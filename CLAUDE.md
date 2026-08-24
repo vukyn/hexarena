@@ -12,7 +12,7 @@ no Fiber, no `mprocs` or `/etc/hosts` entry, no swagger. It does not import
 `kuery`, and the kuery shared-package rule is irrelevant because there is nothing
 here another service would want.
 
-Go 1.25, standard library only. Adding a dependency needs a reason that survives
+Go 1.27, standard library only. Adding a dependency needs a reason that survives
 the question "what does this do that the standard library will not".
 
 ## Commands
@@ -29,11 +29,15 @@ go test ./internal/core/battle -run TestControl                     # one test
 gofmt -l . && go vet ./...
 ```
 
-There is no Makefile and no linter config. `gofmt` and `go vet` are the gate.
+The `Makefile` wraps those and nothing more — `make build install run auto test
+golden fmt vet check clean`. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
+`go test ./... -count=1`); `make golden` is the `-update` line above. The raw
+commands stay listed here because they are what the targets are: reach for either.
+There is no linter config — `gofmt` and `go vet` are the whole of it.
 
 `-update` is only defined in the three packages that hold golden files, so
 `go test ./... -update` fails on the rest. A new package with a golden has to be
-added to that command.
+added to that command **and** to the `golden` target.
 
 ## The layer rule
 
@@ -187,7 +191,8 @@ regenerated on autopilot:
 - `skills.golden`, `elements.golden`, `progression.golden`, `combat.golden` are
   the tables each book produces.
 
-Run `go test ./internal/core/hex ./internal/seed ./internal/tui -update` to accept a change and then
+Run `make golden` (`go test ./internal/core/hex ./internal/seed ./internal/tui
+-update`) to accept a change and then
 **read the diff**. That diff is what the files are for: a balance change that
 moves numbers you did not expect is a finding, not noise.
 
