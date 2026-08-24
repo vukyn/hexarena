@@ -1,0 +1,12 @@
+{
+  "level_cap": 60,
+  "ceilings": {
+    "hp": 4800,
+    "attack": 800,
+    "defense": 800,
+    "speed": 200,
+    "accuracy": 300,
+    "dodge": 150
+  },
+  "max_effective_hp": 11500
+}

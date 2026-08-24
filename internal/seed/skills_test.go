@@ -1,0 +1,353 @@
+package seed_test
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/vukyn/hexarena/internal/core/combat"
+	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/pattern"
+	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
+	"github.com/vukyn/hexarena/internal/seed"
+)
+
+func mustSkills(t *testing.T) *skill.Book {
+	t.Helper()
+	book, err := seed.SkillBook()
+	if err != nil {
+		t.Fatalf("load shipped skills: %v", err)
+	}
+	return book
+}
+
+// TestShippedSkillsCoverTheMechanics keeps the seed set honest as a test bed: if
+// a mechanic has no skill exercising it, nothing downstream is really covered.
+func TestShippedSkillsCoverTheMechanics(t *testing.T) {
+	book := mustSkills(t)
+	skills := book.Skills()
+	if len(skills) < 12 {
+		t.Fatalf("the book holds %d skills, want a usable seed set", len(skills))
+	}
+	var (
+		multiStrike, area, amplifier, detonate bool
+		cleanse, dispel, shield, selfBuff      bool
+		guaranteed, speedScaled, longRange     bool
+	)
+	elements := make(map[element.Element]bool)
+	sides := make(map[skill.Side]bool)
+	for _, current := range skills {
+		elements[current.Element] = true
+		sides[current.Target] = true
+		if current.StrikeCount() > 1 {
+			multiStrike = true
+		}
+		if current.Pattern != "single" {
+			area = true
+		}
+		if current.Requires != nil {
+			amplifier = true
+			if current.Requires.Consume {
+				detonate = true
+			}
+		}
+		if current.Strips != nil {
+			harmful := false
+			for _, category := range current.Strips.Categories {
+				if category.Harmful() {
+					harmful = true
+				}
+			}
+			if harmful {
+				cleanse = true
+			} else {
+				dispel = true
+			}
+		}
+		for _, application := range append(current.Applies, current.SelfApplies...) {
+			if application.Status == "block" {
+				shield = true
+			}
+		}
+		if current.Target == skill.Self && len(current.SelfApplies) > 0 {
+			selfBuff = true
+		}
+		if current.Guaranteed() {
+			guaranteed = true
+		}
+		if current.Scaling.Stat == progression.Speed {
+			speedScaled = true
+			if current.Scaling.Source != combat.BaseStat {
+				t.Errorf("skill %q scales off the current speed, which compounds with the turn economy",
+					current.ID)
+			}
+		}
+		if current.Range >= 4 {
+			longRange = true
+		}
+	}
+	for _, testCase := range []struct {
+		name    string
+		covered bool
+	}{
+		{"a multi strike skill", multiStrike},
+		{"an area skill", area},
+		{"a conditional amplifier", amplifier},
+		{"a detonate", detonate},
+		{"a cleanse", cleanse},
+		{"a dispel", dispel},
+		{"a shield", shield},
+		{"a self buff", selfBuff},
+		{"a skill that cannot miss", guaranteed},
+		{"a speed scaled skill", speedScaled},
+		{"a skill reaching the back line", longRange},
+	} {
+		if !testCase.covered {
+			t.Errorf("the seed set has no %s", testCase.name)
+		}
+	}
+	if len(elements) < 6 {
+		t.Errorf("the seed set uses %d elements, want a spread across the chart", len(elements))
+	}
+	for _, side := range []skill.Side{skill.Enemy, skill.Ally, skill.Self} {
+		if !sides[side] {
+			t.Errorf("no shipped skill targets %s", side)
+		}
+	}
+}
+
+// TestEverySkillsReachIsUsable stops a skill declaring a range or a shape that
+// can never do what it says on the board it is played on.
+func TestEverySkillsReachIsUsable(t *testing.T) {
+	book, patterns := mustSkills(t), mustBook(t)
+	for _, current := range book.Skills() {
+		if current.Target == skill.Self {
+			continue
+		}
+		shape, err := patterns.Lookup(current.Pattern)
+		if err != nil {
+			t.Errorf("skill %q: %v", current.ID, err)
+			continue
+		}
+		reachable, widest := false, 0
+		for _, from := range hex.SideCells(hex.SideAlly) {
+			for _, to := range hex.Cells() {
+				if from.DistanceTo(to) > current.Range {
+					continue
+				}
+				wantSide := hex.SideEnemy
+				if current.Target == skill.Ally {
+					wantSide = hex.SideAlly
+				}
+				if to.Side() != wantSide {
+					continue
+				}
+				reachable = true
+				if covered := len(shape.Targets(to)); covered > widest {
+					widest = covered
+				}
+			}
+		}
+		if !reachable {
+			t.Errorf("skill %q at range %d can never reach a %s cell", current.ID, current.Range, current.Target)
+		}
+		if widest != shape.MaxTargets() {
+			t.Errorf("skill %q uses the %q shape but can only ever cover %d of its %d cells",
+				current.ID, shape.Name, widest, shape.MaxTargets())
+		}
+	}
+}
+
+// TestADetonateIsWorthLessThanItsBreakEven is the pricing rule for a burst that
+// consumes a status: it may beat leaving the ticks alone, but not by so much that
+// applying the status and immediately detonating it is the only line worth
+// playing.
+func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
+	book, statuses, rules := mustSkills(t), mustStatuses(t), mustRules(t)
+	for _, current := range book.Skills() {
+		if current.Requires == nil || !current.Requires.Consume {
+			continue
+		}
+		kind, err := statuses.Lookup(current.Requires.Status)
+		if err != nil {
+			t.Errorf("skill %q: %v", current.ID, err)
+			continue
+		}
+		burst := rules.Damage(attackerAttack, referenceDefense,
+			current.PowerAgainst(kind.MaxStacks), neutralAffinity)
+		// What the ticks would have been worth if left alone, plus what a plain
+		// attack would have dealt with the same turn.
+		perTick := rules.Damage(attackerAttack, referenceDefense, kind.TickPower, neutralAffinity)
+		forgone := perTick * int64(current.Requires.MinStacks) * int64(kind.Duration)
+		plain := rules.Damage(attackerAttack, referenceDefense, 1000, neutralAffinity)
+		alternative := forgone + plain
+		if burst <= alternative {
+			t.Errorf("skill %q bursts for %d against an alternative worth %d, so detonating is never right",
+				current.ID, burst, alternative)
+		}
+		if burst > alternative*2 {
+			t.Errorf("skill %q bursts for %d against an alternative worth %d, over twice as good",
+				current.ID, burst, alternative)
+		}
+	}
+}
+
+func TestSkillBookGolden(t *testing.T) {
+	got := skillReport(mustSkills(t), mustStatuses(t), mustBook(t), mustRules(t))
+	path := filepath.Join("testdata", "skills.golden")
+	if *update {
+		if err := os.WriteFile(path, []byte(got), 0o600); err != nil {
+			t.Fatalf("write golden: %v", err)
+		}
+		t.Logf("rewrote %s", path)
+		return
+	}
+	want, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read golden (run: go test ./internal/seed -update): %v", err)
+	}
+	if got != string(want) {
+		t.Errorf("skill report differs from %s; rerun with -update to accept\n--- got ---\n%s", path, got)
+	}
+}
+
+func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book, rules combat.Rules) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "damage is against %d defence at %d attack, a neutral matchup and no accuracy stat\n",
+		referenceDefense, attackerAttack)
+	b.WriteString("a cooldown counts the caster's own turns, the same unit statuses are timed in\n\n")
+
+	b.WriteString("== skills ==\n")
+	b.WriteString("skill           element   tgt    rng  shape          power  hits  total   acc   cd   damage\n")
+	for _, current := range book.Skills() {
+		damage := int64(0)
+		if current.Power > 0 {
+			damage = rules.Total(combat.Hit{
+				Scaling: attackerAttack, Multiplier: current.Power, Strikes: current.StrikeCount(),
+				Affinity: neutralAffinity, Defense: referenceDefense,
+			})
+		}
+		fmt.Fprintf(&b, "%-16s%-10s%-6s%4d  %-14s%5d%6d%7d%6d%5d%9d\n",
+			current.ID, current.Element, current.Target, current.Range, current.Pattern,
+			current.Power, current.StrikeCount(), current.TotalPower(),
+			current.Accuracy, current.Cooldown, damage)
+	}
+
+	b.WriteString("\n== statuses inflicted, chance is fixed and no stat moves it ==\n")
+	b.WriteString("skill           status           stacks   chance   accuracy   lands per cast\n")
+	for _, current := range book.Skills() {
+		for _, application := range current.Applies {
+			landed := current.Accuracy * application.Chance / combat.PermilleBase
+			fmt.Fprintf(&b, "%-16s%-17s%7d%9d%11d%17d\n",
+				current.ID, application.Status, application.Stacks,
+				application.Chance, current.Accuracy, landed)
+		}
+		for _, application := range current.SelfApplies {
+			fmt.Fprintf(&b, "%-16s%-17s%7d%9d%11d%17s\n",
+				current.ID, application.Status+" (self)", application.Stacks,
+				application.Chance, current.Accuracy, "-")
+		}
+	}
+
+	b.WriteString("\n== conditional amplifiers ==\n")
+	b.WriteString("skill           needs      stacks   power   amplified   damage   amplified   gain\n")
+	for _, current := range book.Skills() {
+		if current.Requires == nil {
+			continue
+		}
+		plain := rules.Damage(attackerAttack, referenceDefense, current.Power, neutralAffinity)
+		amplified := rules.Damage(attackerAttack, referenceDefense,
+			current.PowerAgainst(current.Requires.MinStacks), neutralAffinity)
+		note := ""
+		if current.Requires.Consume {
+			note = " (consumes)"
+		}
+		fmt.Fprintf(&b, "%-16s%-11s%7d%8d%12d%9d%12d%7s%s\n",
+			current.ID, current.Requires.Status, current.Requires.MinStacks,
+			current.Power, current.PowerAgainst(current.Requires.MinStacks),
+			plain, amplified, ratio(amplified, plain), note)
+	}
+
+	b.WriteString("\n== what a detonate gives up ==\n")
+	b.WriteString("skill           status   ticks forgone   a plain attack   alternative   burst    ratio\n")
+	for _, current := range book.Skills() {
+		if current.Requires == nil || !current.Requires.Consume {
+			continue
+		}
+		kind, err := statuses.Lookup(current.Requires.Status)
+		if err != nil {
+			continue
+		}
+		perTick := rules.Damage(attackerAttack, referenceDefense, kind.TickPower, neutralAffinity)
+		forgone := perTick * int64(current.Requires.MinStacks) * int64(kind.Duration)
+		plain := rules.Damage(attackerAttack, referenceDefense, 1000, neutralAffinity)
+		burst := rules.Damage(attackerAttack, referenceDefense,
+			current.PowerAgainst(kind.MaxStacks), neutralAffinity)
+		fmt.Fprintf(&b, "%-16s%-9s%15d%17d%14d%8d%9s\n",
+			current.ID, kind.ID, forgone, plain, forgone+plain, burst, ratio(burst, forgone+plain))
+	}
+
+	b.WriteString("\n== cleanses and dispels ==\n")
+	b.WriteString("skill           categories                    stacks\n")
+	for _, current := range book.Skills() {
+		if current.Strips == nil {
+			continue
+		}
+		names := make([]string, 0, len(current.Strips.Categories))
+		for _, category := range current.Strips.Categories {
+			names = append(names, category.String())
+		}
+		fmt.Fprintf(&b, "%-16s%-30s%6d\n", current.ID, strings.Join(names, ", "), current.Strips.Stacks)
+	}
+
+	b.WriteString("\n== timed effects ==\n")
+	b.WriteString("status      category      stacks   turns   tick power   tick   over its life   modifiers\n")
+	for _, kind := range statuses.Kinds() {
+		tick, life := int64(0), int64(0)
+		if kind.TickPower > 0 {
+			tick = rules.Damage(attackerAttack, referenceDefense, kind.TickPower, neutralAffinity)
+			// One stack applied per turn until the cap, then the remaining
+			// duration at full stacks.
+			for turn := 1; turn <= kind.MaxStacks+kind.Duration-1; turn++ {
+				stacks := turn
+				if stacks > kind.MaxStacks {
+					stacks = kind.MaxStacks
+				}
+				life += tick * int64(stacks)
+			}
+		}
+		terms := make([]string, 0, len(kind.Modifiers))
+		for _, term := range kind.Modifiers {
+			terms = append(terms, term.String())
+		}
+		joined := strings.Join(terms, ", ")
+		if joined == "" {
+			joined = "-"
+		}
+		fmt.Fprintf(&b, "%-12s%-14s%7d%8d%13d%7d%16d   %s\n",
+			kind.ID, kind.Category, kind.MaxStacks, kind.Duration,
+			kind.TickPower, tick, life, joined)
+	}
+
+	b.WriteString("\n== area shapes a skill can choose ==\n")
+	b.WriteString("shape          width   best aim   worst aim\n")
+	for _, shape := range patterns.Patterns() {
+		best, worst := 0, 99
+		for _, centre := range hex.SideCells(hex.SideEnemy) {
+			covered := len(shape.Targets(centre))
+			if covered > best {
+				best = covered
+			}
+			if covered < worst {
+				worst = covered
+			}
+		}
+		fmt.Fprintf(&b, "%-15s%6d%11d%12d\n", shape.Name, shape.MaxTargets(), best, worst)
+	}
+	return b.String()
+}

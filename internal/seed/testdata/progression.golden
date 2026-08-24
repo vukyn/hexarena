@@ -1,0 +1,33 @@
+== budget ==
+level cap 60, ceilings hp 4800, atk 800, def 800, spd 200, acc 300, ddg 150, effective health budget 11500
+stats grow linearly: base at level 1, max at the level cap
+
+== how much defence each health total can afford ==
+   health  max defence  effective health
+     2000          800              7352
+     2400          800              8823
+     2800          800             10294
+     3200          775             11469
+     3600          655             11464
+     4000          562             11494
+     4400          483             11488
+     4800          417             11483
+
+== hits to kill, struck by 800 attack at a 1800 skill multiplier ==
+profile                resisted twice       resisted        neutral           weak     weak twice
+bulwark, max health                18             12              8              6              4
+sentinel, max defence              18             12              8              6              4
+vanguard, balanced                 17             11              8              5              4
+duelist, max attack                 9              6              4              3              2
+skirmisher, max speed               7              5              3              2              2
+
+== reference profiles at the level cap ==
+bulwark, max health    hp 4800, atk 480, def 400, spd 80, acc 60, ddg 20, absorbs 11214
+sentinel, max defence  hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30, absorbs 11397
+vanguard, balanced     hp 3600, atk 620, def 560, spd 110, acc 110, ddg 60, absorbs 10344
+duelist, max attack    hp 2600, atk 800, def 320, spd 150, acc 180, ddg 90, absorbs 5383
+skirmisher, max speed  hp 2200, atk 760, def 250, spd 200, acc 240, ddg 150, absorbs 4036
+
+== a sample curve, health 320 to 4800 ==
+level        1      11      21      31      41      51      60
+value      320    1079    1838    2597    3357    4116    4800

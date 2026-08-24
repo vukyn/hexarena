@@ -1,0 +1,15 @@
+{
+  "max_targets": 3,
+  "splash_power": 500,
+  "patterns": [
+    { "name": "single", "splash": [] },
+    { "name": "flank_up", "splash": [["up"]] },
+    { "name": "flank_down", "splash": [["down"]] },
+    { "name": "column", "splash": [["up"], ["down"]] },
+    { "name": "wedge_right", "splash": [["upper_right"], ["lower_right"]] },
+    { "name": "wedge_left", "splash": [["upper_left"], ["lower_left"]] },
+    { "name": "pierce", "splash": [["upper_right"], ["upper_right", "upper_right"]] },
+    { "name": "arc_up", "splash": [["up"], ["upper_right"]] },
+    { "name": "arc_down", "splash": [["down"], ["lower_right"]] }
+  ]
+}

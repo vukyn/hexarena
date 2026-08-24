@@ -1,0 +1,6 @@
+{
+  "defense_constant": 300,
+  "minimum_damage": 1,
+  "min_hit_chance": 150,
+  "max_block_charges": 3
+}

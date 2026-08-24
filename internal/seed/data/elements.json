@@ -1,0 +1,25 @@
+{
+  "multipliers": {
+    "advantage": 1500,
+    "neutral": 1000,
+    "disadvantage": 667
+  },
+  "cycles": [
+    {
+      "name": "organic",
+      "chain": ["water", "fire", "grass", "ground"]
+    },
+    {
+      "name": "industrial",
+      "chain": ["ice", "metal", "wind", "electric"]
+    },
+    {
+      "name": "cross",
+      "chain": ["water", "metal", "grass", "wind", "fire", "ice", "ground", "electric"]
+    }
+  ],
+  "mutual": [
+    ["light", "dark"]
+  ],
+  "inert": ["neutral"]
+}

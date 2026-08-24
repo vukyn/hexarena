@@ -1,0 +1,798 @@
+package battle_test
+
+import (
+	"strings"
+	"testing"
+
+	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/combat"
+	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/modifier"
+	"github.com/vukyn/hexarena/internal/core/pattern"
+	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
+)
+
+func books(t *testing.T) battle.Books {
+	t.Helper()
+	chart, err := element.ParseChart([]byte(`{
+	  "multipliers": {"advantage": 1500, "neutral": 1000, "disadvantage": 667},
+	  "cycles": [
+	    {"name": "organic", "chain": ["water", "fire", "grass", "ground"]},
+	    {"name": "industrial", "chain": ["ice", "metal", "wind", "electric"]},
+	    {"name": "cross", "chain": ["water", "metal", "grass", "wind", "fire", "ice", "ground", "electric"]}
+	  ],
+	  "mutual": [["light", "dark"]],
+	  "inert": ["neutral"]
+	}`))
+	if err != nil {
+		t.Fatalf("chart: %v", err)
+	}
+	patterns, err := pattern.ParseBook([]byte(`{
+	  "max_targets": 3, "splash_power": 500,
+	  "patterns": [
+	    {"name": "single", "splash": []},
+	    {"name": "column", "splash": [["up"], ["down"]]}
+	  ]
+	}`))
+	if err != nil {
+		t.Fatalf("patterns: %v", err)
+	}
+	statuses, err := status.ParseBook([]byte(`{
+	  "max_stacks": 5, "max_duration": 6,
+	  "kinds": [
+	    {"id": "poison", "category": "dot", "max_stacks": 3, "duration": 3, "tick_power": 500},
+	    {"id": "burn", "category": "dot", "max_stacks": 2, "duration": 2, "tick_power": 800},
+	    {"id": "weaken", "category": "stat_debuff", "max_stacks": 3, "duration": 3,
+	     "modifiers": [{"target": "attack", "mode": "percent", "amount": -300}]},
+	    {"id": "haste", "category": "buff", "max_stacks": 2, "duration": 3,
+	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 300}]},
+	    {"id": "stun", "category": "control", "max_stacks": 1, "duration": 1},
+	    {"id": "block", "category": "shield", "max_stacks": 3, "duration": 2}
+	  ]
+	}`))
+	if err != nil {
+		t.Fatalf("statuses: %v", err)
+	}
+	skills, err := skill.ParseBook([]byte(`{"skills":[
+	  {"id":"strike","element":"neutral","range":1,"pattern":"single",
+	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"jab","element":"neutral","range":1,"pattern":"single",
+	   "power":60,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"triple","element":"neutral","range":1,"pattern":"single",
+	   "power":400,"strikes":3,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"thorn","element":"grass","range":1,"pattern":"single",
+	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"envenom","element":"neutral","range":1,"pattern":"single",
+	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "applies":[{"status":"poison","chance":1000}]},
+	  {"id":"scorch","element":"neutral","range":1,"pattern":"single",
+	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "applies":[{"status":"burn","chance":1000}]},
+	  {"id":"pop","element":"neutral","range":1,"pattern":"single",
+	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "requires":{"status":"burn","min_stacks":1,"bonus_power":900,"consume":true}},
+	  {"id":"clout","element":"neutral","range":1,"pattern":"single",
+	   "power":100,"strikes":1,"accuracy":1000,"cooldown":3,"target":"enemy"},
+	  {"id":"daze","element":"neutral","range":1,"pattern":"single",
+	   "power":10,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "applies":[{"status":"stun","chance":1000}]},
+	  {"id":"sap","element":"neutral","range":1,"pattern":"single",
+	   "power":10,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "applies":[{"status":"weaken","chance":1000}]},
+	  {"id":"brace","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "self_applies":[{"status":"block","chance":1000,"stacks":1}]},
+	  {"id":"dash","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "self_applies":[{"status":"haste","chance":1000}]},
+	  {"id":"mend","element":"neutral","range":1,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"ally",
+	   "strips":{"categories":["dot","stat_debuff","control"],"stacks":3}}
+	]}`), skill.Deps{Patterns: patterns, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("skills: %v", err)
+	}
+	return battle.Books{
+		Rules: combat.Rules{DefenseConstant: 300, MinimumDamage: 1, MinHitChance: 150, MaxBlockCharges: 3},
+		Chart: chart,
+		Bounds: modifier.Bounds{
+			Headroom: 3000, FloorFraction: 100, MaxAffinityScale: 1000,
+		},
+		Limits: progression.Limits{
+			LevelCap: progression.LevelCap,
+			Ceilings: progression.Values{
+				progression.HP: 4800, progression.Attack: 800, progression.Defense: 800,
+				progression.Speed: 200, progression.Accuracy: 300, progression.Dodge: 150,
+			},
+			MaxEffectiveHP: 11500,
+		},
+		Patterns: patterns, Statuses: statuses, Skills: skills,
+	}
+}
+
+func stats(hp, attack, defense, speed int64) progression.Values {
+	return progression.Values{
+		progression.HP: hp, progression.Attack: attack, progression.Defense: defense,
+		progression.Speed: speed, progression.Accuracy: 0, progression.Dodge: 0,
+	}
+}
+
+func single(id string) element.Affinity {
+	member, err := element.Parse(id)
+	if err != nil {
+		panic(err)
+	}
+	affinity, err := element.Single(member)
+	if err != nil {
+		panic(err)
+	}
+	return affinity
+}
+
+// duel is a controlled one on one, both frontline centre, with no accuracy or
+// dodge so every roll is decided by the skill alone.
+func duel(t *testing.T, allySkills, foeSkills []string, allySpeed, foeSpeed int64) *battle.Battle {
+	t.Helper()
+	fight, err := battle.New(books(t), 7, []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, allySpeed), Skills: allySkills},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, foeSpeed), Skills: foeSkills},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	return fight
+}
+
+func find(events []battle.Event, kind battle.Kind) []battle.Event {
+	out := make([]battle.Event, 0, len(events))
+	for _, event := range events {
+		if event.Kind == kind {
+			out = append(out, event)
+		}
+	}
+	return out
+}
+
+func TestNewRejects(t *testing.T) {
+	valid := []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100), Skills: []string{"strike"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100), Skills: []string{"strike"}},
+	}
+	clone := func() []battle.Roster {
+		out := make([]battle.Roster, len(valid))
+		copy(out, valid)
+		return out
+	}
+	if _, err := battle.New(books(t), 1, valid); err != nil {
+		t.Fatalf("the valid roster was rejected: %v", err)
+	}
+
+	cases := []struct {
+		name    string
+		roster  func() []battle.Roster
+		wantErr string
+	}{
+		{"no units", func() []battle.Roster { return nil }, "needs units"},
+		{"one side only", func() []battle.Roster { return clone()[:1] }, "no unit is on the enemy side"},
+		{"a repeated id", func() []battle.Roster {
+			r := clone()
+			r[1].ID = "a"
+			return r
+		}, "listed twice"},
+		{"a slot off the formation", func() []battle.Roster {
+			r := clone()
+			r[0].Slot = hex.Offset{Col: 4, Row: 0}
+			return r
+		}, "not a formation slot"},
+		{"two units in one cell", func() []battle.Roster {
+			r := clone()
+			r = append(r, battle.Roster{ID: "b", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100), Skills: []string{"strike"}})
+			return r
+		}, "both sit at"},
+		{"more than a full team", func() []battle.Roster {
+			r := clone()
+			for i := 0; i < hex.MaxTeamSize; i++ {
+				r = append(r, battle.Roster{
+					ID: string(rune('m' + i)), Side: hex.SideAlly,
+					Slot:     hex.Offset{Col: i % hex.FormationCols, Row: i / hex.FormationCols},
+					Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100), Skills: []string{"strike"},
+				})
+			}
+			return r
+		}, "more than"},
+		{"no skills", func() []battle.Roster {
+			r := clone()
+			r[0].Skills = nil
+			return r
+		}, "has no skills"},
+		{"an unknown skill", func() []battle.Roster {
+			r := clone()
+			r[0].Skills = []string{"nonesuch"}
+			return r
+		}, "unknown skill"},
+		{"the same skill twice", func() []battle.Roster {
+			r := clone()
+			r[0].Skills = []string{"strike", "strike"}
+			return r
+		}, "twice"},
+		{"a skill of an element the unit lacks", func() []battle.Roster {
+			r := clone()
+			r[0].Skills = []string{"strike", "thorn"}
+			return r
+		}, "knows the grass skill"},
+		{"stats over the budget", func() []battle.Roster {
+			r := clone()
+			r[0].Stats = stats(4800, 800, 800, 100)
+			return r
+		}, "over the budget"},
+		{"an affinity that counters itself", func() []battle.Roster {
+			r := clone()
+			pair, err := element.Dual(element.Water, element.Fire)
+			if err != nil {
+				t.Fatalf("dual: %v", err)
+			}
+			r[0].Affinity = pair
+			return r
+		}, "counter each other"},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			_, err := battle.New(books(t), 1, testCase.roster())
+			if err == nil {
+				t.Fatalf("want an error mentioning %q, got none", testCase.wantErr)
+			}
+			if !strings.Contains(err.Error(), testCase.wantErr) {
+				t.Errorf("error %q does not mention %q", err, testCase.wantErr)
+			}
+		})
+	}
+}
+
+func TestBooksMustBeComplete(t *testing.T) {
+	full := books(t)
+	for _, testCase := range []struct {
+		name  string
+		strip func(*battle.Books)
+	}{
+		{"no chart", func(b *battle.Books) { b.Chart = nil }},
+		{"no patterns", func(b *battle.Books) { b.Patterns = nil }},
+		{"no statuses", func(b *battle.Books) { b.Statuses = nil }},
+		{"no skills", func(b *battle.Books) { b.Skills = nil }},
+		{"invalid rules", func(b *battle.Books) { b.Rules.DefenseConstant = 0 }},
+		{"invalid bounds", func(b *battle.Books) { b.Bounds.Headroom = 0 }},
+		{"invalid limits", func(b *battle.Books) { b.Limits.MaxEffectiveHP = 0 }},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			partial := full
+			testCase.strip(&partial)
+			if _, err := battle.New(partial, 1, nil); err == nil {
+				t.Error("a battle was built without complete books")
+			}
+		})
+	}
+}
+
+func TestBeginRecordsTheOpeningBoard(t *testing.T) {
+	fight := duel(t, []string{"strike"}, []string{"strike"}, 100, 100)
+	fight.Begin()
+	events := fight.Drain()
+	opened := find(events, battle.Started)
+	if len(opened) != 2 {
+		t.Fatalf("%d units were recorded, want 2", len(opened))
+	}
+	for _, event := range opened {
+		if event.Amount <= 0 || event.Note == "" {
+			t.Errorf("the opening record for %s is %+v", event.Actor, event)
+		}
+	}
+	if opened[0].Cell == opened[1].Cell {
+		t.Error("both units were recorded in the same cell")
+	}
+	if opened[0].Side == opened[1].Side {
+		t.Error("both units were recorded on the same side")
+	}
+}
+
+// TestTheSameSeedReplaysExactly is the guarantee the whole engine is built for.
+func TestTheSameSeedReplaysExactly(t *testing.T) {
+	run := func() []battle.Event {
+		fight, err := battle.New(books(t), 20240824, []battle.Roster{
+			{ID: "a1", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("fire"), Stats: stats(3000, 700, 400, 120),
+				Skills: []string{"strike", "scorch", "pop", "brace"}},
+			{ID: "a2", Side: hex.SideAlly, Slot: hex.Offset{Col: 1, Row: 1},
+				Affinity: single("grass"), Stats: stats(2400, 760, 300, 170),
+				Skills: []string{"strike", "envenom", "triple"}},
+			{ID: "f1", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("grass"), Stats: stats(3200, 640, 500, 100),
+				Skills: []string{"strike", "envenom", "daze", "mend"}},
+			{ID: "f2", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 2},
+				Affinity: single("water"), Stats: stats(2600, 720, 360, 150),
+				Skills: []string{"strike", "sap", "dash"}},
+		})
+		if err != nil {
+			t.Fatalf("new battle: %v", err)
+		}
+		fight.Begin()
+		if _, err := fight.RunToEnd(2000); err != nil {
+			t.Fatalf("run: %v", err)
+		}
+		return fight.Drain()
+	}
+	first, second := run(), run()
+	if len(first) != len(second) {
+		t.Fatalf("the two runs produced %d and %d events", len(first), len(second))
+	}
+	if len(first) < 40 {
+		t.Fatalf("the battle produced only %d events, too short to be a real check", len(first))
+	}
+	for i := range first {
+		if first[i] != second[i] {
+			t.Fatalf("event %d differs:\n%+v\n%+v", i, first[i], second[i])
+		}
+	}
+}
+
+// TestControlCostsTheFollowingTurn pins the order inside Advance. A one turn stun
+// applied now has to cost the next action; spending its duration before checking
+// it would expire it in the very turn it was meant to prevent.
+func TestControlCostsTheFollowingTurn(t *testing.T) {
+	fight := duel(t, []string{"daze", "jab"}, []string{"strike"}, 100, 100)
+	fight.Begin()
+	fight.Drain()
+
+	// The ally acts first and dazes the foe.
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "a" {
+		t.Fatalf("the first turn went to %s", prompt.Unit)
+	}
+	if err := fight.Act("daze", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+	if applied := find(fight.Drain(), battle.StatusApplied); len(applied) != 1 || applied[0].Status != "stun" {
+		t.Fatalf("the daze applied %+v", applied)
+	}
+
+	// The foe's next turn is lost.
+	prompt, err = fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "f" || !prompt.Skipped || prompt.Reason != "stun" {
+		t.Fatalf("the stunned turn came back as %+v", prompt)
+	}
+	events := fight.Drain()
+	if skipped := find(events, battle.TurnSkipped); len(skipped) != 1 {
+		t.Errorf("%d turns were skipped, want 1", len(skipped))
+	}
+	if expired := find(events, battle.StatusExpired); len(expired) != 1 || expired[0].Status != "stun" {
+		t.Errorf("the stun expired as %+v", expired)
+	}
+
+	// And the turn after that it acts normally.
+	for {
+		prompt, err = fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt.Unit == "f" {
+			break
+		}
+		if !prompt.Skipped {
+			// Jab rather than daze, so the foe is not stunned all over again.
+			if err := fight.Act("jab", hex.Offset{Col: 3, Row: 1}); err != nil {
+				t.Fatalf("act: %v", err)
+			}
+		}
+		fight.Drain()
+	}
+	if prompt.Skipped {
+		t.Errorf("the foe was still stunned on its next turn: %+v", prompt)
+	}
+}
+
+// TestPoisonTicksOnlyOnItsHoldersTurn is the join between the turn order and the
+// timed effects: a fast attacker acting three times does not advance the poison
+// three times.
+func TestPoisonTicksOnlyOnItsHoldersTurn(t *testing.T) {
+	fight := duel(t, []string{"envenom", "jab"}, []string{"jab"}, 200, 70)
+	fight.Begin()
+	fight.Drain()
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "a" {
+		t.Fatalf("the first turn went to %s", prompt.Unit)
+	}
+	if err := fight.Act("envenom", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+	fight.Drain()
+
+	allyTurns, foeTurns, ticks := 0, 0, 0
+	for i := 0; i < 12 && !fight.Finished(); i++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt.Unit == "a" {
+			allyTurns++
+		} else {
+			foeTurns++
+		}
+		for _, event := range fight.Drain() {
+			if event.Kind == battle.StatusTicked {
+				if event.Actor != "f" {
+					t.Errorf("the poison ticked on %s", event.Actor)
+				}
+				if event.Status != "poison" {
+					t.Errorf("the tick named %q", event.Status)
+				}
+				ticks++
+			}
+		}
+		if !prompt.Skipped {
+			choice, ok := fight.Suggest(prompt)
+			if ok {
+				if err := fight.Act(choice.Skill, choice.Aim); err != nil {
+					t.Fatalf("act: %v", err)
+				}
+			} else {
+				fight.Drain()
+			}
+		}
+	}
+	if allyTurns <= foeTurns {
+		t.Fatalf("the faster unit took %d turns against %d, expected more", allyTurns, foeTurns)
+	}
+	if ticks != 3 {
+		t.Errorf("the poison ticked %d times, want the 3 its duration allows", ticks)
+	}
+}
+
+// TestABlockChargeCancelsOneStrikeOfMany is block and multi strike meeting in a
+// real battle rather than in isolation.
+func TestABlockChargeCancelsOneStrikeOfMany(t *testing.T) {
+	fight := duel(t, []string{"triple"}, []string{"brace", "jab"}, 70, 200)
+	fight.Begin()
+	fight.Drain()
+	// The faster foe braces first.
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "f" {
+		t.Fatalf("the first turn went to %s", prompt.Unit)
+	}
+	if err := fight.Act("brace", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("brace: %v", err)
+	}
+	fight.Drain()
+
+	for {
+		prompt, err = fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt.Unit == "a" {
+			break
+		}
+		if !prompt.Skipped {
+			// Jab, not brace: a second charge would eat a second strike.
+			if err := fight.Act("jab", hex.Offset{Col: 2, Row: 1}); err != nil {
+				t.Fatalf("jab: %v", err)
+			}
+		}
+		fight.Drain()
+	}
+	if err := fight.Act("triple", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("triple: %v", err)
+	}
+	events := fight.Drain()
+	blocked, struck := find(events, battle.Blocked), find(events, battle.Damaged)
+	if len(blocked) != 1 {
+		t.Errorf("%d strikes were blocked, want 1", len(blocked))
+	}
+	if len(struck) != 2 {
+		t.Errorf("%d strikes landed, want 2", len(struck))
+	}
+	for _, event := range struck {
+		if event.Amount <= 0 {
+			t.Errorf("a landing strike dealt %d", event.Amount)
+		}
+	}
+}
+
+func TestCooldownBlocksThenReturns(t *testing.T) {
+	fight := duel(t, []string{"clout", "jab"}, []string{"jab"}, 200, 40)
+	fight.Begin()
+	fight.Drain()
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if err := fight.Act("clout", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+	fight.Drain()
+
+	unavailableFor := 0
+	for turn := 0; turn < 8 && !fight.Finished(); turn++ {
+		prompt, err = fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		fight.Drain()
+		if prompt.Unit != "a" || prompt.Skipped {
+			continue
+		}
+		available := false
+		for _, option := range prompt.Options {
+			if option.Skill != "clout" {
+				continue
+			}
+			available = option.Available()
+			if !available && !strings.Contains(option.Reason, "cooldown") {
+				t.Errorf("the reason given was %q", option.Reason)
+			}
+		}
+		if available {
+			if err := fight.Act("clout", hex.Offset{Col: 3, Row: 1}); err != nil {
+				t.Errorf("the skill was offered but refused: %v", err)
+			}
+			break
+		}
+		unavailableFor++
+		if err := fight.Act("clout", hex.Offset{Col: 3, Row: 1}); err == nil {
+			t.Error("a skill on cooldown was accepted")
+		}
+		if err := fight.Act("jab", hex.Offset{Col: 3, Row: 1}); err != nil {
+			t.Fatalf("jab: %v", err)
+		}
+		fight.Drain()
+	}
+	if unavailableFor != 3 {
+		t.Errorf("the skill was unusable for %d of its own turns, want its cooldown of 3", unavailableFor)
+	}
+}
+
+func TestDetonateAmplifiesAndConsumes(t *testing.T) {
+	fight := duel(t, []string{"scorch", "pop"}, []string{"jab"}, 200, 40)
+	fight.Begin()
+	fight.Drain()
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	_ = prompt
+	if err := fight.Act("scorch", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("scorch: %v", err)
+	}
+	fight.Drain()
+	for {
+		prompt, err = fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		fight.Drain()
+		if prompt.Unit == "a" && !prompt.Skipped {
+			break
+		}
+		if !prompt.Skipped {
+			if err := fight.Act("jab", hex.Offset{Col: 2, Row: 1}); err != nil {
+				t.Fatalf("jab: %v", err)
+			}
+			fight.Drain()
+		}
+	}
+	if err := fight.Act("pop", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("pop: %v", err)
+	}
+	events := fight.Drain()
+	amplified := find(events, battle.Amplified)
+	if len(amplified) != 1 {
+		t.Fatalf("%d amplifications, want 1", len(amplified))
+	}
+	if amplified[0].Power != 1000 {
+		t.Errorf("the amplified power is %d, want 1000", amplified[0].Power)
+	}
+	consumed := find(events, battle.StatusConsumed)
+	if len(consumed) != 1 || consumed[0].Status != "burn" || consumed[0].Stacks < 1 {
+		t.Fatalf("the consumption was %+v", consumed)
+	}
+	if consumed[0].Amount <= 0 {
+		t.Errorf("the consumption reported %d damage given up, want the forgone ticks", consumed[0].Amount)
+	}
+	foe, _ := fight.Unit("f")
+	if foe.Statuses.Has("burn") {
+		t.Error("the burn survived being consumed")
+	}
+}
+
+func TestCleanseStripsWhatItNames(t *testing.T) {
+	fight, err := battle.New(books(t), 3, []battle.Roster{
+		{ID: "healer", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 500, 400, 200), Skills: []string{"mend", "jab"}},
+		{ID: "hurt", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 2},
+			Affinity: single("neutral"), Stats: stats(3000, 500, 400, 1), Skills: []string{"jab"}},
+		{ID: "foe", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("grass"), Stats: stats(3000, 500, 400, 1), Skills: []string{"envenom", "sap"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	fight.Drain()
+	hurt, _ := fight.Unit("hurt")
+	statuses := fight.Books().Statuses
+	poison, err := statuses.Lookup("poison")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	weaken, err := statuses.Lookup("weaken")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	hurt.Statuses.Apply(poison, 120)
+	hurt.Statuses.Apply(poison, 120)
+	hurt.Statuses.Apply(weaken, 0)
+
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "healer" {
+		t.Fatalf("the first turn went to %s", prompt.Unit)
+	}
+	if err := fight.Act("mend", hurt.Cell); err != nil {
+		t.Fatalf("mend: %v", err)
+	}
+	stripped := find(fight.Drain(), battle.StatusStripped)
+	if len(stripped) != 1 || stripped[0].Stacks != 3 {
+		t.Fatalf("the cleanse was %+v", stripped)
+	}
+	if hurt.Statuses.Has("poison") || hurt.Statuses.Has("weaken") {
+		t.Errorf("the statuses survived: %+v", hurt.Statuses.Snapshot())
+	}
+}
+
+// TestADebuffMovesTheTurnOrder is the join in the other direction: a status that
+// changes tempo has to reorder the queue, or it is worth nothing.
+func TestADebuffMovesTheTurnOrder(t *testing.T) {
+	fight := duel(t, []string{"dash", "jab"}, []string{"jab"}, 100, 100)
+	fight.Begin()
+	fight.Drain()
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "a" {
+		t.Fatalf("the first turn went to %s", prompt.Unit)
+	}
+	if err := fight.Act("dash", hex.Offset{Col: 2, Row: 1}); err != nil {
+		t.Fatalf("dash: %v", err)
+	}
+	changes := make([]battle.Event, 0, 4)
+	for _, event := range fight.Drain() {
+		if event.Kind == battle.SpeedChanged && event.Actor == "a" {
+			changes = append(changes, event)
+		}
+	}
+
+	for turn := 0; turn < 6 && !fight.Finished(); turn++ {
+		prompt, err = fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		for _, event := range fight.Drain() {
+			if event.Kind == battle.SpeedChanged && event.Actor == "a" {
+				changes = append(changes, event)
+			}
+		}
+		if !prompt.Skipped {
+			if err := fight.Act("jab", hex.Offset{Col: 3, Row: 1}); err != nil {
+				if err := fight.Act("jab", hex.Offset{Col: 2, Row: 1}); err != nil {
+					t.Fatalf("jab: %v", err)
+				}
+			}
+			fight.Drain()
+		}
+	}
+	if len(changes) == 0 {
+		t.Fatal("the haste never reached the turn order")
+	}
+	// The first change is the haste taking hold; a later one is it wearing off.
+	if first := changes[0]; first.Amount <= first.Before {
+		t.Errorf("the haste changed speed from %d to %d, want an increase", first.Before, first.Amount)
+	}
+}
+
+func TestActRejects(t *testing.T) {
+	fight := duel(t, []string{"strike", "clout"}, []string{"strike"}, 200, 40)
+	fight.Begin()
+	fight.Drain()
+	if err := fight.Act("strike", hex.Offset{Col: 3, Row: 1}); err == nil {
+		t.Error("acting before a turn began was accepted")
+	}
+	if _, err := fight.Advance(); err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if _, err := fight.Advance(); err == nil {
+		t.Error("advancing twice without acting was accepted")
+	}
+	if err := fight.Act("nonesuch", hex.Offset{Col: 3, Row: 1}); err == nil {
+		t.Error("an unknown skill was accepted")
+	}
+	if err := fight.Act("strike", hex.Offset{Col: 5, Row: 0}); err == nil {
+		t.Error("an unreachable cell was accepted")
+	}
+	if err := fight.Act("strike", hex.Offset{Col: 2, Row: 1}); err == nil {
+		t.Error("an enemy skill aimed at the caster's own cell was accepted")
+	}
+	if err := fight.Act("strike", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("the legal action was refused: %v", err)
+	}
+	if err := fight.Act("strike", hex.Offset{Col: 3, Row: 1}); err == nil {
+		t.Error("acting twice in one turn was accepted")
+	}
+}
+
+func TestABattleEndsWhenASideIsGone(t *testing.T) {
+	fight := duel(t, []string{"strike"}, []string{"jab"}, 200, 80)
+	fight.Begin()
+	turns, err := fight.RunToEnd(4000)
+	if err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	if !fight.Finished() {
+		t.Fatalf("the battle did not finish in %d turns", turns)
+	}
+	winner, decided := fight.Winner()
+	if !decided || winner != hex.SideAlly {
+		t.Errorf("the winner is %v, decided %v, want the ally side", winner, decided)
+	}
+	events := fight.Drain()
+	if died := find(events, battle.Died); len(died) != 1 || died[0].Actor != "f" {
+		t.Errorf("the deaths were %+v", died)
+	}
+	ended := find(events, battle.Ended)
+	if len(ended) != 1 || ended[0].Note != "ally" {
+		t.Errorf("the battle ended as %+v", ended)
+	}
+	if _, err := fight.Advance(); err == nil {
+		t.Error("a finished battle offered another turn")
+	}
+	if err := fight.Act("strike", hex.Offset{Col: 3, Row: 1}); err == nil {
+		t.Error("a finished battle accepted an action")
+	}
+	foe, _ := fight.Unit("f")
+	if !foe.Dead || foe.HP != 0 {
+		t.Errorf("the loser is %+v", foe)
+	}
+	if fight.Queue().Has("f") {
+		t.Error("the dead unit is still in the turn order")
+	}
+}
+
+func TestEventKindNames(t *testing.T) {
+	for kind := 0; kind < battle.KindCount; kind++ {
+		if name := battle.Kind(kind).String(); name == "" || strings.HasPrefix(name, "kind(") {
+			t.Errorf("kind %d has no name, it renders as %q", kind, name)
+		}
+	}
+	if got := battle.Kind(200).String(); !strings.Contains(got, "200") {
+		t.Errorf("an undeclared kind renders as %q", got)
+	}
+}

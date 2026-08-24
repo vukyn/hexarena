@@ -1,0 +1,140 @@
+== battle from seed 11 ==
+135 turns, 518 events, ally won
+
+the first 90 events
+       0 started         ally.bulwark       ally   2,1  4800 hp
+       0 started         ally.vanguard      ally   2,0  3600 hp
+       0 started         ally.sentinel      ally   2,2  3100 hp
+       0 started         ally.duelist       ally   1,1  2600 hp
+       0 started         ally.skirmisher    ally   0,1  2200 hp
+       0 started         foe.bulwark        enemy  3,1  4800 hp
+       0 started         foe.vanguard       enemy  3,2  3600 hp
+       0 started         foe.sentinel       enemy  3,0  3100 hp
+       0 started         foe.duelist        enemy  4,1  2600 hp
+       0 started         foe.skirmisher     enemy  5,1  2200 hp
+    5000 turn_began      ally.skirmisher    turn 1   2200 hp
+    5000 skill_used      ally.skirmisher    arc_bolt at 3,2
+    5000 damaged         ally.skirmisher    arc_bolt hit foe.vanguard for 596, x1500 affinity, 3004 hp left
+    5000 status_resisted ally.skirmisher    foe.vanguard resisted stun at 250 per mille
+    5000 turn_began      foe.skirmisher     turn 1   2200 hp
+    5000 skill_used      foe.skirmisher     hex_curse at 1,1
+    5000 damaged         foe.skirmisher     hex_curse hit ally.duelist for 294, x1000 affinity, 2306 hp left
+    5000 status_applied  foe.skirmisher     weaken x1 on ally.duelist, now 1
+    5000 status_resisted foe.skirmisher     ally.duelist resisted blind at 400 per mille
+    6666 turn_began      ally.duelist       turn 1   2306 hp
+    6666 skill_used      ally.duelist       gale_slash at 3,1
+    6666 missed          ally.duelist       gale_slash missed foe.bulwark at 933 per mille
+    6666 damaged         ally.duelist       gale_slash hit foe.sentinel for 106, x1000 affinity, 2994 hp left
+    6666 damaged         ally.duelist       gale_slash hit foe.duelist for 189, x1000 affinity, 2411 hp left
+    6666 turn_began      foe.duelist        turn 1   2411 hp
+    6666 skill_used      foe.duelist        riptide at 2,0
+    6666 damaged         foe.duelist        riptide hit ally.vanguard for 565, x2250 affinity, 3035 hp left
+    6666 damaged         foe.duelist        riptide hit ally.vanguard for 565, x2250 affinity, 2470 hp left
+    6666 status_resisted foe.duelist        ally.vanguard resisted mire at 550 per mille
+    9090 turn_began      ally.vanguard      turn 1   2470 hp
+    9090 skill_used      ally.vanguard      ember_lance at 3,1
+    9090 damaged         ally.vanguard      ember_lance hit foe.bulwark for 478, x1000 affinity, 4322 hp left
+    9090 status_applied  ally.vanguard      burn x1 on foe.bulwark, now 1
+    9090 turn_began      foe.vanguard       turn 1   3004 hp
+    9090 skill_used      foe.vanguard       creeping_rot at 1,1
+    9090 damaged         foe.vanguard       creeping_rot hit ally.duelist for 315, x1500 affinity, 1991 hp left
+    9090 status_applied  foe.vanguard       poison x1 on ally.duelist, now 1
+   10000 turn_began      ally.skirmisher    turn 2   2200 hp
+   10000 skill_used      ally.skirmisher    creeping_rot at 3,1
+   10000 damaged         ally.skirmisher    creeping_rot hit foe.bulwark for 228, x1000 affinity, 4094 hp left
+   10000 status_applied  ally.skirmisher    poison x1 on foe.bulwark, now 1
+   10000 damaged         ally.skirmisher    creeping_rot hit foe.sentinel for 48, x667 affinity, 2946 hp left
+   10000 status_resisted ally.skirmisher    foe.sentinel resisted poison at 650 per mille
+   10000 damaged         ally.skirmisher    creeping_rot hit foe.vanguard for 92, x1000 affinity, 2912 hp left
+   10000 status_applied  ally.skirmisher    poison x1 on foe.vanguard, now 1
+   10000 turn_began      foe.skirmisher     turn 2   2200 hp
+   10000 skill_used      foe.skirmisher     bolt at 2,1
+   10000 damaged         foe.skirmisher     bolt hit ally.bulwark for 260, x1000 affinity, 4540 hp left
+   11111 turn_began      ally.sentinel      turn 1   3100 hp
+   11111 skill_used      ally.sentinel      riptide at 3,1
+   11111 damaged         ally.sentinel      riptide hit foe.bulwark for 192, x1000 affinity, 3902 hp left
+   11111 missed          ally.sentinel      riptide missed foe.bulwark at 883 per mille
+   11111 status_resisted ally.sentinel      foe.bulwark resisted mire at 550 per mille
+   11111 damaged         ally.sentinel      riptide hit foe.duelist for 108, x1000 affinity, 2303 hp left
+   11111 damaged         ally.sentinel      riptide hit foe.duelist for 108, x1000 affinity, 2195 hp left
+   11111 status_applied  ally.sentinel      mire x1 on foe.duelist, now 1
+   11111 speed_changed   foe.duelist        speed 150 to 121
+   11111 turn_began      foe.sentinel       turn 1   2946 hp
+   11111 skill_used      foe.sentinel       arc_bolt at 2,2
+   11111 damaged         foe.sentinel       arc_bolt hit ally.sentinel for 460, x2250 affinity, 2640 hp left
+   11111 status_resisted foe.sentinel       ally.sentinel resisted stun at 250 per mille
+   12500 turn_began      ally.bulwark       turn 1   4540 hp
+   12500 skill_used      ally.bulwark       sever at 3,1
+   12500 missed          ally.bulwark       sever missed foe.bulwark at 808 per mille
+   12500 turn_began      foe.bulwark        turn 1   3902 hp
+   12500 status_ticked   foe.bulwark        burn x1  212 damage
+   12500 status_ticked   foe.bulwark        poison x1  162 damage
+   12500 skill_used      foe.bulwark        ember_lance at 1,1
+   12500 damaged         foe.bulwark        ember_lance hit ally.duelist for 418, x1000 affinity, 1573 hp left
+   12500 status_applied  foe.bulwark        burn x1 on ally.duelist, now 1
+   13332 turn_began      ally.duelist       turn 2   1573 hp
+   13332 status_ticked   ally.duelist       poison x1  225 damage
+   13332 status_ticked   ally.duelist       burn x1  185 damage
+   13332 skill_used      ally.duelist       bolt at 4,1
+   13332 damaged         ally.duelist       bolt hit foe.duelist for 240, x1000 affinity, 1955 hp left
+   13864 turn_began      foe.duelist        turn 2   1955 hp
+   13864 skill_used      foe.duelist        gale_slash at 2,1
+   13864 damaged         foe.duelist        gale_slash hit ally.bulwark for 288, x667 affinity, 4252 hp left
+   13864 damaged         foe.duelist        gale_slash hit ally.vanguard for 175, x1000 affinity, 2295 hp left
+   15000 turn_began      ally.skirmisher    turn 3   2200 hp
+   15000 skill_used      ally.skirmisher    bolt at 3,1
+   15000 damaged         ally.skirmisher    bolt hit foe.bulwark for 260, x1000 affinity, 3268 hp left
+   15000 turn_began      foe.skirmisher     turn 3   2200 hp
+   15000 skill_used      foe.skirmisher     bolt at 2,1
+   15000 damaged         foe.skirmisher     bolt hit ally.bulwark for 260, x1000 affinity, 3992 hp left
+   18180 turn_began      ally.vanguard      turn 2   2295 hp
+   18180 skill_used      ally.vanguard      detonate at 3,1
+   18180 amplified       ally.vanguard      detonate on burn x1, power 3100
+   18180 status_consumed ally.vanguard      consumed burn x1 off foe.bulwark, 212 forgone
+   18180 damaged         ally.vanguard      detonate hit foe.bulwark for 823, x1000 affinity, 2445 hp left
+... 428 more
+
+the last 12 events
+  160000 turn_skipped    ally.skirmisher    no action available
+  162612 turn_began      foe.skirmisher     turn 35  92 hp
+  162612 skill_used      foe.skirmisher     quickstep at 5,1
+  162612 status_applied  foe.skirmisher     haste x1 on foe.skirmisher, now 1
+  162612 status_applied  foe.skirmisher     focus x1 on foe.skirmisher, now 1
+  162612 speed_changed   foe.skirmisher     speed 200 to 252
+  165000 turn_began      ally.skirmisher    turn 33  1791 hp
+  165000 skill_used      ally.skirmisher    arc_bolt at 5,1
+  165000 damaged         ally.skirmisher    arc_bolt hit foe.skirmisher for 621, x1000 affinity, 0 hp left
+  165000 status_applied  ally.skirmisher    stun x1 on foe.skirmisher, now 1
+  165000 died            foe.skirmisher     fell at 5,1
+  165000 ended                              ally
+
+event counts
+  started             10
+  turn_began         135
+  status_ticked       26
+  status_expired      22
+  speed_changed       11
+  turn_skipped        32
+  skill_used         103
+  amplified            2
+  status_consumed      1
+  missed              11
+  blocked              4
+  damaged            101
+  status_applied      34
+  status_resisted     16
+  status_stripped      0
+  died                 9
+  ended                1
+
+final board
+  ally.bulwark      ally   dead       0 / 4800   hp   ground/metal
+  ally.vanguard     ally   dead       0 / 3600   hp   fire/metal
+  ally.sentinel     ally   dead       0 / 3100   hp   water/ice
+  ally.duelist      ally   dead       0 / 2600   hp   wind/ice
+  ally.skirmisher   ally   alive   1791 / 2200   hp   grass/electric
+  foe.bulwark       enemy  dead       0 / 4800   hp   fire/ground
+  foe.vanguard      enemy  dead       0 / 3600   hp   grass/ice
+  foe.sentinel      enemy  dead       0 / 3100   hp   metal/electric
+  foe.duelist       enemy  dead       0 / 2600   hp   water/wind
+  foe.skirmisher    enemy  dead       0 / 2200   hp   dark

@@ -1,0 +1,5 @@
+{
+  "headroom": 3000,
+  "floor_fraction": 100,
+  "max_affinity_scale": 1000
+}

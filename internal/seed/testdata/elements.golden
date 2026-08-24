@@ -1,0 +1,43 @@
+== multipliers, parts per thousand ==
+advantage 1500  neutral 1000  disadvantage 667
+
+== relations ==
+neutral   beats -                    weak to -
+water     beats fire, metal          weak to ground, electric
+fire      beats grass, ice           weak to water, wind
+grass     beats ground, wind         weak to fire, metal
+ground    beats water, electric      weak to grass, ice
+ice       beats ground, metal        weak to fire, electric
+metal     beats grass, wind          weak to water, ice
+wind      beats fire, electric       weak to grass, metal
+electric  beats water, ice           weak to ground, wind
+light     beats dark                 weak to dark
+dark      beats light                weak to light
+
+== multiplier matrix, attacker down, defender across ==
+           neutral    water     fire    grass   ground      ice    metal     wind electric    light     dark
+neutral       1000     1000     1000     1000     1000     1000     1000     1000     1000     1000     1000
+water         1000     1000     1500     1000      667     1000     1500     1000      667     1000     1000
+fire          1000      667     1000     1500     1000     1500     1000      667     1000     1000     1000
+grass         1000     1000      667     1000     1500     1000      667     1500     1000     1000     1000
+ground        1000     1500     1000      667     1000      667     1000     1000     1500     1000     1000
+ice           1000     1000      667     1000     1500     1000     1500     1000      667     1000     1000
+metal         1000      667     1000     1500     1000      667     1000     1500     1000     1000     1000
+wind          1000     1000     1500      667     1000     1000      667     1000     1500     1000     1000
+electric      1000     1500     1000     1000      667     1500     1000      667     1000     1000     1000
+light         1000     1000     1000     1000     1000     1000     1000     1000     1000     1000     1500
+dark          1000     1000     1000     1000     1000     1000     1000     1000     1000     1500     1000
+
+== 250 damage scaled ==
+           neutral    water     fire    grass   ground      ice    metal     wind electric    light     dark
+neutral        250      250      250      250      250      250      250      250      250      250      250
+water          250      250      375      250      166      250      375      250      166      250      250
+fire           250      166      250      375      250      375      250      166      250      250      250
+grass          250      250      166      250      375      250      166      375      250      250      250
+ground         250      375      250      166      250      166      250      250      375      250      250
+ice            250      250      166      250      375      250      375      250      166      250      250
+metal          250      166      250      375      250      166      250      375      250      250      250
+wind           250      250      375      166      250      250      166      250      375      250      250
+electric       250      375      250      250      166      375      250      166      250      250      250
+light          250      250      250      250      250      250      250      250      250      250      375
+dark           250      250      250      250      250      250      250      250      250      375      250
