@@ -241,8 +241,12 @@ func Line(event battle.Event, tags map[string]string) string {
 	head := fmt.Sprintf("  %-3s", tag(event.Actor))
 	switch event.Kind {
 	case battle.Started:
-		return fmt.Sprintf("  %-3s enters at %s on the %s side with %d health",
-			tag(event.Actor), event.Cell, event.Side, event.Amount)
+		name := event.Name
+		if name == "" {
+			name = event.Actor
+		}
+		return fmt.Sprintf("  %-3s %s enters at %s on the %s side with %d health, %s",
+			tag(event.Actor), name, event.Cell, event.Side, event.Amount, event.Note)
 	case battle.TurnBegan:
 		return fmt.Sprintf("\n  %-3s turn %d", tag(event.Actor), event.Turn)
 	case battle.StatusTicked:
@@ -315,4 +319,149 @@ func Log(events []battle.Event, tags map[string]string) string {
 		lines = append(lines, Line(event, tags))
 	}
 	return strings.Join(lines, "\n")
+}
+
+// Tally is what one unit did and had done to it, counted from the event log.
+type Tally struct {
+	ID     string
+	Name   string
+	Side   hex.Side
+	Turns  int
+	Dealt  int64
+	Taken  int64
+	Ticked int64
+	Hits   int
+	Misses int
+	Walled int
+	Kills  int
+	Fell   bool
+}
+
+// Tallies reads a battle's whole log and counts what each unit did.
+//
+// It is built from the events alone, with no access to the battle, which is the
+// same constraint the event lines are held to. Anything a summary needs that the
+// log cannot supply is something the log is missing.
+func Tallies(events []battle.Event) []Tally {
+	order := make([]string, 0, 10)
+	byID := make(map[string]*Tally, 10)
+	// A kill is credited to whoever last hurt the unit that fell, which the log
+	// carries even though no event says "killed by".
+	lastHarm := make(map[string]string, 10)
+
+	touch := func(id string) *Tally {
+		if id == "" {
+			return nil
+		}
+		if existing, ok := byID[id]; ok {
+			return existing
+		}
+		byID[id] = &Tally{ID: id, Name: id}
+		order = append(order, id)
+		return byID[id]
+	}
+
+	for _, event := range events {
+		actor, target := touch(event.Actor), touch(event.Target)
+		switch event.Kind {
+		case battle.Started:
+			actor.Side = event.Side
+		case battle.TurnBegan:
+			actor.Turns++
+		case battle.StatusTicked:
+			actor.Ticked += event.Amount
+			actor.Taken += event.Amount
+		case battle.Damaged:
+			actor.Dealt += event.Amount
+			actor.Hits++
+			if target != nil {
+				target.Taken += event.Amount
+				lastHarm[target.ID] = actor.ID
+			}
+		case battle.Missed:
+			actor.Misses++
+		case battle.Blocked:
+			if target != nil {
+				target.Walled++
+			}
+		case battle.Died:
+			actor.Fell = true
+			if killer, known := lastHarm[actor.ID]; known && killer != actor.ID {
+				if credited := byID[killer]; credited != nil {
+					credited.Kills++
+				}
+			}
+		}
+	}
+
+	out := make([]Tally, 0, len(order))
+	for _, id := range order {
+		out = append(out, *byID[id])
+	}
+	return out
+}
+
+// Summary renders the tallies as a table.
+func Summary(events []battle.Event, tags map[string]string, names map[string]string) string {
+	tallies := Tallies(events)
+	if len(tallies) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString("tag  unit                 turns    dealt    taken   effects   hits   miss  walled  kills\n")
+	for _, tally := range tallies {
+		name := names[tally.ID]
+		if name == "" {
+			name = tally.Name
+		}
+		if tally.Fell {
+			name += " (fell)"
+		}
+		fmt.Fprintf(&b, "%-5s%-21s%6d%9d%9d%10d%7d%7d%8d%7d\n",
+			tags[tally.ID], name, tally.Turns, tally.Dealt, tally.Taken,
+			tally.Ticked, tally.Hits, tally.Misses, tally.Walled, tally.Kills)
+	}
+	return trimLines(b.String())
+}
+
+// Names maps unit ids to their display names, for a summary rendered from a log
+// that carries ids rather than names.
+func Names(units []*battle.Unit) map[string]string {
+	out := make(map[string]string, len(units))
+	for _, unit := range units {
+		out[unit.ID] = unit.Name
+	}
+	return out
+}
+
+// NamesFromLog reads the display names out of a log's opening records, so a
+// saved battle renders with the names it was fought under.
+func NamesFromLog(events []battle.Event) map[string]string {
+	out := make(map[string]string, 10)
+	for _, event := range events {
+		if event.Kind == battle.Started && event.Actor != "" && event.Name != "" {
+			out[event.Actor] = event.Name
+		}
+	}
+	return out
+}
+
+// TagsFromLog assigns tags using only the log's opening records, so a saved
+// battle can be rendered without the roster it was fought with. It is the same
+// constraint the event lines hold to, applied to the labels.
+func TagsFromLog(events []battle.Event) map[string]string {
+	counts := map[hex.Side]int{}
+	letters := map[hex.Side]string{hex.SideAlly: "A", hex.SideEnemy: "E"}
+	out := make(map[string]string, 10)
+	for _, event := range events {
+		if event.Kind != battle.Started || event.Actor == "" {
+			continue
+		}
+		if _, already := out[event.Actor]; already {
+			continue
+		}
+		counts[event.Side]++
+		out[event.Actor] = fmt.Sprintf("%s%d", letters[event.Side], counts[event.Side])
+	}
+	return out
 }

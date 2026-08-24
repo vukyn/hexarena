@@ -1,6 +1,7 @@
 package battle
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/vukyn/hexarena/internal/core/hex"
@@ -79,6 +80,25 @@ func (k Kind) String() string {
 	return kindNames[k]
 }
 
+// MarshalJSON writes the kind by name, so a saved log does not depend on the
+// order these constants are declared in.
+func (k Kind) MarshalJSON() ([]byte, error) { return json.Marshal(k.String()) }
+
+// UnmarshalJSON reads a kind written by name.
+func (k *Kind) UnmarshalJSON(raw []byte) error {
+	var name string
+	if err := json.Unmarshal(raw, &name); err != nil {
+		return fmt.Errorf("decode event kind: %w", err)
+	}
+	for i, candidate := range kindNames {
+		if candidate == name {
+			*k = Kind(i)
+			return nil
+		}
+	}
+	return fmt.Errorf("unknown event kind %q", name)
+}
+
 // Event is one thing that happened, flat enough to serialise and complete enough
 // to render from without reading the battle's state.
 //
@@ -88,40 +108,43 @@ func (k Kind) String() string {
 // record in a form it can switch on and store. Which fields a kind uses is
 // documented on the kind; the rest stay zero.
 type Event struct {
-	Kind Kind
+	Kind Kind `json:"kind"`
 	// At is the point on the action-value timeline.
-	At int64
+	At int64 `json:"at"`
 	// Turn is the acting unit's own turn number, the unit statuses and
 	// cooldowns are counted in.
-	Turn int
+	Turn int `json:"turn,omitempty"`
 	// Actor is the unit whose turn or action this is.
-	Actor string
+	Actor string `json:"actor,omitempty"`
+	// Name is the actor's display name, carried on Started so a saved log can be
+	// rendered without the roster it was fought with.
+	Name string `json:"name,omitempty"`
 	// Target is the unit on the receiving end, when there is one.
-	Target string
+	Target string `json:"target,omitempty"`
 	// Skill, Status name what was used or applied.
-	Skill  string
-	Status string
+	Skill  string `json:"skill,omitempty"`
+	Status string `json:"status,omitempty"`
 	// Amount is damage, or a stat's new value on SpeedChanged.
-	Amount int64
+	Amount int64 `json:"amount,omitempty"`
 	// Before is the previous value, on SpeedChanged.
-	Before int64
+	Before int64 `json:"before,omitempty"`
 	// Stacks is how many stacks were applied, consumed or stripped.
-	Stacks int
+	Stacks int `json:"stacks,omitempty"`
 	// Strike is which strike of a multi-strike skill this was, from one.
-	Strike int
+	Strike int `json:"strike,omitempty"`
 	// Chance is the probability the roll was made against, in parts per
 	// thousand.
-	Chance int
+	Chance int `json:"chance,omitempty"`
 	// Multiplier is the elemental multiplier the damage was scaled by.
-	Multiplier int
+	Multiplier int `json:"multiplier,omitempty"`
 	// Power is the skill power the hit resolved at, after any amplifier.
-	Power int
+	Power int `json:"power,omitempty"`
 	// Remaining is the target's health after the event, or charges left after a
 	// block.
-	Remaining int64
+	Remaining int64 `json:"remaining,omitempty"`
 	// Cell and Side place a unit on the board.
-	Cell hex.Offset
-	Side hex.Side
+	Cell hex.Offset `json:"cell,omitempty"`
+	Side hex.Side   `json:"side,omitempty"`
 	// Note is a short reason, used only where a kind has one to give.
-	Note string
+	Note string `json:"note,omitempty"`
 }

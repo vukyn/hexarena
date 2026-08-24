@@ -76,9 +76,10 @@ func (b *Battle) Advance() (*Prompt, error) {
 	}
 
 	b.acting, b.awaiting = unit, true
-	return &Prompt{
+	b.prompt = &Prompt{
 		Unit: unit.ID, Turn: turn.Number, At: turn.At, Options: b.options(unit),
-	}, nil
+	}
+	return b.prompt, nil
 }
 
 // tickStatuses resolves the start-of-turn effects. The per-status damage is read
@@ -166,7 +167,7 @@ func (b *Battle) Pass(reason string) error {
 		return fmt.Errorf("no unit is waiting to act")
 	}
 	unit := b.acting
-	b.awaiting = false
+	b.awaiting, b.prompt = false, nil
 	b.spendCooldowns(unit)
 	if reason == "" {
 		reason = "passed"
@@ -274,7 +275,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	// turn it was cast on.
 	b.spendCooldowns(unit)
 	unit.Cooldowns[index] = known.Cooldown
-	b.awaiting = false
+	b.awaiting, b.prompt = false, nil
 	turn := atb.Turn{At: b.queue.Now(), Number: b.queue.Turns(unit.ID)}
 	b.emit(Event{
 		Kind: SkillUsed, At: turn.At, Turn: turn.Number, Actor: unit.ID,

@@ -23,16 +23,16 @@ E5   Nightveil            [##########]  2200/2200    200   -
 
 next: A5 E5 A4 E4 A2 E2 A5 E5
 
-  A1  enters at 2,1 on the ally side with 4800 health
-  A2  enters at 2,0 on the ally side with 3600 health
-  A3  enters at 2,2 on the ally side with 3100 health
-  A4  enters at 1,1 on the ally side with 2600 health
-  A5  enters at 0,1 on the ally side with 2200 health
-  E1  enters at 3,1 on the enemy side with 4800 health
-  E2  enters at 3,2 on the enemy side with 3600 health
-  E3  enters at 3,0 on the enemy side with 3100 health
-  E4  enters at 4,1 on the enemy side with 2600 health
-  E5  enters at 5,1 on the enemy side with 2200 health
+  A1  Bulwark enters at 2,1 on the ally side with 4800 health, ground/metal
+  A2  Vanguard enters at 2,0 on the ally side with 3600 health, fire/metal
+  A3  Sentinel enters at 2,2 on the ally side with 3100 health, water/ice
+  A4  Duelist enters at 1,1 on the ally side with 2600 health, wind/ice
+  A5  Skirmisher enters at 0,1 on the ally side with 2200 health, grass/electric
+  E1  Warden enters at 3,1 on the enemy side with 4800 health, fire/ground
+  E2  Bramble enters at 3,2 on the enemy side with 3600 health, grass/ice
+  E3  Ironclad enters at 3,0 on the enemy side with 3100 health, metal/electric
+  E4  Tidecaller enters at 4,1 on the enemy side with 2600 health, water/wind
+  E5  Nightveil enters at 5,1 on the enemy side with 2200 health, dark
 
 A5 Skirmisher, turn 1 at 0,1
  1) bolt            neutral    rng 3   single        pow 800    acc 940

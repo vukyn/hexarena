@@ -29,6 +29,7 @@
 package hex
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -71,10 +72,35 @@ func (s Side) String() string {
 	}
 }
 
+// MarshalJSON writes the side by name.
+//
+// A number would tie a saved battle log to the order these constants happen to
+// be declared in, so inserting a side later would silently reinterpret every log
+// already written.
+func (s Side) MarshalJSON() ([]byte, error) { return json.Marshal(s.String()) }
+
+// UnmarshalJSON reads a side written by name.
+func (s *Side) UnmarshalJSON(raw []byte) error {
+	var name string
+	if err := json.Unmarshal(raw, &name); err != nil {
+		return fmt.Errorf("decode side: %w", err)
+	}
+	switch name {
+	case "ally":
+		*s = SideAlly
+	case "enemy":
+		*s = SideEnemy
+	default:
+		return fmt.Errorf("unknown side %q", name)
+	}
+	return nil
+}
+
 // Offset is an odd-q offset coordinate: odd columns sit half a cell lower
 // than even ones.
 type Offset struct {
-	Col, Row int
+	Col int `json:"col"`
+	Row int `json:"row"`
 }
 
 func (o Offset) String() string { return fmt.Sprintf("%d,%d", o.Col, o.Row) }

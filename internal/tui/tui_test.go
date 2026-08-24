@@ -349,3 +349,103 @@ func TestOpeningGolden(t *testing.T) {
 		t.Errorf("the opening render differs from %s; rerun with -update to accept\n--- got ---\n%s", path, got)
 	}
 }
+
+func autoLog(t *testing.T, seedValue uint64) []battle.Event {
+	t.Helper()
+	fight, err := seed.NewBattle(seedValue)
+	if err != nil {
+		t.Fatalf("assemble: %v", err)
+	}
+	fight.Begin()
+	if _, err := fight.RunToEnd(4000); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	return fight.Drain()
+}
+
+// TestTalliesAddUp checks the summary against the log it was read from: what one
+// unit dealt has to be what its targets took.
+func TestTalliesAddUp(t *testing.T) {
+	events := autoLog(t, 11)
+	tallies := tui.Tallies(events)
+	if len(tallies) != 10 {
+		t.Fatalf("%d units were tallied, want 10", len(tallies))
+	}
+	var dealt, taken, ticked, kills int64
+	for _, tally := range tallies {
+		dealt += tally.Dealt
+		taken += tally.Taken
+		ticked += tally.Ticked
+		kills += int64(tally.Kills)
+		if tally.Turns == 0 {
+			t.Errorf("unit %q took no turns", tally.ID)
+		}
+		if tally.Side.String() == "unknown" {
+			t.Errorf("unit %q has no side, so the opening records were not read", tally.ID)
+		}
+	}
+	// Damage taken is damage dealt plus what timed effects did, since a tick is
+	// taken by its holder and dealt by nobody.
+	if dealt+ticked != taken {
+		t.Errorf("%d dealt plus %d from effects does not match %d taken", dealt, ticked, taken)
+	}
+	fallen := 0
+	for _, tally := range tallies {
+		if tally.Fell {
+			fallen++
+		}
+	}
+	if fallen == 0 {
+		t.Error("nobody fell in a battle that ended")
+	}
+	// Every death is credited to somebody unless it was a timed effect that
+	// landed the last blow, so the credited kills cannot exceed the deaths.
+	if kills > int64(fallen) {
+		t.Errorf("%d kills were credited for %d deaths", kills, fallen)
+	}
+}
+
+func TestSummaryNamesEveryUnit(t *testing.T) {
+	events := autoLog(t, 11)
+	tags, names := tui.TagsFromLog(events), tui.NamesFromLog(events)
+	rendered := tui.Summary(events, tags, names)
+	for _, tally := range tui.Tallies(events) {
+		if !strings.Contains(rendered, tags[tally.ID]) {
+			t.Errorf("the summary does not tag %q", tally.ID)
+		}
+		if !strings.Contains(rendered, names[tally.ID]) {
+			t.Errorf("the summary does not name %q", tally.ID)
+		}
+	}
+	if !strings.Contains(rendered, "(fell)") {
+		t.Error("the summary does not mark who fell")
+	}
+	if got := tui.Summary(nil, nil, nil); got != "" {
+		t.Errorf("an empty summary rendered as %q", got)
+	}
+}
+
+// TestTagsAndNamesComeFromTheLogAlone is the constraint that makes a saved battle
+// renderable: everything the display needs is in the file.
+func TestTagsAndNamesComeFromTheLogAlone(t *testing.T) {
+	fight, live := opening(t)
+	events := fight.Drain()
+	fromLog := tui.TagsFromLog(events)
+	if len(fromLog) != len(live) {
+		t.Fatalf("the log tagged %d units, the roster tagged %d", len(fromLog), len(live))
+	}
+	for id, tag := range live {
+		if fromLog[id] != tag {
+			t.Errorf("unit %q is tagged %q from the roster and %q from the log", id, tag, fromLog[id])
+		}
+	}
+	names := tui.NamesFromLog(events)
+	for _, unit := range fight.Units() {
+		if names[unit.ID] != unit.Name {
+			t.Errorf("unit %q is named %q in the log, want %q", unit.ID, names[unit.ID], unit.Name)
+		}
+	}
+	if got := len(tui.TagsFromLog(nil)); got != 0 {
+		t.Errorf("an empty log tagged %d units", got)
+	}
+}

@@ -95,7 +95,7 @@ the first 90 events
 ... 428 more
 
 the last 12 events
-  160000 turn_skipped    ally.skirmisher    no action available
+  160000 turn_skipped    ally.skirmisher    nothing usable
   162612 turn_began      foe.skirmisher     turn 35  92 hp
   162612 skill_used      foe.skirmisher     quickstep at 5,1
   162612 status_applied  foe.skirmisher     haste x1 on foe.skirmisher, now 1

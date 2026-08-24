@@ -7,6 +7,11 @@ import (
 	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
+// NoActionReason is the note recorded when a unit has nothing it can use. It is
+// named so that every path which passes for that reason records the same words,
+// and a replay cannot diverge from the log over a turn of phrase.
+const NoActionReason = "nothing usable"
+
 // Choice is an action picked for a unit.
 type Choice struct {
 	Skill string
@@ -137,7 +142,7 @@ func (b *Battle) RunToEnd(maxTurns int) (int, error) {
 		if !ok {
 			// Nothing is usable, which is a legal state: every skill is either
 			// cooling down or out of reach.
-			if err := b.Pass("no action available"); err != nil {
+			if err := b.Pass(NoActionReason); err != nil {
 				return taken, err
 			}
 			continue

@@ -319,3 +319,129 @@ func TestStatsResolveThroughStatuses(t *testing.T) {
 		t.Errorf("weaken changed health to %d", weakened[progression.HP])
 	}
 }
+
+// TestLoggedBattlesVerify is the whole loop: fight, write the log, read it back,
+// replay the decisions it recorded and check the events match. A log that
+// survives that is a record of the battle rather than a story about one.
+func TestLoggedBattlesVerify(t *testing.T) {
+	for seedValue := uint64(0); seedValue < 12; seedValue++ {
+		fight, err := seed.NewBattle(seedValue)
+		if err != nil {
+			t.Fatalf("seed %d: %v", seedValue, err)
+		}
+		fight.Begin()
+		script, _, err := fight.Replay(nil, 4000, fight.Suggest)
+		if err != nil {
+			t.Fatalf("seed %d: play: %v", seedValue, err)
+		}
+		if !fight.Finished() {
+			t.Fatalf("seed %d did not finish", seedValue)
+		}
+		events := fight.Drain()
+
+		raw, err := battle.MarshalLog(battle.Log{Seed: seedValue, Choices: script, Events: events})
+		if err != nil {
+			t.Fatalf("seed %d: marshal: %v", seedValue, err)
+		}
+		parsed, err := battle.ParseLog(raw)
+		if err != nil {
+			t.Fatalf("seed %d: parse: %v", seedValue, err)
+		}
+
+		rerun, err := seed.NewBattle(parsed.Seed)
+		if err != nil {
+			t.Fatalf("seed %d: reassemble: %v", seedValue, err)
+		}
+		rerun.Begin()
+		if _, _, err := rerun.Replay(parsed.Choices, 4000, nil); err != nil {
+			t.Fatalf("seed %d: replay: %v", seedValue, err)
+		}
+		got := rerun.Drain()
+		if len(got) != len(parsed.Events) {
+			t.Fatalf("seed %d: the log holds %d events, replaying produced %d",
+				seedValue, len(parsed.Events), len(got))
+		}
+		for i := range got {
+			if got[i] != parsed.Events[i] {
+				t.Fatalf("seed %d: event %d differs:\nlogged %+v\nre-ran %+v",
+					seedValue, i, parsed.Events[i], got[i])
+			}
+		}
+		if !rerun.Finished() {
+			t.Errorf("seed %d: the replay did not reach the end the log recorded", seedValue)
+		}
+	}
+}
+
+// TestUndoRebuildsTheExactPosition is what a client's undo rests on. Dropping the
+// last decision and replaying the rest has to land on the same state the battle
+// was in before that decision, with nothing deep copied to get there.
+func TestUndoRebuildsTheExactPosition(t *testing.T) {
+	const seedValue = 4
+	fight, err := seed.NewBattle(seedValue)
+	if err != nil {
+		t.Fatalf("assemble: %v", err)
+	}
+	fight.Begin()
+	// Play a while, keeping the position after each decision.
+	script, _, err := fight.Replay(nil, 25, fight.Suggest)
+	if err != nil {
+		t.Fatalf("play: %v", err)
+	}
+	if len(script) < 6 {
+		t.Fatalf("only %d decisions were taken, too few to undo", len(script))
+	}
+	snapshot := func(f *battle.Battle) string {
+		var b strings.Builder
+		for _, unit := range f.Units() {
+			fmt.Fprintf(&b, "%s|%d|%v|%v;", unit.ID, unit.HP, unit.Dead, unit.Statuses.Snapshot())
+		}
+		fmt.Fprintf(&b, "now=%d", f.Queue().Now())
+		return b.String()
+	}
+
+	shortened := script[:len(script)-1]
+	before, err := seed.NewBattle(seedValue)
+	if err != nil {
+		t.Fatalf("reassemble: %v", err)
+	}
+	before.Begin()
+	if _, _, err := before.Replay(shortened, 4000, nil); err != nil {
+		t.Fatalf("replay the shortened script: %v", err)
+	}
+
+	// Replaying the shortened script twice must land in the same place, and
+	// carrying on from it must reproduce the decision that was undone.
+	again, err := seed.NewBattle(seedValue)
+	if err != nil {
+		t.Fatalf("reassemble: %v", err)
+	}
+	again.Begin()
+	if _, _, err := again.Replay(shortened, 4000, nil); err != nil {
+		t.Fatalf("replay again: %v", err)
+	}
+	if snapshot(before) != snapshot(again) {
+		t.Errorf("two replays of the same script landed in different positions:\n%s\n%s",
+			snapshot(before), snapshot(again))
+	}
+
+	resumed, _, err := before.Replay(script[len(shortened):], 4000, nil)
+	if err != nil {
+		t.Fatalf("resume: %v", err)
+	}
+	if len(resumed) != 1 {
+		t.Fatalf("%d decisions were resumed, want 1", len(resumed))
+	}
+	full, err := seed.NewBattle(seedValue)
+	if err != nil {
+		t.Fatalf("reassemble: %v", err)
+	}
+	full.Begin()
+	if _, _, err := full.Replay(script, 4000, nil); err != nil {
+		t.Fatalf("replay the full script: %v", err)
+	}
+	if snapshot(before) != snapshot(full) {
+		t.Errorf("undoing then redoing did not return to the original position:\n%s\n%s",
+			snapshot(before), snapshot(full))
+	}
+}

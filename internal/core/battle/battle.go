@@ -115,6 +115,7 @@ type Battle struct {
 
 	events   []Event
 	acting   *Unit
+	prompt   *Prompt
 	awaiting bool
 	finished bool
 	winner   hex.Side
@@ -221,8 +222,8 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 func (b *Battle) Begin() {
 	for _, unit := range b.units {
 		b.emit(Event{
-			Kind: Started, Actor: unit.ID, Side: unit.Side, Cell: unit.Cell,
-			Amount: unit.HP, Note: unit.Affinity.String(),
+			Kind: Started, Actor: unit.ID, Name: unit.Name, Side: unit.Side,
+			Cell: unit.Cell, Amount: unit.HP, Note: unit.Affinity.String(),
 		})
 	}
 }
@@ -262,6 +263,16 @@ func (b *Battle) Queue() *atb.Queue { return b.queue }
 // Books returns the data the battle was built from, for a client that needs to
 // render a skill's declaration alongside the events.
 func (b *Battle) Books() Books { return b.books }
+
+// Pending returns the turn waiting for an action, or nil when the battle is
+// between turns. It exists so a caller that lost track of an open turn can pick
+// it up rather than advancing past it.
+func (b *Battle) Pending() *Prompt {
+	if !b.awaiting {
+		return nil
+	}
+	return b.prompt
+}
 
 // Stats resolves a unit's current stat line: its base, with every active status's
 // modifier terms applied.
