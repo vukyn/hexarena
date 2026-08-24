@@ -11,6 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -143,8 +144,8 @@ func (s *session) rewind(script battle.Script) error {
 // and rebuilds. It reports whether there was anything to take back.
 func (s *session) undo() (bool, error) {
 	cut := -1
-	for i := len(s.script) - 1; i >= 0; i-- {
-		unit, ok := s.fight.Unit(s.script[i].Unit)
+	for i, decision := range slices.Backward(s.script) {
+		unit, ok := s.fight.Unit(decision.Unit)
 		if ok && unit.Side == s.cfg.side {
 			cut = i
 			break
@@ -402,6 +403,11 @@ func replay(cfg config) error {
 	fmt.Println("== summary ==")
 	fmt.Println(tui.Summary(log.Events, tags, tui.NamesFromLog(log.Events)))
 	if !cfg.verify {
+		// Everything above was read straight out of the file. Nothing re-ran the
+		// battle, so a hand-edited log renders exactly like an honest one; say so
+		// rather than let the output pass for a verified record.
+		fmt.Printf("\nunverified: this is what %s says happened, not a re-run of it; "+
+			"add -verify to replay seed %d and check every event\n", cfg.replay, log.Seed)
 		return nil
 	}
 	return verify(log, cfg.limit)
