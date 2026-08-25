@@ -7,6 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -40,10 +41,40 @@ const (
 	minHeight = 24
 )
 
-// detailLabelWidth is the column every detail pane's row name sits in. It is
-// wide enough for the longest label in either language, which
-// TestEveryLabelFitsItsColumn holds.
-const detailLabelWidth = 11
+// detailLabels is every row name a detail pane draws, which is what its label
+// column is measured from. The level row is not in it because it is named after
+// a number; detailLabelWidth measures that one separately.
+var detailLabels = []i18n.Key{
+	i18n.LabelFrom, i18n.LabelPlaystyle, i18n.LabelElement, i18n.LabelKit,
+	i18n.LabelArt, i18n.LabelStages, i18n.LabelBiography, i18n.LabelEffectiveHP,
+	i18n.LabelNote,
+}
+
+// detailLabelWidth is the column every detail pane's row name sits in,
+// measured from the widest name being drawn in the language in front. The extra
+// column is the gap, so the widest label is still followed by a space.
+//
+// It was a constant 11, and that is what went wrong: a constant is one number
+// for two languages, so it is only ever right for both by luck. The luck ran
+// out on two labels at once — "effective hp" is 12 cells and "nguồn tham khảo"
+// is 15 — and a label past its column pushes that one row's value right of
+// every other row's, which is the same misalignment the form's summary rows had
+// before formLabelWidth measured itself. Measure, do not raise the constant:
+// raising it would waste the difference in whichever language is shorter, and
+// leave the next reworded label to break it again.
+func detailLabelWidth(m model) int {
+	widest := 0
+	for _, key := range detailLabels {
+		if width := lipgloss.Width(m.text(key)); width > widest {
+			widest = width
+		}
+	}
+	// The level row is named after a number, and the widest one is the cap.
+	if width := lipgloss.Width(m.text(i18n.LabelAtLevel, progression.LevelCap)); width > widest {
+		widest = width
+	}
+	return widest + 1
+}
 
 // model is the whole program: a library, the language, the screen in front, and
 // the four screens' own state.
@@ -317,18 +348,29 @@ func (m model) frame(body, footer string) string {
 	return strings.Join(lines, "\n")
 }
 
-// menuLabelWidth is the column the menu's own labels sit in, wide enough for
-// the longest in either language.
-const menuLabelWidth = 16
+// menuLabelWidth is the column the menu's own labels sit in, measured for the
+// same reason the detail panes' column is: "danh sách nhân vật" is 18 cells
+// against "cast" at 4, so one number for both languages either cuts one or
+// wastes a fifth of the row in the other.
+func menuLabelWidth(m model) int {
+	widest := 0
+	for _, item := range menuItems {
+		if width := lipgloss.Width(m.text(item.label)); width > widest {
+			widest = width
+		}
+	}
+	return widest + 1
+}
 
 func (m model) viewMenu() string {
 	var out strings.Builder
 	out.WriteString(m.style.heading.Render(m.text(i18n.MenuHeading)) + "\n\n")
+	width := menuLabelWidth(m)
 	for i, item := range menuItems {
 		marker := "  "
 		// Padded before it is styled, not after: a style is escape codes, and
 		// fmt would count those toward the column.
-		label := pad(m.text(item.label), menuLabelWidth)
+		label := pad(m.text(item.label), width)
 		if i == m.menu {
 			// The marker is the selection. The style only agrees with it.
 			marker = "> "
@@ -343,7 +385,18 @@ func (m model) viewMenu() string {
 // label draws a "name  value" row the way every detail pane in this program
 // does, so the panes line up with each other.
 func (m model) label(name, format string, args ...any) string {
-	return m.labelAt(name, detailLabelWidth, format, args...)
+	return m.labelAt(name, detailLabelWidth(m), format, args...)
+}
+
+// continued draws a row that carries on from the one above it: no name of its
+// own, and its value under the same column as that row's.
+//
+// The kit's Vietnamese names are what this exists for. Five skills glossed
+// inline would be five brackets on one row, which does not fit in 80 columns,
+// so they go underneath in the same order instead — and they only line up with
+// the ids above them if they are placed by the same measurement.
+func (m model) continued(format string, args ...any) string {
+	return m.labelAt("", detailLabelWidth(m), format, args...)
 }
 
 // labelAt is label in a caller-chosen column.

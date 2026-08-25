@@ -110,6 +110,16 @@ func (b browseScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// The two fixed columns of the listing. Both hold ids, which are the same in
+// every language and as long as the data makes them, so these are constants
+// where a column of labels would be measured. The element column after them
+// takes no width of its own: it is last, so its gloss spends the row's slack
+// rather than another column's.
+const (
+	browseIDWidth     = 24
+	browseOriginWidth = 14
+)
+
 func (b browseScreen) view(m model) (string, string) {
 	footer := m.text(i18n.BrowseFooter)
 	rows := b.rows()
@@ -129,7 +139,16 @@ func (b browseScreen) view(m model) (string, string) {
 	}
 	for i, character := range rows {
 		marker := "  "
-		name := fmt.Sprintf("%-24s %-14s %s", character.ID, character.Origin, character.Element)
+		// The element column is glossed here as well as in the detail pane
+		// below, and it is the only list column that is: it is the last one on
+		// the row, so the bracket eats the row's slack rather than another
+		// column's. The worst case any pair of the eleven elements can make was
+		// measured against both fixed columns at full width — 72 cells of the
+		// 79 there are, on metal/electric. The two fixed columns take no gloss
+		// for the same reason: an id past its column would push this one over.
+		name := pad(character.ID, browseIDWidth) + " " +
+			pad(character.Origin, browseOriginWidth) + " " +
+			m.lang.GlossedAffinity(character.Element)
 		if i == b.cursor {
 			marker = "> "
 			name = m.style.selected.Render(name)
@@ -151,9 +170,16 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	}
 	out.WriteString(m.style.heading.Render(character.ID+" — "+character.Name) + "\n")
 	out.WriteString(m.label(m.text(i18n.LabelFrom), "%s", from))
-	out.WriteString(m.label(m.text(i18n.LabelTunedFrom), "%s", character.Archetype))
-	out.WriteString(m.label(m.text(i18n.LabelElement), "%s", character.Element))
+	out.WriteString(m.label(m.text(i18n.LabelPlaystyle), "%s", m.lang.Glossed(character.Archetype)))
+	out.WriteString(m.label(m.text(i18n.LabelElement), "%s", m.lang.GlossedAffinity(character.Element)))
 	out.WriteString(m.label(m.text(i18n.LabelKit), "%s", strings.Join(character.Skills, " ")))
+	// The kit's names go under it rather than beside it: five skills glossed
+	// inline is five brackets on one row, which does not fit. Nothing is drawn
+	// at all when there is nothing to say — in English, or for a kit of skills
+	// the table has no names for — rather than an empty row under a full one.
+	if glossed := m.lang.GlossedKit(character.Skills); glossed != "" {
+		out.WriteString(m.continued("%s", m.style.dim.Render(glossed)))
+	}
 	art := character.Image
 	if m.lib.ImageExists(character.Image) {
 		art = m.style.good.Render(art + "  " + m.text(i18n.ArtPresent))
@@ -175,7 +201,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	out.WriteString(m.label(atLevel, "%s   %s",
 		values, m.style.dim.Render(m.text(i18n.StageInWords, stage.Name))))
 	budget := m.lib.Budget(values)
-	out.WriteString(m.label(m.text(i18n.LabelAbsorbs), "%s", budgetLine(m, budget)))
+	out.WriteString(m.label(m.text(i18n.LabelEffectiveHP), "%s", budgetLine(m, budget)))
 	return out.String()
 }
 

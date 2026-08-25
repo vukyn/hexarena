@@ -78,7 +78,7 @@ func (c checkScreen) view(m model) (string, string) {
 	fmt.Fprintf(&out, "  %s %s %s\n",
 		pad(m.text(i18n.ColumnCharacter), checkIDWidth),
 		pad(m.text(i18n.ColumnArt), checkArtWidth),
-		m.text(i18n.ColumnAbsorbs))
+		m.text(i18n.ColumnEffectiveHP))
 	for i, row := range c.report.Rows {
 		marker := "  "
 		if i == c.cursor {

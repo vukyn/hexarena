@@ -322,7 +322,7 @@ func TestARefusalIsWordedFromItsFacts(t *testing.T) {
 		want string
 	}{
 		{"an id already taken", &forge.IDTakenError{ID: "example-film.tester"},
-			`nhân vật "example-film.tester" đã có trong dàn rồi`},
+			`nhân vật "example-film.tester" đã có trong danh sách rồi`},
 		{"a work that is not catalogued", &forge.UnknownOriginError{ID: "nowhere"},
 			`không có nguồn "nowhere"; thêm bằng lệnh "hexforge origins add nowhere"`},
 		{"a skill named twice", &forge.DuplicateSkillError{ID: "strike"},
