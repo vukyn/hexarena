@@ -926,3 +926,46 @@ func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
 		t.Errorf("the refusal reads %q, want %q", got, want)
 	}
 }
+
+// TestTheSkillListNamesSkillsInVietnamese covers the translated-name column and,
+// more importantly, that it disappears rather than emptying when nothing is
+// glossed. A column of blanks reads as missing data; no column reads as a column
+// that does not apply, which is the truth in English.
+func TestTheSkillListNamesSkillsInVietnamese(t *testing.T) {
+	vietnamese, _, _ := start(t, i18n.Vi)
+	body, _ := vietnamese.enter(screenSkills).skills.view(vietnamese.enter(screenSkills))
+	for _, want := range []string{i18n.Vi.Text(i18n.ColumnGloss), "đòn đánh", "cắt lìa"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the Vietnamese skill list is missing %q", want)
+		}
+	}
+
+	english, _, _ := start(t, i18n.En)
+	body, _ = english.enter(screenSkills).skills.view(english.enter(screenSkills))
+	for _, unwanted := range []string{i18n.En.Text(i18n.ColumnGloss), "đòn đánh", "cắt lìa"} {
+		if strings.Contains(body, unwanted) {
+			t.Errorf("the English skill list should not carry %q", unwanted)
+		}
+	}
+	// That the column is *gone* rather than blank is pinned by
+	// TestSkillRowDropsTheGlossColumnWhenItIsEmpty, which measures the row
+	// instead of guessing at runs of spaces — the id column pads too, so a
+	// space-run heuristic here flags correct output.
+}
+
+// TestSkillRowDropsTheGlossColumnWhenItIsEmpty pins the rule itself, so it
+// cannot be lost when the caller that measures the width changes.
+func TestSkillRowDropsTheGlossColumnWhenItIsEmpty(t *testing.T) {
+	with := skillRow(8, 6, "strike", "đòn", "neutral", "1000x1", "anyone")
+	without := skillRow(8, 0, "strike", "đòn", "neutral", "1000x1", "anyone")
+	if strings.Contains(without, "đòn") {
+		t.Errorf("a zero gloss column still drew the gloss: %q", without)
+	}
+	if !strings.Contains(with, "đòn") {
+		t.Errorf("a sized gloss column dropped the gloss: %q", with)
+	}
+	if lipgloss.Width(without) >= lipgloss.Width(with) {
+		t.Errorf("dropping the column did not narrow the row: %d vs %d",
+			lipgloss.Width(without), lipgloss.Width(with))
+	}
+}

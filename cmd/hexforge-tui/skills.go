@@ -372,9 +372,19 @@ func skillsRoom(m model) int {
 
 // skillRow lays out one row of the listing, and the header above it, from one
 // place so the two cannot drift apart.
-func skillRow(idColumn int, id, member, power, who string) string {
-	return fmt.Sprintf("%s %s %s%s",
-		pad(id, idColumn), pad(member, 9), pad(power, 8), who)
+// skillRow lays out one line of the skill list.
+//
+// glossColumn of zero drops the translated-name column entirely rather than
+// drawing it empty. That one rule covers both cases that need it: English,
+// where nothing is glossed, and a book whose ids all happen to be unglossed —
+// a column of blanks would read as missing data rather than as a column that
+// does not apply.
+func skillRow(idColumn, glossColumn int, id, gloss, member, power, who string) string {
+	name := pad(id, idColumn)
+	if glossColumn > 0 {
+		name += " " + pad(gloss, glossColumn)
+	}
+	return fmt.Sprintf("%s %s %s%s", name, pad(member, 9), pad(power, 8), who)
 }
 
 func (s skillsScreen) view(m model) (string, string) {
@@ -386,10 +396,21 @@ func (s skillsScreen) view(m model) (string, string) {
 	out.WriteString(m.style.heading.Render(m.text(i18n.SkillsHeading)) + "  " +
 		m.style.dim.Render(m.text(i18n.SkillsSubtitle)) + "\n\n")
 
-	column := 0
+	column, glossColumn := 0, 0
 	for _, current := range s.skills {
 		if width := lipgloss.Width(current.ID); width > column {
 			column = width
+		}
+		if width := lipgloss.Width(m.lang.Gloss(current.ID)); width > glossColumn {
+			glossColumn = width
+		}
+	}
+	if glossColumn > 0 {
+		// The header has to fit the column it names, and a newly authored skill
+		// has no gloss, so this width is the widest of the two rather than of
+		// the glosses alone.
+		if width := lipgloss.Width(m.text(i18n.ColumnGloss)); width > glossColumn {
+			glossColumn = width
 		}
 	}
 	from, to := window(len(s.skills), s.cursor, skillsRoom(m))
@@ -402,8 +423,8 @@ func (s skillsScreen) view(m model) (string, string) {
 	// The header names the one column nobody could guess. The other three are
 	// an id, an element and a power, each labelled with the word the form that
 	// authored it uses.
-	out.WriteString("  " + m.style.dim.Render(skillRow(column+1,
-		m.text(i18n.SkillFieldID), m.text(i18n.LabelElement),
+	out.WriteString("  " + m.style.dim.Render(skillRow(column+1, glossColumn,
+		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss), m.text(i18n.LabelElement),
 		m.text(i18n.SkillFieldPower), m.text(i18n.ColumnWhoMayCarry))) + "\n")
 	for index := from; index < to; index++ {
 		current := s.skills[index]
@@ -411,7 +432,8 @@ func (s skillsScreen) view(m model) (string, string) {
 		// The power and the strike count are the balance, so they are the two
 		// numbers on the row; everything else about a skill is a keypress away
 		// on the form that authored it.
-		row := skillRow(column+1, current.ID, current.Element.String(),
+		row := skillRow(column+1, glossColumn, current.ID, m.lang.Gloss(current.ID),
+			current.Element.String(),
 			strconv.Itoa(current.Power)+"x"+strconv.Itoa(current.StrikeCount()), "")
 		row += clip(m.lang.WhoMaySummary(current), minWidth-3-lipgloss.Width(row))
 		if index == s.cursor {

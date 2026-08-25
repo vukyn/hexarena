@@ -76,6 +76,7 @@ const (
 	SkillsFooter
 	SkillsTally
 	ColumnWhoMayCarry
+	ColumnGloss
 	SkillFormHeading
 	SkillFormSubtitle
 	SkillFormFooter
