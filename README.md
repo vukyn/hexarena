@@ -256,6 +256,12 @@ resolving one. Three things get authored:
   a note. An origin nobody has borrowed from yet is allowed.
 - An **archetype** is the preset a role starts from: a suggested stat curve for
   every stat, a suggested kit, and the formation column the role belongs in. It is
+  what stands in for a character *class*: the original design called for one, and
+  it was dropped on purpose, because with skills declared as data an archetype's
+  curve and kit already say everything a class name would have said. Note the
+  consequence — an archetype has **no mechanical effect at all**. It never reaches
+  the engine (`battle.Roster` carries stats, skills, affinity and a slot, and
+  nothing else), so two units differ only by their numbers and their kit. It is
   a starting point and not a constraint — a character records which preset it came
   from and is then free to differ, which is what stops two units of the same role
   being the same unit with two names. A preset that does not itself fit the stat
@@ -429,6 +435,56 @@ cleanses is one the player never has to think about.
 Constraints any replacement must keep: `Suggest` reads no randomness and mutates
 nothing, so a client may call it for a hint without disturbing the battle's own
 sequence, and two identical battles must still produce identical logs.
+
+### Passive skills
+
+Every skill today is active: a unit spends its turn on one. A **passive** — what
+a character *has* rather than what it uses — was part of the original design and
+the engine has none. Four things a passive is normally asked to do, and where
+each already has a home:
+
+- **Raise or lower a stat.** `status.Kind` already carries `Modifiers`, and
+  `modifier.Set` already saturates every term of the same target together. A
+  permanent status granted when the unit is enlisted covers this with no new
+  mechanism, and inherits the saturation for free — which is the point. A passive
+  that *composed* with temporary buffs instead of saturating alongside them would
+  be the one place in the game where stacking explodes.
+- **Add an effect to what the unit already does.** `skill.Application` is the
+  existing shape for "this inflicts that, at a fixed chance". A passive that
+  contributes one needs the application list assembled from the unit as well as
+  from the skill, which is a change in `battle`, not a new rule.
+- **Fire only under a condition.** `skill.Condition` is the existing vocabulary:
+  a status, a minimum stack count, a bonus, and whether it consumes. Reuse it.
+  Two ways of writing "while the target is burning" is how the two drift apart.
+- **Immunity.** The only one of the four with nowhere to live. Nothing can
+  currently refuse an application. `status.Set.Apply` is the choke point every
+  status passes through, and `status.Category` with its `Harmful()` split already
+  gives immunity something to be expressed against. The open questions are
+  whether it keys on a category or a status id, and whether it is absolute or a
+  saturating resistance — absolute immunity is a hard cap on a continuous
+  quantity, which everywhere else in this engine has been the wrong choice.
+
+Constraints any implementation has to keep:
+
+- **A passive that changes a number must emit an event.** The log is the only
+  contract a renderer has, so a silent passive makes the log lie: a reader sees a
+  damage figure the visible numbers cannot account for. This is the trap worth
+  naming in advance, because the mechanism is the easy half and the logging is
+  the half that gets skipped.
+- **An enlist-time passive has to land before the first wait is computed.** Turn
+  order is `1_000_000 / speed`, so a passive touching speed must be in place
+  before the queue is built or turn one is already wrong. `retuneAll` exists
+  because exactly this was got wrong once with haste.
+- **No new randomness.** A passive that rolls, rolls through the `*rng.Source`
+  that was passed in, and the roll has to reach the log — otherwise `--verify`
+  fails against a replay of the same seed, which is precisely what it is for.
+- Durations and cooldowns count in the holder's own turns. Parts per thousand,
+  never floats.
+
+Where a passive is *declared* is open. The natural shape is a `passives.json`
+book validated cross-book the way skills are, a `Passives []string` field on
+`cast.Character`, and an archetype able to suggest one — which would also give an
+archetype its first mechanical weight, since today it carries none.
 
 ### A real cast
 

@@ -293,6 +293,13 @@ reads and **writes** them:
 - `origins.json` — the works characters are borrowed from. Hand-editable;
   `hexforge origins add` appends to it.
 - `archetypes.json` — the role presets: a suggested stat curve and kit per role.
+  This is what stands in for a character **class**: a class was in the original
+  design and was dropped deliberately, because with skills declared as data the
+  curve and the kit already carry what a class name would have. So an archetype
+  has **no mechanical effect** — it never reaches the engine, `battle.Roster`
+  carries no archetype, and nothing branches on one. Do not add a class without
+  deciding what it would do that a stat curve and a kit cannot; the live proposal
+  is to give an archetype its first mechanical weight through a passive instead.
   Hand-authored only; the tool never writes it. Every preset's curve must pass
   `progression.Limits.CheckTable`, and the ids match the roles `roster.json`
   already uses.
@@ -377,6 +384,18 @@ is the constraint each piece has to respect.
       whole timed-effect layer is tested but not played. A replacement must read
       no randomness and mutate nothing — a client calls it for a hint mid-turn —
       and two identical battles must still produce identical logs.
+- [ ] **Passive skills.** Every skill is active today; a passive is what a
+      character has rather than uses. Three of its four usual jobs already have
+      homes and must reuse them instead of growing a parallel vocabulary: stat
+      changes are `status.Kind.Modifiers` (which also buys the saturation, so a
+      passive cannot compose with temporary buffs and explode), extra effects are
+      `skill.Application`, conditions are `skill.Condition`. **Immunity** is the
+      one with no home, and `status.Set.Apply` is the choke point it belongs at —
+      decide category-or-id, and absolute-or-saturating, knowing a hard cap on a
+      continuous quantity has been the wrong answer everywhere else here. Two
+      traps: a passive that changes a number **must emit an event** or the log can
+      no longer explain its own figures, and an enlist-time passive touching speed
+      must apply before the first wait is computed. See README → Roadmap.
 - [ ] **A real cast.** The tooling now exists: `internal/core/cast` holds origins,
       archetype presets and characters, `cmd/hexforge` authors them, and
       `progression.Line` is finally used — `cast.json` ships one single-stage and
