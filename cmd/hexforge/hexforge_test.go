@@ -477,7 +477,7 @@ func TestSkillsAddRunsEndToEndThroughAPipe(t *testing.T) {
 	}
 	for _, want := range []string{
 		// Every default a skill takes, and the two figures it does not.
-		"oath — neutral, enemy", "range 1, single", "1200 x1, accuracy 900, cooldown 2",
+		"oath — neutral, enemy", "range 1, single", "1200 x1, accuracy 900 (90%), cooldown 2",
 		"burn:500", "kept for fire or metal",
 		// The damage against the reference pair skills.golden is measured from,
 		// which is the number this subcommand exists to show before a write.

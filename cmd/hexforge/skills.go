@@ -410,8 +410,9 @@ func renderSkill(out io.Writer, lib *forge.Library, built skill.Skill) {
 	}
 	fmt.Fprintf(out, "\n%s — %s, %s\n", built.ID, built.Element, built.Target)
 	label("reach", "range %d, %s", built.Range, built.Pattern)
-	label("power", "%d x%d, accuracy %d, cooldown %d",
-		built.Power, built.StrikeCount(), built.Accuracy, built.Cooldown)
+	label("power", "%d x%d, accuracy %d (%s), cooldown %d",
+		built.Power, built.StrikeCount(), built.Accuracy,
+		forge.Percent(built.Accuracy), built.Cooldown)
 	if len(built.Applies) > 0 {
 		label("inflicts", "%s", forge.FormatApplications(built.Applies))
 	}

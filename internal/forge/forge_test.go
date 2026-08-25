@@ -1573,3 +1573,20 @@ func TestAnEditRefusedForNoOneCarriersFaultKeepsTheParsersWords(t *testing.T) {
 		t.Errorf("the data directory no longer loads: %v", err)
 	}
 }
+
+func TestPercentReadsPartsPerThousand(t *testing.T) {
+	for _, test := range []struct {
+		permille int
+		want     string
+	}{
+		{1000, "100%"}, {960, "96%"}, {850, "85%"}, {250, "25%"}, {0, "0%"},
+		// A tenth survives, so an authored 855 is not silently reported as 85%.
+		{855, "85.5%"}, {1, "0.1%"},
+		// Power exceeds the base routinely, and a debuff term can be negative.
+		{2200, "220%"}, {-500, "-50%"},
+	} {
+		if got := Percent(test.permille); got != test.want {
+			t.Errorf("Percent(%d) = %q, want %q", test.permille, got, test.want)
+		}
+	}
+}
