@@ -500,6 +500,64 @@ book validated cross-book the way skills are, a `Passives []string` field on
 `cast.Character`, and an archetype able to suggest one — which would also give an
 archetype its first mechanical weight, since today it carries none.
 
+### Healing, draining, and a regeneration status
+
+**Nothing in the game restores health.** `battle.wound` subtracts and no function
+adds; `status.Set.Tick` returns a single unsigned damage total; `status.Category`
+has damage-over-time, stat debuffs, control, buffs and shields, and no fifth kind
+that heals. That absence is why Bulbasaur has no Leech Seed: it drains, and there
+is nothing for it to drain into.
+
+Three separate mechanisms are wanted, and they are not one feature:
+
+- **A direct heal** — a skill that restores health to an ally or the caster.
+- **A drain** — the attacker takes back a share of the damage it dealt. It has to
+  read the damage **dealt**, `combat.DamageDealt`, not the damage rolled, so a
+  strike that missed or was blocked drains nothing.
+- **A regeneration status** — health returned each turn, the mirror of a poison.
+
+The third is the cheapest and the most useful, because the damage-over-time
+machinery already does the work: `status.Kind.TickPower` and the per-stack freeze
+at application are exactly what a regeneration needs, applied with the sign the
+other way.
+
+What an implementation has to settle, in the order these will bite:
+
+- **`Set.Tick` must return healing separately, not a signed total.** It returns
+  one unsigned number today and `wound` consumes it. A negative damage travelling
+  down that path would subtract a negative and could revive a corpse, because
+  `wound` calls `kill` the moment health reaches zero.
+- **A dead unit cannot be healed, and health clamps at `Unit.MaxHP`.** The first
+  keeps a battle able to end; the second is what stops a regeneration from being
+  a shield with no cap. Whether overheal spills into something like a shield is a
+  design question, not a default.
+- **Healing does not go through the defence curve.** Damage over time does — that
+  is what "damage over time goes through armour" settled, *through the formula* —
+  and healing must not, because defence turns away what is coming at a unit and
+  has nothing to do with what is helping it. Do not add the division for
+  symmetry's sake; the asymmetry is the point.
+- **A heal must emit an event.** None of the seventeen event kinds explains
+  health going *up*, so a renderer would draw a number changing with no cause in
+  the log — the same trap a passive skill has, and the same answer: if the log
+  cannot explain it, the log is wrong.
+- **It breaks the stat budget from the other side.** `MaxEffectiveHP` bounds
+  health and defence together because they multiply. A unit that heals is durable
+  beyond its stat line, so the bound becomes an understatement — exactly the
+  mirror of what piercing does to it. With both open, one figure describes
+  neither case, and the tools' effective-health row has to say which it means.
+- **`battle.Suggest` will not use one.** It maximises expected damage, and a heal
+  has none, so it lands in the fallback beside the buffs it already never
+  chooses. That is the same gap *A deeper opponent* records, and it is worth
+  fixing there rather than here.
+
+The status itself is authored in `statuses.json`, which is hand-edited like
+`archetypes.json` — the tool does not write it. A new category also needs its
+wording in both languages, since the category catalogue is held complete rather
+than falling back to its enum spelling.
+
+Determinism is unaffected: this is integer parts-per-thousand arithmetic with no
+new randomness, which is what makes it cheap to add later.
+
 ### Piercing, as the answer to armour
 
 Nothing in the game currently ignores defence. Every damage source goes through

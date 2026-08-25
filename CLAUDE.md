@@ -557,6 +557,23 @@ is the constraint each piece has to respect.
       traps: a passive that changes a number **must emit an event** or the log can
       no longer explain its own figures, and an enlist-time passive touching speed
       must apply before the first wait is computed. See README → Roadmap.
+- [ ] **Healing, draining, and a regeneration status.** Nothing restores health:
+      `wound` only subtracts, `Set.Tick` returns one unsigned damage total, and no
+      `status.Category` heals — which is why Bulbasaur has no Leech Seed. Three
+      mechanisms, not one: a direct heal, a drain reading `combat.DamageDealt`
+      (dealt, not rolled, so a miss or a block drains nothing), and a
+      regeneration status, which is the cheapest because `Kind.TickPower` and the
+      per-stack freeze already do the work with the sign flipped. Five things to
+      decide rather than assume: `Set.Tick` returns healing **separately**, never
+      a signed total, because a negative through `wound` could revive a corpse it
+      already called `kill` on; a dead unit is not healable and health clamps at
+      `Unit.MaxHP`; healing does **not** divide by the defence curve even though
+      damage over time does, and that asymmetry is deliberate — defence turns
+      away harm, not help; a heal must emit an event or the log cannot explain
+      health going up; and it makes `MaxEffectiveHP` an **understatement**, the
+      mirror of what piercing makes of it, so with both open one figure describes
+      neither. `Suggest` will not choose one, for the reason recorded under the
+      opponent. See README → Roadmap.
 - [ ] **Piercing, to answer armour.** Nothing ignores defence today: normal hits,
       splash and damage-over-time ticks all divide by `K + defence`, so the
       effective-health figure is exact and the armour end of the budget has no
