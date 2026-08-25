@@ -1275,3 +1275,25 @@ func TestEveryFormRowFitsTheWindowAtItsBusiest(t *testing.T) {
 		}
 	}
 }
+
+// TestAnAllowlistPickerSaysWhatAnEmptyListMeans covers a hint that used to be
+// borrowed from the kit. The kit's hint talks about the order of a selection and
+// what this character cannot take; on an allowlist neither is true, and what the
+// author needs to know instead is that leaving it empty lets anyone carry it.
+func TestAnAllowlistPickerSaysWhatAnEmptyListMeans(t *testing.T) {
+	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
+		m, _, _ := start(t, lang)
+		for _, field := range []int{
+			skillFieldKeptForElements, skillFieldKeptForRoles, skillFieldKeptForCharacters,
+		} {
+			opened := m.enter(screenSkills).openAllowlist(field)
+			body, _ := opened.picker.view(opened)
+			if want := lang.Text(i18n.PickerAllowlistHint); !strings.Contains(body, want) {
+				t.Errorf("%v field %d is missing the allowlist hint %q", lang, field, want)
+			}
+			if unwanted := lang.Text(i18n.PickerHint); strings.Contains(body, unwanted) {
+				t.Errorf("%v field %d still borrows the kit's hint", lang, field)
+			}
+		}
+	}
+}

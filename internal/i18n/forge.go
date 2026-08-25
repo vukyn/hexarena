@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
+
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
@@ -311,6 +313,22 @@ func (l Lang) WhoMaySummary(carried skill.Skill) string {
 func (l Lang) Damage(preview forge.SkillPreview) string {
 	return l.Say(DamageLine,
 		preview.PerStrike, preview.Total, preview.Attack, preview.Defense)
+}
+
+// DamageWithin is Damage, dropping the reference pair when the full line will
+// not fit.
+//
+// The pair is the same on every skill and is named in the listing and in the
+// field's own help, so it is the expendable half; the two figures being
+// authored are not. A five-figure per-strike damage used to push this row past
+// the window and have its numbers clipped, which is the one part of it a reader
+// is there for.
+func (l Lang) DamageWithin(preview forge.SkillPreview, room int) string {
+	full := l.Damage(preview)
+	if room <= 0 || lipgloss.Width(full) <= room {
+		return full
+	}
+	return l.Say(DamageLineShort, preview.PerStrike, preview.Total)
 }
 
 // StageSummary writes an evolution line as the levels its stages take over at.

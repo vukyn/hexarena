@@ -393,6 +393,7 @@ func (m model) openAllowlist(field int) model {
 	case skillFieldKeptForElements:
 		return m.pick(&pickState{
 			title: i18n.PickerElementsTitle, kind: pickElements,
+			hint:  i18n.PickerAllowlistHint,
 			options: idOptions(forge.ElementNames()), chosen: m.skills.keptElements,
 			apply: func(m model, answer pickAnswer) model {
 				m.skills.keptElements = answer.Chosen
@@ -403,6 +404,7 @@ func (m model) openAllowlist(field int) model {
 	case skillFieldKeptForRoles:
 		return m.pick(&pickState{
 			title: i18n.PickerRolesTitle, kind: pickArchetypes,
+			hint:  i18n.PickerAllowlistHint,
 			options: idOptions(m.lib.Archetypes().IDs()), chosen: m.skills.keptRoles,
 			apply: func(m model, answer pickAnswer) model {
 				m.skills.keptRoles = answer.Chosen
@@ -418,6 +420,7 @@ func (m model) openAllowlist(field int) model {
 		// interaction wherever it happens.
 		return m.pick(&pickState{
 			title: i18n.PickerCharactersTitle, kind: pickCharacters,
+			hint:    i18n.PickerAllowlistHint,
 			footer:  i18n.PickerFilterFooter,
 			options: characterOptions(m.lib), groups: m.lib.OriginIDs(),
 			chosen: m.skills.keptWho,
@@ -692,7 +695,8 @@ func (s skillsScreen) view(m model) (string, string) {
 	if len(s.skills) > 0 {
 		selected := s.skills[clamp(s.cursor, 0, len(s.skills)-1)]
 		preview := m.lib.PreviewDamage(selected)
-		out.WriteString(m.label(m.text(i18n.LabelDamage), "%s", m.lang.Damage(preview)))
+		out.WriteString(m.label(m.text(i18n.LabelDamage), "%s",
+		m.lang.DamageWithin(preview, minWidth-3-detailLabelWidth(m))))
 		if preview.Amplified > 0 {
 			out.WriteString(m.continued("%s",
 				m.text(i18n.DamageAmplified, preview.Amplified)))
@@ -1035,5 +1039,6 @@ func (s skillsScreen) damageRow(m model, labelWidth int) string {
 		return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s",
 			m.style.bad.Render(m.lang.Error(err)))
 	}
-	return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s", m.lang.Damage(preview))
+	return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s",
+		m.lang.DamageWithin(preview, minWidth-3-labelWidth))
 }
