@@ -1590,3 +1590,42 @@ func TestPercentReadsPartsPerThousand(t *testing.T) {
 		}
 	}
 }
+
+func TestDescribeApplicationsKeepsFormatParseable(t *testing.T) {
+	applications := []skill.Application{
+		{Status: "weaken", Chance: 800, Stacks: 1},
+		{Status: "blind", Chance: 400, Stacks: 2},
+	}
+	// The reader's version carries the percentages.
+	described := DescribeApplications(applications)
+	for _, want := range []string{"weaken:800 (80%)", "blind:400:2 (40%)"} {
+		if !strings.Contains(described, want) {
+			t.Errorf("DescribeApplications = %q, missing %q", described, want)
+		}
+	}
+	if got := ApplicationChances(applications); got != "80% · 40%" {
+		t.Errorf("ApplicationChances = %q", got)
+	}
+	// The syntax version must stay exactly what ParseApplications reads back,
+	// because it is what a prefilled form holds. This is the property a
+	// percentage inside FormatApplications would have broken.
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	parsed, err := lib.ParseApplications(FormatApplications(applications))
+	if err != nil {
+		t.Fatalf("FormatApplications no longer round-trips: %v", err)
+	}
+	if len(parsed) != len(applications) {
+		t.Fatalf("round trip gave %d applications, want %d", len(parsed), len(applications))
+	}
+	for i, want := range applications {
+		if parsed[i] != want {
+			t.Errorf("round trip %d = %+v, want %+v", i, parsed[i], want)
+		}
+	}
+	if _, err := lib.ParseApplications(described); err == nil {
+		t.Error("the reader's version parsed, so the two are not distinct after all")
+	}
+}

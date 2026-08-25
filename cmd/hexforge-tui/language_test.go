@@ -1013,6 +1013,34 @@ func TestTheAccuracyRowReadsAsAPercentage(t *testing.T) {
 		t.Errorf("the accuracy row shows %q, want both 850 and 85%%", got)
 	}
 
+	// Power reads the same way, and a zero one says nothing a "0%" could add:
+	// four shipped skills declare no power at all.
+	screen.skills.inputs[skillFieldPower].SetValue("2200")
+	if got := screen.skills.value(screen, skillFieldPower, 16); !strings.Contains(got, "220%") {
+		t.Errorf("the power row shows %q, want 220%%", got)
+	}
+	screen.skills.inputs[skillFieldPower].SetValue("0")
+	if got := screen.skills.percentHint(screen, skillFieldPower); got != "" {
+		t.Errorf("a zero power produced the hint %q, want none", got)
+	}
+
+	// The chances in the inflicts field are parts per thousand too, but the
+	// field holds the syntax ParseApplications reads, so the reading goes
+	// beside it rather than into it.
+	screen.skills.inputs[skillFieldInflicts].SetValue("weaken:800,blind:400")
+	if got := screen.skills.value(screen, skillFieldInflicts, 16); !strings.Contains(got, "80%") ||
+		!strings.Contains(got, "40%") {
+		t.Errorf("the inflicts row shows %q, want both 80%% and 40%%", got)
+	}
+	// A list being typed is unparseable most of the time; that is not an error
+	// to announce.
+	for _, partial := range []string{"weaken", "weaken:", "weaken:8x"} {
+		screen.skills.inputs[skillFieldInflicts].SetValue(partial)
+		if got := screen.skills.chanceHint(screen, 16); got != "" {
+			t.Errorf("a value of %q produced the chance hint %q, want none", partial, got)
+		}
+	}
+
 	// A half-typed number is the normal state of a text field, not an error to
 	// announce, so the hint says nothing at all rather than guessing.
 	for _, partial := range []string{"", "-", "8x"} {
