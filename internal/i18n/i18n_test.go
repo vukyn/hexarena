@@ -17,6 +17,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/forge"
 )
 
@@ -556,6 +557,26 @@ func TestDamageWithinKeepsTheFiguresNotTheReference(t *testing.T) {
 		// Given room, the pair comes back.
 		if got := lang.DamageWithin(preview, 200); got != full {
 			t.Errorf("%v: a roomy line = %q, want %q", lang, got, full)
+		}
+	}
+}
+
+// TestEveryStatusCategoryIsWorded holds the categories complete the way the
+// elements are held complete. A category is a Go enum, not a data id, so a gap
+// is a bug rather than the normal state — before this, only the ticking one was
+// worded and the other four printed their enum spelling, so a Vietnamese screen
+// read "stat_debuff".
+func TestEveryStatusCategoryIsWorded(t *testing.T) {
+	for _, lang := range []Lang{Vi, En} {
+		for category := status.Category(0); int(category) < status.CategoryCount; category++ {
+			name := category.String()
+			worded := lang.StatusCategory(name)
+			if worded == "" {
+				t.Errorf("%v has no wording for the %q category", lang, name)
+			}
+			if worded == name {
+				t.Errorf("%v left the %q category at its enum spelling", lang, name)
+			}
 		}
 	}
 }
