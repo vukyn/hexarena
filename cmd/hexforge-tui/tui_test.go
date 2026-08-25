@@ -18,6 +18,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	"github.com/vukyn/hexarena/internal/testfixture"
 )
 
 // A bubbletea model is testable without a terminal: Update takes a message and
@@ -35,6 +36,14 @@ func scratchData(t *testing.T) string {
 	t.Helper()
 	target := t.TempDir()
 	copyTree(t, shippedDataDir, target)
+	// The fixture is what the tests name. Before this they named the characters
+	// the repository shipped, so editing the real cast broke tests that had
+	// nothing to do with it.
+	if err := testfixture.Inject(target, func() (testfixture.Saver, error) {
+		return forge.Load(target)
+	}); err != nil {
+		t.Fatalf("inject the fixture: %v", err)
+	}
 	return target
 }
 
@@ -191,7 +200,7 @@ func chooseArchetype(t *testing.T, m model, id string) model {
 // really on disk, so a test that wants a known answer has to name a file that
 // is really there — and picking one of these two rather than whatever sorts
 // first keeps these tests out of the way of whoever is authoring a real cast.
-const exampleArt = "assets/example/adept.svg"
+const exampleArt = "assets/fixture/adept.svg"
 
 // chooseArt steps the art chooser to a named path. The cursor has to already be
 // on that field, and the path has to be one internal/forge found on disk.
@@ -237,7 +246,7 @@ func author(t *testing.T, m model, id, name, origin, archetype, element string) 
 // prevent.
 func TestTheFormProducesTheCharacterTheCommandLineProduces(t *testing.T) {
 	m, lib, _ := start(t, i18n.Vi)
-	m = author(t, m, "example-film.tester", "Tester", "example-film", "duelist", "wind/ground")
+	m = author(t, m, "fixture-film.tester", "Tester", "fixture-film", "duelist", "wind/ground")
 
 	fromTheForm, err := m.form.draft().Resolve(lib)
 	if err != nil {
@@ -247,7 +256,7 @@ func TestTheFormProducesTheCharacterTheCommandLineProduces(t *testing.T) {
 	// The same run on the command line: five flags, everything else taken from
 	// the preset and from the id.
 	fromTheFlags, err := forge.Draft{
-		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
+		ID: "fixture-film.tester", Name: "Tester", Origin: "fixture-film",
 		Archetype: "duelist", Element: "wind/ground",
 		Image: exampleArt,
 	}.Resolve(lib)
@@ -311,15 +320,15 @@ func TestTheArtFieldPicksFromWhatIsOnDisk(t *testing.T) {
 
 	// An id whose art is filed where the id says it would be. The suggestion
 	// then names something real, and honouring it is what makes it worth
-	// keeping: forge.SuggestedImage derives assets/example/sprout.svg from
-	// "example.sprout", and that is deliberately not the entry the chooser
+	// keeping: forge.SuggestedImage derives assets/fixture/sprout.svg from
+	// "fixture.sprout", and that is deliberately not the entry the chooser
 	// started on, so following it is a move this can see.
-	suggested := forge.SuggestedImage("example.sprout")
+	suggested := forge.SuggestedImage("fixture.sprout")
 	if suggested == onDisk[0] || !lib.ImageExists(suggested) {
 		t.Fatalf("the suggestion for that id is %q, so this test is not asking what it means to",
 			suggested)
 	}
-	m = typeText(t, m, "example.sprout")
+	m = typeText(t, m, "fixture.sprout")
 	if got := m.form.draft().Image; got != suggested {
 		t.Errorf("the art is %q, want the suggestion %q, which is on disk", got, suggested)
 	}
@@ -328,8 +337,8 @@ func TestTheArtFieldPicksFromWhatIsOnDisk(t *testing.T) {
 	// selection is left where it was.
 	m.form = newFormScreen(lib)
 	m = m.enter(screenNew)
-	m = typeText(t, m, "example-film.tester")
-	if lib.ImageExists(forge.SuggestedImage("example-film.tester")) {
+	m = typeText(t, m, "fixture-film.tester")
+	if lib.ImageExists(forge.SuggestedImage("fixture-film.tester")) {
 		t.Fatal("that id's art exists, so this test is not asking what it means to")
 	}
 	if got := m.form.draft().Image; got != onDisk[0] {
@@ -406,20 +415,20 @@ func TestAFormWithNoArtOnDiskIsStillCompletable(t *testing.T) {
 		t.Errorf("the form does not name the folder it found no art in:\n%s", body)
 	}
 
-	m = typeText(t, m, "example-film.tester")
+	m = typeText(t, m, "fixture-film.tester")
 	m = key(t, m, "down")
 	m = typeText(t, m, "Tester")
 	m = key(t, m, "down")
-	m = chooseOrigin(t, m, "example-film")
+	m = chooseOrigin(t, m, "fixture-film")
 	m = key(t, m, "down")
 	m = chooseArchetype(t, m, "duelist")
 	m = key(t, m, "down")
 	// The suggestion still fills the field, exactly as it did before there was
 	// anything to choose from.
-	if got, want := m.form.draft().Image, forge.SuggestedImage("example-film.tester"); got != want {
+	if got, want := m.form.draft().Image, forge.SuggestedImage("fixture-film.tester"); got != want {
 		t.Errorf("the art field holds %q, want the suggestion %q", got, want)
 	}
-	typed := "assets/example-film/tester.png"
+	typed := "assets/fixture-film/tester.png"
 	m = retype(t, m, typed)
 	m = key(t, m, "down")
 	m = key(t, m, "down")
@@ -429,7 +438,7 @@ func TestAFormWithNoArtOnDiskIsStillCompletable(t *testing.T) {
 	if m.form.err != nil {
 		t.Fatalf("a form with no art on disk could not be completed: %v", m.form.err)
 	}
-	written, known := lib.Characters().Get("example-film.tester")
+	written, known := lib.Characters().Get("fixture-film.tester")
 	if !known {
 		t.Fatal("the character was not written")
 	}
@@ -454,7 +463,7 @@ func TestAFormWithNoArtOnDiskIsStillCompletable(t *testing.T) {
 func TestTheCarryCheckFlipsWithTheElement(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	// The sentinel kit demands water, so fire cannot carry it.
-	m = author(t, m, "example-film.tester", "Tester", "example-film", "sentinel", "fire")
+	m = author(t, m, "fixture-film.tester", "Tester", "fixture-film", "sentinel", "fire")
 	refused := m.form.carryLine(m, m.form.draft())
 	// The whole sentence, in the language in front. It names the affinity, the
 	// skill and what that skill is, because "no" on its own leaves an author
@@ -491,7 +500,7 @@ func TestTheCarryCheckFlipsWithTheElement(t *testing.T) {
 // be worse than no meter at all.
 func TestTheBudgetBarShowsProgressionEffectiveHP(t *testing.T) {
 	m, lib, _ := start(t, i18n.Vi)
-	m = author(t, m, "example-film.tester", "Tester", "example-film", "duelist", "wind/ground")
+	m = author(t, m, "fixture-film.tester", "Tester", "fixture-film", "duelist", "wind/ground")
 
 	table, err := m.form.draft().Table(lib)
 	if err != nil {
@@ -547,7 +556,7 @@ func TestLeavingAnEditedFormAsksFirst(t *testing.T) {
 
 	// One keystroke later, it does ask, and the question is on screen.
 	m = m.enter(screenNew)
-	m = typeText(t, m, "example-film.tester")
+	m = typeText(t, m, "fixture-film.tester")
 	m = key(t, m, "esc")
 	if m.guard == nil {
 		t.Fatal("leaving an edited form did not ask")
@@ -564,7 +573,7 @@ func TestLeavingAnEditedFormAsksFirst(t *testing.T) {
 	if m.screen != screenNew {
 		t.Error("declining the question left the form anyway")
 	}
-	if got := m.form.draft().ID; got != "example-film.tester" {
+	if got := m.form.draft().ID; got != "fixture-film.tester" {
 		t.Errorf("the id is now %q, want the typed one back", got)
 	}
 
@@ -610,7 +619,7 @@ func TestATerminalTooSmallSaysSo(t *testing.T) {
 // screens that list the cast see it without a restart.
 func TestSavingWritesThroughTheLibrary(t *testing.T) {
 	m, lib, dir := start(t, i18n.Vi)
-	m = author(t, m, "example-film.tester", "Tester", "example-film", "duelist", "wind/ground")
+	m = author(t, m, "fixture-film.tester", "Tester", "fixture-film", "duelist", "wind/ground")
 	m = key(t, m, "ctrl+s")
 
 	if m.form.err != nil {
@@ -622,7 +631,7 @@ func TestSavingWritesThroughTheLibrary(t *testing.T) {
 	// The notes are kept as facts and worded on the way to the screen, so this
 	// asks the screen rather than the field.
 	joined := strings.Join(m.lang.Notes(m.form.notes), "\n")
-	if !strings.Contains(joined, "đã ghi example-film.tester") {
+	if !strings.Contains(joined, "đã ghi fixture-film.tester") {
 		t.Errorf("the confirmation does not name the write:\n%s", joined)
 	}
 	// The art was chosen from what is on disk, so there is nothing to warn
@@ -643,17 +652,17 @@ func TestSavingWritesThroughTheLibrary(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reload: %v", err)
 	}
-	if _, known := reloaded.Characters().Get("example-film.tester"); !known {
+	if _, known := reloaded.Characters().Get("fixture-film.tester"); !known {
 		t.Error("the character is not in the reloaded cast")
 	}
 	// The library the program holds knows too, so the browser and the check
 	// screen see it on the next visit.
-	if _, known := lib.Characters().Get("example-film.tester"); !known {
+	if _, known := lib.Characters().Get("fixture-film.tester"); !known {
 		t.Error("the open library does not hold the character it just wrote")
 	}
 	m = m.enter(screenBrowse)
 	body, _ := m.browse.view(m)
-	if !strings.Contains(body, "example-film.tester") {
+	if !strings.Contains(body, "fixture-film.tester") {
 		t.Errorf("the cast browser does not show the new character:\n%s", body)
 	}
 }
@@ -679,7 +688,7 @@ func TestEveryStateIsReadableWithoutColour(t *testing.T) {
 			m, _, dir := start(t, test.lang)
 			// Take one file away, which is the one problem only a program
 			// allowed to read the filesystem can find.
-			if err := os.Remove(filepath.Join(dir, "assets", "example", "sprout.svg")); err != nil {
+			if err := os.Remove(filepath.Join(dir, "assets", "fixture", "sprout.svg")); err != nil {
 				t.Fatalf("remove the art: %v", err)
 			}
 			m = m.enter(screenCheck)
@@ -695,7 +704,7 @@ func TestEveryStateIsReadableWithoutColour(t *testing.T) {
 			// The missing-art row is the whole reason this screen exists, so it
 			// is asserted as the sentence it draws rather than as a word.
 			if test.lang == i18n.Vi &&
-				!strings.Contains(drawn, "nhân vật example-game.sprout dùng ảnh assets/example/sprout.svg") {
+				!strings.Contains(drawn, "nhân vật fixture-game.sprout dùng ảnh assets/fixture/sprout.svg") {
 				t.Errorf("the missing art is not reported in Vietnamese:\n%s", drawn)
 			}
 
@@ -1009,7 +1018,7 @@ func TestTheKitIsChosenFromTheBookAndKeepsItsOrder(t *testing.T) {
 // its own explanation.
 func TestTheKitListSaysWhatThisCharacterCannotTakeAndWhy(t *testing.T) {
 	m, lib, _ := start(t, i18n.Vi)
-	m = author(t, m, "example-film.tester", "Tester", "example-film", "duelist", "fire")
+	m = author(t, m, "fixture-film.tester", "Tester", "fixture-film", "duelist", "fire")
 	m = formCursorTo(t, m, fieldKit)
 	m = key(t, m, "space")
 	m = pickTo(t, m, "venom_fang")

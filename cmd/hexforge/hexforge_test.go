@@ -14,6 +14,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/testfixture"
 )
 
 // shippedDataDir is the real data directory, relative to this package.
@@ -27,6 +28,14 @@ func scratchData(t *testing.T) string {
 	t.Helper()
 	target := t.TempDir()
 	copyTree(t, shippedDataDir, target)
+	// The fixture is what the tests name. Before this they named the characters
+	// the repository shipped, so editing the real cast broke tests that had
+	// nothing to do with it.
+	if err := testfixture.Inject(target, func() (testfixture.Saver, error) {
+		return forge.Load(target)
+	}); err != nil {
+		t.Fatalf("inject the fixture: %v", err)
+	}
 	return target
 }
 
@@ -61,16 +70,16 @@ func copyTree(t *testing.T, from, to string) {
 // The answers are in prompt order, and the kit comes before the element on
 // purpose — the kit is what decides which elements are legal.
 func TestFillRePromptsOnABadAnswer(t *testing.T) {
-	lib, err := forge.Load(shippedDataDir)
+	lib, err := forge.Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
 	script := strings.Join([]string{
 		"Example.Bad",          // rejected: not a slug
-		"example-film.tester",  // accepted
+		"fixture-film.tester",  // accepted
 		"Tester",               // name
 		"nowhere",              // rejected: unknown origin
-		"example-film",         // accepted
+		"fixture-film",         // accepted
 		"berserker",            // rejected: unknown archetype
 		"duelist",              // accepted
 		"",                     // art: take the suggested default
@@ -90,15 +99,15 @@ func TestFillRePromptsOnABadAnswer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolve what the wizard collected: %v", err)
 	}
-	if character.ID != "example-film.tester" || character.Name != "Tester" {
+	if character.ID != "fixture-film.tester" || character.Name != "Tester" {
 		t.Errorf("collected %s / %s", character.ID, character.Name)
 	}
 	if character.Element.String() != "wind/ground" {
 		t.Errorf("the element is %s, want the answer that could carry the kit", character.Element)
 	}
-	if character.Image != forge.SuggestedImage("example-film.tester") {
+	if character.Image != forge.SuggestedImage("fixture-film.tester") {
 		t.Errorf("the art is %q, want the suggested default %q",
-			character.Image, forge.SuggestedImage("example-film.tester"))
+			character.Image, forge.SuggestedImage("fixture-film.tester"))
 	}
 	if character.Bio != "A tester." {
 		t.Errorf("the biography is %q", character.Bio)
@@ -118,15 +127,15 @@ func TestFillRePromptsOnABadAnswer(t *testing.T) {
 // substituted kit that the write will be checked against, so it has to be the
 // one the prompt checks too.
 func TestElementPromptFollowsTheKitNotThePreset(t *testing.T) {
-	lib, err := forge.Load(shippedDataDir)
+	lib, err := forge.Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
 	// The duelist preset demands wind. Substituting a water kit moves the
 	// demand to water, so "wind" must now be refused and "water" accepted.
 	given := forge.Draft{
-		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
-		Archetype: "duelist", Image: "assets/example/tester.svg",
+		ID: "fixture-film.tester", Name: "Tester", Origin: "fixture-film",
+		Archetype: "duelist", Image: "assets/fixture/tester.svg",
 		Skills: "strike,riptide",
 	}
 	script := strings.Join([]string{
@@ -164,7 +173,7 @@ func TestElementPromptFollowsTheKitNotThePreset(t *testing.T) {
 // missing. Without this, the only way through a scripted run was to pipe the
 // right number of blank lines and hope.
 func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
-	lib, err := forge.Load(shippedDataDir)
+	lib, err := forge.Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -181,7 +190,7 @@ func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
 
 	// Every field with no default is required, and each one says so by name.
 	full := forge.Draft{
-		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
+		ID: "fixture-film.tester", Name: "Tester", Origin: "fixture-film",
 		Archetype: "duelist", Element: "wind/ground",
 	}
 	for _, missing := range []struct {
@@ -245,12 +254,12 @@ func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
 // would abandon a session whose remaining fields all had perfectly good
 // defaults, so EOF turns the rest of the session unattended.
 func TestFillFallsBackWhenStdinEnds(t *testing.T) {
-	lib, err := forge.Load(shippedDataDir)
+	lib, err := forge.Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
 	// Answered up to the element, then the input simply stops.
-	script := "example-film.tester\nTester\nexample-film\nduelist\n\n\nwind/ground\n"
+	script := "fixture-film.tester\nTester\nfixture-film\nduelist\n\n\nwind/ground\n"
 	prompt := &prompter{in: bufio.NewReader(strings.NewReader(script)), out: io.Discard, interactive: true}
 	filled, err := fill(forge.Draft{}, lib, prompt)
 	if err != nil {
@@ -273,7 +282,7 @@ func TestFillFallsBackWhenStdinEnds(t *testing.T) {
 
 	// And when the input stops before a field that has no default, the error
 	// still names the flag rather than reporting a bare EOF.
-	short := &prompter{in: bufio.NewReader(strings.NewReader("example-film.tester\n")), out: io.Discard, interactive: true}
+	short := &prompter{in: bufio.NewReader(strings.NewReader("fixture-film.tester\n")), out: io.Discard, interactive: true}
 	if _, err := fill(forge.Draft{}, lib, short); err == nil {
 		t.Fatal("a session that ended before the name was accepted")
 	} else if !strings.Contains(err.Error(), "--name") {
@@ -300,13 +309,13 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 
 	// The exact invocation that used to stop at "kit [strike,riptide,...]: EOF".
 	output, err := run("new", "--data", dir,
-		"--id", "example-anime.piped", "--name", "Piped",
-		"--origin", "example-anime", "--archetype", "sentinel",
-		"--element", "water/ice", "--image", "assets/example/piped.svg", "--yes")
+		"--id", "fixture-anime.piped", "--name", "Piped",
+		"--origin", "fixture-anime", "--archetype", "sentinel",
+		"--element", "water/ice", "--image", "assets/fixture/piped.svg", "--yes")
 	if err != nil {
 		t.Fatalf("a flags-only run through a pipe failed: %v\n%s", err, output)
 	}
-	if !strings.Contains(output, "wrote example-anime.piped") {
+	if !strings.Contains(output, "wrote fixture-anime.piped") {
 		t.Errorf("the run did not report a write:\n%s", output)
 	}
 	// The art does not exist yet, and the write says so rather than pretending
@@ -319,7 +328,7 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 	if err != nil {
 		t.Fatalf("reload: %v", err)
 	}
-	written, known := lib.Characters().Get("example-anime.piped")
+	written, known := lib.Characters().Get("fixture-anime.piped")
 	if !known {
 		t.Fatal("the character was not written")
 	}
@@ -334,7 +343,7 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 	// A field with no default fails, naming its flag, instead of hanging or
 	// reporting an EOF nobody can act on.
 	output, err = run("new", "--data", dir,
-		"--id", "example-anime.nameless", "--origin", "example-anime",
+		"--id", "fixture-anime.nameless", "--origin", "fixture-anime",
 		"--archetype", "sentinel", "--element", "water/ice", "--yes")
 	if err == nil {
 		t.Fatalf("a run with no --name succeeded:\n%s", output)
@@ -346,9 +355,9 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 	// The kit-versus-element rule fires here too, where it is authored, rather
 	// than later in battle.New.
 	output, err = run("new", "--data", dir,
-		"--id", "example-anime.mismatch", "--name", "Mismatch",
-		"--origin", "example-anime", "--archetype", "sentinel",
-		"--element", "fire", "--image", "assets/example/adept.svg", "--yes")
+		"--id", "fixture-anime.mismatch", "--name", "Mismatch",
+		"--origin", "fixture-anime", "--archetype", "sentinel",
+		"--element", "fire", "--image", "assets/fixture/adept.svg", "--yes")
 	if err == nil {
 		t.Fatalf("a fire character carrying the sentinel kit was written:\n%s", output)
 	}
@@ -359,9 +368,9 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 	// Without --yes there is nobody to confirm to, so it says so rather than
 	// writing on somebody's behalf.
 	output, err = run("new", "--data", dir,
-		"--id", "example-anime.unconfirmed", "--name", "Unconfirmed",
-		"--origin", "example-anime", "--archetype", "sentinel",
-		"--element", "water/ice", "--image", "assets/example/adept.svg")
+		"--id", "fixture-anime.unconfirmed", "--name", "Unconfirmed",
+		"--origin", "fixture-anime", "--archetype", "sentinel",
+		"--element", "water/ice", "--image", "assets/fixture/adept.svg")
 	if err == nil {
 		t.Fatalf("an unconfirmed run wrote anyway:\n%s", output)
 	}
@@ -386,7 +395,7 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 // this front-end: forge.Inspect finds the problem, and these columns draw it.
 func TestRenderReportSurvivesAMissingRow(t *testing.T) {
 	dir := scratchData(t)
-	removed := filepath.Join(dir, "assets", "example", "sprout.svg")
+	removed := filepath.Join(dir, "assets", "fixture", "sprout.svg")
 	if err := os.Remove(removed); err != nil {
 		t.Fatalf("remove %s: %v", removed, err)
 	}
@@ -669,7 +678,7 @@ func TestSkillsEditRunsEndToEndThroughAPipe(t *testing.T) {
 	if err == nil {
 		t.Fatalf("an edit that orphans a character was written:\n%s", output)
 	}
-	for _, want := range []string{"example-anime.adept", "unable to carry it"} {
+	for _, want := range []string{"fixture-anime.adept", "unable to carry it"} {
 		if !strings.Contains(output, want) {
 			t.Errorf("the refusal does not mention %q:\n%s", want, output)
 		}
@@ -681,7 +690,7 @@ func TestSkillsEditRunsEndToEndThroughAPipe(t *testing.T) {
 	// The same for an archetype preset, which is a different rule in a different
 	// place: a preset is shared by every character built from it.
 	output, err = run("skills", "edit", "sever", "--data", dir,
-		"--restrict-characters", "example-anime.adept", "--yes")
+		"--restrict-characters", "fixture-anime.adept", "--yes")
 	if err == nil {
 		t.Fatalf("an edit that orphans a preset was written:\n%s", output)
 	}

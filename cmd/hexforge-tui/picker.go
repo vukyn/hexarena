@@ -517,7 +517,7 @@ func (p *pickState) view(m model) (string, string) {
 		m.style.dim.Render(m.text(i18n.ChoicePosition, len(p.chosen), len(p.options))) + "\n")
 	out.WriteString(m.style.dim.Render(m.text(p.hint)) + "\n")
 	// The filter in force, on its own line and only where there is one. It names
-	// both counts for the reason the browser's does: "showing example-anime" says
+	// both counts for the reason the browser's does: "showing fixture-anime" says
 	// nothing about how much of the list is hidden.
 	rows := p.visible()
 	if len(p.groups) > 0 {

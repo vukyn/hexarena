@@ -19,6 +19,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/testfixture"
 )
 
 // shippedDataDir is the real data directory, relative to this package.
@@ -30,6 +31,14 @@ func scratchData(t *testing.T) string {
 	t.Helper()
 	target := t.TempDir()
 	copyTree(t, shippedDataDir, target)
+	// The fixture is what the tests name. Before this they named the characters
+	// the repository shipped, so editing the real cast broke tests that had
+	// nothing to do with it.
+	if err := testfixture.Inject(target, func() (testfixture.Saver, error) {
+		return Load(target)
+	}); err != nil {
+		t.Fatalf("inject the fixture: %v", err)
+	}
 	return target
 }
 
@@ -98,7 +107,7 @@ func TestInspectNoticesMissingArt(t *testing.T) {
 
 	// Take away exactly one file. The path shape is unchanged, so only a
 	// program that reads the filesystem can notice.
-	removed := filepath.Join(dir, "assets", "example", "sprout.svg")
+	removed := filepath.Join(dir, "assets", "fixture", "sprout.svg")
 	if err := os.Remove(removed); err != nil {
 		t.Fatalf("remove %s: %v", removed, err)
 	}
@@ -168,8 +177,8 @@ func TestWrittenCastIsStableAndReloads(t *testing.T) {
 	}
 
 	character, err := Draft{
-		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
-		Archetype: "duelist", Image: "assets/example/tester.png", Element: "wind/ground",
+		ID: "fixture-film.tester", Name: "Tester", Origin: "fixture-film",
+		Archetype: "duelist", Image: "assets/fixture/tester.png", Element: "wind/ground",
 		Bio: "Written by a test.",
 	}.Resolve(lib)
 	if err != nil {
@@ -211,7 +220,7 @@ func TestWrittenCastIsStableAndReloads(t *testing.T) {
 }
 
 func TestResolveTakesTheArchetypeCurveAndKit(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -220,8 +229,8 @@ func TestResolveTakesTheArchetypeCurveAndKit(t *testing.T) {
 		t.Fatal("the duelist preset is not shipped")
 	}
 	character, err := Draft{
-		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
-		Archetype: "duelist", Image: "assets/example/tester.svg", Element: "wind/ground",
+		ID: "fixture-film.tester", Name: "Tester", Origin: "fixture-film",
+		Archetype: "duelist", Image: "assets/fixture/tester.svg", Element: "wind/ground",
 	}.Resolve(lib)
 	if err != nil {
 		t.Fatalf("resolve: %v", err)
@@ -244,8 +253,8 @@ func TestResolveTakesTheArchetypeCurveAndKit(t *testing.T) {
 
 	// An override replaces exactly one curve and leaves the rest alone.
 	overridden := Draft{
-		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
-		Archetype: "duelist", Image: "assets/example/tester.svg", Element: "wind/ground",
+		ID: "fixture-film.tester", Name: "Tester", Origin: "fixture-film",
+		Archetype: "duelist", Image: "assets/fixture/tester.svg", Element: "wind/ground",
 		Skills: "strike, bolt",
 	}
 	overridden.Stats[progression.Speed] = "40:120"
@@ -276,14 +285,14 @@ func TestResolveTakesTheArchetypeCurveAndKit(t *testing.T) {
 }
 
 func TestResolveRejections(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
 	good := func() Draft {
 		return Draft{
-			ID: "example-film.tester", Name: "Tester", Origin: "example-film",
-			Archetype: "duelist", Image: "assets/example/tester.svg", Element: "wind/ground",
+			ID: "fixture-film.tester", Name: "Tester", Origin: "fixture-film",
+			Archetype: "duelist", Image: "assets/fixture/tester.svg", Element: "wind/ground",
 		}
 	}
 	if _, err := good().Resolve(lib); err != nil {
@@ -296,7 +305,7 @@ func TestResolveRejections(t *testing.T) {
 	}{
 		{"no id", func(d *Draft) { d.ID = "" }, "character id is empty"},
 		{"non-slug id", func(d *Draft) { d.ID = "Example.Tester" }, "lowercase letters"},
-		{"an id already in the cast", func(d *Draft) { d.ID = "example-anime.adept" }, "already in the cast"},
+		{"an id already in the cast", func(d *Draft) { d.ID = "fixture-anime.adept" }, "already in the cast"},
 		{"no name", func(d *Draft) { d.Name = "  " }, "display name"},
 		{"unknown origin", func(d *Draft) { d.Origin = "nowhere" }, "unknown origin"},
 		{"unknown archetype", func(d *Draft) { d.Archetype = "berserker" }, "unknown archetype"},
@@ -349,13 +358,13 @@ func TestResolveRejections(t *testing.T) {
 // coordinator reported: sentinel's kit is water, so a fire character built from
 // it wrote cleanly and was then refused by battle.New.
 func TestResolveRefusesAKitTheAffinityCannotCarry(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
 	_, err = Draft{
-		ID: "example-anime.mismatch", Name: "Mismatch", Origin: "example-anime",
-		Archetype: "sentinel", Image: "assets/example/adept.svg", Element: "fire",
+		ID: "fixture-anime.mismatch", Name: "Mismatch", Origin: "fixture-anime",
+		Archetype: "sentinel", Image: "assets/fixture/adept.svg", Element: "fire",
 	}.Resolve(lib)
 	if err == nil {
 		t.Fatal("a fire character carrying the sentinel kit was accepted")
@@ -386,7 +395,7 @@ func TestResolveRefusesAKitTheAffinityCannotCarry(t *testing.T) {
 
 func TestSuggestedImageFollowsTheID(t *testing.T) {
 	cases := map[string]string{
-		"example-anime.adept": "assets/example-anime/adept.svg",
+		"fixture-anime.adept": "assets/fixture-anime/adept.svg",
 		"loner":               "assets/loner.svg",
 		"":                    "",
 	}
@@ -420,7 +429,7 @@ func TestArtFilesListsTheImagesOnDisk(t *testing.T) {
 	}
 	// The two placeholders CLAUDE.md says not to delete are the fixed point:
 	// anything else under assets belongs to whoever is authoring a cast.
-	for _, want := range []string{"assets/example/adept.svg", "assets/example/sprout.svg"} {
+	for _, want := range []string{"assets/fixture/adept.svg", "assets/fixture/sprout.svg"} {
 		if !slices.Contains(shipped, want) {
 			t.Errorf("the shipped art %q was not listed, only %v", want, shipped)
 		}
@@ -899,7 +908,7 @@ func TestAuthoringAgainstARestrictedSkillRefusesTheKitAndTheCharacter(t *testing
 	// the picker marks a row with.
 	var byArchetype *ArchetypeRestrictedError
 	refused := lib.ValidateKitFor("strike,bulwark_oath",
-		Carrier{ID: "example-film.tester", Archetype: "duelist"})
+		Carrier{ID: "fixture-film.tester", Archetype: "duelist"})
 	if !errors.As(refused, &byArchetype) {
 		t.Fatalf("a duelist was allowed a skill kept for bulwark: %v", refused)
 	}
@@ -907,15 +916,15 @@ func TestAuthoringAgainstARestrictedSkillRefusesTheKitAndTheCharacter(t *testing
 		t.Errorf("the refusal names %q", byArchetype.Skill)
 	}
 	if err := lib.ValidateKitFor("strike,bulwark_oath",
-		Carrier{ID: "example-film.tester", Archetype: "bulwark"}); err != nil {
+		Carrier{ID: "fixture-film.tester", Archetype: "bulwark"}); err != nil {
 		t.Errorf("a bulwark was refused a skill kept for bulwark: %v", err)
 	}
 
 	// And the write's check, which is the parser's and is what actually holds:
 	// even with the answer check skipped, the character cannot be written.
 	_, err = Draft{
-		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
-		Archetype: "duelist", Image: "assets/example/adept.svg", Element: "neutral",
+		ID: "fixture-film.tester", Name: "Tester", Origin: "fixture-film",
+		Archetype: "duelist", Image: "assets/fixture/adept.svg", Element: "neutral",
 		Skills: "strike,bulwark_oath",
 	}.Resolve(lib)
 	if err == nil {
@@ -1144,7 +1153,7 @@ func TestAnEditKeepsTheSkillInItsPlaceInTheFile(t *testing.T) {
 // ways editing can break something an addition cannot.
 //
 // The case is built from the shipped data rather than a fixture, and it is the
-// real one: example-anime.adept is water/ice and carries riptide, so keeping
+// real one: fixture-anime.adept is water/ice and carries riptide, so keeping
 // riptide for fire leaves the character it already ships in unable to carry it.
 // What must not happen is a written file that then fails to load — so the refusal
 // comes before the write, and it names who.
@@ -1162,7 +1171,7 @@ func TestAnEditThatWouldOrphanAShippedCharacterIsRefused(t *testing.T) {
 	if err != nil {
 		t.Fatalf("look up riptide: %v", err)
 	}
-	carrier, holds := lib.Characters().Get("example-anime.adept")
+	carrier, holds := lib.Characters().Get("fixture-anime.adept")
 	if !holds || !slices.Contains(carrier.Skills, "riptide") {
 		t.Skip("the shipped cast no longer has a character carrying riptide")
 	}

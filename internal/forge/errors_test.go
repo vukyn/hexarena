@@ -31,7 +31,7 @@ func TestARefusalKeepsTheWordingTheCommandLinePrints(t *testing.T) {
 			`unknown origin "nowhere", add it with "hexforge origins add nowhere"`},
 		{&UnknownArchetypeError{ID: "nobody", Known: []string{"duelist", "sentinel"}},
 			`unknown archetype "nobody", want one of duelist, sentinel`},
-		{&OriginTakenError{ID: "example-film"}, `origin "example-film" is already in the catalog`},
+		{&OriginTakenError{ID: "fixture-film"}, `origin "fixture-film" is already in the catalog`},
 		{&EmptyKitError{}, "a character with no skills would have nothing to do on its turn"},
 		{&DuplicateSkillError{ID: "strike"}, `"strike" is named twice`},
 		{&MissingElementError{}, "no element given"},
@@ -145,7 +145,7 @@ func TestARefusalCarriesWhatItIsAbout(t *testing.T) {
 	} else if malformed.Field != FieldID {
 		t.Errorf("the refusal is about field %d, want the id", malformed.Field)
 	}
-	if err := lib.ValidateNewID("example-film.free"); err != nil {
+	if err := lib.ValidateNewID("fixture-film.free"); err != nil {
 		t.Errorf("a free, well-shaped id was refused: %v", err)
 	}
 	var empty *EmptyKitError

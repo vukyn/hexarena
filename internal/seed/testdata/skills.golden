@@ -22,6 +22,10 @@ war_cry         neutral   ally     1  column            0     1      0  1000    
 quickstep       neutral   self     0  single            0     1      0  1000    3        0
 purify          neutral   ally     2  single            0     1      0  1000    3        0
 unmake          dark      enemy    3  single          600     1    600   900    4      205
+vine_whip       grass     enemy    2  single         1100     1   1100   950    1      377
+razor_leaf      grass     enemy    3  arc_up          600     2   1200   880    2      410
+solar_beam      grass     enemy    4  single         2400     1   2400   850    4      822
+sleep_powder    grass     enemy    2  flank_up          0     1      0  1000    4        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -37,6 +41,7 @@ guard_wall      block (self)           2     1000       1000                -
 war_cry         rally                  1     1000       1000             1000
 quickstep       haste (self)           1     1000       1000                -
 quickstep       focus (self)           1     1000       1000                -
+sleep_powder    stun                   1      500       1000              500
 
 == conditional amplifiers ==
 skill           needs      stacks   power   amplified   damage   amplified   gain

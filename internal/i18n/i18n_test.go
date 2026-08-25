@@ -323,8 +323,8 @@ func TestARefusalIsWordedFromItsFacts(t *testing.T) {
 		err  error
 		want string
 	}{
-		{"an id already taken", &forge.IDTakenError{ID: "example-film.tester"},
-			`nhân vật "example-film.tester" đã có trong danh sách rồi`},
+		{"an id already taken", &forge.IDTakenError{ID: "fixture-film.tester"},
+			`nhân vật "fixture-film.tester" đã có trong danh sách rồi`},
 		{"a work that is not catalogued", &forge.UnknownOriginError{ID: "nowhere"},
 			`không có nguồn "nowhere"; thêm bằng lệnh "hexforge origins add nowhere"`},
 		{"a skill named twice", &forge.DuplicateSkillError{ID: "strike"},
@@ -368,7 +368,7 @@ func TestARefusalIsWordedFromItsFacts(t *testing.T) {
 // which are the other thing internal/forge hands over as facts.
 func TestAWriteIsReportedInBothLanguages(t *testing.T) {
 	notes := []forge.Note{
-		{Kind: forge.NoteWrote, ID: "example-film.tester", Path: "data/cast.json"},
+		{Kind: forge.NoteWrote, ID: "fixture-film.tester", Path: "data/cast.json"},
 		{Kind: forge.NoteArtMissing, Path: "data/assets/tester.svg"},
 		{Kind: forge.NoteRebuild},
 		// An edit is its own note rather than the write's reworded, because the
@@ -378,7 +378,7 @@ func TestAWriteIsReportedInBothLanguages(t *testing.T) {
 		{Kind: forge.NoteGoldensMove},
 	}
 	vietnamese := Vi.Notes(notes)
-	if got, want := vietnamese[0], "đã ghi example-film.tester vào data/cast.json"; got != want {
+	if got, want := vietnamese[0], "đã ghi fixture-film.tester vào data/cast.json"; got != want {
 		t.Errorf("the write reads %q, want %q", got, want)
 	}
 	if !strings.Contains(vietnamese[1], "data/assets/tester.svg") {
@@ -474,14 +474,14 @@ func TestAnEditRefusalNamesWhoWouldBreak(t *testing.T) {
 		{
 			name: "a character that could no longer carry it",
 			err: &forge.SkillEditBreaksError{
-				Carrier: forge.BrokenCharacter, ID: "example-anime.adept", Skill: "riptide",
+				Carrier: forge.BrokenCharacter, ID: "fixture-anime.adept", Skill: "riptide",
 				Err: &forge.CarryError{
 					Affinity: water, Skill: "riptide", Element: element.Water,
 					Reason: skill.CarryElementRestricted, Allowed: []string{"fire"},
 				},
 			},
-			vi: []string{"riptide", "example-anime.adept", "fire"},
-			en: []string{"riptide", "example-anime.adept", "unable to carry it"},
+			vi: []string{"riptide", "fixture-anime.adept", "fire"},
+			en: []string{"riptide", "fixture-anime.adept", "unable to carry it"},
 		},
 		{
 			name: "a preset whose kit could no longer hold it",
@@ -489,11 +489,11 @@ func TestAnEditRefusalNamesWhoWouldBreak(t *testing.T) {
 				Carrier: forge.BrokenPreset, ID: "bulwark", Skill: "sever",
 				Err: &forge.PresetOwnedSkillError{
 					Archetype: "bulwark", Skill: "sever",
-					Allowed: []string{"example-anime.adept"},
+					Allowed: []string{"fixture-anime.adept"},
 				},
 			},
-			vi: []string{"sever", "bulwark", "example-anime.adept"},
-			en: []string{"sever", "bulwark preset", "example-anime.adept"},
+			vi: []string{"sever", "bulwark", "fixture-anime.adept"},
+			en: []string{"sever", "bulwark preset", "fixture-anime.adept"},
 		},
 		{
 			name: "a refusal no carrier is to blame for",

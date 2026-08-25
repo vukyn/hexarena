@@ -70,6 +70,7 @@ func TestShippedArchetypesMatchTheReferenceProfiles(t *testing.T) {
 		{"sentinel", 2, profile(3100, 500, 800, 90, 80, 30)},
 		{"duelist", 1, profile(2600, 800, 320, 150, 180, 90)},
 		{"skirmisher", 0, profile(2200, 760, 250, 200, 240, 150)},
+		{"blighter", 1, profile(3800, 620, 520, 100, 140, 50)},
 	}
 	book := mustArchetypes(t)
 	if got, want := len(book.All()), len(design); got != want {
@@ -302,31 +303,42 @@ func TestShippedOriginsAreUsable(t *testing.T) {
 	}
 }
 
-// referenceRoster places the two example characters by reference, which is the
-// form an authored cast is placed with.
-const referenceRoster = `{
+// referenceRoster places a shipped character by reference, which is the form an
+// authored cast is placed with.
+//
+// It names no character: it asks the shipped book for one. Naming a row coupled
+// this test to content the author is free to change, and editing the cast broke
+// tests that had nothing to do with it.
+func referenceRoster(t *testing.T, characters *cast.Book) ([]byte, cast.Character) {
+	t.Helper()
+	held := characters.All()
+	if len(held) == 0 {
+		t.Skip("the shipped cast is empty, so there is no reference to place")
+	}
+	first := held[0]
+	// One on each side, because a battle needs an opponent and a cast of one is
+	// the smallest a shipped book is allowed to be.
+	return []byte(fmt.Sprintf(`{
   "units": [
-    {"id": "ally.adept", "character": "example-anime.adept", "level": 60, "side": "ally", "slot": [2, 1]},
-    {"id": "foe.sprout", "character": "example-game.sprout", "level": 30, "side": "enemy", "slot": [0, 1]}
+    {"id": "ally.one", "character": %q, "level": 60, "side": "ally", "slot": [2, 1]},
+    {"id": "foe.one", "character": %q, "level": 60, "side": "enemy", "slot": [2, 1]}
   ]
-}`
+}`, first.ID, first.ID)), first
+}
 
 func TestParseRosterResolvesACharacterReference(t *testing.T) {
 	characters := mustCast(t)
-	roster, err := seed.ParseRoster([]byte(referenceRoster), characters)
+	raw, adept := referenceRoster(t, characters)
+	roster, err := seed.ParseRoster(raw, characters)
 	if err != nil {
 		t.Fatalf("parse the reference roster: %v", err)
 	}
 	if len(roster) != 2 {
 		t.Fatalf("the roster resolved to %d units, want 2", len(roster))
 	}
-	adept, known := characters.Get("example-anime.adept")
-	if !known {
-		t.Fatal("the example character is not in the shipped cast")
-	}
 	wanted, _, err := adept.Resolve(progression.LevelCap)
 	if err != nil {
-		t.Fatalf("resolve the example character: %v", err)
+		t.Fatalf("resolve %s: %v", adept.ID, err)
 	}
 	if roster[0].Name != adept.Name {
 		t.Errorf("the placement is named %q, want the character's %q", roster[0].Name, adept.Name)
@@ -340,18 +352,31 @@ func TestParseRosterResolvesACharacterReference(t *testing.T) {
 	if strings.Join(roster[0].Skills, " ") != strings.Join(adept.Skills, " ") {
 		t.Errorf("the placement carries %v, the character knows %v", roster[0].Skills, adept.Skills)
 	}
-	// The second unit is at level 30, which is the level its second stage takes
-	// over at: a reference resolves the line rather than the last stage.
-	sprout, _ := characters.Get("example-game.sprout")
-	wantedLate, stage, err := sprout.Resolve(30)
-	if err != nil {
-		t.Fatalf("resolve at the stage boundary: %v", err)
-	}
-	if stage.Name != "Bloom" {
-		t.Fatalf("level 30 lands in stage %q, want %q", stage.Name, "Bloom")
-	}
-	if roster[1].Stats != wantedLate {
-		t.Errorf("the placement resolved to %s, want %s", roster[1].Stats, wantedLate)
+	// A reference resolves the whole evolution line, not the last stage. The
+	// level comes from the character's own line rather than a number written
+	// here, so the property survives the cast being re-authored; a single-stage
+	// cast simply has nothing to prove.
+	if len(adept.Stages) > 1 {
+		second := adept.Stages[1]
+		staged := []byte(fmt.Sprintf(`{
+  "units": [
+    {"id": "ally.one", "character": %q, "level": %d, "side": "ally", "slot": [2, 1]}
+  ]
+}`, adept.ID, second.MinLevel))
+		placed, err := seed.ParseRoster(staged, characters)
+		if err != nil {
+			t.Fatalf("parse at the stage boundary: %v", err)
+		}
+		wantedLate, stage, err := adept.Resolve(second.MinLevel)
+		if err != nil {
+			t.Fatalf("resolve at level %d: %v", second.MinLevel, err)
+		}
+		if stage.Name != second.Name {
+			t.Fatalf("level %d lands in stage %q, want %q", second.MinLevel, stage.Name, second.Name)
+		}
+		if placed[0].Stats != wantedLate {
+			t.Errorf("the placement resolved to %s, want %s", placed[0].Stats, wantedLate)
+		}
 	}
 	// A referenced roster has to build a real battle, not merely parse: the
 	// engine applies its own rules about affinities, slots and kits.
@@ -374,37 +399,37 @@ func TestParseRosterRejections(t *testing.T) {
 			// Two sources for one number is how the two drift apart, so the
 			// mixture is refused rather than resolved by precedence.
 			name: "a character reference that also restates its stats",
-			raw: `{"units": [{"id": "a", "character": "example-anime.adept", "level": 60,
+			raw: `{"units": [{"id": "a", "character": "fixture-anime.adept", "level": 60,
 			       "side": "ally", "slot": [2, 1],
 			       "stats": {"hp": 1, "attack": 1, "defense": 1, "speed": 1, "accuracy": 1, "dodge": 1}}]}`,
 			wantIn: "restates [stats]",
 		},
 		{
 			name: "a character reference that also restates its name",
-			raw: `{"units": [{"id": "a", "character": "example-anime.adept", "level": 60,
+			raw: `{"units": [{"id": "a", "character": "fixture-anime.adept", "level": 60,
 			       "side": "ally", "slot": [2, 1], "name": "Something Else"}]}`,
 			wantIn: "restates [name]",
 		},
 		{
 			name: "a character reference that also restates its element and skills",
-			raw: `{"units": [{"id": "a", "character": "example-anime.adept", "level": 60,
+			raw: `{"units": [{"id": "a", "character": "fixture-anime.adept", "level": 60,
 			       "side": "ally", "slot": [2, 1], "element": "fire", "skills": ["strike"]}]}`,
 			wantIn: "restates [element skills]",
 		},
 		{
 			name:   "a character reference with no level",
-			raw:    `{"units": [{"id": "a", "character": "example-anime.adept", "side": "ally", "slot": [2, 1]}]}`,
+			raw:    `{"units": [{"id": "a", "character": "fixture-anime.adept", "side": "ally", "slot": [2, 1]}]}`,
 			wantIn: "gives no level",
 		},
 		{
 			name: "a character reference past the level cap",
-			raw: `{"units": [{"id": "a", "character": "example-anime.adept", "level": 61,
+			raw: `{"units": [{"id": "a", "character": "fixture-anime.adept", "level": 61,
 			       "side": "ally", "slot": [2, 1]}]}`,
 			wantIn: "outside 1..60",
 		},
 		{
 			name: "a character reference at level zero",
-			raw: `{"units": [{"id": "a", "character": "example-anime.adept", "level": 0,
+			raw: `{"units": [{"id": "a", "character": "fixture-anime.adept", "level": 0,
 			       "side": "ally", "slot": [2, 1]}]}`,
 			wantIn: "outside 1..60",
 		},
@@ -425,7 +450,7 @@ func TestParseRosterRejections(t *testing.T) {
 		},
 		{
 			name:   "an unknown side",
-			raw:    `{"units": [{"id": "a", "character": "example-anime.adept", "level": 10, "side": "neither", "slot": [2, 1]}]}`,
+			raw:    `{"units": [{"id": "a", "character": "fixture-anime.adept", "level": 10, "side": "neither", "slot": [2, 1]}]}`,
 			wantIn: "unknown side",
 		},
 	}
