@@ -8,5 +8,7 @@ example-film     film    1999     Example Film
 example-game     game    2011     Example Game
                  example-game.sprout (Example Sprout)
                  note: An example entry so the catalog is not empty. Replace it with a work you are actually borrowing from.
+pokemon          anime   undated  Pokémon
+                 nobody borrowed from it yet
 
-3 works, 6 media declared: anime film series game comic novel
+4 works, 6 media declared: anime film series game comic novel

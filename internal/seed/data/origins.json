@@ -20,6 +20,12 @@
       "medium": "game",
       "year": 2011,
       "note": "An example entry so the catalog is not empty. Replace it with a work you are actually borrowing from."
+    },
+    {
+      "id": "pokemon",
+      "title": "Pokémon",
+      "medium": "anime",
+      "year": 0
     }
   ]
 }
