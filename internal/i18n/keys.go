@@ -184,6 +184,10 @@ const (
 	PickerChance
 	StatusDetail
 	StatusTicks
+	CategoryStatDebuff
+	CategoryControl
+	CategoryBuff
+	CategoryShield
 
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement

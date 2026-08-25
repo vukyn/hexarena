@@ -308,6 +308,30 @@ func (l Lang) WhoMaySummary(carried skill.Skill) string {
 	return strings.Join(parts, ", ")
 }
 
+// StatusCategory words what a kind of status does.
+//
+// A category is a Go enum, not a data id, so it is held **complete** the way the
+// elements are: a category with no wording is a gap in the catalog and fails a
+// test, rather than falling through to its own name. Before this, only the
+// ticking one was worded and the other four printed their enum spelling --
+// "stat_debuff" on a Vietnamese screen.
+//
+// The map is a lookup keyed by the name status.Category already writes, so
+// nothing here decides an order.
+func (l Lang) StatusCategory(name string) string {
+	worded := map[string]Key{
+		"dot":         StatusTicks,
+		"stat_debuff": CategoryStatDebuff,
+		"control":     CategoryControl,
+		"buff":        CategoryBuff,
+		"shield":      CategoryShield,
+	}
+	if key, known := worded[name]; known {
+		return l.Text(key)
+	}
+	return name
+}
+
 // Damage words what a skill is worth against the reference pair, which is the
 // figure an author needs before a power is written rather than after.
 func (l Lang) Damage(preview forge.SkillPreview) string {

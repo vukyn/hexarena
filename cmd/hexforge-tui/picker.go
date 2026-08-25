@@ -476,14 +476,11 @@ func (p *pickState) detail(m model, id string) string {
 			if kind.ID != id {
 				continue
 			}
-			// The ticking note stands in for the category rather than joining
-			// it: "dot" is the category's own id and "damages every turn" is
-			// what it means, so printing both prints it twice — and the row is
-			// long enough that the second copy is what gets clipped.
-			sort := kind.Category
-			if kind.Ticks {
-				sort = m.text(i18n.StatusTicks)
-			}
+			// The wording stands in for the category rather than joining it:
+			// "dot" is the category's own id and "damages every turn" is what it
+			// means, so printing both prints it twice — and the row is long
+			// enough that the second copy is what gets clipped.
+			sort := m.lang.StatusCategory(kind.Category)
 			facts := m.text(i18n.StatusDetail, sort, kind.Duration, kind.MaxStacks)
 			if name := m.lang.Gloss(id); name != "" {
 				facts = name + " · " + facts
