@@ -83,14 +83,14 @@ const (
 	BrowseNothingAuthored
 	BrowseNoneFromThisWork
 	LabelFrom
-	LabelTunedFrom
+	LabelPlaystyle
 	LabelElement
 	LabelKit
 	LabelArt
 	LabelStages
 	LabelBiography
 	LabelAtLevel
-	LabelAbsorbs
+	LabelEffectiveHP
 	StageInWords
 
 	// The check screen.
@@ -102,7 +102,7 @@ const (
 	CheckNothingToCheck
 	ColumnCharacter
 	ColumnArt
-	ColumnAbsorbs
+	ColumnEffectiveHP
 	CheckDoesNotResolve
 	CheckOverBudget
 	CheckProblem

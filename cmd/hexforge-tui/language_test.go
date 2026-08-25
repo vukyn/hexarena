@@ -278,7 +278,7 @@ func TestARefusedWriteIsWordedInTheLanguageInFront(t *testing.T) {
 		t.Fatal("a character with a taken id was written")
 	}
 	drawn := m.View()
-	if want := `chưa ghi được: nhân vật "example-anime.adept" đã có trong dàn rồi`; !strings.Contains(drawn, want) {
+	if want := `chưa ghi được: nhân vật "example-anime.adept" đã có trong danh sách rồi`; !strings.Contains(drawn, want) {
 		t.Errorf("the refusal on screen is not %q:\n%s", want, drawn)
 	}
 
@@ -341,38 +341,141 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 	}
 }
 
-// TestEveryLabelFitsItsColumn holds the fixed columns the detail panes line up
-// on. A label a cell too long pushes a whole pane out of alignment, and only in
-// one language.
-func TestEveryLabelFitsItsColumn(t *testing.T) {
-	labels := []i18n.Key{
-		i18n.LabelFrom, i18n.LabelTunedFrom, i18n.LabelElement, i18n.LabelKit,
-		i18n.LabelArt, i18n.LabelStages, i18n.LabelBiography, i18n.LabelAbsorbs,
-		i18n.LabelNote, i18n.LabelBudget, i18n.LabelCarries,
-	}
+// TestEveryLabelFitsItsFixedColumn holds the columns that are still a constant.
+//
+// The detail panes' and the menu's are not: they are measured from the labels
+// being drawn, which is what TestTheDetailPanesMeasureTheirLabelColumn asserts
+// and what a constant could not survive once "effective hp" and "nguồn tham
+// khảo" existed. What is left here is the check screen's art cell, which holds
+// one of two known words in each language rather than a label that can be
+// reworded into anything.
+func TestEveryLabelFitsItsFixedColumn(t *testing.T) {
 	for _, lang := range i18n.Langs() {
-		for _, key := range labels {
-			if width := lipgloss.Width(lang.Text(key)); width > detailLabelWidth {
-				t.Errorf("the %s label %q is %d cells, over the %d column",
-					lang, lang.Text(key), width, detailLabelWidth)
-			}
-		}
-		// The level label takes a number, and the widest one is the cap.
-		widest := lang.Say(i18n.LabelAtLevel, 999)
-		if width := lipgloss.Width(widest); width > detailLabelWidth {
-			t.Errorf("the %s level label %q is %d cells", lang, widest, width)
-		}
-		for _, key := range []i18n.Key{i18n.MenuCast, i18n.MenuNewCharacter, i18n.MenuOrigins, i18n.MenuCheck} {
-			if width := lipgloss.Width(lang.Text(key)); width > menuLabelWidth {
-				t.Errorf("the %s menu label %q is %d cells", lang, lang.Text(key), width)
-			}
-		}
 		for _, key := range []i18n.Key{i18n.ArtPresent, i18n.ArtMissing} {
 			if width := lipgloss.Width(lang.Text(key)); width > checkArtWidth {
 				t.Errorf("the %s art column holds %q at %d cells", lang, lang.Text(key), width)
 			}
 		}
 	}
+	// The form's own column already measures itself, and its summary rows are
+	// told that width rather than assuming the detail panes'. Both of those
+	// labels have to fit it, or the two rows under the stats sit out of line.
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		width := formLabelWidth(m)
+		for _, key := range []i18n.Key{i18n.LabelBudget, i18n.LabelCarries} {
+			if measured := lipgloss.Width(lang.Text(key)); measured >= width {
+				t.Errorf("the %s label %q is %d cells against the form's %d column",
+					lang, lang.Text(key), measured, width)
+			}
+		}
+	}
+}
+
+// TestTheDetailPanesMeasureTheirLabelColumn is the alignment property, asserted
+// by reading the drawn screen rather than the number behind it.
+//
+// Every row of a pane puts its value in the same column, in each language, and
+// the two languages land on different columns — which is the whole point of
+// measuring: 11 was right for both only until it was right for neither. The kit
+// gloss line is in the block being measured, so it is held to the same column
+// as the ids above it.
+func TestTheDetailPanesMeasureTheirLabelColumn(t *testing.T) {
+	columns := make(map[i18n.Lang]int)
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		browse := m.enter(screenBrowse)
+		body, _ := browse.browse.view(browse)
+		rows := detailRows(t, body)
+		if len(rows) < 6 {
+			t.Fatalf("the %s detail pane drew %d rows:\n%s", lang, len(rows), body)
+		}
+		found := make(map[int][]string)
+		for _, row := range rows {
+			at := valueColumn(row)
+			if at < 0 {
+				t.Errorf("the %s pane drew a row with no value column:\n%q", lang, row)
+				continue
+			}
+			found[at] = append(found[at], row)
+		}
+		if len(found) != 1 {
+			t.Errorf("the %s pane starts its values in %d different columns:\n%s",
+				lang, len(found), strings.Join(rows, "\n"))
+		}
+		for at := range found {
+			columns[lang] = at
+		}
+
+		// The origins pane shares the column, which is what makes the panes line
+		// up with each other rather than each with itself.
+		note, _ := m.enter(screenOrigins).origins.view(m)
+		for _, line := range strings.Split(note, "\n") {
+			if !strings.Contains(line, lang.Text(i18n.LabelNote)) {
+				continue
+			}
+			if at := valueColumn(line); at != columns[lang] {
+				t.Errorf("the %s note row puts its value at %d, the browser at %d:\n%q",
+					lang, at, columns[lang], line)
+			}
+		}
+	}
+	if columns[i18n.Vi] == columns[i18n.En] {
+		t.Errorf("both languages put their values at column %d, so the width is not measured",
+			columns[i18n.Vi])
+	}
+}
+
+// detailRows is the "name  value" block a character's detail pane draws, which
+// is everything after its heading. The heading is the one line in the pane that
+// starts in the first column, so the rows are what follows the last of those.
+func detailRows(t *testing.T, body string) []string {
+	t.Helper()
+	lines := strings.Split(strings.TrimRight(body, "\n"), "\n")
+	start := -1
+	for i, line := range lines {
+		if line != "" && !strings.HasPrefix(line, " ") {
+			start = i
+		}
+	}
+	if start < 0 {
+		t.Fatalf("no detail heading in:\n%s", body)
+	}
+	var rows []string
+	for _, line := range lines[start+1:] {
+		if strings.TrimSpace(line) != "" {
+			rows = append(rows, line)
+		}
+	}
+	return rows
+}
+
+// valueColumn is the cell a row's value starts in, or -1 when the line is not
+// one of these rows.
+//
+// A label may hold a space of its own — "nguồn tham khảo", "effective hp",
+// "cấp 20" — so the value is not the second word. It is what follows the
+// padding, and padding is two spaces or more: the widest label is padded to one
+// past itself and then separated by another. A row that carries on from the one
+// above has no label at all, so its whole prefix is that padding.
+func valueColumn(line string) int {
+	runes := []rune(line)
+	if len(runes) < 4 || runes[0] != ' ' || runes[1] != ' ' {
+		return -1
+	}
+	for at := 2; at+1 < len(runes); at++ {
+		if runes[at] != ' ' || runes[at+1] != ' ' {
+			continue
+		}
+		for at < len(runes) && runes[at] == ' ' {
+			at++
+		}
+		if at >= len(runes) {
+			return -1
+		}
+		return at
+	}
+	return -1
 }
 
 // TestNoScreenHoldsItsOwnWording is the rule that keeps the two languages
@@ -476,4 +579,257 @@ func words(text string) []string {
 	}
 	flush()
 	return found
+}
+
+// TestTheScreensGlossEveryDataName is the feature end to end: an id from a data
+// file arrives on a Vietnamese screen with its Vietnamese name beside it, and on
+// an English screen exactly as the file writes it.
+//
+// The expected strings come from internal/i18n rather than from a list here,
+// because the point being asserted is that the screen asks for the gloss at all
+// — a hand-kept list would pass while the browser drew the bare id. The one
+// literal below is the format itself, which is the thing that has to be stable.
+func TestTheScreensGlossEveryDataName(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	browse := m.enter(screenBrowse)
+	for index, character := range browse.browse.rows() {
+		browse.browse.cursor = index
+		body, _ := browse.browse.view(browse)
+
+		// Asserted against the row that is supposed to carry each gloss, not
+		// against the screen: the element is glossed twice — in the list and in
+		// the pane — so a whole-screen search passes with either one of them
+		// gone. That was not a hypothetical; it let a mutation through.
+		rows := detailRows(t, body)
+		checks := []struct {
+			label string
+			want  string
+		}{
+			{m.text(i18n.LabelPlaystyle), i18n.Vi.Glossed(character.Archetype)},
+			{m.text(i18n.LabelElement), i18n.Vi.GlossedAffinity(character.Element)},
+		}
+		for _, check := range checks {
+			if check.want == "" {
+				t.Errorf("%s has nothing glossed, so this proves nothing", character.ID)
+				continue
+			}
+			row := paneRow(t, rows, check.label)
+			if !strings.Contains(row, check.want) {
+				t.Errorf("the %s row for %s is %q, want it to show %q",
+					check.label, character.ID, row, check.want)
+			}
+		}
+		// The kit's names are on the row under the kit's ids, in the same order.
+		kit := i18n.Vi.GlossedKit(character.Skills)
+		if kit == "" {
+			t.Errorf("%s's kit is not glossed, so this proves nothing", character.ID)
+		} else if under := rowUnder(t, rows, m.text(i18n.LabelKit)); !strings.Contains(under, kit) {
+			t.Errorf("the row under %s's kit is %q, want it to show %q",
+				character.ID, under, kit)
+		}
+		// The element is glossed in the list as well as in the pane, and the
+		// list row is the one that had to be measured to fit.
+		row := listRow(t, body, character.ID)
+		if want := i18n.Vi.GlossedAffinity(character.Element); !strings.Contains(row, want) {
+			t.Errorf("the list row for %s does not show %q:\n%q", character.ID, want, row)
+		}
+	}
+
+	// The shipped cast holds the pair this was asked for, in the format it was
+	// asked for. Everything above would pass if the format changed; this would
+	// not.
+	browse.browse.cursor = 1
+	sprout, _ := browse.browse.view(browse)
+	for _, want := range []string{
+		"grass/electric (cỏ/điện)",
+		"skirmisher (du kích)",
+		"tia bắn · nanh độc · mục rữa · hồ quang",
+	} {
+		if !strings.Contains(sprout, want) {
+			t.Errorf("the browser does not show %q:\n%s", want, sprout)
+		}
+	}
+
+	// In English the same rows carry the ids alone. Every Vietnamese name of
+	// every id the data holds is checked against every English screen, so a
+	// gloss leaking into the wrong language is caught wherever it is drawn.
+	english, _, _ := start(t, i18n.En)
+	english.width, english.height = 200, 60
+	var names []string
+	for _, character := range lib.Characters().All() {
+		names = append(names, i18n.Vi.Gloss(character.Archetype))
+		for _, member := range character.Element.Elements() {
+			names = append(names, i18n.Vi.Gloss(member.String()))
+		}
+		for _, id := range character.Skills {
+			names = append(names, i18n.Vi.Gloss(id))
+		}
+	}
+	for name, screen := range everyScreen(t, english) {
+		screen.width, screen.height = 200, 60
+		drawn := screen.View()
+		for _, unwanted := range names {
+			if unwanted != "" && strings.Contains(drawn, unwanted) {
+				t.Errorf("the %s screen in English holds the gloss %q:\n%s", name, unwanted, drawn)
+			}
+		}
+	}
+	englishBrowse := english.enter(screenBrowse)
+	body, _ := englishBrowse.browse.view(englishBrowse)
+	for _, want := range []string{"playstyle     sentinel", "element       water/ice"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the English browser does not draw %q:\n%s", want, body)
+		}
+	}
+}
+
+// paneRow is the detail row a label names, and rowUnder is the one after it.
+func paneRow(t *testing.T, rows []string, label string) string {
+	t.Helper()
+	return rows[paneRowIndex(t, rows, label)]
+}
+
+func rowUnder(t *testing.T, rows []string, label string) string {
+	t.Helper()
+	at := paneRowIndex(t, rows, label)
+	if at+1 >= len(rows) {
+		t.Fatalf("nothing follows the %q row in:\n%s", label, strings.Join(rows, "\n"))
+	}
+	return rows[at+1]
+}
+
+func paneRowIndex(t *testing.T, rows []string, label string) int {
+	t.Helper()
+	for i, row := range rows {
+		if strings.HasPrefix(row, "  "+label+" ") {
+			return i
+		}
+	}
+	t.Fatalf("no %q row in:\n%s", label, strings.Join(rows, "\n"))
+	return -1
+}
+
+// listRow is the browser's own row for a character, as opposed to the detail
+// pane below, which names it again.
+func listRow(t *testing.T, body, id string) string {
+	t.Helper()
+	for _, line := range strings.Split(body, "\n") {
+		trimmed := strings.TrimLeft(line, "> ")
+		if strings.HasPrefix(trimmed, id+" ") {
+			return line
+		}
+	}
+	t.Fatalf("no list row for %s in:\n%s", id, body)
+	return ""
+}
+
+// TestEveryGlossFitsItsRow is the width measurement for the rows a gloss
+// lengthened, taken over every character and every preset rather than over the
+// one character the browser happens to open on.
+//
+// The kit is the row that decides this. Five skills is the longest kit the
+// presets ship — the duelist's — and five Vietnamese names of two or three
+// words each is what pushed the gloss onto its own line instead of into five
+// brackets beside the ids.
+func TestEveryGlossFitsItsRow(t *testing.T) {
+	const drawable = minWidth - 1
+	for _, lang := range i18n.Langs() {
+		m, lib, _ := start(t, lang)
+		width := detailLabelWidth(m)
+		// A detail row is two spaces of indent, the label column, and a space.
+		indent := 2 + width + 1
+
+		kits := make(map[string][]string)
+		for _, character := range lib.Characters().All() {
+			kits[character.ID] = character.Skills
+		}
+		for _, preset := range lib.Archetypes().All() {
+			kits[preset.ID] = preset.Skills
+		}
+		for id, skills := range kits {
+			glossed := lang.GlossedKit(skills)
+			if glossed == "" {
+				continue
+			}
+			if drawn := indent + lipgloss.Width(glossed); drawn > drawable {
+				t.Errorf("%s's kit gloss in %s draws %d cells, over the %d there are: %q",
+					id, lang, drawn, drawable, glossed)
+			}
+		}
+
+		for _, character := range lib.Characters().All() {
+			for _, row := range []string{
+				lang.Glossed(character.Archetype),
+				lang.GlossedAffinity(character.Element),
+			} {
+				if drawn := indent + lipgloss.Width(row); drawn > drawable {
+					t.Errorf("%s draws %q at %d cells in %s, over the %d there are",
+						character.ID, row, drawn, lang, drawable)
+				}
+			}
+			// The list row is the tighter of the two: two fixed columns come
+			// before the element, and the gloss has what is left.
+			list := 2 + browseIDWidth + 1 + browseOriginWidth + 1 +
+				lipgloss.Width(lang.GlossedAffinity(character.Element))
+			if list > drawable {
+				t.Errorf("%s's list row in %s draws %d cells, over the %d there are",
+					character.ID, lang, list, drawable)
+			}
+		}
+	}
+}
+
+// TestTheRenamedLabelsSayTheNewThing holds the four wordings that were changed,
+// and holds the old ones gone.
+//
+// Both halves matter. A screen still drawing the old label would be caught by
+// the first, and a rename applied to the catalog but not to the screen that asks
+// for it would be caught by the second.
+func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
+	cases := []struct {
+		lang    i18n.Lang
+		nowSays []string
+		gone    []string
+	}{
+		{i18n.Vi,
+			[]string{"danh sách nhân vật", "nguồn tham khảo", "lối chơi", "máu quy đổi"},
+			// "dàn" is the whole word that "danh sách" replaced, and no other
+			// Vietnamese wording holds those three letters with that tone.
+			[]string{"dàn", "dựa trên", "chịu được"}},
+		{i18n.En,
+			[]string{"playstyle", "effective hp"},
+			[]string{"tuned from", "absorbs"}},
+	}
+	for _, test := range cases {
+		base, _, _ := start(t, test.lang)
+		base.width, base.height = 200, 60
+		said := make(map[string]bool)
+		for name, screen := range everyScreen(t, base) {
+			screen.width, screen.height = 200, 60
+			drawn := screen.View()
+			for _, unwanted := range test.gone {
+				if strings.Contains(drawn, unwanted) {
+					t.Errorf("the %s screen in %s still says %q:\n%s",
+						name, test.lang, unwanted, drawn)
+				}
+			}
+			for _, wanted := range test.nowSays {
+				if strings.Contains(drawn, wanted) {
+					said[wanted] = true
+				}
+			}
+		}
+		for _, wanted := range test.nowSays {
+			if !said[wanted] {
+				t.Errorf("no screen in %s says %q", test.lang, wanted)
+			}
+		}
+	}
+
+	// The refusal is worded from the same term, so the two cannot part company.
+	taken := &forge.IDTakenError{ID: "example-anime.adept"}
+	if got, want := i18n.Vi.Error(taken),
+		`nhân vật "example-anime.adept" đã có trong danh sách rồi`; got != want {
+		t.Errorf("the refusal reads %q, want %q", got, want)
+	}
 }
