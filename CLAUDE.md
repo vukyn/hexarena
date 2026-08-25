@@ -23,14 +23,19 @@ go run ./cmd/hexarena --auto --seed 11           # both sides play themselves
 go run ./cmd/hexarena --auto --log b.json        # write a log
 go run ./cmd/hexarena --replay b.json --verify   # re-run it and check every event
 
+go run ./cmd/hexforge                            # author the cast: list the subcommands
+go run ./cmd/hexforge new                        # create a character, prompting for what is missing
+go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
+
 go test ./...
 go test ./internal/core/hex ./internal/seed ./internal/tui -update   # accept new goldens
 go test ./internal/core/battle -run TestControl                     # one test
 gofmt -l . && go vet ./...
 ```
 
-The `Makefile` wraps those and nothing more — `make build install run auto test
-golden fmt vet check clean`. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
+The `Makefile` wraps those and nothing more — `make build install run auto forge
+test golden fmt vet check clean`. `make build` builds both binaries; `make forge
+ARGS="show some.id"` passes arguments through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
 `go test ./... -count=1`); `make golden` is the `-update` line above. The raw
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
@@ -65,6 +70,31 @@ Concretely, in every core package except `battle`:
 
 `battle` is the only package that holds state. `tui` and `cmd` hold none either —
 they render.
+
+**Where the filesystem rule bites: a character's art.** `cast.Character.Image` is
+a path, and there are two different questions about it.
+`cast.ValidateImagePath` answers the first — is the path *well shaped*: relative,
+no `..` segment, no drive volume, ending `.svg` or `.png` — using `path` rather
+than `filepath`, because a committed data file has to mean the same thing on
+every platform. Whether the file is **really there** is only asked by
+`cmd/hexforge check`, because `internal/core` may not read the filesystem and,
+more to the point, only the caller knows which directory the path is relative
+to. Do not move the existence check into the parser to make it "complete": that
+would make loading the game depend on the working directory, and the embedded
+copy has no directory at all. `cast.ValidateID` is exported for the same reason
+`ValidateImagePath` is — an authoring tool has to reject an answer as it is
+typed, not at the end of a wizard.
+
+**`hexforge new` must work with nobody watching.** A preset-supplied value is
+not missing, so an unattended run takes every default and errors only on a field
+that has none, naming its flag. Two traps live here. `os.Stdin.Stat` cannot tell
+a terminal from `/dev/null` — both are character devices — so the mode check is
+only a first guess and **EOF on a read is the authoritative signal**; hitting it
+turns the rest of the session unattended rather than failing on a field whose
+default was fine. And the kit is asked **before** the element, because the kit is
+what decides which elements are legal: asking the other way round means either
+validating against a preset the author is about to replace with `--skills`, or
+accepting an answer the write then refuses.
 
 ## The event log is the contract
 
@@ -121,6 +151,23 @@ at both ceilings absorbs several times what either ceiling suggests.
 **Skill validation is cross-book.** `skill.ParseBook` takes the pattern and status
 books and checks every name a skill uses. A skill naming a shape or a status that
 does not exist fails at load, not at the moment it would have mattered.
+`cast.ParseBook` and `cast.ParseArchetypes` follow the same shape — a character's
+origin, archetype, kit, affinity and every stage's stat table are checked against
+the books that declare them, and an archetype preset that does not itself fit
+`progression.Limits` is rejected, because a preset that fails the budget hands
+every author a stat line that fails later. A character whose kit its affinity
+cannot carry is rejected too — see the carry rule below.
+
+**A roster entry never has two sources for one number.** `seed.ParseRoster`
+accepts two forms: the flat one, which writes out `name`, `element`, `stats` and
+`skills`, and the reference one, which names a `character` and a `level` and
+resolves all four from the cast book. Mixing them is **rejected**, not resolved by
+precedence — a precedence rule silently ignores half of what was authored, and the
+half it ignores is the half someone just edited. `level` is required with
+`character` (an evolution line cannot be resolved without one) and refused
+without it (an inline stat line is already resolved). `battle.Roster` deliberately
+gains no image, biography or origin field: the engine has no use for them, and the
+event log is what a renderer reads.
 
 **Where balance numbers live.** Tick power and modifier terms belong to the
 *status*, not to the skill that applies it, so two skills inflicting the same
@@ -179,6 +226,33 @@ code.
 Balance lives in `internal/seed/data`, embedded with `go:embed`. Changing a number
 there changes the game without touching Go.
 
+Three of those files are the cast rather than the balance, and `cmd/hexforge` both
+reads and **writes** them:
+
+- `origins.json` — the works characters are borrowed from. Hand-editable;
+  `hexforge origins add` appends to it.
+- `archetypes.json` — the role presets: a suggested stat curve and kit per role.
+  Hand-authored only; the tool never writes it. Every preset's curve must pass
+  `progression.Limits.CheckTable`, and the ids match the roles `roster.json`
+  already uses.
+- `cast.json` — the authored characters, each an evolution line
+  (`progression.Line`) plus an origin, an archetype it was tuned from, an
+  affinity, a kit and a path to its art. `hexforge new` appends to it.
+
+`cast.json` and `origins.json` are committed **in exactly the form
+`Book.Marshal` writes** — two-space indented, sorted by id. That is deliberate:
+the tool rewrites the whole file on every addition, so if the committed form
+drifted from the written one, the next `hexforge new` would produce a diff of the
+entire file instead of one block. `TestWrittenCastIsStableAndReloads` fails if it
+drifts. Marshal is also the one place in `cast` that *imposes* an order rather
+than preserving the authored one; everything else keeps declaration order,
+because a map range would randomise it.
+
+Art lives under `internal/seed/data/assets/` and is **not embedded** — the embed
+directive names the JSON files one by one. The two placeholder SVGs there exist so
+`hexforge check` passes out of the box; replace them, do not delete them without
+also replacing the example characters.
+
 The golden files under `testdata` are **the design record**, not fixtures to be
 regenerated on autopilot:
 
@@ -190,6 +264,10 @@ regenerated on autopilot:
 - `replay.golden` is a whole battle rendered from its log.
 - `skills.golden`, `elements.golden`, `progression.golden`, `combat.golden` are
   the tables each book produces.
+- `origins.golden`, `archetypes.golden`, `cast.golden` are the same for the cast:
+  which works are catalogued and who was borrowed from each, every preset's curve
+  with what it spends of the effective-health budget, and every character
+  resolved at each of its stage boundaries and at the cap.
 
 Run `make golden` (`go test ./internal/core/hex ./internal/seed ./internal/tui
 -update`) to accept a change and then
@@ -198,9 +276,31 @@ moves numbers you did not expect is a finding, not noise.
 
 Several tests deliberately hardcode design figures rather than reading them from
 the data — `TestRangeLadder`, `TestShippedDualStacking`, `TestDefenseCurveAnchors`,
-`TestShippedProgressionLimits`. Those exist so shipped data cannot drift from the
-design silently. If one fails, decide which of the two is wrong before editing
-either.
+`TestShippedProgressionLimits`,
+`TestShippedArchetypesMatchTheReferenceProfiles`. Those exist so shipped data
+cannot drift from the design silently. If one fails, decide which of the two is
+wrong before editing either. The last one ties `archetypes.json` to the reference
+profiles `progression.golden`'s hits-to-kill table was read from, so the presets
+and the balance reasoning cannot part company.
+
+**One rule, one declaration: which skills an affinity may carry.**
+`skill.CanCarry` is the whole of it. `battle.enlist` calls it and
+`cast.ParseBook` calls it, so a character that writes cleanly is a character
+that loads — before, `battle.New` refused a unit carrying a skill of an element
+it did not share and the authoring layer had no idea, so `hexforge new
+--archetype sentinel --element fire` wrote a character and `hexforge check` said
+"no problems found". Do not restate the condition at a third call site; that is
+the mistake the "one source for a recorded string" note above is about.
+
+`skill.Demands` is the other half, derived rather than authored:
+`Archetype.Demands` is the distinct non-neutral elements a kit requires, filled
+in `ParseArchetypes` and tagged `json:"-"` so a data file cannot claim a demand
+its kit does not have — an authored hint would only be caught when a character
+built from the preset was refused. A kit demanding more than two elements is
+rejected outright, because no affinity can hold three. Whether the two it
+demands are *allowed together* needs the element chart, which a preset is
+validated without, so that half lives in
+`TestEveryShippedArchetypeKitIsCarryableAtAll`.
 
 ## Open work
 
@@ -216,7 +316,13 @@ is the constraint each piece has to respect.
       whole timed-effect layer is tested but not played. A replacement must read
       no randomness and mutate nothing — a client calls it for a hint mid-turn —
       and two identical battles must still produce identical logs.
-- [ ] **A real cast.** `roster.json` is a test bed with flat stats.
-      `progression.Line` supports staged evolution and nothing uses it yet. Design
+- [ ] **A real cast.** The tooling now exists: `internal/core/cast` holds origins,
+      archetype presets and characters, `cmd/hexforge` authors them, and
+      `progression.Line` is finally used — `cast.json` ships one single-stage and
+      one two-stage example. What is missing is the cast itself and its art. Design
       against `progression.Limits`, particularly the joint health-and-defence
-      bound, since those two multiply.
+      bound, since those two multiply, and remember that an archetype's kit
+      constrains a character's affinity, which `skill.CanCarry` now enforces at
+      authoring time and `Archetype.Demands` reports. `roster.json` is
+      still the flat test bed on purpose: turning it into character references
+      would change every battle the goldens were measured from.

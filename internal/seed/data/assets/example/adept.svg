@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Example Adept placeholder">
+  <!-- Placeholder art for the example cast. Real unit art replaces this file;
+       hexforge check only asks that the path a character names exists. -->
+  <rect width="64" height="64" rx="6" fill="#12313f"/>
+  <circle cx="32" cy="26" r="11" fill="#4fb3c8"/>
+  <path d="M12 56c4-11 11-16 20-16s16 5 20 16z" fill="#8fd6e2"/>
+</svg>

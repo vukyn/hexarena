@@ -6,6 +6,7 @@ package seed
 import (
 	"embed"
 
+	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/modifier"
@@ -15,7 +16,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
-//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/skills.json data/roster.json
+//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/skills.json data/origins.json data/archetypes.json data/cast.json data/roster.json
 var files embed.FS
 
 // ElementsFile is the raw affinity chart declaration.
@@ -109,4 +110,94 @@ func SkillBook() (*skill.Book, error) {
 		return nil, err
 	}
 	return skill.ParseBook(raw, skill.Deps{Patterns: patterns, Statuses: statuses})
+}
+
+// OriginsFile is the raw catalog of works the cast is borrowed from.
+func OriginsFile() ([]byte, error) { return files.ReadFile("data/origins.json") }
+
+// Origins parses the embedded origin catalog.
+func Origins() (*cast.OriginBook, error) {
+	raw, err := OriginsFile()
+	if err != nil {
+		return nil, err
+	}
+	return cast.ParseOrigins(raw)
+}
+
+// ArchetypesFile is the raw role-preset declaration.
+func ArchetypesFile() ([]byte, error) { return files.ReadFile("data/archetypes.json") }
+
+// Archetypes parses the embedded role presets, checking every skill they
+// suggest and every curve they propose against the stat budget.
+func Archetypes() (*cast.ArchetypeBook, error) {
+	raw, err := ArchetypesFile()
+	if err != nil {
+		return nil, err
+	}
+	limits, err := ProgressionLimits()
+	if err != nil {
+		return nil, err
+	}
+	rules, err := CombatRules()
+	if err != nil {
+		return nil, err
+	}
+	skills, err := SkillBook()
+	if err != nil {
+		return nil, err
+	}
+	return cast.ParseArchetypes(raw, cast.ArchetypeDeps{
+		Skills: skills, Limits: limits, Rules: rules,
+	})
+}
+
+// CastFile is the raw character declaration.
+func CastFile() ([]byte, error) { return files.ReadFile("data/cast.json") }
+
+// Cast parses the embedded characters, checking every origin, archetype and
+// skill they name against the book that declares it.
+func Cast() (*cast.Book, error) {
+	raw, err := CastFile()
+	if err != nil {
+		return nil, err
+	}
+	deps, err := CastDeps()
+	if err != nil {
+		return nil, err
+	}
+	return cast.ParseBook(raw, deps)
+}
+
+// CastDeps assembles everything a character is validated against. It is
+// exported because an authoring tool builds its own cast book from a working
+// directory and has to validate it against the same books.
+func CastDeps() (cast.Deps, error) {
+	origins, err := Origins()
+	if err != nil {
+		return cast.Deps{}, err
+	}
+	archetypes, err := Archetypes()
+	if err != nil {
+		return cast.Deps{}, err
+	}
+	skills, err := SkillBook()
+	if err != nil {
+		return cast.Deps{}, err
+	}
+	chart, err := ElementChart()
+	if err != nil {
+		return cast.Deps{}, err
+	}
+	limits, err := ProgressionLimits()
+	if err != nil {
+		return cast.Deps{}, err
+	}
+	rules, err := CombatRules()
+	if err != nil {
+		return cast.Deps{}, err
+	}
+	return cast.Deps{
+		Origins: origins, Archetypes: archetypes, Skills: skills,
+		Chart: chart, Limits: limits, Rules: rules,
+	}, nil
 }
