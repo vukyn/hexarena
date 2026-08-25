@@ -75,31 +75,29 @@ type Draft struct {
 // can be produced here that would not load back.
 func (d Draft) Resolve(lib *Library) (cast.Character, error) {
 	if err := cast.ValidateID(d.ID); err != nil {
-		return cast.Character{}, err
+		return cast.Character{}, &FieldRefusedError{Field: FieldID, Value: d.ID, Err: err}
 	}
 	if _, clash := lib.characters.Get(d.ID); clash {
-		return cast.Character{}, fmt.Errorf("character %q is already in the cast", d.ID)
+		return cast.Character{}, &IDTakenError{ID: d.ID}
 	}
 	if strings.TrimSpace(d.Name) == "" {
-		return cast.Character{}, fmt.Errorf("character %q needs a display name", d.ID)
+		return cast.Character{}, &MissingNameError{ID: d.ID}
 	}
 	if _, known := lib.origins.Get(d.Origin); !known {
-		return cast.Character{}, fmt.Errorf("unknown origin %q, add it with %q",
-			d.Origin, "hexforge origins add "+d.Origin)
+		return cast.Character{}, &UnknownOriginError{ID: d.Origin}
 	}
 	archetype, known := lib.archetypes.Get(d.Archetype)
 	if !known {
-		return cast.Character{}, fmt.Errorf("unknown archetype %q, want one of %s",
-			d.Archetype, strings.Join(lib.archetypes.IDs(), ", "))
+		return cast.Character{}, &UnknownArchetypeError{ID: d.Archetype, Known: lib.archetypes.IDs()}
 	}
 	if err := cast.ValidateImagePath(d.Image); err != nil {
-		return cast.Character{}, err
+		return cast.Character{}, &FieldRefusedError{Field: FieldImage, Value: d.Image, Err: err}
 	}
 	affinity, err := ParseAffinity(d.Element)
 	if err != nil {
 		return cast.Character{}, err
 	}
-	if err := lib.chart.ValidateAffinity(affinity); err != nil {
+	if err := lib.checkAffinity(affinity); err != nil {
 		return cast.Character{}, err
 	}
 
@@ -111,9 +109,9 @@ func (d Draft) Resolve(lib *Library) (cast.Character, error) {
 		}
 		curve, err := ParseCurve(override)
 		if err != nil {
-			return cast.Character{}, fmt.Errorf("%s: %w", kind, err)
+			return cast.Character{}, &StatFieldError{Kind: kind, Err: err}
 		}
-		if err := curve.Validate(kind); err != nil {
+		if err := checkCurve(kind, curve); err != nil {
 			return cast.Character{}, err
 		}
 		table[kind] = curve
@@ -161,9 +159,9 @@ func (d Draft) Table(lib *Library) (progression.Table, error) {
 		}
 		curve, err := ParseCurve(override)
 		if err != nil {
-			return table, fmt.Errorf("%s: %w", kind, err)
+			return table, &StatFieldError{Kind: kind, Err: err}
 		}
-		if err := curve.Validate(kind); err != nil {
+		if err := checkCurve(kind, curve); err != nil {
 			return table, err
 		}
 		table[kind] = curve
@@ -212,25 +210,30 @@ func (l *Library) Budget(values progression.Values) Budget {
 // skill.CanCarry is the single declaration of the rule and cast.ParseBook
 // applies it at the write, so this is only bringing the same answer forward:
 // a wrong element should cost one line at the moment it is typed rather than
-// the whole session at the moment it is saved. The wording lives here so both
-// front-ends say the same thing.
+// the whole session at the moment it is saved. The answer comes back as a
+// *CarryError holding the affinity, the skill and the skill's element, so a
+// front-end can word it in the author's language without taking the rule apart
+// again.
 func CheckCarry(affinity element.Affinity, kit []skill.Skill) error {
 	for _, carried := range kit {
 		if !skill.CanCarry(affinity, carried) {
-			return fmt.Errorf("%s cannot carry %q, which is %s",
-				affinity, carried.ID, carried.Element)
+			return &CarryError{Affinity: affinity, Skill: carried.ID, Element: carried.Element}
 		}
 	}
 	return nil
 }
 
-// DemandSummary says which elements a kit will insist on, so a prompt or a
-// form answers the question the author is about to get wrong.
+// KitDemands is the distinct non-neutral elements a kit insists on.
 //
 // The demand is derived from the kit actually chosen, not from the preset,
-// because the two differ the moment the kit is edited.
+// because the two differ the moment the kit is edited. skill.Demands is the
+// derivation; this is where a front-end reaches it, so that "what does this kit
+// need" has one answer for the prompt, the form and the check.
+func KitDemands(kit []skill.Skill) []element.Element { return skill.Demands(kit) }
+
+// DemandSummary is KitDemands as the English sentence cmd/hexforge prints.
 func DemandSummary(kit []skill.Skill) string {
-	demanded := skill.Demands(kit)
+	demanded := KitDemands(kit)
 	if len(demanded) == 0 {
 		return "this kit is all neutral, so any element carries it"
 	}
@@ -241,21 +244,50 @@ func DemandSummary(kit []skill.Skill) string {
 	return "this kit needs " + strings.Join(names, " and ")
 }
 
-// PresetSummary describes a preset the way a chooser wants it: what its kit is
-// and which elements that kit will insist on.
+// Preset is a role preset as a chooser wants it: the kit it supplies and the
+// elements that kit will insist on, both as the ids they are written with.
+type Preset struct {
+	Skills  []string
+	Demands []string
+}
+
+// PresetFacts reads a preset without wording anything about it.
+func PresetFacts(preset cast.Archetype) Preset {
+	return Preset{Skills: preset.Skills, Demands: preset.DemandNames()}
+}
+
+// PresetSummary is PresetFacts as the English line cmd/hexforge prints.
 func PresetSummary(preset cast.Archetype) string {
-	names := preset.DemandNames()
-	if len(names) == 0 {
-		return fmt.Sprintf("%s (any element)", strings.Join(preset.Skills, " "))
+	facts := PresetFacts(preset)
+	if len(facts.Demands) == 0 {
+		return fmt.Sprintf("%s (any element)", strings.Join(facts.Skills, " "))
 	}
-	return fmt.Sprintf("%s (needs %s)", strings.Join(preset.Skills, " "), strings.Join(names, " and "))
+	return fmt.Sprintf("%s (needs %s)",
+		strings.Join(facts.Skills, " "), strings.Join(facts.Demands, " and "))
+}
+
+// Stage is one step of an evolution line: what it is called and the level it
+// takes over at.
+type Stage struct {
+	Name     string
+	MinLevel int
+}
+
+// StageFacts is an evolution line as the pairs behind it.
+func StageFacts(character cast.Character) []Stage {
+	out := make([]Stage, 0, len(character.Stages))
+	for _, stage := range character.Stages {
+		out = append(out, Stage{Name: stage.Name, MinLevel: stage.MinLevel})
+	}
+	return out
 }
 
 // StageSummary writes an evolution line as the levels its stages take over at,
 // which is the one thing a table cell has room for.
 func StageSummary(character cast.Character) string {
-	parts := make([]string, 0, len(character.Stages))
-	for _, stage := range character.Stages {
+	stages := StageFacts(character)
+	parts := make([]string, 0, len(stages))
+	for _, stage := range stages {
 		parts = append(parts, fmt.Sprintf("%s@%d", stage.Name, stage.MinLevel))
 	}
 	return strings.Join(parts, " → ")
@@ -276,6 +308,14 @@ func SuggestedImage(id string) string {
 
 // ShortStat is the three letter label for a stat: a column heading in a table,
 // a flag name on the command line, and a row label in a form.
+//
+// These six labels are not translated, in any front-end, and that is a
+// decision rather than an omission. They are the flag names cmd/hexforge takes
+// (--hp, --atk) and the keys the data files are written with, so an author
+// types them either way; translating the form's row label would leave a person
+// reading "phòng thủ" on screen and needing "def" to act on it. They are also
+// what the fixed-width columns were measured for — every one is three
+// characters or fewer, which no translation of "defence" is.
 func ShortStat(kind progression.Kind) string {
 	switch kind {
 	case progression.HP:

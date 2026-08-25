@@ -13,7 +13,8 @@ implementations of it.
 go run ./cmd/hexarena --seed 11 --side ally    # play a side
 go run ./cmd/hexarena --auto --seed 11         # watch both sides play themselves
 go run ./cmd/hexforge                          # author the cast: see the subcommands
-go run ./cmd/hexforge-tui                      # the same authoring, full screen
+go run ./cmd/hexforge-tui                      # the same authoring, full screen, in Vietnamese
+go run ./cmd/hexforge-tui --lang en            # ...or in English; ctrl+l swaps them mid-session
 go test ./...
 ```
 
@@ -333,19 +334,41 @@ every keystroke:
   the kit and names the first one it cannot, as the element or the kit is being
   typed.
 
-Both answers, and the words they are given in, come from `internal/forge` — the
-same functions the write goes through, so neither can be a second opinion.
+Both answers come from `internal/forge` — the same functions the write goes
+through, so neither can be a second opinion.
 `TestTheFormProducesTheCharacterTheCommandLineProduces` asserts that the same
 answers typed into the form and passed as flags resolve to the same character.
 
-`cmd/hexforge` is not superseded. A full-screen program cannot run with stdin as
-a pipe, so the flag-and-prompt tool is what a script, CI, and this repository's
-own end-to-end tests use; `hexforge-tui` refuses to start when stdout is not a
-terminal rather than writing control codes into a file. It takes the same
-`--data <dir>`, quits on `q` or `ctrl+c`, backs out of a screen with `esc`, asks
-before discarding an edited form, says so plainly when the window is too small to
-draw one, and encodes nothing in colour alone — with `NO_COLOR` set it renders as
-plain text, and a character with no art still reads `MISSING`.
+It speaks **Vietnamese and English, Vietnamese by default**.
+
+```
+go run ./cmd/hexforge-tui                 # tiếng Việt
+go run ./cmd/hexforge-tui --lang en       # or: HEXARENA_LANG=en, or ctrl+l
+```
+
+`--lang vi|en` beats `HEXARENA_LANG`, an unrecognised value in either is an error
+naming the two that work, and `ctrl+l` swaps the languages from any screen —
+mid-form included, without losing a keystroke, because a field holds what was
+typed and only the labels around it are redrawn.
+
+That is possible because `internal/forge` hands over *facts* rather than
+sentences: a refused kit arrives as a value carrying the affinity, the skill and
+the skill's element, and `internal/i18n` turns it into
+`hệ fire không mang được chiêu "sever" (hệ metal)` or into
+`fire cannot carry the skill "sever", which is metal`. `cmd/hexforge-tui` holds
+no wording of its own — a test greps its source to keep it that way. Element
+ids, skill ids and the stat labels `hp atk def spd acc ddg` are the same in both
+languages on purpose: they are what you type and what the data files store.
+
+`cmd/hexforge` stays English, and is not superseded. A full-screen program cannot
+run with stdin as a pipe, so the flag-and-prompt tool is what a script, CI, and
+this repository's own end-to-end tests use; `hexforge-tui` refuses to start when
+stdout is not a terminal rather than writing control codes into a file. It takes
+the same `--data <dir>`, quits on `q` or `ctrl+c`, backs out of a screen with
+`esc`, asks before discarding an edited form, says so plainly when the window is
+too small to draw one — it wants 80 by 24 — and encodes nothing in colour alone:
+with `NO_COLOR` set it renders as plain text, and a character with no art still
+reads `MISSING`, or `THIẾU`.
 
 Every subcommand takes `--data <dir>`, defaulting to `internal/seed/data`. That is
 also the caveat: the game boots from the copies baked in by `go:embed`, so an edit

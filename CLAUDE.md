@@ -36,7 +36,8 @@ go run ./cmd/hexforge                            # author the cast: list the sub
 go run ./cmd/hexforge new                        # create a character, prompting for what is missing
 go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
 
-go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal)
+go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal), in Vietnamese
+go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG=en does the same, ctrl+l toggles
 
 go test ./...
 go test ./internal/core/hex ./internal/seed ./internal/tui -update   # accept new goldens
@@ -45,7 +46,7 @@ gofmt -l . && go vet ./...
 ```
 
 The `Makefile` wraps those and nothing more — `make build install run auto forge
-forge-tui test golden fmt vet check clean`. `make build` builds all three
+forge-tui forge-tui-en test golden fmt vet check clean`. `make build` builds all three
 binaries; `make forge ARGS="show some.id"` passes arguments through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
 `go test ./... -count=1`); `make golden` is the `-update` line above. The raw
 commands stay listed here because they are what the targets are: reach for either.
@@ -109,6 +110,34 @@ kit-versus-affinity gap). If the TUI needs a sentence the CLI already has, it
 comes from the package. `internal/forge` is the one part of the module allowed
 to read and write real files, and its doc comment says why: `internal/core` may
 not, and `internal/seed` only ever reads the embedded copy.
+
+**Two languages, one set of facts: `internal/i18n`.** `cmd/hexforge-tui` speaks
+Vietnamese by default and English on `--lang en` / `HEXARENA_LANG=en` / `ctrl+l`;
+`cmd/hexforge` stays English because scripts read it, and its output is a
+contract pinned by `TestARefusalKeepsTheWordingTheCommandLinePrints`. That is why
+`internal/forge` returns **values, not sentences**: `CheckCarry` gives a
+`*CarryError` holding the affinity, the skill and the skill's element,
+`PresetFacts` / `StageFacts` / `SaveNoteFacts` / `Report.Problems` give data, and
+the string helpers (`DemandSummary`, `PresetSummary`, `StageSummary`,
+`SaveNotes`) are thin wrappers **built on** those, so the command line's English
+cannot drift from the facts. `internal/i18n` holds a `Lang` (parsed by name,
+unknown is an error), a `Key` enum and one array per language; it may import
+`internal/forge`, and **forge must never import it**.
+
+Three rules hold that shape, each with a test: no user-visible literal may live
+in `cmd/hexforge-tui` (`TestNoScreenHoldsItsOwnWording` greps its own AST), every
+key is worded in both languages and no key is orphaned, and every wording
+measures one cell per letter — write Vietnamese **composed**, or a combining mark
+measures zero and every fixed-width column on that screen drifts. What is
+deliberately *not* translated: ids of every kind, the six stat labels
+`hp atk def spd acc ddg` (they are the `--hp` flag names and the data files' own
+keys — see `forge.ShortStat`), and diagnostics from `internal/core`, which get a
+lead-in in the reader's language in front of the parser's own English.
+
+The minimum window is **80x24**, up from 72: Vietnamese runs 20–30% longer and
+the busiest footers no longer fit, which was measured rather than guessed
+(`TestEveryWordingFitsTheMinimumWidth` renders every screen in both languages and
+holds every line inside it, minus one column so a full-width line cannot wrap).
 
 `TestTheFormProducesTheCharacterTheCommandLineProduces` is what holds this: the
 same answers as flags and as keystrokes must resolve to the same

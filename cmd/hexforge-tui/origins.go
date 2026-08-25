@@ -7,9 +7,11 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/i18n"
 )
 
 // The fields of the add-a-work form.
@@ -41,8 +43,10 @@ type originsScreen struct {
 	field       int
 	touched     bool
 
-	err   error
-	added string
+	err error
+	// added is the last work written, kept as what it was rather than as the
+	// line announcing it, so a language switch redraws the announcement.
+	added *cast.Origin
 }
 
 func newOriginsScreen(lib *forge.Library) originsScreen {
@@ -98,7 +102,7 @@ func (o originsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) 
 	case "a":
 		o = o.resetForm()
 		o.adding = true
-		o.added = ""
+		o.added = nil
 	}
 	m.origins = o
 	return m, nil
@@ -112,7 +116,7 @@ func (o originsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.C
 			m.origins = o
 			return m, nil
 		}
-		return m.ask("discard the work being added?", func(m model) model {
+		return m.ask(i18n.OriginFormDiscard, func(m model) model {
 			m.origins = m.origins.resetForm()
 			m.origins.adding = false
 			return m
@@ -165,14 +169,12 @@ func (o originsScreen) moveTo(target int) originsScreen {
 // save writes the work through forge.Library.SaveOrigin, which validates it
 // exactly as a load would and replaces the file atomically.
 func (o originsScreen) save(m model) originsScreen {
-	year := 0
-	if raw := strings.TrimSpace(o.inputs[originFieldYear].Value()); raw != "" {
-		parsed, err := strconv.Atoi(raw)
-		if err != nil {
-			o.err = fmt.Errorf("the year %q is not a number; leave it empty if it is unknown", raw)
-			return o
-		}
-		year = parsed
+	// The year's refusal is forge.ParseYear's, like every other refusal on this
+	// screen: a rule worded in a front-end is a rule declared twice.
+	year, err := forge.ParseYear(o.inputs[originFieldYear].Value())
+	if err != nil {
+		o.err = err
+		return o
 	}
 	medium, err := cast.ParseMedium(cast.MediumNames()[o.mediumIndex])
 	if err != nil {
@@ -190,10 +192,9 @@ func (o originsScreen) save(m model) originsScreen {
 		o.err = err
 		return o
 	}
-	added := fmt.Sprintf("added %s (%s) to %s", origin.ID, origin.Medium, m.lib.OriginsPath())
 	o = o.refresh(m.lib).resetForm()
 	o.adding = false
-	o.added = added
+	o.added = &origin
 	return o
 }
 
@@ -201,22 +202,24 @@ func (o originsScreen) view(m model) (string, string) {
 	if o.adding {
 		return o.viewForm(m)
 	}
-	footer := "↑/↓ move · a add a work · esc back · q quit"
+	footer := m.text(i18n.OriginsFooter)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render("origins") + "  " +
-		m.style.dim.Render("the works the cast is borrowed from") + "\n\n")
+	out.WriteString(m.style.heading.Render(m.text(i18n.OriginsHeading)) + "  " +
+		m.style.dim.Render(m.text(i18n.OriginsSubtitle)) + "\n\n")
 	if len(o.origins) == 0 {
-		out.WriteString("  no works in the catalog yet. Press a to add one.\n")
+		out.WriteString("  " + m.text(i18n.OriginsEmpty) + "\n")
 		return out.String(), footer
 	}
+	counted := originsCountWidth(m)
 	for i, origin := range o.origins {
 		marker := "  "
 		year := "     "
 		if origin.Year != 0 {
 			year = strconv.Itoa(origin.Year)
 		}
-		row := fmt.Sprintf("%-16s %-7s %-5s %2d cast  %s",
-			origin.ID, origin.Medium, year, o.counts[origin.ID], origin.Title)
+		row := fmt.Sprintf("%s %s %s %s  %s",
+			pad(origin.ID, 16), pad(origin.Medium.String(), 7), pad(year, 5),
+			pad(m.text(i18n.OriginsCastCount, o.counts[origin.ID]), counted), origin.Title)
 		if i == o.cursor {
 			marker = "> "
 			row = m.style.selected.Render(row)
@@ -224,28 +227,62 @@ func (o originsScreen) view(m model) (string, string) {
 		out.WriteString(marker + row + "\n")
 	}
 	if selected := o.origins[clamp(o.cursor, 0, len(o.origins)-1)]; selected.Note != "" {
-		out.WriteString("\n" + m.label("note", "%s", selected.Note))
+		out.WriteString("\n" + m.label(m.text(i18n.LabelNote), "%s", selected.Note))
 	}
-	if o.added != "" {
-		out.WriteString("\n" + m.style.good.Render(o.added) + "\n")
+	if o.added != nil {
+		out.WriteString("\n" + m.style.good.Render(m.text(i18n.OriginAdded,
+			o.added.ID, o.added.Medium, m.lib.OriginsPath())) + "\n")
 	}
-	out.WriteString("\n" + m.style.dim.Render(
-		fmt.Sprintf("%d works. media: %s", len(o.origins), strings.Join(cast.MediumNames(), " "))))
+	out.WriteString("\n" + m.style.dim.Render(m.text(i18n.OriginsTally,
+		len(o.origins), strings.Join(cast.MediumNames(), " "))))
 	return out.String(), footer
 }
 
+// originsCountWidth is the column the "how many characters" cell sits in. It is
+// measured rather than declared because the cell is a counted noun — two words
+// in Vietnamese, one in English — and the widest count is the whole cast.
+func originsCountWidth(m model) int {
+	widest := 0
+	for _, origin := range m.lib.Origins().All() {
+		width := lipgloss.Width(m.text(i18n.OriginsCastCount,
+			len(m.lib.Characters().OfOrigin(origin.ID))))
+		if width > widest {
+			widest = width
+		}
+	}
+	return widest
+}
+
+// originFieldLabel is what each row of the add-a-work form is called.
+func originFieldLabel(m model, field int) string {
+	keys := [originFieldCount]i18n.Key{
+		originFieldID:     i18n.OriginFieldID,
+		originFieldTitle:  i18n.OriginFieldTitle,
+		originFieldMedium: i18n.OriginFieldMedium,
+		originFieldYear:   i18n.OriginFieldYear,
+		originFieldNote:   i18n.OriginFieldNote,
+	}
+	return m.text(keys[field])
+}
+
 func (o originsScreen) viewForm(m model) (string, string) {
-	footer := "↑/↓ field · ←/→ medium · ctrl+s add · esc back · ctrl+c quit"
-	labels := [originFieldCount]string{"id", "title", "medium", "year", "note"}
+	footer := m.text(i18n.OriginFormFooter)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render("add a work") + "  " +
-		m.style.dim.Render("a character can only name a work the catalog holds") + "\n\n")
+	out.WriteString(m.style.heading.Render(m.text(i18n.OriginFormHeading)) + "  " +
+		m.style.dim.Render(m.text(i18n.OriginFormSubtitle)) + "\n\n")
+	width := 0
+	for field := range originFieldCount {
+		if measured := lipgloss.Width(originFieldLabel(m, field)); measured > width {
+			width = measured
+		}
+	}
+	width++
 	for field := range originFieldCount {
 		marker := "  "
 		if field == o.field {
 			marker = "> "
 		}
-		name := fmt.Sprintf("%-8s", labels[field])
+		name := pad(originFieldLabel(m, field), width)
 		if field == o.field {
 			name = m.style.selected.Render(name)
 		} else {
@@ -255,14 +292,14 @@ func (o originsScreen) viewForm(m model) (string, string) {
 		if field == originFieldMedium {
 			mediums := cast.MediumNames()
 			value = fmt.Sprintf("< %s >  %s", mediums[o.mediumIndex],
-				m.style.dim.Render(fmt.Sprintf("%d of %d", o.mediumIndex+1, len(mediums))))
+				m.style.dim.Render(m.text(i18n.ChoicePosition, o.mediumIndex+1, len(mediums))))
 		}
 		out.WriteString(marker + name + " " + value + "\n")
 	}
-	out.WriteString("\n" + m.style.dim.Render(
-		"the year may be left empty when it is unknown; the note is free text") + "\n")
+	out.WriteString("\n" + m.style.dim.Render(m.text(i18n.OriginFormHint)) + "\n")
 	if o.err != nil {
-		out.WriteString("\n" + m.style.bad.Render("cannot add: "+o.err.Error()) + "\n")
+		out.WriteString("\n" +
+			m.style.bad.Render(m.text(i18n.AddRefused, m.lang.Error(o.err))) + "\n")
 	}
 	return out.String(), footer
 }

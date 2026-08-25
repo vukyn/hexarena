@@ -9,6 +9,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/i18n"
 )
 
 // browseScreen is the authored cast, filtered by origin, with one character
@@ -20,15 +21,15 @@ import (
 // budget — becomes visible.
 type browseScreen struct {
 	characters []cast.Character
-	// filters is "every work" followed by the catalogued origin ids.
-	filters []string
+	// origins is the catalogued work ids, and filter indexes them from one.
+	// Zero is the filter that hides nothing, and it is a number rather than a
+	// name in the list because its name is a translated word while every other
+	// entry is an id that is the same in every language.
+	origins []string
 	filter  int
 	cursor  int
 	level   int
 }
-
-// everyOrigin is the filter that hides nothing.
-const everyOrigin = "all origins"
 
 func newBrowseScreen(lib *forge.Library) browseScreen {
 	return browseScreen{level: progression.LevelCap}.refresh(lib)
@@ -39,23 +40,40 @@ func newBrowseScreen(lib *forge.Library) browseScreen {
 // a stale list.
 func (b browseScreen) refresh(lib *forge.Library) browseScreen {
 	b.characters = lib.Characters().All()
-	b.filters = append([]string{everyOrigin}, lib.OriginIDs()...)
+	b.origins = lib.OriginIDs()
 	if b.level == 0 {
 		b.level = progression.LevelCap
 	}
-	if b.filter >= len(b.filters) {
+	if b.filter > len(b.origins) {
 		b.filter = 0
 	}
 	b.cursor = clamp(b.cursor, 0, len(b.rows())-1)
 	return b
 }
 
+// filterID is the work in force, or empty when every work is shown.
+func (b browseScreen) filterID() string {
+	if b.filter <= 0 || b.filter > len(b.origins) {
+		return ""
+	}
+	return b.origins[b.filter-1]
+}
+
+// filterName is what the filter is called on screen: an id, or the translated
+// word for "everything".
+func (b browseScreen) filterName(m model) string {
+	if id := b.filterID(); id != "" {
+		return id
+	}
+	return m.text(i18n.BrowseAllOrigins)
+}
+
 // rows is the characters the current filter leaves visible.
 func (b browseScreen) rows() []cast.Character {
-	if b.filter <= 0 || b.filter >= len(b.filters) {
+	wanted := b.filterID()
+	if wanted == "" {
 		return b.characters
 	}
-	wanted := b.filters[b.filter]
 	out := make([]cast.Character, 0, len(b.characters))
 	for _, character := range b.characters {
 		if character.Origin == wanted {
@@ -85,7 +103,7 @@ func (b browseScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "end":
 		b.level = progression.LevelCap
 	case "f":
-		b.filter = (b.filter + 1) % len(b.filters)
+		b.filter = (b.filter + 1) % (len(b.origins) + 1)
 		b.cursor = clamp(b.cursor, 0, len(b.rows())-1)
 	}
 	m.browse = b
@@ -93,19 +111,19 @@ func (b browseScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (b browseScreen) view(m model) (string, string) {
-	footer := "↑/↓ character · ←/→ level · home/end 1 or the cap · f filter · esc back · q quit"
+	footer := m.text(i18n.BrowseFooter)
 	rows := b.rows()
 	var out strings.Builder
 	fmt.Fprintf(&out, "%s  %s\n\n",
-		m.style.heading.Render("cast"),
-		m.style.dim.Render(fmt.Sprintf("showing %s (%d of %d characters)",
-			b.filters[b.filter], len(rows), len(b.characters))))
+		m.style.heading.Render(m.text(i18n.BrowseHeading)),
+		m.style.dim.Render(m.text(i18n.BrowseShowing,
+			b.filterName(m), len(rows), len(b.characters))))
 	if len(rows) == 0 {
-		out.WriteString("  nothing to show here.\n\n")
+		out.WriteString("  " + m.text(i18n.BrowseNothingHere) + "\n\n")
 		if len(b.characters) == 0 {
-			out.WriteString("  No characters have been authored yet. Pick \"new character\" from the menu.\n")
+			out.WriteString("  " + m.text(i18n.BrowseNothingAuthored) + "\n")
 		} else {
-			out.WriteString("  No character is borrowed from this work. Press f for the next filter.\n")
+			out.WriteString("  " + m.text(i18n.BrowseNoneFromThisWork) + "\n")
 		}
 		return out.String(), footer
 	}
@@ -132,45 +150,45 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 		from = fmt.Sprintf("%s (%s, %s)", origin.Title, origin.Medium, character.Origin)
 	}
 	out.WriteString(m.style.heading.Render(character.ID+" — "+character.Name) + "\n")
-	out.WriteString(m.label("from", "%s", from))
-	out.WriteString(m.label("tuned from", "%s", character.Archetype))
-	out.WriteString(m.label("element", "%s", character.Element))
-	out.WriteString(m.label("kit", "%s", strings.Join(character.Skills, " ")))
+	out.WriteString(m.label(m.text(i18n.LabelFrom), "%s", from))
+	out.WriteString(m.label(m.text(i18n.LabelTunedFrom), "%s", character.Archetype))
+	out.WriteString(m.label(m.text(i18n.LabelElement), "%s", character.Element))
+	out.WriteString(m.label(m.text(i18n.LabelKit), "%s", strings.Join(character.Skills, " ")))
 	art := character.Image
 	if m.lib.ImageExists(character.Image) {
-		art = m.style.good.Render(art + "  present")
+		art = m.style.good.Render(art + "  " + m.text(i18n.ArtPresent))
 	} else {
-		art = m.style.bad.Render(art + "  MISSING")
+		art = m.style.bad.Render(art + "  " + m.text(i18n.ArtMissing))
 	}
-	out.WriteString(m.label("art", "%s", art))
-	out.WriteString(m.label("stages", "%s", forge.StageSummary(character)))
+	out.WriteString(m.label(m.text(i18n.LabelArt), "%s", art))
+	out.WriteString(m.label(m.text(i18n.LabelStages), "%s", m.lang.StageSummary(character)))
 	if character.Bio != "" {
-		out.WriteString(m.label("bio", "%s", character.Bio))
+		out.WriteString(m.label(m.text(i18n.LabelBiography), "%s", character.Bio))
 	}
 
+	atLevel := m.text(i18n.LabelAtLevel, b.level)
 	values, stage, err := character.Resolve(b.level)
 	if err != nil {
-		out.WriteString(m.label(fmt.Sprintf("level %d", b.level), "%s", m.style.bad.Render(err.Error())))
+		out.WriteString(m.label(atLevel, "%s", m.style.bad.Render(m.lang.Error(err))))
 		return out.String()
 	}
-	out.WriteString(m.label(fmt.Sprintf("level %d", b.level), "%s   %s",
-		values, m.style.dim.Render("stage "+stage.Name)))
+	out.WriteString(m.label(atLevel, "%s   %s",
+		values, m.style.dim.Render(m.text(i18n.StageInWords, stage.Name))))
 	budget := m.lib.Budget(values)
-	out.WriteString(m.label("absorbs", "%s", budgetLine(m, budget)))
+	out.WriteString(m.label(m.text(i18n.LabelAbsorbs), "%s", budgetLine(m, budget)))
 	return out.String()
 }
 
 // budgetLine is the joint health-and-defence bound drawn as a meter and as
-// numbers. The numbers are what makes it readable without colour, and the
-// wording of "over the budget" is the state, not the styling.
+// numbers. The numbers are what makes it readable without colour, and being
+// over the bound is said in words in both languages, because it is the state
+// rather than the styling.
 func budgetLine(m model, budget forge.Budget) string {
-	text := fmt.Sprintf("%s %d of %d, %d to spare",
-		bar(budgetBarWidth, budget.Effective, budget.Max), budget.Effective, budget.Max, budget.Headroom)
+	meter := bar(budgetBarWidth, budget.Effective, budget.Max)
 	if budget.Over() {
-		return m.style.bad.Render(fmt.Sprintf("%s %d of %d, OVER THE BUDGET by %d",
-			bar(budgetBarWidth, budget.Effective, budget.Max), budget.Effective, budget.Max, -budget.Headroom))
+		return m.style.bad.Render(m.lang.Budget(meter, budget))
 	}
-	return m.style.good.Render(text)
+	return m.style.good.Render(m.lang.Budget(meter, budget))
 }
 
 // clamp keeps an index or a level inside its range, and returns the low bound

@@ -186,7 +186,7 @@ func (l *Library) LookupKit(named []string) ([]skill.Skill, error) {
 	for _, id := range named {
 		known, err := l.skills.Lookup(id)
 		if err != nil {
-			return nil, err
+			return nil, &UnknownSkillError{ID: id, Err: err}
 		}
 		out = append(out, known)
 	}
@@ -237,7 +237,7 @@ func (l *Library) SaveCharacter(character cast.Character) error {
 // have to restate it, and that is the mistake.
 func (l *Library) SaveOrigin(origin cast.Origin) error {
 	if _, clash := l.origins.Get(origin.ID); clash {
-		return fmt.Errorf("origin %q is already in the catalog", origin.ID)
+		return &OriginTakenError{ID: origin.ID}
 	}
 	grown, err := l.origins.Append(origin)
 	if err != nil {
@@ -254,22 +254,60 @@ func (l *Library) SaveOrigin(origin cast.Origin) error {
 	return nil
 }
 
-// SaveNotes is what a front-end says after a successful write.
+// NoteKind is which of the three things a front-end says after a write.
+type NoteKind int
+
+const (
+	// NoteWrote names the character and the file it landed in.
+	NoteWrote NoteKind = iota
+	// NoteArtMissing warns that the art named is not on disk yet, so a check
+	// will keep failing on this character until it is.
+	NoteArtMissing
+	// NoteRebuild warns that the game boots from the embedded copy, so an edit
+	// is not in a battle until the binary is rebuilt.
+	NoteRebuild
+)
+
+// Note is one line of a write's confirmation, held as what it is about rather
+// than as a sentence, so each front-end can word it in its own language.
+type Note struct {
+	Kind NoteKind
+	// ID is the character written, on NoteWrote.
+	ID string
+	// Path is the file written, on NoteWrote, or the art that is missing, on
+	// NoteArtMissing.
+	Path string
+}
+
+// SaveNoteFacts is what a write is worth saying about, in order.
 //
-// It lives here because both front-ends have to say the same thing and because
-// two of the three lines are warnings rather than pleasantries: art that is not
-// there yet leaves a character that a check will keep failing on, and the game
-// boots from the embedded copy, so an edit is not in a battle until the binary
-// is rebuilt.
-func (l *Library) SaveNotes(character cast.Character) []string {
-	notes := []string{fmt.Sprintf("wrote %s to %s", character.ID, l.CastPath())}
+// It lives here because both front-ends have to report the same things and
+// because two of the three are warnings rather than pleasantries.
+func (l *Library) SaveNoteFacts(character cast.Character) []Note {
+	notes := []Note{{Kind: NoteWrote, ID: character.ID, Path: l.CastPath()}}
 	if !l.ImageExists(character.Image) {
-		notes = append(notes, fmt.Sprintf(
-			"note: %s is not there yet; a check will keep saying so until it is",
-			l.ImagePath(character.Image)))
+		notes = append(notes, Note{Kind: NoteArtMissing, Path: l.ImagePath(character.Image)})
 	}
-	return append(notes,
-		"note: the game boots from the embedded copy, so rebuild before this reaches a battle")
+	return append(notes, Note{Kind: NoteRebuild})
+}
+
+// SaveNotes is SaveNoteFacts in the English cmd/hexforge prints.
+func (l *Library) SaveNotes(character cast.Character) []string {
+	facts := l.SaveNoteFacts(character)
+	lines := make([]string, 0, len(facts))
+	for _, note := range facts {
+		switch note.Kind {
+		case NoteWrote:
+			lines = append(lines, fmt.Sprintf("wrote %s to %s", note.ID, note.Path))
+		case NoteArtMissing:
+			lines = append(lines, fmt.Sprintf(
+				"note: %s is not there yet; a check will keep saying so until it is", note.Path))
+		case NoteRebuild:
+			lines = append(lines,
+				"note: the game boots from the embedded copy, so rebuild before this reaches a battle")
+		}
+	}
+	return lines
 }
 
 // replaceFile writes a data file in one step.

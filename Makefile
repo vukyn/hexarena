@@ -4,7 +4,7 @@
 # -update is declared only in the packages that own golden files, so
 # `go test ./... -update` fails on every other package.
 
-.PHONY: build install run auto forge forge-tui test golden fmt vet check clean
+.PHONY: build install run auto forge forge-tui forge-tui-en test golden fmt vet check clean
 
 build:
 	@go build -o bin/ ./cmd/hexarena ./cmd/hexforge ./cmd/hexforge-tui
@@ -26,8 +26,16 @@ forge:
 # The full-screen authoring client, over the same internal/forge. It takes over
 # the screen, so it refuses to start when stdout is not a terminal — use `forge`
 # from a script or a pipe.
+#
+# It opens in Vietnamese. `make forge-tui ARGS="--lang en"` starts it in
+# English, HEXARENA_LANG=en does the same for a whole shell, and ctrl+l swaps
+# the two from any screen without losing what has been typed.
 forge-tui:
 	@go run ./cmd/hexforge-tui $(ARGS)
+
+# The same in English, which is what `make forge` and `hexforge check` speak.
+forge-tui-en:
+	@go run ./cmd/hexforge-tui --lang en $(ARGS)
 
 test:
 	@go test ./...
