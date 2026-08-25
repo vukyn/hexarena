@@ -676,15 +676,42 @@ func (s skillsScreen) value(m model, field, labelWidth int) string {
 		return s.listValue(m, s.keptRoles, labelWidth)
 	case skillFieldKeptForCharacters:
 		return s.listValue(m, s.keptWho, labelWidth)
-	case skillFieldAccuracy:
-		// Accuracy is authored in parts per thousand because that is what the
-		// engine divides by, but nobody reads 850 as a chance. The percentage
-		// sits beside the field rather than replacing it: the number written to
-		// the file is still the number on screen.
+	case skillFieldAccuracy, skillFieldPower:
+		// Both are authored in parts per thousand because that is what the
+		// engine multiplies and divides by, but nobody reads 850 as a chance or
+		// 2200 as "twice over". The percentage sits beside the field rather than
+		// replacing it: the number written to the file is still the number on
+		// screen.
 		return s.inputs[field].View() + s.percentHint(m, field)
+	case skillFieldInflicts:
+		// The chances in this field are parts per thousand too, but the field
+		// holds a whole list in the syntax ParseApplications reads, so the
+		// reading goes beside it rather than into it.
+		return s.inputs[field].View() + s.chanceHint(m, labelWidth)
 	default:
 		return s.inputs[field].View()
 	}
+}
+
+// chanceHint reads out the chances in the inflicts field. A list being typed is
+// unparseable most of the time, and that is not an error to announce, so it says
+// nothing until the whole list parses.
+func (s skillsScreen) chanceHint(m model, labelWidth int) string {
+	typed := strings.TrimSpace(s.inputs[skillFieldInflicts].Value())
+	if typed == "" {
+		return ""
+	}
+	applications, err := m.lib.ParseApplications(typed)
+	if err != nil || len(applications) == 0 {
+		return ""
+	}
+	// The field itself is a fixed width, so the row's only unbounded part is
+	// this reading: a skill may apply any number of statuses, and five of them
+	// would push the row past the floor. Clipping the reading is right where
+	// clipping the value would not be — a chance you cannot see is still
+	// written in the field beside it.
+	room := minWidth - 3 - labelWidth - s.inputs[skillFieldInflicts].Width - 2
+	return "  " + m.style.dim.Render(clip(forge.ApplicationChances(applications), room))
 }
 
 // percentHint is the dim reading of a parts-per-thousand field, or nothing at
@@ -692,7 +719,9 @@ func (s skillsScreen) value(m model, field, labelWidth int) string {
 // state of a text field, so it is not an error to say nothing about.
 func (s skillsScreen) percentHint(m model, field int) string {
 	permille, err := strconv.Atoi(strings.TrimSpace(s.inputs[field].Value()))
-	if err != nil {
+	if err != nil || permille == 0 {
+		// A support skill declares no power, and "0%" says nothing the zero did
+		// not.
 		return ""
 	}
 	return "  " + m.style.dim.Render(forge.Percent(permille))

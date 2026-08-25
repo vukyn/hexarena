@@ -410,11 +410,17 @@ func renderSkill(out io.Writer, lib *forge.Library, built skill.Skill) {
 	}
 	fmt.Fprintf(out, "\n%s — %s, %s\n", built.ID, built.Element, built.Target)
 	label("reach", "range %d, %s", built.Range, built.Pattern)
-	label("power", "%d x%d, accuracy %d (%s), cooldown %d",
-		built.Power, built.StrikeCount(), built.Accuracy,
-		forge.Percent(built.Accuracy), built.Cooldown)
+	// A support skill declares no power, and "0 (0%)" says nothing the zero did
+	// not, so the reading is dropped rather than printed empty.
+	power := strconv.Itoa(built.Power)
+	if built.Power != 0 {
+		power += " (" + forge.Percent(built.Power) + ")"
+	}
+	label("power", "%s x%d, accuracy %d (%s), cooldown %d",
+		power, built.StrikeCount(),
+		built.Accuracy, forge.Percent(built.Accuracy), built.Cooldown)
 	if len(built.Applies) > 0 {
-		label("inflicts", "%s", forge.FormatApplications(built.Applies))
+		label("inflicts", "%s", forge.DescribeApplications(built.Applies))
 	}
 	label("carried by", "%s", forge.WhoMaySummary(built))
 	preview := lib.PreviewDamage(built)

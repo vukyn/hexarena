@@ -309,6 +309,16 @@ func (l *Library) ParseApplications(answer string) ([]skill.Application, error) 
 		if err != nil {
 			return nil, &UnknownStatusError{ID: id, Err: err}
 		}
+		// An empty segment is a shape error here, even though ParseNumber reads
+		// one as zero. That reading is right for a form field, where empty means
+		// unanswered, and wrong here: the colon has already promised a number,
+		// and "weaken:" would otherwise become a chance of nought, which the
+		// skill book refuses later with a worse message than this one.
+		for _, segment := range parts[1:] {
+			if strings.TrimSpace(segment) == "" {
+				return nil, &ApplicationShapeError{Raw: entry}
+			}
+		}
 		chance, err := ParseNumber(parts[1])
 		if err != nil {
 			return nil, err
@@ -358,6 +368,35 @@ func FormatApplications(applications []skill.Application) string {
 		parts = append(parts, written)
 	}
 	return strings.Join(parts, ",")
+}
+
+// DescribeApplications is FormatApplications for a reader: the same list with
+// each chance's percentage beside it.
+//
+// It is deliberately a second function rather than an option on the first.
+// FormatApplications' output is the syntax the authoring form is prefilled with
+// and ParseApplications reads back, so a percentage inside it would stop the
+// round trip and leave the form holding something it cannot parse.
+func DescribeApplications(applications []skill.Application) string {
+	parts := make([]string, 0, len(applications))
+	for _, application := range applications {
+		written := application.Status + ":" + strconv.Itoa(application.Chance)
+		if application.Stacks > 1 {
+			written += ":" + strconv.Itoa(application.Stacks)
+		}
+		parts = append(parts, written+" ("+Percent(application.Chance)+")")
+	}
+	return strings.Join(parts, ", ")
+}
+
+// ApplicationChances is just the percentages, in order, for a screen that has
+// the list already and only needs it read out.
+func ApplicationChances(applications []skill.Application) string {
+	parts := make([]string, 0, len(applications))
+	for _, application := range applications {
+		parts = append(parts, Percent(application.Chance))
+	}
+	return strings.Join(parts, " · ")
 }
 
 // ValidateNewSkillID rejects a skill with no id or one the book already holds.
