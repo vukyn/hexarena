@@ -486,6 +486,74 @@ book validated cross-book the way skills are, a `Passives []string` field on
 `cast.Character`, and an archetype able to suggest one — which would also give an
 archetype its first mechanical weight, since today it carries none.
 
+### Piercing, as the answer to armour
+
+Nothing in the game currently ignores defence. Every damage source goes through
+the same curve — a normal hit, a splash hit, and a damage-over-time tick all
+divide by `K + defence`, which is what "damage over time goes through armour"
+settled: through the *formula*, not around it. So the effective-health figure
+`hexforge` reports is exact today rather than an estimate.
+
+That leaves the armour end of the stat budget without a counter. `progression.Limits`
+caps health and defence *together* because they multiply, and two very different
+units can sit at the same cap:
+
+| | health | defence | absorbs |
+| --- | ---: | ---: | ---: |
+| sentinel | 3100 | 800 | 11397 |
+| bulwark | 4800 | 400 | 11214 |
+
+Equal to within two percent, and every other defence in the game answers
+something: dodge answers accuracy, a guaranteed hit answers dodge, block answers
+the guaranteed hit, multi-strike answers block, cleanse answers a poison. Armour
+answers all of them and nothing answers armour.
+
+**Piercing should be a ratio, not a switch.** Measured against the two units
+above, as parts per thousand of defence ignored:
+
+| pierced | sentinel | bulwark | bulwark's edge |
+| ---: | ---: | ---: | ---: |
+| 0 | 11397 | 11214 | 0.98x |
+| 200 | 9717 | 9937 | 1.02x |
+| 400 | 8072 | 8648 | 1.07x |
+| 600 | 6418 | 7361 | 1.15x |
+| 1000 | 3100 | 4800 | 1.55x |
+
+A ratio is a dial across that whole range. A switch — true damage, defence
+ignored outright — jumps straight to the last row, which makes an armour unit
+absolutely worthless against one skill and unaffected by the next, with nothing
+in between. That is the same reason buffs saturate here instead of being clamped:
+a hard cap on a continuous quantity is the wrong shape, and this engine has
+already chosen against it everywhere else.
+
+What an implementation has to settle:
+
+- **Where the number lives.** A field on `skill.Skill`, passed into
+  `combat.Rules.Damage` as another parameter. Adding it with a zero default moves
+  **no golden file**; the first shipped skill given a non-zero value moves
+  `scenarios.golden`, and that diff is the record of the balance change. `sever`
+  is the obvious first candidate — it is the metal skill that already exists to
+  cut through things.
+- **Whether it reaches damage over time.** A tick's damage is computed once, when
+  the stack is *applied*, and frozen on the stack. So a piercing skill that
+  applies a poison would freeze a pierced tick for the rest of that stack's life,
+  which is a much larger effect than a pierced single hit. Decide deliberately.
+- **What it does to the budget.** `MaxEffectiveHP` bounds durability against
+  non-piercing damage. Once piercing exists, that bound no longer describes the
+  worst case, and the question becomes whether raw health needs a floor of its own
+  so an all-armour unit cannot be deleted by one skill.
+- **How it reads in the log.** A pierced hit that looks like an ordinary hit makes
+  the log unable to explain its own numbers — the same trap passive skills have.
+  It needs to be visible in the event, not inferred from the damage being larger
+  than expected.
+- **What the tools say.** `hexforge`'s effective-health figure, and the
+  `máu quy đổi` / `effective hp` row, describe durability against damage that does
+  not pierce. The moment piercing ships, one number stops being the answer and
+  both cases have to be shown, or the label is lying.
+
+Determinism is unaffected: this is integer parts-per-thousand arithmetic with no
+new randomness, which is the one thing that makes it cheap to add later.
+
 ### A real cast
 
 The tooling for this exists now — see *Authoring a cast* above.
