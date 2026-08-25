@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
-	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/forge"
 )
 
 // question is one field of a draft and everything needed to fill it: the flag
@@ -164,17 +162,17 @@ func (p *prompter) note(format string, args ...any) {
 func runNew(args []string) error {
 	set := newFlagSet("new")
 	dir := dataFlag(set)
-	var given draft
-	set.StringVar(&given.id, "id", "", "the character's id; one dot may separate the origin from the name")
-	set.StringVar(&given.name, "name", "", "the display name")
-	set.StringVar(&given.origin, "origin", "", "the id of the work it is borrowed from")
-	set.StringVar(&given.archetype, "archetype", "", "the role preset to start from")
-	set.StringVar(&given.image, "image", "", "relative path to the art, ending .svg or .png")
-	set.StringVar(&given.element, "element", "", "one element, or two separated by a slash")
-	set.StringVar(&given.bio, "bio", "", "a line or two about who this is")
-	set.StringVar(&given.skills, "skills", "", "comma separated kit; defaults to the archetype's")
+	var given forge.Draft
+	set.StringVar(&given.ID, "id", "", "the character's id; one dot may separate the origin from the name")
+	set.StringVar(&given.Name, "name", "", "the display name")
+	set.StringVar(&given.Origin, "origin", "", "the id of the work it is borrowed from")
+	set.StringVar(&given.Archetype, "archetype", "", "the role preset to start from")
+	set.StringVar(&given.Image, "image", "", "relative path to the art, ending .svg or .png")
+	set.StringVar(&given.Element, "element", "", "one element, or two separated by a slash")
+	set.StringVar(&given.Bio, "bio", "", "a line or two about who this is")
+	set.StringVar(&given.Skills, "skills", "", "comma separated kit; defaults to the archetype's")
 	for _, kind := range progression.Kinds() {
-		set.StringVar(&given.stats[kind], shortStat(kind),
+		set.StringVar(&given.Stats[kind], forge.ShortStat(kind),
 			"", fmt.Sprintf("override the %s curve, written base:max", kind))
 	}
 	confirmed := set.Bool("yes", false, "write without asking for confirmation")
@@ -185,15 +183,15 @@ func runNew(args []string) error {
 	switch len(operands) {
 	case 0:
 	case 1:
-		if given.id != "" && given.id != operands[0] {
-			return fmt.Errorf("the id was given twice, as %q and as --id %q", operands[0], given.id)
+		if given.ID != "" && given.ID != operands[0] {
+			return fmt.Errorf("the id was given twice, as %q and as --id %q", operands[0], given.ID)
 		}
-		given.id = operands[0]
+		given.ID = operands[0]
 	default:
 		return fmt.Errorf("usage: hexforge new [id] [flags]")
 	}
 
-	lib, err := load(*dir)
+	lib, err := forge.Load(*dir)
 	if err != nil {
 		return err
 	}
@@ -202,13 +200,13 @@ func runNew(args []string) error {
 	if err != nil {
 		return err
 	}
-	character, err := filled.resolve(lib)
+	character, err := filled.Resolve(lib)
 	if err != nil {
 		return err
 	}
 
 	renderCharacter(os.Stdout, lib, character, 1, progression.LevelCap)
-	target := filepath.Join(lib.dir, castFile)
+	target := lib.CastPath()
 	if !*confirmed {
 		if !prompt.interactive {
 			return fmt.Errorf("stdin is not a terminal, so the write cannot be confirmed: pass --yes")
@@ -222,26 +220,19 @@ func runNew(args []string) error {
 			return nil
 		}
 	}
-	updated, err := lib.characters.Append(lib.castDeps(), character)
-	if err != nil {
+	if err := lib.SaveCharacter(character); err != nil {
 		return err
 	}
-	if err := lib.writeCast(updated); err != nil {
-		return err
+	for _, line := range lib.SaveNotes(character) {
+		fmt.Println(line)
 	}
-	fmt.Printf("wrote %s to %s\n", character.ID, target)
-	if !lib.imageExists(character.Image) {
-		fmt.Printf("note: %s is not there yet; hexforge check will keep saying so until it is\n",
-			lib.imagePath(character.Image))
-	}
-	fmt.Printf("note: the game boots from the embedded copy, so rebuild before this reaches a battle\n")
 	return nil
 }
 
 // fill asks for whatever the flags left out, in an order that lets each answer
 // supply the next one's default: the archetype has to be settled before its
 // curve and its kit can be offered.
-func fill(given draft, lib *library, prompt *prompter) (draft, error) {
+func fill(given forge.Draft, lib *forge.Library, prompt *prompter) (forge.Draft, error) {
 	filled := given
 	ask := func(field *string, q question) error {
 		q.given = *field
@@ -253,211 +244,98 @@ func fill(given draft, lib *library, prompt *prompter) (draft, error) {
 		return nil
 	}
 
-	if err := ask(&filled.id, question{
-		flag: "id", prompt: "id",
-		validate: func(answer string) error {
-			if err := cast.ValidateID(answer); err != nil {
-				return err
-			}
-			if _, clash := lib.characters.Get(answer); clash {
-				return fmt.Errorf("character %q is already in the cast", answer)
-			}
-			return nil
-		},
+	if err := ask(&filled.ID, question{
+		flag: "id", prompt: "id", validate: lib.ValidateNewID,
 	}); err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 
-	if err := ask(&filled.name, question{
-		flag: "name", prompt: "display name",
-		validate: func(answer string) error {
-			if strings.TrimSpace(answer) == "" {
-				return fmt.Errorf("a character needs a display name")
-			}
-			return nil
-		},
+	if err := ask(&filled.Name, question{
+		flag: "name", prompt: "display name", validate: forge.ValidateName,
 	}); err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 
-	if filled.origin == "" {
-		prompt.note("origins: %s\n", strings.Join(originIDs(lib), " "))
+	if filled.Origin == "" {
+		prompt.note("origins: %s\n", strings.Join(lib.OriginIDs(), " "))
 	}
-	if err := ask(&filled.origin, question{
-		flag: "origin", prompt: "origin",
-		validate: func(answer string) error {
-			if _, known := lib.origins.Get(answer); !known {
-				return fmt.Errorf("unknown origin %q, add it with %q", answer, "hexforge origins add "+answer)
-			}
-			return nil
-		},
+	if err := ask(&filled.Origin, question{
+		flag: "origin", prompt: "origin", validate: lib.ValidateOrigin,
 	}); err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 
-	if filled.archetype == "" {
-		for _, preset := range lib.archetypes.All() {
-			prompt.note("  %-11s %s\n", preset.ID, presetDemand(preset))
+	if filled.Archetype == "" {
+		for _, preset := range lib.Archetypes().All() {
+			prompt.note("  %-11s %s\n", preset.ID, forge.PresetSummary(preset))
 		}
 	}
-	if err := ask(&filled.archetype, question{
-		flag: "archetype", prompt: "archetype",
-		validate: func(answer string) error {
-			if _, known := lib.archetypes.Get(answer); !known {
-				return fmt.Errorf("unknown archetype %q, want one of %s",
-					answer, strings.Join(lib.archetypes.IDs(), ", "))
-			}
-			return nil
-		},
+	if err := ask(&filled.Archetype, question{
+		flag: "archetype", prompt: "archetype", validate: lib.ValidateArchetype,
 	}); err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 	// Safe: the answer was validated against the book.
-	archetype, _ := lib.archetypes.Get(filled.archetype)
+	archetype, _ := lib.Archetypes().Get(filled.Archetype)
 
-	if err := ask(&filled.image, question{
-		flag: "image", prompt: "art path", preset: suggestedImage(filled.id),
+	if err := ask(&filled.Image, question{
+		flag: "image", prompt: "art path", preset: forge.SuggestedImage(filled.ID),
 		validate: cast.ValidateImagePath,
 	}); err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 
 	// The kit is settled before the element, because the kit is what decides
 	// which elements are legal. Asking the other way round means either
 	// validating the element against a preset the author is about to replace, or
 	// accepting an answer that the write then refuses.
-	if err := ask(&filled.skills, question{
+	if err := ask(&filled.Skills, question{
 		flag: "skills", prompt: "kit", preset: strings.Join(archetype.Skills, ","),
-		validate: func(answer string) error {
-			named := splitList(answer)
-			if len(named) == 0 {
-				return fmt.Errorf("a character with no skills would have nothing to do on its turn")
-			}
-			seen := make(map[string]bool, len(named))
-			for _, id := range named {
-				if _, err := lib.skills.Lookup(id); err != nil {
-					return err
-				}
-				if seen[id] {
-					return fmt.Errorf("%q is named twice", id)
-				}
-				seen[id] = true
-			}
-			return nil
-		},
+		validate: lib.ValidateKit,
 	}); err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 	// Safe: every name in the answer was looked up while it was validated.
-	kit, err := lookupKit(lib, splitList(filled.skills))
+	kit, err := lib.LookupKit(forge.SplitList(filled.Skills))
 	if err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 
-	if err := ask(&filled.element, question{
-		flag: "element", prompt: "element, one or two separated by a slash" + demandHint(kit),
+	if err := ask(&filled.Element, question{
+		flag:   "element",
+		prompt: "element, one or two separated by a slash (" + forge.DemandSummary(kit) + ")",
 		validate: func(answer string) error {
-			affinity, err := parseAffinity(answer)
-			if err != nil {
-				return err
-			}
-			if err := lib.chart.ValidateAffinity(affinity); err != nil {
-				return err
-			}
-			// The same predicate the write goes through, applied early so a
-			// wrong answer costs one line instead of the whole session.
-			for _, carried := range kit {
-				if !skill.CanCarry(affinity, carried) {
-					return fmt.Errorf("%s cannot carry %q, which is %s",
-						affinity, carried.ID, carried.Element)
-				}
-			}
-			return nil
+			return lib.ValidateElement(answer, kit)
 		},
 	}); err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 
 	for _, kind := range progression.Kinds() {
-		if err := ask(&filled.stats[kind], question{
-			flag: shortStat(kind), prompt: kind.String() + " curve, base:max",
-			preset: formatCurve(archetype.Stats[kind]),
+		if err := ask(&filled.Stats[kind], question{
+			flag: forge.ShortStat(kind), prompt: kind.String() + " curve, base:max",
+			preset: forge.FormatCurve(archetype.Stats[kind]),
 			validate: func(answer string) error {
-				curve, err := parseCurve(answer)
-				if err != nil {
-					return err
-				}
-				return curve.Validate(kind)
+				return forge.ValidateCurve(kind, answer)
 			},
 		}); err != nil {
-			return draft{}, err
+			return forge.Draft{}, err
 		}
 	}
 
-	if err := ask(&filled.bio, question{
+	if err := ask(&filled.Bio, question{
 		flag: "bio", prompt: "biography", optional: true,
 	}); err != nil {
-		return draft{}, err
+		return forge.Draft{}, err
 	}
 	return filled, nil
-}
-
-// lookupKit resolves a list of skill ids against the book.
-func lookupKit(lib *library, named []string) ([]skill.Skill, error) {
-	out := make([]skill.Skill, 0, len(named))
-	for _, id := range named {
-		known, err := lib.skills.Lookup(id)
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, known)
-	}
-	return out, nil
-}
-
-// demandHint says which elements a kit will insist on, so the prompt answers the
-// question the author is about to get wrong. The demand is derived from the kit
-// actually chosen, not from the preset, because the two differ the moment
-// --skills is used.
-func demandHint(kit []skill.Skill) string {
-	demanded := skill.Demands(kit)
-	if len(demanded) == 0 {
-		return " (this kit is all neutral, so any element carries it)"
-	}
-	names := make([]string, 0, len(demanded))
-	for _, member := range demanded {
-		names = append(names, member.String())
-	}
-	return fmt.Sprintf(" (this kit needs %s)", strings.Join(names, " and "))
-}
-
-// suggestedImage proposes where a character's art would live, following the id.
-// It is only a default: any relative path ending .svg or .png is allowed.
-func suggestedImage(id string) string {
-	if id == "" {
-		return ""
-	}
-	folder, name, split := strings.Cut(id, ".")
-	if !split {
-		return path.Join("assets", folder+".svg")
-	}
-	return path.Join("assets", folder, name+".svg")
-}
-
-func originIDs(lib *library) []string {
-	origins := lib.origins.All()
-	out := make([]string, 0, len(origins))
-	for _, origin := range origins {
-		out = append(out, origin.ID)
-	}
-	return out
 }
 
 // renderCharacter prints a character resolved at each of the given levels,
 // with what it spends of the effective-health budget. It is what the wizard
 // shows before writing and what show prints.
-func renderCharacter(out io.Writer, lib *library, character cast.Character, levels ...int) {
-	origin, known := lib.origins.Get(character.Origin)
+func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character, levels ...int) {
+	origin, known := lib.Origins().Get(character.Origin)
 	title := character.Origin
 	if known {
 		title = fmt.Sprintf("%s (%s, %s)", origin.Title, origin.Medium, character.Origin)
@@ -471,7 +349,7 @@ func renderCharacter(out io.Writer, lib *library, character cast.Character, leve
 	label("element", "%s", character.Element)
 	label("kit", "%s", strings.Join(character.Skills, " "))
 	label("art", "%s", character.Image)
-	label("stages", "%s", stageSummary(character))
+	label("stages", "%s", forge.StageSummary(character))
 	if character.Bio != "" {
 		label("bio", "%s", character.Bio)
 	}
@@ -481,19 +359,9 @@ func renderCharacter(out io.Writer, lib *library, character cast.Character, leve
 			label(fmt.Sprintf("level %d", level), "%v", err)
 			continue
 		}
-		effective := progression.EffectiveHP(values, lib.rules)
+		budget := lib.Budget(values)
 		label(fmt.Sprintf("level %d", level), "%s", values)
 		label("", "stage %q absorbs %d of the %d effective-health budget, %d to spare",
-			stage.Name, effective, lib.limits.MaxEffectiveHP, lib.limits.MaxEffectiveHP-effective)
+			stage.Name, budget.Effective, budget.Max, budget.Headroom)
 	}
-}
-
-// presetDemand describes a preset for the archetype prompt: what its kit is and
-// which elements that kit will insist on.
-func presetDemand(preset cast.Archetype) string {
-	names := preset.DemandNames()
-	if len(names) == 0 {
-		return fmt.Sprintf("%s (any element)", strings.Join(preset.Skills, " "))
-	}
-	return fmt.Sprintf("%s (needs %s)", strings.Join(preset.Skills, " "), strings.Join(names, " and "))
 }

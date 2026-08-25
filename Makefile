@@ -4,13 +4,13 @@
 # -update is declared only in the packages that own golden files, so
 # `go test ./... -update` fails on every other package.
 
-.PHONY: build install run auto forge test golden fmt vet check clean
+.PHONY: build install run auto forge forge-tui test golden fmt vet check clean
 
 build:
-	@go build -o bin/ ./cmd/hexarena ./cmd/hexforge
+	@go build -o bin/ ./cmd/hexarena ./cmd/hexforge ./cmd/hexforge-tui
 
 install:
-	@go install ./cmd/hexarena ./cmd/hexforge
+	@go install ./cmd/hexarena ./cmd/hexforge ./cmd/hexforge-tui
 
 run:
 	@go run ./cmd/hexarena --seed 11 --side ally
@@ -22,6 +22,12 @@ auto:
 # module root; `make forge` with no arguments prints its subcommands.
 forge:
 	@go run ./cmd/hexforge $(ARGS)
+
+# The full-screen authoring client, over the same internal/forge. It takes over
+# the screen, so it refuses to start when stdout is not a terminal — use `forge`
+# from a script or a pipe.
+forge-tui:
+	@go run ./cmd/hexforge-tui $(ARGS)
 
 test:
 	@go test ./...

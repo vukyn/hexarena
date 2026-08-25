@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/forge"
 )
 
 func runShow(args []string) error {
@@ -22,14 +23,14 @@ func runShow(args []string) error {
 	if *level < 1 || *level > progression.LevelCap {
 		return fmt.Errorf("level %d is outside 1..%d", *level, progression.LevelCap)
 	}
-	lib, err := load(*dir)
+	lib, err := forge.Load(*dir)
 	if err != nil {
 		return err
 	}
 	id := operands[0]
-	character, known := lib.characters.Get(id)
+	character, known := lib.Characters().Get(id)
 	if !known {
-		return fmt.Errorf("no character %q in %s; list them with: hexforge cast", id, lib.dir)
+		return fmt.Errorf("no character %q in %s; list them with: hexforge cast", id, lib.Dir())
 	}
 	renderCharacter(os.Stdout, lib, character, *level)
 	return nil
