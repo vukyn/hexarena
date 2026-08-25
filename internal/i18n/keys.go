@@ -96,6 +96,7 @@ const (
 	SkillFieldKeptForCharacters
 	LabelDamage
 	DamageLine
+	DamageLineShort
 	DamageAmplified
 	DamageMoved
 	SkillAdded
@@ -160,6 +161,7 @@ const (
 	PickerRolesTitle
 	PickerCharactersTitle
 	PickerHint
+	PickerAllowlistHint
 	PickerFooter
 	PickerNothingToPick
 	PickerNothingChosen

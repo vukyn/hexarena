@@ -535,3 +535,27 @@ func TestAnEditRefusalNamesWhoWouldBreak(t *testing.T) {
 		}
 	}
 }
+
+// TestDamageWithinKeepsTheFiguresNotTheReference covers what the row is for. A
+// five-figure per-strike damage used to run past the window and have its numbers
+// clipped, which is the one part of the row a reader is there for.
+func TestDamageWithinKeepsTheFiguresNotTheReference(t *testing.T) {
+	preview := forge.SkillPreview{PerStrike: 41156571, Total: 41156571, Attack: 800, Defense: 400}
+	for _, lang := range []Lang{Vi, En} {
+		full := lang.Damage(preview)
+		short := lang.DamageWithin(preview, 40)
+		if short == full {
+			t.Errorf("%v: a 40-cell room kept the full line %q", lang, short)
+		}
+		if !strings.Contains(short, "41156571") {
+			t.Errorf("%v: the short line dropped the figure: %q", lang, short)
+		}
+		if strings.Contains(short, "800") || strings.Contains(short, "400") {
+			t.Errorf("%v: the short line kept the reference pair: %q", lang, short)
+		}
+		// Given room, the pair comes back.
+		if got := lang.DamageWithin(preview, 200); got != full {
+			t.Errorf("%v: a roomy line = %q, want %q", lang, got, full)
+		}
+	}
+}

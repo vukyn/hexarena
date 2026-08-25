@@ -32,14 +32,40 @@ func runSkills(args []string) error {
 
 func renderSkills(out io.Writer, lib *forge.Library) {
 	skills := lib.Skills().Skills()
-	rendered := newTable("id", "element", "tgt", "rng", "shape",
-		"power", "hits", "acc", "cd", "who may carry it").rightAlign(3, 5, 6, 7, 8)
+	// The name column is dropped rather than drawn empty when no skill carries
+	// one, which is the shipped state: the nineteen names are still compiled
+	// into the terminal client, and a column of blanks here would read as
+	// missing data rather than as a column that does not apply. That is the
+	// same rule the client's own name column follows.
+	named := false
 	for _, current := range skills {
-		rendered.add(current.ID, current.Element.String(), current.Target.String(),
+		if current.Name != "" {
+			named = true
+			break
+		}
+	}
+	headings := []string{"id"}
+	if named {
+		headings = append(headings, "name")
+	}
+	headings = append(headings, "element", "tgt", "rng", "shape",
+		"power", "hits", "acc", "cd", "who may carry it")
+	shift := 0
+	if named {
+		shift = 1
+	}
+	rendered := newTable(headings...).rightAlign(3+shift, 5+shift, 6+shift, 7+shift, 8+shift)
+	for _, current := range skills {
+		row := []string{current.ID}
+		if named {
+			row = append(row, current.Name)
+		}
+		row = append(row, current.Element.String(), current.Target.String(),
 			strconv.Itoa(current.Range), current.Pattern,
 			strconv.Itoa(current.Power), strconv.Itoa(current.StrikeCount()),
 			strconv.Itoa(current.Accuracy), strconv.Itoa(current.Cooldown),
 			forge.WhoMaySummary(current))
+		rendered.add(row...)
 	}
 	rendered.render(out)
 	fmt.Fprintf(out, "\n%d skills; \"anyone\" is a neutral skill with no restriction, which is\n"+

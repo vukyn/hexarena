@@ -163,7 +163,7 @@ answers rather than screen logic:
   `forge.CheckSkill`'s answer, the same value the write refuses on, so the mark
   and the refusal cannot disagree. Nineteen rows do not fit beside a form (the
   form is nineteen body lines of the twenty it has in an 80x24 window), so the
-  list is a **sub-screen that scrolls**, and `pickerRoom` counts what the screen
+  list is a **sub-screen that scrolls**, and `(*pickState).room` counts what the screen
   spends — including the empty string a trailing newline leaves when `frame`
   splits the body, which was miscounted first time and truncated the list.
 - The new-skill form shows **expected damage as the power is typed**, from
@@ -172,7 +172,25 @@ answers rather than screen logic:
   guess: they are the pair `skills.golden`'s own damage column is measured from
   (800 and 400), so the figure before a write is the figure the golden shows
   after one. It truncates **per strike** rather than once over the total, as a
-  battle does — three strikes of 600 are 615, not 617.
+  battle does — three strikes of 600 are 615, not 617. The row drops its
+  reference pair rather than its figures when it will not fit
+  (`Lang.DamageWithin`): the pair is identical on every skill and named in the
+  field's own help, while the two numbers being authored are the reason the row
+  exists.
+- Every field carries a **help line describing the focused one**, and a shape
+  chooser draws the cells it covers on a sub-screen built from `pattern.Targets`
+  and `hex.Render`, so the drawing cannot disagree with what the engine catches.
+  Both replaced a static footnote that stated the parts-per-thousand convention
+  and was not read. A field that needs a *list* — the statuses a skill inflicts,
+  and the three allowlists — opens the same picker as the kit; each picker names
+  its own hint, because the kit's (order, and what this character cannot take)
+  says nothing true about an allowlist.
+- A skill's **Vietnamese name is data, not Go**: `skill.Skill.Name` is opaque
+  display text and `internal/core` never learns what a language is. An authored
+  name wins, the compiled table in `internal/i18n/gloss.go` answers when there is
+  none — which is still the case for all nineteen shipped skills — and the bare
+  id when there is neither. Any table showing it drops the column rather than
+  drawing it empty.
 
 **`hexforge new` must work with nobody watching.** A preset-supplied value is
 not missing, so an unattended run takes every default and errors only on a field
