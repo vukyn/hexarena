@@ -529,7 +529,7 @@ func (f formScreen) artLabel(m model) string {
 //
 // A path is the one chooser value here with no bound. An origin and an
 // archetype are ids from a book, but art is a file under a folder an author
-// fills as they like: assets/example/sprout.svg is already 24 cells before
+// fills as they like: assets/fixture/sprout.svg is already 24 cells before
 // anybody nests one deeper. So the row is measured rather than trusted — what
 // is left once the marker, the label column, the chooser's own decoration and
 // the position counter have taken theirs, all of them as they are really drawn.

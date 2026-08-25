@@ -1,133 +1,111 @@
 {
   "characters": [
     {
-      "id": "example-anime.adept",
-      "name": "Example Adept",
-      "origin": "example-anime",
-      "archetype": "sentinel",
-      "image": "assets/example/adept.svg",
-      "element": [
-        "water",
-        "ice"
-      ],
-      "bio": "An example character, kept so the cast book is not empty and so the single-stage case has something to read. It sits exactly on the sentinel preset, which is what a character looks like before it has been tuned away from one. Replace it.",
+      "id": "pokemon.bulbasaur",
+      "name": "Bulbasaur",
+      "origin": "pokemon",
+      "archetype": "blighter",
+      "image": "assets/bulbasaur.svg",
+      "element": "grass",
+      "bio": "Hạt giống trên lưng lớn cùng nó và nuôi nó bằng ánh nắng. Đánh chậm, chịu đòn tốt, thắng bằng cách rải độc rồi cầm cự lâu hơn đối phương. Ba giai đoạn: Bulbasaur, Ivysaur từ cấp 16, Venusaur từ cấp 32.",
       "stages": [
         {
-          "name": "Example Adept",
+          "name": "Bulbasaur",
           "min_level": 1,
           "stats": {
             "hp": {
-              "base": 930,
-              "max": 3100
+              "base": 900,
+              "max": 3000
             },
             "attack": {
               "base": 150,
-              "max": 500
+              "max": 480
             },
             "defense": {
-              "base": 240,
-              "max": 800
+              "base": 130,
+              "max": 400
             },
             "speed": {
-              "base": 27,
+              "base": 30,
               "max": 90
             },
             "accuracy": {
-              "base": 24,
-              "max": 80
+              "base": 40,
+              "max": 120
             },
             "dodge": {
-              "base": 9,
-              "max": 30
-            }
-          }
-        }
-      ],
-      "skills": [
-        "strike",
-        "riptide",
-        "guard_wall",
-        "purify"
-      ]
-    },
-    {
-      "id": "example-game.sprout",
-      "name": "Example Sprout",
-      "origin": "example-game",
-      "archetype": "skirmisher",
-      "image": "assets/example/sprout.svg",
-      "element": [
-        "grass",
-        "electric"
-      ],
-      "bio": "An example character, and the one that shows what an evolution line is for: two stages, the second taking over at level 30 with a curve the first never reaches. Replace it.",
-      "stages": [
-        {
-          "name": "Sprout",
-          "min_level": 1,
-          "stats": {
-            "hp": {
-              "base": 660,
-              "max": 1500
-            },
-            "attack": {
-              "base": 228,
-              "max": 520
-            },
-            "defense": {
-              "base": 75,
-              "max": 170
-            },
-            "speed": {
-              "base": 60,
-              "max": 140
-            },
-            "accuracy": {
-              "base": 72,
-              "max": 165
-            },
-            "dodge": {
-              "base": 45,
-              "max": 100
+              "base": 15,
+              "max": 45
             }
           }
         },
         {
-          "name": "Bloom",
-          "min_level": 30,
+          "name": "Ivysaur",
+          "min_level": 16,
           "stats": {
             "hp": {
               "base": 1100,
-              "max": 2200
+              "max": 3400
             },
             "attack": {
-              "base": 380,
-              "max": 760
+              "base": 190,
+              "max": 550
             },
             "defense": {
-              "base": 125,
-              "max": 250
+              "base": 165,
+              "max": 460
             },
             "speed": {
-              "base": 100,
-              "max": 200
+              "base": 38,
+              "max": 95
             },
             "accuracy": {
-              "base": 120,
-              "max": 240
+              "base": 50,
+              "max": 130
             },
             "dodge": {
-              "base": 75,
-              "max": 150
+              "base": 18,
+              "max": 48
+            }
+          }
+        },
+        {
+          "name": "Venusaur",
+          "min_level": 32,
+          "stats": {
+            "hp": {
+              "base": 1300,
+              "max": 3800
+            },
+            "attack": {
+              "base": 230,
+              "max": 620
+            },
+            "defense": {
+              "base": 200,
+              "max": 520
+            },
+            "speed": {
+              "base": 45,
+              "max": 100
+            },
+            "accuracy": {
+              "base": 60,
+              "max": 140
+            },
+            "dodge": {
+              "base": 22,
+              "max": 50
             }
           }
         }
       ],
       "skills": [
-        "bolt",
-        "venom_fang",
+        "vine_whip",
+        "razor_leaf",
         "creeping_rot",
-        "arc_bolt"
+        "sleep_powder",
+        "solar_beam"
       ]
     }
   ]

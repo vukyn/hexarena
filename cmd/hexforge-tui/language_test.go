@@ -213,7 +213,7 @@ func firstWords(text string) string {
 // worth having mid-form: comparing the two wordings must not cost the work.
 func TestTheLanguageToggleKeepsWhatWasTyped(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
-	m = author(t, m, "example-film.tester", "Tester", "example-film", "sentinel", "fire")
+	m = author(t, m, "fixture-film.tester", "Tester", "fixture-film", "sentinel", "fire")
 	before := m.form.draft()
 	drawnBefore := m.View()
 
@@ -335,20 +335,20 @@ func TestARefusedWriteIsWordedInTheLanguageInFront(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	// A character that already exists. The refusal comes back from
 	// forge.Draft.Resolve as a *forge.IDTakenError.
-	m = author(t, m, "example-anime.adept", "Duplicate", "example-anime", "sentinel", "water/ice")
+	m = author(t, m, "fixture-anime.adept", "Duplicate", "fixture-anime", "sentinel", "water/ice")
 	m = key(t, m, "ctrl+s")
 	if m.form.err == nil {
 		t.Fatal("a character with a taken id was written")
 	}
 	drawn := m.View()
-	if want := `chưa ghi được: nhân vật "example-anime.adept" đã có trong danh sách rồi`; !strings.Contains(drawn, want) {
+	if want := `chưa ghi được: nhân vật "fixture-anime.adept" đã có trong danh sách rồi`; !strings.Contains(drawn, want) {
 		t.Errorf("the refusal on screen is not %q:\n%s", want, drawn)
 	}
 
 	// A curve nobody can level into, typed into the health row: progression
 	// decides it is wrong, the catalog says why in Vietnamese.
 	fresh, _, _ := start(t, i18n.Vi)
-	fresh = author(t, fresh, "example-film.tester", "Tester", "example-film", "duelist", "wind/ground")
+	fresh = author(t, fresh, "fixture-film.tester", "Tester", "fixture-film", "duelist", "wind/ground")
 	fresh = key(t, fresh, "down") // biography
 	fresh = key(t, fresh, "down") // the health curve
 	fresh = retype(t, fresh, "900:400")
@@ -408,9 +408,9 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 // with it, measured rather than assumed.
 //
 // The other two choosers show an id out of a book, which is short by
-// construction: "example-anime", "bulwark". This one shows a filesystem path,
+// construction: "fixture-anime", "bulwark". This one shows a filesystem path,
 // and a path is as long as whoever filed the art made it —
-// assets/example/sprout.svg is 24 cells before anybody nests one folder deeper.
+// assets/fixture/sprout.svg is 24 cells before anybody nests one folder deeper.
 // So the row shortens from the front and keeps the file name, and that is what
 // is asserted here: in both languages, since the label column is measured per
 // language and Vietnamese leaves three cells fewer for the value.
@@ -970,9 +970,9 @@ func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
 	}
 
 	// The refusal is worded from the same term, so the two cannot part company.
-	taken := &forge.IDTakenError{ID: "example-anime.adept"}
+	taken := &forge.IDTakenError{ID: "fixture-anime.adept"}
 	if got, want := i18n.Vi.Error(taken),
-		`nhân vật "example-anime.adept" đã có trong danh sách rồi`; got != want {
+		`nhân vật "fixture-anime.adept" đã có trong danh sách rồi`; got != want {
 		t.Errorf("the refusal reads %q, want %q", got, want)
 	}
 }

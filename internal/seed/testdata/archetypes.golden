@@ -61,4 +61,16 @@ skirmisher, formation column 0
            absorbs 4036 of the 11500 budget, 7464 to spare
   kit      bolt venom_fang creeping_rot arc_bolt
 
-5 presets
+blighter, formation column 1
+  the slow one that wins by attrition: poison first, outlast the answer, and hit hard enough that ignoring it is not an option
+  demands  a character built from it must carry grass
+  hp 1300->3800  attack 230->620  defense 200->520  speed 45->100  accuracy 60->140  dodge 22->50
+  level 1  hp 1300, atk 230, def 200, spd 45, acc 60, ddg 22
+           absorbs 2166 of the 11500 budget, 9334 to spare
+  level 30 hp 2528, atk 421, def 357, spd 72, acc 99, ddg 35
+           absorbs 5543 of the 11500 budget, 5957 to spare
+  level 60 hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50
+           absorbs 10410 of the 11500 budget, 1090 to spare
+  kit      vine_whip razor_leaf creeping_rot sleep_powder solar_beam
+
+6 presets

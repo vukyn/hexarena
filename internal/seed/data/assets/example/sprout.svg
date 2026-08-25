@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Example Sprout placeholder">
-  <!-- Placeholder art for the example cast. Real unit art replaces this file;
-       hexforge check only asks that the path a character names exists. -->
-  <rect width="64" height="64" rx="6" fill="#16321c"/>
-  <path d="M32 56V24" stroke="#7fc45a" stroke-width="4" stroke-linecap="round"/>
-  <path d="M32 30c-10 0-15-6-15-13 8 0 15 5 15 13z" fill="#a7e07c"/>
-  <path d="M32 34c10 0 15-6 15-13-8 0-15 5-15 13z" fill="#ffe066"/>
-</svg>

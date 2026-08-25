@@ -219,7 +219,7 @@ func (l *Library) AssetsPath() string { return filepath.Join(l.dir, assetsDir) }
 // only the ones cast.ValidateImagePath accepts.
 //
 // It walks rather than lists, because the tree is authored: art is filed by
-// origin, so assets/example/adept.svg is as ordinary as assets/hero.svg.
+// origin, so assets/fixture/adept.svg is as ordinary as assets/hero.svg.
 // Anything the parser would refuse is skipped rather than offered — a picker
 // that can hand over a value the write then rejects is worse than a text field,
 // which at least admits the author typed it.

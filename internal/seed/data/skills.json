@@ -318,6 +318,61 @@
         ],
         "stacks": 2
       }
+    },
+    {
+      "id": "vine_whip",
+      "name": "roi dây leo",
+      "element": "grass",
+      "range": 2,
+      "pattern": "single",
+      "power": 1100,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy"
+    },
+    {
+      "id": "razor_leaf",
+      "name": "lá sắc",
+      "element": "grass",
+      "range": 3,
+      "pattern": "arc_up",
+      "power": 600,
+      "strikes": 2,
+      "accuracy": 880,
+      "cooldown": 2,
+      "target": "enemy"
+    },
+    {
+      "id": "solar_beam",
+      "name": "chùm nắng",
+      "element": "grass",
+      "range": 4,
+      "pattern": "single",
+      "power": 2400,
+      "strikes": 1,
+      "accuracy": 850,
+      "cooldown": 4,
+      "target": "enemy"
+    },
+    {
+      "id": "sleep_powder",
+      "name": "phấn ngủ",
+      "element": "grass",
+      "range": 2,
+      "pattern": "flank_up",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "enemy",
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 500,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }
