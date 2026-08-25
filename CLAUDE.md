@@ -396,6 +396,22 @@ is the constraint each piece has to respect.
       traps: a passive that changes a number **must emit an event** or the log can
       no longer explain its own figures, and an enlist-time passive touching speed
       must apply before the first wait is computed. See README → Roadmap.
+- [ ] **Piercing, to answer armour.** Nothing ignores defence today: normal hits,
+      splash and damage-over-time ticks all divide by `K + defence`, so the
+      effective-health figure is exact and the armour end of the budget has no
+      counter, while every other defence here has one. Make it a **ratio in parts
+      per thousand, not a switch** — a switch jumps straight to bulwark being
+      1.55x sentinel while a ratio walks 0.98x → 1.55x, and a hard cap on a
+      continuous quantity is the shape this engine has rejected everywhere else.
+      A field on `skill.Skill` threaded into `combat.Rules.Damage`; a zero default
+      moves **no golden**. Three things to decide, not assume: whether it reaches a
+      damage-over-time tick (a tick is computed once at application and frozen, so
+      a pierced stack is far bigger than a pierced hit), whether `MaxEffectiveHP`
+      still describes the worst case or raw health now needs a floor of its own,
+      and how a pierced hit is made visible in the event log — a pierced hit that
+      logs like an ordinary one leaves the log unable to explain its own numbers.
+      `hexforge`'s effective-health row describes non-piercing damage only and will
+      need both figures. See README → Roadmap.
 - [ ] **A real cast.** The tooling now exists: `internal/core/cast` holds origins,
       archetype presets and characters, `cmd/hexforge` authors them, and
       `progression.Line` is finally used — `cast.json` ships one single-stage and
