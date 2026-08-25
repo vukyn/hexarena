@@ -796,3 +796,49 @@ func TestEventKindNames(t *testing.T) {
 		t.Errorf("an undeclared kind renders as %q", got)
 	}
 }
+
+// TestNewRefusesASkillKeptForAnotherElement is the one half of a restriction
+// the engine can enforce, and it enforces it through the same
+// skill.WhyCannotCarry the authoring layer calls.
+//
+// The other two halves — an archetype and a character identity — are absent
+// from a roster entry on purpose, because both are resolved before a battle
+// starts. Nothing here should grow a field for either: a restriction the engine
+// cannot see is an authoring rule, and cast.ParseBook is where it lives.
+func TestNewRefusesASkillKeptForAnotherElement(t *testing.T) {
+	shared := books(t)
+	restricted, err := skill.ParseBook([]byte(`{"skills":[
+	  {"id":"strike","element":"neutral","range":1,"pattern":"single",
+	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"oath","element":"neutral","range":1,"pattern":"single",
+	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "restrict":{"elements":["grass"]}}
+	]}`), skill.Deps{Patterns: shared.Patterns, Statuses: shared.Statuses})
+	if err != nil {
+		t.Fatalf("skills: %v", err)
+	}
+	shared.Skills = restricted
+
+	roster := func(affinity string) []battle.Roster {
+		return []battle.Roster{
+			{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single(affinity), Stats: stats(3000, 800, 400, 100), Skills: []string{"oath"}},
+			{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100), Skills: []string{"strike"}},
+		}
+	}
+	_, err = battle.New(shared, 1, roster("neutral"))
+	if err == nil {
+		t.Fatal("a unit carrying a skill kept for another element was enlisted")
+	}
+	// The refusal has to be the restriction's rather than the element's: the
+	// unit does share the skill's element, since the skill is neutral.
+	for _, want := range []string{"oath", "grass"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("the refusal %q does not mention %q", err, want)
+		}
+	}
+	if _, err := battle.New(shared, 1, roster("grass")); err != nil {
+		t.Fatalf("a grass unit was refused a skill kept for grass: %v", err)
+	}
+}

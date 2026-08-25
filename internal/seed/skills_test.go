@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -350,4 +351,54 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 		fmt.Fprintf(&b, "%-15s%6d%11d%12d\n", shape.Name, shape.MaxTargets(), best, worst)
 	}
 	return b.String()
+}
+
+// TestTheShippedSkillBookSurvivesBeingWritten is the round trip on the real
+// data rather than on a fixture.
+//
+// It matters because cmd/hexforge now writes this file: it rewrites the whole
+// book on every addition, so a field the authoring form does not ask about has
+// to survive a save it was not part of. Four blocks are in that position today —
+// requires, strips, scaling and self_applies — and the shipped set uses all
+// four, which is what makes this test worth more than the fixture version of it.
+func TestTheShippedSkillBookSurvivesBeingWritten(t *testing.T) {
+	book := mustSkills(t)
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("patterns: %v", err)
+	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("statuses: %v", err)
+	}
+	raw, err := book.Marshal()
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	reparsed, err := skill.ParseBook(raw, skill.Deps{Patterns: patterns, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("the written book does not load: %v", err)
+	}
+	if !reflect.DeepEqual(reparsed.Skills(), book.Skills()) {
+		t.Error("writing the shipped skill book and reading it back changed it")
+	}
+	// Every block the form does not author is still there afterwards, named
+	// rather than counted, so a skill losing one is a failure that says which.
+	for _, current := range reparsed.Skills() {
+		before, err := book.Lookup(current.ID)
+		if err != nil {
+			t.Fatalf("lookup %q: %v", current.ID, err)
+		}
+		switch {
+		case (current.Requires == nil) != (before.Requires == nil):
+			t.Errorf("%q lost or gained its condition", current.ID)
+		case (current.Strips == nil) != (before.Strips == nil):
+			t.Errorf("%q lost or gained its cleanse", current.ID)
+		case current.Scaling != before.Scaling:
+			t.Errorf("%q came back scaling off %v, want %v", current.ID, current.Scaling, before.Scaling)
+		case len(current.SelfApplies) != len(before.SelfApplies):
+			t.Errorf("%q came back with %d self applications, want %d",
+				current.ID, len(current.SelfApplies), len(before.SelfApplies))
+		}
+	}
 }

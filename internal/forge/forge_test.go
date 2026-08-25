@@ -1,6 +1,7 @@
 package forge
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -10,7 +11,9 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
 // shippedDataDir is the real data directory, relative to this package.
@@ -636,5 +639,350 @@ func TestBudgetIsTheProgressionArithmetic(t *testing.T) {
 	}
 	if budget.Over() {
 		t.Error("a shipped preset is over the budget, which ParseArchetypes should have refused")
+	}
+}
+
+// TestCheckSkillAnswersEachRestrictionAndSkipsWhatIsUnanswered is the predicate
+// both front-ends use while a form is half-filled.
+//
+// The skills are built here rather than parsed from a fixture because what is
+// being checked is the predicate, not the parser: skill.ParseBook has its own
+// tests for the same restrictions, and a fixture would only add a second thing
+// that could be wrong.
+func TestCheckSkillAnswersEachRestrictionAndSkipsWhatIsUnanswered(t *testing.T) {
+	fire, err := element.Single(element.Fire)
+	if err != nil {
+		t.Fatalf("single: %v", err)
+	}
+	water, err := element.Single(element.Water)
+	if err != nil {
+		t.Fatalf("single: %v", err)
+	}
+	keptForFire := skill.Skill{
+		ID: "oath", Element: element.Neutral,
+		Restrict: &skill.Restriction{Elements: []element.Element{element.Fire}},
+	}
+	keptForBulwark := skill.Skill{
+		ID: "wall", Element: element.Neutral,
+		Restrict: &skill.Restriction{Archetypes: []string{"bulwark"}},
+	}
+	keptForSprout := skill.Skill{
+		ID: "bloom", Element: element.Neutral,
+		Restrict: &skill.Restriction{Characters: []string{"example.sprout"}},
+	}
+	unrestricted := skill.Skill{ID: "strike", Element: element.Neutral}
+
+	answered := Carrier{
+		ID: "example.adept", Archetype: "duelist", Affinity: water, HasAffinity: true,
+	}
+	var carry *CarryError
+	if err := CheckSkill(answered, keptForFire); !errors.As(err, &carry) {
+		t.Fatalf("a skill kept for fire was allowed to a water unit: %v", err)
+	}
+	if carry.Reason != skill.CarryElementRestricted {
+		t.Errorf("the refusal is reason %d, want the restricted one", carry.Reason)
+	}
+	if got := carry.Allowed; len(got) != 1 || got[0] != "fire" {
+		t.Errorf("the refusal carries the allowlist %v", got)
+	}
+	var byArchetype *ArchetypeRestrictedError
+	if err := CheckSkill(answered, keptForBulwark); !errors.As(err, &byArchetype) {
+		t.Fatalf("a skill kept for one preset was allowed to another: %v", err)
+	}
+	if byArchetype.Archetype != "duelist" || byArchetype.Skill != "wall" {
+		t.Errorf("the refusal reads %+v", byArchetype)
+	}
+	var byCharacter *CharacterRestrictedError
+	if err := CheckSkill(answered, keptForSprout); !errors.As(err, &byCharacter) {
+		t.Fatalf("a skill kept for one character was allowed to another: %v", err)
+	}
+	if err := CheckSkill(answered, unrestricted); err != nil {
+		t.Errorf("an unrestricted skill was refused: %v", err)
+	}
+
+	// Nothing answered yet: the kit may be filled in first, and none of the
+	// three lists has anything to judge against.
+	empty := Carrier{}
+	for _, carried := range []skill.Skill{keptForFire, keptForBulwark, keptForSprout} {
+		if err := CheckSkill(empty, carried); err != nil {
+			t.Errorf("%q was refused before anything was answered: %v", carried.ID, err)
+		}
+	}
+
+	// And the other order: the element settled first admits what it allows.
+	onlyFire := Carrier{Affinity: fire, HasAffinity: true}
+	if err := CheckSkill(onlyFire, keptForFire); err != nil {
+		t.Errorf("a fire unit was refused a skill kept for fire: %v", err)
+	}
+	if err := CheckKit(answered, []skill.Skill{unrestricted, keptForFire}); err == nil {
+		t.Error("a kit holding one refused skill was accepted")
+	}
+	if err := CheckKit(answered, []skill.Skill{unrestricted}); err != nil {
+		t.Errorf("a kit of one unrestricted skill was refused: %v", err)
+	}
+}
+
+// TestADraftsCarrierLeavesAnUnreadableElementOut is what makes the two fill
+// orders work: an element that is not an element yet is an ordinary state on a
+// half-typed form, not a refusal, so it restricts nothing until it parses.
+func TestADraftsCarrierLeavesAnUnreadableElementOut(t *testing.T) {
+	half := Draft{ID: " example.adept ", Archetype: "duelist", Element: "fi"}
+	who := half.Carrier()
+	if who.ID != "example.adept" || who.Archetype != "duelist" {
+		t.Errorf("the carrier reads %+v", who)
+	}
+	if who.HasAffinity {
+		t.Error("a half-typed element was taken as an answer")
+	}
+	settled := Draft{Element: "fire/metal"}.Carrier()
+	if !settled.HasAffinity || settled.Affinity.String() != "fire/metal" {
+		t.Errorf("a settled element resolved to %+v", settled)
+	}
+}
+
+// TestWrittenSkillsAreStableAndReloads is what makes skills.json safe for the
+// tool to write: the bytes are a function of the content, the content survives
+// the trip through the file, and the shipped file is already in the form the
+// tool writes — so the first `skills add` is a one-block diff rather than a
+// rewrite of all three hundred lines nobody can review.
+func TestWrittenSkillsAreStableAndReloads(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	first, err := lib.Skills().Marshal()
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	onDisk, err := os.ReadFile(filepath.Join(dir, skillsFile))
+	if err != nil {
+		t.Fatalf("read the shipped skills: %v", err)
+	}
+	if string(onDisk) != string(first) {
+		t.Error("the shipped skills.json is not in the form the tool writes, so the first write will churn the whole file")
+	}
+
+	built, err := SkillDraft{
+		ID: "oath", Element: "neutral", Target: "enemy", Range: "1", Pattern: "single",
+		Power: "1200", Strikes: "1", Accuracy: "900", Cooldown: "2",
+		Applies: "burn:500", RestrictElements: "fire,metal",
+	}.Resolve(lib)
+	if err != nil {
+		t.Fatalf("resolve a draft: %v", err)
+	}
+	if err := lib.SaveSkill(built); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+
+	reloaded, err := Load(dir)
+	if err != nil {
+		t.Fatalf("reload after writing: %v", err)
+	}
+	returned, err := reloaded.Skills().Lookup(built.ID)
+	if err != nil {
+		t.Fatalf("the written skill is not in the reloaded book: %v", err)
+	}
+	if !reflect.DeepEqual(returned, built) {
+		t.Errorf("the trip through the file changed the skill:\n%+v\n%+v", returned, built)
+	}
+	againRaw, err := reloaded.Skills().Marshal()
+	if err != nil {
+		t.Fatalf("marshal the reloaded book: %v", err)
+	}
+	writtenRaw, err := os.ReadFile(filepath.Join(dir, skillsFile))
+	if err != nil {
+		t.Fatalf("read the written skills: %v", err)
+	}
+	if string(againRaw) != string(writtenRaw) {
+		t.Error("marshalling the reloaded book does not reproduce the file it was read from")
+	}
+	// A saved skill is in the library the caller still holds, so a character
+	// authored in the same session can take it.
+	if _, err := lib.Skills().Lookup(built.ID); err != nil {
+		t.Errorf("the library the skill was saved through does not hold it: %v", err)
+	}
+	// And the write really did append rather than sort: the skill book's order
+	// is authored, and skills.golden's table is that order.
+	skills := reloaded.Skills().Skills()
+	if last := skills[len(skills)-1]; last.ID != built.ID {
+		t.Errorf("the new skill landed at %q rather than the end of the book", last.ID)
+	}
+
+	// The one id already in the book is refused in this package's words rather
+	// than the parser's, which describes a file listing one id twice.
+	var taken *SkillTakenError
+	if err := lib.SaveSkill(built); !errors.As(err, &taken) {
+		t.Errorf("saving a skill twice gave %v", err)
+	}
+}
+
+// TestPreviewDamageIsTheEngineArithmetic pins the reference pair, because it is
+// the whole reason the figure is worth showing: it has to be the same pair
+// skills.golden's damage column is measured from, or an author reads two numbers
+// for one skill and cannot tell which the design was made from.
+func TestPreviewDamageIsTheEngineArithmetic(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	strike, err := lib.Skills().Lookup("strike")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	preview := lib.PreviewDamage(strike)
+	if got, want := preview.Attack, lib.Limits().Ceilings[progression.Attack]; got != want {
+		t.Errorf("the reference attack is %d, want the attack ceiling %d", got, want)
+	}
+	if got, want := preview.Defense, lib.Limits().Ceilings[progression.Defense]/2; got != want {
+		t.Errorf("the reference defence is %d, want half the defence ceiling %d", got, want)
+	}
+	// The figures skills.golden's own table holds for these two rows.
+	if preview.PerStrike != 342 || preview.Total != 342 {
+		t.Errorf("strike previews as %d per strike and %d in all, want 342 and 342",
+			preview.PerStrike, preview.Total)
+	}
+	// A multi-strike skill truncates once per strike, as a battle does, rather
+	// than once over the total: three strikes of 600 are 615 and not 617.
+	flurry, err := lib.Skills().Lookup("flurry")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if got := lib.PreviewDamage(flurry); got.PerStrike != 205 || got.Total != 615 {
+		t.Errorf("flurry previews as %d x%d = %d, want 205 x3 = 615",
+			got.PerStrike, got.Strikes, got.Total)
+	}
+	// A conditional skill reports both figures, because the form can edit the
+	// power of a skill that has a condition even though it cannot author one.
+	detonate, err := lib.Skills().Lookup("detonate")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if got := lib.PreviewDamage(detonate); got.Total != 308 || got.Amplified != 1062 {
+		t.Errorf("detonate previews as %d and %d amplified, want 308 and 1062",
+			got.Total, got.Amplified)
+	}
+	if lib.PreviewDamage(strike).Amplified != 0 {
+		t.Error("a skill with no condition reports an amplified figure")
+	}
+}
+
+// TestAuthoringAgainstARestrictedSkillRefusesTheKitAndTheCharacter is the two
+// halves of part one meeting the tool that writes them: a skill is authored with
+// an allowlist, and the character form then refuses a kit holding it — first at
+// the answer, by the same predicate the picker marks a row with, and then at the
+// write, by cast.ParseBook.
+func TestAuthoringAgainstARestrictedSkillRefusesTheKitAndTheCharacter(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	kept, err := SkillDraft{
+		ID: "bulwark_oath", Element: "neutral", Target: "enemy", Range: "1",
+		Pattern: "single", Power: "1000", Strikes: "1", Accuracy: "900", Cooldown: "0",
+		RestrictArchetypes: "bulwark",
+	}.Resolve(lib)
+	if err != nil {
+		t.Fatalf("resolve a restricted skill: %v", err)
+	}
+	if err := lib.SaveSkill(kept); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+
+	// The answer's check, which is what a prompt applies as it is typed and what
+	// the picker marks a row with.
+	var byArchetype *ArchetypeRestrictedError
+	refused := lib.ValidateKitFor("strike,bulwark_oath",
+		Carrier{ID: "example-film.tester", Archetype: "duelist"})
+	if !errors.As(refused, &byArchetype) {
+		t.Fatalf("a duelist was allowed a skill kept for bulwark: %v", refused)
+	}
+	if byArchetype.Skill != "bulwark_oath" {
+		t.Errorf("the refusal names %q", byArchetype.Skill)
+	}
+	if err := lib.ValidateKitFor("strike,bulwark_oath",
+		Carrier{ID: "example-film.tester", Archetype: "bulwark"}); err != nil {
+		t.Errorf("a bulwark was refused a skill kept for bulwark: %v", err)
+	}
+
+	// And the write's check, which is the parser's and is what actually holds:
+	// even with the answer check skipped, the character cannot be written.
+	_, err = Draft{
+		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
+		Archetype: "duelist", Image: "assets/example/adept.svg", Element: "neutral",
+		Skills: "strike,bulwark_oath",
+	}.Resolve(lib)
+	if err == nil {
+		t.Fatal("a duelist carrying a skill kept for bulwark was written")
+	}
+	for _, want := range []string{"bulwark_oath", "bulwark"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("the write's refusal %q does not mention %q", err, want)
+		}
+	}
+}
+
+// TestTheAllowlistValidatorsAcceptNothingAndRefuseTheUnknown covers the two
+// checks the command line applies to `--restrict-archetypes` and
+// `--restrict-characters`.
+//
+// The empty answer is the case that matters most, and it is the one an
+// implementation gets wrong: an unanswered list is *unrestricted*, and it must
+// not become the present-but-empty list skill.ParseBook refuses. Those are
+// opposite meanings — one skill everybody may carry against one skill nobody
+// may — and only one of them is what an author who pressed Enter meant.
+func TestTheAllowlistValidatorsAcceptNothingAndRefuseTheUnknown(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	for _, answer := range []string{"", "   ", ","} {
+		if err := lib.ValidateRestrictedArchetypes(answer); err != nil {
+			t.Errorf("the empty answer %q was refused for roles: %v", answer, err)
+		}
+		if err := lib.ValidateRestrictedCharacters(answer); err != nil {
+			t.Errorf("the empty answer %q was refused for characters: %v", answer, err)
+		}
+	}
+	// And an empty answer really does mean unrestricted rather than an empty
+	// block, which the parser would refuse.
+	restriction, err := SkillDraft{}.Restriction()
+	if err != nil {
+		t.Fatalf("an empty draft's restriction: %v", err)
+	}
+	if restriction != nil {
+		t.Errorf("an unanswered restriction resolved to %+v, want none at all", restriction)
+	}
+
+	presets := lib.Archetypes().IDs()
+	if len(presets) < 2 {
+		t.Fatalf("the shipped data holds %d presets, and this needs two", len(presets))
+	}
+	if err := lib.ValidateRestrictedArchetypes(presets[0] + "," + presets[1]); err != nil {
+		t.Errorf("two real presets were refused: %v", err)
+	}
+	var unknownArchetype *UnknownArchetypeError
+	if err := lib.ValidateRestrictedArchetypes(presets[0] + ",nowhere"); !errors.As(err, &unknownArchetype) {
+		t.Errorf("an unknown preset gave %v", err)
+	}
+	var twice *DuplicateEntryError
+	if err := lib.ValidateRestrictedArchetypes(presets[0] + "," + presets[0]); !errors.As(err, &twice) {
+		t.Errorf("a preset named twice gave %v", err)
+	}
+
+	cast := lib.CharacterIDs()
+	if len(cast) == 0 {
+		t.Fatal("the shipped data holds no characters, and this needs one")
+	}
+	if err := lib.ValidateRestrictedCharacters(cast[0]); err != nil {
+		t.Errorf("a real character was refused: %v", err)
+	}
+	var unknownCharacter *UnknownCharacterError
+	if err := lib.ValidateRestrictedCharacters("nobody.here"); !errors.As(err, &unknownCharacter) {
+		t.Errorf("an unknown character gave %v", err)
+	}
+	if err := lib.ValidateRestrictedCharacters(cast[0] + "," + cast[0]); !errors.As(err, &twice) {
+		t.Errorf("a character named twice gave %v", err)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -29,13 +30,24 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	adding := m.enter(screenOrigins)
 	adding.origins.adding = true
 	form := m.enter(screenNew)
+	addSkill := m.enter(screenSkills)
+	addSkill.skills.adding = true
+	// The two pickers, opened over the form that raises each. The kit's rows
+	// carry a refusal each and an allowlist's do not, so both shapes of row are
+	// measured.
+	kit := form.openKit()
+	allowlist := addSkill.openAllowlist(skillFieldKeptForCharacters)
 	return map[string]model{
-		"menu":       m.enter(screenMenu),
-		"browse":     m.enter(screenBrowse),
-		"form":       form,
-		"origins":    m.enter(screenOrigins),
-		"add a work": adding,
-		"check":      m.enter(screenCheck),
+		"menu":             m.enter(screenMenu),
+		"browse":           m.enter(screenBrowse),
+		"form":             form,
+		"origins":          m.enter(screenOrigins),
+		"add a work":       adding,
+		"skills":           m.enter(screenSkills),
+		"add a skill":      addSkill,
+		"kit picker":       kit,
+		"allowlist picker": allowlist,
+		"check":            m.enter(screenCheck),
 	}
 }
 
@@ -850,6 +862,13 @@ func TestEveryGlossFitsItsRow(t *testing.T) {
 	}
 }
 
+// saysWord reports whether a screen says a word, rather than merely holding its
+// letters somewhere inside a longer one.
+func saysWord(text, word string) bool {
+	boundary := regexp.MustCompile(`(^|[^\p{L}])` + regexp.QuoteMeta(word) + `($|[^\p{L}])`)
+	return boundary.MatchString(text)
+}
+
 // TestTheRenamedLabelsSayTheNewThing holds the four wordings that were changed,
 // and holds the old ones gone.
 //
@@ -864,8 +883,11 @@ func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
 	}{
 		{i18n.Vi,
 			[]string{"danh sách nhân vật", "nguồn tham khảo", "lối chơi", "máu quy đổi"},
-			// "dàn" is the whole word that "danh sách" replaced, and no other
-			// Vietnamese wording holds those three letters with that tone.
+			// "dàn" is the whole word that "danh sách" replaced. It is matched as
+			// a word and not as a substring, and that is not fussiness: "để dành
+			// cho", which is how a restricted skill says who it is kept for,
+			// holds those three letters with that tone and is a perfectly
+			// ordinary thing to say. A substring test would have banned it.
 			[]string{"dàn", "dựa trên", "chịu được"}},
 		{i18n.En,
 			[]string{"playstyle", "effective hp"},
@@ -879,7 +901,7 @@ func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
 			screen.width, screen.height = 200, 60
 			drawn := screen.View()
 			for _, unwanted := range test.gone {
-				if strings.Contains(drawn, unwanted) {
+				if saysWord(drawn, unwanted) {
 					t.Errorf("the %s screen in %s still says %q:\n%s",
 						name, test.lang, unwanted, drawn)
 				}

@@ -54,10 +54,16 @@ const assetsDir = "assets"
 // the game boots from the embedded copy, so an edit needs a rebuild before it
 // reaches a battle.
 type Library struct {
-	dir        string
-	rules      combat.Rules
-	chart      *element.Chart
-	limits     progression.Limits
+	dir    string
+	rules  combat.Rules
+	chart  *element.Chart
+	limits progression.Limits
+	// patterns and statuses are held rather than discarded after the skill book
+	// is built, because a skill is now authored here too: the shapes and the
+	// statuses are what a skill's declarations are checked against, and writing
+	// one back means re-parsing the book through the same two.
+	patterns   *pattern.Book
+	statuses   *status.Book
 	skills     *skill.Book
 	origins    *cast.OriginBook
 	archetypes *cast.ArchetypeBook
@@ -103,21 +109,19 @@ func Load(dir string) (*Library, error) {
 	if raw, err = read(patternsFile); err != nil {
 		return nil, err
 	}
-	patterns, err := pattern.ParseBook(raw)
-	if err != nil {
+	if lib.patterns, err = pattern.ParseBook(raw); err != nil {
 		return nil, err
 	}
 	if raw, err = read(statusesFile); err != nil {
 		return nil, err
 	}
-	statuses, err := status.ParseBook(raw)
-	if err != nil {
+	if lib.statuses, err = status.ParseBook(raw); err != nil {
 		return nil, err
 	}
 	if raw, err = read(skillsFile); err != nil {
 		return nil, err
 	}
-	if lib.skills, err = skill.ParseBook(raw, skill.Deps{Patterns: patterns, Statuses: statuses}); err != nil {
+	if lib.skills, err = skill.ParseBook(raw, lib.SkillDeps()); err != nil {
 		return nil, err
 	}
 
@@ -156,10 +160,18 @@ func (l *Library) Dir() string { return l.dir }
 func (l *Library) Rules() combat.Rules             { return l.rules }
 func (l *Library) Limits() progression.Limits      { return l.limits }
 func (l *Library) Chart() *element.Chart           { return l.chart }
+func (l *Library) Patterns() *pattern.Book         { return l.patterns }
+func (l *Library) Statuses() *status.Book          { return l.statuses }
 func (l *Library) Skills() *skill.Book             { return l.skills }
 func (l *Library) Origins() *cast.OriginBook       { return l.origins }
 func (l *Library) Archetypes() *cast.ArchetypeBook { return l.archetypes }
 func (l *Library) Characters() *cast.Book          { return l.characters }
+
+// SkillDeps is what a skill is checked against: the shapes it can cover and the
+// statuses it can inflict.
+func (l *Library) SkillDeps() skill.Deps {
+	return skill.Deps{Patterns: l.patterns, Statuses: l.statuses}
+}
 
 // CastDeps is what a character is checked against, assembled from the loaded
 // books so every tool and the game itself apply the same rules.
@@ -176,6 +188,9 @@ func (l *Library) CastPath() string { return filepath.Join(l.dir, castFile) }
 
 // OriginsPath is the file a saved origin lands in.
 func (l *Library) OriginsPath() string { return filepath.Join(l.dir, originsFile) }
+
+// SkillsPath is the file a saved skill lands in.
+func (l *Library) SkillsPath() string { return filepath.Join(l.dir, skillsFile) }
 
 // ImagePath turns an authored image path into a real one. Authored paths are
 // always slash-separated and relative to the data directory; only here does
@@ -337,7 +352,33 @@ func (l *Library) SaveOrigin(origin cast.Origin) error {
 	return nil
 }
 
-// NoteKind is which of the three things a front-end says after a write.
+// SaveSkill appends a skill to the book and writes the whole book back, on the
+// same terms as SaveCharacter.
+//
+// The clash is caught here as well as by Append, for the same reason it is in
+// SaveOrigin: the parser's "declared twice" describes a file listing one id in
+// two places, which is not what an author adding a skill that already exists has
+// done. Because the wording lives here, both front-ends say the same thing.
+func (l *Library) SaveSkill(built skill.Skill) error {
+	if _, clash := l.skills.Lookup(built.ID); clash == nil {
+		return &SkillTakenError{ID: built.ID}
+	}
+	grown, err := l.skills.Append(l.SkillDeps(), built)
+	if err != nil {
+		return err
+	}
+	raw, err := grown.Marshal()
+	if err != nil {
+		return err
+	}
+	if err := l.replaceFile(skillsFile, raw); err != nil {
+		return err
+	}
+	l.skills = grown
+	return nil
+}
+
+// NoteKind is which of the things a front-end says after a write.
 type NoteKind int
 
 const (
@@ -349,6 +390,11 @@ const (
 	// NoteRebuild warns that the game boots from the embedded copy, so an edit
 	// is not in a battle until the binary is rebuilt.
 	NoteRebuild
+	// NoteGoldensMove warns that a balance change has moved the golden files,
+	// and that reading that diff is the next step rather than an afterthought.
+	// It follows a skill, because a skill is balance: its power reaches the
+	// damage tables, the hits-to-kill ladder and the scenario measurements.
+	NoteGoldensMove
 )
 
 // Note is one line of a write's confirmation, held as what it is about rather
@@ -374,9 +420,34 @@ func (l *Library) SaveNoteFacts(character cast.Character) []Note {
 	return append(notes, Note{Kind: NoteRebuild})
 }
 
+// SaveSkillNoteFacts is what writing a skill is worth saying about, in order.
+//
+// The middle note is the one that matters. A skill is balance rather than
+// content: its power lands in scenarios.golden, progression.golden's
+// hits-to-kill ladder and skills.golden's own table, so a save that said nothing
+// would leave an author to discover a dozen moved numbers at the next test run
+// and assume they had broken something.
+func (l *Library) SaveSkillNoteFacts(built skill.Skill) []Note {
+	return []Note{
+		{Kind: NoteWrote, ID: built.ID, Path: l.SkillsPath()},
+		{Kind: NoteGoldensMove},
+		{Kind: NoteRebuild},
+	}
+}
+
+// SaveSkillNotes is SaveSkillNoteFacts in the English cmd/hexforge prints.
+func (l *Library) SaveSkillNotes(built skill.Skill) []string {
+	return l.noteLines(l.SaveSkillNoteFacts(built))
+}
+
 // SaveNotes is SaveNoteFacts in the English cmd/hexforge prints.
 func (l *Library) SaveNotes(character cast.Character) []string {
-	facts := l.SaveNoteFacts(character)
+	return l.noteLines(l.SaveNoteFacts(character))
+}
+
+// noteLines is the English one set of notes prints, so the two callers cannot
+// word the same note two ways.
+func (l *Library) noteLines(facts []Note) []string {
 	lines := make([]string, 0, len(facts))
 	for _, note := range facts {
 		switch note.Kind {
@@ -388,6 +459,9 @@ func (l *Library) SaveNotes(character cast.Character) []string {
 		case NoteRebuild:
 			lines = append(lines,
 				"note: the game boots from the embedded copy, so rebuild before this reaches a battle")
+		case NoteGoldensMove:
+			lines = append(lines,
+				"note: this is balance, so the golden files have moved; run make golden and read the diff")
 		}
 	}
 	return lines

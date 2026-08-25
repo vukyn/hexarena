@@ -31,6 +31,8 @@ const (
 	MenuNewCharacterDetail
 	MenuOrigins
 	MenuOriginsDetail
+	MenuSkills
+	MenuSkillsDetail
 	MenuCheck
 	MenuCheckDetail
 	MenuNote
@@ -67,6 +69,54 @@ const (
 	CarryRefused
 	CarryAccepted
 	WriteRefused
+
+	// The skill book, and the form that adds to it.
+	SkillsHeading
+	SkillsSubtitle
+	SkillsFooter
+	SkillsTally
+	ColumnWhoMayCarry
+	SkillFormHeading
+	SkillFormSubtitle
+	SkillFormFooter
+	SkillFormHint
+	SkillFormDiscard
+	SkillFieldID
+	SkillFieldElement
+	SkillFieldTarget
+	SkillFieldRange
+	SkillFieldShape
+	SkillFieldPower
+	SkillFieldStrikes
+	SkillFieldAccuracy
+	SkillFieldCooldown
+	SkillFieldInflicts
+	SkillFieldKeptForElements
+	SkillFieldKeptForRoles
+	SkillFieldKeptForCharacters
+	LabelDamage
+	DamageLine
+	DamageAmplified
+	SkillAdded
+
+	// Who may carry a skill, which is the same vocabulary in a listing, in a
+	// picker's row and in a refusal.
+	WhoAnyone
+	WhoElementUnits
+	WhoKeptForElements
+	WhoKeptForRoles
+	WhoBelongsTo
+
+	// The multi-select sub-screen, and the row that opens it.
+	PickerKitTitle
+	PickerElementsTitle
+	PickerRolesTitle
+	PickerCharactersTitle
+	PickerHint
+	PickerFooter
+	PickerNothingToPick
+	PickerNothingChosen
+	KitChooseHint
 
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement
@@ -146,6 +196,18 @@ const (
 	ErrorAffinityUndeclared
 	ErrorAffinityRefused
 	ErrorCarry
+	ErrorCarryRestricted
+	ErrorArchetypeRestricted
+	ErrorCharacterRestricted
+	ErrorSkillTaken
+	ErrorMissingSkillID
+	ErrorUnknownPattern
+	ErrorUnknownTarget
+	ErrorUnknownStatus
+	ErrorUnknownCharacter
+	ErrorDuplicateEntry
+	ErrorNotANumber
+	ErrorApplicationShape
 	ErrorCurveShape
 	ErrorCurveNumber
 	ErrorCurveNotPositive
@@ -163,6 +225,7 @@ const (
 	NoteWrote
 	NoteArtMissing
 	NoteRebuild
+	NoteGoldensMove
 
 	keyCount
 )

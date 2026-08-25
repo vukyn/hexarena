@@ -2,6 +2,7 @@ package skill_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -556,4 +557,266 @@ func merge(into, extra map[string]any) map[string]any {
 		into[key] = value
 	}
 	return into
+}
+
+// TestARestrictionParsesTheHalfThisPackageCanSee is the layering of a
+// restriction, checked from the outside: element names are resolved here, and
+// archetype and character names are carried as they were written because the
+// books that declare them are one layer up and importing them would be a cycle.
+func TestARestrictionParsesTheHalfThisPackageCanSee(t *testing.T) {
+	book, err := parse(t, merge(base(), map[string]any{
+		"restrict": map[string]any{
+			"elements":   []string{"fire", "metal"},
+			"archetypes": []string{"bulwark"},
+			"characters": []string{"example.adept"},
+		},
+	}))
+	if err != nil {
+		t.Fatalf("a full restriction should parse: %v", err)
+	}
+	found, err := book.Lookup("ember_lance")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if found.Restrict == nil {
+		t.Fatal("the restriction was dropped")
+	}
+	if got := found.Restrict.ElementNames(); len(got) != 2 || got[0] != "fire" || got[1] != "metal" {
+		t.Errorf("the element allowlist resolved to %v", got)
+	}
+	if !found.Restrict.AllowsArchetype("bulwark") || found.Restrict.AllowsArchetype("duelist") {
+		t.Errorf("the archetype allowlist %v admits the wrong presets", found.Restrict.Archetypes)
+	}
+	if !found.Restrict.AllowsCharacter("example.adept") || found.Restrict.AllowsCharacter("example.other") {
+		t.Errorf("the character allowlist %v admits the wrong characters", found.Restrict.Characters)
+	}
+	if !found.Restrict.NamesCharacters() {
+		t.Error("a skill naming one character does not report itself as belonging to somebody")
+	}
+}
+
+// TestAnAbsentRestrictionRestrictsNothing covers the nil receiver every caller
+// relies on, so that nobody has to ask whether there is a restriction before
+// asking what it says.
+func TestAnAbsentRestrictionRestrictsNothing(t *testing.T) {
+	book := mustBook(t)
+	strike, err := book.Lookup("strike")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if strike.Restrict != nil {
+		t.Fatalf("an undeclared restriction resolved to %+v", strike.Restrict)
+	}
+	fire, err := element.Single(element.Fire)
+	if err != nil {
+		t.Fatalf("single: %v", err)
+	}
+	if !strike.Restrict.AllowsElement(fire) || !strike.Restrict.AllowsArchetype("anything") ||
+		!strike.Restrict.AllowsCharacter("anyone") {
+		t.Error("an absent restriction refused somebody")
+	}
+	if strike.Restrict.NamesCharacters() || strike.Restrict.ElementNames() != nil {
+		t.Error("an absent restriction reported a list")
+	}
+}
+
+// TestARestrictionRejects is the shape of the refusals, and the empty list is
+// the one that matters most: an allowlist nobody satisfies is a mistake every
+// time, and reading it as "unrestricted" would turn one skill nobody may carry
+// into one skill everybody may.
+func TestARestrictionRejects(t *testing.T) {
+	cases := []struct {
+		name   string
+		block  map[string]any
+		expect string
+	}{
+		{"an empty character list", map[string]any{"characters": []string{}}, "empty list"},
+		{"an empty element list", map[string]any{"elements": []string{}}, "empty list"},
+		{"an empty archetype list", map[string]any{"archetypes": []string{}}, "empty list"},
+		{"a block with no lists at all", map[string]any{}, "names no lists"},
+		{"an element that is not one", map[string]any{"elements": []string{"custard"}}, "custard"},
+		{"a repeated element", map[string]any{"elements": []string{"fire", "fire"}}, "twice"},
+		{"a repeated character", map[string]any{"characters": []string{"a", "a"}}, "twice"},
+		{"a blank name", map[string]any{"archetypes": []string{""}}, "empty name"},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := parse(t, merge(base(), map[string]any{"restrict": test.block}))
+			if err == nil {
+				t.Fatalf("%s was accepted", test.name)
+			}
+			if !strings.Contains(err.Error(), test.expect) {
+				t.Errorf("the refusal was %q, want it to mention %q", err, test.expect)
+			}
+			if !strings.Contains(err.Error(), "ember_lance") {
+				t.Errorf("the refusal %q does not name the skill", err)
+			}
+		})
+	}
+}
+
+// TestWhyCannotCarryTellsTheTwoElementRefusalsApart is why the answer is a
+// classification rather than a boolean: one of the two is fixed by taking the
+// skill's element and the other cannot be, because the skill's element is
+// already shared.
+func TestWhyCannotCarryTellsTheTwoElementRefusalsApart(t *testing.T) {
+	book, err := parse(t,
+		// A neutral skill kept for two elements. Neutral is the case a
+		// restriction exists for: CanCarry lets every affinity carry a neutral
+		// skill, so there is nowhere else to say who it belongs to.
+		merge(base(), map[string]any{
+			"id": "oath", "element": "neutral",
+			"restrict": map[string]any{"elements": []string{"fire", "metal"}},
+		}),
+		// A fire skill kept for fire units carrying metal as well.
+		merge(base(), map[string]any{
+			"id":       "forge_lance",
+			"restrict": map[string]any{"elements": []string{"metal"}},
+		}),
+	)
+	if err != nil {
+		t.Fatalf("book: %v", err)
+	}
+	oath, err := book.Lookup("oath")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	lance, err := book.Lookup("forge_lance")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	fire, err := element.Single(element.Fire)
+	if err != nil {
+		t.Fatalf("single: %v", err)
+	}
+	water, err := element.Single(element.Water)
+	if err != nil {
+		t.Fatalf("single: %v", err)
+	}
+	fireAndMetal, err := element.Dual(element.Fire, element.Metal)
+	if err != nil {
+		t.Fatalf("dual: %v", err)
+	}
+	for _, test := range []struct {
+		name     string
+		affinity element.Affinity
+		carried  skill.Skill
+		want     skill.CarryRefusal
+	}{
+		{"fire takes a neutral skill kept for fire", fire, oath, skill.CarryAllowed},
+		{"water is refused the same skill", water, oath, skill.CarryElementRestricted},
+		{"fire alone is refused a fire skill kept for metal", fire, lance, skill.CarryElementRestricted},
+		{"fire and metal takes it", fireAndMetal, lance, skill.CarryAllowed},
+		{"water is refused it for its element first", water, lance, skill.CarryWrongElement},
+	} {
+		if got := skill.WhyCannotCarry(test.affinity, test.carried); got != test.want {
+			t.Errorf("%s: got refusal %d, want %d", test.name, got, test.want)
+		}
+		if got, want := skill.CanCarry(test.affinity, test.carried), test.want == skill.CarryAllowed; got != want {
+			t.Errorf("%s: CanCarry said %v", test.name, got)
+		}
+	}
+}
+
+// TestMarshalIsLosslessForEveryBlockASkillCanDeclare is the property an
+// authoring tool rests on. It writes the whole book back on every addition, and
+// a form that authors nine fields must not quietly drop the four blocks it does
+// not ask about.
+//
+// The comparison is over the resolved skills rather than the bytes, because the
+// parser normalises a few things — an omitted stack count is one stack — and the
+// question being asked is whether the *content* survives, not whether the file
+// is written the way it was typed.
+func TestMarshalIsLosslessForEveryBlockASkillCanDeclare(t *testing.T) {
+	declarations := []map[string]any{
+		// Nine core fields and nothing else, which is the common case.
+		merge(base(), map[string]any{"id": "plain"}),
+		// Every optional block at once, so a block cannot be dropped by
+		// another block being present.
+		merge(base(), map[string]any{
+			"id": "everything", "element": "fire", "strikes": 3, "power": 600,
+			"scaling":      map[string]any{"stat": "speed", "source": "base"},
+			"applies":      []map[string]any{{"status": "poison", "chance": 650, "stacks": 2}},
+			"self_applies": []map[string]any{{"status": "block", "chance": 1000, "stacks": 2}},
+			"requires": map[string]any{
+				"status": "burn", "min_stacks": 2, "bonus_power": 400, "consume": true,
+			},
+			"strips":   map[string]any{"categories": []string{"dot", "stat_debuff"}, "stacks": 2},
+			"restrict": map[string]any{"elements": []string{"fire", "metal"}},
+		}),
+		// A restriction with all three lists, and a condition that does not
+		// consume, so the false half of that flag is covered too.
+		merge(base(), map[string]any{
+			"id": "kept", "requires": map[string]any{"status": "poison", "bonus_power": 500},
+			"restrict": map[string]any{
+				"elements":   []string{"fire"},
+				"archetypes": []string{"bulwark", "sentinel"},
+				"characters": []string{"a.one"},
+			},
+		}),
+	}
+	book, err := parse(t, declarations...)
+	if err != nil {
+		t.Fatalf("the fixtures should parse: %v", err)
+	}
+	raw, err := book.Marshal()
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	reparsed, err := skill.ParseBook(raw, deps(t))
+	if err != nil {
+		t.Fatalf("the marshalled book does not parse: %v\n%s", err, raw)
+	}
+	if !reflect.DeepEqual(reparsed.Skills(), book.Skills()) {
+		t.Errorf("the trip through the file changed the book:\n%+v\n%+v",
+			reparsed.Skills(), book.Skills())
+	}
+	// And again, so that the bytes are a function of the content rather than of
+	// how many times they have been written.
+	again, err := reparsed.Marshal()
+	if err != nil {
+		t.Fatalf("marshal the reparsed book: %v", err)
+	}
+	if string(again) != string(raw) {
+		t.Errorf("a second write produced different bytes:\n%s\n%s", again, raw)
+	}
+	// The order is the order it was declared in, because skills.golden's table
+	// is that order and it is a design record rather than a listing.
+	for i, want := range []string{"plain", "everything", "kept"} {
+		if got := reparsed.Skills()[i].ID; got != want {
+			t.Errorf("skill %d came back as %q, want %q", i, got, want)
+		}
+	}
+}
+
+// TestAppendValidatesLikeAParse is what keeps a written book a loadable one: the
+// addition goes through the parser rather than past it.
+func TestAppendValidatesLikeAParse(t *testing.T) {
+	book := mustBook(t)
+	grown, err := book.Append(deps(t), skill.Skill{
+		ID: "oath", Element: element.Neutral, Range: 1, Pattern: "single",
+		Power: 1000, Strikes: 1, Accuracy: 950, Target: skill.Enemy,
+		Scaling:  skill.Scaling{Stat: progression.Attack, Source: combat.CurrentStat},
+		Restrict: &skill.Restriction{Elements: []element.Element{element.Fire}},
+	})
+	if err != nil {
+		t.Fatalf("append a legal skill: %v", err)
+	}
+	if got := len(grown.Skills()); got != len(book.Skills())+1 {
+		t.Errorf("the grown book holds %d skills", got)
+	}
+	if len(book.Skills()) != 4 {
+		t.Error("Append changed the book it was called on")
+	}
+	// A skill the parser would refuse never becomes a book, so it can never
+	// become a file either.
+	if _, err := book.Append(deps(t), skill.Skill{ID: "hollow"}); err == nil {
+		t.Error("a skill with no power and no effect was appended")
+	}
+	if _, err := book.Append(deps(t), skill.Skill{
+		ID: "strike", Element: element.Neutral, Range: 1, Pattern: "single",
+		Power: 1000, Strikes: 1, Accuracy: 950, Target: skill.Enemy,
+	}); err == nil {
+		t.Error("an id already in the book was appended")
+	}
 }

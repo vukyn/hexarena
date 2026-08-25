@@ -86,6 +86,71 @@ func (l *Library) ValidateKit(answer string) error {
 	return nil
 }
 
+// ValidateKitFor is ValidateKit plus the restrictions the kit's skills declare,
+// checked against whatever the draft has settled so far.
+//
+// It is the kit question's own check: by the time the kit is asked the id and
+// the preset are known, so a skill only somebody else may carry is refused
+// where it is typed rather than at the write. The element is usually still
+// unanswered at that point, and an unanswered element restricts nothing — see
+// Carrier.
+func (l *Library) ValidateKitFor(answer string, who Carrier) error {
+	if err := l.ValidateKit(answer); err != nil {
+		return err
+	}
+	kit, err := l.LookupKit(SplitList(answer))
+	if err != nil {
+		return err
+	}
+	return CheckKit(who, kit)
+}
+
+// ValidateRestrictedArchetypes and ValidateRestrictedCharacters reject an
+// allowlist naming something that does not exist, or naming it twice.
+//
+// An empty answer is accepted, and that is the load-bearing half: an absent list
+// restricts nothing, which is how the common pool is the default shape of a
+// skill. It must not be confused with the list that is present and empty, which
+// skill.ParseBook refuses because nobody satisfies it — an answer nobody typed
+// and an allowlist nobody can meet are different things.
+//
+// These are stricter than skill.ParseBook, which cannot see either book: cast
+// imports skill, so a skill validated against the cast would be an import cycle,
+// and the parser therefore only checks the names of a restriction on a skill
+// somebody already carries. Refusing an unknown name here rather than at the
+// first character to try it is the same bringing-forward CheckSkill does, and it
+// is the reason the full-screen client offers these two as a list rather than a
+// text field: a name that cannot be typed cannot be wrong.
+func (l *Library) ValidateRestrictedArchetypes(answer string) error {
+	return validateAllowlist(answer, func(id string) error {
+		return l.ValidateArchetype(id)
+	})
+}
+
+func (l *Library) ValidateRestrictedCharacters(answer string) error {
+	return validateAllowlist(answer, func(id string) error {
+		if _, known := l.characters.Get(id); !known {
+			return &UnknownCharacterError{ID: id}
+		}
+		return nil
+	})
+}
+
+func validateAllowlist(answer string, known func(string) error) error {
+	named := SplitList(answer)
+	seen := make(map[string]bool, len(named))
+	for _, id := range named {
+		if err := known(id); err != nil {
+			return err
+		}
+		if seen[id] {
+			return &DuplicateEntryError{Value: id}
+		}
+		seen[id] = true
+	}
+	return nil
+}
+
 // ValidateElement rejects an affinity the chart refuses, or one that cannot
 // carry the kit it is being given.
 //

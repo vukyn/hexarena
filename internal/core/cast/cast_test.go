@@ -900,3 +900,249 @@ func TestCarryRuleAcceptsWhatTheKitAllows(t *testing.T) {
 		t.Errorf("the rejection is %q, want it to name the skill's element", err)
 	}
 }
+
+// The fixtures below add restricted skills to the inline book, so that the
+// three halves of a restriction can be exercised where each is enforced: the
+// element one here and in the engine, the archetype and character ones here
+// only, because a roster entry carries neither.
+
+func restrictedSkills(t *testing.T) *skill.Book {
+	t.Helper()
+	patterns, err := pattern.ParseBook([]byte(`{
+	  "max_targets": 3, "splash_power": 500,
+	  "patterns": [{"name": "single", "splash": []}]
+	}`))
+	if err != nil {
+		t.Fatalf("patterns: %v", err)
+	}
+	statuses, err := status.ParseBook([]byte(`{
+	  "max_stacks": 5, "max_duration": 6,
+	  "kinds": [{"id": "poison", "category": "dot", "max_stacks": 3, "duration": 3, "tick_power": 500}]
+	}`))
+	if err != nil {
+		t.Fatalf("statuses: %v", err)
+	}
+	book, err := skill.ParseBook([]byte(`{
+	  "skills": [
+	    {"id": "strike", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1000, "accuracy": 950, "target": "enemy"},
+	    {"id": "riptide", "element": "water", "range": 2, "pattern": "single",
+	     "power": 1600, "accuracy": 900, "target": "enemy"},
+	    {"id": "oath", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1000, "accuracy": 950, "target": "enemy",
+	     "restrict": {"elements": ["fire", "metal"]}},
+	    {"id": "sentinel_oath", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1000, "accuracy": 950, "target": "enemy",
+	     "restrict": {"archetypes": ["sentinel"]}},
+	    {"id": "bulwark_oath", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1000, "accuracy": 950, "target": "enemy",
+	     "restrict": {"archetypes": ["bulwark"]}},
+	    {"id": "warden_only", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1000, "accuracy": 950, "target": "enemy",
+	     "restrict": {"characters": ["a-series.warden"]}},
+	    {"id": "pair_only", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1000, "accuracy": 950, "target": "enemy",
+	     "restrict": {"characters": ["a-series.warden", "a-series.ghost"]}},
+	    {"id": "nobody_only", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1000, "accuracy": 950, "target": "enemy",
+	     "restrict": {"characters": ["a-series.nobody"]}}
+	  ]
+	}`), skill.Deps{Patterns: patterns, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("skills: %v", err)
+	}
+	return book
+}
+
+// restrictedPreset is a preset over the restricted book, whose kit the caller
+// chooses — which is what the preset checks are made of.
+func restrictedPreset(t *testing.T, kit ...string) (*cast.ArchetypeBook, error) {
+	t.Helper()
+	raw, err := json.Marshal(map[string]any{"archetypes": []map[string]any{{
+		"id": "sentinel", "role": "armour rather than health", "column": 2,
+		"stats": table(), "skills": kit,
+	}}})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	return cast.ParseArchetypes(raw, cast.ArchetypeDeps{
+		Skills: restrictedSkills(t), Limits: limits(t), Rules: rules(t),
+	})
+}
+
+func restrictedDeps(t *testing.T) cast.Deps {
+	t.Helper()
+	presets, err := restrictedPreset(t, "strike", "riptide")
+	if err != nil {
+		t.Fatalf("presets: %v", err)
+	}
+	return cast.Deps{
+		Origins: origins(t), Archetypes: presets, Skills: restrictedSkills(t),
+		Chart: chart(t), Limits: limits(t), Rules: rules(t),
+	}
+}
+
+func parseRestricted(t *testing.T, declarations ...map[string]any) (*cast.Book, error) {
+	t.Helper()
+	raw, err := json.Marshal(map[string]any{"characters": declarations})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	return cast.ParseBook(raw, restrictedDeps(t))
+}
+
+// ghost is a second character of the same origin, for the checks that need two.
+func ghost(kit ...string) map[string]any {
+	built := baseCharacter()
+	built["id"] = "a-series.ghost"
+	built["name"] = "Ghost"
+	built["image"] = "assets/a-series/ghost.svg"
+	built["stages"] = []map[string]any{{"name": "Ghost", "min_level": 1, "stats": table()}}
+	built["skills"] = kit
+	return built
+}
+
+func withKit(kit ...string) map[string]any {
+	built := baseCharacter()
+	built["skills"] = kit
+	return built
+}
+
+// TestARestrictionIsEnforcedWhereACharacterIsAuthored is the whole of part one
+// from the cast's side: each of the three allowlists accepts and refuses, and
+// each refusal names the skill and what the restriction allows, because whoever
+// reads it did not necessarily write it.
+func TestARestrictionIsEnforcedWhereACharacterIsAuthored(t *testing.T) {
+	cases := []struct {
+		name    string
+		kit     []string
+		wants   []string
+		refused bool
+	}{
+		{name: "an unrestricted kit", kit: []string{"strike", "riptide"}},
+		{name: "a skill kept for this preset", kit: []string{"strike", "sentinel_oath"}},
+		{name: "a skill kept for this character", kit: []string{"strike", "warden_only"}},
+		{
+			name: "a skill kept for another element", kit: []string{"strike", "oath"},
+			refused: true, wants: []string{"oath", "fire or metal", "water/ice"},
+		},
+		{
+			name: "a skill kept for another preset", kit: []string{"strike", "bulwark_oath"},
+			refused: true, wants: []string{"bulwark_oath", "bulwark", "sentinel"},
+		},
+		{
+			name: "a skill kept for another character", kit: []string{"strike", "nobody_only"},
+			refused: true, wants: []string{"nobody_only", "a-series.nobody"},
+		},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := parseRestricted(t, withKit(test.kit...))
+			if !test.refused {
+				if err != nil {
+					t.Fatalf("%s was refused: %v", test.name, err)
+				}
+				return
+			}
+			if err == nil {
+				t.Fatalf("%s was accepted", test.name)
+			}
+			for _, want := range test.wants {
+				if !strings.Contains(err.Error(), want) {
+					t.Errorf("the refusal %q does not mention %q", err, want)
+				}
+			}
+		})
+	}
+}
+
+// TestACharacterAllowlistMayNameSomebodyDeclaredLater is why the name check
+// runs after the whole book has been read. A skill kept for two characters is
+// carried by the first of them, and the second is further down the file: a check
+// made while the book was half-read would refuse ordinary authoring for being in
+// the wrong order.
+func TestACharacterAllowlistMayNameSomebodyDeclaredLater(t *testing.T) {
+	book, err := parseRestricted(t,
+		withKit("strike", "pair_only"),
+		ghost("strike", "pair_only"),
+	)
+	if err != nil {
+		t.Fatalf("a forward reference should parse: %v", err)
+	}
+	if got := len(book.All()); got != 2 {
+		t.Errorf("the book holds %d characters, want 2", got)
+	}
+
+	// The same allowlist with one name nobody answers to is a refusal, and it
+	// says which name.
+	_, err = parseRestricted(t, withKit("strike", "nobody_only"))
+	if err == nil {
+		t.Fatal("a skill kept for a character the cast does not hold was accepted")
+	}
+	if !strings.Contains(err.Error(), "a-series.nobody") {
+		t.Errorf("the refusal %q does not name the missing character", err)
+	}
+}
+
+// TestASkillNobodyCarriesIsNotCheckedAgainstTheCast is the deadlock this
+// avoids: a unique skill cannot be written after the character that carries it
+// (the character's kit names the skill) and the character cannot be written
+// after the skill (the skill names the character), so one of the two orders has
+// to work. The skill goes in first, carried by nobody.
+func TestASkillNobodyCarriesIsNotCheckedAgainstTheCast(t *testing.T) {
+	if _, err := parseRestricted(t, withKit("strike", "riptide")); err != nil {
+		t.Fatalf("a cast that carries none of the restricted skills was refused: %v", err)
+	}
+	if _, err := cast.ParseBook([]byte(`{"characters": []}`), restrictedDeps(t)); err != nil {
+		t.Fatalf("an empty cast beside restricted skills was refused: %v", err)
+	}
+}
+
+// TestAPresetCannotHoldASkillKeptForSomebody is the check that has to live with
+// the archetype book, because a preset is a starting point for every character
+// built from it: a kit entry only certain characters may carry would refuse
+// everyone else, and the refusal would land on the author of the character
+// rather than the author of the preset.
+func TestAPresetCannotHoldASkillKeptForSomebody(t *testing.T) {
+	cases := []struct {
+		name    string
+		kit     []string
+		wants   []string
+		refused bool
+	}{
+		{name: "an unrestricted kit", kit: []string{"strike", "riptide"}},
+		{name: "a skill kept for this very preset", kit: []string{"strike", "sentinel_oath"}},
+		{name: "a skill kept for an element", kit: []string{"strike", "oath"}},
+		{
+			name: "a skill kept for one character", kit: []string{"strike", "warden_only"},
+			refused: true, wants: []string{"warden_only", "a-series.warden", "shared"},
+		},
+		{
+			name: "a skill kept for two characters", kit: []string{"strike", "pair_only"},
+			refused: true, wants: []string{"pair_only", "a-series.ghost"},
+		},
+		{
+			name: "a skill kept for another preset", kit: []string{"strike", "bulwark_oath"},
+			refused: true, wants: []string{"bulwark_oath", "bulwark"},
+		},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := restrictedPreset(t, test.kit...)
+			if !test.refused {
+				if err != nil {
+					t.Fatalf("%s was refused: %v", test.name, err)
+				}
+				return
+			}
+			if err == nil {
+				t.Fatalf("%s was accepted", test.name)
+			}
+			for _, want := range test.wants {
+				if !strings.Contains(err.Error(), want) {
+					t.Errorf("the refusal %q does not mention %q", err, want)
+				}
+			}
+		})
+	}
+}

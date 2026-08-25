@@ -1,0 +1,555 @@
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+
+	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/i18n"
+)
+
+// The fields of the new-skill form, in the order they are walked.
+//
+// Nine core fields, the statuses it inflicts, and the three allowlists. What is
+// deliberately absent is requires, strips, scaling and self_applies: each is a
+// composite worth several questions of its own, and a form that asked twelve
+// more would be worse than an edit to skills.json. They survive a save
+// untouched — see skill.Skill.MarshalJSON.
+const (
+	skillFieldID = iota
+	skillFieldElement
+	skillFieldTarget
+	skillFieldRange
+	skillFieldShape
+	skillFieldPower
+	skillFieldStrikes
+	skillFieldAccuracy
+	skillFieldCooldown
+	skillFieldInflicts
+	skillFieldKeptForElements
+	skillFieldKeptForRoles
+	skillFieldKeptForCharacters
+	skillFieldCount
+)
+
+// skillsScreen is the skill book, and the form that adds to it.
+//
+// It is the other half of the new-character form in the same way the origins
+// screen is: a kit can only name a skill the book holds, so an author who finds
+// the skill they want missing can add it and go straight back.
+//
+// Nothing here decides whether an answer is acceptable, and nothing here works
+// out what a skill is worth. The damage comes from forge.Library.PreviewDraft,
+// which is combat.Rules.Damage against the reference pair skills.golden's own
+// table is measured from, and the write goes through forge.SkillDraft.Resolve,
+// which appends to the book and therefore applies exactly the checks a load
+// applies.
+type skillsScreen struct {
+	skills []skill.Skill
+	cursor int
+
+	// adding is whether the form is in front of the listing.
+	adding bool
+	inputs []textinput.Model
+	field  int
+	// The three choosers and the three allowlists, held as their answers rather
+	// than as text fields: an element, a side and a shape are all ids out of a
+	// book, so typing one is only a way to get it wrong.
+	elementIndex int
+	targetIndex  int
+	shapeIndex   int
+	keptElements []string
+	keptRoles    []string
+	keptWho      []string
+	touched      bool
+
+	err error
+	// added is the last skill written, kept as what it was rather than as the
+	// line announcing it, so a language switch redraws the announcement.
+	added *skill.Skill
+}
+
+func newSkillsScreen(lib *forge.Library) skillsScreen {
+	return skillsScreen{}.refresh(lib).resetForm(lib)
+}
+
+func (s skillsScreen) refresh(lib *forge.Library) skillsScreen {
+	s.skills = lib.Skills().Skills()
+	s.cursor = clamp(s.cursor, 0, len(s.skills)-1)
+	if s.inputs == nil {
+		s = s.resetForm(lib)
+	}
+	return s
+}
+
+func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
+	s.inputs = make([]textinput.Model, skillFieldCount)
+	for i := range s.inputs {
+		input := textinput.New()
+		input.Prompt = ""
+		input.CharLimit = 200
+		input.Width = 24
+		s.inputs[i] = input
+	}
+	s.inputs[skillFieldID].Width = 32
+	s.inputs[skillFieldInflicts].Width = 40
+	// The defaults are the shape of an ordinary single-target attack, and the
+	// element among them is the one worth spelling out: neutral is the common
+	// pool, so a skill authored without an opinion about its element is one
+	// every character can take. Power and accuracy have none, because both are
+	// balance and a default would write a number nobody chose.
+	s.inputs[skillFieldRange].SetValue(defaultSkillRange)
+	s.inputs[skillFieldStrikes].SetValue(defaultSkillStrikes)
+	s.inputs[skillFieldCooldown].SetValue(defaultSkillCooldown)
+	s.elementIndex = indexOf(forge.ElementNames(), defaultSkillElement)
+	s.targetIndex = indexOf(forge.TargetNames(), defaultSkillTarget)
+	s.shapeIndex = indexOf(lib.PatternNames(), defaultSkillPattern)
+	s.keptElements, s.keptRoles, s.keptWho = nil, nil, nil
+	s.field = skillFieldID
+	s.touched = false
+	s.err = nil
+	s.inputs[s.field].Focus()
+	return s
+}
+
+// The defaults a skill takes when nobody says otherwise. They are the same
+// strings cmd/hexforge's prompts default to; both front-ends offering different
+// defaults would be two answers to one question.
+const (
+	defaultSkillElement  = "neutral"
+	defaultSkillTarget   = "enemy"
+	defaultSkillPattern  = "single"
+	defaultSkillRange    = "1"
+	defaultSkillStrikes  = "1"
+	defaultSkillCooldown = "0"
+)
+
+func indexOf(values []string, want string) int {
+	for i, value := range values {
+		if value == want {
+			return i
+		}
+	}
+	return 0
+}
+
+// draft is the answers as internal/forge wants them, which is the only thing
+// this screen hands outwards.
+func (s skillsScreen) draft(m model) forge.SkillDraft {
+	return forge.SkillDraft{
+		ID:                 strings.TrimSpace(s.inputs[skillFieldID].Value()),
+		Element:            at(forge.ElementNames(), s.elementIndex),
+		Target:             at(forge.TargetNames(), s.targetIndex),
+		Range:              s.inputs[skillFieldRange].Value(),
+		Pattern:            at(m.lib.PatternNames(), s.shapeIndex),
+		Power:              s.inputs[skillFieldPower].Value(),
+		Strikes:            s.inputs[skillFieldStrikes].Value(),
+		Accuracy:           s.inputs[skillFieldAccuracy].Value(),
+		Cooldown:           s.inputs[skillFieldCooldown].Value(),
+		Applies:            s.inputs[skillFieldInflicts].Value(),
+		RestrictElements:   strings.Join(s.keptElements, ","),
+		RestrictArchetypes: strings.Join(s.keptRoles, ","),
+		RestrictCharacters: strings.Join(s.keptWho, ","),
+	}
+}
+
+func at(values []string, index int) string {
+	if len(values) == 0 {
+		return ""
+	}
+	return values[clamp(index, 0, len(values)-1)]
+}
+
+// chooserField reports whether a field is stepped through rather than typed.
+func skillChooserField(field int) bool {
+	switch field {
+	case skillFieldElement, skillFieldTarget, skillFieldShape:
+		return true
+	default:
+		return false
+	}
+}
+
+// listField reports whether a field is a list chosen on the sub-screen.
+func skillListField(field int) bool {
+	switch field {
+	case skillFieldKeptForElements, skillFieldKeptForRoles, skillFieldKeptForCharacters:
+		return true
+	default:
+		return false
+	}
+}
+
+func (s skillsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+	if s.adding {
+		return s.updateForm(m, message)
+	}
+	switch message.String() {
+	case "q":
+		return m, tea.Quit
+	case "esc":
+		m.screen = screenMenu
+		return m, nil
+	case "up", "k":
+		s.cursor = clamp(s.cursor-1, 0, len(s.skills)-1)
+	case "down", "j":
+		s.cursor = clamp(s.cursor+1, 0, len(s.skills)-1)
+	case "a":
+		s = s.resetForm(m.lib)
+		s.adding = true
+		s.added = nil
+	}
+	m.skills = s
+	return m, nil
+}
+
+func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch message.String() {
+	case "esc":
+		if !s.touched {
+			s.adding = false
+			m.skills = s
+			return m, nil
+		}
+		return m.ask(i18n.SkillFormDiscard, func(m model) model {
+			m.skills = m.skills.resetForm(m.lib)
+			m.skills.adding = false
+			return m
+		}), nil
+	case "ctrl+s":
+		s = s.save(m)
+		m.skills = s
+		return m, nil
+	case "up", "shift+tab":
+		s = s.moveTo(s.field - 1)
+		m.skills = s
+		return m, nil
+	case "down", "tab", "enter":
+		s = s.moveTo(s.field + 1)
+		m.skills = s
+		return m, nil
+	}
+	if skillChooserField(s.field) {
+		switch message.String() {
+		case "left":
+			s = s.cycle(m, -1)
+		case "right":
+			s = s.cycle(m, 1)
+		}
+		m.skills = s
+		return m, nil
+	}
+	if skillListField(s.field) {
+		if message.String() == " " || message.String() == "right" {
+			m.skills = s
+			return m.openAllowlist(s.field), nil
+		}
+		m.skills = s
+		return m, nil
+	}
+	updated, command := s.inputs[s.field].Update(message)
+	if updated.Value() != s.inputs[s.field].Value() {
+		s.touched = true
+		s.err = nil
+		s.added = nil
+	}
+	s.inputs[s.field] = updated
+	m.skills = s
+	return m, command
+}
+
+// openAllowlist raises the picker for one of the three lists.
+//
+// The list is offered rather than typed for the reason the origin and the
+// archetype are on the other form: every entry is an id out of a book, so a
+// picker cannot produce a name that does not exist — and an allowlist naming
+// somebody who does not exist is the same mistake as an empty one, satisfied by
+// nobody.
+func (m model) openAllowlist(field int) model {
+	switch field {
+	case skillFieldKeptForElements:
+		return m.pick(&pickState{
+			title: i18n.PickerElementsTitle, kind: pickElements,
+			options: idOptions(forge.ElementNames()), chosen: m.skills.keptElements,
+			apply: func(m model, chosen []string) model {
+				m.skills.keptElements = chosen
+				m.skills.touched = true
+				return m
+			},
+		})
+	case skillFieldKeptForRoles:
+		return m.pick(&pickState{
+			title: i18n.PickerRolesTitle, kind: pickArchetypes,
+			options: idOptions(m.lib.Archetypes().IDs()), chosen: m.skills.keptRoles,
+			apply: func(m model, chosen []string) model {
+				m.skills.keptRoles = chosen
+				m.skills.touched = true
+				return m
+			},
+		})
+	default:
+		return m.pick(&pickState{
+			title: i18n.PickerCharactersTitle, kind: pickCharacters,
+			options: idOptions(m.lib.CharacterIDs()), chosen: m.skills.keptWho,
+			apply: func(m model, chosen []string) model {
+				m.skills.keptWho = chosen
+				m.skills.touched = true
+				return m
+			},
+		})
+	}
+}
+
+func (s skillsScreen) moveTo(target int) skillsScreen {
+	s.inputs[s.field].Blur()
+	s.field = (target + skillFieldCount) % skillFieldCount
+	if !skillChooserField(s.field) && !skillListField(s.field) {
+		s.inputs[s.field].Focus()
+	}
+	return s
+}
+
+func (s skillsScreen) cycle(m model, by int) skillsScreen {
+	step := func(index int, total int) int {
+		if total == 0 {
+			return 0
+		}
+		return (index + by + total) % total
+	}
+	switch s.field {
+	case skillFieldElement:
+		s.elementIndex = step(s.elementIndex, len(forge.ElementNames()))
+	case skillFieldTarget:
+		s.targetIndex = step(s.targetIndex, len(forge.TargetNames()))
+	case skillFieldShape:
+		s.shapeIndex = step(s.shapeIndex, len(m.lib.PatternNames()))
+	}
+	s.touched = true
+	s.err = nil
+	s.added = nil
+	return s
+}
+
+// save resolves the draft and writes it.
+//
+// Both halves belong to internal/forge: Resolve refuses a skill a load would
+// refuse, and SaveSkill writes through the temp-file-then-rename that keeps a
+// crash from truncating skills.json.
+func (s skillsScreen) save(m model) skillsScreen {
+	built, err := s.draft(m).Resolve(m.lib)
+	if err != nil {
+		s.err = err
+		return s
+	}
+	if err := m.lib.SaveSkill(built); err != nil {
+		s.err = err
+		return s
+	}
+	s = s.refresh(m.lib).resetForm(m.lib)
+	s.adding = false
+	s.added = &built
+	return s
+}
+
+// skillsRoom is how many rows the listing has, measured from the window in
+// hand: the body has m.height-4 lines and this screen spends nine of them on a
+// heading, a column header, two blanks, the two damage rows, the tally, the line
+// a write leaves behind, and the empty string the body's trailing newline leaves
+// when frame splits it.
+func skillsRoom(m model) int {
+	room := m.height - 4 - 9
+	if room < 3 {
+		return 3
+	}
+	return room
+}
+
+// skillRow lays out one row of the listing, and the header above it, from one
+// place so the two cannot drift apart.
+func skillRow(idColumn int, id, member, power, who string) string {
+	return fmt.Sprintf("%s %s %s%s",
+		pad(id, idColumn), pad(member, 9), pad(power, 8), who)
+}
+
+func (s skillsScreen) view(m model) (string, string) {
+	if s.adding {
+		return s.viewForm(m)
+	}
+	footer := m.text(i18n.SkillsFooter)
+	var out strings.Builder
+	out.WriteString(m.style.heading.Render(m.text(i18n.SkillsHeading)) + "  " +
+		m.style.dim.Render(m.text(i18n.SkillsSubtitle)) + "\n\n")
+
+	column := 0
+	for _, current := range s.skills {
+		if width := lipgloss.Width(current.ID); width > column {
+			column = width
+		}
+	}
+	from, to := window(len(s.skills), s.cursor, skillsRoom(m))
+	anyone := 0
+	for _, current := range s.skills {
+		if forge.AnyoneMayCarry(current) {
+			anyone++
+		}
+	}
+	// The header names the one column nobody could guess. The other three are
+	// an id, an element and a power, each labelled with the word the form that
+	// authored it uses.
+	out.WriteString("  " + m.style.dim.Render(skillRow(column+1,
+		m.text(i18n.SkillFieldID), m.text(i18n.LabelElement),
+		m.text(i18n.SkillFieldPower), m.text(i18n.ColumnWhoMayCarry))) + "\n")
+	for index := from; index < to; index++ {
+		current := s.skills[index]
+		marker := "  "
+		// The power and the strike count are the balance, so they are the two
+		// numbers on the row; everything else about a skill is a keypress away
+		// on the form that authored it.
+		row := skillRow(column+1, current.ID, current.Element.String(),
+			strconv.Itoa(current.Power)+"x"+strconv.Itoa(current.StrikeCount()), "")
+		row += clip(m.lang.WhoMaySummary(current), minWidth-3-lipgloss.Width(row))
+		if index == s.cursor {
+			marker = "> "
+			row = m.style.selected.Render(row)
+		}
+		out.WriteString(marker + row + "\n")
+	}
+	out.WriteString("\n")
+	// What the skill under the cursor is worth, against the same reference the
+	// form previews an unwritten one against — so a power being authored can be
+	// compared with the powers already in the book without leaving the program.
+	if len(s.skills) > 0 {
+		selected := s.skills[clamp(s.cursor, 0, len(s.skills)-1)]
+		preview := m.lib.PreviewDamage(selected)
+		out.WriteString(m.label(m.text(i18n.LabelDamage), "%s", m.lang.Damage(preview)))
+		if preview.Amplified > 0 {
+			out.WriteString(m.continued("%s",
+				m.text(i18n.DamageAmplified, preview.Amplified)))
+		}
+	}
+	if s.added != nil {
+		out.WriteString(m.style.good.Render(m.text(i18n.SkillAdded,
+			s.added.ID, m.lib.SkillsPath())) + "\n")
+	}
+	out.WriteString(m.style.dim.Render(m.text(i18n.SkillsTally, len(s.skills), anyone)))
+	return out.String(), footer
+}
+
+// skillFieldLabel is what each row of the form is called.
+func skillFieldLabel(m model, field int) string {
+	keys := [skillFieldCount]i18n.Key{
+		skillFieldID:                i18n.SkillFieldID,
+		skillFieldElement:           i18n.SkillFieldElement,
+		skillFieldTarget:            i18n.SkillFieldTarget,
+		skillFieldRange:             i18n.SkillFieldRange,
+		skillFieldShape:             i18n.SkillFieldShape,
+		skillFieldPower:             i18n.SkillFieldPower,
+		skillFieldStrikes:           i18n.SkillFieldStrikes,
+		skillFieldAccuracy:          i18n.SkillFieldAccuracy,
+		skillFieldCooldown:          i18n.SkillFieldCooldown,
+		skillFieldInflicts:          i18n.SkillFieldInflicts,
+		skillFieldKeptForElements:   i18n.SkillFieldKeptForElements,
+		skillFieldKeptForRoles:      i18n.SkillFieldKeptForRoles,
+		skillFieldKeptForCharacters: i18n.SkillFieldKeptForCharacters,
+	}
+	return m.text(keys[field])
+}
+
+// skillLabelWidth is the column the field names sit in, measured from the labels
+// themselves rather than declared: the longest is "cooldown" in one language and
+// "để dành cho mẫu" in the other.
+func skillLabelWidth(m model) int {
+	widest := 0
+	for field := range skillFieldCount {
+		if width := lipgloss.Width(skillFieldLabel(m, field)); width > widest {
+			widest = width
+		}
+	}
+	return widest + 1
+}
+
+func (s skillsScreen) viewForm(m model) (string, string) {
+	footer := m.text(i18n.SkillFormFooter)
+	var out strings.Builder
+	out.WriteString(m.style.heading.Render(m.text(i18n.SkillFormHeading)) + "  " +
+		m.style.dim.Render(m.text(i18n.SkillFormSubtitle)) + "\n\n")
+
+	width := skillLabelWidth(m)
+	for field := range skillFieldCount {
+		marker := "  "
+		if field == s.field {
+			marker = "> "
+		}
+		name := pad(skillFieldLabel(m, field), width)
+		if field == s.field {
+			name = m.style.selected.Render(name)
+		} else {
+			name = m.style.label.Render(name)
+		}
+		out.WriteString(marker + name + " " + s.value(m, field, width) + "\n")
+	}
+
+	out.WriteString("\n")
+	out.WriteString(s.damageRow(m, width))
+	out.WriteString(m.labelAt("", width, "%s", m.style.dim.Render(m.text(i18n.SkillFormHint))))
+	if s.err != nil {
+		out.WriteString(m.style.bad.Render(m.text(i18n.WriteRefused, m.lang.Error(s.err))) + "\n")
+	}
+	return out.String(), footer
+}
+
+// value is what one row shows: a chooser, a chosen list, or what was typed.
+func (s skillsScreen) value(m model, field, labelWidth int) string {
+	choice := func(values []string, index int) string {
+		if len(values) == 0 {
+			return m.style.bad.Render(m.text(i18n.NoneCatalogued))
+		}
+		return fmt.Sprintf(choiceFormat, m.lang.Glossed(at(values, index)),
+			m.style.dim.Render(m.text(i18n.ChoicePosition,
+				clamp(index, 0, len(values)-1)+1, len(values))))
+	}
+	switch field {
+	case skillFieldElement:
+		return choice(forge.ElementNames(), s.elementIndex)
+	case skillFieldTarget:
+		return choice(forge.TargetNames(), s.targetIndex)
+	case skillFieldShape:
+		return choice(m.lib.PatternNames(), s.shapeIndex)
+	case skillFieldKeptForElements:
+		return s.listValue(m, s.keptElements, labelWidth)
+	case skillFieldKeptForRoles:
+		return s.listValue(m, s.keptRoles, labelWidth)
+	case skillFieldKeptForCharacters:
+		return s.listValue(m, s.keptWho, labelWidth)
+	default:
+		return s.inputs[field].View()
+	}
+}
+
+// listValue draws one of the three allowlists: what is in it, or that anybody
+// may carry the skill, which is what an empty list means.
+func (s skillsScreen) listValue(m model, chosen []string, labelWidth int) string {
+	room := minWidth - 3 - labelWidth - lipgloss.Width(m.text(i18n.KitChooseHint)) - 2
+	if len(chosen) == 0 {
+		return m.style.dim.Render(m.text(i18n.WhoAnyone) + "  " + m.text(i18n.KitChooseHint))
+	}
+	return clip(strings.Join(chosen, " "), room) + "  " +
+		m.style.dim.Render(m.text(i18n.KitChooseHint))
+}
+
+// damageRow is the point of authoring a skill on a screen rather than in a file:
+// what the power being typed is actually worth, before it is written.
+func (s skillsScreen) damageRow(m model, labelWidth int) string {
+	preview, err := m.lib.PreviewDraft(s.draft(m))
+	if err != nil {
+		return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s",
+			m.style.bad.Render(m.lang.Error(err)))
+	}
+	return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s", m.lang.Damage(preview))
+}

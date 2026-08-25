@@ -289,9 +289,16 @@ func fill(given forge.Draft, lib *forge.Library, prompt *prompter) (forge.Draft,
 	// which elements are legal. Asking the other way round means either
 	// validating the element against a preset the author is about to replace, or
 	// accepting an answer that the write then refuses.
+	//
+	// The kit's own check is against everything already answered — the id and
+	// the preset, which a skill's restriction may name — and not against the
+	// element, which has not been asked yet. forge.Carrier is what says an
+	// unanswered fact restricts nothing.
 	if err := ask(&filled.Skills, question{
 		flag: "skills", prompt: "kit", preset: strings.Join(archetype.Skills, ","),
-		validate: lib.ValidateKit,
+		validate: func(answer string) error {
+			return lib.ValidateKitFor(answer, filled.Carrier())
+		},
 	}); err != nil {
 		return forge.Draft{}, err
 	}

@@ -18,12 +18,21 @@ import (
 
 // The fields of the new-character form, in the order they are walked.
 //
-// The order is hexforge's prompt order and it is load-bearing in one place:
-// the kit comes before the element, because the kit is what decides which
-// elements are legal. Here it matters less than at a prompt — everything is on
-// screen at once and can be revisited — but the two front-ends walking the same
-// order is what makes them comparable, and the live carry check reads better
-// when the kit above it is already settled.
+// The order is hexforge's prompt order, and on this screen it is a reading order
+// rather than a constraint. At a prompt the kit has to come before the element,
+// because an answer once given is given; here both fields are on screen at once
+// and either one re-checks against the other the moment it changes, so the
+// author may fill them in whichever way round they think.
+//
+// That is why the kit is chosen from a list and the element is still typed. The
+// list marks the skills this character cannot take and says why — with no
+// element answered yet, nothing is marked, because an unanswered element
+// restricts nothing (forge.Carrier) — and the carry line under the form refuses
+// an element the chosen kit cannot take, naming the skill. Neither direction
+// silently drops the other's answer: changing the element does not empty the
+// kit, it turns the offending rows into marked rows and the carry line red,
+// which is a state an author can see and fix rather than one that happened
+// behind them.
 const (
 	fieldID = iota
 	fieldName
@@ -55,6 +64,12 @@ type formScreen struct {
 	// is what the art field offers. Empty means there is nothing to offer and
 	// that field is a text field instead — see choiceField.
 	art []string
+
+	// kit is the chosen skills, in the order they were chosen, because that
+	// order is the kit. It replaced a comma separated text field: nineteen ids
+	// typed by hand is nineteen chances to name one that does not exist, and the
+	// list can say who each skill is kept for while it is being chosen.
+	kit []string
 
 	originIndex    int
 	archetypeIndex int
@@ -126,7 +141,7 @@ func (f formScreen) applyPreset() formScreen {
 	}
 	preset := f.archetypes[clamp(f.archetypeIndex, 0, len(f.archetypes)-1)]
 	if f.kitFollowsPreset {
-		f.inputs[fieldKit].SetValue(strings.Join(preset.Skills, ","))
+		f.kit = append([]string(nil), preset.Skills...)
 	}
 	for _, kind := range progression.Kinds() {
 		if f.statFollowsPreset[kind] {
@@ -184,7 +199,7 @@ func (f formScreen) draft() forge.Draft {
 		ID:      strings.TrimSpace(f.inputs[fieldID].Value()),
 		Name:    f.inputs[fieldName].Value(),
 		Image:   f.imageAnswer(),
-		Skills:  f.inputs[fieldKit].Value(),
+		Skills:  strings.Join(f.kit, ","),
 		Element: strings.TrimSpace(f.inputs[fieldElement].Value()),
 		Bio:     f.inputs[fieldBio].Value(),
 	}
@@ -211,7 +226,7 @@ func (f formScreen) draft() forge.Draft {
 // is what the command line does and what the write already warns about.
 func (f formScreen) choiceField(field int) bool {
 	switch field {
-	case fieldOrigin, fieldArchetype:
+	case fieldOrigin, fieldArchetype, fieldKit:
 		return true
 	case fieldImage:
 		return len(f.art) > 0
@@ -235,6 +250,16 @@ func (f formScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "down", "tab", "enter":
 		f = f.moveTo(f.cursor + 1)
 		m.form = f
+		return m, nil
+	}
+	// The kit is a list rather than a cycle, so it opens a sub-screen instead of
+	// stepping. Nineteen skills do not fit beside a form — see picker.go, which
+	// measures that rather than asserting it.
+	if f.cursor == fieldKit {
+		m.form = f
+		if message.String() == " " || message.String() == "right" {
+			return m.openKit(), nil
+		}
 		return m, nil
 	}
 	if f.choiceField(f.cursor) {
@@ -261,14 +286,36 @@ func (f formScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 			f = f.applyArt()
 		case f.cursor == fieldImage:
 			f.imageFollowsID = false
-		case f.cursor == fieldKit:
-			f.kitFollowsPreset = false
 		case f.cursor >= fieldStatBase:
 			f.statFollowsPreset[f.cursor-fieldStatBase] = false
 		}
 	}
 	m.form = f
 	return m, command
+}
+
+// openKit raises the picker over the skill book.
+//
+// The options carry a refusal each, and it is forge.CheckSkill's: the same
+// predicate the write applies, against whatever the form has settled so far. So
+// the reason a row is unavailable cannot disagree with the reason the write
+// refuses it, which is the whole point of the answer coming from internal/forge.
+func (m model) openKit() model {
+	return m.pick(&pickState{
+		title: i18n.PickerKitTitle, kind: pickSkills,
+		options: kitOptions(m.lib, m.form.draft().Carrier()),
+		chosen:  m.form.kit,
+		apply: func(m model, chosen []string) model {
+			m.form.kit = chosen
+			// Choosing is setting it by hand, so it stops following the preset,
+			// on the same terms as typing a kit used to.
+			m.form.kitFollowsPreset = false
+			m.form.touched = true
+			m.form.err = nil
+			m.form.notes = nil
+			return m
+		},
+	})
 }
 
 // leave goes back to the menu, asking first if there is anything to lose.
@@ -422,6 +469,8 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 		value = f.choice(m, f.archetypeIndex, len(f.archetypes), f.archetypeLabel(m))
 	case field == fieldImage && f.choiceField(fieldImage):
 		value = f.choice(m, f.artIndex, len(f.art), f.artLabel(m))
+	case field == fieldKit:
+		value = f.kitValue(m, labelWidth)
 	case field >= fieldStatBase:
 		value = f.statRow(m, progression.Kind(field-fieldStatBase))
 	default:
@@ -437,6 +486,20 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 			m.style.dim.Render(m.text(i18n.NoArtToChoose, m.lib.AssetsPath())))
 	}
 	return drawn
+}
+
+// kitValue is the chosen kit, with the key that opens the list.
+//
+// The ids and not their names, for the reason no id is translated anywhere here:
+// they are what cast.json holds and what --skills takes. Their Vietnamese names
+// are one keypress away, on the rows of the list itself.
+func (f formScreen) kitValue(m model, labelWidth int) string {
+	hint := m.style.dim.Render(m.text(i18n.KitChooseHint))
+	room := minWidth - 3 - labelWidth - lipgloss.Width(m.text(i18n.KitChooseHint)) - 2
+	if len(f.kit) == 0 {
+		return m.style.bad.Render(m.text(i18n.PickerNothingChosen)) + "  " + hint
+	}
+	return clip(strings.Join(f.kit, " "), room) + "  " + hint
 }
 
 // choiceFormat is how a chooser draws: the value between arrows, then where it
