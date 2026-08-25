@@ -86,29 +86,62 @@ q or ctrl+c to quit`,
 	SkillFormHeading:            "new skill",
 	SkillFormSubtitle:           "the damage is the engine's own, worked out as you type",
 	SkillFormFooter:             "↑/↓ field · ←/→ pick · space list · ctrl+s save · esc back · ctrl+l tiếng Việt",
-	SkillFormHint:               "power and accuracy in parts per thousand: 1000 is one times",
 	SkillFormDiscard:            "discard the skill being authored?",
 	SkillFieldID:                "id",
 	SkillFieldElement:           "element",
 	SkillFieldTarget:            "aims at",
 	SkillFieldRange:             "range",
 	SkillFieldShape:             "shape",
-	SkillFieldPower:             "power",
+	SkillFieldPower:             "damage multiplier",
 	SkillFieldStrikes:           "strikes",
 	SkillFieldAccuracy:          "accuracy",
-	SkillFieldCooldown:          "cooldown",
+	SkillFieldCooldown:          "cooldown (cd)",
 	SkillFieldInflicts:          "inflicts",
 	SkillFieldKeptForElements:   "kept for",
 	SkillFieldKeptForRoles:      "kept for role",
 	SkillFieldKeptForCharacters: "belongs to",
 	LabelDamage:                 "damage",
-	DamageLine:                  "%d per strike, %d in all, against %d attack and %d defence",
-	DamageAmplified:             "%d with its condition holding",
-	DamageMoved:                 "%d → %d per strike, %d → %d in all",
-	SkillAdded:                  "added %s to %s",
-	SkillEdited:                 "edited %s in %s",
-	SkillFormEditHeading:        "edit skill",
-	SkillFormEditDiscard:        "discard the changes?",
+	// The reference pair is named with the two stat labels this client leaves
+	// untranslated everywhere else — see forge.ShortStat — rather than spelled
+	// out. That is seven cells, and this row needs them: it is the widest fixed
+	// row on the skill form, it grows with the number of digits in its own
+	// figures, and it sat at exactly the 79 cells the window has before the
+	// power field was renamed to something longer than "power". The command
+	// line spells them out and is frozen that way because scripts read it; this
+	// array is free to read better, which is what the package comment says.
+	DamageLine:           "%d per strike, %d in all, against %d atk and %d def",
+	DamageAmplified:      "%d with its condition holding",
+	DamageMoved:          "%d → %d per strike, %d → %d in all",
+	SkillAdded:           "added %s to %s",
+	SkillEdited:          "edited %s in %s",
+	SkillFormEditHeading: "edit skill",
+	SkillFormEditDiscard: "discard the changes?",
+
+	// One line per field, describing the field the cursor is on rather than
+	// footnoting two of the fourteen. See keys.go for why this replaced a
+	// footnote: they say what the field does, not what it is called.
+	SkillHelpID:                "the name the data files use: lower case and underscores — e.g. ember_lance",
+	SkillHelpName:              "its Vietnamese name; empty uses the built-in one, then the bare id",
+	SkillHelpElement:           "its element; only a unit sharing it may carry it, neutral suits everyone",
+	SkillHelpTarget:            "which side it reaches: the far one, the caster's own, the caster, or both",
+	SkillHelpRange:             "how many cells away it reaches, from where the caster stands — e.g. 2",
+	SkillHelpShape:             "which cells besides the aim it catches; space draws it on the board",
+	SkillHelpPower:             "parts per thousand of the caster's attack: 1000 is one times, 800 is 0.8x",
+	SkillHelpStrikes:           "how many times one turn lands, each at the multiplier above — e.g. 3",
+	SkillHelpAccuracy:          "parts per thousand chance to connect, before accuracy and dodge — e.g. 900",
+	SkillHelpCooldown:          "turns of the caster's own to wait before using it again; 0 is every turn",
+	SkillHelpInflicts:          "status:chance in parts per thousand, comma separated — e.g. poison:300",
+	SkillHelpKeptForElements:   "only these elements may carry it; empty means any element — e.g. fire",
+	SkillHelpKeptForRoles:      "only these role presets may carry it; empty means any role",
+	SkillHelpKeptForCharacters: "only these characters may carry it; empty means anyone at all",
+
+	// The shape diagram, opened from the shape chooser.
+	SkillShapeHeading:  "which cells the skill catches",
+	SkillShapeCoverage: "catches %d cells",
+	SkillShapeShort:    "catches %d of %d cells — a second step off the board loses one",
+	SkillShapeDrawnAt:  "drawn at %s, the middle of the enemy formation",
+	SkillShapeLegend:   "%s is the aim, at full power · %s is a splash cell, at %s",
+	SkillShapeFooter:   "←/→ shape · enter or esc done · ctrl+l tiếng Việt",
 
 	WhoAnyone:          "anyone",
 	WhoElementUnits:    "%s units",
@@ -125,6 +158,17 @@ q or ctrl+c to quit`,
 	PickerNothingToPick:   "there is nothing to choose from.",
 	PickerNothingChosen:   "nothing chosen yet",
 	KitChooseHint:         "space to choose",
+
+	PickerShowing:        "showing %s (%d of %d)",
+	PickerNothingInGroup: "no characters from this work yet.",
+	PickerFilterFooter:   "space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt",
+
+	PickerStatusesTitle: "the statuses this skill inflicts",
+	PickerStatusHint:    "space chooses a status · type the chance in parts per thousand",
+	PickerStatusFooter:  "space pick · ↑/↓ move · 0-9 chance · enter done · esc back · ctrl+l tiếng Việt",
+	PickerChance:        "chance",
+	StatusDetail:        "%s · %d turns · up to %d stacks",
+	StatusTicks:         "damages every turn",
 
 	KitTakesAnyElement:    "this kit is all neutral, so any element carries it",
 	KitNeeds:              "this kit needs %s",

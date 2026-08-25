@@ -58,13 +58,29 @@ func renderSkills(out io.Writer, lib *forge.Library) {
 // Every refusal it shows is internal/forge's. This file decides the order of the
 // questions and nothing else, which is what keeps it from disagreeing with the
 // full-screen client about what a legal skill is.
+// targetUsage lists the sides a skill may aim at, from the enum rather than by
+// hand.
+//
+// It was written out three times — twice as a flag's usage and once as a
+// prompt's — which is three places to forget when a side is added, and a usage
+// string that omits a legal value is a usage string that is wrong. forge.
+// TargetNames is what the full-screen client's chooser offers, so the two
+// front-ends cannot disagree about what may be typed either.
+var targetUsage = "who it aims at: " + strings.Join(forge.TargetNames(), ", ")
+
+// nameUsage describes the display name. It says what an empty answer means,
+// because absent is a real answer here: a skill with no name is shown by its id,
+// which is what every skill did before the field existed.
+const nameUsage = "the skill's display name; empty shows the id instead"
+
 func runSkillsAdd(args []string) error {
 	set := newFlagSet("skills add")
 	dir := dataFlag(set)
 	var given forge.SkillDraft
 	set.StringVar(&given.ID, "id", "", "the skill's id")
+	set.StringVar(&given.Name, "name", "", nameUsage)
 	set.StringVar(&given.Element, "element", "", "the skill's element; neutral is the common pool")
-	set.StringVar(&given.Target, "target", "", "who it aims at: enemy, ally or self")
+	set.StringVar(&given.Target, "target", "", targetUsage)
 	set.StringVar(&given.Range, "range", "", "how far it reaches, in hexes")
 	set.StringVar(&given.Pattern, "pattern", "", "the shape it covers, by name in the pattern book")
 	set.StringVar(&given.Power, "power", "", "power per strike, in parts per thousand")
@@ -154,8 +170,9 @@ func runSkillsEdit(args []string) error {
 	// from Visit, because the flag package has no way to ask for "unset".
 	var given forge.SkillDraft
 	set.StringVar(&given.ID, "id", "", "refused: a skill's id cannot be edited")
+	set.StringVar(&given.Name, "name", "", nameUsage)
 	set.StringVar(&given.Element, "element", "", "the skill's element; neutral is the common pool")
-	set.StringVar(&given.Target, "target", "", "who it aims at: enemy, ally or self")
+	set.StringVar(&given.Target, "target", "", targetUsage)
 	set.StringVar(&given.Range, "range", "", "how far it reaches, in hexes")
 	set.StringVar(&given.Pattern, "pattern", "", "the shape it covers, by name in the pattern book")
 	set.StringVar(&given.Power, "power", "", "power per strike, in parts per thousand")
@@ -240,7 +257,8 @@ func runSkillsEdit(args []string) error {
 func editFrom(set *flag.FlagSet, given *forge.SkillDraft) forge.SkillEdit {
 	var edit forge.SkillEdit
 	fields := map[string]**string{
-		"id": &edit.ID, "element": &edit.Element, "target": &edit.Target,
+		"id": &edit.ID, "name": &edit.Name,
+		"element": &edit.Element, "target": &edit.Target,
 		"range": &edit.Range, "pattern": &edit.Pattern, "power": &edit.Power,
 		"strikes": &edit.Strikes, "accuracy": &edit.Accuracy,
 		"cooldown": &edit.Cooldown, "applies": &edit.Applies,
@@ -249,7 +267,8 @@ func editFrom(set *flag.FlagSet, given *forge.SkillDraft) forge.SkillEdit {
 		"restrict-characters": &edit.RestrictCharacters,
 	}
 	values := map[string]*string{
-		"id": &given.ID, "element": &given.Element, "target": &given.Target,
+		"id": &given.ID, "name": &given.Name,
+		"element": &given.Element, "target": &given.Target,
 		"range": &given.Range, "pattern": &given.Pattern, "power": &given.Power,
 		"strikes": &given.Strikes, "accuracy": &given.Accuracy,
 		"cooldown": &given.Cooldown, "applies": &given.Applies,
@@ -301,6 +320,13 @@ func fillSkill(given forge.SkillDraft, lib *forge.Library, prompt *prompter) (fo
 	}); err != nil {
 		return forge.SkillDraft{}, err
 	}
+	// The name is asked right after the id, which is where it is authored, and it
+	// has no default and no validation: any text is a name and no text is no name.
+	if err := ask(&filled.Name, question{
+		flag: "name", prompt: "display name", optional: true,
+	}); err != nil {
+		return forge.SkillDraft{}, err
+	}
 	if err := ask(&filled.Element, question{
 		flag: "element", prompt: "element", preset: defaultSkillElement,
 		validate: func(answer string) error {
@@ -311,7 +337,8 @@ func fillSkill(given forge.SkillDraft, lib *forge.Library, prompt *prompter) (fo
 		return forge.SkillDraft{}, err
 	}
 	if err := ask(&filled.Target, question{
-		flag: "target", prompt: "target, one of enemy ally self", preset: defaultSkillTarget,
+		flag: "target", prompt: "target, one of " + strings.Join(forge.TargetNames(), " "),
+		preset: defaultSkillTarget,
 		validate: func(answer string) error {
 			_, err := forge.ParseTarget(answer)
 			return err
@@ -408,7 +435,16 @@ func renderSkill(out io.Writer, lib *forge.Library, built skill.Skill) {
 	label := func(name, format string, args ...any) {
 		fmt.Fprintf(out, "  %-10s %s\n", name, fmt.Sprintf(format, args...))
 	}
-	fmt.Fprintf(out, "\n%s — %s, %s\n", built.ID, built.Element, built.Target)
+	// The name goes in the heading and only when there is one, in the bracket
+	// shape the full-screen client shows a data name in. Every shipped skill has
+	// none, so nothing this command already prints moves — and the listing's
+	// table keeps its columns for the same reason: a column of blanks reads as
+	// missing data rather than as a column that does not apply yet.
+	heading := built.ID
+	if built.Name != "" {
+		heading += " (" + built.Name + ")"
+	}
+	fmt.Fprintf(out, "\n%s — %s, %s\n", heading, built.Element, built.Target)
 	label("reach", "range %d, %s", built.Range, built.Pattern)
 	// A support skill declares no power, and "0 (0%)" says nothing the zero did
 	// not, so the reading is dropped rather than printed empty.

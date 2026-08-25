@@ -36,7 +36,11 @@ import (
 // package's words and the form refusing it in this package's, which is one rule
 // worded twice.
 type SkillDraft struct {
-	ID       string
+	ID string
+	// Name is the skill's display name, which is authored here rather than
+	// compiled in: see skill.Skill.Name. An empty answer is an absent name and
+	// the skill renders as its bare id, which is why nothing here defaults it.
+	Name     string
 	Element  string
 	Target   string
 	Range    string
@@ -141,6 +145,10 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 	}
 
 	base.ID = strings.TrimSpace(d.ID)
+	// Trimmed here as well as by the parser, so that the value this returns is
+	// the value a reload produces — a draft resolving to a name with a space on
+	// the end would compare unequal to the file it wrote.
+	base.Name = strings.TrimSpace(d.Name)
 	base.Element = member
 	base.Target = target
 	base.Range = numbers["range"]
@@ -200,6 +208,7 @@ func (d SkillDraft) ResolveEdit(lib *Library, id string) (skill.Skill, error) {
 func SkillAnswers(current skill.Skill) SkillDraft {
 	return SkillDraft{
 		ID:      current.ID,
+		Name:    current.Name,
 		Element: current.Element.String(),
 		Target:  current.Target.String(),
 		Range:   strconv.Itoa(current.Range),
@@ -446,8 +455,11 @@ func ElementNames() []string {
 	return out
 }
 
-// TargetNames is the three sides a skill can aim at, by the names the data files
-// write and --target takes.
+// TargetNames is every side a skill can aim at, by the names the data files write
+// and --target takes, in the order the enum declares them.
+//
+// Derived rather than listed, which is what lets a side be added in one place:
+// the chooser on the form, the flag's usage and the prompt's all read this.
 func TargetNames() []string {
 	out := make([]string, 0, skill.SideCount)
 	for i := range skill.SideCount {

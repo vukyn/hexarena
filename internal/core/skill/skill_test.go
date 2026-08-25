@@ -9,6 +9,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -916,5 +917,183 @@ func TestAppendValidatesLikeAParse(t *testing.T) {
 		Power: 1000, Strikes: 1, Accuracy: 950, Target: skill.Enemy,
 	}); err == nil {
 		t.Error("an id already in the book was appended")
+	}
+}
+
+// TestTheFourthSideIsNamedAndRelational covers the "all" targeting side at the
+// level it is declared: it serialises by name like every other enum here, and
+// the rule about which cells it reaches is one function rather than a special
+// case at each caller.
+func TestTheFourthSideIsNamedAndRelational(t *testing.T) {
+	if got, want := skill.SideCount, 4; got != want {
+		t.Errorf("there are %d targeting sides, want %d", got, want)
+	}
+	// By name, both ways, for every side — a number would tie a saved skill book
+	// to the order these constants happen to be declared in.
+	for i := range skill.SideCount {
+		side := skill.Side(i)
+		parsed, err := skill.ParseSide(side.String())
+		if err != nil {
+			t.Errorf("the side %s does not parse back: %v", side, err)
+			continue
+		}
+		if parsed != side {
+			t.Errorf("%q parsed as %s, want %s", side.String(), parsed, side)
+		}
+	}
+	if got := skill.All.String(); got != "all" {
+		t.Errorf("the both-sides value is written %q, want %q", got, "all")
+	}
+
+	// The rule itself, from both sides of the board, because it is relational:
+	// "the other side" depends on whose turn it is.
+	for _, from := range []hex.Side{hex.SideAlly, hex.SideEnemy} {
+		other := hex.SideEnemy
+		if from == hex.SideEnemy {
+			other = hex.SideAlly
+		}
+		cases := []struct {
+			side       skill.Side
+			own, avert bool
+		}{
+			{skill.Enemy, false, true},
+			{skill.Ally, true, false},
+			{skill.All, true, true},
+			// Self reaches exactly the caster's cell, which no pair of sides can
+			// express, so it answers no to both and battle decides it first.
+			{skill.Self, false, false},
+		}
+		for _, test := range cases {
+			if got := test.side.Reaches(from, from); got != test.own {
+				t.Errorf("%s cast from %s reaches its own side: %v, want %v",
+					test.side, from, got, test.own)
+			}
+			if got := test.side.Reaches(from, other); got != test.avert {
+				t.Errorf("%s cast from %s reaches %s: %v, want %v",
+					test.side, from, other, got, test.avert)
+			}
+		}
+	}
+
+	// And the shape bound, which is the other thing the value changes: only this
+	// side lets a splash cell cross the midline.
+	for i := range skill.SideCount {
+		side := skill.Side(i)
+		if got, want := side.CrossesSides(), side == skill.All; got != want {
+			t.Errorf("%s crosses the midline: %v, want %v", side, got, want)
+		}
+	}
+}
+
+// TestASkillAimedAtBothSidesLoadsAndWritesBack is the parse and the rewrite,
+// because a value that cannot survive a save is not a value the authoring tools
+// can offer.
+func TestASkillAimedAtBothSidesLoadsAndWritesBack(t *testing.T) {
+	book, err := skill.ParseBook([]byte(`{"skills":[
+	  {"id":"quake","element":"neutral","range":2,"pattern":"column",
+	   "power":500,"strikes":1,"accuracy":1000,"cooldown":0,"target":"all"}
+	]}`), deps(t))
+	if err != nil {
+		t.Fatalf("an all-sided skill was refused: %v", err)
+	}
+	built, err := book.Lookup("quake")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if built.Target != skill.All {
+		t.Errorf("the skill loaded aiming at %s, want all", built.Target)
+	}
+	raw, err := book.Marshal()
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if !strings.Contains(string(raw), `"target": "all"`) {
+		t.Errorf("the rewrite does not name the side:\n%s", raw)
+	}
+	reloaded, err := skill.ParseBook(raw, deps(t))
+	if err != nil {
+		t.Fatalf("the rewrite does not load: %v", err)
+	}
+	again, err := reloaded.Lookup("quake")
+	if err != nil {
+		t.Fatalf("lookup after the rewrite: %v", err)
+	}
+	if again.Target != built.Target {
+		t.Errorf("the trip through the file changed the side to %s", again.Target)
+	}
+}
+
+// TestAnAuthoredNameSurvivesTheFileAndIsAbsentByDefault is the data half of a
+// skill carrying its own display name.
+//
+// The absence is what is worth measuring. A field written at its zero value would
+// have added a key to every skill in the book, which is a balance file rewritten
+// and every table measured from it moved — so this checks that a skill with no
+// name writes no key at all, as well as that a skill with one round-trips.
+func TestAnAuthoredNameSurvivesTheFileAndIsAbsentByDefault(t *testing.T) {
+	book, err := skill.ParseBook([]byte(`{"skills":[
+	  {"id":"oath","name":"lời thề","element":"neutral","range":1,"pattern":"single",
+	   "power":800,"strikes":1,"accuracy":900,"cooldown":0,"target":"enemy"},
+	  {"id":"plain","element":"neutral","range":1,"pattern":"single",
+	   "power":800,"strikes":1,"accuracy":900,"cooldown":0,"target":"enemy"},
+	  {"id":"spaces","name":"   ","element":"neutral","range":1,"pattern":"single",
+	   "power":800,"strikes":1,"accuracy":900,"cooldown":0,"target":"enemy"}
+	]}`), deps(t))
+	if err != nil {
+		t.Fatalf("a named skill was refused: %v", err)
+	}
+	named, err := book.Lookup("oath")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if got, want := named.Name, "lời thề"; got != want {
+		t.Errorf("the name loaded as %q, want %q", got, want)
+	}
+	plain, err := book.Lookup("plain")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if plain.Name != "" {
+		t.Errorf("a skill declaring no name loaded with %q", plain.Name)
+	}
+	// Trimmed to nothing, so a name of spaces is the absent answer rather than a
+	// name that renders as blanks.
+	spaces, err := book.Lookup("spaces")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if spaces.Name != "" {
+		t.Errorf("a name of spaces loaded as %q, want it absent", spaces.Name)
+	}
+
+	raw, err := book.Marshal()
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if !strings.Contains(string(raw), `"name": "lời thề"`) {
+		t.Errorf("the rewrite does not carry the name:\n%s", raw)
+	}
+	// One key for one name: the two skills without one write no key, which is
+	// what kept every golden still when the field arrived.
+	if got, want := strings.Count(string(raw), `"name"`), 1; got != want {
+		t.Errorf("the rewrite holds %d name keys for %d named skills:\n%s", got, want, raw)
+	}
+	reloaded, err := skill.ParseBook(raw, deps(t))
+	if err != nil {
+		t.Fatalf("the rewrite does not load: %v", err)
+	}
+	for _, id := range []string{"oath", "plain", "spaces"} {
+		before, err := book.Lookup(id)
+		if err != nil {
+			t.Fatalf("lookup %s: %v", id, err)
+		}
+		after, err := reloaded.Lookup(id)
+		if err != nil {
+			t.Fatalf("lookup %s after the rewrite: %v", id, err)
+		}
+		if before.Name != after.Name {
+			t.Errorf("%s's name became %q from %q on the trip through the file",
+				id, after.Name, before.Name)
+		}
 	}
 }

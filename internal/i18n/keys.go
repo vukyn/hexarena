@@ -80,7 +80,6 @@ const (
 	SkillFormHeading
 	SkillFormSubtitle
 	SkillFormFooter
-	SkillFormHint
 	SkillFormDiscard
 	SkillFieldID
 	SkillFieldElement
@@ -104,6 +103,49 @@ const (
 	SkillFormEditHeading
 	SkillFormEditDiscard
 
+	// One line per field of the skill form, describing the field the cursor is
+	// on: what the number or the name does, and an answer that would be valid.
+	//
+	// There is one of these for every field and they are worded here rather
+	// than on the screen for the same reason every other line is — but the
+	// reason they exist at all is worth writing down, because it replaced
+	// something. The form used to carry a single footnote about parts per
+	// thousand, which is a sentence about two of the fourteen fields, printed
+	// whether or not the cursor was on either. A footnote covering a seventh of
+	// a screen is a footnote nobody reads, and the fields nobody could guess —
+	// what a shape covers, what syntax the statuses take, what an empty
+	// allowlist means — were the ones it said nothing about.
+	//
+	// They say what the field *does*, not what it is called. A help line that
+	// only expands the label ("power: the skill's power") is the footnote again.
+	SkillHelpID
+	SkillHelpName
+	SkillHelpElement
+	SkillHelpTarget
+	SkillHelpRange
+	SkillHelpShape
+	SkillHelpPower
+	SkillHelpStrikes
+	SkillHelpAccuracy
+	SkillHelpCooldown
+	SkillHelpInflicts
+	SkillHelpKeptForElements
+	SkillHelpKeptForRoles
+	SkillHelpKeptForCharacters
+
+	// The shape diagram, opened from the shape chooser.
+	//
+	// A sub-screen rather than a pane on the form, and the reason is measured:
+	// the form spends nineteen of the twenty body lines an 80x24 window has, and
+	// the board is eight lines on its own. See skillFieldShape's help line,
+	// which is where an author is told the key.
+	SkillShapeHeading
+	SkillShapeCoverage
+	SkillShapeShort
+	SkillShapeDrawnAt
+	SkillShapeLegend
+	SkillShapeFooter
+
 	// Who may carry a skill, which is the same vocabulary in a listing, in a
 	// picker's row and in a refusal.
 	WhoAnyone
@@ -122,6 +164,24 @@ const (
 	PickerNothingToPick
 	PickerNothingChosen
 	KitChooseHint
+
+	// Narrowing a picker's list, which one of the five has: the characters,
+	// because that is the list that grows as a cast is authored. The key and
+	// the cycle are the cast browser's own, so there is one interaction for
+	// filtering a list of characters rather than two.
+	PickerShowing
+	PickerNothingInGroup
+	PickerFilterFooter
+
+	// The status picker, which is the multi-select with one answer more: a
+	// status is an id *and* a chance, so it collects a number beside the list
+	// rather than sending an author back to a text field to remember a syntax.
+	PickerStatusesTitle
+	PickerStatusHint
+	PickerStatusFooter
+	PickerChance
+	StatusDetail
+	StatusTicks
 
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement

@@ -49,7 +49,9 @@ type SkillEdit struct {
 	// ID is only ever here to be refused. It is carried so that a front-end can
 	// pass on what was asked for and get this package's refusal rather than
 	// wording one of its own. See SkillDraft.ResolveEdit.
-	ID       *string
+	ID   *string
+	Name *string
+	// Element and the rest are the fields an edit may name.
 	Element  *string
 	Target   *string
 	Range    *string
@@ -79,6 +81,7 @@ func (e SkillEdit) Draft(current skill.Skill) SkillDraft {
 		given *string
 	}{
 		{&drafted.ID, e.ID},
+		{&drafted.Name, e.Name},
 		{&drafted.Element, e.Element},
 		{&drafted.Target, e.Target},
 		{&drafted.Range, e.Range},

@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
 // The gloss table's guarantees, which are deliberately not the catalog's. The
@@ -52,12 +53,12 @@ func TestAnIDWithNoGlossIsNormal(t *testing.T) {
 	}
 	// A kit of nothing but unknown skills draws no gloss line rather than a
 	// line of repeated ids.
-	if got := Vi.GlossedKit([]string{"tidal_hymn", "warden"}); got != "" {
+	if got := Vi.GlossedKit(kit("tidal_hymn", "warden")); got != "" {
 		t.Errorf("a kit of unglossed skills rendered as %q, want nothing", got)
 	}
 	// A kit that is partly known keeps the unknown one in place, so the line
 	// stays in the same order as the ids above it.
-	if got, want := Vi.GlossedKit([]string{"strike", "tidal_hymn"}),
+	if got, want := Vi.GlossedKit(kit("strike", "tidal_hymn")),
 		"đòn đánh · tidal_hymn"; got != want {
 		t.Errorf("a partly known kit reads %q, want %q", got, want)
 	}
@@ -161,12 +162,12 @@ func TestEnglishAddsNothing(t *testing.T) {
 	if got, want := En.GlossedAffinity(pair), "grass/electric"; got != want {
 		t.Errorf("English rendered the affinity as %q, want %q", got, want)
 	}
-	if got := En.GlossedKit([]string{"strike", "riptide"}); got != "" {
+	if got := En.GlossedKit(kit("strike", "riptide")); got != "" {
 		t.Errorf("English rendered a kit gloss %q, want nothing", got)
 	}
 }
 
-// TestNoIDIsGlossedTwice keeps the three tables disjoint.
+// TestNoIDIsGlossedTwice keeps the tables disjoint.
 //
 // The lookup walks them in order, so an id in two of them takes the first
 // silently — a wrong name rather than a missing one, which is the worse of the
@@ -219,4 +220,109 @@ func glossedIDs() []string {
 	}
 	sort.Strings(ids)
 	return ids
+}
+
+// TestEverySideIsGlossed is TestEveryElementIsGlossed's twin, and for the same
+// reason: skill.Side is a Go enum, so a side with no name is an oversight rather
+// than data nobody has got to yet.
+//
+// It is worth the completeness rule because of what the fourth side is. "enemy",
+// "ally" and "self" are English words a reader can guess; "all" is the one that
+// needs saying, and a table that named three of four would leave exactly the
+// value an author cannot guess as a bare id.
+func TestEverySideIsGlossed(t *testing.T) {
+	for i := range skill.SideCount {
+		side := skill.Side(i)
+		if Vi.Gloss(side.String()) == "" {
+			t.Errorf("the targeting side %s has no Vietnamese name", side)
+		}
+		if got, want := En.Gloss(side.String()), ""; got != want {
+			t.Errorf("the side %s is glossed %q in English, want the bare id", side, got)
+		}
+	}
+	if got, want := len(sideGloss), skill.SideCount; got != want {
+		t.Errorf("the side table holds %d names for %d sides", got, want)
+	}
+}
+
+// kit is a set of skills carrying nothing but their ids, which is what a kit of
+// unnamed skills looks like: the table is the only place a name could come from.
+func kit(ids ...string) []skill.Skill {
+	out := make([]skill.Skill, 0, len(ids))
+	for _, id := range ids {
+		out = append(out, skill.Skill{ID: id})
+	}
+	return out
+}
+
+// TestAnAuthoredNameBeatsTheCompiledTable is the precedence item seven turns on,
+// and it is asserted in all four states because which one wins is the whole
+// question.
+//
+// A name authored on the skill wins, including over a table entry for the same
+// id — that is what makes the field editable rather than decorative. With no
+// authored name the table answers, which is what keeps the nineteen skills that
+// shipped before the field named. With neither, the id stands, which is the rule
+// a data id has always followed.
+func TestAnAuthoredNameBeatsTheCompiledTable(t *testing.T) {
+	// "strike" is in the table, as đòn đánh.
+	tabled := skill.Skill{ID: "strike"}
+	if got, want := Vi.SkillName(tabled), skillGloss["strike"]; got != want {
+		t.Errorf("a skill with no name of its own reads %q, want the table's %q", got, want)
+	}
+	authored := skill.Skill{ID: "strike", Name: "cú đánh"}
+	if got, want := Vi.SkillName(authored), "cú đánh"; got != want {
+		t.Errorf("an authored name reads %q, want %q — it has to beat the table", got, want)
+	}
+	if Vi.SkillName(authored) == skillGloss["strike"] {
+		t.Error("the table won over an authored name")
+	}
+	// An id the table has never heard of, which is every skill authored from
+	// here on.
+	fresh := skill.Skill{ID: "tidal_hymn", Name: "khúc thủy triều"}
+	if got, want := Vi.SkillName(fresh), "khúc thủy triều"; got != want {
+		t.Errorf("a new skill's own name reads %q, want %q", got, want)
+	}
+	// Neither: the bare id, never a placeholder and never an empty bracket.
+	bare := skill.Skill{ID: "tidal_hymn"}
+	if got := Vi.SkillName(bare); got != "" {
+		t.Errorf("a skill with no name anywhere reads %q, want nothing", got)
+	}
+	if got, want := Vi.GlossedSkill(bare), "tidal_hymn"; got != want {
+		t.Errorf("a nameless skill renders as %q, want the bare id %q", got, want)
+	}
+	if got, want := Vi.GlossedSkill(fresh), "tidal_hymn (khúc thủy triều)"; got != want {
+		t.Errorf("a named skill renders as %q, want %q", got, want)
+	}
+	// A name of nothing but spaces is the absent answer rather than a name made
+	// of spaces, so it falls through to the table.
+	spaces := skill.Skill{ID: "strike", Name: "   "}
+	if got, want := Vi.SkillName(spaces), skillGloss["strike"]; got != want {
+		t.Errorf("a blank name reads %q, want the table's %q", got, want)
+	}
+
+	// English shows a data id as the data writes it, authored name or not: the
+	// field is opaque text to internal/core and it is this package that decides
+	// it fills the Vietnamese slot.
+	for _, one := range []skill.Skill{tabled, authored, fresh, bare} {
+		if got := En.SkillName(one); got != "" {
+			t.Errorf("English named %s %q, want nothing", one.ID, got)
+		}
+		if got := En.GlossedSkill(one); got != one.ID {
+			t.Errorf("English rendered %s as %q, want the bare id", one.ID, got)
+		}
+	}
+
+	// And the kit line follows the same order, so a skill does not read one way
+	// in the listing and another under a character's kit.
+	line := Vi.GlossedKit([]skill.Skill{authored, tabled, bare})
+	if !strings.Contains(line, "cú đánh") {
+		t.Errorf("the kit line %q does not use the authored name", line)
+	}
+	if !strings.Contains(line, "tidal_hymn") {
+		t.Errorf("the kit line %q dropped the nameless skill instead of keeping its id", line)
+	}
+	if got, want := len(strings.Split(line, kitJoin)), 3; got != want {
+		t.Errorf("the kit line has %d entries for 3 skills: %q", got, line)
+	}
 }

@@ -697,3 +697,94 @@ func TestSkillsEditRunsEndToEndThroughAPipe(t *testing.T) {
 		t.Errorf("the book does not list after the edits: %v", err)
 	}
 }
+
+// TestSkillsNameIsAuthoredAndEditedThroughFlags is the command line's half of a
+// skill carrying its own display name: it used to be a compiled table in
+// internal/i18n, so a script could not set one at all.
+//
+// It also covers the trap `--cooldown 0` covers for a number: an absent flag and
+// an empty one are different answers, and for a name the empty one is how a name
+// is taken back off.
+func TestSkillsNameIsAuthoredAndEditedThroughFlags(t *testing.T) {
+	binary := buildHexforge(t)
+	dir := scratchData(t)
+
+	run := func(args ...string) (string, error) {
+		command := exec.Command(binary, args...)
+		command.Stdin = strings.NewReader("")
+		output, err := command.CombinedOutput()
+		return string(output), err
+	}
+	held := func(id string) skill.Skill {
+		t.Helper()
+		lib, err := forge.Load(dir)
+		if err != nil {
+			t.Fatalf("reload: %v", err)
+		}
+		found, err := lib.Skills().Lookup(id)
+		if err != nil {
+			t.Fatalf("the book does not hold %s: %v", id, err)
+		}
+		return found
+	}
+
+	output, err := run("skills", "add", "tidal_hymn", "--data", dir,
+		"--name", "khúc thủy triều", "--power", "900", "--accuracy", "900", "--yes")
+	if err != nil {
+		t.Fatalf("authoring a named skill failed: %v\n%s", err, output)
+	}
+	// The name is in what the run reports, so a script can read back what it set.
+	if !strings.Contains(output, "tidal_hymn (khúc thủy triều)") {
+		t.Errorf("the run does not report the name it wrote:\n%s", output)
+	}
+	if got, want := held("tidal_hymn").Name, "khúc thủy triều"; got != want {
+		t.Errorf("the written skill is named %q, want %q", got, want)
+	}
+
+	// A skill authored without one has no name, which is the default and the
+	// state every shipped skill is in.
+	if _, err := run("skills", "add", "oath", "--data", dir,
+		"--power", "900", "--accuracy", "900", "--yes"); err != nil {
+		t.Fatalf("authoring an unnamed skill failed: %v", err)
+	}
+	if got := held("oath").Name; got != "" {
+		t.Errorf("a skill authored with no --name is called %q, want nothing", got)
+	}
+
+	// An edit sets one on a skill that shipped without, and the compiled table
+	// stops being what that skill reads as. Nothing else about it moves.
+	before := held("riptide")
+	if before.Name != "" {
+		t.Fatalf("riptide already carries a name, so this measures nothing")
+	}
+	if _, err := run("skills", "edit", "riptide", "--data", dir,
+		"--name", "sóng dữ", "--yes"); err != nil {
+		t.Fatalf("naming a shipped skill failed: %v", err)
+	}
+	named := held("riptide")
+	if got, want := named.Name, "sóng dữ"; got != want {
+		t.Errorf("the edited skill is named %q, want %q", got, want)
+	}
+	expected := before
+	expected.Name = "sóng dữ"
+	if !reflect.DeepEqual(named, expected) {
+		t.Errorf("--name changed more than the name:\n%+v\n%+v", named, expected)
+	}
+
+	// An explicitly empty --name takes it back off, the way an empty allowlist
+	// clears a restriction. An absent flag would have left it alone, which is
+	// the difference this pair is here to hold.
+	if _, err := run("skills", "edit", "riptide", "--data", dir,
+		"--power", "1100", "--yes"); err != nil {
+		t.Fatalf("an edit naming no name failed: %v", err)
+	}
+	if got := held("riptide").Name; got != "sóng dữ" {
+		t.Errorf("an edit that did not name --name left the name %q", got)
+	}
+	if _, err := run("skills", "edit", "riptide", "--data", dir, "--name", "", "--yes"); err != nil {
+		t.Fatalf("clearing a name was refused: %v", err)
+	}
+	if got := held("riptide").Name; got != "" {
+		t.Errorf("--name \"\" left the name %q, want it cleared", got)
+	}
+}

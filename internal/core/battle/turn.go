@@ -6,6 +6,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/atb"
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -203,25 +204,24 @@ func (b *Battle) options(unit *Unit) []Option {
 	return out
 }
 
-// aims lists the cells a skill may be pointed at: within range, on the side the
+// aims lists the cells a skill may be pointed at: within range, on a side the
 // skill targets, and holding someone.
+//
+// The walk is over the whole board in hex.Cells' column-major order, filtered by
+// skill.Side.Reaches, because a skill aimed at both halves has no single side to
+// ask for. For a skill aimed at one half that is the same list in the same order
+// as the side's own cells — hex.SideCells is Cells filtered — and the order is
+// load-bearing: battle.Suggest keeps the first of two equally good aims, so
+// reordering this would move the choices in a golden log without changing a rule.
 func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 	if known.Target == skill.Self {
 		return []hex.Offset{unit.Cell}
 	}
-	wanted := hex.SideEnemy
-	if known.Target == skill.Ally {
-		wanted = hex.SideAlly
-	}
-	if unit.Side == hex.SideEnemy {
-		if wanted == hex.SideEnemy {
-			wanted = hex.SideAlly
-		} else {
-			wanted = hex.SideEnemy
+	out := make([]hex.Offset, 0, hex.Cols*hex.Rows)
+	for _, cell := range hex.Cells() {
+		if !known.Target.Reaches(unit.Side, cell.Side()) {
+			continue
 		}
-	}
-	out := make([]hex.Offset, 0, hex.FormationCols*hex.Rows)
-	for _, cell := range hex.SideCells(wanted) {
 		if unit.Cell.DistanceTo(cell) > known.Range {
 			continue
 		}
@@ -231,6 +231,19 @@ func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 		out = append(out, cell)
 	}
 	return out
+}
+
+// covers is the cells a skill catches from an aim.
+//
+// One declaration for the two places that walk a shape — resolving an action and
+// rating one — because they have to agree: an aim rated over cells the resolution
+// would not touch is a hint that lies, and the mistake would only show on the
+// skills aimed at both sides, which are the ones nothing else covers.
+func covers(shape pattern.Pattern, known skill.Skill, aim hex.Offset) []hex.Offset {
+	if known.Target.CrossesSides() {
+		return shape.TargetsAcross(aim)
+	}
+	return shape.Targets(aim)
 }
 
 // Act resolves the acting unit's chosen skill against a chosen cell.
@@ -292,7 +305,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	if err != nil {
 		return err
 	}
-	for position, cell := range shape.Targets(aim) {
+	for position, cell := range covers(shape, known, aim) {
 		target := b.occupant(cell)
 		if target == nil {
 			continue
