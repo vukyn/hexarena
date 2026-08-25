@@ -733,6 +733,41 @@ func (b *Book) Append(deps Deps, extra ...Skill) (*Book, error) {
 	return ParseBook(raw, deps)
 }
 
+// Replace returns a new book with one skill's declaration changed, in the place
+// that skill already had.
+//
+// Keeping the position is the whole of it, and it is the same reason Marshal
+// keeps declaration order rather than sorting: the shipped skills.json is
+// committed in the form Marshal writes, and its order is authored information —
+// basic attacks, then the elemental ones, then utility, which is the order
+// skills.golden's table reads in. Moving an edited skill to the end would
+// rewrite every line of the file and every row of that table to change one
+// number, which is exactly what committing the file in Marshal form was meant to
+// avoid.
+//
+// It validates the way Append does, by marshalling and re-parsing rather than by
+// re-implementing a check, so the bytes an authoring tool is about to write are
+// bytes that load. A skill the book does not already hold is refused: this
+// changes a declaration and never adds one, so an id that is not there is a
+// caller's mistake rather than a new skill.
+//
+// The id itself cannot be changed through this, because the id is what the
+// position is found by. Renaming a skill has to walk every kit and every
+// restriction that names the old one, which is a different operation.
+func (b *Book) Replace(deps Deps, edited Skill) (*Book, error) {
+	skills := b.Skills()
+	at := slices.IndexFunc(skills, func(current Skill) bool { return current.ID == edited.ID })
+	if at < 0 {
+		return nil, fmt.Errorf("unknown skill %q", edited.ID)
+	}
+	skills[at] = edited
+	raw, err := json.Marshal(marshalFile{Skills: skills})
+	if err != nil {
+		return nil, fmt.Errorf("encode skill book: %w", err)
+	}
+	return ParseBook(raw, deps)
+}
+
 // Lookup returns a skill by id.
 func (b *Book) Lookup(id string) (Skill, error) {
 	found, ok := b.byID[id]

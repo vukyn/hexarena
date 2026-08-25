@@ -71,6 +71,23 @@ func (l Lang) Error(err error) string {
 	if errors.As(err, &missingSkillID) {
 		return l.Text(ErrorMissingSkillID)
 	}
+	// The edit refusal wraps whichever carrier check said no, so it is asked
+	// before the refusals it can hold: errors.As looks through a wrapper, and
+	// asking the inner question first would drop the carrier the line is about,
+	// which is the whole of what this refusal adds. The same ordering trap as
+	// StatFieldError below.
+	var editBreaks *forge.SkillEditBreaksError
+	if errors.As(err, &editBreaks) {
+		return l.editRefusal(editBreaks)
+	}
+	var skillRename *forge.SkillRenameError
+	if errors.As(err, &skillRename) {
+		return l.Say(ErrorSkillRename, skillRename.From, skillRename.To)
+	}
+	var presetOwned *forge.PresetOwnedSkillError
+	if errors.As(err, &presetOwned) {
+		return l.Say(ErrorPresetOwnedSkill, presetOwned.Skill, l.JoinIDs(presetOwned.Allowed))
+	}
 	var unknownPattern *forge.UnknownPatternError
 	if errors.As(err, &unknownPattern) {
 		return l.Say(ErrorUnknownPattern, unknownPattern.Name)
@@ -165,6 +182,35 @@ func (l Lang) Error(err error) string {
 		return l.Say(ErrorYear, year.Raw)
 	}
 	return l.Say(ErrorAsGiven, err)
+}
+
+// editRefusal words an edit that something already authored could not survive.
+//
+// Three shapes, and the third is the one that matters: an edit refused for a
+// reason no carrier walk could attribute names nobody and keeps the parser's own
+// English, on the same terms every other diagnostic from internal/core does. A
+// carrier invented here to make the sentence read better would be a carrier that
+// is not at fault.
+func (l Lang) editRefusal(broken *forge.SkillEditBreaksError) string {
+	inner := l.Error(broken.Err)
+	if broken.ID == "" {
+		return l.Say(ErrorSkillEditBreaks, broken.Skill, inner)
+	}
+	if broken.Carrier == forge.BrokenPreset {
+		return l.Say(ErrorSkillEditBreaksPreset, broken.Skill, broken.ID, inner)
+	}
+	return l.Say(ErrorSkillEditBreaksCharacter, broken.Skill, broken.ID, inner)
+}
+
+// DamageMoved words what an edit did to a skill's damage, which is the figure a
+// balance change is judged by.
+//
+// Both halves come from the one PreviewDamage reference, so the before and the
+// after are comparable with each other and with skills.golden's own column.
+func (l Lang) DamageMoved(change forge.SkillChange) string {
+	return l.Say(DamageMoved,
+		change.BeforeDamage.PerStrike, change.AfterDamage.PerStrike,
+		change.BeforeDamage.Total, change.AfterDamage.Total)
 }
 
 // affinityRefusal words the chart's no. An outcome the chart grew after this
@@ -298,6 +344,8 @@ func (l Lang) Note(note forge.Note) string {
 	switch note.Kind {
 	case forge.NoteWrote:
 		return l.Say(NoteWrote, note.ID, note.Path)
+	case forge.NoteEdited:
+		return l.Say(NoteEdited, note.ID, note.Path)
 	case forge.NoteArtMissing:
 		return l.Say(NoteArtMissing, note.Path)
 	case forge.NoteGoldensMove:

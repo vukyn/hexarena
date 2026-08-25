@@ -65,6 +65,43 @@ func (d SkillDraft) Resolve(lib *Library) (skill.Skill, error) {
 	if err := lib.ValidateNewSkillID(d.ID); err != nil {
 		return skill.Skill{}, err
 	}
+	// The default has to be set rather than left zero: the zero stat is health,
+	// and a skill scaling off health is refused. See skill.DefaultScaling.
+	built, err := d.resolveOnto(lib, skill.Skill{Scaling: skill.DefaultScaling()})
+	if err != nil {
+		return skill.Skill{}, err
+	}
+	grown, err := lib.skills.Append(lib.SkillDeps(), built)
+	if err != nil {
+		return skill.Skill{}, err
+	}
+	// What comes back is the parser's skill and not the one built above, even
+	// though the two describe the same thing. Append marshals and re-parses, so
+	// this is the value a reload will produce — down to an omitted list being
+	// nil rather than an empty slice, which is the difference that made the
+	// round-trip comparison in TestTheSkillFormProducesTheSkillTheCommandLine
+	// Produces fail on two skills that printed identically. Returning the parsed
+	// one means "what Resolve produced" and "what the file holds" cannot differ
+	// in a way only reflect.DeepEqual can see.
+	return grown.Lookup(built.ID)
+}
+
+// resolveOnto reads every answer a draft holds and lays it over a skill that is
+// already there, which is what makes one parse serve both an addition and an
+// edit.
+//
+// The base is the load-bearing half. A new skill is built onto an empty one, so
+// every field it does not describe is that field's zero value. An edited skill
+// is built onto the skill as it stands, so the four blocks this form never asks
+// about — requires, strips, scaling and self_applies — carry through untouched,
+// which is the same losslessness Skill.MarshalJSON gives a rewrite and is worth
+// nothing unless an edit keeps it too. Building an edit onto an empty skill
+// would silently wipe a hand-authored condition, and wipe it in a file the
+// author was told they were only changing a power in.
+//
+// Listing the fields once here rather than once per caller is the point: a field
+// added to a draft is a field both paths carry, or neither.
+func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, error) {
 	member, err := ParseElement(d.Element)
 	if err != nil {
 		return skill.Skill{}, err
@@ -102,30 +139,85 @@ func (d SkillDraft) Resolve(lib *Library) (skill.Skill, error) {
 		return skill.Skill{}, err
 	}
 
-	built := skill.Skill{
-		ID: strings.TrimSpace(d.ID), Element: member, Target: target,
-		Range: numbers["range"], Pattern: shape.Name,
-		Power: numbers["power"], Strikes: numbers["strikes"],
-		Accuracy: numbers["accuracy"], Cooldown: numbers["cooldown"],
-		// The default has to be set rather than left zero: the zero stat is
-		// health, and a skill scaling off health is refused. See
-		// skill.DefaultScaling.
-		Scaling: skill.DefaultScaling(),
-		Applies: applies, Restrict: restrict,
+	base.ID = strings.TrimSpace(d.ID)
+	base.Element = member
+	base.Target = target
+	base.Range = numbers["range"]
+	base.Pattern = shape.Name
+	base.Power = numbers["power"]
+	base.Strikes = numbers["strikes"]
+	base.Accuracy = numbers["accuracy"]
+	base.Cooldown = numbers["cooldown"]
+	base.Applies = applies
+	base.Restrict = restrict
+	return base, nil
+}
+
+// ResolveEdit turns a draft into the skill it would change an existing one into,
+// or says which answer is wrong.
+//
+// It is Resolve's other half and differs in exactly two ways. The candidate goes
+// through skill.Book.Replace rather than Append, so the skill keeps its place in
+// declaration order — the reason that matters is on Replace. And it is built
+// onto the skill as it stands rather than onto an empty one, so the blocks the
+// form does not ask about survive; see resolveOnto.
+//
+// The id is not editable, and an attempt to change it is refused here rather
+// than in either front-end. A rename would have to cascade through every
+// character's kit, every preset's kit and every restrict.characters list that
+// names the old id, and a half-built rename that moved the declaration and left
+// the references behind would leave a book that does not load.
+func (d SkillDraft) ResolveEdit(lib *Library, id string) (skill.Skill, error) {
+	current, err := lib.skills.Lookup(id)
+	if err != nil {
+		return skill.Skill{}, &UnknownSkillError{ID: id, Err: err}
 	}
-	grown, err := lib.skills.Append(lib.SkillDeps(), built)
+	if named := strings.TrimSpace(d.ID); named != id {
+		return skill.Skill{}, &SkillRenameError{From: id, To: named}
+	}
+	built, err := d.resolveOnto(lib, current)
 	if err != nil {
 		return skill.Skill{}, err
 	}
-	// What comes back is the parser's skill and not the one built above, even
-	// though the two describe the same thing. Append marshals and re-parses, so
-	// this is the value a reload will produce — down to an omitted list being
-	// nil rather than an empty slice, which is the difference that made the
-	// round-trip comparison in TestTheSkillFormProducesTheSkillTheCommandLine
-	// Produces fail on two skills that printed identically. Returning the parsed
-	// one means "what Resolve produced" and "what the file holds" cannot differ
-	// in a way only reflect.DeepEqual can see.
-	return grown.Lookup(built.ID)
+	changed, err := lib.skills.Replace(lib.SkillDeps(), built)
+	if err != nil {
+		return skill.Skill{}, err
+	}
+	// The parser's skill rather than the one built above, for the reason Resolve
+	// returns the parser's: it is the value a reload produces.
+	return changed.Lookup(built.ID)
+}
+
+// SkillAnswers is a skill written back out as the answers it would be authored
+// from, which is what prefilling an edit needs.
+//
+// It is resolveOnto's inverse, and it exists so that accepting every field as it
+// stands reproduces the skill exactly — the same property FormatApplications and
+// FormatCurve have, for the same reason. A front-end that formatted these itself
+// would be free to write a power as "1200 " or an absent restriction as an empty
+// list, and either would turn "change nothing" into a change.
+func SkillAnswers(current skill.Skill) SkillDraft {
+	return SkillDraft{
+		ID:      current.ID,
+		Element: current.Element.String(),
+		Target:  current.Target.String(),
+		Range:   strconv.Itoa(current.Range),
+		Pattern: current.Pattern,
+		Power:   strconv.Itoa(current.Power),
+		// The declared count rather than StrikeCount: an unset count means one,
+		// but it is written as the zero it was authored as, so accepting the
+		// field as it stands reproduces the file rather than normalising it.
+		Strikes:  strconv.Itoa(current.Strikes),
+		Accuracy: strconv.Itoa(current.Accuracy),
+		Cooldown: strconv.Itoa(current.Cooldown),
+		Applies:  FormatApplications(current.Applies),
+		// An absent restriction is three empty answers, which is what makes
+		// accepting the form as it stands write no restrict block at all. See
+		// SkillDraft.Restriction.
+		RestrictElements:   strings.Join(current.Restrict.ElementNames(), ","),
+		RestrictArchetypes: strings.Join(restrictedArchetypes(current), ","),
+		RestrictCharacters: strings.Join(restrictedCharacters(current), ","),
+	}
 }
 
 // Restriction is the three allowlists a draft names, or nil when it names none.

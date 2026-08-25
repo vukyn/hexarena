@@ -38,7 +38,7 @@ const (
 	skillFieldCount
 )
 
-// skillsScreen is the skill book, and the form that adds to it.
+// skillsScreen is the skill book, and the form that adds to it and changes it.
 //
 // It is the other half of the new-character form in the same way the origins
 // screen is: a kit can only name a skill the book holds, so an author who finds
@@ -54,10 +54,16 @@ type skillsScreen struct {
 	skills []skill.Skill
 	cursor int
 
-	// adding is whether the form is in front of the listing.
-	adding bool
-	inputs []textinput.Model
-	field  int
+	// adding is whether the form is in front of the listing to author a new
+	// skill, and editing is the id it is in front to change. They are two fields
+	// rather than one because one form serves both jobs and the difference
+	// decides three things: the heading, what Escape is asking to throw away, and
+	// whether the write appends or replaces. formInFront is the two together, and
+	// they are never both set.
+	adding  bool
+	editing string
+	inputs  []textinput.Model
+	field   int
 	// The three choosers and the three allowlists, held as their answers rather
 	// than as text fields: an element, a side and a shape are all ids out of a
 	// book, so typing one is only a way to get it wrong.
@@ -73,7 +79,15 @@ type skillsScreen struct {
 	// added is the last skill written, kept as what it was rather than as the
 	// line announcing it, so a language switch redraws the announcement.
 	added *skill.Skill
+	// edited is the last change written, kept whole rather than as its id: the
+	// damage before and after is what an author needs from an edit, and it is
+	// carried so a language switch redraws that too.
+	edited *forge.SkillChange
 }
+
+// formInFront reports whether the form is over the listing, either to author a
+// skill or to change one.
+func (s skillsScreen) formInFront() bool { return s.adding || s.editing != "" }
 
 func newSkillsScreen(lib *forge.Library) skillsScreen {
 	return skillsScreen{}.refresh(lib).resetForm(lib)
@@ -114,7 +128,42 @@ func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
 	s.field = skillFieldID
 	s.touched = false
 	s.err = nil
+	s.editing = ""
 	s.inputs[s.field].Focus()
+	return s
+}
+
+// prefill is resetForm over a skill that already exists, which is what makes one
+// form serve both jobs.
+//
+// Every value comes from forge.SkillAnswers rather than being formatted here, so
+// that accepting the form as it stands reproduces the skill exactly. A screen
+// that wrote its own "1200" or turned an absent restriction into an empty list
+// would turn opening the form into a change.
+func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScreen {
+	s = s.resetForm(lib)
+	answers := forge.SkillAnswers(current)
+	for _, filled := range []struct {
+		field int
+		value string
+	}{
+		{skillFieldID, answers.ID},
+		{skillFieldRange, answers.Range},
+		{skillFieldPower, answers.Power},
+		{skillFieldStrikes, answers.Strikes},
+		{skillFieldAccuracy, answers.Accuracy},
+		{skillFieldCooldown, answers.Cooldown},
+		{skillFieldInflicts, answers.Applies},
+	} {
+		s.inputs[filled.field].SetValue(filled.value)
+	}
+	s.elementIndex = indexOf(forge.ElementNames(), answers.Element)
+	s.targetIndex = indexOf(forge.TargetNames(), answers.Target)
+	s.shapeIndex = indexOf(lib.PatternNames(), answers.Pattern)
+	s.keptElements = forge.SplitList(answers.RestrictElements)
+	s.keptRoles = forge.SplitList(answers.RestrictArchetypes)
+	s.keptWho = forge.SplitList(answers.RestrictCharacters)
+	s.editing = current.ID
 	return s
 }
 
@@ -186,8 +235,14 @@ func skillListField(field int) bool {
 	}
 }
 
+// update routes a keystroke on the listing.
+//
+// e is the edit key. It does not collide with anything: this screen is a list
+// rather than a form, so no field has the keyboard, and its only other letters
+// are q, k, j and a. It sits beside a for the reason those two belong together —
+// adding a skill and changing one are the same form reached two ways.
 func (s skillsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
-	if s.adding {
+	if s.formInFront() {
 		return s.updateForm(m, message)
 	}
 	switch message.String() {
@@ -203,7 +258,12 @@ func (s skillsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "a":
 		s = s.resetForm(m.lib)
 		s.adding = true
-		s.added = nil
+		s.added, s.edited = nil, nil
+	case "e":
+		if len(s.skills) > 0 {
+			s = s.prefill(m.lib, s.skills[clamp(s.cursor, 0, len(s.skills)-1)])
+			s.added, s.edited = nil, nil
+		}
 	}
 	m.skills = s
 	return m, nil
@@ -213,11 +273,18 @@ func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cm
 	switch message.String() {
 	case "esc":
 		if !s.touched {
-			s.adding = false
+			s.adding, s.editing = false, ""
 			m.skills = s
 			return m, nil
 		}
-		return m.ask(i18n.SkillFormDiscard, func(m model) model {
+		// The question names what is being thrown away, which is a different
+		// thing in each case: a skill nobody has written yet, or a set of changes
+		// to one that is already in the book.
+		question := i18n.SkillFormDiscard
+		if s.editing != "" {
+			question = i18n.SkillFormEditDiscard
+		}
+		return m.ask(question, func(m model) model {
 			m.skills = m.skills.resetForm(m.lib)
 			m.skills.adding = false
 			return m
@@ -257,7 +324,7 @@ func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cm
 	if updated.Value() != s.inputs[s.field].Value() {
 		s.touched = true
 		s.err = nil
-		s.added = nil
+		s.added, s.edited = nil, nil
 	}
 	s.inputs[s.field] = updated
 	m.skills = s
@@ -336,12 +403,18 @@ func (s skillsScreen) cycle(m model, by int) skillsScreen {
 	return s
 }
 
-// save resolves the draft and writes it.
+// save resolves the draft and writes it, as an addition or as a change to the
+// skill the form was opened on.
 //
-// Both halves belong to internal/forge: Resolve refuses a skill a load would
-// refuse, and SaveSkill writes through the temp-file-then-rename that keeps a
-// crash from truncating skills.json.
+// Every half belongs to internal/forge: Resolve and ResolveEdit each refuse a
+// skill a load would refuse, SaveSkill and EditSkill each write through the
+// temp-file-then-rename that keeps a crash from truncating skills.json, and the
+// second of those refuses an edit no character or preset could survive. Nothing
+// on this screen decides which of those is true.
 func (s skillsScreen) save(m model) skillsScreen {
+	if s.editing != "" {
+		return s.saveEdit(m)
+	}
 	built, err := s.draft(m).Resolve(m.lib)
 	if err != nil {
 		s.err = err
@@ -357,11 +430,47 @@ func (s skillsScreen) save(m model) skillsScreen {
 	return s
 }
 
-// skillsRoom is how many rows the listing has, measured from the window in
-// hand: the body has m.height-4 lines and this screen spends nine of them on a
-// heading, a column header, two blanks, the two damage rows, the tally, the line
-// a write leaves behind, and the empty string the body's trailing newline leaves
-// when frame splits it.
+func (s skillsScreen) saveEdit(m model) skillsScreen {
+	built, err := s.draft(m).ResolveEdit(m.lib, s.editing)
+	if err != nil {
+		s.err = err
+		return s
+	}
+	change, err := m.lib.EditSkill(built)
+	if err != nil {
+		s.err = err
+		return s
+	}
+	// resetForm clears editing, which is what closes the form: the listing behind
+	// it is refreshed from the library the write went through, so the changed row
+	// is the changed row.
+	s = s.refresh(m.lib).resetForm(m.lib)
+	s.adding = false
+	s.edited = &change
+	return s
+}
+
+// skillsRoom is how many rows the listing has, measured from the window in hand:
+// the body has m.height-4 lines and this screen spends nine of them on a
+// heading, a blank, a column header, a blank, the two damage rows, the two lines
+// a write leaves behind, and the tally.
+//
+// The nine are enumerated because two of them are the busiest state rather than
+// every state, and the reserve is for the busiest: the second damage row is only
+// drawn for a skill with a condition, and the second write line only after an
+// edit that moved the damage. A reserve that counted what is about to be drawn
+// would be a reserve that changes under the author, which is worse than one row
+// spent on a screen that does not need it.
+//
+// It stayed at nine when editing added the second write line, and the reason is
+// worth recording rather than leaving as a coincidence: the number was one too
+// high before. The count it came with listed "the empty string the body's
+// trailing newline leaves", copied from pickerRoom, and this body has no trailing
+// newline — the tally is written without one. So the real spend was eight against
+// a reserve of nine, and the second write line is what that spare line has now
+// gone on. There is no spare left, which is what
+// TestTheSkillListingFitsTheSmallestWindowAfterAnEdit measures at the 80x24
+// floor. A tenth line on this screen needs a tenth here.
 func skillsRoom(m model) int {
 	room := m.height - 4 - 9
 	if room < 3 {
@@ -388,7 +497,7 @@ func skillRow(idColumn, glossColumn int, id, gloss, member, power, who string) s
 }
 
 func (s skillsScreen) view(m model) (string, string) {
-	if s.adding {
+	if s.formInFront() {
 		return s.viewForm(m)
 	}
 	footer := m.text(i18n.SkillsFooter)
@@ -459,6 +568,16 @@ func (s skillsScreen) view(m model) (string, string) {
 		out.WriteString(m.style.good.Render(m.text(i18n.SkillAdded,
 			s.added.ID, m.lib.SkillsPath())) + "\n")
 	}
+	if s.edited != nil {
+		out.WriteString(m.style.good.Render(m.text(i18n.SkillEdited,
+			s.edited.After.ID, m.lib.SkillsPath())) + "\n")
+		// The before and after, and only when there is something to compare: an
+		// edit to a restriction or a targeting side moves no damage, and a line
+		// saying a number did not change has to be read to learn nothing.
+		if s.edited.MovesDamage() {
+			out.WriteString(m.style.dim.Render(m.lang.DamageMoved(*s.edited)) + "\n")
+		}
+	}
 	out.WriteString(m.style.dim.Render(m.text(i18n.SkillsTally, len(s.skills), anyone)))
 	return out.String(), footer
 }
@@ -498,8 +617,16 @@ func skillLabelWidth(m model) int {
 
 func (s skillsScreen) viewForm(m model) (string, string) {
 	footer := m.text(i18n.SkillFormFooter)
+	// The heading is the whole of what tells an author which of the two jobs this
+	// form is doing, so it is not shared: every field is prefilled on an edit, and
+	// a prefilled form under "new skill" reads as a form that has remembered the
+	// last thing typed into it.
+	heading := i18n.SkillFormHeading
+	if s.editing != "" {
+		heading = i18n.SkillFormEditHeading
+	}
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.SkillFormHeading)) + "  " +
+	out.WriteString(m.style.heading.Render(m.text(heading)) + "  " +
 		m.style.dim.Render(m.text(i18n.SkillFormSubtitle)) + "\n\n")
 
 	width := skillLabelWidth(m)

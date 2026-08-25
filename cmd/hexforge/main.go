@@ -79,6 +79,14 @@ hexforge authors the cast the battles are fought with.
                                       author a skill; flags prefill, the wizard
                                       asks for what is still missing. A skill is
                                       balance: the golden files will move
+  hexforge skills edit <id> [same flags]
+                                      change a skill already in the book. Only
+                                      the fields named change: --cooldown 0 sets
+                                      it to zero, no --cooldown leaves it, and
+                                      --restrict-elements "" clears the list.
+                                      The id itself cannot be edited, and an edit
+                                      that would leave a character or a preset
+                                      unable to carry the skill is refused
   hexforge cast                       the authored characters
   hexforge new [id]                   create a character; flags prefill, the
                                       wizard asks only for what is still missing

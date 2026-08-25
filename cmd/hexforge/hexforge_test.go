@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 )
 
@@ -545,5 +546,154 @@ func TestSkillsAddRunsEndToEndThroughAPipe(t *testing.T) {
 	// And the whole book still loads, which is the property the write rests on.
 	if _, err := run("skills", "--data", dir); err != nil {
 		t.Errorf("the book does not list after a write: %v", err)
+	}
+}
+
+// TestSkillsEditRunsEndToEndThroughAPipe is the other half of
+// TestSkillsAddRunsEndToEndThroughAPipe, and every case below is a difference
+// between the two rather than a repeat.
+//
+// The one that matters most is the absent flag against the explicit zero: on
+// `add` an absent flag is a question or a default, and here it means leave the
+// field alone, so the two have to be told apart by which flags were really given
+// rather than by comparing a value against "". Both directions are asserted,
+// because getting it wrong in either is silent — a cleared cooldown that did not
+// clear, or a cooldown nobody mentioned that went to zero.
+func TestSkillsEditRunsEndToEndThroughAPipe(t *testing.T) {
+	binary := buildHexforge(t)
+	dir := scratchData(t)
+
+	run := func(args ...string) (string, error) {
+		command := exec.Command(binary, args...)
+		command.Stdin = strings.NewReader("")
+		output, err := command.CombinedOutput()
+		return string(output), err
+	}
+	held := func(id string) skill.Skill {
+		t.Helper()
+		lib, err := forge.Load(dir)
+		if err != nil {
+			t.Fatalf("reload: %v", err)
+		}
+		found, err := lib.Skills().Lookup(id)
+		if err != nil {
+			t.Fatalf("look up %s: %v", id, err)
+		}
+		return found
+	}
+
+	// riptide ships at 900 power over two strikes with a cooldown of three, and
+	// nothing below relies on those numbers except as the values an edit that
+	// does not name them has to leave alone.
+	before := held("riptide")
+	if before.Cooldown == 0 || before.Accuracy == 0 {
+		t.Fatalf("riptide ships as %+v, which makes the zero cases meaningless", before)
+	}
+
+	// An explicit zero lands.
+	output, err := run("skills", "edit", "riptide", "--data", dir, "--cooldown", "0", "--yes")
+	if err != nil {
+		t.Fatalf("an explicit zero was refused: %v\n%s", err, output)
+	}
+	for _, want := range []string{"edited riptide", "make golden"} {
+		if !strings.Contains(output, want) {
+			t.Errorf("the run does not report %q:\n%s", want, output)
+		}
+	}
+	cleared := held("riptide")
+	if cleared.Cooldown != 0 {
+		t.Errorf("--cooldown 0 left the cooldown at %d", cleared.Cooldown)
+	}
+	// And every field the edit did not name is untouched, which is the other half
+	// of the same rule.
+	expected := before
+	expected.Cooldown = 0
+	if !reflect.DeepEqual(cleared, expected) {
+		t.Errorf("--cooldown 0 changed more than the cooldown:\n%+v\n%+v", cleared, expected)
+	}
+
+	// A power change reports the before and the after, because a skill is balance
+	// and what moved is the point of editing through the tool.
+	output, err = run("skills", "edit", "riptide", "--data", dir, "--power", "1100", "--yes")
+	if err != nil {
+		t.Fatalf("a power edit failed: %v\n%s", err, output)
+	}
+	if !strings.Contains(output, "damage 308 → 377 per strike") {
+		t.Errorf("the run does not show the damage before and after:\n%s", output)
+	}
+	if raised := held("riptide"); raised.Power != 1100 || raised.Cooldown != 0 {
+		t.Errorf("the second edit produced %+v", raised)
+	}
+
+	// An explicitly empty list clears a restriction, which is the only way this
+	// front-end can widen a skill again. The skill is one nobody carries, so
+	// narrowing it in the first place is legal.
+	if _, err := run("skills", "add", "oath", "--data", dir,
+		"--power", "1000", "--accuracy", "900", "--restrict-elements", "fire,metal", "--yes"); err != nil {
+		t.Fatalf("author a restricted skill: %v", err)
+	}
+	if got := forge.WhoMaySummary(held("oath")); got != "kept for fire or metal" {
+		t.Fatalf("the authored restriction reads %q", got)
+	}
+	output, err = run("skills", "edit", "oath", "--data", dir, "--restrict-elements", "", "--yes")
+	if err != nil {
+		t.Fatalf("clearing a list was refused: %v\n%s", err, output)
+	}
+	if got := forge.WhoMaySummary(held("oath")); got != "anyone" {
+		t.Errorf("the cleared skill reads %q, want the common pool", got)
+	}
+
+	// An edit naming nothing is refused rather than rewriting the file with the
+	// same bytes, and the refusal shows what naming something looks like.
+	output, err = run("skills", "edit", "oath", "--data", dir, "--yes")
+	if err == nil {
+		t.Fatalf("an edit naming no field was accepted:\n%s", output)
+	}
+	if !strings.Contains(output, "--power") {
+		t.Errorf("the refusal does not show how to name a field:\n%s", output)
+	}
+
+	// The id is not editable, and the refusal says a rename is its own job.
+	output, err = run("skills", "edit", "oath", "--data", dir, "--id", "vow", "--yes")
+	if err == nil {
+		t.Fatalf("a renamed id was written:\n%s", output)
+	}
+	if !strings.Contains(output, "separate operation") {
+		t.Errorf("the refusal does not say a rename is a separate operation:\n%s", output)
+	}
+
+	// An edit that would leave a shipped character unable to carry the skill is
+	// refused before anything is written, and it names the character.
+	output, err = run("skills", "edit", "riptide", "--data", dir,
+		"--restrict-elements", "fire", "--yes")
+	if err == nil {
+		t.Fatalf("an edit that orphans a character was written:\n%s", output)
+	}
+	for _, want := range []string{"example-anime.adept", "unable to carry it"} {
+		if !strings.Contains(output, want) {
+			t.Errorf("the refusal does not mention %q:\n%s", want, output)
+		}
+	}
+	if refused := held("riptide"); refused.Restrict != nil {
+		t.Errorf("the refused edit was written anyway: %+v", refused.Restrict)
+	}
+
+	// The same for an archetype preset, which is a different rule in a different
+	// place: a preset is shared by every character built from it.
+	output, err = run("skills", "edit", "sever", "--data", dir,
+		"--restrict-characters", "example-anime.adept", "--yes")
+	if err == nil {
+		t.Fatalf("an edit that orphans a preset was written:\n%s", output)
+	}
+	for _, want := range []string{"bulwark preset", "unable to carry it"} {
+		if !strings.Contains(output, want) {
+			t.Errorf("the refusal does not mention %q:\n%s", want, output)
+		}
+	}
+
+	// And the whole book still lists, which is the property every refusal above
+	// exists to protect.
+	if _, err := run("skills", "--data", dir); err != nil {
+		t.Errorf("the book does not list after the edits: %v", err)
 	}
 }

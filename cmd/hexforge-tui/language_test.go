@@ -32,6 +32,14 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	form := m.enter(screenNew)
 	addSkill := m.enter(screenSkills)
 	addSkill.skills.adding = true
+	// The same form over a skill that already exists, which is the widest it ever
+	// draws: every field is prefilled from the book rather than empty.
+	editSkill := m.enter(screenSkills)
+	editSkill.skills = editSkill.skills.prefill(m.lib, editSkill.skills.skills[0])
+	// And the listing as an edit leaves it: two lines rather than one, the second
+	// of which is the damage before and after.
+	editedSkill := m.enter(screenSkills)
+	editedSkill.skills.edited = someSkillChange(t, m)
 	// The two pickers, opened over the form that raises each. The kit's rows
 	// carry a refusal each and an allowlist's do not, so both shapes of row are
 	// measured.
@@ -45,9 +53,30 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"add a work":       adding,
 		"skills":           m.enter(screenSkills),
 		"add a skill":      addSkill,
+		"edit a skill":     editSkill,
+		"edited a skill":   editedSkill,
 		"kit picker":       kit,
 		"allowlist picker": allowlist,
 		"check":            m.enter(screenCheck),
+	}
+}
+
+// someSkillChange is a written edit as the screens receive one, built without
+// writing anything: the figures are the library's own PreviewDamage, so the
+// before-and-after line is as wide here as it is after a real edit.
+func someSkillChange(t *testing.T, m model) *forge.SkillChange {
+	t.Helper()
+	skills := m.lib.Skills().Skills()
+	if len(skills) == 0 {
+		t.Fatal("the shipped book holds no skills")
+	}
+	before := skills[0]
+	after := before
+	after.Power = before.Power*2 + 1000
+	return &forge.SkillChange{
+		Before: before, After: after,
+		BeforeDamage: m.lib.PreviewDamage(before),
+		AfterDamage:  m.lib.PreviewDamage(after),
 	}
 }
 

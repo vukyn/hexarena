@@ -370,6 +370,11 @@ func TestAWriteIsReportedInBothLanguages(t *testing.T) {
 		{Kind: forge.NoteWrote, ID: "example-film.tester", Path: "data/cast.json"},
 		{Kind: forge.NoteArtMissing, Path: "data/assets/tester.svg"},
 		{Kind: forge.NoteRebuild},
+		// An edit is its own note rather than the write's reworded, because the
+		// two are different events to whoever is reading: one added something
+		// nobody carries yet, the other changed something units already carry.
+		{Kind: forge.NoteEdited, ID: "riptide", Path: "data/skills.json"},
+		{Kind: forge.NoteGoldensMove},
 	}
 	vietnamese := Vi.Notes(notes)
 	if got, want := vietnamese[0], "đã ghi example-film.tester vào data/cast.json"; got != want {
@@ -377,6 +382,12 @@ func TestAWriteIsReportedInBothLanguages(t *testing.T) {
 	}
 	if !strings.Contains(vietnamese[1], "data/assets/tester.svg") {
 		t.Errorf("the warning does not name the art: %q", vietnamese[1])
+	}
+	if got, want := vietnamese[3], "đã sửa riptide trong data/skills.json"; got != want {
+		t.Errorf("the edit reads %q, want %q", got, want)
+	}
+	if vietnamese[3] == vietnamese[0] {
+		t.Error("an edit and a write read the same line")
 	}
 	english := En.Notes(notes)
 	if len(english) != len(vietnamese) {
@@ -435,6 +446,92 @@ func TestARestrictionIsWordedFromItsFacts(t *testing.T) {
 		}
 		if got := En.Error(test.err); got != test.en {
 			t.Errorf("%s reads\n %q\nwant\n %q", test.name, got, test.en)
+		}
+	}
+}
+
+// TestAnEditRefusalNamesWhoWouldBreak covers the three shapes of a refused skill
+// edit, which are the wordings this language pair grew for editing.
+//
+// Each is worded from the value internal/forge handed over — which carrier, which
+// skill, and the reason as its own typed refusal — so the sentence is assembled
+// here and decided there. The third case is the one to watch: a refusal no
+// carrier walk could attribute keeps the parser's own English behind a lead-in in
+// the reader's language, exactly as every other diagnostic from internal/core
+// does, rather than being pinned on a carrier that is not at fault.
+func TestAnEditRefusalNamesWhoWouldBreak(t *testing.T) {
+	water, err := element.Dual(element.Water, element.Ice)
+	if err != nil {
+		t.Fatalf("the water/ice affinity: %v", err)
+	}
+	cases := []struct {
+		name string
+		err  *forge.SkillEditBreaksError
+		vi   []string
+		en   []string
+	}{
+		{
+			name: "a character that could no longer carry it",
+			err: &forge.SkillEditBreaksError{
+				Carrier: forge.BrokenCharacter, ID: "example-anime.adept", Skill: "riptide",
+				Err: &forge.CarryError{
+					Affinity: water, Skill: "riptide", Element: element.Water,
+					Reason: skill.CarryElementRestricted, Allowed: []string{"fire"},
+				},
+			},
+			vi: []string{"riptide", "example-anime.adept", "fire"},
+			en: []string{"riptide", "example-anime.adept", "unable to carry it"},
+		},
+		{
+			name: "a preset whose kit could no longer hold it",
+			err: &forge.SkillEditBreaksError{
+				Carrier: forge.BrokenPreset, ID: "bulwark", Skill: "sever",
+				Err: &forge.PresetOwnedSkillError{
+					Archetype: "bulwark", Skill: "sever",
+					Allowed: []string{"example-anime.adept"},
+				},
+			},
+			vi: []string{"sever", "bulwark", "example-anime.adept"},
+			en: []string{"sever", "bulwark preset", "example-anime.adept"},
+		},
+		{
+			name: "a refusal no carrier is to blame for",
+			err: &forge.SkillEditBreaksError{
+				Skill: "bolt",
+				Err:   errors.New(`archetype "skirmisher": a unit may carry at most 2`),
+			},
+			vi: []string{"bolt", "a unit may carry at most 2"},
+			en: []string{"bolt", "a unit may carry at most 2"},
+		},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			for _, pair := range []struct {
+				lang  Lang
+				wants []string
+			}{{Vi, test.vi}, {En, test.en}} {
+				line := pair.lang.Error(test.err)
+				for _, want := range pair.wants {
+					if !strings.Contains(line, want) {
+						t.Errorf("the %s refusal %q does not mention %q", pair.lang, line, want)
+					}
+				}
+			}
+			if Vi.Error(test.err) == En.Error(test.err) {
+				t.Errorf("the refusal is the same line in both languages: %q", Vi.Error(test.err))
+			}
+		})
+	}
+
+	// A rename is refused in both languages too, and both say it is its own job
+	// rather than only that it did not happen.
+	rename := &forge.SkillRenameError{From: "sever", To: "sunder"}
+	for _, lang := range Langs() {
+		line := lang.Error(rename)
+		for _, want := range []string{"sever", "sunder"} {
+			if !strings.Contains(line, want) {
+				t.Errorf("the %s rename refusal %q does not name %q", lang, line, want)
+			}
 		}
 	}
 }

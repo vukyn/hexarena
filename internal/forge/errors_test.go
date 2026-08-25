@@ -44,6 +44,27 @@ func TestARefusalKeepsTheWordingTheCommandLinePrints(t *testing.T) {
 			`hp: "120" is not a curve, want base:max`},
 		{&YearError{Raw: "nineteen"},
 			`the year "nineteen" is not a number; leave it empty if it is unknown`},
+		{&SkillRenameError{From: "sever", To: "sunder"},
+			`a skill's id cannot be edited, so "sever" cannot become "sunder"; ` +
+				"renaming one has to change every kit and every restriction that names it, " +
+				"which is a separate operation"},
+		// The preset is carried in a field and left out of the sentence: whoever
+		// shows this asked about that preset, and naming it here as well would
+		// say it twice in one line.
+		{&PresetOwnedSkillError{
+			Archetype: "bulwark", Skill: "sever", Allowed: []string{"a.one", "a.two"},
+		}, `"sever" belongs to a.one or a.two, and a preset is shared by every character built from it`},
+		{&SkillEditBreaksError{
+			Carrier: BrokenCharacter, ID: "a.one", Skill: "riptide",
+			Err: errors.New("because"),
+		}, `editing "riptide" would leave a.one unable to carry it: because`},
+		{&SkillEditBreaksError{
+			Carrier: BrokenPreset, ID: "bulwark", Skill: "sever", Err: errors.New("because"),
+		}, `editing "sever" would leave the bulwark preset unable to carry it: because`},
+		// No carrier named, which is the shape a refusal about a kit as a whole
+		// takes: the parser's words and nobody blamed.
+		{&SkillEditBreaksError{Skill: "bolt", Err: errors.New("because")},
+			`editing "bolt" would stop the books loading: because`},
 	}
 	for _, test := range cases {
 		if got := test.err.Error(); got != test.want {
