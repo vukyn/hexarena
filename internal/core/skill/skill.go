@@ -95,6 +95,94 @@ type Cleanse struct {
 	Stacks     int
 }
 
+// Restriction is who a skill declares itself available to.
+//
+// Every list is an allowlist and every one is optional: a list that is absent
+// restricts nothing, and a skill with no restriction at all is carried by
+// whoever CanCarry allows. A list that is present and empty is a data error
+// rather than "unrestricted" — an allowlist nobody satisfies is a mistake every
+// time, and reading it as "no restriction" would turn that mistake into a skill
+// silently available to everyone.
+//
+// # Why two of the three are plain strings
+//
+// Elements are parsed here because this package already knows what an element
+// is. Archetypes and characters are not: internal/core/cast declares both, and
+// cast imports this package, so a skill that named a cast type would be an
+// import cycle. So they travel as the ids they were written with and are
+// checked one layer up, by cast.ParseBook and cast.ParseArchetypes — exactly
+// the way a skill's pattern and status names are checked by whoever holds those
+// books rather than by whoever declares the skill.
+//
+// The layering has a consequence worth stating rather than working around:
+// battle.Roster carries stats, skills, an affinity and a slot, and no archetype
+// and no character identity, because both are resolved before a battle starts.
+// So Elements is enforceable at battle load and the other two are not. They are
+// authoring-time rules, and pushing either into the engine to "complete" the
+// feature would put a fact into the replayable core that no replay needs. See
+// CLAUDE.md, "What a restriction can enforce".
+type Restriction struct {
+	// Elements is the affinities allowed to carry the skill: a unit qualifies
+	// by holding any one of them.
+	//
+	// Any rather than all, because a unit holds at most two elements and an
+	// all-of rule of more than two could never be met. The list is what makes a
+	// *neutral* skill restrictable at all — CanCarry lets every affinity carry
+	// a neutral skill, so a neutral skill that should belong to two elements has
+	// nowhere else to say so.
+	Elements []element.Element
+	// Archetypes is the role presets allowed to carry it, by id in the
+	// archetype book.
+	Archetypes []string
+	// Characters is the characters allowed to carry it, by id in the cast book.
+	// A list of one is a unique skill.
+	Characters []string
+}
+
+// AllowsElement reports whether the element allowlist admits an affinity.
+//
+// The nil receiver is the unrestricted case and answers yes, so a caller never
+// has to ask whether there is a restriction before asking what it says.
+func (r *Restriction) AllowsElement(affinity element.Affinity) bool {
+	if r == nil || len(r.Elements) == 0 {
+		return true
+	}
+	for _, allowed := range r.Elements {
+		if affinity.Has(allowed) {
+			return true
+		}
+	}
+	return false
+}
+
+// AllowsArchetype reports whether the preset allowlist admits an id.
+func (r *Restriction) AllowsArchetype(id string) bool {
+	return r == nil || len(r.Archetypes) == 0 || slices.Contains(r.Archetypes, id)
+}
+
+// AllowsCharacter reports whether the character allowlist admits an id.
+func (r *Restriction) AllowsCharacter(id string) bool {
+	return r == nil || len(r.Characters) == 0 || slices.Contains(r.Characters, id)
+}
+
+// NamesCharacters reports whether the skill belongs to named characters, which
+// is what makes it unusable in a preset shared by every character built from
+// it.
+func (r *Restriction) NamesCharacters() bool { return r != nil && len(r.Characters) > 0 }
+
+// ElementNames is the element allowlist written out, which is what a refusal
+// and a listing want.
+func (r *Restriction) ElementNames() []string {
+	if r == nil {
+		return nil
+	}
+	out := make([]string, 0, len(r.Elements))
+	for _, allowed := range r.Elements {
+		out = append(out, allowed.String())
+	}
+	return out
+}
+
 // Skill is one declared action.
 type Skill struct {
 	ID      string
@@ -121,6 +209,8 @@ type Skill struct {
 	Requires *Condition
 	// Strips is the cleanse or dispel the skill performs, if any.
 	Strips *Cleanse
+	// Restrict is who may carry the skill, or nil when anybody may.
+	Restrict *Restriction
 	// Cooldown is how many of the caster's own turns must pass before it can be
 	// used again. Counting the caster's turns rather than cycles means a fast
 	// unit really does get its skill back sooner, in step with everything else
@@ -165,32 +255,55 @@ type Book struct {
 	byID   map[string]Skill
 }
 
+// skillFile is the shape a skill is written in, and therefore the shape it is
+// read in: Skill.MarshalJSON builds one of these rather than carrying its own
+// tags, so the writer cannot describe a field the parser does not read.
+//
+// The field order is the order the keys are written in — the nine core fields
+// first, in the order the data files have always listed them, then the optional
+// blocks. Every core field is written even at its zero value, so a skill's
+// first line is always complete; each optional block is omitted when it is
+// absent, so a skill that declares none reads exactly as it did before any of
+// them existed.
 type skillFile struct {
-	ID       string `json:"id"`
-	Element  string `json:"element"`
-	Range    int    `json:"range"`
-	Pattern  string `json:"pattern"`
-	Power    int    `json:"power"`
-	Strikes  int    `json:"strikes"`
-	Accuracy int    `json:"accuracy"`
-	Scaling  *struct {
-		Stat   string `json:"stat"`
-		Source string `json:"source"`
-	} `json:"scaling"`
-	Applies     []applicationFile `json:"applies"`
-	SelfApplies []applicationFile `json:"self_applies"`
-	Requires    *struct {
-		Status     string `json:"status"`
-		MinStacks  int    `json:"min_stacks"`
-		BonusPower int    `json:"bonus_power"`
-		Consume    bool   `json:"consume"`
-	} `json:"requires"`
-	Strips *struct {
-		Categories []string `json:"categories"`
-		Stacks     int      `json:"stacks"`
-	} `json:"strips"`
-	Cooldown int    `json:"cooldown"`
-	Target   string `json:"target"`
+	ID          string            `json:"id"`
+	Element     string            `json:"element"`
+	Range       int               `json:"range"`
+	Pattern     string            `json:"pattern"`
+	Power       int               `json:"power"`
+	Strikes     int               `json:"strikes"`
+	Accuracy    int               `json:"accuracy"`
+	Cooldown    int               `json:"cooldown"`
+	Target      string            `json:"target"`
+	Restrict    *restrictFile     `json:"restrict,omitempty"`
+	Scaling     *scalingFile      `json:"scaling,omitempty"`
+	Applies     []applicationFile `json:"applies,omitempty"`
+	SelfApplies []applicationFile `json:"self_applies,omitempty"`
+	Requires    *conditionFile    `json:"requires,omitempty"`
+	Strips      *cleanseFile      `json:"strips,omitempty"`
+}
+
+type scalingFile struct {
+	Stat   string `json:"stat"`
+	Source string `json:"source"`
+}
+
+type conditionFile struct {
+	Status     string `json:"status"`
+	MinStacks  int    `json:"min_stacks"`
+	BonusPower int    `json:"bonus_power"`
+	Consume    bool   `json:"consume,omitempty"`
+}
+
+type cleanseFile struct {
+	Categories []string `json:"categories"`
+	Stacks     int      `json:"stacks"`
+}
+
+type restrictFile struct {
+	Elements   []string `json:"elements,omitempty"`
+	Archetypes []string `json:"archetypes,omitempty"`
+	Characters []string `json:"characters,omitempty"`
 }
 
 type applicationFile struct {
@@ -202,6 +315,91 @@ type applicationFile struct {
 type bookFile struct {
 	Skills []skillFile `json:"skills"`
 }
+
+// marshalFile is the shape Book.Marshal writes. It holds Skill rather than
+// skillFile because Skill.MarshalJSON already turns one into the other.
+type marshalFile struct {
+	Skills []Skill `json:"skills"`
+}
+
+// DefaultScaling is what a skill scales off when it says nothing: the caster's
+// attack as it stands, which is what almost every skill wants.
+//
+// It is named once because three places need it — resolve, which fills it in,
+// file, which leaves it out again, and an authoring tool building a skill from
+// answers — and a second copy of the pair would let a written file disagree with
+// the one it was read from.
+//
+// It is exported because the zero Scaling is *not* this: progression.HP is the
+// zero stat, and a skill scaling off health is refused, so a Skill built in Go
+// without setting this field is refused the moment it is written. That refusal
+// is loud on purpose. Silently substituting the default here would make the
+// field's zero value mean two different things depending on where the skill came
+// from.
+func DefaultScaling() Scaling {
+	return Scaling{Stat: progression.Attack, Source: combat.CurrentStat}
+}
+
+// file is a resolved skill as the declaration it came from.
+//
+// Writing goes through the parse shape rather than through tags on Skill, which
+// is what makes the write lossless by construction: the only fields that can be
+// written are the fields the parser reads, and a field added to one is a
+// compile error in the other until it is added there too.
+//
+// Every optional block is written when it is present and left out when it is
+// not, and the one derived default — the scaling — is left out when it is the
+// default, so a file that declared none reads back exactly as it was authored.
+func (s Skill) file() skillFile {
+	out := skillFile{
+		ID: s.ID, Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
+		Power: s.Power, Strikes: s.Strikes, Accuracy: s.Accuracy,
+		Cooldown: s.Cooldown, Target: s.Target.String(),
+		Applies: applicationFiles(s.Applies), SelfApplies: applicationFiles(s.SelfApplies),
+	}
+	if s.Restrict != nil {
+		out.Restrict = &restrictFile{
+			Elements:   s.Restrict.ElementNames(),
+			Archetypes: append([]string(nil), s.Restrict.Archetypes...),
+			Characters: append([]string(nil), s.Restrict.Characters...),
+		}
+	}
+	if s.Scaling != DefaultScaling() {
+		out.Scaling = &scalingFile{
+			Stat: s.Scaling.Stat.String(), Source: s.Scaling.Source.String(),
+		}
+	}
+	if s.Requires != nil {
+		out.Requires = &conditionFile{
+			Status: s.Requires.Status, MinStacks: s.Requires.MinStacks,
+			BonusPower: s.Requires.BonusPower, Consume: s.Requires.Consume,
+		}
+	}
+	if s.Strips != nil {
+		categories := make([]string, 0, len(s.Strips.Categories))
+		for _, category := range s.Strips.Categories {
+			categories = append(categories, category.String())
+		}
+		out.Strips = &cleanseFile{Categories: categories, Stacks: s.Strips.Stacks}
+	}
+	return out
+}
+
+func applicationFiles(applications []Application) []applicationFile {
+	if len(applications) == 0 {
+		return nil
+	}
+	out := make([]applicationFile, 0, len(applications))
+	for _, application := range applications {
+		out = append(out, applicationFile{
+			Status: application.Status, Chance: application.Chance, Stacks: application.Stacks,
+		})
+	}
+	return out
+}
+
+// MarshalJSON writes a skill as the declaration a parse would read back.
+func (s Skill) MarshalJSON() ([]byte, error) { return json.Marshal(s.file()) }
 
 // Deps are the books a skill's declarations are checked against. Validating here
 // rather than at use is the whole point: a skill naming a shape or a status that
@@ -305,7 +503,7 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return fail("has range %d, want between 1 and %d", declared.Range, maxRange)
 	}
 
-	scaling := Scaling{Stat: progression.Attack, Source: combat.CurrentStat}
+	scaling := DefaultScaling()
 	if declared.Scaling != nil {
 		stat, err := parseStat(declared.Scaling.Stat)
 		if err != nil {
@@ -360,6 +558,11 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		}
 	}
 
+	restrict, err := resolveRestriction(declared.ID, declared.Restrict)
+	if err != nil {
+		return Skill{}, err
+	}
+
 	var strips *Cleanse
 	if declared.Strips != nil {
 		if len(declared.Strips.Categories) == 0 {
@@ -388,8 +591,66 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		ID: declared.ID, Element: affinity, Range: declared.Range, Pattern: shape.Name,
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
 		Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
-		Requires: requires, Strips: strips, Cooldown: declared.Cooldown, Target: target,
+		Requires: requires, Strips: strips, Restrict: restrict,
+		Cooldown: declared.Cooldown, Target: target,
 	}, nil
+}
+
+// resolveRestriction checks the half of a restriction this package can see.
+//
+// Element names are real, no list is present-but-empty, no entry is blank and
+// no entry is repeated. What it deliberately does not check is whether an
+// archetype or a character id exists, because the books that declare those are
+// one layer up — see Restriction. cast.ParseArchetypes and cast.ParseBook make
+// that check, which is the same division as a skill's pattern and status names.
+func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, error) {
+	if declared == nil {
+		return nil, nil
+	}
+	fail := func(format string, args ...any) error {
+		return fmt.Errorf("skill %q restricts "+format, append([]any{skillID}, args...)...)
+	}
+	if declared.Elements == nil && declared.Archetypes == nil && declared.Characters == nil {
+		return nil, fail("nothing, because it names no lists; leave the block out to restrict nothing")
+	}
+	// A present-but-empty list is refused rather than read as "unrestricted".
+	// The two readings differ by everything — one skill nobody may carry
+	// against one skill everybody may — and the wrong one is silent.
+	for _, list := range []struct {
+		name    string
+		entries []string
+	}{
+		{"elements", declared.Elements},
+		{"archetypes", declared.Archetypes},
+		{"characters", declared.Characters},
+	} {
+		if list.entries != nil && len(list.entries) == 0 {
+			return nil, fail("its %s to an empty list, which nobody satisfies; leave the list out to restrict nothing",
+				list.name)
+		}
+		seen := make(map[string]bool, len(list.entries))
+		for _, entry := range list.entries {
+			if entry == "" {
+				return nil, fail("its %s with an empty name", list.name)
+			}
+			if seen[entry] {
+				return nil, fail("its %s to %q twice", list.name, entry)
+			}
+			seen[entry] = true
+		}
+	}
+	restriction := &Restriction{
+		Archetypes: append([]string(nil), declared.Archetypes...),
+		Characters: append([]string(nil), declared.Characters...),
+	}
+	for _, name := range declared.Elements {
+		member, err := element.Parse(name)
+		if err != nil {
+			return nil, fail("its elements: %w", err)
+		}
+		restriction.Elements = append(restriction.Elements, member)
+	}
+	return restriction, nil
 }
 
 func resolveApplications(skillID, field string, declared []applicationFile, deps Deps) ([]Application, error) {
@@ -440,6 +701,38 @@ func (b *Book) Skills() []Skill {
 	return out
 }
 
+// Marshal writes the book as a data file: two-space indented JSON, in the order
+// the skills were declared.
+//
+// Declaration order rather than sorted by id, which is where this differs from
+// cast.Book.Marshal, and the difference is the point. A cast is a set looked up
+// by id, so sorting it is free and makes an addition a one-block diff. A skill
+// book's order is authored information — the shipped file reads basic attacks,
+// then the elemental ones, then the utility skills, and skills.golden's table is
+// that order — so sorting would shuffle a design record to buy the same
+// one-block diff that appending already gives.
+func (b *Book) Marshal() ([]byte, error) {
+	out, err := json.MarshalIndent(marshalFile{Skills: b.Skills()}, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("encode skill book: %w", err)
+	}
+	return append(out, '\n'), nil
+}
+
+// Append returns a new book holding the declared skills plus the extra ones,
+// validated exactly as a parse would validate them.
+//
+// It works by marshalling and re-parsing rather than by re-implementing the
+// checks, which is what guarantees the bytes an authoring tool is about to write
+// are bytes that load.
+func (b *Book) Append(deps Deps, extra ...Skill) (*Book, error) {
+	raw, err := json.Marshal(marshalFile{Skills: append(b.Skills(), extra...)})
+	if err != nil {
+		return nil, fmt.Errorf("encode skill book: %w", err)
+	}
+	return ParseBook(raw, deps)
+}
+
 // Lookup returns a skill by id.
 func (b *Book) Lookup(id string) (Skill, error) {
 	found, ok := b.byID[id]
@@ -449,17 +742,58 @@ func (b *Book) Lookup(id string) (Skill, error) {
 	return found, nil
 }
 
-// CanCarry reports whether a unit of the given affinity may use this skill.
-// A neutral skill is universal; anything else demands an element the unit
-// actually has, which is what makes a second element worth carrying.
+// CarryRefusal is why an affinity may not carry a skill, or that it may.
 //
-// This is the single declaration of the rule. battle.enlist refuses a roster
-// entry that breaks it and cast.ParseBook refuses an authored character that
-// breaks it, both by calling this — two callers wording one rule in their own
-// words is how the two come to disagree, and the disagreement here would be a
-// character that writes cleanly and then cannot enter a battle.
+// It is a classification rather than a sentence for the same reason
+// internal/forge returns values: three callers refuse a kit and each words it
+// for its own reader — the engine for a log, the parser for a data file, the
+// authoring tool in the author's language — and a sentence cannot be reworded
+// after it is built without being taken apart again.
+type CarryRefusal uint8
+
+const (
+	// CarryAllowed is a skill the affinity may use.
+	CarryAllowed CarryRefusal = iota
+	// CarryWrongElement is a skill of an element the unit does not have.
+	CarryWrongElement
+	// CarryElementRestricted is a skill whose element allowlist excludes the
+	// unit. It is a separate answer from CarryWrongElement because the two need
+	// different advice: one is fixed by changing the affinity to the skill's
+	// element, and the other cannot be, because the skill's own element is
+	// already shared.
+	CarryElementRestricted
+)
+
+// WhyCannotCarry is the whole of which skills an affinity may carry.
+//
+// Two conditions, in the order they are worth reporting. A unit may only use a
+// skill of an element it shares — a neutral skill is universal, which is what
+// makes a second element worth carrying — and it must also satisfy whatever
+// element allowlist the skill declares, which is the narrower rule a
+// restriction adds. Nothing else here is enforceable: an archetype and a
+// character identity do not reach the engine, so those two halves of a
+// restriction are checked where a character is authored. See Restriction.
+//
+// This is the single declaration. battle.enlist refuses a roster entry that
+// breaks it, cast.ParseBook refuses an authored character that breaks it and
+// forge.CheckCarry brings the same answer forward to the moment an answer is
+// typed — all three by calling this, because two callers wording one rule in
+// their own words is how the two come to disagree, and the disagreement here
+// would be a character that writes cleanly and then cannot enter a battle.
+func WhyCannotCarry(affinity element.Affinity, carried Skill) CarryRefusal {
+	if carried.Element != element.Neutral && !affinity.Has(carried.Element) {
+		return CarryWrongElement
+	}
+	if !carried.Restrict.AllowsElement(affinity) {
+		return CarryElementRestricted
+	}
+	return CarryAllowed
+}
+
+// CanCarry reports whether a unit of the given affinity may use this skill.
+// It is WhyCannotCarry for a caller that only needs the yes or no.
 func CanCarry(affinity element.Affinity, carried Skill) bool {
-	return carried.Element == element.Neutral || affinity.Has(carried.Element)
+	return WhyCannotCarry(affinity, carried) == CarryAllowed
 }
 
 // Demands returns the distinct non-neutral elements a kit requires, in the

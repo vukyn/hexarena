@@ -162,7 +162,46 @@ func ParseBook(raw []byte, deps Deps) (*Book, error) {
 		book.byID[built.ID] = built
 		book.characters = append(book.characters, built)
 	}
+	if err := checkCharacterRestrictions(book, deps.Skills); err != nil {
+		return nil, err
+	}
 	return book, nil
+}
+
+// checkCharacterRestrictions checks the names in a carried skill's character
+// allowlist, once every character has been read.
+//
+// It runs after the loop rather than inside it because the allowlist points at
+// the very book being parsed: a skill restricted to a character declared
+// further down the file is ordinary authoring, and a check made while the book
+// was half-read would refuse it for being in the wrong place.
+//
+// Only the skills somebody carries are checked, and that is deliberate rather
+// than lazy. Checking every skill in the book would deadlock authoring: a
+// unique skill cannot be written before the character it names, and that
+// character cannot be written before the skill its kit names. Restricting the
+// check to carried skills breaks the cycle — the skill goes in first, carried by
+// nobody, and is checked the moment the character that carries it exists.
+func checkCharacterRestrictions(book *Book, skills *skill.Book) error {
+	for _, character := range book.characters {
+		for _, id := range character.Skills {
+			carried, err := skills.Lookup(id)
+			if err != nil {
+				return err
+			}
+			if carried.Restrict == nil {
+				continue
+			}
+			for _, named := range carried.Restrict.Characters {
+				if _, known := book.byID[named]; !known {
+					return fmt.Errorf(
+						"character %q carries %q, which is restricted to the character %q, and the cast holds nobody with that id",
+						character.ID, carried.ID, named)
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
@@ -198,14 +237,34 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 	if err != nil {
 		return fail("%w", err)
 	}
-	// The rule lives in skill.CanCarry, which battle.enlist calls too. Applying
-	// it here is what makes a character fail where it is authored rather than
-	// at the moment somebody tries to put it in a battle — an author has no
-	// reason to know the engine has an opinion about this.
+	// The element half of the rule lives in skill.WhyCannotCarry, which
+	// battle.enlist calls too. Applying it here is what makes a character fail
+	// where it is authored rather than at the moment somebody tries to put it
+	// in a battle — an author has no reason to know the engine has an opinion
+	// about this.
+	//
+	// The other two halves of a restriction are enforced only here, because the
+	// engine has neither an archetype nor a character identity to check them
+	// against. Each refusal names the skill and what the restriction allows, so
+	// that somebody who did not write the restriction can act on it without
+	// opening skills.json.
 	for _, carried := range kit {
-		if !skill.CanCarry(*declared.Element, carried) {
+		switch skill.WhyCannotCarry(*declared.Element, carried) {
+		case skill.CarryWrongElement:
 			return fail("is %s and cannot carry %q, which is %s",
 				*declared.Element, carried.ID, carried.Element)
+		case skill.CarryElementRestricted:
+			return fail("is %s and cannot carry %q, which only %s may carry",
+				*declared.Element, carried.ID,
+				strings.Join(carried.Restrict.ElementNames(), " or "))
+		}
+		if !carried.Restrict.AllowsArchetype(declared.Archetype) {
+			return fail("was tuned from %q and cannot carry %q, which only the %s archetype may carry",
+				declared.Archetype, carried.ID, strings.Join(carried.Restrict.Archetypes, " or "))
+		}
+		if !carried.Restrict.AllowsCharacter(declared.ID) {
+			return fail("cannot carry %q, which only %s may carry",
+				carried.ID, strings.Join(carried.Restrict.Characters, " or "))
 		}
 	}
 

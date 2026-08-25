@@ -34,6 +34,8 @@ go run ./cmd/hexarena --replay b.json --verify   # re-run it and check every eve
 
 go run ./cmd/hexforge                            # author the cast: list the subcommands
 go run ./cmd/hexforge new                        # create a character, prompting for what is missing
+go run ./cmd/hexforge skills                     # the declared skills and who may carry each
+go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900   # author a skill
 go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
 
 go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal), in Vietnamese
@@ -149,6 +151,28 @@ same answers as flags and as keystrokes must resolve to the same
 to start when stdout is not a terminal rather than painting escape codes into
 one.
 
+**Where a form beats a prompt: the kit, and a skill's damage.** Two things the
+full-screen client does that the command line cannot, and both are `internal/forge`
+answers rather than screen logic:
+
+- The kit is a **multi-select over the skill book** (`cmd/hexforge-tui/picker.go`),
+  not a typed list. Every skill is listed, including the ones this character may
+  not take, each marked and captioned with who it *is* for — a hidden skill reads
+  as a skill that does not exist. The availability of a row is
+  `forge.CheckSkill`'s answer, the same value the write refuses on, so the mark
+  and the refusal cannot disagree. Nineteen rows do not fit beside a form (the
+  form is nineteen body lines of the twenty it has in an 80x24 window), so the
+  list is a **sub-screen that scrolls**, and `pickerRoom` counts what the screen
+  spends — including the empty string a trailing newline leaves when `frame`
+  splits the body, which was miscounted first time and truncated the list.
+- The new-skill form shows **expected damage as the power is typed**, from
+  `forge.Library.PreviewDamage`, which is `combat.Rules.Damage` against the
+  attack ceiling and *half* the defence ceiling. Those two are not a tasteful
+  guess: they are the pair `skills.golden`'s own damage column is measured from
+  (800 and 400), so the figure before a write is the figure the golden shows
+  after one. It truncates **per strike** rather than once over the total, as a
+  battle does — three strikes of 600 are 615, not 617.
+
 **`hexforge new` must work with nobody watching.** A preset-supplied value is
 not missing, so an unattended run takes every default and errors only on a field
 that has none, naming its flag. Two traps live here. `os.Stdin.Stat` cannot tell
@@ -159,6 +183,18 @@ default was fine. And the kit is asked **before** the element, because the kit i
 what decides which elements are legal: asking the other way round means either
 validating against a preset the author is about to replace with `--skills`, or
 accepting an answer the write then refuses.
+
+**That prompt order is a prompt's problem, not a form's.** At a prompt an answer
+once given is given, so one order has to be right. On the form both fields are on
+screen and **either may be filled in first**: `forge.Carrier` says an unanswered
+fact restricts nothing, so with no element yet the picker marks nothing, and with
+an element settled it marks the skills that element cannot take. Going the other
+way, the carry line under the form refuses an element the chosen kit cannot take
+and names the skill. Neither direction mutates the other's answer — changing the
+element does not empty the kit, it turns those rows into marked rows and the carry
+line red, which is a state an author can see and fix rather than one that happened
+behind them. Do not "tidy" that by dropping the offending skills: a silent
+mutation is how a one-way order comes back, and it makes the live check a lie.
 
 ## The event log is the contract
 
@@ -290,6 +326,32 @@ code.
 Balance lives in `internal/seed/data`, embedded with `go:embed`. Changing a number
 there changes the game without touching Go.
 
+`skills.json` is the exception that is **balance and tool-written at once**:
+`hexforge skills add` and the full-screen client's skill form both append to it.
+That is why it is committed in the form `Book.Marshal` writes, on the same terms
+as `cast.json` below, and why a save says **the golden files have moved** rather
+than only that it wrote — a power reaches `skills.golden`, `scenarios.golden` and
+`progression.golden`'s hits-to-kill ladder, so `make golden` and reading the diff
+is the next step and not an afterthought.
+
+Two things about that write are worth knowing before touching it:
+
+- `skill.Book.Marshal` keeps **declaration order** where `cast.Book.Marshal`
+  sorts by id. A cast is a set looked up by id; a skill book's order is authored
+  information (basic attacks, then the elemental ones, then utility, which is the
+  order `skills.golden`'s table reads in), so sorting would shuffle a design
+  record to buy the one-block diff that appending already gives.
+- `Skill.MarshalJSON` builds the **parse shape** (`skillFile`) rather than
+  carrying tags of its own, so the only fields that can be written are the fields
+  the parser reads. That is what makes the rewrite lossless for the four blocks
+  the authoring form does not ask about — `requires`, `strips`, `scaling`,
+  `self_applies` — and `TestTheShippedSkillBookSurvivesBeingWritten` measures it
+  on the real data rather than on a fixture. A field added to one struct is a
+  compile error in the other until it is added there too, which is the point.
+  Note `Scaling`'s zero value is **not** its default (the zero stat is health,
+  and a skill scaling off health is refused), so a `skill.Skill` built in Go must
+  set `skill.DefaultScaling()`; the refusal is loud rather than silent on purpose.
+
 Three of those files are the cast rather than the balance, and `cmd/hexforge` both
 reads and **writes** them:
 
@@ -362,6 +424,57 @@ it did not share and the authoring layer had no idea, so `hexforge new
 --archetype sentinel --element fire` wrote a character and `hexforge check` said
 "no problems found". Do not restate the condition at a third call site; that is
 the mistake the "one source for a recorded string" note above is about.
+
+**What a restriction can enforce, and what it cannot.** A skill may declare
+`restrict`, an optional allowlist of `elements`, `archetypes` and `characters`
+(any list absent means unrestricted; a list **present and empty is an error**,
+because an allowlist nobody satisfies is a mistake every time). The three are
+not enforced in the same place, and the split is a layer fact rather than an
+omission:
+
+- **`elements` reaches the engine.** It is checked by `skill.WhyCannotCarry`
+  beside the shared-element rule, so `battle.enlist`, `cast.ParseBook` and
+  `forge.CheckSkill` all apply it from one declaration. `CanCarry` is now that
+  function's yes/no. The two element refusals are *different answers*
+  (`CarryWrongElement`, `CarryElementRestricted`) because they need different
+  advice: one is fixed by taking the skill's element, the other cannot be, since
+  the skill's element is already shared. The list is what makes a **neutral**
+  skill restrictable at all.
+- **`archetypes` and `characters` cannot reach the engine.** `battle.Roster`
+  carries stats, skills, an affinity and a slot — no archetype and no character
+  identity — because evolution and archetype are resolved *before* a battle
+  starts. So both are **authoring-time only**, enforced in `cast.ParseBook`
+  (`resolveCharacter`). **Do not push either into `battle` to "complete" the
+  feature**: it would put a fact into the replayable core that no replay reads,
+  and `battle.Roster`'s deliberate emptiness is recorded above for the same
+  reason.
+
+`skill` itself validates only what it can see — the element names are real, no
+list is present-but-empty, no entry blank or repeated — because `cast` imports
+`skill` and the reverse would be an import cycle. Archetype and character *names*
+are therefore checked one layer up, exactly like a skill's pattern and status
+names. Two consequences worth knowing:
+
+- The character allowlist is checked **after the whole cast has been read**
+  (`checkCharacterRestrictions`), so it may name somebody declared further down
+  the file.
+- It is checked **only for skills somebody carries**, and that avoids a real
+  deadlock: a unique skill cannot be authored after the character that carries it
+  (the kit names the skill) and that character cannot be authored after the skill
+  (the restriction names the character). The skill goes in first, carried by
+  nobody, and is checked the moment a carrier exists.
+
+**A skill kept for named characters may not sit in an archetype preset's kit**,
+and that check lives in `cast.resolveArchetype` — the only place holding both
+the preset's id and each skill's restriction without a second lookup. A preset is
+the starting point for *every* character built from it, so a kit entry only
+certain characters may carry would refuse everyone else, and the refusal would
+land on the author of the character rather than the author of the preset. The
+same function refuses a preset whose kit holds a skill kept for a *different*
+archetype. What it deliberately does not attempt is whether an element allowlist
+and the kit's `Demands` are jointly satisfiable — that needs the element chart,
+which a preset is validated without, the same gap
+`TestEveryShippedArchetypeKitIsCarryableAtAll` covers for `Demands`.
 
 `skill.Demands` is the other half, derived rather than authored:
 `Archetype.Demands` is the distinct non-neutral elements a kit requires, filled

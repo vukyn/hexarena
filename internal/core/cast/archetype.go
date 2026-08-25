@@ -154,6 +154,23 @@ func resolveArchetype(declared archetypeFile, deps ArchetypeDeps) (Archetype, er
 	if err != nil {
 		return fail("%w", err)
 	}
+	// A preset is a starting point for any character built from it, so a skill
+	// only certain characters may carry has no place in one: every character
+	// from the preset except those named would be refused, and the refusal
+	// would land on the author of the character rather than on the author of
+	// the preset. This is checked here because this is the only place that
+	// holds both books — the preset's id and each skill's restriction — without
+	// a second lookup.
+	for _, carried := range kit {
+		if carried.Restrict.NamesCharacters() {
+			return fail("has %q in its kit, which only %s may carry, and a preset is shared by every character built from it",
+				carried.ID, strings.Join(carried.Restrict.Characters, " or "))
+		}
+		if !carried.Restrict.AllowsArchetype(declared.ID) {
+			return fail("has %q in its kit, which only the %s archetype may carry",
+				carried.ID, strings.Join(carried.Restrict.Archetypes, " or "))
+		}
+	}
 	// A unit carries at most two elements, and it must have every element its
 	// kit demands, so a kit demanding three can never be carried by anybody.
 	// Rejecting it here is the difference between a preset that is unusable and

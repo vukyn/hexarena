@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/forge"
 )
 
@@ -447,5 +448,102 @@ func TestParseArgsAllowsFlagsAfterAnOperand(t *testing.T) {
 				t.Errorf("level is %d, want %d", *level, test.wantLevel)
 			}
 		})
+	}
+}
+
+// TestSkillsAddRunsEndToEndThroughAPipe is the authoring flow a script uses,
+// from argv to the file and back.
+//
+// It matters more here than for a character, because a skill is balance: the
+// figures a run reports are the ones the golden tables will move to, so a script
+// that writes one has to be able to read what it just did.
+func TestSkillsAddRunsEndToEndThroughAPipe(t *testing.T) {
+	binary := buildHexforge(t)
+	dir := scratchData(t)
+
+	run := func(args ...string) (string, error) {
+		command := exec.Command(binary, args...)
+		command.Stdin = strings.NewReader("")
+		output, err := command.CombinedOutput()
+		return string(output), err
+	}
+
+	output, err := run("skills", "add", "oath", "--data", dir,
+		"--power", "1200", "--accuracy", "900", "--cooldown", "2",
+		"--applies", "burn:500", "--restrict-elements", "fire,metal", "--yes")
+	if err != nil {
+		t.Fatalf("a flags-only run through a pipe failed: %v\n%s", err, output)
+	}
+	for _, want := range []string{
+		// Every default a skill takes, and the two figures it does not.
+		"oath — neutral, enemy", "range 1, single", "1200 x1, accuracy 900, cooldown 2",
+		"burn:500", "kept for fire or metal",
+		// The damage against the reference pair skills.golden is measured from,
+		// which is the number this subcommand exists to show before a write.
+		"411 per strike", "800 attack and 400 defence",
+		"wrote oath", "make golden",
+	} {
+		if !strings.Contains(output, want) {
+			t.Errorf("the run does not report %q:\n%s", want, output)
+		}
+	}
+
+	lib, err := forge.Load(dir)
+	if err != nil {
+		t.Fatalf("reload: %v", err)
+	}
+	written, err := lib.Skills().Lookup("oath")
+	if err != nil {
+		t.Fatalf("the skill was not written: %v", err)
+	}
+	if written.Element != element.Neutral || written.Power != 1200 || written.Cooldown != 2 {
+		t.Errorf("the written skill is %+v", written)
+	}
+	if got := forge.WhoMaySummary(written); got != "kept for fire or metal" {
+		t.Errorf("the written restriction reads %q", got)
+	}
+	// Written at the end of the book rather than sorted into it, because a skill
+	// book's order is authored: skills.golden's table is that order.
+	if last := lib.Skills().Skills()[len(lib.Skills().Skills())-1]; last.ID != "oath" {
+		t.Errorf("the new skill landed at %q rather than the end of the book", last.ID)
+	}
+
+	// A field with no default fails naming its flag, instead of writing a
+	// balance number nobody chose.
+	output, err = run("skills", "add", "powerless", "--data", dir, "--accuracy", "900", "--yes")
+	if err == nil {
+		t.Fatalf("a run with no --power succeeded:\n%s", output)
+	}
+	if !strings.Contains(output, "--power") {
+		t.Errorf("the failure does not name --power:\n%s", output)
+	}
+
+	// An id already in the book is refused in the words internal/forge owns,
+	// rather than by the parser complaining about a file listing one id twice.
+	output, err = run("skills", "add", "strike", "--data", dir,
+		"--power", "1000", "--accuracy", "900", "--yes")
+	if err == nil {
+		t.Fatalf("an id already in the book was written:\n%s", output)
+	}
+	if !strings.Contains(output, "already in the book") {
+		t.Errorf("the failure does not say the id is taken:\n%s", output)
+	}
+
+	// An allowlist naming somebody who does not exist is refused up front. The
+	// skill book cannot make that check — cast imports skill, so the reverse
+	// would be an import cycle — and letting it be written would defer the
+	// refusal to the first character that tried to carry it.
+	output, err = run("skills", "add", "phantom", "--data", dir,
+		"--power", "1000", "--accuracy", "900", "--restrict-characters", "nobody.here", "--yes")
+	if err == nil {
+		t.Fatalf("a skill kept for a character nobody has authored was written:\n%s", output)
+	}
+	if !strings.Contains(output, "nobody.here") {
+		t.Errorf("the failure does not name the character:\n%s", output)
+	}
+
+	// And the whole book still loads, which is the property the write rests on.
+	if _, err := run("skills", "--data", dir); err != nil {
+		t.Errorf("the book does not list after a write: %v", err)
 	}
 }

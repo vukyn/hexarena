@@ -6,6 +6,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
 // The refusals this package makes, as types rather than as sentences.
@@ -74,6 +75,87 @@ type OriginTakenError struct{ ID string }
 
 func (e *OriginTakenError) Error() string {
 	return fmt.Sprintf("origin %q is already in the catalog", e.ID)
+}
+
+// UnknownCharacterError is a name that is not in the cast. It is raised by an
+// allowlist naming somebody who does not exist, which is the same mistake as an
+// empty allowlist: nobody satisfies it.
+type UnknownCharacterError struct{ ID string }
+
+func (e *UnknownCharacterError) Error() string {
+	return fmt.Sprintf("no character %q in the cast", e.ID)
+}
+
+// DuplicateEntryError is one name listed twice in an allowlist.
+type DuplicateEntryError struct{ Value string }
+
+func (e *DuplicateEntryError) Error() string {
+	return fmt.Sprintf("%q is named twice", e.Value)
+}
+
+// SkillTakenError is an id that is already in the skill book.
+type SkillTakenError struct{ ID string }
+
+func (e *SkillTakenError) Error() string {
+	return fmt.Sprintf("skill %q is already in the book", e.ID)
+}
+
+// MissingSkillIDError is a skill with nothing to be called.
+type MissingSkillIDError struct{}
+
+func (e *MissingSkillIDError) Error() string { return "a skill needs an id" }
+
+// UnknownPatternError is a shape the pattern book does not hold. The judgement
+// is pattern.Book.Lookup's; this only carries the name alongside it.
+type UnknownPatternError struct {
+	Name string
+	Err  error
+}
+
+func (e *UnknownPatternError) Error() string { return e.Err.Error() }
+func (e *UnknownPatternError) Unwrap() error { return e.Err }
+
+// UnknownTargetError is a targeting side that is not one, on the same terms.
+type UnknownTargetError struct {
+	Name string
+	Err  error
+}
+
+func (e *UnknownTargetError) Error() string { return e.Err.Error() }
+func (e *UnknownTargetError) Unwrap() error { return e.Err }
+
+// UnknownStatusError is a status the book does not hold, on the same terms.
+type UnknownStatusError struct {
+	ID  string
+	Err error
+}
+
+func (e *UnknownStatusError) Error() string { return e.Err.Error() }
+func (e *UnknownStatusError) Unwrap() error { return e.Err }
+
+// NumberError is an answer that was meant to be a number and is not.
+//
+// It carries no bounds, deliberately: what a legal power or a legal cooldown is
+// belongs to skill.ParseBook, and a second opinion here would be a second
+// declaration of it. This is only the difference between "that is not a number"
+// and "that number will not do".
+type NumberError struct {
+	Raw string
+	Err error
+}
+
+func (e *NumberError) Error() string {
+	return fmt.Sprintf("%q is not a number", e.Raw)
+}
+
+func (e *NumberError) Unwrap() error { return e.Err }
+
+// ApplicationShapeError is an inflicted-status entry that is not a status and a
+// chance.
+type ApplicationShapeError struct{ Raw string }
+
+func (e *ApplicationShapeError) Error() string {
+	return fmt.Sprintf("%q is not a status and a chance, want status:chance or status:chance:stacks", e.Raw)
 }
 
 // EmptyKitError is a character that would have nothing to do on its turn.
@@ -153,17 +235,59 @@ type AffinityRefusedError struct {
 func (e *AffinityRefusedError) Error() string { return e.Err.Error() }
 func (e *AffinityRefusedError) Unwrap() error { return e.Err }
 
-// CarryError is a kit holding a skill the affinity may not use, with the three
-// things that explain it: what the character is, which skill, and what that
-// skill is.
+// CarryError is a kit holding a skill the affinity may not use, with the four
+// things that explain it: what the character is, which skill, what that skill
+// is, and which of the two element rules refused it.
+//
+// Reason is skill.WhyCannotCarry's own answer, carried rather than recomputed.
+// The two need different advice — a wrong element is fixed by taking the
+// skill's element, and a restricted one cannot be, because the skill's element
+// is already shared — so a front-end that had only the affinity and the skill
+// would have to work out which had happened, which is the rule declared twice.
 type CarryError struct {
 	Affinity element.Affinity
 	Skill    string
 	Element  element.Element
+	Reason   skill.CarryRefusal
+	// Allowed is the skill's element allowlist, on CarryElementRestricted.
+	Allowed []string
 }
 
 func (e *CarryError) Error() string {
+	if e.Reason == skill.CarryElementRestricted {
+		return fmt.Sprintf("%s cannot carry %q, which only %s may carry",
+			e.Affinity, e.Skill, strings.Join(e.Allowed, " or "))
+	}
 	return fmt.Sprintf("%s cannot carry %q, which is %s", e.Affinity, e.Skill, e.Element)
+}
+
+// ArchetypeRestrictedError is a kit holding a skill the preset it was tuned
+// from may not use.
+//
+// It is a refusal the engine can never make: a roster entry carries no
+// archetype, so this rule lives entirely where a character is authored.
+type ArchetypeRestrictedError struct {
+	Archetype string
+	Skill     string
+	Allowed   []string
+}
+
+func (e *ArchetypeRestrictedError) Error() string {
+	return fmt.Sprintf("%q cannot carry %q, which only the %s archetype may carry",
+		e.Archetype, e.Skill, strings.Join(e.Allowed, " or "))
+}
+
+// CharacterRestrictedError is a kit holding a skill that belongs to somebody
+// else, on the same terms as ArchetypeRestrictedError.
+type CharacterRestrictedError struct {
+	Character string
+	Skill     string
+	Allowed   []string
+}
+
+func (e *CharacterRestrictedError) Error() string {
+	return fmt.Sprintf("%q cannot carry %q, which only %s may carry",
+		e.Character, e.Skill, strings.Join(e.Allowed, " or "))
 }
 
 // CurveShapeError is an answer that is not a "base:max" pair at all.

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -110,6 +111,10 @@ func key(t *testing.T, m model, name string) model {
 	types := map[string]tea.KeyType{
 		"down": tea.KeyDown, "up": tea.KeyUp, "left": tea.KeyLeft, "right": tea.KeyRight,
 		"enter": tea.KeyEnter, "esc": tea.KeyEscape, "tab": tea.KeyTab, "ctrl+s": tea.KeyCtrlS,
+		// Space is a named key here rather than a rune, because that is how a
+		// terminal delivers it: bubbletea turns a bare space into KeySpace,
+		// whose String is " ", which is what the screens match on.
+		"space": tea.KeySpace,
 	}
 	kind, known := types[name]
 	if !known {
@@ -894,6 +899,352 @@ func TestTheFooterNamesTheKeysOfTheScreenInFront(t *testing.T) {
 						test.target, lang, footer, want)
 				}
 			}
+		}
+	}
+}
+
+// formCursorTo walks the new-character form to a field with the keys an author
+// would press, rather than setting the cursor behind the screen's back.
+func formCursorTo(t *testing.T, m model, field int) model {
+	t.Helper()
+	for m.form.cursor != field {
+		m = key(t, m, "down")
+	}
+	return m
+}
+
+// pickTo moves an open picker's cursor onto an id.
+//
+// It rewinds to the top first, because the list clamps at both ends the way
+// every other list in this program does: pressing down from below the target
+// would never reach it.
+func pickTo(t *testing.T, m model, id string) model {
+	t.Helper()
+	if m.picker == nil {
+		t.Fatal("no picker is open")
+	}
+	for range len(m.picker.options) {
+		m = key(t, m, "up")
+	}
+	for range len(m.picker.options) {
+		if m.picker.options[m.picker.cursor].id == id {
+			return m
+		}
+		m = key(t, m, "down")
+	}
+	t.Fatalf("the picker never reached %q", id)
+	return m
+}
+
+// clearKit takes every chosen skill back out, which is what a kit chosen from
+// scratch starts from.
+func clearKit(t *testing.T, m model) model {
+	t.Helper()
+	for len(m.picker.chosen) > 0 {
+		m = pickTo(t, m, m.picker.chosen[0])
+		m = key(t, m, "space")
+	}
+	return m
+}
+
+// TestTheKitIsChosenFromTheBookAndKeepsItsOrder is the field turning from a
+// comma separated list somebody types into a list somebody chooses.
+//
+// The order is the property worth asserting: a kit is not a set, and the order
+// the skills were chosen in is the order cast.json records.
+func TestTheKitIsChosenFromTheBookAndKeepsItsOrder(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	m = m.enter(screenNew)
+	m = formCursorTo(t, m, fieldKit)
+	if !m.form.choiceField(fieldKit) {
+		t.Fatal("the kit is still a text field")
+	}
+	m = key(t, m, "space")
+	if m.picker == nil {
+		t.Fatal("space on the kit row did not open the list")
+	}
+	if got, want := len(m.picker.options), len(lib.Skills().Skills()); got != want {
+		t.Errorf("the list offers %d skills of %d; every one has to be offered, "+
+			"because a hidden skill reads as a skill that does not exist", got, want)
+	}
+	m = clearKit(t, m)
+	// Chosen in an order that is not the book's, so that the answer cannot pass
+	// by accident.
+	for _, id := range []string{"bolt", "strike", "flurry"} {
+		m = pickTo(t, m, id)
+		m = key(t, m, "space")
+	}
+	m = key(t, m, "enter")
+	if m.picker != nil {
+		t.Fatal("enter did not close the list")
+	}
+	if got, want := m.form.draft().Skills, "bolt,strike,flurry"; got != want {
+		t.Errorf("the kit is %q, want %q", got, want)
+	}
+	// Escape leaves the answer alone, which is what makes the list safe to open
+	// just to read it.
+	m = key(t, m, "space")
+	m = clearKit(t, m)
+	m = key(t, m, "esc")
+	if got, want := m.form.draft().Skills, "bolt,strike,flurry"; got != want {
+		t.Errorf("after escaping the list the kit is %q, want %q", got, want)
+	}
+}
+
+// TestTheKitListSaysWhatThisCharacterCannotTakeAndWhy is the half of the picker
+// that could have been done by hiding rows instead, and must not be.
+//
+// The expected sentence is built from forge.CheckSkill here rather than written
+// out, because the property is that the reason on screen is the *same predicate*
+// the write applies. A hand-written string would pass while the screen invented
+// its own explanation.
+func TestTheKitListSaysWhatThisCharacterCannotTakeAndWhy(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	m = author(t, m, "example-film.tester", "Tester", "example-film", "duelist", "fire")
+	m = formCursorTo(t, m, fieldKit)
+	m = key(t, m, "space")
+	m = pickTo(t, m, "venom_fang")
+
+	grass, err := lib.Skills().Lookup("venom_fang")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	refusal := forge.CheckSkill(m.form.draft().Carrier(), grass)
+	if refusal == nil {
+		t.Fatal("a fire character is allowed a grass skill")
+	}
+	drawn := m.View()
+	if !strings.Contains(drawn, i18n.Vi.Error(refusal)) {
+		t.Errorf("the list does not say why the skill is unavailable:\n%s", drawn)
+	}
+	if !strings.Contains(drawn, "venom_fang") {
+		t.Errorf("the unavailable skill is hidden rather than marked:\n%s", drawn)
+	}
+	// Marked, and refused: the row cannot be taken in, and nothing about the
+	// answer changes when it is tried.
+	before := strings.Join(m.picker.chosen, ",")
+	m = key(t, m, "space")
+	if got := strings.Join(m.picker.chosen, ","); got != before {
+		t.Errorf("an unavailable skill was chosen: %q became %q", before, got)
+	}
+	// A skill the character may take is still choosable, so the mark is about
+	// the skill and not about the list being read-only.
+	m = pickTo(t, m, "ember_lance")
+	m = key(t, m, "space")
+	if !slices.Contains(m.picker.chosen, "ember_lance") {
+		t.Error("a fire character could not choose a fire skill")
+	}
+}
+
+// TestEitherOrderWorksBetweenTheKitAndTheElement is the conflict the two
+// front-ends resolve differently, resolved here in both directions.
+//
+// At a prompt the kit has to come first, because an answer once given is given.
+// On a form both are on screen, so whichever is filled in first constrains the
+// other and the second re-checks against the first — and neither silently drops
+// the other's answer.
+func TestEitherOrderWorksBetweenTheKitAndTheElement(t *testing.T) {
+	// Nothing answered: nothing is unavailable, because an unanswered element
+	// restricts nothing. Without this the kit could only be filled in second.
+	m, lib, _ := start(t, i18n.Vi)
+	m = m.enter(screenNew)
+	m = formCursorTo(t, m, fieldKit)
+	m = key(t, m, "space")
+	for _, option := range m.picker.options {
+		if option.refusal != nil {
+			t.Errorf("%q is unavailable before an element was answered: %v",
+				option.id, option.refusal)
+		}
+	}
+	m = clearKit(t, m)
+	// The kit first: a wind skill, chosen with no element in hand.
+	m = pickTo(t, m, "gale_slash")
+	m = key(t, m, "space")
+	m = key(t, m, "enter")
+	// Then the element, which the kit now constrains. The carry line refuses it
+	// and names the skill, rather than the kit quietly losing the entry.
+	m = formCursorTo(t, m, fieldElement)
+	m = typeText(t, m, "fire")
+	body, _ := m.form.view(m)
+	if !strings.Contains(body, "gale_slash") {
+		t.Errorf("the carry line does not name the skill the element cannot take:\n%s", body)
+	}
+	if strings.Contains(m.form.draft().Skills, "gale_slash") != true {
+		t.Error("choosing an element dropped a skill from the kit behind the author's back")
+	}
+
+	// The other way round: element first, and the same skill is then marked in
+	// the list by the same predicate.
+	m = formCursorTo(t, m, fieldKit)
+	m = key(t, m, "space")
+	m = pickTo(t, m, "gale_slash")
+	wind, err := lib.Skills().Lookup("gale_slash")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if forge.CheckSkill(m.form.draft().Carrier(), wind) == nil {
+		t.Fatal("a fire character is allowed a wind skill")
+	}
+	if m.picker.options[m.picker.cursor].refusal == nil {
+		t.Error("the list does not mark a skill the settled element cannot take")
+	}
+	// And taking it back out always works, which is how the conflict is fixed.
+	m = key(t, m, "space")
+	if slices.Contains(m.picker.chosen, "gale_slash") {
+		t.Error("an unavailable skill could not be taken back out")
+	}
+}
+
+// skillFormTo walks the new-skill form to a field with the keys an author would
+// press.
+func skillFormTo(t *testing.T, m model, field int) model {
+	t.Helper()
+	for m.skills.field != field {
+		m = key(t, m, "down")
+	}
+	return m
+}
+
+// cycleSkillChooserTo steps a chooser until it reads the wanted value, or says
+// the value was never offered.
+func cycleSkillChooserTo(t *testing.T, m model, want string, read func(model) string) model {
+	t.Helper()
+	for range 24 {
+		if read(m) == want {
+			return m
+		}
+		m = key(t, m, "right")
+	}
+	t.Fatalf("the chooser never reached %q", want)
+	return m
+}
+
+// TestTheSkillFormProducesTheSkillTheCommandLineProduces is the same property
+// the character form has, for the book the character form draws its kit from.
+//
+// The same answers given as flags and as keystrokes have to arrive at the same
+// skill.Skill, because both go through forge.SkillDraft.Resolve. If this fails,
+// one of the two front-ends has started deciding something for itself.
+func TestTheSkillFormProducesTheSkillTheCommandLineProduces(t *testing.T) {
+	m, lib, dir := start(t, i18n.Vi)
+	m = m.enter(screenSkills)
+	m = typeText(t, m, "a")
+	if !m.skills.adding {
+		t.Fatal("a did not open the new-skill form")
+	}
+
+	m = typeText(t, m, "oath")
+	m = skillFormTo(t, m, skillFieldElement)
+	m = cycleSkillChooserTo(t, m, "fire", func(m model) string { return m.skills.draft(m).Element })
+	m = skillFormTo(t, m, skillFieldPower)
+	m = typeText(t, m, "1200")
+	m = skillFormTo(t, m, skillFieldAccuracy)
+	m = typeText(t, m, "900")
+	m = skillFormTo(t, m, skillFieldInflicts)
+	m = typeText(t, m, "burn:500")
+	// The allowlist is chosen from the book rather than typed, so a name that
+	// does not exist cannot be given.
+	m = skillFormTo(t, m, skillFieldKeptForRoles)
+	m = key(t, m, "space")
+	if m.picker == nil {
+		t.Fatal("space on the role allowlist did not open the list")
+	}
+	m = pickTo(t, m, "bulwark")
+	m = key(t, m, "space")
+	m = key(t, m, "enter")
+
+	fromTheForm, err := m.skills.draft(m).Resolve(lib)
+	if err != nil {
+		t.Fatalf("the form's draft does not resolve: %v", err)
+	}
+	fromTheFlags, err := forge.SkillDraft{
+		ID: "oath", Element: "fire", Target: "enemy", Range: "1", Pattern: "single",
+		Power: "1200", Strikes: "1", Accuracy: "900", Cooldown: "0",
+		Applies: "burn:500", RestrictArchetypes: "bulwark",
+	}.Resolve(lib)
+	if err != nil {
+		t.Fatalf("the flag-only draft does not resolve: %v", err)
+	}
+	if !reflect.DeepEqual(fromTheForm, fromTheFlags) {
+		t.Errorf("the two front-ends produced different skills:\nform:  %+v\nflags: %+v",
+			fromTheForm, fromTheFlags)
+	}
+
+	// The damage is on screen before the write, and it is the engine's own
+	// figure rather than a formula retyped here: 800 attack against 400
+	// defence at 1200 per mille, which is the reference skills.golden's own
+	// damage column is measured from.
+	preview, err := m.lib.PreviewDraft(m.skills.draft(m))
+	if err != nil {
+		t.Fatalf("preview: %v", err)
+	}
+	if preview.PerStrike != 411 {
+		t.Errorf("a 1200 power previews as %d, want 411", preview.PerStrike)
+	}
+	body, _ := m.skills.view(m)
+	if !strings.Contains(body, i18n.Vi.Damage(preview)) {
+		t.Errorf("the form does not show the damage:\n%s", body)
+	}
+
+	m = key(t, m, "ctrl+s")
+	if m.skills.err != nil {
+		t.Fatalf("the write was refused: %v", m.skills.err)
+	}
+	if m.skills.adding {
+		t.Error("the form is still open after a write")
+	}
+	if m.skills.added == nil || m.skills.added.ID != "oath" {
+		t.Errorf("the screen does not report what it wrote: %+v", m.skills.added)
+	}
+	// Written through the library the screen holds, so the listing behind it
+	// already has the new skill.
+	if _, err := m.lib.Skills().Lookup("oath"); err != nil {
+		t.Errorf("the library does not hold the written skill: %v", err)
+	}
+	reloaded, err := forge.Load(dir)
+	if err != nil {
+		t.Fatalf("reload: %v", err)
+	}
+	written, err := reloaded.Skills().Lookup("oath")
+	if err != nil {
+		t.Fatalf("the file does not hold the written skill: %v", err)
+	}
+	if !reflect.DeepEqual(written, fromTheForm) {
+		t.Errorf("the trip through the file changed the skill:\n%+v\n%+v", written, fromTheForm)
+	}
+	// And the skill is now offered to a kit, which is why authoring one from
+	// this program is worth having at all.
+	kit := kitOptions(reloaded, forge.Carrier{})
+	if !slices.ContainsFunc(kit, func(option pickOption) bool { return option.id == "oath" }) {
+		t.Error("the written skill is not offered to a kit")
+	}
+}
+
+// TestASavedSkillSaysTheGoldensHaveMoved is the note that makes a skill
+// different from a character: a power is balance, so the measured tables the
+// design was read from have changed, and reading that diff is the next step
+// rather than an afterthought.
+func TestASavedSkillSaysTheGoldensHaveMoved(t *testing.T) {
+	_, lib, _ := start(t, i18n.Vi)
+	built, err := forge.SkillDraft{
+		ID: "oath", Element: "neutral", Target: "enemy", Range: "1", Pattern: "single",
+		Power: "1000", Strikes: "1", Accuracy: "900", Cooldown: "0",
+	}.Resolve(lib)
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	kinds := make([]forge.NoteKind, 0, 3)
+	for _, note := range lib.SaveSkillNoteFacts(built) {
+		kinds = append(kinds, note.Kind)
+	}
+	want := []forge.NoteKind{forge.NoteWrote, forge.NoteGoldensMove, forge.NoteRebuild}
+	if !reflect.DeepEqual(kinds, want) {
+		t.Errorf("a saved skill reports %v, want %v", kinds, want)
+	}
+	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
+		line := lang.Note(forge.Note{Kind: forge.NoteGoldensMove})
+		if !strings.Contains(line, "make golden") {
+			t.Errorf("the %s note does not say how to accept the move: %q", lang, line)
 		}
 	}
 }

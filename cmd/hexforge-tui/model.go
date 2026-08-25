@@ -20,6 +20,7 @@ const (
 	screenBrowse
 	screenNew
 	screenOrigins
+	screenSkills
 	screenCheck
 )
 
@@ -99,7 +100,15 @@ type model struct {
 	browse  browseScreen
 	form    formScreen
 	origins originsScreen
+	skills  skillsScreen
 	check   checkScreen
+
+	// picker holds the multi-select while it is open, over whichever screen
+	// raised it. It lives here rather than on a screen because two screens raise
+	// one — the kit on the new-character form, the three allowlists on the new
+	// skill form — and a picker owned by a screen would be two pickers to keep
+	// in step.
+	picker *pickState
 
 	// guard holds the unsaved-changes question while it is being asked. A form
 	// with edits in it is the one thing in this program that a stray Escape can
@@ -126,6 +135,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		browse:  newBrowseScreen(lib),
 		form:    newFormScreen(lib),
 		origins: newOriginsScreen(lib),
+		skills:  newSkillsScreen(lib),
 		check:   newCheckScreen(lib),
 	}
 }
@@ -146,6 +156,7 @@ var menuItems = []menuItem{
 	{i18n.MenuCast, i18n.MenuCastDetail, screenBrowse},
 	{i18n.MenuNewCharacter, i18n.MenuNewCharacterDetail, screenNew},
 	{i18n.MenuOrigins, i18n.MenuOriginsDetail, screenOrigins},
+	{i18n.MenuSkills, i18n.MenuSkillsDetail, screenSkills},
 	{i18n.MenuCheck, i18n.MenuCheckDetail, screenCheck},
 }
 
@@ -187,6 +198,9 @@ func (m model) key(message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.guard != nil {
 		return m.answerGuard(message)
 	}
+	if m.picker != nil {
+		return m.picker.update(m, message)
+	}
 	if m.tooSmall() {
 		if message.String() == "q" {
 			return m, tea.Quit
@@ -202,6 +216,8 @@ func (m model) key(message tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.form.update(m, message)
 	case screenOrigins:
 		return m.origins.update(m, message)
+	case screenSkills:
+		return m.skills.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
 	}
@@ -260,6 +276,8 @@ func (m model) enter(target screen) model {
 		m.check = m.check.refresh(m.lib)
 	case screenOrigins:
 		m.origins = m.origins.refresh(m.lib)
+	case screenSkills:
+		m.skills = m.skills.refresh(m.lib)
 	}
 	return m
 }
@@ -287,8 +305,15 @@ func (m model) View() string {
 		body, footer = m.form.view(m)
 	case screenOrigins:
 		body, footer = m.origins.view(m)
+	case screenSkills:
+		body, footer = m.skills.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
+	}
+	// The picker is drawn over whichever screen raised it, for the same reason
+	// it is a sub-screen at all: a list of nineteen does not fit beside a form.
+	if m.picker != nil {
+		body, footer = m.picker.view(m)
 	}
 	if m.guard != nil {
 		footer = m.text(i18n.ConfirmFooter, m.text(m.guard.question))

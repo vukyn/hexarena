@@ -55,6 +55,7 @@ func main() {
 var commands = map[string]func([]string) error{
 	"origins":    runOrigins,
 	"archetypes": runArchetypes,
+	"skills":     runSkills,
 	"cast":       runCast,
 	"new":        runNew,
 	"show":       runShow,
@@ -69,6 +70,15 @@ hexforge authors the cast the battles are fought with.
   hexforge origins add <id> --title T --medium anime [--year N] [--note ...]
                                       add a work to the catalog
   hexforge archetypes                 the role presets, their curves and their kits
+  hexforge skills                     the declared skills and who may carry each
+  hexforge skills add <id> --power N --accuracy N [--element E] [--target T]
+                                      [--range N] [--pattern P] [--strikes N]
+                                      [--cooldown N] [--applies s:c[:n],...]
+                                      [--restrict-elements ...] [--restrict-archetypes ...]
+                                      [--restrict-characters ...]
+                                      author a skill; flags prefill, the wizard
+                                      asks for what is still missing. A skill is
+                                      balance: the golden files will move
   hexforge cast                       the authored characters
   hexforge new [id]                   create a character; flags prefill, the
                                       wizard asks only for what is still missing

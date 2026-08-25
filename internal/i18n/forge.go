@@ -63,6 +63,42 @@ func (l Lang) Error(err error) string {
 	if errors.As(err, &unknownSkill) {
 		return l.Say(ErrorUnknownSkill, unknownSkill.ID)
 	}
+	var skillTaken *forge.SkillTakenError
+	if errors.As(err, &skillTaken) {
+		return l.Say(ErrorSkillTaken, skillTaken.ID)
+	}
+	var missingSkillID *forge.MissingSkillIDError
+	if errors.As(err, &missingSkillID) {
+		return l.Text(ErrorMissingSkillID)
+	}
+	var unknownPattern *forge.UnknownPatternError
+	if errors.As(err, &unknownPattern) {
+		return l.Say(ErrorUnknownPattern, unknownPattern.Name)
+	}
+	var unknownTarget *forge.UnknownTargetError
+	if errors.As(err, &unknownTarget) {
+		return l.Say(ErrorUnknownTarget, unknownTarget.Name)
+	}
+	var unknownStatus *forge.UnknownStatusError
+	if errors.As(err, &unknownStatus) {
+		return l.Say(ErrorUnknownStatus, unknownStatus.ID)
+	}
+	var unknownCharacter *forge.UnknownCharacterError
+	if errors.As(err, &unknownCharacter) {
+		return l.Say(ErrorUnknownCharacter, unknownCharacter.ID)
+	}
+	var duplicate *forge.DuplicateEntryError
+	if errors.As(err, &duplicate) {
+		return l.Say(ErrorDuplicateEntry, duplicate.Value)
+	}
+	var notANumber *forge.NumberError
+	if errors.As(err, &notANumber) {
+		return l.Say(ErrorNotANumber, notANumber.Raw)
+	}
+	var applicationShape *forge.ApplicationShapeError
+	if errors.As(err, &applicationShape) {
+		return l.Say(ErrorApplicationShape, applicationShape.Raw)
+	}
 	var unknownElement *forge.UnknownElementError
 	if errors.As(err, &unknownElement) {
 		return l.Say(ErrorUnknownElement, unknownElement.Name)
@@ -81,7 +117,21 @@ func (l Lang) Error(err error) string {
 	}
 	var carry *forge.CarryError
 	if errors.As(err, &carry) {
+		if carry.Reason == skill.CarryElementRestricted {
+			return l.Say(ErrorCarryRestricted,
+				carry.Affinity, carry.Skill, l.JoinElements(carry.Allowed))
+		}
 		return l.Say(ErrorCarry, carry.Affinity, carry.Skill, carry.Element)
+	}
+	var archetypeRestricted *forge.ArchetypeRestrictedError
+	if errors.As(err, &archetypeRestricted) {
+		return l.Say(ErrorArchetypeRestricted, archetypeRestricted.Archetype,
+			archetypeRestricted.Skill, l.JoinIDs(archetypeRestricted.Allowed))
+	}
+	var characterRestricted *forge.CharacterRestrictedError
+	if errors.As(err, &characterRestricted) {
+		return l.Say(ErrorCharacterRestricted, characterRestricted.Character,
+			characterRestricted.Skill, l.JoinIDs(characterRestricted.Allowed))
 	}
 	// The stat field wraps whichever curve refusal happened, so it is asked
 	// before them: errors.As looks through a wrapper, and asking the inner
@@ -172,8 +222,49 @@ func (l Lang) PresetSummary(preset cast.Archetype) string {
 // JoinElements puts the word for "and" between element ids. The ids themselves
 // are never translated — they are what --element takes and what the data files
 // hold.
-func (l Lang) JoinElements(names []string) string {
-	return strings.Join(names, l.Text(ElementJoiner))
+func (l Lang) JoinElements(names []string) string { return l.JoinIDs(names) }
+
+// JoinIDs is JoinElements for the other kinds of id a list can hold — an
+// archetype, a character — which read the same way and translate the same
+// amount, which is not at all.
+func (l Lang) JoinIDs(ids []string) string {
+	return strings.Join(ids, l.Text(ElementJoiner))
+}
+
+// WhoMaySummary is who may carry a skill, in this language.
+//
+// The facts are forge.WhoMayCarry's, and the four gates compose in one order —
+// the skill's own element first, then each allowlist — so a picker's row, a
+// listing's column and a form's summary all read the same way round.
+//
+// The ids inside it are never translated, for the reason every id here is not:
+// they are what the data files hold and what an author types.
+func (l Lang) WhoMaySummary(carried skill.Skill) string {
+	facts := forge.WhoMayCarry(carried)
+	if facts.Anyone {
+		return l.Text(WhoAnyone)
+	}
+	parts := make([]string, 0, 4)
+	if facts.Element != "" {
+		parts = append(parts, l.Say(WhoElementUnits, facts.Element))
+	}
+	if len(facts.Elements) > 0 {
+		parts = append(parts, l.Say(WhoKeptForElements, l.JoinIDs(facts.Elements)))
+	}
+	if len(facts.Archetypes) > 0 {
+		parts = append(parts, l.Say(WhoKeptForRoles, l.JoinIDs(facts.Archetypes)))
+	}
+	if len(facts.Characters) > 0 {
+		parts = append(parts, l.Say(WhoBelongsTo, l.JoinIDs(facts.Characters)))
+	}
+	return strings.Join(parts, ", ")
+}
+
+// Damage words what a skill is worth against the reference pair, which is the
+// figure an author needs before a power is written rather than after.
+func (l Lang) Damage(preview forge.SkillPreview) string {
+	return l.Say(DamageLine,
+		preview.PerStrike, preview.Total, preview.Attack, preview.Defense)
 }
 
 // StageSummary writes an evolution line as the levels its stages take over at.
@@ -209,6 +300,8 @@ func (l Lang) Note(note forge.Note) string {
 		return l.Say(NoteWrote, note.ID, note.Path)
 	case forge.NoteArtMissing:
 		return l.Say(NoteArtMissing, note.Path)
+	case forge.NoteGoldensMove:
+		return l.Text(NoteGoldensMove)
 	default:
 		return l.Text(NoteRebuild)
 	}

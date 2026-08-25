@@ -16,6 +16,7 @@ package battle
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/atb"
 	"github.com/vukyn/hexarena/internal/core/combat"
@@ -196,11 +197,25 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 		}
 		seen[known.ID] = true
 		// A unit may only carry a skill of an element it shares, or a neutral
-		// one. The rule is declared once, in skill.CanCarry, so that the layer
-		// where a character is authored refuses exactly what this refuses.
-		if !skill.CanCarry(entry.Affinity, known) {
+		// one, and it must satisfy whatever element allowlist the skill
+		// declares. The rule is declared once, in skill.WhyCannotCarry, so that
+		// the layer where a character is authored refuses exactly what this
+		// refuses.
+		//
+		// A skill's archetype and character allowlists are not checked here and
+		// cannot be: a roster entry carries no archetype and no character
+		// identity, because both are resolved before a battle starts. Those two
+		// are authoring-time rules, enforced by cast.ParseBook. Adding either to
+		// a roster entry to "complete" the rule would put a fact in the
+		// replayable core that no replay reads.
+		switch skill.WhyCannotCarry(entry.Affinity, known) {
+		case skill.CarryWrongElement:
 			return nil, fmt.Errorf("unit %q is %s but knows the %s skill %q",
 				entry.ID, entry.Affinity, known.Element, known.ID)
+		case skill.CarryElementRestricted:
+			return nil, fmt.Errorf("unit %q is %s but knows %q, which only %s may carry",
+				entry.ID, entry.Affinity, known.ID,
+				strings.Join(known.Restrict.ElementNames(), " or "))
 		}
 	}
 

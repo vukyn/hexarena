@@ -169,6 +169,21 @@ func (d Draft) Table(lib *Library) (progression.Table, error) {
 	return table, nil
 }
 
+// Carrier is the draft as a kit check wants it: the id, the preset and the
+// element, with an unreadable or unanswered element left out rather than
+// guessed at.
+//
+// Draft.Resolve refuses a bad element on its own account; this is for the
+// checks a half-filled form makes as it is typed, where an element that is not
+// an element yet is an ordinary state and not a refusal.
+func (d Draft) Carrier() Carrier {
+	who := Carrier{ID: strings.TrimSpace(d.ID), Archetype: strings.TrimSpace(d.Archetype)}
+	if affinity, err := ParseAffinity(d.Element); err == nil {
+		who.Affinity, who.HasAffinity = affinity, true
+	}
+	return who
+}
+
 // KitNames is the kit a draft would be written with: the named skills, or the
 // archetype's when none were named.
 func (d Draft) KitNames(lib *Library) []string {
@@ -205,22 +220,75 @@ func (l *Library) Budget(values progression.Values) Budget {
 	}
 }
 
-// CheckCarry reports the first skill in a kit that an affinity may not use.
+// Carrier is who a kit is being checked for: the three facts a skill's
+// restriction can name.
 //
-// skill.CanCarry is the single declaration of the rule and cast.ParseBook
-// applies it at the write, so this is only bringing the same answer forward:
-// a wrong element should cost one line at the moment it is typed rather than
-// the whole session at the moment it is saved. The answer comes back as a
-// *CarryError holding the affinity, the skill and the skill's element, so a
-// front-end can word it in the author's language without taking the rule apart
-// again.
-func CheckCarry(affinity element.Affinity, kit []skill.Skill) error {
-	for _, carried := range kit {
-		if !skill.CanCarry(affinity, carried) {
-			return &CarryError{Affinity: affinity, Skill: carried.ID, Element: carried.Element}
+// Each one may be unanswered, and an unanswered fact restricts nothing. That is
+// what lets the kit be filled in before the element or after it: whichever the
+// author settles first constrains the other, and the second is checked against
+// the first as soon as it exists. An empty id and an empty archetype are
+// unanswered by being empty; an affinity cannot be, because the zero value is a
+// legal neutral affinity, so HasAffinity says whether one was given.
+type Carrier struct {
+	ID          string
+	Archetype   string
+	Affinity    element.Affinity
+	HasAffinity bool
+}
+
+// CheckSkill reports why a carrier may not carry one skill, or nil when it may.
+//
+// The element half is skill.WhyCannotCarry's judgement, which cast.ParseBook
+// and battle.enlist also call, so this is only bringing the same answer forward:
+// a wrong element should cost one line at the moment it is typed rather than the
+// whole session at the moment it is saved. The other two halves are
+// cast.ParseBook's alone — the engine has no archetype and no character
+// identity — and this brings those forward too, from the same predicates on
+// skill.Restriction.
+//
+// Every answer comes back as a typed error holding what it is about rather than
+// a sentence, so a front-end can word it in the author's language without
+// taking the rule apart again.
+func CheckSkill(who Carrier, carried skill.Skill) error {
+	if who.HasAffinity {
+		switch reason := skill.WhyCannotCarry(who.Affinity, carried); reason {
+		case skill.CarryWrongElement, skill.CarryElementRestricted:
+			return &CarryError{
+				Affinity: who.Affinity, Skill: carried.ID, Element: carried.Element,
+				Reason: reason, Allowed: carried.Restrict.ElementNames(),
+			}
+		}
+	}
+	if who.Archetype != "" && !carried.Restrict.AllowsArchetype(who.Archetype) {
+		return &ArchetypeRestrictedError{
+			Archetype: who.Archetype, Skill: carried.ID,
+			Allowed: append([]string(nil), carried.Restrict.Archetypes...),
+		}
+	}
+	if who.ID != "" && !carried.Restrict.AllowsCharacter(who.ID) {
+		return &CharacterRestrictedError{
+			Character: who.ID, Skill: carried.ID,
+			Allowed: append([]string(nil), carried.Restrict.Characters...),
 		}
 	}
 	return nil
+}
+
+// CheckKit reports the first skill in a kit the carrier may not use.
+func CheckKit(who Carrier, kit []skill.Skill) error {
+	for _, carried := range kit {
+		if err := CheckSkill(who, carried); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CheckCarry is CheckKit for the element alone, which is what an element answer
+// is checked against: the id and the preset are settled elsewhere on the form
+// and are refused there.
+func CheckCarry(affinity element.Affinity, kit []skill.Skill) error {
+	return CheckKit(Carrier{Affinity: affinity, HasAffinity: true}, kit)
 }
 
 // KitDemands is the distinct non-neutral elements a kit insists on.

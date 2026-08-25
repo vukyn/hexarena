@@ -16,6 +16,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 )
 
@@ -384,6 +385,56 @@ func TestAWriteIsReportedInBothLanguages(t *testing.T) {
 	for i := range english {
 		if english[i] == vietnamese[i] {
 			t.Errorf("note %d is the same line in both languages: %q", i, english[i])
+		}
+	}
+}
+
+// TestARestrictionIsWordedFromItsFacts covers the three refusals a skill's
+// restriction can produce. Each one names the skill and who the skill is kept
+// for, because a refusal an author cannot act on is only half a refusal.
+func TestARestrictionIsWordedFromItsFacts(t *testing.T) {
+	water, err := element.Single(element.Water)
+	if err != nil {
+		t.Fatalf("the water affinity: %v", err)
+	}
+	cases := []struct {
+		name string
+		err  error
+		vi   string
+		en   string
+	}{
+		{
+			name: "an element allowlist",
+			err: &forge.CarryError{
+				Affinity: water, Skill: "oath", Element: element.Neutral,
+				Reason: skill.CarryElementRestricted, Allowed: []string{"fire", "metal"},
+			},
+			vi: `hệ water không mang được chiêu "oath"; chiêu này để dành cho fire và metal`,
+			en: `water cannot carry the skill "oath"; it is kept for fire and metal`,
+		},
+		{
+			name: "a role allowlist",
+			err: &forge.ArchetypeRestrictedError{
+				Archetype: "duelist", Skill: "guard_wall", Allowed: []string{"bulwark"},
+			},
+			vi: `"duelist" không mang được chiêu "guard_wall"; chiêu này để dành cho mẫu bulwark`,
+			en: `"duelist" cannot carry the skill "guard_wall"; it is kept for the bulwark role`,
+		},
+		{
+			name: "a character allowlist",
+			err: &forge.CharacterRestrictedError{
+				Character: "example.adept", Skill: "unmake", Allowed: []string{"example.sprout"},
+			},
+			vi: `"example.adept" không mang được chiêu "unmake"; chiêu này là của riêng example.sprout`,
+			en: `"example.adept" cannot carry the skill "unmake"; it belongs to example.sprout`,
+		},
+	}
+	for _, test := range cases {
+		if got := Vi.Error(test.err); got != test.vi {
+			t.Errorf("%s reads\n %q\nwant\n %q", test.name, got, test.vi)
+		}
+		if got := En.Error(test.err); got != test.en {
+			t.Errorf("%s reads\n %q\nwant\n %q", test.name, got, test.en)
 		}
 	}
 }
