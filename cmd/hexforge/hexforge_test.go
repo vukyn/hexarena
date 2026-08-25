@@ -11,14 +11,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/forge"
 )
 
 // shippedDataDir is the real data directory, relative to this package.
 const shippedDataDir = "../../internal/seed/data"
 
 // scratchData copies the shipped data into a temporary directory, so a test may
-// write to it without touching the repository.
+// write to it without touching the repository. internal/forge's tests carry
+// their own copy of this: it is test scaffolding rather than a rule, and
+// exporting it would put test-only code in the package the game links.
 func scratchData(t *testing.T) string {
 	t.Helper()
 	target := t.TempDir()
@@ -51,274 +53,13 @@ func copyTree(t *testing.T, from, to string) {
 	}
 }
 
-// TestInspectPassesOnTheShippedData is the check that would have caught an
-// example character pointing at art nobody committed.
-func TestInspectPassesOnTheShippedData(t *testing.T) {
-	report, err := inspect(shippedDataDir)
-	if err != nil {
-		t.Fatalf("the shipped data does not load: %v", err)
-	}
-	if !report.ok() {
-		t.Errorf("the shipped data has problems: %v", report.problems)
-	}
-	if len(report.rows) == 0 {
-		t.Fatal("no characters were inspected, so nothing here is being exercised")
-	}
-	for _, row := range report.rows {
-		if !row.imageExists {
-			t.Errorf("%s names art that is not there: %s", row.id, row.image)
-		}
-		if row.failure != nil {
-			t.Errorf("%s does not resolve: %v", row.id, row.failure)
-		}
-		if row.headroom < 0 {
-			t.Errorf("%s absorbs %d, over the budget", row.id, row.effective)
-		}
-	}
-}
-
-// TestInspectNoticesMissingArt is the one question internal/core/cast is not
-// allowed to ask, so it has to be asked here.
-func TestInspectNoticesMissingArt(t *testing.T) {
-	dir := scratchData(t)
-	before, err := inspect(dir)
-	if err != nil {
-		t.Fatalf("inspect the copy: %v", err)
-	}
-	if !before.ok() {
-		t.Fatalf("the copied data already has problems: %v", before.problems)
-	}
-
-	// Take away exactly one file. The path shape is unchanged, so only a
-	// program that reads the filesystem can notice.
-	removed := filepath.Join(dir, "assets", "example", "sprout.svg")
-	if err := os.Remove(removed); err != nil {
-		t.Fatalf("remove %s: %v", removed, err)
-	}
-	after, err := inspect(dir)
-	if err != nil {
-		t.Fatalf("inspect after removing the art: %v", err)
-	}
-	if after.ok() {
-		t.Fatal("the missing art was not noticed")
-	}
-	if len(after.problems) != 1 {
-		t.Errorf("%d problems reported, want 1: %v", len(after.problems), after.problems)
-	}
-	if !strings.Contains(after.problems[0], "sprout.svg") {
-		t.Errorf("the problem is %q, want it to name the missing file", after.problems[0])
-	}
-	missing, present := 0, 0
-	for _, row := range after.rows {
-		if row.imageExists {
-			present++
-		} else {
-			missing++
-		}
-	}
-	if missing != 1 || present != len(after.rows)-1 {
-		t.Errorf("%d characters are missing art and %d are not, want exactly one missing",
-			missing, present)
-	}
-	// The report is still a full report: taking away a file must not stop the
-	// budget being tabulated for everyone else.
-	if len(after.rows) != len(before.rows) {
-		t.Errorf("the report covers %d characters, want %d", len(after.rows), len(before.rows))
-	}
-	// And it renders without panicking on the row that has no art.
-	after.render(io.Discard)
-}
-
-// TestWrittenCastIsStableAndReloads is what makes the tool safe to run twice:
-// the bytes are a function of the content, and the content survives the trip
-// through the file.
-func TestWrittenCastIsStableAndReloads(t *testing.T) {
-	dir := scratchData(t)
-	lib, err := load(dir)
-	if err != nil {
-		t.Fatalf("load: %v", err)
-	}
-	first, err := lib.characters.Marshal()
-	if err != nil {
-		t.Fatalf("marshal: %v", err)
-	}
-	// The shipped file is already in this form, so writing it back is a no-op
-	// on disk. That is the property that keeps a `new` diff to one block.
-	onDisk, err := os.ReadFile(filepath.Join(dir, castFile))
-	if err != nil {
-		t.Fatalf("read the shipped cast: %v", err)
-	}
-	if string(onDisk) != string(first) {
-		t.Error("the shipped cast.json is not in the form the tool writes, so the first write will churn the whole file")
-	}
-
-	character, err := draft{
-		id: "example-film.tester", name: "Tester", origin: "example-film",
-		archetype: "duelist", image: "assets/example/tester.png", element: "wind/ground",
-		bio: "Written by a test.",
-	}.resolve(lib)
-	if err != nil {
-		t.Fatalf("resolve a draft: %v", err)
-	}
-	grown, err := lib.characters.Append(lib.castDeps(), character)
-	if err != nil {
-		t.Fatalf("append: %v", err)
-	}
-	if err := lib.writeCast(grown); err != nil {
-		t.Fatalf("write: %v", err)
-	}
-
-	reloaded, err := load(dir)
-	if err != nil {
-		t.Fatalf("reload after writing: %v", err)
-	}
-	returned, known := reloaded.characters.Get(character.ID)
-	if !known {
-		t.Fatal("the written character is not in the reloaded book")
-	}
-	if !reflect.DeepEqual(returned, character) {
-		t.Errorf("the trip through the file changed the character:\n%+v\n%+v", returned, character)
-	}
-	// Writing the reloaded book back has to produce the same bytes, or every
-	// run of the tool would rewrite the file for no reason.
-	againRaw, err := reloaded.characters.Marshal()
-	if err != nil {
-		t.Fatalf("marshal the reloaded book: %v", err)
-	}
-	writtenRaw, err := os.ReadFile(filepath.Join(dir, castFile))
-	if err != nil {
-		t.Fatalf("read the written cast: %v", err)
-	}
-	if string(againRaw) != string(writtenRaw) {
-		t.Error("marshalling the reloaded book does not reproduce the file it was read from")
-	}
-}
-
-func TestResolveTakesTheArchetypeCurveAndKit(t *testing.T) {
-	lib, err := load(shippedDataDir)
-	if err != nil {
-		t.Fatalf("load: %v", err)
-	}
-	preset, known := lib.archetypes.Get("duelist")
-	if !known {
-		t.Fatal("the duelist preset is not shipped")
-	}
-	character, err := draft{
-		id: "example-film.tester", name: "Tester", origin: "example-film",
-		archetype: "duelist", image: "assets/example/tester.svg", element: "wind/ground",
-	}.resolve(lib)
-	if err != nil {
-		t.Fatalf("resolve: %v", err)
-	}
-	if len(character.Stages) != 1 {
-		t.Fatalf("the wizard produced %d stages, want 1", len(character.Stages))
-	}
-	if character.Stages[0].MinLevel != 1 {
-		t.Errorf("the only stage starts at level %d, want 1", character.Stages[0].MinLevel)
-	}
-	if character.Stages[0].Name != "Tester" {
-		t.Errorf("the only stage is named %q, want the character's name", character.Stages[0].Name)
-	}
-	if character.Stages[0].Stats != preset.Stats {
-		t.Error("the stat curve is not the archetype's")
-	}
-	if !reflect.DeepEqual(character.Skills, preset.Skills) {
-		t.Errorf("the kit is %v, want the archetype's %v", character.Skills, preset.Skills)
-	}
-
-	// An override replaces exactly one curve and leaves the rest alone.
-	overridden := draft{
-		id: "example-film.tester", name: "Tester", origin: "example-film",
-		archetype: "duelist", image: "assets/example/tester.svg", element: "wind/ground",
-		skills: "strike, bolt",
-	}
-	overridden.stats[progression.Speed] = "40:120"
-	tuned, err := overridden.resolve(lib)
-	if err != nil {
-		t.Fatalf("resolve with an override: %v", err)
-	}
-	want := progression.Curve{Base: 40, Max: 120}
-	if got := tuned.Stages[0].Stats[progression.Speed]; got != want {
-		t.Errorf("the speed curve is %+v, want %+v", got, want)
-	}
-	if got := tuned.Stages[0].Stats[progression.HP]; got != preset.Stats[progression.HP] {
-		t.Errorf("overriding speed also changed health to %+v", got)
-	}
-	if !reflect.DeepEqual(tuned.Skills, []string{"strike", "bolt"}) {
-		t.Errorf("the kit is %v, want the two skills that were named", tuned.Skills)
-	}
-}
-
-func TestResolveRejections(t *testing.T) {
-	lib, err := load(shippedDataDir)
-	if err != nil {
-		t.Fatalf("load: %v", err)
-	}
-	good := func() draft {
-		return draft{
-			id: "example-film.tester", name: "Tester", origin: "example-film",
-			archetype: "duelist", image: "assets/example/tester.svg", element: "wind/ground",
-		}
-	}
-	if _, err := good().resolve(lib); err != nil {
-		t.Fatalf("the base draft should resolve: %v", err)
-	}
-	cases := []struct {
-		name   string
-		change func(*draft)
-		wantIn string
-	}{
-		{"no id", func(d *draft) { d.id = "" }, "character id is empty"},
-		{"non-slug id", func(d *draft) { d.id = "Example.Tester" }, "lowercase letters"},
-		{"an id already in the cast", func(d *draft) { d.id = "example-anime.adept" }, "already in the cast"},
-		{"no name", func(d *draft) { d.name = "  " }, "display name"},
-		{"unknown origin", func(d *draft) { d.origin = "nowhere" }, "unknown origin"},
-		{"unknown archetype", func(d *draft) { d.archetype = "berserker" }, "unknown archetype"},
-		{"bad image extension", func(d *draft) { d.image = "assets/a.gif" }, "want .svg or .png"},
-		{"absolute image", func(d *draft) { d.image = "/assets/a.svg" }, "absolute path"},
-		{"unknown element", func(d *draft) { d.element = "plasma" }, "unknown element"},
-		{"three elements", func(d *draft) { d.element = "fire/wind/ice" }, "want one or two"},
-		{"an element pair the chart refuses", func(d *draft) { d.element = "water/fire" }, "counter each other"},
-		{"unknown skill", func(d *draft) { d.skills = "strike,meteor" }, "unknown skill"},
-		{"a duplicated skill", func(d *draft) { d.skills = "strike,strike" }, "twice"},
-		{"an unreadable curve", func(d *draft) { d.stats[progression.HP] = "780" }, "want base:max"},
-		{"a curve with an unreadable base", func(d *draft) { d.stats[progression.HP] = "x:2600" }, "unreadable base"},
-		{"a curve that shrinks with level", func(d *draft) { d.stats[progression.HP] = "2600:780" }, "may not shrink"},
-		{"a curve starting at nothing", func(d *draft) { d.stats[progression.HP] = "0:2600" }, "positive value"},
-		{"a curve over its ceiling", func(d *draft) { d.stats[progression.Speed] = "60:260" }, "over the ceiling"},
-		{
-			// Health and defence multiply, so the joint bound is the one an
-			// author is most likely to walk into without noticing.
-			name: "a pair of curves over the joint durability budget",
-			change: func(d *draft) {
-				d.stats[progression.HP] = "1440:4800"
-				d.stats[progression.Defense] = "240:800"
-			},
-			wantIn: "over the budget",
-		},
-	}
-	for _, test := range cases {
-		t.Run(test.name, func(t *testing.T) {
-			candidate := good()
-			test.change(&candidate)
-			_, err := candidate.resolve(lib)
-			if err == nil {
-				t.Fatalf("the draft resolved, want a rejection mentioning %q", test.wantIn)
-			}
-			if !strings.Contains(err.Error(), test.wantIn) {
-				t.Errorf("the rejection is %q, want it to mention %q", err, test.wantIn)
-			}
-		})
-	}
-}
-
 // TestFillRePromptsOnABadAnswer is the behaviour that keeps the wizard usable:
 // a wrong answer costs one line, not the whole session.
 //
 // The answers are in prompt order, and the kit comes before the element on
 // purpose — the kit is what decides which elements are legal.
 func TestFillRePromptsOnABadAnswer(t *testing.T) {
-	lib, err := load(shippedDataDir)
+	lib, err := forge.Load(shippedDataDir)
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -339,11 +80,11 @@ func TestFillRePromptsOnABadAnswer(t *testing.T) {
 		"A tester.", // biography
 	}, "\n") + "\n"
 	prompt := &prompter{in: bufio.NewReader(strings.NewReader(script)), out: io.Discard, interactive: true}
-	filled, err := fill(draft{}, lib, prompt)
+	filled, err := fill(forge.Draft{}, lib, prompt)
 	if err != nil {
 		t.Fatalf("fill: %v", err)
 	}
-	character, err := filled.resolve(lib)
+	character, err := filled.Resolve(lib)
 	if err != nil {
 		t.Fatalf("resolve what the wizard collected: %v", err)
 	}
@@ -353,14 +94,14 @@ func TestFillRePromptsOnABadAnswer(t *testing.T) {
 	if character.Element.String() != "wind/ground" {
 		t.Errorf("the element is %s, want the answer that could carry the kit", character.Element)
 	}
-	if character.Image != suggestedImage("example-film.tester") {
+	if character.Image != forge.SuggestedImage("example-film.tester") {
 		t.Errorf("the art is %q, want the suggested default %q",
-			character.Image, suggestedImage("example-film.tester"))
+			character.Image, forge.SuggestedImage("example-film.tester"))
 	}
 	if character.Bio != "A tester." {
 		t.Errorf("the biography is %q", character.Bio)
 	}
-	preset, _ := lib.archetypes.Get("duelist")
+	preset, _ := lib.Archetypes().Get("duelist")
 	if character.Stages[0].Stats != preset.Stats {
 		t.Error("pressing Enter through the curves did not take the preset")
 	}
@@ -375,16 +116,16 @@ func TestFillRePromptsOnABadAnswer(t *testing.T) {
 // substituted kit that the write will be checked against, so it has to be the
 // one the prompt checks too.
 func TestElementPromptFollowsTheKitNotThePreset(t *testing.T) {
-	lib, err := load(shippedDataDir)
+	lib, err := forge.Load(shippedDataDir)
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
 	// The duelist preset demands wind. Substituting a water kit moves the
 	// demand to water, so "wind" must now be refused and "water" accepted.
-	given := draft{
-		id: "example-film.tester", name: "Tester", origin: "example-film",
-		archetype: "duelist", image: "assets/example/tester.svg",
-		skills: "strike,riptide",
+	given := forge.Draft{
+		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
+		Archetype: "duelist", Image: "assets/example/tester.svg",
+		Skills: "strike,riptide",
 	}
 	script := strings.Join([]string{
 		"wind/ground", // rejected: the substituted kit needs water
@@ -397,7 +138,7 @@ func TestElementPromptFollowsTheKitNotThePreset(t *testing.T) {
 	if err != nil {
 		t.Fatalf("fill: %v", err)
 	}
-	character, err := filled.resolve(lib)
+	character, err := filled.Resolve(lib)
 	if err != nil {
 		t.Fatalf("resolve: %v", err)
 	}
@@ -408,33 +149,11 @@ func TestElementPromptFollowsTheKitNotThePreset(t *testing.T) {
 	// And the same rule refuses it at the write, which is the guarantee the
 	// prompt is only bringing forward: skill.CanCarry is the single declaration.
 	mismatched := given
-	mismatched.element = "wind/ground"
-	if _, err := mismatched.resolve(lib); err == nil {
+	mismatched.Element = "wind/ground"
+	if _, err := mismatched.Resolve(lib); err == nil {
 		t.Fatal("a character was resolved carrying a water skill without water")
 	} else if !strings.Contains(err.Error(), "riptide") {
 		t.Errorf("the rejection is %q, want it to name riptide", err)
-	}
-}
-
-// TestResolveRefusesAKitTheAffinityCannotCarry is the exact reproduction the
-// coordinator reported: sentinel's kit is water, so a fire character built from
-// it wrote cleanly and was then refused by battle.New.
-func TestResolveRefusesAKitTheAffinityCannotCarry(t *testing.T) {
-	lib, err := load(shippedDataDir)
-	if err != nil {
-		t.Fatalf("load: %v", err)
-	}
-	_, err = draft{
-		id: "example-anime.mismatch", name: "Mismatch", origin: "example-anime",
-		archetype: "sentinel", image: "assets/example/adept.svg", element: "fire",
-	}.resolve(lib)
-	if err == nil {
-		t.Fatal("a fire character carrying the sentinel kit was accepted")
-	}
-	for _, want := range []string{"riptide", "water", "fire"} {
-		if !strings.Contains(err.Error(), want) {
-			t.Errorf("the rejection is %q, want it to mention %q", err, want)
-		}
 	}
 }
 
@@ -443,7 +162,7 @@ func TestResolveRefusesAKitTheAffinityCannotCarry(t *testing.T) {
 // missing. Without this, the only way through a scripted run was to pipe the
 // right number of blank lines and hope.
 func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
-	lib, err := load(shippedDataDir)
+	lib, err := forge.Load(shippedDataDir)
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -452,25 +171,25 @@ func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
 	}
 
 	// Nothing given: the first field with no default is named, by its flag.
-	if _, err := fill(draft{}, lib, unattended()); err == nil {
+	if _, err := fill(forge.Draft{}, lib, unattended()); err == nil {
 		t.Fatal("a draft with nothing in it was accepted without a terminal")
 	} else if !strings.Contains(err.Error(), "--id") {
 		t.Errorf("the error is %q, want it to name --id", err)
 	}
 
 	// Every field with no default is required, and each one says so by name.
-	full := draft{
-		id: "example-film.tester", name: "Tester", origin: "example-film",
-		archetype: "duelist", element: "wind/ground",
+	full := forge.Draft{
+		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
+		Archetype: "duelist", Element: "wind/ground",
 	}
 	for _, missing := range []struct {
 		flag  string
-		clear func(*draft)
+		clear func(*forge.Draft)
 	}{
-		{"name", func(d *draft) { d.name = "" }},
-		{"origin", func(d *draft) { d.origin = "" }},
-		{"archetype", func(d *draft) { d.archetype = "" }},
-		{"element", func(d *draft) { d.element = "" }},
+		{"name", func(d *forge.Draft) { d.Name = "" }},
+		{"origin", func(d *forge.Draft) { d.Origin = "" }},
+		{"archetype", func(d *forge.Draft) { d.Archetype = "" }},
+		{"element", func(d *forge.Draft) { d.Element = "" }},
 	} {
 		t.Run("missing "+missing.flag, func(t *testing.T) {
 			candidate := full
@@ -491,19 +210,19 @@ func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("a fully flagged draft was refused without a terminal: %v", err)
 	}
-	character, err := filled.resolve(lib)
+	character, err := filled.Resolve(lib)
 	if err != nil {
 		t.Fatalf("resolve: %v", err)
 	}
-	preset, _ := lib.archetypes.Get("duelist")
+	preset, _ := lib.Archetypes().Get("duelist")
 	if !reflect.DeepEqual(character.Skills, preset.Skills) {
 		t.Errorf("the kit is %v, want the preset's %v", character.Skills, preset.Skills)
 	}
 	if character.Stages[0].Stats != preset.Stats {
 		t.Error("the curves are not the preset's")
 	}
-	if character.Image != suggestedImage(full.id) {
-		t.Errorf("the art is %q, want the suggested default %q", character.Image, suggestedImage(full.id))
+	if character.Image != forge.SuggestedImage(full.ID) {
+		t.Errorf("the art is %q, want the suggested default %q", character.Image, forge.SuggestedImage(full.ID))
 	}
 	if character.Bio != "" {
 		t.Errorf("the biography is %q, want it left empty", character.Bio)
@@ -511,7 +230,7 @@ func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
 
 	// A bad flag is reported rather than re-asked, and names the flag.
 	broken := full
-	broken.element = "plasma"
+	broken.Element = "plasma"
 	if _, err := fill(broken, lib, unattended()); err == nil || !strings.Contains(err.Error(), "--element") {
 		t.Errorf("a bad --element gave %v, want an error naming the flag", err)
 	}
@@ -524,25 +243,25 @@ func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
 // would abandon a session whose remaining fields all had perfectly good
 // defaults, so EOF turns the rest of the session unattended.
 func TestFillFallsBackWhenStdinEnds(t *testing.T) {
-	lib, err := load(shippedDataDir)
+	lib, err := forge.Load(shippedDataDir)
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
 	// Answered up to the element, then the input simply stops.
 	script := "example-film.tester\nTester\nexample-film\nduelist\n\n\nwind/ground\n"
 	prompt := &prompter{in: bufio.NewReader(strings.NewReader(script)), out: io.Discard, interactive: true}
-	filled, err := fill(draft{}, lib, prompt)
+	filled, err := fill(forge.Draft{}, lib, prompt)
 	if err != nil {
 		t.Fatalf("fill stopped when the input ended: %v", err)
 	}
 	if prompt.interactive {
 		t.Error("the prompter still thinks somebody is answering")
 	}
-	character, err := filled.resolve(lib)
+	character, err := filled.Resolve(lib)
 	if err != nil {
 		t.Fatalf("resolve: %v", err)
 	}
-	preset, _ := lib.archetypes.Get("duelist")
+	preset, _ := lib.Archetypes().Get("duelist")
 	if character.Stages[0].Stats != preset.Stats {
 		t.Error("the curves after the input ended are not the preset's")
 	}
@@ -553,7 +272,7 @@ func TestFillFallsBackWhenStdinEnds(t *testing.T) {
 	// And when the input stops before a field that has no default, the error
 	// still names the flag rather than reporting a bare EOF.
 	short := &prompter{in: bufio.NewReader(strings.NewReader("example-film.tester\n")), out: io.Discard, interactive: true}
-	if _, err := fill(draft{}, lib, short); err == nil {
+	if _, err := fill(forge.Draft{}, lib, short); err == nil {
 		t.Fatal("a session that ended before the name was accepted")
 	} else if !strings.Contains(err.Error(), "--name") {
 		t.Errorf("the error is %q, want it to name --name", err)
@@ -594,15 +313,15 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 		t.Errorf("the write did not warn about the missing art:\n%s", output)
 	}
 
-	lib, err := load(dir)
+	lib, err := forge.Load(dir)
 	if err != nil {
 		t.Fatalf("reload: %v", err)
 	}
-	written, known := lib.characters.Get("example-anime.piped")
+	written, known := lib.Characters().Get("example-anime.piped")
 	if !known {
 		t.Fatal("the character was not written")
 	}
-	preset, _ := lib.archetypes.Get("sentinel")
+	preset, _ := lib.Archetypes().Get("sentinel")
 	if !reflect.DeepEqual(written.Skills, preset.Skills) {
 		t.Errorf("the written kit is %v, want the preset's %v", written.Skills, preset.Skills)
 	}
@@ -661,6 +380,29 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 	}
 }
 
+// TestRenderReportSurvivesAMissingRow is the one part of check that stayed in
+// this front-end: forge.Inspect finds the problem, and these columns draw it.
+func TestRenderReportSurvivesAMissingRow(t *testing.T) {
+	dir := scratchData(t)
+	removed := filepath.Join(dir, "assets", "example", "sprout.svg")
+	if err := os.Remove(removed); err != nil {
+		t.Fatalf("remove %s: %v", removed, err)
+	}
+	report, err := forge.Inspect(dir)
+	if err != nil {
+		t.Fatalf("inspect: %v", err)
+	}
+	var drawn strings.Builder
+	renderReport(&drawn, report)
+	// The state is named, not merely coloured or left blank.
+	if !strings.Contains(drawn.String(), "MISSING") {
+		t.Errorf("the row with no art does not say so:\n%s", drawn.String())
+	}
+	if !strings.Contains(drawn.String(), "sprout.svg") {
+		t.Errorf("the problem list does not name the file:\n%s", drawn.String())
+	}
+}
+
 // buildHexforge builds the binary under test once, so the end-to-end run
 // exercises the real program rather than a re-entry into the test binary.
 func buildHexforge(t *testing.T) string {
@@ -705,57 +447,5 @@ func TestParseArgsAllowsFlagsAfterAnOperand(t *testing.T) {
 				t.Errorf("level is %d, want %d", *level, test.wantLevel)
 			}
 		})
-	}
-}
-
-func TestSuggestedImageFollowsTheID(t *testing.T) {
-	cases := map[string]string{
-		"example-anime.adept": "assets/example-anime/adept.svg",
-		"loner":               "assets/loner.svg",
-		"":                    "",
-	}
-	// The map is a set of independent cases; nothing here reaches an ordered
-	// output.
-	for id, want := range cases {
-		if got := suggestedImage(id); got != want {
-			t.Errorf("suggestedImage(%q) is %q, want %q", id, got, want)
-		}
-	}
-}
-
-func TestLoadRejectsAMissingDirectory(t *testing.T) {
-	if _, err := load(filepath.Join(t.TempDir(), "nothing-here")); err == nil {
-		t.Error("a directory with no data files loaded")
-	}
-	if _, err := load(""); err == nil {
-		t.Error("an empty data directory loaded")
-	}
-}
-
-// TestReplaceFileLeavesTheOldOneOnFailure is the reason a write goes through a
-// temporary file: a truncated data file is a data file that stops the game
-// booting.
-func TestReplaceFileLeavesTheOldOneOnFailure(t *testing.T) {
-	dir := scratchData(t)
-	lib, err := load(dir)
-	if err != nil {
-		t.Fatalf("load: %v", err)
-	}
-	before, err := os.ReadFile(filepath.Join(dir, castFile))
-	if err != nil {
-		t.Fatalf("read: %v", err)
-	}
-	// A directory where the temp file has to go cannot be written into, so the
-	// replacement fails before the target is touched.
-	lib.dir = filepath.Join(dir, "does-not-exist")
-	if err := lib.replaceFile(castFile, []byte("{}")); err == nil {
-		t.Fatal("writing into a missing directory succeeded")
-	}
-	after, err := os.ReadFile(filepath.Join(dir, castFile))
-	if err != nil {
-		t.Fatalf("read after the failed write: %v", err)
-	}
-	if string(after) != string(before) {
-		t.Error("a failed write changed the file it was replacing")
 	}
 }

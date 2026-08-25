@@ -1,22 +1,20 @@
-// Command hexforge authors the cast the battles are fought with.
+// Command hexforge authors the cast the battles are fought with, from flags
+// and prompts.
 //
 // It is a reader, a prompt and a writer, nothing more. Every rule about what a
-// character may be lives in internal/core/cast, and this binary validates by
-// calling those parsers rather than by knowing anything itself — the same
-// relationship cmd/hexarena has with the event log. If a check belongs
-// anywhere, it belongs in the parser, because the parser is what the game runs
-// through at boot and this tool is not.
+// character may be lives in internal/core/cast, and the authoring logic that
+// sequences those rules — loading the books, turning answers into a character,
+// writing the file back — lives in internal/forge. This binary validates by
+// calling those, rather than by knowing anything itself: the same relationship
+// cmd/hexarena has with the event log. If a check belongs anywhere, it belongs
+// in the parser, because the parser is what the game runs through at boot and
+// this tool is not.
 //
-// It is the one place in the repository that reads the data directory rather
-// than the embedded copy, and the one place that asks whether a file exists.
-// internal/core may not touch the filesystem, and internal/seed only ever
-// reads the copy the embed directive baked in, so a tool that has to write a
-// data file and check that the art beside it is really there has to be a
-// separate program.
-//
-// (This comment spells that directive "the embed directive" on purpose. A
-// comment line beginning with its real spelling is read by the compiler as a
-// directive, and in this repository a stray one would be a real trap.)
+// It is flags and a line-oriented prompt on purpose, which is what makes it the
+// front-end a script and a pipe use. cmd/hexforge-tui is the same authoring
+// logic behind a full-screen program, and a full-screen program cannot run with
+// stdin as a pipe. Neither front-end restates a rule the other has: both go
+// through internal/forge.
 package main
 
 import (
@@ -25,12 +23,9 @@ import (
 	"io"
 	"os"
 	"strings"
-)
 
-// defaultDataDir is where the game's own data lives, relative to the module
-// root. Every subcommand takes --data so a scratch copy can be edited without
-// touching the shipped files.
-const defaultDataDir = "internal/seed/data"
+	"github.com/vukyn/hexarena/internal/forge"
+)
 
 func main() {
 	if len(os.Args) < 2 {
@@ -81,8 +76,11 @@ hexforge authors the cast the battles are fought with.
   hexforge check                      parse the books from disk, verify the art
                                       is really there, report the stat budget
 
-Every subcommand takes --data <dir> (default `+defaultDataDir+`), which is the
+Every subcommand takes --data <dir> (default `+forge.DefaultDataDir+`), which is the
 directory it reads and writes. Run any subcommand with -h for its own flags.
+
+hexforge-tui is the same authoring in a full-screen program; this one is what a
+script and a pipe use.
 
 The game ships the embedded copies of these files, so rebuild after editing.
 `, "\n"))
@@ -90,7 +88,7 @@ The game ships the embedded copies of these files, so rebuild after editing.
 
 // dataFlag registers the one flag every subcommand shares.
 func dataFlag(set *flag.FlagSet) *string {
-	return set.String("data", defaultDataDir, "the data directory to read and write")
+	return set.String("data", forge.DefaultDataDir, "the data directory to read and write")
 }
 
 // newFlagSet builds a subcommand's flag set. ContinueOnError rather than

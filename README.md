@@ -13,8 +13,13 @@ implementations of it.
 go run ./cmd/hexarena --seed 11 --side ally    # play a side
 go run ./cmd/hexarena --auto --seed 11         # watch both sides play themselves
 go run ./cmd/hexforge                          # author the cast: see the subcommands
+go run ./cmd/hexforge-tui                      # the same authoring, full screen
 go test ./...
 ```
+
+The full-screen authoring client is built on bubbletea, with bubbles and
+lipgloss beside it. Everything else needs only the standard library so far,
+which is how it worked out rather than a constraint being kept.
 
 ## The battlefield
 
@@ -302,11 +307,45 @@ hexforge new --id my-series.lee --name "Lee" --origin my-series \
   --archetype duelist --element wind/ground --yes
 ```
 
-`hexforge check` is the one place that touches the filesystem for anything beyond
-reading a data file: it verifies that the art each character names is really
-there. `internal/core/cast` checks only the *shape* of an image path (relative,
-no `..`, ending `.svg` or `.png`), because a core package may not read the
-filesystem and only the caller knows what the path is relative to.
+`internal/forge` is the one package that touches the filesystem for anything
+beyond reading a data file: it verifies that the art each character names is
+really there. `internal/core/cast` checks only the *shape* of an image path
+(relative, no `..`, ending `.svg` or `.png`), because a core package may not read
+the filesystem and only the caller knows what the path is relative to.
+
+### The same authoring, full screen
+
+```
+go run ./cmd/hexforge-tui              # or: make forge-tui
+```
+
+`hexforge-tui` is a second front-end over the same `internal/forge`: a cast
+browser that resolves a character at any level you walk to with the arrow keys, a
+new-character form, the origin catalog with an add form, and the check rendered
+as a screen. Two things it can do that a sequence of prompts cannot — because
+everything is visible at once and both are pure integer arithmetic recomputed on
+every keystroke:
+
+- a **live budget meter**, the effective health a stat line absorbs against the
+  joint health-and-defence bound, so the limit is a number you are watching
+  rather than a rejection at the end;
+- a **live carry check**, which says whether the affinity carries every skill in
+  the kit and names the first one it cannot, as the element or the kit is being
+  typed.
+
+Both answers, and the words they are given in, come from `internal/forge` — the
+same functions the write goes through, so neither can be a second opinion.
+`TestTheFormProducesTheCharacterTheCommandLineProduces` asserts that the same
+answers typed into the form and passed as flags resolve to the same character.
+
+`cmd/hexforge` is not superseded. A full-screen program cannot run with stdin as
+a pipe, so the flag-and-prompt tool is what a script, CI, and this repository's
+own end-to-end tests use; `hexforge-tui` refuses to start when stdout is not a
+terminal rather than writing control codes into a file. It takes the same
+`--data <dir>`, quits on `q` or `ctrl+c`, backs out of a screen with `esc`, asks
+before discarding an edited form, says so plainly when the window is too small to
+draw one, and encodes nothing in colour alone — with `NO_COLOR` set it renders as
+plain text, and a character with no art still reads `MISSING`.
 
 Every subcommand takes `--data <dir>`, defaulting to `internal/seed/data`. That is
 also the caveat: the game boots from the copies baked in by `go:embed`, so an edit
@@ -372,7 +411,8 @@ sequence, and two identical battles must still produce identical logs.
 
 The tooling for this exists now — see *Authoring a cast* above.
 `internal/core/cast` holds origins, archetype presets and characters;
-`cmd/hexforge` authors them; `progression.Line` is finally used, with one
+`internal/forge` sequences the authoring and `cmd/hexforge` and
+`cmd/hexforge-tui` are two front-ends over it; `progression.Line` is finally used, with one
 single-stage and one two-stage example in `cast.json`; and a roster entry can
 place a character by reference. What remains is the cast itself:
 

@@ -12,8 +12,17 @@ no Fiber, no `mprocs` or `/etc/hosts` entry, no swagger. It does not import
 `kuery`, and the kuery shared-package rule is irrelevant because there is nothing
 here another service would want.
 
-Go 1.27, standard library only. Adding a dependency needs a reason that survives
-the question "what does this do that the standard library will not".
+Go 1.27. Third-party dependencies are allowed anywhere in the module; reach for
+one when it earns its place. `cmd/hexforge-tui` uses bubbletea, bubbles and
+lipgloss, and the rest of the module currently happens to need nothing beyond
+the standard library — that is where it landed, not a rule to defend.
+
+What *is* a rule is the layer contract below, and none of it is about
+dependencies: `internal/core` stays a pure function of its integer arguments no
+matter what the module imports. A dependency that reaches into the engine has to
+answer one question first — "what happens to a replay when this dependency
+changes its mind" — because a battle that stops reproducing from its seed takes
+the log format, `--verify` and undo down with it.
 
 ## Commands
 
@@ -27,6 +36,8 @@ go run ./cmd/hexforge                            # author the cast: list the sub
 go run ./cmd/hexforge new                        # create a character, prompting for what is missing
 go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
 
+go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal)
+
 go test ./...
 go test ./internal/core/hex ./internal/seed ./internal/tui -update   # accept new goldens
 go test ./internal/core/battle -run TestControl                     # one test
@@ -34,8 +45,8 @@ gofmt -l . && go vet ./...
 ```
 
 The `Makefile` wraps those and nothing more — `make build install run auto forge
-test golden fmt vet check clean`. `make build` builds both binaries; `make forge
-ARGS="show some.id"` passes arguments through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
+forge-tui test golden fmt vet check clean`. `make build` builds all three
+binaries; `make forge ARGS="show some.id"` passes arguments through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
 `go test ./... -count=1`); `make golden` is the `-update` line above. The raw
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
@@ -77,13 +88,34 @@ a path, and there are two different questions about it.
 no `..` segment, no drive volume, ending `.svg` or `.png` — using `path` rather
 than `filepath`, because a committed data file has to mean the same thing on
 every platform. Whether the file is **really there** is only asked by
-`cmd/hexforge check`, because `internal/core` may not read the filesystem and,
+`internal/forge`, because `internal/core` may not read the filesystem and,
 more to the point, only the caller knows which directory the path is relative
 to. Do not move the existence check into the parser to make it "complete": that
 would make loading the game depend on the working directory, and the embedded
 copy has no directory at all. `cast.ValidateID` is exported for the same reason
 `ValidateImagePath` is — an authoring tool has to reject an answer as it is
 typed, not at the end of a wizard.
+
+**Two front-ends, one set of rules: `internal/forge`.** The authoring logic —
+loading the books from a directory, `Draft.Resolve` turning answers into a
+validated character, the per-answer checks a prompt or a form applies as it is
+typed, `Budget`, `Inspect`, the temp-file-then-rename write, and `SaveNotes` —
+lives in `internal/forge`. `cmd/hexforge` is flags and prompts over it;
+`cmd/hexforge-tui` is a full-screen bubbletea client over the same thing.
+Neither may restate a rule, **including the wording of a refusal**: a front-end
+that phrases a rejection itself is a second declaration of the rule behind it,
+which is the mistake recorded twice below (the passed-turn reason, and the
+kit-versus-affinity gap). If the TUI needs a sentence the CLI already has, it
+comes from the package. `internal/forge` is the one part of the module allowed
+to read and write real files, and its doc comment says why: `internal/core` may
+not, and `internal/seed` only ever reads the embedded copy.
+
+`TestTheFormProducesTheCharacterTheCommandLineProduces` is what holds this: the
+same answers as flags and as keystrokes must resolve to the same
+`cast.Character`. A full-screen program cannot run with stdin as a pipe, so
+`cmd/hexforge` is not going away — it is what a script uses, and the TUI refuses
+to start when stdout is not a terminal rather than painting escape codes into
+one.
 
 **`hexforge new` must work with nobody watching.** A preset-supplied value is
 not missing, so an unattended run takes every default and errors only on a field

@@ -9,6 +9,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/forge"
 )
 
 func runOrigins(args []string) error {
@@ -28,7 +29,7 @@ func runOrigins(args []string) error {
 // Rejecting a stray operand matters more than it looks. `hexforge origins --data
 // x add ...` would otherwise print the catalog and silently drop the `add`,
 // leaving someone convinced they had added a work they had not.
-func loadForListing(name string, args []string) (*library, error) {
+func loadForListing(name string, args []string) (*forge.Library, error) {
 	set := newFlagSet(name)
 	dir := dataFlag(set)
 	operands, err := parseArgs(set, args)
@@ -38,11 +39,11 @@ func loadForListing(name string, args []string) (*library, error) {
 	if len(operands) > 0 {
 		return nil, fmt.Errorf("hexforge %s takes no arguments, got %v", name, operands)
 	}
-	return load(*dir)
+	return forge.Load(*dir)
 }
 
-func renderOrigins(out io.Writer, lib *library) {
-	origins := lib.origins.All()
+func renderOrigins(out io.Writer, lib *forge.Library) {
+	origins := lib.Origins().All()
 	if len(origins) == 0 {
 		fmt.Fprintf(out, "no works in the catalog yet; add one with: hexforge origins add <id> --title T --medium anime\n")
 		return
@@ -54,7 +55,7 @@ func renderOrigins(out io.Writer, lib *library) {
 			year = strconv.Itoa(origin.Year)
 		}
 		rendered.add(origin.ID, origin.Medium.String(), year,
-			strconv.Itoa(len(lib.characters.OfOrigin(origin.ID))), origin.Title)
+			strconv.Itoa(len(lib.Characters().OfOrigin(origin.ID))), origin.Title)
 	}
 	rendered.render(out)
 	fmt.Fprintf(out, "\n%d works, media: %s\n", len(origins), strings.Join(cast.MediumNames(), " "))
@@ -86,25 +87,18 @@ func runOriginsAdd(args []string) error {
 	if err != nil {
 		return err
 	}
-	lib, err := load(*dir)
+	lib, err := forge.Load(*dir)
 	if err != nil {
 		return err
 	}
-	if _, clash := lib.origins.Get(id); clash {
-		return fmt.Errorf("origin %q is already in the catalog", id)
-	}
-	// Append validates exactly as a load would, so a rejected entry never
+	// SaveOrigin validates exactly as a load would, so a rejected entry never
 	// reaches the file.
-	updated, err := lib.origins.Append(cast.Origin{
+	if err := lib.SaveOrigin(cast.Origin{
 		ID: id, Title: *title, Medium: parsed, Year: *year, Note: *note,
-	})
-	if err != nil {
+	}); err != nil {
 		return err
 	}
-	if err := lib.writeOrigins(updated); err != nil {
-		return err
-	}
-	fmt.Printf("added %s (%s) to %s\n", id, parsed, lib.dir)
+	fmt.Printf("added %s (%s) to %s\n", id, parsed, lib.Dir())
 	return nil
 }
 
@@ -117,15 +111,15 @@ func runArchetypes(args []string) error {
 	return nil
 }
 
-func renderArchetypes(out io.Writer, lib *library) {
-	archetypes := lib.archetypes.All()
+func renderArchetypes(out io.Writer, lib *forge.Library) {
+	archetypes := lib.Archetypes().All()
 	if len(archetypes) == 0 {
 		fmt.Fprintln(out, "no presets declared")
 		return
 	}
 	header := []string{"id", "col"}
 	for _, kind := range progression.Kinds() {
-		header = append(header, shortStat(kind))
+		header = append(header, forge.ShortStat(kind))
 	}
 	header = append(header, "needs", "kit")
 	rendered := newTable(header...).rightAlign(1)
@@ -145,13 +139,14 @@ func renderArchetypes(out io.Writer, lib *library) {
 		"carried by exactly that pair.\n")
 	for _, archetype := range archetypes {
 		capped := archetype.Stats.At(progression.LevelCap)
+		budget := lib.Budget(capped)
 		fmt.Fprintf(out, "  %-11s %s\n", archetype.ID, archetype.Role)
 		fmt.Fprintf(out, "  %-11s at the cap: %s, absorbs %d of the %d budget\n", "",
-			capped, progression.EffectiveHP(capped, lib.rules), lib.limits.MaxEffectiveHP)
+			capped, budget.Effective, budget.Max)
 	}
 }
 
-// demandColumn is the elements a preset's kit insists on, or a dash when the kit
+// demandColumn is the elements a preset's kit insists on, or "any" when the kit
 // is all neutral and any affinity carries it.
 func demandColumn(archetype cast.Archetype) string {
 	names := archetype.DemandNames()
@@ -170,8 +165,8 @@ func runCast(args []string) error {
 	return nil
 }
 
-func renderCast(out io.Writer, lib *library) {
-	characters := lib.characters.All()
+func renderCast(out io.Writer, lib *forge.Library) {
+	characters := lib.Characters().All()
 	if len(characters) == 0 {
 		fmt.Fprintln(out, "no characters authored yet; create one with: hexforge new")
 		return
@@ -179,38 +174,8 @@ func renderCast(out io.Writer, lib *library) {
 	rendered := newTable("id", "name", "origin", "archetype", "element", "stages", "image")
 	for _, character := range characters {
 		rendered.add(character.ID, character.Name, character.Origin, character.Archetype,
-			character.Element.String(), stageSummary(character), character.Image)
+			character.Element.String(), forge.StageSummary(character), character.Image)
 	}
 	rendered.render(out)
 	fmt.Fprintf(out, "\n%d characters\n", len(characters))
-}
-
-// stageSummary writes an evolution line as the levels its stages take over at,
-// which is the one thing a table has room for.
-func stageSummary(character cast.Character) string {
-	parts := make([]string, 0, len(character.Stages))
-	for _, stage := range character.Stages {
-		parts = append(parts, fmt.Sprintf("%s@%d", stage.Name, stage.MinLevel))
-	}
-	return strings.Join(parts, " → ")
-}
-
-// shortStat is the three letter column heading for a stat.
-func shortStat(kind progression.Kind) string {
-	switch kind {
-	case progression.HP:
-		return "hp"
-	case progression.Attack:
-		return "atk"
-	case progression.Defense:
-		return "def"
-	case progression.Speed:
-		return "spd"
-	case progression.Accuracy:
-		return "acc"
-	case progression.Dodge:
-		return "ddg"
-	default:
-		return kind.String()
-	}
 }
