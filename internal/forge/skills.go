@@ -1,6 +1,7 @@
 package forge
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -326,6 +327,27 @@ func (l *Library) ParseApplications(answer string) ([]skill.Application, error) 
 // FormatApplications is ParseApplications' inverse, which is what a prefilled
 // field and a listing both need, so that accepting a field as it stands
 // reproduces what was in it.
+// Percent renders a parts-per-thousand figure as the percentage a reader
+// actually thinks in: 850 becomes "85%".
+//
+// The arithmetic stays integer, like everything else these numbers touch. A
+// tenth is kept only when there is one, so an authored 855 reads "85.5%" while
+// the shipped values, which are all multiples of ten, stay short.
+//
+// It lives here rather than in either front-end because both show the same
+// figure and a second copy would eventually round differently.
+func Percent(permille int) string {
+	sign := ""
+	if permille < 0 {
+		sign, permille = "-", -permille
+	}
+	whole, tenth := permille/10, permille%10
+	if tenth == 0 {
+		return fmt.Sprintf("%s%d%%", sign, whole)
+	}
+	return fmt.Sprintf("%s%d.%d%%", sign, whole, tenth)
+}
+
 func FormatApplications(applications []skill.Application) string {
 	parts := make([]string, 0, len(applications))
 	for _, application := range applications {

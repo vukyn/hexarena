@@ -998,3 +998,27 @@ func TestSkillRowDropsTheGlossColumnWhenItIsEmpty(t *testing.T) {
 			lipgloss.Width(without), lipgloss.Width(with))
 	}
 }
+
+// TestTheAccuracyRowReadsAsAPercentage covers the reason the row exists: 850 is
+// what the engine divides by, and nobody reads it as a chance. The parts per
+// thousand stay on screen — the number written to the file has to be the number
+// shown — with the percentage beside them.
+func TestTheAccuracyRowReadsAsAPercentage(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	screen := m.enter(screenSkills)
+	screen.skills.adding = true
+	screen.skills.inputs[skillFieldAccuracy].SetValue("850")
+	if got := screen.skills.value(screen, skillFieldAccuracy, 16); !strings.Contains(got, "850") ||
+		!strings.Contains(got, "85%") {
+		t.Errorf("the accuracy row shows %q, want both 850 and 85%%", got)
+	}
+
+	// A half-typed number is the normal state of a text field, not an error to
+	// announce, so the hint says nothing at all rather than guessing.
+	for _, partial := range []string{"", "-", "8x"} {
+		screen.skills.inputs[skillFieldAccuracy].SetValue(partial)
+		if got := screen.skills.percentHint(screen, skillFieldAccuracy); got != "" {
+			t.Errorf("a value of %q produced the hint %q, want none", partial, got)
+		}
+	}
+}

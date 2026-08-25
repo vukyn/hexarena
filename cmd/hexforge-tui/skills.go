@@ -676,9 +676,26 @@ func (s skillsScreen) value(m model, field, labelWidth int) string {
 		return s.listValue(m, s.keptRoles, labelWidth)
 	case skillFieldKeptForCharacters:
 		return s.listValue(m, s.keptWho, labelWidth)
+	case skillFieldAccuracy:
+		// Accuracy is authored in parts per thousand because that is what the
+		// engine divides by, but nobody reads 850 as a chance. The percentage
+		// sits beside the field rather than replacing it: the number written to
+		// the file is still the number on screen.
+		return s.inputs[field].View() + s.percentHint(m, field)
 	default:
 		return s.inputs[field].View()
 	}
+}
+
+// percentHint is the dim reading of a parts-per-thousand field, or nothing at
+// all while the field does not hold one. A half-typed number is the normal
+// state of a text field, so it is not an error to say nothing about.
+func (s skillsScreen) percentHint(m model, field int) string {
+	permille, err := strconv.Atoi(strings.TrimSpace(s.inputs[field].Value()))
+	if err != nil {
+		return ""
+	}
+	return "  " + m.style.dim.Render(forge.Percent(permille))
 }
 
 // listValue draws one of the three allowlists: what is in it, or that anybody
