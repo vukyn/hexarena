@@ -40,12 +40,31 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// of which is the damage before and after.
 	editedSkill := m.enter(screenSkills)
 	editedSkill.skills.edited = someSkillChange(t, m)
+	// The shape diagram, which is a state of the skill form rather than a screen
+	// of its own. The shape it draws is the widest the board ever is, because the
+	// board is a fixed size — what varies is the line under it, so this is here
+	// for the same reason every other state is: to be measured in both languages.
+	shape := m.enter(screenSkills)
+	shape.skills.adding = true
+	shape.skills.field = skillFieldShape
+	shape.skills.shapeIndex = indexOf(m.lib.PatternNames(), "pierce")
+	shape.skills.shapeDrawn = true
 	// The two pickers, opened over the form that raises each. The kit's rows
 	// carry a refusal each and an allowlist's do not, so both shapes of row are
 	// measured.
 	kit := form.openKit()
 	allowlist := addSkill.openAllowlist(skillFieldKeptForCharacters)
+	// The status picker is the fifth, and the only one that collects a number as
+	// well as a set, so its extra row is measured with the rest.
+	statuses := addSkill.openStatuses()
+	statuses.picker.chosen = []string{"poison"}
+	statuses.picker.typed.SetValue("300")
+	// And the character allowlist with its filter narrowed, which is a line the
+	// unfiltered picker does not draw.
+	filtered := addSkill.openAllowlist(skillFieldKeptForCharacters)
+	filtered.picker.nextFilter()
 	return map[string]model{
+		"shape diagram":    shape,
 		"menu":             m.enter(screenMenu),
 		"browse":           m.enter(screenBrowse),
 		"form":             form,
@@ -57,6 +76,8 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"edited a skill":   editedSkill,
 		"kit picker":       kit,
 		"allowlist picker": allowlist,
+		"status picker":    statuses,
+		"filtered picker":  filtered,
 		"check":            m.enter(screenCheck),
 	}
 }
@@ -732,7 +753,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 			}
 		}
 		// The kit's names are on the row under the kit's ids, in the same order.
-		kit := i18n.Vi.GlossedKit(character.Skills)
+		kit := i18n.Vi.GlossedKit(lib.KitSkills(character.Skills))
 		if kit == "" {
 			t.Errorf("%s's kit is not glossed, so this proves nothing", character.ID)
 		} else if under := rowUnder(t, rows, m.text(i18n.LabelKit)); !strings.Contains(under, kit) {
@@ -859,7 +880,7 @@ func TestEveryGlossFitsItsRow(t *testing.T) {
 			kits[preset.ID] = preset.Skills
 		}
 		for id, skills := range kits {
-			glossed := lang.GlossedKit(skills)
+			glossed := lang.GlossedKit(lib.KitSkills(skills))
 			if glossed == "" {
 				continue
 			}
@@ -985,8 +1006,8 @@ func TestTheSkillListNamesSkillsInVietnamese(t *testing.T) {
 // TestSkillRowDropsTheGlossColumnWhenItIsEmpty pins the rule itself, so it
 // cannot be lost when the caller that measures the width changes.
 func TestSkillRowDropsTheGlossColumnWhenItIsEmpty(t *testing.T) {
-	with := skillRow(8, 6, "strike", "đòn", "neutral", "1000x1", "anyone")
-	without := skillRow(8, 0, "strike", "đòn", "neutral", "1000x1", "anyone")
+	with := skillRow(8, 6, 8, "strike", "đòn", "neutral", "1000x1", "anyone")
+	without := skillRow(8, 0, 8, "strike", "đòn", "neutral", "1000x1", "anyone")
 	if strings.Contains(without, "đòn") {
 		t.Errorf("a zero gloss column still drew the gloss: %q", without)
 	}
@@ -1047,6 +1068,210 @@ func TestTheAccuracyRowReadsAsAPercentage(t *testing.T) {
 		screen.skills.inputs[skillFieldAccuracy].SetValue(partial)
 		if got := screen.skills.percentHint(screen, skillFieldAccuracy); got != "" {
 			t.Errorf("a value of %q produced the hint %q, want none", partial, got)
+		}
+	}
+}
+
+// TestEveryFieldOfTheSkillFormHasHelp is the reason the static footnote went:
+// fourteen fields and one sentence about two of them explained nothing about
+// the twelve nobody could guess.
+//
+// Three properties, and the third is the one a wording test alone would miss:
+// every field draws a line, the line changes as the cursor moves, and it is
+// really on the drawn screen rather than only in the catalog.
+func TestEveryFieldOfTheSkillFormHasHelp(t *testing.T) {
+	const drawable = minWidth - 1
+	for _, lang := range i18n.Langs() {
+		base, _, _ := start(t, lang)
+		base.width, base.height = minWidth, minHeight
+		m := base.enter(screenSkills)
+		m.skills.adding = true
+
+		seen := make(map[string]int, skillFieldCount)
+		for field := range skillFieldCount {
+			m = skillFormTo(t, m, field)
+			help := skillFieldHelp(m, field)
+			if strings.TrimSpace(help) == "" {
+				t.Errorf("field %d has no help line in %s", field, lang)
+				continue
+			}
+			// The help is a sentence in a screen-wide row, so it is measured
+			// against the whole drawable width rather than against a column.
+			if width := lipgloss.Width("  " + help); width > drawable {
+				t.Errorf("the %s help for field %d is %d cells wide, over the %d it has:\n%s",
+					lang, field, width, drawable, help)
+			}
+			if before, clash := seen[help]; clash {
+				t.Errorf("fields %d and %d share the %s help line %q",
+					before, field, lang, help)
+			}
+			seen[help] = field
+			body, _ := m.skills.view(m)
+			if !strings.Contains(body, help) {
+				t.Errorf("the %s form does not draw the help for field %d:\n%s",
+					lang, field, body)
+			}
+			// A help line that says nothing but the label again is the footnote
+			// back: it has to be longer than the name of the field it explains.
+			if label := skillFieldLabel(m, field); lipgloss.Width(help) <= lipgloss.Width(label) {
+				t.Errorf("the %s help for %q is no longer than its own label: %q",
+					lang, label, help)
+			}
+		}
+		if len(seen) != skillFieldCount {
+			t.Errorf("%s drew %d distinct help lines over %d fields",
+				lang, len(seen), skillFieldCount)
+		}
+	}
+}
+
+// TestTheSkillFormFitsTheSmallestWindow is the form's half of what
+// TestTheSkillListingFitsTheSmallestWindowAfterAnEdit measures for the listing.
+//
+// The busiest state, because that is the only one that measures anything: every
+// field prefilled from a skill already in the book, and a refused write under
+// them, which is the extra line an error costs. The form spent nineteen of the
+// twenty body lines an 80x24 window has before the help line existed and it
+// still spends nineteen, because the help replaced the footnote rather than
+// joining it — there is no spare line here, which is why the shape diagram is a
+// sub-screen and not a pane.
+func TestTheSkillFormFitsTheSmallestWindow(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m.width, m.height = minWidth, minHeight
+		m = m.enter(screenSkills)
+		m.skills = m.skills.prefill(m.lib, m.skills.skills[0])
+		m.skills.err = &forge.MissingSkillIDError{}
+		drawn := m.View()
+		if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
+			strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
+			t.Errorf("the %s skill form is truncated at %dx%d:\n%s",
+				lang, minWidth, minHeight, drawn)
+		}
+		// And the count itself, so that a line added to this screen fails here
+		// with the arithmetic rather than only through the truncation marker.
+		body, _ := m.skills.view(m)
+		if lines, room := len(strings.Split(body, "\n")), minHeight-4; lines > room {
+			t.Errorf("the %s skill form draws %d body lines against the %d it has",
+				lang, lines, room)
+		}
+	}
+}
+
+// TestTheListingHeaderLinesUpWithItsRows is what the power column's width is
+// for, and it is measured on the drawn screen rather than on the number behind
+// it.
+//
+// The header names its columns with the labels the form authored them with, so
+// renaming a field renames a column here — and the power column was a constant 8
+// while its header was the word "power". A 17-cell "damage multiplier" in an
+// 8-cell column does not overflow anything, because pad only widens: it pushes
+// the last column's header nine cells right of the rows it names, which is a
+// table that lies about which numbers are under which word.
+func TestTheListingHeaderLinesUpWithItsRows(t *testing.T) {
+	const drawable = minWidth - 1
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m.width, m.height = minWidth, minHeight
+		m = m.enter(screenSkills)
+		body, _ := m.skills.view(m)
+		lines := strings.Split(body, "\n")
+
+		header, row := "", ""
+		for _, line := range lines {
+			switch {
+			case strings.Contains(line, lang.Text(i18n.ColumnWhoMayCarry)):
+				header = line
+			// Any row but the cursor's, so the marker is the same two cells as
+			// the header's and the offsets are comparable.
+			case row == "" && strings.HasPrefix(line, "  ") &&
+				strings.Contains(line, lang.Text(i18n.WhoAnyone)):
+				row = line
+			}
+		}
+		if header == "" || row == "" {
+			t.Fatalf("the %s listing has no header or no plain row:\n%s", lang, body)
+		}
+		// Cell offsets, not byte offsets: a Vietnamese header is multi-byte and
+		// strings.Index would compare two different units.
+		cellAt := func(line, needle string) int {
+			return lipgloss.Width(line[:strings.Index(line, needle)])
+		}
+		if got, want := cellAt(header, lang.Text(i18n.ColumnWhoMayCarry)),
+			cellAt(row, lang.Text(i18n.WhoAnyone)); got != want {
+			t.Errorf("the %s header's last column starts at %d and its rows' at %d:\n%s\n%s",
+				lang, got, want, header, row)
+		}
+		// And the power column really is named after the field that authored it,
+		// which is the coupling the width exists to keep affordable.
+		if !strings.Contains(header, lang.Text(i18n.SkillFieldPower)) {
+			t.Errorf("the %s header does not name the power column %q:\n%s",
+				lang, lang.Text(i18n.SkillFieldPower), header)
+		}
+		for _, line := range lines {
+			if width := lipgloss.Width(line); width > drawable {
+				t.Errorf("the %s listing draws %d cells, over the %d it has:\n%s",
+					lang, width, drawable, line)
+			}
+		}
+	}
+}
+
+// TestEveryFormRowFitsTheWindowAtItsBusiest is the row arithmetic, measured
+// against the widest content each row can hold rather than against the empty
+// form every other test happens to render.
+//
+// This is what caught skillValueRoom being a cell short. The two rows with a
+// part that has no length of its own — the chances beside the inflicts field and
+// the ids of an allowlist — computed what was left from the text field's
+// declared Width, and a bubbles text field draws a cell more than that for its
+// cursor. Both rows came to exactly 80 cells in an 80-column window: inside
+// frame's clip, so nothing looked wrong, and over the edge of the terminals that
+// wrap a line filling the final cell.
+func TestEveryFormRowFitsTheWindowAtItsBusiest(t *testing.T) {
+	const drawable = minWidth - 1
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m.width, m.height = minWidth, minHeight
+		m = m.enter(screenSkills)
+		m.skills.adding = true
+		// The busiest each row can be: a full-width id, three statuses read out
+		// beside the field, and three long ids in every allowlist.
+		m.skills.inputs[skillFieldID].SetValue(strings.Repeat("a", 40))
+		// A power high enough that the damage row under the fields carries
+		// four-digit figures, which is the case that row is measured on: it is
+		// the widest fixed row on this screen and it grows with the number of
+		// digits in its own numbers, so an empty power — the only state every
+		// other test renders it in — measures nothing. The shipped book tops out
+		// at 2200, which is three digits; this is past it on purpose.
+		//
+		// It has a real ceiling above this: five-digit damage, which needs a
+		// power around 15000, runs the row two cells over and is clipped by
+		// frame. Nothing shipped is within a factor of six of that.
+		m.skills.inputs[skillFieldPower].SetValue("3000")
+		m.skills.inputs[skillFieldAccuracy].SetValue("1000")
+		m.skills.inputs[skillFieldInflicts].SetValue("poison:300,burn:500,weaken:1000")
+		long := []string{"example-hero", "example-sprout", "example-adept"}
+		m.skills.keptElements, m.skills.keptRoles, m.skills.keptWho = long, long, long
+
+		width := skillLabelWidth(m)
+		for field := range skillFieldCount {
+			m.skills.field = field
+			row := "  " + pad(skillFieldLabel(m, field), width) + " " +
+				m.skills.value(m, field, width)
+			if measured := lipgloss.Width(row); measured > drawable {
+				t.Errorf("the %s row for field %d is %d cells wide, over the %d it has:\n%s",
+					lang, field, measured, drawable, row)
+			}
+		}
+		// And the whole screen in that state, since the rows are not the only
+		// lines on it.
+		body, _ := m.skills.view(m)
+		for _, line := range strings.Split(body, "\n") {
+			if measured := lipgloss.Width(line); measured > drawable {
+				t.Errorf("the %s form draws %d cells, over the %d it has:\n%s",
+					lang, measured, drawable, line)
+			}
 		}
 	}
 }

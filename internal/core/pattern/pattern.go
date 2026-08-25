@@ -136,6 +136,24 @@ func (p Pattern) Validate(maxTargets int) error {
 // first. Cells off the board, cells on the other half of the battlefield, and
 // duplicates are dropped, so the result can be shorter than MaxTargets.
 func (p Pattern) Targets(primary hex.Offset) []hex.Offset {
+	return p.targets(primary, false)
+}
+
+// TargetsAcross is Targets for a skill aimed at both halves of the battlefield:
+// the same shape, with the midline no longer stopping it.
+//
+// It is a second entry point rather than a parameter on the first because the
+// midline is the right bound for every skill that aims at one side, so the plain
+// call has to stay the one that reads as ordinary. Both go through one walk, so
+// there is no second copy of the geometry — only a second answer to the one
+// question the two differ on. Which of them a caster gets is skill.Side's
+// CrossesSides, not a decision made here: this package knows what a side is and
+// nothing about what a skill aims at.
+func (p Pattern) TargetsAcross(primary hex.Offset) []hex.Offset {
+	return p.targets(primary, true)
+}
+
+func (p Pattern) targets(primary hex.Offset, across bool) []hex.Offset {
 	if !primary.OnBoard() {
 		return nil
 	}
@@ -149,7 +167,10 @@ func (p Pattern) Targets(primary hex.Offset) []hex.Offset {
 			cube = cube.Add(step.Step())
 		}
 		cell := cube.Offset()
-		if !cell.OnBoard() || cell.Side() != side || seen[cell] {
+		if !cell.OnBoard() || seen[cell] {
+			continue
+		}
+		if !across && cell.Side() != side {
 			continue
 		}
 		seen[cell] = true

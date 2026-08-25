@@ -216,3 +216,78 @@ func TestBookLookupAndPower(t *testing.T) {
 		t.Errorf("the book was modified through its own accessor, first shape is now %q", got)
 	}
 }
+
+// TestTargetsAcrossKeepsWhatTheMidlineDrops is the one difference between the two
+// walks, and that it is the only one.
+//
+// The midline is the right bound for every skill aimed at one side, so the plain
+// walk keeps it. A skill aimed at both halves is the case where dropping a cell
+// for being on the wrong side is wrong, and this is what says the two agree on
+// everything else — the board's edge, duplicate cells, and the primary coming
+// first.
+func TestTargetsAcrossKeepsWhatTheMidlineDrops(t *testing.T) {
+	wedge := pattern.Pattern{Name: "wedge_left", Splash: [][]pattern.Direction{
+		{pattern.UpperLeft}, {pattern.LowerLeft},
+	}}
+	// The enemy frontline: both of the shape's cells sit one column back, which
+	// is the caster's own half.
+	frontline := hex.Offset{Col: 3, Row: 1}
+	stopped := wedge.Targets(frontline)
+	crossed := wedge.TargetsAcross(frontline)
+	if len(stopped) != 1 {
+		t.Errorf("the midline let %v through from %v, want the primary alone",
+			stopped, frontline)
+	}
+	if len(crossed) != wedge.MaxTargets() {
+		t.Errorf("crossing the midline caught %v from %v, want all %d cells",
+			crossed, frontline, wedge.MaxTargets())
+	}
+	if crossed[0] != frontline {
+		t.Errorf("the crossing walk returned %v first, want the primary", crossed[0])
+	}
+	for _, cell := range crossed[1:] {
+		if cell.Side() == frontline.Side() {
+			t.Errorf("%v is on the primary's own side, so this measures nothing", cell)
+		}
+	}
+
+	// Everything else the walk drops, it still drops. The board's edge is not a
+	// side.
+	edge := hex.Offset{Col: 0, Row: 1}
+	if got := wedge.TargetsAcross(edge); len(got) != 1 {
+		t.Errorf("crossing the midline also crossed the board's edge: %v", got)
+	}
+	if got := wedge.TargetsAcross(hex.Offset{Col: -1, Row: 0}); got != nil {
+		t.Errorf("a primary off the board caught %v, want nothing", got)
+	}
+	// A shape whose chains land on one cell twice still reports it once.
+	twice := pattern.Pattern{Name: "twice", Splash: [][]pattern.Direction{
+		{pattern.UpperLeft}, {pattern.UpperLeft},
+	}}
+	if got := twice.TargetsAcross(frontline); len(got) != 2 {
+		t.Errorf("a repeated cell was counted twice: %v", got)
+	}
+
+	// And for a shape that never leaves its own half, the two walks agree
+	// exactly, which is what keeps every shipped skill where it was.
+	column := pattern.Pattern{Name: "column", Splash: [][]pattern.Direction{
+		{pattern.Up}, {pattern.Down},
+	}}
+	for _, cell := range hex.Cells() {
+		if got, want := column.TargetsAcross(cell), column.Targets(cell); !equalOffsets(got, want) {
+			t.Errorf("from %v the two walks give %v and %v", cell, got, want)
+		}
+	}
+}
+
+func equalOffsets(got, want []hex.Offset) bool {
+	if len(got) != len(want) {
+		return false
+	}
+	for i := range got {
+		if got[i] != want[i] {
+			return false
+		}
+	}
+	return true
+}

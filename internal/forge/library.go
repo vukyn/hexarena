@@ -279,6 +279,27 @@ func ArtFiles(dir string) ([]string, error) {
 func (l *Library) ArtFiles() ([]string, error) { return ArtFiles(l.dir) }
 
 // LookupKit resolves a list of skill ids against the book.
+// KitSkills resolves a kit's ids against the book for a caller that is drawing
+// them rather than checking them: one entry per id, in the kit's own order, and
+// an id the book does not hold stands in as a skill carrying nothing but that id.
+//
+// LookupKit's refusal is right where a kit is being authored, and no use at all
+// where one is being drawn: the ids came off a character that already loaded, so
+// an unknown one is unreachable — and dropping the entry would be worse than
+// standing it in, because the names are drawn under the ids and have to stay in
+// step with them one for one.
+func (l *Library) KitSkills(named []string) []skill.Skill {
+	out := make([]skill.Skill, 0, len(named))
+	for _, id := range named {
+		carried, err := l.skills.Lookup(id)
+		if err != nil {
+			carried = skill.Skill{ID: id}
+		}
+		out = append(out, carried)
+	}
+	return out
+}
+
 func (l *Library) LookupKit(named []string) ([]skill.Skill, error) {
 	out := make([]skill.Skill, 0, len(named))
 	for _, id := range named {

@@ -11,8 +11,10 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -930,8 +932,11 @@ func pickTo(t *testing.T, m model, id string) model {
 	for range len(m.picker.options) {
 		m = key(t, m, "up")
 	}
+	// The visible rows rather than every row: a picker may be filtered, and the
+	// cursor indexes what is on screen.
 	for range len(m.picker.options) {
-		if m.picker.options[m.picker.cursor].id == id {
+		rows := m.picker.visible()
+		if len(rows) > 0 && rows[clamp(m.picker.cursor, 0, len(rows)-1)].id == id {
 			return m
 		}
 		m = key(t, m, "down")
@@ -1138,6 +1143,8 @@ func TestTheSkillFormProducesTheSkillTheCommandLineProduces(t *testing.T) {
 	}
 
 	m = typeText(t, m, "oath")
+	m = skillFormTo(t, m, skillFieldName)
+	m = typeText(t, m, "lời thề")
 	m = skillFormTo(t, m, skillFieldElement)
 	m = cycleSkillChooserTo(t, m, "fire", func(m model) string { return m.skills.draft(m).Element })
 	m = skillFormTo(t, m, skillFieldPower)
@@ -1162,7 +1169,8 @@ func TestTheSkillFormProducesTheSkillTheCommandLineProduces(t *testing.T) {
 		t.Fatalf("the form's draft does not resolve: %v", err)
 	}
 	fromTheFlags, err := forge.SkillDraft{
-		ID: "oath", Element: "fire", Target: "enemy", Range: "1", Pattern: "single",
+		ID: "oath", Name: "lời thề",
+		Element: "fire", Target: "enemy", Range: "1", Pattern: "single",
 		Power: "1200", Strikes: "1", Accuracy: "900", Cooldown: "0",
 		Applies: "burn:500", RestrictArchetypes: "bulwark",
 	}.Resolve(lib)
@@ -1471,5 +1479,678 @@ func TestTheSkillListingFitsTheSmallestWindowAfterAnEdit(t *testing.T) {
 				t.Errorf("the %s listing does not show %q:\n%s", lang, want, drawn)
 			}
 		}
+	}
+}
+
+// TestTheShapeChooserDrawsWhatTheShapeCatches is item three of the form's
+// legibility: "< pierce >" names a step chain and says nothing about which cells
+// it covers, so the chooser draws them.
+//
+// What is asserted is the composition rather than the picture: the expectation
+// here walks pattern.Targets itself, from the pattern book, and the drawn board
+// has to agree cell for cell. So a diagram that marked a plausible-looking set
+// of cells that a battle would not actually hit fails, which is the only failure
+// worth catching — a shape chooser that lies is worse than one that says nothing.
+func TestTheShapeChooserDrawsWhatTheShapeCatches(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	primary := forge.ShapeDiagramCell()
+	for _, name := range lib.PatternNames() {
+		shape, err := lib.Patterns().Lookup(name)
+		if err != nil {
+			t.Fatalf("look up %s: %v", name, err)
+		}
+		caught := shape.Targets(primary)
+		if len(caught) == 0 || caught[0] != primary {
+			t.Fatalf("%s catches %v from %v, want the primary first", name, caught, primary)
+		}
+		want := hex.Render(func(cell hex.Offset) string {
+			for position, target := range caught {
+				if target != cell {
+					continue
+				}
+				if position == 0 {
+					return shapeAimMark
+				}
+				return shapeSplashMark
+			}
+			return ""
+		})
+
+		coverage, err := lib.ShapeCoverage(name, defaultSkillTarget)
+		if err != nil {
+			t.Fatalf("coverage of %s: %v", name, err)
+		}
+		if coverage.Covered() != len(caught) {
+			t.Errorf("%s reports %d cells covered against Targets' %d",
+				name, coverage.Covered(), len(caught))
+		}
+		if got := shapeBoard(coverage); got != want {
+			t.Errorf("the board drawn for %s is not the cells Targets returns:\n%s\nwant:\n%s",
+				name, got, want)
+		}
+		// The two marks are different characters, not two colours: the tests run
+		// with NO_COLOR set, so what is counted here is what a monochrome
+		// terminal shows.
+		board := shapeBoard(coverage)
+		if got := strings.Count(board, shapeAimMark); got != 1 {
+			t.Errorf("%s marks the aim %d times, want once:\n%s", name, got, board)
+		}
+		if got, want := strings.Count(board, shapeSplashMark), len(caught)-1; got != want {
+			t.Errorf("%s marks %d splash cells over %d caught:\n%s", name, got, want, board)
+		}
+		if shapeAimMark == shapeSplashMark {
+			t.Error("the aim and a splash cell are the same mark, so the board needs colour")
+		}
+
+		// And the drawn screen really holds that board, rather than the board
+		// being a function nothing calls.
+		screen := m.enter(screenSkills)
+		screen.skills.adding = true
+		screen.skills.field = skillFieldShape
+		screen.skills.shapeIndex = indexOf(lib.PatternNames(), name)
+		screen.skills.shapeDrawn = true
+		body, _ := screen.skills.view(screen)
+		for _, line := range strings.Split(want, "\n") {
+			if !strings.Contains(body, line) {
+				t.Errorf("the %s diagram does not draw %q:\n%s", name, line, body)
+			}
+		}
+	}
+}
+
+// TestTheShapeDiagramOpensFromTheChooserAndFollowsIt is the interaction: the key
+// that opens it, the keys that leave it, and that it draws the shape the field
+// behind it holds rather than a copy of it.
+func TestTheShapeDiagramOpensFromTheChooserAndFollowsIt(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	m = m.enter(screenSkills)
+	m = typeText(t, m, "a")
+	m = skillFormTo(t, m, skillFieldShape)
+	// Space is free on a chooser — a chooser is stepped with the arrows — and it
+	// is the same key the three allowlists open their picker with.
+	m = key(t, m, "space")
+	if !m.skills.shapeDrawn {
+		t.Fatal("space on the shape field did not open the diagram")
+	}
+	opened := m.skills.draft(m).Pattern
+
+	// The arrows on the diagram are the chooser's own, so the field behind it
+	// moves with the drawing and there is nothing to apply when it closes.
+	m = key(t, m, "right")
+	moved := m.skills.draft(m).Pattern
+	if moved == opened {
+		t.Errorf("the diagram's right arrow did not change the shape, still %q", opened)
+	}
+	body, _ := m.skills.view(m)
+	if !strings.Contains(body, moved) {
+		t.Errorf("the diagram draws %q while the field holds %q:\n%s", opened, moved, body)
+	}
+	m = key(t, m, "left")
+	if back := m.skills.draft(m).Pattern; back != opened {
+		t.Errorf("stepping back landed on %q, want %q", back, opened)
+	}
+
+	// Nothing else on the form is reachable while it is over it: enter would
+	// otherwise move to the next field and escape would leave the form.
+	m = key(t, m, "enter")
+	if m.skills.shapeDrawn {
+		t.Error("enter did not close the diagram")
+	}
+	if m.skills.field != skillFieldShape {
+		t.Errorf("closing the diagram moved the cursor to field %d", m.skills.field)
+	}
+	m = key(t, m, "space")
+	m = key(t, m, "esc")
+	if m.skills.shapeDrawn {
+		t.Error("escape did not close the diagram")
+	}
+	if !m.skills.adding {
+		t.Error("escape on the diagram left the form as well")
+	}
+	if m.guard != nil {
+		t.Error("escape on the diagram raised the discard question")
+	}
+
+	// The other two choosers have nothing to draw, so space on them does
+	// nothing rather than opening an empty board.
+	for _, field := range []int{skillFieldElement, skillFieldTarget} {
+		m = skillFormTo(t, m, field)
+		m = key(t, m, "space")
+		if m.skills.shapeDrawn {
+			t.Errorf("space on field %d opened the shape diagram", field)
+		}
+	}
+	_ = lib
+}
+
+// TestTheShapeDiagramFitsTheSmallestWindow is why it is a sub-screen: the board
+// alone is eight lines and the form it would have gone under spends nineteen of
+// its twenty.
+func TestTheShapeDiagramFitsTheSmallestWindow(t *testing.T) {
+	const drawable = minWidth - 1
+	for _, lang := range i18n.Langs() {
+		base, lib, _ := start(t, lang)
+		base.width, base.height = minWidth, minHeight
+		for _, name := range lib.PatternNames() {
+			m := base.enter(screenSkills)
+			m.skills.adding = true
+			m.skills.field = skillFieldShape
+			m.skills.shapeIndex = indexOf(lib.PatternNames(), name)
+			m.skills.shapeDrawn = true
+			drawn := m.View()
+			if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
+				strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
+				t.Errorf("the %s diagram for %s is truncated at %dx%d:\n%s",
+					lang, name, minWidth, minHeight, drawn)
+			}
+			body, footer := m.skills.view(m)
+			for _, line := range append(strings.Split(body, "\n"), footer) {
+				if width := lipgloss.Width(line); width > drawable {
+					t.Errorf("the %s diagram for %s draws %d cells, over the %d it has:\n%s",
+						lang, name, width, drawable, line)
+				}
+			}
+		}
+	}
+}
+
+// TestTheStatusFieldIsPickedRatherThanRemembered is item five: the field takes
+// "status:chance" in parts per thousand and nothing on screen said so, so the
+// statuses are chosen out of the book and the syntax is written for the author.
+//
+// The property that matters is not that a picker exists but that what it writes
+// parses: forge.ParseApplications is the only parser and it has to accept what
+// the screen produced, or the shortcut has produced a field the write refuses.
+func TestTheStatusFieldIsPickedRatherThanRemembered(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	m = m.enter(screenSkills)
+	m = typeText(t, m, "a")
+	m = skillFormTo(t, m, skillFieldInflicts)
+	m = key(t, m, "space")
+	if m.picker == nil {
+		t.Fatal("space on the inflicts field did not open the status list")
+	}
+	// Every declared status is offered, in the book's own order.
+	offered := make([]string, 0, len(m.picker.options))
+	for _, option := range m.picker.options {
+		offered = append(offered, option.id)
+	}
+	if !slices.Equal(offered, lib.StatusIDs()) {
+		t.Errorf("the picker offers %v, want the status book's %v", offered, lib.StatusIDs())
+	}
+
+	// Pick a poison, type a chance, done.
+	m = pickTo(t, m, "poison")
+	m = key(t, m, "space")
+	m = typeText(t, m, "300")
+	m = key(t, m, "enter")
+	if m.picker != nil {
+		t.Fatal("enter did not close the picker")
+	}
+	if m.skills.err != nil {
+		t.Fatalf("the picker's answer was refused: %v", m.skills.err)
+	}
+	written := m.skills.inputs[skillFieldInflicts].Value()
+	if written != "poison:300" {
+		t.Errorf("the field holds %q, want %q", written, "poison:300")
+	}
+	// The parser accepts it, which is the whole point.
+	applications, err := lib.ParseApplications(written)
+	if err != nil {
+		t.Fatalf("what the picker wrote does not parse: %v", err)
+	}
+	if len(applications) != 1 || applications[0].Status != "poison" ||
+		applications[0].Chance != 300 {
+		t.Errorf("the entry parsed as %+v, want one poison at 300", applications)
+	}
+
+	// A second trip appends rather than replacing, so two statuses at two
+	// chances is two trips — which is what one chance for a batch costs.
+	m = key(t, m, "space")
+	m = pickTo(t, m, "blind")
+	m = key(t, m, "space")
+	m = typeText(t, m, "500")
+	m = key(t, m, "enter")
+	if got, want := m.skills.inputs[skillFieldInflicts].Value(), "poison:300,blind:500"; got != want {
+		t.Errorf("the second trip left the field %q, want %q", got, want)
+	}
+	if _, err := lib.ParseApplications(m.skills.inputs[skillFieldInflicts].Value()); err != nil {
+		t.Fatalf("the appended list does not parse: %v", err)
+	}
+
+	// And the skill that comes out of the form really carries them.
+	m = skillFormTo(t, m, skillFieldPower)
+	m = typeText(t, m, "800")
+	m = skillFormTo(t, m, skillFieldAccuracy)
+	m = typeText(t, m, "900")
+	m = skillFormTo(t, m, skillFieldID)
+	m = typeText(t, m, "hex_bite")
+	built, err := m.skills.draft(m).Resolve(m.lib)
+	if err != nil {
+		t.Fatalf("the draft does not resolve: %v", err)
+	}
+	if len(built.Applies) != 2 {
+		t.Fatalf("the skill inflicts %+v, want two statuses", built.Applies)
+	}
+	if built.Applies[0].Status != "poison" || built.Applies[0].Chance != 300 ||
+		built.Applies[1].Status != "blind" || built.Applies[1].Chance != 500 {
+		t.Errorf("the skill inflicts %+v, want poison at 300 and blind at 500", built.Applies)
+	}
+}
+
+// TestTheChanceFieldTakesDigitsAndDefaultsToCertain covers the two ways the
+// chance is answered and the one way it cannot be.
+//
+// The default is a placeholder rather than a value, and that is the fix for a
+// real fault: a four-digit default in a field limited to four characters refuses
+// the next keystroke, so the first thing an author had to do was delete an answer
+// they never gave.
+func TestTheChanceFieldTakesDigitsAndDefaultsToCertain(t *testing.T) {
+	m, lib, _ := start(t, i18n.En)
+	m = m.enter(screenSkills)
+	m = typeText(t, m, "a")
+	m = skillFormTo(t, m, skillFieldInflicts)
+
+	// Nothing typed: the default is written, and it is on screen as the
+	// placeholder before enter is pressed.
+	m = key(t, m, "space")
+	if got := m.picker.typed.Value(); got != "" {
+		t.Errorf("the chance field opens holding %q, want it empty so typing works", got)
+	}
+	if got := m.picker.typed.Placeholder; got != forge.DefaultApplicationChance {
+		t.Errorf("the chance field shows %q as its default, want %q",
+			got, forge.DefaultApplicationChance)
+	}
+	body, _ := m.picker.view(m)
+	if !strings.Contains(body, forge.DefaultApplicationChance) {
+		t.Errorf("the default chance is not on screen:\n%s", body)
+	}
+	m = pickTo(t, m, "block")
+	m = key(t, m, "space")
+	m = key(t, m, "enter")
+	if got, want := m.skills.inputs[skillFieldInflicts].Value(),
+		"block:"+forge.DefaultApplicationChance; got != want {
+		t.Errorf("enter with nothing typed wrote %q, want %q", got, want)
+	}
+
+	// Letters are refused by the field, and the movement keys stay movement:
+	// k and j are how a picker's cursor moves, so they must not become text.
+	m.skills.inputs[skillFieldInflicts].SetValue("")
+	m = key(t, m, "space")
+	before := m.picker.cursor
+	m = typeText(t, m, "j")
+	if m.picker.cursor == before {
+		t.Error("j did not move the picker's cursor, so it was typed into the field")
+	}
+	m = typeText(t, m, "abc")
+	if got := m.picker.typed.Value(); got != "" {
+		t.Errorf("the chance field took %q, want digits only", got)
+	}
+	m = typeText(t, m, "7")
+	if got := m.picker.typed.Value(); got != "7" {
+		t.Errorf("the chance field holds %q after a digit, want %q", got, "7")
+	}
+
+	// Escape throws the trip away, including the chance.
+	m = key(t, m, "esc")
+	if m.picker != nil {
+		t.Fatal("escape did not close the picker")
+	}
+	if got := m.skills.inputs[skillFieldInflicts].Value(); got != "" {
+		t.Errorf("escape still wrote %q", got)
+	}
+	_ = lib
+}
+
+// TestTypingTheStatusSyntaxProducesWhatThePickerDoes is the rule the picker must
+// not break: the field is the record, and a script writes the same thing by hand.
+func TestTypingTheStatusSyntaxProducesWhatThePickerDoes(t *testing.T) {
+	// Two models built from scratch rather than one forked in two. A model holds
+	// its text fields in a slice, so two copies of one model write into the same
+	// fields — which is harmless in the program, where there is one model, and a
+	// silent wrong answer in a test that compares two paths.
+	openForm := func() model {
+		m, _, _ := start(t, i18n.Vi)
+		m = m.enter(screenSkills)
+		m = typeText(t, m, "a")
+		m = typeText(t, m, "oath")
+		m = skillFormTo(t, m, skillFieldPower)
+		m = typeText(t, m, "800")
+		m = skillFormTo(t, m, skillFieldAccuracy)
+		m = typeText(t, m, "900")
+		return skillFormTo(t, m, skillFieldInflicts)
+	}
+	byHand := typeText(t, openForm(), "poison:300")
+
+	byPicker := key(t, openForm(), "space")
+	byPicker = pickTo(t, byPicker, "poison")
+	byPicker = key(t, byPicker, "space")
+	byPicker = typeText(t, byPicker, "300")
+	byPicker = key(t, byPicker, "enter")
+
+	fromHand, err := byHand.skills.draft(byHand).Resolve(byHand.lib)
+	if err != nil {
+		t.Fatalf("the typed draft does not resolve: %v", err)
+	}
+	fromPicker, err := byPicker.skills.draft(byPicker).Resolve(byPicker.lib)
+	if err != nil {
+		t.Fatalf("the picked draft does not resolve: %v", err)
+	}
+	if !reflect.DeepEqual(fromHand, fromPicker) {
+		t.Errorf("typing and picking produced different skills:\ntyped:  %+v\npicked: %+v",
+			fromHand, fromPicker)
+	}
+}
+
+// TestTheStatusPickerFitsTheSmallestWindow is the layout, measured the way the
+// other sub-screens are: the field it carries costs two lines the other four
+// pickers do not spend, and the status book is twelve rows.
+func TestTheStatusPickerFitsTheSmallestWindow(t *testing.T) {
+	const drawable = minWidth - 1
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m.width, m.height = minWidth, minHeight
+		m = m.enter(screenSkills)
+		m.skills.adding = true
+		m.skills.field = skillFieldInflicts
+		m = m.openStatuses()
+		// Something chosen and something typed, which is the busiest it gets.
+		m = pickTo(t, m, "poison")
+		m = key(t, m, "space")
+		m = typeText(t, m, "300")
+		drawn := m.View()
+		if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
+			strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
+			t.Errorf("the %s status picker is truncated at %dx%d:\n%s",
+				lang, minWidth, minHeight, drawn)
+		}
+		body, footer := m.picker.view(m)
+		for _, line := range append(strings.Split(body, "\n"), footer) {
+			if width := lipgloss.Width(line); width > drawable {
+				t.Errorf("the %s status picker draws %d cells, over the %d it has:\n%s",
+					lang, width, drawable, line)
+			}
+		}
+		// The chance row and its reading are both really on screen.
+		if !strings.Contains(body, lang.Text(i18n.PickerChance)) {
+			t.Errorf("the %s picker does not name the chance field:\n%s", lang, body)
+		}
+		if !strings.Contains(body, forge.Percent(300)) {
+			t.Errorf("the %s picker does not read the chance back as a percentage:\n%s",
+				lang, body)
+		}
+	}
+}
+
+// TestTheCharacterAllowlistNarrowsByOrigin is item six: the list of characters
+// grows with the cast, so it gets a filter, and the filter is the cast browser's
+// — same key, same cycle, same axis — rather than a second interaction for the
+// same job.
+func TestTheCharacterAllowlistNarrowsByOrigin(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	m = m.enter(screenSkills)
+	m = typeText(t, m, "a")
+	m = skillFormTo(t, m, skillFieldKeptForCharacters)
+	m = key(t, m, "space")
+	if m.picker == nil {
+		t.Fatal("space on the character allowlist did not open the list")
+	}
+	if got, want := len(m.picker.visible()), len(lib.CharacterIDs()); got != want {
+		t.Fatalf("the picker opens showing %d of %d characters, want all of them", got, want)
+	}
+	if !slices.Equal(m.picker.groups, lib.OriginIDs()) {
+		t.Errorf("the filter cycles %v, want the catalogued works %v",
+			m.picker.groups, lib.OriginIDs())
+	}
+
+	// Choose somebody before filtering, so the filter can be shown not to lose
+	// an answer.
+	first := m.picker.visible()[0].id
+	m = key(t, m, "space")
+
+	// f narrows to one work, and the rows really are that work's.
+	seen := make(map[string]int, len(m.picker.groups))
+	for range len(m.picker.groups) {
+		m = typeText(t, m, "f")
+		group := m.picker.group()
+		if group == "" {
+			t.Fatalf("stepping the filter landed back on everything too early")
+		}
+		for _, row := range m.picker.visible() {
+			character, known := lib.Characters().Get(row.id)
+			if !known {
+				t.Fatalf("the picker offers %q, which the cast book does not hold", row.id)
+			}
+			if character.Origin != group {
+				t.Errorf("filtering by %q left %q, which is from %q",
+					group, row.id, character.Origin)
+			}
+		}
+		seen[group] = len(m.picker.visible())
+		// Whatever was chosen stays chosen, whether the filter shows it or not:
+		// narrowing is a way to find a row, never a way to lose one.
+		if !slices.Contains(m.picker.chosen, first) {
+			t.Errorf("filtering by %q dropped %q from the answer: %v",
+				group, first, m.picker.chosen)
+		}
+	}
+	// One more step wraps back to everything, exactly as the browser's does.
+	m = typeText(t, m, "f")
+	if got := m.picker.group(); got != "" {
+		t.Errorf("the filter wrapped to %q, want everything", got)
+	}
+	if got, want := len(m.picker.visible()), len(lib.CharacterIDs()); got != want {
+		t.Errorf("wrapping around shows %d of %d characters", got, want)
+	}
+	// The filtered counts add up to the whole list, so nothing was hidden from
+	// every group at once.
+	total := 0
+	for _, count := range seen {
+		total += count
+	}
+	if total != len(lib.CharacterIDs()) {
+		t.Errorf("the works account for %d characters of %d", total, len(lib.CharacterIDs()))
+	}
+
+	// And the answer survives the trip.
+	m = key(t, m, "enter")
+	if !slices.Contains(m.skills.keptWho, first) {
+		t.Errorf("the allowlist came back as %v, want it to hold %q", m.skills.keptWho, first)
+	}
+}
+
+// TestOnlyTheCharacterListHasAFilter keeps f a letter nothing listens for on the
+// pickers with nothing to narrow — eleven elements and five role presets are
+// fixed lists, and a key that sometimes does nothing is worse than one that never
+// appears.
+func TestOnlyTheCharacterListHasAFilter(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	m = m.enter(screenSkills)
+	m = typeText(t, m, "a")
+	for _, field := range []int{skillFieldKeptForElements, skillFieldKeptForRoles} {
+		m = skillFormTo(t, m, field)
+		m = key(t, m, "space")
+		if m.picker == nil {
+			t.Fatalf("space on field %d did not open a list", field)
+		}
+		if len(m.picker.groups) != 0 {
+			t.Errorf("field %d's picker carries a filter: %v", field, m.picker.groups)
+		}
+		before := len(m.picker.visible())
+		m = typeText(t, m, "f")
+		if got := len(m.picker.visible()); got != before {
+			t.Errorf("f narrowed field %d's list from %d to %d", field, before, got)
+		}
+		if got := m.picker.footer; got != i18n.PickerFooter {
+			t.Errorf("field %d's picker offers a filter key in its footer", field)
+		}
+		m = key(t, m, "esc")
+	}
+	// The kit picker on the other form is the fourth without one, and the status
+	// picker the fifth.
+	kit := m.enter(screenNew).openKit()
+	if len(kit.picker.groups) != 0 {
+		t.Errorf("the kit picker carries a filter: %v", kit.picker.groups)
+	}
+}
+
+// TestAWorkWithNoCastSaysSo covers the state the filter can reach that the list
+// cannot: every work is catalogued whether or not anybody has been borrowed from
+// it, so a filter can land on an empty one.
+func TestAWorkWithNoCastSaysSo(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, lib, _ := start(t, lang)
+		m.width, m.height = minWidth, minHeight
+		m = m.enter(screenSkills)
+		m.skills.adding = true
+		m.skills.field = skillFieldKeptForCharacters
+		m = m.openAllowlist(skillFieldKeptForCharacters)
+
+		empty := ""
+		for _, origin := range lib.OriginIDs() {
+			used := false
+			for _, character := range lib.Characters().All() {
+				if character.Origin == origin {
+					used = true
+					break
+				}
+			}
+			if !used {
+				empty = origin
+				break
+			}
+		}
+		if empty == "" {
+			t.Skip("every catalogued work has a character, so this state is unreachable")
+		}
+		for m.picker.group() != empty {
+			m = typeText(t, m, "f")
+		}
+		body, _ := m.picker.view(m)
+		if !strings.Contains(body, lang.Text(i18n.PickerNothingInGroup)) {
+			t.Errorf("the %s picker says nothing about an empty work:\n%s", lang, body)
+		}
+		// Space on nothing does nothing rather than reaching past the end of the
+		// list.
+		before := append([]string(nil), m.picker.chosen...)
+		m = key(t, m, "space")
+		if !slices.Equal(m.picker.chosen, before) {
+			t.Errorf("space on an empty list chose %v", m.picker.chosen)
+		}
+		if strings.Contains(m.View(), lang.Text(i18n.Truncated)) {
+			t.Errorf("the %s filtered picker is truncated at %dx%d:\n%s",
+				lang, minWidth, minHeight, m.View())
+		}
+	}
+}
+
+// TestTheFormAuthorsASkillsVietnameseName is item seven from the front: the name
+// used to be a compiled table, so it could not be authored by the tool that
+// authors the skill, and now it is a field on the declaration.
+//
+// The end of the chain is what is asserted: a name typed on the form reaches the
+// file, comes back out of it, and is what the listing draws in the column that
+// used to be fed by the table.
+func TestTheFormAuthorsASkillsVietnameseName(t *testing.T) {
+	m, lib, dir := start(t, i18n.Vi)
+	m = m.enter(screenSkills)
+	m = typeText(t, m, "a")
+	m = typeText(t, m, "tidal_hymn")
+	m = skillFormTo(t, m, skillFieldName)
+	m = typeText(t, m, "khúc thủy triều")
+	m = skillFormTo(t, m, skillFieldPower)
+	m = typeText(t, m, "800")
+	m = skillFormTo(t, m, skillFieldAccuracy)
+	m = typeText(t, m, "900")
+
+	// The name is the second field, where it is authored, and the row is called
+	// what the listing's own column is called.
+	if got, want := skillFieldName, skillFieldID+1; got != want {
+		t.Errorf("the name is field %d, want it straight after the id at %d", got, want)
+	}
+	if got, want := skillFieldLabel(m, skillFieldName), m.text(i18n.ColumnGloss); got != want {
+		t.Errorf("the name row is called %q and the listing's column %q", got, want)
+	}
+
+	m = key(t, m, "ctrl+s")
+	if m.skills.err != nil {
+		t.Fatalf("the write was refused: %v", m.skills.err)
+	}
+	written, err := m.lib.Skills().Lookup("tidal_hymn")
+	if err != nil {
+		t.Fatalf("the library does not hold the written skill: %v", err)
+	}
+	if got, want := written.Name, "khúc thủy triều"; got != want {
+		t.Errorf("the written skill is named %q, want %q", got, want)
+	}
+	// Off the disk, because the file is where a name now lives.
+	reloaded, err := forge.Load(dir)
+	if err != nil {
+		t.Fatalf("reload: %v", err)
+	}
+	fromFile, err := reloaded.Skills().Lookup("tidal_hymn")
+	if err != nil {
+		t.Fatalf("the file does not hold the written skill: %v", err)
+	}
+	if fromFile.Name != written.Name {
+		t.Errorf("the trip through the file left the name %q, want %q",
+			fromFile.Name, written.Name)
+	}
+	// And it is what the listing draws, in the column the compiled table used to
+	// be the only source for.
+	listing := m.enter(screenSkills)
+	listing.skills = listing.skills.refresh(m.lib)
+	body, _ := listing.skills.view(listing)
+	if !strings.Contains(body, "khúc thủy triều") {
+		t.Errorf("the listing does not show the authored name:\n%s", body)
+	}
+	_ = lib
+}
+
+// TestAnAuthoredNameOverridesTheCompiledOneOnScreen is the precedence rule where
+// an author sees it: editing a shipped skill's name replaces what the compiled
+// table says for it, rather than fighting it.
+func TestAnAuthoredNameOverridesTheCompiledOneOnScreen(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	m = m.enter(screenSkills)
+	m = skillListTo(t, m, "strike")
+	compiled := i18n.Vi.SkillName(m.skills.skills[m.skills.cursor])
+	if compiled == "" {
+		t.Fatal("strike has no compiled name, so this measures nothing")
+	}
+
+	m = typeText(t, m, "e")
+	if m.skills.editing != "strike" {
+		t.Fatalf("e opened the form on %q, want strike", m.skills.editing)
+	}
+	// The form opens holding the skill's *authored* name, which is empty for a
+	// shipped skill: prefilling the compiled one would turn opening the form
+	// into a write that moved a name out of Go and into the data file.
+	if got := m.skills.inputs[skillFieldName].Value(); got != "" {
+		t.Errorf("the name field opened holding %q, want it empty for a shipped skill", got)
+	}
+	m = skillFormTo(t, m, skillFieldName)
+	m = typeText(t, m, "cú đánh")
+	m = key(t, m, "ctrl+s")
+	if m.skills.err != nil {
+		t.Fatalf("the edit was refused: %v", m.skills.err)
+	}
+
+	edited, err := m.lib.Skills().Lookup("strike")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if got, want := i18n.Vi.SkillName(edited), "cú đánh"; got != want {
+		t.Errorf("the skill now reads %q, want the authored %q", got, want)
+	}
+	if i18n.Vi.SkillName(edited) == compiled {
+		t.Error("the compiled name won over the authored one")
+	}
+	body, _ := m.skills.view(m)
+	if !strings.Contains(body, "cú đánh") {
+		t.Errorf("the listing still shows the compiled name:\n%s", body)
+	}
+	if strings.Contains(body, compiled) {
+		t.Errorf("the listing shows both names at once:\n%s", body)
 	}
 }

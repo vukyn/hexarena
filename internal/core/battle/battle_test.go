@@ -1,6 +1,8 @@
 package battle_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -34,7 +36,8 @@ func books(t *testing.T) battle.Books {
 	  "max_targets": 3, "splash_power": 500,
 	  "patterns": [
 	    {"name": "single", "splash": []},
-	    {"name": "column", "splash": [["up"], ["down"]]}
+	    {"name": "column", "splash": [["up"], ["down"]]},
+	    {"name": "wedge_left", "splash": [["upper_left"], ["lower_left"]]}
 	  ]
 	}`))
 	if err != nil {
@@ -90,7 +93,12 @@ func books(t *testing.T) battle.Books {
 	   "self_applies":[{"status":"haste","chance":1000}]},
 	  {"id":"mend","element":"neutral","range":1,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"ally",
-	   "strips":{"categories":["dot","stat_debuff","control"],"stacks":3}}
+	   "strips":{"categories":["dot","stat_debuff","control"],"stacks":3}},
+	  {"id":"quake","element":"neutral","range":2,"pattern":"wedge_left",
+	   "power":500,"strikes":1,"accuracy":1000,"cooldown":0,"target":"all"},
+	  {"id":"anthem","element":"neutral","range":2,"pattern":"wedge_left",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"all",
+	   "applies":[{"status":"haste","chance":1000}]}
 	]}`), skill.Deps{Patterns: patterns, Statuses: statuses})
 	if err != nil {
 		t.Fatalf("skills: %v", err)
@@ -841,4 +849,255 @@ func TestNewRefusesASkillKeptForAnotherElement(t *testing.T) {
 	if _, err := battle.New(shared, 1, roster("grass")); err != nil {
 		t.Fatalf("a grass unit was refused a skill kept for grass: %v", err)
 	}
+}
+
+// TestASkillAimedAtBothSidesReachesBoth is the engine half of the "all" target
+// side, which is what makes the chooser's fourth option mean anything.
+//
+// Three things are asserted together because they are one change: the legal aims
+// admit a cell on either half, the shape spreads across the midline instead of
+// stopping at it, and what is caught on the caster's own half really is hurt.
+// That last one is the point of the value rather than a flaw in it — a skill that
+// says it hits everybody and quietly spares your own squad is worse than no
+// skill.
+func TestASkillAimedAtBothSidesReachesBoth(t *testing.T) {
+	// The ally holds the area skill aimed at both halves; the foe holds a jab so
+	// the fight is a fight.
+	fight := duel(t, []string{"quake"}, []string{"jab"}, 120, 100)
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "a" {
+		t.Fatalf("the faster unit is %q, want the one holding the area skill", prompt.Unit)
+	}
+	if len(prompt.Options) != 1 {
+		t.Fatalf("the caster was offered %d options, want the one skill", len(prompt.Options))
+	}
+	// Both occupied cells are legal aims: the foe's, and the caster's own.
+	// hex.Cells is column-major, so the caster's own column comes first.
+	want := []hex.Offset{{Col: 2, Row: 1}, {Col: 3, Row: 1}}
+	if got := prompt.Options[0].Aims; !equalCells(got, want) {
+		t.Errorf("an all-sided skill may be aimed at %v, want %v", got, want)
+	}
+
+	// Aimed at the foe, and the shape's two left-hand cells land back on the
+	// caster's own half — where Targets would have dropped them.
+	if err := fight.Act("quake", hex.Offset{Col: 3, Row: 1}); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+	events := fight.Drain()
+	hurt := make(map[string]int64)
+	for _, event := range find(events, battle.Damaged) {
+		hurt[event.Target] += event.Amount
+	}
+	if hurt["f"] == 0 {
+		t.Error("the skill did not hurt the unit it was aimed at")
+	}
+	if hurt["a"] == 0 {
+		t.Error("the skill spared the caster's own half, so it did not cross the midline")
+	}
+	// The primary takes the whole power and a splash cell the book's share, so
+	// the caster — caught by the splash — takes less than the aim.
+	if hurt["a"] >= hurt["f"] {
+		t.Errorf("the splash cell took %d against the aim's %d, want less", hurt["a"], hurt["f"])
+	}
+	// And the cap still holds: the shape covers three cells at most, whichever
+	// side they are on.
+	if targets := len(find(events, battle.Damaged)); targets > 3 {
+		t.Errorf("the shape struck %d cells, over the book's limit of 3", targets)
+	}
+}
+
+// TestTheOtherSidesStillStopAtTheMidline is the other half of the same change:
+// admitting one skill across the line must not move any other skill's bounds.
+func TestTheOtherSidesStillStopAtTheMidline(t *testing.T) {
+	fight := duel(t, []string{"strike", "mend", "brace"}, []string{"jab"}, 120, 100)
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	wanted := map[string][]hex.Offset{
+		// Aimed at the enemy: only the far half.
+		"strike": {{Col: 3, Row: 1}},
+		// Aimed at an ally: only the near half, the caster included.
+		"mend": {{Col: 2, Row: 1}},
+		// Aimed at itself: its own cell and nothing else.
+		"brace": {{Col: 2, Row: 1}},
+	}
+	for _, option := range prompt.Options {
+		want, known := wanted[option.Skill]
+		if !known {
+			t.Fatalf("the caster was offered %q, which this test does not know", option.Skill)
+		}
+		if !equalCells(option.Aims, want) {
+			t.Errorf("%s may be aimed at %v, want %v", option.Skill, option.Aims, want)
+		}
+	}
+}
+
+// TestSuggestLeavesAnAllSidedAttackAlone records what the shallow opponent does
+// with the new value, which is nothing.
+//
+// Suggest rates a skill only if it is aimed at the enemy, so a damaging skill
+// aimed at both halves is skipped outright — it is not chosen and not rated. It
+// is not a fallback either, because that is only for a skill with no power at
+// all. So the opponent will not bomb its own squad, and it will not use the skill
+// at any other time either: an all-sided attack is dead weight to the AI and a
+// player's tool.
+//
+// That is a finding rather than a design, and it is pinned here so it cannot
+// change by accident. A deeper opponent — see README's roadmap — has to weigh
+// what it would do to its own side, and battle.expected deliberately skips a
+// unit on the caster's side rather than subtracting it, so relaxing this guard
+// alone would produce exactly the opponent that bombs its own team and calls it
+// a gain.
+func TestSuggestLeavesAnAllSidedAttackAlone(t *testing.T) {
+	// The area skill is worth eight times the jab, so anything that rated it
+	// would take it.
+	fight := duel(t, []string{"quake", "jab"}, []string{"jab"}, 120, 100)
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	choice, ok := fight.Suggest(prompt)
+	if !ok {
+		t.Fatal("Suggest offered nothing at all")
+	}
+	if choice.Skill != "jab" {
+		t.Errorf("Suggest picked %q, want the enemy-aimed jab: a damaging all-sided "+
+			"skill is skipped, not rated", choice.Skill)
+	}
+
+	// A skill with no power is a different case and does get used, because the
+	// fallback does not ask which side it aims at — which is what a
+	// battlefield-wide buff or cleanse needs.
+	quiet := duel(t, []string{"anthem"}, []string{"jab"}, 120, 100)
+	prompt, err = quiet.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	choice, ok = quiet.Suggest(prompt)
+	if !ok || choice.Skill != "anthem" {
+		t.Errorf("Suggest picked %q (offered: %v), want the all-sided buff",
+			choice.Skill, ok)
+	}
+}
+
+func equalCells(got, want []hex.Offset) bool {
+	if len(got) != len(want) {
+		return false
+	}
+	for i := range got {
+		if got[i] != want[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// TestASkillNameReachesNoDecision is the layer rule that lets a skill carry a
+// display name at all, and it is measured as behaviour rather than by grepping
+// for the field.
+//
+// A skill's name is text for a screen. If any rule ever read it, internal/core
+// would be deciding something about a language, and a battle would stop being a
+// pure function of its integer arguments in the way that is hardest to see. So
+// the same seed and the same roster are played out twice over two books that
+// differ in nothing but every skill's name, and the two event logs have to be
+// identical event for event — which also covers the log, since a name that
+// reached one would show up here.
+func TestASkillNameReachesNoDecision(t *testing.T) {
+	roster := []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 110),
+			Skills: []string{"strike", "envenom", "clout", "brace"}},
+		{ID: "b", Side: hex.SideAlly, Slot: hex.Offset{Col: 1, Row: 0},
+			Affinity: single("grass"), Stats: stats(2600, 700, 300, 95),
+			Skills: []string{"thorn", "mend", "quake"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("fire"), Stats: stats(3000, 800, 400, 100),
+			Skills: []string{"scorch", "pop", "daze"}},
+		{ID: "g", Side: hex.SideEnemy, Slot: hex.Offset{Col: 1, Row: 2},
+			Affinity: single("neutral"), Stats: stats(2400, 650, 350, 105),
+			Skills: []string{"triple", "sap", "dash"}},
+	}
+	play := func(t *testing.T, deck battle.Books) []battle.Event {
+		t.Helper()
+		fight, err := battle.New(deck, 31, roster)
+		if err != nil {
+			t.Fatalf("new battle: %v", err)
+		}
+		if _, err := fight.RunToEnd(400); err != nil {
+			t.Fatalf("run: %v", err)
+		}
+		return fight.Drain()
+	}
+
+	plain := books(t)
+	named := books(t)
+	named.Skills = withNames(t, named)
+
+	// The names really are there, or this measures two identical books.
+	changed := 0
+	for _, one := range named.Skills.Skills() {
+		before, err := plain.Skills.Lookup(one.ID)
+		if err != nil {
+			t.Fatalf("lookup %s: %v", one.ID, err)
+		}
+		if before.Name != "" {
+			t.Fatalf("%s already had a name, so this measures nothing", one.ID)
+		}
+		if one.Name == "" {
+			t.Fatalf("%s was not given a name", one.ID)
+		}
+		changed++
+	}
+	if changed == 0 {
+		t.Fatal("no skill was renamed")
+	}
+
+	without, with := play(t, plain), play(t, named)
+	if len(without) != len(with) {
+		t.Fatalf("naming the skills changed the battle's length: %d events against %d",
+			len(with), len(without))
+	}
+	for i := range without {
+		if without[i] != with[i] {
+			t.Fatalf("event %d differs once the skills are named:\n%+v\n%+v",
+				i, without[i], with[i])
+		}
+	}
+}
+
+// withNames is the book it is given with a display name added to every skill,
+// built by rewriting the book's own marshalled form so that nothing but the name
+// can differ.
+func withNames(t *testing.T, deck battle.Books) *skill.Book {
+	t.Helper()
+	raw, err := deck.Skills.Marshal()
+	if err != nil {
+		t.Fatalf("marshal the skill book: %v", err)
+	}
+	var file struct {
+		Skills []map[string]any `json:"skills"`
+	}
+	if err := json.Unmarshal(raw, &file); err != nil {
+		t.Fatalf("decode the skill book: %v", err)
+	}
+	for i, declared := range file.Skills {
+		// Vietnamese, because that is what these names really are, and because a
+		// multi-byte name is the one a naive comparison somewhere would trip on.
+		declared["name"] = fmt.Sprintf("chiêu số %d", i+1)
+	}
+	grown, err := json.Marshal(file)
+	if err != nil {
+		t.Fatalf("encode the skill book: %v", err)
+	}
+	book, err := skill.ParseBook(grown,
+		skill.Deps{Patterns: deck.Patterns, Statuses: deck.Statuses})
+	if err != nil {
+		t.Fatalf("the named book does not load: %v", err)
+	}
+	return book
 }

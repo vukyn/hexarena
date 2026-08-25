@@ -177,7 +177,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// inline is five brackets on one row, which does not fit. Nothing is drawn
 	// at all when there is nothing to say — in English, or for a kit of skills
 	// the table has no names for — rather than an empty row under a full one.
-	if glossed := m.lang.GlossedKit(character.Skills); glossed != "" {
+	if glossed := m.lang.GlossedKit(m.lib.KitSkills(character.Skills)); glossed != "" {
 		out.WriteString(m.continued("%s", m.style.dim.Render(glossed)))
 	}
 	art := character.Image

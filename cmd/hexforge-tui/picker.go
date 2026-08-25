@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
@@ -33,14 +34,36 @@ import (
 // the cursor together already say where you are, and a page boundary is one more
 // thing to learn.
 //
-// # Why one picker for four different lists
+// # Why one picker for five different lists
 //
 // The kit is chosen from the skill book; a restriction's three allowlists are
-// chosen from the element, archetype and cast books. All four are "pick several
-// from a list, keep the order", and one implementation is one set of keys to
-// learn. What differs is only how a row's detail reads, which is what pickKind
-// selects, and the detail is worded at draw time rather than stored — a stored
-// sentence would still be in the old language after ctrl+l.
+// chosen from the element, archetype and cast books; and what a skill inflicts is
+// chosen from the status book. All five are "pick several from a list, keep the
+// order", and one implementation is one set of keys to learn. What differs is
+// only how a row's detail reads, which is what pickKind selects, and the detail
+// is worded at draw time rather than stored — a stored sentence would still be in
+// the old language after ctrl+l.
+//
+// Two of the five carry something more, and each earns it. The statuses collect a
+// chance beside the list, because a status is an id *and* a number. The
+// characters carry a filter, and the reason is not only that the list grows —
+// the skill book grows too — but that a character has an obvious axis to narrow
+// by and the cast browser already narrows by it. A filter needs somewhere to come
+// from; the skill book has no equally natural grouping, so the kit picker scrolls
+// and does not filter.
+//
+// # Why one of the five collects a number as well
+//
+// A status is not an id. The field it goes into takes "status:chance" in parts
+// per thousand, so a picker that handed back ids alone would leave the author
+// back in a text field remembering a syntax — which is the complaint the picker
+// was raised to answer. So the status picker carries one text field under its
+// list, and enter applies both halves.
+//
+// One chance for everything picked, which is a limit rather than an oversight: a
+// chance per row would be a form inside a list. Two statuses at two chances is
+// two trips, or one trip and an edit — the field is still a text field and
+// forge.ParseApplications is still the only parser.
 
 // pickKind is what a picker is choosing.
 type pickKind int
@@ -53,6 +76,10 @@ const (
 	pickElements
 	pickArchetypes
 	pickCharacters
+	// pickStatuses is what a skill inflicts, whose rows carry each status's own
+	// facts — how long it lasts, how far it stacks, whether it ticks — because
+	// choosing between "mire" and "expose" on the ids alone is not choosing.
+	pickStatuses
 )
 
 // pickOption is one row: an id, and why the carrier may not take it.
@@ -64,26 +91,167 @@ const (
 type pickOption struct {
 	id      string
 	refusal error
+	// group is what a filter narrows the list by, empty for a picker with none.
+	//
+	// One string per row rather than a predicate per filter, because the only
+	// thing a filter has to do here is answer "is this row in the group in
+	// front" — and a row carrying its own group means the filtering is the same
+	// code whatever the group turns out to be.
+	group string
+}
+
+// pickAnswer is what a picker hands back: what was chosen, and the one thing
+// that was typed beside the list.
+//
+// A struct rather than two parameters so that the pickers with nothing to
+// type are not written as though they had ignored something — and so that a
+// sixth picker needing a second answer does not change four call sites.
+type pickAnswer struct {
+	// Chosen is in the order it was picked, because for a kit that order *is*
+	// the kit.
+	Chosen []string
+	// Typed is the extra field's answer, empty for a picker that has none.
+	Typed string
 }
 
 // pickState is a picker while it is open.
 type pickState struct {
 	title   i18n.Key
+	hint    i18n.Key
+	footer  i18n.Key
 	kind    pickKind
 	options []pickOption
 	// chosen is the answer, in the order it was chosen, because for a kit that
 	// order *is* the kit.
 	chosen []string
 	cursor int
+	// typed is the one answer collected beside the list, and label names it.
+	// Both are absent for the pickers that choose ids and nothing else.
+	typed *textinput.Model
+	label i18n.Key
+	// groups are the values f narrows the list by, and filter indexes them from
+	// one — zero is the filter that hides nothing, exactly as the cast browser's
+	// own filter is numbered, and for the same reason: its name is a translated
+	// word while every entry in the list is an id that reads the same in either
+	// language.
+	//
+	// Empty for a picker with nothing to narrow. The list a filter is worth
+	// having on is the one that grows with the cast, which is the characters.
+	groups []string
+	filter int
 	// apply hands the answer back to whoever raised the picker.
-	apply func(model, []string) model
+	apply func(model, pickAnswer) model
+}
+
+// visible is the rows the filter in force leaves on screen.
+//
+// Everything chosen stays chosen, whether or not the filter shows it: the
+// summary under the list is the whole answer and it is drawn from chosen rather
+// than from this, so narrowing the list is a way to find a row and never a way
+// to lose one.
+func (p *pickState) visible() []pickOption {
+	wanted := p.group()
+	if wanted == "" {
+		return p.options
+	}
+	out := make([]pickOption, 0, len(p.options))
+	for _, option := range p.options {
+		if option.group == wanted {
+			out = append(out, option)
+		}
+	}
+	return out
+}
+
+// group is the value in force, or empty when every row is shown.
+func (p *pickState) group() string {
+	if p.filter <= 0 || p.filter > len(p.groups) {
+		return ""
+	}
+	return p.groups[p.filter-1]
+}
+
+// groupName is what the filter is called on screen: the group's own id, or the
+// translated word for everything.
+func (p *pickState) groupName(m model) string {
+	if group := p.group(); group != "" {
+		return group
+	}
+	return m.text(i18n.BrowseAllOrigins)
+}
+
+// nextFilter steps the filter on, wrapping through "everything".
+//
+// The key and the cycle are the cast browser's, deliberately: an author who has
+// filtered the cast once should not have a second interaction to learn for the
+// same job on a list of the same things.
+func (p *pickState) nextFilter() {
+	p.filter = (p.filter + 1) % (len(p.groups) + 1)
+	p.cursor = clamp(p.cursor, 0, len(p.visible())-1)
 }
 
 // pick raises a picker. Nothing is applied until it is closed with enter.
 func (m model) pick(state *pickState) model {
 	state.cursor = clamp(state.cursor, 0, len(state.options)-1)
+	if state.hint == 0 {
+		state.hint = i18n.PickerHint
+	}
+	if state.footer == 0 {
+		state.footer = i18n.PickerFooter
+	}
 	m.picker = state
 	return m
+}
+
+// numberField is the chance field the status picker carries: a text field that
+// takes digits and nothing else.
+//
+// Narrow on purpose. A picker's other keys are space, the arrows, k, j, enter
+// and escape, so letters have to stay out of the field or moving the cursor
+// would type into it — and the field holds a figure in parts per thousand, which
+// is four digits at most.
+//
+// The default is the *placeholder* rather than the value, and that was measured
+// rather than chosen: a four-digit default in a field with a four-character limit
+// is a field that refuses the next keystroke, so the first thing an author has to
+// do is delete an answer they did not give. Empty with the default shown means
+// typing works immediately and pressing enter without typing still writes it —
+// forge.AddApplications reads a blank chance as the default, so the two front-ends
+// cannot disagree about what nothing means.
+func numberField(placeholder string) *textinput.Model {
+	input := textinput.New()
+	input.Prompt = ""
+	input.CharLimit = 4
+	input.Width = 6
+	input.Placeholder = placeholder
+	input.Focus()
+	return &input
+}
+
+// numberKey reports whether a keystroke belongs in a number field: a digit, or
+// one of the keys that edit or move within one.
+//
+// The filter is here rather than on the field's own Validate, and that is not a
+// preference. bubbles' Validate does not refuse a keystroke — it takes the value
+// and records an error beside it — so a letter typed at a "numeric" field sits in
+// the field looking accepted, and only a caller reading Err would ever know. It
+// was written the other way first and a test found the letters in the field.
+// Refusing the key is what makes the field numeric.
+func numberKey(message tea.KeyMsg) bool {
+	switch message.Type {
+	case tea.KeyBackspace, tea.KeyDelete, tea.KeyLeft, tea.KeyRight,
+		tea.KeyHome, tea.KeyEnd:
+		return true
+	case tea.KeyRunes:
+		for _, letter := range message.Runes {
+			if letter < '0' || letter > '9' {
+				return false
+			}
+		}
+		return len(message.Runes) > 0
+	default:
+		return false
+	}
 }
 
 // kitOptions is the skill book as rows, each carrying whether this character may
@@ -111,24 +279,78 @@ func idOptions(ids []string) []pickOption {
 	return out
 }
 
+// characterOptions is the authored cast as rows, each carrying the work it was
+// borrowed from so the list can be narrowed by it.
+//
+// The order is the cast book's own, which is what the browser lists too, and the
+// group is the character's origin — the same axis the browser filters on, so an
+// author filtering here is filtering by the thing they already filter by there.
+func characterOptions(lib *forge.Library) []pickOption {
+	characters := lib.Characters().All()
+	out := make([]pickOption, 0, len(characters))
+	for _, character := range characters {
+		out = append(out, pickOption{id: character.ID, group: character.Origin})
+	}
+	return out
+}
+
+// statusOptions is the status book as rows.
+//
+// Every status is offered and none can be refused: a skill may inflict anything
+// the book declares, so there is no carrier to check against and no row that
+// carries a mark. What each row carries instead is the status's own facts, which
+// is the thing an id does not say.
+func statusOptions(lib *forge.Library) []pickOption {
+	book := lib.StatusBook()
+	out := make([]pickOption, 0, len(book))
+	for _, kind := range book {
+		out = append(out, pickOption{id: kind.ID})
+	}
+	return out
+}
+
 func (p *pickState) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch message.String() {
 	case "esc":
 		m.picker = nil
 		return m, nil
 	case "enter":
-		apply, chosen := p.apply, append([]string(nil), p.chosen...)
+		answer := pickAnswer{Chosen: append([]string(nil), p.chosen...)}
+		if p.typed != nil {
+			answer.Typed = p.typed.Value()
+		}
+		apply := p.apply
 		m.picker = nil
 		if apply != nil {
-			m = apply(m, chosen)
+			m = apply(m, answer)
 		}
 		return m, nil
 	case "up", "k":
-		p.cursor = clamp(p.cursor-1, 0, len(p.options)-1)
+		p.cursor = clamp(p.cursor-1, 0, len(p.visible())-1)
 	case "down", "j":
-		p.cursor = clamp(p.cursor+1, 0, len(p.options)-1)
+		p.cursor = clamp(p.cursor+1, 0, len(p.visible())-1)
 	case " ":
 		p.toggle()
+	case "f":
+		// Only where there is something to narrow. On a picker with no groups f
+		// is a letter nothing is listening for, which is what it was before.
+		if len(p.groups) > 0 {
+			p.nextFilter()
+			m.picker = p
+			return m, nil
+		}
+		fallthrough
+	default:
+		// Anything left goes to the field, when there is one and the key belongs
+		// in it. It is checked last so that a picker's own keys cannot be
+		// swallowed by a text field, and only digits get through, so k and j stay
+		// movement rather than becoming text.
+		if p.typed != nil && numberKey(message) {
+			updated, command := p.typed.Update(message)
+			*p.typed = updated
+			m.picker = p
+			return m, command
+		}
 	}
 	m.picker = p
 	return m, nil
@@ -143,10 +365,11 @@ func (p *pickState) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 // mark and the line under the list carries the whole sentence, before space is
 // ever pressed. A message raised by the keypress would be the same words twice.
 func (p *pickState) toggle() {
-	if len(p.options) == 0 {
+	rows := p.visible()
+	if len(rows) == 0 {
 		return
 	}
-	option := p.options[clamp(p.cursor, 0, len(p.options)-1)]
+	option := rows[clamp(p.cursor, 0, len(rows)-1)]
 	if at := slices.Index(p.chosen, option.id); at >= 0 {
 		p.chosen = append(p.chosen[:at:at], p.chosen[at+1:]...)
 		return
@@ -157,7 +380,7 @@ func (p *pickState) toggle() {
 	p.chosen = append(p.chosen, option.id)
 }
 
-// pickerRoom is how many rows the list has, measured from the window in hand.
+// room is how many rows the list has, measured from the window in hand.
 //
 // The count was wrong the first time it was written and the screen said so: the
 // body has m.height-4 lines to draw in, and this screen spends **seven** of
@@ -168,8 +391,19 @@ func (p *pickState) toggle() {
 //
 // Three rows is the floor: below that the list is not a list, and a window that
 // small is already refused by the too-small screen.
-func pickerRoom(m model) int {
-	const spent = 7
+//
+// A picker carrying a field of its own spends two more — the field's row and the
+// blank above it — and it is counted here rather than subtracted at the call
+// site, so the one place that knows what this screen draws is the one place that
+// counts it.
+func (p *pickState) room(m model) int {
+	spent := 7
+	if p.typed != nil {
+		spent += 2
+	}
+	if len(p.groups) > 0 {
+		spent++
+	}
 	room := m.height - 4 - spent
 	if room < 3 {
 		return 3
@@ -233,6 +467,31 @@ func (p *pickState) idColumn() int {
 // refusal use. For the three allowlists it is the id's Vietnamese name, which is
 // nothing at all in English — there, an id is shown as the data writes it.
 func (p *pickState) detail(m model, id string) string {
+	if p.kind == pickStatuses {
+		// A status's facts, glossed name first: "trúng độc · dot · 3 lượt ·
+		// tối đa 3 lớp". The category and the numbers are what tell a poison
+		// from a burn, and the ticking note is the one fact that changes what a
+		// skill applying it is worth.
+		for _, kind := range m.lib.StatusBook() {
+			if kind.ID != id {
+				continue
+			}
+			// The ticking note stands in for the category rather than joining
+			// it: "dot" is the category's own id and "damages every turn" is
+			// what it means, so printing both prints it twice — and the row is
+			// long enough that the second copy is what gets clipped.
+			sort := kind.Category
+			if kind.Ticks {
+				sort = m.text(i18n.StatusTicks)
+			}
+			facts := m.text(i18n.StatusDetail, sort, kind.Duration, kind.MaxStacks)
+			if name := m.lang.Gloss(id); name != "" {
+				facts = name + " · " + facts
+			}
+			return m.style.dim.Render(facts)
+		}
+		return ""
+	}
 	if p.kind != pickSkills {
 		return m.style.dim.Render(m.lang.Gloss(id))
 	}
@@ -246,20 +505,43 @@ func (p *pickState) detail(m model, id string) string {
 	return m.lang.WhoMaySummary(carried)
 }
 
+// refusalUnderCursor is the refusal on the row the cursor is on, or nothing when
+// the filter has left no rows at all.
+func refusalUnderCursor(rows []pickOption, cursor int) error {
+	if len(rows) == 0 {
+		return nil
+	}
+	return rows[clamp(cursor, 0, len(rows)-1)].refusal
+}
+
 func (p *pickState) view(m model) (string, string) {
 	var out strings.Builder
 	out.WriteString(m.style.heading.Render(m.text(p.title)) + "  " +
 		m.style.dim.Render(m.text(i18n.ChoicePosition, len(p.chosen), len(p.options))) + "\n")
-	out.WriteString(m.style.dim.Render(m.text(i18n.PickerHint)) + "\n\n")
+	out.WriteString(m.style.dim.Render(m.text(p.hint)) + "\n")
+	// The filter in force, on its own line and only where there is one. It names
+	// both counts for the reason the browser's does: "showing example-anime" says
+	// nothing about how much of the list is hidden.
+	rows := p.visible()
+	if len(p.groups) > 0 {
+		out.WriteString(m.style.dim.Render(m.text(i18n.PickerShowing,
+			p.groupName(m), len(rows), len(p.options))) + "\n")
+	}
+	out.WriteString("\n")
 	if len(p.options) == 0 {
 		out.WriteString("  " + m.text(i18n.PickerNothingToPick) + "\n")
-		return out.String(), m.text(i18n.PickerFooter)
+		return out.String(), m.text(p.footer)
+	}
+	if len(rows) == 0 {
+		// A filter that hides everything is a state an author has to be able to
+		// see and step out of, not an empty screen.
+		out.WriteString("  " + m.text(i18n.PickerNothingInGroup) + "\n")
 	}
 
 	column := p.idColumn()
-	from, to := window(len(p.options), p.cursor, pickerRoom(m))
+	from, to := window(len(rows), p.cursor, p.room(m))
 	for index := from; index < to; index++ {
-		option := p.options[index]
+		option := rows[index]
 		marker := "  "
 		if index == p.cursor {
 			marker = "> "
@@ -304,8 +586,26 @@ func (p *pickState) view(m model) (string, string) {
 	// The whole refusal for the row under the cursor, which is where there is
 	// room for a sentence. It is drawn before anything is pressed, so a space
 	// that cannot take the row in has already explained itself.
-	if refusal := p.options[clamp(p.cursor, 0, len(p.options)-1)].refusal; refusal != nil {
+	if refusal := refusalUnderCursor(rows, p.cursor); refusal != nil {
 		out.WriteString(m.style.bad.Render("  "+clip(m.lang.Error(refusal), minWidth-3)) + "\n")
 	}
-	return out.String(), m.text(i18n.PickerFooter)
+	// The one answer typed beside the list, under it and named, with its reading
+	// beside it — the same reading the form gives the field this picker writes
+	// into, because 300 is not a chance anybody reads as one.
+	if p.typed != nil {
+		// The reading is of what the field will contribute, which is the default
+		// while nothing has been typed — the same value enter would write, so the
+		// percentage cannot describe a chance the write does not use.
+		answer := strings.TrimSpace(p.typed.Value())
+		if answer == "" {
+			answer = p.typed.Placeholder
+		}
+		reading := ""
+		if permille, err := strconv.Atoi(answer); err == nil {
+			reading = "  " + m.style.dim.Render(forge.Percent(permille))
+		}
+		out.WriteString("\n  " + m.style.label.Render(m.text(p.label)) + "  " +
+			p.typed.View() + reading)
+	}
+	return out.String(), m.text(p.footer)
 }

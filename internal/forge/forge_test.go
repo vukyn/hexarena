@@ -1,6 +1,7 @@
 package forge
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -14,6 +15,8 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 )
@@ -1627,5 +1630,339 @@ func TestDescribeApplicationsKeepsFormatParseable(t *testing.T) {
 	}
 	if _, err := lib.ParseApplications(described); err == nil {
 		t.Error("the reader's version parsed, so the two are not distinct after all")
+	}
+}
+
+// TestTheShapeDiagramCellShowsTheMostOfEveryShape is the design record behind
+// ShapeDiagramCell: it is a choice between two cells, each of which draws one of
+// the nine shipped shapes short, and this is the arithmetic that made it.
+//
+// The claim in that function's doc comment is checked rather than asserted:
+// {4,1} is the only cell on the board from which all six one-step directions
+// stay on the board and on one side, and no cell at all draws all nine shapes in
+// full. If a tenth shape or a wider board makes a better cell exist, this fails
+// and the comment gets rewritten with it.
+func TestTheShapeDiagramCellShowsTheMostOfEveryShape(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	chosen := ShapeDiagramCell()
+	if !chosen.OnBoard() {
+		t.Fatalf("the diagram's cell %v is off the board", chosen)
+	}
+	if chosen.Side() != hex.SideEnemy {
+		t.Errorf("the diagram's cell %v is on the %s side, and a skill is aimed at the other one",
+			chosen, chosen.Side())
+	}
+
+	// The property that picked it: every neighbour survives Targets' two drops.
+	whole := func(cell hex.Offset) bool {
+		for _, direction := range pattern.Directions() {
+			step := cell.Cube().Add(direction.Step()).Offset()
+			if !step.OnBoard() || step.Side() != cell.Side() {
+				return false
+			}
+		}
+		return true
+	}
+	if !whole(chosen) {
+		t.Errorf("some one-step direction leaves the board or the side from %v", chosen)
+	}
+	for _, cell := range hex.Cells() {
+		if cell == chosen || cell.Side() != chosen.Side() {
+			continue
+		}
+		if whole(cell) {
+			t.Errorf("%v also keeps all six directions, so the choice is no longer forced", cell)
+		}
+	}
+
+	// The ally half has exactly one such cell too, and it is this one rotated,
+	// which is why one drawing serves a skill aimed either way. Written down
+	// because it is load-bearing: without it the diagram would need a cell per
+	// side and the screen would have to know which side the skill aims at to
+	// draw a shape.
+	mirror := hex.Place(hex.SideEnemy, chosen)
+	if !whole(mirror) {
+		t.Errorf("the ally half's mirror %v does not keep all six directions", mirror)
+	}
+	for _, cell := range hex.Cells() {
+		if cell == mirror || cell.Side() != mirror.Side() {
+			continue
+		}
+		if whole(cell) {
+			t.Errorf("%v keeps all six directions as well as the mirror %v", cell, mirror)
+		}
+	}
+
+	// What that buys, shape by shape, and what it costs.
+	short := make([]string, 0, 1)
+	for _, name := range lib.PatternNames() {
+		coverage, err := lib.ShapeCoverage(name, skill.Enemy.String())
+		if err != nil {
+			t.Fatalf("coverage of %s: %v", name, err)
+		}
+		if coverage.Primary != chosen {
+			t.Errorf("%s is drawn from %v, want the one cell %v", name, coverage.Primary, chosen)
+		}
+		if !coverage.Whole() {
+			short = append(short, name)
+		}
+	}
+	// One shape draws short, and it is the two-step chain: its second
+	// upper-right step leaves the board from the middle column. Named rather
+	// than counted, because which one it is is the whole of the trade.
+	if want := []string{"pierce"}; !slices.Equal(short, want) {
+		t.Errorf("the shapes drawing short from %v are %v, want %v", chosen, short, want)
+	}
+
+	// Every shape covers the same number of cells from the mirror, so the one
+	// drawing really is the other side's shape rotated rather than a different
+	// shape.
+	for _, name := range lib.PatternNames() {
+		shape, err := lib.Patterns().Lookup(name)
+		if err != nil {
+			t.Fatalf("look up %s: %v", name, err)
+		}
+		here, there := len(shape.Targets(chosen)), len(shape.Targets(mirror))
+		if here != there {
+			t.Errorf("%s catches %d cells from %v and %d from its mirror %v",
+				name, here, chosen, there, mirror)
+		}
+	}
+
+	// And no cell does better, so the choice was which shape is short.
+	for _, cell := range hex.Cells() {
+		if cell.Side() != hex.SideEnemy {
+			continue
+		}
+		all := true
+		for _, name := range lib.PatternNames() {
+			shape, err := lib.Patterns().Lookup(name)
+			if err != nil {
+				t.Fatalf("look up %s: %v", name, err)
+			}
+			if len(shape.Targets(cell)) != shape.MaxTargets() {
+				all = false
+				break
+			}
+		}
+		if all {
+			t.Errorf("%v draws every shape in full, so it is the cell to use", cell)
+		}
+	}
+}
+
+// TestTheSplashShareIsTheBookOwn keeps the figure the diagram's legend quotes
+// tied to the pattern book rather than to a number typed on a screen.
+func TestTheSplashShareIsTheBookOwn(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	if got, want := lib.SplashShare(), Percent(lib.Patterns().SplashPower); got != want {
+		t.Errorf("the splash share reads %q against the book's %q", got, want)
+	}
+}
+
+// TestTheDiagramCrossesTheMidlineOnlyForAnAllSidedSkill is the coupling between
+// the drawing and the engine: a diagram that showed a cell the resolution would
+// drop, or hid one it would hit, would be a chooser that lies about the shape it
+// is offering.
+//
+// No shipped shape reaches across the midline from the diagram's cell — every
+// splash chain there is one step long, and one step from the middle column stays
+// on the enemy half — so this is measured against a shape authored here with a
+// two-step chain, which does. It is the case a future shape brings with it, and
+// the point of testing it now is that nothing on screen would say so.
+func TestTheDiagramCrossesTheMidlineOnlyForAnAllSidedSkill(t *testing.T) {
+	// The shipped book with one shape added, rather than a book of its own: the
+	// shipped skills name the shipped shapes, so a replacement would not load.
+	dir := scratchData(t)
+	path := filepath.Join(dir, "patterns.json")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read the pattern book: %v", err)
+	}
+	var book struct {
+		MaxTargets  int `json:"max_targets"`
+		SplashPower int `json:"splash_power"`
+		Patterns    []struct {
+			Name   string     `json:"name"`
+			Splash [][]string `json:"splash"`
+		} `json:"patterns"`
+	}
+	if err := json.Unmarshal(raw, &book); err != nil {
+		t.Fatalf("decode the pattern book: %v", err)
+	}
+	book.Patterns = append(book.Patterns, struct {
+		Name   string     `json:"name"`
+		Splash [][]string `json:"splash"`
+	}{Name: "sweep", Splash: [][]string{{"lower_left"}, {"lower_left", "lower_left"}}})
+	grown, err := json.Marshal(book)
+	if err != nil {
+		t.Fatalf("encode the pattern book: %v", err)
+	}
+	if err := os.WriteFile(path, grown, 0o644); err != nil {
+		t.Fatalf("write the pattern book: %v", err)
+	}
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+
+	stopped, err := lib.ShapeCoverage("sweep", skill.Enemy.String())
+	if err != nil {
+		t.Fatalf("coverage aimed at the enemy: %v", err)
+	}
+	crossed, err := lib.ShapeCoverage("sweep", skill.All.String())
+	if err != nil {
+		t.Fatalf("coverage aimed at both sides: %v", err)
+	}
+	if stopped.Covered() != 2 {
+		t.Errorf("aimed at one side the shape covers %d cells, want 2 — the second "+
+			"step leaves the enemy half", stopped.Covered())
+	}
+	if !crossed.Whole() {
+		t.Errorf("aimed at both sides the shape covers %d of %d cells, want all of them",
+			crossed.Covered(), crossed.Max)
+	}
+	// And the extra cell really is on the other half, which is the whole of the
+	// difference.
+	extra := crossed.Splash[len(crossed.Splash)-1]
+	if extra.Side() == crossed.Primary.Side() {
+		t.Errorf("the cell the crossing walk added, %v, is on the primary's own side", extra)
+	}
+
+	// Every other side stops at the midline, so admitting one did not move the
+	// rest.
+	for i := range skill.SideCount {
+		side := skill.Side(i)
+		if side == skill.All {
+			continue
+		}
+		coverage, err := lib.ShapeCoverage("sweep", side.String())
+		if err != nil {
+			t.Fatalf("coverage aimed at %s: %v", side, err)
+		}
+		if coverage.Covered() != stopped.Covered() {
+			t.Errorf("aimed at %s the shape covers %d cells against %d for the enemy",
+				side, coverage.Covered(), stopped.Covered())
+		}
+	}
+
+	// An answer that is not a side is a refusal rather than a silent default: a
+	// diagram drawn from a misread answer is a diagram of the wrong shape.
+	if _, err := lib.ShapeCoverage("sweep", "everyone"); err == nil {
+		t.Error("an unknown targeting side was accepted")
+	}
+}
+
+// TestAddApplicationsWritesWhatTheParserReads is the contract between the status
+// picker and the field it writes into: the field is the record, so what is
+// written there has to be something ParseApplications accepts.
+//
+// Every case is round-tripped through the parser rather than compared to a
+// string typed here, because the string is not the point — a spelling this test
+// agreed with and the parser did not would pass and ship a broken field.
+func TestAddApplicationsWritesWhatTheParserReads(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	cases := []struct {
+		name     string
+		answer   string
+		statuses []string
+		chance   string
+		want     string
+	}{
+		{"into an empty field", "", []string{"poison"}, "300", "poison:300"},
+		{"several at one chance", "", []string{"poison", "burn"}, "500",
+			"poison:500,burn:500"},
+		{"onto what is already there", "poison:300", []string{"blind"}, "400",
+			"poison:300,blind:400"},
+		// A half-typed list ends in a comma, and joining onto one would leave an
+		// empty entry the parser reads as a shape error.
+		{"onto a trailing comma", "poison:300,", []string{"blind"}, "400",
+			"poison:300,blind:400"},
+		// A blank chance is the default rather than a nought: nought is a status
+		// that can never land, which the skill book refuses over a field the
+		// author never filled in.
+		{"with no chance given", "", []string{"block"}, "",
+			"block:" + DefaultApplicationChance},
+		{"with nothing chosen", "poison:300", nil, "400", "poison:300"},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := lib.AddApplications(test.answer, test.statuses, test.chance)
+			if err != nil {
+				t.Fatalf("refused: %v", err)
+			}
+			if got != test.want {
+				t.Errorf("wrote %q, want %q", got, test.want)
+			}
+			applications, err := lib.ParseApplications(got)
+			if err != nil {
+				t.Fatalf("what was written does not parse: %v", err)
+			}
+			// And back out again unchanged, which is what makes the field
+			// something the form can be prefilled from.
+			if again := FormatApplications(applications); again != got {
+				t.Errorf("the round trip turned %q into %q", got, again)
+			}
+		})
+	}
+
+	// A status the book does not declare is refused rather than written, because
+	// a field holding one is a field the write refuses later with less to go on.
+	if _, err := lib.AddApplications("", []string{"no_such_status"}, "300"); err == nil {
+		t.Error("an unknown status was written into the field")
+	}
+	// A chance that is not a number is refused for the same reason. The picker's
+	// own field takes digits only, so this is the answer a script could give.
+	if _, err := lib.AddApplications("", []string{"poison"}, "half"); err == nil {
+		t.Error("a chance that is not a number was accepted")
+	}
+	// The answer is handed back unchanged on a refusal, so a rejected addition
+	// cannot lose what the author had already typed.
+	held := "poison:300"
+	if got, _ := lib.AddApplications(held, []string{"poison"}, "half"); got != held {
+		t.Errorf("a refused addition left the field %q, want %q", got, held)
+	}
+}
+
+// TestTheStatusBookIsOfferedInItsOwnOrder keeps the picker's rows tied to the
+// data file rather than to a map, which would shuffle them between runs.
+func TestTheStatusBookIsOfferedInItsOwnOrder(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	book := lib.StatusBook()
+	ids := make([]string, 0, len(book))
+	for _, kind := range book {
+		ids = append(ids, kind.ID)
+	}
+	if !slices.Equal(ids, lib.StatusIDs()) {
+		t.Errorf("the facts are in the order %v against the book's %v", ids, lib.StatusIDs())
+	}
+	// The facts a row shows are the status's own, not a guess: poison ticks and
+	// a shield does not, which is the difference that changes what a skill
+	// applying one is worth.
+	for _, kind := range book {
+		declared, err := lib.Statuses().Lookup(kind.ID)
+		if err != nil {
+			t.Fatalf("look up %s: %v", kind.ID, err)
+		}
+		if kind.Duration != declared.Duration || kind.MaxStacks != declared.MaxStacks {
+			t.Errorf("%s reads as %d turns and %d stacks against the book's %d and %d",
+				kind.ID, kind.Duration, kind.MaxStacks, declared.Duration, declared.MaxStacks)
+		}
+		if kind.Ticks != (declared.TickPower > 0) {
+			t.Errorf("%s reads as ticking %v against a tick power of %d",
+				kind.ID, kind.Ticks, declared.TickPower)
+		}
 	}
 }

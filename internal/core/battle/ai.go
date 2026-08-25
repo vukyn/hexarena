@@ -82,8 +82,14 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 	}
 	actorStats := b.Stats(actor)
 	total := int64(0)
-	for position, cell := range shape.Targets(aim) {
+	for position, cell := range covers(shape, declared, aim) {
 		target := b.occupant(cell)
+		// A unit on the caster's own side is skipped rather than counted as a
+		// negative: this is "expected damage", and the one skill that can hurt
+		// an ally — an area skill aimed at both halves — is one Suggest never
+		// reaches, because it only rates a skill aimed at the enemy. Both facts
+		// are recorded here because relaxing either alone would produce an
+		// opponent that happily bombs its own squad and rates it as a gain.
 		if target == nil || target.Side == actor.Side {
 			continue
 		}

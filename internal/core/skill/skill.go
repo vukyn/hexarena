@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
@@ -33,12 +34,29 @@ const (
 	Ally
 	// Self aims only at the caster.
 	Self
+	// All aims at either half, and a shape aimed this way spreads across the
+	// midline instead of stopping at it.
+	//
+	// It is what a skill that does not care whose side a unit is on needs: a
+	// battlefield-wide cleanse, a haste on everybody, and — since nothing here
+	// distinguishes a friendly target from a hostile one once a cell is chosen —
+	// a damaging skill that hurts the caster's own squad as well. That last one
+	// is the point of having the value rather than a flaw in it; resolveAgainst
+	// has never asked which side a target is on, so an ally-aimed damaging skill
+	// already did the same thing.
+	//
+	// Declared last on purpose. The value is serialised by name like every
+	// other enum here, so appending cannot reinterpret a skill book or a saved
+	// log — but the numbering is what SideCount and TargetNames are built from,
+	// and putting a new value in the middle would reorder the chooser a
+	// front-end offers.
+	All
 )
 
 // SideCount is the number of targeting sides.
-const SideCount = int(Self) + 1
+const SideCount = int(All) + 1
 
-var sideNames = [SideCount]string{Enemy: "enemy", Ally: "ally", Self: "self"}
+var sideNames = [SideCount]string{Enemy: "enemy", Ally: "ally", Self: "self", All: "all"}
 
 func (s Side) String() string {
 	if int(s) >= SideCount {
@@ -46,6 +64,41 @@ func (s Side) String() string {
 	}
 	return sideNames[s]
 }
+
+// Reaches reports whether a skill aimed by a unit on one side of the board may
+// be pointed at a cell on another.
+//
+// The rule is relational rather than absolute — "the other side" depends on
+// whose turn it is — and it lives here because it is one rule with two callers:
+// the legal aims a unit is offered and the aim an action is checked against.
+// Before, battle worked out an absolute side and then flipped it for an enemy
+// caster, which is the same fact written as a special case.
+//
+// Self is not asked here and answers no. It reaches exactly the caster's own
+// cell, which is a unit rather than a side, so nothing can decide it from two
+// sides alone; battle answers that one before it asks this.
+func (s Side) Reaches(from, at hex.Side) bool {
+	switch s {
+	case All:
+		return true
+	case Ally:
+		return at == from
+	case Self:
+		return false
+	default:
+		return at != from
+	}
+}
+
+// CrossesSides reports whether a shape aimed by this skill may spread onto the
+// other half of the board.
+//
+// pattern.Targets drops a splash cell that lands on the far side of the midline,
+// which is right for every skill that aims at one side: an area attack on the
+// enemy front rank must not catch the caster's own. A skill aimed at both sides
+// is the one case where that drop is wrong, and this is what says so — once,
+// for the two places that walk a shape.
+func (s Side) CrossesSides() bool { return s == All }
 
 // ParseSide resolves a targeting name as written in the data files.
 func ParseSide(name string) (Side, error) {
@@ -185,7 +238,30 @@ func (r *Restriction) ElementNames() []string {
 
 // Skill is one declared action.
 type Skill struct {
-	ID      string
+	ID string
+	// Name is the skill's authored display name, and this package knows nothing
+	// about it beyond that it is text: not what language it is in, not how wide
+	// it is on a screen, not whether anything shows it. Nothing in
+	// internal/core reads it — no rule branches on it and no event carries it —
+	// which is what lets it be here at all.
+	//
+	// # Why the name is on the declaration
+	//
+	// A skill's Vietnamese name used to be a compiled table in internal/i18n,
+	// which meant a name could not be authored by the tool that authors the
+	// skill. Putting it here rather than in a translations file beside the book
+	// is the same judgement `Applies` and `Restrict` are here for: a skill and
+	// its name are authored in one sitting, and a second file is a second thing
+	// to keep in step — one that would go stale exactly when a skill was
+	// renamed or removed.
+	//
+	// It is absent by default and absent is a real answer: a skill with no name
+	// renders as its bare id, which is the rule a data id has always followed
+	// when nothing has a name for it. internal/i18n prefers this over its own
+	// table, so the compiled names remain the fallback for the skills that
+	// shipped before this field existed. Being absent by default is also why no
+	// golden moved when it arrived — see skillFile.
+	Name    string
 	Element element.Element
 	// Range is the hex distance the skill reaches, measured on the shared board.
 	Range int
@@ -266,7 +342,13 @@ type Book struct {
 // absent, so a skill that declares none reads exactly as it did before any of
 // them existed.
 type skillFile struct {
-	ID          string            `json:"id"`
+	ID string `json:"id"`
+	// Name is written only when there is one, which is what kept every golden
+	// still when it was added: the shipped book declares none, so the shipped
+	// file round-trips byte for byte and the tables measured from it do not move.
+	// It sits beside the id because that is where it reads — a skill and the name
+	// it is called by, then the numbers.
+	Name        string            `json:"name,omitempty"`
 	Element     string            `json:"element"`
 	Range       int               `json:"range"`
 	Pattern     string            `json:"pattern"`
@@ -352,7 +434,8 @@ func DefaultScaling() Scaling {
 // default, so a file that declared none reads back exactly as it was authored.
 func (s Skill) file() skillFile {
 	out := skillFile{
-		ID: s.ID, Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
+		ID: s.ID, Name: s.Name,
+		Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
 		Power: s.Power, Strikes: s.Strikes, Accuracy: s.Accuracy,
 		Cooldown: s.Cooldown, Target: s.Target.String(),
 		Applies: applicationFiles(s.Applies), SelfApplies: applicationFiles(s.SelfApplies),
@@ -523,6 +606,12 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		scaling = Scaling{Stat: stat, Source: source}
 	}
 
+	// The name is text and this package has no opinion about it beyond that: it
+	// is trimmed, so that a name of nothing but spaces is the absent answer
+	// rather than a name made of spaces, and it is not measured, not checked
+	// against a character set and not compared with the id.
+	name := strings.TrimSpace(declared.Name)
+
 	applies, err := resolveApplications(declared.ID, "applies", declared.Applies, deps)
 	if err != nil {
 		return Skill{}, err
@@ -588,7 +677,8 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	}
 
 	return Skill{
-		ID: declared.ID, Element: affinity, Range: declared.Range, Pattern: shape.Name,
+		ID: declared.ID, Name: name,
+		Element: affinity, Range: declared.Range, Pattern: shape.Name,
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
 		Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
 		Requires: requires, Strips: strips, Restrict: restrict,

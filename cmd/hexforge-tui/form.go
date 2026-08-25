@@ -305,8 +305,8 @@ func (m model) openKit() model {
 		title: i18n.PickerKitTitle, kind: pickSkills,
 		options: kitOptions(m.lib, m.form.draft().Carrier()),
 		chosen:  m.form.kit,
-		apply: func(m model, chosen []string) model {
-			m.form.kit = chosen
+		apply: func(m model, answer pickAnswer) model {
+			m.form.kit = answer.Chosen
 			// Choosing is setting it by hand, so it stops following the preset,
 			// on the same terms as typing a kit used to.
 			m.form.kitFollowsPreset = false

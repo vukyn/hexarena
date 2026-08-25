@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -16,13 +18,18 @@ import (
 
 // The fields of the new-skill form, in the order they are walked.
 //
-// Nine core fields, the statuses it inflicts, and the three allowlists. What is
-// deliberately absent is requires, strips, scaling and self_applies: each is a
-// composite worth several questions of its own, and a form that asked twelve
-// more would be worse than an edit to skills.json. They survive a save
-// untouched — see skill.Skill.MarshalJSON.
+// Nine core fields, the display name, the statuses it inflicts, and the three
+// allowlists. What is deliberately absent is requires, strips, scaling and
+// self_applies: each is a composite worth several questions of its own, and a
+// form that asked twelve more would be worse than an edit to skills.json. They
+// survive a save untouched — see skill.Skill.MarshalJSON.
+//
+// The name sits second because that is where it is authored: a skill and the name
+// it is called by are one thought, which is also why the name is a field on
+// skill.Skill and not a translations file beside the book.
 const (
 	skillFieldID = iota
+	skillFieldName
 	skillFieldElement
 	skillFieldTarget
 	skillFieldRange
@@ -74,6 +81,14 @@ type skillsScreen struct {
 	keptRoles    []string
 	keptWho      []string
 	touched      bool
+	// shapeDrawn is whether the shape diagram is over the form.
+	//
+	// A flag rather than a state of its own, because the diagram has no answer
+	// to hold: it draws the shape the chooser is already on and the arrow keys
+	// on it are the chooser's own, so there is one shapeIndex and the drawing
+	// cannot disagree with the field behind it. That is the difference from the
+	// picker, which collects an answer and hands it back on enter.
+	shapeDrawn bool
 
 	err error
 	// added is the last skill written, kept as what it was rather than as the
@@ -112,6 +127,7 @@ func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
 		s.inputs[i] = input
 	}
 	s.inputs[skillFieldID].Width = 32
+	s.inputs[skillFieldName].Width = 32
 	s.inputs[skillFieldInflicts].Width = 40
 	// The defaults are the shape of an ordinary single-target attack, and the
 	// element among them is the one worth spelling out: neutral is the common
@@ -127,6 +143,7 @@ func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
 	s.keptElements, s.keptRoles, s.keptWho = nil, nil, nil
 	s.field = skillFieldID
 	s.touched = false
+	s.shapeDrawn = false
 	s.err = nil
 	s.editing = ""
 	s.inputs[s.field].Focus()
@@ -148,6 +165,7 @@ func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScr
 		value string
 	}{
 		{skillFieldID, answers.ID},
+		{skillFieldName, answers.Name},
 		{skillFieldRange, answers.Range},
 		{skillFieldPower, answers.Power},
 		{skillFieldStrikes, answers.Strikes},
@@ -193,6 +211,7 @@ func indexOf(values []string, want string) int {
 func (s skillsScreen) draft(m model) forge.SkillDraft {
 	return forge.SkillDraft{
 		ID:                 strings.TrimSpace(s.inputs[skillFieldID].Value()),
+		Name:               s.inputs[skillFieldName].Value(),
 		Element:            at(forge.ElementNames(), s.elementIndex),
 		Target:             at(forge.TargetNames(), s.targetIndex),
 		Range:              s.inputs[skillFieldRange].Value(),
@@ -270,6 +289,22 @@ func (s skillsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// The diagram is answered first, before Escape can be read as leaving the
+	// form and before Enter can be read as moving to the next field: while it is
+	// over the form, both of those close it and nothing else on the form is
+	// reachable.
+	if s.shapeDrawn {
+		switch message.String() {
+		case "esc", "enter", " ":
+			s.shapeDrawn = false
+		case "left":
+			s = s.cycle(m, -1)
+		case "right":
+			s = s.cycle(m, 1)
+		}
+		m.skills = s
+		return m, nil
+	}
 	switch message.String() {
 	case "esc":
 		if !s.touched {
@@ -308,9 +343,24 @@ func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cm
 			s = s.cycle(m, -1)
 		case "right":
 			s = s.cycle(m, 1)
+		case " ":
+			// Space is the same key the three allowlists open their picker with,
+			// and it is free on a chooser: a chooser is stepped with the arrows.
+			// Only the shape has anything to open.
+			if s.field == skillFieldShape {
+				s.shapeDrawn = true
+			}
 		}
 		m.skills = s
 		return m, nil
+	}
+	// The inflicts field is the one text field with a list behind it. Space
+	// opens it rather than typing a space, and that costs nothing: the syntax
+	// ParseApplications reads has no spaces in it, and every other way of
+	// filling this field still works, because the field is the record.
+	if s.field == skillFieldInflicts && message.String() == " " {
+		m.skills = s
+		return m.openStatuses(), nil
 	}
 	if skillListField(s.field) {
 		if message.String() == " " || message.String() == "right" {
@@ -344,8 +394,8 @@ func (m model) openAllowlist(field int) model {
 		return m.pick(&pickState{
 			title: i18n.PickerElementsTitle, kind: pickElements,
 			options: idOptions(forge.ElementNames()), chosen: m.skills.keptElements,
-			apply: func(m model, chosen []string) model {
-				m.skills.keptElements = chosen
+			apply: func(m model, answer pickAnswer) model {
+				m.skills.keptElements = answer.Chosen
 				m.skills.touched = true
 				return m
 			},
@@ -354,23 +404,76 @@ func (m model) openAllowlist(field int) model {
 		return m.pick(&pickState{
 			title: i18n.PickerRolesTitle, kind: pickArchetypes,
 			options: idOptions(m.lib.Archetypes().IDs()), chosen: m.skills.keptRoles,
-			apply: func(m model, chosen []string) model {
-				m.skills.keptRoles = chosen
+			apply: func(m model, answer pickAnswer) model {
+				m.skills.keptRoles = answer.Chosen
 				m.skills.touched = true
 				return m
 			},
 		})
 	default:
+		// The one list with a filter, because it is the one that grows: the
+		// elements are eleven and fixed and the role presets are five, while the
+		// cast is whatever has been authored. It narrows by origin and takes the
+		// cast browser's own key, so filtering a list of characters is one
+		// interaction wherever it happens.
 		return m.pick(&pickState{
 			title: i18n.PickerCharactersTitle, kind: pickCharacters,
-			options: idOptions(m.lib.CharacterIDs()), chosen: m.skills.keptWho,
-			apply: func(m model, chosen []string) model {
-				m.skills.keptWho = chosen
+			footer:  i18n.PickerFilterFooter,
+			options: characterOptions(m.lib), groups: m.lib.OriginIDs(),
+			chosen: m.skills.keptWho,
+			apply: func(m model, answer pickAnswer) model {
+				m.skills.keptWho = answer.Chosen
 				m.skills.touched = true
 				return m
 			},
 		})
 	}
+}
+
+// openStatuses raises the picker over the status book and writes what comes back
+// into the inflicts field.
+//
+// The shortest path from "I want a poison" to a valid entry: pick the status out
+// of the book, type the chance in the field under the list, enter. The syntax is
+// forge.AddApplications' — the same spelling ParseApplications reads back — so
+// the screen never spells an entry itself, and nothing about the field changes:
+// it is still a text field, an author who knows the syntax still types it, and a
+// script writes the same thing.
+//
+// Nothing is preselected. The field may already hold entries and the picker
+// appends to them, so starting with those rows ticked would mean the author had
+// to untick them to avoid writing each one twice.
+func (m model) openStatuses() model {
+	return m.pick(&pickState{
+		title: i18n.PickerStatusesTitle, kind: pickStatuses,
+		hint: i18n.PickerStatusHint, footer: i18n.PickerStatusFooter,
+		options: statusOptions(m.lib),
+		typed:   numberField(forge.DefaultApplicationChance),
+		label:   i18n.PickerChance,
+		apply: func(m model, answer pickAnswer) model {
+			if len(answer.Chosen) == 0 {
+				return m
+			}
+			field := &m.skills.inputs[skillFieldInflicts]
+			written, err := m.lib.AddApplications(field.Value(), answer.Chosen, answer.Typed)
+			if err != nil {
+				// A refusal from here can only be a chance that is not a number,
+				// which the field refuses a keystroke at a time — so this is
+				// unreachable and reported rather than swallowed, on the form's
+				// own error line.
+				m.skills.err = err
+				return m
+			}
+			field.SetValue(written)
+			// The cursor goes to the end, because what was just written is at the
+			// end and the author's next move is usually to adjust it.
+			field.CursorEnd()
+			m.skills.touched = true
+			m.skills.err = nil
+			m.skills.added, m.skills.edited = nil, nil
+			return m
+		},
+	})
 }
 
 func (s skillsScreen) moveTo(target int) skillsScreen {
@@ -465,7 +568,7 @@ func (s skillsScreen) saveEdit(m model) skillsScreen {
 // It stayed at nine when editing added the second write line, and the reason is
 // worth recording rather than leaving as a coincidence: the number was one too
 // high before. The count it came with listed "the empty string the body's
-// trailing newline leaves", copied from pickerRoom, and this body has no trailing
+// trailing newline leaves", copied from the picker's own count, and this body has no trailing
 // newline — the tally is written without one. So the real spend was eight against
 // a reserve of nine, and the second write line is what that spare line has now
 // gone on. There is no spare left, which is what
@@ -481,19 +584,45 @@ func skillsRoom(m model) int {
 
 // skillRow lays out one row of the listing, and the header above it, from one
 // place so the two cannot drift apart.
-// skillRow lays out one line of the skill list.
 //
 // glossColumn of zero drops the translated-name column entirely rather than
 // drawing it empty. That one rule covers both cases that need it: English,
 // where nothing is glossed, and a book whose ids all happen to be unglossed —
 // a column of blanks would read as missing data rather than as a column that
 // does not apply.
-func skillRow(idColumn, glossColumn int, id, gloss, member, power, who string) string {
+//
+// powerColumn is a parameter for the same reason glossColumn is, and it stopped
+// being a constant when the power column's header stopped being the word
+// "power": the header is the label the form authored the number with, so a
+// column of 8 held "1000x1" but cut "damage multiplier" — or, since pad only
+// widens, let the header run 9 cells past the column and push the last column's
+// header right of the rows it names. One header out of line with its own rows is
+// the one failure this function exists to prevent.
+func skillRow(idColumn, glossColumn, powerColumn int, id, gloss, member, power, who string) string {
 	name := pad(id, idColumn)
 	if glossColumn > 0 {
 		name += " " + pad(gloss, glossColumn)
 	}
-	return fmt.Sprintf("%s %s %s%s", name, pad(member, 9), pad(power, 8), who)
+	return fmt.Sprintf("%s %s %s%s", name, pad(member, 9), pad(power, powerColumn), who)
+}
+
+// skillPowerColumn is the width the power column takes: enough for the figures
+// the rows hold, and enough for the header naming them.
+//
+// The figures are short by construction — a power and a strike count, "1000x1"
+// — so the header is what decides this, and it differs per language for the
+// same reason every other measured column here does.
+//
+// The measured label gets a cell added, and the 8 has one already: it is the
+// last column before free text, so without a gap a header exactly as wide as its
+// column runs straight into the next one. "hệ số sát thương" is 16 cells, which
+// is what made that visible.
+func skillPowerColumn(m model) int {
+	const figures = 8
+	if width := lipgloss.Width(m.text(i18n.SkillFieldPower)) + 1; width > figures {
+		return width
+	}
+	return figures
 }
 
 func (s skillsScreen) view(m model) (string, string) {
@@ -510,7 +639,7 @@ func (s skillsScreen) view(m model) (string, string) {
 		if width := lipgloss.Width(current.ID); width > column {
 			column = width
 		}
-		if width := lipgloss.Width(m.lang.Gloss(current.ID)); width > glossColumn {
+		if width := lipgloss.Width(m.lang.SkillName(current)); width > glossColumn {
 			glossColumn = width
 		}
 	}
@@ -531,8 +660,12 @@ func (s skillsScreen) view(m model) (string, string) {
 	}
 	// The header names the one column nobody could guess. The other three are
 	// an id, an element and a power, each labelled with the word the form that
-	// authored it uses.
-	out.WriteString("  " + m.style.dim.Render(skillRow(column+1, glossColumn,
+	// authored it uses — which is the point of naming them from the same keys:
+	// an author who has just typed a damage multiplier on the form should find
+	// that column called the same thing here, rather than the shorter word the
+	// form stopped using.
+	powerColumn := skillPowerColumn(m)
+	out.WriteString("  " + m.style.dim.Render(skillRow(column+1, glossColumn, powerColumn,
 		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss), m.text(i18n.LabelElement),
 		m.text(i18n.SkillFieldPower), m.text(i18n.ColumnWhoMayCarry))) + "\n")
 	for index := from; index < to; index++ {
@@ -541,7 +674,8 @@ func (s skillsScreen) view(m model) (string, string) {
 		// The power and the strike count are the balance, so they are the two
 		// numbers on the row; everything else about a skill is a keypress away
 		// on the form that authored it.
-		row := skillRow(column+1, glossColumn, current.ID, m.lang.Gloss(current.ID),
+		row := skillRow(column+1, glossColumn, powerColumn,
+			current.ID, m.lang.SkillName(current),
 			current.Element.String(),
 			strconv.Itoa(current.Power)+"x"+strconv.Itoa(current.StrikeCount()), "")
 		row += clip(m.lang.WhoMaySummary(current), minWidth-3-lipgloss.Width(row))
@@ -585,7 +719,11 @@ func (s skillsScreen) view(m model) (string, string) {
 // skillFieldLabel is what each row of the form is called.
 func skillFieldLabel(m model, field int) string {
 	keys := [skillFieldCount]i18n.Key{
-		skillFieldID:                i18n.SkillFieldID,
+		skillFieldID: i18n.SkillFieldID,
+		// The same key the listing's own column uses, because they are the same
+		// thing: an author who has just typed a name here should find the column
+		// that shows it called what they typed it into.
+		skillFieldName:              i18n.ColumnGloss,
 		skillFieldElement:           i18n.SkillFieldElement,
 		skillFieldTarget:            i18n.SkillFieldTarget,
 		skillFieldRange:             i18n.SkillFieldRange,
@@ -602,6 +740,38 @@ func skillFieldLabel(m model, field int) string {
 	return m.text(keys[field])
 }
 
+// skillFieldHelp is the line describing the field the cursor is on: what it
+// means, and an answer that would be valid.
+//
+// One entry per field, and the array is indexed by the field constant for the
+// same reason skillFieldLabel's is — a field added without a help line is a
+// blank line rather than a build failure, so TestEveryFieldOfTheSkillFormHasHelp
+// walks every field and reads the screen.
+//
+// It replaced a static footnote about parts per thousand. That footnote was true
+// of two fields out of fourteen and drawn whichever field had the cursor, which
+// is why it explained nothing about the fields nobody could guess: what a shape
+// covers, what syntax the statuses take, what an empty allowlist means.
+func skillFieldHelp(m model, field int) string {
+	keys := [skillFieldCount]i18n.Key{
+		skillFieldID:                i18n.SkillHelpID,
+		skillFieldName:              i18n.SkillHelpName,
+		skillFieldElement:           i18n.SkillHelpElement,
+		skillFieldTarget:            i18n.SkillHelpTarget,
+		skillFieldRange:             i18n.SkillHelpRange,
+		skillFieldShape:             i18n.SkillHelpShape,
+		skillFieldPower:             i18n.SkillHelpPower,
+		skillFieldStrikes:           i18n.SkillHelpStrikes,
+		skillFieldAccuracy:          i18n.SkillHelpAccuracy,
+		skillFieldCooldown:          i18n.SkillHelpCooldown,
+		skillFieldInflicts:          i18n.SkillHelpInflicts,
+		skillFieldKeptForElements:   i18n.SkillHelpKeptForElements,
+		skillFieldKeptForRoles:      i18n.SkillHelpKeptForRoles,
+		skillFieldKeptForCharacters: i18n.SkillHelpKeptForCharacters,
+	}
+	return m.text(keys[clamp(field, 0, skillFieldCount-1)])
+}
+
 // skillLabelWidth is the column the field names sit in, measured from the labels
 // themselves rather than declared: the longest is "cooldown" in one language and
 // "để dành cho mẫu" in the other.
@@ -615,7 +785,90 @@ func skillLabelWidth(m model) int {
 	return widest + 1
 }
 
+// The two marks the diagram puts in a cell. hex.Render gives each cell two
+// characters, so both are two.
+//
+// Characters and not colour, for the reason the picker's own marks are: the
+// meaning has to survive NO_COLOR, a monochrome terminal and a recording that
+// lost its escape codes. The dense mark is the cell the skill is aimed at and
+// the sparse one is a cell that only catches the splash share, which is the
+// weight each carries as well as the ink.
+const (
+	shapeAimMark    = "##"
+	shapeSplashMark = ".."
+)
+
+// viewShape is the shape diagram: the board with the cells this shape catches
+// marked, drawn from forge.ShapeCoverage.
+//
+// It is a sub-screen rather than a pane beside the form, and that was measured
+// rather than judged: the form spends nineteen of the twenty body lines an 80x24
+// window has — twenty with a refusal under it — and hex.Render is eight lines
+// before a heading, a legend or the blanks around it. There was no room, and
+// hiding half a board is worse than opening one.
+//
+// The arrows here are the chooser's own, so the drawing follows the field rather
+// than holding a copy of it, and nothing needs applying when it closes.
+func (s skillsScreen) viewShape(m model) (string, string) {
+	footer := m.text(i18n.SkillShapeFooter)
+	shapes := m.lib.PatternNames()
+	name := at(shapes, s.shapeIndex)
+	var out strings.Builder
+	out.WriteString(m.style.heading.Render(m.text(i18n.SkillShapeHeading)) + "  " +
+		m.style.dim.Render(m.text(i18n.ChoicePosition,
+			clamp(s.shapeIndex, 0, len(shapes)-1)+1, len(shapes))) + "\n")
+
+	// The draft rather than the shape alone: what a shape covers depends on the
+	// side the skill aims at, and that is the field above this one.
+	draft := s.draft(m)
+	coverage, err := m.lib.ShapeCoverage(draft.Pattern, draft.Target)
+	if err != nil {
+		// Unreachable through the chooser, which offers the book's own names,
+		// and drawn rather than swallowed for the same reason the picker draws a
+		// lost id: a shape the book cannot resolve is worth seeing.
+		out.WriteString(m.style.bad.Render("  "+m.lang.Error(err)) + "\n")
+		return out.String(), footer
+	}
+	// How many cells it really catches, and — when the aim loses one — that it
+	// did, so a shape drawing short reads as this aim rather than as this shape.
+	caught := m.text(i18n.SkillShapeCoverage, coverage.Covered())
+	if !coverage.Whole() {
+		caught = m.text(i18n.SkillShapeShort, coverage.Covered(), coverage.Max)
+	}
+	out.WriteString("  " + m.style.selected.Render(name) + "  " +
+		m.style.dim.Render(caught) + "\n")
+	out.WriteString("  " + m.style.dim.Render(
+		m.text(i18n.SkillShapeDrawnAt, coverage.Primary)) + "\n\n")
+
+	for _, line := range strings.Split(shapeBoard(coverage), "\n") {
+		out.WriteString("  " + line + "\n")
+	}
+	out.WriteString("\n  " + m.style.dim.Render(m.text(i18n.SkillShapeLegend,
+		shapeAimMark, shapeSplashMark, m.lib.SplashShare())))
+	return out.String(), footer
+}
+
+// shapeBoard draws the battlefield with a coverage marked on it.
+//
+// The board is hex.Render, the same drawing the terminal client shows a
+// formation with, and the cells are the ones pattern.Targets returned — so this
+// is a rendering of two existing functions and holds no geometry of its own.
+func shapeBoard(coverage forge.ShapeCoverage) string {
+	return hex.Render(func(cell hex.Offset) string {
+		if cell == coverage.Primary {
+			return shapeAimMark
+		}
+		if slices.Contains(coverage.Splash, cell) {
+			return shapeSplashMark
+		}
+		return ""
+	})
+}
+
 func (s skillsScreen) viewForm(m model) (string, string) {
+	if s.shapeDrawn {
+		return s.viewShape(m)
+	}
 	footer := m.text(i18n.SkillFormFooter)
 	// The heading is the whole of what tells an author which of the two jobs this
 	// form is doing, so it is not shared: every field is prefilled on an edit, and
@@ -646,10 +899,24 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 
 	out.WriteString("\n")
 	out.WriteString(s.damageRow(m, width))
-	out.WriteString(m.labelAt("", width, "%s", m.style.dim.Render(m.text(i18n.SkillFormHint))))
+	// The help for the field the cursor is on, at the body's own indent rather
+	// than in the value column. The label column is measured per language and
+	// takes a third of the row in Vietnamese; a sentence that has to say what a
+	// field means *and* show a valid answer cannot spend that, and it is not a
+	// value belonging to a row anyway.
+	//
+	// The last line carries no newline of its own, and that is a line rather than
+	// a tidy: frame splits the body on newlines, so a trailing one leaves an
+	// empty string that costs a row of the twenty an 80x24 window has. This form
+	// spent all twenty before the name field arrived; dropping the newline is
+	// what paid for it, with nothing to see on screen either way. It is the same
+	// accounting skillsRoom records for the listing, which has never had one.
+	tail := []string{"  " + m.style.dim.Render(skillFieldHelp(m, s.field))}
 	if s.err != nil {
-		out.WriteString(m.style.bad.Render(m.text(i18n.WriteRefused, m.lang.Error(s.err))) + "\n")
+		tail = append(tail,
+			m.style.bad.Render(m.text(i18n.WriteRefused, m.lang.Error(s.err))))
 	}
+	out.WriteString(strings.Join(tail, "\n"))
 	return out.String(), footer
 }
 
@@ -710,7 +977,15 @@ func (s skillsScreen) chanceHint(m model, labelWidth int) string {
 	// would push the row past the floor. Clipping the reading is right where
 	// clipping the value would not be — a chance you cannot see is still
 	// written in the field beside it.
-	room := minWidth - 3 - labelWidth - s.inputs[skillFieldInflicts].Width - 2
+	//
+	// What is left is measured from the field as it is *drawn* rather than from
+	// the Width it was given, and the difference is a real cell: a bubbles text
+	// field renders its own trailing cursor, so its View is a cell wider than
+	// its Width. A room computed from the declaration left this row 80 cells
+	// wide in an 80-column window — inside frame's clip, so nothing was cut, and
+	// over the edge on the terminals that wrap a line filling the final cell.
+	// It only became visible when the label column grew.
+	room := skillValueRoom(labelWidth, lipgloss.Width(s.inputs[skillFieldInflicts].View()))
 	return "  " + m.style.dim.Render(clip(forge.ApplicationChances(applications), room))
 }
 
@@ -727,10 +1002,24 @@ func (s skillsScreen) percentHint(m model, field int) string {
 	return "  " + m.style.dim.Render(forge.Percent(permille))
 }
 
+// skillValueRoom is what a form row has left for the one part of it that has no
+// length of its own — the chances beside the inflicts field, the ids in an
+// allowlist — once the marker, the label column, the fixed part of the value and
+// the two-space gap before whatever follows have been paid for.
+//
+// One declaration for both, because both had the same arithmetic written out
+// twice and both were one cell over. The window's last column is left empty for
+// the reason frame leaves it: a line filling a terminal's final cell wraps on
+// some of them, and one wrapped line pushes the footer off the bottom.
+func skillValueRoom(labelWidth, spent int) int {
+	const marker, gap = 2, 2
+	return minWidth - 1 - marker - labelWidth - 1 - spent - gap
+}
+
 // listValue draws one of the three allowlists: what is in it, or that anybody
 // may carry the skill, which is what an empty list means.
 func (s skillsScreen) listValue(m model, chosen []string, labelWidth int) string {
-	room := minWidth - 3 - labelWidth - lipgloss.Width(m.text(i18n.KitChooseHint)) - 2
+	room := skillValueRoom(labelWidth, lipgloss.Width(m.text(i18n.KitChooseHint)))
 	if len(chosen) == 0 {
 		return m.style.dim.Render(m.text(i18n.WhoAnyone) + "  " + m.text(i18n.KitChooseHint))
 	}
