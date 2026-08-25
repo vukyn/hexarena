@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
+	"slices"
 	"strings"
 	"testing"
 
@@ -386,6 +388,140 @@ func TestSuggestedImageFollowsTheID(t *testing.T) {
 		if got := SuggestedImage(id); got != want {
 			t.Errorf("SuggestedImage(%q) is %q, want %q", id, got, want)
 		}
+	}
+}
+
+// TestArtFilesListsTheImagesOnDisk is the question internal/core/cast cannot
+// ask, in the shape a picker needs it: not "is this one path there" but "which
+// paths are".
+//
+// The tree is walked rather than listed because art is filed by origin, so the
+// shipped assets folder is already two levels deep. Everything else here is
+// what must not be offered: a file that is not an image, and a name this
+// filesystem accepts but cast.ValidateImagePath refuses — a chooser handing
+// back a value the write would reject is worse than a text field, which at
+// least admits the author typed it.
+func TestArtFilesListsTheImagesOnDisk(t *testing.T) {
+	dir := scratchData(t)
+	shipped, err := ArtFiles(dir)
+	if err != nil {
+		t.Fatalf("list the shipped art: %v", err)
+	}
+	if len(shipped) == 0 {
+		t.Fatal("no art was found in the shipped data, so nothing here is being exercised")
+	}
+	// The two placeholders CLAUDE.md says not to delete are the fixed point:
+	// anything else under assets belongs to whoever is authoring a cast.
+	for _, want := range []string{"assets/example/adept.svg", "assets/example/sprout.svg"} {
+		if !slices.Contains(shipped, want) {
+			t.Errorf("the shipped art %q was not listed, only %v", want, shipped)
+		}
+	}
+
+	deeper := filepath.Join(dir, "assets", "borrowed", "kanto")
+	if err := os.MkdirAll(deeper, 0o755); err != nil {
+		t.Fatalf("create %s: %v", deeper, err)
+	}
+	writeFile(t, filepath.Join(deeper, "starter.png"), "not really a png")
+	writeFile(t, filepath.Join(dir, "assets", "notes.txt"), "not art at all")
+
+	art, err := ArtFiles(dir)
+	if err != nil {
+		t.Fatalf("list the art: %v", err)
+	}
+	if !slices.Contains(art, "assets/borrowed/kanto/starter.png") {
+		t.Errorf("the walk did not reach three folders down: %v", art)
+	}
+	for _, unwanted := range []string{"assets/notes.txt", "notes.txt"} {
+		if slices.Contains(art, unwanted) {
+			t.Errorf("%q was offered as art: %v", unwanted, art)
+		}
+	}
+	if len(art) != len(shipped)+1 {
+		t.Errorf("%d paths were listed over the shipped %d, want exactly the one image added: %v",
+			len(art), len(shipped), art)
+	}
+	// Every entry is a path a character may really name, and the order is the
+	// one it will be shown in: sorted, because directory order is not a promise
+	// any operating system makes and this list reaches a screen.
+	for _, image := range art {
+		if err := cast.ValidateImagePath(image); err != nil {
+			t.Errorf("%q was offered but would be refused: %v", image, err)
+		}
+	}
+	if !slices.IsSorted(art) {
+		t.Errorf("the art is listed out of order: %v", art)
+	}
+}
+
+// TestArtFilesSkipsANameTheParserRefuses is the other half of that rule, split
+// out because it cannot run everywhere.
+//
+// A backslash in a filename is legal on a unix filesystem and refused by
+// cast.ValidateImagePath, which is exactly the case worth having: a path this
+// machine can hold and cast.json cannot mean the same thing twice. Windows has
+// no such filename to make, so there is nothing to assert there.
+func TestArtFilesSkipsANameTheParserRefuses(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("a backslash is not a legal filename here")
+	}
+	dir := scratchData(t)
+	before, err := ArtFiles(dir)
+	if err != nil {
+		t.Fatalf("list the art: %v", err)
+	}
+	writeFile(t, filepath.Join(dir, "assets", `back\slash.svg`), "<svg/>")
+	after, err := ArtFiles(dir)
+	if err != nil {
+		t.Fatalf("list the art after adding a refused name: %v", err)
+	}
+	if !reflect.DeepEqual(after, before) {
+		t.Errorf("a name the parser refuses was offered anyway:\nbefore %v\nafter  %v", before, after)
+	}
+}
+
+// TestArtFilesTreatsAMissingAssetsFolderAsEmpty is the case a front-end has to
+// survive rather than refuse.
+//
+// A data directory with no art is not broken — nothing has been drawn for it
+// yet — so this is an empty list and not an error. A front-end that took an
+// error here would have no form to show, which is a worse answer than a field
+// somebody can type into.
+func TestArtFilesTreatsAMissingAssetsFolderAsEmpty(t *testing.T) {
+	dir := scratchData(t)
+	assets := filepath.Join(dir, "assets")
+	if err := os.RemoveAll(assets); err != nil {
+		t.Fatalf("take away %s: %v", assets, err)
+	}
+	art, err := ArtFiles(dir)
+	if err != nil {
+		t.Fatalf("a missing assets folder is not an error, but it gave one: %v", err)
+	}
+	if len(art) != 0 {
+		t.Errorf("%d paths were listed with no assets folder: %v", len(art), art)
+	}
+	// The books still load, which is what makes the empty list a state a form
+	// has to handle rather than a failure it can decline to draw: whether art
+	// exists is a check's question, not a parser's.
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("the books do not load without an assets folder: %v", err)
+	}
+	fromLibrary, err := lib.ArtFiles()
+	if err != nil || len(fromLibrary) != 0 {
+		t.Errorf("the library listed %v, %v; want nothing and no error", fromLibrary, err)
+	}
+	if lib.AssetsPath() != assets {
+		t.Errorf("the library looks for art in %q, want %q", lib.AssetsPath(), assets)
+	}
+}
+
+// writeFile drops one file into place, creating no folder: every caller here has
+// already made the one it goes in.
+func writeFile(t *testing.T, name, content string) {
+	t.Helper()
+	if err := os.WriteFile(name, []byte(content), 0o644); err != nil {
+		t.Fatalf("write %s: %v", name, err)
 	}
 }
 

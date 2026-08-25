@@ -1,10 +1,13 @@
 package forge
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
@@ -33,6 +36,14 @@ const (
 	archetypesFile = "archetypes.json"
 	castFile       = "cast.json"
 )
+
+// assetsDir is the folder inside a data directory that art lives under.
+//
+// It is named once, here, because two questions read it: where a character's
+// art is suggested to live, which SuggestedImage answers, and what art there is
+// to choose from, which ArtFiles answers. Two spellings of one folder name is
+// how a picker ends up offering paths a suggestion never proposes.
+const assetsDir = "assets"
 
 // Library is every book a character is validated against, loaded from one data
 // directory.
@@ -179,6 +190,78 @@ func (l *Library) ImageExists(image string) bool {
 	info, err := os.Stat(l.ImagePath(image))
 	return err == nil && info.Mode().IsRegular()
 }
+
+// AssetsPath is the directory art is looked for in.
+//
+// A front-end needs it for one sentence only: the one it says when there is no
+// art to offer. "Nothing found" without naming where it looked is a line nobody
+// can act on, and a front-end joining the folder name on itself would be a
+// second declaration of where art lives.
+func (l *Library) AssetsPath() string { return filepath.Join(l.dir, assetsDir) }
+
+// ArtFiles is every image under a data directory's assets folder, as the paths
+// a character may name: relative to the data directory, slash separated, and
+// only the ones cast.ValidateImagePath accepts.
+//
+// It walks rather than lists, because the tree is authored: art is filed by
+// origin, so assets/example/adept.svg is as ordinary as assets/hero.svg.
+// Anything the parser would refuse is skipped rather than offered — a picker
+// that can hand over a value the write then rejects is worse than a text field,
+// which at least admits the author typed it.
+//
+// The order is sorted rather than the order the filesystem hands over. This
+// list reaches a screen, and directory order is not a promise any operating
+// system makes: a chooser whose entries moved between runs would be one nobody
+// could learn.
+//
+// A missing assets folder is an empty list and not an error. A data directory
+// is allowed to have no art yet, and what a front-end owes an author then is a
+// field they can still fill in, not a refusal to draw the form.
+func ArtFiles(dir string) ([]string, error) {
+	root := filepath.Join(dir, assetsDir)
+	var found []string
+	walk := func(name string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			if name == root && errors.Is(err, fs.ErrNotExist) {
+				return fs.SkipAll
+			}
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		// Stat rather than trust the directory entry, so that this agrees with
+		// ImageExists: that one follows a symlink and wants a regular file, and
+		// the two disagreeing would mean offering a path a check then calls
+		// missing, or hiding one it would have accepted.
+		info, err := os.Stat(name)
+		if err != nil || !info.Mode().IsRegular() {
+			return nil
+		}
+		relative, err := filepath.Rel(dir, name)
+		if err != nil {
+			return err
+		}
+		// Slashes on the way out, for the same reason ValidateImagePath refuses
+		// a backslash: what is written into cast.json has to mean the same thing
+		// on the next machine to read it.
+		image := filepath.ToSlash(relative)
+		if cast.ValidateImagePath(image) != nil {
+			return nil
+		}
+		found = append(found, image)
+		return nil
+	}
+	if err := filepath.WalkDir(root, walk); err != nil {
+		return nil, fmt.Errorf("look for art under %s: %w", root, err)
+	}
+	sort.Strings(found)
+	return found, nil
+}
+
+// ArtFiles is the package function over the directory the books were read from,
+// which is what a front-end holding a library has.
+func (l *Library) ArtFiles() ([]string, error) { return ArtFiles(l.dir) }
 
 // LookupKit resolves a list of skill ids against the book.
 func (l *Library) LookupKit(named []string) ([]skill.Skill, error) {
