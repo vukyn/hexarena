@@ -390,6 +390,11 @@ const (
 	// NoteRebuild warns that the game boots from the embedded copy, so an edit
 	// is not in a battle until the binary is rebuilt.
 	NoteRebuild
+	// NoteEdited names the skill that was changed and the file it was changed
+	// in. It is a separate note from NoteWrote rather than the same one reworded,
+	// because the two are different events to the reader: one added something
+	// nobody carries yet, and the other changed something units already carry.
+	NoteEdited
 	// NoteGoldensMove warns that a balance change has moved the golden files,
 	// and that reading that diff is the next step rather than an afterthought.
 	// It follows a skill, because a skill is balance: its power reaches the
@@ -453,6 +458,8 @@ func (l *Library) noteLines(facts []Note) []string {
 		switch note.Kind {
 		case NoteWrote:
 			lines = append(lines, fmt.Sprintf("wrote %s to %s", note.ID, note.Path))
+		case NoteEdited:
+			lines = append(lines, fmt.Sprintf("edited %s in %s", note.ID, note.Path))
 		case NoteArtMissing:
 			lines = append(lines, fmt.Sprintf(
 				"note: %s is not there yet; a check will keep saying so until it is", note.Path))

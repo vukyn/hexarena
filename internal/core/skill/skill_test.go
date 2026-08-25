@@ -3,6 +3,7 @@ package skill_test
 import (
 	"encoding/json"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -791,6 +792,103 @@ func TestMarshalIsLosslessForEveryBlockASkillCanDeclare(t *testing.T) {
 
 // TestAppendValidatesLikeAParse is what keeps a written book a loadable one: the
 // addition goes through the parser rather than past it.
+// TestReplaceKeepsTheSkillWhereItWas is the property the whole of editing rests
+// on, and it is measured on the whole marshalled book rather than on the edited
+// entry.
+//
+// Asserting only that the entry changed would pass just as happily on a Replace
+// that moved the skill to the end, and moving it is the failure that matters:
+// skills.json is committed in the form Marshal writes and its order is authored
+// information, so a one-field edit that reordered the file would rewrite every
+// line of it and every row of skills.golden's table. So the assertion is that
+// the marshalled book differs from the original in exactly the bytes of the one
+// number that changed.
+func TestReplaceKeepsTheSkillWhereItWas(t *testing.T) {
+	book := mustBook(t)
+	before, err := book.Marshal()
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	// The third of four, so a Replace that appended, prepended or sorted would
+	// all read differently from a Replace that changed it in place.
+	original, err := book.Lookup("cinder_burst")
+	if err != nil {
+		t.Fatalf("look up the skill to edit: %v", err)
+	}
+	edited := original
+	edited.Power = 1234
+
+	changed, err := book.Replace(deps(t), edited)
+	if err != nil {
+		t.Fatalf("replace: %v", err)
+	}
+	if len(changed.Skills()) != len(book.Skills()) {
+		t.Errorf("the book holds %d skills after a replace, want %d",
+			len(changed.Skills()), len(book.Skills()))
+	}
+	if held, err := book.Lookup("cinder_burst"); err != nil || held.Power != original.Power {
+		t.Error("Replace changed the book it was called on")
+	}
+
+	after, err := changed.Marshal()
+	if err != nil {
+		t.Fatalf("marshal the changed book: %v", err)
+	}
+	was, now := strings.Split(string(before), "\n"), strings.Split(string(after), "\n")
+	if len(was) != len(now) {
+		t.Fatalf("the file went from %d lines to %d", len(was), len(now))
+	}
+	moved := []int(nil)
+	for i := range was {
+		if was[i] != now[i] {
+			moved = append(moved, i)
+		}
+	}
+	if len(moved) != 1 {
+		t.Fatalf("%d lines of the file changed, want 1:\n%s", len(moved), string(after))
+	}
+	if got := strings.TrimSpace(now[moved[0]]); got != `"power": 1234,` {
+		t.Errorf("the line that changed is %q", got)
+	}
+	if was := strings.TrimSpace(was[moved[0]]); was != `"power": `+strconv.Itoa(original.Power)+`,` {
+		t.Errorf("the line it replaced was %q", was)
+	}
+	// The order itself, stated as an order rather than inferred from the bytes.
+	names := make([]string, 0, 4)
+	for _, current := range changed.Skills() {
+		names = append(names, current.ID)
+	}
+	if got := strings.Join(names, " "); got != "strike ember_lance cinder_burst riptide" {
+		t.Errorf("the declaration order became %q", got)
+	}
+}
+
+// TestReplaceValidatesLikeAParseAndOnlyChangesWhatIsThere is the other half of
+// Replace's contract: it is a change to a declaration, never an addition, and
+// the parser has the last word on the change.
+func TestReplaceValidatesLikeAParseAndOnlyChangesWhatIsThere(t *testing.T) {
+	book := mustBook(t)
+	legal, err := book.Lookup("strike")
+	if err != nil {
+		t.Fatalf("look up strike: %v", err)
+	}
+
+	// An id the book does not hold is a caller's mistake rather than a new skill:
+	// Replace finds the position by the id, so there is no position to keep.
+	absent := legal
+	absent.ID = "oath"
+	if _, err := book.Replace(deps(t), absent); err == nil {
+		t.Error("a skill the book does not hold was replaced into it")
+	}
+	// And a change the parser refuses never becomes a book, so it can never
+	// become a file. The bound is skill.ParseBook's and is not restated here.
+	broken := legal
+	broken.Pattern = "nonesuch"
+	if _, err := book.Replace(deps(t), broken); err == nil {
+		t.Error("a skill naming a shape that does not exist was replaced in")
+	}
+}
+
 func TestAppendValidatesLikeAParse(t *testing.T) {
 	book := mustBook(t)
 	grown, err := book.Append(deps(t), skill.Skill{

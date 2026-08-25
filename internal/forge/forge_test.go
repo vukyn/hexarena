@@ -7,10 +7,12 @@ import (
 	"reflect"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -984,5 +986,590 @@ func TestTheAllowlistValidatorsAcceptNothingAndRefuseTheUnknown(t *testing.T) {
 	}
 	if err := lib.ValidateRestrictedCharacters(cast[0] + "," + cast[0]); !errors.As(err, &twice) {
 		t.Errorf("a character named twice gave %v", err)
+	}
+}
+
+// The tests below are editing a skill that already ships, which is a different
+// job from authoring one for the reason stated at the top of skill_edit.go:
+// nobody carries a new skill, and shipped units carry an edited one.
+
+// TestAnEditKeepsTheBlocksTheFormNeverAsksAbout is the losslessness that makes
+// editing through the tool safe at all.
+//
+// The form authors nine fields, the statuses inflicted and the three allowlists.
+// It never asks about requires, strips, scaling or self_applies, and all four
+// exist in the shipped book — so an edit built onto an empty skill rather than
+// onto the skill as it stands would silently delete a hand-authored condition, in
+// a file the author was told they were only changing a power in.
+//
+// The four are asserted on the real data rather than on a fixture, for the same
+// reason TestTheShippedSkillBookSurvivesBeingWritten is: a fixture proves the
+// mechanism and the shipped file proves the game.
+func TestAnEditKeepsTheBlocksTheFormNeverAsksAbout(t *testing.T) {
+	cases := []struct {
+		skill string
+		holds func(skill.Skill) bool
+		what  string
+	}{
+		{"detonate", func(s skill.Skill) bool { return s.Requires != nil }, "requires"},
+		{"purify", func(s skill.Skill) bool { return s.Strips != nil }, "strips"},
+		{"swift_edge", func(s skill.Skill) bool {
+			return s.Scaling.Source == combat.BaseStat && s.Scaling.Stat == progression.Speed
+		}, "scaling"},
+		{"quickstep", func(s skill.Skill) bool { return len(s.SelfApplies) > 0 }, "self_applies"},
+	}
+	for _, test := range cases {
+		t.Run(test.what, func(t *testing.T) {
+			dir := scratchData(t)
+			lib, err := Load(dir)
+			if err != nil {
+				t.Fatalf("load: %v", err)
+			}
+			before, err := lib.Skills().Lookup(test.skill)
+			if err != nil {
+				t.Fatalf("look up %s: %v", test.skill, err)
+			}
+			if !test.holds(before) {
+				t.Fatalf("the shipped %s no longer declares %s, so this proves nothing",
+					test.skill, test.what)
+			}
+
+			// An edit that mentions the accuracy and nothing else.
+			raised := "700"
+			built, err := (SkillEdit{Accuracy: &raised}).Draft(before).ResolveEdit(lib, test.skill)
+			if err != nil {
+				t.Fatalf("resolve the edit: %v", err)
+			}
+			change, err := lib.EditSkill(built)
+			if err != nil {
+				t.Fatalf("edit: %v", err)
+			}
+			if change.After.Accuracy != 700 {
+				t.Errorf("the accuracy became %d", change.After.Accuracy)
+			}
+			if !test.holds(change.After) {
+				t.Errorf("the edit dropped %s: %+v", test.what, change.After)
+			}
+
+			// And the file, not only the value in hand: the block has to come back
+			// off the disk.
+			reloaded, err := Load(dir)
+			if err != nil {
+				t.Fatalf("reload: %v", err)
+			}
+			written, err := reloaded.Skills().Lookup(test.skill)
+			if err != nil {
+				t.Fatalf("the edited skill is not in the reloaded book: %v", err)
+			}
+			if !reflect.DeepEqual(written, change.After) {
+				t.Errorf("the trip through the file changed the skill:\n%+v\n%+v",
+					written, change.After)
+			}
+			// Everything the edit did not name is what it was, which is the whole
+			// claim: the accuracy is the only field that moved.
+			expected := before
+			expected.Accuracy = 700
+			if !reflect.DeepEqual(written, expected) {
+				t.Errorf("the edit changed more than the accuracy:\n%+v\n%+v",
+					written, expected)
+			}
+		})
+	}
+}
+
+// TestAnEditKeepsTheSkillInItsPlaceInTheFile is skill.Book.Replace's promise
+// measured where it matters: on the shipped file, which is committed in the form
+// Marshal writes precisely so an edit is a small diff.
+func TestAnEditKeepsTheSkillInItsPlaceInTheFile(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	before, err := os.ReadFile(filepath.Join(dir, skillsFile))
+	if err != nil {
+		t.Fatalf("read the shipped skills: %v", err)
+	}
+	order := func(book *skill.Book) []string {
+		out := make([]string, 0, len(book.Skills()))
+		for _, current := range book.Skills() {
+			out = append(out, current.ID)
+		}
+		return out
+	}
+	was := order(lib.Skills())
+
+	// venom_fang is the fourth of nineteen, so a write that appended or sorted
+	// would move it.
+	current, err := lib.Skills().Lookup("venom_fang")
+	if err != nil {
+		t.Fatalf("look up venom_fang: %v", err)
+	}
+	power := "1300"
+	built, err := (SkillEdit{Power: &power}).Draft(current).ResolveEdit(lib, "venom_fang")
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	if _, err := lib.EditSkill(built); err != nil {
+		t.Fatalf("edit: %v", err)
+	}
+	after, err := os.ReadFile(filepath.Join(dir, skillsFile))
+	if err != nil {
+		t.Fatalf("read the written skills: %v", err)
+	}
+	if !slices.Equal(order(lib.Skills()), was) {
+		t.Errorf("the declaration order became %v, want %v", order(lib.Skills()), was)
+	}
+	// The whole file rather than the entry: an assertion about the entry alone
+	// would pass on a write that moved it to the end.
+	oldLines, newLines := strings.Split(string(before), "\n"), strings.Split(string(after), "\n")
+	if len(oldLines) != len(newLines) {
+		t.Fatalf("the file went from %d lines to %d", len(oldLines), len(newLines))
+	}
+	moved := []string(nil)
+	for i := range oldLines {
+		if oldLines[i] != newLines[i] {
+			moved = append(moved, strings.TrimSpace(newLines[i]))
+		}
+	}
+	if len(moved) != 1 || moved[0] != `"power": 1300,` {
+		t.Errorf("the write changed %v, want one power line", moved)
+	}
+}
+
+// TestAnEditThatWouldOrphanAShippedCharacterIsRefused is the first of the two
+// ways editing can break something an addition cannot.
+//
+// The case is built from the shipped data rather than a fixture, and it is the
+// real one: example-anime.adept is water/ice and carries riptide, so keeping
+// riptide for fire leaves the character it already ships in unable to carry it.
+// What must not happen is a written file that then fails to load — so the refusal
+// comes before the write, and it names who.
+func TestAnEditThatWouldOrphanAShippedCharacterIsRefused(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	before, err := os.ReadFile(filepath.Join(dir, skillsFile))
+	if err != nil {
+		t.Fatalf("read the shipped skills: %v", err)
+	}
+	current, err := lib.Skills().Lookup("riptide")
+	if err != nil {
+		t.Fatalf("look up riptide: %v", err)
+	}
+	carrier, holds := lib.Characters().Get("example-anime.adept")
+	if !holds || !slices.Contains(carrier.Skills, "riptide") {
+		t.Skip("the shipped cast no longer has a character carrying riptide")
+	}
+
+	fire := "fire"
+	built, err := (SkillEdit{RestrictElements: &fire}).Draft(current).ResolveEdit(lib, "riptide")
+	if err != nil {
+		t.Fatalf("the skill itself is legal, so resolving it should pass: %v", err)
+	}
+	_, err = lib.EditSkill(built)
+	var broken *SkillEditBreaksError
+	if !errors.As(err, &broken) {
+		t.Fatalf("keeping a carried skill for another element was accepted: %v", err)
+	}
+	if broken.ID != carrier.ID {
+		t.Errorf("the refusal names %q, want %q", broken.ID, carrier.ID)
+	}
+	if broken.Carrier != BrokenCharacter {
+		t.Errorf("the refusal is about %v, want a character", broken.Carrier)
+	}
+	if broken.Skill != "riptide" {
+		t.Errorf("the refusal names the skill %q", broken.Skill)
+	}
+	// And why, from the same value skill.WhyCannotCarry hands the engine.
+	var refused *CarryError
+	if !errors.As(err, &refused) {
+		t.Fatalf("the reason is %T, want a carry refusal", broken.Err)
+	}
+	if refused.Reason != skill.CarryElementRestricted {
+		t.Errorf("the reason is %v, want the element allowlist", refused.Reason)
+	}
+
+	// Nothing was written, which is the point: a refused edit must not leave a
+	// data directory the game no longer boots from.
+	after, err := os.ReadFile(filepath.Join(dir, skillsFile))
+	if err != nil {
+		t.Fatalf("read the skills after the refusal: %v", err)
+	}
+	if string(after) != string(before) {
+		t.Error("a refused edit still rewrote skills.json")
+	}
+	if held, err := lib.Skills().Lookup("riptide"); err != nil || held.Restrict != nil {
+		t.Errorf("the library kept the refused edit: %+v", held)
+	}
+	if _, err := Load(dir); err != nil {
+		t.Errorf("the data directory no longer loads: %v", err)
+	}
+}
+
+// TestAnEditThatWouldOrphanAnArchetypePresetIsRefused is the second way, and it
+// is a different rule in a different place: a preset is the starting point for
+// every character built from it, so a skill kept for named characters has no
+// business in one — cast.resolveArchetype refuses it, and forge.CheckPresetKit
+// brings that answer forward so the refusal can name the preset.
+//
+// The case is shipped data again: sever sits in bulwark's kit and nobody carries
+// it, so keeping it for a named character breaks the preset and only the preset.
+func TestAnEditThatWouldOrphanAnArchetypePresetIsRefused(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	current, err := lib.Skills().Lookup("sever")
+	if err != nil {
+		t.Fatalf("look up sever: %v", err)
+	}
+	preset, holds := lib.Archetypes().Get("bulwark")
+	if !holds || !slices.Contains(preset.Skills, "sever") {
+		t.Skip("the shipped presets no longer have bulwark carrying sever")
+	}
+	owner := lib.CharacterIDs()[0]
+
+	built, err := (SkillEdit{RestrictCharacters: &owner}).Draft(current).ResolveEdit(lib, "sever")
+	if err != nil {
+		t.Fatalf("the skill itself is legal, so resolving it should pass: %v", err)
+	}
+	_, err = lib.EditSkill(built)
+	var broken *SkillEditBreaksError
+	if !errors.As(err, &broken) {
+		t.Fatalf("giving a preset's skill to one character was accepted: %v", err)
+	}
+	if broken.Carrier != BrokenPreset || broken.ID != "bulwark" {
+		t.Errorf("the refusal is about %v %q, want the bulwark preset", broken.Carrier, broken.ID)
+	}
+	var owned *PresetOwnedSkillError
+	if !errors.As(err, &owned) {
+		t.Fatalf("the reason is %T, want a preset-owned refusal", broken.Err)
+	}
+	if owned.Archetype != "bulwark" || owned.Skill != "sever" {
+		t.Errorf("the reason names %q and %q", owned.Archetype, owned.Skill)
+	}
+	if _, err := Load(dir); err != nil {
+		t.Errorf("the data directory no longer loads: %v", err)
+	}
+}
+
+// TestAnAbsentFieldAndAnExplicitZeroAreDifferentAnswers is the trap a partial
+// edit exists to close.
+//
+// "--cooldown 0" means make the cooldown zero and no --cooldown at all means
+// leave it, and a field held as a plain string cannot tell the two apart. So the
+// fields are pointers, and both halves are asserted: the zero has to land, and
+// the silence has to leave everything alone.
+func TestAnAbsentFieldAndAnExplicitZeroAreDifferentAnswers(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	// riptide ships with a cooldown of three, so zero is a change and silence is
+	// not.
+	current, err := lib.Skills().Lookup("riptide")
+	if err != nil {
+		t.Fatalf("look up riptide: %v", err)
+	}
+	if current.Cooldown == 0 {
+		t.Fatal("riptide ships with no cooldown, so this proves nothing")
+	}
+
+	zero := "0"
+	cleared := (SkillEdit{Cooldown: &zero}).Draft(current)
+	if cleared.Cooldown != "0" {
+		t.Errorf("an explicit zero drafted as %q", cleared.Cooldown)
+	}
+	silent := (SkillEdit{}).Draft(current)
+	if silent.Cooldown != strconv.Itoa(current.Cooldown) {
+		t.Errorf("an absent field drafted as %q, want the cooldown it had", silent.Cooldown)
+	}
+	// And an edit naming nothing is a draft that reproduces the skill exactly,
+	// which is what makes "leave it" mean leave it.
+	unchanged, err := silent.ResolveEdit(lib, "riptide")
+	if err != nil {
+		t.Fatalf("resolve an edit that names nothing: %v", err)
+	}
+	if !reflect.DeepEqual(unchanged, current) {
+		t.Errorf("an edit naming nothing changed the skill:\n%+v\n%+v", unchanged, current)
+	}
+	if (SkillEdit{}).Names() {
+		t.Error("an edit naming nothing reports that it names something")
+	}
+	if !(SkillEdit{Cooldown: &zero}).Names() {
+		t.Error("an edit naming a field reports that it names nothing")
+	}
+
+	// The zero really lands, through the write.
+	built, err := cleared.ResolveEdit(lib, "riptide")
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	change, err := lib.EditSkill(built)
+	if err != nil {
+		t.Fatalf("edit: %v", err)
+	}
+	if change.After.Cooldown != 0 {
+		t.Errorf("the cooldown became %d, want zero", change.After.Cooldown)
+	}
+	if change.Before.Cooldown != current.Cooldown {
+		t.Errorf("the change reports the old cooldown as %d", change.Before.Cooldown)
+	}
+}
+
+// TestAnExplicitlyEmptyListClearsARestriction covers the only way the command
+// line can take a restriction back off a skill.
+//
+// An empty string is a real answer here, and it means the opposite of silence: it
+// clears the list, which puts a neutral skill back in the common pool. The
+// distinction it must not fall into is the one skill.ParseBook refuses — a list
+// present and empty, satisfied by nobody — and SkillDraft.Restriction is what
+// keeps them apart.
+func TestAnExplicitlyEmptyListClearsARestriction(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	// A skill nobody carries, so narrowing it and widening it again breaks
+	// nothing.
+	kept, err := SkillDraft{
+		ID: "oath", Element: "neutral", Target: "enemy", Range: "1", Pattern: "single",
+		Power: "1000", Strikes: "1", Accuracy: "900", Cooldown: "0",
+		RestrictElements: "fire,metal", RestrictArchetypes: "bulwark",
+	}.Resolve(lib)
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	if err := lib.SaveSkill(kept); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+
+	// Silence on the other two lists leaves them exactly as they were, which is
+	// what makes clearing one list a change to one list.
+	nothing := ""
+	built, err := (SkillEdit{RestrictElements: &nothing}).Draft(kept).ResolveEdit(lib, "oath")
+	if err != nil {
+		t.Fatalf("resolve the clearing edit: %v", err)
+	}
+	if names := built.Restrict.ElementNames(); len(names) != 0 {
+		t.Errorf("the element allowlist is still %v", names)
+	}
+	if built.Restrict == nil || !slices.Equal(built.Restrict.Archetypes, []string{"bulwark"}) {
+		t.Errorf("clearing the elements also cleared the roles: %+v", built.Restrict)
+	}
+
+	// And clearing every list leaves no restrict block at all, rather than an
+	// empty one the parser refuses.
+	all := SkillEdit{
+		RestrictElements: &nothing, RestrictArchetypes: &nothing, RestrictCharacters: &nothing,
+	}
+	bare, err := all.Draft(kept).ResolveEdit(lib, "oath")
+	if err != nil {
+		t.Fatalf("resolve the fully clearing edit: %v", err)
+	}
+	if bare.Restrict != nil {
+		t.Errorf("clearing every list left %+v, want no restriction at all", bare.Restrict)
+	}
+	change, err := lib.EditSkill(bare)
+	if err != nil {
+		t.Fatalf("edit: %v", err)
+	}
+	if !AnyoneMayCarry(change.After) {
+		t.Errorf("the cleared skill is not back in the common pool: %s", WhoMaySummary(change.After))
+	}
+	reloaded, err := Load(dir)
+	if err != nil {
+		t.Fatalf("reload: %v", err)
+	}
+	written, err := reloaded.Skills().Lookup("oath")
+	if err != nil {
+		t.Fatalf("the edited skill is not in the reloaded book: %v", err)
+	}
+	if written.Restrict != nil {
+		t.Errorf("the file still holds a restriction: %+v", written.Restrict)
+	}
+}
+
+// TestEditingTheIDIsRefused is the operation this deliberately does not attempt.
+//
+// A rename has to change every kit, every preset's kit and every
+// restrict.characters list that names the old id. Half of that — moving the
+// declaration and leaving the references — is a book that does not load, so the
+// refusal says a rename is a separate operation rather than doing part of one.
+func TestEditingTheIDIsRefused(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	current, err := lib.Skills().Lookup("sever")
+	if err != nil {
+		t.Fatalf("look up sever: %v", err)
+	}
+	renamed := "sunder"
+	_, err = (SkillEdit{ID: &renamed}).Draft(current).ResolveEdit(lib, "sever")
+	var rename *SkillRenameError
+	if !errors.As(err, &rename) {
+		t.Fatalf("a renamed id was accepted: %v", err)
+	}
+	if rename.From != "sever" || rename.To != "sunder" {
+		t.Errorf("the refusal reads %q → %q", rename.From, rename.To)
+	}
+	// The same id is not a rename, so passing it changes nothing.
+	same := "sever"
+	if _, err := (SkillEdit{ID: &same}).Draft(current).ResolveEdit(lib, "sever"); err != nil {
+		t.Errorf("naming the id it already has was refused: %v", err)
+	}
+	// And a skill the book does not hold is refused as unknown rather than
+	// quietly added.
+	var unknown *UnknownSkillError
+	if _, err := (SkillEdit{}).Draft(current).ResolveEdit(lib, "nonesuch"); !errors.As(err, &unknown) {
+		t.Errorf("editing a skill that does not exist gave %v", err)
+	}
+}
+
+// TestTheBeforeAndAfterDamageIsPreviewDamage is what makes an edit reportable: a
+// skill is balance, so the figure that matters after a write is what moved.
+//
+// Both halves have to be the same PreviewDamage the form shows before a write and
+// skills.golden's column is measured from, or the two figures are not comparable
+// with each other and neither is comparable with the table.
+func TestTheBeforeAndAfterDamageIsPreviewDamage(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	current, err := lib.Skills().Lookup("venom_fang")
+	if err != nil {
+		t.Fatalf("look up venom_fang: %v", err)
+	}
+	wanted := lib.PreviewDamage(current)
+
+	power := "1500"
+	built, err := (SkillEdit{Power: &power}).Draft(current).ResolveEdit(lib, "venom_fang")
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	expected := lib.PreviewDamage(built)
+	change, err := lib.EditSkill(built)
+	if err != nil {
+		t.Fatalf("edit: %v", err)
+	}
+	if change.BeforeDamage != wanted {
+		t.Errorf("the before is %+v, want %+v", change.BeforeDamage, wanted)
+	}
+	if change.AfterDamage != expected {
+		t.Errorf("the after is %+v, want %+v", change.AfterDamage, expected)
+	}
+	if !change.MovesDamage() {
+		t.Error("raising a power reports that the damage did not move")
+	}
+
+	// An edit that touches no number moves no damage, which is what leaves the
+	// before-and-after line off a screen that has nothing to compare.
+	side := "ally"
+	still, err := lib.Skills().Lookup("war_cry")
+	if err != nil {
+		t.Fatalf("look up war_cry: %v", err)
+	}
+	quiet, err := (SkillEdit{Target: &side}).Draft(still).ResolveEdit(lib, "war_cry")
+	if err != nil {
+		t.Fatalf("resolve: %v", err)
+	}
+	unmoved, err := lib.EditSkill(quiet)
+	if err != nil {
+		t.Fatalf("edit: %v", err)
+	}
+	if unmoved.MovesDamage() {
+		t.Errorf("changing who a skill aims at moved the damage: %s", unmoved.DamageSummary())
+	}
+	// The note still says the goldens moved, because the damage is not the only
+	// thing that reaches one.
+	kinds := make([]NoteKind, 0, 3)
+	for _, note := range lib.EditSkillNoteFacts(unmoved) {
+		kinds = append(kinds, note.Kind)
+	}
+	if !slices.Equal(kinds, []NoteKind{NoteEdited, NoteGoldensMove, NoteRebuild}) {
+		t.Errorf("an edit reports %v", kinds)
+	}
+}
+
+// TestEveryShippedSkillTakesABalanceEdit answers the question an author asks
+// before touching the book at all: is any of it locked?
+//
+// None of it is. Every shipped skill takes a change to its power, because a
+// power narrows nobody — the two ways an edit can orphan a carrier are the
+// element and the restriction, and neither is what balancing a skill touches.
+// That is worth a test rather than a claim: if a future skill were to arrive
+// carried by somebody it could not be rebalanced for, this is where it would
+// show up.
+func TestEveryShippedSkillTakesABalanceEdit(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	for _, current := range lib.Skills().Skills() {
+		// One more than it had, so the edit is real for every skill including the
+		// ones whose power is zero on purpose.
+		raised := strconv.Itoa(current.Power + 1)
+		built, err := (SkillEdit{Power: &raised}).Draft(current).ResolveEdit(lib, current.ID)
+		if err != nil {
+			t.Errorf("%s cannot be rebalanced: %v", current.ID, err)
+			continue
+		}
+		if _, err := lib.EditSkill(built); err != nil {
+			t.Errorf("%s cannot be rebalanced: %v", current.ID, err)
+		}
+	}
+	if _, err := Load(dir); err != nil {
+		t.Errorf("the data directory no longer loads after editing every skill: %v", err)
+	}
+}
+
+// TestAnEditRefusedForNoOneCarriersFaultKeepsTheParsersWords is the third shape
+// of an edit refusal, and the one a classification must not guess at.
+//
+// Whether a kit demands more than two elements is a rule about the kit as a
+// whole rather than about one skill in it, so no per-carrier check can attribute
+// it. The refusal therefore names nobody and shows what cast said, which is the
+// same thing every other diagnostic from internal/core gets. Blaming a carrier
+// here would name one that is not at fault.
+func TestAnEditRefusedForNoOneCarriersFaultKeepsTheParsersWords(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	// bolt is neutral and sits in skirmisher's kit beside a grass skill and an
+	// electric one, so giving it a third element leaves that kit uncarryable.
+	current, err := lib.Skills().Lookup("bolt")
+	if err != nil {
+		t.Fatalf("look up bolt: %v", err)
+	}
+	fire := "fire"
+	built, err := (SkillEdit{Element: &fire}).Draft(current).ResolveEdit(lib, "bolt")
+	if err != nil {
+		t.Fatalf("the skill itself is legal, so resolving it should pass: %v", err)
+	}
+	_, err = lib.EditSkill(built)
+	var broken *SkillEditBreaksError
+	if !errors.As(err, &broken) {
+		t.Fatalf("a kit demanding three elements was accepted: %v", err)
+	}
+	if broken.ID != "" {
+		t.Errorf("the refusal blames %q, and no single carrier is at fault", broken.ID)
+	}
+	if !strings.Contains(err.Error(), "at most 2") {
+		t.Errorf("the refusal does not keep the parser's own words: %v", err)
+	}
+	if _, err := Load(dir); err != nil {
+		t.Errorf("the data directory no longer loads: %v", err)
 	}
 }

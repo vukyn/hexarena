@@ -884,6 +884,10 @@ func TestTheFooterNamesTheKeysOfTheScreenInFront(t *testing.T) {
 		{screenBrowse, []string{"↑/↓", "←/→", "f", "esc", "q"}},
 		{screenNew, []string{"↑/↓", "←/→", "ctrl+s", "esc", "ctrl+c"}},
 		{screenOrigins, []string{"a", "esc", "q"}},
+		// Both of the skill list's own keys, because a key nobody is told about
+		// is a key nobody presses: editing a shipped skill is the whole reason
+		// this screen is more than a table.
+		{screenSkills, []string{"a", "e", "esc", "q"}},
 		{screenCheck, []string{"r", "esc", "q"}},
 	}
 	for _, lang := range i18n.Langs() {
@@ -1245,6 +1249,227 @@ func TestASavedSkillSaysTheGoldensHaveMoved(t *testing.T) {
 		line := lang.Note(forge.Note{Kind: forge.NoteGoldensMove})
 		if !strings.Contains(line, "make golden") {
 			t.Errorf("the %s note does not say how to accept the move: %q", lang, line)
+		}
+	}
+}
+
+// skillListTo moves the skill listing's cursor onto an id, with the keys an
+// author would press.
+func skillListTo(t *testing.T, m model, id string) model {
+	t.Helper()
+	for range len(m.skills.skills) {
+		m = key(t, m, "up")
+	}
+	for range len(m.skills.skills) {
+		if m.skills.skills[m.skills.cursor].ID == id {
+			return m
+		}
+		m = key(t, m, "down")
+	}
+	t.Fatalf("the listing never reached %q", id)
+	return m
+}
+
+// TestEditingASkillOpensThePrefilledFormAndReplaces is the property that makes
+// one form serve both jobs.
+//
+// Three things are asserted and each is a way this can go wrong quietly. The
+// form has to open on the skill under the cursor with its own values in it, or an
+// author accepting a field as it stands changes it. The write has to replace
+// rather than append, or the book grows a duplicate id and the file reorders. And
+// the listing behind it has to show the new value, because a screen that reports
+// a write it did not make is worse than one that reports nothing.
+func TestEditingASkillOpensThePrefilledFormAndReplaces(t *testing.T) {
+	m, lib, dir := start(t, i18n.Vi)
+	before, err := os.ReadFile(filepath.Join(dir, "skills.json"))
+	if err != nil {
+		t.Fatalf("read the shipped skills: %v", err)
+	}
+	original, err := lib.Skills().Lookup("venom_fang")
+	if err != nil {
+		t.Fatalf("look up venom_fang: %v", err)
+	}
+	count := len(lib.Skills().Skills())
+
+	m = m.enter(screenSkills)
+	m = skillListTo(t, m, "venom_fang")
+	m = typeText(t, m, "e")
+	if m.skills.editing != "venom_fang" {
+		t.Fatalf("e opened the form on %q", m.skills.editing)
+	}
+	if m.skills.adding {
+		t.Error("editing a skill also reports itself as adding one")
+	}
+	// Prefilled from the book, and prefilled exactly: the draft the form would
+	// write with nothing touched is the skill as it stands.
+	if drafted := m.skills.draft(m); drafted != forge.SkillAnswers(original) {
+		t.Errorf("the form opened with\n%+v\nwant\n%+v", drafted, forge.SkillAnswers(original))
+	}
+	// The screen says which of the two jobs it is doing.
+	body, _ := m.skills.view(m)
+	if !strings.Contains(body, i18n.Vi.Text(i18n.SkillFormEditHeading)) {
+		t.Errorf("the form does not say it is editing:\n%s", body)
+	}
+	if strings.Contains(body, i18n.Vi.Text(i18n.SkillFormHeading)) {
+		t.Errorf("the form still says it is authoring a new skill:\n%s", body)
+	}
+
+	// Change one number and save.
+	m = skillFormTo(t, m, skillFieldPower)
+	for range len(m.skills.inputs[skillFieldPower].Value()) {
+		m = send(t, m, tea.KeyMsg{Type: tea.KeyBackspace})
+	}
+	m = typeText(t, m, "1500")
+	m = key(t, m, "ctrl+s")
+	if m.skills.err != nil {
+		t.Fatalf("the edit was refused: %v", m.skills.err)
+	}
+	if m.skills.editing != "" {
+		t.Error("the form is still open after a write")
+	}
+	if m.skills.edited == nil || m.skills.edited.After.Power != 1500 {
+		t.Fatalf("the screen does not report what it changed: %+v", m.skills.edited)
+	}
+	if m.skills.edited.Before.Power != original.Power {
+		t.Errorf("the change reports the old power as %d", m.skills.edited.Before.Power)
+	}
+
+	// A replace and not an append: the book is the same length, in the same
+	// order, and the file differs in one line.
+	if got := len(m.lib.Skills().Skills()); got != count {
+		t.Errorf("the book holds %d skills after an edit, want %d", got, count)
+	}
+	after, err := os.ReadFile(filepath.Join(dir, "skills.json"))
+	if err != nil {
+		t.Fatalf("read the written skills: %v", err)
+	}
+	oldLines, newLines := strings.Split(string(before), "\n"), strings.Split(string(after), "\n")
+	if len(oldLines) != len(newLines) {
+		t.Fatalf("the file went from %d lines to %d", len(oldLines), len(newLines))
+	}
+	moved := []string(nil)
+	for i := range oldLines {
+		if oldLines[i] != newLines[i] {
+			moved = append(moved, strings.TrimSpace(newLines[i]))
+		}
+	}
+	if len(moved) != 1 || moved[0] != `"power": 1500,` {
+		t.Errorf("the write changed %v, want one power line", moved)
+	}
+
+	// The listing shows the new value, and the two lines an edit leaves: what
+	// changed, and what the damage moved from and to.
+	body, _ = m.skills.view(m)
+	if !strings.Contains(body, "1500x1") {
+		t.Errorf("the listing does not show the new power:\n%s", body)
+	}
+	if want := i18n.Vi.Say(i18n.SkillEdited, "venom_fang", m.lib.SkillsPath()); !strings.Contains(body, want) {
+		t.Errorf("the listing does not say %q:\n%s", want, body)
+	}
+	if !strings.Contains(body, i18n.Vi.DamageMoved(*m.skills.edited)) {
+		t.Errorf("the listing does not show the damage before and after:\n%s", body)
+	}
+	// And the figures are the library's own, not the screen's.
+	if m.skills.edited.BeforeDamage != lib.PreviewDamage(original) {
+		t.Errorf("the before is %+v", m.skills.edited.BeforeDamage)
+	}
+	if m.skills.edited.AfterDamage != lib.PreviewDamage(m.skills.edited.After) {
+		t.Errorf("the after is %+v", m.skills.edited.AfterDamage)
+	}
+}
+
+// TestAnEditTheDataCannotSurviveIsRefusedOnScreen is the refusal the form has to
+// show rather than write, in the author's own language.
+//
+// The wording is internal/i18n's from internal/forge's facts, which is what lets
+// the screen name the character without holding a rule: the refusal it draws
+// carries the carrier's id, and the screen only decides where to put it.
+func TestAnEditTheDataCannotSurviveIsRefusedOnScreen(t *testing.T) {
+	m, _, dir := start(t, i18n.Vi)
+	before, err := os.ReadFile(filepath.Join(dir, "skills.json"))
+	if err != nil {
+		t.Fatalf("read the shipped skills: %v", err)
+	}
+	m = m.enter(screenSkills)
+	m = skillListTo(t, m, "riptide")
+	m = typeText(t, m, "e")
+
+	// Keep a skill a shipped character carries for an element that character does
+	// not have.
+	m = skillFormTo(t, m, skillFieldKeptForElements)
+	m = key(t, m, "space")
+	if m.picker == nil {
+		t.Fatal("space on the element allowlist did not open the list")
+	}
+	m = pickTo(t, m, "fire")
+	m = key(t, m, "space")
+	m = key(t, m, "enter")
+	m = key(t, m, "ctrl+s")
+
+	var broken *forge.SkillEditBreaksError
+	if !errors.As(m.skills.err, &broken) {
+		t.Fatalf("the screen accepted an edit that orphans a character: %v", m.skills.err)
+	}
+	if m.skills.editing != "riptide" {
+		t.Error("a refused edit closed the form, losing what was typed")
+	}
+	if after, err := os.ReadFile(filepath.Join(dir, "skills.json")); err != nil {
+		t.Fatalf("read the skills after the refusal: %v", err)
+	} else if string(after) != string(before) {
+		t.Error("a refused edit still rewrote skills.json")
+	}
+
+	body, _ := m.skills.view(m)
+	// The character is named on screen, in the language in front.
+	if !strings.Contains(body, broken.ID) {
+		t.Errorf("the refusal does not name who would break:\n%s", body)
+	}
+	if !strings.Contains(body, i18n.Vi.Error(m.skills.err)) {
+		t.Errorf("the refusal on screen is not the one internal/i18n words:\n%s", body)
+	}
+}
+
+// TestTheSkillListingFitsTheSmallestWindowAfterAnEdit is skillsRoom's arithmetic,
+// measured rather than counted by hand — because counting it by hand is how it
+// went wrong before, and because an edit spends a line an addition does not.
+//
+// Two things make the case the busiest one this screen has, and both are
+// necessary: the cursor sits on a skill with a condition, so the amplified damage
+// row is drawn, and an edit has been reported, so both of the lines a write
+// leaves are drawn. On any lesser state the screen has a line spare and a reserve
+// that is one short still fits, which is a measurement that proves nothing.
+func TestTheSkillListingFitsTheSmallestWindowAfterAnEdit(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m.width, m.height = minWidth, minHeight
+		m = m.enter(screenSkills)
+		// The worst case, and the only one that measures anything: the cursor on a
+		// skill that has a condition, so the amplified row is drawn as well. On a
+		// skill without one the screen spends a line less and a reserve that is one
+		// short still fits, which is a measurement that proves nothing.
+		m = skillListTo(t, m, "detonate")
+		if selected := m.skills.skills[m.skills.cursor]; selected.Requires == nil {
+			t.Fatalf("%s no longer has a condition, so this measures the wrong case",
+				selected.ID)
+		}
+		m.skills.edited = someSkillChange(t, m)
+		drawn := m.View()
+		if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
+			strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
+			t.Errorf("the %s skill listing is truncated at %dx%d:\n%s",
+				lang, minWidth, minHeight, drawn)
+		}
+		// And the two lines an edit leaves are both really on screen, which is
+		// what makes the reserve worth spending.
+		for _, want := range []string{
+			m.lang.Say(i18n.SkillEdited, m.skills.edited.After.ID, m.lib.SkillsPath()),
+			m.lang.DamageMoved(*m.skills.edited),
+		} {
+			// The path is clipped to the window like any other free text, so the
+			// assertion is on the front of the line rather than all of it.
+			if head := want; !strings.Contains(drawn, head[:min(len(head), 20)]) {
+				t.Errorf("the %s listing does not show %q:\n%s", lang, want, drawn)
+			}
 		}
 	}
 }

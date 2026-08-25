@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -13,8 +14,13 @@ import (
 )
 
 func runSkills(args []string) error {
-	if len(args) > 0 && args[0] == "add" {
-		return runSkillsAdd(args[1:])
+	if len(args) > 0 {
+		switch args[0] {
+		case "add":
+			return runSkillsAdd(args[1:])
+		case "edit":
+			return runSkillsEdit(args[1:])
+		}
 	}
 	lib, err := loadForListing("skills", args)
 	if err != nil {
@@ -124,6 +130,141 @@ func runSkillsAdd(args []string) error {
 		fmt.Println(line)
 	}
 	return nil
+}
+
+// runSkillsEdit changes one skill that is already in the book.
+//
+// It takes the same flag names as `skills add`, and the difference between the
+// two is entirely in what an absent flag means. On `add` an absent flag is a
+// question the wizard asks or a default it takes; here it means leave the field
+// alone, and that is why nothing below prompts for anything. An edit is a
+// sentence about the fields it names.
+//
+// The trap this function exists to avoid: an absent flag and a flag set to zero
+// are different answers. `--cooldown 0` clears a cooldown and no `--cooldown`
+// leaves it, so which flags were given is read from FlagSet.Visit — which walks
+// only the flags that were really on the command line — rather than by comparing
+// a value against "" or against zero, which cannot tell the two apart. An
+// explicitly empty `--restrict-elements ""` is a real answer too, and the only
+// way this front-end can take a restriction back off a skill.
+func runSkillsEdit(args []string) error {
+	set := newFlagSet("skills edit")
+	dir := dataFlag(set)
+	// The flag values land in strings and the pointers are filled in afterwards
+	// from Visit, because the flag package has no way to ask for "unset".
+	var given forge.SkillDraft
+	set.StringVar(&given.ID, "id", "", "refused: a skill's id cannot be edited")
+	set.StringVar(&given.Element, "element", "", "the skill's element; neutral is the common pool")
+	set.StringVar(&given.Target, "target", "", "who it aims at: enemy, ally or self")
+	set.StringVar(&given.Range, "range", "", "how far it reaches, in hexes")
+	set.StringVar(&given.Pattern, "pattern", "", "the shape it covers, by name in the pattern book")
+	set.StringVar(&given.Power, "power", "", "power per strike, in parts per thousand")
+	set.StringVar(&given.Strikes, "strikes", "", "how many times it lands")
+	set.StringVar(&given.Accuracy, "accuracy", "", "its own chance to connect, in parts per thousand")
+	set.StringVar(&given.Cooldown, "cooldown", "", "the caster's own turns before it can be used again")
+	set.StringVar(&given.Applies, "applies", "",
+		"statuses it inflicts, comma separated, each status:chance or status:chance:stacks")
+	set.StringVar(&given.RestrictElements, "restrict-elements", "",
+		"only these elements may carry it; an empty value clears the list")
+	set.StringVar(&given.RestrictArchetypes, "restrict-archetypes", "",
+		"only these role presets may carry it; an empty value clears the list")
+	set.StringVar(&given.RestrictCharacters, "restrict-characters", "",
+		"only these characters may carry it; an empty value clears the list")
+	confirmed := set.Bool("yes", false, "write without asking for confirmation")
+	operands, err := parseArgs(set, args)
+	if err != nil {
+		return err
+	}
+	if len(operands) != 1 {
+		return fmt.Errorf("usage: hexforge skills edit <id> [flags]")
+	}
+	id := operands[0]
+
+	edit := editFrom(set, &given)
+	if !edit.Names() {
+		return fmt.Errorf("nothing to change: name at least one field, "+
+			"as in `hexforge skills edit %s --power 1200`", id)
+	}
+
+	lib, err := forge.Load(*dir)
+	if err != nil {
+		return err
+	}
+	current, err := lib.Skills().Lookup(id)
+	if err != nil {
+		return err
+	}
+	built, err := edit.Draft(current).ResolveEdit(lib, id)
+	if err != nil {
+		return err
+	}
+
+	renderSkill(os.Stdout, lib, built)
+	if !*confirmed {
+		prompt := newPrompter()
+		if !prompt.interactive {
+			return fmt.Errorf("stdin is not a terminal, so the write cannot be confirmed: pass --yes")
+		}
+		agreed, err := prompt.confirm("\nchange " + id + " in " + lib.SkillsPath() + "?")
+		if err != nil {
+			return err
+		}
+		if !agreed {
+			fmt.Println("nothing written")
+			return nil
+		}
+	}
+	change, err := lib.EditSkill(built)
+	if err != nil {
+		return err
+	}
+	for _, line := range lib.EditSkillNotes(change) {
+		fmt.Println(line)
+	}
+	// The before-and-after is the point of editing through the tool rather than
+	// in the file: the figures are what the goldens will show moved.
+	if change.MovesDamage() {
+		fmt.Printf("damage %s\n", change.DamageSummary())
+	}
+	return nil
+}
+
+// editFrom reads which flags were really given.
+//
+// FlagSet.Visit walks only those, which is the whole reason this exists rather
+// than a run of `if value != ""`: it is what makes `--cooldown 0` a change to
+// zero and no `--cooldown` no change at all, and what makes
+// `--restrict-elements ""` clear a list instead of being mistaken for silence.
+// The map is read by key and never ranged over, so nothing about the order it
+// walks in reaches the output.
+func editFrom(set *flag.FlagSet, given *forge.SkillDraft) forge.SkillEdit {
+	var edit forge.SkillEdit
+	fields := map[string]**string{
+		"id": &edit.ID, "element": &edit.Element, "target": &edit.Target,
+		"range": &edit.Range, "pattern": &edit.Pattern, "power": &edit.Power,
+		"strikes": &edit.Strikes, "accuracy": &edit.Accuracy,
+		"cooldown": &edit.Cooldown, "applies": &edit.Applies,
+		"restrict-elements":   &edit.RestrictElements,
+		"restrict-archetypes": &edit.RestrictArchetypes,
+		"restrict-characters": &edit.RestrictCharacters,
+	}
+	values := map[string]*string{
+		"id": &given.ID, "element": &given.Element, "target": &given.Target,
+		"range": &given.Range, "pattern": &given.Pattern, "power": &given.Power,
+		"strikes": &given.Strikes, "accuracy": &given.Accuracy,
+		"cooldown": &given.Cooldown, "applies": &given.Applies,
+		"restrict-elements":   &given.RestrictElements,
+		"restrict-archetypes": &given.RestrictArchetypes,
+		"restrict-characters": &given.RestrictCharacters,
+	}
+	set.Visit(func(flagged *flag.Flag) {
+		field, ours := fields[flagged.Name]
+		if !ours {
+			return
+		}
+		*field = values[flagged.Name]
+	})
+	return edit
 }
 
 // The defaults a skill takes when nobody says otherwise.

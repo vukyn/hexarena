@@ -285,6 +285,9 @@ go run ./cmd/hexforge                  # list the subcommands
 go run ./cmd/hexforge origins          # the catalog of works
 go run ./cmd/hexforge origins add my-series --title "Some Series" --medium series --year 2024
 go run ./cmd/hexforge archetypes       # the presets, their curves and their kits
+go run ./cmd/hexforge skills           # the declared skills and who may carry each
+go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900
+go run ./cmd/hexforge skills edit oath --power 1100   # change one already in the book
 go run ./cmd/hexforge cast             # the authored characters
 go run ./cmd/hexforge new              # create a character
 go run ./cmd/hexforge show some.id --level 30
@@ -302,6 +305,17 @@ effective-health budget they spend; `--yes` skips the confirmation. Every answer
 is checked as it is entered, against the same parsers the game loads through — the
 tool knows no rules of its own, which is why a character it writes is a character
 that loads.
+
+`hexforge skills add` and `hexforge skills edit` take the same flag names, and
+the difference between them is what an absent flag means. On `add` it is a
+question the wizard asks or a default it takes; on `edit` it means leave the
+field alone, so `--cooldown 0` sets a cooldown to zero, no `--cooldown` leaves
+it, and `--restrict-elements ""` clears a list. A skill's id cannot be edited —
+renaming one has to change every kit and every restriction that names it — and an
+edit that would leave an authored character or an archetype preset unable to
+carry the skill is refused before anything is written, naming who would break.
+Editing is balance rather than content, so a successful one reports the damage
+before and after and says the golden files have moved.
 
 With nobody watching — a pipe, a script, CI — it takes the default for every field
 that has one and fails only on a field that has none, naming the flag that would

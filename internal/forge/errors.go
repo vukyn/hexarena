@@ -105,6 +105,90 @@ type MissingSkillIDError struct{}
 
 func (e *MissingSkillIDError) Error() string { return "a skill needs an id" }
 
+// SkillRenameError is an edit that would change a skill's id.
+//
+// It is a refusal rather than a rename because a rename is a different
+// operation: the id is named by every kit that carries the skill, by every
+// preset's kit, and by every restrict.characters list that keeps it for
+// somebody, so moving the declaration alone would leave a book that does not
+// load. The refusal says so rather than saying no, because an author who typed a
+// new id wants to know what would have to happen, not only that it did not.
+type SkillRenameError struct{ From, To string }
+
+func (e *SkillRenameError) Error() string {
+	return fmt.Sprintf("a skill's id cannot be edited, so %q cannot become %q; "+
+		"renaming one has to change every kit and every restriction that names it, "+
+		"which is a separate operation", e.From, e.To)
+}
+
+// PresetOwnedSkillError is an archetype preset whose kit holds a skill kept for
+// named characters.
+//
+// The judgement is cast.resolveArchetype's, brought forward by CheckPresetKit.
+// It is a refusal the engine can never make, for the same reason
+// ArchetypeRestrictedError is: a roster entry carries no archetype.
+type PresetOwnedSkillError struct {
+	Archetype string
+	Skill     string
+	Allowed   []string
+}
+
+// The sentence names the skill and its owners and leaves the preset out, even
+// though the preset is carried in a field. Whoever shows this has the preset's
+// id already — it is what they asked about — and a refusal that named it here as
+// well would say it twice in one line.
+func (e *PresetOwnedSkillError) Error() string {
+	return fmt.Sprintf("%q belongs to %s, and a preset is shared by every character built from it",
+		e.Skill, strings.Join(e.Allowed, " or "))
+}
+
+// BrokenCarrier is which kind of carrier an edit would break.
+//
+// The two are not interchangeable in a refusal: a character is one unit an
+// author can retune, and a preset is the starting point for every character
+// built from it, so the same edit is a smaller problem in the first case than in
+// the second.
+type BrokenCarrier int
+
+const (
+	// BrokenCharacter is an authored character that would stop being able to
+	// carry the skill.
+	BrokenCharacter BrokenCarrier = iota
+	// BrokenPreset is an archetype preset whose kit would stop being legal.
+	BrokenPreset
+)
+
+// SkillEditBreaksError is an edit that would leave something already authored
+// unable to carry the skill.
+//
+// Err is the reason, and it is either one of this package's own typed refusals —
+// the classified case, where a carrier walk found who breaks and why — or the
+// parser's own words, for a refusal about a kit as a whole rather than about one
+// skill in it. ID is empty in that second case, and a front-end then says what
+// the parser said rather than blaming a carrier that may not be at fault.
+type SkillEditBreaksError struct {
+	Carrier BrokenCarrier
+	// ID is the character or preset that would break, empty when the refusal
+	// belongs to no single one.
+	ID    string
+	Skill string
+	Err   error
+}
+
+func (e *SkillEditBreaksError) Error() string {
+	if e.ID == "" {
+		return fmt.Sprintf("editing %q would stop the books loading: %v", e.Skill, e.Err)
+	}
+	if e.Carrier == BrokenPreset {
+		return fmt.Sprintf("editing %q would leave the %s preset unable to carry it: %v",
+			e.Skill, e.ID, e.Err)
+	}
+	return fmt.Sprintf("editing %q would leave %s unable to carry it: %v",
+		e.Skill, e.ID, e.Err)
+}
+
+func (e *SkillEditBreaksError) Unwrap() error { return e.Err }
+
 // UnknownPatternError is a shape the pattern book does not hold. The judgement
 // is pattern.Book.Lookup's; this only carries the name alongside it.
 type UnknownPatternError struct {

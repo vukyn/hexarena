@@ -98,7 +98,11 @@ const (
 	LabelDamage
 	DamageLine
 	DamageAmplified
+	DamageMoved
 	SkillAdded
+	SkillEdited
+	SkillFormEditHeading
+	SkillFormEditDiscard
 
 	// Who may carry a skill, which is the same vocabulary in a listing, in a
 	// picker's row and in a refusal.
@@ -202,6 +206,11 @@ const (
 	ErrorCharacterRestricted
 	ErrorSkillTaken
 	ErrorMissingSkillID
+	ErrorSkillRename
+	ErrorPresetOwnedSkill
+	ErrorSkillEditBreaksCharacter
+	ErrorSkillEditBreaksPreset
+	ErrorSkillEditBreaks
 	ErrorUnknownPattern
 	ErrorUnknownTarget
 	ErrorUnknownStatus
@@ -224,6 +233,7 @@ const (
 	ProblemMissingArt
 	ProblemDoesNotResolve
 	NoteWrote
+	NoteEdited
 	NoteArtMissing
 	NoteRebuild
 	NoteGoldensMove

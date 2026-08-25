@@ -36,6 +36,7 @@ go run ./cmd/hexforge                            # author the cast: list the sub
 go run ./cmd/hexforge new                        # create a character, prompting for what is missing
 go run ./cmd/hexforge skills                     # the declared skills and who may carry each
 go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900   # author a skill
+go run ./cmd/hexforge skills edit oath --power 1100                 # change one already in the book
 go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
 
 go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal), in Vietnamese
@@ -327,8 +328,10 @@ Balance lives in `internal/seed/data`, embedded with `go:embed`. Changing a numb
 there changes the game without touching Go.
 
 `skills.json` is the exception that is **balance and tool-written at once**:
-`hexforge skills add` and the full-screen client's skill form both append to it.
-That is why it is committed in the form `Book.Marshal` writes, on the same terms
+`hexforge skills add` and the full-screen client's skill form both append to it,
+and `hexforge skills edit` and the same form (opened with `e` on the listing)
+both change what is already in it. That is why it is committed in the form
+`Book.Marshal` writes, on the same terms
 as `cast.json` below, and why a save says **the golden files have moved** rather
 than only that it wrote — a power reaches `skills.golden`, `scenarios.golden` and
 `progression.golden`'s hits-to-kill ladder, so `make golden` and reading the diff
@@ -340,7 +343,10 @@ Two things about that write are worth knowing before touching it:
   sorts by id. A cast is a set looked up by id; a skill book's order is authored
   information (basic attacks, then the elemental ones, then utility, which is the
   order `skills.golden`'s table reads in), so sorting would shuffle a design
-  record to buy the one-block diff that appending already gives.
+  record to buy the one-block diff that appending already gives. `skill.Book.Replace`
+  is the same fact for an edit and is why it keeps a skill's **position**:
+  reordering on a one-field change would rewrite the whole file and the whole
+  golden table.
 - `Skill.MarshalJSON` builds the **parse shape** (`skillFile`) rather than
   carrying tags of its own, so the only fields that can be written are the fields
   the parser reads. That is what makes the rewrite lossless for the four blocks
@@ -351,6 +357,27 @@ Two things about that write are worth knowing before touching it:
   Note `Scaling`'s zero value is **not** its default (the zero stat is health,
   and a skill scaling off health is refused), so a `skill.Skill` built in Go must
   set `skill.DefaultScaling()`; the refusal is loud rather than silent on purpose.
+
+**Editing a skill can break what adding one cannot**, and that is the whole shape
+of `forge.Library.EditSkill`. Nobody carries a new skill; shipped units carry an
+edited one, so changing an element or narrowing a `restrict` can leave an authored
+character — or an archetype preset's kit — no longer allowed to hold it. So an edit
+re-parses `archetypes.json` and `cast.json` **off the disk** against the edited
+book *before* writing anything, and a refusal from either is the thing to prevent
+rather than to discover: a written file that then fails to load is a data
+directory the game does not boot from. The re-parse is the authority; naming *who*
+would break is a classification after the fact (`brokenPreset` / `brokenCharacter`
+walking `CheckKit` and `CheckPresetKit`), exactly like `checkAffinity` classifying
+after the element chart has already said no — nothing there can turn a no into a
+yes, and a refusal neither walk recognises names nobody and keeps the parser's own
+words. `forge.CheckPresetKit` is the preset half of that, bringing forward
+`cast.resolveArchetype`'s two restriction rules the way `CheckSkill` brings
+forward `resolveCharacter`'s three. Two other things an edit must keep: an
+**absent** field and a field set to **zero** are different answers (hence
+`SkillEdit`'s pointers and `FlagSet.Visit` in `cmd/hexforge`, and an explicitly
+empty list is how a restriction is cleared), and a skill's **id is not editable** —
+a rename has to cascade through every kit and every `restrict.characters` list, so
+`SkillRenameError` says so rather than half-doing it.
 
 Three of those files are the cast rather than the balance, and `cmd/hexforge` both
 reads and **writes** them:
