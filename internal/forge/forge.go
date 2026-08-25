@@ -301,9 +301,9 @@ func SuggestedImage(id string) string {
 	}
 	folder, name, split := strings.Cut(id, ".")
 	if !split {
-		return path.Join("assets", folder+".svg")
+		return path.Join(assetsDir, folder+".svg")
 	}
-	return path.Join("assets", folder, name+".svg")
+	return path.Join(assetsDir, folder, name+".svg")
 }
 
 // ShortStat is the three letter label for a stat: a column heading in a table,

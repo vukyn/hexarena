@@ -56,6 +56,7 @@ const (
 	FieldElement
 	FieldBiography
 	NoneCatalogued
+	NoArtToChoose
 	CurveAgainstCeiling
 	OverTheCeiling
 	LabelBudget

@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"path"
+	"slices"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -49,9 +51,14 @@ type formScreen struct {
 	inputs     []textinput.Model
 	origins    []cast.Origin
 	archetypes []cast.Archetype
+	// art is the images internal/forge found under the data directory, which
+	// is what the art field offers. Empty means there is nothing to offer and
+	// that field is a text field instead — see choiceField.
+	art []string
 
 	originIndex    int
 	archetypeIndex int
+	artIndex       int
 	cursor         int
 
 	// touched is whether anything has been typed or chosen. It is the whole of
@@ -77,10 +84,16 @@ type formScreen struct {
 }
 
 func newFormScreen(lib *forge.Library) formScreen {
+	// A directory that cannot be read is, from the author's side, a directory
+	// with nothing in it: either way there is no art to offer, and the answer to
+	// both is the text field and a line naming where it looked. Refusing to draw
+	// the form over it would be the one outcome that helps nobody.
+	art, _ := lib.ArtFiles()
 	f := formScreen{
 		inputs:           make([]textinput.Model, fieldCount),
 		origins:          lib.Origins().All(),
 		archetypes:       lib.Archetypes().All(),
+		art:              art,
 		imageFollowsID:   true,
 		kitFollowsPreset: true,
 	}
@@ -107,7 +120,7 @@ func newFormScreen(lib *forge.Library) formScreen {
 
 // applyPreset refills every field that is still following something else.
 func (f formScreen) applyPreset() formScreen {
-	f.inputs[fieldImage].SetValue(f.imageValue())
+	f = f.applyArt()
 	if len(f.archetypes) == 0 {
 		return f
 	}
@@ -123,12 +136,44 @@ func (f formScreen) applyPreset() formScreen {
 	return f
 }
 
-// imageValue is the art path the id suggests, unless one was typed.
-func (f formScreen) imageValue() string {
+// applyArt points the art field at what the id suggests, while it is still
+// following the id.
+//
+// Which field that is depends on what is on disk. With art to choose from, the
+// suggestion is worth honouring only when it names one of the entries:
+// SuggestedImage derives a path from the id, so it names a real file exactly
+// when the art was filed where the id says it would be. When it does not, the
+// selection stays where it is — the first entry to begin with, and whatever was
+// chosen once somebody has chosen — rather than jumping back to the top of the
+// list on every keystroke in the id.
+func (f formScreen) applyArt() formScreen {
 	if !f.imageFollowsID {
-		return f.inputs[fieldImage].Value()
+		return f
 	}
-	return forge.SuggestedImage(strings.TrimSpace(f.inputs[fieldID].Value()))
+	suggested := forge.SuggestedImage(strings.TrimSpace(f.inputs[fieldID].Value()))
+	if len(f.art) == 0 {
+		f.inputs[fieldImage].SetValue(suggested)
+		// The cursor goes to the end of what was just put there, which is where
+		// an author editing a prefilled path starts from. SetValue moves it on
+		// its own only when the field was empty, so filling this one a letter at
+		// a time as the id is typed would otherwise leave the cursor stranded
+		// where the first suggestion happened to end.
+		f.inputs[fieldImage].CursorEnd()
+		return f
+	}
+	if at := slices.Index(f.art, suggested); at >= 0 {
+		f.artIndex = at
+	}
+	return f
+}
+
+// imageAnswer is the art path the form is offering, from whichever of the two
+// fields is in front.
+func (f formScreen) imageAnswer() string {
+	if len(f.art) == 0 {
+		return strings.TrimSpace(f.inputs[fieldImage].Value())
+	}
+	return f.art[clamp(f.artIndex, 0, len(f.art)-1)]
 }
 
 // Draft is the answers as internal/forge wants them. It is the only thing this
@@ -138,7 +183,7 @@ func (f formScreen) draft() forge.Draft {
 	draft := forge.Draft{
 		ID:      strings.TrimSpace(f.inputs[fieldID].Value()),
 		Name:    f.inputs[fieldName].Value(),
-		Image:   strings.TrimSpace(f.inputs[fieldImage].Value()),
+		Image:   f.imageAnswer(),
 		Skills:  f.inputs[fieldKit].Value(),
 		Element: strings.TrimSpace(f.inputs[fieldElement].Value()),
 		Bio:     f.inputs[fieldBio].Value(),
@@ -156,10 +201,23 @@ func (f formScreen) draft() forge.Draft {
 }
 
 // choiceField reports whether a field is picked from a list rather than typed.
+//
 // An origin and an archetype are ids in books, so typing one is a way to get it
-// wrong; the list cannot produce an answer the book does not hold.
-func choiceField(field int) bool {
-	return field == fieldOrigin || field == fieldArchetype
+// wrong; the list cannot produce an answer the book does not hold. Art is the
+// same shape with one difference — its list is what is on disk rather than what
+// a book declares, so it can be empty, and an empty one leaves that field a
+// text field. A form that cannot be completed because a folder is empty is
+// worse than one that lets an author name a file that is not there yet, which
+// is what the command line does and what the write already warns about.
+func (f formScreen) choiceField(field int) bool {
+	switch field {
+	case fieldOrigin, fieldArchetype:
+		return true
+	case fieldImage:
+		return len(f.art) > 0
+	default:
+		return false
+	}
 }
 
 func (f formScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -179,7 +237,7 @@ func (f formScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.form = f
 		return m, nil
 	}
-	if choiceField(f.cursor) {
+	if f.choiceField(f.cursor) {
 		switch message.String() {
 		case "left":
 			f = f.cycle(-1)
@@ -199,8 +257,8 @@ func (f formScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 		f.notes = nil
 		switch {
 		case f.cursor == fieldID:
-			// The art path follows the id until somebody types one.
-			f.inputs[fieldImage].SetValue(f.imageValue())
+			// The art field follows the id until somebody sets it themselves.
+			f = f.applyArt()
 		case f.cursor == fieldImage:
 			f.imageFollowsID = false
 		case f.cursor == fieldKit:
@@ -231,7 +289,7 @@ func (f formScreen) leave(m model) model {
 func (f formScreen) moveTo(target int) formScreen {
 	f.inputs[f.cursor].Blur()
 	f.cursor = (target + fieldCount) % fieldCount
-	if !choiceField(f.cursor) {
+	if !f.choiceField(f.cursor) {
 		f.inputs[f.cursor].Focus()
 	}
 	return f
@@ -250,6 +308,14 @@ func (f formScreen) cycle(by int) formScreen {
 			f.archetypeIndex = (f.archetypeIndex + by + len(f.archetypes)) % len(f.archetypes)
 			f.touched = true
 			f = f.applyPreset()
+		}
+	case fieldImage:
+		if len(f.art) > 0 {
+			f.artIndex = (f.artIndex + by + len(f.art)) % len(f.art)
+			// Choosing is setting it by hand, so it stops following the id, on
+			// the same terms as typing a path used to.
+			f.imageFollowsID = false
+			f.touched = true
 		}
 	}
 	f.err = nil
@@ -354,13 +420,32 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 		value = f.choice(m, f.originIndex, len(f.origins), f.originLabel())
 	case field == fieldArchetype:
 		value = f.choice(m, f.archetypeIndex, len(f.archetypes), f.archetypeLabel(m))
+	case field == fieldImage && f.choiceField(fieldImage):
+		value = f.choice(m, f.artIndex, len(f.art), f.artLabel(m))
 	case field >= fieldStatBase:
 		value = f.statRow(m, progression.Kind(field-fieldStatBase))
 	default:
 		value = f.inputs[field].View()
 	}
-	return marker + name + " " + value + "\n"
+	drawn := marker + name + " " + value + "\n"
+	if field == fieldImage && !f.choiceField(fieldImage) {
+		// An art field that is a text field is the exception now, so it says
+		// why: "nothing to choose from" without naming the folder it looked in
+		// is a line nobody can act on. It sits under the row in the same column
+		// as the values, which is what m.labelAt with no name draws.
+		drawn += m.labelAt("", labelWidth, "%s",
+			m.style.dim.Render(m.text(i18n.NoArtToChoose, m.lib.AssetsPath())))
+	}
+	return drawn
 }
+
+// choiceFormat is how a chooser draws: the value between arrows, then where it
+// sits in the list.
+//
+// It is a constant because the art chooser measures its own room from it. A
+// second copy of the decoration would drift from the one being drawn, and the
+// measurement would then be of a row nobody sees.
+const choiceFormat = "< %s >  %s"
 
 // choice renders a picked value with its position, so "there are more of these"
 // is visible without pressing anything.
@@ -368,8 +453,72 @@ func (f formScreen) choice(m model, index, total int, label string) string {
 	if total == 0 {
 		return m.style.bad.Render(m.text(i18n.NoneCatalogued))
 	}
-	return fmt.Sprintf("< %s >  %s", label,
+	return fmt.Sprintf(choiceFormat, label,
 		m.style.dim.Render(m.text(i18n.ChoicePosition, index+1, total)))
+}
+
+// artLabel is the chosen art path, shortened to what its row has room for.
+func (f formScreen) artLabel(m model) string {
+	return elidePath(f.imageAnswer(), artRoom(m, f.artIndex, len(f.art)))
+}
+
+// artRoom is how many cells the art chooser has for its path.
+//
+// A path is the one chooser value here with no bound. An origin and an
+// archetype are ids from a book, but art is a file under a folder an author
+// fills as they like: assets/example/sprout.svg is already 24 cells before
+// anybody nests one deeper. So the row is measured rather than trusted — what
+// is left once the marker, the label column, the chooser's own decoration and
+// the position counter have taken theirs, all of them as they are really drawn.
+//
+// What it measures against is the floor and not the window in hand, and that is
+// deliberate: minWidth is the width this program promises to draw in, while
+// measuring the real terminal would give the same row two lengths and leave
+// TestEveryWordingFitsTheMinimumWidth nothing to hold.
+func artRoom(m model, index, total int) int {
+	const marker = 2
+	decoration := lipgloss.Width(fmt.Sprintf(choiceFormat, "",
+		m.text(i18n.ChoicePosition, index+1, total)))
+	// The window's last column is left empty, as it is everywhere here: a line
+	// filling a terminal's final cell wraps on some of them.
+	return minWidth - 1 - marker - formLabelWidth(m) - 1 - decoration
+}
+
+// ellipsis marks a path that did not fit. One rune rather than three dots, so
+// that its cell count is its character count, which is the unit every column in
+// this client is measured in.
+const ellipsis = "…"
+
+// elidePath shortens a path to a number of cells, keeping the end.
+//
+// The end is the informative half: the file name says which piece of art this
+// is and the extension says what kind, while the folder above it is either
+// obvious from the character being authored or one keypress away. So a path
+// that does not fit loses its directories first — assets/deep/hero.svg becomes
+// …/hero.svg — and only a file name that is too long on its own is cut, from
+// the front, so that the extension survives.
+//
+// Shortened rather than wrapped, for the reason frame clips: a wrapped row
+// pushes every row under it down by one, which is how the footer leaves the
+// bottom of the screen.
+func elidePath(image string, room int) string {
+	if room < 1 {
+		return ""
+	}
+	if lipgloss.Width(image) <= room {
+		return image
+	}
+	base := path.Base(image)
+	if shortened := ellipsis + "/" + base; lipgloss.Width(shortened) <= room {
+		return shortened
+	}
+	// Measured a rune at a time rather than counted, so that a name holding a
+	// character wider than one cell cannot slip past the budget.
+	letters := []rune(base)
+	for len(letters) > 0 && lipgloss.Width(ellipsis+string(letters)) > room {
+		letters = letters[1:]
+	}
+	return ellipsis + string(letters)
 }
 
 func (f formScreen) originLabel() string {

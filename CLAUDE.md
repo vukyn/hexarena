@@ -91,7 +91,10 @@ than `filepath`, because a committed data file has to mean the same thing on
 every platform. Whether the file is **really there** is only asked by
 `internal/forge`, because `internal/core` may not read the filesystem and,
 more to the point, only the caller knows which directory the path is relative
-to. Do not move the existence check into the parser to make it "complete": that
+to. `internal/forge` now answers a second filesystem question as well — *which*
+art files exist, via `ArtFiles`, so the authoring form can offer a choice
+instead of asking for a path to be typed. Its results are sorted explicitly:
+a directory walk has no guaranteed order and that order reaches the screen. Do not move the existence check into the parser to make it "complete": that
 would make loading the game depend on the working directory, and the embedded
 copy has no directory at all. `cast.ValidateID` is exported for the same reason
 `ValidateImagePath` is — an authoring tool has to reject an answer as it is

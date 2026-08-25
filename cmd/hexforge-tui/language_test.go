@@ -5,6 +5,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -336,6 +337,76 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 		for _, line := range strings.Split(small.View(), "\n") {
 			if width := lipgloss.Width(line); width > 24 {
 				t.Errorf("the too-small screen in %s draws %d cells:\n%s", lang, width, line)
+			}
+		}
+	}
+}
+
+// TestALongArtPathStaysInsideItsRow is the width risk the art chooser brought
+// with it, measured rather than assumed.
+//
+// The other two choosers show an id out of a book, which is short by
+// construction: "example-anime", "bulwark". This one shows a filesystem path,
+// and a path is as long as whoever filed the art made it —
+// assets/example/sprout.svg is 24 cells before anybody nests one folder deeper.
+// So the row shortens from the front and keeps the file name, and that is what
+// is asserted here: in both languages, since the label column is measured per
+// language and Vietnamese leaves three cells fewer for the value.
+//
+// Two shapes, because the shortening has two steps. A long folder loses the
+// folder. A file name too long on its own loses its own front, so that the name
+// and the extension are the part that survives.
+func TestALongArtPathStaysInsideItsRow(t *testing.T) {
+	const drawable = minWidth - 1
+	folder := strings.Repeat("deep-folder-", 4) + "end"
+	longName := strings.Repeat("very-long-name-", 4) + "end.svg"
+	for _, lang := range i18n.Langs() {
+		dir := scratchData(t)
+		if err := os.MkdirAll(filepath.Join(dir, "assets", folder), 0o755); err != nil {
+			t.Fatalf("create the folder: %v", err)
+		}
+		for _, name := range []string{"hero.svg", longName} {
+			if err := os.WriteFile(
+				filepath.Join(dir, "assets", folder, name), []byte("<svg/>"), 0o644); err != nil {
+				t.Fatalf("write %s: %v", name, err)
+			}
+		}
+		base, _, _ := startIn(t, lang, dir)
+
+		cases := []struct {
+			art   string
+			shows []string
+		}{
+			// The folder goes and the file name stays whole.
+			{"assets/" + folder + "/hero.svg", []string{ellipsis + "/hero.svg"}},
+			// Nothing but the tail of the name fits, and the tail is the half
+			// worth keeping: it is the end that holds the extension.
+			{"assets/" + folder + "/" + longName, []string{ellipsis, "end.svg"}},
+		}
+		for _, test := range cases {
+			m := base.enter(screenNew)
+			for range fieldImage {
+				m = key(t, m, "down")
+			}
+			m = chooseArt(t, m, test.art)
+			row := strings.TrimRight(m.form.row(m, fieldImage, formLabelWidth(m)), "\n")
+			if width := lipgloss.Width(row); width > drawable {
+				t.Errorf("the %s art row is %d cells wide, over the %d it has:\n%s",
+					lang, width, drawable, row)
+			}
+			for _, want := range test.shows {
+				if !strings.Contains(row, want) {
+					t.Errorf("the %s art row does not show %q:\n%s", lang, want, row)
+				}
+			}
+			if strings.Contains(row, folder) {
+				t.Errorf("the %s art row kept the whole folder, so nothing was shortened:\n%s",
+					lang, row)
+			}
+			// The row is what was shortened, not the answer: a form that wrote
+			// the path it drew would write a path no file has.
+			if got := m.form.draft().Image; got != test.art {
+				t.Errorf("the draft holds %q, want the whole path %q", got, test.art)
 			}
 		}
 	}

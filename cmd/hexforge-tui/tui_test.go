@@ -11,6 +11,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
+	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -72,8 +73,17 @@ func copyTree(t *testing.T, from, to string) {
 // about the wording say which language they mean.
 func start(t *testing.T, lang i18n.Lang) (model, *forge.Library, string) {
 	t.Helper()
+	return startIn(t, lang, scratchData(t))
+}
+
+// startIn is start over a data directory the test has already arranged.
+//
+// The art picker is what needs it: the form reads the assets folder when it is
+// built, so a test about art that is or is not there has to put it there, or
+// take it away, before the model exists.
+func startIn(t *testing.T, lang i18n.Lang, dir string) (model, *forge.Library, string) {
+	t.Helper()
 	t.Setenv("NO_COLOR", "1")
-	dir := scratchData(t)
 	lib, err := forge.Load(dir)
 	if err != nil {
 		t.Fatalf("load %s: %v", dir, err)
@@ -169,6 +179,27 @@ func chooseArchetype(t *testing.T, m model, id string) model {
 	return m
 }
 
+// exampleArt is one of the two placeholder images the shipped data ships with,
+// which CLAUDE.md says not to delete. The art field is a chooser over what is
+// really on disk, so a test that wants a known answer has to name a file that
+// is really there — and picking one of these two rather than whatever sorts
+// first keeps these tests out of the way of whoever is authoring a real cast.
+const exampleArt = "assets/example/adept.svg"
+
+// chooseArt steps the art chooser to a named path. The cursor has to already be
+// on that field, and the path has to be one internal/forge found on disk.
+func chooseArt(t *testing.T, m model, image string) model {
+	t.Helper()
+	for range len(m.form.art) {
+		if m.form.draft().Image == image {
+			return m
+		}
+		m = key(t, m, "right")
+	}
+	t.Fatalf("no art %q to choose among %v", image, m.form.art)
+	return m
+}
+
 // author drives the form from the menu to a completed draft, in the order the
 // fields are walked.
 func author(t *testing.T, m model, id, name, origin, archetype, element string) model {
@@ -181,7 +212,8 @@ func author(t *testing.T, m model, id, name, origin, archetype, element string) 
 	m = chooseOrigin(t, m, origin)
 	m = key(t, m, "down")
 	m = chooseArchetype(t, m, archetype)
-	m = key(t, m, "down") // art: keep the path the id suggests
+	m = key(t, m, "down") // art: chosen from what is on disk
+	m = chooseArt(t, m, exampleArt)
 	m = key(t, m, "down") // kit: keep the preset's
 	m = key(t, m, "down")
 	m = typeText(t, m, element)
@@ -210,7 +242,7 @@ func TestTheFormProducesTheCharacterTheCommandLineProduces(t *testing.T) {
 	fromTheFlags, err := forge.Draft{
 		ID: "example-film.tester", Name: "Tester", Origin: "example-film",
 		Archetype: "duelist", Element: "wind/ground",
-		Image: forge.SuggestedImage("example-film.tester"),
+		Image: exampleArt,
 	}.Resolve(lib)
 	if err != nil {
 		t.Fatalf("the flag-only draft does not resolve: %v", err)
@@ -223,8 +255,14 @@ func TestTheFormProducesTheCharacterTheCommandLineProduces(t *testing.T) {
 	// And the form really did fill the fields it fills rather than resolving to
 	// the same thing by leaving them empty.
 	draft := m.form.draft()
-	if draft.Image != forge.SuggestedImage("example-film.tester") {
-		t.Errorf("the art path is %q, want the one the id suggests", draft.Image)
+	if draft.Image != exampleArt {
+		t.Errorf("the art path is %q, want the one that was chosen", draft.Image)
+	}
+	// The chooser cannot offer art that is not there, which is the whole of why
+	// it is a chooser: on the command line this field is free text and a check
+	// is what finds out.
+	if !lib.ImageExists(draft.Image) {
+		t.Errorf("the art chooser produced %q, which is not on disk", draft.Image)
 	}
 	preset, _ := lib.Archetypes().Get("duelist")
 	if draft.Skills != strings.Join(preset.Skills, ",") {
@@ -233,6 +271,169 @@ func TestTheFormProducesTheCharacterTheCommandLineProduces(t *testing.T) {
 	if draft.Stats[progression.HP] != forge.FormatCurve(preset.Stats[progression.HP]) {
 		t.Errorf("the health curve field holds %q, want the preset's",
 			draft.Stats[progression.HP])
+	}
+}
+
+// TestTheArtFieldPicksFromWhatIsOnDisk is the field turning from a path
+// somebody types into a path somebody chooses.
+//
+// The list is internal/forge's, because whether a file is there is the one
+// question internal/core is not allowed to ask. What is asserted here is the
+// choosing: where the selection starts, that it starts on the id's suggestion
+// when that art really exists, and that the value it lands on is one a write
+// will accept.
+func TestTheArtFieldPicksFromWhatIsOnDisk(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	onDisk, err := lib.ArtFiles()
+	if err != nil {
+		t.Fatalf("list the art: %v", err)
+	}
+	if len(onDisk) < 2 {
+		t.Fatalf("the data holds %d images, and stepping through a list needs two", len(onDisk))
+	}
+
+	m = m.enter(screenNew)
+	if !m.form.choiceField(fieldImage) {
+		t.Fatal("the art field is not a chooser with art on disk")
+	}
+	// Nothing typed, so nothing suggested: the first entry is where a chooser
+	// has to be, since an empty art field is a character that will not write.
+	if got := m.form.draft().Image; got != onDisk[0] {
+		t.Errorf("the art starts at %q, want the first entry %q", got, onDisk[0])
+	}
+
+	// An id whose art is filed where the id says it would be. The suggestion
+	// then names something real, and honouring it is what makes it worth
+	// keeping: forge.SuggestedImage derives assets/example/sprout.svg from
+	// "example.sprout", and that is deliberately not the entry the chooser
+	// started on, so following it is a move this can see.
+	suggested := forge.SuggestedImage("example.sprout")
+	if suggested == onDisk[0] || !lib.ImageExists(suggested) {
+		t.Fatalf("the suggestion for that id is %q, so this test is not asking what it means to",
+			suggested)
+	}
+	m = typeText(t, m, "example.sprout")
+	if got := m.form.draft().Image; got != suggested {
+		t.Errorf("the art is %q, want the suggestion %q, which is on disk", got, suggested)
+	}
+
+	// An id whose art is not there. The suggestion means nothing now, so the
+	// selection is left where it was.
+	m.form = newFormScreen(lib)
+	m = m.enter(screenNew)
+	m = typeText(t, m, "example-film.tester")
+	if lib.ImageExists(forge.SuggestedImage("example-film.tester")) {
+		t.Fatal("that id's art exists, so this test is not asking what it means to")
+	}
+	if got := m.form.draft().Image; got != onDisk[0] {
+		t.Errorf("the art is %q, want the first entry %q when the suggestion is not there", got, onDisk[0])
+	}
+
+	// And it steps, in both directions, and every value it offers is one the
+	// parser will take.
+	for range fieldImage {
+		m = key(t, m, "down")
+	}
+	seen := make(map[string]bool)
+	for range len(onDisk) {
+		image := m.form.draft().Image
+		if err := cast.ValidateImagePath(image); err != nil {
+			t.Errorf("the chooser offered %q, which a write would refuse: %v", image, err)
+		}
+		if !lib.ImageExists(image) {
+			t.Errorf("the chooser offered %q, which is not on disk", image)
+		}
+		seen[image] = true
+		m = key(t, m, "right")
+	}
+	if len(seen) != len(onDisk) {
+		t.Errorf("stepping right reached %d of the %d images", len(seen), len(onDisk))
+	}
+	// Right all the way round is back at the start, and left from there wraps
+	// to the end, so neither end of the list is a dead stop.
+	if got := m.form.draft().Image; got != onDisk[0] {
+		t.Errorf("stepping right through the whole list ended at %q, want %q", got, onDisk[0])
+	}
+	m = key(t, m, "left")
+	if got, want := m.form.draft().Image, onDisk[len(onDisk)-1]; got != want {
+		t.Errorf("stepping left from the first entry gives %q, want the last %q", got, want)
+	}
+
+	// A choice made by hand survives an edit to the id, on the same terms a
+	// typed path always did: what somebody set themselves is not overwritten
+	// under them.
+	chosen := m.form.draft().Image
+	for range fieldImage {
+		m = key(t, m, "up")
+	}
+	m = typeText(t, m, "-again")
+	if got := m.form.draft().Image; got != chosen {
+		t.Errorf("editing the id moved the art from %q to %q", chosen, got)
+	}
+}
+
+// TestAFormWithNoArtOnDiskIsStillCompletable is the fallback, and it is the
+// reason the art field is not a chooser unconditionally.
+//
+// A folder with nothing in it must not be able to stop a character being
+// authored. So with no art to offer the field is the text field it always was,
+// the form says where it looked rather than showing an empty chooser, and the
+// write goes through — carrying the warning that the art is not there yet,
+// which is the same one cmd/hexforge prints and the one the picker made
+// unreachable by construction.
+func TestAFormWithNoArtOnDiskIsStillCompletable(t *testing.T) {
+	dir := scratchData(t)
+	if err := os.RemoveAll(filepath.Join(dir, "assets")); err != nil {
+		t.Fatalf("take away the art: %v", err)
+	}
+	m, lib, _ := startIn(t, i18n.Vi, dir)
+	m = m.enter(screenNew)
+	if len(m.form.art) != 0 {
+		t.Fatalf("the form found art after it was taken away: %v", m.form.art)
+	}
+	if m.form.choiceField(fieldImage) {
+		t.Fatal("the art field is a chooser with nothing to choose")
+	}
+	body, _ := m.form.view(m)
+	if !strings.Contains(body, lib.AssetsPath()) {
+		t.Errorf("the form does not name the folder it found no art in:\n%s", body)
+	}
+
+	m = typeText(t, m, "example-film.tester")
+	m = key(t, m, "down")
+	m = typeText(t, m, "Tester")
+	m = key(t, m, "down")
+	m = chooseOrigin(t, m, "example-film")
+	m = key(t, m, "down")
+	m = chooseArchetype(t, m, "duelist")
+	m = key(t, m, "down")
+	// The suggestion still fills the field, exactly as it did before there was
+	// anything to choose from.
+	if got, want := m.form.draft().Image, forge.SuggestedImage("example-film.tester"); got != want {
+		t.Errorf("the art field holds %q, want the suggestion %q", got, want)
+	}
+	typed := "assets/example-film/tester.png"
+	m = retype(t, m, typed)
+	m = key(t, m, "down")
+	m = key(t, m, "down")
+	m = typeText(t, m, "wind/ground")
+	m = key(t, m, "ctrl+s")
+
+	if m.form.err != nil {
+		t.Fatalf("a form with no art on disk could not be completed: %v", m.form.err)
+	}
+	written, known := lib.Characters().Get("example-film.tester")
+	if !known {
+		t.Fatal("the character was not written")
+	}
+	if written.Image != typed {
+		t.Errorf("the character names the art %q, want the typed %q", written.Image, typed)
+	}
+	// And the write says the art is not there yet, which is the whole reason a
+	// field somebody can type into is still allowed to produce one.
+	joined := strings.Join(m.lang.Notes(m.form.notes), "\n")
+	if !strings.Contains(joined, "chưa có file") {
+		t.Errorf("the confirmation does not warn that the art is missing:\n%s", joined)
 	}
 }
 
@@ -417,13 +618,12 @@ func TestSavingWritesThroughTheLibrary(t *testing.T) {
 	if !strings.Contains(joined, "đã ghi example-film.tester") {
 		t.Errorf("the confirmation does not name the write:\n%s", joined)
 	}
-	// The art does not exist, and the confirmation says so rather than letting
-	// the author believe the character is finished.
-	if !strings.Contains(joined, "chưa có file") {
-		t.Errorf("the confirmation does not warn about the missing art:\n%s", joined)
-	}
-	if !strings.Contains(joined, "sprout.svg") && !strings.Contains(joined, "tester.svg") {
-		t.Errorf("the warning does not name the art it is missing:\n%s", joined)
+	// The art was chosen from what is on disk, so there is nothing to warn
+	// about. That warning is not gone — it is what the form says when there is
+	// no art to choose from and a path was typed instead, which
+	// TestAFormWithNoArtOnDiskIsStillCompletable asserts.
+	if strings.Contains(joined, "chưa có file") {
+		t.Errorf("the confirmation warns about art the picker took off the disk:\n%s", joined)
 	}
 
 	// A fresh form is waiting, so ctrl+s twice cannot write twice.
