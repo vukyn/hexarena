@@ -35,9 +35,52 @@ type Report struct {
 	Origins    int
 	Archetypes int
 	Rows       []CharacterReport
-	// Problems are the reasons a check fails, worded for a person.
-	Problems []string
+	// Problems are the reasons a check fails. Each is a value carrying what it
+	// is about, and its Error method is the English cmd/hexforge prints, so a
+	// front-end may draw either the sentence or the facts.
+	Problems []Problem
 }
+
+// Problem is one reason a check fails.
+//
+// It is an interface over a closed set of causes rather than a string, because
+// cmd/hexforge-tui says these in the author's language and a sentence cannot be
+// translated once it has been built. The unexported method is what closes the
+// set: only this package can add a cause, so a front-end switching over them
+// has a knowable list — and it still needs a default, which prints the cause's
+// own English rather than nothing.
+type Problem interface {
+	error
+	problem()
+}
+
+// MissingArtProblem is a character naming art that is not on disk. This is the
+// one question internal/core is not allowed to ask.
+type MissingArtProblem struct {
+	ID    string
+	Image string
+	Path  string
+}
+
+func (p *MissingArtProblem) Error() string {
+	return fmt.Sprintf("character %s names the art %s, which is not at %s", p.ID, p.Image, p.Path)
+}
+
+func (p *MissingArtProblem) problem() {}
+
+// ResolveProblem is a character whose evolution line will not resolve at one of
+// the levels a check tries.
+type ResolveProblem struct {
+	ID  string
+	Err error
+}
+
+func (p *ResolveProblem) Error() string {
+	return fmt.Sprintf("character %s does not resolve: %v", p.ID, p.Err)
+}
+
+func (p *ResolveProblem) Unwrap() error { return p.Err }
+func (p *ResolveProblem) problem()      {}
 
 // OK reports whether the data directory is in a state worth shipping.
 func (r Report) OK() bool { return len(r.Problems) == 0 }
@@ -75,9 +118,10 @@ func (l *Library) Inspect() Report {
 			ImageExists: l.ImageExists(character.Image),
 		}
 		if !row.ImageExists {
-			report.Problems = append(report.Problems,
-				fmt.Sprintf("character %s names the art %s, which is not at %s",
-					character.ID, character.Image, l.ImagePath(character.Image)))
+			report.Problems = append(report.Problems, &MissingArtProblem{
+				ID: character.ID, Image: character.Image,
+				Path: l.ImagePath(character.Image),
+			})
 		}
 		// Both ends of the line are resolved: the first level a character can
 		// exist at and the last, which is where the stat budget bites.
@@ -94,7 +138,7 @@ func (l *Library) Inspect() Report {
 		}
 		if row.Failure != nil {
 			report.Problems = append(report.Problems,
-				fmt.Sprintf("character %s does not resolve: %v", character.ID, row.Failure))
+				&ResolveProblem{ID: character.ID, Err: row.Failure})
 		}
 		report.Rows = append(report.Rows, row)
 	}

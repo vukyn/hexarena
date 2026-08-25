@@ -1,0 +1,236 @@
+package i18n
+
+import (
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/forge"
+)
+
+// This file is where a fact from internal/forge becomes a sentence.
+//
+// Nothing here decides anything. Every branch below is chosen by a value the
+// package already produced — which skill could not be carried, which half of a
+// curve would not read as a number — so a front-end never has to look at a
+// refusal twice, and a second front-end in a third language would add an array
+// rather than a rule.
+
+// Error is a refusal in this language.
+//
+// Anything internal/forge typed is worded from its fields. Anything else —
+// a parser inside internal/core, a filesystem that would not give up a file —
+// is shown as it came, in English. Those messages describe the shape of a data
+// file rather than an answer a person typed, and rewriting them here would put
+// a second copy of a rule in the one place that must not hold any.
+func (l Lang) Error(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	var idTaken *forge.IDTakenError
+	if errors.As(err, &idTaken) {
+		return l.Say(ErrorIDTaken, idTaken.ID)
+	}
+	var missingName *forge.MissingNameError
+	if errors.As(err, &missingName) {
+		return l.Text(ErrorMissingName)
+	}
+	var unknownOrigin *forge.UnknownOriginError
+	if errors.As(err, &unknownOrigin) {
+		return l.Say(ErrorUnknownOrigin, unknownOrigin.ID, unknownOrigin.AddCommand())
+	}
+	var unknownArchetype *forge.UnknownArchetypeError
+	if errors.As(err, &unknownArchetype) {
+		return l.Say(ErrorUnknownArchetype,
+			unknownArchetype.ID, strings.Join(unknownArchetype.Known, " "))
+	}
+	var originTaken *forge.OriginTakenError
+	if errors.As(err, &originTaken) {
+		return l.Say(ErrorOriginTaken, originTaken.ID)
+	}
+	var emptyKit *forge.EmptyKitError
+	if errors.As(err, &emptyKit) {
+		return l.Text(ErrorEmptyKit)
+	}
+	var duplicateSkill *forge.DuplicateSkillError
+	if errors.As(err, &duplicateSkill) {
+		return l.Say(ErrorDuplicateSkill, duplicateSkill.ID)
+	}
+	var unknownSkill *forge.UnknownSkillError
+	if errors.As(err, &unknownSkill) {
+		return l.Say(ErrorUnknownSkill, unknownSkill.ID)
+	}
+	var unknownElement *forge.UnknownElementError
+	if errors.As(err, &unknownElement) {
+		return l.Say(ErrorUnknownElement, unknownElement.Name)
+	}
+	var missingElement *forge.MissingElementError
+	if errors.As(err, &missingElement) {
+		return l.Text(ErrorMissingElement)
+	}
+	var affinityCount *forge.AffinityCountError
+	if errors.As(err, &affinityCount) {
+		return l.Say(ErrorAffinityCount, affinityCount.Raw, affinityCount.Count)
+	}
+	var affinityRefused *forge.AffinityRefusedError
+	if errors.As(err, &affinityRefused) {
+		return l.affinityRefusal(affinityRefused)
+	}
+	var carry *forge.CarryError
+	if errors.As(err, &carry) {
+		return l.Say(ErrorCarry, carry.Affinity, carry.Skill, carry.Element)
+	}
+	// The stat field wraps whichever curve refusal happened, so it is asked
+	// before them: errors.As looks through a wrapper, and asking the inner
+	// question first would drop the "hp" the row is named after.
+	var statField *forge.StatFieldError
+	if errors.As(err, &statField) {
+		return l.Say(ErrorStatField,
+			forge.ShortStat(statField.Kind), l.Error(statField.Err))
+	}
+	var curveShape *forge.CurveShapeError
+	if errors.As(err, &curveShape) {
+		return l.Say(ErrorCurveShape, curveShape.Raw)
+	}
+	var curveNumber *forge.CurveNumberError
+	if errors.As(err, &curveNumber) {
+		return l.Say(ErrorCurveNumber, curveNumber.Raw, curveNumber.Half)
+	}
+	var curveRefused *forge.CurveRefusedError
+	if errors.As(err, &curveRefused) {
+		return l.curveRefusal(curveRefused)
+	}
+	var fieldRefused *forge.FieldRefusedError
+	if errors.As(err, &fieldRefused) {
+		if fieldRefused.Field == forge.FieldImage {
+			return l.Say(ErrorFieldImage, fieldRefused.Err)
+		}
+		return l.Say(ErrorFieldID, fieldRefused.Err)
+	}
+	var year *forge.YearError
+	if errors.As(err, &year) {
+		return l.Say(ErrorYear, year.Raw)
+	}
+	return l.Say(ErrorAsGiven, err)
+}
+
+// affinityRefusal words the chart's no. An outcome the chart grew after this
+// was written arrives unclassified and keeps the chart's own words rather than
+// being given a wrong explanation.
+func (l Lang) affinityRefusal(refused *forge.AffinityRefusedError) string {
+	switch refused.Reason {
+	case forge.AffinityReasonCounters:
+		return l.Say(ErrorAffinityCounters, refused.Affinity)
+	case forge.AffinityReasonUndeclared:
+		return l.Say(ErrorAffinityUndeclared, refused.Affinity)
+	default:
+		return l.Say(ErrorAffinityRefused, refused.Affinity, refused.Err)
+	}
+}
+
+// curveRefusal words progression's no, on the same terms.
+func (l Lang) curveRefusal(refused *forge.CurveRefusedError) string {
+	label := forge.ShortStat(refused.Kind)
+	switch refused.Reason {
+	case forge.CurveReasonNotPositive:
+		return l.Say(ErrorCurveNotPositive, label, refused.Curve.Base)
+	case forge.CurveReasonShrinks:
+		return l.Say(ErrorCurveShrinks, label, refused.Curve.Max, refused.Curve.Base)
+	default:
+		return l.Say(ErrorCurveRefused, label, refused.Err)
+	}
+}
+
+// KitSummary says which elements a kit will insist on, which is the question an
+// author is about to get wrong when they pick an affinity.
+func (l Lang) KitSummary(kit []skill.Skill) string {
+	demanded := forge.KitDemands(kit)
+	if len(demanded) == 0 {
+		return l.Text(KitTakesAnyElement)
+	}
+	names := make([]string, 0, len(demanded))
+	for _, member := range demanded {
+		names = append(names, member.String())
+	}
+	return l.Say(KitNeeds, l.JoinElements(names))
+}
+
+// PresetSummary describes a role preset the way a chooser wants it: the kit it
+// supplies and what that kit demands.
+func (l Lang) PresetSummary(preset cast.Archetype) string {
+	facts := forge.PresetFacts(preset)
+	kit := strings.Join(facts.Skills, " ")
+	if len(facts.Demands) == 0 {
+		return l.Say(PresetTakesAnyElement, kit)
+	}
+	return l.Say(PresetNeeds, kit, l.JoinElements(facts.Demands))
+}
+
+// JoinElements puts the word for "and" between element ids. The ids themselves
+// are never translated — they are what --element takes and what the data files
+// hold.
+func (l Lang) JoinElements(names []string) string {
+	return strings.Join(names, l.Text(ElementJoiner))
+}
+
+// StageSummary writes an evolution line as the levels its stages take over at.
+//
+// The form is the same in both languages, and the arrow rather than a word is
+// why: a stage's name is authored text and the level is a number, so there is
+// nothing here to translate.
+func (l Lang) StageSummary(character cast.Character) string {
+	stages := forge.StageFacts(character)
+	parts := make([]string, 0, len(stages))
+	for _, stage := range stages {
+		parts = append(parts, fmt.Sprintf("%s@%d", stage.Name, stage.MinLevel))
+	}
+	return strings.Join(parts, " → ")
+}
+
+// Budget words what a stat line spends of the joint health-and-defence bound.
+//
+// The meter is drawn by the caller, which owns the width; the numbers are
+// beside it in both states, so being over the bound is a word and a figure
+// rather than a colour.
+func (l Lang) Budget(meter string, budget forge.Budget) string {
+	if budget.Over() {
+		return l.Say(BudgetOver, meter, budget.Effective, budget.Max, -budget.Headroom)
+	}
+	return l.Say(BudgetWithin, meter, budget.Effective, budget.Max, budget.Headroom)
+}
+
+// Note is one line of a write's confirmation.
+func (l Lang) Note(note forge.Note) string {
+	switch note.Kind {
+	case forge.NoteWrote:
+		return l.Say(NoteWrote, note.ID, note.Path)
+	case forge.NoteArtMissing:
+		return l.Say(NoteArtMissing, note.Path)
+	default:
+		return l.Text(NoteRebuild)
+	}
+}
+
+// Notes is every line of one, in order.
+func (l Lang) Notes(notes []forge.Note) []string {
+	out := make([]string, 0, len(notes))
+	for _, note := range notes {
+		out = append(out, l.Note(note))
+	}
+	return out
+}
+
+// Problem is one reason a check failed.
+func (l Lang) Problem(problem forge.Problem) string {
+	switch typed := problem.(type) {
+	case *forge.MissingArtProblem:
+		return l.Say(ProblemMissingArt, typed.ID, typed.Image, typed.Path)
+	case *forge.ResolveProblem:
+		return l.Say(ProblemDoesNotResolve, typed.ID, typed.Err)
+	default:
+		return l.Say(ErrorAsGiven, problem)
+	}
+}

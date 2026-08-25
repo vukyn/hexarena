@@ -5,9 +5,14 @@
 // over the screen, so it can show a stat budget and a carry check updating as
 // the author types rather than refusing an answer several questions later.
 // Neither knows a rule of its own: the id check, the kit check, the element
-// check, the budget and the wording of every refusal all come from
-// internal/forge, so the two cannot drift into disagreeing about what a legal
-// character is.
+// check and the budget all come from internal/forge, so the two cannot drift
+// into disagreeing about what a legal character is.
+//
+// This one also speaks Vietnamese, and does so by default. Every sentence it
+// shows comes from internal/i18n — there is no user-visible wording in this
+// package's own source, which is what TestNoScreenHoldsItsOwnWording checks —
+// and the facts behind those sentences are still internal/forge's. cmd/hexforge
+// stays English on purpose: it is what a script reads.
 //
 // The screen is bubbletea, styled with lipgloss and built from bubbles. None of
 // that reaches the engine: what has to replay identically in a year is
@@ -15,40 +20,82 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/i18n"
 )
 
+// programName is what this binary is called, in every language.
+const programName = "hexforge-tui"
+
+// options is one invocation: which data directory, and which language.
+type options struct {
+	dir  string
+	lang i18n.Lang
+}
+
 func main() {
-	dir := flag.String("data", forge.DefaultDataDir, "the data directory to read and write")
-	flag.Parse()
-	if arguments := flag.Args(); len(arguments) > 0 {
-		fmt.Fprintf(os.Stderr, "hexforge-tui: takes no arguments, got %v\n", arguments)
+	chosen, err := parseOptions(os.Args[1:], os.Getenv(i18n.EnvVar), os.Stderr)
+	if err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return
+		}
+		fmt.Fprintf(os.Stderr, "%s: %v\n", programName, err)
 		os.Exit(2)
 	}
-	if err := run(*dir); err != nil {
-		fmt.Fprintf(os.Stderr, "hexforge-tui: %v\n", err)
+	if err := run(chosen); err != nil {
+		fmt.Fprintf(os.Stderr, "%s: %v\n", programName, err)
 		os.Exit(1)
 	}
 }
 
-func run(dir string) error {
-	if !stdoutIsTerminal() {
-		return fmt.Errorf(
-			"stdout is not a terminal, and a full-screen program would write control codes into it.\n" +
-				"Use hexforge instead: it authors the same cast through the same checks, takes flags\n" +
-				"and reads a pipe, and `hexforge check` prints what this program's check screen shows")
+// parseOptions reads the flags and settles the language.
+//
+// The flag beats the environment variable, because the variable is a standing
+// preference and the flag is this run. An unreadable value in either is an
+// error naming where it came from and which spellings work, rather than a
+// silent fall back to the default — somebody who typed "vn" would otherwise
+// see a screen in the language they were trying to leave and have no idea why.
+//
+// The flag descriptions are worded before the strict check, since the flag
+// package prints them while it is still parsing. They take the environment's
+// language if it is usable and the default if it is not; the proper complaint
+// follows a line later.
+func parseOptions(arguments []string, environment string, out io.Writer) (options, error) {
+	described := i18n.Prefer("", environment)
+	set := flag.NewFlagSet(programName, flag.ContinueOnError)
+	set.SetOutput(out)
+	dir := set.String("data", forge.DefaultDataDir, described.Text(i18n.DataFlagUsage))
+	chosen := set.String(i18n.FlagName, "", described.Text(i18n.LanguageFlagUsage))
+	if err := set.Parse(arguments); err != nil {
+		return options{}, err
 	}
-	lib, err := forge.Load(dir)
+	lang, err := i18n.Resolve(*chosen, environment)
+	if err != nil {
+		return options{}, err
+	}
+	if operands := set.Args(); len(operands) > 0 {
+		return options{}, errors.New(lang.Say(i18n.NoArguments, operands))
+	}
+	return options{dir: *dir, lang: lang}, nil
+}
+
+func run(chosen options) error {
+	if !stdoutIsTerminal() {
+		return errors.New(chosen.lang.Text(i18n.NotATerminal))
+	}
+	lib, err := forge.Load(chosen.dir)
 	if err != nil {
 		return err
 	}
-	program := tea.NewProgram(newModel(lib), tea.WithAltScreen())
+	program := tea.NewProgram(newModel(lib, chosen.lang), tea.WithAltScreen())
 	_, err = program.Run()
 	return err
 }

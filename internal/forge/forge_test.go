@@ -102,8 +102,18 @@ func TestInspectNoticesMissingArt(t *testing.T) {
 	if len(after.Problems) != 1 {
 		t.Errorf("%d problems reported, want 1: %v", len(after.Problems), after.Problems)
 	}
-	if !strings.Contains(after.Problems[0], "sprout.svg") {
-		t.Errorf("the problem is %q, want it to name the missing file", after.Problems[0])
+	// The problem is a value rather than a sentence, so a front-end can word it
+	// in whatever language it speaks. Its English is still the one the command
+	// line prints, and both are checked here.
+	missingArt, isMissingArt := after.Problems[0].(*MissingArtProblem)
+	if !isMissingArt {
+		t.Fatalf("the problem is a %T, want a *MissingArtProblem", after.Problems[0])
+	}
+	if !strings.HasSuffix(missingArt.Path, "sprout.svg") {
+		t.Errorf("the problem names %q, want the missing file", missingArt.Path)
+	}
+	if !strings.Contains(missingArt.Error(), "sprout.svg") {
+		t.Errorf("the problem reads %q, want it to name the missing file", missingArt)
 	}
 	missing, present := 0, 0
 	for _, row := range after.Rows {

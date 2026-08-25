@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/i18n"
 )
 
 // screen is which of the four views is in front.
@@ -21,25 +22,43 @@ const (
 	screenCheck
 )
 
-// The smallest window the forms fit in. Below this the program says so rather
-// than drawing a layout that overlaps itself: a corrupted screen looks like a
-// bug in the tool, and the author is left unable to tell whether the character
-// they are looking at is the one they typed.
+// The smallest window the screens fit in.
+//
+// Below this the program says so rather than drawing a layout that overlaps
+// itself: a corrupted screen looks like a bug in the tool, and the author is
+// left unable to tell whether the character they are looking at is the one they
+// typed.
+//
+// The width was 72 while this client was English only. Vietnamese runs a fifth
+// to a third longer for the same sentence, and the busiest footers — six chords
+// on the form, the level and filter keys on the browser — landed just past it
+// once the language chord was added, so the floor moved to the other number a
+// terminal has always had. TestEveryWordingFitsTheMinimumWidth measures the
+// catalog against this constant in both languages, so it cannot rot quietly.
 const (
-	minWidth  = 72
+	minWidth  = 80
 	minHeight = 24
 )
 
-// model is the whole program: a library, the screen in front, and the four
-// screens' own state.
+// detailLabelWidth is the column every detail pane's row name sits in. It is
+// wide enough for the longest label in either language, which
+// TestEveryLabelFitsItsColumn holds.
+const detailLabelWidth = 11
+
+// model is the whole program: a library, the language, the screen in front, and
+// the four screens' own state.
 //
 // It knows no rules. Every question it can answer about a character — is this
 // id free, can this affinity carry this kit, what does this stat line spend of
 // the budget, is this art really there — is asked of internal/forge, which is
 // the same package cmd/hexforge asks. That is the point of having two
 // front-ends at all: they must be incapable of disagreeing.
+//
+// It knows no wording either. Every sentence comes from internal/i18n, keyed by
+// a constant, so a screen cannot hold a line that exists in one language only.
 type model struct {
 	lib   *forge.Library
+	lang  i18n.Lang
 	style palette
 
 	width, height int
@@ -58,15 +77,20 @@ type model struct {
 }
 
 // guardState is a pending "are you sure" and what to do if the answer is yes.
+//
+// The question is a key rather than a sentence so that switching language with
+// one pending redraws it, instead of leaving the last language's words on the
+// screen until the question is answered.
 type guardState struct {
-	question string
+	question i18n.Key
 	confirm  func(model) model
 }
 
-func newModel(lib *forge.Library) model {
+func newModel(lib *forge.Library, lang i18n.Lang) model {
 	style := newPalette()
 	return model{
 		lib:     lib,
+		lang:    lang,
 		style:   style,
 		browse:  newBrowseScreen(lib),
 		form:    newFormScreen(lib),
@@ -77,18 +101,21 @@ func newModel(lib *forge.Library) model {
 
 func (m model) Init() tea.Cmd { return nil }
 
+// text is one line in the language in front. Every screen goes through it.
+func (m model) text(key i18n.Key, args ...any) string { return m.lang.Say(key, args...) }
+
 // menuItem is one entry of the top-level view.
 type menuItem struct {
-	label  string
-	detail string
+	label  i18n.Key
+	detail i18n.Key
 	target screen
 }
 
 var menuItems = []menuItem{
-	{"cast", "browse the authored characters and resolve them at any level", screenBrowse},
-	{"new character", "author one, with the budget and the carry check live", screenNew},
-	{"origins", "the works the cast is borrowed from, and add one", screenOrigins},
-	{"check", "verify the art is really there and the budget is kept", screenCheck},
+	{i18n.MenuCast, i18n.MenuCastDetail, screenBrowse},
+	{i18n.MenuNewCharacter, i18n.MenuNewCharacterDetail, screenNew},
+	{i18n.MenuOrigins, i18n.MenuOriginsDetail, screenOrigins},
+	{i18n.MenuCheck, i18n.MenuCheckDetail, screenCheck},
 }
 
 func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
@@ -106,11 +133,25 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 //
 // ctrl+c is handled before anything else and from every screen, including with
 // a question pending: a program that can trap somebody in a modal is a program
-// they have to kill from another terminal. A bare q is a quit everywhere a text
-// field is not focused, because where one is, q is a letter.
+// they have to kill from another terminal. ctrl+l is next and works from
+// everywhere for a smaller reason of the same shape — the two languages are
+// only worth comparing side by side if the comparison costs nothing, and a
+// toggle that needed the form closed first would be a toggle nobody uses
+// mid-sentence.
+//
+// It is a chord rather than a letter because on the form a letter is text: a
+// bare l would have to be typed into a field, not swallowed by the program.
+// Only m.lang changes, so every field keeps what has been typed into it.
+//
+// A bare q is a quit everywhere a text field is not focused, because where one
+// is, q is a letter.
 func (m model) key(message tea.KeyMsg) (tea.Model, tea.Cmd) {
-	if message.String() == "ctrl+c" {
+	switch message.String() {
+	case "ctrl+c":
 		return m, tea.Quit
+	case "ctrl+l":
+		m.lang = m.lang.Other()
+		return m, nil
 	}
 	if m.guard != nil {
 		return m.answerGuard(message)
@@ -138,6 +179,9 @@ func (m model) key(message tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 // answerGuard resolves a pending confirmation. Anything that is not a yes is a
 // no, which is the same default hexforge's own confirmation takes.
+//
+// The y is the same letter in both languages on purpose: it is what the [y/N]
+// on screen offers, and what every other confirmation in this repository takes.
 func (m model) answerGuard(message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	confirm := m.guard.confirm
 	switch strings.ToLower(message.String()) {
@@ -151,7 +195,7 @@ func (m model) answerGuard(message tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 // ask raises a confirmation. The callback runs only if the answer is yes.
-func (m model) ask(question string, confirm func(model) model) model {
+func (m model) ask(question i18n.Key, confirm func(model) model) model {
 	m.guard = &guardState{question: question, confirm: confirm}
 	return m
 }
@@ -197,7 +241,7 @@ func (m model) View() string {
 	if m.width == 0 {
 		// bubbletea sends the first window size a moment after start. Drawing a
 		// guessed layout here and redrawing it immediately is a visible flash.
-		return "hexforge-tui: measuring the terminal…\n"
+		return programName + ": " + m.text(i18n.MeasuringTerminal) + "\n"
 	}
 	if m.tooSmall() {
 		return m.viewTooSmall()
@@ -205,7 +249,7 @@ func (m model) View() string {
 	var body, footer string
 	switch m.screen {
 	case screenMenu:
-		body, footer = m.viewMenu(), "↑/↓ move · enter open · q quit"
+		body, footer = m.viewMenu(), m.text(i18n.MenuFooter)
 	case screenBrowse:
 		body, footer = m.browse.view(m)
 	case screenNew:
@@ -216,32 +260,22 @@ func (m model) View() string {
 		body, footer = m.check.view(m)
 	}
 	if m.guard != nil {
-		footer = m.guard.question + " [y/N] · ctrl+c quit"
+		footer = m.text(i18n.ConfirmFooter, m.text(m.guard.question))
 	}
 	return m.frame(body, footer)
 }
 
-// viewTooSmall is what a window that cannot hold a form gets instead of a
+// viewTooSmall is what a window that cannot hold a screen gets instead of a
 // mangled one.
 //
-// It names both sizes, because "too small" without a target is a message
-// nobody can act on, and it points at the other front-end, which needs no room
-// at all and can do everything this one can.
+// It names both sizes, because "too small" without a target is a message nobody
+// can act on, and it points at the other front-end, which needs no room at all
+// and can do everything this one can. It is drawn in the language in front,
+// which is why it is a catalog entry and not a fallback in English: the person
+// who cannot read the screen is exactly the person who needs this line.
 func (m model) viewTooSmall() string {
-	// Every line is kept short on purpose. This is the one screen that is drawn
-	// into a window known to be small, so it has to read in a window smaller
-	// still — and it is clipped like any other, rather than wrapping.
-	lines := strings.Split(fmt.Sprintf(`terminal too small
-
-needs at least %dx%d
-this window is %dx%d
-
-Make it bigger, or use
-hexforge instead: same
-cast, same checks, and
-it fits any terminal.
-
-q or ctrl+c to quit`, minWidth, minHeight, m.width, m.height), "\n")
+	lines := strings.Split(
+		m.text(i18n.TerminalTooSmall, minWidth, minHeight, m.width, m.height), "\n")
 	clip := lipgloss.NewStyle().MaxWidth(m.width)
 	for i, line := range lines {
 		lines[i] = clip.Render(line)
@@ -253,7 +287,7 @@ q or ctrl+c to quit`, minWidth, minHeight, m.width, m.height), "\n")
 // whole thing to the window's height, so a shorter screen does not leave the
 // previous one's tail on display.
 func (m model) frame(body, footer string) string {
-	header := m.style.title.Render("hexforge") + m.style.dim.Render("  "+m.lib.Dir())
+	header := m.style.title.Render(programName) + m.style.dim.Render("  "+m.lib.Dir())
 	lines := []string{header, ""}
 	lines = append(lines, strings.Split(body, "\n")...)
 
@@ -264,7 +298,7 @@ func (m model) frame(body, footer string) string {
 	room := m.height - 2
 	if len(lines) > room {
 		lines = lines[:room]
-		lines[room-1] = m.style.dim.Render("… cut off; a taller window shows the rest")
+		lines[room-1] = m.style.dim.Render(m.text(i18n.Truncated))
 	}
 	for len(lines) < room {
 		lines = append(lines, "")
@@ -283,28 +317,55 @@ func (m model) frame(body, footer string) string {
 	return strings.Join(lines, "\n")
 }
 
+// menuLabelWidth is the column the menu's own labels sit in, wide enough for
+// the longest in either language.
+const menuLabelWidth = 16
+
 func (m model) viewMenu() string {
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render("what would you like to do?") + "\n\n")
+	out.WriteString(m.style.heading.Render(m.text(i18n.MenuHeading)) + "\n\n")
 	for i, item := range menuItems {
 		marker := "  "
-		label := item.label
+		// Padded before it is styled, not after: a style is escape codes, and
+		// fmt would count those toward the column.
+		label := pad(m.text(item.label), menuLabelWidth)
 		if i == m.menu {
 			// The marker is the selection. The style only agrees with it.
 			marker = "> "
 			label = m.style.selected.Render(label)
 		}
-		out.WriteString(fmt.Sprintf("%s%-16s %s\n", marker, label, m.style.dim.Render(item.detail)))
+		out.WriteString(marker + label + " " + m.style.dim.Render(m.text(item.detail)) + "\n")
 	}
-	out.WriteString("\n" + m.style.dim.Render(
-		"Everything written here goes through the same checks as hexforge, and the\n"+
-			"game boots from the embedded copy — rebuild before an edit reaches a battle."))
+	out.WriteString("\n" + m.style.dim.Render(m.text(i18n.MenuNote)))
 	return out.String()
 }
 
 // label draws a "name  value" row the way every detail pane in this program
 // does, so the panes line up with each other.
 func (m model) label(name, format string, args ...any) string {
+	return m.labelAt(name, detailLabelWidth, format, args...)
+}
+
+// labelAt is label in a caller-chosen column.
+//
+// The new-character form sizes its own column from the widest field name it is
+// drawing, which differs per language ("archetype" is 9 cells, "mẫu vai trò" is
+// 11), so its summary rows have to be told that width rather than assume the
+// detail panes' one. They used to assume it, and the budget and carry lines sat
+// a cell out of line with the stats directly above them — the wrong way in
+// English and the wrong way in Vietnamese, in opposite directions.
+func (m model) labelAt(name string, width int, format string, args ...any) string {
 	return fmt.Sprintf("  %s %s\n",
-		m.style.label.Render(fmt.Sprintf("%-11s", name)), fmt.Sprintf(format, args...))
+		m.style.label.Render(pad(name, width)), fmt.Sprintf(format, args...))
+}
+
+// pad widens a string to a column.
+//
+// fmt's own %-*s counts runes, which is the right unit here — every letter this
+// client draws, Vietnamese included, is one terminal cell wide, and
+// TestEveryWordingIsOneCellPerLetter is what keeps that true. What fmt cannot
+// do is ignore a style's escape codes, so padding happens before styling
+// everywhere in this package.
+func pad(text string, width int) string {
+	return fmt.Sprintf("%-*s", width, text)
 }

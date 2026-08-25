@@ -6,10 +6,12 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/i18n"
 )
 
 // The fields of the new-character form, in the order they are walked.
@@ -66,9 +68,12 @@ type formScreen struct {
 	statFollowsPreset [progression.KindCount]bool
 
 	// err is the last refusal from a save, and notes is what the last successful
-	// one reported. Both come from internal/forge; neither is worded here.
+	// one reported. Both are kept as internal/forge produced them — an error
+	// value and a slice of forge.Note — rather than as the lines they will be
+	// drawn as, so that switching language redraws them instead of leaving the
+	// previous language's sentence sitting under a translated form.
 	err   error
-	notes []string
+	notes []forge.Note
 }
 
 func newFormScreen(lib *forge.Library) formScreen {
@@ -214,7 +219,7 @@ func (f formScreen) leave(m model) model {
 		m.screen = screenMenu
 		return m
 	}
-	return m.ask("discard the character being authored?", func(m model) model {
+	return m.ask(i18n.FormDiscard, func(m model) model {
 		m.form = newFormScreen(m.lib)
 		m.screen = screenMenu
 		return m
@@ -271,59 +276,72 @@ func (f formScreen) save(m model) formScreen {
 		f.notes = nil
 		return f
 	}
-	notes := m.lib.SaveNotes(character)
+	notes := m.lib.SaveNoteFacts(character)
 	fresh := newFormScreen(m.lib)
 	fresh.notes = notes
 	return fresh
 }
 
-// fieldLabel is what each row is called. Stat rows are named by their short
-// label, which is the same one the command line uses as a flag.
-func fieldLabel(field int) string {
-	switch field {
-	case fieldID:
-		return "id"
-	case fieldName:
-		return "name"
-	case fieldOrigin:
-		return "origin"
-	case fieldArchetype:
-		return "archetype"
-	case fieldImage:
-		return "art"
-	case fieldKit:
-		return "kit"
-	case fieldElement:
-		return "element"
-	case fieldBio:
-		return "bio"
-	default:
-		return forge.ShortStat(progression.Kind(field - fieldStatBase))
+// fieldLabel is what each row is called.
+//
+// Stat rows are named by their short label — hp, atk, def — in every language,
+// and forge.ShortStat says why: those six are the flag names and the data
+// files' own keys, so an author needs them as they are written to act on them.
+func fieldLabel(m model, field int) string {
+	labels := map[int]i18n.Key{
+		fieldID:        i18n.FieldID,
+		fieldName:      i18n.FieldName,
+		fieldOrigin:    i18n.FieldOrigin,
+		fieldArchetype: i18n.FieldArchetype,
+		fieldImage:     i18n.FieldArt,
+		fieldKit:       i18n.FieldKit,
+		fieldElement:   i18n.FieldElement,
+		fieldBio:       i18n.FieldBiography,
 	}
+	// A map read by key, never ranged over into anything drawn: the order on
+	// screen is the field order, which is the constants above.
+	if key, named := labels[field]; named {
+		return m.text(key)
+	}
+	return forge.ShortStat(progression.Kind(field - fieldStatBase))
+}
+
+// formLabelWidth is the column the field names sit in. It is measured from the
+// labels themselves rather than declared, because the longest of them is
+// "archetype" in one language and "mẫu vai trò" in the other, and a constant
+// would be wrong for one of them the next time either is reworded.
+func formLabelWidth(m model) int {
+	widest := 0
+	for field := range fieldCount {
+		if width := lipgloss.Width(fieldLabel(m, field)); width > widest {
+			widest = width
+		}
+	}
+	return widest + 1
 }
 
 func (f formScreen) view(m model) (string, string) {
-	footer := "↑/↓ field · ←/→ choose · ctrl+s write · esc back · ctrl+c quit"
+	footer := m.text(i18n.FormFooter)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render("new character") + "  " +
-		m.style.dim.Render(fmt.Sprintf("every check is the write's own, at level %d",
-			progression.LevelCap)) + "\n\n")
+	out.WriteString(m.style.heading.Render(m.text(i18n.FormHeading)) + "  " +
+		m.style.dim.Render(m.text(i18n.FormSubtitle, progression.LevelCap)) + "\n\n")
 
+	width := formLabelWidth(m)
 	for field := range fieldCount {
-		out.WriteString(f.row(m, field))
+		out.WriteString(f.row(m, field, width))
 	}
 	out.WriteString("\n")
-	out.WriteString(f.liveChecks(m))
+	out.WriteString(f.liveChecks(m, width))
 	return out.String(), footer
 }
 
 // row draws one field: a marker, its name, and either its text or its choice.
-func (f formScreen) row(m model, field int) string {
+func (f formScreen) row(m model, field, labelWidth int) string {
 	marker := "  "
 	if field == f.cursor {
 		marker = "> "
 	}
-	name := fmt.Sprintf("%-10s", fieldLabel(field))
+	name := pad(fieldLabel(m, field), labelWidth)
 	if field == f.cursor {
 		name = m.style.selected.Render(name)
 	} else {
@@ -335,7 +353,7 @@ func (f formScreen) row(m model, field int) string {
 	case field == fieldOrigin:
 		value = f.choice(m, f.originIndex, len(f.origins), f.originLabel())
 	case field == fieldArchetype:
-		value = f.choice(m, f.archetypeIndex, len(f.archetypes), f.archetypeLabel())
+		value = f.choice(m, f.archetypeIndex, len(f.archetypes), f.archetypeLabel(m))
 	case field >= fieldStatBase:
 		value = f.statRow(m, progression.Kind(field-fieldStatBase))
 	default:
@@ -348,10 +366,10 @@ func (f formScreen) row(m model, field int) string {
 // is visible without pressing anything.
 func (f formScreen) choice(m model, index, total int, label string) string {
 	if total == 0 {
-		return m.style.bad.Render("none catalogued")
+		return m.style.bad.Render(m.text(i18n.NoneCatalogued))
 	}
 	return fmt.Sprintf("< %s >  %s", label,
-		m.style.dim.Render(fmt.Sprintf("%d of %d", index+1, total)))
+		m.style.dim.Render(m.text(i18n.ChoicePosition, index+1, total)))
 }
 
 func (f formScreen) originLabel() string {
@@ -362,12 +380,12 @@ func (f formScreen) originLabel() string {
 	return fmt.Sprintf("%s — %s", origin.ID, origin.Title)
 }
 
-func (f formScreen) archetypeLabel() string {
+func (f formScreen) archetypeLabel(m model) string {
 	if len(f.archetypes) == 0 {
 		return ""
 	}
 	preset := f.archetypes[clamp(f.archetypeIndex, 0, len(f.archetypes)-1)]
-	return fmt.Sprintf("%s — %s", preset.ID, forge.PresetSummary(preset))
+	return fmt.Sprintf("%s — %s", preset.ID, m.lang.PresetSummary(preset))
 }
 
 // statRow is a curve as "base:max", a meter of where its maximum sits against
@@ -378,16 +396,17 @@ func (f formScreen) statRow(m model, kind progression.Kind) string {
 	curve, err := forge.ParseCurve(input.Value())
 	meter := m.style.dim.Render(strings.Repeat("-", statBarWidth+2))
 	trailing := ""
-	if err == nil {
-		meter = bar(statBarWidth, curve.Max, ceiling)
-		trailing = fmt.Sprintf("%d → %d of %d", curve.Base, curve.Max, ceiling)
-		if curve.Max > ceiling {
-			trailing = m.style.bad.Render(trailing + "  OVER THE CEILING")
-		} else {
-			trailing = m.style.dim.Render(trailing)
-		}
+	if err != nil {
+		// The refusal is forge.ParseCurve's, worded by the catalog. This screen
+		// does not decide what is wrong with a curve, only where to put it.
+		return fmt.Sprintf("%s %s %s", input.View(), meter, m.style.bad.Render(m.lang.Error(err)))
+	}
+	meter = bar(statBarWidth, curve.Max, ceiling)
+	trailing = m.text(i18n.CurveAgainstCeiling, curve.Base, curve.Max, ceiling)
+	if curve.Max > ceiling {
+		trailing = m.style.bad.Render(trailing + "  " + m.text(i18n.OverTheCeiling))
 	} else {
-		trailing = m.style.bad.Render("not a curve; write base:max")
+		trailing = m.style.dim.Render(trailing)
 	}
 	return fmt.Sprintf("%s %s %s", input.View(), meter, trailing)
 }
@@ -396,26 +415,27 @@ func (f formScreen) statRow(m model, kind progression.Kind) string {
 // stat line spends of the joint budget, and whether the affinity can carry the
 // kit. Both are recomputed on every keystroke because both are cheap, and both
 // come from internal/forge so that neither can disagree with the write.
-func (f formScreen) liveChecks(m model) string {
+func (f formScreen) liveChecks(m model, labelWidth int) string {
 	var out strings.Builder
 	draft := f.draft()
 
 	table, err := draft.Table(m.lib)
 	if err != nil {
-		out.WriteString(m.label("budget", "%s", m.style.bad.Render(err.Error())))
+		out.WriteString(m.labelAt(m.text(i18n.LabelBudget), labelWidth, "%s", m.style.bad.Render(m.lang.Error(err))))
 	} else {
 		values := table.At(progression.LevelCap)
-		out.WriteString(m.label("budget", "%s", budgetLine(m, m.lib.Budget(values))))
+		out.WriteString(m.labelAt(m.text(i18n.LabelBudget), labelWidth, "%s", budgetLine(m, m.lib.Budget(values))))
 	}
 
-	out.WriteString(m.label("carries", "%s", f.carryLine(m, draft)))
+	out.WriteString(m.labelAt(m.text(i18n.LabelCarries), labelWidth, "%s", f.carryLine(m, draft)))
 
 	switch {
 	case f.err != nil:
-		out.WriteString("\n" + m.style.bad.Render("cannot write: "+f.err.Error()) + "\n")
+		out.WriteString("\n" +
+			m.style.bad.Render(m.text(i18n.WriteRefused, m.lang.Error(f.err))) + "\n")
 	case len(f.notes) > 0:
 		out.WriteString("\n")
-		for i, note := range f.notes {
+		for i, note := range m.lang.Notes(f.notes) {
 			if i == 0 {
 				out.WriteString(m.style.good.Render(note) + "\n")
 				continue
@@ -429,20 +449,22 @@ func (f formScreen) liveChecks(m model) string {
 // carryLine says whether the affinity carries every skill in the kit, and names
 // the first one it cannot.
 //
-// The naming is not this screen's doing: forge.CheckCarry, reached through
-// ValidateElement, produces the sentence, so the form, the prompt and the
-// parser all refuse a mismatch in the same words.
+// The judgement is not this screen's doing: forge.CheckCarry, reached through
+// ValidateElement, decides it and hands back a *forge.CarryError holding the
+// affinity, the skill and the skill's element, so the form, the prompt and the
+// parser cannot disagree about a mismatch. Only the sentence is chosen here,
+// and only by asking the catalog for it.
 func (f formScreen) carryLine(m model, draft forge.Draft) string {
 	names := draft.KitNames(m.lib)
 	kit, err := m.lib.LookupKit(names)
 	if err != nil {
-		return m.style.bad.Render(err.Error())
+		return m.style.bad.Render(m.lang.Error(err))
 	}
 	if strings.TrimSpace(draft.Element) == "" {
-		return m.style.dim.Render("no element yet — " + forge.DemandSummary(kit))
+		return m.style.dim.Render(m.text(i18n.CarryNoElementYet, m.lang.KitSummary(kit)))
 	}
 	if err := m.lib.ValidateElement(draft.Element, kit); err != nil {
-		return m.style.bad.Render("NO — " + err.Error())
+		return m.style.bad.Render(m.text(i18n.CarryRefused, m.lang.Error(err)))
 	}
-	return m.style.good.Render("yes — " + draft.Element + " carries every skill in the kit")
+	return m.style.good.Render(m.text(i18n.CarryAccepted, draft.Element))
 }

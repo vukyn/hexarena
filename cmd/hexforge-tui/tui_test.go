@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/i18n"
 )
 
 // A bubbletea model is testable without a terminal: Update takes a message and
@@ -57,14 +59,18 @@ func copyTree(t *testing.T, from, to string) {
 	}
 }
 
-// start builds a model over a scratch copy of the data, sized to a terminal
-// that is comfortably big enough.
+// start builds a model over a scratch copy of the data, in the language asked
+// for, sized to a terminal that is comfortably big enough.
 //
 // NO_COLOR is set for every test: the styles then render as plain text, which
 // is what lets an assertion look for a word rather than for a word wrapped in
 // escape codes. That it works at all is the point of the palette — meaning
-// never lives in colour here.
-func start(t *testing.T) (model, *forge.Library, string) {
+// never lives in colour here, in either language.
+//
+// The language is a parameter rather than the default because most of what is
+// asserted below is a state rather than a sentence, and the tests that are
+// about the wording say which language they mean.
+func start(t *testing.T, lang i18n.Lang) (model, *forge.Library, string) {
 	t.Helper()
 	t.Setenv("NO_COLOR", "1")
 	dir := scratchData(t)
@@ -72,7 +78,7 @@ func start(t *testing.T) (model, *forge.Library, string) {
 	if err != nil {
 		t.Fatalf("load %s: %v", dir, err)
 	}
-	m := newModel(lib)
+	m := newModel(lib, lang)
 	m.width, m.height = 120, 44
 	return m, lib, dir
 }
@@ -191,7 +197,7 @@ func author(t *testing.T, m model, id, name, origin, archetype, element string) 
 // something for itself — which is exactly the drift internal/forge exists to
 // prevent.
 func TestTheFormProducesTheCharacterTheCommandLineProduces(t *testing.T) {
-	m, lib, _ := start(t)
+	m, lib, _ := start(t, i18n.Vi)
 	m = author(t, m, "example-film.tester", "Tester", "example-film", "duelist", "wind/ground")
 
 	fromTheForm, err := m.form.draft().Resolve(lib)
@@ -238,15 +244,15 @@ func TestTheFormProducesTheCharacterTheCommandLineProduces(t *testing.T) {
 // moment the element changes — while naming the skill that cannot be carried,
 // which is what tells the author what to do about it.
 func TestTheCarryCheckFlipsWithTheElement(t *testing.T) {
-	m, _, _ := start(t)
+	m, _, _ := start(t, i18n.Vi)
 	// The sentinel kit demands water, so fire cannot carry it.
 	m = author(t, m, "example-film.tester", "Tester", "example-film", "sentinel", "fire")
 	refused := m.form.carryLine(m, m.form.draft())
-	if !strings.Contains(refused, "NO") {
-		t.Errorf("fire against a water kit reads %q, want a refusal", refused)
-	}
-	if !strings.Contains(refused, "riptide") {
-		t.Errorf("the refusal is %q, want it to name the skill that cannot be carried", refused)
+	// The whole sentence, in the language in front. It names the affinity, the
+	// skill and what that skill is, because "no" on its own leaves an author
+	// with nothing to change.
+	if want := `KHÔNG — hệ fire không mang được chiêu "riptide" (hệ water)`; refused != want {
+		t.Errorf("fire against a water kit reads\n %q\nwant\n %q", refused, want)
 	}
 	// The whole screen says it too, not just the helper.
 	body, _ := m.form.view(m)
@@ -261,11 +267,8 @@ func TestTheCarryCheckFlipsWithTheElement(t *testing.T) {
 	}
 	m = typeText(t, m, "water/ice")
 	accepted := m.form.carryLine(m, m.form.draft())
-	if strings.Contains(accepted, "NO") {
-		t.Errorf("water/ice against a water kit reads %q, want it accepted", accepted)
-	}
-	if !strings.Contains(accepted, "yes") {
-		t.Errorf("the accepted line is %q, want it to say so in words", accepted)
+	if want := "ĐƯỢC — water/ice mang được mọi chiêu trong bộ"; accepted != want {
+		t.Errorf("water/ice against a water kit reads\n %q\nwant\n %q", accepted, want)
 	}
 
 	// The two answers agree with the one the write would give, which is the
@@ -279,7 +282,7 @@ func TestTheCarryCheckFlipsWithTheElement(t *testing.T) {
 // engine's own arithmetic. A budget meter drawn from a second calculation would
 // be worse than no meter at all.
 func TestTheBudgetBarShowsProgressionEffectiveHP(t *testing.T) {
-	m, lib, _ := start(t)
+	m, lib, _ := start(t, i18n.Vi)
 	m = author(t, m, "example-film.tester", "Tester", "example-film", "duelist", "wind/ground")
 
 	table, err := m.form.draft().Table(lib)
@@ -309,7 +312,7 @@ func TestTheBudgetBarShowsProgressionEffectiveHP(t *testing.T) {
 	m = key(t, m, "down") // defence curve
 	m = retype(t, m, "240:800")
 	body, _ = m.form.view(m)
-	if !strings.Contains(body, "OVER THE BUDGET") {
+	if !strings.Contains(body, "VƯỢT HẠN MỨC") {
 		t.Errorf("a stat line over the joint bound is not called out:\n%s", body)
 	}
 	// And the write agrees, so the warning is not a second opinion.
@@ -322,7 +325,7 @@ func TestTheBudgetBarShowsProgressionEffectiveHP(t *testing.T) {
 // one keystroke away from every other key on the form, so it must not be able
 // to silently throw away an hour of tuning.
 func TestLeavingAnEditedFormAsksFirst(t *testing.T) {
-	m, _, _ := start(t)
+	m, _, _ := start(t, i18n.Vi)
 
 	// An untouched form has nothing to lose and leaves without a question.
 	m = m.enter(screenNew)
@@ -373,21 +376,23 @@ func TestLeavingAnEditedFormAsksFirst(t *testing.T) {
 // worse than drawing nothing: an author cannot tell a mangled form from a wrong
 // one.
 func TestATerminalTooSmallSaysSo(t *testing.T) {
-	m, _, _ := start(t)
+	m, _, _ := start(t, i18n.Vi)
 	m = m.enter(screenNew)
 	m = send(t, m, tea.WindowSizeMsg{Width: 40, Height: 10})
 	drawn := m.View()
-	for _, want := range []string{"too small", "72x24", "40x10", "hexforge"} {
+	// It is drawn in the language in front, and it names both sizes: the person
+	// who cannot read this screen is exactly the one who needs it.
+	for _, want := range []string{"quá nhỏ", "80x24", "40x10", "hexforge"} {
 		if !strings.Contains(drawn, want) {
 			t.Errorf("the fallback does not mention %q:\n%s", want, drawn)
 		}
 	}
-	if strings.Contains(drawn, "new character") {
+	if strings.Contains(drawn, m.text(i18n.FormHeading)) {
 		t.Errorf("the form was drawn into a window that cannot hold it:\n%s", drawn)
 	}
 	// Growing the window brings the form back rather than needing a restart.
 	m = send(t, m, tea.WindowSizeMsg{Width: 120, Height: 44})
-	if !strings.Contains(m.View(), "new character") {
+	if !strings.Contains(m.View(), m.text(i18n.FormHeading)) {
 		t.Errorf("the form did not come back after a resize:\n%s", m.View())
 	}
 }
@@ -396,7 +401,7 @@ func TestATerminalTooSmallSaysSo(t *testing.T) {
 // reaches cast.json, the confirmation is the one hexforge prints, and the
 // screens that list the cast see it without a restart.
 func TestSavingWritesThroughTheLibrary(t *testing.T) {
-	m, lib, dir := start(t)
+	m, lib, dir := start(t, i18n.Vi)
 	m = author(t, m, "example-film.tester", "Tester", "example-film", "duelist", "wind/ground")
 	m = key(t, m, "ctrl+s")
 
@@ -406,15 +411,19 @@ func TestSavingWritesThroughTheLibrary(t *testing.T) {
 	if len(m.form.notes) == 0 {
 		t.Fatal("the save reported nothing")
 	}
-	joined := strings.Join(m.form.notes, "\n")
-	if !strings.Contains(joined, "wrote example-film.tester") {
+	// The notes are kept as facts and worded on the way to the screen, so this
+	// asks the screen rather than the field.
+	joined := strings.Join(m.lang.Notes(m.form.notes), "\n")
+	if !strings.Contains(joined, "đã ghi example-film.tester") {
 		t.Errorf("the confirmation does not name the write:\n%s", joined)
 	}
 	// The art does not exist, and the confirmation says so rather than letting
-	// the author believe the character is finished. This is hexforge's own
-	// wording, from forge.Library.SaveNotes.
-	if !strings.Contains(joined, "is not there yet") {
+	// the author believe the character is finished.
+	if !strings.Contains(joined, "chưa có file") {
 		t.Errorf("the confirmation does not warn about the missing art:\n%s", joined)
+	}
+	if !strings.Contains(joined, "sprout.svg") && !strings.Contains(joined, "tester.svg") {
+		t.Errorf("the warning does not name the art it is missing:\n%s", joined)
 	}
 
 	// A fresh form is waiting, so ctrl+s twice cannot write twice.
@@ -449,39 +458,58 @@ func TestSavingWritesThroughTheLibrary(t *testing.T) {
 // screen. A tool whose only report of "this is broken" is a red cell is a tool
 // that lies on a monochrome terminal and in a pasted transcript.
 func TestEveryStateIsReadableWithoutColour(t *testing.T) {
-	m, _, dir := start(t)
-	// Take one file away, which is the one problem only a program allowed to
-	// read the filesystem can find.
-	if err := os.Remove(filepath.Join(dir, "assets", "example", "sprout.svg")); err != nil {
-		t.Fatalf("remove the art: %v", err)
+	// Both languages, because a state that is a word in one and a colour in the
+	// other is a screen that lies to half its readers.
+	cases := []struct {
+		lang                   i18n.Lang
+		failed, missing, works string
+	}{
+		{i18n.Vi, "KHÔNG ĐẠT", "THIẾU", "ĐẠT"},
+		{i18n.En, "FAILED", "MISSING", "PASSED"},
 	}
-	m = m.enter(screenCheck)
-	drawn := m.View()
-	if strings.Contains(drawn, "\x1b[") {
-		t.Errorf("NO_COLOR is set and the screen still carries escape codes:\n%q", drawn)
-	}
-	for _, want := range []string{"FAILED", "MISSING", "sprout.svg"} {
-		if !strings.Contains(drawn, want) {
-			t.Errorf("the check screen does not say %q:\n%s", want, drawn)
-		}
-	}
+	for _, test := range cases {
+		t.Run(test.lang.String(), func(t *testing.T) {
+			m, _, dir := start(t, test.lang)
+			// Take one file away, which is the one problem only a program
+			// allowed to read the filesystem can find.
+			if err := os.Remove(filepath.Join(dir, "assets", "example", "sprout.svg")); err != nil {
+				t.Fatalf("remove the art: %v", err)
+			}
+			m = m.enter(screenCheck)
+			drawn := m.View()
+			if strings.Contains(drawn, "\x1b[") {
+				t.Errorf("NO_COLOR is set and the screen still carries escape codes:\n%q", drawn)
+			}
+			for _, want := range []string{test.failed, test.missing, "sprout.svg"} {
+				if !strings.Contains(drawn, want) {
+					t.Errorf("the check screen does not say %q:\n%s", want, drawn)
+				}
+			}
+			// The missing-art row is the whole reason this screen exists, so it
+			// is asserted as the sentence it draws rather than as a word.
+			if test.lang == i18n.Vi &&
+				!strings.Contains(drawn, "nhân vật example-game.sprout dùng ảnh assets/example/sprout.svg") {
+				t.Errorf("the missing art is not reported in Vietnamese:\n%s", drawn)
+			}
 
-	// A passing check says so in words as well.
-	fresh, _, _ := start(t)
-	fresh = fresh.enter(screenCheck)
-	if !strings.Contains(fresh.View(), "PASSED") {
-		t.Errorf("a clean check does not say it passed:\n%s", fresh.View())
+			// A passing check says so in words as well.
+			fresh, _, _ := start(t, test.lang)
+			fresh = fresh.enter(screenCheck)
+			if !strings.Contains(fresh.View(), test.works) {
+				t.Errorf("a clean check does not say it passed:\n%s", fresh.View())
+			}
+		})
 	}
 }
 
 // TestBrowsingResolvesAtTheChosenLevel is the reason the browser is more than a
 // listing: a character is a curve, and the arrow keys walk it.
 func TestBrowsingResolvesAtTheChosenLevel(t *testing.T) {
-	m, lib, _ := start(t)
+	m, lib, _ := start(t, i18n.Vi)
 	m = m.enter(screenBrowse)
 
 	body, footer := m.browse.view(m)
-	if !strings.Contains(footer, "level") {
+	if !strings.Contains(footer, "←/→") {
 		t.Errorf("the footer does not offer the level keys: %q", footer)
 	}
 	if m.browse.level != progression.LevelCap {
@@ -521,12 +549,15 @@ func TestBrowsingResolvesAtTheChosenLevel(t *testing.T) {
 	// did: the count on screen names the filter.
 	m = typeText(t, m, "f")
 	body, _ = m.browse.view(m)
-	if !strings.Contains(body, m.browse.filters[m.browse.filter]) {
+	if !strings.Contains(body, m.browse.filterName(m)) {
 		t.Errorf("the filter in force is not named on screen:\n%s", body)
 	}
+	if m.browse.filterID() == "" {
+		t.Fatal("pressing f did not narrow the list to a work")
+	}
 	for _, shown := range m.browse.rows() {
-		if shown.Origin != m.browse.filters[m.browse.filter] {
-			t.Errorf("%s is shown under the %q filter", shown.ID, m.browse.filters[m.browse.filter])
+		if shown.Origin != m.browse.filterID() {
+			t.Errorf("%s is shown under the %q filter", shown.ID, m.browse.filterID())
 		}
 	}
 }
@@ -534,7 +565,7 @@ func TestBrowsingResolvesAtTheChosenLevel(t *testing.T) {
 // TestQuitKeysWorkFromEveryScreen covers the promise the footers make. ctrl+c
 // has to work even with a question pending, or a modal can trap somebody.
 func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
-	base, _, _ := start(t)
+	base, _, _ := start(t, i18n.Vi)
 	for _, target := range []screen{screenMenu, screenBrowse, screenOrigins, screenCheck} {
 		m := base.enter(target)
 		if _, command := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}}); !quits(command) {
@@ -572,7 +603,7 @@ func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 // TestAddingAWorkWritesTheCatalog covers the origins screen, which exists so an
 // author who finds the work they want missing does not have to leave.
 func TestAddingAWorkWritesTheCatalog(t *testing.T) {
-	m, _, dir := start(t)
+	m, _, dir := start(t, i18n.Vi)
 	m = m.enter(screenOrigins)
 	m = typeText(t, m, "a")
 	if !m.origins.adding {
@@ -616,34 +647,52 @@ func TestAddingAWorkWritesTheCatalog(t *testing.T) {
 	if m.origins.err == nil {
 		t.Fatal("a duplicate id was accepted")
 	}
-	if !strings.Contains(m.origins.err.Error(), "already in the catalog") {
-		t.Errorf("the refusal is %q", m.origins.err)
+	// The refusal is the catalog's own, as a value, so the screen says it in the
+	// language in front while cmd/hexforge keeps its English.
+	var taken *forge.OriginTakenError
+	if !errors.As(m.origins.err, &taken) {
+		t.Fatalf("the refusal is a %T, want a *forge.OriginTakenError", m.origins.err)
+	}
+	if want := `nguồn "example-play" đã có trong danh mục rồi`; m.lang.Error(taken) != want {
+		t.Errorf("the refusal reads\n %q\nwant\n %q", m.lang.Error(taken), want)
+	}
+	if !strings.Contains(m.View(), "chưa thêm được") {
+		t.Errorf("the refusal is not on screen:\n%s", m.View())
 	}
 }
 
 // TestTheFooterNamesTheKeysOfTheScreenInFront is what makes the program
 // navigable without a manual, and it is easy to break by adding a key and
 // forgetting the footer.
+//
+// The keys themselves are what is asserted, in both languages: a chord is the
+// same on every keyboard, so it is the part of a footer that cannot be
+// translated away. The language toggle is checked on every screen for the same
+// reason it works on every screen — a toggle nobody can find is a toggle
+// nobody uses.
 func TestTheFooterNamesTheKeysOfTheScreenInFront(t *testing.T) {
-	base, _, _ := start(t)
 	cases := []struct {
 		target screen
 		wants  []string
 	}{
 		{screenMenu, []string{"enter", "q"}},
-		{screenBrowse, []string{"level", "filter", "esc", "q"}},
-		{screenNew, []string{"ctrl+s", "esc", "ctrl+c"}},
-		{screenOrigins, []string{"add", "esc", "q"}},
-		{screenCheck, []string{"esc", "q"}},
+		{screenBrowse, []string{"↑/↓", "←/→", "f", "esc", "q"}},
+		{screenNew, []string{"↑/↓", "←/→", "ctrl+s", "esc", "ctrl+c"}},
+		{screenOrigins, []string{"a", "esc", "q"}},
+		{screenCheck, []string{"r", "esc", "q"}},
 	}
-	for _, test := range cases {
-		m := base.enter(test.target)
-		drawn := m.View()
-		lines := strings.Split(strings.TrimRight(drawn, "\n"), "\n")
-		footer := lines[len(lines)-1]
-		for _, want := range test.wants {
-			if !strings.Contains(footer, want) {
-				t.Errorf("screen %d's footer %q does not offer %q", test.target, footer, want)
+	for _, lang := range i18n.Langs() {
+		base, _, _ := start(t, lang)
+		for _, test := range cases {
+			m := base.enter(test.target)
+			drawn := m.View()
+			lines := strings.Split(strings.TrimRight(drawn, "\n"), "\n")
+			footer := lines[len(lines)-1]
+			for _, want := range append(test.wants, "ctrl+l") {
+				if !strings.Contains(footer, want) {
+					t.Errorf("screen %d's %s footer %q does not offer %q",
+						test.target, lang, footer, want)
+				}
 			}
 		}
 	}
