@@ -427,3 +427,133 @@ func TestSideNames(t *testing.T) {
 		t.Errorf("an undeclared side renders as %q", got)
 	}
 }
+
+// TestCanCarry is the single declaration of a rule two packages apply:
+// battle.enlist refuses a roster entry that breaks it and cast.ParseBook
+// refuses an authored character that breaks it. If either one grew its own copy
+// of the predicate, a character could write cleanly and then be refused at load.
+func TestCanCarry(t *testing.T) {
+	book := mustBook(t)
+	strike, err := book.Lookup("strike")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	ember, err := book.Lookup("ember_lance")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+
+	fire, err := element.Single(element.Fire)
+	if err != nil {
+		t.Fatalf("single: %v", err)
+	}
+	water, err := element.Single(element.Water)
+	if err != nil {
+		t.Fatalf("single: %v", err)
+	}
+	dual, err := element.Dual(element.Water, element.Ice)
+	if err != nil {
+		t.Fatalf("dual: %v", err)
+	}
+	neutral, err := element.Single(element.Neutral)
+	if err != nil {
+		t.Fatalf("single: %v", err)
+	}
+
+	// A neutral skill is universal, which is why every kit can start with one.
+	for _, affinity := range []element.Affinity{fire, water, dual, neutral} {
+		if !skill.CanCarry(affinity, strike) {
+			t.Errorf("%s cannot carry the neutral skill %q", affinity, strike.ID)
+		}
+	}
+	if !skill.CanCarry(fire, ember) {
+		t.Errorf("fire cannot carry %q", ember.ID)
+	}
+	if skill.CanCarry(water, ember) {
+		t.Errorf("water carries the fire skill %q", ember.ID)
+	}
+	if skill.CanCarry(neutral, ember) {
+		t.Errorf("a neutral unit carries the fire skill %q", ember.ID)
+	}
+	// A second element buys a second line of skills, which is the whole reason
+	// to carry one.
+	fireAndMetal, err := element.Dual(element.Fire, element.Metal)
+	if err != nil {
+		t.Fatalf("dual: %v", err)
+	}
+	if !skill.CanCarry(fireAndMetal, ember) {
+		t.Errorf("%s cannot carry %q", fireAndMetal, ember.ID)
+	}
+}
+
+func TestDemands(t *testing.T) {
+	book := mustBook(t)
+	kit := func(ids ...string) []skill.Skill {
+		t.Helper()
+		out := make([]skill.Skill, 0, len(ids))
+		for _, id := range ids {
+			found, err := book.Lookup(id)
+			if err != nil {
+				t.Fatalf("lookup %q: %v", id, err)
+			}
+			out = append(out, found)
+		}
+		return out
+	}
+	cases := []struct {
+		name string
+		ids  []string
+		want []element.Element
+	}{
+		{"an all-neutral kit demands nothing", []string{"strike"}, nil},
+		{"one element", []string{"strike", "ember_lance"}, []element.Element{element.Fire}},
+		{
+			"a repeated element is demanded once",
+			[]string{"ember_lance", "cinder_burst"},
+			[]element.Element{element.Fire},
+		},
+		{
+			// Listing order, not element declaration order: nothing here may
+			// depend on a map's iteration.
+			"two elements in the order the skills were listed",
+			[]string{"riptide", "ember_lance"},
+			[]element.Element{element.Water, element.Fire},
+		},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			got := skill.Demands(kit(test.ids...))
+			if len(got) != len(test.want) {
+				t.Fatalf("demands %v, want %v", got, test.want)
+			}
+			for i := range got {
+				if got[i] != test.want[i] {
+					t.Errorf("demands %v, want %v", got, test.want)
+				}
+			}
+		})
+	}
+}
+
+// mustBook is a small book with a neutral, a fire, a second fire and a water
+// skill, which is enough to exercise both halves of the carry rule.
+func mustBook(t *testing.T) *skill.Book {
+	t.Helper()
+	book, err := parse(t,
+		merge(base(), map[string]any{"id": "strike", "element": "neutral", "power": 1000}),
+		base(),
+		merge(base(), map[string]any{"id": "cinder_burst"}),
+		merge(base(), map[string]any{"id": "riptide", "element": "water"}),
+	)
+	if err != nil {
+		t.Fatalf("book: %v", err)
+	}
+	return book
+}
+
+func merge(into, extra map[string]any) map[string]any {
+	for key, value := range extra {
+		into[key] = value
+	}
+	return into
+}

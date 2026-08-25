@@ -196,9 +196,9 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 		}
 		seen[known.ID] = true
 		// A unit may only carry a skill of an element it shares, or a neutral
-		// one. That constraint is what makes a second element worth having:
-		// it buys a second line of skills rather than a better multiplier.
-		if known.Element != element.Neutral && !entry.Affinity.Has(known.Element) {
+		// one. The rule is declared once, in skill.CanCarry, so that the layer
+		// where a character is authored refuses exactly what this refuses.
+		if !skill.CanCarry(entry.Affinity, known) {
 			return nil, fmt.Errorf("unit %q is %s but knows the %s skill %q",
 				entry.ID, entry.Affinity, known.Element, known.ID)
 		}

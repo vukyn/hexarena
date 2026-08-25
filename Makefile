@@ -4,19 +4,24 @@
 # -update is declared only in the packages that own golden files, so
 # `go test ./... -update` fails on every other package.
 
-.PHONY: build install run auto test golden fmt vet check clean
+.PHONY: build install run auto forge test golden fmt vet check clean
 
 build:
-	@go build -o bin/ ./cmd/hexarena
+	@go build -o bin/ ./cmd/hexarena ./cmd/hexforge
 
 install:
-	@go install ./cmd/hexarena
+	@go install ./cmd/hexarena ./cmd/hexforge
 
 run:
 	@go run ./cmd/hexarena --seed 11 --side ally
 
 auto:
 	@go run ./cmd/hexarena --auto --seed 11
+
+# The authoring tool. It reads and writes internal/seed/data, so run it from the
+# module root; `make forge` with no arguments prints its subcommands.
+forge:
+	@go run ./cmd/hexforge $(ARGS)
 
 test:
 	@go test ./...

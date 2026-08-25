@@ -1,0 +1,32 @@
+== the authored cast ==
+
+example-anime.adept — Example Adept
+  from     Example Anime (anime)
+  preset   sentinel
+  element  water/ice
+  art      assets/example/adept.svg
+  kit      strike riptide guard_wall purify
+  stage "Example Adept" owns levels 1 to 60
+    level 1  hp 930, atk 150, def 240, spd 27, acc 24, ddg 9
+             absorbs 1675 of the 11500 budget, 9825 to spare
+    level 60 hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30
+             absorbs 11397 of the 11500 budget, 103 to spare
+
+example-game.sprout — Example Sprout
+  from     Example Game (game)
+  preset   skirmisher
+  element  grass/electric
+  art      assets/example/sprout.svg
+  kit      bolt venom_fang creeping_rot arc_bolt
+  stage "Sprout" owns levels 1 to 29
+    level 1  hp 660, atk 228, def 75, spd 60, acc 72, ddg 45
+             absorbs 825 of the 11500 budget, 10675 to spare
+    level 29 hp 1058, atk 366, def 120, spd 97, acc 116, ddg 71
+             absorbs 1481 of the 11500 budget, 10019 to spare
+  stage "Bloom" owns levels 30 to 60
+    level 30 hp 1640, atk 566, def 186, spd 149, acc 178, ddg 111
+             absorbs 2658 of the 11500 budget, 8842 to spare
+    level 60 hp 2200, atk 760, def 250, spd 200, acc 240, ddg 150
+             absorbs 4036 of the 11500 budget, 7464 to spare
+
+2 characters

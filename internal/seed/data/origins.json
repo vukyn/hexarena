@@ -1,0 +1,25 @@
+{
+  "origins": [
+    {
+      "id": "example-anime",
+      "title": "Example Anime",
+      "medium": "anime",
+      "year": 2002,
+      "note": "An example entry so the catalog is not empty. Replace it with a work you are actually borrowing from."
+    },
+    {
+      "id": "example-film",
+      "title": "Example Film",
+      "medium": "film",
+      "year": 1999,
+      "note": "An example entry, and the one nobody has borrowed from yet: an unused origin is allowed. Replace it with a work of your own."
+    },
+    {
+      "id": "example-game",
+      "title": "Example Game",
+      "medium": "game",
+      "year": 2011,
+      "note": "An example entry so the catalog is not empty. Replace it with a work you are actually borrowing from."
+    }
+  ]
+}

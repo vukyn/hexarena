@@ -12,6 +12,7 @@ implementations of it.
 ```
 go run ./cmd/hexarena --seed 11 --side ally    # play a side
 go run ./cmd/hexarena --auto --seed 11         # watch both sides play themselves
+go run ./cmd/hexforge                          # author the cast: see the subcommands
 go test ./...
 ```
 
@@ -188,6 +189,9 @@ cannot silently reinterpret every log already saved.
 
 ```
 cmd/hexarena/          terminal client: all input and output, no rules
+cmd/hexforge/          authoring tool: the only program that reads the data
+                       directory rather than the embedded copy, and the only
+                       one that asks whether a file exists
 internal/tui/          rendering, pure functions over the event log
 internal/seed/         the embedded data and the loaders that parse it
 internal/core/
@@ -202,6 +206,7 @@ internal/core/
   status/              timed effects
   atb/                 turn order
   skill/               skill declarations, validated against every other book
+  cast/                who a character is: origins, archetype presets, characters
   battle/              the only package that holds state; emits the event log
 ```
 
@@ -222,6 +227,9 @@ Balance lives in `internal/seed/data`, embedded at build time:
 | `patterns.json` | the area shapes and the splash share |
 | `statuses.json` | the timed effects, their tick power and their modifier terms |
 | `skills.json` | the skills |
+| `origins.json` | the works the cast is borrowed from |
+| `archetypes.json` | the role presets: a suggested stat curve and kit per role |
+| `cast.json` | the authored characters, each with an evolution line |
 | `roster.json` | a seed roster to exercise the engine with |
 
 Changing a number there changes the game without touching Go. The tests will tell
@@ -229,6 +237,92 @@ you what moved: several of them freeze design figures deliberately, and the gold
 files under `testdata` are a record of what the numbers currently produce. Run
 `go test ./internal/core/hex ./internal/seed ./internal/tui -update` to accept a
 change, and read the diff — that diff is the point of them.
+
+## Authoring a cast
+
+A character is a **definition**; a roster entry is a **placement**. Keeping them
+apart is what lets the same character stand in a dozen encounters at a dozen
+levels while the engine only ever receives the flat stat line that falls out of
+resolving one. Three things get authored:
+
+- An **origin** is a work a character was borrowed from: an id, a title, a medium
+  (`anime`, `film`, `series`, `game`, `comic`, `novel`) and optionally a year and
+  a note. An origin nobody has borrowed from yet is allowed.
+- An **archetype** is the preset a role starts from: a suggested stat curve for
+  every stat, a suggested kit, and the formation column the role belongs in. It is
+  a starting point and not a constraint — a character records which preset it came
+  from and is then free to differ, which is what stops two units of the same role
+  being the same unit with two names. A preset that does not itself fit the stat
+  budget is rejected at load, because it would hand every author a stat line that
+  fails later.
+- A **character** is the definition: an id, a name, an origin, the archetype it
+  was tuned from, a path to its art, one or two elements, a kit, and an
+  **evolution line** — one or more stages, each with its own stat curve, the level
+  a stage declares being the first level it owns.
+
+A unit may only carry a skill of an element it shares, or a neutral one — that is
+what makes a second element worth having, since it buys a second line of skills
+rather than a better multiplier. So a kit *demands* elements, and the character
+carrying it must have all of them. The demand is derived from the kit, never
+authored, and `hexforge archetypes` shows it in the `needs` column; a preset whose
+kit demanded three elements would be rejected, because no affinity can hold
+three.
+
+```
+go run ./cmd/hexforge                  # list the subcommands
+go run ./cmd/hexforge origins          # the catalog of works
+go run ./cmd/hexforge origins add my-series --title "Some Series" --medium series --year 2024
+go run ./cmd/hexforge archetypes       # the presets, their curves and their kits
+go run ./cmd/hexforge cast             # the authored characters
+go run ./cmd/hexforge new              # create a character
+go run ./cmd/hexforge show some.id --level 30
+go run ./cmd/hexforge check            # parse from disk, verify the art, report the budget
+```
+
+`hexforge new` prefills from flags and prompts only for what is still missing, so
+`--id --name --origin --archetype --image --element --bio --skills` and the
+per-stat `--hp --atk --def --spd --acc --ddg` overrides (written `base:max`) turn
+it into a one-liner. Choosing an archetype fills every curve and the kit, and each
+prompt shows the preset as its default. The kit is asked before the element,
+because the kit is what decides which elements are legal. Before writing, it
+prints the resolved level 1 and level 60 lines with how much of the
+effective-health budget they spend; `--yes` skips the confirmation. Every answer
+is checked as it is entered, against the same parsers the game loads through — the
+tool knows no rules of its own, which is why a character it writes is a character
+that loads.
+
+With nobody watching — a pipe, a script, CI — it takes the default for every field
+that has one and fails only on a field that has none, naming the flag that would
+have supplied it. Those are `--id --name --origin --archetype --element`; the art
+path defaults to one derived from the id, and the kit and every curve come from
+the archetype:
+
+```
+hexforge new --id my-series.lee --name "Lee" --origin my-series \
+  --archetype duelist --element wind/ground --yes
+```
+
+`hexforge check` is the one place that touches the filesystem for anything beyond
+reading a data file: it verifies that the art each character names is really
+there. `internal/core/cast` checks only the *shape* of an image path (relative,
+no `..`, ending `.svg` or `.png`), because a core package may not read the
+filesystem and only the caller knows what the path is relative to.
+
+Every subcommand takes `--data <dir>`, defaulting to `internal/seed/data`. That is
+also the caveat: the game boots from the copies baked in by `go:embed`, so an edit
+needs a rebuild before it reaches a battle.
+
+A roster entry may then place a character by reference instead of restating its
+numbers:
+
+```json
+{ "id": "ally.lee", "character": "example-game.sprout", "level": 30, "side": "ally", "slot": [1, 1] }
+```
+
+The flat form keeps working. What is refused is the **mixture**: a reference that
+also writes out `name`, `element`, `stats` or `skills` is rejected rather than
+resolved by precedence, because two sources for one number is how the two drift
+apart.
 
 ## Roadmap
 
@@ -276,18 +370,32 @@ sequence, and two identical battles must still produce identical logs.
 
 ### A real cast
 
-`roster.json` is a test bed, not a cast: ten units with flat stats, chosen to
-cover every affinity and every mechanic rather than to be interesting. What is
-missing:
+The tooling for this exists now — see *Authoring a cast* above.
+`internal/core/cast` holds origins, archetype presets and characters;
+`cmd/hexforge` authors them; `progression.Line` is finally used, with one
+single-stage and one two-stage example in `cast.json`; and a roster entry can
+place a character by reference. What remains is the cast itself:
 
-- **Evolution lines.** `progression.Line` supports staged growth and nothing uses
-  it yet — every seed unit is a single stage with flat numbers. A real unit
-  declares a curve per stage and the level selects one.
-- **Art.** Unit avatars are meant to load from SVG, which is the same pipeline
-  question the graphical client faces.
-- **Biography and identity.** None of the seed units have anything but a name.
+- **The characters.** `cast.json` ships two examples that say in their own
+  biographies that they are examples. `roster.json` is still the ten-unit flat
+  test bed, deliberately: it covers every affinity and every mechanic, and
+  turning it into references would change every battle the golden files were
+  measured from.
+- **Art.** `hexforge check` verifies that the file a character names exists, and
+  two placeholder SVGs sit under `internal/seed/data/assets/` so it passes out of
+  the box. Nothing rasterises them yet, which is the same pipeline question the
+  graphical client faces.
+- **Elements to design around.** `battle.New` refuses a unit carrying a skill of
+  an element it does not share, so an archetype's kit constrains the affinity of
+  every character built from it — `skill.CanCarry` is the single declaration of
+  that rule and `hexforge` applies it while you are authoring, so this is a design
+  constraint rather than a trap. `hexforge archetypes` prints each preset's
+  demand: bulwark needs metal, vanguard fire, sentinel water, duelist wind,
+  skirmisher grass and electric. A new preset mixing three elements' skills is
+  rejected, because no affinity can hold three.
 
 The stat budget is the constraint to design against: `progression.Limits` bounds
 each stat and, separately, bounds health and defence together, because those two
 multiply rather than add. A unit at both ceilings is not merely durable, it is
-durable squared.
+durable squared. The five shipped presets spend between 4036 and 11397 of the
+11500 effective-health budget, and `hexforge show` prints what is left.

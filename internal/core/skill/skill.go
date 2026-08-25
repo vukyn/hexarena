@@ -12,6 +12,7 @@ package skill
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
@@ -446,4 +447,38 @@ func (b *Book) Lookup(id string) (Skill, error) {
 		return Skill{}, fmt.Errorf("unknown skill %q", id)
 	}
 	return found, nil
+}
+
+// CanCarry reports whether a unit of the given affinity may use this skill.
+// A neutral skill is universal; anything else demands an element the unit
+// actually has, which is what makes a second element worth carrying.
+//
+// This is the single declaration of the rule. battle.enlist refuses a roster
+// entry that breaks it and cast.ParseBook refuses an authored character that
+// breaks it, both by calling this — two callers wording one rule in their own
+// words is how the two come to disagree, and the disagreement here would be a
+// character that writes cleanly and then cannot enter a battle.
+func CanCarry(affinity element.Affinity, carried Skill) bool {
+	return carried.Element == element.Neutral || affinity.Has(carried.Element)
+}
+
+// Demands returns the distinct non-neutral elements a kit requires, in the
+// order the skills were listed.
+//
+// It is what a kit says about the affinity that may hold it: a unit must have
+// every element in this set, so a kit demanding more than two can never be
+// carried at all, and a kit demanding two can only be carried by exactly that
+// pair. Deriving it from the skills is the point — an authored hint would be
+// free to drift from the kit it described.
+func Demands(kit []Skill) []element.Element {
+	out := make([]element.Element, 0, 2)
+	for _, carried := range kit {
+		if carried.Element == element.Neutral {
+			continue
+		}
+		if !slices.Contains(out, carried.Element) {
+			out = append(out, carried.Element)
+		}
+	}
+	return out
 }
