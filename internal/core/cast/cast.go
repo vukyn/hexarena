@@ -89,10 +89,20 @@ type Character struct {
 	Passives []Unlock `json:"passives,omitempty"`
 }
 
-// Resolve flattens the character at a level into the stat line the battle
-// engine works with, and reports which stage it landed in.
-func (c Character) Resolve(level int) (progression.Values, progression.Stage, error) {
-	return c.Stages.Resolve(level)
+// Resolve flattens the character at a level, as a chosen stage, into the stat
+// line the battle engine works with, and reports which stage it fielded.
+//
+// progression.Furthest is what a caller passes when nobody is choosing — a
+// screen showing this character at level 30 has no placement behind it — and it
+// is the behaviour every caller had before a stage could be chosen at all.
+func (c Character) Resolve(level int, stage string) (progression.Values, progression.Stage, error) {
+	return c.Stages.Resolve(level, stage)
+}
+
+// StagesAt is the forms this character may be fielded as at a level, in line
+// order. It is what a placement chooses from and what a refusal offers.
+func (c Character) StagesAt(level int) ([]progression.Stage, error) {
+	return c.Stages.Allowed(level)
 }
 
 // StageArt is the picture of one of the character's forms: the stage's own art
@@ -146,16 +156,36 @@ func (c Character) Art() []ArtEntry {
 // a stage answer "what is this unit", while this answers "what does it bring",
 // and the second is the question a placement asks. Keeping them apart is also
 // what lets the kit join it later without Resolve growing a fifth return.
-func (c Character) PassivesAt(level int) []string {
-	return UnlockedIDs(c.Passives, level)
+func (c Character) PassivesAt(level int, stage string) []string {
+	return UnlockedIDs(c.Passives, level, c.form(level, stage))
+}
+
+// form is the stage name a level-and-choice resolves to, so that the two "what
+// does it have" questions do not each have to work it out — and cannot work it
+// out differently.
+//
+// A choice that does not name a form means the furthest one, which is what every
+// placement meant before it could choose. A name the line does not answer to
+// resolves to itself and simply matches nothing, because this is a reader rather
+// than a validator: resolveLoadout is where a bad stage is refused, once, with a
+// message that can offer the alternatives.
+func (c Character) form(level int, stage string) string {
+	if stage != progression.Furthest {
+		return stage
+	}
+	reached, err := c.Stages.StageAt(level)
+	if err != nil {
+		return stage
+	}
+	return reached.Name
 }
 
 // SkillsAt is the skills the character has learned by a level, in declaration
 // order. It is the list a placement may choose its loadout from, and the same
 // function the traits use — one "what is available at level N" for both lists,
 // which is the whole of "skills and traits are one mechanism".
-func (c Character) SkillsAt(level int) []string {
-	return UnlockedIDs(c.Skills, level)
+func (c Character) SkillsAt(level int, stage string) []string {
+	return UnlockedIDs(c.Skills, level, c.form(level, stage))
 }
 
 // clone copies the slices a caller could otherwise mutate through.
@@ -352,7 +382,7 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 	if err != nil {
 		return Character{}, err
 	}
-	learnset, kit, err := resolveLearnset(declared.ID, declared.Skills, deps.Skills)
+	learnset, kit, err := resolveLearnset(declared.ID, declared.Skills, deps.Skills, declared.Stages)
 	if err != nil {
 		return fail("%w", err)
 	}
@@ -403,7 +433,7 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 		}
 	}
 
-	passives, err := resolvePassives("character", declared.ID, declared.Passives, deps.Passives)
+	passives, err := resolvePassives("character", declared.ID, declared.Passives, deps.Passives, declared.Stages)
 	if err != nil {
 		return Character{}, err
 	}
@@ -488,7 +518,7 @@ func resolveSkills(declared []string, skills *skill.Book) ([]skill.Skill, error)
 // unstated is one, and a level outside the cap is a refusal rather than a clamp.
 // A clamp would silently move a skill an author put at 61 to the cap and leave
 // them reading a learnset that does not say what they wrote.
-func resolveLearnset(owner string, declared []Unlock, skills *skill.Book) ([]Unlock, []skill.Skill, error) {
+func resolveLearnset(owner string, declared []Unlock, skills *skill.Book, line progression.Line) ([]Unlock, []skill.Skill, error) {
 	if len(declared) == 0 {
 		return nil, nil, fmt.Errorf("knows no skills, so it would have nothing to do on its turn")
 	}
@@ -510,7 +540,10 @@ func resolveLearnset(owner string, declared []Unlock, skills *skill.Book) ([]Unl
 			return nil, nil, fmt.Errorf("learns %q at level %d, outside 1..%d",
 				known.ID, entry.AtLevel, progression.LevelCap)
 		}
-		entries = append(entries, Unlock{ID: known.ID, AtLevel: level})
+		if err := checkStages("character", owner, known.ID, entry.Stages, line); err != nil {
+			return nil, nil, err
+		}
+		entries = append(entries, Unlock{ID: known.ID, AtLevel: level, Stages: slices.Clone(entry.Stages)})
 		kit = append(kit, known)
 	}
 	// A character that learns nothing until later has nothing to bring at level
@@ -518,10 +551,18 @@ func resolveLearnset(owner string, declared []Unlock, skills *skill.Book) ([]Unl
 	// here rather than at placement because it is a fact about the character:
 	// every other level would be legal and the author would only find out by
 	// fielding it.
-	if !slices.ContainsFunc(entries, func(entry Unlock) bool { return entry.AtLevel == 1 }) {
-		return nil, nil, fmt.Errorf("learns nothing at level 1, so it would start with nothing to do")
+	// The first form at level one is what a character starts as, so that is the
+	// combination this insists on: an entry kept for a later form is no use to a
+	// unit that has not grown into it, and one gated on a later level is no use
+	// either.
+	first := progression.Furthest
+	if len(line) > 0 {
+		first = line[0].Name
 	}
-	_ = owner
+	if !slices.ContainsFunc(entries, func(entry Unlock) bool { return entry.Available(1, first) }) {
+		return nil, nil, fmt.Errorf(
+			"learns nothing it could use at level 1 as %s, so it would start with nothing to do", first)
+	}
 	return entries, kit, nil
 }
 
@@ -554,6 +595,43 @@ func LearnedIDs(entries []Unlock) []string {
 		out = append(out, entry.ID)
 	}
 	return out
+}
+
+// checkStages is the rule both lists obey about a stage allowlist, said once.
+//
+// A name the line does not answer to is a typo, and an unchecked one reads as
+// "nobody may hold this" — the same silence a present-but-empty allowlist is
+// refused for everywhere else in this repository. The line is passed in rather
+// than read off a character because the presets share this function and have no
+// line at all: for them the answer is that a stage gate is meaningless, which is
+// a different refusal and a clearer one.
+func checkStages(kind, owner, what string, stages []string, line progression.Line) error {
+	if len(stages) == 0 {
+		return nil
+	}
+	if len(line) == 0 {
+		return fmt.Errorf("%s %q keeps %q for the stage %q, and it has no evolution line to have stages of",
+			kind, owner, what, stages[0])
+	}
+	named := progression.StageNames(line)
+	seen := make([]string, 0, len(stages))
+	for _, stage := range stages {
+		if !slices.Contains(named, stage) {
+			return fmt.Errorf("%s %q keeps %q for the stage %q, and its forms are %v",
+				kind, owner, what, stage, named)
+		}
+		if slices.Contains(seen, stage) {
+			return fmt.Errorf("%s %q keeps %q for the stage %q twice", kind, owner, what, stage)
+		}
+		seen = append(seen, stage)
+	}
+	// An allowlist naming every form is the same as naming none, and the two
+	// spellings would render differently while meaning the same thing.
+	if len(seen) == len(named) {
+		return fmt.Errorf("%s %q keeps %q for every one of its forms, which is what naming none already means",
+			kind, owner, what)
+	}
+	return nil
 }
 
 func skillIDs(kit []skill.Skill) []string {
@@ -650,7 +728,7 @@ func (b *Book) Append(deps Deps, extra ...Character) (*Book, error) {
 // names something needs the book, so a book that was not handed over is a
 // refusal rather than a pass: the alternative is a data file whose traits are
 // checked or unchecked depending on how the caller wired itself up.
-func resolvePassives(kind, owner string, declared []Unlock, book *passive.Book) ([]Unlock, error) {
+func resolvePassives(kind, owner string, declared []Unlock, book *passive.Book, line progression.Line) ([]Unlock, error) {
 	if len(declared) == 0 {
 		return nil, nil
 	}
@@ -675,7 +753,10 @@ func resolvePassives(kind, owner string, declared []Unlock, book *passive.Book) 
 			return nil, fmt.Errorf("%s %q unlocks %q at level %d, outside 1..%d",
 				kind, owner, found.ID, entry.AtLevel, progression.LevelCap)
 		}
-		out = append(out, Unlock{ID: found.ID, AtLevel: level})
+		if err := checkStages(kind, owner, found.ID, entry.Stages, line); err != nil {
+			return nil, err
+		}
+		out = append(out, Unlock{ID: found.ID, AtLevel: level, Stages: slices.Clone(entry.Stages)})
 	}
 	return out, nil
 }
@@ -688,30 +769,68 @@ func resolvePassives(kind, owner string, declared []Unlock, book *passive.Book) 
 // type rather than a second one beside it. Two vocabularies for one idea is the
 // mistake this repository keeps a list of.
 //
-// # What it deliberately cannot say
+// # Two gates, and why the second one is a list
 //
-// There is no at_stage. A stage gate would read as a different fact from a level
-// gate, and today it is not one: progression.Line.StageAt derives a stage from a
-// level, so at_stage "Ivysaur" *is* at_level 16 and nothing else. It becomes a
-// second fact only once a placement names the stage it fielded, and authoring it
-// before then would be two spellings of one number — see README, Roadmap.
+// A level gate says *when*; a stage gate says *which form*. They were one fact
+// until a placement could choose its stage, because the stage was derived from
+// the level — `at_stage: "Ivysaur"` was exactly `at_level: 16` and nothing else.
+// A placement now names the form it fielded, so the two are different questions
+// and both can be asked.
+//
+// The stage gate is an **allowlist** rather than a threshold, and that is the
+// whole reason evolving is a decision rather than a formality. A threshold could
+// only ever say "from this form onwards", so everything an early form knew a
+// grown one knew too, and choosing not to evolve would be choosing a weaker unit
+// for nothing. A list can say "Bulbasaur only" — something the grown form never
+// gets — which is what gives up an evolution in exchange for keeping a move.
+//
+// It is the same shape `skill.Restriction` uses for elements and archetypes, for
+// the same reason: an allowlist can name one member of a class, and a threshold
+// cannot.
 type Unlock struct {
 	ID string `json:"id"`
 	// AtLevel is the first level the holder has it at. An unstated level is one:
 	// the common case is a trait a character has always had, and writing
 	// "at_level": 1 on every entry would be noise on the line that matters least.
 	AtLevel int `json:"at_level,omitempty"`
+	// Stages are the forms that may hold it, by stage name. Empty is every form,
+	// which is the ordinary case and the one that writes nothing.
+	Stages []string `json:"stages,omitempty"`
 }
 
-// Unlocked reports whether the entry is in force at a level.
+// Unlocked reports whether the entry's *level* gate is passed.
+//
+// It answers half the question and is kept because half is what several callers
+// want: an authoring screen printing "endurance@16" is describing the entry
+// rather than a placement, and it has no form in front of it to ask about.
 func (u Unlock) Unlocked(level int) bool { return level >= u.AtLevel }
+
+// Held reports whether the named form may hold it.
+//
+// An empty allowlist is every form. The form is matched by name because that is
+// what a placement chooses by and what the data spells — a stage has no id of
+// its own, and inventing one would be a second name for the thing already named.
+func (u Unlock) Held(stage string) bool {
+	if len(u.Stages) == 0 {
+		return true
+	}
+	return slices.Contains(u.Stages, stage)
+}
+
+// Available reports whether a unit of this level, fielded as this form, has it.
+// Both gates, asked together, because a caller that asked only one would be
+// wrong in whichever direction it forgot.
+func (u Unlock) Available(level int, stage string) bool {
+	return u.Unlocked(level) && u.Held(stage)
+}
 
 // unlockFile is the shape an entry is written in, and therefore the shape it is
 // read in — the same arrangement skill.Skill has, so the writer cannot describe
 // a field the parser does not read.
 type unlockFile struct {
-	ID      string `json:"id"`
-	AtLevel int    `json:"at_level,omitempty"`
+	ID      string   `json:"id"`
+	AtLevel int      `json:"at_level,omitempty"`
+	Stages  []string `json:"stages,omitempty"`
 }
 
 // MarshalJSON writes the entry as the declaration a parse would read back, and
@@ -723,23 +842,29 @@ type unlockFile struct {
 // which of two spellings it is holding. The cost of that is this method — the
 // writer has to know that one is the value not worth writing.
 func (u Unlock) MarshalJSON() ([]byte, error) {
-	out := unlockFile{ID: u.ID}
+	// The allowlist has no normalisation to undo: an empty one means every form
+	// and is simply not written, which is what omitempty already does. It is
+	// listed here rather than left out because a writer that does not name a
+	// field is a writer that silently drops it — and this one is invisible until
+	// somebody fields a unit and finds a skill missing.
+	out := unlockFile{ID: u.ID, Stages: u.Stages}
 	if u.AtLevel > 1 {
 		out.AtLevel = u.AtLevel
 	}
 	return json.Marshal(out)
 }
 
-// UnlockedIDs is the ids in force at a level, in declaration order.
+// UnlockedIDs is the ids a unit of this level, fielded as this form, has — in
+// declaration order.
 //
 // One function rather than one per list, and it takes the list rather than
-// reading a character, so the kit can use it unchanged when skills gain their own
-// levels. Declaration order because the result reaches a roster entry and then an
-// event log: an order a map decided would stop a battle replaying.
-func UnlockedIDs(entries []Unlock, level int) []string {
+// reading a character, so the kit and the traits share it. Declaration order
+// because the result reaches a roster entry and then an event log: an order a
+// map decided would stop a battle replaying.
+func UnlockedIDs(entries []Unlock, level int, stage string) []string {
 	out := make([]string, 0, len(entries))
 	for _, entry := range entries {
-		if entry.Unlocked(level) {
+		if entry.Available(level, stage) {
 			out = append(out, entry.ID)
 		}
 	}

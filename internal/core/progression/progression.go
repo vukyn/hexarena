@@ -376,7 +376,21 @@ func (l Line) Validate(limits Limits, rules combat.Rules) error {
 	return nil
 }
 
-// StageAt returns the stage a unit of the given level has reached.
+// Furthest is the stage a level reaches on its own, and it is what a caller
+// passes when it is not choosing.
+//
+// It is the empty string because "which form is this" and "the newest form this
+// level allows" are the same answer whenever nobody has decided otherwise, and a
+// second spelling would let a placement mean the default in two ways. Naming it
+// is what keeps `Resolve(level, "")` from reading as a caller that forgot.
+const Furthest = ""
+
+// StageAt returns the furthest stage a unit of the given level has reached.
+//
+// This is what a level *allows*, not what a unit *is*: a placement may field an
+// earlier form, and Allowed is the list it may choose from. What this answers is
+// the question a browser asks — "show me this character at level 30" — where
+// there is no placement and therefore nobody to have chosen.
 func (l Line) StageAt(level int) (Stage, error) {
 	if level < 1 || level > LevelCap {
 		return Stage{}, fmt.Errorf("level %d is outside 1..%d", level, LevelCap)
@@ -394,12 +408,84 @@ func (l Line) StageAt(level int) (Stage, error) {
 	return l[reached], nil
 }
 
-// Resolve flattens an evolution line and a level into the stat line the battle
-// engine works with. Nothing downstream sees the line itself.
-func (l Line) Resolve(level int) (Values, Stage, error) {
-	stage, err := l.StageAt(level)
+// Allowed is every stage a level may be fielded as, in line order.
+//
+// A level reaching Venusaur reaches Ivysaur and Bulbasaur too, so this is a
+// prefix of the line rather than a filter over it — which is what makes
+// "evolving" a threshold that is passed rather than a door that closes behind
+// the unit.
+func (l Line) Allowed(level int) ([]Stage, error) {
+	if level < 1 || level > LevelCap {
+		return nil, fmt.Errorf("level %d is outside 1..%d", level, LevelCap)
+	}
+	out := make([]Stage, 0, len(l))
+	for _, stage := range l {
+		if stage.MinLevel > level {
+			break
+		}
+		out = append(out, stage)
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("no stage covers level %d", level)
+	}
+	return out, nil
+}
+
+// StageNames is the names of a list of stages, which is what a refusal offers
+// somebody who has just named one that is not there.
+func StageNames(stages []Stage) []string {
+	out := make([]string, 0, len(stages))
+	for _, stage := range stages {
+		out = append(out, stage.Name)
+	}
+	return out
+}
+
+// Resolve flattens an evolution line, a level and a chosen stage into the stat
+// line the battle engine works with. Nothing downstream sees the line itself.
+//
+// # Why the stage is a parameter
+//
+// It used to be derived: the stage was whatever the level reached, and there was
+// no decision anywhere in it. A level should instead *allow* a form, with
+// whoever is fielding the unit saying which one it fielded — otherwise "may
+// evolve" and "does evolve" are the same sentence, and a learnset entry gated on
+// a stage would be a second spelling of a level.
+//
+// Furthest is the answer for a caller that is not choosing, and it is the
+// behaviour every caller had before this: a browser showing a character at level
+// 30 has no placement and therefore nobody to have chosen for it.
+//
+// Naming a stage the level has not reached is refused rather than clamped. A
+// clamp would field a different unit from the one that was written down, which
+// is the one outcome worse than saying no.
+func (l Line) Resolve(level int, stage string) (Values, Stage, error) {
+	if stage == Furthest {
+		reached, err := l.StageAt(level)
+		if err != nil {
+			return Values{}, Stage{}, err
+		}
+		return reached.Stats.At(level), reached, nil
+	}
+	allowed, err := l.Allowed(level)
 	if err != nil {
 		return Values{}, Stage{}, err
 	}
-	return stage.Stats.At(level), stage, nil
+	for _, candidate := range allowed {
+		if candidate.Name == stage {
+			return candidate.Stats.At(level), candidate, nil
+		}
+	}
+	// Told apart, because the two are different mistakes: a name nobody in the
+	// line answers to is a typo, and a name that is simply ahead of the level is
+	// a placement that has not grown into it yet.
+	for _, candidate := range l {
+		if candidate.Name == stage {
+			return Values{}, Stage{}, fmt.Errorf(
+				"stage %q begins at level %d, and this is level %d",
+				stage, candidate.MinLevel, level)
+		}
+	}
+	return Values{}, Stage{}, fmt.Errorf("no stage of this line is called %q; it has %v",
+		stage, StageNames(l))
 }

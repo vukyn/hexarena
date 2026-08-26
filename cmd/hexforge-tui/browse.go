@@ -217,7 +217,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	}
 
 	atLevel := m.text(i18n.LabelAtLevel, b.level)
-	values, stage, err := character.Resolve(b.level)
+	values, stage, err := character.Resolve(b.level, progression.Furthest)
 	if err != nil {
 		out.WriteString(m.label(atLevel, "%s", m.style.bad.Render(m.lang.Error(err))))
 		return out.String()
@@ -249,7 +249,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 		out.WriteString(m.wrapped(m.text(i18n.LabelTraits), detailLabelWidth(m),
 			forge.UnlockSummaryAt(character.Passives, b.level)))
 		if glossed := m.lang.GlossedPassives(
-			m.lib.KitPassives(character.PassivesAt(b.level))); glossed != "" {
+			m.lib.KitPassives(character.PassivesAt(b.level, progression.Furthest))); glossed != "" {
 			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
 		}
 	}

@@ -210,10 +210,10 @@ func (l *Library) Inspect() Report {
 		}
 		// Both ends of the line are resolved: the first level a character can
 		// exist at and the last, which is where the stat budget bites.
-		if _, _, err := character.Resolve(1); err != nil {
+		if _, _, err := character.Resolve(1, progression.Furthest); err != nil {
 			row.Failure = err
 		}
-		values, stage, err := character.Resolve(progression.LevelCap)
+		values, stage, err := character.Resolve(progression.LevelCap, progression.Furthest)
 		if err != nil {
 			row.Failure = err
 		} else {

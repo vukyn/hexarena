@@ -431,13 +431,29 @@ func StageSummary(character cast.Character) string {
 func UnlockSummary(entries []cast.Unlock) string {
 	parts := make([]string, 0, len(entries))
 	for _, entry := range entries {
-		if entry.AtLevel <= 1 {
-			parts = append(parts, entry.ID)
-			continue
-		}
-		parts = append(parts, fmt.Sprintf("%s@%d", entry.ID, entry.AtLevel))
+		parts = append(parts, unlockLabel(entry.ID, entry, entry.AtLevel > 1))
 	}
 	return strings.Join(parts, " ")
+}
+
+// unlockLabel is one entry as a single token: the id, the level gate while it is
+// worth printing, and the forms that may hold it.
+//
+// One token rather than a phrase, because these are joined by spaces into a row
+// an author scans — a bracket with a space in it would read as two entries. The
+// forms are printed whenever there are any, at every level, because unlike a
+// level gate they never stop being true: a skill kept for the bulb forms is kept
+// for them at level 60 as much as at level 1, and a row that dropped the mark
+// once the level passed would be saying the grown form has it.
+func unlockLabel(id string, entry cast.Unlock, gated bool) string {
+	label := id
+	if gated {
+		label = fmt.Sprintf("%s@%d", id, entry.AtLevel)
+	}
+	if len(entry.Stages) == 0 {
+		return label
+	}
+	return fmt.Sprintf("%s[%s]", label, strings.Join(entry.Stages, ","))
 }
 
 // UnlockSummaryAt is the same list seen from a level: a gate is printed only
@@ -451,11 +467,7 @@ func UnlockSummary(entries []cast.Unlock) string {
 func UnlockSummaryAt(entries []cast.Unlock, level int) string {
 	parts := make([]string, 0, len(entries))
 	for _, entry := range entries {
-		if entry.Unlocked(level) {
-			parts = append(parts, entry.ID)
-			continue
-		}
-		parts = append(parts, fmt.Sprintf("%s@%d", entry.ID, entry.AtLevel))
+		parts = append(parts, unlockLabel(entry.ID, entry, !entry.Unlocked(level)))
 	}
 	return strings.Join(parts, " ")
 }

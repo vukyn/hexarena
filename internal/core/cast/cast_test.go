@@ -262,7 +262,7 @@ func TestParseBookAcceptsTheBaseDeclaration(t *testing.T) {
 	if got, want := found.Element.String(), "water/ice"; got != want {
 		t.Errorf("element is %s, want %s", got, want)
 	}
-	values, stage, err := found.Resolve(progression.LevelCap)
+	values, stage, err := found.Resolve(progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("resolve at the cap: %v", err)
 	}
@@ -837,7 +837,7 @@ func TestResolveAtAStageBoundary(t *testing.T) {
 		{1, "Sprout"}, {29, "Sprout"}, {30, "Bloom"}, {31, "Bloom"}, {progression.LevelCap, "Bloom"},
 	}
 	for _, test := range cases {
-		_, stage, err := character.Resolve(test.level)
+		_, stage, err := character.Resolve(test.level, progression.Furthest)
 		if err != nil {
 			t.Fatalf("resolve at level %d: %v", test.level, err)
 		}
@@ -848,10 +848,10 @@ func TestResolveAtAStageBoundary(t *testing.T) {
 	// A level outside the range is an error rather than a clamp: a roster
 	// asking for level 0 has a mistake in it, and silently answering with
 	// level 1 hides it.
-	if _, _, err := character.Resolve(0); err == nil {
+	if _, _, err := character.Resolve(0, progression.Furthest); err == nil {
 		t.Error("level 0 resolved")
 	}
-	if _, _, err := character.Resolve(progression.LevelCap + 1); err == nil {
+	if _, _, err := character.Resolve(progression.LevelCap+1, progression.Furthest); err == nil {
 		t.Error("a level past the cap resolved")
 	}
 }
@@ -1260,7 +1260,7 @@ func TestStageArtFollowsTheFormAndFallsBackToTheCharacter(t *testing.T) {
 		{progression.LevelCap, "assets/a-series/bloom.png"},
 	}
 	for _, test := range cases {
-		_, stage, err := character.Resolve(test.level)
+		_, stage, err := character.Resolve(test.level, progression.Furthest)
 		if err != nil {
 			t.Fatalf("resolve at level %d: %v", test.level, err)
 		}

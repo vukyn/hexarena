@@ -37,7 +37,12 @@ type rosterEntry struct {
 	Character string `json:"character"`
 	// Level is required with Character and meaningless without it, because
 	// resolving an evolution line needs one.
-	Level    *int                `json:"level"`
+	Level *int `json:"level"`
+	// Stage is the form this placement fielded, and it is a *choice*: a level
+	// allows a form rather than dictating one. Absent means the furthest the
+	// level reaches, which is what every placement meant before it could choose
+	// — so a roster written earlier still says what it always said.
+	Stage    string              `json:"stage,omitempty"`
 	Name     *string             `json:"name"`
 	Element  *element.Affinity   `json:"element"`
 	Stats    *progression.Values `json:"stats"`
@@ -117,6 +122,11 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 			return battle.Roster{}, fmt.Errorf(
 				"unit %q gives a level but no character, and an inline stat line is already resolved", unit.ID)
 		}
+		if unit.Stage != "" {
+			return battle.Roster{}, fmt.Errorf(
+				"unit %q names the stage %q but no character, and an inline stat line has no evolution line to choose a form from",
+				unit.ID, unit.Stage)
+		}
 		if unit.Name == nil || unit.Element == nil || unit.Stats == nil {
 			return battle.Roster{}, fmt.Errorf(
 				"unit %q names no character, so it needs a name, an element and a stat line of its own", unit.ID)
@@ -164,7 +174,7 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 		return battle.Roster{}, fmt.Errorf("unit %q references the unknown character %q",
 			unit.ID, unit.Character)
 	}
-	stats, _, err := character.Resolve(level)
+	stats, form, err := character.Resolve(level, unit.Stage)
 	if err != nil {
 		return battle.Roster{}, fmt.Errorf("unit %q: %w", unit.ID, err)
 	}
@@ -175,7 +185,7 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 	// this is the only place a character and a level meet. A flat entry states
 	// what it brings and has no learnset to choose from, and the engine is handed
 	// a resolved kit exactly as it is handed a resolved stat line.
-	entry.Skills, entry.Passives, err = resolveLoadout(unit, character, level)
+	entry.Skills, entry.Passives, err = resolveLoadout(unit, character, level, form.Name)
 	if err != nil {
 		return battle.Roster{}, err
 	}
@@ -207,17 +217,21 @@ const (
 // available to choose from, because an author who has just been told "no" wants
 // the list rather than a second trip to cast.json.
 //
-// Both halves obey one rule read from one place: what is unlocked at this level.
-// Skills and traits are one mechanism, and the only thing that differs between
-// them here is the number of slots.
-func resolveLoadout(unit rosterEntry, character cast.Character, level int) ([]string, []string, error) {
+// Both halves obey one rule read from one place: what is available to this level
+// *as this form*. Skills and traits are one mechanism, and the only thing that
+// differs between them here is the number of slots.
+//
+// The form comes from Resolve rather than from the entry, so a placement that
+// named no stage is asking about the furthest one — and both lists are asking
+// about the same form, which they would not be if each worked it out.
+func resolveLoadout(unit rosterEntry, character cast.Character, level int, form string) ([]string, []string, error) {
 	skills, err := chooseFrom("skill", unit.ID, unit.Skills,
-		character.SkillsAt(level), SkillSlots, level, required)
+		character.SkillsAt(level, form), SkillSlots, level, required)
 	if err != nil {
 		return nil, nil, err
 	}
 	passives, err := chooseFrom("trait", unit.ID, unit.Passives,
-		character.PassivesAt(level), TraitSlots, level, optional)
+		character.PassivesAt(level, form), TraitSlots, level, optional)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -378,7 +378,7 @@ func TestLineResolvePicksTheReachedStage(t *testing.T) {
 		{45, "elder"}, {progression.LevelCap, "elder"},
 	}
 	for _, testCase := range cases {
-		values, stage, err := line.Resolve(testCase.level)
+		values, stage, err := line.Resolve(testCase.level, progression.Furthest)
 		if err != nil {
 			t.Errorf("level %d: %v", testCase.level, err)
 			continue
@@ -392,7 +392,7 @@ func TestLineResolvePicksTheReachedStage(t *testing.T) {
 	}
 	// Only the final stage reaches the health ceiling, which is the point of
 	// evolving.
-	atCap, _, err := line.Resolve(progression.LevelCap)
+	atCap, _, err := line.Resolve(progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("resolve at the cap: %v", err)
 	}
@@ -404,7 +404,7 @@ func TestLineResolvePicksTheReachedStage(t *testing.T) {
 func TestLineRejectsLevelsOutsideTheRange(t *testing.T) {
 	line := evolutionLine()
 	for _, level := range []int{0, -1, progression.LevelCap + 1} {
-		if _, _, err := line.Resolve(level); err == nil {
+		if _, _, err := line.Resolve(level, progression.Furthest); err == nil {
 			t.Errorf("level %d was accepted", level)
 		}
 	}

@@ -393,7 +393,7 @@ func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character
 		label("bio", "%s", character.Bio)
 	}
 	for _, level := range levels {
-		values, stage, err := character.Resolve(level)
+		values, stage, err := character.Resolve(level, progression.Furthest)
 		if err != nil {
 			label(fmt.Sprintf("level %d", level), "%v", err)
 			continue

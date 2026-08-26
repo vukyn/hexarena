@@ -774,7 +774,7 @@ func TestBrowsingResolvesAtTheChosenLevel(t *testing.T) {
 		t.Errorf("the browser opens at level %d, want the cap", m.browse.level)
 	}
 	character := lib.Characters().All()[0]
-	values, _, err := character.Resolve(progression.LevelCap)
+	values, _, err := character.Resolve(progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("resolve at the cap: %v", err)
 	}
@@ -789,7 +789,7 @@ func TestBrowsingResolvesAtTheChosenLevel(t *testing.T) {
 		t.Errorf("one step left went to level %d", m.browse.level)
 	}
 	body, _ = m.browse.view(m)
-	lower, _, err := character.Resolve(progression.LevelCap - 1)
+	lower, _, err := character.Resolve(progression.LevelCap-1, progression.Furthest)
 	if err != nil {
 		t.Fatalf("resolve one level down: %v", err)
 	}

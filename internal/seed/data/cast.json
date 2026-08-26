@@ -118,7 +118,11 @@
         },
         {
           "id": "sleep_powder",
-          "at_level": 12
+          "at_level": 12,
+          "stages": [
+            "Bulbasaur",
+            "Ivysaur"
+          ]
         },
         {
           "id": "leech_seed",

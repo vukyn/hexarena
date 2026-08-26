@@ -537,13 +537,15 @@ for the kit: two vocabularies for one idea is the mistake this file keeps a list
 of. Four things that are decisions: an unstated level is **one**, normalised at
 parse so exactly one value in memory means "from the start" — which is why
 `Unlock` carries a `MarshalJSON` that omits a level of one rather than an
-`omitempty` tag; there is **no `at_stage`**, because `Line.StageAt` derives a
-stage from a level so `at_stage: "Ivysaur"` *is* `at_level: 16` until a placement
-names the stage it fielded; the gate is applied in **exactly one place**,
-`seed.ParseRoster`, the only place a character and a level meet (a flat entry
-writes out its own traits and has no level to gate against); and bringing every
-unlocked trait is **not a choice**, which is why this half needed no change to the
-log — the slot is where that is paid for.
+`omitempty` tag; the second gate is `Stages`, an **allowlist and not a
+threshold** (a threshold says "from this form on", which a level already says —
+only a list can say "the bulb forms only", which is what makes giving up an
+evolution buy something), and **`at_stage` was never built** because the list
+says everything it would have; both gates are applied in **exactly one place**,
+`seed.ParseRoster`, the only place a character, a level and a chosen form meet (a
+flat entry writes out its own traits and has neither); and bringing every
+unlocked trait is **not a choice**, which is why that half needed no change to
+the log — the slot is where that is paid for.
 
 **A trait is on before `queue.Add`, not corrected after it.** `battle.enlist`
 calls `grant` and then adds the unit at `b.Stats(unit)` speed. A wait is
@@ -1169,16 +1171,33 @@ is the constraint each piece has to respect.
       shipped unit is level 8 with three. ⚠️ Pierce flipped sign *again*: 49.2→46.5
       before replies, 51.9→53.0 with them, **49.5→46.0** with slots. **No balance
       figure carries across a feature.**
-- [ ] **Choosing to evolve.** `Line.StageAt` derives a stage from a level and
-      there is no decision in it; a level should *allow* a stage and the placement
-      name which it fielded, so `Resolve(level)` becomes `Resolve(level, stage)`
-      with the chosen stage's threshold no higher than the level.
-      ⚠️ **`at_stage` cannot be built before this** — while a stage is derived,
-      `at_stage: "Ivysaur"` *is* `at_level: 16`, a second spelling of one fact.
-      ⚠️ **Choosing not to evolve is strictly worse as designed**: stage curves only
-      rise, so the choice is decorative unless an earlier stage can learn something
-      the later one cannot — which is now one field away rather than a mechanism
-      away, since the learnset exists.
+- [x] **Choosing to evolve.** A level **allows** a form; the placement names
+      which it fielded. `Line.Resolve(level)` → `Resolve(level, stage)`, plus
+      `Line.Allowed(level)` and `progression.Furthest` (the empty string, named)
+      for every caller that has no placement behind it — a browse screen showing
+      a character at level 30 is describing, not fielding. Roster entry gained
+      `"stage"`, optional, absent = furthest, so an older roster still says what
+      it said.
+      ⚠️ **A form ahead of the level is REFUSED, never clamped** — a clamp fields
+      a different unit from the one written down. Two refusals, told apart: a name
+      the line does not answer to is a typo; a name merely ahead of the level is a
+      placement that has not grown into it.
+      ⚠️ **`at_stage` was never built and is not wanted.** The second gate is
+      `Unlock.Stages`, an **allowlist**: a threshold could only say "from this
+      form on", which a level already says, so everything an early form knew a
+      grown one knew too and giving up an evolution bought nothing. A list says
+      `["Bulbasaur","Ivysaur"]` — a move Venusaur never gets. Same reason
+      `skill.Restriction` is an allowlist. `at_stage: "Ivysaur"` is just
+      `stages: ["Ivysaur","Venusaur"]`; two fields would be two vocabularies.
+      Refused: a form the line lacks · one named twice · **every** form (that is
+      what naming none means) · a stage list on a preset (no line) · a character
+      that learns nothing its **first form at level 1** can use.
+      `forge.UnlockSummary` prints `sleep_powder@12[Bulbasaur,Ivysaur]` — the mark
+      shows at every level, unlike a level gate, because it never stops being true.
+      ⚠️ **The shipped roster does not take the trade.** Every unit is fielded as
+      its furthest form, balance is unchanged at **49.5%** and `replay.golden` did
+      not move. None of the three characters is close enough for one kept skill to
+      pay for a stage of stats — a cast-tuning question, not a mechanism one.
       **No condition beyond a level**: items, friendship and battles-fought all
       need somewhere to persist, and there is no meta layer, no inventory, no save.
 - [ ] **Grow the cast.** Three characters ship, one per element, and the seed
