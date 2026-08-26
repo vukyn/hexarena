@@ -248,10 +248,16 @@ func play(cfg config) error {
 
 	if !current.fight.Finished() {
 		fmt.Printf("\nstopped after %d turns without a decision\n", cfg.limit)
-	} else if winner, decided := current.fight.Winner(); decided {
-		fmt.Printf("\nthe %s side wins\n", winner)
 	} else {
-		fmt.Println("\nthe battle ends with nobody standing")
+		switch outcome := current.fight.Outcome(); outcome {
+		case battle.Victory:
+			winner, _ := current.fight.Winner()
+			fmt.Printf("\nthe %s side wins\n", winner)
+		case battle.Stalemate:
+			fmt.Println("\nthe battle ends in a draw: both sides are still standing and neither can reach the other")
+		default:
+			fmt.Println("\nthe battle ends with nobody standing")
+		}
 	}
 	return finish(current)
 }

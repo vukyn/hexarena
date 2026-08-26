@@ -120,6 +120,16 @@ func (c checkScreen) view(m model) (string, string) {
 				m.style.bad.Render(m.text(i18n.CheckProblem, m.lang.Problem(problem))) + "\n")
 		}
 	}
+	// Drawn dim rather than bad, and drawn whether or not the check passed: a
+	// warning is not a failure, and a passing check is the one place nothing
+	// else would say this.
+	if len(c.report.Warnings) > 0 {
+		out.WriteString("\n")
+		for _, warning := range c.report.Warnings {
+			out.WriteString("  " +
+				m.style.dim.Render(m.text(i18n.CheckWarning, m.lang.Warning(warning))) + "\n")
+		}
+	}
 	out.WriteString("\n" + m.style.dim.Render(m.text(i18n.CheckNote)))
 	return out.String(), footer
 }

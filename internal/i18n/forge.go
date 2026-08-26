@@ -443,3 +443,14 @@ func (l Lang) Problem(problem forge.Problem) string {
 		return l.Say(ErrorAsGiven, problem)
 	}
 }
+
+// Warning is one thing a check noticed that is not a reason to fail.
+func (l Lang) Warning(warning forge.Warning) string {
+	switch typed := warning.(type) {
+	case *forge.ShortReachWarning:
+		return l.Say(WarningShortReach,
+			typed.ID, typed.Archetype, typed.Column, typed.Needed, typed.Range)
+	default:
+		return l.Say(ErrorAsGiven, warning)
+	}
+}

@@ -104,6 +104,11 @@ func books(t *testing.T) battle.Books {
 	  {"id":"mend","element":"neutral","range":1,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"ally",
 	   "strips":{"categories":["dot","stat_debuff","control"],"stacks":3}},
+	  {"id":"lob","element":"neutral","range":3,"pattern":"single",
+	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"spit","element":"neutral","range":3,"pattern":"single",
+	   "power":10,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "applies":[{"status":"poison","chance":1000}]},
 	  {"id":"quake","element":"neutral","range":2,"pattern":"wedge_left",
 	   "power":500,"strikes":1,"accuracy":1000,"cooldown":0,"target":"all"},
 	  {"id":"anthem","element":"neutral","range":2,"pattern":"wedge_left",
@@ -333,7 +338,10 @@ func TestTheSameSeedReplaysExactly(t *testing.T) {
 			{ID: "a1", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
 				Affinity: single("fire"), Stats: stats(3000, 700, 400, 120),
 				Skills: []string{"strike", "scorch", "pop", "brace"}},
-			{ID: "a2", Side: hex.SideAlly, Slot: hex.Offset{Col: 1, Row: 1},
+			// On the front column, because every skill it knows is range one
+			// and aimed at the enemy: from the middle column the nearest enemy
+			// is two cells away, so battle.New refuses the roster outright.
+			{ID: "a2", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 0},
 				Affinity: single("grass"), Stats: stats(2400, 760, 300, 170),
 				Skills: []string{"strike", "envenom", "triple"}},
 			{ID: "f1", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
@@ -774,6 +782,258 @@ func TestActRejects(t *testing.T) {
 	}
 }
 
+// deadlocked is the roster the Stalemate outcome exists for: a short-ranged pair
+// on the front column who can reach each other, and a longer-ranged pair on the
+// back column who can reach the front but not each other.
+//
+// It starts legal — battle.New refuses a unit that can aim at nobody, and every
+// one of these four can — and stops being legal the moment the two front units
+// die, because reach is fixed at enlistment and nothing on this board moves.
+// That is the whole shape of the problem: measured through hex.Place, the back
+// column is five cells from the enemy's back column and three from its front.
+// frontSkills is what the two front units carry, and it is a parameter for one
+// reason: a front unit that can also touch the enemy's back column is how a
+// timed effect gets onto a survivor of the deadlock.
+func deadlocked(t *testing.T, frontSkills []string, speeds [4]int64) []battle.Roster {
+	t.Helper()
+	return []battle.Roster{
+		{ID: "a.front", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(10, 800, 400, speeds[0]), Skills: frontSkills},
+		{ID: "a.back", Side: hex.SideAlly, Slot: hex.Offset{Col: 0, Row: 1},
+			Affinity: single("neutral"), Stats: stats(4000, 800, 400, speeds[1]), Skills: []string{"lob"}},
+		{ID: "f.front", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(10, 800, 400, speeds[2]), Skills: []string{"strike"}},
+		{ID: "f.back", Side: hex.SideEnemy, Slot: hex.Offset{Col: 0, Row: 1},
+			Affinity: single("neutral"), Stats: stats(4000, 800, 400, speeds[3]), Skills: []string{"lob"}},
+	}
+}
+
+// TestABattleNobodyCanActInIsADraw is seed 18 as a test: the fight that used to
+// skip 3955 of its 4000 turns and come back as a battle that never finished.
+func TestABattleNobodyCanActInIsADraw(t *testing.T) {
+	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"strike"}, [4]int64{40, 150, 50, 100}))
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	turns, err := fight.RunToEnd(400)
+	if err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	if !fight.Finished() {
+		t.Fatalf("the deadlock ran the full %d turns instead of ending", turns)
+	}
+	// The point of the whole change: it ends because it is over, not because
+	// the backstop caught it.
+	if turns > 50 {
+		t.Errorf("the draw took %d turns, so it was found by exhaustion rather than by state", turns)
+	}
+	if got := fight.Outcome(); got != battle.Stalemate {
+		t.Errorf("the battle ended as %s, want %s", got, battle.Stalemate)
+	}
+	if _, decided := fight.Winner(); decided {
+		t.Error("a stalemate named a winner")
+	}
+	// Both sides are still standing, which is exactly what makes this different
+	// from the draw a mutual kill produces.
+	for _, id := range []string{"a.back", "f.back"} {
+		unit, known := fight.Unit(id)
+		if !known || unit.Dead {
+			t.Errorf("%s did not survive the draw", id)
+		}
+	}
+	ended := find(fight.Drain(), battle.Ended)
+	if len(ended) != 1 || ended[0].Outcome != battle.Stalemate {
+		t.Fatalf("the log closed with %+v", ended)
+	}
+}
+
+// TestADrawIsTheSameFromTheSameSeed is the determinism the outcome has to keep.
+// A draw detected from a count of quiet turns, or from anything a second run
+// could disagree about, would be a battle that drew on one machine and not on
+// another.
+func TestADrawIsTheSameFromTheSameSeed(t *testing.T) {
+	run := func() []battle.Event {
+		fight, err := battle.New(books(t), 5150, deadlocked(t, []string{"strike"}, [4]int64{40, 150, 50, 100}))
+		if err != nil {
+			t.Fatalf("new battle: %v", err)
+		}
+		fight.Begin()
+		if _, err := fight.RunToEnd(400); err != nil {
+			t.Fatalf("run: %v", err)
+		}
+		if fight.Outcome() != battle.Stalemate {
+			t.Fatalf("the battle ended as %s, want %s", fight.Outcome(), battle.Stalemate)
+		}
+		return fight.Drain()
+	}
+	first, second := run(), run()
+	if len(first) != len(second) {
+		t.Fatalf("the two runs produced %d and %d events", len(first), len(second))
+	}
+	for i := range first {
+		if first[i] != second[i] {
+			t.Fatalf("event %d differs:\n%+v\n%+v", i, first[i], second[i])
+		}
+	}
+}
+
+// TestAPoisonedDeadlockIsNotADeadlock is the distinction the whole predicate
+// turns on: a board nobody can act on is not final while something on it is
+// still counting down. The poison will kill somebody, and killing somebody ends
+// the battle by emptying a side.
+//
+// The poison arrives from the ally's front unit, which carries a range of three
+// and can therefore touch the enemy's back column — the one place a timed effect
+// can be put on a unit that will still be standing when the board freezes.
+//
+// It is driven by hand rather than by Suggest, because what is being measured is
+// a particular moment: both front units dead, a poison still ticking on a
+// survivor. Letting the opponent choose would measure whether that moment
+// happened to arrive.
+func TestAPoisonedDeadlockIsNotADeadlock(t *testing.T) {
+	// The ally front acts first, so its poison lands before anyone dies, and
+	// the enemy front acts last, so it never acts at all.
+	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"spit"}, [4]int64{200, 60, 50, 100}))
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	allyFront, _ := fight.Unit("a.front")
+	allyBack, _ := fight.Unit("a.back")
+	foeFront, _ := fight.Unit("f.front")
+	foeBack, _ := fight.Unit("f.back")
+
+	spat, held := false, false
+	for turns := 0; turns < 200 && !fight.Finished(); turns++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("turn %d: %v", turns, err)
+		}
+		if prompt.Skipped {
+			continue
+		}
+		switch {
+		case prompt.Unit == "a.front" && !spat:
+			if err := fight.Act("spit", foeBack.Cell); err != nil {
+				t.Fatalf("turn %d: spit: %v", turns, err)
+			}
+			spat = true
+		case prompt.Unit == "a.back" && !foeFront.Dead:
+			if err := fight.Act("lob", foeFront.Cell); err != nil {
+				t.Fatalf("turn %d: lob: %v", turns, err)
+			}
+		case prompt.Unit == "f.back" && !allyFront.Dead:
+			if err := fight.Act("lob", allyFront.Cell); err != nil {
+				t.Fatalf("turn %d: lob: %v", turns, err)
+			}
+		default:
+			if err := fight.Pass(""); err != nil {
+				t.Fatalf("turn %d: pass: %v", turns, err)
+			}
+		}
+		if !allyFront.Dead || !foeFront.Dead || !foeBack.Statuses.Has("poison") {
+			continue
+		}
+		// Nobody can act and both sides are alive, so the only thing keeping
+		// this battle open is the poison. Ending here would be the engine
+		// calling a draw on a board that had not settled.
+		held = true
+		if fight.Finished() {
+			t.Fatalf("turn %d: the battle drew while %s was still poisoned", turns, foeBack.ID)
+		}
+	}
+	if !held {
+		t.Fatal("the deadlock never arrived with a status still running, so this measured nothing")
+	}
+	if got := fight.Outcome(); got != battle.Stalemate {
+		t.Fatalf("the battle ended as %s, want %s once the poison ran out", got, battle.Stalemate)
+	}
+	if foeBack.Statuses.Has("poison") {
+		t.Error("the draw was declared with the poison still on")
+	}
+	if allyBack.Dead || foeBack.Dead {
+		t.Error("a survivor of the draw is dead")
+	}
+}
+
+// TestASavedLogNamesTheWinnerAndTheDrawNamesNobody is why hex.SideNone is the
+// zero value.
+//
+// A side is written with omitempty. With a real side at zero, an ally win wrote
+// no winner at all and was read back correctly only because the missing field
+// decoded to the side that happened to be declared first — the same shape as a
+// battle that ends for no stated reason, right by coincidence. Both endings are
+// checked here because the pair is the point: the win has to say who, and the
+// draw has to say nobody rather than say ally.
+func TestASavedLogNamesTheWinnerAndTheDrawNamesNobody(t *testing.T) {
+	closing := func(t *testing.T, fight *battle.Battle) (battle.Event, string) {
+		t.Helper()
+		fight.Begin()
+		if _, err := fight.RunToEnd(400); err != nil {
+			t.Fatalf("run: %v", err)
+		}
+		ended := find(fight.Drain(), battle.Ended)
+		if len(ended) != 1 {
+			t.Fatalf("the battle closed with %d events", len(ended))
+		}
+		raw, err := json.Marshal(ended[0])
+		if err != nil {
+			t.Fatalf("encode: %v", err)
+		}
+		var back battle.Event
+		if err := json.Unmarshal(raw, &back); err != nil {
+			t.Fatalf("decode: %v", err)
+		}
+		if back != ended[0] {
+			t.Errorf("the trip through the wire changed the event:\n%+v\n%+v", back, ended[0])
+		}
+		return ended[0], string(raw)
+	}
+
+	// The ally side wins this one, and ally is the side that used to be zero.
+	won, raw := closing(t, duel(t, []string{"strike"}, []string{"jab"}, 200, 80))
+	if won.Outcome != battle.Victory || won.Side != hex.SideAlly {
+		t.Fatalf("the battle ended as %+v", won)
+	}
+	if !strings.Contains(raw, `"side":"ally"`) {
+		t.Errorf("a won battle does not name its winner on the wire: %s", raw)
+	}
+
+	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"strike"}, [4]int64{40, 150, 50, 100}))
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	drawn, raw := closing(t, fight)
+	if drawn.Outcome != battle.Stalemate {
+		t.Fatalf("the battle ended as %+v", drawn)
+	}
+	if drawn.Side != hex.SideNone {
+		t.Errorf("a draw named %s as the winner", drawn.Side)
+	}
+	if strings.Contains(raw, `"side"`) {
+		t.Errorf("a draw wrote a winner on the wire: %s", raw)
+	}
+}
+
+// TestNewRefusesAUnitThatCanReachNobody is the authoring half of the same
+// problem: the case worth catching where an error is cheapest.
+func TestNewRefusesAUnitThatCanReachNobody(t *testing.T) {
+	roster := deadlocked(t, []string{"strike"}, [4]int64{40, 150, 50, 100})
+	// Range one from the back column, where the nearest enemy is three cells
+	// away: a unit that could never have acted at all.
+	roster[1].Skills = []string{"strike"}
+	_, err := battle.New(books(t), 1, roster)
+	if err == nil {
+		t.Fatal("a unit that can aim at nobody was enlisted")
+	}
+	for _, want := range []string{"a.back", "longest range is 1", "3 cells away"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("the refusal %q does not say %q", err, want)
+		}
+	}
+}
+
 func TestABattleEndsWhenASideIsGone(t *testing.T) {
 	fight := duel(t, []string{"strike"}, []string{"jab"}, 200, 80)
 	fight.Begin()
@@ -793,7 +1053,7 @@ func TestABattleEndsWhenASideIsGone(t *testing.T) {
 		t.Errorf("the deaths were %+v", died)
 	}
 	ended := find(events, battle.Ended)
-	if len(ended) != 1 || ended[0].Note != "ally" {
+	if len(ended) != 1 || ended[0].Outcome != battle.Victory || ended[0].Side != hex.SideAlly {
 		t.Errorf("the battle ended as %+v", ended)
 	}
 	if _, err := fight.Advance(); err == nil {
@@ -819,6 +1079,40 @@ func TestEventKindNames(t *testing.T) {
 	}
 	if got := battle.Kind(200).String(); !strings.Contains(got, "200") {
 		t.Errorf("an undeclared kind renders as %q", got)
+	}
+}
+
+// TestOutcomeSurvivesTheWire is the same guarantee a kind and a side already
+// have: a saved log names its ending rather than numbering it, so declaring a
+// fifth outcome later cannot silently reinterpret every log already written.
+func TestOutcomeSurvivesTheWire(t *testing.T) {
+	for value := 0; value < battle.OutcomeCount; value++ {
+		outcome := battle.Outcome(value)
+		if name := outcome.String(); name == "" || strings.HasPrefix(name, "outcome(") {
+			t.Errorf("outcome %d has no name, it renders as %q", value, name)
+		}
+		raw, err := json.Marshal(battle.Event{Kind: battle.Ended, Outcome: outcome})
+		if err != nil {
+			t.Fatalf("encode %s: %v", outcome, err)
+		}
+		var back battle.Event
+		if err := json.Unmarshal(raw, &back); err != nil {
+			t.Fatalf("decode %s: %v", outcome, err)
+		}
+		if back.Outcome != outcome {
+			t.Errorf("%s came back as %s", outcome, back.Outcome)
+		}
+		// Undecided is the zero value precisely so that no event but the
+		// closing one carries an outcome at all.
+		if written := strings.Contains(string(raw), "outcome"); written == (outcome == battle.Undecided) {
+			t.Errorf("%s encodes as %s", outcome, raw)
+		}
+	}
+	if got := battle.Outcome(200).String(); !strings.Contains(got, "200") {
+		t.Errorf("an undeclared outcome renders as %q", got)
+	}
+	if err := json.Unmarshal([]byte(`{"outcome":"landslide"}`), &battle.Event{}); err == nil {
+		t.Error("an unknown outcome was decoded")
 	}
 }
 

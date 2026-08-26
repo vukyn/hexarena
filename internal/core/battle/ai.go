@@ -132,8 +132,16 @@ func requiredStatus(declared skill.Skill) string {
 }
 
 // RunToEnd plays the battle out with Suggest choosing for both sides, stopping at
-// the turn limit so a stalemate cannot hang a caller. It reports how many turns
-// were taken.
+// the turn limit so a runaway cannot hang a caller. It reports how many turns
+// were taken, and the caller reads Finished to know whether that was the end or
+// the limit.
+//
+// The limit is a backstop and nothing else. It used to be the only thing that
+// noticed a battle nobody could act in, which made it stand in for an outcome
+// the engine could not express; a deadlock now ends itself as a Stalemate, so
+// reaching the limit means something genuinely endless is happening — two units
+// buffing themselves at each other for ever — rather than a draw waiting to be
+// recognised.
 func (b *Battle) RunToEnd(maxTurns int) (int, error) {
 	taken := 0
 	for !b.finished && taken < maxTurns {

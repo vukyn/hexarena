@@ -605,6 +605,50 @@ func TestAPermanentStatusNeitherExpiresNorCanBeTakenOff(t *testing.T) {
 	}
 }
 
+// TestTimedIgnoresWhatNeverRunsOut is the question a battle asks before deciding
+// it can no longer change: is anything on this unit still counting down.
+//
+// A permanent status must not answer yes. A passive is what a unit is rather
+// than something happening to it, so a board where the only statuses left are
+// traits is a board that will never move on its own — and counting one would
+// keep a deadlocked battle open for ever, which is the failure the whole
+// question exists to end.
+func TestTimedIgnoresWhatNeverRunsOut(t *testing.T) {
+	book := permanentBook(t)
+	permanent, err := book.Lookup("toughened")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	timed, err := book.Lookup("haste")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+
+	var set status.Set
+	if set.Timed() {
+		t.Error("a clean unit is holding something timed")
+	}
+	set.Apply(permanent, 0)
+	if set.Timed() {
+		t.Error("a permanent status counts as something still counting down")
+	}
+	set.Apply(timed, 0)
+	if !set.Timed() {
+		t.Fatal("a buff with a duration on it does not count")
+	}
+	// The timed one runs out and the permanent one does not, so the answer has
+	// to go back to no rather than staying yes for the rest of the battle.
+	for range timed.Duration {
+		set.Tick()
+	}
+	if set.Timed() {
+		t.Error("the answer is still yes after the only timed status expired")
+	}
+	if !set.Has("toughened") {
+		t.Error("the permanent status went with it")
+	}
+}
+
 // TestASnapshotSaysWhichStatusesHaveNoCountdown is the renderer's half: reading
 // Remaining alone would draw "0 turns left" beside the one thing that never runs
 // out.

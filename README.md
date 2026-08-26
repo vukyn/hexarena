@@ -403,6 +403,57 @@ which is what a level being more than a number looks like.
 
 `hexforge passives` lists what is declared and what each grants.
 
+## How a battle ends
+
+Three endings, and the closing event names which one it was rather than leaving a
+reader to work it out from what stopped happening.
+
+| outcome | what it means |
+| --- | --- |
+| `victory` | one side is empty, and the closing event names the other |
+| `annihilation` | both sides are empty, which a simultaneous kill can produce |
+| `stalemate` | units are alive on both sides and nobody can act again |
+
+The third is the one that needs explaining, and it exists because **nothing on
+this board moves**. A unit occupies the slot it was placed in for the whole
+battle, so its reach is settled the moment it is enlisted — and the enemies worth
+reaching are not, because they die. Measured through `hex.Place`, the nearest
+enemy is one cell from the front column, two from the middle and three from the
+back, so a short-ranged unit standing behind the front stops being able to act at
+all the moment the enemies near it fall. Two of them, one on each side, is a
+battle that can never finish. It is not hypothetical: seed 18 once spent 3955 of
+its 4000 turns skipped, every one a unit with nothing usable, and came back as a
+battle that never ended rather than as a result.
+
+A stalemate is declared when, for every living unit, **nothing timed is on it**
+and **no skill it knows has a legal aim, cooldowns ignored**. Both halves are
+asked pessimistically, because declaring a draw on a battle that would have
+resolved is worse than letting the turn limit catch a real runaway:
+
+- A skipped turn is ordinary. Turns are lost to control and to cooldowns
+  constantly and those resolve, so neither is read here — which is exactly why an
+  ordinary skipped turn cannot be mistaken for this.
+- A poisoned deadlock is not a deadlock. The poison will kill somebody, and that
+  ends the battle by emptying a side. So will a stun wearing off or a shield
+  running out. Anything with a duration left to spend is a promise the board is
+  not final; a permanent status a trait granted is not, and `status.Set.Timed`
+  is where that distinction lives.
+- It is a pure function of the state, not a count of quiet turns. A battle that
+  draws on one machine has to draw on every other from the same seed, and a
+  counter is one more thing two runs could disagree about.
+
+The common case is caught earlier and more cheaply. `battle.New` refuses a roster
+holding a unit that can aim at nobody from the slot it was given, and `hexforge
+check` **warns** — rather than fails — when a character's longest range cannot
+reach anybody from the column its archetype puts it in. A warning, because the
+squad in front of it is what does the reaching and that is a design an author may
+well mean. Neither is sufficient on its own, which is the point: reach shrinks as
+units die, so a roster that starts fine can still end deadlocked.
+
+The turn limit stays what it always was, a backstop. It is no longer standing in
+for an outcome the engine could not express, so reaching it now means something
+genuinely endless is happening rather than a draw waiting to be recognised.
+
 ## Battle logs
 
 A battle can be written out, read back, printed, and re-run from its seed to check
@@ -422,8 +473,15 @@ that was its own and replays the rest. Because the engine is deterministic that
 lands on exactly the position the battle was in, with nothing deep copied to get
 there.
 
-Kinds and sides are written by name, not by number, so inserting a constant later
-cannot silently reinterpret every log already saved.
+Kinds, sides and outcomes are written by name, not by number, so inserting a
+constant later cannot silently reinterpret every log already saved.
+
+A side is written only when there is one, which is why "no side" rather than
+"ally" is the zero value. With a real side at zero, every ally unit's opening
+event left the field out and a reader got the right answer only because ally
+happened to be declared first — and a battle with no winner wrote exactly the
+same thing while meaning the opposite. A won battle now names its winner and a
+draw names nobody. Logs written before that change do not `--verify`.
 
 ## Layout
 
@@ -857,56 +915,6 @@ the placement, and `hexforge` gains a reason to show a character's learnset by
 level and to refuse a loadout the level cannot hold. Choosing the four is a
 player's decision, and until there is something to make it with, an automatic
 battle may take any four.
-
-### A battle nobody can act in has no outcome
-
-`checkEnd` ends a battle when a side is emptied, and that is the only way one
-ends. A battle where **neither side can act** is not an outcome the engine can
-express: it runs to the turn limit and comes back as a failure.
-
-This is not hypothetical. Seed 18 spent 3955 of its 4000 turns skipped, every one
-a unit with nothing usable, because two survivors stood on the back column with a
-kit that reaches three cells. Measured through `hex.Place`, the far corner of the
-board is:
-
-| authored column | distance to the furthest enemy slot |
-| --- | ---: |
-| 2, the front | 3 |
-| 1 | 4 |
-| 0, the back | 5 |
-
-So a short-ranged unit behind the front stops being able to act the moment the
-enemies near it die, and if both sides are left with only such units the battle
-cannot finish. The shipped roster now stands its whole squad on column two, which
-avoids it rather than fixes it.
-
-**The underlying reason is that nothing moves.** A unit occupies the slot it was
-placed in for the whole battle, so its reach is fixed at enlistment. In a game
-with movement this situation resolves itself; here it cannot.
-
-Two answers, and they are not alternatives:
-
-- **Refuse it at authoring.** `battle.New` could check that every unit can reach
-  *someone*, and `hexforge` could warn when a character's longest range cannot
-  cover the board from the column its preset suggests. That catches the common
-  case early, where an error is cheapest. It is not sufficient on its own: reach
-  changes as units die, and a roster that starts fine can still end deadlocked.
-- **End it at runtime, as a draw.** This is the real fix, and what it has to
-  settle:
-  - **A skipped turn is not a stalemate.** Turns are skipped by control and by
-    cooldowns all the time, and those resolve. The condition is a full cycle in
-    which nobody could act *and* nothing is pending that would change that — a
-    poisoned deadlock is not a deadlock, because the poison ends it.
-  - **A draw needs its own event.** A battle that simply stops leaves the log
-    unable to say why, and `--verify` comparing two runs of a battle that ended
-    for no stated reason proves less than it looks. Same trap as a passive
-    changing a number silently.
-  - **It is not an error.** `RunToEnd` returns one when it hits the limit, which
-    is right for a runaway and wrong for a draw. The turn limit should stay as
-    the backstop it is, and stop being the thing that reports this.
-  - **Detection must be a pure function of the state.** A count of cycles is
-    fine; anything reading a clock is not, and a battle that drew on one machine
-    has to draw on every other from the same seed.
 
 ### A real cast, and a roster that is not a mirror
 

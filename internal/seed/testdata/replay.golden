@@ -106,7 +106,7 @@ the last 12 events
   120000 skill_used      ally.venusaur      vine_whip at 3,1
   120000 damaged         ally.venusaur      vine_whip hit foe.venusaur for 228, x1000 affinity, 0 hp left
   120000 died            foe.venusaur       fell at 3,1
-  120000 ended                              ally
+  120000 ended                              victory to the ally side
 
 event counts
   started              6

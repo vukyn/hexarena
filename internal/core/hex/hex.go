@@ -57,9 +57,23 @@ const (
 type Side uint8
 
 const (
-	SideAlly Side = iota
+	// SideNone is no side at all, and it is the zero value on purpose.
+	//
+	// A side is written to a battle log with `omitempty`, so whichever side is
+	// zero is the one that never appears on the wire — and a reader would then
+	// be recovering it from the absence of a field rather than from the log.
+	// That is exactly the trap a draw with no stated reason sets: the fact is
+	// right by coincidence until the day somebody reorders a constant. With
+	// nothing at zero, an absent side means what it says, and a battle whose
+	// winner is undecided writes no winner rather than quietly writing the
+	// first one declared.
+	SideNone Side = iota
+	SideAlly
 	SideEnemy
 )
+
+// Fights reports whether the side is one a unit can be on. SideNone is not.
+func (s Side) Fights() bool { return s == SideAlly || s == SideEnemy }
 
 func (s Side) String() string {
 	switch s {
@@ -67,6 +81,8 @@ func (s Side) String() string {
 		return "ally"
 	case SideEnemy:
 		return "enemy"
+	case SideNone:
+		return "none"
 	default:
 		return "unknown"
 	}
@@ -90,6 +106,8 @@ func (s *Side) UnmarshalJSON(raw []byte) error {
 		*s = SideAlly
 	case "enemy":
 		*s = SideEnemy
+	case "none":
+		*s = SideNone
 	default:
 		return fmt.Errorf("unknown side %q", name)
 	}
@@ -242,6 +260,10 @@ func InRange(origin Offset, radius int) []Offset {
 // would not mirror each other: odd columns are pushed downward, so an ally
 // frontline slot and the enemy slot authored identically would have different
 // distance profiles and the matchup would be silently unbalanced.
+//
+// SideNone is placed as an ally would be. There is nothing better to do with a
+// side that is not one, and refusing it here would put an error in the geometry:
+// whoever builds a roster is where a unit on no side is caught.
 func Place(side Side, author Offset) Offset {
 	if side == SideEnemy {
 		return Offset{Col: Cols - 1 - author.Col, Row: Rows - 1 - author.Row}
@@ -270,6 +292,38 @@ func SideCells(side Side) []Offset {
 		}
 	}
 	return out
+}
+
+// ReachNeeded is the shortest range that can touch anybody at all from a
+// formation column: the distance to the nearest opposing slot, taken from the
+// worst row of that column so the answer holds wherever in it a unit stands.
+//
+// Nothing on this board moves, so a unit's reach is settled the moment it is
+// placed, and this is the number that settles it. Today the answers are one from
+// the front column, two from the middle and three from the back — but they are
+// measured through Place rather than written down, because the mirroring is what
+// produces them and a constant would go quietly wrong the day the board changed
+// shape.
+//
+// A column outside the formation grid reports zero, which is no reach at all.
+func ReachNeeded(col int) int {
+	if col < 0 || col >= FormationCols {
+		return 0
+	}
+	needed := 0
+	for row := 0; row < Rows; row++ {
+		mine := Place(SideAlly, Offset{Col: col, Row: row})
+		nearest := 0
+		for _, theirs := range SideCells(SideEnemy) {
+			if distance := mine.DistanceTo(theirs); nearest == 0 || distance < nearest {
+				nearest = distance
+			}
+		}
+		if nearest > needed {
+			needed = nearest
+		}
+	}
+	return needed
 }
 
 // Render draws the battlefield as interlocking ASCII hexes, which is how the

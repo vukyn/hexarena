@@ -1,6 +1,7 @@
 package hex
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -177,6 +178,112 @@ func TestPlaceLandsOnTheRightHalf(t *testing.T) {
 	}
 	if got := Place(SideEnemy, Offset{2, 1}).Col; got != EnemyFrontCol {
 		t.Errorf("enemy frontline column is %d, want %d", got, EnemyFrontCol)
+	}
+}
+
+// TestNoSideIsTheZeroValue is what keeps a battle log honest about who won.
+//
+// A side is written with `omitempty`, so whichever side is zero never reaches
+// the wire and a reader recovers it from the absence of a field. With a real
+// side at zero that is right by coincidence — until a constant is reordered, or
+// until a battle with no winner writes the first side declared. So the zero
+// value is nobody, and this is the test that says so.
+func TestNoSideIsTheZeroValue(t *testing.T) {
+	var unset Side
+	if unset != SideNone {
+		t.Fatalf("the zero value is %s, want %s", unset, SideNone)
+	}
+	if SideNone.Fights() {
+		t.Error("no side reports that it fights")
+	}
+	for _, side := range []Side{SideAlly, SideEnemy} {
+		if !side.Fights() {
+			t.Errorf("%s reports that it does not fight", side)
+		}
+	}
+	// Every cell on the board belongs to one of the two that fight, so nothing
+	// a coordinate reports can be the zero value.
+	for _, cell := range Cells() {
+		if !cell.Side().Fights() {
+			t.Errorf("cell %s is on %s", cell, cell.Side())
+		}
+	}
+	// Encoding is what this is all for: an unset side has to leave the field out
+	// entirely, and a real one has to be written.
+	type carrier struct {
+		Side Side `json:"side,omitempty"`
+	}
+	for _, one := range []struct {
+		side    Side
+		written bool
+	}{{SideNone, false}, {SideAlly, true}, {SideEnemy, true}} {
+		raw, err := json.Marshal(carrier{Side: one.side})
+		if err != nil {
+			t.Fatalf("encode %s: %v", one.side, err)
+		}
+		if strings.Contains(string(raw), "side") != one.written {
+			t.Errorf("%s encodes as %s", one.side, raw)
+		}
+		var back carrier
+		if err := json.Unmarshal(raw, &back); err != nil {
+			t.Fatalf("decode %s: %v", one.side, err)
+		}
+		if back.Side != one.side {
+			t.Errorf("%s came back as %s", one.side, back.Side)
+		}
+	}
+	if err := json.Unmarshal([]byte(`{"side":"neither"}`), &carrier{}); err == nil {
+		t.Error("an unknown side was decoded")
+	}
+}
+
+// TestReachNeededRisesTowardsTheBackColumn is the geometry behind a deadlock,
+// stated as the three numbers an author has to size a kit against.
+//
+// It is asserted against measured distances rather than against the literals
+// one, two and three, so the check stays true of whatever board Place produces
+// rather than of the board it happens to produce today. The literals are
+// asserted separately, because the current answers are worth noticing if they
+// ever move.
+func TestReachNeededRisesTowardsTheBackColumn(t *testing.T) {
+	for col := 0; col < FormationCols; col++ {
+		needed := ReachNeeded(col)
+		for row := 0; row < Rows; row++ {
+			mine := Place(SideAlly, Offset{Col: col, Row: row})
+			within := 0
+			for _, theirs := range SideCells(SideEnemy) {
+				if mine.DistanceTo(theirs) <= needed {
+					within++
+				}
+			}
+			if within == 0 {
+				t.Errorf("a range of %d from %s reaches nothing, but that is what column %d needs",
+					needed, mine, col)
+			}
+			if needed <= 1 {
+				continue
+			}
+			// One short must reach nobody, or the number is not the shortest
+			// range that works and a warning built on it would be wrong.
+			for _, theirs := range SideCells(SideEnemy) {
+				if mine.DistanceTo(theirs) <= needed-1 {
+					t.Errorf("a range of %d already reaches %s from %s, so column %d does not need %d",
+						needed-1, theirs, mine, col, needed)
+				}
+			}
+		}
+	}
+	// The front column is next to the enemy's, and every column behind it is one
+	// further out. Worth pinning: these are the numbers a kit is sized against.
+	for col, want := range map[int]int{2: 1, 1: 2, 0: 3} {
+		if got := ReachNeeded(col); got != want {
+			t.Errorf("column %d needs a range of %d, want %d", col, got, want)
+		}
+	}
+	for _, col := range []int{-1, FormationCols, Cols} {
+		if got := ReachNeeded(col); got != 0 {
+			t.Errorf("column %d is not a formation column but needs %d", col, got)
+		}
 	}
 }
 

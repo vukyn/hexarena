@@ -277,6 +277,23 @@ func (s *Set) Stacks(id string) int {
 // Has reports whether the unit carries the status at all.
 func (s *Set) Has(id string) bool { return s.Stacks(id) > 0 }
 
+// Timed reports whether the unit holds anything that will change on its own:
+// a stack with a duration still to spend. A permanent status does not count,
+// because nothing about one is ever spent — Tick skips the whole entry.
+//
+// It is the question a caller asks before deciding a battle can no longer
+// change. Snapshot could be read for the same answer, but only by re-deriving
+// which kinds are permanent, and a caller deriving that would be a second copy
+// of the rule Tick already enforces.
+func (s *Set) Timed() bool {
+	for i := range s.entries {
+		if !s.entries[i].kind.Permanent && len(s.entries[i].stacks) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // Modifiers returns the stat terms every active stack contributes, accumulated.
 //
 // Stacks contribute their terms once each, so three stacks of a debuff are three

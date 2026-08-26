@@ -102,6 +102,68 @@ func TestInspectPassesOnTheShippedData(t *testing.T) {
 	}
 }
 
+// TestInspectWarnsAboutAKitThatCannotCoverTheBoard is the authoring half of the
+// draw: the case worth catching where an error is cheapest.
+//
+// It is a warning rather than a problem on purpose. A short-ranged character on
+// a back column is a design an author may well mean, because the squad in front
+// of it is what does the reaching — so failing the check would refuse a legal
+// game, and saying nothing would leave the shape a battle nobody can act in is
+// built out of entirely unremarked.
+func TestInspectWarnsAboutAKitThatCannotCoverTheBoard(t *testing.T) {
+	dir := scratchData(t)
+	before, err := Inspect(dir)
+	if err != nil {
+		t.Fatalf("inspect the copy: %v", err)
+	}
+	if len(before.Warnings) != 0 {
+		t.Fatalf("the fixture already warns, so this measures nothing: %v", before.Warnings)
+	}
+
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	// A skirmisher stands on the back column, three cells from the nearest
+	// enemy. Give this one nothing that reaches past one.
+	if preset, found := lib.Archetypes().Get("skirmisher"); !found || preset.Column != 0 {
+		t.Fatal("the skirmisher preset is not on the back column, so this measures nothing")
+	}
+	character, err := Draft{
+		ID: "fixture-game.stub", Name: "Stub", Origin: "fixture-game",
+		Archetype: "skirmisher", Image: "assets/fixture/sprout.svg",
+		Element: "grass", Bio: "Written by a test.", Skills: "venom_fang",
+	}.Resolve(lib)
+	if err != nil {
+		t.Fatalf("resolve a short-ranged skirmisher: %v", err)
+	}
+	if err := lib.SaveCharacter(character); err != nil {
+		t.Fatalf("save the shortened kit: %v", err)
+	}
+
+	after, err := Inspect(dir)
+	if err != nil {
+		t.Fatalf("inspect after shortening the kit: %v", err)
+	}
+	// A warning is not a failure, and the check still passes.
+	if !after.OK() {
+		t.Errorf("a short kit failed the check: %v", after.Problems)
+	}
+	if len(after.Warnings) != 1 {
+		t.Fatalf("%d warnings reported, want 1: %v", len(after.Warnings), after.Warnings)
+	}
+	short, isShort := after.Warnings[0].(*ShortReachWarning)
+	if !isShort {
+		t.Fatalf("the warning is a %T, want a *ShortReachWarning", after.Warnings[0])
+	}
+	if short.ID != character.ID || short.Range != 1 || short.Needed != 3 || short.Column != 0 {
+		t.Errorf("the warning reads %+v", short)
+	}
+	if !strings.Contains(short.Error(), character.ID) {
+		t.Errorf("the warning %q does not name the character", short)
+	}
+}
+
 // TestInspectNoticesMissingArt is the one question internal/core/cast is not
 // allowed to ask, so it has to be asked here.
 func TestInspectNoticesMissingArt(t *testing.T) {
