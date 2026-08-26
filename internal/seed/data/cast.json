@@ -234,7 +234,10 @@
         "dragon_dance"
       ],
       "passives": [
-        "blaze"
+        {
+          "id": "blaze",
+          "at_level": 16
+        }
       ]
     }
   ]
