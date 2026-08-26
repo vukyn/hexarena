@@ -193,7 +193,7 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		fmt.Fprintln(out, "no passives declared")
 		return
 	}
-	rendered := newTable("id", "name", "grants", "adds", "resists", "while")
+	rendered := newTable("id", "name", "grants", "adds", "resists", "amplifies", "while")
 	for _, held := range passives {
 		grants := make([]string, 0, len(held.Grants))
 		for _, grant := range held.Grants {
@@ -222,6 +222,22 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		if len(held.Applies) > 0 {
 			adds = forge.DescribeApplications(held.Applies)
 		}
+		// Both shares in one cell, each named, because a trait may carry either
+		// alone and a bare percentage could be read as the wrong half: "poison
+		// +30% effect" is a stronger tick and "+20% chance" is a poison that
+		// lands more often, and they are worth different things in play.
+		amplifies := make([]string, 0, len(held.Amplifies))
+		for _, raise := range held.Amplifies {
+			shares := make([]string, 0, 2)
+			if raise.Effect > 0 {
+				shares = append(shares, forge.Percent(raise.Effect)+" effect")
+			}
+			if raise.Chance > 0 {
+				shares = append(shares, forge.Percent(raise.Chance)+" chance")
+			}
+			amplifies = append(amplifies,
+				fmt.Sprintf("%s +%s", raise.Status, strings.Join(shares, " +")))
+		}
 		// A gate is only worth a column when there is one, and the share is read
 		// as a percentage for the same reason every other permille is.
 		gate := ""
@@ -229,13 +245,14 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 			gate = "under " + forge.Percent(held.While.BelowHealth) + " health"
 		}
 		rendered.add(held.ID, held.Name, strings.Join(grants, ", "),
-			adds, strings.Join(resists, ", "), gate)
+			adds, strings.Join(resists, ", "), strings.Join(amplifies, ", "), gate)
 	}
 	rendered.render(out)
 	fmt.Fprint(out, "\na trait is in force from the moment its holder is enlisted, and nothing takes it off:\n"+
 		"every status it grants is declared permanent, so it has no duration and no cleanse reaches it.\n"+
 		"a resistance takes its share off an incoming application's chance, so a full share never lands.\n"+
-		"what a trait adds rides on its holder's damaging skills only, through the same roll as their own.\n")
+		"what a trait adds rides on its holder's damaging skills only, through the same roll as their own.\n"+
+		"an amplifier raises what its holder inflicts: the effect is the tick frozen on the stack, the chance is the roll.\n")
 }
 
 func renderArchetypes(out io.Writer, lib *forge.Library) {

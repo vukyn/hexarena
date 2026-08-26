@@ -374,6 +374,8 @@ const (
 	BlurbTraitReplyDamage
 	BlurbTraitReplyStatus
 	BlurbTraitReplyBoth
+	BlurbTraitAmplifiesEffect
+	BlurbTraitAmplifiesChance
 	BlurbTraitWhile
 	BlurbTraitDrains
 	BlurbTraitNone

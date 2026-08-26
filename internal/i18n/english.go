@@ -360,8 +360,14 @@ q or ctrl+c to quit`,
 	BlurbTraitReplyDamage: "Whatever damages it takes %d%% of its attack back.",
 	BlurbTraitReplyStatus: "Whatever damages it is inflicted with %s, %d%% of the time.",
 	BlurbTraitReplyBoth:   "Whatever damages it takes %d%% of its attack back, and %s %d%% of the time.",
-	BlurbTraitWhile:       "In force only at or below %d%% health.",
-	BlurbTraitDrains:      "Everything it does takes back %d%% of the damage dealt.",
-	BlurbTraitNone:        "Carries no traits.",
-	BlurbFooter:           "↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit",
+	// Two sentences rather than one, because the two shares promise different
+	// things: a stronger tick pays over the life of a stack, a better chance pays
+	// per cast, and a reader deciding what the trait is worth needs to know which
+	// of the two it got.
+	BlurbTraitAmplifiesEffect: "Its %s ticks %d%% harder.",
+	BlurbTraitAmplifiesChance: "Its %s lands %d%% more often.",
+	BlurbTraitWhile:           "In force only at or below %d%% health.",
+	BlurbTraitDrains:          "Everything it does takes back %d%% of the damage dealt.",
+	BlurbTraitNone:            "Carries no traits.",
+	BlurbFooter:               "↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit",
 }

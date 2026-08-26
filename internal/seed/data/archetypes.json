@@ -41,6 +41,10 @@
       ],
       "passives": [
         {
+          "id": "virulence",
+          "at_level": 32
+        },
+        {
           "id": "endurance",
           "at_level": 16
         }

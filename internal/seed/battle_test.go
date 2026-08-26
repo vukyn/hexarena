@@ -644,19 +644,30 @@ func render(event battle.Event) string {
 		if event.Passive != "" {
 			note = "  from " + event.Passive + note
 		}
-		return head + fmt.Sprintf("%-18s %s x%d on %s, now %d%s",
-			event.Actor, event.Status, event.Stacks, event.Target, event.Remaining, note)
+		// The frozen tick and whatever raised it, each only when there is one.
+		// A record that showed neither could not be checked: a poison's figure
+		// comes from the applier's stats and the target's defence, and an
+		// amplified one is a different number with nothing on the line to say so
+		// — which is the trap Pierce and Refused were added for, one layer up
+		// from the event.
+		if event.Amount > 0 {
+			note = fmt.Sprintf(", %d per tick", event.Amount) + note
+		}
+		return head + fmt.Sprintf("%-18s %s x%d on %s, now %d%s%s",
+			event.Actor, event.Status, event.Stacks, event.Target, event.Remaining,
+			note, amplification(event))
 	case battle.StatusResisted:
 		// The share refused only when there is one, so a book where nothing
 		// resists reads exactly as it did before resistances existed — and where
 		// something does, the record says whether the roll failed or the target
 		// refused it.
 		if event.Refused > 0 {
-			return head + fmt.Sprintf("%-18s %s resisted %s at %d per mille, %d refused",
-				event.Actor, event.Target, event.Status, event.Chance, event.Refused)
+			return head + fmt.Sprintf("%-18s %s resisted %s at %d per mille, %d refused%s",
+				event.Actor, event.Target, event.Status, event.Chance, event.Refused,
+				amplification(event))
 		}
-		return head + fmt.Sprintf("%-18s %s resisted %s at %d per mille",
-			event.Actor, event.Target, event.Status, event.Chance)
+		return head + fmt.Sprintf("%-18s %s resisted %s at %d per mille%s",
+			event.Actor, event.Target, event.Status, event.Chance, amplification(event))
 	case battle.StatusStripped:
 		return head + fmt.Sprintf("%-18s %s stripped %d off %s", event.Actor, event.Skill, event.Stacks, event.Target)
 	case battle.PassiveHeld:
@@ -675,6 +686,26 @@ func render(event battle.Event) string {
 	default:
 		return head + fmt.Sprintf("%-18s", event.Actor)
 	}
+}
+
+// amplification is what the actor's traits added, for the record's own sake.
+//
+// Written only when a share is there, so a book where nothing amplifies reads
+// exactly as it did before amplifiers existed — the same rule the refused share
+// follows. Both halves named, because the two are worth different things: the
+// effect is the tick frozen on the stack and the chance is the roll.
+func amplification(event battle.Event) string {
+	parts := make([]string, 0, 2)
+	if event.AmplifiedEffect > 0 {
+		parts = append(parts, fmt.Sprintf("+%d effect", event.AmplifiedEffect))
+	}
+	if event.AmplifiedChance > 0 {
+		parts = append(parts, fmt.Sprintf("+%d chance", event.AmplifiedChance))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return ", amplified " + strings.Join(parts, " ")
 }
 
 func TestStatsResolveThroughStatuses(t *testing.T) {
