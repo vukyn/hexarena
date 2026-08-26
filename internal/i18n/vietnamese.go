@@ -48,7 +48,9 @@ q hoặc ctrl+c để thoát`,
 	MenuCheck:              "kiểm tra",
 	MenuCheckDetail:        "xem ảnh có đủ chưa và hạn mức có vượt không",
 	MenuNote: "Mọi thứ ghi ở đây đều qua đúng các bước kiểm tra của hexforge, còn game thì\n" +
-		"chạy từ bản dữ liệu nhúng sẵn — build lại thì sửa đổi mới vào được trận.",
+		"chạy từ bản dữ liệu nhúng sẵn — build lại thì sửa đổi mới vào được trận.\n" +
+		"Các form ghi bằng ctrl+s; trên Mac cmd+S cũng ghi được, miễn là terminal chịu\n" +
+		"truyền phím đó qua thay vì tự mở hộp thoại lưu của nó.",
 	MenuFooter: "↑/↓ chọn · enter mở · ctrl+l English · q thoát",
 
 	ConfirmFooter:  "%s [y/N] · ctrl+c thoát",

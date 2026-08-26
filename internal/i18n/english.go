@@ -44,7 +44,9 @@ q or ctrl+c to quit`,
 	MenuCheck:              "check",
 	MenuCheckDetail:        "see that the art is there and the budget is kept",
 	MenuNote: "Everything written here goes through the same checks as hexforge, and the\n" +
-		"game boots from the embedded copy — rebuild before an edit reaches a battle.",
+		"game boots from the embedded copy — rebuild before an edit reaches a battle.\n" +
+		"A form writes on ctrl+s, and on a Mac cmd+S does it too where the terminal\n" +
+		"passes the chord through instead of opening its own Save dialog.",
 	MenuFooter: "↑/↓ move · enter open · ctrl+l tiếng Việt · q quit",
 
 	ConfirmFooter:  "%s [y/N] · ctrl+c quit",

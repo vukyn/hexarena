@@ -1,8 +1,6 @@
 package main
 
 import (
-	"runtime"
-
 	tea "charm.land/bubbletea/v2"
 )
 
@@ -26,23 +24,6 @@ const (
 	saveKeyCommand = "super+s"
 )
 
-// saveKeyMacLabel is how the pair is written on a Mac, and the space in the
-// middle is the whole of it.
-//
-// It was "⌘S/^S": four symbols and a slash with nothing between them, which on
-// screen reads as one smear rather than as two keystrokes. The footer around it
-// separates one key from the next with a space, so a key that contains no space
-// has nothing to separate it from itself. The space costs nothing — the label is
-// five cells either way.
-//
-// A slash with spaces around it would read better still, and does not fit. The
-// English character-form footer is 73 cells without the label, the smallest
-// window this program will draw in is 80, and the last cell of a line is left
-// empty so that writing it cannot wrap the row — six cells, and "⌘S / ^S" is
-// seven. That budget is guarded by TestEverySaveFooterFitsTheSmallestWindow
-// rather than left as a number in a comment.
-const saveKeyMacLabel = "⌘S ^S"
-
 // isSaveKey reports whether a keystroke asks for the work to be written.
 //
 // One declaration for all three forms, for the reason a passed turn's reason
@@ -57,30 +38,26 @@ func isSaveKey(message tea.KeyPressMsg) bool {
 	return false
 }
 
-// saveKeyLabel is what a footer calls the save key, which depends on the
-// keyboard in front of it rather than on the language being read.
+// saveKeyLabel is what a footer calls the save key.
 //
-// On macOS both are offered and ⌘S is named first, because it is the one a Mac
-// keyboard reaches for and the one that needs discovering; ^S follows because it
-// is the one that always works, and a footer promising only ⌘S would be a
-// promise this program cannot keep on Terminal.app. Everywhere else there is
-// nothing to choose between, so the footer says the single true thing.
+// It is ctrl+s on every platform, including the one where ⌘S also works, and
+// that is a rendering decision rather than a change of heart about ⌘S. ⌘ is
+// East-Asian-Ambiguous width: lipgloss measures it as one cell, a good many
+// terminals draw it as two, and the glyph then lands on top of whatever follows
+// it — "⌘S" is drawn as the two characters overlapping, which is worse than not
+// naming the key at all. Nothing inside a program can find out which of the two
+// its terminal will do.
 //
-// It is a keystroke rather than a sentence, which is why it lives here and not
-// in internal/i18n: ⌘ and ^ are what is printed on the key in every language,
-// and a catalogue entry per platform per language would be four ways to say one
-// symbol.
+// Spacing it apart does not help, because the extra cell has to come from
+// somewhere: the English character-form footer is 73 cells without the label,
+// the smallest window is 80, and the last cell of a row is left empty so that
+// writing it cannot wrap the line. Six cells for the label, and any spelling
+// that names both keys in ASCII needs more than six.
+//
+// So the footer names the keystroke it can always deliver and always draw, and
+// ⌘S is a Mac habit that turns out to work — MenuNote says so on the way in,
+// and the README says why it might not. What the footer must never do is
+// promise ⌘S alone, which is the one thing Terminal.app cannot keep.
 func saveKeyLabel() string {
-	return saveKeyLabelFor(runtime.GOOS)
-}
-
-// saveKeyLabelFor is saveKeyLabel with the platform passed in, so that the width
-// of a label this machine will never draw is still measurable here. The off-Mac
-// label is the longer of the two, so a test that only ever saw the host's would
-// be measuring the easy case on whichever platform it happened to run.
-func saveKeyLabelFor(goos string) string {
-	if goos == "darwin" {
-		return saveKeyMacLabel
-	}
 	return saveKeyControl
 }

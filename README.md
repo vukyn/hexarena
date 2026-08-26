@@ -849,8 +849,19 @@ typed and only the labels around it are redrawn.
 #### Saving: ctrl+s, and ⌘S where a terminal will pass it
 
 Every form writes on **ctrl+s**, which works everywhere, and also on **⌘S**,
-which works where the terminal lets it. On macOS the footer offers both, `⌘S ^S`;
-elsewhere it says `ctrl+s`, because there is nothing to choose between.
+which works where the terminal lets it. The footer names `ctrl+s` on every
+platform, macOS included, and the menu note is where ⌘S is mentioned instead.
+
+That is a drawing problem rather than a change of heart. ⌘ is East-Asian-
+Ambiguous width: it is *measured* as one cell and a good many terminals *draw*
+it as two, so the glyph lands on top of the character after it and `⌘S` comes
+out as two characters overlapping. Nothing inside a program can find out which
+sort of terminal is in front, and spacing it apart needs a cell the footer does
+not have — the English character-form footer is 73 cells without the label, the
+smallest window is 80, and the last cell of a row is left empty so that writing
+it cannot wrap the line. Six cells, and no ASCII spelling of both keys fits in
+six. ⌃, ⇧ and ⌥ are ambiguous in exactly the same way, so none of them is the
+way out.
 
 ⌘S is not something a program can simply ask for. Command is not a modifier the
 classic terminal escape sequences can encode — it does not reach the program at
@@ -864,8 +875,7 @@ which bubbletea v2 parses. Three things then have to be true at once:
 | nothing upstream claims Super | on Linux a window manager may take it first |
 
 Where any of those fails, ⌘S never arrives and ctrl+s is the answer — which is
-why the footer keeps naming a control-S on every platform, and why the label is
-never shortened to ⌘S alone. A terminal that will not pass ⌘S can usually be
+the other reason the footer names a control-S and nothing else. A terminal that will not pass ⌘S can usually be
 told to send the other one instead: iTerm2 and Ghostty can both map ⌘S to
 `Send Text: ^S`, which reaches this program as the keystroke it always accepts.
 
