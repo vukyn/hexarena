@@ -333,7 +333,7 @@
     },
     {
       "id": "razor_leaf",
-      "name": "lá sắc",
+      "name": "phi diệp",
       "element": "grass",
       "range": 3,
       "pattern": "arc_up",
@@ -345,7 +345,7 @@
     },
     {
       "id": "solar_beam",
-      "name": "chùm nắng",
+      "name": "quang kích",
       "element": "grass",
       "range": 4,
       "pattern": "single",
