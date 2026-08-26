@@ -714,6 +714,63 @@ func TestSkillsEditRunsEndToEndThroughAPipe(t *testing.T) {
 // It also covers the trap `--cooldown 0` covers for a number: an absent flag and
 // an empty one are different answers, and for a name the empty one is how a name
 // is taken back off.
+// TestEverySkillsEditFlagReachesTheEdit is a bug that shipped, and the shape of
+// test that would have stopped it.
+//
+// The flags were bound to the edit's fields by two maps keyed by the same names,
+// and three of them — self-applies, restores and drains — were added to one map
+// and not the other. A missing key reads back as a nil answer, which is the exact
+// shape "the flag was not given" has, so the command answered "nothing to change"
+// and exited zero-effect. It had done that since the day those flags were added,
+// and nothing noticed, because every test named a flag that happened to work.
+//
+// So this names none of them. It reads the flag list out of the command's own
+// help, which is the one list that cannot drift from what the command accepts,
+// and asserts that every flag it offers does something. A flag whose value is
+// rejected downstream still passes: what is being tested is that the answer
+// arrived, not that it was any good.
+func TestEverySkillsEditFlagReachesTheEdit(t *testing.T) {
+	binary := buildHexforge(t)
+	dir := scratchData(t)
+
+	help := func() string {
+		command := exec.Command(binary, "skills", "edit", "-h")
+		output, _ := command.CombinedOutput()
+		return string(output)
+	}()
+
+	// The two flags that are not fields of the edit: one names the directory and
+	// one is the confirmation. Every other flag the command offers has to land.
+	notAnEdit := map[string]bool{"data": true, "yes": true}
+
+	flags := make([]string, 0, 20)
+	for _, line := range strings.Split(help, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if !strings.HasPrefix(trimmed, "-") {
+			continue
+		}
+		name := strings.TrimPrefix(strings.Fields(trimmed)[0], "-")
+		if !notAnEdit[name] {
+			flags = append(flags, name)
+		}
+	}
+	if len(flags) < 15 {
+		t.Fatalf("only %d editable flags found in the help, so this is testing nothing:\n%s",
+			len(flags), help)
+	}
+
+	for _, name := range flags {
+		command := exec.Command(binary, "skills", "edit", "riptide",
+			"--data", dir, "--"+name, "1", "--yes")
+		command.Stdin = strings.NewReader("")
+		output, _ := command.CombinedOutput()
+		if strings.Contains(string(output), "nothing to change") {
+			t.Errorf("--%s was given and the command still says nothing to change:\n%s",
+				name, output)
+		}
+	}
+}
+
 func TestSkillsNameIsAuthoredAndEditedThroughFlags(t *testing.T) {
 	binary := buildHexforge(t)
 	dir := scratchData(t)

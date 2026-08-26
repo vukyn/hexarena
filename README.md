@@ -145,9 +145,47 @@ Three things follow, and each of them was a decision:
   two figures is how much of a unit's durability it bought with armour rather
   than with health.
 
-Nothing in the shipped data pierces yet, which is why adding it moved no golden
-file. The first skill given a non-zero value will move `scenarios.golden`, and
-that diff is the record of the balance change.
+`razor_leaf` is the one skill that carries it, at 400, and what that buys is the
+shape the ratio was chosen for — nothing against a bare target, half again as
+much against the defence ceiling:
+
+| target's defence | plain | pierced 400 | gain |
+| ---: | ---: | ---: | ---: |
+| 0 | 960 | 960 | — |
+| 100 | 720 | 800 | 11% |
+| 400 | 410 | 532 | 29% |
+| 800 | 260 | 368 | 41% |
+
+It does not warp the kit it sits in: across forty auto-battles `razor_leaf` goes
+from 34 percent of all casts to 37, and the other three attacks keep their share.
+What that sweep cannot say is whether 400 is the right number, because the shipped
+roster is a mirror — both squads carry the same kit, so piercing helps both sides
+equally and the win rate moves by noise. Judging the value needs an asymmetric
+roster, which is the cast's problem rather than piercing's.
+
+### Why raw health has no floor of its own
+
+`MaxEffectiveHP` bounds durability against damage that does not pierce, so the
+question was whether an armour-heavy line now needs a floor under its health to
+stop one skill deleting it. Measured, it does not, and the reason is worth
+keeping.
+
+Among lines that actually saturate the joint bound, raw health runs from 3128
+(at the 800 defence ceiling) to 4800 (at 400 or less, where the health ceiling
+binds first). Fully pierced, the health-heavy line's edge over the armour-heavy
+one is 1.53x. The worst elemental matchup in the game is a 2.25x swing, and that
+is a swing the design already accepts — so piercing moves durability by less
+than the element chart does.
+
+The other half of the answer is that a floor has nowhere to live. Expressed as a
+ratio — raw health must be at least so much of effective health — it is
+algebraically `DefenseReduction(defence)`, which depends on defence alone: the
+ratio floor *is* the defence ceiling, already in place at 800. Expressed as an
+absolute minimum it cannot work at all, because `CheckTable` walks every level
+from one and every unit has small health at level one.
+
+So there is no new knob to add. If 1.53x ever proves too much, the thing to turn
+is `ceilings.defense`.
 
 ## Elements
 
@@ -715,23 +753,6 @@ Two answers, and they are not alternatives:
   - **Detection must be a pure function of the state.** A count of cycles is
     fine; anything reading a clock is not, and a battle that drew on one machine
     has to draw on every other from the same seed.
-
-### A skill that pierces, and what it does to the budget
-
-Piercing exists and nothing uses it — see *Piercing* above. Two things are left,
-and both are balance rather than engineering:
-
-- **Which skill gets it.** `sever` was the obvious candidate and has been
-  retired along with the rest of the original book, so the decision is open. A
-  cutting skill is the natural home; Bulbasaur's `razor_leaf` is the only one in
-  the shipped cast that reads that way. Giving any skill a non-zero value moves
-  `scenarios.golden`, and reading that diff is how the change gets checked.
-- **Whether raw health needs a floor of its own.** `MaxEffectiveHP` bounds
-  durability against damage that does not pierce, and against damage that does,
-  the sentinel above absorbs 3100 where the bulwark absorbs 4800. Both are legal
-  today. Whether an armour-heavy line should be allowed to be that thin is a
-  question worth measuring against a real piercing skill rather than deciding in
-  advance — which is the other reason to author the skill first.
 
 ### A real cast
 

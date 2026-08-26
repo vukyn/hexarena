@@ -336,8 +336,17 @@ func render(event battle.Event) string {
 		return head + fmt.Sprintf("%-18s %s blocked by %s, %d charges left",
 			event.Actor, event.Skill, event.Target, event.Remaining)
 	case battle.Damaged:
-		return head + fmt.Sprintf("%-18s %s hit %s for %d, x%d affinity, %d hp left",
-			event.Actor, event.Skill, event.Target, event.Amount, event.Multiplier, event.Remaining)
+		// The pierce is on the line only when there is some, so a book where
+		// nothing pierces reads exactly as it did before piercing existed. It is
+		// on the line at all because this golden is the design record: a damage
+		// figure it cannot account for from its own terms is a record of nothing.
+		pierced := ""
+		if event.Pierce > 0 {
+			pierced = fmt.Sprintf(", %d per mille pierced", event.Pierce)
+		}
+		return head + fmt.Sprintf("%-18s %s hit %s for %d, x%d affinity%s, %d hp left",
+			event.Actor, event.Skill, event.Target, event.Amount, event.Multiplier,
+			pierced, event.Remaining)
 	case battle.StatusApplied:
 		note := ""
 		if event.Note != "" {

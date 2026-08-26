@@ -21,6 +21,7 @@
       "power": 600,
       "strikes": 2,
       "accuracy": 880,
+      "pierce": 400,
       "cooldown": 2,
       "target": "enemy"
     },

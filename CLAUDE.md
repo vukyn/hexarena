@@ -305,6 +305,18 @@ share**, because a reader who cannot see it cannot reproduce the figure and a lo
 its reader cannot reproduce is the log lying; and `progression.EffectiveHP` now
 describes one case of two, so anything showing it to an author must show
 `EffectiveHPAgainst(…, scale.Base)` beside it — which comes to the raw health.
+`razor_leaf` carries the only non-zero value, 400, which buys nothing against a
+bare target and 41% against the defence ceiling.
+
+**Raw health needs no floor of its own, and not because we decided against one.**
+A ratio floor — raw health as a share of effective health — is algebraically
+`DefenseReduction(defence)`, a function of defence alone, so it **is** the defence
+ceiling that already exists; and an absolute floor cannot work at all, because
+`CheckTable` walks every level from one and every unit's health is small at level
+one. Measured, it is also not needed: among lines that saturate the joint bound,
+raw health runs 3128 (at the 800 defence ceiling) to 4800, a 1.53x edge fully
+pierced, against the 2.25x the worst elemental matchup already swings. If that
+ever proves too much, the knob to turn is `ceilings.defense`, not a new bound.
 
 **Healing is not damage with a sign.** Three mechanisms give health back — a
 skill's `restores`, a skill's `drains`, and a `regen` status — and each obeys the
@@ -635,16 +647,6 @@ is the constraint each piece has to respect.
       detection must be a pure function of state, because a battle that draws on
       one machine has to draw on every other from the same seed. See README →
       Roadmap.
-- [ ] **A skill that pierces, and whether health needs a floor.** The mechanism
-      ships and nothing uses it, so both halves left are balance. Which skill
-      gets a non-zero `pierce` is open — `sever` was the candidate and was
-      retired with the rest of the original book — and the first one to get it
-      moves `scenarios.golden`, which is where the change gets read. Separately,
-      `MaxEffectiveHP` bounds durability against damage that does not pierce, and
-      against damage that does, a 3100/800 line absorbs 3100 where a 4800/400 one
-      absorbs 4800; both are legal. Whether an armour-heavy line may be that thin
-      is worth measuring against a real piercing skill rather than deciding in
-      advance. See README → Roadmap.
 - [ ] **A real cast.** The tooling now exists: `internal/core/cast` holds origins,
       archetype presets and characters, `cmd/hexforge` authors them, and
       `progression.Line` is finally used — `cast.json` ships one single-stage and
