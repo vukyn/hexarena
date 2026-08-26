@@ -27,7 +27,7 @@
     {
       "id": "solar_beam",
       "name": "quang kích",
-      "element": "grass",
+      "element": "light",
       "range": 4,
       "pattern": "single",
       "power": 2400,

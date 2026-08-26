@@ -1,5 +1,5 @@
 == battle from seed 11 ==
-54 turns, 201 events, ally won
+90 turns, 316 events, ally won
 
 the first 90 events
        0 started         ally.venusaur      ally   2,1  3800 hp
@@ -9,128 +9,128 @@ the first 90 events
        0 started         foe.ivysaur        enemy  4,1  1996 hp
        0 started         foe.bulbasaur      enemy  5,1  1149 hp
    10000 turn_began      ally.venusaur      turn 1   3800 hp
-   10000 skill_used      ally.venusaur      solar_beam at 5,1
-   10000 damaged         ally.venusaur      solar_beam hit foe.bulbasaur for 966, x1000 affinity, 183 hp left
+   10000 skill_used      ally.venusaur      razor_leaf at 5,1
+   10000 damaged         ally.venusaur      razor_leaf hit foe.bulbasaur for 241, x1000 affinity, 908 hp left
+   10000 damaged         ally.venusaur      razor_leaf hit foe.bulbasaur for 241, x1000 affinity, 667 hp left
    10000 turn_began      foe.venusaur       turn 1   3800 hp
-   10000 skill_used      foe.venusaur       solar_beam at 0,1
-   10000 damaged         foe.venusaur       solar_beam hit ally.bulbasaur for 966, x1000 affinity, 183 hp left
-   16666 turn_began      ally.ivysaur       turn 1   1996 hp
-   16666 skill_used      ally.ivysaur       solar_beam at 4,1
-   16666 damaged         ally.ivysaur       solar_beam hit foe.ivysaur for 409, x1000 affinity, 1587 hp left
-   16666 turn_began      foe.ivysaur        turn 1   1587 hp
-   16666 skill_used      foe.ivysaur        solar_beam at 1,1
-   16666 damaged         foe.ivysaur        solar_beam hit ally.ivysaur for 409, x1000 affinity, 1587 hp left
-   20000 turn_began      ally.venusaur      turn 2   3800 hp
-   20000 skill_used      ally.venusaur      razor_leaf at 3,1
-   20000 damaged         ally.venusaur      razor_leaf hit foe.venusaur for 136, x1000 affinity, 3664 hp left
-   20000 missed          ally.venusaur      razor_leaf missed foe.venusaur at 897 per mille
-   20000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 96, x1000 affinity, 1491 hp left
-   20000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 96, x1000 affinity, 1395 hp left
-   20000 turn_began      foe.venusaur       turn 2   3664 hp
-   20000 skill_used      foe.venusaur       razor_leaf at 1,1
-   20000 damaged         foe.venusaur       razor_leaf hit ally.ivysaur for 192, x1000 affinity, 1395 hp left
-   20000 damaged         foe.venusaur       razor_leaf hit ally.ivysaur for 192, x1000 affinity, 1203 hp left
-   20000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 68, x1000 affinity, 3732 hp left
-   20000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 68, x1000 affinity, 3664 hp left
-   27027 turn_began      ally.bulbasaur     turn 1   183 hp
-   27027 skill_used      ally.bulbasaur     solar_beam at 4,1
-   27027 damaged         ally.bulbasaur     solar_beam hit foe.ivysaur for 234, x1000 affinity, 1161 hp left
-   27027 turn_began      foe.bulbasaur      turn 1   183 hp
-   27027 skill_used      foe.bulbasaur      solar_beam at 1,1
-   27027 damaged         foe.bulbasaur      solar_beam hit ally.ivysaur for 234, x1000 affinity, 969 hp left
-   30000 turn_began      ally.venusaur      turn 3   3664 hp
-   30000 skill_used      ally.venusaur      vine_whip at 4,1
-   30000 damaged         ally.venusaur      vine_whip hit foe.ivysaur for 352, x1000 affinity, 809 hp left
-   30000 turn_began      foe.venusaur       turn 3   3664 hp
-   30000 skill_used      foe.venusaur       vine_whip at 1,1
-   30000 damaged         foe.venusaur       vine_whip hit ally.ivysaur for 352, x1000 affinity, 617 hp left
-   33332 turn_began      ally.ivysaur       turn 2   617 hp
-   33332 skill_used      ally.ivysaur       razor_leaf at 3,1
-   33332 damaged         ally.ivysaur       razor_leaf hit foe.venusaur for 72, x1000 affinity, 3592 hp left
-   33332 damaged         ally.ivysaur       razor_leaf hit foe.venusaur for 72, x1000 affinity, 3520 hp left
-   33332 damaged         ally.ivysaur       razor_leaf hit foe.ivysaur for 51, x1000 affinity, 758 hp left
-   33332 damaged         ally.ivysaur       razor_leaf hit foe.ivysaur for 51, x1000 affinity, 707 hp left
-   33332 turn_began      foe.ivysaur        turn 2   707 hp
-   33332 skill_used      foe.ivysaur        razor_leaf at 1,1
-   33332 damaged         foe.ivysaur        razor_leaf hit ally.ivysaur for 102, x1000 affinity, 515 hp left
-   33332 damaged         foe.ivysaur        razor_leaf hit ally.ivysaur for 102, x1000 affinity, 413 hp left
-   33332 damaged         foe.ivysaur        razor_leaf hit ally.venusaur for 36, x1000 affinity, 3628 hp left
-   33332 missed          foe.ivysaur        razor_leaf missed ally.venusaur at 882 per mille
-   40000 turn_began      ally.venusaur      turn 4   3628 hp
-   40000 skill_used      ally.venusaur      sleep_powder at 3,1
-   40000 status_resisted ally.venusaur      foe.venusaur resisted stun at 500 per mille
-   40000 turn_began      foe.venusaur       turn 4   3520 hp
-   40000 skill_used      foe.venusaur       sleep_powder at 1,1
-   40000 status_applied  foe.venusaur       stun x1 on ally.ivysaur, now 1
-   49998 turn_began      ally.ivysaur       turn 3   413 hp
-   49998 status_expired  ally.ivysaur       stun wore off
-   49998 turn_skipped    ally.ivysaur       stun
-   49998 turn_began      foe.ivysaur        turn 3   707 hp
-   49998 skill_used      foe.ivysaur        vine_whip at 2,1
-   49998 damaged         foe.ivysaur        vine_whip hit ally.venusaur for 132, x1000 affinity, 3496 hp left
-   50000 turn_began      ally.venusaur      turn 5   3496 hp
-   50000 skill_used      ally.venusaur      razor_leaf at 3,1
-   50000 damaged         ally.venusaur      razor_leaf hit foe.venusaur for 136, x1000 affinity, 3384 hp left
-   50000 damaged         ally.venusaur      razor_leaf hit foe.venusaur for 136, x1000 affinity, 3248 hp left
-   50000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 96, x1000 affinity, 611 hp left
-   50000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 96, x1000 affinity, 515 hp left
-   50000 turn_began      foe.venusaur       turn 5   3248 hp
-   50000 skill_used      foe.venusaur       razor_leaf at 1,1
-   50000 damaged         foe.venusaur       razor_leaf hit ally.ivysaur for 192, x1000 affinity, 221 hp left
-   50000 damaged         foe.venusaur       razor_leaf hit ally.ivysaur for 192, x1000 affinity, 29 hp left
-   50000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 68, x1000 affinity, 3428 hp left
-   50000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 68, x1000 affinity, 3360 hp left
-   54054 turn_began      ally.bulbasaur     turn 2   183 hp
-   54054 skill_used      ally.bulbasaur     razor_leaf at 3,1
-   54054 damaged         ally.bulbasaur     razor_leaf hit foe.venusaur for 41, x1000 affinity, 3207 hp left
-   54054 missed          ally.bulbasaur     razor_leaf missed foe.venusaur at 868 per mille
-   54054 damaged         ally.bulbasaur     razor_leaf hit foe.ivysaur for 29, x1000 affinity, 486 hp left
-   54054 damaged         ally.bulbasaur     razor_leaf hit foe.ivysaur for 29, x1000 affinity, 457 hp left
-   54054 turn_began      foe.bulbasaur      turn 2   183 hp
-   54054 skill_used      foe.bulbasaur      razor_leaf at 2,1
-   54054 damaged         foe.bulbasaur      razor_leaf hit ally.venusaur for 41, x1000 affinity, 3319 hp left
-   54054 damaged         foe.bulbasaur      razor_leaf hit ally.venusaur for 41, x1000 affinity, 3278 hp left
-   60000 turn_began      ally.venusaur      turn 6   3278 hp
-   60000 skill_used      ally.venusaur      solar_beam at 3,1
-... 111 more
+   10000 skill_used      foe.venusaur       razor_leaf at 1,1
+   10000 damaged         foe.venusaur       razor_leaf hit ally.ivysaur for 192, x1000 affinity, 1804 hp left
+   10000 damaged         foe.venusaur       razor_leaf hit ally.ivysaur for 192, x1000 affinity, 1612 hp left
+   10000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 68, x1000 affinity, 3732 hp left
+   10000 missed          foe.venusaur       razor_leaf missed ally.venusaur at 897 per mille
+   16666 turn_began      ally.ivysaur       turn 1   1612 hp
+   16666 skill_used      ally.ivysaur       razor_leaf at 3,1
+   16666 damaged         ally.ivysaur       razor_leaf hit foe.venusaur for 72, x1000 affinity, 3728 hp left
+   16666 damaged         ally.ivysaur       razor_leaf hit foe.venusaur for 72, x1000 affinity, 3656 hp left
+   16666 damaged         ally.ivysaur       razor_leaf hit foe.ivysaur for 51, x1000 affinity, 1945 hp left
+   16666 damaged         ally.ivysaur       razor_leaf hit foe.ivysaur for 51, x1000 affinity, 1894 hp left
+   16666 turn_began      foe.ivysaur        turn 1   1894 hp
+   16666 skill_used      foe.ivysaur        razor_leaf at 1,1
+   16666 damaged         foe.ivysaur        razor_leaf hit ally.ivysaur for 102, x1000 affinity, 1510 hp left
+   16666 damaged         foe.ivysaur        razor_leaf hit ally.ivysaur for 102, x1000 affinity, 1408 hp left
+   16666 damaged         foe.ivysaur        razor_leaf hit ally.venusaur for 36, x1000 affinity, 3696 hp left
+   16666 damaged         foe.ivysaur        razor_leaf hit ally.venusaur for 36, x1000 affinity, 3660 hp left
+   20000 turn_began      ally.venusaur      turn 2   3660 hp
+   20000 skill_used      ally.venusaur      vine_whip at 4,1
+   20000 damaged         ally.venusaur      vine_whip hit foe.ivysaur for 352, x1000 affinity, 1542 hp left
+   20000 turn_began      foe.venusaur       turn 2   3656 hp
+   20000 skill_used      foe.venusaur       vine_whip at 1,1
+   20000 damaged         foe.venusaur       vine_whip hit ally.ivysaur for 352, x1000 affinity, 1056 hp left
+   27027 turn_began      ally.bulbasaur     turn 1   1149 hp
+   27027 skill_used      ally.bulbasaur     razor_leaf at 3,1
+   27027 damaged         ally.bulbasaur     razor_leaf hit foe.venusaur for 41, x1000 affinity, 3615 hp left
+   27027 damaged         ally.bulbasaur     razor_leaf hit foe.venusaur for 41, x1000 affinity, 3574 hp left
+   27027 damaged         ally.bulbasaur     razor_leaf hit foe.ivysaur for 29, x1000 affinity, 1513 hp left
+   27027 damaged         ally.bulbasaur     razor_leaf hit foe.ivysaur for 29, x1000 affinity, 1484 hp left
+   27027 turn_began      foe.bulbasaur      turn 1   667 hp
+   27027 skill_used      foe.bulbasaur      razor_leaf at 2,1
+   27027 damaged         foe.bulbasaur      razor_leaf hit ally.venusaur for 41, x1000 affinity, 3619 hp left
+   27027 damaged         foe.bulbasaur      razor_leaf hit ally.venusaur for 41, x1000 affinity, 3578 hp left
+   30000 turn_began      ally.venusaur      turn 3   3578 hp
+   30000 skill_used      ally.venusaur      sleep_powder at 3,1
+   30000 status_applied  ally.venusaur      stun x1 on foe.venusaur, now 1
+   30000 turn_began      foe.venusaur       turn 3   3574 hp
+   30000 status_expired  foe.venusaur       stun wore off
+   30000 turn_skipped    foe.venusaur       stun
+   33332 turn_began      ally.ivysaur       turn 2   1056 hp
+   33332 skill_used      ally.ivysaur       vine_whip at 3,1
+   33332 missed          ally.ivysaur       vine_whip missed foe.venusaur at 933 per mille
+   33332 turn_began      foe.ivysaur        turn 2   1484 hp
+   33332 skill_used      foe.ivysaur        vine_whip at 2,1
+   33332 damaged         foe.ivysaur        vine_whip hit ally.venusaur for 132, x1000 affinity, 3446 hp left
+   40000 turn_began      ally.venusaur      turn 4   3446 hp
+   40000 skill_used      ally.venusaur      razor_leaf at 5,1
+   40000 damaged         ally.venusaur      razor_leaf hit foe.bulbasaur for 241, x1000 affinity, 426 hp left
+   40000 damaged         ally.venusaur      razor_leaf hit foe.bulbasaur for 241, x1000 affinity, 185 hp left
+   40000 turn_began      foe.venusaur       turn 4   3574 hp
+   40000 skill_used      foe.venusaur       razor_leaf at 1,1
+   40000 damaged         foe.venusaur       razor_leaf hit ally.ivysaur for 192, x1000 affinity, 864 hp left
+   40000 damaged         foe.venusaur       razor_leaf hit ally.ivysaur for 192, x1000 affinity, 672 hp left
+   40000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 68, x1000 affinity, 3378 hp left
+   40000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 68, x1000 affinity, 3310 hp left
+   49998 turn_began      ally.ivysaur       turn 3   672 hp
+   49998 skill_used      ally.ivysaur       sleep_powder at 3,1
+   49998 status_applied  ally.ivysaur       stun x1 on foe.venusaur, now 1
+   49998 turn_began      foe.ivysaur        turn 3   1484 hp
+   49998 skill_used      foe.ivysaur        sleep_powder at 2,1
+   49998 status_applied  foe.ivysaur        stun x1 on ally.venusaur, now 1
+   50000 turn_began      ally.venusaur      turn 5   3310 hp
+   50000 status_expired  ally.venusaur      stun wore off
+   50000 turn_skipped    ally.venusaur      stun
+   50000 turn_began      foe.venusaur       turn 5   3574 hp
+   50000 status_expired  foe.venusaur       stun wore off
+   50000 turn_skipped    foe.venusaur       stun
+   54054 turn_began      ally.bulbasaur     turn 2   1149 hp
+   54054 turn_skipped    ally.bulbasaur     nothing usable
+   54054 turn_began      foe.bulbasaur      turn 2   185 hp
+   54054 turn_skipped    foe.bulbasaur      nothing usable
+   60000 turn_began      ally.venusaur      turn 6   3310 hp
+   60000 skill_used      ally.venusaur      vine_whip at 4,1
+   60000 damaged         ally.venusaur      vine_whip hit foe.ivysaur for 352, x1000 affinity, 1132 hp left
+   60000 turn_began      foe.venusaur       turn 6   3574 hp
+   60000 skill_used      foe.venusaur       vine_whip at 1,1
+   60000 damaged         foe.venusaur       vine_whip hit ally.ivysaur for 352, x1000 affinity, 320 hp left
+   66664 turn_began      ally.ivysaur       turn 4   320 hp
+   66664 skill_used      ally.ivysaur       razor_leaf at 3,1
+... 226 more
 
 the last 12 events
-  150000 missed          ally.venusaur      razor_leaf missed foe.bulbasaur at 927 per mille
-  150000 damaged         ally.venusaur      razor_leaf hit foe.bulbasaur for 241, x1000 affinity, 0 hp left
-  150000 died            foe.bulbasaur      fell at 5,1
-  150000 turn_began      foe.venusaur       turn 15  158 hp
-  150000 skill_used      foe.venusaur       razor_leaf at 2,1
-  150000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 136, x1000 affinity, 953 hp left
-  150000 damaged         foe.venusaur       razor_leaf hit ally.venusaur for 136, x1000 affinity, 817 hp left
-  160000 turn_began      ally.venusaur      turn 16  817 hp
-  160000 skill_used      ally.venusaur      vine_whip at 3,1
-  160000 damaged         ally.venusaur      vine_whip hit foe.venusaur for 249, x1000 affinity, 0 hp left
-  160000 died            foe.venusaur       fell at 3,1
-  160000 ended                              ally
+  266656 died            foe.venusaur       fell at 3,1
+  270000 turn_began      ally.venusaur      turn 27  628 hp
+  270000 turn_skipped    ally.venusaur      nothing usable
+  270270 turn_began      foe.bulbasaur      turn 10  185 hp
+  270270 skill_used      foe.bulbasaur      razor_leaf at 2,1
+  270270 damaged         foe.bulbasaur      razor_leaf hit ally.venusaur for 41, x1000 affinity, 587 hp left
+  270270 damaged         foe.bulbasaur      razor_leaf hit ally.venusaur for 41, x1000 affinity, 546 hp left
+  280000 turn_began      ally.venusaur      turn 28  546 hp
+  280000 skill_used      ally.venusaur      razor_leaf at 5,1
+  280000 damaged         ally.venusaur      razor_leaf hit foe.bulbasaur for 241, x1000 affinity, 0 hp left
+  280000 died            foe.bulbasaur      fell at 5,1
+  280000 ended                              ally
 
 event counts
   started              6
-  turn_began          54
+  turn_began          90
   status_ticked        0
-  status_expired       2
+  status_expired       5
   speed_changed        0
-  turn_skipped         7
-  skill_used          47
+  turn_skipped        21
+  skill_used          69
   amplified            0
   status_consumed      0
-  missed               7
+  missed              12
   blocked              0
-  damaged             69
-  status_applied       2
-  status_resisted      3
+  damaged             97
+  status_applied       6
+  status_resisted      5
   status_stripped      0
-  died                 3
+  died                 4
   ended                1
 
 final board
-  ally.venusaur     ally   alive    817 / 3800   hp   grass
-  ally.ivysaur      ally   alive     29 / 1996   hp   grass
-  ally.bulbasaur    ally   alive    183 / 1149   hp   grass
+  ally.venusaur     ally   alive    546 / 3800   hp   grass
+  ally.ivysaur      ally   alive    116 / 1996   hp   grass
+  ally.bulbasaur    ally   dead       0 / 1149   hp   grass
   foe.venusaur      enemy  dead       0 / 3800   hp   grass
   foe.ivysaur       enemy  dead       0 / 1996   hp   grass
   foe.bulbasaur     enemy  dead       0 / 1149   hp   grass
