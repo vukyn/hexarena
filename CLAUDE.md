@@ -979,8 +979,9 @@ is the constraint each piece has to respect.
       (1) *poison specialist*: immune to poison · its poison hurts more ·
       attacking it poisons the attacker. (2) *bloodsucker*: heals from damage
       dealt · heals more the closer it is to dying. Pieces: `Resists` ✅ ·
-      *Amplifying a status* ❌ · *Answering back* ❌ · **passive lifesteal —
-      nothing holds it yet** ❌ · `While` ✅ (`blaze` is gated).
+      *Amplifying a status* ❌ · *Answering back* ✅ (`venom_blood` replies) ·
+      **passive lifesteal — nothing holds it yet** ❌ · `While` ✅ (`blaze` is
+      gated).
 - [ ] **Passive lifesteal — the cheapest thing on the roadmap.** A skill may
       `drain` a share of what it dealt (`leech_seed` 600); **no trait can say
       "everything this unit does drains"**. A share on `passive.Passive`, added to
@@ -992,15 +993,17 @@ is the constraint each piece has to respect.
       door into a permanent status, no event either way and no retune; that is a
       saving rather than the only way in. *Vladimir* ("drains harder when hurt")
       is still the case it buys.
-      ⚠️ `Applies` is NOT retaliation: it adds to what the holder's **own** attack
-      inflicts (touch → poisoned), the reverse of answering an attacker. Do not
-      close *Answering back* with it.
+      ⚠️ `Applies` is NOT retaliation, and is still not: it adds to what the
+      holder's **own** attack inflicts (touch → poisoned). Retaliation is
+      `Replies`, which is built.
       ⚠️ **Circular, so choose rather than discover it**: a character brings every
       trait it has, so all five pieces make ONE better unit, not two different
       ones — choosing needs the **trait slot** (*Learnsets, slots*), and that entry
       says a slot is only a decision once traits differ in **kind**. Suggested
-      order: passive lifesteal → amplify a status → trait slot → answering back.
-      The gate has left that list; it is built.
+      order: passive lifesteal → amplify a status → trait slot. The gate and the
+      reply have both left that list; the slot is worth more for it, because the
+      traits now differ in **kind** — a resistance, a gated grant and a reply are
+      three different sorts of thing to choose between.
       See README → *Two builds for one character*.
 - [ ] **Amplifying a status is two features, not one.** A trait that "makes its
       poison better" means either **a stronger tick** — one multiplication into
@@ -1019,29 +1022,39 @@ is the constraint each piece has to respect.
       time. The mirror is cheap: a **vulnerability** is `Resists` with a negative
       share, so opening its 1..1000 bound downwards reuses the whole composition
       rather than adding a field.
-- [ ] **Answering back — the fifth job, and the only one with no home.** The
-      shipped `venom_blood` is *máu độc*: poisonous blood should cost whatever bit
-      into it, so resisting is half its name. ⚠️ **Not `applies` reworded** —
-      `applies` fires on a target the holder chose during the holder's own turn,
-      which `battle` already resolves; a reply fires on the **attacker**, during
-      somebody else's turn, from a unit that is not acting, and inventing that hook
-      is most of the work. It must **not** become a second damage path: resolve
-      through `battle.inflict`/`combat.Rules` so a replay reads it as events and
-      `--verify` re-runs it from the seed. Four rules **decided**: (1) **a reply
-      may kill** — damage gets no exemption for arriving out of turn, so a battle
-      can end on a turn nobody took; re-ask whether the battle is over and let the
-      timeline lose a unit that was never in front of it (a DoT tick already ends
-      one, but there the dying unit is not the one acting). (2) **a reply never
-      triggers a reply** — by rule, *not* a depth counter (a counter is a number
-      somebody raises): resolve a reply with retaliation off. (3) **once per USE of
-      a skill, not per strike** — else a trait's worth scales with somebody else's
-      strike count and `fire_fang` is silently worse than `flamethrower` into one
-      holder. (4) **the holder takes EVERY strike first, then answers** — the reply
-      is on the finished skill, so a striker never dies mid-turn and "what about
-      its remaining strikes" never arises. That leaves the holder's death as the
-      only one that lands first: **a holder killed by the skill does not answer**
-      (dead is dead, as it cannot be healed) — which is also the counter to
-      retaliation, free: kill it outright and there is no reply.
+- [x] **Answering back — the fifth job.** `venom_blood` now costs whatever bit
+      into it: `"replies": {"power": 40, "applies": [{"status":"poison","chance":25}]}`.
+      ⚠️ **Not `applies` reworded** — that fires on a target the holder chose,
+      during the holder's turn; a reply fires on the **attacker**, on somebody
+      else's turn, from a unit that is not acting. **Not a second damage path**:
+      damage through `combat.Rules.Damage`, statuses through `battle.inflict`, so
+      the same resistances, the same rolls and the same event kinds. `inflict` no
+      longer takes a `skill.Skill` but an **`origin`** (`{Skill|Passive, Element,
+      Scaling}`) — the three things it ever wanted from one — which is what lets a
+      reply share it rather than fork it. A reply has **no element and no
+      accuracy**: it is neutral and it lands, because the chart prices what one
+      creature *threw* and an accuracy roll asks whether contact happened, which
+      it already has.
+      Four rules, three of which are just where `b.answer` sits (after the whole
+      skill, once, per holder): a reply **may kill** (a battle can end on a turn
+      nobody took); a reply **never triggers a reply** — closed because the
+      answer list is built from the skill's own targets and a reply is not one,
+      *not* by a depth counter; **once per USE, not per strike**; **every target
+      takes the whole skill first**. A holder the skill killed does not answer,
+      and once one reply kills the attacker the holders behind it do not either.
+      ⚠️ **A reply is priced by how often its holder is attacked and how long it
+      survives, and no number on the trait can say that.** Both Bulbasaurs hold
+      `venom_blood`, but the ally fields Venusaur at 60 and the enemy Ivysaur at
+      16: over 4000 battles the ally makes 69% of the replies and deals **86%** of
+      all reply damage. That is the roster's asymmetry, not the trait's — and it
+      caps how big the trait may be. Measured: power 40 alone 49.5%, **40+25
+      (shipped) 51.9%**, 40+200 73.5%, 250+500 **98.3%**. Tune over thousands of
+      seeds; the 40-seed sweep cannot see a move this size.
+      ⚠️ **It flipped the sign of a figure already in the README.** Removing
+      `razor_leaf`'s pierce used to cost the ally 2.7pp; it now gains 1.1pp
+      (51.9 → 53.0), at every reply size tried. Piercing helps whoever attacks,
+      and this is the first thing that charges for attacking — so **no balance
+      figure measured before this feature carries forward**.
 - [x] **A health threshold a *skill* can read.** `skill.Condition.BelowHealth`
       (permille) reads the **target**; `passive.Condition` reads its **holder**.
       `brine` moved onto it and is finally its canon move — 1000 power → 2000 at or

@@ -296,6 +296,16 @@ func Line(event battle.Event, tags map[string]string) string {
 	case battle.Blocked:
 		return head + fmt.Sprintf("  is blocked by %s, %d charges left", tag(event.Target), event.Remaining)
 	case battle.Damaged:
+		// A reply is damage, and the only thing that separates it from a strike
+		// in the log is that a trait rather than a skill is named — so it is the
+		// same case, worded so a reader can tell that this happened on somebody
+		// else's turn. Reading it as damage-with-no-skill would work and would
+		// be a rule nobody wrote down.
+		if event.Passive != "" {
+			return head + fmt.Sprintf("  answers %s with %s for %d%s, %d left",
+				tag(event.Target), event.Passive, event.Amount,
+				affinityNote(event.Multiplier), event.Remaining)
+		}
 		return head + fmt.Sprintf("  hits %s for %d%s%s, %d left",
 			tag(event.Target), event.Amount, affinityNote(event.Multiplier),
 			pierceNote(event.Pierce), event.Remaining)
@@ -304,8 +314,15 @@ func Line(event battle.Event, tags map[string]string) string {
 		if event.Note != "" {
 			note = ", " + event.Note
 		}
-		return head + fmt.Sprintf("  %s x%d on %s, now %d%s",
-			event.Status, event.Stacks, tag(event.Target), event.Remaining, note)
+		// The trait is named where there is one, for the same reason the damage
+		// above names it: a status arriving on the attacker's own turn, from the
+		// unit it just hit, has nothing else in the log to account for it.
+		source := ""
+		if event.Passive != "" {
+			source = " (" + event.Passive + ")"
+		}
+		return head + fmt.Sprintf("  %s x%d on %s, now %d%s%s",
+			event.Status, event.Stacks, tag(event.Target), event.Remaining, note, source)
 	case battle.StatusResisted:
 		// Two different things end an application, and the kind is called
 		// status_resisted for both: the roll failed, or the target's traits

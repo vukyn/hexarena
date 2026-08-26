@@ -38,6 +38,15 @@
       "id": "venom_blood",
       "name": "máu độc",
       "grants": [],
+      "replies": {
+        "power": 40,
+        "applies": [
+          {
+            "status": "poison",
+            "chance": 25
+          }
+        ]
+      },
       "resists": [
         {
           "status": "poison",

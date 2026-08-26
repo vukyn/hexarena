@@ -191,8 +191,11 @@ type Event struct {
 	// Outcome is how the battle finished, on Ended and nowhere else. Undecided
 	// is the zero value, so every other kind leaves it out.
 	Outcome Outcome `json:"outcome,omitempty"`
-	// Passive names the trait an event came from, on PassiveHeld and
-	// PassiveReleased.
+	// Passive names the trait an event came from, and is the one field that
+	// says a thing happened because of what a unit *is* rather than what it
+	// did: on PassiveHeld and PassiveReleased, and on the Damaged,
+	// StatusApplied and StatusResisted a reply produces. Skill is empty on
+	// exactly those, and the two are never both set.
 	Passive string `json:"passive,omitempty"`
 	// Refused is the share of a status application's chance the target's traits
 	// took off, in parts per thousand, on StatusApplied and StatusResisted.

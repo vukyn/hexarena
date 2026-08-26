@@ -212,6 +212,32 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 		lines = append(lines, l.Say(BlurbTraitApplies,
 			l.stacked(application.Status, application.Stacks), percent(application.Chance)))
 	}
+	// One sentence for the whole reply rather than one per part: what a reader
+	// wants is what it costs to attack this unit, and a damage line filed apart
+	// from a status line leaves them to add it up.
+	//
+	// Three whole wordings rather than one built from fragments, because a
+	// sentence assembled by joining clauses is a sentence neither language gets
+	// to choose the shape of — and the blanks have to arrive in one order for
+	// both, which TestTheSameBlanksInEveryLanguage enforces.
+	if held.Replies.Answers() {
+		switch {
+		case held.Replies.Power > 0 && len(held.Replies.Applies) > 0:
+			// The first application only. A trait answering with two statuses at
+			// once is authorable and nothing shipped does it; a second sentence
+			// for the rest is the change to make when something does.
+			first := held.Replies.Applies[0]
+			lines = append(lines, l.Say(BlurbTraitReplyBoth,
+				percent(held.Replies.Power),
+				l.stacked(first.Status, first.Stacks), percent(first.Chance)))
+		case held.Replies.Power > 0:
+			lines = append(lines, l.Say(BlurbTraitReplyDamage, percent(held.Replies.Power)))
+		default:
+			first := held.Replies.Applies[0]
+			lines = append(lines, l.Say(BlurbTraitReplyStatus,
+				l.stacked(first.Status, first.Stacks), percent(first.Chance)))
+		}
+	}
 	for _, resistance := range held.Resists {
 		if resistance.Amount >= scale.Base {
 			lines = append(lines, l.Say(BlurbTraitImmune, l.glossed(resistance.Status)))

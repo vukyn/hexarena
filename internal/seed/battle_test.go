@@ -285,6 +285,74 @@ func TestSeedBattleReplaysExactly(t *testing.T) {
 	}
 }
 
+// TestNoEventNamesBothASkillAndATrait is the encoding a renderer reads a reply
+// by, asserted where it can actually be broken.
+//
+// A reply is damage that names a trait instead of a skill, and everything that
+// draws one — the terminal client, the replay report, a future graphical client
+// — decides which sentence to write by asking which of the two fields is set. If
+// an event ever carried both, every one of those readers would pick whichever it
+// happened to test first, and they would not all pick the same.
+//
+// The sweep is the shipped roster rather than the bench, because the shipped
+// roster is the one holding a trait that replies.
+func TestNoEventNamesBothASkillAndATrait(t *testing.T) {
+	for seedValue := uint64(0); seedValue < 40; seedValue++ {
+		fight, err := seed.NewBattle(seedValue)
+		if err != nil {
+			t.Fatalf("seed %d: %v", seedValue, err)
+		}
+		fight.Begin()
+		if _, err := fight.RunToEnd(4000); err != nil {
+			t.Fatalf("seed %d: %v", seedValue, err)
+		}
+		for _, event := range fight.Drain() {
+			if event.Skill != "" && event.Passive != "" {
+				t.Fatalf("seed %d: %s names the skill %q and the trait %q at once: %+v",
+					seedValue, event.Kind, event.Skill, event.Passive, event)
+			}
+		}
+	}
+}
+
+// TestTheShippedRosterAnswersItsAttackers is the shipped trait doing its job in
+// the shipped game, which is a different question from whether the mechanism
+// works: a reply nobody holds is a feature nobody has.
+func TestTheShippedRosterAnswersItsAttackers(t *testing.T) {
+	answered, poisoned := 0, 0
+	for seedValue := uint64(0); seedValue < 40; seedValue++ {
+		fight, err := seed.NewBattle(seedValue)
+		if err != nil {
+			t.Fatalf("seed %d: %v", seedValue, err)
+		}
+		fight.Begin()
+		if _, err := fight.RunToEnd(4000); err != nil {
+			t.Fatalf("seed %d: %v", seedValue, err)
+		}
+		for _, event := range fight.Drain() {
+			if event.Passive == "" {
+				continue
+			}
+			switch event.Kind {
+			case battle.Damaged:
+				answered++
+			case battle.StatusApplied:
+				poisoned++
+			}
+		}
+	}
+	if answered == 0 {
+		t.Error("nothing in the shipped roster ever answered an attacker")
+	}
+	// The poison is the other half of the trait's name, and it is authored at a
+	// low enough chance that forty battles is the smallest sweep that reliably
+	// sees one. A count rather than a rate: what is being checked is that the
+	// path exists, not how often it fires.
+	if poisoned == 0 {
+		t.Error("no reply in the shipped roster ever landed its status")
+	}
+}
+
 // TestEveryEventKindIsReachable stops a kind being declared and never emitted,
 // which would mean a renderer had a case nobody could test.
 //
@@ -555,6 +623,16 @@ func render(event battle.Event) string {
 		if event.Pierce > 0 {
 			pierced = fmt.Sprintf(", %d per mille pierced", event.Pierce)
 		}
+		// A reply carries a trait where a strike carries a skill, and the verb
+		// changes with it: "answered" rather than "hit", because the damage
+		// landed on somebody else's turn from a unit that was not acting, and a
+		// record that read the two the same way would be hiding the one thing
+		// about a reply that is worth recording.
+		if event.Passive != "" {
+			return head + fmt.Sprintf("%-18s %s answered %s for %d, x%d affinity, %d hp left",
+				event.Actor, event.Passive, event.Target, event.Amount,
+				event.Multiplier, event.Remaining)
+		}
 		return head + fmt.Sprintf("%-18s %s hit %s for %d, x%d affinity%s, %d hp left",
 			event.Actor, event.Skill, event.Target, event.Amount, event.Multiplier,
 			pierced, event.Remaining)
@@ -562,6 +640,9 @@ func render(event battle.Event) string {
 		note := ""
 		if event.Note != "" {
 			note = "  " + event.Note
+		}
+		if event.Passive != "" {
+			note = "  from " + event.Passive + note
 		}
 		return head + fmt.Sprintf("%-18s %s x%d on %s, now %d%s",
 			event.Actor, event.Status, event.Stacks, event.Target, event.Remaining, note)

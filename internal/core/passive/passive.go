@@ -75,6 +75,9 @@ type Passive struct {
 	// and it is the honest one — a damaging skill aimed across the midline is
 	// already an attack on whoever is standing there.
 	Applies []skill.Application
+	// Replies is what the trait costs an attacker, or nil when it answers
+	// nothing.
+	Replies *Reply
 	// While gates the trait, or nil when it is always in force.
 	//
 	// It gates the *whole* trait rather than one field of it: the grants, the
@@ -91,6 +94,51 @@ type Passive struct {
 	// rest; there was no equivalent field for "this unit says no", and the roll
 	// that decides an application belonged entirely to the skill making it.
 	Resists []Resistance
+}
+
+// Reply is what a trait costs whoever attacked its holder.
+//
+// It is the one thing a passive does that fires on somebody else's turn, from a
+// unit that is not acting. `Applies` is the mirror of it and is not it: that one
+// rides on the holder's own attack, at a moment the battle is already resolving
+// a skill the holder chose.
+//
+// # What it is not allowed to be
+//
+// It is not a second damage path. The battle prices it through `combat.Rules`
+// like everything else and writes it to the log as damage, so a replay reads it
+// as events and `--verify` re-runs it from the seed. Anything that could only be
+// seen by reading `*Battle` would be a rule the renderer and the verifier could
+// not agree on.
+//
+// # The two numbers, and what is deliberately missing
+//
+// Power is a share of the holder's attack, in parts per thousand, exactly as a
+// skill's is — so a reply is read against the same scale as the attacks around
+// it, and nought is the honest way to write a trait that answers with a status
+// and no damage.
+//
+// There is no element and no accuracy, and both absences are the same decision:
+// a reply is not an attack the holder chose to make. The elemental chart prices
+// what one creature threw at another, and a trait reading it would make a fire
+// creature's blood weak to water for a reason written nowhere on the trait; an
+// accuracy roll asks whether contact was made, and contact is the thing that has
+// already happened. So a reply is neutral, and it lands.
+type Reply struct {
+	// Power is the share of the holder's attack the reply deals, in parts per
+	// thousand. Nought is a reply that only applies statuses.
+	Power int
+	// Applies are the statuses the reply puts on the attacker. Timed only, for
+	// the same reason a rider is: a permanent one would be an effect on somebody
+	// else that nothing in the game could ever take off.
+	Applies []skill.Application
+}
+
+// Answers reports whether the reply does anything at all. A trait that answers
+// with no damage and no status would be a rule with no effect, which ParseBook
+// refuses rather than accepting and skipping.
+func (r *Reply) Answers() bool {
+	return r != nil && (r.Power > 0 || len(r.Applies) > 0)
 }
 
 // Resistance is how much of one status's application chance its holder refuses,
@@ -194,6 +242,7 @@ type passiveFile struct {
 	Name    string            `json:"name,omitempty"`
 	Grants  []grantFile       `json:"grants"`
 	Applies []applicationFile `json:"applies,omitempty"`
+	Replies *replyFile        `json:"replies,omitempty"`
 	While   *conditionFile    `json:"while,omitempty"`
 	Resists []resistanceFile  `json:"resists,omitempty"`
 }
@@ -202,6 +251,11 @@ type applicationFile struct {
 	Status string `json:"status"`
 	Chance int    `json:"chance"`
 	Stacks int    `json:"stacks,omitempty"`
+}
+
+type replyFile struct {
+	Power   int               `json:"power,omitempty"`
+	Applies []applicationFile `json:"applies,omitempty"`
 }
 
 type conditionFile struct {
@@ -250,8 +304,9 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		return Passive{}, fmt.Errorf("passive %q: "+format,
 			append([]any{declared.ID}, args...)...)
 	}
-	if len(declared.Grants) == 0 && len(declared.Resists) == 0 && len(declared.Applies) == 0 {
-		return fail("grants nothing, resists nothing and adds nothing, so holding it would change nothing")
+	if len(declared.Grants) == 0 && len(declared.Resists) == 0 &&
+		len(declared.Applies) == 0 && declared.Replies == nil {
+		return fail("grants nothing, resists nothing, adds nothing and answers nothing, so holding it would change nothing")
 	}
 	grants := make([]Grant, 0, len(declared.Grants))
 	for _, grant := range declared.Grants {
@@ -300,34 +355,29 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		resists = append(resists, Resistance{Status: kind.ID, Amount: resist.Amount})
 	}
 
-	applies := make([]skill.Application, 0, len(declared.Applies))
-	for _, add := range declared.Applies {
-		kind, err := deps.Statuses.Lookup(add.Status)
+	applies, err := readApplications(declared.Applies, deps, "adds")
+	if err != nil {
+		return fail("%w", err)
+	}
+
+	var replies *Reply
+	if declared.Replies != nil {
+		answers, err := readApplications(declared.Replies.Applies, deps, "answers with")
 		if err != nil {
 			return fail("%w", err)
 		}
-		if add.Chance < 1 || add.Chance > scale.Base {
-			return fail("adds %q on a chance of %d, want a share in parts per thousand",
-				kind.ID, add.Chance)
+		if declared.Replies.Power < 0 {
+			return fail("answers for %d power, and a reply cannot heal what attacked it",
+				declared.Replies.Power)
 		}
-		stacks := max(add.Stacks, 1)
-		if stacks > kind.MaxStacks {
-			return fail("adds %d stacks of %q, which caps at %d", stacks, kind.ID, kind.MaxStacks)
+		replies = &Reply{Power: declared.Replies.Power, Applies: answers}
+		// A reply that neither hurts nor inflicts anything is a rule with no
+		// effect, and the trait around it may well have others — so this is
+		// refused here rather than folded into the "changes nothing" check
+		// above, which would let a trait with one good half hide a dead one.
+		if !replies.Answers() {
+			return fail("answers with no damage and no status, so nothing would happen")
 		}
-		// A trait cannot add a permanent status. Those are what a trait *grants*,
-		// once, to its own holder; inflicting one on somebody else would put an
-		// effect on them that nothing in the game can ever take off.
-		if kind.Permanent {
-			return fail("adds %q, which is permanent: nothing could ever take it off the target",
-				kind.ID)
-		}
-		if slices.ContainsFunc(applies, func(seen skill.Application) bool {
-			return seen.Status == kind.ID
-		}) {
-			return fail("adds %q twice; say one chance instead", kind.ID)
-		}
-		applies = append(applies,
-			skill.Application{Status: kind.ID, Chance: add.Chance, Stacks: stacks})
 	}
 
 	var while *Condition
@@ -341,8 +391,50 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 
 	return Passive{
 		ID: declared.ID, Name: strings.TrimSpace(declared.Name),
-		Grants: grants, Applies: applies, While: while, Resists: resists,
+		Grants: grants, Applies: applies, Replies: replies,
+		While: while, Resists: resists,
 	}, nil
+}
+
+// readApplications is the rules a status a trait puts on somebody *else* has to
+// obey, said once for the two places that put one there.
+//
+// A rider and a reply differ in when they fire and in nothing else, so the
+// checks were going to be identical — and two copies of identical checks is how
+// one of them quietly stops matching the other. The verb is passed in only so
+// that the refusal reads as the thing the author wrote.
+func readApplications(declared []applicationFile, deps Deps, verb string) ([]skill.Application, error) {
+	out := make([]skill.Application, 0, len(declared))
+	for _, add := range declared {
+		kind, err := deps.Statuses.Lookup(add.Status)
+		if err != nil {
+			return nil, err
+		}
+		if add.Chance < 1 || add.Chance > scale.Base {
+			return nil, fmt.Errorf("%s %q on a chance of %d, want a share in parts per thousand",
+				verb, kind.ID, add.Chance)
+		}
+		stacks := max(add.Stacks, 1)
+		if stacks > kind.MaxStacks {
+			return nil, fmt.Errorf("%s %d stacks of %q, which caps at %d",
+				verb, stacks, kind.ID, kind.MaxStacks)
+		}
+		// A trait cannot put a permanent status on somebody else. Those are what
+		// a trait *grants*, to its own holder, where the trait's own gate is the
+		// only thing that may take one back; on anybody else it would be an
+		// effect nothing in the game could ever remove.
+		if kind.Permanent {
+			return nil, fmt.Errorf("%s %q, which is permanent: nothing could ever take it off the target",
+				verb, kind.ID)
+		}
+		if slices.ContainsFunc(out, func(seen skill.Application) bool {
+			return seen.Status == kind.ID
+		}) {
+			return nil, fmt.Errorf("%s %q twice; say one chance instead", verb, kind.ID)
+		}
+		out = append(out, skill.Application{Status: kind.ID, Chance: add.Chance, Stacks: stacks})
+	}
+	return out, nil
 }
 
 // Refuses is the share of an application's chance the passive takes off, for one
@@ -373,6 +465,14 @@ func (b *Book) All() []Passive {
 		out[i].Grants = slices.Clone(out[i].Grants)
 		out[i].Applies = slices.Clone(out[i].Applies)
 		out[i].Resists = slices.Clone(out[i].Resists)
+		// The reply is a pointer holding a slice, so both have to be copied:
+		// a caller handed the pointer could edit the book through it, and one
+		// handed the same slice could edit it through that.
+		if out[i].Replies != nil {
+			answer := *out[i].Replies
+			answer.Applies = slices.Clone(answer.Applies)
+			out[i].Replies = &answer
+		}
 		// The condition is a pointer, so a caller editing what it was handed
 		// would edit the book through it.
 		if out[i].While != nil {
@@ -415,13 +515,23 @@ func (b *Book) Marshal() ([]byte, error) {
 				Status: add.Status, Chance: add.Chance, Stacks: add.Stacks,
 			})
 		}
+		var replies *replyFile
+		if current.Replies != nil {
+			var answers []applicationFile
+			for _, add := range current.Replies.Applies {
+				answers = append(answers, applicationFile{
+					Status: add.Status, Chance: add.Chance, Stacks: add.Stacks,
+				})
+			}
+			replies = &replyFile{Power: current.Replies.Power, Applies: answers}
+		}
 		var while *conditionFile
 		if current.While != nil {
 			while = &conditionFile{BelowHealth: current.While.BelowHealth}
 		}
 		file.Passives = append(file.Passives, passiveFile{
 			ID: current.ID, Name: current.Name, Grants: grants,
-			Applies: applies, While: while, Resists: resists,
+			Applies: applies, Replies: replies, While: while, Resists: resists,
 		})
 	}
 	out, err := json.MarshalIndent(file, "", "  ")

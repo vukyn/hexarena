@@ -162,9 +162,13 @@ Whether 400 is the *right* number could not be judged at all while the shipped
 roster was a mirror — both squads carried the same kit, so piercing helped each
 by exactly as much and the win rate moved by noise. The roster is no longer a
 mirror (see *The seed roster is the balance instrument*), and the answer is
-modest: over four thousand auto-battles, taking the pierce off moves the ally win
-rate from 49.2 per cent to 46.5. The damage table was telling the truth — this is
-a dial that changes who armour is good against, not one that decides battles.
+modest, and it is no longer even one-directional. Over four thousand
+auto-battles, taking the pierce off used to move the ally win rate from 49.2 per
+cent to 46.5; since `venom_blood` began answering attackers it moves it from 51.9
+to 53.0 instead — the same size, the opposite sign. Piercing helps whoever is
+attacking, so a game where attacking costs something prices it differently. The
+damage table was telling the truth either way: this is a dial that changes who
+armour is good against, not one that decides battles.
 
 ### Why raw health has no floor of its own
 
@@ -462,13 +466,17 @@ is healed back. It is *at or under*: half means half counts. And a share is not 
 fraction — `333` of 3000 health is 999, so "a third" written that way admits
 everything strictly under a third and not a third exactly.
 
-**A gate covers the whole trait** — the grants, the resistances and the riders
-come and go together, and a trait wanting one gated half and one ungated half is
-two traits. A gated `grants` was refused for a long time, because a grant is put
+**A gate covers the whole trait** — the grants, the resistances, the riders and
+the reply come and go together, and a trait wanting one gated half and one
+ungated half is two traits. A gated `grants` was refused for a long time, because a grant is put
 on when the unit is enlisted and the status it puts on is permanent precisely so
 nothing can take it off; gating one needs the engine to hold and release that
 status as health crosses the line, which is a mechanism rather than a term. It is
 built: see *A gated grant: a stat change that comes and goes*.
+
+The fifth job a trait can do — answering whatever attacked its holder — is the
+one that fires on somebody else's turn, and it is written up under *Answering
+back* rather than here because it needed a hook rather than a field.
 
 ### A trait comes in at a level
 
@@ -727,12 +735,14 @@ is what stopped `razor_leaf`'s piercing value from being judged by anything but
 its damage table — giving it 400 moved the ally win rate from 23 of 40 to 25,
 which is nothing.
 
-Now it measures. Over four thousand auto-battles the roster sits at **49.2 per
-cent** to the ally, and taking `razor_leaf`'s pierce back off moves that to 46.5
-— a real, one-directional move, on a roster where the ally holds the only
-Venusaur and the enemy the only Blastoise. It read 48.5 before `blaze` was gated:
-the enemy Charmeleon now spends most of a battle without the attack it used to
-open with, which is what a trait worth holding looks like from the other side. The 40-seed sweep the test runs reads
+Now it measures. Over four thousand auto-battles the roster sits at **51.9 per
+cent** to the ally, on a roster where the ally holds the only Venusaur and the
+enemy the only Blastoise. It has moved twice, and both times a trait did it: 48.5
+before `blaze` was gated, 49.2 after, and 51.9 once `venom_blood` began answering
+whatever attacked it — the ally's Venusaur is the unit most attacked on the board
+and therefore the one a reply is worth most to. Taking `razor_leaf`'s pierce off
+now moves it to 53.0, which is the same size the move always was and the opposite
+sign; see *Answering back* for why. The 40-seed sweep the test runs reads
 20–20, and it is far too coarse to tune against: it read 45 per cent on a draft
 whose true rate was 55.
 
@@ -1183,12 +1193,16 @@ around this one:
 | --- | --- | --- |
 | immune to poison | `Resists`, on `venom_blood` | yes |
 | its poison hurts more | *Amplifying a status*, below | no |
-| attacking it poisons the attacker | *Answering back*, below | no |
+| attacking it poisons the attacker | `Replies`, on `venom_blood` | yes |
 | heals from damage dealt | **nothing holds this yet** | no |
 | heals more when nearly dead | `While`, gating that share | half |
 
 `While` is the row that moved: it gates the whole of a trait, grants included,
 and `blaze` is the first shipped trait to use it.
+
+Two of the five are now built, and the poison specialist is most of the way
+there: `venom_blood` refuses poison and answers whoever attacks it, which leaves
+only "its poison hurts more".
 
 **The one that has no home is passive lifesteal.** A skill may `drain` a share of
 what it dealt — `leech_seed` takes 600 — but nothing lets a *trait* say "everything
@@ -1216,13 +1230,14 @@ what make the slot worth building. Either order works; what does not work is
 building neither and expecting the other to justify it.
 
 Suggested order, cheapest first: **passive lifesteal gated on health** (the whole
-second build), then
-**amplifying a status** (half the first build, and the first trait to read two
-units), then the **trait slot** (now that two traits differ in kind), then
-**answering back** (the most expensive thing on this page, and the last row of the
-first build).
+second build), then **amplifying a status** (the last row of the first build, and
+the first trait to read two units), then the **trait slot** — which is now worth
+more than it was, because the traits already differ in kind: a resistance, a
+gated grant and a reply are three different sorts of thing to choose between.
+*Answering back* has left this list; it is built.
 
-Nothing shipped uses `Applies` yet, and `blaze` is the only trait using `While`.
+Nothing shipped uses `Applies` yet; `blaze` is the only trait using `While`, and
+`venom_blood` the only one using `Replies`.
 ⚠️ `Applies` is close to the third row above and is **not** it: it adds to what the holder's *own* attack inflicts —
 touch something and it is poisoned — where the row wants the reverse, an answer to
 being attacked. Writing the first and calling it the second would be the cheapest
@@ -1280,44 +1295,100 @@ the state cannot tell apart.
 
 ### Answering back
 
-The four usual jobs are the four above, and there is a fifth the shipped data
-already promises. `venom_blood` is *máu độc*: blood that is poisonous does not
-only refuse poison, it should cost whatever bit into it. Resisting is half the
-name, and the half that was cheap.
+Built. `venom_blood` is *máu độc*, and blood that is poisonous now costs whatever
+bit into it: whoever damages the holder takes a share of its attack back, and may
+be poisoned by it.
+
+```json
+{ "id": "venom_blood",
+  "replies": { "power": 40, "applies": [{ "status": "poison", "chance": 25 }] },
+  "resists": [{ "status": "poison", "amount": 1000 }] }
+```
 
 It is not `applies` wearing a different hat. That one hands the holder's own
-attack an extra application, so it fires on a target the holder chose, at a moment
-`battle` is already resolving. A reply fires on the **attacker**, during somebody
-else's turn, from a unit that is not acting — there is no hook for that, and
-inventing one is most of the work. What it must not become is a second damage
-path: the reply resolves through `battle.inflict` and `combat.Rules` like every
-other effect, so a replay reads it as events and `--verify` re-runs it from the
-seed.
+attack an extra application, so it fires on a target the holder chose, at a
+moment `battle` is already resolving. A reply fires on the **attacker**, during
+somebody else's turn, from a unit that is not acting — and inventing that hook
+was most of the work.
 
-Four rules, decided rather than left to whoever builds it.
+**It is not a second damage path**, and the shape of the code is the guarantee
+rather than a comment saying so. The damage goes through `combat.Rules.Damage`
+and the statuses through `battle.inflict`, which is the function every skill's
+applications already use — so a reply is refused by the same resistances, rolled
+by the same source, and written to the log as `damaged`, `status_applied` and
+`status_resisted` like anything else. What `inflict` used to take was a whole
+`skill.Skill`; it now takes an `origin`, which is the three things it ever wanted
+out of one — what to name in the log, which element to price a tick against, and
+which stat that tick scales off. A reply names a trait instead of a skill and is
+otherwise indistinguishable, which is exactly the point: a replay reads it
+without knowing, and `--verify` re-runs it from the seed.
 
-- **A reply may kill.** It is damage and gets no exemption for arriving out of
-  turn, so a battle can end on a turn nobody took. Whatever resolves a reply
-  re-asks whether the battle is over, and the timeline loses a unit that was never
-  in front of it. A damage-over-time tick already ends a battle, so the shape
-  exists; what is new is that the unit dying is the one taking the turn.
+Two absences on the declaration, and they are the same decision. **A reply has no
+element and no accuracy.** The elemental chart prices what one creature threw at
+another, and a trait reading it would make a fire creature's blood weak to water
+for a reason written nowhere on the trait; an accuracy roll asks whether contact
+was made, and contact is the thing that has already happened.
+
+Four rules, and three of them are simply where the call sits — after the whole
+skill, once, per holder.
+
+- **A reply may kill**, and a battle can end on a turn nobody took. A
+  damage-over-time tick already ends battles, so the shape existed; what is new
+  is that the unit dying is the one taking the turn.
 - **A reply never triggers a reply.** Closed by rule and not by a depth counter,
-  because a counter is a number somebody will raise: a reply resolves with
-  retaliation off, so a trait cannot answer a trait and two holders facing each
-  other settle in one exchange instead of trading until the arithmetic runs out.
+  because a counter is a number somebody raises. The list of who may answer is
+  built from the skill's own targets, and a reply is not in it — so there is
+  nothing for a second one to answer. Two holders facing each other settle in one
+  exchange.
 - **A reply answers a use of a skill, not a strike.** Otherwise a trait's worth
-  scales with somebody else's strike count, and `fire_fang` is quietly worse than
-  `flamethrower` into one holder for a reason written on neither skill.
-- **The holder takes every strike first and answers afterwards.** The reply is on
-  the finished skill rather than partway through it, so a striker never dies
-  mid-turn and the question of what happens to the strikes it had left never
-  arises.
+  would scale with somebody else's strike count, and `fire_fang` would be quietly
+  worse than `flamethrower` into one holder for a reason written on neither.
+- **The holder takes every strike first and answers afterwards** — indeed, every
+  *target* takes the whole skill before anybody answers it. A reply resolved
+  inside the loop could kill the actor while it still had cells to hit, and "what
+  happens to the rest of the skill" is a question with no good answer.
 
 That last one leaves the holder's death as the only one that can land first, and
 dead is dead: **a holder killed by the skill does not answer**, the way it cannot
 be healed. Which hands retaliation a counter without anybody designing one —
 killing the holder outright is how a reply is avoided, so a trait that punishes
-attacking rewards hitting hard instead of taxing everybody equally.
+attacking rewards hitting hard instead of taxing everybody equally. The same rule
+runs the other way: once one holder's reply has killed the attacker, the holders
+behind it are answering a corpse, and they do not.
+
+#### What the sweep found, which is why the shipped numbers are small
+
+A reply is the first thing in this game whose worth is set by **how often its
+holder is attacked and how long it survives**, and no number on the trait can
+express that. Both Bulbasaurs carry `venom_blood`; the ally fields Venusaur at 60
+and the enemy Ivysaur at 16, so the ally's holder is hit far more, survives far
+longer, and answers far harder. Over four thousand battles the ally deals 86 per
+cent of all the reply damage in the game while making 69 per cent of the replies.
+
+That asymmetry is not the trait's, it is the roster's — and it means the trait
+cannot be big without the roster stopping being a measuring instrument:
+
+| power | poison chance | ally win rate |
+| ---: | ---: | ---: |
+| — | — | 49.2% |
+| 40 | — | 49.5% |
+| **40** | **25** | **51.9%** |
+| 40 | 200 | 73.5% |
+| 80 | 100 | 75.4% |
+| 250 | 500 | 98.3% |
+
+So the shipped reply is a scratch and a two and a half per cent chance of poison,
+and the roster reads **51.9 per cent** to the ally. Anything an author is tempted
+to raise here should be measured over thousands of seeds first, because the
+40-seed sweep in the tests cannot see a move of this size.
+
+⚠️ **It also moved a measurement that was already in this file.** Removing
+`razor_leaf`'s pierce used to cost the ally 2.7 points; against a roster where
+being the attacker costs something, it now *gains* the ally 1.1 (51.9 → 53.0).
+The sign flipped, and it flipped at every reply size tried. Piercing helps
+whoever is attacking, and this is the first thing in the game that charges for
+attacking — so no figure measured before this feature can be carried forward
+without being taken again.
 
 ### A health threshold a skill can read
 
