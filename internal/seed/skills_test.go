@@ -244,6 +244,15 @@ func TestSkillBookGolden(t *testing.T) {
 	}
 }
 
+// allowlist is one column of a restriction: the names it admits, or a dash for
+// a list that is empty and therefore admits everybody.
+func allowlist(names []string) string {
+	if len(names) == 0 {
+		return "-"
+	}
+	return strings.Join(names, " ")
+}
+
 func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book, rules combat.Rules) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "damage is against %d defence at %d attack, a neutral matchup and no accuracy stat\n",
@@ -284,6 +293,24 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 				current.ID, application.Status+" (self)", application.Stacks,
 				application.Chance, current.Accuracy, "-")
 		}
+	}
+
+	// A restriction changes who may play a skill at all, which is a louder fact
+	// about the shipped book than any number beside it, and it was the one rule
+	// this report could not state. The unrestricted skills are left out rather
+	// than listed with three dashes: "free to anybody" is the common case and
+	// the majority of the book, so printing it would bury the four rows that
+	// are the point. The header says so instead.
+	b.WriteString("\n== who may carry, a skill absent here is free to anybody ==\n")
+	b.WriteString("skill           elements   archetypes        characters\n")
+	for _, current := range book.Skills() {
+		if current.Restrict == nil {
+			continue
+		}
+		fmt.Fprintf(&b, "%-16s%-11s%-18s%s\n", current.ID,
+			allowlist(current.Restrict.ElementNames()),
+			allowlist(current.Restrict.Archetypes),
+			allowlist(current.Restrict.Characters))
 	}
 
 	b.WriteString("\n== conditional amplifiers ==\n")
