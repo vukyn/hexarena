@@ -46,6 +46,11 @@ const (
 	StatusStripped
 	// Died is a unit reaching zero health.
 	Died
+	// Healed is a unit getting health back, from a regeneration ticking, a
+	// skill restoring it, or a drain returning a share of damage dealt. The log
+	// has to carry it: without one, a reader sees health go up with nothing to
+	// account for it.
+	Healed
 	// Ended closes a battle.
 	Ended
 )
@@ -70,6 +75,7 @@ var kindNames = [KindCount]string{
 	StatusResisted: "status_resisted",
 	StatusStripped: "status_stripped",
 	Died:           "died",
+	Healed:         "healed",
 	Ended:          "ended",
 }
 

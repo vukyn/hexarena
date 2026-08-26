@@ -88,14 +88,21 @@ func (b *Battle) Advance() (*Prompt, error) {
 // 513" is much less use than one that names the poison.
 func (b *Battle) tickStatuses(unit *Unit, turn atb.Turn) {
 	before := unit.Statuses.Snapshot()
-	damage, expired := unit.Statuses.Tick()
+	damage, healing, expired := unit.Statuses.Tick()
 	for _, entry := range before {
-		if entry.TickDamage <= 0 {
+		if entry.TickAmount <= 0 {
 			continue
 		}
+		// A regeneration reports itself as a heal rather than as a tick, so a
+		// reader is never asked to work out from the status name whether a
+		// number was taken or given.
+		kind := StatusTicked
+		if entry.Category == status.Regen {
+			kind = Healed
+		}
 		b.emit(Event{
-			Kind: StatusTicked, At: turn.At, Turn: turn.Number, Actor: unit.ID,
-			Status: entry.ID, Amount: entry.TickDamage, Stacks: entry.Stacks,
+			Kind: kind, At: turn.At, Turn: turn.Number, Actor: unit.ID,
+			Status: entry.ID, Amount: entry.TickAmount, Stacks: entry.Stacks,
 		})
 	}
 	for _, id := range expired {
@@ -103,9 +110,35 @@ func (b *Battle) tickStatuses(unit *Unit, turn atb.Turn) {
 			Kind: StatusExpired, At: turn.At, Turn: turn.Number, Actor: unit.ID, Status: id,
 		})
 	}
+	// Healing first: a regeneration that would carry a unit past a poison tick
+	// should do so, rather than the order of two totals deciding who lives.
+	if healing > 0 {
+		b.heal(unit, healing, turn)
+	}
 	if damage > 0 {
 		b.wound(unit, damage, turn)
 	}
+}
+
+// heal gives health back, and refuses two things absolutely.
+//
+// A dead unit is not healed: wound calls kill the moment health reaches zero,
+// and undoing that would leave a battle unable to end. And health never passes
+// the maximum the unit was enlisted with, so a regeneration cannot become an
+// uncapped shield. Both are silent — a heal that does nothing is not an error,
+// it is a full-health unit standing in a healing wind.
+func (b *Battle) heal(unit *Unit, amount int64, turn atb.Turn) {
+	if amount <= 0 || unit.Dead || unit.HP >= unit.MaxHP() {
+		return
+	}
+	if room := unit.MaxHP() - unit.HP; amount > room {
+		amount = room
+	}
+	unit.HP += amount
+	b.emit(Event{
+		Kind: Healed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
+		Amount: amount, Remaining: unit.HP,
+	})
 }
 
 func (b *Battle) wound(unit *Unit, damage int64, turn atb.Turn) {
@@ -390,6 +423,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	}
 
 	connected := false
+	dealt := int64(0)
 	if power > 0 {
 		charges := target.Statuses.Stacks(blockStatus)
 		attempts, left := b.books.Rules.Roll(hit, charges, b.source)
@@ -416,6 +450,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			default:
 				event.Kind = Damaged
 				event.Amount = attempt.Damage
+				dealt += attempt.Damage
 				target.HP -= attempt.Damage
 				if target.HP < 0 {
 					target.HP = 0
@@ -444,6 +479,26 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		for _, application := range known.Applies {
 			b.inflict(actor, target, known, application, turn)
 		}
+	}
+	// Restoring reads the caster's scaling stat and skips the defence curve
+	// entirely: see combat.Rules.Restore. A splashed target gets the reduced
+	// share, the same as damage, because a shape's edge is worth less wherever
+	// it lands.
+	if known.Restores > 0 {
+		restore := known.Restores
+		if position > 0 {
+			restore = restore * b.books.Patterns.SplashPower / scale.Base
+		}
+		b.heal(target, b.books.Rules.Restore(
+			combat.PickScaling(known.Scaling.Source,
+				actor.Base[known.Scaling.Stat], actorStats[known.Scaling.Stat]),
+			restore), turn)
+	}
+	// A drain takes its share of what was *dealt*, so a strike that missed or
+	// was blocked returns nothing, and one that overkilled returns only the
+	// damage that landed.
+	if known.Drains > 0 && dealt > 0 {
+		b.heal(actor, dealt*int64(known.Drains)/int64(scale.Base), turn)
 	}
 	if target.HP <= 0 {
 		b.kill(target)

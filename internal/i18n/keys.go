@@ -188,6 +188,7 @@ const (
 	CategoryControl
 	CategoryBuff
 	CategoryShield
+	CategoryRegen
 
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement

@@ -251,6 +251,13 @@ func Line(event battle.Event, tags map[string]string) string {
 		return fmt.Sprintf("\n  %-3s turn %d", tag(event.Actor), event.Turn)
 	case battle.StatusTicked:
 		return head + fmt.Sprintf(" takes %d from %s x%d", event.Amount, event.Status, event.Stacks)
+	case battle.Healed:
+		// A regeneration names itself; a drain or a restoring skill has no
+		// status to name and says only how much came back.
+		if event.Status != "" {
+			return head + fmt.Sprintf(" heals %d from %s x%d", event.Amount, event.Status, event.Stacks)
+		}
+		return head + fmt.Sprintf(" heals %d, %d hp left", event.Amount, event.Remaining)
 	case battle.StatusExpired:
 		return head + fmt.Sprintf(" %s wears off", event.Status)
 	case battle.SpeedChanged:
@@ -330,6 +337,7 @@ type Tally struct {
 	Dealt  int64
 	Taken  int64
 	Ticked int64
+	Healed int64
 	Hits   int
 	Misses int
 	Walled int
@@ -371,6 +379,8 @@ func Tallies(events []battle.Event) []Tally {
 		case battle.StatusTicked:
 			actor.Ticked += event.Amount
 			actor.Taken += event.Amount
+		case battle.Healed:
+			actor.Healed += event.Amount
 		case battle.Damaged:
 			actor.Dealt += event.Amount
 			actor.Hits++

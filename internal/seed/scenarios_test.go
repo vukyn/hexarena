@@ -886,7 +886,7 @@ func TestDamageOverTimeCannotBeDodgedOrBlocked(t *testing.T) {
 	tick := rules.Damage(attackerAttack, referenceDefense, poisonPower, neutralAffinity)
 	var set status.Set
 	set.Apply(poison, tick)
-	damage, _ := set.Tick()
+	damage, _, _ := set.Tick()
 	if damage != tick {
 		t.Errorf("the tick dealt %d against a dodging, shielded target, want the full %d", damage, tick)
 	}
@@ -959,7 +959,7 @@ func poisonRamp(poison status.Kind, tick int64, turns, cleanseTurn int) int64 {
 		if turn == cleanseTurn {
 			set.Cleanse([]status.Category{status.Dot}, poison.MaxStacks)
 		}
-		damage, _ := set.Tick()
+		damage, _, _ := set.Tick()
 		total += damage
 	}
 	return total
@@ -994,7 +994,7 @@ func writeStatusScenario(b *strings.Builder, rules combat.Rules) {
 			set.Apply(poison, tick)
 		}
 		stacks := set.Stacks("poison")
-		damage, _ := set.Tick()
+		damage, _, _ := set.Tick()
 		cumulative += damage
 		fmt.Fprintf(b, "%11d%9d%7d%13d%17s\n", turn, stacks, damage, cumulative, ratio(cumulative, direct))
 	}
@@ -1014,7 +1014,7 @@ func writeStatusScenario(b *strings.Builder, rules combat.Rules) {
 			if turn <= poison.MaxStacks {
 				run.Apply(poison, perStack)
 			}
-			damage, _ := run.Tick()
+			damage, _, _ := run.Tick()
 			total += damage
 		}
 		fmt.Fprintf(b, "%-24s%4d%19d%8d%20d%9s\n",
@@ -1059,7 +1059,7 @@ func writeStatusScenario(b *strings.Builder, rules combat.Rules) {
 		run.Apply(poison, tick)
 		total := int64(0)
 		for turn := 0; turn < turns; turn++ {
-			damage, _ := run.Tick()
+			damage, _, _ := run.Tick()
 			total += damage
 		}
 		fmt.Fprintf(b, "%15d%8d\n", turns, total)
@@ -1240,7 +1240,7 @@ func writeTurnOrderScenario(b *strings.Builder, rules combat.Rules) {
 		}
 		damage := int64(0)
 		if turn.ID == "ally.bulwark" {
-			damage, _ = set.Tick()
+			damage, _, _ = set.Tick()
 		}
 		fmt.Fprintf(b, "%3d%7d   %-22s%12d%14d\n", i, turn.At, turn.ID, damage, set.Stacks("poison"))
 	}
