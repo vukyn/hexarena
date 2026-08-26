@@ -2225,3 +2225,85 @@ func TestArtImageDrawsARaster(t *testing.T) {
 		t.Errorf("the middle of a red picture is %+v", middle)
 	}
 }
+
+// TestTheShippedArtIsCutOutRatherThanFramed is the defect this catches, stated
+// as the rule it broke.
+//
+// One of the three shipped pictures was traced from a source with no alpha, so
+// it carried an opaque backdrop — its first path is a rectangle across the whole
+// canvas. It inked 92 percent of the box it was drawn in where the other two
+// inked around a third, and in the preview it showed as a filled rectangle
+// behind the sprite while the others floated. Nothing said so: the file was well
+// shaped, on disk, and drew without complaint.
+//
+// A unit stands on a board, so its art is a cut-out and a baked background is
+// always wrong here.
+//
+// The measurement is the corners of the *inked* rectangle rather than of the box
+// the picture was drawn in, and the first version of this test got that wrong: a
+// square box letterboxes a 784x731 picture, so the box's corners were transparent
+// margin and the framed asset passed. The inked rectangle needs no knowledge of
+// the source's proportions and separates the two cases exactly — a frame's own
+// corners are painted, while a creature's silhouette does not reach all four
+// corners of its tightest rectangle.
+func TestTheShippedArtIsCutOutRatherThanFramed(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	characters := lib.Characters().All()
+	if len(characters) == 0 {
+		t.Skip("the shipped cast is empty, so there is no art to measure")
+	}
+	const side = 64
+	seen := 0
+	for _, character := range characters {
+		for _, art := range character.Art() {
+			drawn, err := lib.ArtImage(art.Image, side, side)
+			if err != nil {
+				t.Errorf("%s: %v", art.Image, err)
+				continue
+			}
+			inked, any := inkBounds(drawn)
+			if !any {
+				t.Errorf("%s drew nothing at all", art.Image)
+				continue
+			}
+			seen++
+			for _, corner := range []image.Point{
+				{X: inked.Min.X, Y: inked.Min.Y},
+				{X: inked.Max.X - 1, Y: inked.Min.Y},
+				{X: inked.Min.X, Y: inked.Max.Y - 1},
+				{X: inked.Max.X - 1, Y: inked.Max.Y - 1},
+			} {
+				if alpha := drawn.RGBAAt(corner.X, corner.Y).A; alpha > 8 {
+					t.Errorf("%s has paint in the corner of what it drew, at %v (alpha %d): it carries a background rather than being cut out",
+						art.Image, corner, alpha)
+				}
+			}
+		}
+	}
+	if seen == 0 {
+		t.Error("no picture was measured, so this asserts nothing")
+	}
+}
+
+// inkBounds is the tightest rectangle holding every pixel with paint in it.
+func inkBounds(drawn *image.RGBA) (image.Rectangle, bool) {
+	bounds := drawn.Bounds()
+	inked := image.Rectangle{Min: bounds.Max, Max: bounds.Min}
+	any := false
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			if drawn.RGBAAt(x, y).A <= 8 {
+				continue
+			}
+			any = true
+			inked.Min.X = min(inked.Min.X, x)
+			inked.Min.Y = min(inked.Min.Y, y)
+			inked.Max.X = max(inked.Max.X, x+1)
+			inked.Max.Y = max(inked.Max.Y, y+1)
+		}
+	}
+	return inked, any
+}
