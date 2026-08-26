@@ -295,6 +295,13 @@ whole of why authored prose is safe here: no number in it, nothing a balance
 change can make wrong. Digits rather than a percent sign, because "110" and "gấp
 2" are the same mistake. English has none (like `Skill.Name`, it is authored once
 in Vietnamese) and falls back to the derived opening.
+⚠️ **A clause obeys the same body rule as the name** — `withdraw` was renamed off
+"thu mai" because anybody may carry it, and the first clause written for it said
+"rụt hết vào trong mai": the same defect through a field the name test does not
+look at. `TestAFreeSkillsFlavourNamesNoBodyItMayNotHave` checks an **unrestricted**
+skill's clause against a hand-written `bodyWords` list; a restricted skill is
+exempt because its restriction guarantees the body. It cannot tell whose shell is
+meant, so a body word about anything trips it — reword rather than argue.
 `?N` at the battle prompt describes the Nth offered skill, `?TAG` a unit's traits;
 both reprint the menu and cost no turn. Every number comes from the skill itself,
 because an authored line survives its own numbers moving — "doubles" outlives a

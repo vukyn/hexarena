@@ -33,7 +33,7 @@ Mục tiêu đang dính trúng độc: 180% công.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 
 leech_seed
-Cấy một hạt ký sinh bám rễ vào kẻ địch mà hút ngược sinh lực về, 70% công.
+Cấy một hạt ký sinh bám vào kẻ địch mà hút ngược sinh lực về, 70% công.
 Hút lại 60% sát thương gây ra.
 Tầm 3 · 90% trúng · hồi 3 lượt.
 
@@ -67,7 +67,7 @@ Gây bỏng cho mục tiêu, 70% khả năng.
 Tầm 3 · 3 ô · 86% trúng · hồi 3 lượt.
 
 heat_wave
-Quạt cánh đẩy một luồng khí nóng tràn qua nhiều ô cùng lúc, 110% công.
+Đẩy một luồng khí nóng tràn qua nhiều ô cùng lúc, 110% công.
 Gây bỏng cho mục tiêu, 40% khả năng.
 Tầm 3 · 3 ô · 85% trúng · hồi 4 lượt.
 
@@ -95,7 +95,7 @@ Bắn một tia nước mạnh vào kẻ địch, 100% công.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 
 bubble
-Thổi một chùm bọt nước bám dính lấy chân đối phương, 70% công.
+Thổi một chùm bọt nước bám dính lấy đối phương, 70% công.
 Gây sa lầy cho mục tiêu, 70% khả năng.
 Tầm 3 · 3 ô · 90% trúng · hồi 2 lượt.
 
@@ -119,7 +119,7 @@ Dồn toàn lực bắn một cột nước áp suất cao xuyên qua trận đ�
 Tầm 4 · 80% trúng · hồi 4 lượt.
 
 withdraw
-Rụt hết vào trong mai, mài lại lớp vỏ cho dày thêm.
+Thu mình lại, dồn hết vào việc chống đỡ.
 Hồi máu bằng 50% công.
 Tự nhận đỡ đòn x2.
 Bản thân · hồi 3 lượt.

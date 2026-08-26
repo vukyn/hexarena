@@ -594,3 +594,53 @@ func TestEveryShippedSkillHasAFlavourClause(t *testing.T) {
 		}
 	}
 }
+
+// bodyWords are the words a skill free for anybody to carry may not use about
+// itself, and each one is a judgement rather than a rule a machine could derive.
+//
+// The list is hand-written for the same reason TestABodyBoundSkillIsRestricted's
+// is: nothing separates "mai" from "nước" except somebody reading it and deciding
+// whether every creature has one. Teeth and mouths are deliberately absent — a
+// mouth is near enough universal that "há miệng phun lửa" reads on anything, and
+// that judgement was already made when fire_fang and bite were left unrestricted.
+var bodyWords = map[string]string{
+	"mai":  "a shell",
+	"vỏ":   "a shell",
+	"cánh": "wings",
+	"chân": "legs",
+	"rễ":   "roots",
+	"vảy":  "scales",
+	"sừng": "horns",
+	"lông": "fur or feathers",
+}
+
+// TestAFreeSkillsFlavourNamesNoBodyItMayNotHave is the hole the flavour clause
+// opened in a rule that already existed.
+//
+// `withdraw` was renamed from "thu mai" to "thủ thế" precisely because anybody may
+// carry it and a shell-less creature reading "thu mai" is nonsense — and then the
+// first flavour clause written for it said "rụt hết vào trong mai", which is the
+// same defect through a field the name test does not look at. A restricted skill
+// is free to name whatever its restriction guarantees: `ingrain` may say roots,
+// because only a plant may take it.
+//
+// It reads the whole clause and cannot tell whose shell is being described, so a
+// body word about something *else* trips it too — `leech_seed` said the seed took
+// root in its target and was refused for it. That bluntness is the right way
+// round: rewording costs a few words, and a miss costs a sentence that reads as
+// nonsense on somebody's screen.
+func TestAFreeSkillsFlavourNamesNoBodyItMayNotHave(t *testing.T) {
+	for _, current := range mustSkills(t).Skills() {
+		if current.Restrict != nil {
+			continue
+		}
+		lowered := strings.ToLower(current.Flavour)
+		for word, what := range bodyWords {
+			if !strings.Contains(lowered, word) {
+				continue
+			}
+			t.Errorf("%q is free for anybody to carry and its flavour says %q, which is %s: restrict the skill or reword the clause",
+				current.ID, word, what)
+		}
+	}
+}

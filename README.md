@@ -685,6 +685,18 @@ number in it cannot be made wrong by changing a number. The check is for digits
 rather than for a percent sign, because "110" and "gấp 2" are the same mistake in
 different clothes.
 
+⚠️ **A clause is bound by the same rule the name is.** `withdraw` was renamed from
+*thu mai* to *thủ thế* because anybody may carry it and a shell-less creature
+reading "thu mai" is nonsense — and the first clause written for it said *rụt hết
+vào trong mai*, which is the same defect through a field the name test does not
+look at. `TestAFreeSkillsFlavourNamesNoBodyItMayNotHave` holds it now, against a
+hand-written list of body words, and a restricted skill is exempt because its
+restriction guarantees the body: `ingrain` may say roots, since only a plant may
+take it. The check reads the whole clause and cannot tell *whose* shell is meant,
+so a body word about something else trips it too — that bluntness is the right way
+round, because rewording costs a few words and a miss costs a sentence that reads
+as nonsense on somebody's screen.
+
 Without a clause a skill opens with the derived one — *Đánh đối phương, 110%
 công* — which is what every description read like before, and is what a skill
 still being authored in the tool reads like. What may not happen is a skill

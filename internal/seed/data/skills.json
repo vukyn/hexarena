@@ -121,7 +121,7 @@
     {
       "id": "leech_seed",
       "name": "hạt ký sinh",
-      "flavour": "Cấy một hạt ký sinh bám rễ vào kẻ địch mà hút ngược sinh lực về",
+      "flavour": "Cấy một hạt ký sinh bám vào kẻ địch mà hút ngược sinh lực về",
       "element": "grass",
       "range": 3,
       "pattern": "single",
@@ -253,7 +253,7 @@
     {
       "id": "heat_wave",
       "name": "sóng nhiệt",
-      "flavour": "Quạt cánh đẩy một luồng khí nóng tràn qua nhiều ô cùng lúc",
+      "flavour": "Đẩy một luồng khí nóng tràn qua nhiều ô cùng lúc",
       "element": "fire",
       "range": 3,
       "pattern": "wedge_right",
@@ -373,7 +373,7 @@
     {
       "id": "bubble",
       "name": "bong bóng",
-      "flavour": "Thổi một chùm bọt nước bám dính lấy chân đối phương",
+      "flavour": "Thổi một chùm bọt nước bám dính lấy đối phương",
       "element": "water",
       "range": 3,
       "pattern": "arc_down",
@@ -463,7 +463,7 @@
     {
       "id": "withdraw",
       "name": "thủ thế",
-      "flavour": "Rụt hết vào trong mai, mài lại lớp vỏ cho dày thêm",
+      "flavour": "Thu mình lại, dồn hết vào việc chống đỡ",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
