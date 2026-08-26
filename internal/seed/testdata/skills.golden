@@ -51,6 +51,13 @@ bite            expose                 1      500        900              450
 withdraw        block (self)           2     1000       1000                -
 aqua_ring       regrowth (self)        2     1000       1000                -
 
+== who may carry, a skill absent here is free to anybody ==
+skill           elements   archetypes        characters
+synthesis       grass      -                 -
+ingrain         grass      -                 -
+dragon_rage     -          -                 pokemon.charmander
+dragon_dance    -          -                 pokemon.charmander
+
 == conditional amplifiers ==
 skill           needs      stacks   power   amplified   damage   amplified   gain
 venoshock       poison           1     900        1800      308         617  2.00x

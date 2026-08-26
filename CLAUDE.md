@@ -785,6 +785,23 @@ is the constraint each piece has to respect.
       character. The trait is right and the **mirrored roster** is what makes it
       degenerate, so this waits on the asymmetric roster below rather than on a
       smaller number.
+- [ ] **Species — what a unit *is*, not how it fights.** An element says what a
+      unit is made of and an archetype says how it fights; nothing says whether it
+      has a shell, roots or a lineage, so a skill named after a body may land on a
+      body it does not fit. `withdraw` found it — "thu mai" on a shell-less
+      creature — and the two answers are different rules: a general **effect** gets
+      a general **name** (withdraw is now a stance, not a shell), while an identity
+      keeps its name and carries a restriction. ⚠️ `skill.Restriction` has no axis
+      for it, so `dragon_rage`/`dragon_dance` are parked on `characters:
+      [pokemon.charmander]` — the wrong axis **on purpose**: an archetype
+      restriction would make a fighting style imply a lineage, which is the
+      coupling species removes. That also costs the preset those two skills (a
+      preset may not hold a character-restricted skill), so `scorcher` suggests 7
+      where Charmander carries 9. Shape: a **fourth allowlist** on the same
+      `Restriction` plus a field on the character, its own book like origins, and a
+      unit may hold more than one (a fire dragon is both). **Nothing in `battle`
+      branches on it** — a carry rule and a word on screen, like an archetype.
+      `TestABodyBoundSkillIsRestricted` is the list to revisit when it lands.
 - [ ] **Learnsets, slots, and choosing to evolve.** A character holds every skill
       *and every trait* from level one and brings all of them, so a level is the
       only thing separating a young unit from a grown one. **Skills and traits are

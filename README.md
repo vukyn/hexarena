@@ -1017,3 +1017,36 @@ each stat and, separately, bounds health and defence together, because those two
 multiply rather than add. A unit at both ceilings is not merely durable, it is
 durable squared. The five shipped presets spend between 4036 and 11397 of the
 11500 effective-health budget, and `hexforge show` prints what is left.
+
+### What a unit is, not only how it fights
+
+Nothing in the data says what a unit *is*. An element says what it is made of and
+an archetype says how it fights, and neither answers whether it has a shell, roots
+or a lineage — so a skill named after a body is free to land on a body it does not
+fit. `withdraw` is the one that found it: Squirtle pulls into its shell, the name
+read perfectly on the character it was written for, and nothing would have stopped
+a Machop taking it and reading "thu mai" on a creature with no shell.
+
+Two answers, and they are different rules rather than a preference. Where the
+*effect* is general the **name** should be too, which is why `withdraw` is now
+glossed as a stance and not as a shell. Where the identity is the point the name
+stays and the skill carries a restriction — and that is where the gap is, because
+`skill.Restriction` allows a list of elements, a list of archetypes and a list of
+characters, and being a dragon is none of the three.
+
+`dragon_rage` and `dragon_dance` are parked on the third of those, restricted to
+`pokemon.charmander`, and it is the wrong axis on purpose rather than by mistake.
+An archetype restriction would have said a *fighting style* implies a lineage,
+which is the coupling species exists to remove — and a preset may not hold a
+character-restricted skill at all, which is why `scorcher` suggests seven skills
+and Charmander carries nine. That refusal is the engine agreeing: a kit shared by
+every character built from a preset has no room for a skill about one of them.
+
+So the shape: a species is a fourth allowlist on the same `Restriction` and a
+fourth field on a character, declared in its own book the way origins and
+archetypes are, and a unit may have more than one — a fire dragon is both. Nothing
+in `battle` branches on it, exactly as nothing branches on an archetype; it is a
+carry rule and a word on a screen, which is what keeps it cheap. When it lands,
+the two lineage skills move from a character allowlist onto a species one and
+become carryable by every dragon, which is what they should have said all along,
+and `TestABodyBoundSkillIsRestricted` is the list of what else to revisit.

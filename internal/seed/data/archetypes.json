@@ -85,9 +85,7 @@
         "fire_spin",
         "heat_wave",
         "inferno",
-        "dragon_rage",
-        "smokescreen",
-        "dragon_dance"
+        "smokescreen"
       ],
       "passives": [
         {

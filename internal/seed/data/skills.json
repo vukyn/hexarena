@@ -135,7 +135,12 @@
       "accuracy": 1000,
       "restores": 900,
       "cooldown": 4,
-      "target": "self"
+      "target": "self",
+      "restrict": {
+        "elements": [
+          "grass"
+        ]
+      }
     },
     {
       "id": "ingrain",
@@ -154,7 +159,12 @@
           "chance": 1000,
           "stacks": 2
         }
-      ]
+      ],
+      "restrict": {
+        "elements": [
+          "grass"
+        ]
+      }
     },
     {
       "id": "ember",
@@ -273,7 +283,12 @@
       "strikes": 1,
       "accuracy": 920,
       "cooldown": 3,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "characters": [
+          "pokemon.charmander"
+        ]
+      }
     },
     {
       "id": "smokescreen",
@@ -316,7 +331,12 @@
           "chance": 1000,
           "stacks": 1
         }
-      ]
+      ],
+      "restrict": {
+        "characters": [
+          "pokemon.charmander"
+        ]
+      }
     },
     {
       "id": "water_gun",
@@ -418,7 +438,7 @@
     },
     {
       "id": "withdraw",
-      "name": "thu mai",
+      "name": "thủ thế",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
