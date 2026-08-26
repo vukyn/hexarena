@@ -288,6 +288,24 @@ without it (an inline stat line is already resolved). `battle.Roster` deliberate
 gains no image, biography or origin field: the engine has no use for them, and the
 event log is what a renderer reads.
 
+**Piercing is a ratio, and it stops at the strike.** `skill.Skill.Pierce` is the
+share of the target's defence a skill ignores, in parts per thousand, applied by
+`combat.Pierced` inside `Rules.Strike`. `Rules.Damage` itself takes the defence
+*as it applies* and knows nothing about piercing — deliberately, because five
+positional integers is a signature a mis-ordered argument passes silently, and
+because a caller reaching it directly is asking for the raw curve. A
+damage-over-time tick is exactly such a caller and **must stay that way**: a tick
+is computed once when the stack is applied and frozen for its whole life, so
+piercing one is worth as many pierced hits as the stack has turns left (400 a
+turn for three turns against 171, measured on the shipped poison), which is a
+different skill from the one the author wrote. Three consequences: a ratio rather
+than a switch, for the reason buffs saturate — a hard cap on a continuous
+quantity is the shape this engine rejects; the `damaged` event **carries the
+share**, because a reader who cannot see it cannot reproduce the figure and a log
+its reader cannot reproduce is the log lying; and `progression.EffectiveHP` now
+describes one case of two, so anything showing it to an author must show
+`EffectiveHPAgainst(…, scale.Base)` beside it — which comes to the raw health.
+
 **Healing is not damage with a sign.** Three mechanisms give health back — a
 skill's `restores`, a skill's `drains`, and a `regen` status — and each obeys the
 same four rules. `combat.Rules.Restore` deliberately does **not** divide by the
@@ -617,22 +635,16 @@ is the constraint each piece has to respect.
       detection must be a pure function of state, because a battle that draws on
       one machine has to draw on every other from the same seed. See README →
       Roadmap.
-- [ ] **Piercing, to answer armour.** Nothing ignores defence today: normal hits,
-      splash and damage-over-time ticks all divide by `K + defence`, so the
-      effective-health figure is exact and the armour end of the budget has no
-      counter, while every other defence here has one. Make it a **ratio in parts
-      per thousand, not a switch** — a switch jumps straight to bulwark being
-      1.55x sentinel while a ratio walks 0.98x → 1.55x, and a hard cap on a
-      continuous quantity is the shape this engine has rejected everywhere else.
-      A field on `skill.Skill` threaded into `combat.Rules.Damage`; a zero default
-      moves **no golden**. Three things to decide, not assume: whether it reaches a
-      damage-over-time tick (a tick is computed once at application and frozen, so
-      a pierced stack is far bigger than a pierced hit), whether `MaxEffectiveHP`
-      still describes the worst case or raw health now needs a floor of its own,
-      and how a pierced hit is made visible in the event log — a pierced hit that
-      logs like an ordinary one leaves the log unable to explain its own numbers.
-      `hexforge`'s effective-health row describes non-piercing damage only and will
-      need both figures. See README → Roadmap.
+- [ ] **A skill that pierces, and whether health needs a floor.** The mechanism
+      ships and nothing uses it, so both halves left are balance. Which skill
+      gets a non-zero `pierce` is open — `sever` was the candidate and was
+      retired with the rest of the original book — and the first one to get it
+      moves `scenarios.golden`, which is where the change gets read. Separately,
+      `MaxEffectiveHP` bounds durability against damage that does not pierce, and
+      against damage that does, a 3100/800 line absorbs 3100 where a 4800/400 one
+      absorbs 4800; both are legal. Whether an armour-heavy line may be that thin
+      is worth measuring against a real piercing skill rather than deciding in
+      advance. See README → Roadmap.
 - [ ] **A real cast.** The tooling now exists: `internal/core/cast` holds origins,
       archetype presets and characters, `cmd/hexforge` authors them, and
       `progression.Line` is finally used — `cast.json` ships one single-stage and

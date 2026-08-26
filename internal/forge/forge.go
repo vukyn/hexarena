@@ -42,6 +42,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
@@ -205,6 +206,17 @@ type Budget struct {
 	Effective int64
 	Max       int64
 	Headroom  int64
+	// Pierced is what the same line absorbs against damage that ignores its
+	// defence outright, which comes to exactly its health.
+	//
+	// It is here because Effective stopped being the whole answer the moment
+	// piercing existed: it measures durability against damage that does not
+	// pierce, which is what the bound is set against, and a row showing only
+	// that figure would be describing the best case as though it were the only
+	// one. The two together are the range a stat line really sits in, and the
+	// gap between them is how much of its durability an author bought with
+	// armour rather than with health.
+	Pierced int64
 }
 
 // Over reports whether the line breaks the bound.
@@ -217,6 +229,7 @@ func (l *Library) Budget(values progression.Values) Budget {
 		Effective: effective,
 		Max:       l.limits.MaxEffectiveHP,
 		Headroom:  l.limits.MaxEffectiveHP - effective,
+		Pierced:   progression.EffectiveHPAgainst(values, l.rules, scale.Base),
 	}
 }
 

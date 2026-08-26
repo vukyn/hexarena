@@ -417,6 +417,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		Strikes:       known.StrikeCount(),
 		Affinity:      multiplier,
 		Defense:       targetStats[progression.Defense],
+		Pierce:        known.Pierce,
 		SkillAccuracy: known.Accuracy,
 		AccuracyStat:  actorStats[progression.Accuracy],
 		DodgeStat:     targetStats[progression.Dodge],
@@ -439,7 +440,8 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			event := Event{
 				At: turn.At, Turn: turn.Number, Actor: actor.ID, Target: target.ID,
 				Skill: known.ID, Strike: strike + 1, Chance: chance,
-				Multiplier: multiplier, Power: power, Remaining: target.HP,
+				Multiplier: multiplier, Power: power, Pierce: known.Pierce,
+				Remaining: target.HP,
 			}
 			switch attempt.Outcome {
 			case combat.Missed:
@@ -523,6 +525,12 @@ func (b *Battle) inflict(actor, target *Unit, known skill.Skill, application ski
 	}
 	tick := int64(0)
 	if kind.Category == status.Dot {
+		// Full defence, deliberately, even when the skill applying the status
+		// pierces. A tick is computed once here and frozen on the stack for the
+		// rest of its life, so piercing it would be worth as many pierced hits
+		// as the stack has turns left — a far larger effect than the per-strike
+		// ratio the author wrote. That is why Pierced is applied by Strike and
+		// not folded into the defence a caller passes.
 		tick = b.books.Rules.Damage(
 			b.Stats(actor)[known.Scaling.Stat],
 			b.Stats(target)[progression.Defense],

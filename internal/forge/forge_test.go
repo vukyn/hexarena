@@ -881,6 +881,77 @@ func TestPreviewDamageIsTheEngineArithmetic(t *testing.T) {
 	}
 }
 
+// TestAPiercingSkillIsAuthoredAndPreviewsAgainstTheArmourItLeaves is the
+// authoring end of piercing: the answer reaches the skill, and the damage figure
+// the form shows is measured against the defence the skill actually faces.
+//
+// The preview naming the pierced defence rather than the defender's is what
+// keeps the line able to explain itself. An author who divides by the figure the
+// row names has to arrive at the damage the row names beside it; showing the raw
+// 400 next to damage computed against 160 would be a row that contradicts its
+// own arithmetic.
+func TestAPiercingSkillIsAuthoredAndPreviewsAgainstTheArmourItLeaves(t *testing.T) {
+	lib, err := Load(scratchData(t))
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	answers := SkillDraft{
+		ID: "sunder", Element: "metal", Target: "enemy", Range: "1", Pattern: "single",
+		Power: "1000", Strikes: "1", Accuracy: "900", Cooldown: "2", Pierce: "600",
+	}
+	built, err := answers.Resolve(lib)
+	if err != nil {
+		t.Fatalf("resolve a piercing draft: %v", err)
+	}
+	if built.Pierce != 600 {
+		t.Fatalf("the draft answered 600 and the skill pierces %d", built.Pierce)
+	}
+
+	reference := lib.Limits().Ceilings[progression.Defense] / 2
+	preview := lib.PreviewDamage(built)
+	if want := combat.Pierced(reference, 600); preview.Defense != want {
+		t.Errorf("the preview measures against %d defence, want the %d piercing leaves of %d",
+			preview.Defense, want, reference)
+	}
+	if want := lib.Rules().Damage(preview.Attack, preview.Defense, built.Power, 1000); preview.PerStrike != want {
+		t.Errorf("the preview says %d per strike but its own reference pair gives %d",
+			preview.PerStrike, want)
+	}
+	// A skill that pierces nothing still reads against the plain reference, so
+	// every skill authored before this existed previews as it always did.
+	plain := built
+	plain.Pierce = 0
+	if got := lib.PreviewDamage(plain); got.Defense != reference {
+		t.Errorf("an unpierced skill previews against %d defence, want the reference %d",
+			got.Defense, reference)
+	}
+
+	// And the answer survives a save, a reload and being read back into the form
+	// — which is the trip an edit takes.
+	if err := lib.SaveSkill(built); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+	reloaded, err := Load(lib.Dir())
+	if err != nil {
+		t.Fatalf("reload: %v", err)
+	}
+	returned, err := reloaded.Skills().Lookup(built.ID)
+	if err != nil {
+		t.Fatalf("the written skill is not in the reloaded book: %v", err)
+	}
+	if returned.Pierce != 600 {
+		t.Errorf("the reloaded skill pierces %d, want 600", returned.Pierce)
+	}
+	if got := SkillAnswers(returned).Pierce; got != "600" {
+		t.Errorf("the form reads the pierce back as %q, want \"600\"", got)
+	}
+	// Absent rather than a nought on a skill that does not pierce, so accepting
+	// the form as it stands writes the file that was read.
+	if got := SkillAnswers(plain).Pierce; got != "" {
+		t.Errorf("an unpierced skill reads back as %q, want an empty answer", got)
+	}
+}
+
 // TestAuthoringAgainstARestrictedSkillRefusesTheKitAndTheCharacter is the two
 // halves of part one meeting the tool that writes them: a skill is authored with
 // an allowlist, and the character form then refuses a kit holding it — first at

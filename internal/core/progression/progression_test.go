@@ -210,6 +210,54 @@ func TestEffectiveHPCombinesHealthAndDefence(t *testing.T) {
 	}
 }
 
+// TestEffectiveHPAgainstPiercingBottomsOutAtHealth is the honest floor of a stat
+// line: against damage that ignores its armour outright, what a unit absorbs is
+// what it has.
+//
+// It is also what makes the plain figure readable. EffectiveHP describes
+// non-piercing damage and the budget is measured against it, so a tool showing
+// only that quotes the best case; the gap between the two is how much of a
+// unit's durability it bought with armour rather than with health, and an
+// armour-heavy line is exactly where that gap is largest.
+func TestEffectiveHPAgainstPiercingBottomsOutAtHealth(t *testing.T) {
+	r := rules()
+	cases := []struct {
+		hp, defense int64
+	}{{4800, 0}, {4800, 800}, {3100, 800}, {2600, 320}}
+	for _, testCase := range cases {
+		values := progression.Values{progression.HP: testCase.hp, progression.Defense: testCase.defense}
+		if got := progression.EffectiveHPAgainst(values, r, 1000); got != testCase.hp {
+			t.Errorf("%d health behind %d defence absorbs %d when fully pierced, want its %d health",
+				testCase.hp, testCase.defense, got, testCase.hp)
+		}
+		// No piercing has to be the plain figure exactly, since that is the one
+		// the budget is checked against.
+		if got, want := progression.EffectiveHPAgainst(values, r, 0),
+			progression.EffectiveHP(values, r); got != want {
+			t.Errorf("unpierced, EffectiveHPAgainst gave %d against EffectiveHP's %d", got, want)
+		}
+	}
+}
+
+// TestPiercingInvertsWhichArmourProfileIsMoreDurable is the whole point of
+// giving armour an answer: two lines the budget calls equal are not equal once
+// something ignores defence, and it is the one carrying less health that loses.
+func TestPiercingInvertsWhichArmourProfileIsMoreDurable(t *testing.T) {
+	r := rules()
+	sentinel := progression.Values{progression.HP: 3100, progression.Defense: 800}
+	bulwark := progression.Values{progression.HP: 4800, progression.Defense: 400}
+	if progression.EffectiveHP(sentinel, r) <= progression.EffectiveHP(bulwark, r) {
+		t.Fatalf("the fixtures no longer describe the case: %d against %d unpierced",
+			progression.EffectiveHP(sentinel, r), progression.EffectiveHP(bulwark, r))
+	}
+	if progression.EffectiveHPAgainst(sentinel, r, 1000) >=
+		progression.EffectiveHPAgainst(bulwark, r, 1000) {
+		t.Errorf("fully pierced, the armoured line still absorbs %d against %d",
+			progression.EffectiveHPAgainst(sentinel, r, 1000),
+			progression.EffectiveHPAgainst(bulwark, r, 1000))
+	}
+}
+
 func TestCheckValuesRejects(t *testing.T) {
 	l, r := limits(), rules()
 	cases := []struct {

@@ -65,6 +65,7 @@ const (
 	LabelCarries
 	BudgetWithin
 	BudgetOver
+	BudgetPierced
 	CarryNoElementYet
 	CarryRefused
 	CarryAccepted
@@ -92,9 +93,11 @@ const (
 	SkillFieldCooldown
 	SkillFieldInflicts
 	SkillFieldOnItself
+	SkillFieldPierce
 	SkillFieldRestores
 	SkillFieldDrains
 	SkillHelpOnItself
+	SkillHelpPierce
 	SkillHelpRestores
 	SkillHelpDrains
 	SkillFieldKeptForElements

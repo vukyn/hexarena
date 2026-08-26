@@ -60,11 +60,12 @@ type SkillEdit struct {
 	Strikes  *string
 	Accuracy *string
 	Cooldown *string
-	// SelfApplies, Restores and Drains, like every other field here, are nil
+	// SelfApplies, Pierce, Restores and Drains, like every other field here, are nil
 	// when the flag was not given and point at an answer when it was — so an
 	// empty string clears a list or zeroes a figure, and an absent flag leaves
 	// it alone.
 	SelfApplies *string
+	Pierce      *string
 	Restores    *string
 	Drains      *string
 	Applies     *string
@@ -99,6 +100,7 @@ func (e SkillEdit) Draft(current skill.Skill) SkillDraft {
 		{&drafted.Cooldown, e.Cooldown},
 		{&drafted.Applies, e.Applies},
 		{&drafted.SelfApplies, e.SelfApplies},
+		{&drafted.Pierce, e.Pierce},
 		{&drafted.Restores, e.Restores},
 		{&drafted.Drains, e.Drains},
 		{&drafted.RestrictElements, e.RestrictElements},

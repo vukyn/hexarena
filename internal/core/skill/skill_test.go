@@ -103,6 +103,13 @@ func TestParseBookRejects(t *testing.T) {
 		{"negative accuracy", func(s map[string]any) { s["accuracy"] = -5 }, "parts per thousand"},
 		{"damage that can never land", func(s map[string]any) { s["accuracy"] = 0 }, "can never connect"},
 		{"negative cooldown", func(s map[string]any) { s["cooldown"] = -1 }, "want zero or more"},
+		{"piercing past the whole armour", func(s map[string]any) { s["pierce"] = 1200 }, "parts per thousand"},
+		{"negative piercing", func(s map[string]any) { s["pierce"] = -100 }, "parts per thousand"},
+		{"piercing with nothing to pierce with", func(s map[string]any) {
+			s["power"] = 0
+			s["pierce"] = 400
+			s["strips"] = map[string]any{"categories": []string{"dot"}, "stacks": 1}
+		}, "never attacks through"},
 		{"range of zero on an enemy skill", func(s map[string]any) { s["range"] = 0 }, "want between 1 and"},
 		{"range past the board", func(s map[string]any) { s["range"] = 9 }, "want between 1 and"},
 		{"a skill that does nothing at all", func(s map[string]any) {
@@ -746,6 +753,11 @@ func TestMarshalIsLosslessForEveryBlockASkillCanDeclare(t *testing.T) {
 			"strips":   map[string]any{"categories": []string{"dot", "stat_debuff"}, "stacks": 2},
 			"restrict": map[string]any{"elements": []string{"fire", "metal"}},
 		}),
+		// Piercing at both ends of its range, since the field is written only
+		// when there is some: nought has to leave no key behind and a full
+		// thousand has to survive as one.
+		merge(base(), map[string]any{"id": "cleaver", "pierce": 1000}),
+		merge(base(), map[string]any{"id": "chipper", "pierce": 1}),
 		// A restriction with all three lists, and a condition that does not
 		// consume, so the false half of that flag is covered too.
 		merge(base(), map[string]any{
@@ -784,7 +796,7 @@ func TestMarshalIsLosslessForEveryBlockASkillCanDeclare(t *testing.T) {
 	}
 	// The order is the order it was declared in, because skills.golden's table
 	// is that order and it is a design record rather than a listing.
-	for i, want := range []string{"plain", "everything", "kept"} {
+	for i, want := range []string{"plain", "everything", "cleaver", "chipper", "kept"} {
 		if got := reparsed.Skills()[i].ID; got != want {
 			t.Errorf("skill %d came back as %q, want %q", i, got, want)
 		}

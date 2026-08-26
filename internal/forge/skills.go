@@ -56,6 +56,9 @@ type SkillDraft struct {
 	// is a separate answer rather than a marker inside Applies because the two
 	// reach different units and a skill regularly does both.
 	SelfApplies string
+	// Pierce is the share of the target's defence the skill ignores, in parts
+	// per thousand. Empty is the common case and means none.
+	Pierce string
 	// Restores is health given to whoever the skill targets, in parts per
 	// thousand of the caster's scaling stat.
 	Restores string
@@ -136,7 +139,7 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 	}{
 		{"range", d.Range}, {"power", d.Power}, {"strikes", d.Strikes},
 		{"accuracy", d.Accuracy}, {"cooldown", d.Cooldown},
-		{"restores", d.Restores}, {"drains", d.Drains},
+		{"pierce", d.Pierce}, {"restores", d.Restores}, {"drains", d.Drains},
 	} {
 		// A map written and read by key, never ranged over into an output: the
 		// fields below are named one at a time.
@@ -171,6 +174,7 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 	base.Power = numbers["power"]
 	base.Strikes = numbers["strikes"]
 	base.Accuracy = numbers["accuracy"]
+	base.Pierce = numbers["pierce"]
 	base.Cooldown = numbers["cooldown"]
 	base.Applies = applies
 	base.SelfApplies = selfApplies
@@ -235,9 +239,13 @@ func SkillAnswers(current skill.Skill) SkillDraft {
 		// The declared count rather than StrikeCount: an unset count means one,
 		// but it is written as the zero it was authored as, so accepting the
 		// field as it stands reproduces the file rather than normalising it.
-		Strikes:     strconv.Itoa(current.Strikes),
-		Accuracy:    strconv.Itoa(current.Accuracy),
-		Cooldown:    strconv.Itoa(current.Cooldown),
+		Strikes:  strconv.Itoa(current.Strikes),
+		Accuracy: strconv.Itoa(current.Accuracy),
+		Cooldown: strconv.Itoa(current.Cooldown),
+		// Optional, so an unpierced skill comes back as an empty answer rather
+		// than a nought: accepting the form as it stands has to write the file
+		// that was read, and a nought would add a "pierce": 0 key to it.
+		Pierce:      optionalNumber(current.Pierce),
 		Applies:     FormatApplications(current.Applies),
 		SelfApplies: FormatApplications(current.SelfApplies),
 		Restores:    optionalNumber(current.Restores),
@@ -535,6 +543,12 @@ func (l *Library) StatusIDs() []string {
 type SkillPreview struct {
 	// Attack and Defense are the reference figures the damage is measured
 	// against, carried so a front-end can name them rather than assume them.
+	//
+	// Defense is what the skill faces rather than what the defender has: a
+	// piercing skill's share is already off it. That keeps the line able to
+	// explain itself — a reader who divides by the defence named here reproduces
+	// the damage named beside it — which is the same reason the event log carries
+	// the pierce it resolved at.
 	Attack, Defense int64
 	// PerStrike is one strike's damage and Total is every strike's, which is
 	// the figure to compare two skills of different strike counts by.
@@ -567,7 +581,7 @@ type SkillPreview struct {
 // directly above this line, so an author reads the two together.
 func (l *Library) PreviewDamage(built skill.Skill) SkillPreview {
 	attack := l.limits.Ceilings[progression.Attack]
-	defense := l.limits.Ceilings[progression.Defense] / 2
+	defense := combat.Pierced(l.limits.Ceilings[progression.Defense]/2, built.Pierce)
 	preview := SkillPreview{
 		Attack: attack, Defense: defense, Strikes: built.StrikeCount(),
 	}

@@ -336,6 +336,36 @@ func TestLineSpellsOutTheAffinity(t *testing.T) {
 	}
 }
 
+// TestADamagedLineSaysWhatArmourItWentThrough is the renderer's half of the
+// contract: the event carries the share, and a reader who cannot see it cannot
+// account for the damage.
+func TestADamagedLineSaysWhatArmourItWentThrough(t *testing.T) {
+	cases := []struct {
+		pierce int
+		want   string
+	}{
+		{0, ""},
+		{400, "through 40% of the armour"},
+		{1000, "straight through the armour"},
+	}
+	for _, testCase := range cases {
+		line := tui.Line(battle.Event{
+			Kind: battle.Damaged, Actor: "a", Target: "f",
+			Amount: 500, Multiplier: 1000, Pierce: testCase.pierce, Remaining: 1000,
+		}, nil)
+		if testCase.want == "" {
+			if strings.Contains(line, "armour") {
+				t.Errorf("a hit that pierced nothing rendered as %q", line)
+			}
+			continue
+		}
+		if !strings.Contains(line, testCase.want) {
+			t.Errorf("a pierce of %d rendered as %q, want %q in it",
+				testCase.pierce, line, testCase.want)
+		}
+	}
+}
+
 func TestLineFallsBackToTheIdWhenUntagged(t *testing.T) {
 	line := tui.Line(battle.Event{Kind: battle.Damaged, Actor: "stranger", Target: "other"}, nil)
 	if !strings.Contains(line, "stranger") || !strings.Contains(line, "other") {

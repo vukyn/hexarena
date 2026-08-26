@@ -636,7 +636,9 @@ func (f formScreen) liveChecks(m model, labelWidth int) string {
 		out.WriteString(m.labelAt(m.text(i18n.LabelBudget), labelWidth, "%s", m.style.bad.Render(m.lang.Error(err))))
 	} else {
 		values := table.At(progression.LevelCap)
-		out.WriteString(m.labelAt(m.text(i18n.LabelBudget), labelWidth, "%s", budgetLine(m, m.lib.Budget(values))))
+		budget := m.lib.Budget(values)
+		out.WriteString(m.labelAt(m.text(i18n.LabelBudget), labelWidth, "%s", budgetLine(m, budget)))
+		out.WriteString(m.labelAt("", labelWidth, "%s", m.style.dim.Render(m.lang.BudgetPierced(budget))))
 	}
 
 	out.WriteString(m.labelAt(m.text(i18n.LabelCarries), labelWidth, "%s", f.carryLine(m, draft)))

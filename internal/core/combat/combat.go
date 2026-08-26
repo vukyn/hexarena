@@ -110,6 +110,13 @@ func (r Rules) GrantBlocks(held, granted int) (total, wasted int) {
 //
 // A hit that resolves below MinimumDamage is raised to it, but an attack with
 // no power behind it deals nothing at all.
+//
+// defense is the defence as it applies to this hit, piercing already taken off.
+// Piercing is Pierced's job rather than a fifth parameter here: five positional
+// integers is a signature a mis-ordered argument passes silently, and Hit is the
+// struct that exists precisely to carry an attack whose terms are all settled.
+// A caller that reaches this directly rather than through Strike is asking for
+// the raw curve, and a damage-over-time tick is exactly that — see turn.go.
 func (r Rules) Damage(attack, defense int64, skillMultiplier, affinityMultiplier int) int64 {
 	if attack <= 0 || skillMultiplier <= 0 || affinityMultiplier <= 0 {
 		return 0
@@ -142,6 +149,32 @@ func (r Rules) Restore(stat int64, multiplier int) int64 {
 	return stat * int64(multiplier) / int64(PermilleBase)
 }
 
+// Pierced returns the defence a hit resolves against once a piercing ratio has
+// been taken off it, in parts per thousand of defence ignored.
+//
+// It is a ratio rather than a switch, and that is the whole design. Measured
+// against a 3100/800 unit and a 4800/400 one, both of which sit at the same
+// joint budget, a ratio walks the armoured unit's edge from 0.98x to 1.55x
+// across its range while a switch jumps straight to the far end — making an
+// armour unit worthless against one skill and unaffected by the next, with
+// nothing in between. A hard cap on a continuous quantity is the shape this
+// engine has rejected everywhere else, which is why buffs saturate.
+//
+// Only the ignored share is truncated, so full piercing reaches exactly zero
+// defence and no piercing leaves the defence exactly as it was.
+func Pierced(defense int64, pierce int) int64 {
+	if defense <= 0 {
+		return 0
+	}
+	if pierce <= 0 {
+		return defense
+	}
+	if pierce >= PermilleBase {
+		return 0
+	}
+	return defense * int64(PermilleBase-pierce) / int64(PermilleBase)
+}
+
 // DefenseReduction returns the share of damage that gets through a given
 // defence, in parts per thousand. It exists for tuning and for showing the
 // curve; Damage does not call it, because folding it in would introduce a
@@ -171,8 +204,17 @@ type Hit struct {
 	Strikes int
 	// Affinity is the elemental multiplier, in parts per thousand.
 	Affinity int
-	// Defense is the target's defence, already buffed.
+	// Defense is the target's defence, already buffed and not yet pierced.
 	Defense int64
+	// Pierce is the share of that defence the skill ignores, in parts per
+	// thousand. Zero is every skill that does not pierce, which is why adding
+	// the field moved no golden file.
+	//
+	// It sits on the hit rather than being folded into Defense by the caller so
+	// that the figure survives to the event log: a pierced hit that logs like an
+	// ordinary one leaves the log unable to explain its own numbers, which is
+	// the same trap a silent passive would set.
+	Pierce int
 	// SkillAccuracy is the skill's own chance to connect, in parts per
 	// thousand. Zero means the skill never lands, so it must be set.
 	SkillAccuracy int
@@ -357,9 +399,10 @@ func (h Hit) StrikeCount() int {
 	return h.Strikes
 }
 
-// Strike returns the damage of a single strike.
+// Strike returns the damage of a single strike, against whatever defence the
+// hit's piercing leaves standing.
 func (r Rules) Strike(h Hit) int64 {
-	return r.Damage(h.Scaling, h.Defense, h.Multiplier, h.Affinity)
+	return r.Damage(h.Scaling, Pierced(h.Defense, h.Pierce), h.Multiplier, h.Affinity)
 }
 
 // Resolve returns the damage of each strike in order.

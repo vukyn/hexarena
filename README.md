@@ -91,6 +91,64 @@ Damage is a ratio against defence rather than a subtraction because
 between full damage and none, and that breakpoint moves every time the level cap
 changes.
 
+## Piercing
+
+A skill may declare `pierce`, the share of the target's defence it ignores, in
+parts per thousand. It is the answer to armour, which was the one defence in the
+game with nothing on the other side of it: dodge answers accuracy, a guaranteed
+hit answers dodge, block answers the guaranteed hit, multi-strike answers block,
+cleanse answers a poison — and armour answered all of them.
+
+**It is a ratio rather than a switch**, and that is the design rather than an
+implementation detail. `progression.Limits` caps health and defence together
+because they multiply, so two very different builds sit at the same bound:
+
+| | health | defence | absorbs |
+| --- | ---: | ---: | ---: |
+| sentinel | 3100 | 800 | 11397 |
+| bulwark | 4800 | 400 | 11214 |
+
+Equal to within two percent. Piercing is what separates them, and how far it
+separates them is the dial:
+
+| pierced | sentinel | bulwark | bulwark's edge |
+| ---: | ---: | ---: | ---: |
+| 0 | 11397 | 11214 | 0.98x |
+| 200 | 9717 | 9937 | 1.02x |
+| 400 | 8072 | 8648 | 1.07x |
+| 600 | 6418 | 7361 | 1.15x |
+| 1000 | 3100 | 4800 | 1.55x |
+
+A switch — true damage, defence ignored outright — offers only the last row,
+which makes an armour unit worthless against one skill and untouched by the next
+with nothing in between. That is the same reason buffs saturate here instead of
+being clamped: a hard cap on a continuous quantity is the wrong shape, and this
+engine has chosen against it everywhere else.
+
+Three things follow, and each of them was a decision:
+
+- **It reaches the skill's own strikes and nothing else.** A status the skill
+  applies ticks against full defence, because a tick's damage is computed once
+  when the stack is applied and frozen for the stack's whole life — so a pierced
+  tick would be worth as many pierced hits as the stack has turns left. Measured
+  on the shipped poison that is 400 a turn for three turns against 171, which is
+  a different skill from the one the author wrote.
+- **A pierced hit says so in the log.** The `damaged` event carries the share.
+  Without it a reader holding the attacker's stats, the power and the multiplier
+  could reproduce every damage figure in the game except this one, and a log its
+  reader cannot reproduce is the log lying. The terminal client reads it out as
+  *through 40% of the armour*.
+- **The effective-health figure now describes one case out of two.** It measures
+  damage that does not pierce, which is what the budget is checked against, so
+  `hexforge` shows the other end beside it: what a stat line absorbs when its
+  armour is ignored outright, which is exactly its health. The gap between the
+  two figures is how much of a unit's durability it bought with armour rather
+  than with health.
+
+Nothing in the shipped data pierces yet, which is why adding it moved no golden
+file. The first skill given a non-zero value will move `scenarios.golden`, and
+that diff is the record of the balance change.
+
 ## Elements
 
 Eleven elements. Eight sit in two four-cycles joined by a cross eight-cycle,
@@ -658,73 +716,22 @@ Two answers, and they are not alternatives:
     fine; anything reading a clock is not, and a battle that drew on one machine
     has to draw on every other from the same seed.
 
-### Piercing, as the answer to armour
+### A skill that pierces, and what it does to the budget
 
-Nothing in the game currently ignores defence. Every damage source goes through
-the same curve — a normal hit, a splash hit, and a damage-over-time tick all
-divide by `K + defence`, which is what "damage over time goes through armour"
-settled: through the *formula*, not around it. So the effective-health figure
-`hexforge` reports is exact today rather than an estimate.
+Piercing exists and nothing uses it — see *Piercing* above. Two things are left,
+and both are balance rather than engineering:
 
-That leaves the armour end of the stat budget without a counter. `progression.Limits`
-caps health and defence *together* because they multiply, and two very different
-units can sit at the same cap:
-
-| | health | defence | absorbs |
-| --- | ---: | ---: | ---: |
-| sentinel | 3100 | 800 | 11397 |
-| bulwark | 4800 | 400 | 11214 |
-
-Equal to within two percent, and every other defence in the game answers
-something: dodge answers accuracy, a guaranteed hit answers dodge, block answers
-the guaranteed hit, multi-strike answers block, cleanse answers a poison. Armour
-answers all of them and nothing answers armour.
-
-**Piercing should be a ratio, not a switch.** Measured against the two units
-above, as parts per thousand of defence ignored:
-
-| pierced | sentinel | bulwark | bulwark's edge |
-| ---: | ---: | ---: | ---: |
-| 0 | 11397 | 11214 | 0.98x |
-| 200 | 9717 | 9937 | 1.02x |
-| 400 | 8072 | 8648 | 1.07x |
-| 600 | 6418 | 7361 | 1.15x |
-| 1000 | 3100 | 4800 | 1.55x |
-
-A ratio is a dial across that whole range. A switch — true damage, defence
-ignored outright — jumps straight to the last row, which makes an armour unit
-absolutely worthless against one skill and unaffected by the next, with nothing
-in between. That is the same reason buffs saturate here instead of being clamped:
-a hard cap on a continuous quantity is the wrong shape, and this engine has
-already chosen against it everywhere else.
-
-What an implementation has to settle:
-
-- **Where the number lives.** A field on `skill.Skill`, passed into
-  `combat.Rules.Damage` as another parameter. Adding it with a zero default moves
-  **no golden file**; the first shipped skill given a non-zero value moves
-  `scenarios.golden`, and that diff is the record of the balance change. `sever`
-  is the obvious first candidate — it is the metal skill that already exists to
-  cut through things.
-- **Whether it reaches damage over time.** A tick's damage is computed once, when
-  the stack is *applied*, and frozen on the stack. So a piercing skill that
-  applies a poison would freeze a pierced tick for the rest of that stack's life,
-  which is a much larger effect than a pierced single hit. Decide deliberately.
-- **What it does to the budget.** `MaxEffectiveHP` bounds durability against
-  non-piercing damage. Once piercing exists, that bound no longer describes the
-  worst case, and the question becomes whether raw health needs a floor of its own
-  so an all-armour unit cannot be deleted by one skill.
-- **How it reads in the log.** A pierced hit that looks like an ordinary hit makes
-  the log unable to explain its own numbers — the same trap passive skills have.
-  It needs to be visible in the event, not inferred from the damage being larger
-  than expected.
-- **What the tools say.** `hexforge`'s effective-health figure, and the
-  `máu quy đổi` / `effective hp` row, describe durability against damage that does
-  not pierce. The moment piercing ships, one number stops being the answer and
-  both cases have to be shown, or the label is lying.
-
-Determinism is unaffected: this is integer parts-per-thousand arithmetic with no
-new randomness, which is the one thing that makes it cheap to add later.
+- **Which skill gets it.** `sever` was the obvious candidate and has been
+  retired along with the rest of the original book, so the decision is open. A
+  cutting skill is the natural home; Bulbasaur's `razor_leaf` is the only one in
+  the shipped cast that reads that way. Giving any skill a non-zero value moves
+  `scenarios.golden`, and reading that diff is how the change gets checked.
+- **Whether raw health needs a floor of its own.** `MaxEffectiveHP` bounds
+  durability against damage that does not pierce, and against damage that does,
+  the sentinel above absorbs 3100 where the bulwark absorbs 4800. Both are legal
+  today. Whether an armour-heavy line should be allowed to be that thin is a
+  question worth measuring against a real piercing skill rather than deciding in
+  advance — which is the other reason to author the skill first.
 
 ### A real cast
 

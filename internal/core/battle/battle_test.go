@@ -68,6 +68,11 @@ func books(t *testing.T) battle.Books {
 	   "power":400,"strikes":3,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"thorn","element":"grass","range":1,"pattern":"single",
 	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"cleave","element":"neutral","range":1,"pattern":"single",
+	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy","pierce":600},
+	  {"id":"venom_edge","element":"neutral","range":1,"pattern":"single",
+	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy","pierce":1000,
+	   "applies":[{"status":"poison","chance":1000}]},
 	  {"id":"envenom","element":"neutral","range":1,"pattern":"single",
 	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
 	   "applies":[{"status":"poison","chance":1000}]},
@@ -1100,4 +1105,104 @@ func withNames(t *testing.T, deck battle.Books) *skill.Book {
 		t.Fatalf("the named book does not load: %v", err)
 	}
 	return book
+}
+
+// TestPiercingGoesThroughArmourAndTheLogSaysSo is the mechanism in a real
+// battle: the same power against the same defender, once with armour in the way
+// and once with most of it ignored.
+//
+// The log carrying the share is half the test rather than a detail. A reader
+// holding the attacker's stats, the power and the multiplier can reproduce every
+// other damage figure the engine emits, and a pierced hit that said nothing
+// would be the one they could not — which is the log failing at the only job it
+// has.
+func TestPiercingGoesThroughArmourAndTheLogSaysSo(t *testing.T) {
+	hit := func(skillID string) battle.Event {
+		t.Helper()
+		fight := duel(t, []string{skillID}, []string{"jab"}, 200, 70)
+		fight.Begin()
+		fight.Drain()
+		if _, err := fight.Advance(); err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if err := fight.Act(skillID, hex.Offset{Col: 3, Row: 1}); err != nil {
+			t.Fatalf("act: %v", err)
+		}
+		damaged := find(fight.Drain(), battle.Damaged)
+		if len(damaged) != 1 {
+			t.Fatalf("%s produced %d damage events, want 1", skillID, len(damaged))
+		}
+		return damaged[0]
+	}
+
+	// strike and cleave are the same skill but for the piercing, so the two
+	// figures differ by nothing else.
+	plain := hit("strike")
+	pierced := hit("cleave")
+	if pierced.Amount <= plain.Amount {
+		t.Errorf("piercing 600 dealt %d against the %d a plain strike dealt",
+			pierced.Amount, plain.Amount)
+	}
+	if plain.Pierce != 0 {
+		t.Errorf("a strike that pierces nothing logged a pierce of %d", plain.Pierce)
+	}
+	if pierced.Pierce != 600 {
+		t.Errorf("the pierced hit logged a pierce of %d, want the skill's 600", pierced.Pierce)
+	}
+	// The figure has to be the one the logged terms produce, or the log is a
+	// story about the hit rather than a record of it.
+	rules := books(t).Rules
+	want := rules.Damage(800, combat.Pierced(400, pierced.Pierce), pierced.Power, pierced.Multiplier)
+	if pierced.Amount != want {
+		t.Errorf("the log says %d damage but its own terms give %d", pierced.Amount, want)
+	}
+}
+
+// TestAPiercingSkillDoesNotPierceTheStatusItApplies is the decision this
+// mechanism turns on, and the reason it is a test rather than a comment.
+//
+// A tick's damage is computed once, when the stack is applied, and frozen for
+// the stack's whole life. So piercing a tick would be worth as many pierced hits
+// as the stack has turns left — three, here — which is a far larger effect than
+// the per-strike ratio an author wrote. venom_edge pierces the armour outright
+// and its poison still has to tick for exactly what envenom's does.
+func TestAPiercingSkillDoesNotPierceTheStatusItApplies(t *testing.T) {
+	applied := func(skillID string) battle.Event {
+		t.Helper()
+		fight := duel(t, []string{skillID}, []string{"jab"}, 200, 70)
+		fight.Begin()
+		fight.Drain()
+		if _, err := fight.Advance(); err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if err := fight.Act(skillID, hex.Offset{Col: 3, Row: 1}); err != nil {
+			t.Fatalf("act: %v", err)
+		}
+		events := find(fight.Drain(), battle.StatusApplied)
+		if len(events) != 1 {
+			t.Fatalf("%s applied %d statuses, want 1", skillID, len(events))
+		}
+		return events[0]
+	}
+
+	plain := applied("envenom")
+	pierced := applied("venom_edge")
+	if plain.Amount == 0 {
+		t.Fatalf("the plain poison froze a tick of nothing, so this proves nothing")
+	}
+	if pierced.Amount != plain.Amount {
+		t.Errorf("the poison of a piercing skill ticks for %d against the %d a plain one ticks for",
+			pierced.Amount, plain.Amount)
+	}
+	// And the figure is the one full defence gives, not merely equal to another
+	// wrong one: both would be pierced if Pierced had been folded into the
+	// defence the caller passes.
+	rules := books(t).Rules
+	kind, err := books(t).Statuses.Lookup("poison")
+	if err != nil {
+		t.Fatalf("poison: %v", err)
+	}
+	if want := rules.Damage(800, 400, kind.TickPower, 1000); pierced.Amount != want {
+		t.Errorf("the frozen tick is %d, want the %d full defence gives", pierced.Amount, want)
+	}
 }

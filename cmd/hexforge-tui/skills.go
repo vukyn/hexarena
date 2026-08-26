@@ -40,6 +40,7 @@ const (
 	skillFieldCooldown
 	skillFieldInflicts
 	skillFieldOnItself
+	skillFieldPierce
 	skillFieldRestores
 	skillFieldDrains
 	skillFieldKeptForElements
@@ -177,6 +178,7 @@ func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScr
 		{skillFieldCooldown, answers.Cooldown},
 		{skillFieldInflicts, answers.Applies},
 		{skillFieldOnItself, answers.SelfApplies},
+		{skillFieldPierce, answers.Pierce},
 		{skillFieldRestores, answers.Restores},
 		{skillFieldDrains, answers.Drains},
 	} {
@@ -229,6 +231,7 @@ func (s skillsScreen) draft(m model) forge.SkillDraft {
 		Cooldown:           s.inputs[skillFieldCooldown].Value(),
 		Applies:            s.inputs[skillFieldInflicts].Value(),
 		SelfApplies:        s.inputs[skillFieldOnItself].Value(),
+		Pierce:             s.inputs[skillFieldPierce].Value(),
 		Restores:           s.inputs[skillFieldRestores].Value(),
 		Drains:             s.inputs[skillFieldDrains].Value(),
 		RestrictElements:   strings.Join(s.keptElements, ","),
@@ -748,6 +751,7 @@ func skillFieldLabel(m model, field int) string {
 		skillFieldCooldown:          i18n.SkillFieldCooldown,
 		skillFieldInflicts:          i18n.SkillFieldInflicts,
 		skillFieldOnItself:          i18n.SkillFieldOnItself,
+		skillFieldPierce:            i18n.SkillFieldPierce,
 		skillFieldRestores:          i18n.SkillFieldRestores,
 		skillFieldDrains:            i18n.SkillFieldDrains,
 		skillFieldKeptForElements:   i18n.SkillFieldKeptForElements,
@@ -783,6 +787,7 @@ func skillFieldHelp(m model, field int) string {
 		skillFieldCooldown:          i18n.SkillHelpCooldown,
 		skillFieldInflicts:          i18n.SkillHelpInflicts,
 		skillFieldOnItself:          i18n.SkillHelpOnItself,
+		skillFieldPierce:            i18n.SkillHelpPierce,
 		skillFieldRestores:          i18n.SkillHelpRestores,
 		skillFieldDrains:            i18n.SkillHelpDrains,
 		skillFieldKeptForElements:   i18n.SkillHelpKeptForElements,
@@ -1003,10 +1008,11 @@ func (s skillsScreen) value(m model, field, labelWidth int) string {
 		return s.listValue(m, s.keptRoles, labelWidth)
 	case skillFieldKeptForCharacters:
 		return s.listValue(m, s.keptWho, labelWidth)
-	case skillFieldAccuracy, skillFieldPower, skillFieldRestores, skillFieldDrains:
-		// Both are authored in parts per thousand because that is what the
-		// engine multiplies and divides by, but nobody reads 850 as a chance or
-		// 2200 as "twice over". The percentage sits beside the field rather than
+	case skillFieldAccuracy, skillFieldPower, skillFieldPierce,
+		skillFieldRestores, skillFieldDrains:
+		// Every one of these is authored in parts per thousand because that is
+		// what the engine multiplies and divides by, but nobody reads 850 as a
+		// chance or 2200 as "twice over". The percentage sits beside the field rather than
 		// replacing it: the number written to the file is still the number on
 		// screen.
 		return s.inputs[field].View() + s.percentHint(m, field)
