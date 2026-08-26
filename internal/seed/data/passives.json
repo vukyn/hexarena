@@ -35,6 +35,18 @@
       ]
     },
     {
+      "id": "virulence",
+      "name": "độc lực",
+      "grants": [],
+      "amplifies": [
+        {
+          "status": "poison",
+          "effect": 300,
+          "chance": 200
+        }
+      ]
+    },
+    {
       "id": "venom_blood",
       "name": "máu độc",
       "grants": [],

@@ -934,6 +934,58 @@ optional note, and no stats, no kit and no rule of its own.
   `TestEveryShippedSkillTakesABalanceEdit` now compares the restriction across the
   edit, which is the general form of that check rather than a species-shaped one.
 
+## Amplifying a status, which really is two features
+
+Shipped. A trait may declare `amplifies`, per status, with two optional shares:
+`effect` raises the damage-over-time tick and `chance` raises the roll that
+decides whether the status lands. Either alone is a legal trait, because they are
+worth different things — a tick pays over the life of a stack, a chance pays per
+cast.
+
+- **Both sides meet at one site and compose by multiplying.** `battle.amplify`
+  raises the chance, `battle.resist` lowers it, both inside `inflict`, so the
+  order they are applied in cannot matter and neither has to know the other
+  exists. The cost is stated rather than hidden: resistances stacking *diminish*
+  for free, amplifiers stacking *compound*.
+- ⚠️ **`amplify` reads the unit that is *acting*; `resist`, a few lines above it,
+  reads the unit being acted on.** Every other job a trait has is about its
+  holder. The two take the same Go type, so passing the wrong one compiles and
+  silently hands a target its attacker's amplifier —
+  `TestAnAmplifierReadsTheUnitThatIsActing` is the only thing standing between
+  that and a release.
+- **The clamp is last, and only last.** A probability cannot exceed one, so a
+  composed chance is clamped to `scale.Base` — but clamping *before* the target's
+  share would make the order matter (a certainty amplified then halved is 500,
+  halved then amplified is 600). Compose, then clamp.
+- **The tick is amplified where it is frozen**, in the one multiplication
+  `inflict` hands `Set.Apply`, so nothing later has to know the trait existed —
+  which matters because a `Stack` deliberately does not remember who applied it.
+- **The shares reach the event, and the record.** `AmplifiedChance` and
+  `AmplifiedEffect` sit beside `Refused` on `status_applied` and
+  `status_resisted`, and the replay record prints them (and the frozen tick) when
+  there is one. This was the third time the same trap came up after `Pierce` and
+  `Refused`, and the first time it was noticed before shipping rather than after.
+- ⚠️ **A regeneration cannot have its effect amplified, and the reason is a bug
+  older than this field.** A regen declares `tick_power` and heals from a frozen
+  amount exactly as a poison damages from one, but `battle.inflict` computes a
+  tick only for a `Dot` — so **an applied regeneration freezes nought and heals
+  nothing**. `ingrain` and `aqua_ring` both self-apply `regrowth`; nothing has
+  noticed because `battle.Suggest` never casts a non-damaging skill. The parse
+  refuses `effect` on anything but a `Dot` rather than promising a multiplication
+  of zero. Fixing the regen is its own change, and it moves balance.
+- **It composes with a reply for free, and the shipped data proves it.**
+  `venom_blood` answers an attacker with poison and `virulence` amplifies poison;
+  both sit on the same Bulbasaur, and a reply inflicts through the same
+  `battle.inflict` with the holder as the actor — so the reply's poison is
+  amplified too, 25 per mille becoming 30 in the record. Nothing was written to
+  make that happen, which is the argument for `origin` and for one inflict path
+  rather than two.
+- Still absent: **vulnerability**, the mirror where a target is *easier* to
+  affect. It is `Resists` with a negative share and reuses the whole composition,
+  but it needs one decision first — a negative `Refused` in the log, and the
+  early return in `resist` that treats "nothing refused" as "nothing to do" would
+  silently drop it.
+
 ## Open work
 
 Detail and the open questions are in `README.md` under Roadmap. What matters here
@@ -979,7 +1031,9 @@ is the constraint each piece has to respect.
       (1) *poison specialist*: immune to poison · its poison hurts more ·
       attacking it poisons the attacker. (2) *bloodsucker*: heals from damage
       dealt · heals more the closer it is to dying. Pieces: `Resists` ✅ ·
-      *Amplifying a status* ❌ · *Answering back* ✅ (`venom_blood` replies) ·
+      *Amplifying a status* ✅ (`virulence`, carried from Venusaur onwards) ·
+      *Answering back* ✅ (`venom_blood` replies) — **so build (1), the poison
+      specialist, is complete**: immune, sharper, and it bites back ·
       **passive lifesteal** ✅ · `While` ✅ (`blaze` is gated).
 - [x] **Passive lifesteal — SHIPPED.** `passive.Passive.Drains`, a share of the
       damage its holder deals, added to the skill's own drain and resolved where a
@@ -1010,23 +1064,6 @@ is the constraint each piece has to respect.
       differ in **kind** — a resistance, a gated grant, a reply and a drain are
       four different sorts of thing to choose between.
       See README → *Two builds for one character*.
-- [ ] **Amplifying a status is two features, not one.** A trait that "makes its
-      poison better" means either **a stronger tick** — one multiplication into
-      the tick `battle.inflict` freezes on the stack — or **a better chance**,
-      which is the *same site a resistance already bites*, so the two meet there
-      and the multiplicative composition makes their order irrelevant. Keep them
-      separate: a trait may want either alone, and they read differently in play
-      (a tick is worth more the longer a stack lives, a chance the more often the
-      skill is cast). ⚠️ **This is the first trait to read the *applier's*
-      passives at a site that reads the target's** — `Battle.resist` walks the
-      target's, an amplifier walks the actor's, both inside `inflict`. And the
-      third step is the one that gets skipped: **the amplification has to reach
-      the event**, because `status_applied.amount` already carries the frozen tick,
-      so an amplified poison reads as 260 where it was 201 with nothing saying why
-      — the same trap `Pierce` and `Refused` were added for, now for the third
-      time. The mirror is cheap: a **vulnerability** is `Resists` with a negative
-      share, so opening its 1..1000 bound downwards reuses the whole composition
-      rather than adding a field.
 - [x] **Answering back — the fifth job.** `venom_blood` now costs whatever bit
       into it: `"replies": {"power": 40, "applies": [{"status":"poison","chance":25}]}`.
       ⚠️ **Not `applies` reworded** — that fires on a target the holder chose,

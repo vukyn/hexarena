@@ -840,7 +840,21 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 	if err != nil {
 		return
 	}
-	chance, refused := b.resist(target, kind.ID, application.Chance)
+	// The actor's side first and the target's second, which reads in the order
+	// the fiction does — a trait sharpens what is thrown, armour refuses what
+	// arrives — and is arithmetically the same either way round, which is the
+	// point of both composing by multiplication.
+	amplifiedEffect, amplifiedChance := b.amplify(actor, kind.ID)
+	chance, refused := b.resist(target, kind.ID,
+		int(raise(int64(application.Chance), amplifiedChance)))
+	// Clamped last, and only here. A probability cannot exceed one, so an
+	// amplifier on an application that already lands every time is worth
+	// nothing — but clamping *before* the target's share would make the order
+	// the two sides compose in matter: a certain application amplified then
+	// halved is five hundred, while halved then amplified is six. Composing
+	// first and clamping the result keeps the two interchangeable, which is the
+	// property both sides were written around.
+	chance = min(chance, scale.Base)
 	// Chance is the figure that was actually rolled and Refused says why it is
 	// not the skill's own. Without the second, a reader of the log cannot tell an
 	// application that rolled badly from one the target refused — and the kind is
@@ -851,6 +865,7 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 			Kind: StatusResisted, At: turn.At, Turn: turn.Number, Actor: actor.ID,
 			Target: target.ID, Skill: from.Skill, Passive: from.Passive,
 			Status: kind.ID, Chance: chance, Refused: refused,
+			AmplifiedChance: amplifiedChance,
 		})
 		return
 	}
@@ -862,12 +877,12 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 		// as the stack has turns left — a far larger effect than the per-strike
 		// ratio the author wrote. That is why Pierced is applied by Strike and
 		// not folded into the defence a caller passes.
-		tick = b.books.Rules.Damage(
+		tick = raise(b.books.Rules.Damage(
 			b.Stats(actor)[from.Scaling],
 			b.Stats(target)[progression.Defense],
 			kind.TickPower,
 			b.books.Chart.MultiplierAgainst(from.Element, target.Affinity),
-		)
+		), amplifiedEffect)
 	}
 	applied := 0
 	wasted := 0
@@ -884,6 +899,7 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 		Kind: StatusApplied, At: turn.At, Turn: turn.Number, Actor: actor.ID,
 		Target: target.ID, Skill: from.Skill, Passive: from.Passive, Status: kind.ID,
 		Stacks: applied, Amount: tick, Chance: chance, Refused: refused,
+		AmplifiedChance: amplifiedChance, AmplifiedEffect: amplifiedEffect,
 		Remaining: int64(target.Statuses.Stacks(kind.ID)),
 		Note:      wastedNote(wasted),
 	})
@@ -959,6 +975,58 @@ func (b *Battle) resist(target *Unit, statusID string, chance int) (effective, r
 		return chance, 0
 	}
 	return chance * surviving / scale.Base, scale.Base - surviving
+}
+
+// amplify is what the actor's traits add to a status they are inflicting: a
+// share on the tick and a share on the chance.
+//
+// ⚠️ **This is the one place a trait reads the unit that is *acting* rather than
+// the unit being acted on.** resist walks the target's passives a few lines
+// above; this walks the actor's, and both run inside inflict. Every other job a
+// trait has is about its holder, so the two being neighbours is worth noticing
+// before adding a third: the parameter is not interchangeable, and passing the
+// wrong unit would compile and would silently give a target the attacker's
+// amplifier.
+//
+// Composed by multiplying what each trait raises, which is the arithmetic resist
+// composes with read in the other direction. That is what makes the order the two
+// sides are applied in irrelevant — the chance is multiplied by everything
+// raising it and everything lowering it — and it is why neither function has to
+// know the other exists.
+func (b *Battle) amplify(actor *Unit, statusID string) (effect, chance int) {
+	if len(actor.Passives) == 0 || b.books.Passives == nil {
+		return 0, 0
+	}
+	raisedEffect, raisedChance := scale.Base, scale.Base
+	for _, id := range actor.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			continue
+		}
+		byEffect, byChance := held.Boosts(statusID)
+		if byEffect == 0 && byChance == 0 {
+			continue
+		}
+		// The gate is read here for the same reason resist reads it: a trait
+		// that only sharpens a hurt holder stops sharpening it the moment it is
+		// healed back.
+		if !b.inForce(actor, held) {
+			continue
+		}
+		raisedEffect = raisedEffect * (scale.Base + byEffect) / scale.Base
+		raisedChance = raisedChance * (scale.Base + byChance) / scale.Base
+	}
+	return raisedEffect - scale.Base, raisedChance - scale.Base
+}
+
+// raise applies an amplifier's share to a figure. A share of nought is the
+// figure itself, so the common case takes no arithmetic at all rather than a
+// multiplication and a division that cancel.
+func raise(value int64, share int) int64 {
+	if share <= 0 {
+		return value
+	}
+	return value * int64(scale.Base+share) / int64(scale.Base)
 }
 
 func wastedNote(wasted int) string {

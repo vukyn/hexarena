@@ -527,6 +527,83 @@ which is what a level being more than a number looks like.
 
 `hexforge passives` lists what is declared and what each grants.
 
+### Amplifying a status, which really is two features
+
+A trait that "makes its poison better" was two different things, and both are
+built. `amplifies` is a list on a trait, one entry per status, with two optional
+shares:
+
+```json
+{ "id": "virulence", "name": "độc lực", "grants": [],
+  "amplifies": [{ "status": "poison", "effect": 300, "chance": 200 }] }
+```
+
+- **`effect`** raises the tick. The tick is computed once, in `battle.inflict`,
+  from the applier's scaling stat, and frozen on the stack for its whole life —
+  so the amplifier folds into that one multiplication and nothing later has to
+  know about it. That is what keeps a stack worth the same after its author has
+  died, which matters because a `Stack` deliberately does not remember who
+  applied it.
+- **`chance`** raises the roll. That is the same site a resistance bites, so the
+  two meet there: one side's trait raises the chance and the other's lowers it,
+  both by multiplication, so the order cannot matter.
+
+Either share alone is a legal trait, because they read differently in play — a
+stronger tick is worth more the longer a stack lives, a better chance the more
+often the skill is cast.
+
+Three things it had to do, and the third is the one that usually gets skipped:
+
+1. A field on `passive.Passive`, per status, the way `Resists` is. ✅
+2. The multiplication — into the tick for the effect, into the chance for the
+   chance. ✅
+3. **The amplification reaches the event.** `AmplifiedChance` and
+   `AmplifiedEffect` sit beside `Refused`, because `amount` already carried the
+   frozen tick and `chance` the rolled figure, and neither is reproducible from
+   the skill book alone. The replay record prints them, and the frozen tick with
+   them, so the design record explains its own numbers rather than showing 480
+   where the skill says 400. ✅
+
+**This one reads the *applier's* traits at a site that reads the target's.**
+`battle.resist` walks the target's passives; `battle.amplify` walks the actor's,
+a few lines away and taking the same type. Passing the wrong unit compiles.
+
+The clamp is worth knowing about: a probability cannot exceed one, so the
+composed chance is clamped — after both sides, never between them, because
+clamping first would make their order matter.
+
+It composes with a reply without anything being written to make it: `venom_blood`
+answers whatever attacked its holder with poison, `virulence` amplifies poison,
+and both sit on the same Bulbasaur — so the reply's poison is amplified as well,
+25 per mille reading as 30 in the record. A reply inflicts through the same
+`inflict` with the holder as the actor, which is the whole argument for one path
+rather than two.
+
+Two limits, both deliberate:
+
+- **A regeneration's effect cannot be amplified.** A regen ticks in every sense
+  that matters to a data file, and it is refused anyway, because ⚠️
+  `battle.inflict` computes a tick only for a damage-over-time — so **an applied
+  regeneration freezes nought and heals nothing today**. `ingrain` and
+  `aqua_ring` self-apply `regrowth` and neither has ever healed; nothing noticed
+  because `battle.Suggest` does not cast non-damaging skills. Allowing the share
+  would promise an author a multiplication of zero. The regen is a separate fix
+  and it moves balance.
+- **Vulnerability is not built.** A target that is *easier* to poison is
+  `Resists` with a negative share, which reuses the whole composition rather than
+  adding a field — but it needs a decision about a negative `Refused` in the log,
+  and `resist` returns early when nothing is refused, which would silently drop
+  it.
+
+One thing already true and worth stating, because it limits what can be
+attributed after the fact: a `Stack` remembers its frozen amount and nothing else.
+It does not know who applied it, deliberately — the applier may be dead by the
+time the stack resolves, so keeping the id would be keeping a pointer to something
+that no longer exists. So `status_ticked` names the unit *taking* the damage, not
+the one that caused it, and the only place the source is recorded is the
+`status_applied` event. Two units poisoning the same target leave two stacks that
+the state cannot tell apart.
+
 ## How a battle ends
 
 Three endings, and the closing event names which one it was rather than leaving a
@@ -1192,7 +1269,7 @@ around this one:
 | the build wants | where it lives | built |
 | --- | --- | --- |
 | immune to poison | `Resists`, on `venom_blood` | yes |
-| its poison hurts more | *Amplifying a status*, below | no |
+| its poison hurts more | `Amplifies`, on `virulence` | yes |
 | attacking it poisons the attacker | `Replies`, on `venom_blood` | yes |
 | heals from damage dealt | `passive.Passive.Drains` | yes |
 | heals more when nearly dead | `While`, gating that share | yes |
@@ -1257,56 +1334,6 @@ Nothing shipped uses `Applies` yet; `blaze` is the only trait using `While`, and
 touch something and it is poisoned — where the row wants the reverse, an answer to
 being attacked. Writing the first and calling it the second would be the cheapest
 way to close this out wrongly.
-
-### Amplifying a status, which is two features
-
-A trait that "makes its poison better" is two different things, and they land in
-two different places:
-
-- **The effect.** A stronger tick. The tick is computed once, in `battle.inflict`,
-  from the applier's scaling stat, and frozen on the stack for its whole life — so
-  an amplifier here folds into that one multiplication and nothing later has to
-  know about it.
-- **The chance.** Poison that lands more often. That is the *same site a
-  resistance already bites*, so the two meet naturally: one side's trait raises
-  the chance and the other's lowers it, and because a resistance already composes
-  multiplicatively the order they are applied in cannot matter.
-
-They are separate because a trait may plausibly want either without the other,
-and because they read differently in play: a stronger tick is worth more the
-longer a stack lives, while a better chance is worth more the more often the
-skill is cast.
-
-Three things any implementation has to do, and the third is the one that gets
-skipped:
-
-1. A field on `passive.Passive`, per status, the way `Resists` is.
-2. The multiplication — into the tick for the effect, into the chance for the
-   chance.
-3. **The amplification has to reach the event.** `status_applied` already carries
-   the frozen tick as `amount`, so an amplified poison shows up as 260 where it
-   would have been 201 — and nothing in the log says why. That is exactly what
-   `Pierce` on `damaged` and `Refused` on `status_applied` exist to prevent, and
-   it is the third time the same trap has come up: the mechanism is the easy half.
-
-**This one reads the *applier's* traits at a site that currently reads the
-target's.** `Battle.resist` walks the target's passives; an amplifier walks the
-actor's. Both at once in `inflict`, which is worth knowing before writing it,
-because every other trait so far has read exactly one unit.
-
-And the mirror of it is cheaper than it looks: a **vulnerability** — this unit is
-*easier* to poison — is `Resists` with a negative share rather than a new field.
-The validation bounds it at 1..1000 today, and opening the range downwards is a
-one-line change that reuses the whole composition.
-
-One thing already true and worth stating, because it limits what can be
-attributed after the fact: a `Stack` remembers its frozen amount and nothing else.
-It does not know who applied it, deliberately — the applier may be dead by the
-time the stack resolves, so keeping the id would be keeping a pointer to something
-that no longer exists. So `status_ticked` names the unit *taking* the damage, not
-the one that caused it, and the only place the source is recorded is the
-`status_applied` event. Two units poisoning the same target leave two stacks that
-the state cannot tell apart.
 
 ### Answering back
 

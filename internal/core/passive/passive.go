@@ -112,6 +112,11 @@ type Passive struct {
 	// harder when badly hurt" is writable here and "hits harder when badly hurt"
 	// is not.
 	Drains int
+	// Amplifies is what the holder is better at inflicting, which is the one
+	// field here that reads the *other* unit's side of an application: every
+	// other job a trait has is about its holder, and this one is about what its
+	// holder does to somebody else.
+	Amplifies []Amplification
 }
 
 // Reply is what a trait costs whoever attacked its holder.
@@ -189,6 +194,50 @@ type Resistance struct {
 	Amount int
 }
 
+// Amplification is a status the trait's holder is better at inflicting.
+//
+// # Why two shares rather than two features with one share each
+//
+// "Makes my poison better" is two different things and they land in two
+// different places: a **stronger tick**, which folds into the one multiplication
+// battle freezes on the stack, and a **better chance**, which lands at the site a
+// resistance already bites. They read differently in play — a tick is worth more
+// the longer a stack lives, a chance the more often the skill is cast — so a
+// trait must be able to want either alone, and either share may be left out.
+//
+// One entry per status rather than two lists, because two lists would let the
+// same status be named in both and there would be nothing to say which entry was
+// the real one. Leaving a share at nought is how a trait says it does not touch
+// that half.
+//
+// # Why this one is not restricted to harmful statuses
+//
+// Resistance is, and the asymmetry is the point rather than an oversight:
+// refusing a status the holder's own side puts on it is nonsense, while making
+// one *better* is exactly as sensible for a shield as for a poison. What is
+// refused instead is narrower and more useful — an Effect on a status with no
+// tick to raise, which is a trait that cannot do the thing it says.
+//
+// # Why the shares compose by multiplying, and what that costs
+//
+// The same arithmetic a resistance composes with, read in the other direction:
+// a chance is multiplied by everything raising it and everything lowering it, so
+// the order they are applied in cannot matter and neither side has to know the
+// other exists. The cost is that resistances stacking *diminish* for free while
+// amplifiers stacking *compound* — two shares of three hundred are 69 percent
+// rather than 60. The guard is the per-trait bound plus the fact that a unit
+// holds a handful of traits and cannot restack them the way it can restack a
+// buff; if that ever stops being true, scale.Saturate is where this goes.
+type Amplification struct {
+	Status string
+	// Effect is the share added to a damage-over-time tick, in parts per
+	// thousand. Only a ticking status has one.
+	Effect int
+	// Chance is the share added to the application's chance, in parts per
+	// thousand.
+	Chance int
+}
+
 // Condition is when a trait is in force.
 //
 // # Why this is not skill.Condition
@@ -257,13 +306,14 @@ type passiveFile struct {
 	ID string `json:"id"`
 	// Written only when there is one, so a book that names none round-trips to
 	// the bytes it was authored as.
-	Name    string            `json:"name,omitempty"`
-	Grants  []grantFile       `json:"grants"`
-	Applies []applicationFile `json:"applies,omitempty"`
-	Replies *replyFile        `json:"replies,omitempty"`
-	While   *conditionFile    `json:"while,omitempty"`
-	Resists []resistanceFile  `json:"resists,omitempty"`
-	Drains  int               `json:"drains,omitempty"`
+	Name      string              `json:"name,omitempty"`
+	Grants    []grantFile         `json:"grants"`
+	Applies   []applicationFile   `json:"applies,omitempty"`
+	Replies   *replyFile          `json:"replies,omitempty"`
+	While     *conditionFile      `json:"while,omitempty"`
+	Resists   []resistanceFile    `json:"resists,omitempty"`
+	Drains    int                 `json:"drains,omitempty"`
+	Amplifies []amplificationFile `json:"amplifies,omitempty"`
 }
 
 type applicationFile struct {
@@ -284,6 +334,12 @@ type conditionFile struct {
 type resistanceFile struct {
 	Status string `json:"status"`
 	Amount int    `json:"amount"`
+}
+
+type amplificationFile struct {
+	Status string `json:"status"`
+	Effect int    `json:"effect,omitempty"`
+	Chance int    `json:"chance,omitempty"`
 }
 
 type bookFile struct {
@@ -324,8 +380,9 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			append([]any{declared.ID}, args...)...)
 	}
 	if len(declared.Grants) == 0 && len(declared.Resists) == 0 &&
-		len(declared.Applies) == 0 && declared.Replies == nil && declared.Drains == 0 {
-		return fail("grants nothing, resists nothing, adds nothing, answers nothing and drains nothing, so holding it would change nothing")
+		len(declared.Applies) == 0 && declared.Replies == nil &&
+		declared.Drains == 0 && len(declared.Amplifies) == 0 {
+		return fail("grants nothing, resists nothing, adds nothing, answers nothing, drains nothing and amplifies nothing, so holding it would change nothing")
 	}
 	grants := make([]Grant, 0, len(declared.Grants))
 	for _, grant := range declared.Grants {
@@ -374,6 +431,54 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		resists = append(resists, Resistance{Status: kind.ID, Amount: resist.Amount})
 	}
 
+	amplifies := make([]Amplification, 0, len(declared.Amplifies))
+	for _, raise := range declared.Amplifies {
+		kind, err := deps.Statuses.Lookup(raise.Status)
+		if err != nil {
+			return fail("%w", err)
+		}
+		if raise.Effect == 0 && raise.Chance == 0 {
+			return fail("amplifies %q by nothing; say a share of its effect, of its chance, or of both",
+				kind.ID)
+		}
+		// A damage-over-time's tick is the only effect there is to raise, and
+		// refusing everything else is what keeps a trait from claiming a job it
+		// cannot do: "makes my mire hit harder" has no number behind it because a
+		// mire does not tick, and accepting the field would leave an author
+		// waiting for a change that never arrives.
+		//
+		// A regeneration is refused too, and that one is worth spelling out
+		// because it looks like it should pass: a regen declares a tick_power and
+		// heals from a frozen amount exactly as a poison damages from one. But
+		// battle.inflict computes a tick only for a Dot, so ⚠️ **an applied
+		// regeneration freezes nought and heals nothing today** — a bug older
+		// than this field and not one to fix behind it. Accepting the share here
+		// would promise an author a multiplication of zero.
+		if raise.Effect != 0 && kind.Category != status.Dot {
+			return fail("amplifies the effect of %q, which is a %s: only a damage-over-time has a tick this could raise",
+				kind.ID, kind.Category)
+		}
+		for _, share := range []struct {
+			name   string
+			amount int
+		}{{"effect", raise.Effect}, {"chance", raise.Chance}} {
+			if share.amount == 0 {
+				continue
+			}
+			if share.amount < 1 || share.amount > scale.Base {
+				return fail("amplifies the %s of %q by %d, want a share in parts per thousand",
+					share.name, kind.ID, share.amount)
+			}
+		}
+		if slices.ContainsFunc(amplifies, func(seen Amplification) bool {
+			return seen.Status == kind.ID
+		}) {
+			return fail("amplifies %q twice; say one entry with both shares instead", kind.ID)
+		}
+		amplifies = append(amplifies,
+			Amplification{Status: kind.ID, Effect: raise.Effect, Chance: raise.Chance})
+	}
+
 	applies, err := readApplications(declared.Applies, deps, "adds")
 	if err != nil {
 		return fail("%w", err)
@@ -419,6 +524,7 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		ID: declared.ID, Name: strings.TrimSpace(declared.Name),
 		Grants: grants, Applies: applies, Replies: replies,
 		While: while, Resists: resists, Drains: declared.Drains,
+		Amplifies: amplifies,
 	}, nil
 }
 
@@ -472,6 +578,21 @@ func (p Passive) Refuses(statusID string) int {
 		}
 	}
 	return 0
+}
+
+// Boosts is the shares the passive adds to one status's tick and to its chance,
+// or nought for either it says nothing about.
+//
+// Both at once rather than one call each, because the two are one entry: asking
+// twice would look up the same row twice and would let a caller read one half and
+// forget the other, which is exactly the half that does not reach the log.
+func (p Passive) Boosts(statusID string) (effect, chance int) {
+	for _, raise := range p.Amplifies {
+		if raise.Status == statusID {
+			return raise.Effect, raise.Chance
+		}
+	}
+	return 0, 0
 }
 
 // Lookup returns a declared passive, or says which one is missing.
@@ -555,10 +676,16 @@ func (b *Book) Marshal() ([]byte, error) {
 		if current.While != nil {
 			while = &conditionFile{BelowHealth: current.While.BelowHealth}
 		}
+		var amplifies []amplificationFile
+		for _, raise := range current.Amplifies {
+			amplifies = append(amplifies, amplificationFile{
+				Status: raise.Status, Effect: raise.Effect, Chance: raise.Chance,
+			})
+		}
 		file.Passives = append(file.Passives, passiveFile{
 			ID: current.ID, Name: current.Name, Grants: grants,
 			Applies: applies, Replies: replies, While: while, Resists: resists,
-			Drains: current.Drains,
+			Drains: current.Drains, Amplifies: amplifies,
 		})
 	}
 	out, err := json.MarshalIndent(file, "", "  ")

@@ -249,6 +249,18 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 	if held.Drains > 0 {
 		lines = append(lines, l.Say(BlurbTraitDrains, percent(held.Drains)))
 	}
+	// Both shares, each as its own sentence, and the status named first in both
+	// languages so one arg order serves both.
+	for _, raise := range held.Amplifies {
+		if raise.Effect > 0 {
+			lines = append(lines, l.Say(BlurbTraitAmplifiesEffect,
+				l.glossed(raise.Status), percent(raise.Effect)))
+		}
+		if raise.Chance > 0 {
+			lines = append(lines, l.Say(BlurbTraitAmplifiesChance,
+				l.glossed(raise.Status), percent(raise.Chance)))
+		}
+	}
 	if held.While != nil {
 		lines = append(lines, l.Say(BlurbTraitWhile, percent(held.While.BelowHealth)))
 	}

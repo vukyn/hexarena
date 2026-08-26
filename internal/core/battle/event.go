@@ -218,6 +218,22 @@ type Event struct {
 	// somebody reading leech_seed at 600 and a heal of 800 has nothing anywhere
 	// to explain the difference.
 	Drained int `json:"drained,omitempty"`
+	// AmplifiedChance and AmplifiedEffect are the shares the *actor's* traits
+	// added, in parts per thousand, on StatusApplied and StatusResisted: one to
+	// the chance the roll was made against, one to the tick frozen on the stack.
+	//
+	// Two fields because they explain two different figures on the same event.
+	// Amount already carries the frozen tick, so an amplified poison reads as 260
+	// where the same skill and the same stats give 201, and Chance already carries
+	// the rolled figure, which a reader cannot reproduce from the skill's own.
+	// Netting either into Refused would say a number moved without saying which
+	// side moved it — and the whole reason Refused exists is that a share is only
+	// legible when the log names who took it.
+	//
+	// Absent whenever nothing amplified, which is every application the shipped
+	// book made until a trait declared one.
+	AmplifiedChance int `json:"amplified_chance,omitempty"`
+	AmplifiedEffect int `json:"amplified_effect,omitempty"`
 	// Note is a short reason, used only where a kind has one to give.
 	Note string `json:"note,omitempty"`
 }

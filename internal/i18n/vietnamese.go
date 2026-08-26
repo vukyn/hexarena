@@ -355,8 +355,14 @@ q hoặc ctrl+c để thoát`,
 	BlurbTraitReplyDamage: "Ai đánh trúng nó thì chịu lại %d%% công của nó.",
 	BlurbTraitReplyStatus: "Ai đánh trúng nó thì dính %s, %d%% khả năng.",
 	BlurbTraitReplyBoth:   "Ai đánh trúng nó thì chịu lại %d%% công của nó, và dính %s, %d%% khả năng.",
-	BlurbTraitWhile:       "Chỉ có hiệu lực khi còn <=%d%% máu.",
-	BlurbTraitDrains:      "Mọi đòn của nó hút lại %d%% sát thương gây ra.",
-	BlurbTraitNone:        "Không mang nội tại nào.",
-	BlurbFooter:           "↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát",
+	// Worded to open with "nó" rather than with the status's own name, so neither
+	// language needs the name capitalised: a data name is authored lowercase and a
+	// sentence that raised its first letter would be showing a word the data does
+	// not hold.
+	BlurbTraitAmplifiesEffect: "Nó gây %s mạnh thêm %d%%.",
+	BlurbTraitAmplifiesChance: "Khả năng nó gây %s tăng %d%%.",
+	BlurbTraitWhile:           "Chỉ có hiệu lực khi còn <=%d%% máu.",
+	BlurbTraitDrains:          "Mọi đòn của nó hút lại %d%% sát thương gây ra.",
+	BlurbTraitNone:            "Không mang nội tại nào.",
+	BlurbFooter:               "↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát",
 }
