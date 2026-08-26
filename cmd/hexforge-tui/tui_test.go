@@ -789,6 +789,64 @@ func TestBrowsingResolvesAtTheChosenLevel(t *testing.T) {
 	}
 }
 
+// TestBrowsingShowsTheArtOfTheFormItResolvedTo is the per-stage art feature as a
+// reader meets it: the art row is under the level and follows it, so walking the
+// arrow keys is what shows which picture a form uses.
+//
+// The bench's grown form owns a picture of its own and its young form does not,
+// which is both halves in one character: below the boundary the row shows the
+// character's picture, at or above it the form's.
+func TestBrowsingShowsTheArtOfTheFormItResolvedTo(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	m = m.enter(screenBrowse)
+
+	// The character with more than one picture, whichever row it is on.
+	var subject cast.Character
+	for _, candidate := range lib.Characters().All() {
+		if len(candidate.Art()) > 1 {
+			subject = candidate
+			break
+		}
+	}
+	if subject.ID == "" {
+		t.Fatal("no character in the bench has art of its own per stage, so this tests nothing")
+	}
+	for m.browse.rows()[m.browse.cursor].ID != subject.ID {
+		before := m.browse.cursor
+		m = key(t, m, "down")
+		if m.browse.cursor == before {
+			t.Fatalf("walked to the end of the list without reaching %s", subject.ID)
+		}
+	}
+
+	// The boundary the pictures change at, taken from the character rather than
+	// written down here: a bench that moves its stage must not silently turn
+	// this into a test of one level twice.
+	grown := subject.Stages[len(subject.Stages)-1]
+	if grown.Image == "" || grown.MinLevel <= 1 {
+		t.Fatalf("the bench's grown form is %+v, which cannot show a change", grown)
+	}
+	cases := []struct {
+		level int
+		want  string
+	}{
+		{grown.MinLevel - 1, subject.Image},
+		{grown.MinLevel, grown.Image},
+		{progression.LevelCap, grown.Image},
+	}
+	for _, test := range cases {
+		m.browse.level = test.level
+		body := m.browse.detail(m, subject)
+		if !strings.Contains(body, test.want) {
+			t.Errorf("at level %d the pane does not show %s:\n%s", test.level, test.want, body)
+		}
+		if other := subject.Image; test.want != other && strings.Contains(body, other) {
+			t.Errorf("at level %d the pane still shows %s, which belongs to another form:\n%s",
+				test.level, other, body)
+		}
+	}
+}
+
 // TestQuitKeysWorkFromEveryScreen covers the promise the footers make. ctrl+c
 // has to work even with a question pending, or a modal can trap somebody.
 func TestQuitKeysWorkFromEveryScreen(t *testing.T) {

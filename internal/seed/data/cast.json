@@ -42,6 +42,7 @@
         {
           "name": "Ivysaur",
           "min_level": 16,
+          "image": "assets/ivysaur.svg",
           "stats": {
             "hp": {
               "base": 1100,
@@ -72,6 +73,7 @@
         {
           "name": "Venusaur",
           "min_level": 32,
+          "image": "assets/venusaur.svg",
           "stats": {
             "hp": {
               "base": 1300,

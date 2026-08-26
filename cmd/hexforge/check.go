@@ -39,9 +39,13 @@ func renderReport(out io.Writer, r forge.Report) {
 		rendered := newTable("character", "art", "stage at cap", "absorbs", "budget left", "stats at cap").
 			rightAlign(3, 4)
 		for _, row := range r.Rows {
+			// One column for however many pictures a character has: "ok" while
+			// they are all there, and the count when they are not, because
+			// "MISSING" alone on a three-stage character does not say how much
+			// is missing and the problem list below is where the names are.
 			art := "ok"
-			if !row.ImageExists {
-				art = "MISSING"
+			if missing := row.ArtMissing(); missing > 0 {
+				art = fmt.Sprintf("MISSING %d/%d", missing, len(row.Art))
 			}
 			if row.Failure != nil {
 				rendered.add(row.ID, art, "-", "-", "-", row.Failure.Error())

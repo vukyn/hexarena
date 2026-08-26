@@ -356,6 +356,13 @@ func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character
 	label("element", "%s", character.Element)
 	label("kit", "%s", strings.Join(character.Skills, " "))
 	label("art", "%s", character.Image)
+	if art := character.Art(); len(art) > 1 {
+		// Only when a form has its own. Printing "1 picture" for the ordinary
+		// character would be noise on every line of every listing.
+		for _, entry := range art[1:] {
+			label("", "%s for %s", entry.Image, entry.Stage)
+		}
+	}
 	label("stages", "%s", forge.StageSummary(character))
 	if character.Bio != "" {
 		label("bio", "%s", character.Bio)
@@ -368,7 +375,8 @@ func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character
 		}
 		budget := lib.Budget(values)
 		label(fmt.Sprintf("level %d", level), "%s", values)
-		label("", "stage %q absorbs %d of the %d effective-health budget, %d to spare",
-			stage.Name, budget.Effective, budget.Max, budget.Headroom)
+		label("", "stage %q shows %s and absorbs %d of the %d effective-health budget, %d to spare",
+			stage.Name, character.StageArt(stage),
+			budget.Effective, budget.Max, budget.Headroom)
 	}
 }

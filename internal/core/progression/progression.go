@@ -327,8 +327,21 @@ type Stage struct {
 	Name string `json:"name"`
 	// MinLevel is the level at which this stage takes over. The first stage
 	// must start at level 1.
-	MinLevel int   `json:"min_level"`
-	Stats    Table `json:"stats"`
+	MinLevel int `json:"min_level"`
+	// Image is this form's own art, and it is optional: a stage that names none
+	// shows the character's. The fallback is not applied here — see
+	// cast.Character.StageArt, which is the one place that decides it, because
+	// this package has no character to fall back to.
+	//
+	// It sits beside Name rather than one layer up because it is the same kind
+	// of fact: what this form is called and what it looks like both belong to
+	// the form, and a parallel list keyed by stage name would be a second thing
+	// to keep in step — one that goes stale exactly when a stage is renamed or
+	// removed. What this package does not do is check the path: that is
+	// cast.ValidateImagePath's job, the same division a skill's pattern name
+	// follows.
+	Image string `json:"image,omitempty"`
+	Stats Table  `json:"stats"`
 }
 
 // Line is a unit's full evolution line, ordered by MinLevel.

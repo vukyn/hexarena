@@ -288,6 +288,22 @@ without it (an inline stat line is already resolved). `battle.Roster` deliberate
 gains no image, biography or origin field: the engine has no use for them, and the
 event log is what a renderer reads.
 
+**A form's art is optional, and the fallback has one home.**
+`progression.Stage.Image` is a stage's own picture and most stages declare none;
+`cast.Character.StageArt` is the **only** place that falls back to the
+character's. A caller reading `Stage.Image` directly draws nothing for the
+ordinary stage, and a second caller inventing the fallback again is how one
+character ends up with two pictures depending on which screen asks. It sits in
+`progression` beside `Name` because both are facts about the form rather than
+rules — and a parallel list keyed by stage name would be a second thing to keep
+in step, stale exactly when a stage is renamed. `progression` does **not** check
+the path: `cast.ValidateImagePath` does, at parse time, per stage, and only for a
+stage that names one — the empty string is a real refusal there, so an absent
+image must never reach it. A character therefore has a *set* of pictures
+(`Character.Art()`, distinct by path, declaration order, the character's own
+first) and `Library.Inspect` walks all of them, because art only a grown form
+uses is art nobody looks at until the character has grown.
+
 **Piercing is a ratio, and it stops at the strike.** `skill.Skill.Pierce` is the
 share of the target's defence a skill ignores, in parts per thousand, applied by
 `combat.Pierced` inside `Rules.Strike`. `Rules.Damage` itself takes the defence

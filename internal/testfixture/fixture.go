@@ -974,6 +974,7 @@ const Characters = `[
       {
         "name": "Bloom",
         "min_level": 30,
+        "image": "assets/fixture/bloom.svg",
         "stats": {
           "hp": {
             "base": 1100,
@@ -1044,7 +1045,10 @@ func Inject(dir string, reload func() (Saver, error)) error {
 	if err := os.MkdirAll(art, 0o755); err != nil {
 		return fmt.Errorf("make %s: %w", art, err)
 	}
-	for _, name := range []string{"adept.svg", "sprout.svg"} {
+	// bloom.svg is the grown form's own picture. The bench carries one so that
+	// per-stage art is exercised by every test that walks this cast, rather than
+	// only by the one test written for it.
+	for _, name := range []string{"adept.svg", "sprout.svg", "bloom.svg"} {
 		if err := os.WriteFile(filepath.Join(art, name), []byte(Art), 0o644); err != nil {
 			return fmt.Errorf("write %s: %w", name, err)
 		}

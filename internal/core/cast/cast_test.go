@@ -608,6 +608,14 @@ func TestMarshalIsStableAndReParses(t *testing.T) {
 	second["image"] = "assets/a-game/emberling.png"
 	second["element"] = "fire"
 	second["skills"] = []string{"ember_lance"}
+	// Two stages, one with its own picture and one without, so the trip covers
+	// both halves of an optional field: the one that has to survive it and the
+	// one that has to stay absent.
+	second["stages"] = []map[string]any{
+		{"name": "Emberling", "min_level": 1, "stats": table()},
+		{"name": "Emberlord", "min_level": 40, "stats": table(),
+			"image": "assets/a-game/emberlord.png"},
+	}
 
 	book, err := parse(t, baseCharacter(), second)
 	if err != nil {
@@ -658,6 +666,15 @@ func TestMarshalIsStableAndReParses(t *testing.T) {
 	}
 	if !reflect.DeepEqual(original, returned) {
 		t.Errorf("the round trip changed a character:\n%+v\n%+v", original, returned)
+	}
+	// A stage's picture is written only when it has one. The whole reason the
+	// field could be added without moving a golden is that a stage declaring
+	// none writes exactly the bytes it did before the field existed.
+	if strings.Count(string(first), `"image": "assets/a-game/emberlord.png"`) != 1 {
+		t.Errorf("the stage's picture is not written once:\n%s", first)
+	}
+	if strings.Contains(string(first), `"image": ""`) {
+		t.Errorf("a stage with no picture wrote an empty one:\n%s", first)
 	}
 }
 
@@ -1144,5 +1161,133 @@ func TestAPresetCannotHoldASkillKeptForSomebody(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestStageArtFollowsTheFormAndFallsBackToTheCharacter is the whole per-stage
+// art feature in one place: a form that names its own picture shows it, and a
+// form that names none shows the character's rather than nothing.
+//
+// The fallback is what makes the field optional, and optional is what keeps
+// every character authored before it existed valid. A stage drawing nothing
+// would have been the alternative, and it would have shipped as a blank sprite
+// rather than as an error.
+func TestStageArtFollowsTheFormAndFallsBackToTheCharacter(t *testing.T) {
+	entry := baseCharacter()
+	entry["stages"] = []map[string]any{
+		{"name": "Sprout", "min_level": 1, "stats": table()},
+		{"name": "Bloom", "min_level": 30, "stats": table(),
+			"image": "assets/a-series/bloom.png"},
+	}
+	book, err := parse(t, entry)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	character, ok := book.Get("a-series.warden")
+	if !ok {
+		t.Fatal("the parsed character is not in the book")
+	}
+	cases := []struct {
+		level int
+		want  string
+	}{
+		{1, "assets/a-series/warden.svg"},
+		{29, "assets/a-series/warden.svg"},
+		{30, "assets/a-series/bloom.png"},
+		{progression.LevelCap, "assets/a-series/bloom.png"},
+	}
+	for _, test := range cases {
+		_, stage, err := character.Resolve(test.level)
+		if err != nil {
+			t.Fatalf("resolve at level %d: %v", test.level, err)
+		}
+		if got := character.StageArt(stage); got != test.want {
+			t.Errorf("level %d shows %q, want %q", test.level, got, test.want)
+		}
+	}
+}
+
+// TestArtIsEveryDistinctPictureInDeclarationOrder is what a checker walks, so
+// the two properties that matter are that nothing is missed and that nothing is
+// counted twice.
+func TestArtIsEveryDistinctPictureInDeclarationOrder(t *testing.T) {
+	entry := baseCharacter()
+	entry["stages"] = []map[string]any{
+		// The first stage names none, so it contributes no row of its own.
+		{"name": "Sprout", "min_level": 1, "stats": table()},
+		{"name": "Bloom", "min_level": 20, "stats": table(), "image": "assets/a-series/bloom.png"},
+		// A stage naming the same picture as another adds no row either: a
+		// checker asking the filesystem twice about one file would report one
+		// missing file as two problems.
+		{"name": "Late", "min_level": 40, "stats": table(), "image": "assets/a-series/bloom.png"},
+		// And a stage naming the character's own picture is the same case.
+		{"name": "Last", "min_level": 50, "stats": table(), "image": "assets/a-series/warden.svg"},
+	}
+	book, err := parse(t, entry)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	character, _ := book.Get("a-series.warden")
+	art := character.Art()
+	want := []cast.ArtEntry{
+		{Stage: "", Image: "assets/a-series/warden.svg"},
+		{Stage: "Bloom", Image: "assets/a-series/bloom.png"},
+	}
+	if !reflect.DeepEqual(art, want) {
+		t.Errorf("Art() is %+v, want %+v", art, want)
+	}
+	// A character with no stage art at all is the ordinary case, and it is one
+	// row rather than none.
+	plain, err := parse(t, baseCharacter())
+	if err != nil {
+		t.Fatalf("parse the plain character: %v", err)
+	}
+	only, _ := plain.Get("a-series.warden")
+	if got := only.Art(); len(got) != 1 || got[0].Image != "assets/a-series/warden.svg" {
+		t.Errorf("a character with no stage art has Art() %+v, want just its own", got)
+	}
+}
+
+// TestAStageImageIsCheckedLikeTheCharactersAndSaysWhichStage is the parse-time
+// half. The shape of an image path is this package's rule, and a stage's path
+// gets the same rule as a character's — otherwise the one place a path is not
+// checked is the one place it was added last.
+func TestAStageImageIsCheckedLikeTheCharactersAndSaysWhichStage(t *testing.T) {
+	cases := []struct {
+		name    string
+		image   string
+		wantErr string
+	}{
+		{"a backslash", `assets\bloom.png`, "backslash"},
+		{"an absolute path", "/assets/bloom.png", "absolute path"},
+		{"a climb out of the directory", "assets/../../bloom.png", "climbs out"},
+		{"no extension at all", "assets/bloom", "svg"},
+	}
+	for _, test := range cases {
+		entry := baseCharacter()
+		entry["stages"] = []map[string]any{
+			{"name": "Sprout", "min_level": 1, "stats": table()},
+			{"name": "Bloom", "min_level": 30, "stats": table(), "image": test.image},
+		}
+		_, err := parse(t, entry)
+		if err == nil {
+			t.Errorf("%s was accepted as a stage image", test.name)
+			continue
+		}
+		if !strings.Contains(err.Error(), test.wantErr) {
+			t.Errorf("%s was refused with %q, want it to mention %q", test.name, err, test.wantErr)
+		}
+		// Which stage is the half a character-level message cannot give: a
+		// character with four stages and one bad path is otherwise a hunt.
+		if !strings.Contains(err.Error(), "Bloom") {
+			t.Errorf("%s was refused with %q, want it to name the stage", test.name, err)
+		}
+	}
+	// An absent stage image is not an empty one. ValidateImagePath refuses the
+	// empty string, so a stage that says nothing must never reach it.
+	entry := baseCharacter()
+	entry["stages"] = []map[string]any{{"name": "Sprout", "min_level": 1, "stats": table()}}
+	if _, err := parse(t, entry); err != nil {
+		t.Errorf("a stage with no image was refused: %v", err)
 	}
 }

@@ -606,7 +606,11 @@ func castReport(characters *cast.Book, origins *cast.OriginBook, limits progress
 			if i+1 < len(character.Stages) {
 				last = character.Stages[i+1].MinLevel - 1
 			}
-			fmt.Fprintf(&b, "  stage %q owns levels %d to %d\n", stage.Name, stage.MinLevel, last)
+			// The art each form shows, resolved rather than declared: a stage
+			// that names none shows the character's, and a record that printed
+			// the empty field instead would read as "this form has no picture".
+			fmt.Fprintf(&b, "  stage %q owns levels %d to %d, showing %s\n",
+				stage.Name, stage.MinLevel, last, character.StageArt(stage))
 			levels := []int{stage.MinLevel, last}
 			if stage.MinLevel == last {
 				levels = levels[:1]
@@ -621,6 +625,12 @@ func castReport(characters *cast.Book, origins *cast.OriginBook, limits progress
 		}
 		b.WriteString("\n")
 	}
-	fmt.Fprintf(&b, "%d characters\n", len(characters.All()))
+	// "1 characters" was in this record for as long as there was one character
+	// in it. The plural is a word rather than a number, so it is chosen here.
+	if count := len(characters.All()); count == 1 {
+		b.WriteString("1 character\n")
+	} else {
+		fmt.Fprintf(&b, "%d characters\n", count)
+	}
 	return b.String()
 }

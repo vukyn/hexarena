@@ -81,8 +81,13 @@ func TestInspectPassesOnTheShippedData(t *testing.T) {
 		t.Fatal("no characters were inspected, so nothing here is being exercised")
 	}
 	for _, row := range report.Rows {
-		if !row.ImageExists {
-			t.Errorf("%s names art that is not there: %s", row.ID, row.Image)
+		if len(row.Art) == 0 {
+			t.Errorf("%s was inspected with no art at all", row.ID)
+		}
+		for _, art := range row.Art {
+			if !art.Exists {
+				t.Errorf("%s names art that is not there: %s (stage %q)", row.ID, art.Image, art.Stage)
+			}
 		}
 		if row.Failure != nil {
 			t.Errorf("%s does not resolve: %v", row.ID, row.Failure)
@@ -136,20 +141,76 @@ func TestInspectNoticesMissingArt(t *testing.T) {
 	}
 	missing, present := 0, 0
 	for _, row := range after.Rows {
-		if row.ImageExists {
-			present++
-		} else {
-			missing++
-		}
+		missing += row.ArtMissing()
+		present += len(row.Art) - row.ArtMissing()
 	}
-	if missing != 1 || present != len(after.Rows)-1 {
-		t.Errorf("%d characters are missing art and %d are not, want exactly one missing",
-			missing, present)
+	pictures := 0
+	for _, row := range before.Rows {
+		pictures += len(row.Art)
+	}
+	if missing != 1 || present != pictures-1 {
+		t.Errorf("%d pictures are missing and %d are not, want exactly one missing of %d",
+			missing, present, pictures)
 	}
 	// The report is still a full report: taking away a file must not stop the
 	// budget being tabulated for everyone else.
 	if len(after.Rows) != len(before.Rows) {
 		t.Errorf("the report covers %d characters, want %d", len(after.Rows), len(before.Rows))
+	}
+}
+
+// TestInspectNoticesArtOnlyAGrownFormUses is the reason the report holds a list
+// of pictures rather than one.
+//
+// Art a late stage uses is art nobody looks at until a character has grown, so a
+// missing file there is precisely the one that surfaces in front of a player
+// rather than in front of a check. The character's own picture is untouched
+// here: a report that only asked about that would call this data fine.
+func TestInspectNoticesArtOnlyAGrownFormUses(t *testing.T) {
+	dir := scratchData(t)
+	before, err := Inspect(dir)
+	if err != nil {
+		t.Fatalf("inspect the copy: %v", err)
+	}
+	if !before.OK() {
+		t.Fatalf("the copied data already has problems: %v", before.Problems)
+	}
+	// The bench's grown form owns this one, and nothing else names it.
+	grown := filepath.Join(dir, "assets", "fixture", "bloom.svg")
+	if err := os.Remove(grown); err != nil {
+		t.Fatalf("remove %s: %v", grown, err)
+	}
+	after, err := Inspect(dir)
+	if err != nil {
+		t.Fatalf("inspect after removing the art: %v", err)
+	}
+	if after.OK() {
+		t.Fatal("art that only a grown form uses went unnoticed")
+	}
+	if len(after.Problems) != 1 {
+		t.Fatalf("%d problems reported, want 1: %v", len(after.Problems), after.Problems)
+	}
+	missing, isMissingArt := after.Problems[0].(*MissingArtProblem)
+	if !isMissingArt {
+		t.Fatalf("the problem is a %T, want a *MissingArtProblem", after.Problems[0])
+	}
+	// Which form is the half a character-level message cannot give, and it is
+	// what tells an author where to look in cast.json.
+	if missing.Stage != "Bloom" {
+		t.Errorf("the problem names stage %q, want the grown form", missing.Stage)
+	}
+	if !strings.Contains(missing.Error(), "Bloom") {
+		t.Errorf("the problem reads %q, want it to name the stage", missing)
+	}
+	// And the character's own picture is still fine, which is the point: one
+	// row of the list is missing and the rest are not.
+	for _, row := range after.Rows {
+		if row.Art[0].Stage != "" {
+			t.Errorf("%s lists %q first, want the character's own picture", row.ID, row.Art[0].Stage)
+		}
+		if !row.Art[0].Exists {
+			t.Errorf("%s lost its own picture too, so this proves less than it looks", row.ID)
+		}
 	}
 }
 

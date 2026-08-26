@@ -6,17 +6,31 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 )
 
+// ArtReport is one of a character's pictures and whether it is really there.
+type ArtReport struct {
+	// Stage is the form the picture belongs to, empty for the character's own.
+	Stage string
+	Image string
+	// Exists is the question internal/core/cast is not allowed to ask. The
+	// parser has already agreed the path is well shaped; only a program that
+	// may read the filesystem can say whether the art is really there.
+	Exists bool
+}
+
 // CharacterReport is what an inspection found out about one character.
 type CharacterReport struct {
-	ID    string
-	Image string
-	// ImageExists is the question internal/core/cast is not allowed to ask.
-	// The parser has already agreed the path is well shaped; only a program
-	// that may read the filesystem can say whether the art is really there.
-	ImageExists bool
-	Stage       string
-	Values      progression.Values
-	Budget      Budget
+	ID string
+	// Art is every distinct picture the character can show, its own first and
+	// then one per stage that names a different one.
+	//
+	// A list rather than the single image it used to be, because art a grown
+	// form uses is art nobody looks at until the character has grown — so a
+	// missing file there is precisely the one that surfaces late, in front of a
+	// player rather than in front of a check.
+	Art    []ArtReport
+	Stage  string
+	Values progression.Values
+	Budget Budget
 	// Failure is set when the character will not resolve at the level cap,
 	// which the parser cannot catch on its own because a line only has to be
 	// valid, not reachable at every level.
@@ -57,12 +71,21 @@ type Problem interface {
 // MissingArtProblem is a character naming art that is not on disk. This is the
 // one question internal/core is not allowed to ask.
 type MissingArtProblem struct {
-	ID    string
+	ID string
+	// Stage is the form whose art is missing, empty when it is the character's
+	// own. It is on the problem rather than folded into the sentence because
+	// cmd/hexforge-tui says these in the author's language, and "which stage"
+	// is a fact rather than a phrase.
+	Stage string
 	Image string
 	Path  string
 }
 
 func (p *MissingArtProblem) Error() string {
+	if p.Stage != "" {
+		return fmt.Sprintf("character %s names the art %s for its %s stage, which is not at %s",
+			p.ID, p.Image, p.Stage, p.Path)
+	}
 	return fmt.Sprintf("character %s names the art %s, which is not at %s", p.ID, p.Image, p.Path)
 }
 
@@ -81,6 +104,17 @@ func (p *ResolveProblem) Error() string {
 
 func (p *ResolveProblem) Unwrap() error { return p.Err }
 func (p *ResolveProblem) problem()      {}
+
+// ArtMissing is how many of the character's pictures are not on disk.
+func (r CharacterReport) ArtMissing() int {
+	missing := 0
+	for _, art := range r.Art {
+		if !art.Exists {
+			missing++
+		}
+	}
+	return missing
+}
 
 // OK reports whether the data directory is in a state worth shipping.
 func (r Report) OK() bool { return len(r.Problems) == 0 }
@@ -112,16 +146,18 @@ func (l *Library) Inspect() Report {
 	// means they all passed. The archetype listing is where their numbers are
 	// read.
 	for _, character := range l.characters.All() {
-		row := CharacterReport{
-			ID:          character.ID,
-			Image:       character.Image,
-			ImageExists: l.ImageExists(character.Image),
-		}
-		if !row.ImageExists {
-			report.Problems = append(report.Problems, &MissingArtProblem{
-				ID: character.ID, Image: character.Image,
-				Path: l.ImagePath(character.Image),
+		row := CharacterReport{ID: character.ID}
+		for _, art := range character.Art() {
+			exists := l.ImageExists(art.Image)
+			row.Art = append(row.Art, ArtReport{
+				Stage: art.Stage, Image: art.Image, Exists: exists,
 			})
+			if !exists {
+				report.Problems = append(report.Problems, &MissingArtProblem{
+					ID: character.ID, Stage: art.Stage, Image: art.Image,
+					Path: l.ImagePath(art.Image),
+				})
+			}
 		}
 		// Both ends of the line are resolved: the first level a character can
 		// exist at and the last, which is where the stat budget bites.

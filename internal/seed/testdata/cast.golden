@@ -6,20 +6,20 @@ pokemon.bulbasaur — Bulbasaur
   element  grass
   art      assets/bulbasaur.svg
   kit      vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed synthesis ingrain
-  stage "Bulbasaur" owns levels 1 to 15
+  stage "Bulbasaur" owns levels 1 to 15, showing assets/bulbasaur.svg
     level 1  hp 900, atk 150, def 130, spd 30, acc 40, ddg 15
              absorbs 1291 of the 11500 budget, 10209 to spare
     level 15 hp 1398, atk 228, def 194, spd 44, acc 58, ddg 22
              absorbs 2303 of the 11500 budget, 9197 to spare
-  stage "Ivysaur" owns levels 16 to 31
+  stage "Ivysaur" owns levels 16 to 31, showing assets/ivysaur.svg
     level 16 hp 1684, atk 281, def 240, spd 52, acc 70, ddg 25
              absorbs 3034 of the 11500 budget, 8466 to spare
     level 31 hp 2269, atk 373, def 315, spd 66, acc 90, ddg 33
              absorbs 4659 of the 11500 budget, 6841 to spare
-  stage "Venusaur" owns levels 32 to 60
+  stage "Venusaur" owns levels 32 to 60, showing assets/venusaur.svg
     level 32 hp 2613, atk 434, def 368, spd 73, acc 102, ddg 36
              absorbs 5819 of the 11500 budget, 5681 to spare
     level 60 hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50
              absorbs 10410 of the 11500 budget, 1090 to spare
 
-1 characters
+1 character
