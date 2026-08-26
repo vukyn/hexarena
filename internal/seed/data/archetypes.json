@@ -37,9 +37,7 @@
         "poison_powder",
         "sludge_bomb",
         "venoshock",
-        "leech_seed",
-        "synthesis",
-        "ingrain"
+        "leech_seed"
       ],
       "passives": [
         {

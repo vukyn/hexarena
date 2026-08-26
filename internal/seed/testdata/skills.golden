@@ -53,8 +53,8 @@ aqua_ring       regrowth (self)        2     1000       1000                -
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species
-synthesis       grass      -                 -                   -
-ingrain         grass      -                 -                   -
+synthesis       -          -                 -                   plant
+ingrain         -          -                 -                   plant
 dragon_rage     -          -                 -                   dragon
 dragon_dance    -          -                 -                   dragon
 

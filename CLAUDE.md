@@ -868,11 +868,13 @@ certain characters may carry would refuse everyone else, and the refusal would
 land on the author of the character rather than the author of the preset. The
 same function refuses a preset whose kit holds a skill kept for a *different*
 archetype. **The species half of that rule is what keeps the two axes apart**: a
-preset says how a character fights and nothing about what it is, so `ingrain` and
-`synthesis` — which read as a body, roots and photosynthesis — stay restricted by
-`elements` rather than moving onto a `plant` species, because both sit in the
-`blighter` kit and the move would make the preset itself illegal. Grass is a proxy
-for "something that grows", and it is a proxy rather than the fact.
+preset says how a character fights and nothing about what it is. ⚠️ **The price is
+real and both presets have paid it**: `scorcher` gave up the two lineage skills and
+`blighter` gave up `ingrain` and `synthesis` when those moved onto `plant`, so each
+suggests **seven** skills while its character carries nine. Do not "fix" that gap by
+moving a skill back onto `elements` — grass was only ever a proxy for "something
+that grows", and a grass construct with no roots could take both. A preset losing an
+entry is the smaller loss.
 
 What `resolveArchetype` deliberately does not attempt is whether an element allowlist
 and the kit's `Demands` are jointly satisfiable — that needs the element chart,

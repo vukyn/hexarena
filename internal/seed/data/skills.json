@@ -137,8 +137,8 @@
       "cooldown": 4,
       "target": "self",
       "restrict": {
-        "elements": [
-          "grass"
+        "species": [
+          "plant"
         ]
       }
     },
@@ -161,8 +161,8 @@
         }
       ],
       "restrict": {
-        "elements": [
-          "grass"
+        "species": [
+          "plant"
         ]
       }
     },
