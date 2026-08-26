@@ -277,8 +277,9 @@ func Line(event battle.Event, tags map[string]string) string {
 	case battle.Blocked:
 		return head + fmt.Sprintf("  is blocked by %s, %d charges left", tag(event.Target), event.Remaining)
 	case battle.Damaged:
-		return head + fmt.Sprintf("  hits %s for %d%s, %d left",
-			tag(event.Target), event.Amount, affinityNote(event.Multiplier), event.Remaining)
+		return head + fmt.Sprintf("  hits %s for %d%s%s, %d left",
+			tag(event.Target), event.Amount, affinityNote(event.Multiplier),
+			pierceNote(event.Pierce), event.Remaining)
 	case battle.StatusApplied:
 		note := ""
 		if event.Note != "" {
@@ -314,6 +315,24 @@ func affinityNote(multiplier int) string {
 	default:
 		return " (resisted)"
 	}
+}
+
+// pierceNote says how much of the target's armour a hit went through, and says
+// nothing at all when it went through none.
+//
+// It is on the line because a reader who cannot see it cannot account for the
+// damage: the same attacker, power and multiplier against the same defender
+// produce a different figure, and a log a reader cannot reproduce is the log
+// lying. The share rather than the defence it left, because the share is the
+// skill's own property and the defence is the defender's.
+func pierceNote(pierce int) string {
+	if pierce <= 0 {
+		return ""
+	}
+	if pierce >= 1000 {
+		return " (straight through the armour)"
+	}
+	return fmt.Sprintf(" (through %d%% of the armour)", pierce/10)
 }
 
 // Log renders a run of events.

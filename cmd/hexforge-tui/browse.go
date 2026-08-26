@@ -208,6 +208,11 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 		fmt.Sprintf("%s   %s", values, m.text(i18n.StageInWords, stage.Name))))
 	budget := m.lib.Budget(values)
 	out.WriteString(m.label(m.text(i18n.LabelEffectiveHP), "%s", budgetLine(m, budget)))
+	// The pierced floor goes under the row rather than beside it, dim and with
+	// no label of its own, which is the shape the kit's names above already use
+	// for a second reading of the row before it. Lang.BudgetPierced records why
+	// it cannot be a clause on the line itself.
+	out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, m.lang.BudgetPierced(budget)))
 	return out.String()
 }
 

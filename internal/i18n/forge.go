@@ -382,6 +382,24 @@ func (l Lang) Budget(meter string, budget forge.Budget) string {
 	return l.Say(BudgetWithin, meter, budget.Effective, budget.Max, budget.Headroom)
 }
 
+// BudgetPierced words the other end of the same stat line: what it absorbs from
+// damage that ignores its defence outright.
+//
+// It is a line of its own rather than a clause on the budget line, and the
+// reason is measurement rather than taste. The budget line already runs to
+// seventy cells of the seventy-nine the narrowest supported terminal has, so a
+// clause carrying a label and a four-digit figure does not fit at any wording
+// worth reading — and the two things that would make it fit are both worse: a
+// shorter meter loses the affordance the row is there for, and a bare number
+// with no label is exactly the unguessable shorthand this client keeps out.
+//
+// Saying it at all is not optional. The bound measures durability against
+// damage that does not pierce, so a row quoting only that figure describes the
+// best case as though it were the only one.
+func (l Lang) BudgetPierced(budget forge.Budget) string {
+	return l.Say(BudgetPierced, budget.Pierced)
+}
+
 // Note is one line of a write's confirmation.
 func (l Lang) Note(note forge.Note) string {
 	switch note.Kind {

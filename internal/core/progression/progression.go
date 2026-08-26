@@ -265,8 +265,25 @@ func (l Limits) Validate() error {
 
 // EffectiveHP returns how much raw damage a stat line absorbs: health scaled
 // up by whatever its defence turns away.
+//
+// It describes damage that does not pierce. That was every damage source in the
+// game until piercing arrived and it is still all but one of them, which is why
+// this stays the plain name and the bound is measured against it — but it is no
+// longer the worst case, and anything showing the figure to an author has to say
+// which case it means. See EffectiveHPAgainst.
 func EffectiveHP(values Values, rules combat.Rules) int64 {
-	reduction := int64(rules.DefenseReduction(values[Defense]))
+	return EffectiveHPAgainst(values, rules, 0)
+}
+
+// EffectiveHPAgainst is the same figure against damage that ignores a share of
+// the defence, in parts per thousand.
+//
+// Against full piercing it comes back as the raw health, because that is what a
+// unit with no defence left absorbs. That end of the range is the honest floor
+// of a stat line's durability and the number an armour-heavy build should be
+// read against, since piercing is the counter it was given.
+func EffectiveHPAgainst(values Values, rules combat.Rules, pierce int) int64 {
+	reduction := int64(rules.DefenseReduction(combat.Pierced(values[Defense], pierce)))
 	if reduction <= 0 {
 		return values[HP]
 	}

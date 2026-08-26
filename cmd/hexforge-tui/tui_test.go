@@ -518,6 +518,17 @@ func TestTheBudgetBarShowsProgressionEffectiveHP(t *testing.T) {
 			lib.Limits().MaxEffectiveHP, body)
 	}
 
+	// The fully-pierced floor is on screen too, because the bound above it
+	// measures damage that does not pierce: a row showing only that figure
+	// quotes the best case as though it were the only one. It is the raw health,
+	// which is a different number from either of the two checked above.
+	//
+	// The whole worded row rather than the figure alone: the figure is the raw
+	// health, which the health curve's own field is already showing a few rows
+	// up, so a bare number would have passed with this row deleted. It did.
+	if row := i18n.Vi.BudgetPierced(lib.Budget(values)); !strings.Contains(body, row) {
+		t.Errorf("the fully-pierced floor %q is not on screen:\n%s", row, body)
+	}
 	// Health and defence multiply, so the joint bound is the one an author
 	// walks into without noticing. Pushing both to their own ceilings breaks it
 	// while breaking neither ceiling — which is exactly why the meter exists —

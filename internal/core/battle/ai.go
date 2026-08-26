@@ -108,6 +108,7 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 			Strikes:       declared.StrikeCount(),
 			Affinity:      multiplier,
 			Defense:       targetStats[progression.Defense],
+			Pierce:        declared.Pierce,
 			SkillAccuracy: declared.Accuracy,
 			AccuracyStat:  actorStats[progression.Accuracy],
 			DodgeStat:     targetStats[progression.Dodge],

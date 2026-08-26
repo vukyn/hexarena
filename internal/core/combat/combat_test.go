@@ -567,3 +567,117 @@ func TestChargesStackWithoutDiminishing(t *testing.T) {
 		t.Errorf("%d charges left, want none", left)
 	}
 }
+
+// TestPiercingEndpointsAreExact pins the two ends of the ratio. Nought has to
+// leave the defence untouched or every skill in the game changes, and a full
+// thousand has to reach nought rather than one, or "ignores the armour" would be
+// a near miss that still divides by something.
+func TestPiercingEndpointsAreExact(t *testing.T) {
+	for _, defense := range []int64{0, 1, 137, 400, 800, 100_000} {
+		if got := combat.Pierced(defense, 0); got != defense {
+			t.Errorf("Pierced(%d, 0) = %d, want the defence untouched", defense, got)
+		}
+		if got := combat.Pierced(defense, 1000); got != 0 {
+			t.Errorf("Pierced(%d, 1000) = %d, want no defence left", defense, got)
+		}
+	}
+	// Out of range in either direction is the nearer end rather than an error:
+	// the bound belongs to skill validation, and this has to stay total.
+	if got := combat.Pierced(400, -50); got != 400 {
+		t.Errorf("Pierced(400, -50) = %d, want the defence untouched", got)
+	}
+	if got := combat.Pierced(400, 4000); got != 0 {
+		t.Errorf("Pierced(400, 4000) = %d, want no defence left", got)
+	}
+}
+
+// TestPiercingNeverRaisesTheDefenceItTakesFrom is the invariant a truncation
+// could break: every step of the ratio has to leave no more armour standing
+// than the step before it, and never more than there was to begin with.
+func TestPiercingNeverRaisesTheDefenceItTakesFrom(t *testing.T) {
+	const defense = 743
+	previous := int64(defense)
+	for pierce := 0; pierce <= 1000; pierce++ {
+		got := combat.Pierced(defense, pierce)
+		if got > previous {
+			t.Fatalf("armour rose from %d to %d at %d pierced", previous, got, pierce)
+		}
+		if got > defense {
+			t.Fatalf("piercing %d left %d of %d standing", pierce, got, defense)
+		}
+		previous = got
+	}
+}
+
+// TestPiercingIsADialRatherThanASwitch is the reason the field is a ratio, in
+// the numbers the design was chosen from.
+//
+// The two units sit within two percent of each other on the joint
+// health-and-defence budget, which is exactly why armour needed an answer: they
+// are equally durable against everything else in the game. A ratio walks the
+// armoured one's advantage across the range in steps an author can aim at. A
+// switch would offer only the last row, so an armour unit would be worthless
+// against one skill and untouched by the next, with nothing in between — the
+// same shape this engine rejects when it saturates a buff instead of clamping it.
+func TestPiercingIsADialRatherThanASwitch(t *testing.T) {
+	r := rules()
+	// Health and defence of a sentinel and a bulwark at the cap.
+	const (
+		sentinelHealth, sentinelDefense = int64(3100), int64(800)
+		bulwarkHealth, bulwarkDefense   = int64(4800), int64(400)
+	)
+	absorbs := func(health, defense int64, pierce int) int64 {
+		reduction := int64(r.DefenseReduction(combat.Pierced(defense, pierce)))
+		return health * 1000 / reduction
+	}
+	cases := []struct {
+		pierce                  int
+		sentinel, bulwark, edge int64
+	}{
+		{0, 11397, 11214, 983},
+		{200, 9717, 9937, 1022},
+		{400, 8072, 8648, 1071},
+		{600, 6418, 7361, 1146},
+		{1000, 3100, 4800, 1548},
+	}
+	for _, testCase := range cases {
+		sentinel := absorbs(sentinelHealth, sentinelDefense, testCase.pierce)
+		bulwark := absorbs(bulwarkHealth, bulwarkDefense, testCase.pierce)
+		if sentinel != testCase.sentinel || bulwark != testCase.bulwark {
+			t.Errorf("at %d pierced the two absorb %d and %d, want %d and %d",
+				testCase.pierce, sentinel, bulwark, testCase.sentinel, testCase.bulwark)
+		}
+		// The edge in parts per thousand rather than as a ratio, because this
+		// package deals in integers and a float here would be the only one in
+		// the engine. 983 is the armoured unit slightly behind; 1548 is it half
+		// again as durable.
+		if edge := bulwark * 1000 / sentinel; edge != testCase.edge {
+			t.Errorf("at %d pierced the bulwark's edge is %d per thousand, want %d",
+				testCase.pierce, edge, testCase.edge)
+		}
+	}
+}
+
+// TestAPiercingStrikeHitsHarderThanAPlainOne checks the figure reaches the
+// formula through Hit, which is the path a battle takes. Damage itself is
+// deliberately unaware of piercing — see its comment.
+func TestAPiercingStrikeHitsHarderThanAPlainOne(t *testing.T) {
+	r := rules()
+	base := combat.Hit{
+		Scaling: 800, Multiplier: 1000, Affinity: 1000, Defense: 400, SkillAccuracy: 1000,
+	}
+	plain := r.Strike(base)
+	pierced := base
+	pierced.Pierce = 600
+	got := r.Strike(pierced)
+	if got <= plain {
+		t.Fatalf("piercing 600 dealt %d, no more than the %d a plain strike dealt", got, plain)
+	}
+	// It has to be the same figure as the plain strike against the armour that
+	// piercing leaves standing, or piercing is a second damage formula.
+	want := r.Damage(800, combat.Pierced(400, 600), 1000, 1000)
+	if got != want {
+		t.Fatalf("piercing 600 dealt %d, want the %d a plain strike deals against %d defence",
+			got, want, combat.Pierced(400, 600))
+	}
+}

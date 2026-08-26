@@ -288,6 +288,40 @@ without it (an inline stat line is already resolved). `battle.Roster` deliberate
 gains no image, biography or origin field: the engine has no use for them, and the
 event log is what a renderer reads.
 
+**Piercing is a ratio, and it stops at the strike.** `skill.Skill.Pierce` is the
+share of the target's defence a skill ignores, in parts per thousand, applied by
+`combat.Pierced` inside `Rules.Strike`. `Rules.Damage` itself takes the defence
+*as it applies* and knows nothing about piercing — deliberately, because five
+positional integers is a signature a mis-ordered argument passes silently, and
+because a caller reaching it directly is asking for the raw curve. A
+damage-over-time tick is exactly such a caller and **must stay that way**: a tick
+is computed once when the stack is applied and frozen for its whole life, so
+piercing one is worth as many pierced hits as the stack has turns left (400 a
+turn for three turns against 171, measured on the shipped poison), which is a
+different skill from the one the author wrote. Three consequences: a ratio rather
+than a switch, for the reason buffs saturate — a hard cap on a continuous
+quantity is the shape this engine rejects; the `damaged` event **carries the
+share**, because a reader who cannot see it cannot reproduce the figure and a log
+its reader cannot reproduce is the log lying; and `progression.EffectiveHP` now
+describes one case of two, so anything showing it to an author must show
+`EffectiveHPAgainst(…, scale.Base)` beside it — which comes to the raw health.
+
+**Healing is not damage with a sign.** Three mechanisms give health back — a
+skill's `restores`, a skill's `drains`, and a `regen` status — and each obeys the
+same four rules. `combat.Rules.Restore` deliberately does **not** divide by the
+defence curve even though a damage-over-time tick does: defence turns away what
+is coming *at* a unit and has nothing to do with what is helping it, so do not
+add the division for symmetry. A drain reads `combat.DamageDealt`, not the damage
+rolled, so a missed or blocked strike drains nothing. `status.Set.Tick` returns
+**two unsigned totals**, damage and healing, never one signed number — a
+negative down the damage path would subtract a negative, and `wound` calls `kill`
+the moment health reaches zero, so a signed total is the one shape that could
+revive a corpse. And a dead unit is not healable while health clamps at `MaxHP`,
+which is what keeps a battle able to end and stops a regeneration from being an
+uncapped shield. Every restore emits a `healed` event, because nothing else in
+the log explains health going up. Consequence: `Suggest` never picks one, and the
+joint health-and-defence budget is now an **understatement** rather than a bound.
+
 **Where balance numbers live.** Tick power and modifier terms belong to the
 *status*, not to the skill that applies it, so two skills inflicting the same
 debuff inflict the same thing. A skill contributes the attack behind it, which is
@@ -601,39 +635,16 @@ is the constraint each piece has to respect.
       detection must be a pure function of state, because a battle that draws on
       one machine has to draw on every other from the same seed. See README →
       Roadmap.
-- [ ] **Healing, draining, and a regeneration status.** Nothing restores health:
-      `wound` only subtracts, `Set.Tick` returns one unsigned damage total, and no
-      `status.Category` heals — which is why Bulbasaur has no Leech Seed. Three
-      mechanisms, not one: a direct heal, a drain reading `combat.DamageDealt`
-      (dealt, not rolled, so a miss or a block drains nothing), and a
-      regeneration status, which is the cheapest because `Kind.TickPower` and the
-      per-stack freeze already do the work with the sign flipped. Five things to
-      decide rather than assume: `Set.Tick` returns healing **separately**, never
-      a signed total, because a negative through `wound` could revive a corpse it
-      already called `kill` on; a dead unit is not healable and health clamps at
-      `Unit.MaxHP`; healing does **not** divide by the defence curve even though
-      damage over time does, and that asymmetry is deliberate — defence turns
-      away harm, not help; a heal must emit an event or the log cannot explain
-      health going up; and it makes `MaxEffectiveHP` an **understatement**, the
-      mirror of what piercing makes of it, so with both open one figure describes
-      neither. `Suggest` will not choose one, for the reason recorded under the
-      opponent. See README → Roadmap.
-- [ ] **Piercing, to answer armour.** Nothing ignores defence today: normal hits,
-      splash and damage-over-time ticks all divide by `K + defence`, so the
-      effective-health figure is exact and the armour end of the budget has no
-      counter, while every other defence here has one. Make it a **ratio in parts
-      per thousand, not a switch** — a switch jumps straight to bulwark being
-      1.55x sentinel while a ratio walks 0.98x → 1.55x, and a hard cap on a
-      continuous quantity is the shape this engine has rejected everywhere else.
-      A field on `skill.Skill` threaded into `combat.Rules.Damage`; a zero default
-      moves **no golden**. Three things to decide, not assume: whether it reaches a
-      damage-over-time tick (a tick is computed once at application and frozen, so
-      a pierced stack is far bigger than a pierced hit), whether `MaxEffectiveHP`
-      still describes the worst case or raw health now needs a floor of its own,
-      and how a pierced hit is made visible in the event log — a pierced hit that
-      logs like an ordinary one leaves the log unable to explain its own numbers.
-      `hexforge`'s effective-health row describes non-piercing damage only and will
-      need both figures. See README → Roadmap.
+- [ ] **A skill that pierces, and whether health needs a floor.** The mechanism
+      ships and nothing uses it, so both halves left are balance. Which skill
+      gets a non-zero `pierce` is open — `sever` was the candidate and was
+      retired with the rest of the original book — and the first one to get it
+      moves `scenarios.golden`, which is where the change gets read. Separately,
+      `MaxEffectiveHP` bounds durability against damage that does not pierce, and
+      against damage that does, a 3100/800 line absorbs 3100 where a 4800/400 one
+      absorbs 4800; both are legal. Whether an armour-heavy line may be that thin
+      is worth measuring against a real piercing skill rather than deciding in
+      advance. See README → Roadmap.
 - [ ] **A real cast.** The tooling now exists: `internal/core/cast` holds origins,
       archetype presets and characters, `cmd/hexforge` authors them, and
       `progression.Line` is finally used — `cast.json` ships one single-stage and

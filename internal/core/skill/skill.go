@@ -275,7 +275,18 @@ type Skill struct {
 	// Accuracy is its own chance to connect, before the caster's accuracy stat
 	// and the target's dodge. A full thousand cannot miss and cannot be dodged.
 	Accuracy int
-	Scaling  Scaling
+	// Pierce is the share of the target's defence the skill ignores, in parts
+	// per thousand. It is the answer to armour, which every other defence in
+	// the game already has one of, and it is a ratio rather than a switch for
+	// the reason combat.Pierced records.
+	//
+	// It reaches the skill's own strikes and nothing else. A status this skill
+	// applies ticks against full defence, because a tick's damage is computed
+	// once when the stack is applied and frozen for the stack's whole life — so
+	// a pierced tick is worth several pierced hits, which is a larger effect
+	// than an author setting a per-strike ratio is asking for.
+	Pierce  int
+	Scaling Scaling
 	// Applies are the statuses inflicted on each target it hits.
 	Applies []Application
 	// SelfApplies are the statuses the caster gains, which is how a shield or a
@@ -356,13 +367,17 @@ type skillFile struct {
 	// file round-trips byte for byte and the tables measured from it do not move.
 	// It sits beside the id because that is where it reads — a skill and the name
 	// it is called by, then the numbers.
-	Name        string            `json:"name,omitempty"`
-	Element     string            `json:"element"`
-	Range       int               `json:"range"`
-	Pattern     string            `json:"pattern"`
-	Power       int               `json:"power"`
-	Strikes     int               `json:"strikes"`
-	Accuracy    int               `json:"accuracy"`
+	Name     string `json:"name,omitempty"`
+	Element  string `json:"element"`
+	Range    int    `json:"range"`
+	Pattern  string `json:"pattern"`
+	Power    int    `json:"power"`
+	Strikes  int    `json:"strikes"`
+	Accuracy int    `json:"accuracy"`
+	// Pierce is written only when there is some, like the two healing figures
+	// below it: no shipped skill pierces, so the shipped book round-trips byte
+	// for byte and the tables measured from it did not move when it arrived.
+	Pierce      int               `json:"pierce,omitempty"`
 	Restores    int               `json:"restores,omitempty"`
 	Drains      int               `json:"drains,omitempty"`
 	Cooldown    int               `json:"cooldown"`
@@ -447,7 +462,7 @@ func (s Skill) file() skillFile {
 		ID: s.ID, Name: s.Name,
 		Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
 		Power: s.Power, Strikes: s.Strikes, Accuracy: s.Accuracy,
-		Restores: s.Restores, Drains: s.Drains,
+		Pierce: s.Pierce, Restores: s.Restores, Drains: s.Drains,
 		Cooldown: s.Cooldown, Target: s.Target.String(),
 		Applies: applicationFiles(s.Applies), SelfApplies: applicationFiles(s.SelfApplies),
 	}
@@ -589,6 +604,10 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return fail("has accuracy %d, want a share in parts per thousand", declared.Accuracy)
 	case declared.Power > 0 && declared.Accuracy == 0:
 		return fail("deals damage but can never connect")
+	case declared.Pierce < 0 || declared.Pierce > scale.Base:
+		return fail("pierces %d, want a share in parts per thousand", declared.Pierce)
+	case declared.Pierce > 0 && declared.Power == 0:
+		return fail("pierces defence it never attacks through")
 	case declared.Restores > 0 && target == Enemy:
 		return fail("restores health to the enemy, which nobody means")
 	case declared.Cooldown < 0:
@@ -702,7 +721,7 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		ID: declared.ID, Name: name,
 		Element: affinity, Range: declared.Range, Pattern: shape.Name,
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
-		Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
+		Pierce: declared.Pierce, Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
 		Requires: requires, Strips: strips, Restrict: restrict,
 		Restores: declared.Restores, Drains: declared.Drains,
 		Cooldown: declared.Cooldown, Target: target,

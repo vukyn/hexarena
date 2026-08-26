@@ -145,6 +145,13 @@ type Event struct {
 	Multiplier int `json:"multiplier,omitempty"`
 	// Power is the skill power the hit resolved at, after any amplifier.
 	Power int `json:"power,omitempty"`
+	// Pierce is the share of the target's defence the hit ignored, in parts per
+	// thousand, on Damaged. It is here because a pierced hit that logs like an
+	// ordinary one leaves the log unable to explain its own figures: a reader
+	// with the same stats and the same power cannot reproduce the damage, and
+	// the log is the only contract a renderer has. Absent on every hit that
+	// pierces nothing, which is every hit the shipped book can produce today.
+	Pierce int `json:"pierce,omitempty"`
 	// Remaining is the target's health after the event, or charges left after a
 	// block.
 	Remaining int64 `json:"remaining,omitempty"`

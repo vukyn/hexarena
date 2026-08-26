@@ -117,6 +117,8 @@ func runSkillsAdd(args []string) error {
 		"statuses it inflicts, comma separated, each status:chance or status:chance:stacks")
 	set.StringVar(&given.SelfApplies, "self-applies", "",
 		"statuses it puts on the caster, written the same way as applies")
+	set.StringVar(&given.Pierce, "pierce", "",
+		"share of the target's defence it ignores, in parts per thousand")
 	set.StringVar(&given.Restores, "restores", "",
 		"health it gives its target, in parts per thousand of the caster's scaling stat")
 	set.StringVar(&given.Drains, "drains", "",
@@ -215,6 +217,8 @@ func runSkillsEdit(args []string) error {
 		"statuses it inflicts, comma separated, each status:chance or status:chance:stacks")
 	set.StringVar(&given.SelfApplies, "self-applies", "",
 		"statuses it puts on the caster, written the same way as applies")
+	set.StringVar(&given.Pierce, "pierce", "",
+		"share of the target's defence it ignores; an empty value clears it")
 	set.StringVar(&given.Restores, "restores", "",
 		"health it gives its target, in parts per thousand; an empty value clears it")
 	set.StringVar(&given.Drains, "drains", "",
@@ -301,6 +305,7 @@ func editFrom(set *flag.FlagSet, given *forge.SkillDraft) forge.SkillEdit {
 		"strikes": &edit.Strikes, "accuracy": &edit.Accuracy,
 		"cooldown": &edit.Cooldown, "applies": &edit.Applies,
 		"self-applies":        &edit.SelfApplies,
+		"pierce":              &edit.Pierce,
 		"restores":            &edit.Restores,
 		"drains":              &edit.Drains,
 		"restrict-elements":   &edit.RestrictElements,
@@ -450,6 +455,7 @@ func fillSkill(given forge.SkillDraft, lib *forge.Library, prompt *prompter) (fo
 		flag   string
 		prompt string
 	}{
+		{&filled.Pierce, "pierce", "share of the target's defence it ignores, in parts per thousand"},
 		{&filled.Restores, "restores", "health given to its target, in parts per thousand"},
 		{&filled.Drains, "drains", "share of the damage dealt that comes back"},
 	} {
@@ -531,6 +537,9 @@ func renderSkill(out io.Writer, lib *forge.Library, built skill.Skill) {
 	}
 	if len(built.SelfApplies) > 0 {
 		label("on itself", "%s", forge.DescribeApplications(built.SelfApplies))
+	}
+	if built.Pierce > 0 {
+		label("pierces", "%d (%s) of the target's defence", built.Pierce, forge.Percent(built.Pierce))
 	}
 	if built.Restores > 0 {
 		label("restores", "%d (%s) of the caster's %s",
