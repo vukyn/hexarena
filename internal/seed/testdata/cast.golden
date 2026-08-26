@@ -22,4 +22,26 @@ pokemon.bulbasaur — Bulbasaur
     level 60 hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50
              absorbs 10410 of the 11500 budget, 1090 to spare
 
-1 character
+pokemon.charmander — Charmander
+  from     Pokémon (anime)
+  preset   scorcher
+  element  fire
+  art      assets/charmander.svg
+  kit      ember flamethrower fire_fang fire_spin heat_wave inferno dragon_rage smokescreen dragon_dance
+  stage "Charmander" owns levels 1 to 15, showing assets/charmander.svg
+    level 1  hp 760, atk 180, def 95, spd 46, acc 48, ddg 22
+             absorbs 1001 of the 11500 budget, 10499 to spare
+    level 15 hp 1149, atk 265, def 141, spd 63, acc 66, ddg 30
+             absorbs 1689 of the 11500 budget, 9811 to spare
+  stage "Charmeleon" owns levels 16 to 31, showing assets/charmeleon.svg
+    level 16 hp 1355, atk 321, def 175, spd 73, acc 76, ddg 35
+             absorbs 2147 of the 11500 budget, 9353 to spare
+    level 31 hp 1830, atk 423, def 231, spd 92, acc 97, ddg 44
+             absorbs 3244 of the 11500 budget, 8256 to spare
+  stage "Charizard" owns levels 32 to 60, showing assets/charizard.svg
+    level 32 hp 2103, atk 491, def 281, spd 102, acc 109, ddg 51
+             absorbs 4075 of the 11500 budget, 7425 to spare
+    level 60 hp 3100, atk 700, def 400, spd 140, acc 150, ddg 70
+             absorbs 7242 of the 11500 budget, 4258 to spare
+
+2 characters

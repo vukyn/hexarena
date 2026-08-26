@@ -13,4 +13,16 @@ blighter, formation column 1
            absorbs 10410 of the 11500 budget, 1090 to spare
   kit      vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed synthesis ingrain
 
-1 presets
+scorcher, formation column 0
+  the fast one that wins before attrition matters: set the target alight, then cash the burn in with a bigger hit than it can trade back
+  demands  a character built from it must carry fire
+  hp 1000->3100  attack 260->700  defense 150->400  speed 62->140  accuracy 65->150  dodge 30->70
+  level 1  hp 1000, atk 260, def 150, spd 62, acc 65, ddg 30
+           absorbs 1501 of the 11500 budget, 9999 to spare
+  level 30 hp 2032, atk 476, def 272, spd 100, acc 106, ddg 49
+           absorbs 3877 of the 11500 budget, 7623 to spare
+  level 60 hp 3100, atk 700, def 400, spd 140, acc 150, ddg 70
+           absorbs 7242 of the 11500 budget, 4258 to spare
+  kit      ember flamethrower fire_fang fire_spin heat_wave inferno dragon_rage smokescreen dragon_dance
+
+2 presets

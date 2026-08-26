@@ -119,6 +119,123 @@
           "at_level": 16
         }
       ]
+    },
+    {
+      "id": "pokemon.charmander",
+      "name": "Charmander",
+      "origin": "pokemon",
+      "archetype": "scorcher",
+      "image": "assets/charmander.svg",
+      "element": "fire",
+      "bio": "Ngọn lửa trên đuôi cháy theo sức sống của nó, càng hăng thì càng bùng. Đánh nhanh, sát thương cao, nhưng mỏng đòn: thắng bằng cách đốt trước rồi thu tiền bỏng, thua nếu để trận kéo dài. Ba giai đoạn: Charmander, Charmeleon từ cấp 16, Charizard từ cấp 32.",
+      "stages": [
+        {
+          "name": "Charmander",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 760,
+              "max": 2400
+            },
+            "attack": {
+              "base": 180,
+              "max": 540
+            },
+            "defense": {
+              "base": 95,
+              "max": 290
+            },
+            "speed": {
+              "base": 46,
+              "max": 118
+            },
+            "accuracy": {
+              "base": 48,
+              "max": 126
+            },
+            "dodge": {
+              "base": 22,
+              "max": 56
+            }
+          }
+        },
+        {
+          "name": "Charmeleon",
+          "min_level": 16,
+          "image": "assets/charmeleon.svg",
+          "stats": {
+            "hp": {
+              "base": 880,
+              "max": 2750
+            },
+            "attack": {
+              "base": 220,
+              "max": 620
+            },
+            "defense": {
+              "base": 120,
+              "max": 340
+            },
+            "speed": {
+              "base": 54,
+              "max": 130
+            },
+            "accuracy": {
+              "base": 56,
+              "max": 138
+            },
+            "dodge": {
+              "base": 26,
+              "max": 63
+            }
+          }
+        },
+        {
+          "name": "Charizard",
+          "min_level": 32,
+          "image": "assets/charizard.svg",
+          "stats": {
+            "hp": {
+              "base": 1000,
+              "max": 3100
+            },
+            "attack": {
+              "base": 260,
+              "max": 700
+            },
+            "defense": {
+              "base": 150,
+              "max": 400
+            },
+            "speed": {
+              "base": 62,
+              "max": 140
+            },
+            "accuracy": {
+              "base": 65,
+              "max": 150
+            },
+            "dodge": {
+              "base": 30,
+              "max": 70
+            }
+          }
+        }
+      ],
+      "skills": [
+        "ember",
+        "flamethrower",
+        "fire_fang",
+        "fire_spin",
+        "heat_wave",
+        "inferno",
+        "dragon_rage",
+        "smokescreen",
+        "dragon_dance"
+      ],
+      "passives": [
+        "blaze"
+      ]
     }
   ]
 }

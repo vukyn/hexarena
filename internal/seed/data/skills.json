@@ -155,6 +155,168 @@
           "stacks": 2
         }
       ]
+    },
+    {
+      "id": "ember",
+      "name": "tàn lửa",
+      "element": "fire",
+      "range": 2,
+      "pattern": "single",
+      "power": 1000,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy",
+      "applies": [
+        {
+          "status": "burn",
+          "chance": 300,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "flamethrower",
+      "name": "phun lửa",
+      "element": "fire",
+      "range": 3,
+      "pattern": "single",
+      "power": 1600,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "applies": [
+        {
+          "status": "burn",
+          "chance": 500,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "fire_fang",
+      "name": "nanh lửa",
+      "element": "fire",
+      "range": 1,
+      "pattern": "single",
+      "power": 650,
+      "strikes": 2,
+      "accuracy": 880,
+      "pierce": 350,
+      "cooldown": 2,
+      "target": "enemy"
+    },
+    {
+      "id": "fire_spin",
+      "name": "xoáy lửa",
+      "element": "fire",
+      "range": 3,
+      "pattern": "column",
+      "power": 850,
+      "strikes": 1,
+      "accuracy": 860,
+      "cooldown": 3,
+      "target": "enemy",
+      "applies": [
+        {
+          "status": "burn",
+          "chance": 700,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "heat_wave",
+      "name": "sóng nhiệt",
+      "element": "fire",
+      "range": 3,
+      "pattern": "wedge_right",
+      "power": 1100,
+      "strikes": 1,
+      "accuracy": 850,
+      "cooldown": 4,
+      "target": "enemy",
+      "applies": [
+        {
+          "status": "burn",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "inferno",
+      "name": "hỏa ngục",
+      "element": "fire",
+      "range": 2,
+      "pattern": "single",
+      "power": 1000,
+      "strikes": 1,
+      "accuracy": 880,
+      "cooldown": 3,
+      "target": "enemy",
+      "requires": {
+        "status": "burn",
+        "min_stacks": 1,
+        "bonus_power": 2500,
+        "consume": true
+      }
+    },
+    {
+      "id": "dragon_rage",
+      "name": "long nộ",
+      "element": "neutral",
+      "range": 3,
+      "pattern": "single",
+      "power": 1300,
+      "strikes": 1,
+      "accuracy": 920,
+      "cooldown": 3,
+      "target": "enemy"
+    },
+    {
+      "id": "smokescreen",
+      "name": "màn khói",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "flank_up",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "enemy",
+      "applies": [
+        {
+          "status": "blind",
+          "chance": 800,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "dragon_dance",
+      "name": "long vũ",
+      "element": "neutral",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "self_applies": [
+        {
+          "status": "rally",
+          "chance": 1000,
+          "stacks": 1
+        },
+        {
+          "status": "haste",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

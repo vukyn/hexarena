@@ -47,6 +47,51 @@
           "at_level": 16
         }
       ]
+    },
+    {
+      "id": "scorcher",
+      "role": "the fast one that wins before attrition matters: set the target alight, then cash the burn in with a bigger hit than it can trade back",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1000,
+          "max": 3100
+        },
+        "attack": {
+          "base": 260,
+          "max": 700
+        },
+        "defense": {
+          "base": 150,
+          "max": 400
+        },
+        "speed": {
+          "base": 62,
+          "max": 140
+        },
+        "accuracy": {
+          "base": 65,
+          "max": 150
+        },
+        "dodge": {
+          "base": 30,
+          "max": 70
+        }
+      },
+      "skills": [
+        "ember",
+        "flamethrower",
+        "fire_fang",
+        "fire_spin",
+        "heat_wave",
+        "inferno",
+        "dragon_rage",
+        "smokescreen",
+        "dragon_dance"
+      ],
+      "passives": [
+        "blaze"
+      ]
     }
   ]
 }

@@ -9,6 +9,16 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "blaze",
+      "name": "bùng lửa",
+      "grants": [
+        {
+          "status": "kindled",
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

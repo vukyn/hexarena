@@ -152,6 +152,20 @@
       "max_stacks": 3,
       "duration": 3,
       "tick_power": 400
+    },
+    {
+      "id": "kindled",
+      "category": "buff",
+      "max_stacks": 1,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "attack",
+          "mode": "percent",
+          "amount": 150
+        }
+      ]
     }
   ]
 }
