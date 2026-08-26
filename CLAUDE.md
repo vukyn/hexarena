@@ -136,12 +136,19 @@ its own Save dialog, and on Linux a window manager may claim Super first. So
 `ctrl+s` stays the binding that always works and `saveKeyLabel` keeps naming a
 control-S on every platform. Do not "simplify" the footer to ⌘S alone on macOS.
 
-⚠️ **The label has six cells and no more.** The English character-form footer is
-73 cells without it, the smallest window is 80, and the last cell of a row is
-left empty so writing it cannot wrap the line — so `⌘S ^S` fits and `⌘S / ^S`
-does not. `TestEverySaveFooterFitsTheSmallestWindow` measures all three
-platforms' labels rather than only the host's, because the off-Mac `ctrl+s` is
-the longer of the two.
+⚠️ **The footer names `ctrl+s` and nothing else, on every platform.** Not an
+oversight and not a downgrade of ⌘S, which still saves: ⌘ is East-Asian-Ambiguous
+width, so `lipgloss.Width` counts one cell where many terminals draw two, and the
+glyph is then drawn on top of the character after it — `⌘S` renders as two
+overlapping characters. A program cannot detect which sort of terminal it has.
+Spacing it apart needs a cell that is not there: the English character-form
+footer is 73 cells without the label, the smallest window is 80, the last cell of
+a row is left empty so writing it cannot wrap the line, and no ASCII spelling of
+both keys fits in the six that leaves. ⌃/⇧/⌥ are ambiguous too, so they are not
+the way out either. Guarded by `TestTheSaveLabelIsDrawableEverywhere` (label is
+ASCII) and `TestEverySaveFooterFitsTheSmallestWindow` (the six cells). ⌘S is
+announced in `MenuNote` instead, which `TestTheMenuFitsTheSmallestWindow` keeps
+inside the window.
 
 Four API changes matter, and three of them fail *quietly* rather than at compile
 time — which is why they are written down:

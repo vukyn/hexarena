@@ -1,7 +1,6 @@
 package main
 
 import (
-	"runtime"
 	"strings"
 	"testing"
 
@@ -156,22 +155,31 @@ func TestTheSaveLabelAlwaysOffersTheKeyThatAlwaysWorks(t *testing.T) {
 	if !strings.Contains(label, "^S") && !strings.Contains(label, saveKeyControl) {
 		t.Errorf("the save label %q names no control-S, which is the key that always works", label)
 	}
-	if runtime.GOOS == "darwin" && !strings.Contains(label, "⌘") {
-		t.Errorf("the save label %q offers no Command key on a Mac", label)
-	}
-	if runtime.GOOS != "darwin" && strings.Contains(label, "⌘") {
-		t.Errorf("the save label %q offers a Command key off a Mac", label)
+}
+
+// TestTheSaveLabelIsDrawableEverywhere is the rendering half of it, and the
+// reason the footer stopped naming ⌘S.
+//
+// ⌘ is East-Asian-Ambiguous width — measured as one cell, drawn as two by a good
+// many terminals, which lands the glyph on top of the character after it. On
+// those terminals "⌘S" is two overlapping characters rather than a key, and
+// nothing inside the program can find out which sort of terminal is in front. So
+// the label stays inside the characters every terminal draws at the width they
+// were measured at.
+//
+// The assertion is on every letter rather than on ⌘ alone, because the next
+// tempting symbol has exactly the same problem: ⌃, ⇧ and ⌥ are ambiguous too.
+func TestTheSaveLabelIsDrawableEverywhere(t *testing.T) {
+	for _, letter := range saveKeyLabel() {
+		if letter > 127 {
+			t.Errorf("the save label %q carries %q, whose drawn width the program cannot know",
+				saveKeyLabel(), letter)
+		}
 	}
 }
 
 // TestEverySaveFooterFitsTheSmallestWindow is the budget the save label is
-// spelled against.
-//
-// Three footers carry the label, in two languages, and the label itself depends
-// on the platform — twelve lines, of which the machine running this test draws
-// six. The other six are measured here anyway, because a footer that overruns
-// only on Linux is a footer nobody here would see overrun, and the off-Mac label
-// is the longer of the two.
+// spelled against, and the reason it cannot grow to name a second key as well.
 //
 // The budget is minWidth-1 rather than minWidth for the reason the sub-screen
 // layout tests use it: writing the last cell of a row is what makes a terminal
@@ -184,37 +192,14 @@ func TestEverySaveFooterFitsTheSmallestWindow(t *testing.T) {
 		"the skill form":     i18n.SkillFormFooter,
 		"the origins form":   i18n.OriginFormFooter,
 	}
-	for _, goos := range []string{"darwin", "linux", "windows"} {
-		label := saveKeyLabelFor(goos)
-		for _, lang := range i18n.Langs() {
-			for name, key := range footers {
-				footer := lang.Say(key, label)
-				if width := lipgloss.Width(footer); width > drawable {
-					t.Errorf("on %s, %s's %s footer draws %d cells, over the %d it has:\n%s",
-						goos, name, lang, width, drawable, footer)
-				}
+	for _, lang := range i18n.Langs() {
+		for name, key := range footers {
+			footer := lang.Say(key, saveKeyLabel())
+			if width := lipgloss.Width(footer); width > drawable {
+				t.Errorf("%s's %s footer draws %d cells, over the %d it has:\n%s",
+					name, lang, width, drawable, footer)
 			}
 		}
-	}
-}
-
-// TestTheSaveLabelSeparatesItsTwoKeys is the complaint that changed the label.
-//
-// A footer separates one key from the next with a space, so a label naming two
-// keys with nothing between them is read as one key with a strange name. The
-// assertion is on the space rather than on the exact spelling, because the
-// spelling is a layout decision and the separation is not.
-func TestTheSaveLabelSeparatesItsTwoKeys(t *testing.T) {
-	label := saveKeyLabelFor("darwin")
-	command, control, found := strings.Cut(label, " ")
-	if !found {
-		t.Fatalf("the Mac save label %q names two keys with nothing between them", label)
-	}
-	if !strings.Contains(command, "⌘") {
-		t.Errorf("the Mac save label %q does not name the Command key first", label)
-	}
-	if !strings.Contains(control, "^") {
-		t.Errorf("the Mac save label %q names no control-S after the Command key", label)
 	}
 }
 

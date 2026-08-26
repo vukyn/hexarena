@@ -1916,6 +1916,39 @@ func TestTheShapeDiagramOpensFromTheChooserAndFollowsIt(t *testing.T) {
 	_ = lib
 }
 
+// TestTheMenuFitsTheSmallestWindow is the screen everybody arrives on, measured
+// like the sub-screens are.
+//
+// The note underneath the menu is the part that grows: it is the only place a
+// keystroke that is not in a footer gets explained, so it collects a line every
+// time something needs saying, and the menu has a whole window to lose before
+// anyone notices. Both languages, because the Vietnamese note is the longer one
+// and it is the default.
+//
+// The measurement is the note's own lines rather than the drawn screen's: the
+// header carries the data directory, which is a filesystem path of any length
+// and is deliberately clipped to the window like any other free text. A note
+// line is written by hand and cannot be clipped without losing a word.
+func TestTheMenuFitsTheSmallestWindow(t *testing.T) {
+	const drawable = minWidth - 1
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m.width, m.height = minWidth, minHeight
+		drawn := m.screenContent()
+		if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
+			strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
+			t.Errorf("the %s menu is truncated at %dx%d:\n%s",
+				lang, minWidth, minHeight, drawn)
+		}
+		for _, line := range strings.Split(m.text(i18n.MenuNote), "\n") {
+			if width := lipgloss.Width(line); width > drawable {
+				t.Errorf("a line of the %s menu note draws %d cells, over the %d it has:\n%s",
+					lang, width, drawable, line)
+			}
+		}
+	}
+}
+
 // TestTheShapeDiagramFitsTheSmallestWindow is why it is a sub-screen: the board
 // alone is eight lines and the form it would have gone under spends nineteen of
 // its twenty.
