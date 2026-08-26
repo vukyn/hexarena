@@ -577,3 +577,20 @@ func allowlistedAxes(axes map[string][]string) string {
 	}
 	return strings.Join(named, ", ")
 }
+
+// TestEveryShippedSkillHasAFlavourClause is the wording rule, held the way the
+// archetype gloss rule is: a shipped skill reaches a player, and a player reading
+// "Đánh 1 mục tiêu đối phương, 110% công" is being handed the data rather than
+// told what happened.
+//
+// The field itself is optional and stays that way — a skill being authored in the
+// tool has no clause yet and should not be refused for it. What may not happen is
+// a skill *shipping* without one.
+func TestEveryShippedSkillHasAFlavourClause(t *testing.T) {
+	for _, current := range mustSkills(t).Skills() {
+		if strings.TrimSpace(current.Flavour) == "" {
+			t.Errorf("%q ships with no flavour clause, so its description opens with the derived one",
+				current.ID)
+		}
+	}
+}

@@ -41,27 +41,31 @@ import (
 // Vietnamese-only description would ignore it.
 func (l Lang) Describe(declared skill.Skill, shapes *pattern.Book) string {
 	lines := make([]string, 0, 4)
-	if opening := l.describeOpening(declared, shapes); opening != "" {
+	if opening := l.describeOpening(declared); opening != "" {
 		lines = append(lines, opening)
 	}
 	lines = append(lines, l.describeExtras(declared)...)
 	if condition := l.describeCondition(declared); condition != "" {
 		lines = append(lines, condition)
 	}
-	lines = append(lines, l.describeCosts(declared))
+	lines = append(lines, l.describeCosts(declared, shapes))
 	return strings.Join(lines, "\n")
 }
 
 // describeOpening is the damage sentence, or the aim alone when a skill deals
 // none: a skill with no power is not a weaker attack, it is a different kind of
 // action, and opening with "0% of attack" would file it as the first.
-func (l Lang) describeOpening(declared skill.Skill, shapes *pattern.Book) string {
-	aim := l.describeAim(declared, shapes)
+func (l Lang) describeOpening(declared skill.Skill) string {
+	aim := l.describeAim(declared)
 	if declared.Power <= 0 {
 		// A skill that deals no damage still has to say what it reaches. Without
 		// this a two-cell powder read exactly like a single-target one, because
 		// every sentence after this one talks about "the target" and none of them
 		// count how many there are.
+		flavour := l.flavour(declared)
+		if flavour != "" {
+			return flavour + "."
+		}
 		if declared.Target == skill.Self {
 			return ""
 		}
@@ -73,30 +77,59 @@ func (l Lang) describeOpening(declared skill.Skill, shapes *pattern.Book) string
 		damage = l.Say(BlurbStrikes, declared.StrikeCount(),
 			percent(declared.Power), stat, percent(declared.TotalPower()))
 	}
+	// An authored clause replaces the derived one it would otherwise open with,
+	// and the figures are appended to it either way. Nothing derives "dây leo"
+	// from vine_whip — the name is the one fact only a person holds — so this is
+	// where prose is allowed in, and the digit ban at parse is what keeps it from
+	// carrying a number that could go stale.
 	sentence := l.Say(BlurbHits, aim, damage)
+	if flavour := l.flavour(declared); flavour != "" {
+		sentence = l.Say(BlurbFlavoured, flavour, damage)
+	}
 	if declared.Pierce > 0 {
 		sentence += l.Say(BlurbPierces, percent(declared.Pierce))
 	}
 	return sentence + "."
 }
 
-// describeAim is who the skill reaches: the side it aims at, and how many cells
-// its shape covers when that is more than one.
-func (l Lang) describeAim(declared skill.Skill, shapes *pattern.Book) string {
-	side := l.Text(map[skill.Side]Key{
+// flavour is a skill's authored opening clause in this language, or nothing.
+//
+// English has none: like a skill's name, the clause is authored once and in
+// Vietnamese, so an English reader gets the derived opening rather than a
+// Vietnamese sentence dropped into an English one. That is the same trade
+// SkillName already makes, and it is why the field is not a translations table —
+// a second file is a second thing to keep in step.
+func (l Lang) flavour(declared skill.Skill) string {
+	if l != Vi {
+		return ""
+	}
+	return declared.Flavour
+}
+
+// describeAim is the side a skill reaches. How many cells it covers is on the
+// cost line instead — see cellsCovered.
+func (l Lang) describeAim(declared skill.Skill) string {
+	return l.Text(map[skill.Side]Key{
 		skill.Enemy: BlurbSideEnemy, skill.Ally: BlurbSideAlly,
 		skill.Self: BlurbSideSelf, skill.All: BlurbSideAll,
 	}[declared.Target])
-	cells := 1
-	if shapes != nil {
-		if shape, err := shapes.Lookup(declared.Pattern); err == nil {
-			cells = shape.MaxTargets()
-		}
+}
+
+// cells is how many of them a skill's shape covers, or one when the book cannot
+// say. It is read by the cost line rather than by the opening sentence: a shape
+// is a fact about reach, which is what that line is for, and keeping it there is
+// what leaves the opening free for the authored clause. In the opening it also
+// read badly twice over — "rắc phấn ru ngủ xuống chỗ đối phương đứng, nhắm 2 ô
+// đối phương" says the target twice and the count once too late.
+func cellsCovered(declared skill.Skill, shapes *pattern.Book) int {
+	if shapes == nil {
+		return 1
 	}
-	if declared.Target == skill.Self || cells <= 1 {
-		return side
+	shape, err := shapes.Lookup(declared.Pattern)
+	if err != nil {
+		return 1
 	}
-	return l.Say(BlurbCells, cells, side)
+	return shape.MaxTargets()
 }
 
 // describeExtras is everything a skill does that is not damage, one sentence
@@ -164,7 +197,7 @@ func (l Lang) describeCondition(declared skill.Skill) string {
 
 // describeCosts is the line every skill has: how far it reaches, how often it
 // connects, and how long it is gone for.
-func (l Lang) describeCosts(declared skill.Skill) string {
+func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 	parts := make([]string, 0, 3)
 	if declared.Target == skill.Self {
 		// A self-targeted skill has no range to state, and saying nothing at all
@@ -174,6 +207,9 @@ func (l Lang) describeCosts(declared skill.Skill) string {
 		parts = append(parts, l.Text(BlurbCostSelf))
 	} else {
 		parts = append(parts, l.Say(BlurbCostRange, declared.Range))
+	}
+	if covered := cellsCovered(declared, shapes); covered > 1 {
+		parts = append(parts, l.Say(BlurbCostCells, covered))
 	}
 	if declared.Power > 0 || len(declared.Applies) > 0 {
 		parts = append(parts, l.Say(BlurbCostAccuracy, percent(declared.Accuracy)))

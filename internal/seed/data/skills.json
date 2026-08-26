@@ -3,6 +3,7 @@
     {
       "id": "vine_whip",
       "name": "roi dây leo",
+      "flavour": "Vung dây leo quật kẻ địch từ xa",
       "element": "grass",
       "range": 2,
       "pattern": "single",
@@ -15,6 +16,7 @@
     {
       "id": "razor_leaf",
       "name": "phi diệp",
+      "flavour": "Búng một loạt lá sắc như dao cắt ngang hàng ngũ đối phương",
       "element": "grass",
       "range": 3,
       "pattern": "arc_up",
@@ -28,6 +30,7 @@
     {
       "id": "solar_beam",
       "name": "quang kích",
+      "flavour": "Gom nắng vào thân rồi bắn thẳng một luồng sáng xuyên qua trận địa",
       "element": "light",
       "range": 4,
       "pattern": "single",
@@ -40,6 +43,7 @@
     {
       "id": "sleep_powder",
       "name": "phấn ngủ",
+      "flavour": "Rắc một lớp phấn ru ngủ phủ xuống chỗ đối phương đứng",
       "element": "grass",
       "range": 2,
       "pattern": "flank_up",
@@ -59,6 +63,7 @@
     {
       "id": "poison_powder",
       "name": "độc phấn",
+      "flavour": "Thổi phấn độc bay là là sang phía đối phương",
       "element": "neutral",
       "range": 2,
       "pattern": "flank_up",
@@ -78,6 +83,7 @@
     {
       "id": "sludge_bomb",
       "name": "độc bùn",
+      "flavour": "Nhổ một cục bùn độc đặc quánh vào kẻ địch",
       "element": "neutral",
       "range": 2,
       "pattern": "single",
@@ -97,6 +103,7 @@
     {
       "id": "venoshock",
       "name": "độc kích",
+      "flavour": "Dội dung dịch ăn mòn lên vết độc đang có sẵn",
       "element": "neutral",
       "range": 2,
       "pattern": "single",
@@ -114,6 +121,7 @@
     {
       "id": "leech_seed",
       "name": "hạt ký sinh",
+      "flavour": "Cấy một hạt ký sinh bám rễ vào kẻ địch mà hút ngược sinh lực về",
       "element": "grass",
       "range": 3,
       "pattern": "single",
@@ -127,6 +135,7 @@
     {
       "id": "synthesis",
       "name": "quang hợp",
+      "flavour": "Đứng yên uống nắng, tự vá lại thân mình",
       "element": "grass",
       "range": 0,
       "pattern": "single",
@@ -145,6 +154,7 @@
     {
       "id": "ingrain",
       "name": "cắm rễ",
+      "flavour": "Đâm rễ xuống nền đá, bám chặt lấy chỗ đứng",
       "element": "grass",
       "range": 0,
       "pattern": "single",
@@ -169,6 +179,7 @@
     {
       "id": "ember",
       "name": "than hồng",
+      "flavour": "Búng một cụm than hồng vào kẻ địch",
       "element": "fire",
       "range": 2,
       "pattern": "single",
@@ -188,6 +199,7 @@
     {
       "id": "flamethrower",
       "name": "phun lửa",
+      "flavour": "Há miệng phun một cột lửa dài về phía trước",
       "element": "fire",
       "range": 3,
       "pattern": "single",
@@ -207,6 +219,7 @@
     {
       "id": "fire_fang",
       "name": "nanh lửa",
+      "flavour": "Ngoạm hai nhát, răng nanh bọc lửa xé qua lớp giáp",
       "element": "fire",
       "range": 1,
       "pattern": "single",
@@ -220,6 +233,7 @@
     {
       "id": "fire_spin",
       "name": "xoáy lửa",
+      "flavour": "Cuộn một cột lửa xoáy nhốt lấy cả hàng dọc đối phương",
       "element": "fire",
       "range": 3,
       "pattern": "column",
@@ -239,6 +253,7 @@
     {
       "id": "heat_wave",
       "name": "sóng nhiệt",
+      "flavour": "Quạt cánh đẩy một luồng khí nóng tràn qua nhiều ô cùng lúc",
       "element": "fire",
       "range": 3,
       "pattern": "wedge_right",
@@ -258,6 +273,7 @@
     {
       "id": "inferno",
       "name": "hỏa ngục",
+      "flavour": "Ép ngọn lửa đang cháy trên người kẻ địch bùng lên một lần cuối",
       "element": "fire",
       "range": 2,
       "pattern": "single",
@@ -276,6 +292,7 @@
     {
       "id": "dragon_rage",
       "name": "long nộ",
+      "flavour": "Gầm lên một luồng khí rồng thuần chất, không nóng cũng không lạnh",
       "element": "neutral",
       "range": 3,
       "pattern": "single",
@@ -293,6 +310,7 @@
     {
       "id": "smokescreen",
       "name": "màn khói",
+      "flavour": "Phun một màn khói đặc che kín tầm nhìn đối phương",
       "element": "neutral",
       "range": 2,
       "pattern": "flank_up",
@@ -312,6 +330,7 @@
     {
       "id": "dragon_dance",
       "name": "long vũ",
+      "flavour": "Nhảy một điệu cổ xưa của giống rồng, càng nhảy càng hăng",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -341,6 +360,7 @@
     {
       "id": "water_gun",
       "name": "súng nước",
+      "flavour": "Bắn một tia nước mạnh vào kẻ địch",
       "element": "water",
       "range": 2,
       "pattern": "single",
@@ -353,6 +373,7 @@
     {
       "id": "bubble",
       "name": "bong bóng",
+      "flavour": "Thổi một chùm bọt nước bám dính lấy chân đối phương",
       "element": "water",
       "range": 3,
       "pattern": "arc_down",
@@ -372,6 +393,7 @@
     {
       "id": "whirlpool",
       "name": "xoáy nước",
+      "flavour": "Xoáy nước cuốn lấy cả hàng dọc, ghì chúng lại giữa dòng",
       "element": "water",
       "range": 3,
       "pattern": "column",
@@ -391,6 +413,7 @@
     {
       "id": "bite",
       "name": "cắn",
+      "flavour": "Đớp một nhát vào chỗ hở, cắn rách lớp phòng thủ",
       "element": "neutral",
       "range": 1,
       "pattern": "single",
@@ -410,6 +433,7 @@
     {
       "id": "brine",
       "name": "nước mặn",
+      "flavour": "Tạt nước mặn xối thẳng vào vết thương đang hở",
       "element": "water",
       "range": 2,
       "pattern": "single",
@@ -426,6 +450,7 @@
     {
       "id": "hydro_pump",
       "name": "thủy pháo",
+      "flavour": "Dồn toàn lực bắn một cột nước áp suất cao xuyên qua trận địa",
       "element": "water",
       "range": 4,
       "pattern": "single",
@@ -438,6 +463,7 @@
     {
       "id": "withdraw",
       "name": "thủ thế",
+      "flavour": "Rụt hết vào trong mai, mài lại lớp vỏ cho dày thêm",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -458,6 +484,7 @@
     {
       "id": "aqua_ring",
       "name": "vòng nước",
+      "flavour": "Quấn một vòng nước quanh mình, nước tự vá vết thương theo thời gian",
       "element": "water",
       "range": 0,
       "pattern": "single",
@@ -477,6 +504,7 @@
     {
       "id": "rapid_spin",
       "name": "xoay nhanh",
+      "flavour": "Xoay tít người, hất văng mọi thứ đang bám trên mình",
       "element": "neutral",
       "range": 0,
       "pattern": "single",

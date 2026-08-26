@@ -672,13 +672,23 @@ part of deciding and cannot cost a turn.
   Tầm 3 · 88% trúng · hồi 2 lượt.
 ```
 
-**Every word of it is derived from the skill.** Nothing is authored, and that is
-the whole design rather than an economy: a written description is free to drift
-the moment a value moves, and a line reading "doubles" survives a bonus dropping
-from 1000 to 700 with nothing to catch it. This engine made that trade once
-already and refused it — `Archetype.Demands` is computed from a kit precisely so
-it cannot describe a kit it no longer has. The price is a uniform voice, and a
-flat sentence is worth more than a wrong number.
+**Every figure in it is derived from the skill, and exactly one clause is not.**
+`Skill.Flavour` is the opening — *vung dây leo quật kẻ địch từ xa* — and the
+numbers are appended to it. Everything else stays computed, because an authored
+figure drifts the moment the figure it describes moves: a line reading "doubles"
+survives a bonus dropping from 1000 to 700 with nothing to catch it, and this
+engine already refused that trade once in `Archetype.Demands`.
+
+⚠️ **A flavour clause may not contain a digit, and `ParseBook` refuses one that
+does.** That single rule is what makes authored prose safe here: a clause with no
+number in it cannot be made wrong by changing a number. The check is for digits
+rather than for a percent sign, because "110" and "gấp 2" are the same mistake in
+different clothes.
+
+Without a clause a skill opens with the derived one — *Đánh đối phương, 110%
+công* — which is what every description read like before, and is what a skill
+still being authored in the tool reads like. What may not happen is a skill
+*shipping* that way, which `TestEveryShippedSkillHasAFlavourClause` holds.
 
 `testdata/describe.golden` holds every shipped skill's description, so a number
 moving in `skills.json` moves a line there and the diff says how the change reads

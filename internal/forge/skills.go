@@ -40,7 +40,11 @@ type SkillDraft struct {
 	// Name is the skill's display name, which is authored here rather than
 	// compiled in: see skill.Skill.Name. An empty answer is an absent name and
 	// the skill renders as its bare id, which is why nothing here defaults it.
-	Name     string
+	Name string
+	// Flavour is the clause a description opens with — prose, and never a figure,
+	// which skill.ParseBook refuses. Authored here for the same reason Name is:
+	// the words a skill is read in are written in the same sitting as the skill.
+	Flavour  string
 	Element  string
 	Target   string
 	Range    string
@@ -168,6 +172,7 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 	// the value a reload produces — a draft resolving to a name with a space on
 	// the end would compare unequal to the file it wrote.
 	base.Name = strings.TrimSpace(d.Name)
+	base.Flavour = strings.TrimSpace(d.Flavour)
 	base.Element = member
 	base.Target = target
 	base.Range = numbers["range"]

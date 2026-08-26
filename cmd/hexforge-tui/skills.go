@@ -30,6 +30,7 @@ import (
 const (
 	skillFieldID = iota
 	skillFieldName
+	skillFieldFlavour
 	skillFieldElement
 	skillFieldTarget
 	skillFieldRange
@@ -134,6 +135,7 @@ func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
 	}
 	s.inputs[skillFieldID].SetWidth(32)
 	s.inputs[skillFieldName].SetWidth(32)
+	s.inputs[skillFieldFlavour].SetWidth(48)
 	s.inputs[skillFieldInflicts].SetWidth(40)
 	s.inputs[skillFieldOnItself].SetWidth(40)
 	// The defaults are the shape of an ordinary single-target attack, and the
@@ -173,6 +175,7 @@ func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScr
 	}{
 		{skillFieldID, answers.ID},
 		{skillFieldName, answers.Name},
+		{skillFieldFlavour, answers.Flavour},
 		{skillFieldRange, answers.Range},
 		{skillFieldPower, answers.Power},
 		{skillFieldStrikes, answers.Strikes},
@@ -224,6 +227,7 @@ func (s skillsScreen) draft(m model) forge.SkillDraft {
 	return forge.SkillDraft{
 		ID:                 strings.TrimSpace(s.inputs[skillFieldID].Value()),
 		Name:               s.inputs[skillFieldName].Value(),
+		Flavour:            s.inputs[skillFieldFlavour].Value(),
 		Element:            at(forge.ElementNames(), s.elementIndex),
 		Target:             at(forge.TargetNames(), s.targetIndex),
 		Range:              s.inputs[skillFieldRange].Value(),
@@ -770,6 +774,7 @@ func skillFieldLabel(m model, field int) string {
 		// thing: an author who has just typed a name here should find the column
 		// that shows it called what they typed it into.
 		skillFieldName:              i18n.ColumnGloss,
+		skillFieldFlavour:           i18n.LabelFlavour,
 		skillFieldElement:           i18n.SkillFieldElement,
 		skillFieldTarget:            i18n.SkillFieldTarget,
 		skillFieldRange:             i18n.SkillFieldRange,
@@ -807,6 +812,7 @@ func skillFieldHelp(m model, field int) string {
 	keys := [skillFieldCount]i18n.Key{
 		skillFieldID:                i18n.SkillHelpID,
 		skillFieldName:              i18n.SkillHelpName,
+		skillFieldFlavour:           i18n.SkillHelpFlavour,
 		skillFieldElement:           i18n.SkillHelpElement,
 		skillFieldTarget:            i18n.SkillHelpTarget,
 		skillFieldRange:             i18n.SkillHelpRange,
