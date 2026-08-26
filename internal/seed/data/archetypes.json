@@ -95,6 +95,54 @@
           "at_level": 16
         }
       ]
+    },
+    {
+      "id": "warden",
+      "role": "the one that makes the other side's turn not work: slow the approach, shrug off the hit that lands, and still be standing when the burst is spent",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1200,
+          "max": 3600
+        },
+        "attack": {
+          "base": 155,
+          "max": 460
+        },
+        "defense": {
+          "base": 215,
+          "max": 640
+        },
+        "speed": {
+          "base": 28,
+          "max": 85
+        },
+        "accuracy": {
+          "base": 46,
+          "max": 135
+        },
+        "dodge": {
+          "base": 13,
+          "max": 38
+        }
+      },
+      "skills": [
+        "water_gun",
+        "bubble",
+        "whirlpool",
+        "bite",
+        "brine",
+        "hydro_pump",
+        "withdraw",
+        "aqua_ring",
+        "rapid_spin"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        }
+      ]
     }
   ]
 }

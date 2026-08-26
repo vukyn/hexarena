@@ -22,6 +22,15 @@ inferno         fire      enemy    2  single         1000     1   1000   880    
 dragon_rage     neutral   enemy    3  single         1300     1   1300   920    3     0      445
 smokescreen     neutral   enemy    2  flank_up          0     1      0  1000    3     0        0
 dragon_dance    neutral   self     0  single            0     1      0  1000    4     0        0
+water_gun       water     enemy    2  single         1000     1   1000   950    1     0      342
+bubble          water     enemy    3  arc_down        700     1    700   900    2     0      240
+whirlpool       water     enemy    3  column          800     1    800   850    3     0      274
+bite            neutral   enemy    1  single         1200     1   1200   900    2     0      411
+brine           water     enemy    2  single         1000     1   1000   900    2     0      342
+hydro_pump      water     enemy    4  single         2200     1   2200   800    4     0      754
+withdraw        neutral   self     0  single            0     1      0  1000    3     0        0
+aqua_ring       water     self     0  single            0     1      0  1000    4     0        0
+rapid_spin      neutral   self     0  single            0     1      0  1000    3     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -36,11 +45,17 @@ heat_wave       burn                   1      400        850              340
 smokescreen     blind                  1      800       1000              800
 dragon_dance    rally (self)           1     1000       1000                -
 dragon_dance    haste (self)           1     1000       1000                -
+bubble          mire                   1      700        900              630
+whirlpool       mire                   1      600        850              510
+bite            expose                 1      500        900              450
+withdraw        block (self)           2     1000       1000                -
+aqua_ring       regrowth (self)        2     1000       1000                -
 
 == conditional amplifiers ==
 skill           needs      stacks   power   amplified   damage   amplified   gain
 venoshock       poison           1     900        1800      308         617  2.00x
 inferno         burn             1    1000        3500      342        1200  3.50x (consumes)
+brine           mire             1    1000        1900      342         651  1.90x
 
 == what a detonate gives up ==
 skill           status   ticks forgone   a plain attack   alternative   burst    ratio
@@ -48,6 +63,7 @@ inferno         burn                 548              342           890    1200 
 
 == cleanses and dispels ==
 skill           categories                    stacks
+rapid_spin      stat_debuff, dot                   1
 
 == timed effects ==
 status      category      stacks   turns   tick power   tick   over its life   modifiers

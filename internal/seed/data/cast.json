@@ -239,6 +239,126 @@
           "at_level": 16
         }
       ]
+    },
+    {
+      "id": "pokemon.squirtle",
+      "name": "Squirtle",
+      "origin": "pokemon",
+      "archetype": "warden",
+      "element": "water",
+      "image": "assets/squirtle.svg",
+      "bio": "Rút vào mai để né đòn, rồi bắn nước ra từ chỗ trú. Chậm và đấm nhẹ, nhưng khó gục: làm đối phương lê chân, cởi được thứ dính trên người, và cầm cự đến khi bên kia hết bài. Ba giai đoạn: Squirtle, Wartortle từ cấp 16, Blastoise từ cấp 32.",
+      "stages": [
+        {
+          "name": "Squirtle",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 950,
+              "max": 2900
+            },
+            "attack": {
+              "base": 120,
+              "max": 360
+            },
+            "defense": {
+              "base": 175,
+              "max": 500
+            },
+            "speed": {
+              "base": 24,
+              "max": 72
+            },
+            "accuracy": {
+              "base": 40,
+              "max": 115
+            },
+            "dodge": {
+              "base": 11,
+              "max": 32
+            }
+          }
+        },
+        {
+          "name": "Wartortle",
+          "min_level": 16,
+          "image": "assets/wartortle.svg",
+          "stats": {
+            "hp": {
+              "base": 1080,
+              "max": 3250
+            },
+            "attack": {
+              "base": 138,
+              "max": 410
+            },
+            "defense": {
+              "base": 195,
+              "max": 570
+            },
+            "speed": {
+              "base": 26,
+              "max": 78
+            },
+            "accuracy": {
+              "base": 43,
+              "max": 125
+            },
+            "dodge": {
+              "base": 12,
+              "max": 35
+            }
+          }
+        },
+        {
+          "name": "Blastoise",
+          "min_level": 32,
+          "image": "assets/blastoise.svg",
+          "stats": {
+            "hp": {
+              "base": 1200,
+              "max": 3600
+            },
+            "attack": {
+              "base": 155,
+              "max": 460
+            },
+            "defense": {
+              "base": 215,
+              "max": 640
+            },
+            "speed": {
+              "base": 28,
+              "max": 85
+            },
+            "accuracy": {
+              "base": 46,
+              "max": 135
+            },
+            "dodge": {
+              "base": 13,
+              "max": 38
+            }
+          }
+        }
+      ],
+      "skills": [
+        "water_gun",
+        "bubble",
+        "whirlpool",
+        "bite",
+        "brine",
+        "hydro_pump",
+        "withdraw",
+        "aqua_ring",
+        "rapid_spin"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        }
+      ]
     }
   ]
 }

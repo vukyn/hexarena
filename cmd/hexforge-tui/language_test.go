@@ -998,13 +998,30 @@ func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
 	}
 }
 
+// wholeSkillList is the listing rendered from the top and from the bottom.
+//
+// The view is a window around the cursor, so a single render only ever shows
+// the skills near it. The glossed skills this test names are fixture ones,
+// which sort after every shipped skill: reading one render made the assertion
+// depend on how many skills happened to ship above them, and it broke the day
+// another character's kit landed. What is being measured is the gloss column,
+// not the length of the book.
+func wholeSkillList(m model) string {
+	entered := m.enter(screenSkills)
+	top, _ := entered.skills.view(entered)
+	tail := entered.skills
+	tail.cursor = len(tail.skills) - 1
+	bottom, _ := tail.view(entered)
+	return top + "\n" + bottom
+}
+
 // TestTheSkillListNamesSkillsInVietnamese covers the translated-name column and,
 // more importantly, that it disappears rather than emptying when nothing is
 // glossed. A column of blanks reads as missing data; no column reads as a column
 // that does not apply, which is the truth in English.
 func TestTheSkillListNamesSkillsInVietnamese(t *testing.T) {
 	vietnamese, _, _ := start(t, i18n.Vi)
-	body, _ := vietnamese.enter(screenSkills).skills.view(vietnamese.enter(screenSkills))
+	body := wholeSkillList(vietnamese)
 	for _, want := range []string{i18n.Vi.Text(i18n.ColumnGloss), "đòn đánh", "cắt lìa"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("the Vietnamese skill list is missing %q", want)
@@ -1012,7 +1029,7 @@ func TestTheSkillListNamesSkillsInVietnamese(t *testing.T) {
 	}
 
 	english, _, _ := start(t, i18n.En)
-	body, _ = english.enter(screenSkills).skills.view(english.enter(screenSkills))
+	body = wholeSkillList(english)
 	for _, unwanted := range []string{i18n.En.Text(i18n.ColumnGloss), "đòn đánh", "cắt lìa"} {
 		if strings.Contains(body, unwanted) {
 			t.Errorf("the English skill list should not carry %q", unwanted)
