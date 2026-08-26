@@ -375,6 +375,7 @@ const (
 	BlurbTraitReplyStatus
 	BlurbTraitReplyBoth
 	BlurbTraitWhile
+	BlurbTraitDrains
 	BlurbTraitNone
 	BlurbFooter
 

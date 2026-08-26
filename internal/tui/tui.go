@@ -276,6 +276,13 @@ func Line(event battle.Event, tags map[string]string) string {
 		if event.Status != "" {
 			return head + fmt.Sprintf(" heals %d from %s x%d", event.Amount, event.Status, event.Stacks)
 		}
+		// A drain says the share it took, because the amount alone cannot be
+		// reproduced from the skill any more: a trait may drain as well, so the
+		// number on screen is not the skill's own figure applied to the damage.
+		if event.Drained > 0 {
+			return head + fmt.Sprintf(" drains %d, %d%% of what it dealt, %d hp left",
+				event.Amount, event.Drained/10, event.Remaining)
+		}
 		return head + fmt.Sprintf(" heals %d, %d hp left", event.Amount, event.Remaining)
 	case battle.StatusExpired:
 		return head + fmt.Sprintf(" %s wears off", event.Status)

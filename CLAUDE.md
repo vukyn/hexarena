@@ -980,19 +980,24 @@ is the constraint each piece has to respect.
       attacking it poisons the attacker. (2) *bloodsucker*: heals from damage
       dealt · heals more the closer it is to dying. Pieces: `Resists` ✅ ·
       *Amplifying a status* ❌ · *Answering back* ✅ (`venom_blood` replies) ·
-      **passive lifesteal — nothing holds it yet** ❌ · `While` ✅ (`blaze` is
-      gated).
-- [ ] **Passive lifesteal — the cheapest thing on the roadmap.** A skill may
-      `drain` a share of what it dealt (`leech_seed` 600); **no trait can say
-      "everything this unit does drains"**. A share on `passive.Passive`, added to
-      the skill's own drain, read where a drain already resolves.
-      ⚠️ This entry used to say a gated *share* was legal where a gated *grant*
-      was not, and that *Overgrow* was therefore unwritable. Both halves are now
-      stale — a grant can be gated. A share is still the **cheaper** of the two,
-      because it is read fresh where a drain already resolves and so needs no
-      door into a permanent status, no event either way and no retune; that is a
-      saving rather than the only way in. *Vladimir* ("drains harder when hurt")
-      is still the case it buys.
+      **passive lifesteal** ✅ · `While` ✅ (`blaze` is gated).
+- [x] **Passive lifesteal — SHIPPED.** `passive.Passive.Drains`, a share of the
+      damage its holder deals, added to the skill's own drain and resolved where a
+      drain already is. `blood_thirst` 250 · `last_gasp` 400 gated at 400.
+      A gated share is the **cheaper** of the two gates (no door into a permanent
+      status, no event either way, no retune), not the only legal one: #62 made a
+      gated grant work too, so *Overgrow* and *Vladimir* are both writable and
+      only the cost differs.
+      ⚠️ Trait shares **add**, never compose — a share of damage dealt is not a
+      chance — and the total is **capped at the base**. That cap is a
+      *conservation* (cannot take back more than was dealt, the same invariant
+      `skill.resolve` holds on one share), not the buff ceiling this engine
+      rejects; saturating would pay 285 for a trait that says 400.
+      ⚠️ The `Healed` event carries **`Drained`**, the share, because `Amount`
+      alone cannot say why once a trait can drain too — the `Pierce`/`Refused`
+      trap again.
+      ⚠️ Both traits are **carried by nobody**, like `venom_blood` before them:
+      without the trait slot they make one unit better, not two different.
       ⚠️ `Applies` is NOT retaliation, and is still not: it adds to what the
       holder's **own** attack inflicts (touch → poisoned). Retaliation is
       `Replies`, which is built.
@@ -1000,10 +1005,10 @@ is the constraint each piece has to respect.
       trait it has, so all five pieces make ONE better unit, not two different
       ones — choosing needs the **trait slot** (*Learnsets, slots*), and that entry
       says a slot is only a decision once traits differ in **kind**. Suggested
-      order: passive lifesteal → amplify a status → trait slot. The gate and the
-      reply have both left that list; the slot is worth more for it, because the
-      traits now differ in **kind** — a resistance, a gated grant and a reply are
-      three different sorts of thing to choose between.
+      order: amplify a status → trait slot. The gate, the reply and the drain have
+      all left that list; the slot is worth more for it, because the traits now
+      differ in **kind** — a resistance, a gated grant, a reply and a drain are
+      four different sorts of thing to choose between.
       See README → *Two builds for one character*.
 - [ ] **Amplifying a status is two features, not one.** A trait that "makes its
       poison better" means either **a stronger tick** — one multiplication into

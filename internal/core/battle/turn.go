@@ -716,14 +716,78 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	// A drain takes its share of what was *dealt*, so a strike that missed or
 	// was blocked returns nothing, and one that overkilled returns only the
 	// damage that landed.
-	if known.Drains > 0 && dealt > 0 {
-		b.heal(actor, dealt*int64(known.Drains)/int64(scale.Base), turn)
+	//
+	// The skill's share and the caster's traits are added rather than composed,
+	// and the total is capped at the base. That cap is not the hard cap this
+	// engine rejects elsewhere: a buff ceiling bounds how good a number may get,
+	// where this bounds a *conservation* — health taken back cannot exceed damage
+	// dealt, which is the same invariant skill.resolve enforces on a single
+	// share. Saturating instead would be worse than either: it would take a
+	// trait's four hundred and pay out two hundred and eighty-five on a skill
+	// that drains nothing, so a trait would be worth less than it says.
+	if drained := drainShare(known.Drains + b.lifesteal(actor)); drained > 0 && dealt > 0 {
+		b.drain(actor, dealt, drained, turn)
 	}
 	if target.HP <= 0 {
 		b.kill(target)
 	}
 	_ = shape
 	return dealt
+}
+
+// lifesteal is the share of its damage the actor's traits take back, added
+// across every trait in force.
+//
+// Added rather than multiplied because a share of the damage dealt is not a
+// chance: two resistances compose by what each lets through, and two drains
+// simply both drain. The sum is bounded by its caller.
+func (b *Battle) lifesteal(actor *Unit) int {
+	if len(actor.Passives) == 0 || b.books.Passives == nil {
+		return 0
+	}
+	total := 0
+	for _, id := range actor.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			continue
+		}
+		if held.Drains == 0 || !b.inForce(actor, held) {
+			continue
+		}
+		total += held.Drains
+	}
+	return total
+}
+
+// drainShare bounds a total drain at the base. See the note at its call site for
+// why this cap is a conservation rule rather than a ceiling.
+func drainShare(total int) int {
+	if total > scale.Base {
+		return scale.Base
+	}
+	return total
+}
+
+// drain heals the actor for its share of what a strike dealt, and says on the
+// event what the share was.
+//
+// A drain is a Healed like any other, so the kind stays what a renderer already
+// knows; what it carries is the one number that makes the heal reproducible now
+// that the skill's own figure is no longer the whole of it.
+func (b *Battle) drain(actor *Unit, dealt int64, share int, turn atb.Turn) {
+	amount := dealt * int64(share) / int64(scale.Base)
+	if amount <= 0 || actor.Dead || actor.HP >= actor.MaxHP() {
+		return
+	}
+	if room := actor.MaxHP() - actor.HP; amount > room {
+		amount = room
+	}
+	actor.HP += amount
+	b.emit(Event{
+		Kind: Healed, At: turn.At, Turn: turn.Number, Actor: actor.ID,
+		Amount: amount, Remaining: actor.HP, Drained: share,
+	})
+	b.reconsider(actor, turn)
 }
 
 // inflict rolls one status application.

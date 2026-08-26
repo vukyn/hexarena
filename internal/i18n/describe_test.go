@@ -94,6 +94,9 @@ func TestEveryTraitDescriptionSaysEveryThingItDoes(t *testing.T) {
 			if held.Replies.Answers() {
 				want++
 			}
+			if held.Drains > 0 {
+				want++
+			}
 			if held.While != nil {
 				want++
 			}

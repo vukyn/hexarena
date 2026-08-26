@@ -246,6 +246,9 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 		lines = append(lines, l.Say(BlurbTraitResists,
 			percent(resistance.Amount), l.glossed(resistance.Status)))
 	}
+	if held.Drains > 0 {
+		lines = append(lines, l.Say(BlurbTraitDrains, percent(held.Drains)))
+	}
 	if held.While != nil {
 		lines = append(lines, l.Say(BlurbTraitWhile, percent(held.While.BelowHealth)))
 	}

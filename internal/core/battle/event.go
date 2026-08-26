@@ -207,6 +207,17 @@ type Event struct {
 	// the target refused it outright, so without this the log gives a reader the
 	// word "resisted" and no way to tell which of the two it means.
 	Refused int `json:"refused,omitempty"`
+	// Drained is the share of the damage a strike dealt that came back as
+	// health, in parts per thousand, on the Healed a drain produces.
+	//
+	// It is on the event for the reason Pierce and Refused are: Amount alone
+	// cannot say why. A drain of six hundred off a strike that dealt three
+	// hundred and a drain of three hundred off one that dealt six hundred are the
+	// same number by the time they reach a reader, and once a *trait* can drain
+	// as well as a skill, the skill's own figure no longer accounts for it —
+	// somebody reading leech_seed at 600 and a heal of 800 has nothing anywhere
+	// to explain the difference.
+	Drained int `json:"drained,omitempty"`
 	// Note is a short reason, used only where a kind has one to give.
 	Note string `json:"note,omitempty"`
 }

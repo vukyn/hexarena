@@ -53,6 +53,21 @@
           "amount": 1000
         }
       ]
+    },
+    {
+      "id": "blood_thirst",
+      "name": "khát máu",
+      "grants": [],
+      "drains": 250
+    },
+    {
+      "id": "last_gasp",
+      "name": "hấp hối",
+      "grants": [],
+      "while": {
+        "below_health": 400
+      },
+      "drains": 400
     }
   ]
 }
