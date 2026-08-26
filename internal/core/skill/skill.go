@@ -287,6 +287,14 @@ type Skill struct {
 	Strips *Cleanse
 	// Restrict is who may carry the skill, or nil when anybody may.
 	Restrict *Restriction
+	// Restores is how much health the skill gives its targets, in parts per
+	// thousand of the caster's scaling stat. It does not pass through defence:
+	// see combat.Rules.Restore for why.
+	Restores int
+	// Drains is the share of the damage actually dealt that comes back to the
+	// caster, in parts per thousand. It reads damage *dealt* rather than damage
+	// rolled, so a strike that missed or was blocked drains nothing.
+	Drains int
 	// Cooldown is how many of the caster's own turns must pass before it can be
 	// used again. Counting the caster's turns rather than cycles means a fast
 	// unit really does get its skill back sooner, in step with everything else
@@ -355,6 +363,8 @@ type skillFile struct {
 	Power       int               `json:"power"`
 	Strikes     int               `json:"strikes"`
 	Accuracy    int               `json:"accuracy"`
+	Restores    int               `json:"restores,omitempty"`
+	Drains      int               `json:"drains,omitempty"`
 	Cooldown    int               `json:"cooldown"`
 	Target      string            `json:"target"`
 	Restrict    *restrictFile     `json:"restrict,omitempty"`
@@ -437,6 +447,7 @@ func (s Skill) file() skillFile {
 		ID: s.ID, Name: s.Name,
 		Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
 		Power: s.Power, Strikes: s.Strikes, Accuracy: s.Accuracy,
+		Restores: s.Restores, Drains: s.Drains,
 		Cooldown: s.Cooldown, Target: s.Target.String(),
 		Applies: applicationFiles(s.Applies), SelfApplies: applicationFiles(s.SelfApplies),
 	}
@@ -561,14 +572,25 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	switch {
 	case declared.Power < 0:
 		return fail("has power %d, want zero or more", declared.Power)
-	case declared.Power == 0 && len(declared.Applies) == 0 && len(declared.SelfApplies) == 0 && declared.Strips == nil:
+	case declared.Power == 0 && len(declared.Applies) == 0 && len(declared.SelfApplies) == 0 &&
+		declared.Strips == nil && declared.Restores == 0:
 		return fail("has no power and does nothing else, so it would be a wasted turn")
+	case declared.Restores < 0:
+		return fail("restores %d, want zero or more", declared.Restores)
+	case declared.Drains < 0:
+		return fail("drains %d, want zero or more", declared.Drains)
+	case declared.Drains > scale.Base:
+		return fail("drains %d, more than the damage it deals", declared.Drains)
+	case declared.Drains > 0 && declared.Power == 0:
+		return fail("drains from damage it never deals")
 	case declared.Strikes < 0:
 		return fail("has %d strikes, want zero or more", declared.Strikes)
 	case declared.Accuracy < 0 || declared.Accuracy > scale.Base:
 		return fail("has accuracy %d, want a share in parts per thousand", declared.Accuracy)
 	case declared.Power > 0 && declared.Accuracy == 0:
 		return fail("deals damage but can never connect")
+	case declared.Restores > 0 && target == Enemy:
+		return fail("restores health to the enemy, which nobody means")
 	case declared.Cooldown < 0:
 		return fail("has cooldown %d, want zero or more", declared.Cooldown)
 	}
@@ -682,6 +704,7 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
 		Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
 		Requires: requires, Strips: strips, Restrict: restrict,
+		Restores: declared.Restores, Drains: declared.Drains,
 		Cooldown: declared.Cooldown, Target: target,
 	}, nil
 }

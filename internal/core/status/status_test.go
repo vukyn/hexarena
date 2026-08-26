@@ -56,10 +56,10 @@ func TestEachStackKeepsItsOwnSnapshot(t *testing.T) {
 	set.Apply(poison(), 50)
 	set.Apply(poison(), 200)
 	set.Apply(poison(), 90)
-	if got, want := set.TickDamage("poison"), int64(340); got != want {
+	if got, want := set.TickAmount("poison"), int64(340); got != want {
 		t.Errorf("the tick is %d, want %d", got, want)
 	}
-	damage, _ := set.Tick()
+	damage, _, _ := set.Tick()
 	if damage != 340 {
 		t.Errorf("the first tick dealt %d, want 340", damage)
 	}
@@ -92,7 +92,7 @@ func TestAStackTicksExactlyItsDuration(t *testing.T) {
 	set.Apply(poison(), 100)
 	total := int64(0)
 	for turn := 1; turn <= 5; turn++ {
-		damage, expired := set.Tick()
+		damage, _, expired := set.Tick()
 		total += damage
 		switch {
 		case turn < 3 && damage != 100:
@@ -127,7 +127,7 @@ func TestTotalDamageDoesNotDependOnSpeed(t *testing.T) {
 		set.Apply(poison(), 160)
 		total := int64(0)
 		for turn := 0; turn < turnsToSimulate; turn++ {
-			damage, _ := set.Tick()
+			damage, _, _ := set.Tick()
 			total += damage
 		}
 		if total != 480 {
@@ -146,8 +146,8 @@ func TestTickOrderIsStable(t *testing.T) {
 	}
 	first, second := build(), build()
 	for turn := 0; turn < 4; turn++ {
-		damageA, expiredA := first.Tick()
-		damageB, expiredB := second.Tick()
+		damageA, _, expiredA := first.Tick()
+		damageB, _, expiredB := second.Tick()
 		if damageA != damageB {
 			t.Fatalf("turn %d dealt %d and %d", turn, damageA, damageB)
 		}
@@ -173,7 +173,7 @@ func TestRemoveTakesTheHeaviestStacksFirst(t *testing.T) {
 	if removed != 1 || damage != 300 {
 		t.Errorf("removing one stack took %d stacks worth %d, want 1 worth 300", removed, damage)
 	}
-	if got, want := set.TickDamage("poison"), int64(170); got != want {
+	if got, want := set.TickAmount("poison"), int64(170); got != want {
 		t.Errorf("the remaining tick is %d, want %d", got, want)
 	}
 	removed, damage = set.Remove("poison", 5)
@@ -290,14 +290,14 @@ func TestBlockChargesAreAShieldStatus(t *testing.T) {
 		t.Errorf("spending a charge took %d stacks worth %d, want 1 worth 0", removed, damage)
 	}
 	// Charges deal nothing on a tick but do run out.
-	damage, _ := set.Tick()
+	damage, _, _ := set.Tick()
 	if damage != 0 {
 		t.Errorf("a shield ticked for %d, want nothing", damage)
 	}
 	if got, want := set.Stacks("block"), 2; got != want {
 		t.Errorf("%d charges after a tick, want %d", got, want)
 	}
-	damage, expired := set.Tick()
+	damage, _, expired := set.Tick()
 	if damage != 0 {
 		t.Errorf("a shield ticked for %d, want nothing", damage)
 	}
@@ -329,7 +329,7 @@ func TestCountInAndSnapshot(t *testing.T) {
 		t.Fatalf("the snapshot lists %d statuses, want 3", len(snapshot))
 	}
 	first := snapshot[0]
-	if first.ID != "poison" || first.Stacks != 2 || first.TickDamage != 200 || first.Remaining != 3 {
+	if first.ID != "poison" || first.Stacks != 2 || first.TickAmount != 200 || first.Remaining != 3 {
 		t.Errorf("the first snapshot is %+v", first)
 	}
 	if snapshot[1].ID != "burn" || snapshot[2].ID != "haste" {
@@ -340,14 +340,14 @@ func TestCountInAndSnapshot(t *testing.T) {
 func TestNegativeTickDamageIsTreatedAsNone(t *testing.T) {
 	var set status.Set
 	set.Apply(poison(), -500)
-	if got := set.TickDamage("poison"); got != 0 {
+	if got := set.TickAmount("poison"); got != 0 {
 		t.Errorf("a negative snapshot became %d, want 0", got)
 	}
 }
 
 func TestZeroSetIsUsable(t *testing.T) {
 	var set status.Set
-	damage, expired := set.Tick()
+	damage, _, expired := set.Tick()
 	if damage != 0 || len(expired) != 0 {
 		t.Errorf("a clean unit ticked for %d and expired %v", damage, expired)
 	}
@@ -360,7 +360,7 @@ func TestZeroSetIsUsable(t *testing.T) {
 }
 
 func TestCategoryNames(t *testing.T) {
-	want := []string{"dot", "stat_debuff", "control", "buff", "shield"}
+	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen"}
 	categories := status.Categories()
 	if len(categories) != len(want) {
 		t.Fatalf("there are %d categories, want %d", len(categories), len(want))
@@ -462,10 +462,10 @@ func TestTickPowerBelongsOnlyToADot(t *testing.T) {
 			"no tick_power"},
 		{"a buff with tick power",
 			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"buff","max_stacks":1,"duration":1,"tick_power":300}]}`,
-			"only a dot ticks with"},
+			"only a ticking status uses"},
 		{"a shield with tick power",
 			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"shield","max_stacks":1,"duration":1,"tick_power":300}]}`,
-			"only a dot ticks with"},
+			"only a ticking status uses"},
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.name, func(t *testing.T) {

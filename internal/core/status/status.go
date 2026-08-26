@@ -51,10 +51,15 @@ const (
 	Buff
 	// Shield absorbs incoming damage; its stack count is the charge count.
 	Shield
+	// Regen restores its snapshotted amount at the start of the holder's turn.
+	// It is Dot with the sign the other way, and it shares the machinery: the
+	// amount is frozen when the stack is applied, so two casters stacking one
+	// regeneration each contribute what their own attack was worth.
+	Regen
 )
 
 // CategoryCount is the number of categories.
-const CategoryCount = int(Shield) + 1
+const CategoryCount = int(Regen) + 1
 
 var categoryNames = [CategoryCount]string{
 	Dot:        "dot",
@@ -62,6 +67,7 @@ var categoryNames = [CategoryCount]string{
 	Control:    "control",
 	Buff:       "buff",
 	Shield:     "shield",
+	Regen:      "regen",
 }
 
 func (c Category) String() string {
@@ -133,9 +139,9 @@ type Kind struct {
 
 // Stack is one application of a status.
 type Stack struct {
-	// TickDamage is the damage this stack deals per tick, snapshotted when it
+	// TickAmount is what this stack ticks for, snapshotted when it
 	// was applied. It is zero for a status that does not deal damage.
-	TickDamage int64
+	TickAmount int64
 	// Remaining is how many of the holder's turns are left.
 	Remaining int
 }
@@ -171,15 +177,15 @@ func (s *Set) find(id string) int {
 // cap, that the application was wasted. A caller that wants to tell the player
 // its effect did nothing needs that distinction; silently succeeding would hide
 // it.
-func (s *Set) Apply(kind Kind, tickDamage int64) (added, wasted bool) {
-	if tickDamage < 0 {
-		tickDamage = 0
+func (s *Set) Apply(kind Kind, tickAmount int64) (added, wasted bool) {
+	if tickAmount < 0 {
+		tickAmount = 0
 	}
 	index := s.find(kind.ID)
 	if index < 0 {
 		s.entries = append(s.entries, entry{
 			kind:   kind,
-			stacks: []Stack{{TickDamage: tickDamage, Remaining: kind.Duration}},
+			stacks: []Stack{{TickAmount: tickAmount, Remaining: kind.Duration}},
 		})
 		return true, false
 	}
@@ -193,21 +199,31 @@ func (s *Set) Apply(kind Kind, tickDamage int64) (added, wasted bool) {
 	if len(target.stacks) >= kind.MaxStacks {
 		return false, true
 	}
-	target.stacks = append(target.stacks, Stack{TickDamage: tickDamage, Remaining: kind.Duration})
+	target.stacks = append(target.stacks, Stack{TickAmount: tickAmount, Remaining: kind.Duration})
 	return true, false
 }
 
-// Tick resolves the start of the holder's turn: it totals the damage every
-// damage-dealing stack owes, then spends one turn of every stack's duration and
-// drops whatever ran out.
+// Tick resolves the start of the holder's turn: it totals what every ticking
+// stack owes, then spends one turn of every stack's duration and drops whatever
+// ran out.
 //
-// Damage is totalled before durations are spent, so a status with one turn left
-// still deals its final tick. It returns the ids of statuses that ran out
+// Damage and healing come back as two unsigned totals rather than one signed
+// one, and that is deliberate. The caller subtracts damage through the same path
+// that kills a unit at zero, so a negative arriving there would subtract a
+// negative and could bring a corpse back — the one bug this shape makes
+// impossible to write.
+//
+// Totals are taken before durations are spent, so a status with one turn left
+// still ticks a final time. It returns the ids of statuses that ran out
 // entirely, in the order they were applied.
-func (s *Set) Tick() (damage int64, expired []string) {
+func (s *Set) Tick() (damage, healing int64, expired []string) {
 	for i := range s.entries {
 		for _, stack := range s.entries[i].stacks {
-			damage += stack.TickDamage
+			if s.entries[i].kind.Category == Regen {
+				healing += stack.TickAmount
+				continue
+			}
+			damage += stack.TickAmount
 		}
 	}
 	kept := s.entries[:0]
@@ -228,7 +244,7 @@ func (s *Set) Tick() (damage int64, expired []string) {
 		kept = append(kept, current)
 	}
 	s.entries = kept
-	return damage, expired
+	return damage, healing, expired
 }
 
 // Stacks returns how many stacks of a status the unit carries. It is what a
@@ -262,15 +278,15 @@ func (s *Set) Modifiers() modifier.Set {
 	return out
 }
 
-// TickDamage returns what the status currently deals per tick.
-func (s *Set) TickDamage(id string) int64 {
+// TickAmount returns what the status currently deals per tick.
+func (s *Set) TickAmount(id string) int64 {
 	index := s.find(id)
 	if index < 0 {
 		return 0
 	}
 	total := int64(0)
 	for _, stack := range s.entries[index].stacks {
-		total += stack.TickDamage
+		total += stack.TickAmount
 	}
 	return total
 }
@@ -329,7 +345,7 @@ func (s *Set) Remove(id string, count int) (removed int, damage int64) {
 		order[i] = i
 	}
 	sort.SliceStable(order, func(a, b int) bool {
-		return target.stacks[order[a]].TickDamage > target.stacks[order[b]].TickDamage
+		return target.stacks[order[a]].TickAmount > target.stacks[order[b]].TickAmount
 	})
 	if count > len(order) {
 		count = len(order)
@@ -337,7 +353,7 @@ func (s *Set) Remove(id string, count int) (removed int, damage int64) {
 	doomed := make(map[int]bool, count)
 	for i := 0; i < count; i++ {
 		doomed[order[i]] = true
-		damage += target.stacks[order[i]].TickDamage
+		damage += target.stacks[order[i]].TickAmount
 	}
 	kept := make([]Stack, 0, len(target.stacks)-count)
 	for i, stack := range target.stacks {
@@ -402,7 +418,7 @@ type Snapshot struct {
 	ID         string
 	Category   Category
 	Stacks     int
-	TickDamage int64
+	TickAmount int64
 	Remaining  int
 }
 
@@ -413,14 +429,14 @@ func (s *Set) Snapshot() []Snapshot {
 		current := s.entries[i]
 		total, longest := int64(0), 0
 		for _, stack := range current.stacks {
-			total += stack.TickDamage
+			total += stack.TickAmount
 			if stack.Remaining > longest {
 				longest = stack.Remaining
 			}
 		}
 		out = append(out, Snapshot{
 			ID: current.kind.ID, Category: current.kind.Category,
-			Stacks: len(current.stacks), TickDamage: total, Remaining: longest,
+			Stacks: len(current.stacks), TickAmount: total, Remaining: longest,
 		})
 	}
 	return out
@@ -486,11 +502,15 @@ func ParseBook(raw []byte) (*Book, error) {
 			return nil, fmt.Errorf("status %q lasts %d turns, over the limit of %d",
 				declared.ID, declared.Duration, book.MaxDuration)
 		}
+		// Both ticking categories need a power and nothing else may carry one.
+		// Regen is Dot with the sign the other way, so it earns the same
+		// requirement rather than an exception.
+		ticks := category == Dot || category == Regen
 		switch {
-		case category == Dot && declared.TickPower < 1:
-			return nil, fmt.Errorf("status %q deals damage over time but has no tick_power", declared.ID)
-		case category != Dot && declared.TickPower != 0:
-			return nil, fmt.Errorf("status %q is %s but declares tick_power %d, which only a dot ticks with",
+		case ticks && declared.TickPower < 1:
+			return nil, fmt.Errorf("status %q ticks but has no tick_power", declared.ID)
+		case !ticks && declared.TickPower != 0:
+			return nil, fmt.Errorf("status %q is %s but declares tick_power %d, which only a ticking status uses",
 				declared.ID, category, declared.TickPower)
 		}
 		if _, clash := book.byID[declared.ID]; clash {

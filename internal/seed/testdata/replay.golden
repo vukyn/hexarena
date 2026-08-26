@@ -125,6 +125,7 @@ event counts
   status_resisted      7
   status_stripped      0
   died                 5
+  healed               0
   ended                1
 
 final board

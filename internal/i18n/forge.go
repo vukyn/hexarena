@@ -325,6 +325,7 @@ func (l Lang) StatusCategory(name string) string {
 		"control":     CategoryControl,
 		"buff":        CategoryBuff,
 		"shield":      CategoryShield,
+		"regen":       CategoryRegen,
 	}
 	if key, known := worded[name]; known {
 		return l.Text(key)

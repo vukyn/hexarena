@@ -172,6 +172,7 @@ q hoặc ctrl+c để thoát`,
 	CategoryControl:     "khống chế, mất lượt",
 	CategoryBuff:        "tăng chỉ số",
 	CategoryShield:      "khiên, chặn một đòn",
+	CategoryRegen:       "hồi máu mỗi lượt",
 
 	KitTakesAnyElement:    "bộ chiêu này toàn chiêu trung tính nên hệ nào cũng mang được",
 	KitNeeds:              "bộ chiêu này cần hệ %s",

@@ -349,6 +349,30 @@ const Skills = `[
       ],
       "stacks": 2
     }
+  },
+  {
+    "id": "mend",
+    "element": "neutral",
+    "range": 2,
+    "pattern": "single",
+    "power": 0,
+    "strikes": 0,
+    "accuracy": 1000,
+    "restores": 600,
+    "cooldown": 3,
+    "target": "ally"
+  },
+  {
+    "id": "siphon",
+    "element": "neutral",
+    "range": 2,
+    "pattern": "single",
+    "power": 1000,
+    "strikes": 1,
+    "accuracy": 900,
+    "drains": 500,
+    "cooldown": 3,
+    "target": "enemy"
   }
 ]`
 
@@ -659,7 +683,8 @@ const Roster = `{
         "bolt",
         "gale_slash",
         "swift_edge",
-        "flurry"
+        "flurry",
+        "mend"
       ]
     },
     {
@@ -713,7 +738,8 @@ const Roster = `{
         "strike",
         "ember_lance",
         "guard_wall",
-        "war_cry"
+        "war_cry",
+        "siphon"
       ]
     },
     {
@@ -795,7 +821,8 @@ const Roster = `{
         "bolt",
         "riptide",
         "gale_slash",
-        "flurry"
+        "flurry",
+        "purify"
       ]
     },
     {

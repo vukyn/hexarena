@@ -175,6 +175,7 @@ q or ctrl+c to quit`,
 	CategoryControl:     "costs a turn",
 	CategoryBuff:        "raises a stat",
 	CategoryShield:      "blocks one strike",
+	CategoryRegen:       "restores every turn",
 
 	KitTakesAnyElement:    "this kit is all neutral, so any element carries it",
 	KitNeeds:              "this kit needs %s",

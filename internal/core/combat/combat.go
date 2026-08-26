@@ -126,6 +126,22 @@ func (r Rules) Damage(attack, defense int64, skillMultiplier, affinityMultiplier
 	return damage
 }
 
+// Restore returns how much health a multiplier of a stat gives back.
+//
+// It does not divide by the defence curve, and damage over time does. That
+// asymmetry is the design rather than an oversight: defence turns away what is
+// coming *at* a unit and has nothing to do with what is helping it, so a
+// well-armoured unit is no harder to heal than a bare one. Adding the division
+// for symmetry's sake would make armour quietly reduce its own side's support.
+//
+// Like everything else here it is integer parts per thousand, truncated once.
+func (r Rules) Restore(stat int64, multiplier int) int64 {
+	if stat <= 0 || multiplier <= 0 {
+		return 0
+	}
+	return stat * int64(multiplier) / int64(PermilleBase)
+}
+
 // DefenseReduction returns the share of damage that gets through a given
 // defence, in parts per thousand. It exists for tuning and for showing the
 // curve; Damage does not call it, because folding it in would introduce a
