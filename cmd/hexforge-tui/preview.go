@@ -6,8 +6,8 @@ import (
 	"image/color"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -38,7 +38,7 @@ func newPreviewScreen() previewScreen {
 	return previewScreen{rendered: map[string]string{}}
 }
 
-func (p previewScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (p previewScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch message.String() {
 	case "q":
 		return m, tea.Quit
@@ -200,7 +200,12 @@ func ink(pixel color.RGBA) inkColour {
 	}
 }
 
-func (i inkColour) hex() lipgloss.Color {
+// hex is the pixel as a colour a style can take.
+//
+// lipgloss v2 returns the standard library's color.Color from Color rather than
+// a named string type of its own, so this hands back that interface: the value
+// is the same, and it is now the one every other colour in Go already is.
+func (i inkColour) hex() color.Color {
 	return lipgloss.Color(fmt.Sprintf("#%02x%02x%02x", i.r, i.g, i.b))
 }
 

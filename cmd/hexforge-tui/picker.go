@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -219,10 +219,10 @@ func (m model) pick(state *pickState) model {
 // forge.AddApplications reads a blank chance as the default, so the two front-ends
 // cannot disagree about what nothing means.
 func numberField(placeholder string) *textinput.Model {
-	input := textinput.New()
+	input := newInput()
 	input.Prompt = ""
 	input.CharLimit = 4
-	input.Width = 6
+	input.SetWidth(6)
 	input.Placeholder = placeholder
 	input.Focus()
 	return &input
@@ -237,21 +237,26 @@ func numberField(placeholder string) *textinput.Model {
 // the field looking accepted, and only a caller reading Err would ever know. It
 // was written the other way first and a test found the letters in the field.
 // Refusing the key is what makes the field numeric.
-func numberKey(message tea.KeyMsg) bool {
-	switch message.Type {
+// A keystroke is read through Code and Text rather than through a key type,
+// because bubbletea v2 has none: an editing key is a named Code, and a
+// printable one carries the characters it produced in Text. Text is empty
+// whenever a modifier is held, which is what keeps ctrl+1 out of the field
+// without a second check for it.
+func numberKey(message tea.KeyPressMsg) bool {
+	switch message.Code {
 	case tea.KeyBackspace, tea.KeyDelete, tea.KeyLeft, tea.KeyRight,
 		tea.KeyHome, tea.KeyEnd:
 		return true
-	case tea.KeyRunes:
-		for _, letter := range message.Runes {
-			if letter < '0' || letter > '9' {
-				return false
-			}
-		}
-		return len(message.Runes) > 0
-	default:
+	}
+	if message.Text == "" {
 		return false
 	}
+	for _, letter := range message.Text {
+		if letter < '0' || letter > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // kitOptions is the skill book as rows, each carrying whether this character may
@@ -309,7 +314,7 @@ func statusOptions(lib *forge.Library) []pickOption {
 	return out
 }
 
-func (p *pickState) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (p *pickState) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch message.String() {
 	case "esc":
 		m.picker = nil
@@ -329,7 +334,7 @@ func (p *pickState) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 		p.cursor = clamp(p.cursor-1, 0, len(p.visible())-1)
 	case "down", "j":
 		p.cursor = clamp(p.cursor+1, 0, len(p.visible())-1)
-	case " ":
+	case "space":
 		p.toggle()
 	case "f":
 		// Only where there is something to narrow. On a picker with no groups f

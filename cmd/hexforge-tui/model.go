@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
@@ -172,7 +172,7 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = typed.Width, typed.Height
 		return m, nil
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		return m.key(typed)
 	}
 	return m, nil
@@ -194,7 +194,7 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 //
 // A bare q is a quit everywhere a text field is not focused, because where one
 // is, q is a letter.
-func (m model) key(message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch message.String() {
 	case "ctrl+c":
 		return m, tea.Quit
@@ -238,7 +238,7 @@ func (m model) key(message tea.KeyMsg) (tea.Model, tea.Cmd) {
 //
 // The y is the same letter in both languages on purpose: it is what the [y/N]
 // on screen offers, and what every other confirmation in this repository takes.
-func (m model) answerGuard(message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m model) answerGuard(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	confirm := m.guard.confirm
 	switch strings.ToLower(message.String()) {
 	case "y":
@@ -256,7 +256,7 @@ func (m model) ask(question i18n.Key, confirm func(model) model) model {
 	return m
 }
 
-func (m model) updateMenu(message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (m model) updateMenu(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch message.String() {
 	case "q", "esc":
 		return m, tea.Quit
@@ -268,7 +268,7 @@ func (m model) updateMenu(message tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if m.menu < len(menuItems)-1 {
 			m.menu++
 		}
-	case "enter", " ":
+	case "enter", "space":
 		return m.enter(menuItems[m.menu].target), nil
 	}
 	return m, nil
@@ -295,7 +295,17 @@ func (m model) tooSmall() bool {
 	return m.width > 0 && (m.width < minWidth || m.height < minHeight)
 }
 
-func (m model) View() string {
+// View draws the screen, and is the one place the alternate screen is asked
+// for: bubbletea v2 puts that on the view rather than on a program option, so
+// it is a property of what is being drawn rather than of how the program was
+// started.
+func (m model) View() tea.View {
+	view := tea.NewView(m.screenContent())
+	view.AltScreen = true
+	return view
+}
+
+func (m model) screenContent() string {
 	if m.width == 0 {
 		// bubbletea sends the first window size a moment after start. Drawing a
 		// guessed layout here and redrawing it immediately is a visible flash.

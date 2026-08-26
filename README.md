@@ -18,7 +18,7 @@ go run ./cmd/hexforge-tui --lang en            # ...or in English; ctrl+l swaps 
 go test ./...
 ```
 
-The full-screen authoring client is built on bubbletea, with bubbles and
+The full-screen authoring client is built on bubbletea v2, with bubbles and
 lipgloss beside it. Everything else needs only the standard library so far,
 which is how it worked out rather than a constraint being kept.
 
@@ -781,6 +781,29 @@ naming the two that work, and `ctrl+l` swaps the languages from any screen —
 mid-form included, without losing a keystroke, because a field holds what was
 typed and only the labels around it are redrawn.
 
+#### Saving: ctrl+s, and ⌘S where a terminal will pass it
+
+Every form writes on **ctrl+s**, which works everywhere, and also on **⌘S**,
+which works where the terminal lets it. On macOS the footer offers both, `⌘S/^S`;
+elsewhere it says `ctrl+s`, because there is nothing to choose between.
+
+⌘S is not something a program can simply ask for. Command is not a modifier the
+classic terminal escape sequences can encode — it does not reach the program at
+all — so it takes the **Kitty keyboard protocol**, which reports it as Super and
+which bubbletea v2 parses. Three things then have to be true at once:
+
+| | |
+| --- | --- |
+| the terminal speaks the protocol | kitty, Ghostty, WezTerm, foot, and iTerm2 with CSI u enabled. **Terminal.app does not** |
+| it passes ⌘S through | rather than opening its own *Save Text As…* |
+| nothing upstream claims Super | on Linux a window manager may take it first |
+
+Where any of those fails, ⌘S never arrives and ctrl+s is the answer — which is
+why the footer keeps naming a control-S on every platform, and why the label is
+never shortened to ⌘S alone. A terminal that will not pass ⌘S can usually be
+told to send the other one instead: iTerm2 and Ghostty can both map ⌘S to
+`Send Text: ^S`, which reaches this program as the keystroke it always accepts.
+
 That is possible because `internal/forge` hands over *facts* rather than
 sentences: a refused kit arrives as a value carrying the affinity, the skill and
 the skill's element, and `internal/i18n` turns it into
@@ -964,6 +987,47 @@ that no longer exists. So `status_ticked` names the unit *taking* the damage, no
 the one that caused it, and the only place the source is recorded is the
 `status_applied` event. Two units poisoning the same target leave two stacks that
 the state cannot tell apart.
+
+### Answering back
+
+The four usual jobs are the four above, and there is a fifth the shipped data
+already promises. `venom_blood` is *máu độc*: blood that is poisonous does not
+only refuse poison, it should cost whatever bit into it. Resisting is half the
+name, and the half that was cheap.
+
+It is not `applies` wearing a different hat. That one hands the holder's own
+attack an extra application, so it fires on a target the holder chose, at a moment
+`battle` is already resolving. A reply fires on the **attacker**, during somebody
+else's turn, from a unit that is not acting — there is no hook for that, and
+inventing one is most of the work. What it must not become is a second damage
+path: the reply resolves through `battle.inflict` and `combat.Rules` like every
+other effect, so a replay reads it as events and `--verify` re-runs it from the
+seed.
+
+Four rules, decided rather than left to whoever builds it.
+
+- **A reply may kill.** It is damage and gets no exemption for arriving out of
+  turn, so a battle can end on a turn nobody took. Whatever resolves a reply
+  re-asks whether the battle is over, and the timeline loses a unit that was never
+  in front of it. A damage-over-time tick already ends a battle, so the shape
+  exists; what is new is that the unit dying is the one taking the turn.
+- **A reply never triggers a reply.** Closed by rule and not by a depth counter,
+  because a counter is a number somebody will raise: a reply resolves with
+  retaliation off, so a trait cannot answer a trait and two holders facing each
+  other settle in one exchange instead of trading until the arithmetic runs out.
+- **A reply answers a use of a skill, not a strike.** Otherwise a trait's worth
+  scales with somebody else's strike count, and `fire_fang` is quietly worse than
+  `flamethrower` into one holder for a reason written on neither skill.
+- **The holder takes every strike first and answers afterwards.** The reply is on
+  the finished skill rather than partway through it, so a striker never dies
+  mid-turn and the question of what happens to the strikes it had left never
+  arises.
+
+That last one leaves the holder's death as the only one that can land first, and
+dead is dead: **a holder killed by the skill does not answer**, the way it cannot
+be healed. Which hands retaliation a counter without anybody designing one —
+killing the holder outright is how a reply is avoided, so a trait that punishes
+attacking rewards hitting hard instead of taxing everybody equally.
 
 ### A health threshold a skill can read
 

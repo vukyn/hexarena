@@ -12,8 +12,8 @@ import (
 	"testing"
 	"unicode"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/vukyn/hexarena/internal/forge"
@@ -130,7 +130,7 @@ func TestEveryScreenRendersInBothLanguages(t *testing.T) {
 		free := freeText(lib)
 		spoken := make(map[string]bool)
 		for name, m := range everyScreen(t, base) {
-			drawn := m.View()
+			drawn := m.screenContent()
 			if strings.TrimSpace(drawn) == "" {
 				t.Errorf("the %s screen drew nothing in %s", name, test.lang)
 			}
@@ -216,9 +216,9 @@ func TestTheLanguageToggleKeepsWhatWasTyped(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	m = author(t, m, "fixture-film.tester", "Tester", "fixture-film", "sentinel", "fire")
 	before := m.form.draft()
-	drawnBefore := m.View()
+	drawnBefore := m.screenContent()
 
-	m = send(t, m, tea.KeyMsg{Type: tea.KeyCtrlL})
+	m = send(t, m, tea.KeyPressMsg{Code: 'l', Mod: tea.ModCtrl})
 	if m.lang != i18n.En {
 		t.Fatalf("ctrl+l left the language at %q", m.lang)
 	}
@@ -232,7 +232,7 @@ func TestTheLanguageToggleKeepsWhatWasTyped(t *testing.T) {
 	if m.form.cursor == 0 {
 		t.Error("the toggle moved the cursor back to the first field")
 	}
-	drawnAfter := m.View()
+	drawnAfter := m.screenContent()
 	if drawnAfter == drawnBefore {
 		t.Error("the screen did not change language")
 	}
@@ -244,7 +244,7 @@ func TestTheLanguageToggleKeepsWhatWasTyped(t *testing.T) {
 
 	// Back again, from a different screen, and with a question pending: the
 	// toggle works everywhere ctrl+c does.
-	m = send(t, m, tea.KeyMsg{Type: tea.KeyCtrlL})
+	m = send(t, m, tea.KeyPressMsg{Code: 'l', Mod: tea.ModCtrl})
 	if m.lang != i18n.Vi {
 		t.Errorf("the toggle does not go back, it is at %q", m.lang)
 	}
@@ -252,12 +252,12 @@ func TestTheLanguageToggleKeepsWhatWasTyped(t *testing.T) {
 	if m.guard == nil {
 		t.Fatal("leaving an edited form did not ask")
 	}
-	m = send(t, m, tea.KeyMsg{Type: tea.KeyCtrlL})
+	m = send(t, m, tea.KeyPressMsg{Code: 'l', Mod: tea.ModCtrl})
 	if m.guard == nil {
 		t.Fatal("the toggle answered the pending question")
 	}
-	if !strings.Contains(m.View(), "discard the character") {
-		t.Errorf("the pending question did not follow the language:\n%s", m.View())
+	if !strings.Contains(m.screenContent(), "discard the character") {
+		t.Errorf("the pending question did not follow the language:\n%s", m.screenContent())
 	}
 	if got := m.form.draft().ID; got != before.ID {
 		t.Errorf("the id is now %q, want %q", got, before.ID)
@@ -341,7 +341,7 @@ func TestARefusedWriteIsWordedInTheLanguageInFront(t *testing.T) {
 	if m.form.err == nil {
 		t.Fatal("a character with a taken id was written")
 	}
-	drawn := m.View()
+	drawn := m.screenContent()
 	if want := `chưa ghi được: nhân vật "fixture-anime.adept" đã có trong danh sách rồi`; !strings.Contains(drawn, want) {
 		t.Errorf("the refusal on screen is not %q:\n%s", want, drawn)
 	}
@@ -358,8 +358,8 @@ func TestARefusedWriteIsWordedInTheLanguageInFront(t *testing.T) {
 		t.Fatal("a curve that shrinks with level was written")
 	}
 	want := "hp kết thúc ở 400 nhưng bắt đầu từ 900; chỉ số không tụt khi lên cấp"
-	if !strings.Contains(fresh.View(), want) {
-		t.Errorf("the refusal on screen is not %q:\n%s", want, fresh.View())
+	if !strings.Contains(fresh.screenContent(), want) {
+		t.Errorf("the refusal on screen is not %q:\n%s", want, fresh.screenContent())
 	}
 }
 
@@ -383,7 +383,7 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 		free := freeText(lib)
 		for name, m := range everyScreen(t, base) {
 			m.width, m.height = 200, 60
-			for _, line := range strings.Split(m.View(), "\n") {
+			for _, line := range strings.Split(m.screenContent(), "\n") {
 				if carriesFreeText(line, free) {
 					continue
 				}
@@ -397,7 +397,7 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 		// since it is only ever drawn in a window that is already too narrow.
 		small := base
 		small.width, small.height = 40, 10
-		for _, line := range strings.Split(small.View(), "\n") {
+		for _, line := range strings.Split(small.screenContent(), "\n") {
 			if width := lipgloss.Width(line); width > 24 {
 				t.Errorf("the too-small screen in %s draws %d cells:\n%s", lang, width, line)
 			}
@@ -816,7 +816,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 	}
 	for name, screen := range everyScreen(t, english) {
 		screen.width, screen.height = 200, 60
-		drawn := screen.View()
+		drawn := screen.screenContent()
 		for _, unwanted := range names {
 			if unwanted != "" && strings.Contains(drawn, unwanted) {
 				t.Errorf("the %s screen in English holds the gloss %q:\n%s", name, unwanted, drawn)
@@ -970,7 +970,7 @@ func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
 		said := make(map[string]bool)
 		for name, screen := range everyScreen(t, base) {
 			screen.width, screen.height = 200, 60
-			drawn := screen.View()
+			drawn := screen.screenContent()
 			for _, unwanted := range test.gone {
 				if saysWord(drawn, unwanted) {
 					t.Errorf("the %s screen in %s still says %q:\n%s",
@@ -1180,7 +1180,7 @@ func TestTheSkillFormFitsTheSmallestWindow(t *testing.T) {
 		m = m.enter(screenSkills)
 		m.skills = m.skills.prefill(m.lib, m.skills.skills[0])
 		m.skills.err = &forge.MissingSkillIDError{}
-		drawn := m.View()
+		drawn := m.screenContent()
 		if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
 			strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
 			t.Errorf("the %s skill form is truncated at %dx%d:\n%s",
