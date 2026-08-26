@@ -915,6 +915,47 @@ Whatever comes next keeps the two constraints the first slice was built under: a
 trait that changes a number **emits an event**, and one that touches speed is in
 force before the first wait is computed.
 
+### Answering back
+
+The four usual jobs are the four above, and there is a fifth the shipped data
+already promises. `venom_blood` is *máu độc*: blood that is poisonous does not
+only refuse poison, it should cost whatever bit into it. Resisting is half the
+name, and the half that was cheap.
+
+It is not `applies` wearing a different hat. That one hands the holder's own
+attack an extra application, so it fires on a target the holder chose, at a moment
+`battle` is already resolving. A reply fires on the **attacker**, during somebody
+else's turn, from a unit that is not acting — there is no hook for that, and
+inventing one is most of the work. What it must not become is a second damage
+path: the reply resolves through `battle.inflict` and `combat.Rules` like every
+other effect, so a replay reads it as events and `--verify` re-runs it from the
+seed.
+
+Four rules, decided rather than left to whoever builds it.
+
+- **A reply may kill.** It is damage and gets no exemption for arriving out of
+  turn, so a battle can end on a turn nobody took. Whatever resolves a reply
+  re-asks whether the battle is over, and the timeline loses a unit that was never
+  in front of it. A damage-over-time tick already ends a battle, so the shape
+  exists; what is new is that the unit dying is the one taking the turn.
+- **A reply never triggers a reply.** Closed by rule and not by a depth counter,
+  because a counter is a number somebody will raise: a reply resolves with
+  retaliation off, so a trait cannot answer a trait and two holders facing each
+  other settle in one exchange instead of trading until the arithmetic runs out.
+- **A reply answers a use of a skill, not a strike.** Otherwise a trait's worth
+  scales with somebody else's strike count, and `fire_fang` is quietly worse than
+  `flamethrower` into one holder for a reason written on neither skill.
+- **The holder takes every strike first and answers afterwards.** The reply is on
+  the finished skill rather than partway through it, so a striker never dies
+  mid-turn and the question of what happens to the strikes it had left never
+  arises.
+
+That last one leaves the holder's death as the only one that can land first, and
+dead is dead: **a holder killed by the skill does not answer**, the way it cannot
+be healed. Which hands retaliation a counter without anybody designing one —
+killing the holder outright is how a reply is avoided, so a trait that punishes
+attacking rewards hitting hard instead of taxing everybody equally.
+
 ### A health threshold a skill can read
 
 `passive.Condition` answers "how hurt is the holder", and a **trait** is the only
