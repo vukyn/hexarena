@@ -90,10 +90,22 @@ var (
 		"focus":  "tập trung",
 		"veil":   "mờ ảo",
 		"block":  "đỡ đòn",
+		// The three that shipped without one. A regen, and the two permanent
+		// statuses a trait grants -- which are the ones a reader is least able
+		// to guess at, because nothing else on screen says what they do.
+		"regrowth":  "tái sinh",
+		"toughened": "cứng đòn",
+		"kindled":   "rực lửa",
 	}
 
-	// The role presets in archetypes.json. Hand-authored data, so this is a
-	// lookup that may miss.
+	// The role presets in archetypes.json.
+	//
+	// Unlike the other authored tables this one may **not** miss for a shipped
+	// preset, and TestEveryShippedArchetypeIsGlossed says so. The character
+	// browser prints the preset id under "lối chơi", so a preset with no entry
+	// here reads as an English word in the middle of a Vietnamese screen -- and
+	// it is the one field on that screen a reader cannot work out from the
+	// numbers beside it. A preset that is not shipped is still free to miss.
 	archetypeGloss = map[string]string{
 		"bulwark":    "lá chắn",
 		"vanguard":   "tiên phong",
@@ -101,6 +113,8 @@ var (
 		"duelist":    "đấu sĩ",
 		"skirmisher": "du kích",
 		"blighter":   "kẻ gieo độc",
+		"scorcher":   "kẻ thiêu đốt",
+		"warden":     "người gác cổng",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its
