@@ -1198,6 +1198,34 @@ is the constraint each piece has to respect.
       its furthest form, balance is unchanged at **49.5%** and `replay.golden` did
       not move. None of the three characters is close enough for one kept skill to
       pay for a stage of stats — a cast-tuning question, not a mechanism one.
+- [ ] **Looking a status up — the layer with the most reading and the least said.**
+      `hexforge` lists origins, species, archetypes, passives and skills; **statuses
+      are not one of them**, so `statuses.json` is the only way to learn what `mire`
+      does. In battle it is worse: the log says *resisted mire* and nothing says it
+      is a quarter off speed for two turns. A skill's description names the status
+      and stops — *gây sa lầy, 70% khả năng* — which says something will happen, not
+      what. Shape: `Lang.DescribeStatus` beside `Describe`/`DescribePassive`,
+      **derived**, both languages, reached by `?` at the battle prompt (like
+      `?N`/`?TAG`) and a screen in the tool (like `screenBlurb`). ⚠️ Print a **life,
+      not a tick** — poison 500×3 against burn 800×2 is compared over its life, and
+      `skills.golden` already has that column; same for a percent against its stack
+      cap. ⚠️ **Permanent is "always", never "0 turns"** (`Snapshot.Permanent`).
+      ⚠️ **Group by category** or a cleanse is unreadable — `rapid_spin` strips a
+      `stat_debuff` and a `dot`, and nothing shows which statuses those are.
+      ⚠️ The one that will be got wrong: **it describes the declared kind, not what
+      a unit feels** — `virulence` amplifies and a resistance refuses, so the 500 in
+      the book is not what lands. Say so, or a reader meets it when the log shows
+      650.
+- [ ] **Choosing to evolve.** `Line.StageAt` derives a stage from a level and
+      there is no decision in it; a level should *allow* a stage and the placement
+      name which it fielded, so `Resolve(level)` becomes `Resolve(level, stage)`
+      with the chosen stage's threshold no higher than the level.
+      ⚠️ **`at_stage` cannot be built before this** — while a stage is derived,
+      `at_stage: "Ivysaur"` *is* `at_level: 16`, a second spelling of one fact.
+      ⚠️ **Choosing not to evolve is strictly worse as designed**: stage curves only
+      rise, so the choice is decorative unless an earlier stage can learn something
+      the later one cannot — which is now one field away rather than a mechanism
+      away, since the learnset exists.
       **No condition beyond a level**: items, friendship and battles-fought all
       need somewhere to persist, and there is no meta layer, no inventory, no save.
 - [ ] **Grow the cast.** Three characters ship, one per element, and the seed
