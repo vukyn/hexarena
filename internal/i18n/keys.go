@@ -222,6 +222,7 @@ const (
 	LabelPlaystyle
 	LabelElement
 	LabelKit
+	LabelTraits
 	LabelArt
 	LabelStages
 	LabelBiography

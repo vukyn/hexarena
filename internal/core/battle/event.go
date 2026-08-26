@@ -51,6 +51,15 @@ const (
 	// has to carry it: without one, a reader sees health go up with nothing to
 	// account for it.
 	Healed
+	// PassiveHeld is a trait a unit was enlisted with, and the permanent status
+	// it put on. One per granted status, emitted with the opening board.
+	//
+	// It is its own kind rather than a StatusApplied with an empty skill,
+	// because the two are different facts: one is something a unit did to
+	// another and rolled a chance for, the other is what a unit simply is. A
+	// renderer that drew them the same way would tell a reader a trait had just
+	// been inflicted.
+	PassiveHeld
 	// Ended closes a battle.
 	Ended
 )
@@ -76,6 +85,7 @@ var kindNames = [KindCount]string{
 	StatusStripped: "status_stripped",
 	Died:           "died",
 	Healed:         "healed",
+	PassiveHeld:    "passive_held",
 	Ended:          "ended",
 }
 
@@ -158,6 +168,8 @@ type Event struct {
 	// Cell and Side place a unit on the board.
 	Cell hex.Offset `json:"cell,omitempty"`
 	Side hex.Side   `json:"side,omitempty"`
+	// Passive names the trait an event came from, on PassiveHeld.
+	Passive string `json:"passive,omitempty"`
 	// Note is a short reason, used only where a kind has one to give.
 	Note string `json:"note,omitempty"`
 }

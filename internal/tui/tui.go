@@ -96,7 +96,13 @@ func Effects(unit *battle.Unit) string {
 		if entry.Stacks > 1 {
 			part += fmt.Sprintf(" x%d", entry.Stacks)
 		}
-		part += fmt.Sprintf(" (%dt)", entry.Remaining)
+		// A permanent status has no countdown to print, and printing its zero
+		// would read as "about to run out" for the one thing that never does.
+		if entry.Permanent {
+			part += " (always)"
+		} else {
+			part += fmt.Sprintf(" (%dt)", entry.Remaining)
+		}
 		parts = append(parts, part)
 	}
 	return strings.Join(parts, ", ")
@@ -291,6 +297,12 @@ func Line(event battle.Event, tags map[string]string) string {
 		return head + fmt.Sprintf("  %s resists %s (%d%%)", tag(event.Target), event.Status, event.Chance/10)
 	case battle.StatusStripped:
 		return head + fmt.Sprintf("  strips %d off %s", event.Stacks, tag(event.Target))
+	case battle.PassiveHeld:
+		// A trait and the permanent status it put on, in one line, because
+		// either half alone leaves the reader guessing: the trait's name says
+		// nothing about what it does, and the status appearing on its own has
+		// nothing to account for it.
+		return head + fmt.Sprintf("  holds %s: %s x%d", event.Passive, event.Status, event.Stacks)
 	case battle.Died:
 		return head + fmt.Sprintf(" falls at %s", event.Cell)
 	case battle.Ended:

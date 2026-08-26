@@ -123,6 +123,12 @@ func (d Draft) Resolve(lib *Library) (cast.Character, error) {
 		skills = SplitList(d.Skills)
 	}
 
+	// The preset's traits, and there is no answer that overrides them yet — the
+	// same arrangement the evolution line has. A trait is one line in cast.json
+	// and a preset is where the suggestion belongs, so a wizard question would be
+	// a third place to say the same thing before anybody had asked for one.
+	passives := archetype.Passives
+
 	// A character created here has one stage, named after the character. A
 	// second stage is an evolution line, and authoring one is an edit to
 	// cast.json rather than a wizard question: the whole point of a stage is
@@ -133,7 +139,7 @@ func (d Draft) Resolve(lib *Library) (cast.Character, error) {
 		Origin: d.Origin, Archetype: d.Archetype,
 		Image: d.Image, Element: affinity, Bio: strings.TrimSpace(d.Bio),
 		Stages: progression.Line{{Name: strings.TrimSpace(d.Name), MinLevel: 1, Stats: table}},
-		Skills: skills,
+		Skills: skills, Passives: passives,
 	}
 	if _, err := lib.characters.Append(lib.CastDeps(), character); err != nil {
 		return cast.Character{}, err

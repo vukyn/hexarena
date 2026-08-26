@@ -302,6 +302,60 @@ maximises expected damage and a heal has none — the same gap recorded under *A
 deeper opponent*. And a unit that heals is durable beyond its stat line, so the
 joint health-and-defence budget becomes an understatement rather than a bound.
 
+## Passives
+
+A skill is spent on a turn. A **passive** is not: it is in force from the moment
+a unit is enlisted, and nothing the unit or its opponents do turns it off.
+
+A passive **grants statuses**, and that is the whole mechanism. Nothing about a
+stat change is reimplemented: the terms belong to the status, `modifier.Set`
+saturates every term of the same target together, and a trait therefore saturates
+*alongside* a temporary buff rather than composing with it. A passive that
+composed would be the one place in this game where stacking explodes, and reusing
+the status is what makes that unwritable.
+
+Every status a passive grants must be declared **permanent** — a new flag on a
+status kind, not a duration of nought, because nought would make an absent or
+mistyped duration silently permanent. Permanent means four things, and each is a
+place something else would have ended it:
+
+- it never counts down, so it never appears in `Set.Tick`'s expiry list;
+- a dispel, a cleanse and a detonate all reach `Set.Remove`, and it refuses them
+  there — one guard for all three;
+- it cannot be a damage-over-time or a regeneration, because a permanent one of
+  either ticks for the whole battle with nothing able to stop it;
+- and a renderer is told, so it draws *always* rather than the `0t` that reading
+  the countdown alone would give.
+
+The reason those matter is that a trait is granted **once**. A dispel that took
+one off would turn it off for the rest of the battle with no way back, which is a
+far larger effect than stripping a buff somebody cast a moment ago.
+
+**A trait is in force before the first wait is computed.** A wait is
+`1_000_000 / speed` and the queue is built while a unit is being enlisted, so a
+trait touching speed goes on before that — not corrected afterwards, because the
+first turn has already been served by the time anything would notice. The test
+for it makes the holder the *slower* unit at its base and faster only with the
+trait counted; an earlier version used two equal speeds and passed on the
+tie-break whether the trait was applied first or not.
+
+**And it says so in the log.** Each granted status is a `passive_held` event
+beside the unit's own `started`, naming the trait and the status. It is its own
+kind rather than a `status_applied` with an empty skill, because the two are
+different facts: one is something a unit did to another and rolled a chance for,
+the other is what a unit simply is.
+
+Traits are declared in `passives.json` and checked against the status book at
+load, the way a skill is checked against the pattern and status books. A character
+names the ones it holds; an **archetype may suggest** some, which is where a
+preset finally gains a mechanical weight — until now a preset never reached the
+engine and nothing branched on one. `battle.Roster` carries them because the test
+of what belongs on a roster entry has always been "does a replay read it", not "is
+it small": an archetype and an evolution stage are settled *before* a battle and
+leave nothing behind but numbers, while a trait is in force during one.
+
+`hexforge passives` lists what is declared and what each grants.
+
 ## Battle logs
 
 A battle can be written out, read back, printed, and re-run from its seed to check
@@ -616,55 +670,34 @@ Constraints any replacement must keep: `Suggest` reads no randomness and mutates
 nothing, so a client may call it for a hint without disturbing the battle's own
 sequence, and two identical battles must still produce identical logs.
 
-### Passive skills
+### What a passive still cannot do
 
-Every skill today is active: a unit spends its turn on one. A **passive** — what
-a character *has* rather than what it uses — was part of the original design and
-the engine has none. Four things a passive is normally asked to do, and where
-each already has a home:
+Traits exist — see *Passives* above — and one of the four things a passive is
+normally asked to do is built. The other three:
 
-- **Raise or lower a stat.** `status.Kind` already carries `Modifiers`, and
-  `modifier.Set` already saturates every term of the same target together. A
-  permanent status granted when the unit is enlisted covers this with no new
-  mechanism, and inherits the saturation for free — which is the point. A passive
-  that *composed* with temporary buffs instead of saturating alongside them would
-  be the one place in the game where stacking explodes.
 - **Add an effect to what the unit already does.** `skill.Application` is the
-  existing shape for "this inflicts that, at a fixed chance". A passive that
-  contributes one needs the application list assembled from the unit as well as
-  from the skill, which is a change in `battle`, not a new rule.
-- **Fire only under a condition.** `skill.Condition` is the existing vocabulary:
-  a status, a minimum stack count, a bonus, and whether it consumes. Reuse it.
-  Two ways of writing "while the target is burning" is how the two drift apart.
-- **Immunity.** The only one of the four with nowhere to live. Nothing can
-  currently refuse an application. `status.Set.Apply` is the choke point every
-  status passes through, and `status.Category` with its `Harmful()` split already
-  gives immunity something to be expressed against. The open questions are
-  whether it keys on a category or a status id, and whether it is absolute or a
-  saturating resistance — absolute immunity is a hard cap on a continuous
-  quantity, which everywhere else in this engine has been the wrong choice.
+  existing shape for "this inflicts that, at a fixed chance". A trait
+  contributing one needs the application list assembled from the unit as well as
+  from the skill, which is a change in `battle` rather than a new rule.
+- **Fire only under a condition.** `skill.Condition` is the existing vocabulary —
+  a status, a minimum stack count, a bonus, and whether it consumes — and reusing
+  it is the point, because two ways of writing "while the target is burning" is
+  how the two drift apart. What it cannot express is the condition a trait most
+  often wants: *while the holder is below a share of its health*. That is a new
+  term, and deciding it is the work.
+- **Immunity, or resistance.** Still the one with nowhere to live: nothing can
+  refuse an application. The choke point is `battle.inflict`, where the chance is
+  rolled, rather than `status.Set.Apply` — a resistance that reduced a **chance**
+  is continuous and saturates like everything else here, while one that refused
+  an application outright is a hard cap on a continuous quantity, which this
+  engine has rejected everywhere else. The shape that follows: resistance is a
+  ratio in parts per thousand against a `status.Category`, and a declared full
+  thousand is the explicit way to write true immunity — the mirror of a skill
+  declaring full accuracy, which is how "this must land" is already written.
 
-Constraints any implementation has to keep:
-
-- **A passive that changes a number must emit an event.** The log is the only
-  contract a renderer has, so a silent passive makes the log lie: a reader sees a
-  damage figure the visible numbers cannot account for. This is the trap worth
-  naming in advance, because the mechanism is the easy half and the logging is
-  the half that gets skipped.
-- **An enlist-time passive has to land before the first wait is computed.** Turn
-  order is `1_000_000 / speed`, so a passive touching speed must be in place
-  before the queue is built or turn one is already wrong. `retuneAll` exists
-  because exactly this was got wrong once with haste.
-- **No new randomness.** A passive that rolls, rolls through the `*rng.Source`
-  that was passed in, and the roll has to reach the log — otherwise `--verify`
-  fails against a replay of the same seed, which is precisely what it is for.
-- Durations and cooldowns count in the holder's own turns. Parts per thousand,
-  never floats.
-
-Where a passive is *declared* is open. The natural shape is a `passives.json`
-book validated cross-book the way skills are, a `Passives []string` field on
-`cast.Character`, and an archetype able to suggest one — which would also give an
-archetype its first mechanical weight, since today it carries none.
+Whatever comes next keeps the two constraints the first slice was built under: a
+trait that changes a number **emits an event**, and one that touches speed is in
+force before the first wait is computed.
 
 ### Learnsets, four slots, and choosing to evolve
 

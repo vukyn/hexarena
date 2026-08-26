@@ -12,6 +12,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -31,6 +32,7 @@ const (
 	limitsFile     = "progression.json"
 	patternsFile   = "patterns.json"
 	statusesFile   = "statuses.json"
+	passivesFile   = "passives.json"
 	skillsFile     = "skills.json"
 	originsFile    = "origins.json"
 	archetypesFile = "archetypes.json"
@@ -62,8 +64,11 @@ type Library struct {
 	// is built, because a skill is now authored here too: the shapes and the
 	// statuses are what a skill's declarations are checked against, and writing
 	// one back means re-parsing the book through the same two.
-	patterns   *pattern.Book
-	statuses   *status.Book
+	patterns *pattern.Book
+	statuses *status.Book
+	// passives is held for the same reason: a character names traits, and the
+	// book is what those names are checked against on every write.
+	passives   *passive.Book
 	skills     *skill.Book
 	origins    *cast.OriginBook
 	archetypes *cast.ArchetypeBook
@@ -118,6 +123,12 @@ func Load(dir string) (*Library, error) {
 	if lib.statuses, err = status.ParseBook(raw); err != nil {
 		return nil, err
 	}
+	if raw, err = read(passivesFile); err != nil {
+		return nil, err
+	}
+	if lib.passives, err = passive.ParseBook(raw, passive.Deps{Statuses: lib.statuses}); err != nil {
+		return nil, err
+	}
 	if raw, err = read(skillsFile); err != nil {
 		return nil, err
 	}
@@ -135,9 +146,7 @@ func Load(dir string) (*Library, error) {
 	if raw, err = read(archetypesFile); err != nil {
 		return nil, err
 	}
-	lib.archetypes, err = cast.ParseArchetypes(raw, cast.ArchetypeDeps{
-		Skills: lib.skills, Limits: lib.limits, Rules: lib.rules,
-	})
+	lib.archetypes, err = cast.ParseArchetypes(raw, lib.ArchetypeDeps())
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +172,7 @@ func (l *Library) Chart() *element.Chart           { return l.chart }
 func (l *Library) Patterns() *pattern.Book         { return l.patterns }
 func (l *Library) Statuses() *status.Book          { return l.statuses }
 func (l *Library) Skills() *skill.Book             { return l.skills }
+func (l *Library) Passives() *passive.Book         { return l.passives }
 func (l *Library) Origins() *cast.OriginBook       { return l.origins }
 func (l *Library) Archetypes() *cast.ArchetypeBook { return l.archetypes }
 func (l *Library) Characters() *cast.Book          { return l.characters }
@@ -175,10 +185,22 @@ func (l *Library) SkillDeps() skill.Deps {
 
 // CastDeps is what a character is checked against, assembled from the loaded
 // books so every tool and the game itself apply the same rules.
+// ArchetypeDeps is everything a preset is validated against, and it exists for
+// the same reason CastDeps does: two callers parse the archetype book — a load,
+// and the re-parse a skill edit does off the disk — and a second copy of the
+// list is a second thing to forget a book from. That is not hypothetical: when
+// passives arrived the re-parse kept its own list, so every skill edit in the
+// repository started failing with a refusal about a preset nobody had touched.
+func (l *Library) ArchetypeDeps() cast.ArchetypeDeps {
+	return cast.ArchetypeDeps{
+		Skills: l.skills, Passives: l.passives, Limits: l.limits, Rules: l.rules,
+	}
+}
+
 func (l *Library) CastDeps() cast.Deps {
 	return cast.Deps{
 		Origins: l.origins, Archetypes: l.archetypes, Skills: l.skills,
-		Chart: l.chart, Limits: l.limits, Rules: l.rules,
+		Passives: l.passives, Chart: l.chart, Limits: l.limits, Rules: l.rules,
 	}
 }
 
@@ -296,6 +318,21 @@ func (l *Library) KitSkills(named []string) []skill.Skill {
 			carried = skill.Skill{ID: id}
 		}
 		out = append(out, carried)
+	}
+	return out
+}
+
+// KitPassives is the same for a character's traits: the declared ones resolved,
+// and a placeholder for a name the book does not hold, so a listing draws the id
+// rather than a gap.
+func (l *Library) KitPassives(named []string) []passive.Passive {
+	out := make([]passive.Passive, 0, len(named))
+	for _, id := range named {
+		held, err := l.passives.Lookup(id)
+		if err != nil {
+			held = passive.Passive{ID: id}
+		}
+		out = append(out, held)
 	}
 	return out
 }

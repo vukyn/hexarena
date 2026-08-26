@@ -8,6 +8,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 )
@@ -32,6 +33,13 @@ type Archetype struct {
 	Stats progression.Table `json:"stats"`
 	// Skills is the suggested kit.
 	Skills []string `json:"skills"`
+	// Passives is the suggested traits, and it is where an archetype finally
+	// gains a mechanical weight: until now a preset never reached the engine and
+	// nothing branched on one, so it was a curve and a kit under a name. A
+	// passive it suggests does reach the engine, through whatever character takes
+	// the suggestion — the preset itself still does not, which keeps
+	// battle.Roster free of an archetype exactly as before.
+	Passives []string `json:"passives,omitempty"`
 	// Demands is the distinct non-neutral elements the kit requires, derived
 	// from Skills at parse time by skill.Demands.
 	//
@@ -76,8 +84,9 @@ type archetypeFile struct {
 	Column int    `json:"column"`
 	// Stats is a pointer so an omitted table is an error rather than a preset
 	// of zeroes.
-	Stats  *progression.Table `json:"stats"`
-	Skills []string           `json:"skills"`
+	Stats    *progression.Table `json:"stats"`
+	Skills   []string           `json:"skills"`
+	Passives []string           `json:"passives"`
 }
 
 type archetypeBookFile struct {
@@ -87,8 +96,12 @@ type archetypeBookFile struct {
 // ArchetypeDeps are what a preset's declarations are checked against.
 type ArchetypeDeps struct {
 	Skills *skill.Book
-	Limits progression.Limits
-	Rules  combat.Rules
+	// Passives is the book a suggested trait is checked against. It is optional
+	// only in the sense that a preset suggesting none never reaches it; a preset
+	// that names one without it is refused rather than accepted unchecked.
+	Passives *passive.Book
+	Limits   progression.Limits
+	Rules    combat.Rules
 }
 
 func (d ArchetypeDeps) validate() error {
@@ -184,9 +197,14 @@ func resolveArchetype(declared archetypeFile, deps ArchetypeDeps) (Archetype, er
 		return fail("has a kit demanding %d elements (%s), and a unit may carry at most 2",
 			len(demands), strings.Join(names, ", "))
 	}
+	passives, err := resolvePassives("archetype", declared.ID, declared.Passives, deps.Passives)
+	if err != nil {
+		return Archetype{}, err
+	}
 	return Archetype{
 		ID: declared.ID, Role: role, Column: declared.Column,
 		Stats: *declared.Stats, Skills: skillIDs(kit), Demands: demands,
+		Passives: passives,
 	}, nil
 }
 

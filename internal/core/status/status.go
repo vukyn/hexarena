@@ -117,7 +117,18 @@ type Kind struct {
 	// MaxStacks is how many times the status can be layered on one unit.
 	MaxStacks int
 	// Duration is how many of the holder's turns a freshly applied stack lasts.
+	// A permanent status declares none.
 	Duration int
+	// Permanent means a stack never counts down and never expires, which is what
+	// a passive's granted status needs: a passive is what a unit *is* rather than
+	// something that happened to it.
+	//
+	// It is a flag rather than a duration of nought, because nought would make an
+	// absent or mistyped duration silently permanent — and the fields around it
+	// already refuse their own zero for that reason. A permanent status is
+	// therefore two declarations that have to agree, and ParseBook checks they
+	// do.
+	Permanent bool
 	// TickPower is what one stack deals per tick, in parts per thousand of the
 	// applier's scaling stat, run through the usual damage formula at the moment
 	// it is applied.
@@ -229,6 +240,13 @@ func (s *Set) Tick() (damage, healing int64, expired []string) {
 	kept := s.entries[:0]
 	for i := range s.entries {
 		current := s.entries[i]
+		// A permanent status is not timed, so nothing about it is spent here and
+		// it can never reach the expiry list. Skipping the whole entry rather
+		// than guarding the decrement is what keeps that true of both halves.
+		if current.kind.Permanent {
+			kept = append(kept, current)
+			continue
+		}
 		alive := current.stacks[:0]
 		for _, stack := range current.stacks {
 			stack.Remaining--
@@ -340,6 +358,15 @@ func (s *Set) Remove(id string, count int) (removed int, damage int64) {
 		return 0, 0
 	}
 	target := &s.entries[index]
+	// A permanent status is refused here, which is what keeps a passive from
+	// being dispelled. Cleanse and Consume both come through Remove, so saying it
+	// once covers both — and it has to be said, because a passive is granted only
+	// when the unit is enlisted: a dispel that took one off would turn it off for
+	// the rest of the battle with no way back, which is a far larger effect than
+	// stripping a buff somebody cast.
+	if target.kind.Permanent {
+		return 0, 0
+	}
 	order := make([]int, len(target.stacks))
 	for i := range order {
 		order[i] = i
@@ -419,7 +446,12 @@ type Snapshot struct {
 	Category   Category
 	Stacks     int
 	TickAmount int64
-	Remaining  int
+	// Remaining is the longest turn count left across the stacks, and it is
+	// meaningless when Permanent is set: a permanent status carries no duration,
+	// so a renderer reading Remaining alone would draw "0 turns left" beside
+	// something that never runs out.
+	Remaining int
+	Permanent bool
 }
 
 // Snapshot returns every active status, in the order they were applied.
@@ -437,6 +469,7 @@ func (s *Set) Snapshot() []Snapshot {
 		out = append(out, Snapshot{
 			ID: current.kind.ID, Category: current.kind.Category,
 			Stacks: len(current.stacks), TickAmount: total, Remaining: longest,
+			Permanent: current.kind.Permanent,
 		})
 	}
 	return out
@@ -460,6 +493,7 @@ type bookFile struct {
 		Category  string              `json:"category"`
 		MaxStacks int                 `json:"max_stacks"`
 		Duration  int                 `json:"duration"`
+		Permanent bool                `json:"permanent,omitempty"`
 		TickPower int                 `json:"tick_power"`
 		Modifiers []modifier.Modifier `json:"modifiers"`
 	} `json:"kinds"`
@@ -496,11 +530,22 @@ func ParseBook(raw []byte) (*Book, error) {
 		case declared.MaxStacks > book.MaxStacks:
 			return nil, fmt.Errorf("status %q allows %d stacks, over the limit of %d",
 				declared.ID, declared.MaxStacks, book.MaxStacks)
-		case declared.Duration < 1:
+		case declared.Permanent && declared.Duration != 0:
+			return nil, fmt.Errorf("status %q is permanent and also lasts %d turns, which are two different answers",
+				declared.ID, declared.Duration)
+		case !declared.Permanent && declared.Duration < 1:
 			return nil, fmt.Errorf("status %q lasts %d turns, want at least 1", declared.ID, declared.Duration)
 		case declared.Duration > book.MaxDuration:
 			return nil, fmt.Errorf("status %q lasts %d turns, over the limit of %d",
 				declared.ID, declared.Duration, book.MaxDuration)
+		}
+		// A permanent status that ticks is a unit losing health for the whole
+		// battle with nothing able to stop it, or gaining it forever, and one is
+		// as broken as the other. The two ticking categories are refused
+		// together for the same reason they share the tick_power requirement.
+		if declared.Permanent && (category == Dot || category == Regen) {
+			return nil, fmt.Errorf("status %q is a permanent %s, which would tick for the whole battle",
+				declared.ID, category)
 		}
 		// Both ticking categories need a power and nothing else may carry one.
 		// Regen is Dot with the sign the other way, so it earns the same
@@ -526,10 +571,28 @@ func ParseBook(raw []byte) (*Book, error) {
 				return nil, fmt.Errorf("status %q modifier %d targets affinity, which a status cannot carry",
 					declared.ID, i)
 			}
+			if term.Target == modifier.HP {
+				// A health term does nothing, and has always done nothing:
+				// Unit.MaxHP reads the *base* line, and nothing in the engine
+				// reads the modified health at all. So the status would apply,
+				// show up in the log and change no number anybody can see.
+				//
+				// It is refused rather than fixed because fixing it is a design
+				// question, not an oversight: raising a maximum mid-battle has to
+				// decide whether current health follows it up, and lowering one
+				// has to decide what happens to a unit already above the new
+				// maximum. Neither answer is obvious and neither is needed yet.
+				// A passive is what makes this reachable — "more health" is the
+				// most obvious trait anybody would write — so the refusal is
+				// what stops it being written and silently doing nothing.
+				return nil, fmt.Errorf("status %q modifier %d targets health, which nothing in the engine reads: health comes from the stat line and does not move during a battle",
+					declared.ID, i)
+			}
 		}
 		kind := Kind{
 			ID: declared.ID, Category: category,
 			MaxStacks: declared.MaxStacks, Duration: declared.Duration,
+			Permanent: declared.Permanent,
 			TickPower: declared.TickPower, Modifiers: declared.Modifiers,
 		}
 		book.byID[kind.ID] = kind

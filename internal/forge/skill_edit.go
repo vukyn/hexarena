@@ -213,9 +213,16 @@ func (l *Library) recheckCarriers(edited *skill.Book, id string) (*cast.Archetyp
 	if err != nil {
 		return nil, nil, err
 	}
-	archetypes, err := cast.ParseArchetypes(rawArchetypes, cast.ArchetypeDeps{
-		Skills: edited, Limits: l.limits, Rules: l.rules,
-	})
+	// The library's own dependency lists with the skill book swapped, rather than
+	// two fresh ones written out here. A re-parse missing a book refuses on the
+	// missing book instead of on the edit, and the refusal it produces names a
+	// preset the author never touched — which is exactly what happened when
+	// passives arrived and this restated its deps: every skill edit in the
+	// repository began failing with "archetype blighter names passives, which
+	// cannot be checked without the passive book".
+	archetypeDeps := l.ArchetypeDeps()
+	archetypeDeps.Skills = edited
+	archetypes, err := cast.ParseArchetypes(rawArchetypes, archetypeDeps)
 	if err != nil {
 		return nil, nil, l.brokenPreset(edited, id, err)
 	}
@@ -223,10 +230,10 @@ func (l *Library) recheckCarriers(edited *skill.Book, id string) (*cast.Archetyp
 	if err != nil {
 		return nil, nil, err
 	}
-	characters, err := cast.ParseBook(rawCast, cast.Deps{
-		Origins: l.origins, Archetypes: archetypes, Skills: edited,
-		Chart: l.chart, Limits: l.limits, Rules: l.rules,
-	})
+	castDeps := l.CastDeps()
+	castDeps.Archetypes = archetypes
+	castDeps.Skills = edited
+	characters, err := cast.ParseBook(rawCast, castDeps)
 	if err != nil {
 		return nil, nil, l.brokenCharacter(edited, id, err)
 	}

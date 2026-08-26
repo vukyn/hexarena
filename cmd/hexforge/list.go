@@ -111,6 +111,43 @@ func runArchetypes(args []string) error {
 	return nil
 }
 
+func runPassives(args []string) error {
+	lib, err := loadForListing("passives", args)
+	if err != nil {
+		return err
+	}
+	renderPassives(os.Stdout, lib)
+	return nil
+}
+
+// renderPassives lists the declared traits and what each puts on its holder.
+//
+// The statuses are named rather than their effect summarised: what a status does
+// is the status book's own table, and restating a modifier here would be a second
+// declaration of a number that lives somewhere else.
+func renderPassives(out io.Writer, lib *forge.Library) {
+	passives := lib.Passives().All()
+	if len(passives) == 0 {
+		fmt.Fprintln(out, "no passives declared")
+		return
+	}
+	rendered := newTable("id", "name", "grants")
+	for _, held := range passives {
+		grants := make([]string, 0, len(held.Grants))
+		for _, grant := range held.Grants {
+			if grant.Stacks > 1 {
+				grants = append(grants, fmt.Sprintf("%s x%d", grant.Status, grant.Stacks))
+				continue
+			}
+			grants = append(grants, grant.Status)
+		}
+		rendered.add(held.ID, held.Name, strings.Join(grants, ", "))
+	}
+	rendered.render(out)
+	fmt.Fprint(out, "\na trait is in force from the moment its holder is enlisted, and nothing takes it off:\n"+
+		"every status it grants is declared permanent, so it has no duration and no cleanse reaches it.\n")
+}
+
 func renderArchetypes(out io.Writer, lib *forge.Library) {
 	archetypes := lib.Archetypes().All()
 	if len(archetypes) == 0 {

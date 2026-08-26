@@ -33,6 +33,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 )
@@ -58,6 +59,15 @@ type Character struct {
 	// character with one stage is the ordinary case, not a special one.
 	Stages progression.Line `json:"stages"`
 	Skills []string         `json:"skills"`
+	// Passives are the traits the character holds for the whole of every battle,
+	// by id in the passive book. Absent is the ordinary case.
+	//
+	// Unlike an archetype, these do reach the engine: battle.Roster carries them
+	// because a passive is in force *during* a battle, where an archetype and an
+	// evolution stage are both settled before one starts. That is the line the
+	// roster's deliberate emptiness is drawn on — not "as little as possible",
+	// but "nothing a replay does not read".
+	Passives []string `json:"passives,omitempty"`
 }
 
 // Resolve flattens the character at a level into the stat line the battle
@@ -118,6 +128,7 @@ func (c Character) clone() Character {
 	copy(out.Stages, c.Stages)
 	out.Skills = make([]string, len(c.Skills))
 	copy(out.Skills, c.Skills)
+	out.Passives = slices.Clone(c.Passives)
 	return out
 }
 
@@ -135,10 +146,11 @@ type characterFile struct {
 	Image     string `json:"image"`
 	// Element is a pointer so an omitted field is an error rather than a
 	// silent neutral affinity.
-	Element *element.Affinity `json:"element"`
-	Bio     string            `json:"bio"`
-	Stages  progression.Line  `json:"stages"`
-	Skills  []string          `json:"skills"`
+	Element  *element.Affinity `json:"element"`
+	Bio      string            `json:"bio"`
+	Stages   progression.Line  `json:"stages"`
+	Skills   []string          `json:"skills"`
+	Passives []string          `json:"passives"`
 }
 
 type bookFile struct {
@@ -158,9 +170,12 @@ type Deps struct {
 	Origins    *OriginBook
 	Archetypes *ArchetypeBook
 	Skills     *skill.Book
-	Chart      *element.Chart
-	Limits     progression.Limits
-	Rules      combat.Rules
+	// Passives is the book a character's traits are checked against, and it is
+	// wanted only by a character that names one — see resolvePassives.
+	Passives *passive.Book
+	Chart    *element.Chart
+	Limits   progression.Limits
+	Rules    combat.Rules
 }
 
 func (d Deps) validate() error {
@@ -326,11 +341,16 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 		}
 	}
 
+	passives, err := resolvePassives("character", declared.ID, declared.Passives, deps.Passives)
+	if err != nil {
+		return Character{}, err
+	}
+
 	return Character{
 		ID: declared.ID, Name: declared.Name,
 		Origin: declared.Origin, Archetype: declared.Archetype,
 		Image: declared.Image, Element: *declared.Element, Bio: declared.Bio,
-		Stages: declared.Stages, Skills: skillIDs(kit),
+		Stages: declared.Stages, Skills: skillIDs(kit), Passives: passives,
 	}, nil
 }
 
@@ -429,6 +449,35 @@ func (b *Book) Append(deps Deps, extra ...Character) (*Book, error) {
 		return nil, fmt.Errorf("encode cast book: %w", err)
 	}
 	return ParseBook(raw, deps)
+}
+
+// resolvePassives checks a list of trait ids against the passive book, and is
+// shared by a character and by an archetype preset because both name traits the
+// same way and a second copy of these four rules is a second thing to drift.
+//
+// A list that is absent is no traits, which is the ordinary case. A list that
+// names something needs the book, so a book that was not handed over is a
+// refusal rather than a pass: the alternative is a data file whose traits are
+// checked or unchecked depending on how the caller wired itself up.
+func resolvePassives(kind, owner string, declared []string, book *passive.Book) ([]string, error) {
+	if len(declared) == 0 {
+		return nil, nil
+	}
+	if book == nil {
+		return nil, fmt.Errorf("%s %q names passives, which cannot be checked without the passive book", kind, owner)
+	}
+	out := make([]string, 0, len(declared))
+	for _, id := range declared {
+		found, err := book.Lookup(id)
+		if err != nil {
+			return nil, fmt.Errorf("%s %q: %w", kind, owner, err)
+		}
+		if slices.Contains(out, found.ID) {
+			return nil, fmt.Errorf("%s %q names the passive %q twice", kind, owner, found.ID)
+		}
+		out = append(out, found.ID)
+	}
+	return out, nil
 }
 
 // ValidateImagePath checks the shape of an authored image path. Whether the
