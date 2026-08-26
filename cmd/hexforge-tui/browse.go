@@ -176,8 +176,26 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	}
 	out.WriteString(m.style.heading.Render(character.ID+" — "+character.Name) + "\n")
 	out.WriteString(m.label(m.text(i18n.LabelFrom), "%s", from))
-	out.WriteString(m.label(m.text(i18n.LabelPlaystyle), "%s", m.lang.Glossed(character.Archetype)))
-	out.WriteString(m.label(m.text(i18n.LabelElement), "%s", m.lang.GlossedAffinity(character.Element)))
+	// The preset and the element read as ids with their names on the row under
+	// them, which is the one convention this pane has rather than two.
+	//
+	// They used to bracket the name beside the id — "blighter (kẻ gieo độc)" —
+	// while the kit, the species and the traits put theirs underneath, and the
+	// split was invisible to a reader: it followed where the name came from, a
+	// compiled table against a data file, which is a fact about this repository
+	// and not about the character on screen. The list above still brackets,
+	// because a table column has no second row to give.
+	//
+	// An unglossed id draws no second row rather than an empty one, so an English
+	// screen is exactly what it was.
+	out.WriteString(m.label(m.text(i18n.LabelPlaystyle), "%s", character.Archetype))
+	if name := m.lang.Gloss(character.Archetype); name != "" {
+		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, name))
+	}
+	out.WriteString(m.label(m.text(i18n.LabelElement), "%s", character.Element))
+	if names := m.lang.AffinityNames(character.Element); names != "" {
+		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, names))
+	}
 	// Wrapped, not clipped: nine ids are longer than any terminal, and half an
 	// id is worse than a second row.
 	out.WriteString(m.wrapped(m.text(i18n.LabelKit), detailLabelWidth(m),
@@ -212,12 +230,6 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// rather than before it because there is no picture to name until the stage
 	// is known, and a character that will not resolve has already returned.
 	out.WriteString(m.label(m.text(i18n.LabelArt), "%s", b.artLine(m, character, stage)))
-	// Traits sit with the art rather than with the kit, because both now answer
-	// "at this level": a gate still ahead is printed and one already passed is
-	// not, so walking the level is what shows a trait coming in. The names go
-	// under it the way the kit's do, and only the ones actually in force are
-	// named — glossing a trait the unit does not have yet would read as a trait
-	// it has.
 	// What it is, when it is anything: the axis a skill kept for a lineage reads,
 	// and the one fact on this screen that the numbers cannot imply. Only when
 	// there is one, on the same terms as the traits row under it.
@@ -228,6 +240,11 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
 		}
 	}
+	// Traits sit with the art rather than with the kit, because both answer "at
+	// this level": a gate still ahead is printed and one already passed is not, so
+	// walking the level is what shows a trait coming in. The names go under it the
+	// way the kit's do, and only the ones actually in force are named — glossing a
+	// trait the unit does not have yet would read as a trait it has.
 	if len(character.Passives) > 0 {
 		out.WriteString(m.wrapped(m.text(i18n.LabelTraits), detailLabelWidth(m),
 			forge.UnlockSummaryAt(character.Passives, b.level)))
