@@ -99,6 +99,19 @@ var (
 		"kindled":   "rực lửa",
 	}
 
+	// The status categories in statuses.json. They are named by a cleanse rather
+	// than by a status — "strips a stat_debuff" — so they reach a reader who
+	// never sees the word anywhere else, which is exactly the case a gloss is
+	// for.
+	categoryGloss = map[string]string{
+		"dot":         "hiệu ứng gây hại theo lượt",
+		"stat_debuff": "hiệu ứng giảm chỉ số",
+		"control":     "hiệu ứng khống chế",
+		"buff":        "hiệu ứng tăng chỉ số",
+		"shield":      "lớp khiên",
+		"regen":       "hiệu ứng hồi máu",
+	}
+
 	// The role presets in archetypes.json.
 	//
 	// Unlike the other authored tables this one may **not** miss for a shipped
@@ -159,7 +172,7 @@ var (
 // first, which is a wrong name rather than a missing one and therefore the
 // worse of the two failures.
 var glossaries = []map[string]string{
-	elementGloss, sideGloss, statusGloss, archetypeGloss, skillGloss,
+	elementGloss, sideGloss, statusGloss, categoryGloss, archetypeGloss, skillGloss,
 }
 
 // glossBracket is how a gloss sits beside the id it explains. It is punctuation

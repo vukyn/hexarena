@@ -287,6 +287,21 @@ Two tests hold the line: `TestEveryEventKindIsReachable` fails if a declared kin
 is never emitted by any real battle, and `TestEveryEventKindRenders` fails if a
 kind falls through the renderer's default case.
 
+**Skill and trait descriptions are DERIVED, never authored** (`internal/tui/describe.go`).
+`?N` at the battle prompt describes the Nth offered skill, `?TAG` a unit's traits;
+both reprint the menu and cost no turn. Every number comes from the skill itself,
+because an authored line survives its own numbers moving — "doubles" outlives a
+bonus falling 1000 → 700 — and this repo already refused that trade in
+`Archetype.Demands`. ⚠️ **Never add a `description` field to skills.json.**
+Numbers are **shares of a stat** ("100% công"), never damage figures: a figure is
+true for one caster against one target and false at the next buff. ⚠️ The block is
+**Vietnamese on an otherwise English screen** — a stated cost, not an oversight;
+translate the whole battle screen in one piece or not at all. It borrows
+`i18n.Vi.Gloss` rather than growing a second Vietnamese vocabulary (two names for
+one status is how they drift). `testdata/describe.golden` covers **every** shipped
+skill and trait, so a balance change moves a line there — that diff is how a
+number change reads to a player.
+
 Event kinds, sides and outcomes serialise **by name**. Do not change that to a
 number: a saved log would silently reinterpret itself the next time a constant was
 inserted. Renaming one breaks existing logs, so treat the names as the wire
