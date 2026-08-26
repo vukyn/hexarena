@@ -117,6 +117,9 @@
         {
           "id": "endurance",
           "at_level": 16
+        },
+        {
+          "id": "venom_blood"
         }
       ]
     },
