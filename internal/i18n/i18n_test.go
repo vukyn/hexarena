@@ -200,7 +200,18 @@ func usedIdentifiers(t *testing.T) map[string]bool {
 		if err != nil {
 			return err
 		}
-		if entry.IsDir() || !strings.HasSuffix(path, ".go") || declarations[path] {
+		// A dot-directory is not the module's own source. .claude/worktrees holds
+		// *other checkouts of this repository*, so descending into one both
+		// counts a key as used because some other branch uses it and fails the
+		// walk outright whenever a checkout is sitting on an unresolved conflict
+		// — which is a test on this branch turning red for work on another.
+		if entry.IsDir() {
+			if name := entry.Name(); strings.HasPrefix(name, ".") && path != root {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(path, ".go") || declarations[path] {
 			return nil
 		}
 		file, err := parser.ParseFile(token.NewFileSet(), path, nil, 0)
