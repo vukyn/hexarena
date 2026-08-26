@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/vukyn/hexarena/internal/seed"
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -24,6 +25,36 @@ import (
 // and a twelfth element is a Go change, which is also when element.Chart
 // refuses to validate an unclassified one. So an element with no name is the
 // same kind of oversight as a catalog gap, and is treated as one.
+// TestEveryShippedArchetypeIsGlossed is the one authored table that may not
+// miss, and it is here rather than beside the data because the reason is a
+// screen and not a number.
+//
+// The character browser prints the preset id under "lối chơi". Every other
+// field on that row is a figure or an element, either of which reads the same
+// in both languages; the preset is the one word, so an ungained entry here is
+// an English word alone in the middle of a Vietnamese screen. "warden" shipped
+// exactly that way and nothing said so.
+//
+// It measures the shipped book rather than the table's length: a preset that is
+// not shipped is still free to miss, which is what keeps this from becoming a
+// second place a preset has to be registered.
+func TestEveryShippedArchetypeIsGlossed(t *testing.T) {
+	book, err := seed.Archetypes()
+	if err != nil {
+		t.Fatalf("load the shipped archetypes: %v", err)
+	}
+	presets := book.All()
+	if len(presets) == 0 {
+		t.Fatal("the shipped data declares no preset, so this asserts nothing")
+	}
+	for _, preset := range presets {
+		if Vi.Gloss(preset.ID) == "" {
+			t.Errorf("the shipped preset %q has no Vietnamese name, so the character browser shows it bare under %q",
+				preset.ID, Vi.Text(LabelPlaystyle))
+		}
+	}
+}
+
 func TestEveryElementIsGlossed(t *testing.T) {
 	for _, member := range element.All() {
 		if Vi.Gloss(member.String()) == "" {
@@ -43,7 +74,7 @@ func TestEveryElementIsGlossed(t *testing.T) {
 // never "bolt ()" and never a placeholder. The absent ids below are deliberately
 // not in any data file: they stand in for the next skill somebody adds.
 func TestAnIDWithNoGlossIsNormal(t *testing.T) {
-	for _, absent := range []string{"tidal_hymn", "warden", "no_such_element", ""} {
+	for _, absent := range []string{"tidal_hymn", "tidebinder", "no_such_element", ""} {
 		if got := Vi.Gloss(absent); got != "" {
 			t.Errorf("the absent id %q was glossed %q", absent, got)
 		}
@@ -53,7 +84,7 @@ func TestAnIDWithNoGlossIsNormal(t *testing.T) {
 	}
 	// A kit of nothing but unknown skills draws no gloss line rather than a
 	// line of repeated ids.
-	if got := Vi.GlossedKit(kit("tidal_hymn", "warden")); got != "" {
+	if got := Vi.GlossedKit(kit("tidal_hymn", "tidebinder")); got != "" {
 		t.Errorf("a kit of unglossed skills rendered as %q, want nothing", got)
 	}
 	// A kit that is partly known keeps the unknown one in place, so the line
