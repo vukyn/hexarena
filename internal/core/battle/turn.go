@@ -521,18 +521,32 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	_ = shape
 }
 
-// inflict rolls one status application. The chance is the skill's own and nothing
-// touches it: whether the hit landed and whether the status takes hold are two
-// separate questions, and keeping them separate is what makes both legible.
+// inflict rolls one status application.
+//
+// The chance starts as the skill's own — whether the hit landed and whether the
+// status takes hold are two separate questions, and keeping them separate is what
+// makes both legible. The one thing that touches it is the *target's* traits: a
+// resistance is the only reason an application's chance is not the skill's own,
+// and it is applied here rather than at status.Set.Apply because this is where the
+// roll happens. Apply has no dice, so a resistance living there could only refuse
+// outright — a hard cap on a continuous quantity, which this engine has chosen
+// against everywhere else.
 func (b *Battle) inflict(actor, target *Unit, known skill.Skill, application skill.Application, turn atb.Turn) {
 	kind, err := b.books.Statuses.Lookup(application.Status)
 	if err != nil {
 		return
 	}
-	if !b.source.Chance(application.Chance) {
+	chance, refused := b.resist(target, kind.ID, application.Chance)
+	// Chance is the figure that was actually rolled and Refused says why it is
+	// not the skill's own. Without the second, a reader of the log cannot tell an
+	// application that rolled badly from one the target refused — and the kind is
+	// called status_resisted either way, which is exactly the confusion this
+	// field exists to end.
+	if !b.source.Chance(chance) {
 		b.emit(Event{
 			Kind: StatusResisted, At: turn.At, Turn: turn.Number, Actor: actor.ID,
-			Target: target.ID, Skill: known.ID, Status: kind.ID, Chance: application.Chance,
+			Target: target.ID, Skill: known.ID, Status: kind.ID, Chance: chance,
+			Refused: refused,
 		})
 		return
 	}
@@ -565,10 +579,44 @@ func (b *Battle) inflict(actor, target *Unit, known skill.Skill, application ski
 	b.emit(Event{
 		Kind: StatusApplied, At: turn.At, Turn: turn.Number, Actor: actor.ID,
 		Target: target.ID, Skill: known.ID, Status: kind.ID,
-		Stacks: applied, Amount: tick, Chance: application.Chance,
+		Stacks: applied, Amount: tick, Chance: chance, Refused: refused,
 		Remaining: int64(target.Statuses.Stacks(kind.ID)),
 		Note:      wastedNote(wasted),
 	})
+}
+
+// resist takes whatever the target's traits refuse off an application's chance,
+// and reports the share refused.
+//
+// Sources compose by multiplying what each lets through, which is what a chance
+// does anyway: two resistances of six hundred leave sixteen percent rather than
+// none, so stacking diminishes for free and no saturation helper is needed. A
+// single declared full thousand still reaches zero, which is the whole point of
+// the absolute being available to an author and never to a stack.
+//
+// One resistance is exact: surviving comes back as scale.Base minus the amount
+// with nothing lost, so the chance takes a single truncation. That is the common
+// case, and the one worth being exact in.
+func (b *Battle) resist(target *Unit, statusID string, chance int) (effective, refused int) {
+	if chance <= 0 || len(target.Passives) == 0 || b.books.Passives == nil {
+		return chance, 0
+	}
+	surviving := scale.Base
+	for _, id := range target.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			continue
+		}
+		amount := held.Refuses(statusID)
+		if amount <= 0 {
+			continue
+		}
+		surviving = surviving * (scale.Base - amount) / scale.Base
+	}
+	if surviving >= scale.Base {
+		return chance, 0
+	}
+	return chance * surviving / scale.Base, scale.Base - surviving
 }
 
 func wastedNote(wasted int) string {

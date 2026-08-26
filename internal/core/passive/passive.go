@@ -24,6 +24,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
@@ -55,6 +56,45 @@ type Passive struct {
 	// would be a trait that quietly stopped being true, which is worse than one
 	// that was never declared.
 	Grants []Grant
+	// Resists is the share of an incoming application's chance the holder
+	// refuses, per status.
+	//
+	// It is the one thing a passive does that had no home already: nothing in the
+	// engine could refuse a status before this. A stat change reuses
+	// status.Kind.Modifiers, so a trait grants and the existing code does the
+	// rest; there was no equivalent field for "this unit says no", and the roll
+	// that decides an application belonged entirely to the skill making it.
+	Resists []Resistance
+}
+
+// Resistance is how much of one status's application chance its holder refuses,
+// in parts per thousand.
+//
+// # Why a status rather than a category
+//
+// A category would read as the tidier choice — Cleanse takes categories, and for
+// good reason — but it cannot say the thing that is actually wanted. "Immune to
+// poison" as a category is "immune to every damage-over-time", which hands the
+// holder immunity to burn as well; there is no way to be exact. An id can always
+// name a class by listing it, while a category can never name one member of one.
+//
+// So the cost of ids is verbosity on a trait meaning to cover a whole class, and
+// the cost of categories is being unable to express the case that motivated the
+// feature. A category resistance can be added beside this later if a class is
+// ever wanted; adding it the other way round would mean shipping something wrong
+// first.
+//
+// # Why a ratio, and what a full thousand means
+//
+// A ratio because refusing outright is a hard cap on a continuous quantity, and
+// this engine has chosen against that everywhere: buffs saturate, piercing is a
+// share, dodge approaches a floor it never reaches. A declared full thousand is
+// then the explicit way to write true immunity — exactly as a skill declaring
+// full accuracy is the explicit way to write an effect that must land. The
+// absolute is available to whoever authors it and never falls out of stacking.
+type Resistance struct {
+	Status string
+	Amount int
 }
 
 // StatusIDs is the statuses the passive grants, in declaration order. It is what
@@ -92,8 +132,14 @@ type passiveFile struct {
 	ID string `json:"id"`
 	// Written only when there is one, so a book that names none round-trips to
 	// the bytes it was authored as.
-	Name   string      `json:"name,omitempty"`
-	Grants []grantFile `json:"grants"`
+	Name    string           `json:"name,omitempty"`
+	Grants  []grantFile      `json:"grants"`
+	Resists []resistanceFile `json:"resists,omitempty"`
+}
+
+type resistanceFile struct {
+	Status string `json:"status"`
+	Amount int    `json:"amount"`
 }
 
 type bookFile struct {
@@ -133,8 +179,8 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		return Passive{}, fmt.Errorf("passive %q: "+format,
 			append([]any{declared.ID}, args...)...)
 	}
-	if len(declared.Grants) == 0 {
-		return fail("grants nothing, so holding it would change nothing")
+	if len(declared.Grants) == 0 && len(declared.Resists) == 0 {
+		return fail("grants nothing and resists nothing, so holding it would change nothing")
 	}
 	grants := make([]Grant, 0, len(declared.Grants))
 	for _, grant := range declared.Grants {
@@ -157,9 +203,47 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		}
 		grants = append(grants, Grant{Status: kind.ID, Stacks: stacks})
 	}
+
+	resists := make([]Resistance, 0, len(declared.Resists))
+	for _, resist := range declared.Resists {
+		kind, err := deps.Statuses.Lookup(resist.Status)
+		if err != nil {
+			return fail("%w", err)
+		}
+		// Only what can be done *to* the holder. A trait resisting a buff would
+		// be refusing its own side's help, and a trait resisting a shield or a
+		// regeneration the same — Harmful is the existing split and this is the
+		// second thing to lean on it, so the two cannot disagree about which
+		// categories are an attack.
+		if !kind.Category.Harmful() {
+			return fail("resists %q, which is a %s: there is nothing to refuse in a status the holder's own side puts on it",
+				kind.ID, kind.Category)
+		}
+		if resist.Amount < 1 || resist.Amount > scale.Base {
+			return fail("resists %q by %d, want a share in parts per thousand",
+				kind.ID, resist.Amount)
+		}
+		if slices.ContainsFunc(resists, func(seen Resistance) bool { return seen.Status == kind.ID }) {
+			return fail("resists %q twice; say one share instead", kind.ID)
+		}
+		resists = append(resists, Resistance{Status: kind.ID, Amount: resist.Amount})
+	}
+
 	return Passive{
-		ID: declared.ID, Name: strings.TrimSpace(declared.Name), Grants: grants,
+		ID: declared.ID, Name: strings.TrimSpace(declared.Name),
+		Grants: grants, Resists: resists,
 	}, nil
+}
+
+// Refuses is the share of an application's chance the passive takes off, for one
+// status, or nought when it says nothing about it.
+func (p Passive) Refuses(statusID string) int {
+	for _, resist := range p.Resists {
+		if resist.Status == statusID {
+			return resist.Amount
+		}
+	}
+	return 0
 }
 
 // Lookup returns a declared passive, or says which one is missing.
@@ -177,6 +261,7 @@ func (b *Book) All() []Passive {
 	copy(out, b.passives)
 	for i := range out {
 		out[i].Grants = slices.Clone(out[i].Grants)
+		out[i].Resists = slices.Clone(out[i].Resists)
 	}
 	return out
 }
@@ -199,8 +284,16 @@ func (b *Book) Marshal() ([]byte, error) {
 		for _, grant := range current.Grants {
 			grants = append(grants, grantFile{Status: grant.Status, Stacks: grant.Stacks})
 		}
+		// Written only when there are any, so a trait that resists nothing
+		// round-trips to the bytes it was authored as — the same reason the name
+		// is omitted when there is none.
+		var resists []resistanceFile
+		for _, resist := range current.Resists {
+			resists = append(resists,
+				resistanceFile{Status: resist.Status, Amount: resist.Amount})
+		}
 		file.Passives = append(file.Passives, passiveFile{
-			ID: current.ID, Name: current.Name, Grants: grants,
+			ID: current.ID, Name: current.Name, Grants: grants, Resists: resists,
 		})
 	}
 	out, err := json.MarshalIndent(file, "", "  ")

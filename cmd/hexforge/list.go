@@ -9,6 +9,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/forge"
 )
 
@@ -131,7 +132,7 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		fmt.Fprintln(out, "no passives declared")
 		return
 	}
-	rendered := newTable("id", "name", "grants")
+	rendered := newTable("id", "name", "grants", "resists")
 	for _, held := range passives {
 		grants := make([]string, 0, len(held.Grants))
 		for _, grant := range held.Grants {
@@ -141,11 +142,26 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 			}
 			grants = append(grants, grant.Status)
 		}
-		rendered.add(held.ID, held.Name, strings.Join(grants, ", "))
+		// A full thousand reads as "immune" rather than as a number: it is the
+		// one value that is a fact about the holder rather than a share, and a
+		// trait whose whole purpose is an immunity should not make a reader
+		// divide by ten to find that out.
+		resists := make([]string, 0, len(held.Resists))
+		for _, resist := range held.Resists {
+			if resist.Amount >= scale.Base {
+				resists = append(resists, resist.Status+" (immune)")
+				continue
+			}
+			resists = append(resists,
+				fmt.Sprintf("%s %s", resist.Status, forge.Percent(resist.Amount)))
+		}
+		rendered.add(held.ID, held.Name,
+			strings.Join(grants, ", "), strings.Join(resists, ", "))
 	}
 	rendered.render(out)
 	fmt.Fprint(out, "\na trait is in force from the moment its holder is enlisted, and nothing takes it off:\n"+
-		"every status it grants is declared permanent, so it has no duration and no cleanse reaches it.\n")
+		"every status it grants is declared permanent, so it has no duration and no cleanse reaches it.\n"+
+		"a resistance takes its share off an incoming application's chance, so a full share never lands.\n")
 }
 
 func renderArchetypes(out io.Writer, lib *forge.Library) {

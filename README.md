@@ -354,6 +354,63 @@ of what belongs on a roster entry has always been "does a replay read it", not "
 it small": an archetype and an evolution stage are settled *before* a battle and
 leave nothing behind but numbers, while a trait is in force during one.
 
+### A trait can refuse a status
+
+A trait may also **resist** one, which is the only thing a passive does that had
+no home already. A stat change reuses `status.Kind.Modifiers`, so the trait grants
+and the existing code does the rest; nothing in the engine could say *no* to an
+application, and the roll that decided one belonged entirely to the skill making
+it.
+
+```json
+{ "id": "venom_blood", "grants": [], "resists": [{ "status": "poison", "amount": 1000 }] }
+```
+
+**The choke point is `battle.inflict`, not `status.Set.Apply`.** Apply is where
+every status passes through, which makes it the obvious place and the wrong one:
+it has no dice, so a resistance living there could only refuse outright. That is a
+hard cap on a continuous quantity, which this engine has rejected everywhere —
+buffs saturate, piercing is a share, dodge approaches a floor it never reaches.
+`inflict` is where the chance is rolled, so a resistance there is a share of a
+probability.
+
+**A full thousand is the explicit way to write immunity**, and it is available
+only to whoever authors it. Sources compose by multiplying what each lets through
+— two resistances of six hundred leave sixteen percent rather than none — so
+stacking diminishes for free, needs no saturation helper, and can never reach the
+absolute. That is the same division as a skill declaring full accuracy: certain if
+you write it, never if you stack towards it. A single resistance is exact, which is
+the case worth being exact in.
+
+**By status, not by category.** A category would be tidier — `Cleanse` takes
+categories, for good reason — but it cannot say the thing that is wanted. "Immune
+to poison" as a category is "immune to every damage-over-time", which hands the
+holder immunity to burn as well. An id can name a class by listing it; a category
+can never name one member of one. Only a **harmful** category may be resisted:
+`Harmful()` is the existing split, and a trait refusing a buff would be refusing
+its own side's help.
+
+**And the log had to learn to tell two refusals apart.** `status_resisted` is
+emitted whether the roll failed or the target refused it, so the event now carries
+the share refused, and the renderer says which:
+
+```
+A1  E1 resists poison (40%)                    the roll failed
+A1  E1 shrugs off poison (40% chance, 60% refused)
+A1  E1 is immune to poison
+```
+
+Without that a reader is handed the word "resisted" and no way to tell a piece of
+luck from a property of the unit — which is exactly the confusion the feature had
+to be explained out of.
+
+`venom_blood` is declared and **carried by nobody**, the way `pierce` shipped. Put
+on Bulbasaur it is canon, and measured across forty auto-battles it takes the whole
+poison layer out of the shipped fight: 183 applications become 0, along with every
+damage-over-time tick and every `venoshock` amplifier. That is the mirrored roster
+rather than the trait — both sides are the same poison-immune character — so it
+waits for a roster whose two sides differ.
+
 ### A trait comes in at a level
 
 A character does not simply hold its traits; it holds each **from a level
@@ -777,10 +834,11 @@ sequence, and two identical battles must still produce identical logs.
 
 ### What a passive still cannot do
 
-Traits exist — see *Passives* above — and one of the four things a passive is
-normally asked to do is built. The other three, which are also step 2 of the
-order under *Learnsets, slots, and choosing to evolve*: a trait slot is only a
-decision once traits differ in kind rather than in number.
+Traits exist — see *Passives* above — and two of the four things a passive is
+normally asked to do are built: a stat change, and refusing a status. The other
+two, which are also step 2 of the order under *Learnsets, slots, and choosing to
+evolve*: a trait slot is only a decision once traits differ in kind rather than in
+number.
 
 - **Add an effect to what the unit already does.** `skill.Application` is the
   existing shape for "this inflicts that, at a fixed chance". A trait
@@ -792,15 +850,6 @@ decision once traits differ in kind rather than in number.
   how the two drift apart. What it cannot express is the condition a trait most
   often wants: *while the holder is below a share of its health*. That is a new
   term, and deciding it is the work.
-- **Immunity, or resistance.** Still the one with nowhere to live: nothing can
-  refuse an application. The choke point is `battle.inflict`, where the chance is
-  rolled, rather than `status.Set.Apply` — a resistance that reduced a **chance**
-  is continuous and saturates like everything else here, while one that refused
-  an application outright is a hard cap on a continuous quantity, which this
-  engine has rejected everywhere else. The shape that follows: resistance is a
-  ratio in parts per thousand against a `status.Category`, and a declared full
-  thousand is the explicit way to write true immunity — the mirror of a skill
-  declaring full accuracy, which is how "this must land" is already written.
 
 Whatever comes next keeps the two constraints the first slice was built under: a
 trait that changes a number **emits an event**, and one that touches speed is in

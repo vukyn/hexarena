@@ -120,7 +120,10 @@ func books(t *testing.T) battle.Books {
 	}
 	passives, err := passive.ParseBook([]byte(`{"passives":[
 	  {"id":"swift","name":"nhanh nhẹn","grants":[{"status":"fleet","stacks":1}]},
-	  {"id":"hardy","grants":[{"status":"toughened","stacks":2}]}
+	  {"id":"hardy","grants":[{"status":"toughened","stacks":2}]},
+	  {"id":"clean_blood","grants":[],"resists":[{"status":"poison","amount":1000}]},
+	  {"id":"thick_blood","grants":[],"resists":[{"status":"poison","amount":600}]},
+	  {"id":"cold_blood","grants":[],"resists":[{"status":"poison","amount":600}]}
 	]}`), passive.Deps{Statuses: statuses})
 	if err != nil {
 		t.Fatalf("passives: %v", err)
