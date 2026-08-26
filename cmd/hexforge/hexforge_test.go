@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
@@ -123,7 +124,7 @@ func TestFillRePromptsOnABadAnswer(t *testing.T) {
 	if character.Stages[0].Stats != preset.Stats {
 		t.Error("pressing Enter through the curves did not take the preset")
 	}
-	if !reflect.DeepEqual(character.Skills, preset.Skills) {
+	if !reflect.DeepEqual(cast.LearnedIDs(character.Skills), preset.Skills) {
 		t.Errorf("pressing Enter through the kit gave %v", character.Skills)
 	}
 }
@@ -234,7 +235,7 @@ func TestFillWithoutATerminalTakesEveryDefault(t *testing.T) {
 		t.Fatalf("resolve: %v", err)
 	}
 	preset, _ := lib.Archetypes().Get("duelist")
-	if !reflect.DeepEqual(character.Skills, preset.Skills) {
+	if !reflect.DeepEqual(cast.LearnedIDs(character.Skills), preset.Skills) {
 		t.Errorf("the kit is %v, want the preset's %v", character.Skills, preset.Skills)
 	}
 	if character.Stages[0].Stats != preset.Stats {
@@ -285,7 +286,7 @@ func TestFillFallsBackWhenStdinEnds(t *testing.T) {
 	if character.Stages[0].Stats != preset.Stats {
 		t.Error("the curves after the input ended are not the preset's")
 	}
-	if !reflect.DeepEqual(character.Skills, preset.Skills) {
+	if !reflect.DeepEqual(cast.LearnedIDs(character.Skills), preset.Skills) {
 		t.Errorf("the kit after the input ended is %v", character.Skills)
 	}
 
@@ -342,7 +343,7 @@ func TestNewRunsEndToEndThroughAPipe(t *testing.T) {
 		t.Fatal("the character was not written")
 	}
 	preset, _ := lib.Archetypes().Get("sentinel")
-	if !reflect.DeepEqual(written.Skills, preset.Skills) {
+	if !reflect.DeepEqual(cast.LearnedIDs(written.Skills), preset.Skills) {
 		t.Errorf("the written kit is %v, want the preset's %v", written.Skills, preset.Skills)
 	}
 	if written.Stages[0].Stats != preset.Stats {

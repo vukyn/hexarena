@@ -211,6 +211,21 @@ func passives(t *testing.T) *passive.Book {
 
 // baseCharacter is a character that parses, for the same reason
 // baseArchetype exists.
+// learn is a skills declaration in the shape the parser reads it: a learnset,
+// every entry known from level one unless a case says otherwise.
+//
+// The tests here are about everything *except* when a skill is learned — a
+// restriction, an element, a duplicate — so writing {"id": ...} out eleven times
+// would bury what each case is actually asking. A case that is about the level
+// writes the entries itself.
+func learn(ids ...string) []map[string]any {
+	out := make([]map[string]any, 0, len(ids))
+	for _, id := range ids {
+		out = append(out, map[string]any{"id": id})
+	}
+	return out
+}
+
 func baseCharacter() map[string]any {
 	return map[string]any{
 		"id": "a-series.warden", "name": "Warden",
@@ -219,7 +234,7 @@ func baseCharacter() map[string]any {
 		"stages": []map[string]any{
 			{"name": "Warden", "min_level": 1, "stats": table()},
 		},
-		"skills": []string{"strike", "riptide"},
+		"skills": learn("strike", "riptide"),
 	}
 }
 
@@ -299,17 +314,17 @@ func TestParseBookRejections(t *testing.T) {
 		},
 		{
 			name:   "unknown skill",
-			change: func(entry map[string]any) { entry["skills"] = []string{"strike", "meteor"} },
+			change: func(entry map[string]any) { entry["skills"] = learn("strike", "meteor") },
 			wantIn: "unknown skill",
 		},
 		{
 			name:   "empty skill list",
-			change: func(entry map[string]any) { entry["skills"] = []string{} },
+			change: func(entry map[string]any) { entry["skills"] = learn() },
 			wantIn: "knows no skills",
 		},
 		{
 			name:   "duplicate skill",
-			change: func(entry map[string]any) { entry["skills"] = []string{"strike", "strike"} },
+			change: func(entry map[string]any) { entry["skills"] = learn("strike", "strike") },
 			wantIn: "twice",
 		},
 		{
@@ -390,7 +405,7 @@ func TestParseBookRejections(t *testing.T) {
 			// same call, so a character that writes cleanly here is a character
 			// that loads.
 			name:   "a kit the affinity cannot carry",
-			change: func(entry map[string]any) { entry["skills"] = []string{"strike", "ember_lance"} },
+			change: func(entry map[string]any) { entry["skills"] = learn("strike", "ember_lance") },
 			wantIn: "cannot carry",
 		},
 		{
@@ -655,7 +670,7 @@ func TestMarshalIsStableAndReParses(t *testing.T) {
 	second["origin"] = "a-game"
 	second["image"] = "assets/a-game/emberling.png"
 	second["element"] = "fire"
-	second["skills"] = []string{"ember_lance"}
+	second["skills"] = learn("ember_lance")
 	// Two stages, one with its own picture and one without, so the trip covers
 	// both halves of an optional field: the one that has to survive it and the
 	// one that has to stay absent.
@@ -773,7 +788,7 @@ func TestAppendValidatesBeforeItAccepts(t *testing.T) {
 	}
 	broken, _ := book.Get("a-series.warden")
 	broken.ID = "a-series.other"
-	broken.Skills = []string{"meteor"}
+	broken.Skills = cast.Learn([]string{"meteor"})
 	if _, err := book.Append(deps(t), broken); err == nil {
 		t.Error("a character naming an unknown skill was appended")
 	}
@@ -849,10 +864,10 @@ func TestBookDoesNotHandOutItsInternals(t *testing.T) {
 		t.Fatalf("parse: %v", err)
 	}
 	borrowed, _ := book.Get("a-series.warden")
-	borrowed.Skills[0] = "meteor"
+	borrowed.Skills[0].ID = "meteor"
 	borrowed.Stages[0].Name = "vandalised"
 	again, _ := book.Get("a-series.warden")
-	if again.Skills[0] != "strike" {
+	if again.Skills[0].ID != "strike" {
 		t.Errorf("the book's kit was edited through Get: %v", again.Skills)
 	}
 	if again.Stages[0].Name != "Warden" {
@@ -947,7 +962,7 @@ func TestCarryRuleAcceptsWhatTheKitAllows(t *testing.T) {
 	entry := baseCharacter()
 	// riptide is water and gale_slash is wind; water and wind do not counter
 	// each other, so the pair is a legal affinity and carries both.
-	entry["skills"] = []string{"strike", "riptide", "gale_slash"}
+	entry["skills"] = learn("strike", "riptide", "gale_slash")
 	entry["element"] = []string{"water", "wind"}
 	if _, err := parse(t, entry); err != nil {
 		t.Fatalf("a dual affinity covering its kit was refused: %v", err)
@@ -1063,13 +1078,13 @@ func ghost(kit ...string) map[string]any {
 	built["name"] = "Ghost"
 	built["image"] = "assets/a-series/ghost.svg"
 	built["stages"] = []map[string]any{{"name": "Ghost", "min_level": 1, "stats": table()}}
-	built["skills"] = kit
+	built["skills"] = learn(kit...)
 	return built
 }
 
 func withKit(kit ...string) map[string]any {
 	built := baseCharacter()
-	built["skills"] = kit
+	built["skills"] = learn(kit...)
 	return built
 }
 

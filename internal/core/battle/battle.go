@@ -77,16 +77,20 @@ func (b Books) validate() error {
 
 // Roster is one unit as it enters a battle, with its evolution and level already
 // resolved into flat stats.
+// The tags are here because a roster is written to a log, and a log is a file
+// somebody reads. Without them the placement would come out in Go's field names
+// while every other file this repository writes is snake case — the same record
+// spelled two ways depending on which layer produced it.
 type Roster struct {
-	ID   string
-	Name string
-	Side hex.Side
+	ID   string   `json:"id"`
+	Name string   `json:"name,omitempty"`
+	Side hex.Side `json:"side"`
 	// Slot is the formation slot the unit occupies, authored from its own side's
 	// point of view. hex.Place maps it onto the shared board.
-	Slot     hex.Offset
-	Affinity element.Affinity
-	Stats    progression.Values
-	Skills   []string
+	Slot     hex.Offset         `json:"slot"`
+	Affinity element.Affinity   `json:"element"`
+	Stats    progression.Values `json:"stats"`
+	Skills   []string           `json:"skills"`
 	// Passives are the traits the unit holds, by id in the passive book.
 	//
 	// This is the first thing on a roster entry that is neither a stat nor a
@@ -95,7 +99,7 @@ type Roster struct {
 	// behind but numbers, while a passive is in force during one and a replay has
 	// to know about it. The test of what belongs on a Roster has always been
 	// "does a replay read it", not "is it small".
-	Passives []string
+	Passives []string `json:"passives,omitempty"`
 }
 
 // Unit is a combatant's mutable state.

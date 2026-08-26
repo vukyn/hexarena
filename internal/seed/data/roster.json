@@ -8,6 +8,15 @@
       "slot": [
         2,
         1
+      ],
+      "skills": [
+        "razor_leaf",
+        "sludge_bomb",
+        "venoshock",
+        "leech_seed"
+      ],
+      "passives": [
+        "venom_blood"
       ]
     },
     {
@@ -18,6 +27,15 @@
       "slot": [
         1,
         0
+      ],
+      "skills": [
+        "water_gun",
+        "bubble",
+        "bite",
+        "whirlpool"
+      ],
+      "passives": [
+        "endurance"
       ]
     },
     {
@@ -28,6 +46,11 @@
       "slot": [
         1,
         1
+      ],
+      "skills": [
+        "ember",
+        "fire_spin",
+        "fire_fang"
       ]
     },
     {
@@ -38,6 +61,15 @@
       "slot": [
         2,
         1
+      ],
+      "skills": [
+        "hydro_pump",
+        "brine",
+        "water_gun",
+        "whirlpool"
+      ],
+      "passives": [
+        "endurance"
       ]
     },
     {
@@ -48,6 +80,15 @@
       "slot": [
         1,
         0
+      ],
+      "skills": [
+        "flamethrower",
+        "dragon_rage",
+        "fire_spin",
+        "fire_fang"
+      ],
+      "passives": [
+        "blaze"
       ]
     },
     {
@@ -58,6 +99,15 @@
       "slot": [
         1,
         1
+      ],
+      "skills": [
+        "razor_leaf",
+        "vine_whip",
+        "poison_powder",
+        "leech_seed"
+      ],
+      "passives": [
+        "venom_blood"
       ]
     }
   ]

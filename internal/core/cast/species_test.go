@@ -194,7 +194,7 @@ func TestASkillKeptForALineageAsksWhatTheCarrierIs(t *testing.T) {
 			if test.species != nil {
 				declared["species"] = test.species
 			}
-			declared["skills"] = []string{"strike", "lineage_roar"}
+			declared["skills"] = learn("strike", "lineage_roar")
 			book, err := parse(t, declared)
 			switch {
 			case test.refused && err == nil:
@@ -232,7 +232,7 @@ func TestASkillKeptForAnUnknownSpeciesIsRefusedByItsCarrier(t *testing.T) {
 	}
 	declared := baseCharacter()
 	declared["species"] = []string{"dragon"}
-	declared["skills"] = []string{"strike", "lineage_roar"}
+	declared["skills"] = learn("strike", "lineage_roar")
 	raw, err := json.Marshal(map[string]any{"characters": []map[string]any{declared}})
 	if err != nil {
 		t.Fatalf("marshal: %v", err)

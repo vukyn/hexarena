@@ -1,9 +1,11 @@
 package seed_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/testfixture"
 )
@@ -182,8 +185,8 @@ func TestEveryShippedCharacterNamesSomethingReal(t *testing.T) {
 		if _, known := archetypes.Get(character.Archetype); !known {
 			t.Errorf("%s was tuned from the unknown archetype %q", character.ID, character.Archetype)
 		}
-		for _, id := range character.Skills {
-			if _, err := skills.Lookup(id); err != nil {
+		for _, entry := range character.Skills {
+			if _, err := skills.Lookup(entry.ID); err != nil {
 				t.Errorf("%s: %v", character.ID, err)
 			}
 		}
@@ -276,14 +279,14 @@ func TestEveryShippedCharacterMayCarryItsKit(t *testing.T) {
 		t.Fatalf("load shipped skills: %v", err)
 	}
 	for _, character := range mustCast(t).All() {
-		for _, id := range character.Skills {
-			known, err := skills.Lookup(id)
+		for _, entry := range character.Skills {
+			known, err := skills.Lookup(entry.ID)
 			if err != nil {
 				t.Fatalf("%s: %v", character.ID, err)
 			}
 			if !skill.CanCarry(character.Element, known) {
 				t.Errorf("%s is %s and carries %s, which is %s: battle.New will refuse it",
-					character.ID, character.Element, id, known.Element)
+					character.ID, character.Element, entry.ID, known.Element)
 			}
 		}
 	}
@@ -300,7 +303,7 @@ func TestEveryShippedCharacterCoversItsPresetDemand(t *testing.T) {
 			t.Errorf("%s names the unknown preset %q", character.ID, character.Archetype)
 			continue
 		}
-		if !sameStrings(character.Skills, preset.Skills) {
+		if !sameStrings(cast.LearnedIDs(character.Skills), preset.Skills) {
 			// A substituted kit is allowed; only the kit it actually carries
 			// binds it, and the test above covers that.
 			continue
@@ -355,6 +358,23 @@ func TestShippedOriginsAreUsable(t *testing.T) {
 // It names no character: it asks the shipped book for one. Naming a row coupled
 // this test to content the author is free to change, and editing the cast broke
 // tests that had nothing to do with it.
+// loadoutOf is the first few skills a character has learned by a level, as the
+// JSON a placement writes. A test that only wants a roster to parse should not
+// have to know which four to bring — but it does have to bring some, because a
+// placement is a choice and this file is where that rule is exercised.
+func loadoutOf(t *testing.T, character cast.Character, level int) string {
+	t.Helper()
+	known := character.SkillsAt(level)
+	if len(known) > seed.SkillSlots {
+		known = known[:seed.SkillSlots]
+	}
+	raw, err := json.Marshal(known)
+	if err != nil {
+		t.Fatalf("marshal a loadout: %v", err)
+	}
+	return string(raw)
+}
+
 func referenceRoster(t *testing.T, characters *cast.Book) ([]byte, cast.Character) {
 	t.Helper()
 	held := characters.All()
@@ -364,12 +384,13 @@ func referenceRoster(t *testing.T, characters *cast.Book) ([]byte, cast.Characte
 	first := held[0]
 	// One on each side, because a battle needs an opponent and a cast of one is
 	// the smallest a shipped book is allowed to be.
+	loadout := loadoutOf(t, first, progression.LevelCap)
 	return []byte(fmt.Sprintf(`{
   "units": [
-    {"id": "ally.one", "character": %q, "level": 60, "side": "ally", "slot": [2, 1]},
-    {"id": "foe.one", "character": %q, "level": 60, "side": "enemy", "slot": [2, 1]}
+    {"id": "ally.one", "character": %q, "level": 60, "side": "ally", "slot": [2, 1], "skills": %s},
+    {"id": "foe.one", "character": %q, "level": 60, "side": "enemy", "slot": [2, 1], "skills": %s}
   ]
-}`, first.ID, first.ID)), first
+}`, first.ID, loadout, first.ID, loadout)), first
 }
 
 func TestParseRosterResolvesACharacterReference(t *testing.T) {
@@ -395,8 +416,13 @@ func TestParseRosterResolvesACharacterReference(t *testing.T) {
 	if roster[0].Affinity.String() != adept.Element.String() {
 		t.Errorf("the placement is %s, the character is %s", roster[0].Affinity, adept.Element)
 	}
-	if strings.Join(roster[0].Skills, " ") != strings.Join(adept.Skills, " ") {
-		t.Errorf("the placement carries %v, the character knows %v", roster[0].Skills, adept.Skills)
+	// A placement chooses from what the character knows rather than carrying all
+	// of it, so what is checked is that every chosen skill is one the character
+	// has — the loadout itself is the placement's decision, not the sheet's.
+	for _, carried := range roster[0].Skills {
+		if !slices.Contains(cast.LearnedIDs(adept.Skills), carried) {
+			t.Errorf("the placement carries %q, which %s never learns", carried, adept.ID)
+		}
 	}
 	// A reference resolves the whole evolution line, not the last stage. The
 	// level comes from the character's own line rather than a number written
@@ -406,9 +432,9 @@ func TestParseRosterResolvesACharacterReference(t *testing.T) {
 		second := adept.Stages[1]
 		staged := []byte(fmt.Sprintf(`{
   "units": [
-    {"id": "ally.one", "character": %q, "level": %d, "side": "ally", "slot": [2, 1]}
+    {"id": "ally.one", "character": %q, "level": %d, "side": "ally", "slot": [2, 1], "skills": %s}
   ]
-}`, adept.ID, second.MinLevel))
+}`, adept.ID, second.MinLevel, loadoutOf(t, adept, second.MinLevel)))
 		placed, err := seed.ParseRoster(staged, characters)
 		if err != nil {
 			t.Fatalf("parse at the stage boundary: %v", err)
@@ -460,7 +486,7 @@ func TestParseRosterRejections(t *testing.T) {
 			name: "a character reference that also restates its element and skills",
 			raw: `{"units": [{"id": "a", "character": "fixture-anime.adept", "level": 60,
 			       "side": "ally", "slot": [2, 1], "element": "fire", "skills": ["strike"]}]}`,
-			wantIn: "restates [element skills]",
+			wantIn: "restates [element]",
 		},
 		{
 			name:   "a character reference with no level",
@@ -683,7 +709,7 @@ func castReport(characters *cast.Book, origins *cast.OriginBook, limits progress
 		}
 		fmt.Fprintf(&b, "  species  %s\n", kinds)
 		fmt.Fprintf(&b, "  art      %s\n", character.Image)
-		fmt.Fprintf(&b, "  kit      %s\n", strings.Join(character.Skills, " "))
+		fmt.Fprintf(&b, "  kit      %s\n", forge.UnlockSummary(character.Skills))
 		for i, stage := range character.Stages {
 			// A stage is reported over the levels it actually owns, not up to
 			// the cap: a stage that is superseded at 30 never reaches level 60,

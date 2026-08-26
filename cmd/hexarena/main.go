@@ -84,8 +84,13 @@ func parseSide(name string) (hex.Side, error) {
 // the engine is deterministic, dropping the last decision and replaying the rest
 // rebuilds exactly the position the battle was in.
 type session struct {
-	cfg    config
-	fight  *battle.Battle
+	cfg   config
+	fight *battle.Battle
+	// roster is the placement this battle was fought with, kept because the log
+	// records it and because a rewind rebuilds from it. Reading the data again
+	// would work today and would stop working the moment a placement is chosen
+	// at a prompt rather than read out of a file.
+	roster []battle.Roster
 	tags   map[string]string
 	names  map[string]string
 	script battle.Script
@@ -98,16 +103,25 @@ type session struct {
 }
 
 func newSession(cfg config) (*session, error) {
-	fight, err := seed.NewBattle(cfg.seed)
+	books, err := seed.Books()
+	if err != nil {
+		return nil, err
+	}
+	roster, err := seed.Roster()
+	if err != nil {
+		return nil, err
+	}
+	fight, err := battle.New(books, cfg.seed, roster)
 	if err != nil {
 		return nil, err
 	}
 	fight.Begin()
 	current := &session{
-		cfg:   cfg,
-		fight: fight,
-		tags:  tui.Tags(fight.Units()),
-		names: tui.Names(fight.Units()),
+		cfg:    cfg,
+		fight:  fight,
+		roster: roster,
+		tags:   tui.Tags(fight.Units()),
+		names:  tui.Names(fight.Units()),
 	}
 	current.collect()
 	return current, nil
@@ -126,7 +140,14 @@ func (s *session) collect() {
 // rewind rebuilds the battle from its seed and replays a shortened script. It is
 // the whole of undo: no snapshot, no deep copy, just the seed and the decisions.
 func (s *session) rewind(script battle.Script) error {
-	fight, err := seed.NewBattle(s.cfg.seed)
+	books, err := seed.Books()
+	if err != nil {
+		return err
+	}
+	// The roster this battle was fought with, not the one on disk. An undo that
+	// re-read the data would quietly field a different squad the moment the data
+	// changed underneath a running game.
+	fight, err := battle.New(books, s.cfg.seed, s.roster)
 	if err != nil {
 		return err
 	}
@@ -275,7 +296,8 @@ func finish(current *session) error {
 		return nil
 	}
 	raw, err := battle.MarshalLog(battle.Log{
-		Seed: current.cfg.seed, Choices: current.script, Events: current.events,
+		Seed: current.cfg.seed, Roster: current.roster,
+		Choices: current.script, Events: current.events,
 	})
 	if err != nil {
 		return err
@@ -481,7 +503,20 @@ func replay(cfg config) error {
 }
 
 func verify(log battle.Log, limit int) error {
-	fight, err := seed.NewBattle(log.Seed)
+	if !log.Replayable() {
+		return fmt.Errorf(
+			"this log records no placement, so there is nothing to re-run it with: " +
+				"it was written before a placement was a choice, and re-running the shipped " +
+				"roster against it would compare two different battles")
+	}
+	books, err := seed.Books()
+	if err != nil {
+		return err
+	}
+	// From the log's own roster rather than the shipped one. That is the whole
+	// point of recording it: the battle being checked is the battle that was
+	// fought, not whatever the data says today.
+	fight, err := battle.New(books, log.Seed, log.Roster)
 	if err != nil {
 		return err
 	}

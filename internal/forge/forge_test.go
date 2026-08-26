@@ -374,7 +374,7 @@ func TestResolveTakesTheArchetypeCurveAndKit(t *testing.T) {
 	if character.Stages[0].Stats != preset.Stats {
 		t.Error("the stat curve is not the archetype's")
 	}
-	if !reflect.DeepEqual(character.Skills, preset.Skills) {
+	if !reflect.DeepEqual(cast.LearnedIDs(character.Skills), preset.Skills) {
 		t.Errorf("the kit is %v, want the archetype's %v", character.Skills, preset.Skills)
 	}
 
@@ -396,7 +396,7 @@ func TestResolveTakesTheArchetypeCurveAndKit(t *testing.T) {
 	if got := tuned.Stages[0].Stats[progression.HP]; got != preset.Stats[progression.HP] {
 		t.Errorf("overriding speed also changed health to %+v", got)
 	}
-	if !reflect.DeepEqual(tuned.Skills, []string{"strike", "bolt"}) {
+	if !reflect.DeepEqual(cast.LearnedIDs(tuned.Skills), []string{"strike", "bolt"}) {
 		t.Errorf("the kit is %v, want the two skills that were named", tuned.Skills)
 	}
 
@@ -1370,7 +1370,7 @@ func TestAnEditThatWouldOrphanAShippedCharacterIsRefused(t *testing.T) {
 		t.Fatalf("look up riptide: %v", err)
 	}
 	carrier, holds := lib.Characters().Get("fixture-anime.adept")
-	if !holds || !slices.Contains(carrier.Skills, "riptide") {
+	if !holds || !slices.Contains(cast.LearnedIDs(carrier.Skills), "riptide") {
 		t.Skip("the shipped cast no longer has a character carrying riptide")
 	}
 

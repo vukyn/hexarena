@@ -1057,12 +1057,13 @@ is the constraint each piece has to respect.
       `Replies`, which is built.
       ⚠️ **Circular, so choose rather than discover it**: a character brings every
       trait it has, so all five pieces make ONE better unit, not two different
-      ones — choosing needs the **trait slot** (*Learnsets, slots*), and that entry
+      ones — choosing needs the **trait slot** (*Learnsets and slots*, built), and that entry
       says a slot is only a decision once traits differ in **kind**. Suggested
-      order: amplify a status → trait slot. The gate, the reply and the drain have
-      all left that list; the slot is worth more for it, because the traits now
-      differ in **kind** — a resistance, a gated grant, a reply and a drain are
-      four different sorts of thing to choose between.
+      order: nothing. The gate, the reply, the drain, the amplifier **and** the
+      trait slot are all built, so the five pieces are five things a placement now
+      chooses **one** of — a resistance, a gated grant, a reply, a drain and an
+      amplifier are five different sorts of thing, which is exactly the "differ in
+      kind" the slot was waiting for. What is left is putting them on characters.
       See README → *Two builds for one character*.
 - [x] **Answering back — the fifth job.** `venom_blood` now costs whatever bit
       into it: `"replies": {"power": 40, "applies": [{"status":"poison","chance":25}]}`.
@@ -1114,46 +1115,53 @@ is the constraint each piece has to respect.
       identically, else the AI prefers a bonus it does not get. Still absent: the
       **gradient** (harder the further the *caster* fell) — a multiplier in
       `combat`, reads the other unit, a separate feature.
-- [ ] **Learnsets, slots, and choosing to evolve.** A character holds every skill
-      *and every trait* from level one and brings all of them, so a level is the
-      only thing separating a young unit from a grown one. **Skills and traits are
-      one mechanism here, not two**: both are "declare many, unlock by
-      progression, bring some", so it is one `{id, at_level}` shape, one
-      validator and one availability function, used by a kit with four slots and a
-      trait list with one. Building a second unlock system for traits would be
-      two vocabularies for one idea. Four pieces, one mechanism: a **learnset**
-      (`{id, at_level}`, or `at_stage` for one only a later form can hold, which
-      is what makes evolving *unlock* rather than merely raise numbers — but
-      ⚠️ **`at_stage` cannot be built before chosen evolution**, because
-      `Line.StageAt` derives a stage from a level today, so `at_stage: "Ivysaur"`
-      *is* `at_level: 16` and nothing else); **slots** on a placement, four skills
-      and one trait, refused at load if it names something unlearned, too many, or
-      one twice — and note **gating is separable from slots and much cheaper**, so
-      a first slice can gate traits and bring every unlocked one, which is not a
-      choice and needs no log change. **Order: (1) gate the traits — DONE**,
-      `cast.Unlock` settled on the smaller list; **(2) the passive jobs that make a
-      slot a decision — DONE**, since a slot between three stat traits is not a
-      choice while a resistance, a rider or a gated trait is, and all of those now
-      exist; **(3) the slots and the log carrying the placement**, which is now the
-      next thing rather than the third. Then **a chosen stage** —
-      `Line.StageAt` derives one from a level today, and a level should instead
-      *allow* one while the placement names which it fielded, so
-      `Resolve(level)` becomes `Resolve(level, stage)`; and **no condition beyond
-      a level**, because items, friendship and battles-fought all need somewhere
-      to persist and there is no meta layer, no inventory and no save. Three
-      things to face: **the log must carry the placement** or `--verify` compares
-      two different battles once the loadout and stage are choices (and a log
-      becomes portable across a data edit, which it is not today); **four slots
-      is a per-turn nerf sized by cooldowns** — a skill at cooldown N gives
-      `1/(N+1)` actions per turn, so level one with cooldowns 1 and 4 idles 30% of
-      its turns, which compounds the stalemate gap above and makes a
-      low-cooldown basic near-mandatory (`strike` at cooldown zero was that, and
-      is retired); and **choosing not to evolve is strictly worse as designed**,
-      since stage curves only rise, so the choice is decorative unless an earlier
-      stage can learn something the later one cannot. **The engine learns none of
-      it** — `battle.Roster` still takes a resolved kit and a resolved stat line,
-      because a learnset and a stage settle before a battle exactly as evolution
-      already does. See README → Roadmap.
+- [x] **Learnsets and slots.** A character now holds a **learnset** —
+      `Character.Skills` is `[]cast.Unlock`, the *same type as the traits* — and a
+      placement **chooses** from it: `SkillSlots = 4`, `TraitSlots = 1`, in
+      `internal/seed/roster.go`. One `{id, at_level}` shape, one validator, one
+      `UnlockedIDs`, and even one renderer (`forge.UnlockSummary` draws a kit and a
+      trait list alike, `razor_leaf poison_powder@8`).
+      ⚠️ **`skills`/`passives` on a reference entry changed meaning**: they used to
+      be a restatement of the character sheet and were REFUSED as one; they are now
+      the loadout. Refused instead: naming nothing (a slot is a decision — no
+      default), naming more than the slots hold, naming one twice, naming what the
+      level has not learned. A refusal lists what *was* available.
+      ⚠️ **The kit is required and the trait slot is not**, and that asymmetry is
+      deliberate: a unit with no skills cannot act, so an empty kit is never a
+      choice; a unit with no trait is ordinary, so insisting would make "the plain
+      version" unwritable. `required`/`optional` are named constants at the call
+      site for exactly this.
+      ⚠️ **An archetype's kit stays `[]string`** — a preset has no level to gate
+      against, so it is a suggestion for authoring; `cast.Learn` turns it into a
+      learnset when hexforge builds a character from it, all at level 1.
+      **`battle.Roster` is unchanged** and still takes a resolved kit: a learnset
+      settles before a battle exactly as an evolution does.
+      **The log now carries the placement.** `battle.Log.Roster` holds the resolved
+      roster and `--verify` rebuilds from it, because once a placement picks four
+      of nine, re-running the embedded data would compare two different battles and
+      call the difference corruption. It carries the RESOLVED form, which makes a
+      log readable across a data edit. `Log.Replayable()` is false for a log
+      written before this: it still renders (that reads events only) and refuses to
+      verify, saying why. `battle.Roster` gained json tags so the log is snake case
+      like every other file here.
+      **Measured, 4000 seeds:** roster **49.5%** ally (was 51.9 before slots), 0
+      stalls, longest 63, and only **2.2%** of turns idle — not the 30% the design
+      note predicted, because that was a level-1 two-skill unit and the youngest
+      shipped unit is level 8 with three. ⚠️ Pierce flipped sign *again*: 49.2→46.5
+      before replies, 51.9→53.0 with them, **49.5→46.0** with slots. **No balance
+      figure carries across a feature.**
+- [ ] **Choosing to evolve.** `Line.StageAt` derives a stage from a level and
+      there is no decision in it; a level should *allow* a stage and the placement
+      name which it fielded, so `Resolve(level)` becomes `Resolve(level, stage)`
+      with the chosen stage's threshold no higher than the level.
+      ⚠️ **`at_stage` cannot be built before this** — while a stage is derived,
+      `at_stage: "Ivysaur"` *is* `at_level: 16`, a second spelling of one fact.
+      ⚠️ **Choosing not to evolve is strictly worse as designed**: stage curves only
+      rise, so the choice is decorative unless an earlier stage can learn something
+      the later one cannot — which is now one field away rather than a mechanism
+      away, since the learnset exists.
+      **No condition beyond a level**: items, friendship and battles-fought all
+      need somewhere to persist, and there is no meta layer, no inventory, no save.
 - [ ] **Grow the cast.** Three characters ship, one per element, and the seed
       roster is no longer a mirror — so the thing this item was blocking, a
       measurable balance figure, exists. What is left is content, under two

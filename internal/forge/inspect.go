@@ -250,8 +250,8 @@ func (l *Library) shortReach(character cast.Character) *ShortReachWarning {
 		return nil
 	}
 	longest, counted := 0, 0
-	for _, id := range character.Skills {
-		carried, err := l.skills.Lookup(id)
+	for _, entry := range character.Skills {
+		carried, err := l.skills.Lookup(entry.ID)
 		if err != nil {
 			continue
 		}

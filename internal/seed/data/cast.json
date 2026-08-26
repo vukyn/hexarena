@@ -106,15 +106,40 @@
         }
       ],
       "skills": [
-        "vine_whip",
-        "razor_leaf",
-        "sleep_powder",
-        "poison_powder",
-        "sludge_bomb",
-        "venoshock",
-        "leech_seed",
-        "synthesis",
-        "ingrain"
+        {
+          "id": "vine_whip"
+        },
+        {
+          "id": "razor_leaf"
+        },
+        {
+          "id": "poison_powder",
+          "at_level": 8
+        },
+        {
+          "id": "sleep_powder",
+          "at_level": 12
+        },
+        {
+          "id": "leech_seed",
+          "at_level": 16
+        },
+        {
+          "id": "synthesis",
+          "at_level": 20
+        },
+        {
+          "id": "venoshock",
+          "at_level": 24
+        },
+        {
+          "id": "sludge_bomb",
+          "at_level": 32
+        },
+        {
+          "id": "ingrain",
+          "at_level": 36
+        }
       ],
       "passives": [
         {
@@ -237,15 +262,40 @@
         }
       ],
       "skills": [
-        "ember",
-        "flamethrower",
-        "fire_fang",
-        "fire_spin",
-        "heat_wave",
-        "inferno",
-        "dragon_rage",
-        "smokescreen",
-        "dragon_dance"
+        {
+          "id": "ember"
+        },
+        {
+          "id": "fire_spin"
+        },
+        {
+          "id": "fire_fang",
+          "at_level": 8
+        },
+        {
+          "id": "smokescreen",
+          "at_level": 12
+        },
+        {
+          "id": "flamethrower",
+          "at_level": 16
+        },
+        {
+          "id": "dragon_rage",
+          "at_level": 20
+        },
+        {
+          "id": "dragon_dance",
+          "at_level": 24
+        },
+        {
+          "id": "heat_wave",
+          "at_level": 32
+        },
+        {
+          "id": "inferno",
+          "at_level": 36
+        }
       ],
       "passives": [
         {
@@ -364,15 +414,40 @@
         }
       ],
       "skills": [
-        "water_gun",
-        "bubble",
-        "whirlpool",
-        "bite",
-        "brine",
-        "hydro_pump",
-        "withdraw",
-        "aqua_ring",
-        "rapid_spin"
+        {
+          "id": "water_gun"
+        },
+        {
+          "id": "bubble"
+        },
+        {
+          "id": "bite",
+          "at_level": 8
+        },
+        {
+          "id": "withdraw",
+          "at_level": 12
+        },
+        {
+          "id": "whirlpool",
+          "at_level": 16
+        },
+        {
+          "id": "brine",
+          "at_level": 20
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 24
+        },
+        {
+          "id": "aqua_ring",
+          "at_level": 28
+        },
+        {
+          "id": "hydro_pump",
+          "at_level": 36
+        }
       ],
       "passives": [
         {
