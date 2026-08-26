@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/scale"
+	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
@@ -56,6 +57,24 @@ type Passive struct {
 	// would be a trait that quietly stopped being true, which is worse than one
 	// that was never declared.
 	Grants []Grant
+	// Applies are the statuses the holder adds to what its own damaging skills
+	// inflict, on top of whatever those skills declare.
+	//
+	// skill.Application is reused rather than copied: "this inflicts that, at a
+	// fixed chance" is a shape that already exists, and a second one beside it is
+	// how the two drift apart. So a trait contributes to the list a skill's own
+	// applications are drawn from, which is a change in battle rather than a new
+	// rule.
+	//
+	// It rides on a skill that **deals damage** and on no other. A support skill
+	// aimed at an ally would otherwise carry a hostile rider to the ally:
+	// resolveAgainst deliberately never asks which side a target is on, so
+	// "already hurting whatever it hits" is the available way to say "hostile",
+	// and it is the honest one — a damaging skill aimed across the midline is
+	// already an attack on whoever is standing there.
+	Applies []skill.Application
+	// While gates the trait, or nil when it is always in force.
+	While *Condition
 	// Resists is the share of an incoming application's chance the holder
 	// refuses, per status.
 	//
@@ -97,6 +116,42 @@ type Resistance struct {
 	Amount int
 }
 
+// Condition is when a trait is in force.
+//
+// # Why this is not skill.Condition
+//
+// Reusing the existing vocabulary was the plan, and it does not fit. A skill's
+// condition asks what the *target* is carrying — a status, a stack count, and
+// whether to spend it — because it exists to pay a skill off for arriving after
+// a debuff. What a trait wants to ask is about its *holder*, and the question it
+// wants most is one no status can answer: how hurt am I. Bending
+// skill.Condition to carry a health share would give one type two unrelated
+// jobs, and the note that said to reuse it also said this term was the work.
+//
+// One term today, and it is a share rather than a number of points: a threshold
+// in points would mean a different fraction of the bar at every level, so a
+// trait authored for a level-eight unit would be permanently on at sixty.
+type Condition struct {
+	// BelowHealth is the share of its maximum health the holder must be at or
+	// under, in parts per thousand. A third is 333.
+	BelowHealth int
+}
+
+// Holds reports whether the condition is met by a unit at the given health.
+//
+// At or under, not strictly under: a threshold of a third means a third counts.
+// Maximum health of nought answers no rather than dividing by it — a unit with
+// no maximum is not a unit that is hurt.
+func (c *Condition) Holds(health, maximum int64) bool {
+	if c == nil {
+		return true
+	}
+	if maximum <= 0 {
+		return false
+	}
+	return health*int64(scale.Base) <= int64(c.BelowHealth)*maximum
+}
+
 // StatusIDs is the statuses the passive grants, in declaration order. It is what
 // a listing and a refusal want, and it saves every caller writing the same loop.
 func (p Passive) StatusIDs() []string {
@@ -132,9 +187,21 @@ type passiveFile struct {
 	ID string `json:"id"`
 	// Written only when there is one, so a book that names none round-trips to
 	// the bytes it was authored as.
-	Name    string           `json:"name,omitempty"`
-	Grants  []grantFile      `json:"grants"`
-	Resists []resistanceFile `json:"resists,omitempty"`
+	Name    string            `json:"name,omitempty"`
+	Grants  []grantFile       `json:"grants"`
+	Applies []applicationFile `json:"applies,omitempty"`
+	While   *conditionFile    `json:"while,omitempty"`
+	Resists []resistanceFile  `json:"resists,omitempty"`
+}
+
+type applicationFile struct {
+	Status string `json:"status"`
+	Chance int    `json:"chance"`
+	Stacks int    `json:"stacks,omitempty"`
+}
+
+type conditionFile struct {
+	BelowHealth int `json:"below_health"`
 }
 
 type resistanceFile struct {
@@ -179,8 +246,8 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		return Passive{}, fmt.Errorf("passive %q: "+format,
 			append([]any{declared.ID}, args...)...)
 	}
-	if len(declared.Grants) == 0 && len(declared.Resists) == 0 {
-		return fail("grants nothing and resists nothing, so holding it would change nothing")
+	if len(declared.Grants) == 0 && len(declared.Resists) == 0 && len(declared.Applies) == 0 {
+		return fail("grants nothing, resists nothing and adds nothing, so holding it would change nothing")
 	}
 	grants := make([]Grant, 0, len(declared.Grants))
 	for _, grant := range declared.Grants {
@@ -229,9 +296,60 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		resists = append(resists, Resistance{Status: kind.ID, Amount: resist.Amount})
 	}
 
+	applies := make([]skill.Application, 0, len(declared.Applies))
+	for _, add := range declared.Applies {
+		kind, err := deps.Statuses.Lookup(add.Status)
+		if err != nil {
+			return fail("%w", err)
+		}
+		if add.Chance < 1 || add.Chance > scale.Base {
+			return fail("adds %q on a chance of %d, want a share in parts per thousand",
+				kind.ID, add.Chance)
+		}
+		stacks := max(add.Stacks, 1)
+		if stacks > kind.MaxStacks {
+			return fail("adds %d stacks of %q, which caps at %d", stacks, kind.ID, kind.MaxStacks)
+		}
+		// A trait cannot add a permanent status. Those are what a trait *grants*,
+		// once, to its own holder; inflicting one on somebody else would put an
+		// effect on them that nothing in the game can ever take off.
+		if kind.Permanent {
+			return fail("adds %q, which is permanent: nothing could ever take it off the target",
+				kind.ID)
+		}
+		if slices.ContainsFunc(applies, func(seen skill.Application) bool {
+			return seen.Status == kind.ID
+		}) {
+			return fail("adds %q twice; say one chance instead", kind.ID)
+		}
+		applies = append(applies,
+			skill.Application{Status: kind.ID, Chance: add.Chance, Stacks: stacks})
+	}
+
+	var while *Condition
+	if declared.While != nil {
+		if declared.While.BelowHealth < 1 || declared.While.BelowHealth > scale.Base {
+			return fail("is in force below %d health, want a share in parts per thousand",
+				declared.While.BelowHealth)
+		}
+		// A gated *grant* is refused rather than half-built. A grant is applied
+		// once, when the unit is enlisted, and the status it puts on is permanent
+		// precisely so nothing can take it off — so a condition on one would have
+		// to add and remove that status as health crossed the line, which is a
+		// mechanism rather than a term: the engine would need its own door into a
+		// permanent status, an event for the trait coming and going, and a retune
+		// each time. Accepting it here would ship a trait whose condition was
+		// silently ignored, which is worse than not being able to write it.
+		if len(grants) > 0 {
+			return fail("is gated on health and also grants %q: a granted status is applied once and cannot be taken back, so the gate would be ignored",
+				grants[0].Status)
+		}
+		while = &Condition{BelowHealth: declared.While.BelowHealth}
+	}
+
 	return Passive{
 		ID: declared.ID, Name: strings.TrimSpace(declared.Name),
-		Grants: grants, Resists: resists,
+		Grants: grants, Applies: applies, While: while, Resists: resists,
 	}, nil
 }
 
@@ -261,7 +379,14 @@ func (b *Book) All() []Passive {
 	copy(out, b.passives)
 	for i := range out {
 		out[i].Grants = slices.Clone(out[i].Grants)
+		out[i].Applies = slices.Clone(out[i].Applies)
 		out[i].Resists = slices.Clone(out[i].Resists)
+		// The condition is a pointer, so a caller editing what it was handed
+		// would edit the book through it.
+		if out[i].While != nil {
+			gate := *out[i].While
+			out[i].While = &gate
+		}
 	}
 	return out
 }
@@ -292,8 +417,19 @@ func (b *Book) Marshal() ([]byte, error) {
 			resists = append(resists,
 				resistanceFile{Status: resist.Status, Amount: resist.Amount})
 		}
+		var applies []applicationFile
+		for _, add := range current.Applies {
+			applies = append(applies, applicationFile{
+				Status: add.Status, Chance: add.Chance, Stacks: add.Stacks,
+			})
+		}
+		var while *conditionFile
+		if current.While != nil {
+			while = &conditionFile{BelowHealth: current.While.BelowHealth}
+		}
 		file.Passives = append(file.Passives, passiveFile{
-			ID: current.ID, Name: current.Name, Grants: grants, Resists: resists,
+			ID: current.ID, Name: current.Name, Grants: grants,
+			Applies: applies, While: while, Resists: resists,
 		})
 	}
 	out, err := json.MarshalIndent(file, "", "  ")

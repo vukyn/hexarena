@@ -123,7 +123,12 @@ func books(t *testing.T) battle.Books {
 	  {"id":"hardy","grants":[{"status":"toughened","stacks":2}]},
 	  {"id":"clean_blood","grants":[],"resists":[{"status":"poison","amount":1000}]},
 	  {"id":"thick_blood","grants":[],"resists":[{"status":"poison","amount":600}]},
-	  {"id":"cold_blood","grants":[],"resists":[{"status":"poison","amount":600}]}
+	  {"id":"cold_blood","grants":[],"resists":[{"status":"poison","amount":600}]},
+	  {"id":"venomous","grants":[],"applies":[{"status":"poison","chance":1000}]},
+	  {"id":"cornered","grants":[],"while":{"below_health":500},
+	   "applies":[{"status":"burn","chance":1000}]},
+	  {"id":"last_stand","grants":[],"while":{"below_health":500},
+	   "resists":[{"status":"poison","amount":1000}]}
 	]}`), passive.Deps{Statuses: statuses})
 	if err != nil {
 		t.Fatalf("passives: %v", err)

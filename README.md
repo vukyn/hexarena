@@ -411,6 +411,55 @@ damage-over-time tick and every `venoshock` amplifier. That is the mirrored rost
 rather than the trait — both sides are the same poison-immune character — so it
 waits for a roster whose two sides differ.
 
+### A trait can add to what its holder does, and can wait until it is hurt
+
+Two more of the four things a passive is asked for, and neither needed a new rule.
+
+```json
+{
+  "id": "cornered",
+  "grants": [],
+  "while": { "below_health": 500 },
+  "applies": [{ "status": "poison", "chance": 500 }]
+}
+```
+
+**What it adds goes through the same list a skill's own applications do.**
+`skill.Application` is reused rather than copied, and the trait's riders are
+inflicted by the same `inflict` — so they take the same roll, the same
+resistance, and the same event. A second pass of their own would have been a
+second place for all three to be got wrong.
+
+**A rider goes on a damaging skill and no other.** `resolveAgainst` deliberately
+never asks which side a target is on, so "already dealing damage to it" is the
+available way to say the skill is hostile — and it is the honest one, since a
+damaging skill aimed across the midline is already an attack on whoever is
+standing there. Without the rule a cleanse would poison the ally it was healing.
+The test for it had to be rewritten: it first used a *self*-aimed shield, which
+returns before `resolveAgainst` is reached at all, so it passed with the rule
+deleted.
+
+**`while` is not `skill.Condition`, and that is the point.** A skill's condition
+asks what the *target* is carrying, because it exists to pay a skill off for
+arriving after a debuff. A trait wants to ask about its *holder*, and the question
+it wants most is one no status can answer: how hurt am I. Bending one type to both
+jobs is how two vocabularies grow inside one. So `while` carries a single term, a
+**share** of maximum health rather than a number of points — a threshold in points
+would be a different fraction of the bar at every level, so a trait authored for a
+level-eight unit would be permanently on at sixty.
+
+The share is read **live**, at the moment the rider or the resistance is asked
+for, so a trait that only protects a hurt unit stops protecting it the moment it
+is healed back. It is *at or under*: half means half counts. And a share is not a
+fraction — `333` of 3000 health is 999, so "a third" written that way admits
+everything strictly under a third and not a third exactly.
+
+**A gated `grants` is refused**, rather than accepted and quietly ignored. A grant
+is applied once, when the unit is enlisted, and the status it puts on is permanent
+precisely so nothing can take it off — so a gate on one would have to add and
+remove that status as health crossed the line. That is a mechanism rather than a
+term, and it is the last piece: see *What a passive still cannot do*.
+
 ### A trait comes in at a level
 
 A character does not simply hold its traits; it holds each **from a level
@@ -834,22 +883,33 @@ sequence, and two identical battles must still produce identical logs.
 
 ### What a passive still cannot do
 
-Traits exist — see *Passives* above — and two of the four things a passive is
-normally asked to do are built: a stat change, and refusing a status. The other
-two, which are also step 2 of the order under *Learnsets, slots, and choosing to
-evolve*: a trait slot is only a decision once traits differ in kind rather than in
-number.
+All four of the things a passive is normally asked for are built — a stat change,
+refusing a status, adding to what the holder does, and waiting until it is hurt.
+One combination of two of them is not, and it is the one the canonical abilities
+want.
 
-- **Add an effect to what the unit already does.** `skill.Application` is the
-  existing shape for "this inflicts that, at a fixed chance". A trait
-  contributing one needs the application list assembled from the unit as well as
-  from the skill, which is a change in `battle` rather than a new rule.
-- **Fire only under a condition.** `skill.Condition` is the existing vocabulary —
-  a status, a minimum stack count, a bonus, and whether it consumes — and reusing
-  it is the point, because two ways of writing "while the target is burning" is
-  how the two drift apart. What it cannot express is the condition a trait most
-  often wants: *while the holder is below a share of its health*. That is a new
-  term, and deciding it is the work.
+**A gated grant: a stat change that comes and goes.** *Overgrow* and *Blaze* are
+"hits harder when badly hurt", which is a stat change under a condition, and that
+pairing is refused at parse rather than accepted and ignored. A grant is applied
+once, at enlistment, and the status it puts on is permanent so that nothing can
+dispel a trait — so gating one means adding and removing that status as health
+crosses the line. What that needs, having been worked out rather than guessed:
+
+- a door into a permanent status **for the engine only**. `Set.Remove` must keep
+  refusing them, or a dispel could turn a trait off for the rest of a battle; a
+  dedicated pair — `Hold` and `Release`, used by `battle.grant` and by the
+  re-evaluation — leaves the guard meaning what it says.
+- **an event each way.** A trait coming on or going off changes a visible number,
+  and the log is the only contract a renderer has. `PassiveHeld` says it came on;
+  going off has no kind yet.
+- **a retune each time**, because a gated trait touching speed reorders the queue,
+  and `retuneAll` is what keeps it honest.
+- **one re-evaluation point.** Health moves in `wound` and `heal` and nowhere
+  else, so those are the two places — for the unit whose health moved, not for
+  everybody.
+
+None of that is large. It is a mechanism rather than a term, which is why it is
+its own piece rather than a clause of this one.
 
 Whatever comes next keeps the two constraints the first slice was built under: a
 trait that changes a number **emits an event**, and one that touches speed is in
