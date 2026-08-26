@@ -132,7 +132,7 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		fmt.Fprintln(out, "no passives declared")
 		return
 	}
-	rendered := newTable("id", "name", "grants", "resists")
+	rendered := newTable("id", "name", "grants", "adds", "resists", "while")
 	for _, held := range passives {
 		grants := make([]string, 0, len(held.Grants))
 		for _, grant := range held.Grants {
@@ -155,13 +155,26 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 			resists = append(resists,
 				fmt.Sprintf("%s %s", resist.Status, forge.Percent(resist.Amount)))
 		}
-		rendered.add(held.ID, held.Name,
-			strings.Join(grants, ", "), strings.Join(resists, ", "))
+		// The riders read the way a skill's own applications do, through the same
+		// helper, so the two lists cannot come out described differently.
+		adds := ""
+		if len(held.Applies) > 0 {
+			adds = forge.DescribeApplications(held.Applies)
+		}
+		// A gate is only worth a column when there is one, and the share is read
+		// as a percentage for the same reason every other permille is.
+		gate := ""
+		if held.While != nil {
+			gate = "under " + forge.Percent(held.While.BelowHealth) + " health"
+		}
+		rendered.add(held.ID, held.Name, strings.Join(grants, ", "),
+			adds, strings.Join(resists, ", "), gate)
 	}
 	rendered.render(out)
 	fmt.Fprint(out, "\na trait is in force from the moment its holder is enlisted, and nothing takes it off:\n"+
 		"every status it grants is declared permanent, so it has no duration and no cleanse reaches it.\n"+
-		"a resistance takes its share off an incoming application's chance, so a full share never lands.\n")
+		"a resistance takes its share off an incoming application's chance, so a full share never lands.\n"+
+		"what a trait adds rides on its holder's damaging skills only, through the same roll as their own.\n")
 }
 
 func renderArchetypes(out io.Writer, lib *forge.Library) {

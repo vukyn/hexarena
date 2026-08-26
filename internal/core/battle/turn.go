@@ -6,6 +6,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/atb"
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
@@ -494,6 +495,20 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		for _, application := range known.Applies {
 			b.inflict(actor, target, known, application, turn)
 		}
+		// The actor's traits contribute to the same list rather than to a second
+		// pass of their own, so a trait's rider goes through the same roll, the
+		// same resistance and the same event as a skill's own application. A
+		// separate path would be a second place for all three to be got wrong.
+		//
+		// Only on a skill with power. resolveAgainst deliberately never asks
+		// which side a target is on, so "already dealing damage to it" is the
+		// available way to say the skill is hostile — and an ally-aimed damaging
+		// skill is already an attack on whoever it catches.
+		if power > 0 {
+			for _, application := range b.riders(actor) {
+				b.inflict(actor, target, known, application, turn)
+			}
+		}
 	}
 	// Restoring reads the caster's scaling stat and skips the defence curve
 	// entirely: see combat.Rules.Restore. A splashed target gets the reduced
@@ -585,6 +600,39 @@ func (b *Battle) inflict(actor, target *Unit, known skill.Skill, application ski
 	})
 }
 
+// riders is the applications a unit's traits add to what its damaging skills
+// inflict, in the order the traits were enlisted with.
+//
+// Declaration order, because these reach the log: a set ordered by anything a
+// map decided would stop a battle replaying from its seed.
+func (b *Battle) riders(actor *Unit) []skill.Application {
+	if len(actor.Passives) == 0 || b.books.Passives == nil {
+		return nil
+	}
+	var out []skill.Application
+	for _, id := range actor.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			continue
+		}
+		if !b.inForce(actor, held) {
+			continue
+		}
+		out = append(out, held.Applies...)
+	}
+	return out
+}
+
+// inForce reports whether a trait's gated half applies to its holder right now.
+//
+// A trait with no condition is always in force, so this is the only question a
+// caller has to ask. Health is read live rather than snapshotted: a trait that
+// turns on when its holder is hurt has to turn on during the turn it was hurt,
+// not on the next one.
+func (b *Battle) inForce(unit *Unit, held passive.Passive) bool {
+	return held.While.Holds(unit.HP, unit.MaxHP())
+}
+
 // resist takes whatever the target's traits refuse off an application's chance,
 // and reports the share refused.
 //
@@ -609,6 +657,11 @@ func (b *Battle) resist(target *Unit, statusID string, chance int) (effective, r
 		}
 		amount := held.Refuses(statusID)
 		if amount <= 0 {
+			continue
+		}
+		// The gate is read here rather than at enlistment, so a trait that only
+		// protects a hurt unit stops protecting it the moment it is healed back.
+		if !b.inForce(target, held) {
 			continue
 		}
 		surviving = surviving * (scale.Base - amount) / scale.Base

@@ -95,9 +95,9 @@ func TestResistanceRejections(t *testing.T) {
 			"twice",
 		},
 		{
-			"a trait that neither grants nor resists",
+			"a trait that does nothing at all",
 			`[{"id":"idle","grants":[],"resists":[]}]`,
-			"grants nothing and resists nothing",
+			"holding it would change nothing",
 		},
 	}
 	for _, test := range cases {

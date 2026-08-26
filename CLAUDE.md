@@ -383,6 +383,29 @@ the battle; it may not be a `Dot` or a `Regen`, either of which would tick for t
 whole battle; and `Snapshot` carries the flag so a renderer draws *always* instead
 of the `0t` the countdown alone would give.
 
+**A trait's riders go through the skill's own application list, and only on a
+damaging skill.** `passive.Passive.Applies` reuses `skill.Application` and
+`battle.riders` feeds it to the same `inflict`, so a rider takes the same roll,
+the same resistance and the same event — a second pass would be a second place for
+all three to go wrong. The `power > 0` guard is what keeps a hostile rider off a
+cleanse: `resolveAgainst` never asks which side a target is on, so "already
+dealing damage to it" is the available way to say hostile. ⚠️ Test that guard with
+a skill aimed at an **ally** (`mend`), never a self-aimed one — `Act` returns
+before `resolveAgainst` for `Target: Self`, so a self-shield passes with the guard
+deleted, and that was the first version of the test.
+
+**`passive.Condition` is not `skill.Condition`, deliberately.** A skill's
+condition asks what the *target* carries; a trait asks about its *holder*, and the
+question it wants is one no status answers. One term, `BelowHealth`, a **share**
+of maximum health — points would be a different fraction of the bar at every
+level. Read **live** at each site (`riders`, `resist`) through `inForce`, so a
+trait stops applying the moment its holder is healed back; *at or under*; and a
+share is not a fraction, so `333` of 3000 is 999 and a third exactly does not
+pass. **A gated `grants` is refused at parse** — a grant is applied once and its
+status is permanent so nothing can dispel it, so gating one is a mechanism (an
+engine-only door into a permanent status, an event each way, a retune) rather than
+a term. Accepting it would ship a trait whose gate was silently ignored.
+
 **A resistance belongs at `battle.inflict`, never at `status.Set.Apply`.**
 `Apply` is the choke point every status passes through, which makes it the obvious
 home and the wrong one: it has no dice, so a resistance there could only refuse
@@ -762,21 +785,35 @@ is the constraint each piece has to respect.
       whole timed-effect layer is tested but not played. A replacement must read
       no randomness and mutate nothing — a client calls it for a hint mid-turn —
       and two identical battles must still produce identical logs.
-- [ ] **What a passive still cannot do.** Traits grant permanent statuses and
-      refuse them; two of the four usual jobs are built. The other two must reuse
-      the homes they already have rather than growing a parallel vocabulary:
-      extra effects are `skill.Application`, assembled from the unit as well as
-      the skill (a change in `battle`, not a new rule); and conditions are
-      `skill.Condition`, which **cannot** express the one a trait most often
-      wants — while the holder is below a share of its health — so that term is
-      the work, and the shipped `brine` is **parked** on `mire` until it exists
-      (its move doubles under half health; keep the name, move it onto the term
-      when there is one). Build the *threshold*, not a curve: half health is
-      `hp*1000 <= maxHP*500` and reuses `requires`/`bonus_power` for free, while
-      a gradient is a multiplier in `combat` reading the **caster's** health.
-      Both original constraints still hold: a trait changing a number
-      **emits an event**, and one touching speed is in force before the first wait
-      is computed. See README → Roadmap.
+- [ ] **A gated grant: a stat change that comes and goes.** All four things a
+      passive is asked for are built; one *combination* of two is not, and it is
+      the one the canonical abilities want — Overgrow and Blaze are "hits harder
+      when badly hurt", a stat change under a condition. `passive` refuses that
+      pairing at parse rather than ignoring the gate. What it needs, worked out
+      rather than guessed: an engine-only door into a permanent status (`Hold` /
+      `Release`, so `Set.Remove` keeps refusing them and a dispel still cannot
+      turn a trait off for a whole battle); **an event each way** — `PassiveHeld`
+      says it came on and going off has no kind yet; a **retune** each time, since
+      a gated trait touching speed reorders the queue; and **one re-evaluation
+      point** — health moves in `wound` and `heal` and nowhere else, for the unit
+      whose health moved rather than for everybody. Both original constraints
+      still hold: a trait changing a number **emits an event**, and one touching
+      speed is in force before the first wait is computed. See README → Roadmap.
+- [ ] **A health threshold a *skill* can read.** `passive.Condition` answers "how
+      hurt is the holder" and a **trait** is the only thing that can ask:
+      `skill.Condition` still asks only what the *target* is carrying, and only
+      whether it carries a status — so a skill cannot say "harder against
+      something already hurt". The shipped `brine` is **parked** on `mire` waiting
+      for it: its move doubles against a target at or below half health, so keep
+      the name and move it onto the term when there is one. Build the *threshold*,
+      not a curve — half health is `hp*1000 <= maxHP*500`, the same arithmetic
+      `passive.Condition.Holds` already does, and it reuses
+      `requires`/`bonus_power` for free, while a **gradient** is a multiplier in
+      `combat` reading the *caster's* health and is a second feature rather than an
+      option on this one. ⚠️ Decide rather than discover whether the two thresholds
+      share a type or only their arithmetic: a trait's asks about its holder and a
+      skill's about its target, so the reading is identical and the subject is not
+      — exactly the pair that becomes one type doing two jobs if nobody chooses.
 - [ ] **`venom_blood` is declared and carried by nobody.** Poison immunity is
       canon for Bulbasaur and putting it on is one line, but measured across forty
       auto-battles it takes the whole poison layer out of the shipped fight: 183
