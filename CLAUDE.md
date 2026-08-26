@@ -136,6 +136,13 @@ its own Save dialog, and on Linux a window manager may claim Super first. So
 `ctrl+s` stays the binding that always works and `saveKeyLabel` keeps naming a
 control-S on every platform. Do not "simplify" the footer to ⌘S alone on macOS.
 
+⚠️ **The label has six cells and no more.** The English character-form footer is
+73 cells without it, the smallest window is 80, and the last cell of a row is
+left empty so writing it cannot wrap the line — so `⌘S ^S` fits and `⌘S / ^S`
+does not. `TestEverySaveFooterFitsTheSmallestWindow` measures all three
+platforms' labels rather than only the host's, because the off-Mac `ctrl+s` is
+the longer of the two.
+
 Four API changes matter, and three of them fail *quietly* rather than at compile
 time — which is why they are written down:
 

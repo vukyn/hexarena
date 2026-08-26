@@ -26,6 +26,23 @@ const (
 	saveKeyCommand = "super+s"
 )
 
+// saveKeyMacLabel is how the pair is written on a Mac, and the space in the
+// middle is the whole of it.
+//
+// It was "⌘S/^S": four symbols and a slash with nothing between them, which on
+// screen reads as one smear rather than as two keystrokes. The footer around it
+// separates one key from the next with a space, so a key that contains no space
+// has nothing to separate it from itself. The space costs nothing — the label is
+// five cells either way.
+//
+// A slash with spaces around it would read better still, and does not fit. The
+// English character-form footer is 73 cells without the label, the smallest
+// window this program will draw in is 80, and the last cell of a line is left
+// empty so that writing it cannot wrap the row — six cells, and "⌘S / ^S" is
+// seven. That budget is guarded by TestEverySaveFooterFitsTheSmallestWindow
+// rather than left as a number in a comment.
+const saveKeyMacLabel = "⌘S ^S"
+
 // isSaveKey reports whether a keystroke asks for the work to be written.
 //
 // One declaration for all three forms, for the reason a passed turn's reason
@@ -54,8 +71,16 @@ func isSaveKey(message tea.KeyPressMsg) bool {
 // and a catalogue entry per platform per language would be four ways to say one
 // symbol.
 func saveKeyLabel() string {
-	if runtime.GOOS == "darwin" {
-		return "⌘S/^S"
+	return saveKeyLabelFor(runtime.GOOS)
+}
+
+// saveKeyLabelFor is saveKeyLabel with the platform passed in, so that the width
+// of a label this machine will never draw is still measurable here. The off-Mac
+// label is the longer of the two, so a test that only ever saw the host's would
+// be measuring the easy case on whichever platform it happened to run.
+func saveKeyLabelFor(goos string) string {
+	if goos == "darwin" {
+		return saveKeyMacLabel
 	}
 	return saveKeyControl
 }
