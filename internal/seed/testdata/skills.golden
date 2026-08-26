@@ -5,7 +5,7 @@ a cooldown counts the caster's own turns, the same unit statuses are timed in
 skill           element   tgt    rng  shape          power  hits  total   acc   cd   damage
 vine_whip       grass     enemy    2  single         1100     1   1100   950    1      377
 razor_leaf      grass     enemy    3  arc_up          600     2   1200   880    2      410
-solar_beam      grass     enemy    4  single         2400     1   2400   850    4      822
+solar_beam      light     enemy    4  single         2400     1   2400   850    4      822
 sleep_powder    grass     enemy    2  flank_up          0     1      0  1000    4        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
