@@ -799,6 +799,29 @@ is the constraint each piece has to respect.
       whose health moved rather than for everybody. Both original constraints
       still hold: a trait changing a number **emits an event**, and one touching
       speed is in force before the first wait is computed. See README → Roadmap.
+- [ ] **Answering back — the fifth job, and the only one with no home.** The
+      shipped `venom_blood` is *máu độc*: poisonous blood should cost whatever bit
+      into it, so resisting is half its name. ⚠️ **Not `applies` reworded** —
+      `applies` fires on a target the holder chose during the holder's own turn,
+      which `battle` already resolves; a reply fires on the **attacker**, during
+      somebody else's turn, from a unit that is not acting, and inventing that hook
+      is most of the work. It must **not** become a second damage path: resolve
+      through `battle.inflict`/`combat.Rules` so a replay reads it as events and
+      `--verify` re-runs it from the seed. Four rules **decided**: (1) **a reply
+      may kill** — damage gets no exemption for arriving out of turn, so a battle
+      can end on a turn nobody took; re-ask whether the battle is over and let the
+      timeline lose a unit that was never in front of it (a DoT tick already ends
+      one, but there the dying unit is not the one acting). (2) **a reply never
+      triggers a reply** — by rule, *not* a depth counter (a counter is a number
+      somebody raises): resolve a reply with retaliation off. (3) **once per USE of
+      a skill, not per strike** — else a trait's worth scales with somebody else's
+      strike count and `fire_fang` is silently worse than `flamethrower` into one
+      holder. (4) **the holder takes EVERY strike first, then answers** — the reply
+      is on the finished skill, so a striker never dies mid-turn and "what about
+      its remaining strikes" never arises. That leaves the holder's death as the
+      only one that lands first: **a holder killed by the skill does not answer**
+      (dead is dead, as it cannot be healed) — which is also the counter to
+      retaliation, free: kill it outright and there is no reply.
 - [ ] **A health threshold a *skill* can read.** `passive.Condition` answers "how
       hurt is the holder" and a **trait** is the only thing that can ask:
       `skill.Condition` still asks only what the *target* is carrying, and only
