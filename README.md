@@ -500,6 +500,77 @@ book validated cross-book the way skills are, a `Passives []string` field on
 `cast.Character`, and an archetype able to suggest one — which would also give an
 archetype its first mechanical weight, since today it carries none.
 
+### Learnsets, four slots, and choosing to evolve
+
+A character knows every skill it will ever know, from level one, and brings all
+of them. That makes a level cap the only thing separating a young unit from a
+grown one, and it means authoring a ninth skill makes a character strictly better
+rather than presenting a choice.
+
+Four pieces, and they are one mechanism:
+
+- **A learnset.** A character declares *when* it learns each skill rather than
+  simply holding a list: `{skill, at_level}`, or `{skill, at_stage}` for one that
+  only a later form can hold. A stage-gated skill is gated behind whatever that
+  stage requires, transitively, which is what makes evolving unlock something
+  rather than merely raise numbers.
+- **Four slots.** A placement brings at most four of what the character has
+  learned. Refused at load if it names one the character has not learned at that
+  level, if it names more than four, or if it names one twice.
+- **Evolution is chosen, not derived.** Today `progression.Line.StageAt` reads a
+  stage out of a level, and there is no decision in it. Reaching the threshold
+  should instead *allow* a stage, and the placement names which one it fielded, so
+  `Resolve(level)` becomes `Resolve(level, stage)` with the chosen stage's
+  threshold no higher than the level.
+- **Conditions beyond a level are deliberately out of scope.** Items, a
+  friendship count, a number of battles fought — every one of those needs
+  somewhere to persist between battles, and there is no such place: hexarena has
+  no meta layer, no inventory and no save. A level is what a character sheet
+  knows. An item system is its own future thing, not a clause of this one.
+
+Three things this has to face.
+
+**The log has to carry the placement.** A log holds a seed, the decisions taken
+and the events produced, and the roster comes from the embedded data — so a log
+is already only valid against the build that wrote it. Once the loadout and the
+stage are *choices*, a log without them cannot be re-run at all, and `--verify`
+would be comparing two different battles. Writing the placement into the log is
+part of this change rather than a follow-up, and it has the side benefit of
+making a log portable across a data edit, which today it is not.
+
+**Four slots is a per-turn nerf, and cooldowns set its size.** A skill on
+cooldown *N* is usable every *N+1* turns, so it contributes `1/(N+1)` actions per
+turn. Measured against Bulbasaur's own cooldowns:
+
+| loadout | actions per turn | turns idle |
+| --- | ---: | ---: |
+| four attacks, cooldowns 1, 2, 2, 2 | 1.50 | none, a third wasted |
+| four support skills, cooldowns 3, 4, 4, 4 | 0.85 | 15% |
+| level one, two skills, cooldowns 1 and 4 | 0.70 | **30%** |
+
+So the mechanism works: a level-one unit spends about a third of its turns unable
+to act, which is what being young should feel like. But it **compounds the
+stalemate gap above** — more turns with nothing usable is more chance of a battle
+that cannot end — and it makes a low-cooldown basic close to mandatory, which is
+why every game of this shape has a move you can spam. `strike`, at cooldown zero,
+was exactly that and has been retired; a four-slot world probably needs a
+successor to it.
+
+**Choosing not to evolve is currently strictly worse.** Stage curves only rise,
+so a placement that fields an earlier stage fields a weaker unit for no
+compensation, and the choice is decorative. It becomes a real decision only if an
+earlier stage can hold something a later one cannot — an earlier learn entry the
+grown form never gets. That is worth deciding deliberately rather than
+discovering: as it stands, "may evolve" and "does evolve" are the same thing.
+
+The engine learns none of this. `battle.Roster` keeps taking a resolved kit and a
+resolved stat line, because a learnset and a stage choice are settled *before* a
+battle, exactly as evolution already is. What changes is the authoring layer and
+the placement, and `hexforge` gains a reason to show a character's learnset by
+level and to refuse a loadout the level cannot hold. Choosing the four is a
+player's decision, and until there is something to make it with, an automatic
+battle may take any four.
+
 ### A battle nobody can act in has no outcome
 
 `checkEnd` ends a battle when a side is emptied, and that is the only way one

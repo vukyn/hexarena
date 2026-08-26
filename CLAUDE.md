@@ -557,6 +557,31 @@ is the constraint each piece has to respect.
       traps: a passive that changes a number **must emit an event** or the log can
       no longer explain its own figures, and an enlist-time passive touching speed
       must apply before the first wait is computed. See README → Roadmap.
+- [ ] **Learnsets, four slots, and choosing to evolve.** A character holds every
+      skill from level one and brings all of them, so a level is the only thing
+      separating a young unit from a grown one. Four pieces, one mechanism: a
+      **learnset** (`{skill, at_level}`, or `at_stage` for one only a later form
+      can hold, which is what makes evolving *unlock* rather than merely raise
+      numbers); **four slots** on a placement, refused at load if it names an
+      unlearned skill, more than four, or one twice; **a chosen stage** —
+      `Line.StageAt` derives one from a level today, and a level should instead
+      *allow* one while the placement names which it fielded, so
+      `Resolve(level)` becomes `Resolve(level, stage)`; and **no condition beyond
+      a level**, because items, friendship and battles-fought all need somewhere
+      to persist and there is no meta layer, no inventory and no save. Three
+      things to face: **the log must carry the placement** or `--verify` compares
+      two different battles once the loadout and stage are choices (and a log
+      becomes portable across a data edit, which it is not today); **four slots
+      is a per-turn nerf sized by cooldowns** — a skill at cooldown N gives
+      `1/(N+1)` actions per turn, so level one with cooldowns 1 and 4 idles 30% of
+      its turns, which compounds the stalemate gap above and makes a
+      low-cooldown basic near-mandatory (`strike` at cooldown zero was that, and
+      is retired); and **choosing not to evolve is strictly worse as designed**,
+      since stage curves only rise, so the choice is decorative unless an earlier
+      stage can learn something the later one cannot. **The engine learns none of
+      it** — `battle.Roster` still takes a resolved kit and a resolved stat line,
+      because a learnset and a stage settle before a battle exactly as evolution
+      already does. See README → Roadmap.
 - [ ] **A battle nobody can act in has no outcome.** `checkEnd` ends one only by
       emptying a side, so a mutual deadlock runs to the turn limit and returns an
       *error*. Real, not hypothetical: seed 18 skipped 3955 of 4000 turns, all
