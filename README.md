@@ -169,6 +169,43 @@ Because a large term saturates rather than overflowing, a debuff can safely be
 authored well past a hundred percent, and a modest buff still lands close to its
 face value.
 
+## Healing
+
+Three mechanisms give health back, and they are separate things rather than one
+feature: a skill's `restores` heals whoever it targets, a skill's `drains`
+returns a share of the damage it actually dealt to its caster, and a `regen`
+status returns health at the start of its holder's turn — the mirror of a poison,
+running on the same machinery with the sign the other way.
+
+Four rules hold all three together:
+
+- **Healing does not go through the defence curve, and damage over time does.**
+  That asymmetry is deliberate. Defence turns away what is coming *at* a unit and
+  has nothing to do with what is helping it, so a well-armoured unit is no harder
+  to heal than a bare one. `combat.Rules.Restore` is where the division is
+  absent on purpose, and adding it for symmetry's sake would make armour quietly
+  reduce its own side's support.
+- **A drain reads the damage dealt, never the damage rolled.** A strike that
+  missed or was blocked drains nothing, which is what keeps a drain a reward for
+  connecting rather than for swinging.
+- **`status.Set.Tick` returns two unsigned totals, not one signed one.** Damage
+  and healing come back separately. A negative travelling down the damage path
+  would subtract a negative, and `wound` calls `kill` the moment health reaches
+  zero — so a single signed total is the one shape in which a tick could bring a
+  corpse back.
+- **A dead unit is not healable and health clamps at `MaxHP`.** The first keeps a
+  battle able to end; the second is what stops a regeneration from being a shield
+  with no cap. Overheal spills into nothing.
+
+Every restore emits a `healed` event. None of the other kinds explains health
+going *up*, so without one a renderer would draw a number changing with no cause
+in the log.
+
+Two consequences worth naming. `battle.Suggest` never chooses a heal, because it
+maximises expected damage and a heal has none — the same gap recorded under *A
+deeper opponent*. And a unit that heals is durable beyond its stat line, so the
+joint health-and-defence budget becomes an understatement rather than a bound.
+
 ## Battle logs
 
 A battle can be written out, read back, printed, and re-run from its seed to check
@@ -620,64 +657,6 @@ Two answers, and they are not alternatives:
   - **Detection must be a pure function of the state.** A count of cycles is
     fine; anything reading a clock is not, and a battle that drew on one machine
     has to draw on every other from the same seed.
-
-### Healing, draining, and a regeneration status
-
-**Nothing in the game restores health.** `battle.wound` subtracts and no function
-adds; `status.Set.Tick` returns a single unsigned damage total; `status.Category`
-has damage-over-time, stat debuffs, control, buffs and shields, and no fifth kind
-that heals. That absence is why Bulbasaur has no Leech Seed: it drains, and there
-is nothing for it to drain into.
-
-Three separate mechanisms are wanted, and they are not one feature:
-
-- **A direct heal** — a skill that restores health to an ally or the caster.
-- **A drain** — the attacker takes back a share of the damage it dealt. It has to
-  read the damage **dealt**, `combat.DamageDealt`, not the damage rolled, so a
-  strike that missed or was blocked drains nothing.
-- **A regeneration status** — health returned each turn, the mirror of a poison.
-
-The third is the cheapest and the most useful, because the damage-over-time
-machinery already does the work: `status.Kind.TickPower` and the per-stack freeze
-at application are exactly what a regeneration needs, applied with the sign the
-other way.
-
-What an implementation has to settle, in the order these will bite:
-
-- **`Set.Tick` must return healing separately, not a signed total.** It returns
-  one unsigned number today and `wound` consumes it. A negative damage travelling
-  down that path would subtract a negative and could revive a corpse, because
-  `wound` calls `kill` the moment health reaches zero.
-- **A dead unit cannot be healed, and health clamps at `Unit.MaxHP`.** The first
-  keeps a battle able to end; the second is what stops a regeneration from being
-  a shield with no cap. Whether overheal spills into something like a shield is a
-  design question, not a default.
-- **Healing does not go through the defence curve.** Damage over time does — that
-  is what "damage over time goes through armour" settled, *through the formula* —
-  and healing must not, because defence turns away what is coming at a unit and
-  has nothing to do with what is helping it. Do not add the division for
-  symmetry's sake; the asymmetry is the point.
-- **A heal must emit an event.** None of the seventeen event kinds explains
-  health going *up*, so a renderer would draw a number changing with no cause in
-  the log — the same trap a passive skill has, and the same answer: if the log
-  cannot explain it, the log is wrong.
-- **It breaks the stat budget from the other side.** `MaxEffectiveHP` bounds
-  health and defence together because they multiply. A unit that heals is durable
-  beyond its stat line, so the bound becomes an understatement — exactly the
-  mirror of what piercing does to it. With both open, one figure describes
-  neither case, and the tools' effective-health row has to say which it means.
-- **`battle.Suggest` will not use one.** It maximises expected damage, and a heal
-  has none, so it lands in the fallback beside the buffs it already never
-  chooses. That is the same gap *A deeper opponent* records, and it is worth
-  fixing there rather than here.
-
-The status itself is authored in `statuses.json`, which is hand-edited like
-`archetypes.json` — the tool does not write it. A new category also needs its
-wording in both languages, since the category catalogue is held complete rather
-than falling back to its enum spelling.
-
-Determinism is unaffected: this is integer parts-per-thousand arithmetic with no
-new randomness, which is what makes it cheap to add later.
 
 ### Piercing, as the answer to armour
 

@@ -288,6 +288,22 @@ without it (an inline stat line is already resolved). `battle.Roster` deliberate
 gains no image, biography or origin field: the engine has no use for them, and the
 event log is what a renderer reads.
 
+**Healing is not damage with a sign.** Three mechanisms give health back — a
+skill's `restores`, a skill's `drains`, and a `regen` status — and each obeys the
+same four rules. `combat.Rules.Restore` deliberately does **not** divide by the
+defence curve even though a damage-over-time tick does: defence turns away what
+is coming *at* a unit and has nothing to do with what is helping it, so do not
+add the division for symmetry. A drain reads `combat.DamageDealt`, not the damage
+rolled, so a missed or blocked strike drains nothing. `status.Set.Tick` returns
+**two unsigned totals**, damage and healing, never one signed number — a
+negative down the damage path would subtract a negative, and `wound` calls `kill`
+the moment health reaches zero, so a signed total is the one shape that could
+revive a corpse. And a dead unit is not healable while health clamps at `MaxHP`,
+which is what keeps a battle able to end and stops a regeneration from being an
+uncapped shield. Every restore emits a `healed` event, because nothing else in
+the log explains health going up. Consequence: `Suggest` never picks one, and the
+joint health-and-defence budget is now an **understatement** rather than a bound.
+
 **Where balance numbers live.** Tick power and modifier terms belong to the
 *status*, not to the skill that applies it, so two skills inflicting the same
 debuff inflict the same thing. A skill contributes the attack behind it, which is
@@ -601,23 +617,6 @@ is the constraint each piece has to respect.
       detection must be a pure function of state, because a battle that draws on
       one machine has to draw on every other from the same seed. See README →
       Roadmap.
-- [ ] **Healing, draining, and a regeneration status.** Nothing restores health:
-      `wound` only subtracts, `Set.Tick` returns one unsigned damage total, and no
-      `status.Category` heals — which is why Bulbasaur has no Leech Seed. Three
-      mechanisms, not one: a direct heal, a drain reading `combat.DamageDealt`
-      (dealt, not rolled, so a miss or a block drains nothing), and a
-      regeneration status, which is the cheapest because `Kind.TickPower` and the
-      per-stack freeze already do the work with the sign flipped. Five things to
-      decide rather than assume: `Set.Tick` returns healing **separately**, never
-      a signed total, because a negative through `wound` could revive a corpse it
-      already called `kill` on; a dead unit is not healable and health clamps at
-      `Unit.MaxHP`; healing does **not** divide by the defence curve even though
-      damage over time does, and that asymmetry is deliberate — defence turns
-      away harm, not help; a heal must emit an event or the log cannot explain
-      health going up; and it makes `MaxEffectiveHP` an **understatement**, the
-      mirror of what piercing makes of it, so with both open one figure describes
-      neither. `Suggest` will not choose one, for the reason recorded under the
-      opponent. See README → Roadmap.
 - [ ] **Piercing, to answer armour.** Nothing ignores defence today: normal hits,
       splash and damage-over-time ticks all divide by `K + defence`, so the
       effective-health figure is exact and the armour end of the budget has no
