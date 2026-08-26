@@ -39,6 +39,9 @@ const (
 	skillFieldAccuracy
 	skillFieldCooldown
 	skillFieldInflicts
+	skillFieldOnItself
+	skillFieldRestores
+	skillFieldDrains
 	skillFieldKeptForElements
 	skillFieldKeptForRoles
 	skillFieldKeptForCharacters
@@ -129,6 +132,7 @@ func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
 	s.inputs[skillFieldID].Width = 32
 	s.inputs[skillFieldName].Width = 32
 	s.inputs[skillFieldInflicts].Width = 40
+	s.inputs[skillFieldOnItself].Width = 40
 	// The defaults are the shape of an ordinary single-target attack, and the
 	// element among them is the one worth spelling out: neutral is the common
 	// pool, so a skill authored without an opinion about its element is one
@@ -172,6 +176,9 @@ func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScr
 		{skillFieldAccuracy, answers.Accuracy},
 		{skillFieldCooldown, answers.Cooldown},
 		{skillFieldInflicts, answers.Applies},
+		{skillFieldOnItself, answers.SelfApplies},
+		{skillFieldRestores, answers.Restores},
+		{skillFieldDrains, answers.Drains},
 	} {
 		s.inputs[filled.field].SetValue(filled.value)
 	}
@@ -221,6 +228,9 @@ func (s skillsScreen) draft(m model) forge.SkillDraft {
 		Accuracy:           s.inputs[skillFieldAccuracy].Value(),
 		Cooldown:           s.inputs[skillFieldCooldown].Value(),
 		Applies:            s.inputs[skillFieldInflicts].Value(),
+		SelfApplies:        s.inputs[skillFieldOnItself].Value(),
+		Restores:           s.inputs[skillFieldRestores].Value(),
+		Drains:             s.inputs[skillFieldDrains].Value(),
 		RestrictElements:   strings.Join(s.keptElements, ","),
 		RestrictArchetypes: strings.Join(s.keptRoles, ","),
 		RestrictCharacters: strings.Join(s.keptWho, ","),
@@ -358,7 +368,7 @@ func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cm
 	// opens it rather than typing a space, and that costs nothing: the syntax
 	// ParseApplications reads has no spaces in it, and every other way of
 	// filling this field still works, because the field is the record.
-	if s.field == skillFieldInflicts && message.String() == " " {
+	if (s.field == skillFieldInflicts || s.field == skillFieldOnItself) && message.String() == " " {
 		m.skills = s
 		return m.openStatuses(), nil
 	}
@@ -737,6 +747,9 @@ func skillFieldLabel(m model, field int) string {
 		skillFieldAccuracy:          i18n.SkillFieldAccuracy,
 		skillFieldCooldown:          i18n.SkillFieldCooldown,
 		skillFieldInflicts:          i18n.SkillFieldInflicts,
+		skillFieldOnItself:          i18n.SkillFieldOnItself,
+		skillFieldRestores:          i18n.SkillFieldRestores,
+		skillFieldDrains:            i18n.SkillFieldDrains,
 		skillFieldKeptForElements:   i18n.SkillFieldKeptForElements,
 		skillFieldKeptForRoles:      i18n.SkillFieldKeptForRoles,
 		skillFieldKeptForCharacters: i18n.SkillFieldKeptForCharacters,
@@ -769,6 +782,9 @@ func skillFieldHelp(m model, field int) string {
 		skillFieldAccuracy:          i18n.SkillHelpAccuracy,
 		skillFieldCooldown:          i18n.SkillHelpCooldown,
 		skillFieldInflicts:          i18n.SkillHelpInflicts,
+		skillFieldOnItself:          i18n.SkillHelpOnItself,
+		skillFieldRestores:          i18n.SkillHelpRestores,
+		skillFieldDrains:            i18n.SkillHelpDrains,
 		skillFieldKeptForElements:   i18n.SkillHelpKeptForElements,
 		skillFieldKeptForRoles:      i18n.SkillHelpKeptForRoles,
 		skillFieldKeptForCharacters: i18n.SkillHelpKeptForCharacters,
@@ -869,6 +885,31 @@ func shapeBoard(coverage forge.ShapeCoverage) string {
 	})
 }
 
+// formRoom is how many field rows the window has.
+//
+// The body gets m.height-4. This form spends the rest on a heading, a blank, a
+// blank, the damage row and the help line — five — plus a row for each ellipsis
+// the window draws and one for a refusal when there is one. Counting them here
+// rather than guessing is what the listing had to learn twice: a reserve one out
+// truncates the screen's own summary and looks like a layout bug rather than an
+// arithmetic one.
+func (s skillsScreen) formRoom(m model) int {
+	spent := 5
+	if s.err != nil {
+		spent++
+	}
+	// Room for both ellipses whenever the window cannot hold everything, so the
+	// count does not change as the cursor moves and shift every row under it.
+	room := m.height - 4 - spent
+	if room < skillFieldCount {
+		room -= 2
+	}
+	if room < 1 {
+		room = 1
+	}
+	return room
+}
+
 func (s skillsScreen) viewForm(m model) (string, string) {
 	if s.shapeDrawn {
 		return s.viewShape(m)
@@ -887,7 +928,18 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 		m.style.dim.Render(m.text(i18n.SkillFormSubtitle)) + "\n\n")
 
 	width := skillLabelWidth(m)
-	for field := range skillFieldCount {
+	// The form scrolls now. It spent every row an 80x24 window has at fourteen
+	// fields, and healing brought three more, so the choice was between a
+	// sub-screen for the rest and a window over all of them — and a form split
+	// in two makes an author hunt for a field rather than scroll to it.
+	//
+	// The window follows the cursor rather than the top, so tabbing to the last
+	// field brings it into view instead of leaving the cursor off screen.
+	from, to := window(skillFieldCount, s.field, s.formRoom(m))
+	if from > 0 {
+		out.WriteString("  " + m.style.dim.Render(ellipsis) + "\n")
+	}
+	for field := from; field < to; field++ {
 		marker := "  "
 		if field == s.field {
 			marker = "> "
@@ -899,6 +951,10 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 			name = m.style.label.Render(name)
 		}
 		out.WriteString(marker + name + " " + s.value(m, field, width) + "\n")
+	}
+
+	if to < skillFieldCount {
+		out.WriteString("  " + m.style.dim.Render(ellipsis) + "\n")
 	}
 
 	out.WriteString("\n")
@@ -947,7 +1003,7 @@ func (s skillsScreen) value(m model, field, labelWidth int) string {
 		return s.listValue(m, s.keptRoles, labelWidth)
 	case skillFieldKeptForCharacters:
 		return s.listValue(m, s.keptWho, labelWidth)
-	case skillFieldAccuracy, skillFieldPower:
+	case skillFieldAccuracy, skillFieldPower, skillFieldRestores, skillFieldDrains:
 		// Both are authored in parts per thousand because that is what the
 		// engine multiplies and divides by, but nobody reads 850 as a chance or
 		// 2200 as "twice over". The percentage sits beside the field rather than
