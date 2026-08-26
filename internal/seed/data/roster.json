@@ -11,28 +11,28 @@
       ]
     },
     {
-      "id": "ally.ivysaur",
-      "character": "pokemon.bulbasaur",
-      "level": 24,
+      "id": "ally.wartortle",
+      "character": "pokemon.squirtle",
+      "level": 16,
       "side": "ally",
       "slot": [
-        2,
+        1,
         0
       ]
     },
     {
-      "id": "ally.bulbasaur",
-      "character": "pokemon.bulbasaur",
+      "id": "ally.charmander",
+      "character": "pokemon.charmander",
       "level": 8,
       "side": "ally",
       "slot": [
-        2,
-        2
+        1,
+        1
       ]
     },
     {
-      "id": "foe.venusaur",
-      "character": "pokemon.bulbasaur",
+      "id": "foe.blastoise",
+      "character": "pokemon.squirtle",
       "level": 60,
       "side": "enemy",
       "slot": [
@@ -41,23 +41,23 @@
       ]
     },
     {
-      "id": "foe.ivysaur",
-      "character": "pokemon.bulbasaur",
-      "level": 24,
+      "id": "foe.charmeleon",
+      "character": "pokemon.charmander",
+      "level": 28,
       "side": "enemy",
       "slot": [
-        2,
+        1,
         0
       ]
     },
     {
-      "id": "foe.bulbasaur",
+      "id": "foe.ivysaur",
       "character": "pokemon.bulbasaur",
-      "level": 8,
+      "level": 16,
       "side": "enemy",
       "slot": [
-        2,
-        2
+        1,
+        1
       ]
     }
   ]
