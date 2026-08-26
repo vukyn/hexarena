@@ -437,17 +437,28 @@ func (m model) continued(format string, args ...any) string {
 // The rows this draws are variable in number, so it belongs only on a pane that
 // can afford that. The form counts its rows to scroll them and must not use it.
 func (m model) wrapped(name string, width int, value string) string {
+	return m.wrappedIn(name, width, lipgloss.NewStyle(), value)
+}
+
+// wrappedIn is wrapped with a style, applied one line at a time.
+//
+// One line at a time matters. Styling the whole block instead treats it as a box:
+// lipgloss pads every line out to the width of the widest and swallows the
+// trailing newline, so the row after it was appended to the end of a field of
+// spaces and disappeared. The dim reading lost its dimness and the art row lost
+// its existence, from one Render around the wrong thing.
+func (m model) wrappedIn(name string, width int, style lipgloss.Style, value string) string {
 	room := m.usableWidth() - 2 - width - 1
 	if room < 8 {
 		// Narrower than this and wrapping makes a column of syllables; the
 		// clip is the lesser evil.
-		return m.labelAt(name, width, "%s", clip(value, max(room, 1)))
+		return m.labelAt(name, width, "%s", style.Render(clip(value, max(room, 1))))
 	}
 	lines := wrapWords(value, room)
 	var out strings.Builder
-	out.WriteString(m.labelAt(name, width, "%s", lines[0]))
+	out.WriteString(m.labelAt(name, width, "%s", style.Render(lines[0])))
 	for _, line := range lines[1:] {
-		out.WriteString(m.labelAt("", width, "%s", line))
+		out.WriteString(m.labelAt("", width, "%s", style.Render(line)))
 	}
 	return out.String()
 }

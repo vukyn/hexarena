@@ -1411,3 +1411,47 @@ func TestAWrappedRowLinesUpUnderItsValue(t *testing.T) {
 		t.Error("a word longer than the room was cut instead of overflowing")
 	}
 }
+
+// TestAStyledWrappedRowDoesNotEatTheRowBelow is a regression, and the shape of
+// the bug is worth keeping: styling a whole wrapped block instead of each of its
+// lines made lipgloss treat it as a box, pad every line out to the widest and
+// swallow the trailing newline — so the row after it was appended to the end of a
+// field of spaces and vanished from the screen, taking its own styling with it.
+//
+// Asserted structurally rather than by looking for escape codes, because
+// lipgloss disables colour when the output is not a terminal and a test never
+// has one: what has to hold is that every row is still drawn, on its own line.
+func TestAStyledWrappedRowDoesNotEatTheRowBelow(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	m = send(t, m, tea.WindowSizeMsg{Width: 100, Height: 40})
+	browse := m.enter(screenBrowse)
+	body, _ := browse.browse.view(browse)
+	rows := strings.Split(body, "\n")
+
+	// The kit's reading is the styled wrapped row; the art row is what used to
+	// disappear behind it.
+	for _, label := range []i18n.Key{
+		i18n.LabelFrom, i18n.LabelPlaystyle, i18n.LabelElement, i18n.LabelKit,
+		i18n.LabelArt, i18n.LabelStages, i18n.LabelBiography, i18n.LabelEffectiveHP,
+	} {
+		want := i18n.Vi.Text(label)
+		found := false
+		for _, row := range rows {
+			if strings.HasPrefix(strings.TrimSpace(row), want) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("the pane has no row for %q:\n%s", want, body)
+		}
+	}
+	// And no row is a run of spaces: that is what the swallowed newline left
+	// behind, and it reads as a gap rather than as a bug.
+	for i, row := range rows {
+		if row != "" && strings.TrimSpace(row) == "" {
+			t.Errorf("row %d is %d cells of nothing", i, lipgloss.Width(row))
+		}
+	}
+	_ = lib
+}
