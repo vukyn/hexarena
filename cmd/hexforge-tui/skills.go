@@ -301,6 +301,15 @@ func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 			s = s.prefill(m.lib, s.skills[clamp(s.cursor, 0, len(s.skills)-1)])
 			s.added, s.edited = nil, nil
 		}
+	case "?":
+		// The description screen keeps no cursor of its own and reads this one,
+		// so raising it needs nothing handed over — the same arrangement the art
+		// preview has with the browser.
+		if len(s.skills) > 0 {
+			m.skills = s
+			m.screen = screenBlurb
+			return m, nil
+		}
 	}
 	m.skills = s
 	return m, nil

@@ -18,6 +18,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/passive"
+	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/tui"
 )
@@ -327,7 +328,7 @@ func describe(current *session, prompt *battle.Prompt, question string) {
 			return
 		}
 		fmt.Println()
-		fmt.Println(tui.Detail(declared, books.Patterns))
+		fmt.Println(tui.Detail(i18n.Vi, declared, books.Patterns))
 		return
 	}
 	for id, tag := range current.tags {
@@ -348,7 +349,7 @@ func describe(current *session, prompt *battle.Prompt, question string) {
 			}
 		}
 		fmt.Println()
-		fmt.Println(tui.DetailPassives(fmt.Sprintf("%s %s", tag, unit.Name), held))
+		fmt.Println(tui.DetailPassives(i18n.Vi, fmt.Sprintf("%s %s", tag, unit.Name), held))
 		return
 	}
 	fmt.Printf("  %q is not a skill number or a unit tag\n", question)

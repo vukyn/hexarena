@@ -330,6 +330,51 @@ const (
 	NoteRebuild
 	NoteGoldensMove
 
+	// What a skill does, in sentences, for somebody deciding whether to use it.
+	// Every one is derived from the skill's own fields — see Lang.Describe — so a
+	// wording here is a sentence with numbers dropped into it and never a fact of
+	// its own.
+	BlurbHits
+	BlurbAims
+	BlurbCells
+	BlurbStrikes
+	BlurbOnce
+	BlurbPierces
+	BlurbRestores
+	BlurbDrains
+	BlurbInflicts
+	BlurbSelfApplies
+	BlurbStrips
+	BlurbStripsOne
+	BlurbWhenCarrying
+	BlurbWhenHurt
+	BlurbAmplified
+	BlurbConsumes
+	BlurbCostRange
+	BlurbCostSelf
+	BlurbCostAccuracy
+	BlurbCostCooldown
+	BlurbCostCooldownOne
+	BlurbCostEveryTurn
+	BlurbAnd
+	BlurbSideEnemy
+	BlurbSideAlly
+	BlurbSideSelf
+	BlurbSideAll
+	BlurbStatAttack
+	BlurbStatDefense
+	BlurbStatSpeed
+	BlurbStatAccuracy
+	BlurbStatDodge
+	BlurbTraitGrants
+	BlurbTraitGrantsGated
+	BlurbTraitApplies
+	BlurbTraitImmune
+	BlurbTraitResists
+	BlurbTraitWhile
+	BlurbTraitNone
+	BlurbFooter
+
 	keyCount
 )
 
