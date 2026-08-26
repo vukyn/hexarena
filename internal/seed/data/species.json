@@ -13,7 +13,7 @@
     {
       "id": "plant",
       "name": "thực vật",
-      "note": "something that grows, which is what roots and photosynthesis read as; the two skills that mean it stay restricted by element, because a shared preset holds them"
+      "note": "something that grows, which is what roots and photosynthesis read as; the two skills that mean it are restricted to it, and the blighter preset gave them up rather than model a body as a fighting style"
     },
     {
       "id": "turtle",

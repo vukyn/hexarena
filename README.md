@@ -1015,10 +1015,12 @@ Two things the axis is deliberately *not*:
   what it is, so every character built from it that is not one of those kinds would
   be refused, and the refusal would land on whoever wrote the character. That is
   why `scorcher` still suggests seven skills where Charmander carries nine — and
-  why `ingrain` and `synthesis`, which read as a body, stay restricted by
-  **element**: they sit in the `blighter` kit, so moving them onto a `plant`
-  species would make the preset itself illegal. Grass is the proxy a shared kit
-  can hold, and it is a proxy rather than the fact.
+  why `blighter` suggests seven where Bulbasaur carries nine: `ingrain` and
+  `synthesis` read as a body — roots and photosynthesis — so they are kept by the
+  `plant` species and left the preset behind. They were on `elements` first,
+  because that kept the kit whole, and grass was only ever a proxy for "something
+  that grows": a grass-element construct with no roots could take both and nothing
+  said no. A preset losing an entry is the smaller loss.
   `TestABodyBoundSkillIsRestricted` is where those judgements are recorded, and it
   names the *axis* each skill is kept by rather than only asking that it is kept:
   "anybody may carry it" is one failure and "the wrong list keeps it" is another,

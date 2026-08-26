@@ -520,17 +520,19 @@ func TestTheShippedSkillBookSurvivesBeingWritten(t *testing.T) {
 //   - species, for a lineage. Being a dragon outlives the character that first
 //     had it, so a character allowlist said "only this one may carry it" when it
 //     meant "only a dragon may".
-//   - elements, for the two that mean a body. `ingrain` and `synthesis` are in
-//     the blighter kit, and cast.resolveArchetype refuses a species-restricted
-//     skill in a preset for the same reason it refuses a character-restricted
-//     one -- a preset says how a character fights and nothing about what it is.
-//     So moving these onto a plant species would make the preset itself illegal;
-//     grass is the proxy a shared kit can hold, and it is a proxy rather than
-//     the fact.
+//   - species, for the two that mean a body too. `ingrain` and `synthesis` read
+//     as roots and photosynthesis, so a plant is what they mean and grass was
+//     only ever a proxy for it -- a grass-element construct with no roots could
+//     take both, and nothing said no. They were kept on the proxy because
+//     cast.resolveArchetype refuses a species-restricted skill in a preset, and
+//     moving them cost the blighter kit two entries. That is the right way round:
+//     a preset losing a skill is a smaller thing than modelling a body as a
+//     fighting style, and scorcher had already paid the same price for the two
+//     lineage skills.
 func TestABodyBoundSkillIsRestricted(t *testing.T) {
 	bound := map[string]struct{ why, axis string }{
-		"ingrain":      {"roots, so only something that grows may take it", "elements"},
-		"synthesis":    {"photosynthesis, so only something that grows may take it", "elements"},
+		"ingrain":      {"roots, so only something that grows may take it", "species"},
+		"synthesis":    {"photosynthesis, so only something that grows may take it", "species"},
 		"dragon_rage":  {"a lineage, not a technique", "species"},
 		"dragon_dance": {"a lineage, not a technique", "species"},
 	}

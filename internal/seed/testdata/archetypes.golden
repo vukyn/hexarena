@@ -11,7 +11,7 @@ blighter, formation column 1
            absorbs 5543 of the 11500 budget, 5957 to spare
   level 60 hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50
            absorbs 10410 of the 11500 budget, 1090 to spare
-  kit      vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed synthesis ingrain
+  kit      vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed
 
 scorcher, formation column 0
   the fast one that wins before attrition matters: set the target alight, then cash the burn in with a bigger hit than it can trade back

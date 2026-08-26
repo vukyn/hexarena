@@ -176,11 +176,13 @@ func resolveArchetype(declared archetypeFile, deps ArchetypeDeps) (Archetype, er
 	// a second lookup.
 	//
 	// A species-restricted skill is refused on exactly the same ground, and that
-	// is what keeps the two axes from collapsing into each other: `ingrain` and
-	// `synthesis` are in the blighter kit and read as a body ("roots", "photo-
-	// synthesis"), so moving them onto a plant species would make the preset
-	// itself illegal. They stay restricted by element, which is the proxy a
-	// shared kit can hold.
+	// is what keeps the two axes from collapsing into each other. The price is
+	// real and has been paid twice: `scorcher` gave up the two lineage skills and
+	// `blighter` gave up `ingrain` and `synthesis`, so both presets suggest seven
+	// skills while the characters built from them carry nine. A preset losing an
+	// entry is the smaller loss — the alternative is a preset that says a
+	// fighting style implies a body, which is the coupling species exists to
+	// remove.
 	for _, carried := range kit {
 		if carried.Restrict.NamesCharacters() {
 			return fail("has %q in its kit, which only %s may carry, and a preset is shared by every character built from it",
