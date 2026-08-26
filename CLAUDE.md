@@ -1064,8 +1064,13 @@ is the constraint each piece has to respect.
       ⚠️ The `Healed` event carries **`Drained`**, the share, because `Amount`
       alone cannot say why once a trait can drain too — the `Pierce`/`Refused`
       trap again.
-      ⚠️ Both traits are **carried by nobody**, like `venom_blood` before them:
-      without the trait slot they make one unit better, not two different.
+      Both are on Bulbasaur's learnset now (`blood_thirst`@20, `last_gasp`@40),
+      which needed the trait slot first: before it a character brought everything,
+      so a fourth trait made one unit better rather than two different. At the cap
+      the **one** slot decides between five traits of four kinds — resist+reply,
+      amplifier, stat change, drain, gated drain. `TestBulbasaurCanBeBuiltTwoWays`
+      measures that the *choice* exists, and fails if `TraitSlots` grows or a
+      direction loses its last entry.
       ⚠️ `Applies` is NOT retaliation, and is still not: it adds to what the
       holder's **own** attack inflicts (touch → poisoned). Retaliation is
       `Replies`, which is built.

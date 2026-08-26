@@ -747,3 +747,51 @@ func castReport(characters *cast.Book, origins *cast.OriginBook, limits progress
 	}
 	return b.String()
 }
+
+// TestBulbasaurCanBeBuiltTwoWays is the scenario the trait work was for, asserted
+// rather than described: at the cap the character offers traits from two
+// different builds, and a placement carries exactly one, so bringing the poison
+// answer means not bringing the sustain and the other way round.
+//
+// It measures the *choice* rather than any one trait, because a choice is what a
+// slot is. Before the slot existed a character brought everything it had, and
+// every trait added made one unit better rather than two units different — this
+// fails the day that comes back, whether by the slot count moving or by a
+// direction losing its last entry.
+func TestBulbasaurCanBeBuiltTwoWays(t *testing.T) {
+	book := mustCast(t)
+	character, known := book.Get("pokemon.bulbasaur")
+	if !known {
+		t.Fatal("the shipped cast holds no bulbasaur")
+	}
+	available := character.PassivesAt(progression.LevelCap)
+
+	builds := map[string][]string{
+		"poison":    {"venom_blood", "virulence"},
+		"sustain":   {"blood_thirst", "last_gasp"},
+		"endurance": {"endurance"},
+	}
+	for name, wanted := range builds {
+		found := 0
+		for _, id := range wanted {
+			if slices.Contains(available, id) {
+				found++
+			}
+		}
+		if found == 0 {
+			t.Errorf("nothing in the %s build is available at the cap; it holds %v", name, available)
+		}
+	}
+
+	// One slot, so the builds are alternatives rather than a list. If this ever
+	// grows, every trait above becomes an addition and the scenario stops being
+	// a choice.
+	if seed.TraitSlots != 1 {
+		t.Errorf("a placement carries %d traits, and two builds are only a choice at one",
+			seed.TraitSlots)
+	}
+	if len(available) < 2 {
+		t.Errorf("%d traits are available at the cap, so the one slot decides nothing",
+			len(available))
+	}
+}

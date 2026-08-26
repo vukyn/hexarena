@@ -143,15 +143,23 @@
       ],
       "passives": [
         {
+          "id": "venom_blood"
+        },
+        {
           "id": "endurance",
           "at_level": 16
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 20
         },
         {
           "id": "virulence",
           "at_level": 32
         },
         {
-          "id": "venom_blood"
+          "id": "last_gasp",
+          "at_level": 40
         }
       ]
     },
