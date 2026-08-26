@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -124,16 +124,16 @@ func (s skillsScreen) refresh(lib *forge.Library) skillsScreen {
 func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
 	s.inputs = make([]textinput.Model, skillFieldCount)
 	for i := range s.inputs {
-		input := textinput.New()
+		input := newInput()
 		input.Prompt = ""
 		input.CharLimit = 200
-		input.Width = 24
+		input.SetWidth(24)
 		s.inputs[i] = input
 	}
-	s.inputs[skillFieldID].Width = 32
-	s.inputs[skillFieldName].Width = 32
-	s.inputs[skillFieldInflicts].Width = 40
-	s.inputs[skillFieldOnItself].Width = 40
+	s.inputs[skillFieldID].SetWidth(32)
+	s.inputs[skillFieldName].SetWidth(32)
+	s.inputs[skillFieldInflicts].SetWidth(40)
+	s.inputs[skillFieldOnItself].SetWidth(40)
 	// The defaults are the shape of an ordinary single-target attack, and the
 	// element among them is the one worth spelling out: neutral is the common
 	// pool, so a skill authored without an opinion about its element is one
@@ -273,7 +273,7 @@ func skillListField(field int) bool {
 // rather than a form, so no field has the keyboard, and its only other letters
 // are q, k, j and a. It sits beside a for the reason those two belong together —
 // adding a skill and changing one are the same form reached two ways.
-func (s skillsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if s.formInFront() {
 		return s.updateForm(m, message)
 	}
@@ -301,20 +301,28 @@ func (s skillsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (s skillsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	// The diagram is answered first, before Escape can be read as leaving the
 	// form and before Enter can be read as moving to the next field: while it is
 	// over the form, both of those close it and nothing else on the form is
 	// reachable.
 	if s.shapeDrawn {
 		switch message.String() {
-		case "esc", "enter", " ":
+		case "esc", "enter", "space":
 			s.shapeDrawn = false
 		case "left":
 			s = s.cycle(m, -1)
 		case "right":
 			s = s.cycle(m, 1)
 		}
+		m.skills = s
+		return m, nil
+	}
+	// After the diagram and before the switch: saving answers to more than one
+	// keystroke, and isSaveKey is the single declaration of which. It comes
+	// second because the diagram takes every key while it is open.
+	if isSaveKey(message) {
+		s = s.save(m)
 		m.skills = s
 		return m, nil
 	}
@@ -337,10 +345,6 @@ func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cm
 			m.skills.adding = false
 			return m
 		}), nil
-	case "ctrl+s":
-		s = s.save(m)
-		m.skills = s
-		return m, nil
 	case "up", "shift+tab":
 		s = s.moveTo(s.field - 1)
 		m.skills = s
@@ -356,7 +360,7 @@ func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cm
 			s = s.cycle(m, -1)
 		case "right":
 			s = s.cycle(m, 1)
-		case " ":
+		case "space":
 			// Space is the same key the three allowlists open their picker with,
 			// and it is free on a chooser: a chooser is stepped with the arrows.
 			// Only the shape has anything to open.
@@ -371,12 +375,12 @@ func (s skillsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cm
 	// opens it rather than typing a space, and that costs nothing: the syntax
 	// ParseApplications reads has no spaces in it, and every other way of
 	// filling this field still works, because the field is the record.
-	if (s.field == skillFieldInflicts || s.field == skillFieldOnItself) && message.String() == " " {
+	if (s.field == skillFieldInflicts || s.field == skillFieldOnItself) && message.String() == "space" {
 		m.skills = s
 		return m.openStatuses(), nil
 	}
 	if skillListField(s.field) {
-		if message.String() == " " || message.String() == "right" {
+		if message.String() == "space" || message.String() == "right" {
 			m.skills = s
 			return m.openAllowlist(s.field), nil
 		}
@@ -919,7 +923,7 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 	if s.shapeDrawn {
 		return s.viewShape(m)
 	}
-	footer := m.text(i18n.SkillFormFooter)
+	footer := m.text(i18n.SkillFormFooter, saveKeyLabel())
 	// The heading is the whole of what tells an author which of the two jobs this
 	// form is doing, so it is not shared: every field is prefilled on an edit, and
 	// a prefilled form under "new skill" reads as a form that has remembered the

@@ -26,7 +26,7 @@ import (
 	"io"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -95,7 +95,9 @@ func run(chosen options) error {
 	if err != nil {
 		return err
 	}
-	program := tea.NewProgram(newModel(lib, chosen.lang), tea.WithAltScreen())
+	// No alternate-screen option here: bubbletea v2 asks for it on the view the
+	// model returns, so it is model.View that says so.
+	program := tea.NewProgram(newModel(lib, chosen.lang))
 	_, err = program.Run()
 	return err
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
@@ -83,7 +83,7 @@ func (b browseScreen) rows() []cast.Character {
 	return out
 }
 
-func (b browseScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (b browseScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch message.String() {
 	case "q":
 		return m, tea.Quit

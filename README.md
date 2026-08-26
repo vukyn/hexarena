@@ -18,7 +18,7 @@ go run ./cmd/hexforge-tui --lang en            # ...or in English; ctrl+l swaps 
 go test ./...
 ```
 
-The full-screen authoring client is built on bubbletea, with bubbles and
+The full-screen authoring client is built on bubbletea v2, with bubbles and
 lipgloss beside it. Everything else needs only the standard library so far,
 which is how it worked out rather than a constraint being kept.
 
@@ -780,6 +780,29 @@ go run ./cmd/hexforge-tui --lang en       # or: HEXARENA_LANG=en, or ctrl+l
 naming the two that work, and `ctrl+l` swaps the languages from any screen —
 mid-form included, without losing a keystroke, because a field holds what was
 typed and only the labels around it are redrawn.
+
+#### Saving: ctrl+s, and ⌘S where a terminal will pass it
+
+Every form writes on **ctrl+s**, which works everywhere, and also on **⌘S**,
+which works where the terminal lets it. On macOS the footer offers both, `⌘S/^S`;
+elsewhere it says `ctrl+s`, because there is nothing to choose between.
+
+⌘S is not something a program can simply ask for. Command is not a modifier the
+classic terminal escape sequences can encode — it does not reach the program at
+all — so it takes the **Kitty keyboard protocol**, which reports it as Super and
+which bubbletea v2 parses. Three things then have to be true at once:
+
+| | |
+| --- | --- |
+| the terminal speaks the protocol | kitty, Ghostty, WezTerm, foot, and iTerm2 with CSI u enabled. **Terminal.app does not** |
+| it passes ⌘S through | rather than opening its own *Save Text As…* |
+| nothing upstream claims Super | on Linux a window manager may take it first |
+
+Where any of those fails, ⌘S never arrives and ctrl+s is the answer — which is
+why the footer keeps naming a control-S on every platform, and why the label is
+never shortened to ⌘S alone. A terminal that will not pass ⌘S can usually be
+told to send the other one instead: iTerm2 and Ghostty can both map ⌘S to
+`Send Text: ^S`, which reaches this program as the keystroke it always accepts.
 
 That is possible because `internal/forge` hands over *facts* rather than
 sentences: a refused kit arrives as a value carrying the affinity, the skill and

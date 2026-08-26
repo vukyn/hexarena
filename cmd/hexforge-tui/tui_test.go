@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/hex"
@@ -119,32 +119,46 @@ func send(t *testing.T, m model, message tea.Msg) model {
 }
 
 // key sends a named key: "down", "esc", "ctrl+s" and so on.
+//
+// A key is a code and a set of modifiers rather than a type, which is what
+// bubbletea v2 delivers. A modified key carries no Text, so nothing here has to
+// say separately that ctrl+s is not the letter s.
 func key(t *testing.T, m model, name string) model {
 	t.Helper()
-	types := map[string]tea.KeyType{
-		"down": tea.KeyDown, "up": tea.KeyUp, "left": tea.KeyLeft, "right": tea.KeyRight,
-		"enter": tea.KeyEnter, "esc": tea.KeyEscape, "tab": tea.KeyTab, "ctrl+s": tea.KeyCtrlS,
+	presses := map[string]tea.KeyPressMsg{
+		"down": {Code: tea.KeyDown}, "up": {Code: tea.KeyUp},
+		"left": {Code: tea.KeyLeft}, "right": {Code: tea.KeyRight},
+		"enter": {Code: tea.KeyEnter}, "esc": {Code: tea.KeyEscape},
+		"tab":    {Code: tea.KeyTab},
+		"ctrl+s": {Code: 's', Mod: tea.ModCtrl},
+		// The Command key, which only a terminal speaking the Kitty keyboard
+		// protocol ever reports. The whole point of being on v2 is that this
+		// keystroke can exist at all.
+		"super+s": {Code: 's', Mod: tea.ModSuper},
 		// Space is a named key here rather than a rune, because that is how a
 		// terminal delivers it: bubbletea turns a bare space into KeySpace,
 		// whose String is " ", which is what the screens match on.
-		"space": tea.KeySpace,
+		"space": {Code: tea.KeySpace, Text: " "},
 	}
-	kind, known := types[name]
+	press, known := presses[name]
 	if !known {
 		t.Fatalf("no key named %q in the test helper", name)
 	}
-	return send(t, m, tea.KeyMsg{Type: kind})
+	return send(t, m, press)
 }
 
 // typeText sends one rune per message, which is what a keyboard does.
 //
 // Sending a whole word in one message would be a lie in a way that matters: a
-// multi-rune KeyMsg stringifies to that word, so "up" typed in one go would be
-// routed as the up arrow rather than as two letters.
+// key carrying several characters stringifies to that word, so "up" typed in one
+// go would be routed as the up arrow rather than as two letters.
+//
+// Code and Text both carry the letter, which is what a terminal reports for a
+// printable key: Code is which key, Text is what it produced.
 func typeText(t *testing.T, m model, text string) model {
 	t.Helper()
 	for _, letter := range text {
-		m = send(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{letter}})
+		m = send(t, m, tea.KeyPressMsg{Code: letter, Text: string(letter)})
 	}
 	return m
 }
@@ -153,7 +167,7 @@ func typeText(t *testing.T, m model, text string) model {
 func retype(t *testing.T, m model, text string) model {
 	t.Helper()
 	for range len(m.form.inputs[m.form.cursor].Value()) {
-		m = send(t, m, tea.KeyMsg{Type: tea.KeyBackspace})
+		m = send(t, m, tea.KeyPressMsg{Code: tea.KeyBackspace})
 	}
 	return typeText(t, m, text)
 }
@@ -482,7 +496,7 @@ func TestTheCarryCheckFlipsWithTheElement(t *testing.T) {
 	// Delete "fire" and type an affinity that carries it: the same check flips
 	// without anything else changing.
 	for range len("fire") {
-		m = send(t, m, tea.KeyMsg{Type: tea.KeyBackspace})
+		m = send(t, m, tea.KeyPressMsg{Code: tea.KeyBackspace})
 	}
 	m = typeText(t, m, "water/ice")
 	accepted := m.form.carryLine(m, m.form.draft())
@@ -574,8 +588,8 @@ func TestLeavingAnEditedFormAsksFirst(t *testing.T) {
 	if m.guard == nil {
 		t.Fatal("leaving an edited form did not ask")
 	}
-	if !strings.Contains(m.View(), "[y/N]") {
-		t.Errorf("the pending question is not on screen:\n%s", m.View())
+	if !strings.Contains(m.screenContent(), "[y/N]") {
+		t.Errorf("the pending question is not on screen:\n%s", m.screenContent())
 	}
 
 	// Anything but a yes keeps the work, including the screen and the text.
@@ -609,7 +623,7 @@ func TestATerminalTooSmallSaysSo(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	m = m.enter(screenNew)
 	m = send(t, m, tea.WindowSizeMsg{Width: 40, Height: 10})
-	drawn := m.View()
+	drawn := m.screenContent()
 	// It is drawn in the language in front, and it names both sizes: the person
 	// who cannot read this screen is exactly the one who needs it.
 	for _, want := range []string{"quá nhỏ", "80x24", "40x10", "hexforge"} {
@@ -622,8 +636,8 @@ func TestATerminalTooSmallSaysSo(t *testing.T) {
 	}
 	// Growing the window brings the form back rather than needing a restart.
 	m = send(t, m, tea.WindowSizeMsg{Width: 120, Height: 44})
-	if !strings.Contains(m.View(), m.text(i18n.FormHeading)) {
-		t.Errorf("the form did not come back after a resize:\n%s", m.View())
+	if !strings.Contains(m.screenContent(), m.text(i18n.FormHeading)) {
+		t.Errorf("the form did not come back after a resize:\n%s", m.screenContent())
 	}
 }
 
@@ -705,7 +719,7 @@ func TestEveryStateIsReadableWithoutColour(t *testing.T) {
 				t.Fatalf("remove the art: %v", err)
 			}
 			m = m.enter(screenCheck)
-			drawn := m.View()
+			drawn := m.screenContent()
 			if strings.Contains(drawn, "\x1b[") {
 				t.Errorf("NO_COLOR is set and the screen still carries escape codes:\n%q", drawn)
 			}
@@ -715,7 +729,7 @@ func TestEveryStateIsReadableWithoutColour(t *testing.T) {
 			// colour taken out and nothing put back is an empty box.
 			plain := m.enter(screenBrowse)
 			plain.screen = screenPreview
-			picture := plain.View()
+			picture := plain.screenContent()
 			if strings.Contains(picture, "\x1b[") {
 				t.Errorf("NO_COLOR is set and the preview still carries escape codes:\n%q", picture)
 			}
@@ -737,8 +751,8 @@ func TestEveryStateIsReadableWithoutColour(t *testing.T) {
 			// A passing check says so in words as well.
 			fresh, _, _ := start(t, test.lang)
 			fresh = fresh.enter(screenCheck)
-			if !strings.Contains(fresh.View(), test.works) {
-				t.Errorf("a clean check does not say it passed:\n%s", fresh.View())
+			if !strings.Contains(fresh.screenContent(), test.works) {
+				t.Errorf("a clean check does not say it passed:\n%s", fresh.screenContent())
 			}
 		})
 	}
@@ -890,7 +904,7 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 	// p opens it, and the browser keeps its place: the preview has no cursor of
 	// its own, so anything it lost would have to be found again on the way back.
 	before := m.browse
-	next, _ := m.browse.update(m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'p'}})
+	next, _ := m.browse.update(m, tea.KeyPressMsg{Code: 'p', Text: "p"})
 	m = next.(model)
 	if m.screen != screenPreview {
 		t.Fatalf("p left the program on screen %d", m.screen)
@@ -928,7 +942,7 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 	}
 
 	// esc goes back, and p from inside is the same door.
-	back, _ := m.preview.update(m, tea.KeyMsg{Type: tea.KeyEsc})
+	back, _ := m.preview.update(m, tea.KeyPressMsg{Code: tea.KeyEscape})
 	if back.(model).screen != screenBrowse {
 		t.Error("esc did not return to the browser")
 	}
@@ -1027,7 +1041,7 @@ func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
 		m = m.enter(screenBrowse)
 		m.screen = screenPreview
 
-		framed := m.View()
+		framed := m.screenContent()
 		if notice := m.text(i18n.Truncated); strings.Contains(framed, notice) {
 			t.Errorf("at %d rows the preview is cut off:\n%s", height, framed)
 		}
@@ -1054,10 +1068,10 @@ func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 	base, _, _ := start(t, i18n.Vi)
 	for _, target := range []screen{screenMenu, screenBrowse, screenOrigins, screenCheck, screenPreview} {
 		m := base.enter(target)
-		if _, command := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}}); !quits(command) {
+		if _, command := m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"}); !quits(command) {
 			t.Errorf("q did not quit from screen %d", target)
 		}
-		if _, command := m.Update(tea.KeyMsg{Type: tea.KeyCtrlC}); !quits(command) {
+		if _, command := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}); !quits(command) {
 			t.Errorf("ctrl+c did not quit from screen %d", target)
 		}
 	}
@@ -1065,14 +1079,14 @@ func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 	// On the form, q is a letter: it lands in the field rather than ending the
 	// session. ctrl+c is the quit there, which is what the footer says.
 	m := base.enter(screenNew)
-	m = send(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}})
+	m = send(t, m, tea.KeyPressMsg{Code: 'q', Text: "q"})
 	if got := m.form.draft().ID; got != "q" {
 		t.Errorf("the id field holds %q, want the letter that was typed", got)
 	}
 	if m.screen != screenNew {
 		t.Error("q left the form")
 	}
-	if _, command := m.Update(tea.KeyMsg{Type: tea.KeyCtrlC}); !quits(command) {
+	if _, command := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}); !quits(command) {
 		t.Error("ctrl+c did not quit the form")
 	}
 	// And with a question pending it still quits, rather than being eaten as an
@@ -1081,7 +1095,7 @@ func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 	if m.guard == nil {
 		t.Fatal("the guard did not fire")
 	}
-	if _, command := m.Update(tea.KeyMsg{Type: tea.KeyCtrlC}); !quits(command) {
+	if _, command := m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}); !quits(command) {
 		t.Error("ctrl+c did not quit with a question pending")
 	}
 }
@@ -1142,8 +1156,8 @@ func TestAddingAWorkWritesTheCatalog(t *testing.T) {
 	if want := `nguồn "example-play" đã có trong danh mục rồi`; m.lang.Error(taken) != want {
 		t.Errorf("the refusal reads\n %q\nwant\n %q", m.lang.Error(taken), want)
 	}
-	if !strings.Contains(m.View(), "chưa thêm được") {
-		t.Errorf("the refusal is not on screen:\n%s", m.View())
+	if !strings.Contains(m.screenContent(), "chưa thêm được") {
+		t.Errorf("the refusal is not on screen:\n%s", m.screenContent())
 	}
 }
 
@@ -1163,7 +1177,7 @@ func TestTheFooterNamesTheKeysOfTheScreenInFront(t *testing.T) {
 	}{
 		{screenMenu, []string{"enter", "q"}},
 		{screenBrowse, []string{"↑/↓", "←/→", "f", "esc", "q"}},
-		{screenNew, []string{"↑/↓", "←/→", "ctrl+s", "esc", "ctrl+c"}},
+		{screenNew, []string{"↑/↓", "←/→", saveKeyLabel(), "esc", "ctrl+c"}},
 		{screenOrigins, []string{"a", "esc", "q"}},
 		// Both of the skill list's own keys, because a key nobody is told about
 		// is a key nobody presses: editing a shipped skill is the whole reason
@@ -1175,7 +1189,7 @@ func TestTheFooterNamesTheKeysOfTheScreenInFront(t *testing.T) {
 		base, _, _ := start(t, lang)
 		for _, test := range cases {
 			m := base.enter(test.target)
-			drawn := m.View()
+			drawn := m.screenContent()
 			lines := strings.Split(strings.TrimRight(drawn, "\n"), "\n")
 			footer := lines[len(lines)-1]
 			for _, want := range append(test.wants, "ctrl+l") {
@@ -1301,7 +1315,7 @@ func TestTheKitListSaysWhatThisCharacterCannotTakeAndWhy(t *testing.T) {
 	if refusal == nil {
 		t.Fatal("a fire character is allowed a grass skill")
 	}
-	drawn := m.View()
+	drawn := m.screenContent()
 	if !strings.Contains(drawn, i18n.Vi.Error(refusal)) {
 		t.Errorf("the list does not say why the skill is unavailable:\n%s", drawn)
 	}
@@ -1604,7 +1618,7 @@ func TestEditingASkillOpensThePrefilledFormAndReplaces(t *testing.T) {
 	// Change one number and save.
 	m = skillFormTo(t, m, skillFieldPower)
 	for range len(m.skills.inputs[skillFieldPower].Value()) {
-		m = send(t, m, tea.KeyMsg{Type: tea.KeyBackspace})
+		m = send(t, m, tea.KeyPressMsg{Code: tea.KeyBackspace})
 	}
 	m = typeText(t, m, "1500")
 	m = key(t, m, "ctrl+s")
@@ -1740,7 +1754,7 @@ func TestTheSkillListingFitsTheSmallestWindowAfterAnEdit(t *testing.T) {
 				selected.ID)
 		}
 		m.skills.edited = someSkillChange(t, m)
-		drawn := m.View()
+		drawn := m.screenContent()
 		if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
 			strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
 			t.Errorf("the %s skill listing is truncated at %dx%d:\n%s",
@@ -1916,7 +1930,7 @@ func TestTheShapeDiagramFitsTheSmallestWindow(t *testing.T) {
 			m.skills.field = skillFieldShape
 			m.skills.shapeIndex = indexOf(lib.PatternNames(), name)
 			m.skills.shapeDrawn = true
-			drawn := m.View()
+			drawn := m.screenContent()
 			if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
 				strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
 				t.Errorf("the %s diagram for %s is truncated at %dx%d:\n%s",
@@ -2137,7 +2151,7 @@ func TestTheStatusPickerFitsTheSmallestWindow(t *testing.T) {
 		m = pickTo(t, m, "poison")
 		m = key(t, m, "space")
 		m = typeText(t, m, "300")
-		drawn := m.View()
+		drawn := m.screenContent()
 		if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
 			strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
 			t.Errorf("the %s status picker is truncated at %dx%d:\n%s",
@@ -2316,9 +2330,9 @@ func TestAWorkWithNoCastSaysSo(t *testing.T) {
 		if !slices.Equal(m.picker.chosen, before) {
 			t.Errorf("space on an empty list chose %v", m.picker.chosen)
 		}
-		if strings.Contains(m.View(), lang.Text(i18n.Truncated)) {
+		if strings.Contains(m.screenContent(), lang.Text(i18n.Truncated)) {
 			t.Errorf("the %s filtered picker is truncated at %dx%d:\n%s",
-				lang, minWidth, minHeight, m.View())
+				lang, minWidth, minHeight, m.screenContent())
 		}
 	}
 }

@@ -6,9 +6,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
@@ -116,17 +116,17 @@ func newFormScreen(lib *forge.Library) formScreen {
 		f.statFollowsPreset[kind] = true
 	}
 	for i := range f.inputs {
-		input := textinput.New()
+		input := newInput()
 		input.Prompt = ""
 		input.CharLimit = 200
-		input.Width = 40
+		input.SetWidth(40)
 		f.inputs[i] = input
 	}
 	f.inputs[fieldBio].CharLimit = 400
 	// A curve is nine characters at its longest, so a narrow field leaves room
 	// for the meter and the numbers beside it inside the minimum window.
 	for _, kind := range progression.Kinds() {
-		f.inputs[fieldStatBase+int(kind)].Width = 11
+		f.inputs[fieldStatBase+int(kind)].SetWidth(11)
 	}
 	f = f.applyPreset()
 	f.inputs[f.cursor].Focus()
@@ -235,14 +235,17 @@ func (f formScreen) choiceField(field int) bool {
 	}
 }
 
-func (f formScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch message.String() {
-	case "esc":
-		return f.leave(m), nil
-	case "ctrl+s":
+func (f formScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	// Saving is asked before the switch because it answers to more than one
+	// keystroke; isSaveKey is the single declaration of which.
+	if isSaveKey(message) {
 		f = f.save(m)
 		m.form = f
 		return m, nil
+	}
+	switch message.String() {
+	case "esc":
+		return f.leave(m), nil
 	case "up", "shift+tab":
 		f = f.moveTo(f.cursor - 1)
 		m.form = f
@@ -257,7 +260,7 @@ func (f formScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	// measures that rather than asserting it.
 	if f.cursor == fieldKit {
 		m.form = f
-		if message.String() == " " || message.String() == "right" {
+		if message.String() == "space" || message.String() == "right" {
 			return m.openKit(), nil
 		}
 		return m, nil
@@ -434,7 +437,7 @@ func formLabelWidth(m model) int {
 }
 
 func (f formScreen) view(m model) (string, string) {
-	footer := m.text(i18n.FormFooter)
+	footer := m.text(i18n.FormFooter, saveKeyLabel())
 	var out strings.Builder
 	out.WriteString(m.style.heading.Render(m.text(i18n.FormHeading)) + "  " +
 		m.style.dim.Render(m.text(i18n.FormSubtitle, progression.LevelCap)) + "\n\n")

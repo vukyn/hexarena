@@ -14,7 +14,9 @@ here another service would want.
 
 Go 1.27. Third-party dependencies are allowed anywhere in the module; reach for
 one when it earns its place. `cmd/hexforge-tui` uses bubbletea, bubbles and
-lipgloss, and the rest of the module currently happens to need nothing beyond
+lipgloss — all three at **v2**, under `charm.land/…/v2` rather than
+`github.com/charmbracelet/…`, which is where that project moved them — and the
+rest of the module currently happens to need nothing beyond
 the standard library — that is where it landed, not a rule to defend.
 
 What *is* a rule is the layer contract below, and none of it is about
@@ -116,6 +118,47 @@ kit-versus-affinity gap). If the TUI needs a sentence the CLI already has, it
 comes from the package. `internal/forge` is the one part of the module allowed
 to read and write real files, and its doc comment says why: `internal/core` may
 not, and `internal/seed` only ever reads the embedded copy.
+
+### What bubbletea v2 moved, and the four things it broke silently
+
+The migration was made for one reason: **a terminal cannot deliver the Command
+key over the classic escape sequences.** There is no encoding for it, and v1's
+`tea.Key` carried only `Alt`, so ⌘S did not exist as far as a program was
+concerned. The Kitty keyboard protocol does carry it, v2 parses that protocol,
+and a Command key now arrives as `tea.ModSuper`. `cmd/hexforge-tui/savekey.go` is
+the single declaration of which keystrokes save; all three forms ask `isSaveKey`
+rather than matching a string of their own.
+
+⚠️ **That does not make ⌘S universally available and nothing in this repo can.**
+The terminal has to speak the protocol (kitty, Ghostty, WezTerm, foot, iTerm2
+with CSI u on — Terminal.app never), it has to pass ⌘S through instead of opening
+its own Save dialog, and on Linux a window manager may claim Super first. So
+`ctrl+s` stays the binding that always works and `saveKeyLabel` keeps naming a
+control-S on every platform. Do not "simplify" the footer to ⌘S alone on macOS.
+
+Four API changes matter, and three of them fail *quietly* rather than at compile
+time — which is why they are written down:
+
+- **`Model.View` returns `tea.View`, not `string`**, and the alternate screen is
+  a field on it rather than `tea.WithAltScreen()` on the program. `model.View`
+  wraps `model.screenContent`, which is the string the tests read.
+- ⚠️ **A bare space stringifies as `"space"`, not `" "`.** `uv.Key.String`
+  returns `Text` only when it is not a single space, so space falls through to
+  `Keystroke()` and comes out named. Every `case " "` compiled fine and matched
+  nothing.
+- ⚠️ **Colour is the program's decision now, not the library's.** lipgloss v2
+  writes escape codes unconditionally and the program downsamples for the
+  terminal it is attached to, so a `textinput` on its own defaults keeps its
+  colours under `NO_COLOR`. `newInput` / `newInputStyles` in `style.go` restore
+  the palette's rule; under v1 the library detected the missing terminal and did
+  it for free, which is exactly why it is named now.
+- ⚠️ **A virtual cursor is drawn as reverse video**, which is an escape code, so
+  `newInput` turns it off on a plain terminal. That is not a regression: v1's
+  renderer stripped the attribute itself, so the plain path never had a cursor
+  either.
+
+Two mechanical ones: a key is `Code`/`Text`/`Mod` rather than `Type`/`Runes`
+(see `numberKey`), and `textinput.Width` is now `SetWidth`.
 
 **Two languages, one set of facts: `internal/i18n`.** `cmd/hexforge-tui` speaks
 Vietnamese by default and English on `--lang en` / `HEXARENA_LANG=en` / `ctrl+l`;
