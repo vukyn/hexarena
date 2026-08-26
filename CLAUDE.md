@@ -557,6 +557,25 @@ is the constraint each piece has to respect.
       traps: a passive that changes a number **must emit an event** or the log can
       no longer explain its own figures, and an enlist-time passive touching speed
       must apply before the first wait is computed. See README → Roadmap.
+- [ ] **A battle nobody can act in has no outcome.** `checkEnd` ends one only by
+      emptying a side, so a mutual deadlock runs to the turn limit and returns an
+      *error*. Real, not hypothetical: seed 18 skipped 3955 of 4000 turns, all
+      "nothing usable", because two survivors stood on the back column with a
+      range-3 kit — measured through `hex.Place`, the furthest enemy slot is 3
+      cells from column 2, 4 from column 1 and 5 from column 0. The root cause is
+      that **nothing moves**: reach is fixed at enlistment, so a situation that
+      would resolve itself in a game with movement cannot here. Two answers, both
+      wanted: refuse the obvious case at authoring (`battle.New` checking every
+      unit can reach someone; `hexforge` warning when a kit's range cannot cover
+      the board) — necessary but not sufficient, since reach shrinks as units die
+      — and end it at runtime as a **draw**. That last needs care: a skipped turn
+      is normal and resolves, so the condition is a full cycle where nobody could
+      act *and* nothing pending would change it (a poisoned deadlock is not one);
+      a draw needs its own event or the log cannot say why the battle stopped; it
+      is not an error, so the turn limit goes back to being only a backstop; and
+      detection must be a pure function of state, because a battle that draws on
+      one machine has to draw on every other from the same seed. See README →
+      Roadmap.
 - [ ] **Healing, draining, and a regeneration status.** Nothing restores health:
       `wound` only subtracts, `Set.Tick` returns one unsigned damage total, and no
       `status.Category` heals — which is why Bulbasaur has no Leech Seed. Three

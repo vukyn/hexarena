@@ -500,6 +500,56 @@ book validated cross-book the way skills are, a `Passives []string` field on
 `cast.Character`, and an archetype able to suggest one — which would also give an
 archetype its first mechanical weight, since today it carries none.
 
+### A battle nobody can act in has no outcome
+
+`checkEnd` ends a battle when a side is emptied, and that is the only way one
+ends. A battle where **neither side can act** is not an outcome the engine can
+express: it runs to the turn limit and comes back as a failure.
+
+This is not hypothetical. Seed 18 spent 3955 of its 4000 turns skipped, every one
+a unit with nothing usable, because two survivors stood on the back column with a
+kit that reaches three cells. Measured through `hex.Place`, the far corner of the
+board is:
+
+| authored column | distance to the furthest enemy slot |
+| --- | ---: |
+| 2, the front | 3 |
+| 1 | 4 |
+| 0, the back | 5 |
+
+So a short-ranged unit behind the front stops being able to act the moment the
+enemies near it die, and if both sides are left with only such units the battle
+cannot finish. The shipped roster now stands its whole squad on column two, which
+avoids it rather than fixes it.
+
+**The underlying reason is that nothing moves.** A unit occupies the slot it was
+placed in for the whole battle, so its reach is fixed at enlistment. In a game
+with movement this situation resolves itself; here it cannot.
+
+Two answers, and they are not alternatives:
+
+- **Refuse it at authoring.** `battle.New` could check that every unit can reach
+  *someone*, and `hexforge` could warn when a character's longest range cannot
+  cover the board from the column its preset suggests. That catches the common
+  case early, where an error is cheapest. It is not sufficient on its own: reach
+  changes as units die, and a roster that starts fine can still end deadlocked.
+- **End it at runtime, as a draw.** This is the real fix, and what it has to
+  settle:
+  - **A skipped turn is not a stalemate.** Turns are skipped by control and by
+    cooldowns all the time, and those resolve. The condition is a full cycle in
+    which nobody could act *and* nothing is pending that would change that — a
+    poisoned deadlock is not a deadlock, because the poison ends it.
+  - **A draw needs its own event.** A battle that simply stops leaves the log
+    unable to say why, and `--verify` comparing two runs of a battle that ended
+    for no stated reason proves less than it looks. Same trap as a passive
+    changing a number silently.
+  - **It is not an error.** `RunToEnd` returns one when it hits the limit, which
+    is right for a runaway and wrong for a draw. The turn limit should stay as
+    the backstop it is, and stop being the thing that reports this.
+  - **Detection must be a pure function of the state.** A count of cycles is
+    fine; anything reading a clock is not, and a battle that drew on one machine
+    has to draw on every other from the same seed.
+
 ### Healing, draining, and a regeneration status
 
 **Nothing in the game restores health.** `battle.wound` subtracts and no function
