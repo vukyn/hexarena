@@ -106,7 +106,10 @@
         "sleep_powder",
         "poison_powder",
         "sludge_bomb",
-        "venoshock"
+        "venoshock",
+        "leech_seed",
+        "synthesis",
+        "ingrain"
       ]
     }
   ]

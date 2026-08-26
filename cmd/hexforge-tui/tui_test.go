@@ -2109,6 +2109,11 @@ func TestTheFormAuthorsASkillsVietnameseName(t *testing.T) {
 	// be the only source for.
 	listing := m.enter(screenSkills)
 	listing.skills = listing.skills.refresh(m.lib)
+	// Scrolled to the skill rather than reading the first screenful: the list
+	// scrolls, so which rows are drawn depends on how many skills the book
+	// holds, and asserting on the top of it made authoring a skill anywhere
+	// break this.
+	listing = skillListTo(t, listing, "tidal_hymn")
 	body, _ := listing.skills.view(listing)
 	if !strings.Contains(body, "khúc thủy triều") {
 		t.Errorf("the listing does not show the authored name:\n%s", body)

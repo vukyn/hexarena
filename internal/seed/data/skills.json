@@ -76,7 +76,7 @@
     },
     {
       "id": "sludge_bomb",
-      "name": "độc bộc",
+      "name": "độc bùn",
       "element": "neutral",
       "range": 2,
       "pattern": "single",
@@ -109,6 +109,51 @@
         "min_stacks": 1,
         "bonus_power": 900
       }
+    },
+    {
+      "id": "leech_seed",
+      "name": "hạt ký sinh",
+      "element": "grass",
+      "range": 3,
+      "pattern": "single",
+      "power": 700,
+      "strikes": 1,
+      "accuracy": 900,
+      "drains": 600,
+      "cooldown": 3,
+      "target": "enemy"
+    },
+    {
+      "id": "synthesis",
+      "name": "quang hợp",
+      "element": "grass",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "restores": 900,
+      "cooldown": 4,
+      "target": "self"
+    },
+    {
+      "id": "ingrain",
+      "name": "cắm rễ",
+      "element": "grass",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "self_applies": [
+        {
+          "status": "regrowth",
+          "chance": 1000,
+          "stacks": 2
+        }
+      ]
     }
   ]
 }
