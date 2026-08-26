@@ -10,7 +10,7 @@
    \__/  \__/  \__/
 
 tag  unit                 hp                        spd   effects
-A1   Bulwark              [##########]  4800/4800     80   -
+A1   Bulwark              [##########]  4800/4800     80   toughened (always)
 A2   Vanguard             [##########]  3600/3600    110   -
 A3   Sentinel             [##########]  3100/3100     90   -
 A4   Duelist              [##########]  2600/2600    150   -
@@ -24,6 +24,7 @@ E5   Nightveil            [##########]  2200/2200    200   -
 next: A5 E5 A4 E4 A2 E2 A5 E5
 
   A1  Bulwark enters at 2,1 on the ally side with 4800 health, ground/metal
+  A1   holds endurance: toughened x1
   A2  Vanguard enters at 2,0 on the ally side with 3600 health, fire/metal
   A3  Sentinel enters at 2,2 on the ally side with 3100 health, water/ice
   A4  Duelist enters at 1,1 on the ally side with 2600 health, wind/ice

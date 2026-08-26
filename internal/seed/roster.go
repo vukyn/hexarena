@@ -29,11 +29,12 @@ type rosterEntry struct {
 	Character string `json:"character"`
 	// Level is required with Character and meaningless without it, because
 	// resolving an evolution line needs one.
-	Level   *int                `json:"level"`
-	Name    *string             `json:"name"`
-	Element *element.Affinity   `json:"element"`
-	Stats   *progression.Values `json:"stats"`
-	Skills  []string            `json:"skills"`
+	Level    *int                `json:"level"`
+	Name     *string             `json:"name"`
+	Element  *element.Affinity   `json:"element"`
+	Stats    *progression.Values `json:"stats"`
+	Skills   []string            `json:"skills"`
+	Passives []string            `json:"passives"`
 }
 
 type rosterFile struct {
@@ -116,6 +117,7 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 		entry.Affinity = *unit.Element
 		entry.Stats = *unit.Stats
 		entry.Skills = unit.Skills
+		entry.Passives = unit.Passives
 		return entry, nil
 	}
 
@@ -134,6 +136,9 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 	}
 	if unit.Skills != nil {
 		restated = append(restated, "skills")
+	}
+	if unit.Passives != nil {
+		restated = append(restated, "passives")
 	}
 	if len(restated) > 0 {
 		return battle.Roster{}, fmt.Errorf(
@@ -163,6 +168,7 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 	entry.Affinity = character.Element
 	entry.Stats = stats
 	entry.Skills = character.Skills
+	entry.Passives = character.Passives
 	return entry, nil
 }
 
@@ -196,9 +202,13 @@ func Books() (battle.Books, error) {
 	if err != nil {
 		return battle.Books{}, err
 	}
+	passives, err := PassiveBook()
+	if err != nil {
+		return battle.Books{}, err
+	}
 	return battle.Books{
 		Rules: rules, Chart: chart, Bounds: bounds, Limits: limits,
-		Patterns: patterns, Statuses: statuses, Skills: skills,
+		Patterns: patterns, Statuses: statuses, Skills: skills, Passives: passives,
 	}, nil
 }
 

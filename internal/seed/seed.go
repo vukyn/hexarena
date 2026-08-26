@@ -10,13 +10,14 @@ import (
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/modifier"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
-//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/skills.json data/origins.json data/archetypes.json data/cast.json data/roster.json
+//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/archetypes.json data/cast.json data/roster.json
 var files embed.FS
 
 // ElementsFile is the raw affinity chart declaration.
@@ -91,6 +92,23 @@ func StatusBook() (*status.Book, error) {
 	return status.ParseBook(raw)
 }
 
+// PassivesFile is the raw passive declaration.
+func PassivesFile() ([]byte, error) { return files.ReadFile("data/passives.json") }
+
+// PassiveBook parses the embedded passives against the status book, which is
+// what a granted status is checked against.
+func PassiveBook() (*passive.Book, error) {
+	raw, err := PassivesFile()
+	if err != nil {
+		return nil, err
+	}
+	statuses, err := StatusBook()
+	if err != nil {
+		return nil, err
+	}
+	return passive.ParseBook(raw, passive.Deps{Statuses: statuses})
+}
+
 // SkillsFile is the raw skill declaration.
 func SkillsFile() ([]byte, error) { return files.ReadFile("data/skills.json") }
 
@@ -146,8 +164,12 @@ func Archetypes() (*cast.ArchetypeBook, error) {
 	if err != nil {
 		return nil, err
 	}
+	passives, err := PassiveBook()
+	if err != nil {
+		return nil, err
+	}
 	return cast.ParseArchetypes(raw, cast.ArchetypeDeps{
-		Skills: skills, Limits: limits, Rules: rules,
+		Skills: skills, Passives: passives, Limits: limits, Rules: rules,
 	})
 }
 
@@ -184,6 +206,10 @@ func CastDeps() (cast.Deps, error) {
 	if err != nil {
 		return cast.Deps{}, err
 	}
+	passives, err := PassiveBook()
+	if err != nil {
+		return cast.Deps{}, err
+	}
 	chart, err := ElementChart()
 	if err != nil {
 		return cast.Deps{}, err
@@ -197,7 +223,7 @@ func CastDeps() (cast.Deps, error) {
 		return cast.Deps{}, err
 	}
 	return cast.Deps{
-		Origins: origins, Archetypes: archetypes, Skills: skills,
+		Origins: origins, Archetypes: archetypes, Skills: skills, Passives: passives,
 		Chart: chart, Limits: limits, Rules: rules,
 	}, nil
 }

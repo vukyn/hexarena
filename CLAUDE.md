@@ -307,6 +307,47 @@ counting map entries (a cacheless preview writes the same key every time) and
 deleting the file (which froze the wrong behaviour) — so it is measured by making
 the bytes unreadable while size and mtime stay put.
 
+**A passive is statuses, and permanent means four things.** `passive.Passive`
+grants `status` ids and nothing else — the terms belong to the status, so a trait
+saturates *alongside* a temporary buff through `modifier.Set` rather than
+composing with it, which is the one place stacking could explode. Every granted
+status must be **permanent**, a flag on `status.Kind` rather than a duration of
+nought (nought would make an absent or mistyped duration silently permanent, and
+the fields around it already refuse their own zero for that reason). Permanent
+means: it never counts down and never reaches `Tick`'s expiry list; `Set.Remove`
+refuses it, which covers dispel, cleanse and detonate in one guard, because a
+trait is granted **once** and taking a stack off would turn it off for the rest of
+the battle; it may not be a `Dot` or a `Regen`, either of which would tick for the
+whole battle; and `Snapshot` carries the flag so a renderer draws *always* instead
+of the `0t` the countdown alone would give.
+
+**A trait is on before `queue.Add`, not corrected after it.** `battle.enlist`
+calls `grant` and then adds the unit at `b.Stats(unit)` speed. A wait is
+`1_000_000/speed` and the first one has been served by the time `retuneAll` would
+notice, so a correction is not a fix. ⚠️ The test for it makes the holder the
+**slower** unit at its base and faster only with the trait counted — two units of
+equal speed pass on the tie-break whether the trait was applied first or not, and
+that was the first version of it. Events are emitted in `Begin`, not `enlist`: a
+battle has no log until the opening board, and a line naming a unit the log has
+not introduced is one a renderer cannot place.
+
+**Do not restate a dependency list.** `Library.ArchetypeDeps` and
+`Library.CastDeps` exist because two callers parse those books — a load, and the
+re-parse `EditSkill` does off the disk — and `recheckCarriers` takes them and
+swaps the skill book rather than writing its own. It used to write its own, and
+when passives arrived every skill edit in the repository began failing with
+"archetype blighter names passives, which cannot be checked without the passive
+book": a re-parse missing a book refuses on the missing book instead of on the
+edit, and names a preset the author never touched.
+
+**A health modifier on a status is refused.** It has always done nothing —
+`Unit.MaxHP` reads the *base* line and nothing reads the modified health at all —
+so the status would apply, appear in the log and change no visible number. It is
+refused rather than fixed because raising a maximum mid-battle has to decide
+whether current health follows it up, and lowering one has to decide what happens
+to a unit already above the new maximum. A passive is what makes this reachable:
+"more health" is the most obvious trait anybody would write.
+
 **A form's art is optional, and the fallback has one home.**
 `progression.Stage.Image` is a stage's own picture and most stages declare none;
 `cast.Character.StageArt` is the **only** place that falls back to the
@@ -626,18 +667,22 @@ is the constraint each piece has to respect.
       whole timed-effect layer is tested but not played. A replacement must read
       no randomness and mutate nothing — a client calls it for a hint mid-turn —
       and two identical battles must still produce identical logs.
-- [ ] **Passive skills.** Every skill is active today; a passive is what a
-      character has rather than uses. Three of its four usual jobs already have
-      homes and must reuse them instead of growing a parallel vocabulary: stat
-      changes are `status.Kind.Modifiers` (which also buys the saturation, so a
-      passive cannot compose with temporary buffs and explode), extra effects are
-      `skill.Application`, conditions are `skill.Condition`. **Immunity** is the
-      one with no home, and `status.Set.Apply` is the choke point it belongs at —
-      decide category-or-id, and absolute-or-saturating, knowing a hard cap on a
-      continuous quantity has been the wrong answer everywhere else here. Two
-      traps: a passive that changes a number **must emit an event** or the log can
-      no longer explain its own figures, and an enlist-time passive touching speed
-      must apply before the first wait is computed. See README → Roadmap.
+- [ ] **What a passive still cannot do.** Traits exist and grant permanent
+      statuses; one of the four usual jobs is built. The other three must reuse
+      the homes they already have rather than growing a parallel vocabulary:
+      extra effects are `skill.Application`, assembled from the unit as well as
+      the skill (a change in `battle`, not a new rule); conditions are
+      `skill.Condition`, which **cannot** express the one a trait most often
+      wants — while the holder is below a share of its health — so that term is
+      the work; and **resistance** still has nowhere to live. Its choke point is
+      `battle.inflict`, where the chance is rolled, *not* `status.Set.Apply`: a
+      resistance that reduces a chance is continuous and saturates like
+      everything else, while one that refuses an application outright is a hard
+      cap on a continuous quantity. So it is a ratio per `status.Category`, and a
+      declared full thousand is the explicit way to write true immunity — the
+      mirror of a skill declaring full accuracy. Both original constraints still
+      hold: a trait changing a number **emits an event**, and one touching speed
+      is in force before the first wait is computed. See README → Roadmap.
 - [ ] **Learnsets, four slots, and choosing to evolve.** A character holds every
       skill from level one and brings all of them, so a level is the only thing
       separating a young unit from a grown one. Four pieces, one mechanism: a

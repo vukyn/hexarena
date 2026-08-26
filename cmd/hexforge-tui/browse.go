@@ -189,6 +189,17 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	if glossed := m.lang.GlossedKit(m.lib.KitSkills(character.Skills)); glossed != "" {
 		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
 	}
+	// Traits sit under the kit because they read as the other half of it: what
+	// the character uses, then what it simply has. Drawn only when there are
+	// any — a row saying "none" on every character in a cast that holds none is
+	// a row that says nothing.
+	if len(character.Passives) > 0 {
+		out.WriteString(m.wrapped(m.text(i18n.LabelTraits), detailLabelWidth(m),
+			strings.Join(character.Passives, " ")))
+		if glossed := m.lang.GlossedPassives(m.lib.KitPassives(character.Passives)); glossed != "" {
+			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
+		}
+	}
 	out.WriteString(m.label(m.text(i18n.LabelStages), "%s", m.lang.StageSummary(character)))
 	if character.Bio != "" {
 		out.WriteString(m.wrapped(m.text(i18n.LabelBiography), detailLabelWidth(m), character.Bio))

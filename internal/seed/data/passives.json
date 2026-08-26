@@ -1,0 +1,14 @@
+{
+  "passives": [
+    {
+      "id": "endurance",
+      "name": "bền bỉ",
+      "grants": [
+        {
+          "status": "toughened",
+          "stacks": 1
+        }
+      ]
+    }
+  ]
+}

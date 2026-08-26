@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
@@ -274,6 +275,30 @@ func (l Lang) GlossedAffinity(affinity element.Affinity) string {
 // resolves them — forge.Library.KitSkills is that, and it stands an id the book
 // has lost in as a skill with nothing but that id, so this line stays one entry
 // per id and in step with the ids above it.
+// GlossedPassives is GlossedKit for traits: the authored names, or nothing at all
+// when none of them has one.
+//
+// A trait's name is authored in the passive book and there is no compiled table
+// behind it, unlike a skill's — the traits arrived after names were data, so
+// there was never a version of them that needed one.
+func (l Lang) GlossedPassives(held []passive.Passive) string {
+	names := make([]string, 0, len(held))
+	glossed := false
+	for _, one := range held {
+		name := strings.TrimSpace(one.Name)
+		if name == "" {
+			name = one.ID
+		} else {
+			glossed = true
+		}
+		names = append(names, name)
+	}
+	if !glossed {
+		return ""
+	}
+	return strings.Join(names, kitJoin)
+}
+
 func (l Lang) GlossedKit(carried []skill.Skill) string {
 	names := make([]string, 0, len(carried))
 	glossed := false

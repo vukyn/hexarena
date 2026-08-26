@@ -535,3 +535,175 @@ func TestBookRejectsAnInvalidModifier(t *testing.T) {
 		t.Fatal("a modifier with no amount was accepted")
 	}
 }
+
+// TestAPermanentStatusNeitherExpiresNorCanBeTakenOff is what "permanent" has to
+// mean, stated as the four things that end a status and do not end this one.
+//
+// A passive grants one, and a passive is granted once when its holder is
+// enlisted. So anything that took a stack off would turn the trait off for the
+// rest of the battle with no way back, which is a far larger effect than
+// stripping a buff somebody cast a moment ago.
+func TestAPermanentStatusNeitherExpiresNorCanBeTakenOff(t *testing.T) {
+	book := permanentBook(t)
+	kind, err := book.Lookup("toughened")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	var set status.Set
+	set.Apply(kind, 0)
+	set.Apply(kind, 0)
+	if got := set.Stacks("toughened"); got != 2 {
+		t.Fatalf("two applications gave %d stacks", got)
+	}
+
+	// Turns going by, which is what expires anything timed. Far more than any
+	// duration the book allows.
+	for turn := range 50 {
+		damage, healing, expired := set.Tick()
+		if damage != 0 || healing != 0 {
+			t.Fatalf("turn %d: a permanent buff ticked %d damage and %d healing", turn, damage, healing)
+		}
+		if len(expired) != 0 {
+			t.Fatalf("turn %d: a permanent status expired: %v", turn, expired)
+		}
+	}
+	if got := set.Stacks("toughened"); got != 2 {
+		t.Errorf("after 50 turns the status is down to %d stacks, want 2", got)
+	}
+
+	// A dispel, a cleanse and a detonate all reach Remove, so all three are
+	// refused by one guard — and all three are checked, because a guard in the
+	// wrong place would stop only the one it was written for.
+	if removed, damage := set.Remove("toughened", 2); removed != 0 || damage != 0 {
+		t.Errorf("a dispel took %d stacks and %d tick damage off a permanent status", removed, damage)
+	}
+	if got := set.Cleanse([]status.Category{status.Buff}, 5); got != 0 {
+		t.Errorf("a cleanse took %d stacks off a permanent status", got)
+	}
+	if stacks, _ := set.Consume("toughened"); stacks != 0 {
+		t.Errorf("consuming took %d stacks off a permanent status", stacks)
+	}
+	if got := set.Stacks("toughened"); got != 2 {
+		t.Errorf("the status is down to %d stacks, want the 2 it started with", got)
+	}
+
+	// A timed status in the same set still expires, so the guard is on the kind
+	// rather than on the set.
+	timed, err := book.Lookup("haste")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	set.Apply(timed, 0)
+	for range timed.Duration {
+		set.Tick()
+	}
+	if set.Has("haste") {
+		t.Error("a timed status in a set holding a permanent one did not expire")
+	}
+	if got := set.Stacks("toughened"); got != 2 {
+		t.Errorf("expiring the timed status also cost the permanent one; %d stacks left", got)
+	}
+}
+
+// TestASnapshotSaysWhichStatusesHaveNoCountdown is the renderer's half: reading
+// Remaining alone would draw "0 turns left" beside the one thing that never runs
+// out.
+func TestASnapshotSaysWhichStatusesHaveNoCountdown(t *testing.T) {
+	book := permanentBook(t)
+	forever, err := book.Lookup("toughened")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	timed, err := book.Lookup("haste")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	var set status.Set
+	set.Apply(forever, 0)
+	set.Apply(timed, 0)
+	found := 0
+	for _, entry := range set.Snapshot() {
+		switch entry.ID {
+		case "toughened":
+			found++
+			if !entry.Permanent {
+				t.Error("the permanent status is not marked permanent in the snapshot")
+			}
+		case "haste":
+			found++
+			if entry.Permanent {
+				t.Error("a timed status is marked permanent in the snapshot")
+			}
+			if entry.Remaining != timed.Duration {
+				t.Errorf("the timed status has %d turns left, want %d", entry.Remaining, timed.Duration)
+			}
+		}
+	}
+	if found != 2 {
+		t.Errorf("the snapshot covered %d of the 2 statuses applied", found)
+	}
+}
+
+func TestPermanentDeclarationsAreRefused(t *testing.T) {
+	cases := []struct {
+		name    string
+		kind    string
+		wantErr string
+	}{
+		{
+			"permanent and timed at once",
+			`{"id": "odd", "category": "buff", "max_stacks": 1, "duration": 3, "permanent": true}`,
+			"two different answers",
+		},
+		{
+			"a permanent damage-over-time",
+			`{"id": "rot", "category": "dot", "max_stacks": 1, "duration": 0, "permanent": true, "tick_power": 300}`,
+			"whole battle",
+		},
+		{
+			"a permanent regeneration",
+			`{"id": "bloom", "category": "regen", "max_stacks": 1, "duration": 0, "permanent": true, "tick_power": 300}`,
+			"whole battle",
+		},
+		{
+			"a timed status with no duration",
+			`{"id": "brief", "category": "buff", "max_stacks": 1, "duration": 0}`,
+			"want at least 1",
+		},
+		{
+			"a health modifier, which nothing reads",
+			`{"id": "swell", "category": "buff", "max_stacks": 1, "duration": 2,
+			  "modifiers": [{"target": "hp", "mode": "percent", "amount": 200}]}`,
+			"nothing in the engine reads",
+		},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := status.ParseBook([]byte(
+				`{"max_stacks": 5, "max_duration": 6, "kinds": [` + test.kind + `]}`))
+			if err == nil {
+				t.Fatalf("%s was accepted", test.name)
+			}
+			if !strings.Contains(err.Error(), test.wantErr) {
+				t.Errorf("%s was refused with %q, want it to mention %q", test.name, err, test.wantErr)
+			}
+		})
+	}
+}
+
+func permanentBook(t *testing.T) *status.Book {
+	t.Helper()
+	book, err := status.ParseBook([]byte(`{
+	  "max_stacks": 5, "max_duration": 6,
+	  "kinds": [
+	    {"id": "toughened", "category": "buff", "max_stacks": 3, "duration": 0, "permanent": true,
+	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]},
+	    {"id": "haste", "category": "buff", "max_stacks": 2, "duration": 3,
+	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 300}]}
+	  ]
+	}`))
+	if err != nil {
+		t.Fatalf("statuses: %v", err)
+	}
+	return book
+}

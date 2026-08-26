@@ -55,6 +55,7 @@ func main() {
 var commands = map[string]func([]string) error{
 	"origins":    runOrigins,
 	"archetypes": runArchetypes,
+	"passives":   runPassives,
 	"skills":     runSkills,
 	"cast":       runCast,
 	"new":        runNew,
@@ -70,6 +71,7 @@ hexforge authors the cast the battles are fought with.
   hexforge origins add <id> --title T --medium anime [--year N] [--note ...]
                                       add a work to the catalog
   hexforge archetypes                 the role presets, their curves and their kits
+  hexforge passives                   the declared traits and what each grants
   hexforge skills                     the declared skills and who may carry each
   hexforge skills add <id> --power N --accuracy N [--element E] [--target T]
                                       [--range N] [--pattern P] [--strikes N]

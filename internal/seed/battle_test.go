@@ -359,6 +359,9 @@ func render(event battle.Event) string {
 			event.Actor, event.Target, event.Status, event.Chance)
 	case battle.StatusStripped:
 		return head + fmt.Sprintf("%-18s %s stripped %d off %s", event.Actor, event.Skill, event.Stacks, event.Target)
+	case battle.PassiveHeld:
+		return head + fmt.Sprintf("%-18s %s: %s x%d",
+			event.Actor, event.Passive, event.Status, event.Stacks)
 	case battle.Died:
 		return head + fmt.Sprintf("%-18s fell at %s", event.Actor, event.Cell)
 	case battle.Ended:
@@ -370,9 +373,18 @@ func render(event battle.Event) string {
 
 func TestStatsResolveThroughStatuses(t *testing.T) {
 	fight := benchBattle(t, 5)
-	unit, ok := fight.Unit("ally.bulwark")
-	if !ok {
-		t.Fatal("the roster has no ally.bulwark")
+	// A unit carrying nothing, found rather than named. ally.bulwark was named
+	// here and then given a passive, so it resolved to 458 defence against a base
+	// of 400 and this failed — which is the mechanism working, in the wrong test.
+	var unit *battle.Unit
+	for _, candidate := range fight.Units() {
+		if len(candidate.Statuses.Active()) == 0 {
+			unit = candidate
+			break
+		}
+	}
+	if unit == nil {
+		t.Fatal("every unit on the bench carries a status, so nothing here measures an unaffected one")
 	}
 	if got := fight.Stats(unit); got != unit.Base {
 		t.Errorf("an unaffected unit resolved to %s, want its base %s", got, unit.Base)

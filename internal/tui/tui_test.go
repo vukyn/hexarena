@@ -160,7 +160,19 @@ func TestHealthBar(t *testing.T) {
 
 func TestEffectsSummarisesStacksAndDuration(t *testing.T) {
 	fight, _ := opening(t)
-	unit := fight.Units()[0]
+	// A unit holding no trait, found rather than assumed: the bench gives one
+	// unit a passive, so "the first unit" stopped being the clean one the moment
+	// that trait existed and would silently stop being it again.
+	var unit *battle.Unit
+	for _, candidate := range fight.Units() {
+		if len(candidate.Statuses.Active()) == 0 {
+			unit = candidate
+			break
+		}
+	}
+	if unit == nil {
+		t.Fatal("every unit on the bench carries a status, so nothing here measures a clean one")
+	}
 	if got := tui.Effects(unit); got != "-" {
 		t.Errorf("a clean unit shows %q, want %q", got, "-")
 	}

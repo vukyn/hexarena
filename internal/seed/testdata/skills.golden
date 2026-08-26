@@ -43,6 +43,7 @@ stun        control             1       1            0      0               0   
 rally       buff                3       3            0      0               0   attack +30.0%
 haste       buff                2       3            0      0               0   speed +30.0%
 focus       buff                2       3            0      0               0   accuracy +40.0%
+toughened   buff                1       0            0      0               0   defense +15.0%
 veil        buff                2       2            0      0               0   dodge +40.0%
 block       shield              3       2            0      0               0   -
 regrowth    regen               3       3          400    137            1644   -

@@ -16,6 +16,7 @@ package battle
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/atb"
@@ -23,6 +24,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/modifier"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/rng"
@@ -47,6 +49,10 @@ type Books struct {
 	Patterns *pattern.Book
 	Statuses *status.Book
 	Skills   *skill.Book
+	// Passives is wanted only by a roster entry that names one. A battle whose
+	// units hold no traits runs without it, which is what let the field arrive
+	// without every existing caller having to be found.
+	Passives *passive.Book
 }
 
 func (b Books) validate() error {
@@ -81,6 +87,15 @@ type Roster struct {
 	Affinity element.Affinity
 	Stats    progression.Values
 	Skills   []string
+	// Passives are the traits the unit holds, by id in the passive book.
+	//
+	// This is the first thing on a roster entry that is neither a stat nor a
+	// skill, and it belongs here for the reason the archetype and the evolution
+	// stage do not: those two are settled *before* a battle and leave nothing
+	// behind but numbers, while a passive is in force during one and a replay has
+	// to know about it. The test of what belongs on a Roster has always been
+	// "does a replay read it", not "is it small".
+	Passives []string
 }
 
 // Unit is a combatant's mutable state.
@@ -101,6 +116,11 @@ type Unit struct {
 	Skills    []string
 	Cooldowns []int
 	Statuses  status.Set
+	// Passives are the ids the unit was enlisted with, kept so the log can say
+	// which trait put a permanent status on. The statuses themselves are already
+	// in Statuses; this is the provenance, and without it a reader sees a
+	// permanent buff with nothing to account for it.
+	Passives []string
 }
 
 // MaxHP is the health the unit started with.
@@ -227,10 +247,65 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 	if unit.Name == "" {
 		unit.Name = unit.ID
 	}
-	if err := b.queue.Add(unit.ID, entry.Stats[progression.Speed]); err != nil {
+	if err := b.grant(unit, entry.Passives); err != nil {
+		return nil, err
+	}
+	// The buffed speed, and the traits are on by the line above. That ordering is
+	// the whole of this: a wait is 1_000_000/speed, so a trait touching speed has
+	// to be in force before the first one is computed, or turn one is already
+	// wrong for the rest of the battle. retuneAll exists because exactly this was
+	// got wrong once with haste, and doing it here rather than retuning after the
+	// fact means there is no wrong wait to correct and no SpeedChanged event
+	// claiming a change that was true from the start.
+	if err := b.queue.Add(unit.ID, b.Stats(unit)[progression.Speed]); err != nil {
 		return nil, err
 	}
 	return unit, nil
+}
+
+// grant puts a unit's traits on it, before it has a place in the queue.
+//
+// The statuses are applied rather than the modifiers being read directly, which
+// is the point of declaring a passive as statuses at all: the terms belong to the
+// status, modifier.Set saturates every term of the same target together, and a
+// trait therefore saturates *alongside* a temporary buff rather than composing
+// with it. A passive that composed would be the one place in this game where
+// stacking explodes.
+//
+// Nothing is emitted here. A battle has no log until Begin records the opening
+// board, and an event describing a unit that has not been introduced yet is a
+// log a renderer cannot draw — so the traits take effect here and are reported
+// there, which is also the order a reader wants them in.
+func (b *Battle) grant(unit *Unit, ids []string) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	if b.books.Passives == nil {
+		return fmt.Errorf("unit %q holds passives, which needs the passive book", unit.ID)
+	}
+	for _, id := range ids {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			return fmt.Errorf("unit %q: %w", unit.ID, err)
+		}
+		if slices.Contains(unit.Passives, held.ID) {
+			return fmt.Errorf("unit %q holds the passive %q twice", unit.ID, held.ID)
+		}
+		unit.Passives = append(unit.Passives, held.ID)
+		for _, grant := range held.Grants {
+			kind, err := b.books.Statuses.Lookup(grant.Status)
+			if err != nil {
+				return fmt.Errorf("unit %q: passive %q: %w", unit.ID, held.ID, err)
+			}
+			for range grant.Stacks {
+				// A tick amount of nought: a permanent status cannot be a
+				// damage-over-time or a regeneration, which the status book
+				// refuses, so there is nothing here to snapshot.
+				unit.Statuses.Apply(kind, 0)
+			}
+		}
+	}
+	return nil
 }
 
 // Begin records the opening board. It takes no turn.
@@ -240,6 +315,24 @@ func (b *Battle) Begin() {
 			Kind: Started, Actor: unit.ID, Name: unit.Name, Side: unit.Side,
 			Cell: unit.Cell, Amount: unit.HP, Note: unit.Affinity.String(),
 		})
+		// Each unit's traits directly after the unit itself, because that is the
+		// order they read in and because a trait naming a unit the log has not
+		// introduced is a line a renderer cannot place. They were put on in
+		// enlist; this says so. Without it a reader sees a permanent buff on the
+		// board with nothing anywhere to account for it — the same trap a silent
+		// passive changing a damage figure would set.
+		for _, id := range unit.Passives {
+			held, err := b.books.Passives.Lookup(id)
+			if err != nil {
+				continue
+			}
+			for _, grant := range held.Grants {
+				b.emit(Event{
+					Kind: PassiveHeld, Actor: unit.ID, Passive: held.ID,
+					Status: grant.Status, Stacks: grant.Stacks,
+				})
+			}
+		}
 	}
 }
 

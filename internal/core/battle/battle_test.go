@@ -11,6 +11,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/modifier"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -53,7 +54,11 @@ func books(t *testing.T) battle.Books {
 	    {"id": "haste", "category": "buff", "max_stacks": 2, "duration": 3,
 	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 300}]},
 	    {"id": "stun", "category": "control", "max_stacks": 1, "duration": 1},
-	    {"id": "block", "category": "shield", "max_stacks": 3, "duration": 2}
+	    {"id": "block", "category": "shield", "max_stacks": 3, "duration": 2},
+	    {"id": "fleet", "category": "buff", "max_stacks": 1, "duration": 0, "permanent": true,
+	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 500}]},
+	    {"id": "toughened", "category": "buff", "max_stacks": 2, "duration": 0, "permanent": true,
+	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]}
 	  ]
 	}`))
 	if err != nil {
@@ -108,6 +113,13 @@ func books(t *testing.T) battle.Books {
 	if err != nil {
 		t.Fatalf("skills: %v", err)
 	}
+	passives, err := passive.ParseBook([]byte(`{"passives":[
+	  {"id":"swift","name":"nhanh nhẹn","grants":[{"status":"fleet","stacks":1}]},
+	  {"id":"hardy","grants":[{"status":"toughened","stacks":2}]}
+	]}`), passive.Deps{Statuses: statuses})
+	if err != nil {
+		t.Fatalf("passives: %v", err)
+	}
 	return battle.Books{
 		Rules: combat.Rules{DefenseConstant: 300, MinimumDamage: 1, MinHitChance: 150, MaxBlockCharges: 3},
 		Chart: chart,
@@ -122,7 +134,7 @@ func books(t *testing.T) battle.Books {
 			},
 			MaxEffectiveHP: 11500,
 		},
-		Patterns: patterns, Statuses: statuses, Skills: skills,
+		Patterns: patterns, Statuses: statuses, Skills: skills, Passives: passives,
 	}
 }
 
@@ -1205,4 +1217,205 @@ func TestAPiercingSkillDoesNotPierceTheStatusItApplies(t *testing.T) {
 	if want := rules.Damage(800, 400, kind.TickPower, 1000); pierced.Amount != want {
 		t.Errorf("the frozen tick is %d, want the %d full defence gives", pierced.Amount, want)
 	}
+}
+
+// TestAPassiveIsInForceBeforeTheFirstWaitIsComputed is the trap this feature was
+// warned about in advance, and the only test here that would catch it.
+//
+// A wait is 1_000_000/speed, and the queue is built while a unit is being
+// enlisted. So a trait touching speed has to be on the unit *before* that,
+// because a wait computed from the base line is wrong for the whole battle and
+// nothing later recomputes the one already served. retuneAll exists because
+// exactly this was got wrong once with haste.
+//
+// The holder is the *slower* unit at its base, and faster only once the trait is
+// counted: 100 against 130, and 150 against 130 with the trait on. So it takes
+// the first turn if and only if the trait was in force when the queue was built.
+//
+// Equal speeds do not test this, and that was the first version of it. With both
+// at 100 the holder wins the tie-break and goes first whether the trait was
+// counted or not, so granting after the queue was built passed clean.
+func TestAPassiveIsInForceBeforeTheFirstWaitIsComputed(t *testing.T) {
+	const (
+		holderSpeed = 100
+		rivalSpeed  = 130
+	)
+	fight := mustBattle(t, books(t), 3, []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, holderSpeed),
+			Skills: []string{"strike"}, Passives: []string{"swift"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, rivalSpeed),
+			Skills: []string{"strike"}},
+	})
+	fight.Begin()
+
+	holder, _ := fight.Unit("a")
+	buffed := fight.Stats(holder)[progression.Speed]
+	if buffed <= rivalSpeed {
+		t.Fatalf("the trait resolves to speed %d against the rival's %d, so the fixtures cannot tell the two orders apart",
+			buffed, rivalSpeed)
+	}
+
+	// The first turn is the one a wait computed after the fact cannot fix: it has
+	// already been served by the time anything would notice.
+	fight.Drain()
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "a" {
+		t.Errorf("the first turn went to %s, want the slower unit whose trait makes it faster", prompt.Unit)
+	}
+	// And it is not a correction after the fact either. A SpeedChanged on the
+	// first turn would mean the queue was built from the base line and then
+	// patched, which is the failure this test is about even when the order comes
+	// out right.
+	for _, event := range find(fight.Drain(), battle.SpeedChanged) {
+		if event.Actor == "a" {
+			t.Errorf("the holder's speed was corrected from %d to %d on the first turn, so the queue was built without the trait",
+				event.Before, event.Amount)
+		}
+	}
+}
+
+// TestAHeldPassiveIsOnTheBoardAndInTheLog is the other half of the constraint: a
+// passive that changes a number has to say so, or the log stops being able to
+// explain its own figures.
+func TestAHeldPassiveIsOnTheBoardAndInTheLog(t *testing.T) {
+	fight := mustBattle(t, books(t), 7, []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100),
+			Skills: []string{"strike"}, Passives: []string{"hardy"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100),
+			Skills: []string{"strike"}},
+	})
+	holder, _ := fight.Unit("a")
+	// On before Begin, because Begin reports rather than applies.
+	if got := holder.Statuses.Stacks("toughened"); got != 2 {
+		t.Errorf("the holder carries %d stacks before Begin, want the 2 the trait grants", got)
+	}
+	if got := fight.Stats(holder)[progression.Defense]; got <= holder.Base[progression.Defense] {
+		t.Errorf("the trait resolved to defence %d against a base of %d", got, holder.Base[progression.Defense])
+	}
+
+	fight.Begin()
+	events := find(fight.Drain(), battle.PassiveHeld)
+	if len(events) != 1 {
+		t.Fatalf("the opening board carries %d passive events, want 1", len(events))
+	}
+	held := events[0]
+	switch {
+	case held.Actor != "a":
+		t.Errorf("the event names %q as the holder", held.Actor)
+	case held.Passive != "hardy":
+		t.Errorf("the event names the trait %q, want hardy", held.Passive)
+	case held.Status != "toughened":
+		t.Errorf("the event names the status %q, want toughened", held.Status)
+	case held.Stacks != 2:
+		t.Errorf("the event says %d stacks, want 2", held.Stacks)
+	}
+	// The unit with no trait gets no line, or the log claims a trait nobody has.
+	for _, event := range events {
+		if event.Actor == "f" {
+			t.Error("a unit holding no trait was reported as holding one")
+		}
+	}
+}
+
+// TestAPassiveSurvivesEverythingThatEndsAStatus is what "permanent" has to mean
+// in a real battle rather than in the status package's own tests.
+//
+// A trait granted only at enlistment and then dispelled would be off for the
+// rest of the battle with no way back, which is a far larger effect than
+// stripping a buff somebody cast — so a cleanse must not reach it, and the turns
+// going by must not either.
+func TestAPassiveSurvivesEverythingThatEndsAStatus(t *testing.T) {
+	fight := mustBattle(t, books(t), 11, []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 200),
+			Skills: []string{"mend", "jab"}, Passives: []string{"hardy"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 60),
+			Skills: []string{"jab"}},
+	})
+	fight.Begin()
+	fight.Drain()
+	holder, _ := fight.Unit("a")
+
+	// mend strips dot, stat_debuff and control rather than buffs, so aim the
+	// cleanse at the trait directly instead: it is the mechanism under test, not
+	// the skill.
+	if removed, _ := holder.Statuses.Remove("toughened", 2); removed != 0 {
+		t.Errorf("a dispel took %d stacks off a trait", removed)
+	}
+	if got := holder.Statuses.Cleanse([]status.Category{status.Buff}, 5); got != 0 {
+		t.Errorf("a cleanse took %d stacks off a trait", got)
+	}
+	if stacks, _ := holder.Statuses.Consume("toughened"); stacks != 0 {
+		t.Errorf("consuming took %d stacks off a trait", stacks)
+	}
+
+	// And a whole battle's worth of turns, which is what expires anything timed.
+	for i := 0; i < 40 && !fight.Finished(); i++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if !prompt.Skipped {
+			if choice, ok := fight.Suggest(prompt); ok {
+				if err := fight.Act(choice.Skill, choice.Aim); err != nil {
+					t.Fatalf("act: %v", err)
+				}
+			}
+		}
+		fight.Drain()
+	}
+	if got := holder.Statuses.Stacks("toughened"); got != 2 {
+		t.Errorf("after a battle's worth of turns the trait is down to %d stacks, want 2", got)
+	}
+}
+
+// TestNewRefusesAPassiveItCannotHonour keeps a data mistake at the load rather
+// than at the moment it would have mattered, the way every other book does.
+func TestNewRefusesAPassiveItCannotHonour(t *testing.T) {
+	entry := func(passives ...string) []battle.Roster {
+		return []battle.Roster{
+			{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100),
+				Skills: []string{"strike"}, Passives: passives},
+			{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100),
+				Skills: []string{"strike"}},
+		}
+	}
+	if _, err := battle.New(books(t), 1, entry("nobody-wrote-this")); err == nil {
+		t.Error("a unit holding an undeclared trait was enlisted")
+	}
+	if _, err := battle.New(books(t), 1, entry("hardy", "hardy")); err == nil {
+		t.Error("a unit holding the same trait twice was enlisted")
+	}
+	// Without the book, a trait cannot be honoured, and enlisting anyway would
+	// put a unit on the board quietly missing what it was built with.
+	bare := books(t)
+	bare.Passives = nil
+	if _, err := battle.New(bare, 1, entry("hardy")); err == nil {
+		t.Error("a unit holding a trait was enlisted with no passive book")
+	}
+	// And a battle whose units hold none still runs without one, which is what
+	// let the field arrive without every caller being found.
+	if _, err := battle.New(bare, 1, entry()); err != nil {
+		t.Errorf("a battle with no traits refused to start without the book: %v", err)
+	}
+}
+
+// mustBattle is battle.New for a test that has nothing to say about failure.
+func mustBattle(t *testing.T, books battle.Books, seed uint64, roster []battle.Roster) *battle.Battle {
+	t.Helper()
+	fight, err := battle.New(books, seed, roster)
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	return fight
 }

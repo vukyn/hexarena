@@ -40,6 +40,9 @@
         "leech_seed",
         "synthesis",
         "ingrain"
+      ],
+      "passives": [
+        "endurance"
       ]
     }
   ]

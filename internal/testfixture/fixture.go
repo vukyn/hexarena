@@ -575,6 +575,14 @@ const Archetypes = `[
 // battle that exercises everything, and a shipped roster wants to be the game --
 // those are different jobs, and one file could not do both once the game had one
 // character in it.
+//
+// One unit carries a passive, and it is here rather than in the shipped roster
+// for the reason the rest of this bench exists: an engine test needs every kind
+// of event a battle can produce, and the shipped cast holds no trait yet because
+// which trait a borrowed character has is a design decision rather than an
+// engine one. The trait itself is the shipped `endurance` — the bench uses the
+// real status and passive books, so a fixture inventing its own would be testing
+// a book nobody ships.
 const Roster = `{
   "units": [
     {
@@ -602,6 +610,9 @@ const Roster = `{
         "sever",
         "guard_wall",
         "war_cry"
+      ],
+      "passives": [
+        "endurance"
       ]
     },
     {

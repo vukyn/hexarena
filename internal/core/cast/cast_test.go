@@ -2,6 +2,7 @@ package cast_test
 
 import (
 	"encoding/json"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"reflect"
 	"sort"
 	"strings"
@@ -131,7 +132,7 @@ func archetypes(t *testing.T, declarations ...map[string]any) (*cast.ArchetypeBo
 		t.Fatalf("marshal: %v", err)
 	}
 	return cast.ParseArchetypes(raw, cast.ArchetypeDeps{
-		Skills: skills(t), Limits: limits(t), Rules: rules(t),
+		Skills: skills(t), Passives: passives(t), Limits: limits(t), Rules: rules(t),
 	})
 }
 
@@ -157,8 +158,32 @@ func deps(t *testing.T) cast.Deps {
 	t.Helper()
 	return cast.Deps{
 		Origins: origins(t), Archetypes: archetypeBook(t), Skills: skills(t),
-		Chart: chart(t), Limits: limits(t), Rules: rules(t),
+		Passives: passives(t), Chart: chart(t), Limits: limits(t), Rules: rules(t),
 	}
+}
+
+// passives is the trait book the fixtures name. One permanent status and one
+// trait granting it is the whole of what this package has to check: whether a
+// trait *does* anything is the passive package's own business.
+func passives(t *testing.T) *passive.Book {
+	t.Helper()
+	statuses, err := status.ParseBook([]byte(`{
+	  "max_stacks": 5, "max_duration": 6,
+	  "kinds": [
+	    {"id": "toughened", "category": "buff", "max_stacks": 2, "duration": 0, "permanent": true,
+	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]}
+	  ]
+	}`))
+	if err != nil {
+		t.Fatalf("statuses: %v", err)
+	}
+	book, err := passive.ParseBook(
+		[]byte(`{"passives":[{"id":"endurance","grants":[{"status":"toughened"}]}]}`),
+		passive.Deps{Statuses: statuses})
+	if err != nil {
+		t.Fatalf("passives: %v", err)
+	}
+	return book
 }
 
 // baseCharacter is a character that parses, for the same reason
@@ -1289,5 +1314,105 @@ func TestAStageImageIsCheckedLikeTheCharactersAndSaysWhichStage(t *testing.T) {
 	entry["stages"] = []map[string]any{{"name": "Sprout", "min_level": 1, "stats": table()}}
 	if _, err := parse(t, entry); err != nil {
 		t.Errorf("a stage with no image was refused: %v", err)
+	}
+}
+
+// TestPassivesAreCheckedOnACharacterAndOnAPreset is the cross-book half: a trait
+// id is checked against the passive book at load, the way a kit is checked
+// against the skill book.
+//
+// Both a character and a preset name traits, and both go through one resolver —
+// so this covers the shared rule twice rather than the same rule twice.
+func TestPassivesAreCheckedOnACharacterAndOnAPreset(t *testing.T) {
+	entry := baseCharacter()
+	entry["passives"] = []string{"endurance"}
+	book, err := parse(t, entry)
+	if err != nil {
+		t.Fatalf("a character holding a declared trait was refused: %v", err)
+	}
+	character, ok := book.Get("a-series.warden")
+	if !ok {
+		t.Fatal("the parsed character is not in the book")
+	}
+	if !reflect.DeepEqual(character.Passives, []string{"endurance"}) {
+		t.Errorf("the character holds %v, want the trait it named", character.Passives)
+	}
+
+	// Absent is the ordinary case and stays absent rather than becoming empty:
+	// the writer omits it, so a cast that names none keeps the bytes it had.
+	plain, err := parse(t, baseCharacter())
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	only, _ := plain.Get("a-series.warden")
+	if only.Passives != nil {
+		t.Errorf("a character naming no trait came back with %v", only.Passives)
+	}
+
+	for _, test := range []struct {
+		name    string
+		names   []string
+		wantErr string
+	}{
+		{"an unknown trait", []string{"nobody-wrote-this"}, "unknown passive"},
+		{"the same trait twice", []string{"endurance", "endurance"}, "twice"},
+	} {
+		broken := baseCharacter()
+		broken["passives"] = test.names
+		_, err := parse(t, broken)
+		if err == nil {
+			t.Errorf("%s was accepted on a character", test.name)
+			continue
+		}
+		if !strings.Contains(err.Error(), test.wantErr) {
+			t.Errorf("%s was refused with %q, want it to mention %q", test.name, err, test.wantErr)
+		}
+	}
+
+	// A preset suggesting a trait is where an archetype finally gains a
+	// mechanical weight, so it is checked the same way.
+	preset := baseArchetype()
+	preset["passives"] = []string{"endurance"}
+	presets, err := archetypes(t, preset)
+	if err != nil {
+		t.Fatalf("a preset suggesting a declared trait was refused: %v", err)
+	}
+	suggested, ok := presets.Get("sentinel")
+	if !ok {
+		t.Fatal("the parsed preset is not in the book")
+	}
+	if !reflect.DeepEqual(suggested.Passives, []string{"endurance"}) {
+		t.Errorf("the preset suggests %v, want the trait it named", suggested.Passives)
+	}
+	broken := baseArchetype()
+	broken["passives"] = []string{"nobody-wrote-this"}
+	if _, err := archetypes(t, broken); err == nil {
+		t.Error("a preset suggesting an undeclared trait was accepted")
+	}
+}
+
+// TestNamingAPassiveWithoutTheBookIsRefused keeps the check from being optional
+// by accident. A caller that forgot to wire the book up would otherwise get a
+// character whose traits were never verified, and it would load cleanly.
+func TestNamingAPassiveWithoutTheBookIsRefused(t *testing.T) {
+	deps := deps(t)
+	deps.Passives = nil
+	entry := baseCharacter()
+	entry["passives"] = []string{"endurance"}
+	raw, err := json.Marshal(map[string]any{"characters": []map[string]any{entry}})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if _, err := cast.ParseBook(raw, deps); err == nil {
+		t.Error("a character naming a trait parsed with no passive book to check against")
+	}
+	// And a cast that names none still loads without one, which is what let the
+	// field arrive without every caller being found.
+	bare, err := json.Marshal(map[string]any{"characters": []map[string]any{baseCharacter()}})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if _, err := cast.ParseBook(bare, deps); err != nil {
+		t.Errorf("a cast naming no trait was refused without the book: %v", err)
 	}
 }
