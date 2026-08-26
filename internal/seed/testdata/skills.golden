@@ -2,17 +2,17 @@ damage is against 400 defence at 800 attack, a neutral matchup and no accuracy s
 a cooldown counts the caster's own turns, the same unit statuses are timed in
 
 == skills ==
-skill           element   tgt    rng  shape          power  hits  total   acc   cd   damage
-vine_whip       grass     enemy    2  single         1100     1   1100   950    1      377
-razor_leaf      grass     enemy    3  arc_up          600     2   1200   880    2      410
-solar_beam      light     enemy    4  single         2400     1   2400   850    4      822
-sleep_powder    grass     enemy    2  flank_up          0     1      0  1000    4        0
-poison_powder   neutral   enemy    2  flank_up          0     1      0  1000    3        0
-sludge_bomb     neutral   enemy    2  single         1300     1   1300   900    2      445
-venoshock       neutral   enemy    2  single          900     1    900   900    2      308
-leech_seed      grass     enemy    3  single          700     1    700   900    3      240
-synthesis       grass     self     0  single            0     1      0  1000    4        0
-ingrain         grass     self     0  single            0     1      0  1000    4        0
+skill           element   tgt    rng  shape          power  hits  total   acc   cd   prc   damage
+vine_whip       grass     enemy    2  single         1100     1   1100   950    1     0      377
+razor_leaf      grass     enemy    3  arc_up          600     2   1200   880    2   400      532
+solar_beam      light     enemy    4  single         2400     1   2400   850    4     0      822
+sleep_powder    grass     enemy    2  flank_up          0     1      0  1000    4     0        0
+poison_powder   neutral   enemy    2  flank_up          0     1      0  1000    3     0        0
+sludge_bomb     neutral   enemy    2  single         1300     1   1300   900    2     0      445
+venoshock       neutral   enemy    2  single          900     1    900   900    2     0      308
+leech_seed      grass     enemy    3  single          700     1    700   900    3     0      240
+synthesis       grass     self     0  single            0     1      0  1000    4     0        0
+ingrain         grass     self     0  single            0     1      0  1000    4     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast

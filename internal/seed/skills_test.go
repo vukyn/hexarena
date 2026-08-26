@@ -251,19 +251,23 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 	b.WriteString("a cooldown counts the caster's own turns, the same unit statuses are timed in\n\n")
 
 	b.WriteString("== skills ==\n")
-	b.WriteString("skill           element   tgt    rng  shape          power  hits  total   acc   cd   damage\n")
+	// The pierce column earns its width the moment one skill has a value: the
+	// damage figure beside it is measured against the armour that skill leaves
+	// standing, so without the column the table holds two skills of the same
+	// power and different damage and cannot say why.
+	b.WriteString("skill           element   tgt    rng  shape          power  hits  total   acc   cd   prc   damage\n")
 	for _, current := range book.Skills() {
 		damage := int64(0)
 		if current.Power > 0 {
 			damage = rules.Total(combat.Hit{
 				Scaling: attackerAttack, Multiplier: current.Power, Strikes: current.StrikeCount(),
-				Affinity: neutralAffinity, Defense: referenceDefense,
+				Affinity: neutralAffinity, Defense: referenceDefense, Pierce: current.Pierce,
 			})
 		}
-		fmt.Fprintf(&b, "%-16s%-10s%-6s%4d  %-14s%5d%6d%7d%6d%5d%9d\n",
+		fmt.Fprintf(&b, "%-16s%-10s%-6s%4d  %-14s%5d%6d%7d%6d%5d%6d%9d\n",
 			current.ID, current.Element, current.Target, current.Range, current.Pattern,
 			current.Power, current.StrikeCount(), current.TotalPower(),
-			current.Accuracy, current.Cooldown, damage)
+			current.Accuracy, current.Cooldown, current.Pierce, damage)
 	}
 
 	b.WriteString("\n== statuses inflicted, chance is fixed and no stat moves it ==\n")
