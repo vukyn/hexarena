@@ -212,6 +212,9 @@ const (
 	BrowseShowing
 	BrowseAllOrigins
 	BrowseFooter
+	PreviewFooter
+	PreviewTitle
+	PreviewArtUnreadable
 	BrowseNothingHere
 	BrowseNothingAuthored
 	BrowseNoneFromThisWork

@@ -494,7 +494,10 @@ every keystroke:
   rather than a rejection at the end;
 - a **live carry check**, which says whether the affinity carries every skill in
   the kit and names the first one it cannot, as the element or the kit is being
-  typed.
+  typed;
+- an **art preview**, `p` from the browser, which draws the picture of the form
+  the level resolved to — so walking the level is how a character's forms are
+  compared, which is the whole reason a form may have art of its own.
 
 Both answers come from `internal/forge` — the same functions the write goes
 through, so neither can be a second opinion.
@@ -521,6 +524,21 @@ the skill's element, and `internal/i18n` turns it into
 no wording of its own — a test greps its source to keep it that way. Element
 ids, skill ids and the stat labels `hp atk def spd acc ddg` are the same in both
 languages on purpose: they are what you type and what the data files store.
+
+The preview is the one place in this client where colour carries information
+rather than decorating it, and the monochrome path is therefore a different
+drawing rather than the same one with the colour removed: with `NO_COLOR` it
+draws a ramp of weights, which keeps the shading, instead of a silhouette in one
+character, which would keep only the outline. `internal/forge.ArtImage`
+rasterises — the only place in the repository that does — and hands back pixels,
+because a terminal and a graphical client turn those into something to look at
+very differently. Two pixel rows go into one cell as an upper half block, so a
+cell is very nearly square and the picture keeps its proportions without anyone
+correcting for the font. The drawing is cached against the file's size and
+modification time rather than against its path, so redrawing an asset outside the
+program updates the preview instead of being ignored until a restart: a tool
+whose job is telling you the truth about a data directory should not be the last
+thing to notice it changed.
 
 `cmd/hexforge` stays English, and is not superseded. A full-screen program cannot
 run with stdin as a pipe, so the flag-and-prompt tool is what a script, CI, and
@@ -559,9 +577,15 @@ in practice: it never reads the battle, only the events.
 
 Open questions before starting:
 
-- **Asset pipeline.** Unit art is meant to be SVG. Ebiten cannot draw SVG, so
-  either bake to PNG at build time or rasterise at load with `oksvg` and
-  `rasterx`. Decide before any art exists, not after.
+- **Asset pipeline.** Unit art is SVG and ebiten cannot draw it, so it is either
+  baked to PNG at build time or rasterised at load. The authoring tool has
+  already answered this for itself — `forge.ArtImage` rasterises at load with
+  `oksvg` and `rasterx` for the terminal preview — which narrows the question
+  rather than settling it: a preview redraws once per look at a size bounded by
+  `MaxArtPixels`, while a battle draws every frame, and tens of milliseconds a
+  picture is affordable in the first case and not in the second. So the open
+  question is whether the client rasterises once at load into a texture, or
+  whether the build bakes the sizes it needs.
 - **Animation against an instant log.** Events carry no duration. The renderer
   has to decide how long a strike takes to draw without the engine knowing or
   caring, and a skipped or fast-forwarded animation must not change what

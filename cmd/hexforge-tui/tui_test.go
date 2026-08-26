@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/rand"
 	"errors"
+	"image/color"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -707,6 +709,19 @@ func TestEveryStateIsReadableWithoutColour(t *testing.T) {
 			if strings.Contains(drawn, "\x1b[") {
 				t.Errorf("NO_COLOR is set and the screen still carries escape codes:\n%q", drawn)
 			}
+			// The art preview is the one screen that draws in colour on purpose,
+			// so it is the one that could break this promise. Its monochrome
+			// path has to be a drawing rather than a blank: a preview with the
+			// colour taken out and nothing put back is an empty box.
+			plain := m.enter(screenBrowse)
+			plain.screen = screenPreview
+			picture := plain.View()
+			if strings.Contains(picture, "\x1b[") {
+				t.Errorf("NO_COLOR is set and the preview still carries escape codes:\n%q", picture)
+			}
+			if !strings.ContainsAny(picture, "=+*#%@") {
+				t.Errorf("the monochrome preview drew no ink at all:\n%s", picture)
+			}
 			for _, want := range []string{test.failed, test.missing, "sprout.svg"} {
 				if !strings.Contains(drawn, want) {
 					t.Errorf("the check screen does not say %q:\n%s", want, drawn)
@@ -847,11 +862,149 @@ func TestBrowsingShowsTheArtOfTheFormItResolvedTo(t *testing.T) {
 	}
 }
 
+// TestThePreviewDrawsTheFormTheLevelResolvedTo is the art preview end to end:
+// raised from the browser with p, drawing the picture of the form the level
+// lands in, and walking the level walks the picture.
+//
+// It is drawn from the shipped data rather than the bench, because the bench's
+// art is a flat placeholder and a flat picture cannot tell a working drawing
+// from a broken one.
+func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
+	// The monochrome drawing, so the assertions are about characters rather
+	// than about escape codes. Both paths draw the same grid.
+	t.Setenv("NO_COLOR", "1")
+	lib, err := forge.Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	m := newModel(lib, i18n.Vi)
+	m.width, m.height = 92, 44
+	m = m.enter(screenBrowse)
+
+	character := m.browse.rows()[0]
+	if len(character.Art()) < 2 {
+		t.Skip("the shipped cast no longer has a character whose forms differ")
+	}
+	grown := character.Stages[len(character.Stages)-1]
+
+	// p opens it, and the browser keeps its place: the preview has no cursor of
+	// its own, so anything it lost would have to be found again on the way back.
+	before := m.browse
+	next, _ := m.browse.update(m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'p'}})
+	m = next.(model)
+	if m.screen != screenPreview {
+		t.Fatalf("p left the program on screen %d", m.screen)
+	}
+	if m.browse.cursor != before.cursor || m.browse.level != before.level {
+		t.Error("opening the preview moved the browser underneath it")
+	}
+
+	// The young form at level one, the grown one at its own threshold, and the
+	// picture on screen changes with it.
+	m.browse.level = 1
+	young, footer := m.preview.view(m)
+	if !strings.Contains(young, character.Image) {
+		t.Errorf("the preview does not name the young form's art:\n%s", young)
+	}
+	if !strings.Contains(footer, "←/→") {
+		t.Errorf("the footer does not offer the level keys: %q", footer)
+	}
+	m.browse.level = grown.MinLevel
+	old, _ := m.preview.view(m)
+	if !strings.Contains(old, grown.Image) {
+		t.Errorf("at level %d the preview does not name %s:\n%s", grown.MinLevel, grown.Image, old)
+	}
+	if young == old {
+		t.Error("the two forms drew the same picture, so the level is not reaching the raster")
+	}
+
+	// A drawing, not a blank rectangle: the ramp has to actually be in it, and
+	// the picture has to be as tall as the room it was given.
+	if !strings.ContainsAny(old, "=+*#%@") {
+		t.Errorf("the preview drew no ink at all:\n%s", old)
+	}
+	if lines := strings.Count(old, "\n"); lines < 10 {
+		t.Errorf("the preview drew %d lines, want a picture rather than a caption", lines)
+	}
+
+	// esc goes back, and p from inside is the same door.
+	back, _ := m.preview.update(m, tea.KeyMsg{Type: tea.KeyEsc})
+	if back.(model).screen != screenBrowse {
+		t.Error("esc did not return to the browser")
+	}
+}
+
+// TestThePreviewRasterisesOncePerFileAndSize is the cache and its invalidation.
+//
+// Two earlier versions of this proved nothing, and both are worth naming.
+// Counting entries in the map fails to notice a preview with no cache at all,
+// because that writes the same key every time and the map is the same size
+// either way. Removing the picture then proved the cache but froze the wrong
+// behaviour: a drawing that survives its file being deleted is a tool telling
+// somebody the data directory still holds something it does not. So the cache is
+// keyed on what the file *is* — its size and modification time — and this
+// measures a hit by making the bytes unreadable without changing either.
+func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
+	m, _, dir := start(t, i18n.Vi)
+	m = m.enter(screenBrowse)
+	character := m.browse.rows()[clamp(m.browse.cursor, 0, len(m.browse.rows())-1)]
+	art := filepath.Join(dir, character.Image)
+
+	first, _ := m.preview.view(m)
+	if !strings.Contains(first, character.Image) {
+		t.Fatalf("the first look drew nothing:\n%s", first)
+	}
+
+	// Unreadable, but the same size and the same modification time, so the key
+	// is unchanged and only a cache can answer.
+	info, err := os.Stat(art)
+	if err != nil {
+		t.Fatalf("stat the art: %v", err)
+	}
+	if err := os.Chmod(art, 0); err != nil {
+		t.Fatalf("chmod the art: %v", err)
+	}
+	if _, err := os.ReadFile(art); err == nil {
+		t.Skip("this user can read a file with no permissions, so nothing here is measured")
+	}
+	again, _ := m.preview.view(m)
+	if again != first {
+		t.Errorf("the second look at the same file and size went back to disk:\n%s", again)
+	}
+	if err := os.Chmod(art, 0o644); err != nil {
+		t.Fatalf("restore the art: %v", err)
+	}
+
+	// A different size is a different key, so it is drawn again — from a file
+	// that is readable once more.
+	m.width -= 12
+	resized, _ := m.preview.view(m)
+	if resized == first {
+		t.Error("a resize returned the drawing made at the old size")
+	}
+
+	// And redrawing the art outside the program invalidates what was cached,
+	// rather than being ignored until a restart. Written a byte shorter, so the
+	// stamp differs even where a filesystem's clock is coarse.
+	m.width += 12
+	shorter := make([]byte, info.Size()-1)
+	if _, err := rand.Read(shorter); err != nil {
+		t.Fatalf("make some bytes: %v", err)
+	}
+	if err := os.WriteFile(art, shorter, 0o644); err != nil {
+		t.Fatalf("rewrite the art: %v", err)
+	}
+	changed, _ := m.preview.view(m)
+	if changed == first {
+		t.Error("the art was rewritten and the preview kept the old drawing")
+	}
+}
+
 // TestQuitKeysWorkFromEveryScreen covers the promise the footers make. ctrl+c
 // has to work even with a question pending, or a modal can trap somebody.
 func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 	base, _, _ := start(t, i18n.Vi)
-	for _, target := range []screen{screenMenu, screenBrowse, screenOrigins, screenCheck} {
+	for _, target := range []screen{screenMenu, screenBrowse, screenOrigins, screenCheck, screenPreview} {
 		m := base.enter(target)
 		if _, command := m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'q'}}); !quits(command) {
 			t.Errorf("q did not quit from screen %d", target)
@@ -2235,5 +2388,62 @@ func TestAnAuthoredNameOverridesTheCompiledOneOnScreen(t *testing.T) {
 	}
 	if strings.Contains(body, compiled) {
 		t.Errorf("the listing shows both names at once:\n%s", body)
+	}
+}
+
+// TestATransparentCellIsLeftAlone is the one property of the drawing that is not
+// about how it looks: a cell with nothing in either half must be a plain space
+// with no styling at all.
+//
+// Anything else paints the terminal's own background over with whatever colour
+// this program guessed it to be, which turns a transparent margin into a
+// rectangle — and the two new pictures in the shipped cast have transparent
+// margins, so the wrong answer here would be visible on the first look.
+func TestATransparentCellIsLeftAlone(t *testing.T) {
+	clear := color.RGBA{}
+	// Just under the floor: a pixel this faint is coverage from anti-aliasing
+	// rather than ink, and drawing it would thicken every edge in the picture.
+	faint := color.RGBA{R: 10, G: 10, B: 10, A: alphaFloor - 1}
+	solid := color.RGBA{R: 200, G: 40, B: 40, A: 255}
+
+	for _, test := range []struct {
+		name       string
+		top, below color.RGBA
+	}{
+		{"both empty", clear, clear},
+		{"both under the floor", faint, faint},
+		{"one empty, one under the floor", clear, faint},
+	} {
+		if got := blockCell(ink(test.top), ink(test.below), newPalette()); got != " " {
+			t.Errorf("%s rendered as %q in colour, want a bare space", test.name, got)
+		}
+		if got := rampCell(ink(test.top), ink(test.below)); got != " " {
+			t.Errorf("%s rendered as %q in monochrome, want a bare space", test.name, got)
+		}
+	}
+
+	// And a painted cell is never a space, in either drawing: a pixel that reads
+	// as nothing turns a filled shape into a hole.
+	for _, test := range []struct {
+		name       string
+		top, below color.RGBA
+	}{
+		{"the top half", solid, clear},
+		{"the bottom half", clear, solid},
+		{"both halves", solid, solid},
+	} {
+		if got := blockCell(ink(test.top), ink(test.below), newPalette()); strings.TrimSpace(got) == "" {
+			t.Errorf("%s rendered as %q in colour, want ink", test.name, got)
+		}
+		if got := rampCell(ink(test.top), ink(test.below)); got == " " {
+			t.Errorf("%s rendered as a space in monochrome, want ink", test.name)
+		}
+	}
+
+	// A fully white pixel is the case that would read as nothing on the ramp, so
+	// it is the one worth naming: white ink is still ink.
+	white := ink(color.RGBA{R: 255, G: 255, B: 255, A: 255})
+	if got := rampCell(white, white); got == " " {
+		t.Error("a white pixel drew as a space, so a pale shape would come out hollow")
 	}
 }

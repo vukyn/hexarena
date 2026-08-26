@@ -105,6 +105,12 @@ func (b browseScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "f":
 		b.filter = (b.filter + 1) % (len(b.origins) + 1)
 		b.cursor = clamp(b.cursor, 0, len(b.rows())-1)
+	case "p":
+		// The preview keeps no cursor and no level of its own, so raising it
+		// needs nothing handed over: it reads both back off this screen.
+		m.browse = b
+		m.screen = screenPreview
+		return m, nil
 	}
 	m.browse = b
 	return m, nil
