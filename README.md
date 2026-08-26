@@ -404,6 +404,15 @@ resolving one. Three things get authored:
   was tuned from, a path to its art, one or two elements, a kit, and an
   **evolution line** — one or more stages, each with its own stat curve, the level
   a stage declares being the first level it owns.
+- A **stage may name its own art**, and most do not. A form that names none shows
+  the character's picture, which is what keeps the field optional and every
+  character authored before it existed valid — `cast.Character.StageArt` is the
+  one place that fallback is decided, because two screens inventing it separately
+  is how a character ends up with two pictures depending on which one is asking.
+  A character therefore has a *set* of pictures rather than one, and `hexforge
+  check` verifies every one of them: art that only a grown form uses is art
+  nobody looks at until the character has grown, so a missing file there is
+  exactly the one that would surface in front of a player.
 
 A unit may only carry a skill of an element it shares, or a neutral one — that is
 what makes a second element worth having, since it buys a second line of skills
@@ -462,8 +471,8 @@ hexforge new --id my-series.lee --name "Lee" --origin my-series \
 ```
 
 `internal/forge` is the one package that touches the filesystem for anything
-beyond reading a data file: it verifies that the art each character names is
-really there. `internal/core/cast` checks only the *shape* of an image path
+beyond reading a data file: it verifies that every picture a character names is
+really there, its own and each of its forms'. `internal/core/cast` checks only the *shape* of an image path
 (relative, no `..`, ending `.svg` or `.png`), because a core package may not read
 the filesystem and only the caller knows what the path is relative to.
 

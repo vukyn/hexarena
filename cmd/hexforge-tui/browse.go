@@ -183,13 +183,6 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	if glossed := m.lang.GlossedKit(m.lib.KitSkills(character.Skills)); glossed != "" {
 		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
 	}
-	art := character.Image
-	if m.lib.ImageExists(character.Image) {
-		art = m.style.good.Render(art + "  " + m.text(i18n.ArtPresent))
-	} else {
-		art = m.style.bad.Render(art + "  " + m.text(i18n.ArtMissing))
-	}
-	out.WriteString(m.label(m.text(i18n.LabelArt), "%s", art))
 	out.WriteString(m.label(m.text(i18n.LabelStages), "%s", m.lang.StageSummary(character)))
 	if character.Bio != "" {
 		out.WriteString(m.wrapped(m.text(i18n.LabelBiography), detailLabelWidth(m), character.Bio))
@@ -201,6 +194,14 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 		out.WriteString(m.label(atLevel, "%s", m.style.bad.Render(m.lang.Error(err))))
 		return out.String()
 	}
+	// The art row keeps its place in the block that says what the character is,
+	// but the picture it names is the one the level resolved to. A character
+	// whose forms have their own pictures has no single picture, so walking the
+	// level with the arrow keys is what shows which one a form uses — the same
+	// reason the level is worth walking for the stats. It is drawn after Resolve
+	// rather than before it because there is no picture to name until the stage
+	// is known, and a character that will not resolve has already returned.
+	out.WriteString(m.label(m.text(i18n.LabelArt), "%s", b.artLine(m, character, stage)))
 	// Six stats and a stage name come to 88 cells at the floor, so this wraps
 	// too. It was being clipped by the frame, and what fell off the end was the
 	// stage — the one part of the row that says which form the numbers belong to.
@@ -214,6 +215,16 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// it cannot be a clause on the line itself.
 	out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, m.lang.BudgetPierced(budget)))
 	return out.String()
+}
+
+// artLine is the picture the character shows at the resolved stage, and whether
+// it is on disk.
+func (b browseScreen) artLine(m model, character cast.Character, stage progression.Stage) string {
+	art := character.StageArt(stage)
+	if m.lib.ImageExists(art) {
+		return m.style.good.Render(art + "  " + m.text(i18n.ArtPresent))
+	}
+	return m.style.bad.Render(art + "  " + m.text(i18n.ArtMissing))
 }
 
 // budgetLine is the joint health-and-defence bound drawn as a meter and as

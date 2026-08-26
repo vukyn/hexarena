@@ -66,6 +66,51 @@ func (c Character) Resolve(level int) (progression.Values, progression.Stage, er
 	return c.Stages.Resolve(level)
 }
 
+// StageArt is the picture of one of the character's forms: the stage's own art
+// when it declares any, and the character's when it does not.
+//
+// This is the only place the fallback is decided. A caller reading
+// progression.Stage.Image directly would draw nothing for the ordinary stage
+// that names none, and a second caller would invent the same fallback slightly
+// differently — which is how a character ends up with two pictures depending on
+// which screen is asking.
+func (c Character) StageArt(stage progression.Stage) string {
+	if stage.Image != "" {
+		return stage.Image
+	}
+	return c.Image
+}
+
+// ArtEntry is one picture a character can show, and which form it belongs to.
+type ArtEntry struct {
+	// Stage is the form's name, empty for the character's own picture.
+	Stage string
+	Image string
+}
+
+// Art is every distinct picture the character can show: its own first, then one
+// per stage that names a different one.
+//
+// A checker wants this rather than the single Image, because art that only a
+// grown form uses is exactly the art nobody looks at until the character has
+// grown — so a missing file there is the one that surfaces late. Distinct by
+// path and in declaration order, so a stage sharing the character's picture adds
+// no row and the result never depends on map order.
+func (c Character) Art() []ArtEntry {
+	out := make([]ArtEntry, 0, len(c.Stages)+1)
+	out = append(out, ArtEntry{Image: c.Image})
+	for _, stage := range c.Stages {
+		if stage.Image == "" {
+			continue
+		}
+		if slices.ContainsFunc(out, func(seen ArtEntry) bool { return seen.Image == stage.Image }) {
+			continue
+		}
+		out = append(out, ArtEntry{Stage: stage.Name, Image: stage.Image})
+	}
+	return out
+}
+
 // clone copies the slices a caller could otherwise mutate through.
 func (c Character) clone() Character {
 	out := c
@@ -232,6 +277,19 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 	}
 	if err := declared.Stages.Validate(deps.Limits, deps.Rules); err != nil {
 		return fail("%w", err)
+	}
+	// A stage's art is optional and its absence is the answer "show the
+	// character's", so only a stage that names one is checked. The check is here
+	// rather than in Line.Validate for the same reason a skill's pattern name is
+	// checked by whoever holds the pattern book: this package owns what an image
+	// path may look like, and progression does not.
+	for _, stage := range declared.Stages {
+		if stage.Image == "" {
+			continue
+		}
+		if err := ValidateImagePath(stage.Image); err != nil {
+			return fail("stage %q: %w", stage.Name, err)
+		}
 	}
 	kit, err := resolveSkills(declared.Skills, deps.Skills)
 	if err != nil {

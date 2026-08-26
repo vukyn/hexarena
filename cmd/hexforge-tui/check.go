@@ -84,9 +84,16 @@ func (c checkScreen) view(m model) (string, string) {
 		if i == c.cursor {
 			marker = "> "
 		}
+		// The plain words while there is one picture, and the count once a
+		// character has several: "thiếu" on a three-stage character leaves the
+		// reader asking how many, and the answer is cheap.
 		art := m.style.good.Render(pad(m.text(i18n.ArtPresent), checkArtWidth))
-		if !row.ImageExists {
-			art = m.style.bad.Render(pad(m.text(i18n.ArtMissing), checkArtWidth))
+		if missing := row.ArtMissing(); missing > 0 {
+			said := m.text(i18n.ArtMissing)
+			if len(row.Art) > 1 {
+				said = m.text(i18n.ArtSomeMissing, missing, len(row.Art))
+			}
+			art = m.style.bad.Render(pad(said, checkArtWidth))
 		}
 		detail := ""
 		if row.Failure != nil {

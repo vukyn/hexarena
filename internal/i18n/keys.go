@@ -42,6 +42,7 @@ const (
 	ConfirmFooter
 	ArtPresent
 	ArtMissing
+	ArtSomeMissing
 	ChoicePosition
 
 	// The new-character form.
@@ -307,6 +308,7 @@ const (
 
 	// What a check found, and what a write is worth saying afterwards.
 	ProblemMissingArt
+	ProblemMissingStageArt
 	ProblemDoesNotResolve
 	NoteWrote
 	NoteEdited

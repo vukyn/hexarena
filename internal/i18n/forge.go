@@ -429,6 +429,13 @@ func (l Lang) Notes(notes []forge.Note) []string {
 func (l Lang) Problem(problem forge.Problem) string {
 	switch typed := problem.(type) {
 	case *forge.MissingArtProblem:
+		// Two sentences rather than one with a clause that is sometimes empty:
+		// a stage's missing art and a character's are different findings, and a
+		// reader should not have to notice a gap in the wording to tell them
+		// apart.
+		if typed.Stage != "" {
+			return l.Say(ProblemMissingStageArt, typed.ID, typed.Image, typed.Stage, typed.Path)
+		}
 		return l.Say(ProblemMissingArt, typed.ID, typed.Image, typed.Path)
 	case *forge.ResolveProblem:
 		return l.Say(ProblemDoesNotResolve, typed.ID, typed.Err)
