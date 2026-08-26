@@ -407,12 +407,17 @@ Without that a reader is handed the word "resisted" and no way to tell a piece o
 luck from a property of the unit — which is exactly the confusion the feature had
 to be explained out of.
 
-`venom_blood` is declared and **carried by nobody**, the way `pierce` shipped. Put
-on Bulbasaur it is canon, and measured across forty auto-battles it takes the whole
-poison layer out of the shipped fight: 183 applications become 0, along with every
-damage-over-time tick and every `venoshock` amplifier. That is the mirrored roster
-rather than the trait — both sides are the same poison-immune character — so it
-waits for a roster whose two sides differ.
+`venom_blood` is on Bulbasaur, which is canon and was one line — but only after the
+roster stopped being a mirror. Against the mirror it took the whole poison layer
+out of the shipped fight: 183 applications became 0, along with every
+damage-over-time tick and every `venoshock` amplifier, because both sides were the
+same poison-immune character. That was the roster and not the trait, and the
+measurement now says so. Across forty auto-battles the layer survives — 83
+applications become 60, 183 ticks become 133, 119 amplifiers become 104 — because
+one Bulbasaur stands on each side and four other units do not care. The ally win
+rate moved from 20 of 40 to 17, which is **noise and not a reading**: forty
+battles cannot resolve three, and the counts above are what the change is judged
+on.
 
 ### A trait can add to what its holder does, and can wait until it is hurt
 

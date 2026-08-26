@@ -936,14 +936,17 @@ is the constraint each piece has to respect.
       share a type or only their arithmetic: a trait's asks about its holder and a
       skill's about its target, so the reading is identical and the subject is not
       — exactly the pair that becomes one type doing two jobs if nobody chooses.
-- [ ] **`venom_blood` is declared and carried by nobody.** Poison immunity is
-      canon for Bulbasaur and putting it on is one line, but measured across forty
-      auto-battles it takes the whole poison layer out of the shipped fight: 183
-      applications become 0, along with every damage-over-time tick and every
-      `venoshock` amplifier, because both squads are the same poison-immune
-      character. The trait is right and the **mirrored roster** is what makes it
-      degenerate, so this waits on the asymmetric roster below rather than on a
-      smaller number.
+- [x] **`venom_blood` is carried by Bulbasaur** (from level 1 — immunity is innate,
+      unlike `endurance` at 16). It was one line and it waited on the roster, not on
+      a number: against the **mirror** it zeroed the poison layer outright (183
+      applications → 0, every tick and every `venoshock` amplifier with them),
+      because both squads were the same poison-immune character. With the two sides
+      differing the layer survives — over 40 auto-battles 83 applications → 60, 183
+      ticks → 133, 119 amplified → 104. ⚠️ Ally wins moved 20/40 → 17/40, which is
+      **noise**: 40 battles cannot resolve 3 (the same trap `razor_leaf`'s pierce
+      hit at 23 → 25). Judge a trait on the counts, never on the win rate. The trait
+      is on the **character**, not on `blighter` — spreading poison is a playstyle,
+      being immune to it is what the unit *is*, and that is the species axis.
 - [ ] **Species — what a unit *is*, not how it fights.** An element says what a
       unit is made of and an archetype says how it fights; nothing says whether it
       has a shell, roots or a lineage, so a skill named after a body may land on a
