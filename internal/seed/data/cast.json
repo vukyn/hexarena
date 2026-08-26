@@ -8,6 +8,9 @@
       "image": "assets/bulbasaur.svg",
       "element": "grass",
       "bio": "Hạt giống trên lưng lớn cùng nó và nuôi nó bằng ánh nắng. Đánh chậm, trụ đòn tốt, thắng bằng cách rải độc rồi cầm cự lâu hơn đối phương. Ba giai đoạn: Bulbasaur, Ivysaur từ cấp 16, Venusaur từ cấp 32.",
+      "species": [
+        "plant"
+      ],
       "stages": [
         {
           "name": "Bulbasaur",
@@ -131,6 +134,10 @@
       "image": "assets/charmander.svg",
       "element": "fire",
       "bio": "Ngọn lửa trên đuôi cháy theo sức sống của nó, càng hăng thì càng bùng. Đánh nhanh, sát thương cao, nhưng mỏng đòn: thắng bằng cách đốt trước rồi thu tiền bỏng, thua nếu để trận kéo dài. Ba giai đoạn: Charmander, Charmeleon từ cấp 16, Charizard từ cấp 32.",
+      "species": [
+        "lizard",
+        "dragon"
+      ],
       "stages": [
         {
           "name": "Charmander",
@@ -251,6 +258,9 @@
       "element": "water",
       "image": "assets/squirtle.svg",
       "bio": "Rút vào mai để né đòn, rồi bắn nước ra từ chỗ trú. Chậm và đấm nhẹ, nhưng khó gục: làm đối phương lê chân, cởi được thứ dính trên người, và cầm cự đến khi bên kia hết bài. Ba giai đoạn: Squirtle, Wartortle từ cấp 16, Blastoise từ cấp 32.",
+      "species": [
+        "turtle"
+      ],
       "stages": [
         {
           "name": "Squirtle",

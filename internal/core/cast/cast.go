@@ -55,6 +55,15 @@ type Character struct {
 	Image   string           `json:"image"`
 	Element element.Affinity `json:"element"`
 	Bio     string           `json:"bio,omitempty"`
+	// Species is what the character is, each by id in the species book. Absent
+	// is the ordinary case and it is a real answer rather than a gap: most
+	// characters need no lineage, and a skill that asks for one refuses a unit
+	// that is nothing in particular.
+	//
+	// A list because a unit may be several things at once, and because the
+	// alternative — one species per character — would force a choice between two
+	// true statements the moment a skill was written about either.
+	Species []string `json:"species,omitempty"`
 	// Stages is the evolution line the character's stats grow along. A
 	// character with one stage is the ordinary case, not a special one.
 	Stages progression.Line `json:"stages"`
@@ -139,6 +148,7 @@ func (c Character) clone() Character {
 	copy(out.Stages, c.Stages)
 	out.Skills = make([]string, len(c.Skills))
 	copy(out.Skills, c.Skills)
+	out.Species = slices.Clone(c.Species)
 	out.Passives = slices.Clone(c.Passives)
 	return out
 }
@@ -159,6 +169,7 @@ type characterFile struct {
 	// silent neutral affinity.
 	Element  *element.Affinity `json:"element"`
 	Bio      string            `json:"bio"`
+	Species  []string          `json:"species"`
 	Stages   progression.Line  `json:"stages"`
 	Skills   []string          `json:"skills"`
 	Passives []Unlock          `json:"passives"`
@@ -184,9 +195,13 @@ type Deps struct {
 	// Passives is the book a character's traits are checked against, and it is
 	// wanted only by a character that names one — see resolvePassives.
 	Passives *passive.Book
-	Chart    *element.Chart
-	Limits   progression.Limits
-	Rules    combat.Rules
+	// Species is the book a character's kinds are checked against, on the same
+	// terms as Passives: wanted only by a character that claims one, or by one
+	// carrying a skill that asks for one.
+	Species *SpeciesBook
+	Chart   *element.Chart
+	Limits  progression.Limits
+	Rules   combat.Rules
 }
 
 func (d Deps) validate() error {
@@ -317,6 +332,10 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 			return fail("stage %q: %w", stage.Name, err)
 		}
 	}
+	species, err := resolveCharacterSpecies(declared.ID, declared.Species, deps.Species)
+	if err != nil {
+		return Character{}, err
+	}
 	kit, err := resolveSkills(declared.Skills, deps.Skills)
 	if err != nil {
 		return fail("%w", err)
@@ -350,6 +369,22 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 			return fail("cannot carry %q, which only %s may carry",
 				carried.ID, strings.Join(carried.Restrict.Characters, " or "))
 		}
+		// A restriction naming a species nobody declared is a typo, and left
+		// unchecked it reads as "nobody may carry this" — which is the same
+		// silence a present-but-empty allowlist was refused for.
+		for _, named := range carried.Restrict.SpeciesNames() {
+			if deps.Species == nil {
+				return fail("carries %q, which is kept for a species, and that cannot be checked without the species book",
+					carried.ID)
+			}
+			if _, known := deps.Species.Get(named); !known {
+				return fail("carries %q, which is kept for the unknown species %q", carried.ID, named)
+			}
+		}
+		if !carried.Restrict.AllowsSpecies(species) {
+			return fail("cannot carry %q, which only a %s may carry",
+				carried.ID, strings.Join(carried.Restrict.SpeciesNames(), " or "))
+		}
 	}
 
 	passives, err := resolvePassives("character", declared.ID, declared.Passives, deps.Passives)
@@ -361,8 +396,39 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 		ID: declared.ID, Name: declared.Name,
 		Origin: declared.Origin, Archetype: declared.Archetype,
 		Image: declared.Image, Element: *declared.Element, Bio: declared.Bio,
-		Stages: declared.Stages, Skills: skillIDs(kit), Passives: passives,
+		Species: species, Stages: declared.Stages, Skills: skillIDs(kit),
+		Passives: passives,
 	}, nil
+}
+
+// resolveCharacterSpecies checks what a character claims to be against the
+// species book.
+//
+// Unlike a carried skill's *character* allowlist, this is checked inside the
+// parse loop rather than after it, and there is no deadlock to break: the species
+// book is a separate file that names nothing, so a species can always be written
+// before whatever claims it. The character allowlist is deferred only because it
+// points at the very book being read — see checkCharacterRestrictions.
+func resolveCharacterSpecies(owner string, declared []string, book *SpeciesBook) ([]string, error) {
+	if len(declared) == 0 {
+		return nil, nil
+	}
+	if book == nil {
+		return nil, fmt.Errorf("character %q names species, which cannot be checked without the species book", owner)
+	}
+	out := make([]string, 0, len(declared))
+	for _, id := range declared {
+		found, known := book.Get(id)
+		if !known {
+			return nil, fmt.Errorf("character %q is the unknown species %q; the ones there are: %s",
+				owner, id, strings.Join(book.IDs(), " "))
+		}
+		if slices.Contains(out, found.ID) {
+			return nil, fmt.Errorf("character %q is the species %q twice", owner, found.ID)
+		}
+		out = append(out, found.ID)
+	}
+	return out, nil
 }
 
 // resolveSkills checks a kit against the skill book and hands back the resolved
@@ -424,6 +490,22 @@ func (b *Book) OfOrigin(id string) []Character {
 	out := make([]Character, 0, len(b.characters))
 	for _, entry := range b.characters {
 		if entry.Origin == id {
+			out = append(out, entry.clone())
+		}
+	}
+	return out
+}
+
+// OfSpecies returns every character that is one kind of creature, in
+// declaration order.
+//
+// A character may be several things at once, so the same character is returned
+// by more than one call, which is the difference from OfOrigin: a work is a
+// partition of the cast and a species is not.
+func (b *Book) OfSpecies(id string) []Character {
+	out := make([]Character, 0, len(b.characters))
+	for _, entry := range b.characters {
+		if slices.Contains(entry.Species, id) {
 			out = append(out, entry.clone())
 		}
 	}

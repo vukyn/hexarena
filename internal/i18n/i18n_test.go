@@ -440,6 +440,17 @@ func TestARestrictionIsWordedFromItsFacts(t *testing.T) {
 			vi: `"example.adept" không mang được chiêu "unmake"; chiêu này là của riêng example.sprout`,
 			en: `"example.adept" cannot carry the skill "unmake"; it belongs to example.sprout`,
 		},
+		{
+			// The fourth axis, and the one whose sentence differs in shape rather
+			// than only in wording: it names what the carrier would have to *be*,
+			// so the article belongs to the kind and not to the character.
+			name: "a species allowlist",
+			err: &forge.SpeciesRestrictedError{
+				Character: "example.adept", Skill: "dragon_rage", Allowed: []string{"dragon"},
+			},
+			vi: `"example.adept" không mang được chiêu "dragon_rage"; chiêu này để dành cho loài dragon`,
+			en: `"example.adept" cannot carry the skill "dragon_rage"; it is kept for a dragon`,
+		},
 	}
 	for _, test := range cases {
 		if got := Vi.Error(test.err); got != test.vi {

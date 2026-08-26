@@ -171,6 +171,8 @@ func runNew(args []string) error {
 	set.StringVar(&given.Element, "element", "", "one element, or two separated by a slash")
 	set.StringVar(&given.Bio, "bio", "", "a line or two about who this is")
 	set.StringVar(&given.Skills, "skills", "", "comma separated kit; defaults to the archetype's")
+	set.StringVar(&given.Species, "species", "",
+		"comma separated kinds of creature it is; empty is nothing in particular")
 	for _, kind := range progression.Kinds() {
 		set.StringVar(&given.Stats[kind], forge.ShortStat(kind),
 			"", fmt.Sprintf("override the %s curve, written base:max", kind))
@@ -285,6 +287,17 @@ func fill(given forge.Draft, lib *forge.Library, prompt *prompter) (forge.Draft,
 		return forge.Draft{}, err
 	}
 
+	// What it is comes before the kit, because a skill kept for a lineage is one
+	// of the things the kit check reads -- see forge.Carrier. It is optional, and
+	// an empty answer is the ordinary character rather than a hole: most of a
+	// cast is nothing in particular.
+	if err := ask(&filled.Species, question{
+		flag: "species", prompt: "what it is, comma separated, empty for nothing in particular",
+		optional: true, validate: lib.ValidateSpeciesList,
+	}); err != nil {
+		return forge.Draft{}, err
+	}
+
 	// The kit is settled before the element, because the kit is what decides
 	// which elements are legal. Asking the other way round means either
 	// validating the element against a preset the author is about to replace, or
@@ -355,6 +368,12 @@ func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character
 	label("tuned from", "%s", character.Archetype)
 	label("element", "%s", character.Element)
 	label("kit", "%s", strings.Join(character.Skills, " "))
+	// Only when there are any, on the same terms as the traits line below: most
+	// of a cast is nothing in particular, and a row saying so on every one of
+	// them says nothing.
+	if len(character.Species) > 0 {
+		label("species", "%s", strings.Join(character.Species, " "))
+	}
 	// Only when there are any. A "traits: none" line on every character in a
 	// cast that holds none is a row that says nothing on every screen it is on.
 	if len(character.Passives) > 0 {

@@ -246,6 +246,7 @@ func author(t *testing.T, m model, id, name, origin, archetype, element string) 
 	m = chooseArchetype(t, m, archetype)
 	m = key(t, m, "down") // art: chosen from what is on disk
 	m = chooseArt(t, m, exampleArt)
+	m = key(t, m, "down") // species: leave it nothing in particular
 	m = key(t, m, "down") // kit: keep the preset's
 	m = key(t, m, "down")
 	m = typeText(t, m, element)
@@ -446,7 +447,8 @@ func TestAFormWithNoArtOnDiskIsStillCompletable(t *testing.T) {
 	}
 	typed := "assets/fixture-film/tester.png"
 	m = retype(t, m, typed)
-	m = key(t, m, "down")
+	m = key(t, m, "down") // species
+	m = key(t, m, "down") // kit
 	m = key(t, m, "down")
 	m = typeText(t, m, "wind/ground")
 	m = key(t, m, "ctrl+s")

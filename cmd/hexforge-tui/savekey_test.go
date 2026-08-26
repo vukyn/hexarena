@@ -33,8 +33,9 @@ func TestTheCommandKeySavesWhereverControlSDoes(t *testing.T) {
 		m = chooseOrigin(t, m, "fixture-film")
 		m = key(t, m, "down")
 		m = chooseArchetype(t, m, "duelist")
-		m = key(t, m, "down")
-		m = key(t, m, "down")
+		m = key(t, m, "down") // art
+		m = key(t, m, "down") // species
+		m = key(t, m, "down") // kit
 		m = key(t, m, "down")
 		m = typeText(t, m, "wind/ground")
 		m = key(t, m, "super+s")

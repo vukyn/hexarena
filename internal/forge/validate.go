@@ -57,6 +57,24 @@ func (l *Library) ValidateOrigin(id string) error {
 	return nil
 }
 
+// ValidateSpecies rejects a kind of creature that is not in the catalog, and
+// says how to add it.
+func (l *Library) ValidateSpecies(id string) error {
+	if _, known := l.species.Get(id); !known {
+		return &UnknownSpeciesError{ID: id}
+	}
+	return nil
+}
+
+// ValidateSpeciesList rejects a comma separated answer naming a kind that does
+// not exist, or naming one twice. An empty answer is accepted: being nothing in
+// particular is what most characters are.
+func (l *Library) ValidateSpeciesList(answer string) error {
+	return validateAllowlist(answer, func(id string) error {
+		return l.ValidateSpecies(id)
+	})
+}
+
 // ValidateArchetype rejects a preset that does not exist, and lists the ones
 // that do.
 func (l *Library) ValidateArchetype(id string) error {
@@ -125,6 +143,10 @@ func (l *Library) ValidateRestrictedArchetypes(answer string) error {
 	return validateAllowlist(answer, func(id string) error {
 		return l.ValidateArchetype(id)
 	})
+}
+
+func (l *Library) ValidateRestrictedSpecies(answer string) error {
+	return l.ValidateSpeciesList(answer)
 }
 
 func (l *Library) ValidateRestrictedCharacters(answer string) error {

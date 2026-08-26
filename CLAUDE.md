@@ -852,7 +852,14 @@ the starting point for *every* character built from it, so a kit entry only
 certain characters may carry would refuse everyone else, and the refusal would
 land on the author of the character rather than the author of the preset. The
 same function refuses a preset whose kit holds a skill kept for a *different*
-archetype. What it deliberately does not attempt is whether an element allowlist
+archetype. **The species half of that rule is what keeps the two axes apart**: a
+preset says how a character fights and nothing about what it is, so `ingrain` and
+`synthesis` — which read as a body, roots and photosynthesis — stay restricted by
+`elements` rather than moving onto a `plant` species, because both sit in the
+`blighter` kit and the move would make the preset itself illegal. Grass is a proxy
+for "something that grows", and it is a proxy rather than the fact.
+
+What `resolveArchetype` deliberately does not attempt is whether an element allowlist
 and the kit's `Demands` are jointly satisfiable — that needs the element chart,
 which a preset is validated without, the same gap
 `TestEveryShippedArchetypeKitIsCarryableAtAll` covers for `Demands`.
@@ -866,6 +873,36 @@ rejected outright, because no affinity can hold three. Whether the two it
 demands are *allowed together* needs the element chart, which a preset is
 validated without, so that half lives in
 `TestEveryShippedArchetypeKitIsCarryableAtAll`.
+
+## Species: what a unit is
+
+Shipped. An element says what a unit is made of and an archetype says how it
+fights; `cast.Species` says **what it is** — a shell, roots, a lineage — and it is
+deliberately the thinnest axis in the repository: an id, a word for a screen, an
+optional note, and no stats, no kit and no rule of its own.
+
+- **A fourth allowlist, not a fourth concept.** `skill.Restriction.Species` sits
+  beside the other three and composes the same way, so `dragon_rage` and
+  `dragon_dance` moved off `characters: [pokemon.charmander]` — the wrong axis, on
+  purpose, for as long as there was no right one — and are now carryable by *every*
+  dragon. A character declares `species` as a list because a unit may be several
+  things at once; Charmander is a `lizard` and a `dragon`.
+- **Nothing in `battle` branches on it**, exactly as nothing branches on an
+  archetype. It is a carry rule settled while a character is authored plus a word
+  a browser prints — which is what keeps it cheap, and why `scenarios.golden` and
+  `replay.golden` did not move when it landed.
+- **An empty list is a real answer**, not a hole: "nothing in particular" is what
+  most of a cast is, and it is what a lineage skill refuses. The one place that
+  reading is relaxed is `forge.Carrier`, where an empty list is a question nobody
+  has reached yet, so a lineage skill picked *before* a species is settled is
+  refused at the write rather than at the keystroke. That is documented on the
+  field rather than fixed, because a half-filled form cannot tell the two apart.
+- `⚠️` **Every axis has to be read back into the draft.** `forge.SkillAnswers`
+  held three allowlists, and species arrived without the fourth line — so every
+  balance edit to a lineage skill silently rewrote it as free to anybody, with the
+  file still loading and every carrier still carrying.
+  `TestEveryShippedSkillTakesABalanceEdit` now compares the restriction across the
+  edit, which is the general form of that check rather than a species-shaped one.
 
 ## Open work
 
@@ -952,23 +989,6 @@ is the constraint each piece has to respect.
       identically, else the AI prefers a bonus it does not get. Still absent: the
       **gradient** (harder the further the *caster* fell) — a multiplier in
       `combat`, reads the other unit, a separate feature.
-- [ ] **Species — what a unit *is*, not how it fights.** An element says what a
-      unit is made of and an archetype says how it fights; nothing says whether it
-      has a shell, roots or a lineage, so a skill named after a body may land on a
-      body it does not fit. `withdraw` found it — "thu mai" on a shell-less
-      creature — and the two answers are different rules: a general **effect** gets
-      a general **name** (withdraw is now a stance, not a shell), while an identity
-      keeps its name and carries a restriction. ⚠️ `skill.Restriction` has no axis
-      for it, so `dragon_rage`/`dragon_dance` are parked on `characters:
-      [pokemon.charmander]` — the wrong axis **on purpose**: an archetype
-      restriction would make a fighting style imply a lineage, which is the
-      coupling species removes. That also costs the preset those two skills (a
-      preset may not hold a character-restricted skill), so `scorcher` suggests 7
-      where Charmander carries 9. Shape: a **fourth allowlist** on the same
-      `Restriction` plus a field on the character, its own book like origins, and a
-      unit may hold more than one (a fire dragon is both). **Nothing in `battle`
-      branches on it** — a carry rule and a word on screen, like an archetype.
-      `TestABodyBoundSkillIsRestricted` is the list to revisit when it lands.
 - [ ] **Learnsets, slots, and choosing to evolve.** A character holds every skill
       *and every trait* from level one and brings all of them, so a level is the
       only thing separating a young unit from a grown one. **Skills and traits are

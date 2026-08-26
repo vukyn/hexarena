@@ -67,8 +67,10 @@ func copyTree(t *testing.T, from, to string) {
 // TestFillRePromptsOnABadAnswer is the behaviour that keeps the wizard usable:
 // a wrong answer costs one line, not the whole session.
 //
-// The answers are in prompt order, and the kit comes before the element on
-// purpose — the kit is what decides which elements are legal.
+// The answers are in prompt order, and two of the orderings are deliberate: the
+// kit comes before the element because the kit decides which elements are legal,
+// and what the character *is* comes before the kit because a skill kept for a
+// lineage is one of the things the kit check reads.
 func TestFillRePromptsOnABadAnswer(t *testing.T) {
 	lib, err := forge.Load(scratchData(t))
 	if err != nil {
@@ -83,6 +85,8 @@ func TestFillRePromptsOnABadAnswer(t *testing.T) {
 		"berserker",            // rejected: unknown archetype
 		"duelist",              // accepted
 		"",                     // art: take the suggested default
+		"dragoon",              // rejected: not a species in the catalog
+		"lizard",               // accepted: what it is
 		"",                     // kit: take the preset's
 		"water/ice",            // rejected: a legal pair that cannot carry gale_slash
 		"water/fire",           // rejected: the chart refuses the pair itself
@@ -112,6 +116,9 @@ func TestFillRePromptsOnABadAnswer(t *testing.T) {
 	if character.Bio != "A tester." {
 		t.Errorf("the biography is %q", character.Bio)
 	}
+	if !reflect.DeepEqual(character.Species, []string{"lizard"}) {
+		t.Errorf("what it is came out as %v, want the answer that was accepted", character.Species)
+	}
 	preset, _ := lib.Archetypes().Get("duelist")
 	if character.Stages[0].Stats != preset.Stats {
 		t.Error("pressing Enter through the curves did not take the preset")
@@ -139,6 +146,7 @@ func TestElementPromptFollowsTheKitNotThePreset(t *testing.T) {
 		Skills: "strike,riptide",
 	}
 	script := strings.Join([]string{
+		"",            // species: nothing in particular
 		"wind/ground", // rejected: the substituted kit needs water
 		"water/ice",   // accepted
 		"", "", "", "", "", "",
@@ -258,8 +266,9 @@ func TestFillFallsBackWhenStdinEnds(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	// Answered up to the element, then the input simply stops.
-	script := "fixture-film.tester\nTester\nfixture-film\nduelist\n\n\nwind/ground\n"
+	// Answered up to the element, then the input simply stops. The two bare
+	// newlines in the middle are the art and the species; the third is the kit.
+	script := "fixture-film.tester\nTester\nfixture-film\nduelist\n\n\n\nwind/ground\n"
 	prompt := &prompter{in: bufio.NewReader(strings.NewReader(script)), out: io.Discard, interactive: true}
 	filled, err := fill(forge.Draft{}, lib, prompt)
 	if err != nil {

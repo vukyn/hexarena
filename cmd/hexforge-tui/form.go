@@ -39,6 +39,7 @@ const (
 	fieldOrigin
 	fieldArchetype
 	fieldImage
+	fieldSpecies
 	fieldKit
 	fieldElement
 	fieldBio
@@ -64,6 +65,12 @@ type formScreen struct {
 	// is what the art field offers. Empty means there is nothing to offer and
 	// that field is a text field instead — see choiceField.
 	art []string
+
+	// species is what the character is, chosen from the species book. It is a
+	// list rather than a chooser for the reason the kit is: a unit may be
+	// several things at once, and an empty answer is a real one -- most of a
+	// cast is nothing in particular.
+	species []string
 
 	// kit is the chosen skills, in the order they were chosen, because that
 	// order is the kit. It replaced a comma separated text field: nineteen ids
@@ -200,6 +207,7 @@ func (f formScreen) draft() forge.Draft {
 		Name:    f.inputs[fieldName].Value(),
 		Image:   f.imageAnswer(),
 		Skills:  strings.Join(f.kit, ","),
+		Species: strings.Join(f.species, ","),
 		Element: strings.TrimSpace(f.inputs[fieldElement].Value()),
 		Bio:     f.inputs[fieldBio].Value(),
 	}
@@ -226,7 +234,7 @@ func (f formScreen) draft() forge.Draft {
 // is what the command line does and what the write already warns about.
 func (f formScreen) choiceField(field int) bool {
 	switch field {
-	case fieldOrigin, fieldArchetype, fieldKit:
+	case fieldOrigin, fieldArchetype, fieldKit, fieldSpecies:
 		return true
 	case fieldImage:
 		return len(f.art) > 0
@@ -258,9 +266,12 @@ func (f formScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 	// The kit is a list rather than a cycle, so it opens a sub-screen instead of
 	// stepping. Nineteen skills do not fit beside a form — see picker.go, which
 	// measures that rather than asserting it.
-	if f.cursor == fieldKit {
+	if f.cursor == fieldKit || f.cursor == fieldSpecies {
 		m.form = f
 		if message.String() == "space" || message.String() == "right" {
+			if f.cursor == fieldSpecies {
+				return m.openSpecies(), nil
+			}
 			return m.openKit(), nil
 		}
 		return m, nil
@@ -313,6 +324,27 @@ func (m model) openKit() model {
 			// Choosing is setting it by hand, so it stops following the preset,
 			// on the same terms as typing a kit used to.
 			m.form.kitFollowsPreset = false
+			m.form.touched = true
+			m.form.err = nil
+			m.form.notes = nil
+			return m
+		},
+	})
+}
+
+// openSpecies raises the picker over the species book.
+//
+// No refusal on any row, which is the difference from the kit: what a character
+// *is* cannot be wrong on its own -- it is the kit that becomes impossible, and
+// the kit rows below say so, because kitOptions is built from a carrier that
+// already carries this answer.
+func (m model) openSpecies() model {
+	return m.pick(&pickState{
+		title: i18n.PickerSpeciesTitle, kind: pickSpecies,
+		options: idOptions(m.lib.Species().IDs()),
+		chosen:  m.form.species,
+		apply: func(m model, answer pickAnswer) model {
+			m.form.species = answer.Chosen
 			m.form.touched = true
 			m.form.err = nil
 			m.form.notes = nil
@@ -410,6 +442,7 @@ func fieldLabel(m model, field int) string {
 		fieldOrigin:    i18n.FieldOrigin,
 		fieldArchetype: i18n.FieldArchetype,
 		fieldImage:     i18n.FieldArt,
+		fieldSpecies:   i18n.FieldSpecies,
 		fieldKit:       i18n.FieldKit,
 		fieldElement:   i18n.FieldElement,
 		fieldBio:       i18n.FieldBiography,
@@ -474,6 +507,8 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 		value = f.choice(m, f.artIndex, len(f.art), f.artLabel(m))
 	case field == fieldKit:
 		value = f.kitValue(m, labelWidth)
+	case field == fieldSpecies:
+		value = f.speciesValue(m, labelWidth)
 	case field >= fieldStatBase:
 		value = f.statRow(m, progression.Kind(field-fieldStatBase))
 	default:
@@ -503,6 +538,20 @@ func (f formScreen) kitValue(m model, labelWidth int) string {
 		return m.style.bad.Render(m.text(i18n.PickerNothingChosen)) + "  " + hint
 	}
 	return clip(strings.Join(f.kit, " "), room) + "  " + hint
+}
+
+// speciesValue is what the character is, with the key that opens the list.
+//
+// Empty reads as a word rather than as the kit's red "nothing chosen": a
+// character that is nothing in particular is finished, and marking it as a gap
+// would mark most of a cast as unfinished.
+func (f formScreen) speciesValue(m model, labelWidth int) string {
+	hint := m.style.dim.Render(m.text(i18n.KitChooseHint))
+	room := minWidth - 3 - labelWidth - lipgloss.Width(m.text(i18n.KitChooseHint)) - 2
+	if len(f.species) == 0 {
+		return m.style.dim.Render(m.text(i18n.SpeciesNothingInParticular)) + "  " + hint
+	}
+	return clip(strings.Join(f.species, " "), room) + "  " + hint
 }
 
 // choiceFormat is how a chooser draws: the value between arrows, then where it

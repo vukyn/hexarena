@@ -64,6 +64,11 @@ type Draft struct {
 	Bio       string
 	// Skills is a comma separated list. Empty means "take the archetype's kit".
 	Skills string
+	// Species is a comma separated list of what the character is. Empty is a
+	// real answer -- "nothing in particular" -- rather than a default taken from
+	// somewhere else: an archetype cannot supply it, because how a character
+	// fights says nothing about what it is.
+	Species string
 	// Stats holds a "base:max" override per stat. An empty entry means "take
 	// the archetype's curve".
 	Stats [progression.KindCount]string
@@ -123,6 +128,21 @@ func (d Draft) Resolve(lib *Library) (cast.Character, error) {
 		skills = SplitList(d.Skills)
 	}
 
+	// Nil rather than an empty slice when nothing was answered, because
+	// Character.Species is omitempty: an empty slice writes the same file a nil
+	// one does, so keeping it would make what Resolve returns differ from what
+	// a reload produces on a field nobody filled in. See
+	// TestWrittenCastIsStableAndReloads.
+	var species []string
+	if strings.TrimSpace(d.Species) != "" {
+		species = SplitList(d.Species)
+	}
+	for _, id := range species {
+		if _, known := lib.species.Get(id); !known {
+			return cast.Character{}, &UnknownSpeciesError{ID: id}
+		}
+	}
+
 	// The preset's traits, and there is no answer that overrides them yet — the
 	// same arrangement the evolution line has. A trait is one line in cast.json
 	// and a preset is where the suggestion belongs, so a wizard question would be
@@ -139,7 +159,7 @@ func (d Draft) Resolve(lib *Library) (cast.Character, error) {
 		Origin: d.Origin, Archetype: d.Archetype,
 		Image: d.Image, Element: affinity, Bio: strings.TrimSpace(d.Bio),
 		Stages: progression.Line{{Name: strings.TrimSpace(d.Name), MinLevel: 1, Stats: table}},
-		Skills: skills, Passives: passives,
+		Skills: skills, Species: species, Passives: passives,
 	}
 	if _, err := lib.characters.Append(lib.CastDeps(), character); err != nil {
 		return cast.Character{}, err
@@ -176,15 +196,18 @@ func (d Draft) Table(lib *Library) (progression.Table, error) {
 	return table, nil
 }
 
-// Carrier is the draft as a kit check wants it: the id, the preset and the
-// element, with an unreadable or unanswered element left out rather than
-// guessed at.
+// Carrier is the draft as a kit check wants it: the id, the preset, the element
+// and what the character is, with an unreadable or unanswered element left out
+// rather than guessed at.
 //
 // Draft.Resolve refuses a bad element on its own account; this is for the
 // checks a half-filled form makes as it is typed, where an element that is not
 // an element yet is an ordinary state and not a refusal.
 func (d Draft) Carrier() Carrier {
-	who := Carrier{ID: strings.TrimSpace(d.ID), Archetype: strings.TrimSpace(d.Archetype)}
+	who := Carrier{
+		ID: strings.TrimSpace(d.ID), Archetype: strings.TrimSpace(d.Archetype),
+		Species: SplitList(d.Species),
+	}
 	if affinity, err := ParseAffinity(d.Element); err == nil {
 		who.Affinity, who.HasAffinity = affinity, true
 	}
@@ -239,7 +262,7 @@ func (l *Library) Budget(values progression.Values) Budget {
 	}
 }
 
-// Carrier is who a kit is being checked for: the three facts a skill's
+// Carrier is who a kit is being checked for: the four facts a skill's
 // restriction can name.
 //
 // Each one may be unanswered, and an unanswered fact restricts nothing. That is
@@ -253,6 +276,14 @@ type Carrier struct {
 	Archetype   string
 	Affinity    element.Affinity
 	HasAffinity bool
+	// Species is what the character is. An empty list is unanswered here, which
+	// is the one place this axis cannot be checked as strictly as the parser
+	// checks it: to cast.ParseBook an empty list is a real answer and a lineage
+	// skill refuses it, while on a half-filled form it is a question nobody has
+	// reached yet. The form takes the second reading, so a lineage skill picked
+	// before a species is settled is refused at the write rather than at the
+	// keystroke -- and picked after it, at the keystroke.
+	Species []string
 }
 
 // CheckSkill reports why a carrier may not carry one skill, or nil when it may.
@@ -288,6 +319,12 @@ func CheckSkill(who Carrier, carried skill.Skill) error {
 		return &CharacterRestrictedError{
 			Character: who.ID, Skill: carried.ID,
 			Allowed: append([]string(nil), carried.Restrict.Characters...),
+		}
+	}
+	if len(who.Species) > 0 && !carried.Restrict.AllowsSpecies(who.Species) {
+		return &SpeciesRestrictedError{
+			Character: who.ID, Skill: carried.ID,
+			Allowed: carried.Restrict.SpeciesNames(),
 		}
 	}
 	return nil

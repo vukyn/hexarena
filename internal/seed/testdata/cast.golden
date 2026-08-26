@@ -4,6 +4,7 @@ pokemon.bulbasaur — Bulbasaur
   from     Pokémon (anime)
   preset   blighter
   element  grass
+  species  plant
   art      assets/bulbasaur.svg
   kit      vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed synthesis ingrain
   stage "Bulbasaur" owns levels 1 to 15, showing assets/bulbasaur.svg
@@ -26,6 +27,7 @@ pokemon.charmander — Charmander
   from     Pokémon (anime)
   preset   scorcher
   element  fire
+  species  lizard dragon
   art      assets/charmander.svg
   kit      ember flamethrower fire_fang fire_spin heat_wave inferno dragon_rage smokescreen dragon_dance
   stage "Charmander" owns levels 1 to 15, showing assets/charmander.svg
@@ -48,6 +50,7 @@ pokemon.squirtle — Squirtle
   from     Pokémon (anime)
   preset   warden
   element  water
+  species  turtle
   art      assets/squirtle.svg
   kit      water_gun bubble whirlpool bite brine hydro_pump withdraw aqua_ring rapid_spin
   stage "Squirtle" owns levels 1 to 15, showing assets/squirtle.svg

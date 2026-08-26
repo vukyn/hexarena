@@ -73,6 +73,7 @@ type SkillEdit struct {
 	RestrictElements   *string
 	RestrictArchetypes *string
 	RestrictCharacters *string
+	RestrictSpecies    *string
 }
 
 // Draft lays a partial change over a skill as it stands, producing the whole set
@@ -106,6 +107,7 @@ func (e SkillEdit) Draft(current skill.Skill) SkillDraft {
 		{&drafted.RestrictElements, e.RestrictElements},
 		{&drafted.RestrictArchetypes, e.RestrictArchetypes},
 		{&drafted.RestrictCharacters, e.RestrictCharacters},
+		{&drafted.RestrictSpecies, e.RestrictSpecies},
 	} {
 		if field.given != nil {
 			*field.into = *field.given

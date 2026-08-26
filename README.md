@@ -640,6 +640,7 @@ Balance lives in `internal/seed/data`, embedded at build time:
 | `statuses.json` | the timed effects, their tick power and their modifier terms |
 | `skills.json` | the skills |
 | `origins.json` | the works the cast is borrowed from |
+| `species.json` | what a unit can be: a shell, roots, a lineage |
 | `archetypes.json` | the role presets: a suggested stat curve and kit per role |
 | `cast.json` | the authored characters, each with an evolution line |
 | `roster.json` | a seed roster to exercise the engine with |
@@ -756,6 +757,8 @@ three.
 go run ./cmd/hexforge                  # list the subcommands
 go run ./cmd/hexforge origins          # the catalog of works
 go run ./cmd/hexforge origins add my-series --title "Some Series" --medium series --year 2024
+go run ./cmd/hexforge species          # what a unit can be, and who is one
+go run ./cmd/hexforge species add fox --name "cáo"
 go run ./cmd/hexforge archetypes       # the presets, their curves and their kits
 go run ./cmd/hexforge skills           # the declared skills and who may carry each
 go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900
@@ -767,11 +770,13 @@ go run ./cmd/hexforge check            # parse from disk, verify the art, report
 ```
 
 `hexforge new` prefills from flags and prompts only for what is still missing, so
-`--id --name --origin --archetype --image --element --bio --skills` and the
-per-stat `--hp --atk --def --spd --acc --ddg` overrides (written `base:max`) turn
-it into a one-liner. Choosing an archetype fills every curve and the kit, and each
-prompt shows the preset as its default. The kit is asked before the element,
-because the kit is what decides which elements are legal. Before writing, it
+`--id --name --origin --archetype --image --element --bio --species --skills` and
+the per-stat `--hp --atk --def --spd --acc --ddg` overrides (written `base:max`)
+turn it into a one-liner. Choosing an archetype fills every curve and the kit, and
+each prompt shows the preset as its default. Two of the orderings are deliberate:
+the kit is asked before the element, because the kit is what decides which
+elements are legal, and what the character *is* is asked before the kit, because a
+skill kept for a lineage asks for it. Before writing, it
 prints the resolved level 1 and level 60 lines with how much of the
 effective-health budget they spend; `--yes` skips the confirmation. Every answer
 is checked as it is entered, against the same parsers the game loads through — the
@@ -782,7 +787,10 @@ that loads.
 the difference between them is what an absent flag means. On `add` it is a
 question the wizard asks or a default it takes; on `edit` it means leave the
 field alone, so `--cooldown 0` sets a cooldown to zero, no `--cooldown` leaves
-it, and `--restrict-elements ""` clears a list. A skill's id cannot be edited —
+it, and `--restrict-elements ""` clears a list. All four allowlists take a flag —
+`--restrict-elements`, `--restrict-archetypes`, `--restrict-characters`,
+`--restrict-species` — and an edit that names none of them leaves every one of
+them exactly as it was. A skill's id cannot be edited —
 renaming one has to change every kit and every restriction that names it — and an
 edit that would leave an authored character or an archetype preset unable to
 carry the skill is refused before anything is written, naming who would break.
@@ -928,6 +936,58 @@ The flat form keeps working. What is refused is the **mixture**: a reference tha
 also writes out `name`, `element`, `stats` or `skills` is rejected rather than
 resolved by precedence, because two sources for one number is how the two drift
 apart.
+
+### What a unit is, not only how it fights
+
+An element says what a unit is made of and an archetype says how it fights, and
+for a long time nothing said whether it had a shell, roots or a lineage — so a
+skill named after a body was free to land on a body it did not fit. `withdraw` is
+the one that found it: Squirtle pulls into its shell, the name read perfectly on
+the character it was written for, and nothing would have stopped a Machop taking
+it and reading "thu mai" on a creature with no shell.
+
+Two answers, and they are different rules rather than a preference. Where the
+*effect* is general the **name** should be too, which is why `withdraw` is glossed
+as a stance and not as a shell. Where the identity is the point the name stays and
+the skill carries a restriction — and that restriction now has an axis to sit on.
+
+`species.json` is a catalog like `origins.json`: an id, a word for a screen, an
+optional note about where the line is drawn, and nothing else. A character names
+what it is with `species`, a **list**, because a unit may be several things at
+once — Charmander is a `lizard` and a `dragon` — and `skill.Restriction` has a
+fourth allowlist beside the elements, the archetypes and the characters, which a
+unit satisfies by being any one of the kinds named.
+
+That is the whole of it. **Nothing in `battle` branches on a species**, exactly as
+nothing branches on an archetype: it is a carry rule settled while a character is
+authored plus a word a browser prints, which is what keeps it cheap and why
+`scenarios.golden` and `replay.golden` did not move when it landed. What did move
+is `dragon_rage` and `dragon_dance`, off `characters: [pokemon.charmander]` — the
+wrong axis, chosen on purpose while there was no right one — and onto `species:
+[dragon]`, where they say what they always meant.
+
+Two things the axis is deliberately *not*:
+
+- **Not a second place to say what a preset is for.** A preset may not hold a
+  species-restricted skill, for the same reason it may not hold a
+  character-restricted one: a preset says how a character fights and nothing about
+  what it is, so every character built from it that is not one of those kinds would
+  be refused, and the refusal would land on whoever wrote the character. That is
+  why `scorcher` still suggests seven skills where Charmander carries nine — and
+  why `ingrain` and `synthesis`, which read as a body, stay restricted by
+  **element**: they sit in the `blighter` kit, so moving them onto a `plant`
+  species would make the preset itself illegal. Grass is the proxy a shared kit
+  can hold, and it is a proxy rather than the fact.
+  `TestABodyBoundSkillIsRestricted` is where those judgements are recorded, and it
+  names the *axis* each skill is kept by rather than only asking that it is kept:
+  "anybody may carry it" is one failure and "the wrong list keeps it" is another,
+  and the second reads as a pass.
+- **Not optional-by-accident.** A character that claims nothing is nothing in
+  particular, which is what most of a cast is and a real answer rather than a gap
+  — it is exactly what a lineage skill refuses. The one place that reading is
+  relaxed is a half-filled form, where an empty list is a question nobody has
+  reached yet: `forge.Carrier` says so on the field, and a lineage skill picked
+  before a species is settled is refused at the write instead of at the keystroke.
 
 ## Roadmap
 
@@ -1276,35 +1336,7 @@ three elements and Blastoise still loses the ace duel on stats, because its
 attack and speed curves are the lowest in the cast — an element advantage does
 not carry a passive stat line.
 
-### What a unit is, not only how it fights
-
-Nothing in the data says what a unit *is*. An element says what it is made of and
-an archetype says how it fights, and neither answers whether it has a shell, roots
-or a lineage — so a skill named after a body is free to land on a body it does not
-fit. `withdraw` is the one that found it: Squirtle pulls into its shell, the name
-read perfectly on the character it was written for, and nothing would have stopped
-a Machop taking it and reading "thu mai" on a creature with no shell.
-
-Two answers, and they are different rules rather than a preference. Where the
-*effect* is general the **name** should be too, which is why `withdraw` is now
-glossed as a stance and not as a shell. Where the identity is the point the name
-stays and the skill carries a restriction — and that is where the gap is, because
-`skill.Restriction` allows a list of elements, a list of archetypes and a list of
-characters, and being a dragon is none of the three.
-
-`dragon_rage` and `dragon_dance` are parked on the third of those, restricted to
-`pokemon.charmander`, and it is the wrong axis on purpose rather than by mistake.
-An archetype restriction would have said a *fighting style* implies a lineage,
-which is the coupling species exists to remove — and a preset may not hold a
-character-restricted skill at all, which is why `scorcher` suggests seven skills
-and Charmander carries nine. That refusal is the engine agreeing: a kit shared by
-every character built from a preset has no room for a skill about one of them.
-
-So the shape: a species is a fourth allowlist on the same `Restriction` and a
-fourth field on a character, declared in its own book the way origins and
-archetypes are, and a unit may have more than one — a fire dragon is both. Nothing
-in `battle` branches on it, exactly as nothing branches on an archetype; it is a
-carry rule and a word on a screen, which is what keeps it cheap. When it lands,
-the two lineage skills move from a character allowlist onto a species one and
-become carryable by every dragon, which is what they should have said all along,
-and `TestABodyBoundSkillIsRestricted` is the list of what else to revisit.
+A third constraint arrived with species, and it is a *softer* one: a skill kept
+for a lineage asks the character to be one, so adding a dragon is adding two lines
+rather than one — the kind in `species.json` and the claim on the character. See
+*What a unit is, not only how it fights* above.

@@ -65,13 +65,14 @@ type SkillDraft struct {
 	// Drains is the share of the damage dealt that comes back to the caster,
 	// also in parts per thousand.
 	Drains string
-	// The three allowlists, comma separated. An empty answer is an absent list,
+	// The four allowlists, comma separated. An empty answer is an absent list,
 	// which is what makes the common pool the default shape: a skill authored
 	// with nothing filled in here is written with no restrict block at all,
 	// rather than with an empty one, which would be the error case.
 	RestrictElements   string
 	RestrictArchetypes string
 	RestrictCharacters string
+	RestrictSpecies    string
 }
 
 // Resolve turns a draft into a skill, or says which answer is wrong.
@@ -250,16 +251,23 @@ func SkillAnswers(current skill.Skill) SkillDraft {
 		SelfApplies: FormatApplications(current.SelfApplies),
 		Restores:    optionalNumber(current.Restores),
 		Drains:      optionalNumber(current.Drains),
-		// An absent restriction is three empty answers, which is what makes
+		// An absent restriction is four empty answers, which is what makes
 		// accepting the form as it stands write no restrict block at all. See
 		// SkillDraft.Restriction.
+		//
+		// Every axis has to be read back here, and the one that was missing is
+		// what proves it: species arrived without this line, so every balance
+		// edit to a lineage skill rewrote it as free to anybody -- a data loss
+		// that left the file loading and every carrier carrying. See
+		// TestEveryShippedSkillTakesABalanceEdit.
 		RestrictElements:   strings.Join(current.Restrict.ElementNames(), ","),
 		RestrictArchetypes: strings.Join(restrictedArchetypes(current), ","),
 		RestrictCharacters: strings.Join(restrictedCharacters(current), ","),
+		RestrictSpecies:    strings.Join(current.Restrict.SpeciesNames(), ","),
 	}
 }
 
-// Restriction is the three allowlists a draft names, or nil when it names none.
+// Restriction is the four allowlists a draft names, or nil when it names none.
 //
 // Nil rather than an empty block is the whole of the common pool being the
 // default: skill.ParseBook refuses a restrict block that restricts nothing, so a
@@ -268,10 +276,14 @@ func (d SkillDraft) Restriction() (*skill.Restriction, error) {
 	elements := SplitList(d.RestrictElements)
 	archetypes := SplitList(d.RestrictArchetypes)
 	characters := SplitList(d.RestrictCharacters)
-	if len(elements) == 0 && len(archetypes) == 0 && len(characters) == 0 {
+	species := SplitList(d.RestrictSpecies)
+	if len(elements) == 0 && len(archetypes) == 0 &&
+		len(characters) == 0 && len(species) == 0 {
 		return nil, nil
 	}
-	restriction := &skill.Restriction{Archetypes: archetypes, Characters: characters}
+	restriction := &skill.Restriction{
+		Archetypes: archetypes, Characters: characters, Species: species,
+	}
 	for _, name := range elements {
 		member, err := ParseElement(name)
 		if err != nil {
@@ -600,10 +612,10 @@ func (l *Library) PreviewDamage(built skill.Skill) SkillPreview {
 
 // CarryFacts is who may take a skill, as the facts rather than as a sentence.
 //
-// Four things can narrow a skill and they compose: its own element gates it to
-// affinities holding that element, and each of the three allowlists gates it
+// Five things can narrow a skill and they compose: its own element gates it to
+// affinities holding that element, and each of the four allowlists gates it
 // further. Nothing narrowing it at all is the common pool, which is what Anyone
-// says, and it is worth its own field rather than a caller checking for four
+// says, and it is worth its own field rather than a caller checking for five
 // empty ones — "which skills can anybody take" is the question an author asks
 // most often and the one the picker answers at a glance.
 type CarryFacts struct {
@@ -612,10 +624,12 @@ type CarryFacts struct {
 	// Element is the skill's own element, empty when it is neutral and
 	// therefore gates nobody.
 	Element string
-	// Elements, Archetypes and Characters are the allowlists it declares.
+	// Elements, Archetypes, Characters and Species are the allowlists it
+	// declares.
 	Elements   []string
 	Archetypes []string
 	Characters []string
+	Species    []string
 }
 
 // WhoMayCarry reads a skill's gates without wording any of them.
@@ -624,6 +638,7 @@ func WhoMayCarry(carried skill.Skill) CarryFacts {
 		Elements:   carried.Restrict.ElementNames(),
 		Archetypes: append([]string(nil), restrictedArchetypes(carried)...),
 		Characters: append([]string(nil), restrictedCharacters(carried)...),
+		Species:    carried.Restrict.SpeciesNames(),
 	}
 	if carried.Element != element.Neutral {
 		facts.Element = carried.Element.String()
@@ -664,6 +679,9 @@ func WhoMaySummary(carried skill.Skill) string {
 	}
 	if len(facts.Characters) > 0 {
 		parts = append(parts, "belongs to "+strings.Join(facts.Characters, " or "))
+	}
+	if len(facts.Species) > 0 {
+		parts = append(parts, "kept for a "+strings.Join(facts.Species, " or "))
 	}
 	return strings.Join(parts, ", ")
 }

@@ -77,6 +77,40 @@ func (e *OriginTakenError) Error() string {
 	return fmt.Sprintf("origin %q is already in the catalog", e.ID)
 }
 
+// UnknownSpeciesError is a kind of creature that is not in the catalog. Like
+// UnknownOriginError it carries the command that would add it.
+type UnknownSpeciesError struct{ ID string }
+
+// AddCommand is what a person would type to catalog the missing species.
+func (e *UnknownSpeciesError) AddCommand() string { return "hexforge species add " + e.ID }
+
+func (e *UnknownSpeciesError) Error() string {
+	return fmt.Sprintf("no species %q in the catalog; add it with %q", e.ID, e.AddCommand())
+}
+
+// SpeciesTakenError is a kind whose id is already catalogued.
+type SpeciesTakenError struct{ ID string }
+
+func (e *SpeciesTakenError) Error() string {
+	return fmt.Sprintf("species %q is already in the catalog", e.ID)
+}
+
+// SpeciesRestrictedError is a skill kept for a lineage the character is not.
+//
+// It carries the character rather than only the skill for the same reason
+// CharacterRestrictedError does: the refusal is about a pairing, and a front-end
+// wording it has to be able to name both halves.
+type SpeciesRestrictedError struct {
+	Character string
+	Skill     string
+	Allowed   []string
+}
+
+func (e *SpeciesRestrictedError) Error() string {
+	return fmt.Sprintf("%q cannot carry the skill %q; it is kept for a %s",
+		e.Character, e.Skill, strings.Join(e.Allowed, " or "))
+}
+
 // UnknownCharacterError is a name that is not in the cast. It is raised by an
 // allowlist naming somebody who does not exist, which is the same mistake as an
 // empty allowlist: nobody satisfies it.

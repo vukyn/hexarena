@@ -224,23 +224,23 @@ type Cleanse struct {
 // time, and reading it as "no restriction" would turn that mistake into a skill
 // silently available to everyone.
 //
-// # Why two of the three are plain strings
+// # Why three of the four are plain strings
 //
 // Elements are parsed here because this package already knows what an element
-// is. Archetypes and characters are not: internal/core/cast declares both, and
-// cast imports this package, so a skill that named a cast type would be an
-// import cycle. So they travel as the ids they were written with and are
-// checked one layer up, by cast.ParseBook and cast.ParseArchetypes — exactly
-// the way a skill's pattern and status names are checked by whoever holds those
-// books rather than by whoever declares the skill.
+// is. Archetypes, characters and species are not: internal/core/cast declares
+// all three, and cast imports this package, so a skill that named a cast type
+// would be an import cycle. So they travel as the ids they were written with
+// and are checked one layer up, by cast.ParseBook and cast.ParseArchetypes —
+// exactly the way a skill's pattern and status names are checked by whoever
+// holds those books rather than by whoever declares the skill.
 //
 // The layering has a consequence worth stating rather than working around:
-// battle.Roster carries stats, skills, an affinity and a slot, and no archetype
-// and no character identity, because both are resolved before a battle starts.
-// So Elements is enforceable at battle load and the other two are not. They are
-// authoring-time rules, and pushing either into the engine to "complete" the
-// feature would put a fact into the replayable core that no replay needs. See
-// CLAUDE.md, "What a restriction can enforce".
+// battle.Roster carries stats, skills, an affinity and a slot, and no archetype,
+// no character identity and no species, because all three are resolved before a
+// battle starts. So Elements is enforceable at battle load and the other three
+// are not. They are authoring-time rules, and pushing any of them into the engine
+// to "complete" the feature would put a fact into the replayable core that no
+// replay needs. See CLAUDE.md, "What a restriction can enforce".
 type Restriction struct {
 	// Elements is the affinities allowed to carry the skill: a unit qualifies
 	// by holding any one of them.
@@ -257,6 +257,15 @@ type Restriction struct {
 	// Characters is the characters allowed to carry it, by id in the cast book.
 	// A list of one is a unique skill.
 	Characters []string
+	// Species is the kinds of creature allowed to carry it, by id in the
+	// species book: a unit qualifies by being any one of them.
+	//
+	// Any rather than all, because a unit may be several things at once and a
+	// skill about being a dragon has no opinion about what else the holder is.
+	// This is the axis a body-bound skill wants: a lineage outlives the
+	// character that first had it, so `dragon_rage` restricted to one character
+	// said "only this one may carry it" when it meant "only a dragon may".
+	Species []string
 }
 
 // AllowsElement reports whether the element allowlist admits an affinity.
@@ -285,10 +294,47 @@ func (r *Restriction) AllowsCharacter(id string) bool {
 	return r == nil || len(r.Characters) == 0 || slices.Contains(r.Characters, id)
 }
 
+// AllowsSpecies reports whether the species allowlist admits a unit that is
+// any of the given kinds.
+//
+// A unit with no species satisfies an unrestricted skill and fails a restricted
+// one, which is the same answer an empty character id would get: the allowlist
+// names what a holder must be, and being nothing is not one of them.
+func (r *Restriction) AllowsSpecies(kinds []string) bool {
+	if r == nil || len(r.Species) == 0 {
+		return true
+	}
+	for _, allowed := range r.Species {
+		if slices.Contains(kinds, allowed) {
+			return true
+		}
+	}
+	return false
+}
+
 // NamesCharacters reports whether the skill belongs to named characters, which
 // is what makes it unusable in a preset shared by every character built from
 // it.
 func (r *Restriction) NamesCharacters() bool { return r != nil && len(r.Characters) > 0 }
+
+// NamesSpecies reports whether the skill belongs to named kinds of creature,
+// which makes it unusable in a preset for exactly the same reason: a preset says
+// how a character fights and nothing about what it is, so every character built
+// from one that is not of those kinds would be refused — and the refusal would
+// land on whoever wrote the character rather than on whoever wrote the preset.
+func (r *Restriction) NamesSpecies() bool { return r != nil && len(r.Species) > 0 }
+
+// SpeciesNames is the species allowlist written out.
+//
+// It exists so that a caller can walk the list without reaching through the
+// pointer: r.Species on a nil restriction is a nil dereference, while every
+// method here answers for the unrestricted case. That trap cost a panic once.
+func (r *Restriction) SpeciesNames() []string {
+	if r == nil {
+		return nil
+	}
+	return append([]string(nil), r.Species...)
+}
 
 // ElementNames is the element allowlist written out, which is what a refusal
 // and a listing want.
@@ -476,6 +522,7 @@ type restrictFile struct {
 	Elements   []string `json:"elements,omitempty"`
 	Archetypes []string `json:"archetypes,omitempty"`
 	Characters []string `json:"characters,omitempty"`
+	Species    []string `json:"species,omitempty"`
 }
 
 type applicationFile struct {
@@ -536,6 +583,7 @@ func (s Skill) file() skillFile {
 			Elements:   s.Restrict.ElementNames(),
 			Archetypes: append([]string(nil), s.Restrict.Archetypes...),
 			Characters: append([]string(nil), s.Restrict.Characters...),
+			Species:    append([]string(nil), s.Restrict.Species...),
 		}
 	}
 	if s.Scaling != DefaultScaling() {
@@ -838,7 +886,8 @@ func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, e
 	fail := func(format string, args ...any) error {
 		return fmt.Errorf("skill %q restricts "+format, append([]any{skillID}, args...)...)
 	}
-	if declared.Elements == nil && declared.Archetypes == nil && declared.Characters == nil {
+	if declared.Elements == nil && declared.Archetypes == nil &&
+		declared.Characters == nil && declared.Species == nil {
 		return nil, fail("nothing, because it names no lists; leave the block out to restrict nothing")
 	}
 	// A present-but-empty list is refused rather than read as "unrestricted".
@@ -851,6 +900,7 @@ func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, e
 		{"elements", declared.Elements},
 		{"archetypes", declared.Archetypes},
 		{"characters", declared.Characters},
+		{"species", declared.Species},
 	} {
 		if list.entries != nil && len(list.entries) == 0 {
 			return nil, fail("its %s to an empty list, which nobody satisfies; leave the list out to restrict nothing",
@@ -870,6 +920,7 @@ func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, e
 	restriction := &Restriction{
 		Archetypes: append([]string(nil), declared.Archetypes...),
 		Characters: append([]string(nil), declared.Characters...),
+		Species:    append([]string(nil), declared.Species...),
 	}
 	for _, name := range declared.Elements {
 		member, err := element.Parse(name)
@@ -1033,8 +1084,8 @@ const (
 // skill of an element it shares — a neutral skill is universal, which is what
 // makes a second element worth carrying — and it must also satisfy whatever
 // element allowlist the skill declares, which is the narrower rule a
-// restriction adds. Nothing else here is enforceable: an archetype and a
-// character identity do not reach the engine, so those two halves of a
+// restriction adds. Nothing else here is enforceable: an archetype, a character
+// identity and a species do not reach the engine, so those three halves of a
 // restriction are checked where a character is authored. See Restriction.
 //
 // This is the single declaration. battle.enlist refuses a roster entry that

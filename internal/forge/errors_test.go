@@ -32,6 +32,12 @@ func TestARefusalKeepsTheWordingTheCommandLinePrints(t *testing.T) {
 		{&UnknownArchetypeError{ID: "nobody", Known: []string{"duelist", "sentinel"}},
 			`unknown archetype "nobody", want one of duelist, sentinel`},
 		{&OriginTakenError{ID: "fixture-film"}, `origin "fixture-film" is already in the catalog`},
+		{&UnknownSpeciesError{ID: "dragoon"},
+			`no species "dragoon" in the catalog; add it with "hexforge species add dragoon"`},
+		{&SpeciesTakenError{ID: "dragon"}, `species "dragon" is already in the catalog`},
+		{&SpeciesRestrictedError{
+			Character: "example.adept", Skill: "dragon_rage", Allowed: []string{"dragon"},
+		}, `"example.adept" cannot carry the skill "dragon_rage"; it is kept for a dragon`},
 		{&EmptyKitError{}, "a character with no skills would have nothing to do on its turn"},
 		{&DuplicateSkillError{ID: "strike"}, `"strike" is named twice`},
 		{&MissingElementError{}, "no element given"},

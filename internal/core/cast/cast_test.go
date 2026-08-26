@@ -65,7 +65,10 @@ func skills(t *testing.T) *skill.Book {
 	    {"id": "ember_lance", "element": "fire", "range": 2, "pattern": "single",
 	     "power": 1800, "accuracy": 900, "target": "enemy"},
 	    {"id": "gale_slash", "element": "wind", "range": 2, "pattern": "single",
-	     "power": 1500, "accuracy": 900, "target": "enemy"}
+	     "power": 1500, "accuracy": 900, "target": "enemy"},
+	    {"id": "lineage_roar", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1200, "accuracy": 900, "target": "enemy",
+	     "restrict": {"species": ["dragon"]}}
 	  ]
 	}`), skill.Deps{Patterns: patterns, Statuses: statuses})
 	if err != nil {
@@ -158,8 +161,25 @@ func deps(t *testing.T) cast.Deps {
 	t.Helper()
 	return cast.Deps{
 		Origins: origins(t), Archetypes: archetypeBook(t), Skills: skills(t),
-		Passives: passives(t), Chart: chart(t), Limits: limits(t), Rules: rules(t),
+		Passives: passives(t), Species: speciesBook(t),
+		Chart: chart(t), Limits: limits(t), Rules: rules(t),
 	}
+}
+
+// speciesBook is the catalog the fixtures claim to be. Two kinds, because one
+// would not show that a character may be several things at once.
+func speciesBook(t *testing.T) *cast.SpeciesBook {
+	t.Helper()
+	book, err := cast.ParseSpecies([]byte(`{
+	  "species": [
+	    {"id": "dragon", "name": "rồng"},
+	    {"id": "lizard", "name": "thằn lằn", "note": "a body rather than a lineage"}
+	  ]
+	}`))
+	if err != nil {
+		t.Fatalf("species: %v", err)
+	}
+	return book
 }
 
 // passives is the trait book the fixtures name. One permanent status and one

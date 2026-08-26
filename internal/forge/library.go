@@ -35,6 +35,7 @@ const (
 	passivesFile   = "passives.json"
 	skillsFile     = "skills.json"
 	originsFile    = "origins.json"
+	speciesFile    = "species.json"
 	archetypesFile = "archetypes.json"
 	castFile       = "cast.json"
 )
@@ -71,6 +72,7 @@ type Library struct {
 	passives   *passive.Book
 	skills     *skill.Book
 	origins    *cast.OriginBook
+	species    *cast.SpeciesBook
 	archetypes *cast.ArchetypeBook
 	characters *cast.Book
 }
@@ -143,6 +145,13 @@ func Load(dir string) (*Library, error) {
 		return nil, err
 	}
 
+	if raw, err = read(speciesFile); err != nil {
+		return nil, err
+	}
+	if lib.species, err = cast.ParseSpecies(raw); err != nil {
+		return nil, err
+	}
+
 	if raw, err = read(archetypesFile); err != nil {
 		return nil, err
 	}
@@ -174,6 +183,7 @@ func (l *Library) Statuses() *status.Book          { return l.statuses }
 func (l *Library) Skills() *skill.Book             { return l.skills }
 func (l *Library) Passives() *passive.Book         { return l.passives }
 func (l *Library) Origins() *cast.OriginBook       { return l.origins }
+func (l *Library) Species() *cast.SpeciesBook      { return l.species }
 func (l *Library) Archetypes() *cast.ArchetypeBook { return l.archetypes }
 func (l *Library) Characters() *cast.Book          { return l.characters }
 
@@ -199,8 +209,9 @@ func (l *Library) ArchetypeDeps() cast.ArchetypeDeps {
 
 func (l *Library) CastDeps() cast.Deps {
 	return cast.Deps{
-		Origins: l.origins, Archetypes: l.archetypes, Skills: l.skills,
-		Passives: l.passives, Chart: l.chart, Limits: l.limits, Rules: l.rules,
+		Origins: l.origins, Species: l.species, Archetypes: l.archetypes,
+		Skills: l.skills, Passives: l.passives,
+		Chart: l.chart, Limits: l.limits, Rules: l.rules,
 	}
 }
 
@@ -210,6 +221,9 @@ func (l *Library) CastPath() string { return filepath.Join(l.dir, castFile) }
 
 // OriginsPath is the file a saved origin lands in.
 func (l *Library) OriginsPath() string { return filepath.Join(l.dir, originsFile) }
+
+// SpeciesPath is the file a saved species lands in.
+func (l *Library) SpeciesPath() string { return filepath.Join(l.dir, speciesFile) }
 
 // SkillsPath is the file a saved skill lands in.
 func (l *Library) SkillsPath() string { return filepath.Join(l.dir, skillsFile) }
@@ -322,6 +336,21 @@ func (l *Library) KitSkills(named []string) []skill.Skill {
 	return out
 }
 
+// KitSpecies is a character's kinds resolved against the catalog, which is what
+// a screen wanting their authored names asks for. It mirrors KitPassives: the
+// lookup is here and the wording is i18n's.
+func (l *Library) KitSpecies(named []string) []cast.Species {
+	out := make([]cast.Species, 0, len(named))
+	for _, id := range named {
+		kind, known := l.species.Get(id)
+		if !known {
+			kind = cast.Species{ID: id}
+		}
+		out = append(out, kind)
+	}
+	return out
+}
+
 // KitPassives is the same for a character's traits: the declared ones resolved,
 // and a placeholder for a name the book does not hold, so a listing draws the id
 // rather than a gap.
@@ -407,6 +436,27 @@ func (l *Library) SaveOrigin(origin cast.Origin) error {
 		return err
 	}
 	l.origins = grown
+	return nil
+}
+
+// SaveSpecies appends a kind of creature to the catalog and writes it back, on
+// the same terms as SaveOrigin.
+func (l *Library) SaveSpecies(kind cast.Species) error {
+	if _, clash := l.species.Get(kind.ID); clash {
+		return &SpeciesTakenError{ID: kind.ID}
+	}
+	grown, err := l.species.Append(kind)
+	if err != nil {
+		return err
+	}
+	raw, err := grown.Marshal()
+	if err != nil {
+		return err
+	}
+	if err := l.replaceFile(speciesFile, raw); err != nil {
+		return err
+	}
+	l.species = grown
 	return nil
 }
 

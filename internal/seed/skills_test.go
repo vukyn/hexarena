@@ -319,15 +319,16 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 	// the majority of the book, so printing it would bury the four rows that
 	// are the point. The header says so instead.
 	b.WriteString("\n== who may carry, a skill absent here is free to anybody ==\n")
-	b.WriteString("skill           elements   archetypes        characters\n")
+	b.WriteString("skill           elements   archetypes        characters          species\n")
 	for _, current := range book.Skills() {
 		if current.Restrict == nil {
 			continue
 		}
-		fmt.Fprintf(&b, "%-16s%-11s%-18s%s\n", current.ID,
+		fmt.Fprintf(&b, "%-16s%-11s%-18s%-20s%s\n", current.ID,
 			allowlist(current.Restrict.ElementNames()),
 			allowlist(current.Restrict.Archetypes),
-			allowlist(current.Restrict.Characters))
+			allowlist(current.Restrict.Characters),
+			allowlist(current.Restrict.SpeciesNames()))
 	}
 
 	// The "needs" column is a sentence rather than a status id because a
@@ -507,27 +508,70 @@ func TestTheShippedSkillBookSurvivesBeingWritten(t *testing.T) {
 // to read the name and decide -- so this is the place that decision is recorded,
 // and a shipped skill added to the list without a restriction fails here.
 //
-// The lineage entries are restricted to a *character* rather than to an
-// archetype, which is deliberate and temporary: an archetype says how a unit
-// fights, and being a dragon is not a fighting style. When species exists these
-// move onto it and become carryable by every dragon, which is what they should
-// have said all along. See the species entry in README's roadmap.
+// Each row names the *axis* rather than only asking for some restriction, and
+// that is the half of this test that took two attempts. "Anybody may carry it"
+// is one failure; "the wrong list keeps it" is a different one that reads as a
+// pass, and the difference is the whole subject here -- the lineage pair sat on
+// a character allowlist for exactly as long as nobody could say which list it
+// should have been on.
+//
+// Why the two axes differ, since the four rows are two of each:
+//
+//   - species, for a lineage. Being a dragon outlives the character that first
+//     had it, so a character allowlist said "only this one may carry it" when it
+//     meant "only a dragon may".
+//   - elements, for the two that mean a body. `ingrain` and `synthesis` are in
+//     the blighter kit, and cast.resolveArchetype refuses a species-restricted
+//     skill in a preset for the same reason it refuses a character-restricted
+//     one -- a preset says how a character fights and nothing about what it is.
+//     So moving these onto a plant species would make the preset itself illegal;
+//     grass is the proxy a shared kit can hold, and it is a proxy rather than
+//     the fact.
 func TestABodyBoundSkillIsRestricted(t *testing.T) {
-	bound := map[string]string{
-		"ingrain":      "roots, so only something that grows may take it",
-		"synthesis":    "photosynthesis, so only something that grows may take it",
-		"dragon_rage":  "a lineage, not a technique",
-		"dragon_dance": "a lineage, not a technique",
+	bound := map[string]struct{ why, axis string }{
+		"ingrain":      {"roots, so only something that grows may take it", "elements"},
+		"synthesis":    {"photosynthesis, so only something that grows may take it", "elements"},
+		"dragon_rage":  {"a lineage, not a technique", "species"},
+		"dragon_dance": {"a lineage, not a technique", "species"},
 	}
 	book := mustSkills(t)
-	for id, why := range bound {
+	for id, expected := range bound {
 		carried, err := book.Lookup(id)
 		if err != nil {
 			t.Errorf("the list names %q, which the shipped book does not hold: %v", id, err)
 			continue
 		}
 		if carried.Restrict == nil {
-			t.Errorf("%q names %s, but anybody may carry it", id, why)
+			t.Errorf("%q names %s, but anybody may carry it", id, expected.why)
+			continue
+		}
+		axes := map[string][]string{
+			"elements":   carried.Restrict.ElementNames(),
+			"archetypes": carried.Restrict.Archetypes,
+			"characters": carried.Restrict.Characters,
+			"species":    carried.Restrict.SpeciesNames(),
+		}
+		if len(axes[expected.axis]) == 0 {
+			t.Errorf("%q names %s and should be kept by its %s, but that list is empty; it is kept by %s",
+				id, expected.why, expected.axis, allowlistedAxes(axes))
 		}
 	}
+}
+
+// allowlistedAxes names which lists of a restriction hold anything, so a
+// refusal above can say what the skill is kept by instead of only what it is
+// not.
+func allowlistedAxes(axes map[string][]string) string {
+	// Ranged in a fixed order rather than over the map: this reaches a failure
+	// message, and Go randomises map order.
+	named := make([]string, 0, len(axes))
+	for _, axis := range []string{"elements", "archetypes", "characters", "species"} {
+		if len(axes[axis]) > 0 {
+			named = append(named, axis+" "+allowlist(axes[axis]))
+		}
+	}
+	if len(named) == 0 {
+		return "nothing"
+	}
+	return strings.Join(named, ", ")
 }
