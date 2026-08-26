@@ -181,8 +181,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// at all when there is nothing to say — in English, or for a kit of skills
 	// the table has no names for — rather than an empty row under a full one.
 	if glossed := m.lang.GlossedKit(m.lib.KitSkills(character.Skills)); glossed != "" {
-		out.WriteString(m.style.dim.Render(
-			m.wrapped("", detailLabelWidth(m), glossed)))
+		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
 	}
 	art := character.Image
 	if m.lib.ImageExists(character.Image) {

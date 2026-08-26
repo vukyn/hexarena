@@ -7,7 +7,7 @@
       "archetype": "blighter",
       "image": "assets/bulbasaur.svg",
       "element": "grass",
-      "bio": "Hạt giống trên lưng lớn cùng nó và nuôi nó bằng ánh nắng. Đánh chậm, chịu đòn tốt, thắng bằng cách rải độc rồi cầm cự lâu hơn đối phương. Ba giai đoạn: Bulbasaur, Ivysaur từ cấp 16, Venusaur từ cấp 32.",
+      "bio": "Hạt giống trên lưng lớn cùng nó và nuôi nó bằng ánh nắng. Đánh chậm, trụ đòn tốt, thắng bằng cách rải độc rồi cầm cự lâu hơn đối phương. Ba giai đoạn: Bulbasaur, Ivysaur từ cấp 16, Venusaur từ cấp 32.",
       "stages": [
         {
           "name": "Bulbasaur",

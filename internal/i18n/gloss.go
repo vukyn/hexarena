@@ -99,6 +99,7 @@ var (
 		"sentinel":   "trấn thủ",
 		"duelist":    "đấu sĩ",
 		"skirmisher": "du kích",
+		"blighter":   "kẻ gieo độc",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its

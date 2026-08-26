@@ -46,7 +46,7 @@ q hoặc ctrl+c để thoát`,
 	MenuSkills:             "danh sách chiêu",
 	MenuSkillsDetail:       "xem các chiêu, ai học được chiêu nào, thêm hoặc sửa chiêu",
 	MenuCheck:              "kiểm tra",
-	MenuCheckDetail:        "xem ảnh có đủ chưa và hạn mức có bị vượt không",
+	MenuCheckDetail:        "xem ảnh có đủ chưa và hạn mức có vượt không",
 	MenuNote: "Mọi thứ ghi ở đây đều qua đúng các bước kiểm tra của hexforge, còn game thì\n" +
 		"chạy từ bản dữ liệu nhúng sẵn — build lại thì sửa đổi mới vào được trận.",
 	MenuFooter: "↑/↓ chọn · enter mở · ctrl+l English · q thoát",
