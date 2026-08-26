@@ -770,7 +770,10 @@ load-bearing:
   slot against `hex.Place` rather than against the picture.
 - **Both trait states and all three stages are in play.** Charmander at 8 is below
   `blaze`'s unlock level and the two 16s sit exactly on `endurance`'s, so a battle
-  exercises a unit with its trait and one without.
+  exercises a unit with its trait and one without. Since `blaze` became gated it
+  carries a third state as well: Charmeleon holds it from the opening board and
+  only comes *into* it partway down, which is what a shipped log now shows a
+  `passive_held` for mid-battle.
 
 ⚠️ **The 40-seed sweep in `TestSeedBattlesFinishFromEverySeed` is a smoke test, not
 a measurement.** It read 45 per cent on a draft whose true rate over 4000 seeds
@@ -935,35 +938,50 @@ is the constraint each piece has to respect.
       whole timed-effect layer is tested but not played. A replacement must read
       no randomness and mutate nothing — a client calls it for a hint mid-turn —
       and two identical battles must still produce identical logs.
-- [ ] **A gated grant: a stat change that comes and goes.** All four things a
-      passive is asked for are built; one *combination* of two is not, and it is
-      the one the canonical abilities want — Overgrow and Blaze are "hits harder
-      when badly hurt", a stat change under a condition. `passive` refuses that
-      pairing at parse rather than ignoring the gate. What it needs, worked out
-      rather than guessed: an engine-only door into a permanent status (`Hold` /
-      `Release`, so `Set.Remove` keeps refusing them and a dispel still cannot
-      turn a trait off for a whole battle); **an event each way** — `PassiveHeld`
-      says it came on and going off has no kind yet; a **retune** each time, since
-      a gated trait touching speed reorders the queue; and **one re-evaluation
-      point** — health moves in `wound` and `heal` and nowhere else, for the unit
-      whose health moved rather than for everybody. Both original constraints
-      still hold: a trait changing a number **emits an event**, and one touching
-      speed is in force before the first wait is computed. See README → Roadmap.
+- [x] **A gated grant: a stat change that comes and goes.** `blaze` is now what
+      it is named after — `{"grants":[{"status":"kindled"}],"while":{"below_health":333}}`
+      — and its burn immunity moved to `heatproof`, because **a gate covers the
+      WHOLE trait** (grants, resists and applies together) and a trait wanting one
+      gated half is two traits. Four pieces: `Set.Hold`/`Set.Release` are the
+      engine-only door (each refuses what `Apply`/`Remove` handle, so neither
+      becomes a second one of those, and `Remove` still refuses a permanent status
+      so no cleanse can dispel a trait); `PassiveHeld` now fires mid-battle too and
+      `PassiveReleased` is the way back; a **retune** at the crossing — not what
+      keeps the queue right (a turn already ends with a sweep) but what puts the
+      `speed_changed` NEXT TO the trait that caused it; and one re-evaluation point
+      per unit whose health moved, in `battle.reconsider`.
+      ⚠️ **The plan was wrong about where health moves.** Not `wound` and `heal`
+      and nowhere else — **three** places: the strike loop in `resolveAgainst`
+      subtracts from its target directly, and that is where nearly all the damage
+      is dealt. Hooking only the two named functions opens a gate for a poison tick
+      and never for a sword. It is read **per strike**, not per skill, or the same
+      trait would be worth less against a multi-strike skill for a reason written
+      on neither. Guard on `unit.HP <= 0` as well as `Dead`: the strike loop leaves
+      a target at zero and kills it afterwards, so a flag-only guard announces a
+      trait to something whose `died` line is the next event.
+      ⚠️ **A gated trait is nearly a one-way door on autopilot** — `Suggest` never
+      heals, the only healing in 60 bench battles is a drain to its own caster
+      (~1/40 of a bar against damage worth ~1/10), and across 4000 battle-seeds of
+      every arrangement tried a trait came back off **once**. So `passive_released`
+      is proved by a **hand-played** battle in `TestEveryEventKindIsReachable`, not
+      by widening the sweep until the rare case shows up.
 - [ ] **Two builds for one Bulbasaur — the target the trait entries add up to.**
       (1) *poison specialist*: immune to poison · its poison hurts more ·
       attacking it poisons the attacker. (2) *bloodsucker*: heals from damage
       dealt · heals more the closer it is to dying. Pieces: `Resists` ✅ ·
       *Amplifying a status* ❌ · *Answering back* ❌ · **passive lifesteal —
-      nothing holds it yet** ❌ · `While` ✅ (unused by any shipped trait).
+      nothing holds it yet** ❌ · `While` ✅ (`blaze` is gated).
 - [ ] **Passive lifesteal — the cheapest thing on the roadmap.** A skill may
       `drain` a share of what it dealt (`leech_seed` 600); **no trait can say
       "everything this unit does drains"**. A share on `passive.Passive`, added to
-      the skill's own drain, read where a drain already resolves. ⚠️ It is also
-      what makes `While` worth having: a **gated share is legal where a gated
-      grant is not** — a grant is applied once at enlistment and cannot be taken
-      back (refused at parse), a share is read fresh per strike. So *Overgrow*
-      ("hits harder when hurt", a gated grant) is **unwritable** and *Vladimir*
-      ("drains harder when hurt", a gated share) is **writable today**.
+      the skill's own drain, read where a drain already resolves.
+      ⚠️ This entry used to say a gated *share* was legal where a gated *grant*
+      was not, and that *Overgrow* was therefore unwritable. Both halves are now
+      stale — a grant can be gated. A share is still the **cheaper** of the two,
+      because it is read fresh where a drain already resolves and so needs no
+      door into a permanent status, no event either way and no retune; that is a
+      saving rather than the only way in. *Vladimir* ("drains harder when hurt")
+      is still the case it buys.
       ⚠️ `Applies` is NOT retaliation: it adds to what the holder's **own** attack
       inflicts (touch → poisoned), the reverse of answering an attacker. Do not
       close *Answering back* with it.
@@ -971,8 +989,9 @@ is the constraint each piece has to respect.
       trait it has, so all five pieces make ONE better unit, not two different
       ones — choosing needs the **trait slot** (*Learnsets, slots*), and that entry
       says a slot is only a decision once traits differ in **kind**. Suggested
-      order: passive lifesteal + gate → amplify a status → trait slot → answering
-      back. See README → *Two builds for one character*.
+      order: passive lifesteal → amplify a status → trait slot → answering back.
+      The gate has left that list; it is built.
+      See README → *Two builds for one character*.
 - [ ] **Amplifying a status is two features, not one.** A trait that "makes its
       poison better" means either **a stronger tick** — one multiplication into
       the tick `battle.inflict` freezes on the stack — or **a better chance**,
@@ -1047,11 +1066,11 @@ is the constraint each piece has to respect.
       one twice — and note **gating is separable from slots and much cheaper**, so
       a first slice can gate traits and bring every unlocked one, which is not a
       choice and needs no log change. **Order: (1) gate the traits — DONE**,
-      `cast.Unlock` settled on the smaller list; **(2) the three missing passive
-      jobs**, because a slot between three stat traits is not a decision and a
-      resistance or a conditional trait is — building the slot first ships a
-      choice with nothing to choose; **(3) the slots and the log carrying the
-      placement**. Then **a chosen stage** —
+      `cast.Unlock` settled on the smaller list; **(2) the passive jobs that make a
+      slot a decision — DONE**, since a slot between three stat traits is not a
+      choice while a resistance, a rider or a gated trait is, and all of those now
+      exist; **(3) the slots and the log carrying the placement**, which is now the
+      next thing rather than the third. Then **a chosen stage** —
       `Line.StageAt` derives one from a level today, and a level should instead
       *allow* one while the placement names which it fielded, so
       `Resolve(level)` becomes `Resolve(level, stage)`; and **no condition beyond

@@ -62,6 +62,43 @@ func TestDescribeEveryShippedSkillGolden(t *testing.T) {
 	}
 }
 
+// TestAGatedTraitIsNotDescribedAsAlways is the sentence a gate made wrong.
+//
+// A trait's grants read as "always carries" because until a grant could be gated
+// that was simply true. A gated one closes with the line saying when it is in
+// force, so the two sentences would have argued with each other — and a reader
+// deciding whether to field the trait would have to work out which of them the
+// engine meant.
+func TestAGatedTraitIsNotDescribedAsAlways(t *testing.T) {
+	passives, err := seed.PassiveBook()
+	if err != nil {
+		t.Fatalf("load the shipped passives: %v", err)
+	}
+	gated := 0
+	for _, held := range passives.All() {
+		description := tui.DescribePassive(held)
+		if strings.TrimSpace(description) == "" {
+			t.Errorf("%q has no description at all", held.ID)
+			continue
+		}
+		if held.While == nil {
+			continue
+		}
+		gated++
+		if !strings.Contains(description, "Chỉ có hiệu lực") {
+			t.Errorf("%q is gated and its description never says when: %q",
+				held.ID, description)
+		}
+		if strings.Contains(description, "Luôn") {
+			t.Errorf("%q is gated and its description still says it always applies: %q",
+				held.ID, description)
+		}
+	}
+	if gated == 0 {
+		t.Skip("no shipped trait is gated, so there is nothing here to contradict")
+	}
+}
+
 // TestEverySkillDescriptionSaysWhatItDoes is the property a golden cannot hold:
 // a golden freezes whatever was generated, including a skill the generator has
 // nothing to say about. This asserts that every shipped skill produces a

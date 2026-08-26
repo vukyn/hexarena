@@ -377,6 +377,10 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 // board, and an event describing a unit that has not been introduced yet is a
 // log a renderer cannot draw — so the traits take effect here and are reported
 // there, which is also the order a reader wants them in.
+//
+// A gated trait is a different matter: it is off at full health, so enlistment
+// puts nothing on and reconsider is what turns it on, mid-battle, with an event
+// of its own.
 func (b *Battle) grant(unit *Unit, ids []string) error {
 	if len(ids) == 0 {
 		return nil
@@ -393,18 +397,34 @@ func (b *Battle) grant(unit *Unit, ids []string) error {
 			return fmt.Errorf("unit %q holds the passive %q twice", unit.ID, held.ID)
 		}
 		unit.Passives = append(unit.Passives, held.ID)
-		for _, grant := range held.Grants {
-			kind, err := b.books.Statuses.Lookup(grant.Status)
-			if err != nil {
-				return fmt.Errorf("unit %q: passive %q: %w", unit.ID, held.ID, err)
-			}
-			for range grant.Stacks {
-				// A tick amount of nought: a permanent status cannot be a
-				// damage-over-time or a regeneration, which the status book
-				// refuses, so there is nothing here to snapshot.
-				unit.Statuses.Apply(kind, 0)
-			}
+		// A gate is read here rather than assumed open, and at enlistment a unit
+		// is at full health — so a trait gated on being hurt starts off, and
+		// turns on the first time it is. Checking the gate rather than
+		// special-casing enlistment is what keeps one rule: a trait is on when
+		// its condition holds, from the first moment to the last.
+		if !b.inForce(unit, held) {
+			continue
 		}
+		if err := b.hold(unit, held); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// hold puts one trait's grants on its holder.
+//
+// Hold rather than Apply, and the difference is the gate: a permanent status is
+// refused by Remove so that nothing in the game can dispel a trait, which leaves
+// the trait's own gate as the only thing that may take it back. Hold and Release
+// are that door, and they work on nothing else.
+func (b *Battle) hold(unit *Unit, held passive.Passive) error {
+	for _, grant := range held.Grants {
+		kind, err := b.books.Statuses.Lookup(grant.Status)
+		if err != nil {
+			return fmt.Errorf("unit %q: passive %q: %w", unit.ID, held.ID, err)
+		}
+		unit.Statuses.Hold(kind, grant.Stacks)
 	}
 	return nil
 }
@@ -425,6 +445,13 @@ func (b *Battle) Begin() {
 		for _, id := range unit.Passives {
 			held, err := b.books.Passives.Lookup(id)
 			if err != nil {
+				continue
+			}
+			// Only what is actually on the unit. A gated trait is off at full
+			// health, and announcing a grant the opening board does not show
+			// would be the log describing a different unit from the one being
+			// drawn beside it.
+			if !b.inForce(unit, held) {
 				continue
 			}
 			for _, grant := range held.Grants {

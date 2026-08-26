@@ -163,7 +163,7 @@ roster was a mirror — both squads carried the same kit, so piercing helped eac
 by exactly as much and the win rate moved by noise. The roster is no longer a
 mirror (see *The seed roster is the balance instrument*), and the answer is
 modest: over four thousand auto-battles, taking the pierce off moves the ally win
-rate from 48.5 per cent to 46.5. The damage table was telling the truth — this is
+rate from 49.2 per cent to 46.5. The damage table was telling the truth — this is
 a dial that changes who armour is good against, not one that decides battles.
 
 ### Why raw health has no floor of its own
@@ -462,11 +462,13 @@ is healed back. It is *at or under*: half means half counts. And a share is not 
 fraction — `333` of 3000 health is 999, so "a third" written that way admits
 everything strictly under a third and not a third exactly.
 
-**A gated `grants` is refused**, rather than accepted and quietly ignored. A grant
-is applied once, when the unit is enlisted, and the status it puts on is permanent
-precisely so nothing can take it off — so a gate on one would have to add and
-remove that status as health crossed the line. That is a mechanism rather than a
-term, and it is the last piece: see *What a passive still cannot do*.
+**A gate covers the whole trait** — the grants, the resistances and the riders
+come and go together, and a trait wanting one gated half and one ungated half is
+two traits. A gated `grants` was refused for a long time, because a grant is put
+on when the unit is enlisted and the status it puts on is permanent precisely so
+nothing can take it off; gating one needs the engine to hold and release that
+status as health crosses the line, which is a mechanism rather than a term. It is
+built: see *A gated grant: a stat change that comes and goes*.
 
 ### A trait comes in at a level
 
@@ -710,10 +712,12 @@ is what stopped `razor_leaf`'s piercing value from being judged by anything but
 its damage table — giving it 400 moved the ally win rate from 23 of 40 to 25,
 which is nothing.
 
-Now it measures. Over four thousand auto-battles the roster sits at **48.5 per
+Now it measures. Over four thousand auto-battles the roster sits at **49.2 per
 cent** to the ally, and taking `razor_leaf`'s pierce back off moves that to 46.5
 — a real, one-directional move, on a roster where the ally holds the only
-Venusaur and the enemy the only Blastoise. The 40-seed sweep the test runs reads
+Venusaur and the enemy the only Blastoise. It read 48.5 before `blaze` was gated:
+the enemy Charmeleon now spends most of a battle without the attack it used to
+open with, which is what a trait worth holding looks like from the other side. The 40-seed sweep the test runs reads
 20–20, and it is far too coarse to tune against: it read 45 per cent on a draft
 whose true rate was 55.
 
@@ -738,10 +742,13 @@ Four properties earn their place, and each is a way the roster was wrong before:
   fire beats grass, but **grass against water is neutral**, so grass has no
   elemental answer at all and pays for it in neutral-element skills —
   `sludge_bomb` and `venoshock` land at full value on anything.
-- **All three forms and both trait states are in play.** The levels span the
+- **All three forms and every trait state are in play.** The levels span the
   final, middle and base stage; Wartortle and Ivysaur sit exactly on
   `endurance`'s unlock level, and Charmander at 8 is below `blaze`'s — so a
   battle exercises a unit holding its trait and a unit that has not earned one.
+  Since `blaze` became gated there is a third state: Charmeleon has earned it and
+  is not yet in it, so a shipped log carries a `passive_held` partway down rather
+  than only at the opening board.
 
 Squirtle is the finding this produced, and it is the kind a mirror hides. Water
 is the strongest of the three elements and Blastoise still cannot carry the ace
@@ -1082,39 +1089,65 @@ Constraints any replacement must keep: `Suggest` reads no randomness and mutates
 nothing, so a client may call it for a hint without disturbing the battle's own
 sequence, and two identical battles must still produce identical logs.
 
-### What a passive still cannot do
+### A gated grant: a stat change that comes and goes
 
-All four of the things a passive is normally asked for are built — a stat change,
-refusing a status, adding to what the holder does, and waiting until it is hurt.
-One combination of two of them is not, and it is the one the canonical abilities
-want.
+Built. All four things a passive is normally asked for were already there — a
+stat change, refusing a status, adding to what the holder does, and waiting until
+it is hurt — and the one *combination* the canonical abilities want was refused
+at parse rather than half-built. **Blaze** is now what it is named after: below a
+third of its health, Charmander's kit hits harder.
 
-**A gated grant: a stat change that comes and goes.** *Overgrow* and *Blaze* are
-"hits harder when badly hurt", which is a stat change under a condition, and that
-pairing is refused at parse rather than accepted and ignored. A grant is applied
-once, at enlistment, and the status it puts on is permanent so that nothing can
-dispel a trait — so gating one means adding and removing that status as health
-crosses the line. What that needs, having been worked out rather than guessed:
+```json
+{ "id": "blaze", "grants": [{"status": "kindled"}], "while": {"below_health": 333} }
+```
 
-- a door into a permanent status **for the engine only**. `Set.Remove` must keep
-  refusing them, or a dispel could turn a trait off for the rest of a battle; a
-  dedicated pair — `Hold` and `Release`, used by `battle.grant` and by the
-  re-evaluation — leaves the guard meaning what it says.
-- **an event each way.** A trait coming on or going off changes a visible number,
-  and the log is the only contract a renderer has. `PassiveHeld` says it came on;
-  going off has no kind yet.
-- **a retune each time**, because a gated trait touching speed reorders the queue,
-  and `retuneAll` is what keeps it honest.
-- **one re-evaluation point.** Health moves in `wound` and `heal` and nowhere
-  else, so those are the two places — for the unit whose health moved, not for
+A gate covers the **whole** trait — its grants, its resistances and its riders
+come and go together. That is why the burn immunity `blaze` used to carry moved
+to a trait of its own: a fire creature that only resisted burns while it was
+losing would be a rule nobody could state. **A trait wanting one gated half and
+one ungated half is two traits**, and saying so is what keeps a gate from
+becoming a per-field flag that has to be read out of the data.
+
+Four things it needed, and they were worked out before any of it was written:
+
+- **A door into a permanent status, for the engine only.** `Set.Remove` refuses a
+  permanent status so that no cleanse can dispel a trait, which is right and
+  which left a gate with no way to take its own grant back. `Set.Hold` and
+  `Set.Release` are that way in and out, and each refuses what the other pair
+  handles — Hold will not touch a timed status, Release will not either — so
+  neither becomes a second `Apply`/`Remove` with the rules missing.
+- **An event each way.** `PassiveHeld` was already the trait coming on; it now
+  fires mid-battle as well as with the opening board, and `PassiveReleased` is
+  the way back. A trait letting go takes a visible number down with it, and the
+  log is the only contract a renderer has.
+- **A retune each time**, since a gated trait touching speed reorders the queue.
+  A turn already ends with a sweep, so this is not what keeps the queue correct —
+  it is what puts the speed change **next to the trait that caused it** instead
+  of several events later beside whatever happened to be resolving.
+- **One re-evaluation point**, for the unit whose health moved rather than for
   everybody.
 
-None of that is large. It is a mechanism rather than a term, which is why it is
-its own piece rather than a clause of this one.
+⚠️ That last one is where the plan was wrong about its own code. It said health
+moves in `wound` and `heal` and nowhere else. It moves in **three** places: the
+strike loop in `resolveAgainst` subtracts from its target directly rather than
+calling `wound`, and that is where nearly all the damage in a battle is dealt. A
+version hooked to the two named functions would have opened a gate for a poison
+tick and never for a sword. The gate is read per *strike* rather than per skill,
+so a trait that comes on after the first hit of three is in force for the other
+two — otherwise the same trait would be worth less against a multi-strike skill
+for a reason written on neither.
 
-Whatever comes next keeps the two constraints the first slice was built under: a
-trait that changes a number **emits an event**, and one that touches speed is in
-force before the first wait is computed.
+**A gated trait is very nearly a one-way door in an automatic battle, and that is
+a fact about the opponent rather than about the gate.** A unit below a third of
+its health is a unit that is losing, and `battle.Suggest` never heals anybody: the
+only healing across sixty bench battles is what a drain returns to its own
+caster, worth about a fortieth of a health bar against damage worth a tenth.
+Across four thousand battle-seeds and every arrangement tried — a bigger drain, a
+smaller holder, a higher line — a trait came back off **once**. So the release is
+proved by a hand-played battle in `TestEveryEventKindIsReachable` rather than by
+widening the sweep until the rare case turned up, because "a player heals and the
+opponent does not" is the actual reason, and a test that passed at seed 3,197
+would have hidden it.
 
 ### Two builds for one character, which is what the trait work is for
 
@@ -1139,20 +1172,24 @@ around this one:
 | heals from damage dealt | **nothing holds this yet** | no |
 | heals more when nearly dead | `While`, gating that share | half |
 
+`While` is the row that moved: it gates the whole of a trait, grants included,
+and `blaze` is the first shipped trait to use it.
+
 **The one that has no home is passive lifesteal.** A skill may `drain` a share of
 what it dealt — `leech_seed` takes 600 — but nothing lets a *trait* say "everything
 this unit does drains". It is the cheapest thing on this page: a share on
 `passive.Passive`, added to whatever the skill already drains, read at the site
-that already resolves a drain. And it is the piece that makes `While` worth
-having, because a **gated share** is legal where a gated grant is not: a grant is
-applied once at enlistment and could not be taken back, which is why `passive`
-refuses that pairing at parse — a share is read fresh on every strike, so a gate
-on one works exactly as written.
+that already resolves a drain.
 
-That distinction is worth keeping in view, because it decides which fantasies are
-writable today. *Overgrow* — "hits harder when badly hurt" — is a gated **grant**
-and is refused. *Vladimir* — "drains harder when badly hurt" — is a gated **share**
-and is not.
+⚠️ This paragraph used to carry a distinction that no longer exists. It said a
+gated **share** was legal where a gated **grant** was not — a grant being applied
+once at enlistment and impossible to take back — and that *Overgrow*, "hits
+harder when badly hurt", was therefore unwritable. A grant can be gated now (see
+*A gated grant: a stat change that comes and goes*), so both fantasies are
+writable and the difference between them is only what they cost. A share is still
+the cheaper: read fresh on every strike at a site that already resolves, it needs
+no door into a permanent status, no event in either direction, and no retune.
+That is a saving, not a gate.
 
 **The circular bit, stated so it is chosen rather than discovered.** A character
 brings every trait it has, so giving Bulbasaur all five rows above makes it one
@@ -1164,14 +1201,14 @@ what make the slot worth building. Either order works; what does not work is
 building neither and expecting the other to justify it.
 
 Suggested order, cheapest first: **passive lifesteal gated on health** (the whole
-second build, and the first use of `While` by any shipped trait), then
+second build), then
 **amplifying a status** (half the first build, and the first trait to read two
 units), then the **trait slot** (now that two traits differ in kind), then
 **answering back** (the most expensive thing on this page, and the last row of the
 first build).
 
-Nothing shipped uses `Applies` or `While` yet. ⚠️ `Applies` is close to the third
-row above and is **not** it: it adds to what the holder's *own* attack inflicts —
+Nothing shipped uses `Applies` yet, and `blaze` is the only trait using `While`.
+⚠️ `Applies` is close to the third row above and is **not** it: it adds to what the holder's *own* attack inflicts —
 touch something and it is poisoned — where the row wants the reverse, an answer to
 being attacked. Writing the first and calling it the second would be the cheapest
 way to close this out wrongly.

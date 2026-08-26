@@ -19,6 +19,14 @@
           "stacks": 1
         }
       ],
+      "while": {
+        "below_health": 333
+      }
+    },
+    {
+      "id": "heatproof",
+      "name": "chịu nhiệt",
+      "grants": [],
       "resists": [
         {
           "status": "burn",

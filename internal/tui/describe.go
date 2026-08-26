@@ -195,8 +195,17 @@ func describeCosts(declared skill.Skill) string {
 // "what is this unit carrying" rather than "should I use it".
 func DescribePassive(held passive.Passive) string {
 	lines := make([]string, 0, 3)
+	// "Always" only where it is true. A gated trait comes and goes with its
+	// holder's health, and the last line below says when — so opening with
+	// "always carries" and closing with "only while under a third" would be two
+	// sentences of the same paragraph contradicting each other, which is worse
+	// than either of them alone.
+	carries := "Luôn mang %s%s."
+	if held.While != nil {
+		carries = "Mang %s%s."
+	}
 	for _, grant := range held.Grants {
-		lines = append(lines, fmt.Sprintf("Luôn mang %s%s.", glossed(grant.Status), stacksOf(grant.Stacks)))
+		lines = append(lines, fmt.Sprintf(carries, glossed(grant.Status), stacksOf(grant.Stacks)))
 	}
 	for _, application := range held.Applies {
 		lines = append(lines, fmt.Sprintf("Đòn của nó gây thêm %s, %d%% khả năng%s.",

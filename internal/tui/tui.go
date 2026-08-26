@@ -330,6 +330,11 @@ func Line(event battle.Event, tags map[string]string) string {
 		// nothing about what it does, and the status appearing on its own has
 		// nothing to account for it.
 		return head + fmt.Sprintf("  holds %s: %s x%d", event.Passive, event.Status, event.Stacks)
+	case battle.PassiveReleased:
+		// The same line the other way round. A gated trait letting go takes a
+		// visible number down with it, so it reads beside the heal that caused
+		// it rather than being left to the reader to infer from the damage.
+		return head + fmt.Sprintf("  lets go of %s: %s x%d", event.Passive, event.Status, event.Stacks)
 	case battle.Died:
 		return head + fmt.Sprintf(" falls at %s", event.Cell)
 	case battle.Ended:
