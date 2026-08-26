@@ -1360,13 +1360,22 @@ purpose: by the time it landed the traits differed in **kind** — a resistance,
 gated grant, a reply, a drain and an amplifier are five different sorts of thing,
 and a placement brings exactly one of them.
 
-⚠️ **`blood_thirst` and `last_gasp` are still carried by nobody**, the way
-`venom_blood` shipped before it. They were waiting for the trait slot, and the
-trait slot now exists — so what remains is a decision about which character holds
-which, and that is authoring rather than mechanism.
+**The scenario is playable.** `blood_thirst` and `last_gasp` are on Bulbasaur's
+learnset at 20 and 40, which was the one line it was short of: both existed in the
+book and the character learned neither, so the slot had nothing from the sustain
+direction to offer. They were waiting for the slot rather than for a smaller
+number, because before it a character brought everything it had and a fourth trait
+made one unit better instead of two units different.
 
-Nothing shipped uses `Applies` yet; `blaze` is the only trait using `While`, and
-`venom_blood` the only one using `Replies`.
+At the cap the slot decides between five traits of four kinds — a resistance that
+also replies, an amplifier, a stat change, a drain and a gated drain — so bringing
+the poison answer means not bringing the sustain, and the other way round.
+`TestBulbasaurCanBeBuiltTwoWays` measures that the *choice* exists rather than that
+any one trait does, and fails if the slot count grows or a direction loses its last
+entry.
+
+Nothing shipped uses `Applies` yet; `blaze` is the only trait using `While` on a
+grant, and `venom_blood` the only one using `Replies`.
 ⚠️ `Applies` is close to the third row above and is **not** it: it adds to what the holder's *own* attack inflicts —
 touch something and it is poisoned — where the row wants the reverse, an answer to
 being attacked. Writing the first and calling it the second would be the cheapest
