@@ -4,7 +4,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/textinput"
+	"charm.land/lipgloss/v2"
 )
 
 // palette is every style the screens draw with.
@@ -51,6 +52,50 @@ func newPalette() palette {
 		selected: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("5")),
 		footer:   lipgloss.NewStyle().Faint(true),
 	}
+}
+
+// newInput is a text field dressed the way this program draws them.
+//
+// Two decisions, and both are here rather than at the four call sites so that a
+// fifth field cannot be born looking different from the other four.
+func newInput() textinput.Model {
+	input := textinput.New()
+	input.SetStyles(newInputStyles())
+	// A virtual cursor is drawn as reverse video, which is an escape code, so a
+	// plain terminal gets none. That is not a loss against what shipped: under
+	// bubbletea v1 the rendering library stripped the attribute itself, so the
+	// plain path never showed a cursor either. What is new is only that the
+	// program has to say so.
+	input.SetVirtualCursor(!plainTerminal())
+	return input
+}
+
+// newInputStyles picks the styles a text field draws itself with, on the same
+// terms as the palette above.
+//
+// It exists because bubbletea v2 moved the decision about colour from the
+// rendering library to the program: lipgloss now writes escape codes
+// unconditionally and the *program* downsamples them for the terminal it is
+// attached to. A field left on its own defaults would therefore keep its colours
+// under NO_COLOR, which is the one thing this program says it does not do — and
+// the palette's rule is only worth having if every drawn thing obeys it.
+//
+// Under v1 nothing had to say this: the library detected the absence of a
+// terminal and wrote plain text by itself. That is exactly why it is written
+// down now — a behaviour that used to be free is a behaviour that will be lost
+// again if nobody names it.
+func newInputStyles() textinput.Styles {
+	styles := textinput.DefaultDarkStyles()
+	if !plainTerminal() {
+		return styles
+	}
+	plain := lipgloss.NewStyle()
+	blank := textinput.StyleState{
+		Text: plain, Placeholder: plain, Suggestion: plain, Prompt: plain,
+	}
+	styles.Focused, styles.Blurred = blank, blank
+	styles.Cursor.Color = nil
+	return styles
 }
 
 // plainTerminal reports whether colour would be noise rather than help.

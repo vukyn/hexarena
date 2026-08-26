@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -31,7 +31,7 @@ func (c checkScreen) refresh(lib *forge.Library) checkScreen {
 	return c
 }
 
-func (c checkScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (c checkScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch message.String() {
 	case "q":
 		return m, tea.Quit

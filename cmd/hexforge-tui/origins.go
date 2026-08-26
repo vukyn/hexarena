@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/forge"
@@ -71,10 +71,10 @@ func (o originsScreen) refresh(lib *forge.Library) originsScreen {
 func (o originsScreen) resetForm() originsScreen {
 	o.inputs = make([]textinput.Model, originFieldCount)
 	for i := range o.inputs {
-		input := textinput.New()
+		input := newInput()
 		input.Prompt = ""
 		input.CharLimit = 200
-		input.Width = 44
+		input.SetWidth(44)
 		o.inputs[i] = input
 	}
 	o.field = originFieldID
@@ -85,7 +85,7 @@ func (o originsScreen) resetForm() originsScreen {
 	return o
 }
 
-func (o originsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (o originsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if o.adding {
 		return o.updateForm(m, message)
 	}
@@ -108,7 +108,14 @@ func (o originsScreen) update(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) 
 	return m, nil
 }
 
-func (o originsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.Cmd) {
+func (o originsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	// Before the switch, because saving answers to more than one keystroke and
+	// isSaveKey is the single declaration of which.
+	if isSaveKey(message) {
+		o = o.save(m)
+		m.origins = o
+		return m, nil
+	}
 	switch message.String() {
 	case "esc":
 		if !o.touched {
@@ -121,10 +128,6 @@ func (o originsScreen) updateForm(m model, message tea.KeyMsg) (tea.Model, tea.C
 			m.origins.adding = false
 			return m
 		}), nil
-	case "ctrl+s":
-		o = o.save(m)
-		m.origins = o
-		return m, nil
 	case "up", "shift+tab":
 		o = o.moveTo(o.field - 1)
 		m.origins = o
@@ -266,7 +269,7 @@ func originFieldLabel(m model, field int) string {
 }
 
 func (o originsScreen) viewForm(m model) (string, string) {
-	footer := m.text(i18n.OriginFormFooter)
+	footer := m.text(i18n.OriginFormFooter, saveKeyLabel())
 	var out strings.Builder
 	out.WriteString(m.style.heading.Render(m.text(i18n.OriginFormHeading)) + "  " +
 		m.style.dim.Render(m.text(i18n.OriginFormSubtitle)) + "\n\n")
