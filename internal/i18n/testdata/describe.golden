@@ -142,6 +142,13 @@ Miễn hoàn toàn bỏng.
 Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2% khả năng.
 Miễn hoàn toàn trúng độc.
 
+[trait] blood_thirst
+Mọi đòn của nó hút lại 25% sát thương gây ra.
+
+[trait] last_gasp
+Mọi đòn của nó hút lại 40% sát thương gây ra.
+Chỉ có hiệu lực khi còn <=40% máu.
+
 == en ==
 
 vine_whip
@@ -285,4 +292,11 @@ Refuses burn outright.
 [trait] venom_blood
 Whatever damages it takes 4% of its attack back, and poison 2% of the time.
 Refuses poison outright.
+
+[trait] blood_thirst
+Everything it does takes back 25% of the damage dealt.
+
+[trait] last_gasp
+Everything it does takes back 40% of the damage dealt.
+In force only at or below 40% health.
 

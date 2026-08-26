@@ -1194,31 +1194,42 @@ around this one:
 | immune to poison | `Resists`, on `venom_blood` | yes |
 | its poison hurts more | *Amplifying a status*, below | no |
 | attacking it poisons the attacker | `Replies`, on `venom_blood` | yes |
-| heals from damage dealt | **nothing holds this yet** | no |
-| heals more when nearly dead | `While`, gating that share | half |
+| heals from damage dealt | `passive.Passive.Drains` | yes |
+| heals more when nearly dead | `While`, gating that share | yes |
 
 `While` is the row that moved: it gates the whole of a trait, grants included,
 and `blaze` is the first shipped trait to use it.
 
-Two of the five are now built, and the poison specialist is most of the way
-there: `venom_blood` refuses poison and answers whoever attacks it, which leaves
-only "its poison hurts more".
+Four of the five are built. The poison specialist is most of the way there —
+`venom_blood` refuses poison and answers whoever attacks it, which leaves only
+"its poison hurts more" — and the bloodsucker is finished.
 
-**The one that has no home is passive lifesteal.** A skill may `drain` a share of
-what it dealt — `leech_seed` takes 600 — but nothing lets a *trait* say "everything
-this unit does drains". It is the cheapest thing on this page: a share on
-`passive.Passive`, added to whatever the skill already drains, read at the site
-that already resolves a drain.
+**The second build.** `passive.Passive.Drains` is a share of the damage its holder
+deals, added to whatever the skill already drains and resolved at the site that
+already resolves one. `blood_thirst` takes a quarter of everything; `last_gasp`
+takes two fifths and is gated at four tenths of health.
 
-⚠️ This paragraph used to carry a distinction that no longer exists. It said a
-gated **share** was legal where a gated **grant** was not — a grant being applied
-once at enlistment and impossible to take back — and that *Overgrow*, "hits
-harder when badly hurt", was therefore unwritable. A grant can be gated now (see
-*A gated grant: a stat change that comes and goes*), so both fantasies are
-writable and the difference between them is only what they cost. A share is still
-the cheaper: read fresh on every strike at a site that already resolves, it needs
-no door into a permanent status, no event in either direction, and no retune.
-That is a saving, not a gate.
+A share is the cheaper of the two gates rather than the only legal one — a grant
+can be gated too (see *A gated grant: a stat change that comes and goes*), so both
+*Overgrow* and *Vladimir* are writable and the difference is what they cost. Read
+fresh on every strike at a site that already resolves, a gated share needs no door
+into a permanent status, no event in either direction, and no retune. `last_gasp`
+is a gate that cost one comparison.
+
+Two decisions inside it. Trait shares **add** rather than composing, because a
+share of the damage dealt is not a chance: two resistances compose by what each
+lets through, and two drains simply both drain. And the total is **capped at the
+base**, which is not the hard cap this engine rejects elsewhere — a buff ceiling
+bounds how good a number may get, where this bounds a *conservation*: health taken
+back cannot exceed damage dealt, the same invariant `skill.resolve` enforces on a
+single share. Saturating instead would have been worse than either, paying out 285
+for a trait that says 400 on a skill that drains nothing.
+
+⚠️ The heal carries `Drained`, the share it took, for the reason `Pierce` and
+`Refused` exist: `Amount` alone cannot say why. Six hundred off a strike that
+dealt three hundred and three hundred off one that dealt six hundred are the same
+number by the time a reader sees them, and the skill's own figure stopped
+accounting for it the moment a trait could drain too.
 
 **The circular bit, stated so it is chosen rather than discovered.** A character
 brings every trait it has, so giving Bulbasaur all five rows above makes it one
@@ -1229,12 +1240,16 @@ number. So the slot is what makes these builds mean anything, and these builds a
 what make the slot worth building. Either order works; what does not work is
 building neither and expecting the other to justify it.
 
-Suggested order, cheapest first: **passive lifesteal gated on health** (the whole
-second build), then **amplifying a status** (the last row of the first build, and
-the first trait to read two units), then the **trait slot** — which is now worth
-more than it was, because the traits already differ in kind: a resistance, a
-gated grant and a reply are three different sorts of thing to choose between.
-*Answering back* has left this list; it is built.
+Remaining order: **amplifying a status** (the last row of the first build, and the
+first trait to read two units), then the **trait slot** — which is worth more than
+it was, because the traits already differ in kind: a resistance, a gated grant, a
+reply and a drain are four different sorts of thing to choose between. *Answering
+back* and the drain have both left this list; both are built.
+
+⚠️ **`blood_thirst` and `last_gasp` are carried by nobody**, the way `venom_blood`
+shipped and `pierce` before it. Putting either on Bulbasaur without the trait slot
+makes one unit better rather than two units different, which is the whole point of
+the paragraph above — so they wait for the slot rather than for a smaller number.
 
 Nothing shipped uses `Applies` yet; `blaze` is the only trait using `While`, and
 `venom_blood` the only one using `Replies`.

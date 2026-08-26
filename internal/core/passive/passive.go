@@ -94,6 +94,24 @@ type Passive struct {
 	// rest; there was no equivalent field for "this unit says no", and the roll
 	// that decides an application belonged entirely to the skill making it.
 	Resists []Resistance
+	// Drains is the share of the damage its holder deals that comes back as
+	// health, in parts per thousand, and nought is "does not drain".
+	//
+	// # Why a trait may hold one when a skill already can
+	//
+	// A skill's drain belongs to the skill: leech_seed takes six hundred because
+	// that is what leech_seed is, and a unit carrying it drains only on the turns
+	// it casts it. A trait's belongs to the unit, so everything it does drains —
+	// which is the difference between a skill that heals and a build that
+	// sustains, and there was no way to write the second.
+	//
+	// It is a **share** rather than a granted status, and that is what makes it
+	// gateable. A grant is applied once at enlistment and cannot be taken back,
+	// so While is refused on one; a share is read fresh on every strike, so a
+	// gate on this works exactly as written. That is the whole of why "drains
+	// harder when badly hurt" is writable here and "hits harder when badly hurt"
+	// is not.
+	Drains int
 }
 
 // Reply is what a trait costs whoever attacked its holder.
@@ -245,6 +263,7 @@ type passiveFile struct {
 	Replies *replyFile        `json:"replies,omitempty"`
 	While   *conditionFile    `json:"while,omitempty"`
 	Resists []resistanceFile  `json:"resists,omitempty"`
+	Drains  int               `json:"drains,omitempty"`
 }
 
 type applicationFile struct {
@@ -305,8 +324,8 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			append([]any{declared.ID}, args...)...)
 	}
 	if len(declared.Grants) == 0 && len(declared.Resists) == 0 &&
-		len(declared.Applies) == 0 && declared.Replies == nil {
-		return fail("grants nothing, resists nothing, adds nothing and answers nothing, so holding it would change nothing")
+		len(declared.Applies) == 0 && declared.Replies == nil && declared.Drains == 0 {
+		return fail("grants nothing, resists nothing, adds nothing, answers nothing and drains nothing, so holding it would change nothing")
 	}
 	grants := make([]Grant, 0, len(declared.Grants))
 	for _, grant := range declared.Grants {
@@ -389,10 +408,17 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		while = &Condition{BelowHealth: declared.While.BelowHealth}
 	}
 
+	// The upper bound is the same one a skill's drain has, and for the same
+	// reason: a share over the base takes back more health than the strike dealt
+	// damage, which is not a strong trait but an incoherent one.
+	if declared.Drains < 0 || declared.Drains > scale.Base {
+		return fail("drains %d, want a share in parts per thousand", declared.Drains)
+	}
+
 	return Passive{
 		ID: declared.ID, Name: strings.TrimSpace(declared.Name),
 		Grants: grants, Applies: applies, Replies: replies,
-		While: while, Resists: resists,
+		While: while, Resists: resists, Drains: declared.Drains,
 	}, nil
 }
 
@@ -532,6 +558,7 @@ func (b *Book) Marshal() ([]byte, error) {
 		file.Passives = append(file.Passives, passiveFile{
 			ID: current.ID, Name: current.Name, Grants: grants,
 			Applies: applies, Replies: replies, While: while, Resists: resists,
+			Drains: current.Drains,
 		})
 	}
 	out, err := json.MarshalIndent(file, "", "  ")

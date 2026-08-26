@@ -356,6 +356,7 @@ q hoặc ctrl+c để thoát`,
 	BlurbTraitReplyStatus: "Ai đánh trúng nó thì dính %s, %d%% khả năng.",
 	BlurbTraitReplyBoth:   "Ai đánh trúng nó thì chịu lại %d%% công của nó, và dính %s, %d%% khả năng.",
 	BlurbTraitWhile:       "Chỉ có hiệu lực khi còn <=%d%% máu.",
+	BlurbTraitDrains:      "Mọi đòn của nó hút lại %d%% sát thương gây ra.",
 	BlurbTraitNone:        "Không mang nội tại nào.",
 	BlurbFooter:           "↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát",
 }

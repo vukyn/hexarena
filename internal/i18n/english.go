@@ -361,6 +361,7 @@ q or ctrl+c to quit`,
 	BlurbTraitReplyStatus: "Whatever damages it is inflicted with %s, %d%% of the time.",
 	BlurbTraitReplyBoth:   "Whatever damages it takes %d%% of its attack back, and %s %d%% of the time.",
 	BlurbTraitWhile:       "In force only at or below %d%% health.",
+	BlurbTraitDrains:      "Everything it does takes back %d%% of the damage dealt.",
 	BlurbTraitNone:        "Carries no traits.",
 	BlurbFooter:           "↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit",
 }

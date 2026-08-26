@@ -140,7 +140,9 @@ func books(t *testing.T) battle.Books {
 	   "grants":[{"status":"toughened","stacks":2}]},
 	  {"id":"spiked","name":"gai","replies":{"power":500}},
 	  {"id":"caustic","replies":{"applies":[{"status":"poison","chance":1000}]}},
-	  {"id":"cornered_spikes","while":{"below_health":500},"replies":{"power":500}}
+	  {"id":"cornered_spikes","while":{"below_health":500},"replies":{"power":500}},
+	  {"id":"thirst","name":"khát","drains":250},
+	  {"id":"parched","name":"khô khát","while":{"below_health":400},"drains":400}
 	]}`), passive.Deps{Statuses: statuses})
 	if err != nil {
 		t.Fatalf("passives: %v", err)
@@ -1838,4 +1840,126 @@ func TestAConditionReadsTheTargetsHealthAndNotTheCasters(t *testing.T) {
 		t.Errorf("the amplification names the status %q, and this condition reads no status",
 			amplified[0].Status)
 	}
+}
+
+// drive plays a battle, acting for whoever is offered a turn, until stop says to
+// stop. It exists because both drain tests need a *hurt* caster, and hurting one
+// means letting the other side actually swing.
+//
+// It reports the events of the last turn it took, and fails rather than returning
+// if the battle ends first: a test that quietly stopped early would assert
+// nothing and say it passed.
+func drive(t *testing.T, fight *battle.Battle, stop func(events []battle.Event) bool) {
+	t.Helper()
+	for turn := 0; turn < 200; turn++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("the battle ended before the test was done: %v", err)
+		}
+		fight.Drain()
+		if prompt.Skipped {
+			continue
+		}
+		aim := hex.Offset{Col: 3, Row: 1}
+		if prompt.Unit == "f" {
+			aim = hex.Offset{Col: 2, Row: 1}
+		}
+		if err := fight.Act("strike", aim); err != nil {
+			t.Fatalf("strike: %v", err)
+		}
+		if stop(fight.Drain()) {
+			return
+		}
+	}
+	t.Fatal("two hundred turns and the test never saw what it was waiting for")
+}
+
+// TestATraitDrainsWhatTheSkillDoesNot is the whole point of a trait holding a
+// share: a skill's drain belongs to the skill and fires on the turns it is cast,
+// where a trait's belongs to the unit and fires on everything it does.
+//
+// The skill here drains nothing, so every point healed came from the trait, and
+// the share on the event is what makes that readable rather than inferred.
+func TestATraitDrainsWhatTheSkillDoesNot(t *testing.T) {
+	fight, err := battle.New(books(t), 7, []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(4000, 800, 0, 60),
+			Skills: []string{"strike"}, Passives: []string{"thirst"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(4800, 700, 400, 120),
+			Skills: []string{"strike"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	fight.Drain()
+
+	var drains []battle.Event
+	var dealt int64
+	drive(t, fight, func(events []battle.Event) bool {
+		// A full-health caster heals for nothing, so the drain only becomes
+		// visible once the other side has landed something. Waiting for that is
+		// the test, not a preamble to it.
+		for _, event := range find(events, battle.Damaged) {
+			if event.Actor == "a" {
+				dealt = event.Amount
+			}
+		}
+		for _, event := range find(events, battle.Healed) {
+			if event.Actor == "a" && event.Drained > 0 {
+				drains = append(drains, event)
+			}
+		}
+		return len(drains) > 0
+	})
+
+	if drains[0].Drained != 250 {
+		t.Errorf("the heal reports a share of %d, want the trait's 250", drains[0].Drained)
+	}
+	if dealt == 0 {
+		t.Fatal("nothing was dealt, so there was nothing to drain from")
+	}
+	if want := dealt * 250 / 1000; drains[0].Amount != want {
+		t.Errorf("the drain returned %d of %d dealt, want %d", drains[0].Amount, dealt, want)
+	}
+}
+
+// TestAGatedDrainIsOffUntilItsHolderIsHurt is the pairing the roadmap said was
+// writable where a gated grant is not: a share is read fresh on every strike, so
+// a gate on one turns on and off with the health it reads.
+func TestAGatedDrainIsOffUntilItsHolderIsHurt(t *testing.T) {
+	fight, err := battle.New(books(t), 7, []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(4000, 800, 0, 60),
+			Skills: []string{"strike"}, Passives: []string{"parched"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(4800, 700, 400, 120),
+			Skills: []string{"strike"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	fight.Drain()
+
+	drained := false
+	drive(t, fight, func(events []battle.Event) bool {
+		caster, _ := fight.Unit("a")
+		for _, event := range find(events, battle.Healed) {
+			if event.Actor != "a" || event.Drained == 0 {
+				continue
+			}
+			// The health the gate was asked about is the health before the drain
+			// paid out; reading it afterwards would let a trait that healed its
+			// holder over the line look as though it had fired while off.
+			before := caster.HP - event.Amount
+			if before*10 > caster.MaxHP()*4 {
+				t.Fatalf("the gated trait drained at %d of %d health, over its four tenths",
+					before, caster.MaxHP())
+			}
+			drained = true
+		}
+		return drained
+	})
 }
