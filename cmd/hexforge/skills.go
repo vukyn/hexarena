@@ -298,38 +298,53 @@ func runSkillsEdit(args []string) error {
 // walks in reaches the output.
 func editFrom(set *flag.FlagSet, given *forge.SkillDraft) forge.SkillEdit {
 	var edit forge.SkillEdit
-	fields := map[string]**string{
-		"id": &edit.ID, "name": &edit.Name,
-		"element": &edit.Element, "target": &edit.Target,
-		"range": &edit.Range, "pattern": &edit.Pattern, "power": &edit.Power,
-		"strikes": &edit.Strikes, "accuracy": &edit.Accuracy,
-		"cooldown": &edit.Cooldown, "applies": &edit.Applies,
-		"self-applies":        &edit.SelfApplies,
-		"pierce":              &edit.Pierce,
-		"restores":            &edit.Restores,
-		"drains":              &edit.Drains,
-		"restrict-elements":   &edit.RestrictElements,
-		"restrict-archetypes": &edit.RestrictArchetypes,
-		"restrict-characters": &edit.RestrictCharacters,
-	}
-	values := map[string]*string{
-		"id": &given.ID, "name": &given.Name,
-		"element": &given.Element, "target": &given.Target,
-		"range": &given.Range, "pattern": &given.Pattern, "power": &given.Power,
-		"strikes": &given.Strikes, "accuracy": &given.Accuracy,
-		"cooldown": &given.Cooldown, "applies": &given.Applies,
-		"restrict-elements":   &given.RestrictElements,
-		"restrict-archetypes": &given.RestrictArchetypes,
-		"restrict-characters": &given.RestrictCharacters,
-	}
+	bindings := editBindings(&edit, given)
 	set.Visit(func(flagged *flag.Flag) {
-		field, ours := fields[flagged.Name]
-		if !ours {
-			return
+		if bound, ours := bindings[flagged.Name]; ours {
+			*bound.edit = bound.answer
 		}
-		*field = values[flagged.Name]
 	})
 	return edit
+}
+
+// editBinding is one flag's two halves: where the answer was parsed into, and
+// which field of the edit points at it once the flag turns out to have been
+// given.
+type editBinding struct {
+	edit   **string
+	answer *string
+}
+
+// editBindings is the one place a flag is tied to the field it edits.
+//
+// It used to be two maps keyed by the same names — one for the edit's fields and
+// one for the answers — and three flags were added to the first without the
+// second. A missing key reads back as a nil answer, so `--restores 500` set the
+// edit's field to nil, which is the shape "the flag was not given" has: the
+// command answered "nothing to change" and exited, and it had done that since
+// the flag was added. One entry carrying both halves is what makes that
+// unwritable, which is why this is a table and not a pair of them.
+func editBindings(edit *forge.SkillEdit, given *forge.SkillDraft) map[string]editBinding {
+	return map[string]editBinding{
+		"id":                  {&edit.ID, &given.ID},
+		"name":                {&edit.Name, &given.Name},
+		"element":             {&edit.Element, &given.Element},
+		"target":              {&edit.Target, &given.Target},
+		"range":               {&edit.Range, &given.Range},
+		"pattern":             {&edit.Pattern, &given.Pattern},
+		"power":               {&edit.Power, &given.Power},
+		"strikes":             {&edit.Strikes, &given.Strikes},
+		"accuracy":            {&edit.Accuracy, &given.Accuracy},
+		"cooldown":            {&edit.Cooldown, &given.Cooldown},
+		"applies":             {&edit.Applies, &given.Applies},
+		"self-applies":        {&edit.SelfApplies, &given.SelfApplies},
+		"pierce":              {&edit.Pierce, &given.Pierce},
+		"restores":            {&edit.Restores, &given.Restores},
+		"drains":              {&edit.Drains, &given.Drains},
+		"restrict-elements":   {&edit.RestrictElements, &given.RestrictElements},
+		"restrict-archetypes": {&edit.RestrictArchetypes, &given.RestrictArchetypes},
+		"restrict-characters": {&edit.RestrictCharacters, &given.RestrictCharacters},
+	}
 }
 
 // The defaults a skill takes when nobody says otherwise.
