@@ -49,13 +49,15 @@ type Passive struct {
 	// sitting, and a separate translations file is a second thing to keep in
 	// step. Absent is a real answer; a passive with no name renders as its id.
 	Name string
-	// Grants are the statuses the holder carries for the whole battle.
+	// Grants are the statuses the holder carries while the trait is in force,
+	// which is the whole battle unless While says otherwise.
 	//
-	// Every one of them must be a permanent status, which ParseBook enforces. A
-	// timed status here would wear off on the holder's own turns and never come
-	// back, because a passive is granted once when the unit is enlisted — so it
-	// would be a trait that quietly stopped being true, which is worse than one
-	// that was never declared.
+	// Every one of them must be a permanent status, which ParseBook enforces.
+	// That is not about how long the trait lasts — a gated one comes and goes —
+	// but about who decides: a permanent status is one nothing in the game can
+	// dispel, so the only thing that can take a grant off is the gate that put it
+	// on. A timed status here would wear off on the holder's own turns with
+	// nothing to put it back, which is a trait that quietly stopped being true.
 	Grants []Grant
 	// Applies are the statuses the holder adds to what its own damaging skills
 	// inflict, on top of whatever those skills declare.
@@ -74,6 +76,11 @@ type Passive struct {
 	// already an attack on whoever is standing there.
 	Applies []skill.Application
 	// While gates the trait, or nil when it is always in force.
+	//
+	// It gates the *whole* trait rather than one field of it: the grants, the
+	// resistances and the applications all come and go together. A trait wanting
+	// one gated half and one ungated half is two traits, and saying so is what
+	// keeps a gate from being a per-field flag nobody can read off the data.
 	While *Condition
 	// Resists is the share of an incoming application's chance the holder
 	// refuses, per status.
@@ -328,18 +335,6 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		if declared.While.BelowHealth < 1 || declared.While.BelowHealth > scale.Base {
 			return fail("is in force below %d health, want a share in parts per thousand",
 				declared.While.BelowHealth)
-		}
-		// A gated *grant* is refused rather than half-built. A grant is applied
-		// once, when the unit is enlisted, and the status it puts on is permanent
-		// precisely so nothing can take it off — so a condition on one would have
-		// to add and remove that status as health crossed the line, which is a
-		// mechanism rather than a term: the engine would need its own door into a
-		// permanent status, an event for the trait coming and going, and a retune
-		// each time. Accepting it here would ship a trait whose condition was
-		// silently ignored, which is worse than not being able to write it.
-		if len(grants) > 0 {
-			return fail("is gated on health and also grants %q: a granted status is applied once and cannot be taken back, so the gate would be ignored",
-				grants[0].Status)
 		}
 		while = &Condition{BelowHealth: declared.While.BelowHealth}
 	}

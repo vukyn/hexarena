@@ -362,6 +362,63 @@ func (s *Set) CountIn(category Category) int {
 	return total
 }
 
+// Hold puts a permanent status on the unit, and is one half of the door a
+// passive's gate needs.
+//
+// Apply would do the same thing, and that is exactly why this exists: Remove
+// refuses a permanent status so that nothing in the game can dispel a trait, and
+// a gated trait has to be able to take its own grant back. A pair that only
+// works on permanent statuses says which door is which — Apply/Remove is what
+// the game does to a unit, Hold/Release is what a unit's own traits do to
+// themselves, and a cleanse reaching the second would be a bug that reads as a
+// typo rather than as a rule being broken.
+//
+// It refuses a timed status for the same reason Remove refuses a permanent one:
+// a trait that granted a timed status would wear off on its holder's own turns
+// with nothing to put it back, and the parse layer already says so. Both halves
+// of the pair refusing the other's kind is what keeps either from becoming a
+// second Apply.
+//
+// Stacks below one are nothing to hold. It reports how many stacks went on,
+// which is nought when the status is timed or already at its cap.
+func (s *Set) Hold(kind Kind, stacks int) int {
+	if !kind.Permanent || stacks < 1 {
+		return 0
+	}
+	held := 0
+	for range stacks {
+		// A tick amount of nought: a permanent status can be neither a
+		// damage-over-time nor a regeneration, which ParseBook refuses, so there
+		// is nothing here to snapshot.
+		if added, _ := s.Apply(kind, 0); !added {
+			break
+		}
+		held++
+	}
+	return held
+}
+
+// Release takes a permanent status back off, every stack of it, and is the other
+// half of the door.
+//
+// Every stack rather than a count, because a grant is a fact about the unit
+// rather than an accumulation: a trait that granted three stacks and gave back
+// one would leave two stacks of a trait that is no longer in force. It reports
+// how many went, which is nought when the status is timed or absent.
+//
+// A timed status is refused here so that this cannot be used as a cleanse that
+// ignores a resistance. Remove is the way to take a timed status off, and it is
+// the way that reports the damage that stopped.
+func (s *Set) Release(id string) int {
+	index := s.find(id)
+	if index < 0 || !s.entries[index].kind.Permanent {
+		return 0
+	}
+	released := len(s.entries[index].stacks)
+	s.entries = append(s.entries[:index], s.entries[index+1:]...)
+	return released
+}
+
 // Remove takes up to count stacks off one status and reports what went, both as
 // a stack count and as the per-tick damage that stopped.
 //

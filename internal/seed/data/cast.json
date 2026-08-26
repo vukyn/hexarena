@@ -247,6 +247,10 @@
         {
           "id": "blaze",
           "at_level": 16
+        },
+        {
+          "id": "heatproof",
+          "at_level": 16
         }
       ]
     },

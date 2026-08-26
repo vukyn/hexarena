@@ -576,13 +576,19 @@ const Archetypes = `[
 // those are different jobs, and one file could not do both once the game had one
 // character in it.
 //
-// One unit carries a passive, and it is here rather than in the shipped roster
-// for the reason the rest of this bench exists: an engine test needs every kind
-// of event a battle can produce, and the shipped cast holds no trait yet because
-// which trait a borrowed character has is a design decision rather than an
-// engine one. The trait itself is the shipped `endurance` — the bench uses the
-// real status and passive books, so a fixture inventing its own would be testing
-// a book nobody ships.
+// Two units carry a trait, and they are here rather than only in the shipped
+// roster for the reason the rest of this bench exists: an engine test needs
+// every kind of event a battle can produce, and which trait a borrowed character
+// holds is a design decision rather than an engine one. Both traits are shipped
+// ones — the bench uses the real status and passive books, so a fixture
+// inventing its own would be testing a book nobody ships.
+//
+// `endurance` on ally.bulwark is the plain case: on from the opening board and
+// never off. `blaze` on foe.bulwark is the gated one, and the unit was chosen
+// for the skill it already had rather than for its element: `siphon` drains, so
+// that unit is the one on the bench that reliably heals itself back up — which
+// is the only way a gate is crossed in the *other* direction, and therefore the
+// only way passive_released is ever emitted.
 const Roster = `{
   "units": [
     {
@@ -751,6 +757,9 @@ const Roster = `{
         "guard_wall",
         "war_cry",
         "siphon"
+      ],
+      "passives": [
+        "blaze"
       ]
     },
     {

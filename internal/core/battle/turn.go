@@ -147,14 +147,91 @@ func (b *Battle) heal(unit *Unit, amount int64, turn atb.Turn) {
 		Kind: Healed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
 		Amount: amount, Remaining: unit.HP,
 	})
+	b.reconsider(unit, turn)
 }
 
 func (b *Battle) wound(unit *Unit, damage int64, turn atb.Turn) {
 	unit.HP -= damage
 	if unit.HP <= 0 {
 		b.kill(unit)
+		return
 	}
-	_ = turn
+	b.reconsider(unit, turn)
+}
+
+// reconsider turns the holder's gated traits on and off as its health crosses
+// the line they were authored against.
+//
+// It is called from every place health moves and from nowhere else, and there
+// are three rather than the two a reading of this file suggests: heal, wound,
+// and the strike loop in resolveAgainst, which subtracts from a target directly
+// rather than going through wound. That third one is the one that matters —
+// almost all the damage in a battle is dealt there, and a version of this that
+// hooked only the two named functions would leave a gate that opened for a
+// poison tick and never for a sword.
+//
+// It takes the unit whose health moved rather than sweeping all ten, because a
+// gate reads its own holder and nobody else's: the other nine would be the same
+// answer computed to be discarded, on every point of damage in the battle.
+//
+// Both directions emit. A trait coming on or going off changes a number a reader
+// can see, and the log is the only contract a renderer has, so a grant that
+// arrived silently would be a damage figure that moved with nothing to account
+// for it. And both directions retune: a gated trait touching speed reorders the
+// queue, and a wait computed against a speed the unit no longer has is wrong for
+// the rest of the battle.
+//
+// A unit at nought health is skipped, and the test is health rather than the
+// Dead flag because the strike loop leaves a target at zero for the rest of the
+// skill and kills it afterwards — so a flag-only guard would announce a trait
+// coming on to a unit whose died line is two events away.
+func (b *Battle) reconsider(unit *Unit, turn atb.Turn) {
+	if unit.Dead || unit.HP <= 0 || len(unit.Passives) == 0 || b.books.Passives == nil {
+		return
+	}
+	changed := false
+	for _, id := range unit.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			continue
+		}
+		// An ungated trait never moves, and asking is cheaper than the two loops
+		// below. A trait that grants nothing has nothing to hold either way: its
+		// gate is read live, at the site that reads it, which is what lets a
+		// resistance stop protecting a healed unit without anything here.
+		if held.While == nil || len(held.Grants) == 0 {
+			continue
+		}
+		wanted := b.inForce(unit, held)
+		for _, grant := range held.Grants {
+			if wanted == unit.Statuses.Has(grant.Status) {
+				continue
+			}
+			if wanted {
+				kind, err := b.books.Statuses.Lookup(grant.Status)
+				if err != nil {
+					continue
+				}
+				unit.Statuses.Hold(kind, grant.Stacks)
+				b.emit(Event{
+					Kind: PassiveHeld, At: turn.At, Turn: turn.Number,
+					Actor: unit.ID, Passive: held.ID,
+					Status: grant.Status, Stacks: grant.Stacks,
+				})
+			} else {
+				released := unit.Statuses.Release(grant.Status)
+				b.emit(Event{
+					Kind: PassiveReleased, At: turn.At, Turn: turn.Number,
+					Actor: unit.ID, Passive: held.ID,
+					Status: grant.Status, Stacks: released,
+				})
+			}
+			changed = true
+		}
+	}
+	if changed {
+		b.retuneAll(turn)
+	}
 }
 
 // retuneAll keeps the queue in step with every unit's current speed.
@@ -476,6 +553,16 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 				connected = true
 			}
 			b.emit(event)
+			// The gate is re-read here rather than once when the skill is
+			// finished, because this is where the health moved. A trait that
+			// came on after the first strike of three is in force for the other
+			// two, which is what "in force while its holder is hurt" says — and
+			// waiting until the end would make the same trait worth less against
+			// a three-strike skill than against a single one, for no reason a
+			// reader could find on either skill.
+			if event.Kind == Damaged {
+				b.reconsider(target, turn)
+			}
 			// A target that has fallen takes no further strikes; the rest of a
 			// multi-strike skill is simply wasted on it.
 			if target.HP <= 0 {

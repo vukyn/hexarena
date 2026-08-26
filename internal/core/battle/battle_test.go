@@ -113,7 +113,10 @@ func books(t *testing.T) battle.Books {
 	   "power":500,"strikes":1,"accuracy":1000,"cooldown":0,"target":"all"},
 	  {"id":"anthem","element":"neutral","range":2,"pattern":"wedge_left",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"all",
-	   "applies":[{"status":"haste","chance":1000}]}
+	   "applies":[{"status":"haste","chance":1000}]},
+	  {"id":"drink","element":"neutral","range":1,"pattern":"single",
+	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "drains":1000}
 	]}`), skill.Deps{Patterns: patterns, Statuses: statuses})
 	if err != nil {
 		t.Fatalf("skills: %v", err)
@@ -128,7 +131,11 @@ func books(t *testing.T) battle.Books {
 	  {"id":"cornered","grants":[],"while":{"below_health":500},
 	   "applies":[{"status":"burn","chance":1000}]},
 	  {"id":"last_stand","grants":[],"while":{"below_health":500},
-	   "resists":[{"status":"poison","amount":1000}]}
+	   "resists":[{"status":"poison","amount":1000}]},
+	  {"id":"desperate","name":"cùng đường","while":{"below_health":500},
+	   "grants":[{"status":"fleet","stacks":1}]},
+	  {"id":"dug_in","while":{"below_health":500},
+	   "grants":[{"status":"toughened","stacks":2}]}
 	]}`), passive.Deps{Statuses: statuses})
 	if err != nil {
 		t.Fatalf("passives: %v", err)

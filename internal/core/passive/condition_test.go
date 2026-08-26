@@ -147,11 +147,6 @@ func TestConditionRejections(t *testing.T) {
 			`[{"id":"odd","while":{"below_health":1200},"applies":[{"status":"poison","chance":300}]}]`,
 			"parts per thousand",
 		},
-		{
-			"a gate on a trait that grants",
-			`[{"id":"odd","while":{"below_health":500},"grants":[{"status":"toughened"}]}]`,
-			"cannot be taken back",
-		},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
@@ -166,27 +161,41 @@ func TestConditionRejections(t *testing.T) {
 	}
 }
 
-// TestAGatedGrantIsRefusedRatherThanIgnored is the one refusal here that is
-// about a missing mechanism rather than a bad number.
+// TestAGatedGrantIsCarriedThrough is the declaration that used to be refused.
 //
-// A grant is applied once, when the unit is enlisted, and the status it puts on
-// is permanent precisely so nothing can take it off. A condition on one would
-// have to add and remove that status as health crossed the line — an engine door
-// into a permanent status, an event for the trait coming and going, and a retune
-// each time. Accepting the declaration would ship a trait whose gate was
-// silently ignored, which is worse than not being able to write it.
-func TestAGatedGrantIsRefusedRatherThanIgnored(t *testing.T) {
-	_, err := parse(t,
-		`[{"id":"overgrow","while":{"below_health":333},"grants":[{"status":"toughened"}]}]`)
-	if err == nil {
-		t.Fatal("a gated grant was accepted, so its gate would be ignored at runtime")
+// A grant behind a gate needed a mechanism rather than a term — an engine door
+// into a permanent status, an event each way, a retune each time — so the parse
+// layer refused it rather than accepting a gate it would then ignore. The
+// mechanism is built, and what is checked here is that the two halves survive
+// together as declared: refusing this was never about the numbers.
+func TestAGatedGrantIsCarriedThrough(t *testing.T) {
+	book, err := parse(t,
+		`[{"id":"overgrow","while":{"below_health":333},"grants":[{"status":"toughened","stacks":1}]}]`)
+	if err != nil {
+		t.Fatalf("a gated grant was refused: %v", err)
 	}
-	for _, want := range []string{"toughened", "applied once", "gate would be ignored"} {
-		if !strings.Contains(err.Error(), want) {
-			t.Errorf("the refusal reads %q, want it to mention %q", err, want)
-		}
+	held, err := book.Lookup("overgrow")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
 	}
-	// The two halves that *can* be gated are accepted alongside each other.
+	if held.While == nil {
+		t.Fatal("the gate was dropped, which is the failure the refusal existed to prevent")
+	}
+	if held.While.BelowHealth != 333 {
+		t.Errorf("the gate is at %d, want 333", held.While.BelowHealth)
+	}
+	if len(held.Grants) != 1 || held.Grants[0].Status != "toughened" {
+		t.Errorf("the grant reads %+v, want one of toughened", held.Grants)
+	}
+	// A gated grant is still a grant, so the status it names still has to be one
+	// nothing in the game can dispel. A timed one would wear off on the holder's
+	// own turns with nothing to put it back, and the gate does not change that.
+	if _, err := parse(t,
+		`[{"id":"odd","while":{"below_health":333},"grants":[{"status":"poison"}]}]`); err == nil {
+		t.Error("a gated grant of a timed status was accepted")
+	}
+	// The two halves that were always gateable are still accepted alongside
+	// each other, with or without a grant beside them.
 	if _, err := parse(t, `[{"id":"cornered","while":{"below_health":333},
 	  "applies":[{"status":"poison","chance":500}],
 	  "resists":[{"status":"weaken","amount":700}]}]`); err != nil {

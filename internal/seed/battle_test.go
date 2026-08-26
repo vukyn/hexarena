@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -286,22 +287,141 @@ func TestSeedBattleReplaysExactly(t *testing.T) {
 
 // TestEveryEventKindIsReachable stops a kind being declared and never emitted,
 // which would mean a renderer had a case nobody could test.
+//
+// Sixty battles on autopilot, and then one played by hand, because autopilot is
+// not the whole game and one kind is only reachable off it — see
+// aHandPlayedGateCrossing.
 func TestEveryEventKindIsReachable(t *testing.T) {
 	seen := make(map[battle.Kind]bool, battle.KindCount)
+	record := func(events []battle.Event) {
+		for _, event := range events {
+			seen[event.Kind] = true
+		}
+	}
 	for seedValue := uint64(0); seedValue < 60; seedValue++ {
 		fight := benchBattle(t, seedValue)
 		fight.Begin()
 		if _, err := fight.RunToEnd(4000); err != nil {
 			t.Fatalf("seed %d: %v", seedValue, err)
 		}
-		for _, event := range fight.Drain() {
-			seen[event.Kind] = true
-		}
+		record(fight.Drain())
 	}
+	record(aHandPlayedGateCrossing(t))
 	for kind := 0; kind < battle.KindCount; kind++ {
 		if !seen[battle.Kind(kind)] {
 			t.Errorf("no battle on the bench ever emitted %s", battle.Kind(kind))
 		}
+	}
+}
+
+// aHandPlayedGateCrossing drives one battle by hand until a gated trait has come
+// on and gone off again, and returns what it logged.
+//
+// It is here rather than folded into the sweep above because of something the
+// sweep measured: on autopilot a gated trait is very nearly a one way door. A
+// unit that falls below a third of its health is a unit that is losing, and the
+// opponent never buffs, never cleanses and never heals anybody — the only
+// healing in sixty battles is what a drain returns to its own caster, which is
+// worth about a fortieth of a health bar against damage worth a tenth. Across
+// four thousand battle-seeds of every arrangement tried, a trait came back off
+// once.
+//
+// So passive_released is reachable, and reachable is what this test is about: a
+// player heals, and Suggest does not. Proving it with a hand-played battle says
+// exactly that, where widening the sweep until the rare case turned up would
+// have been a test that passed for a reason nobody could name.
+func aHandPlayedGateCrossing(t *testing.T) []battle.Event {
+	t.Helper()
+	fight, err := battle.New(benchBooks(t), 3, []battle.Roster{
+		{ID: "holder", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "fire"), Stats: benchStats(2000, 700, 300, 120),
+			Skills: []string{"strike", "siphon"}, Passives: []string{"blaze"}},
+		{ID: "sparring", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 500, 300, 100),
+			Skills: []string{"strike"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	var events []battle.Event
+	held, released := false, false
+	// A generous bound rather than a tuned one: what the loop is waiting for is a
+	// pair of events, and it stops on them.
+	for turn := 0; turn < 400 && !released; turn++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt == nil {
+			break
+		}
+		if !prompt.Skipped {
+			// Trade until the trait is on, then drink the way back up. A player
+			// choosing between the two is the whole of what autopilot will not
+			// do.
+			want := "strike"
+			if prompt.Unit == "holder" && held {
+				want = "siphon"
+			}
+			acted := false
+			for _, option := range prompt.Options {
+				if option.Skill != want || !option.Available() {
+					continue
+				}
+				if err := fight.Act(option.Skill, option.Aims[0]); err != nil {
+					t.Fatalf("act %s: %v", option.Skill, err)
+				}
+				acted = true
+				break
+			}
+			if !acted {
+				if err := fight.Pass("waiting"); err != nil {
+					t.Fatalf("pass: %v", err)
+				}
+			}
+		}
+		for _, event := range fight.Drain() {
+			events = append(events, event)
+			switch event.Kind {
+			case battle.PassiveHeld:
+				if event.Passive == "blaze" {
+					held = true
+				}
+			case battle.PassiveReleased:
+				released = true
+			}
+		}
+		if fight.Finished() {
+			break
+		}
+	}
+	if !held {
+		t.Fatal("the hand-played battle never got its holder below the gate")
+	}
+	if !released {
+		t.Fatal("the hand-played battle never healed its holder back over the gate")
+	}
+	return events
+}
+
+func mustAffinity(t *testing.T, id string) element.Affinity {
+	t.Helper()
+	member, err := element.Parse(id)
+	if err != nil {
+		t.Fatalf("element %s: %v", id, err)
+	}
+	affinity, err := element.Single(member)
+	if err != nil {
+		t.Fatalf("affinity %s: %v", id, err)
+	}
+	return affinity
+}
+
+func benchStats(hp, attack, defense, speed int64) progression.Values {
+	return progression.Values{
+		progression.HP: hp, progression.Attack: attack, progression.Defense: defense,
+		progression.Speed: speed, progression.Accuracy: 0, progression.Dodge: 0,
 	}
 }
 

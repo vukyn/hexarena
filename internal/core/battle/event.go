@@ -51,8 +51,9 @@ const (
 	// has to carry it: without one, a reader sees health go up with nothing to
 	// account for it.
 	Healed
-	// PassiveHeld is a trait a unit was enlisted with, and the permanent status
-	// it put on. One per granted status, emitted with the opening board.
+	// PassiveHeld is a trait taking hold, and the permanent status it put on.
+	// One per granted status: with the opening board for a trait that is simply
+	// in force, and again mid-battle each time a gated one comes on.
 	//
 	// It is its own kind rather than a StatusApplied with an empty skill,
 	// because the two are different facts: one is something a unit did to
@@ -60,6 +61,18 @@ const (
 	// renderer that drew them the same way would tell a reader a trait had just
 	// been inflicted.
 	PassiveHeld
+	// PassiveReleased is a gated trait letting go, and the permanent status that
+	// came off with it.
+	//
+	// A trait coming and going changes a visible number, and the log is the only
+	// contract a renderer has — so the way back needs a line exactly as the way
+	// in does. Without it a reader watches a unit's damage fall with nothing
+	// anywhere to account for it, which is the trap Pierce and Refused were
+	// added for.
+	//
+	// Only a gated trait ever emits one. An ungated grant is in force from the
+	// opening board until the holder dies, and death is already a line.
+	PassiveReleased
 	// Ended closes a battle, and says in its Outcome how. Side names the winner
 	// and is meaningless unless the outcome is a Victory.
 	//
@@ -74,25 +87,26 @@ const (
 const KindCount = int(Ended) + 1
 
 var kindNames = [KindCount]string{
-	Started:        "started",
-	TurnBegan:      "turn_began",
-	StatusTicked:   "status_ticked",
-	StatusExpired:  "status_expired",
-	SpeedChanged:   "speed_changed",
-	TurnSkipped:    "turn_skipped",
-	SkillUsed:      "skill_used",
-	Amplified:      "amplified",
-	StatusConsumed: "status_consumed",
-	Missed:         "missed",
-	Blocked:        "blocked",
-	Damaged:        "damaged",
-	StatusApplied:  "status_applied",
-	StatusResisted: "status_resisted",
-	StatusStripped: "status_stripped",
-	Died:           "died",
-	Healed:         "healed",
-	PassiveHeld:    "passive_held",
-	Ended:          "ended",
+	Started:         "started",
+	TurnBegan:       "turn_began",
+	StatusTicked:    "status_ticked",
+	StatusExpired:   "status_expired",
+	SpeedChanged:    "speed_changed",
+	TurnSkipped:     "turn_skipped",
+	SkillUsed:       "skill_used",
+	Amplified:       "amplified",
+	StatusConsumed:  "status_consumed",
+	Missed:          "missed",
+	Blocked:         "blocked",
+	Damaged:         "damaged",
+	StatusApplied:   "status_applied",
+	StatusResisted:  "status_resisted",
+	StatusStripped:  "status_stripped",
+	Died:            "died",
+	Healed:          "healed",
+	PassiveHeld:     "passive_held",
+	PassiveReleased: "passive_released",
+	Ended:           "ended",
 }
 
 func (k Kind) String() string {
@@ -177,7 +191,8 @@ type Event struct {
 	// Outcome is how the battle finished, on Ended and nowhere else. Undecided
 	// is the zero value, so every other kind leaves it out.
 	Outcome Outcome `json:"outcome,omitempty"`
-	// Passive names the trait an event came from, on PassiveHeld.
+	// Passive names the trait an event came from, on PassiveHeld and
+	// PassiveReleased.
 	Passive string `json:"passive,omitempty"`
 	// Refused is the share of a status application's chance the target's traits
 	// took off, in parts per thousand, on StatusApplied and StatusResisted.

@@ -134,7 +134,10 @@ endurance
 Luôn mang cứng đòn.
 
 blaze
-Luôn mang rực lửa.
+Mang rực lửa.
+Chỉ có hiệu lực khi còn <=33% máu.
+
+heatproof
 Miễn hoàn toàn bỏng.
 
 venom_blood
