@@ -1,66 +1,6 @@
 == role presets ==
 curves read base at level 1 to max at level 60
 
-bulwark, formation column 2
-  the front line that absorbs a round rather than winning one: the most health the budget sells, and the shield that makes it count
-  demands  a character built from it must carry metal
-  hp 1440->4800  attack 150->480  defense 120->400  speed 24->80  accuracy 18->60  dodge 6->20
-  level 1  hp 1440, atk 150, def 120, spd 24, acc 18, ddg 6
-           absorbs 2016 of the 11500 budget, 9484 to spare
-  level 30 hp 3091, atk 312, def 257, spd 51, acc 38, ddg 12
-           absorbs 5745 of the 11500 budget, 5755 to spare
-  level 60 hp 4800, atk 480, def 400, spd 80, acc 60, ddg 20
-           absorbs 11214 of the 11500 budget, 286 to spare
-  kit      strike sever guard_wall war_cry
-
-vanguard, formation column 2
-  the front line that trades: enough durability to stand in it and enough attack to make standing there a threat
-  demands  a character built from it must carry fire
-  hp 1080->3600  attack 180->620  defense 160->560  speed 32->110  accuracy 32->110  dodge 18->60
-  level 1  hp 1080, atk 180, def 160, spd 32, acc 32, ddg 18
-           absorbs 1656 of the 11500 budget, 9844 to spare
-  level 30 hp 2318, atk 396, def 356, spd 70, acc 70, ddg 38
-           absorbs 5072 of the 11500 budget, 6428 to spare
-  level 60 hp 3600, atk 620, def 560, spd 110, acc 110, ddg 60
-           absorbs 10344 of the 11500 budget, 1156 to spare
-  kit      strike ember_lance detonate cinder_burst
-
-sentinel, formation column 2
-  armour rather than health, so it shrugs off many small hits and needs help with the one big one
-  demands  a character built from it must carry water
-  hp 930->3100  attack 150->500  defense 240->800  speed 27->90  accuracy 24->80  dodge 9->30
-  level 1  hp 930, atk 150, def 240, spd 27, acc 24, ddg 9
-           absorbs 1675 of the 11500 budget, 9825 to spare
-  level 30 hp 1996, atk 322, def 515, spd 57, acc 51, ddg 19
-           absorbs 5423 of the 11500 budget, 6077 to spare
-  level 60 hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30
-           absorbs 11397 of the 11500 budget, 103 to spare
-  kit      strike riptide guard_wall purify
-
-duelist, formation column 1
-  the middle line's damage: the hardest single hit in the budget, paid for with the durability to survive being answered
-  demands  a character built from it must carry wind
-  hp 780->2600  attack 240->800  defense 96->320  speed 45->150  accuracy 54->180  dodge 27->90
-  level 1  hp 780, atk 240, def 96, spd 45, acc 54, ddg 27
-           absorbs 1030 of the 11500 budget, 10470 to spare
-  level 30 hp 1674, atk 515, def 206, spd 96, acc 115, ddg 57
-           absorbs 2827 of the 11500 budget, 8673 to spare
-  level 60 hp 2600, atk 800, def 320, spd 150, acc 180, ddg 90
-           absorbs 5383 of the 11500 budget, 6117 to spare
-  kit      strike bolt gale_slash swift_edge flurry
-
-skirmisher, formation column 0
-  the back line that acts first and lands the debuffs the rest of the squad is paid to detonate
-  demands  a character built from it must carry grass and electric
-  hp 660->2200  attack 228->760  defense 75->250  speed 60->200  accuracy 72->240  dodge 45->150
-  level 1  hp 660, atk 228, def 75, spd 60, acc 72, ddg 45
-           absorbs 825 of the 11500 budget, 10675 to spare
-  level 30 hp 1416, atk 489, def 161, spd 128, acc 154, ddg 96
-           absorbs 2178 of the 11500 budget, 9322 to spare
-  level 60 hp 2200, atk 760, def 250, spd 200, acc 240, ddg 150
-           absorbs 4036 of the 11500 budget, 7464 to spare
-  kit      bolt venom_fang creeping_rot arc_bolt
-
 blighter, formation column 1
   the slow one that wins by attrition: poison first, outlast the answer, and hit hard enough that ignoring it is not an option
   demands  a character built from it must carry grass
@@ -71,6 +11,6 @@ blighter, formation column 1
            absorbs 5543 of the 11500 budget, 5957 to spare
   level 60 hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50
            absorbs 10410 of the 11500 budget, 1090 to spare
-  kit      vine_whip razor_leaf creeping_rot sleep_powder solar_beam
+  kit      vine_whip razor_leaf sleep_powder solar_beam
 
-6 presets
+1 presets

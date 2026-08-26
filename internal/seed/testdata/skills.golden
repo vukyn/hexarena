@@ -3,25 +3,6 @@ a cooldown counts the caster's own turns, the same unit statuses are timed in
 
 == skills ==
 skill           element   tgt    rng  shape          power  hits  total   acc   cd   damage
-strike          neutral   enemy    1  single         1000     1   1000   960    0      342
-bolt            neutral   enemy    3  single          800     1    800   940    0      274
-ember_lance     fire      enemy    2  single         1800     1   1800   900    2      617
-venom_fang      grass     enemy    1  single         1200     1   1200   950    1      411
-creeping_rot    grass     enemy    3  column          700     1    700   880    3      240
-cinder_burst    fire      enemy    2  wedge_right    1000     1   1000   850    3      342
-detonate        fire      enemy    2  single          900     1    900  1000    4      308
-flurry          neutral   enemy    1  single          600     3   1800   820    2      615
-gale_slash      wind      enemy    2  arc_up         1260     1   1260   880    3      432
-sever           metal     enemy    1  single         2200     1   2200   780    4      754
-hex_curse       dark      enemy    4  single          800     1    800   900    3      274
-riptide         water     enemy    3  pierce          900     2   1800   850    3      616
-arc_bolt        electric  enemy    5  single         1500     1   1500   830    3      514
-swift_edge      wind      enemy    1  single         9600     1   9600   900    2     3291
-guard_wall      neutral   self     0  single            0     1      0  1000    4        0
-war_cry         neutral   ally     1  column            0     1      0  1000    4        0
-quickstep       neutral   self     0  single            0     1      0  1000    3        0
-purify          neutral   ally     2  single            0     1      0  1000    3        0
-unmake          dark      enemy    3  single          600     1    600   900    4      205
 vine_whip       grass     enemy    2  single         1100     1   1100   950    1      377
 razor_leaf      grass     enemy    3  arc_up          600     2   1200   880    2      410
 solar_beam      grass     enemy    4  single         2400     1   2400   850    4      822
@@ -29,33 +10,16 @@ sleep_powder    grass     enemy    2  flank_up          0     1      0  1000    
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
-ember_lance     burn                   1      700        900              630
-venom_fang      poison                 1      900        950              855
-creeping_rot    poison                 1      650        880              572
-sever           expose                 1      500        780              390
-hex_curse       weaken                 1      800        900              720
-hex_curse       blind                  1      400        900              360
-riptide         mire                   1      550        850              467
-arc_bolt        stun                   1      250        830              207
-guard_wall      block (self)           2     1000       1000                -
-war_cry         rally                  1     1000       1000             1000
-quickstep       haste (self)           1     1000       1000                -
-quickstep       focus (self)           1     1000       1000                -
 sleep_powder    stun                   1      500       1000              500
 
 == conditional amplifiers ==
 skill           needs      stacks   power   amplified   damage   amplified   gain
-cinder_burst    poison           1    1000        1500      342         514  1.50x
-detonate        burn             1     900        3100      308        1062  3.44x (consumes)
 
 == what a detonate gives up ==
 skill           status   ticks forgone   a plain attack   alternative   burst    ratio
-detonate        burn                 548              342           890    1062    1.19x
 
 == cleanses and dispels ==
 skill           categories                    stacks
-purify          dot, stat_debuff, control          3
-unmake          buff, shield                       2
 
 == timed effects ==
 status      category      stacks   turns   tick power   tick   over its life   modifiers

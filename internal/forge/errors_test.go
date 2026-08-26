@@ -90,7 +90,7 @@ func TestAWrappedRefusalKeepsTheWordsOfWhoeverMadeIt(t *testing.T) {
 // TestARefusalCarriesWhatItIsAbout is what makes a second language possible: a
 // front-end reads the fields rather than the sentence.
 func TestARefusalCarriesWhatItIsAbout(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -171,7 +171,7 @@ func TestARefusalCarriesWhatItIsAbout(t *testing.T) {
 // TestTheSummariesAreFactsBeforeTheyAreSentences covers the three summaries a
 // front-end draws, each of which now has a value behind the line.
 func TestTheSummariesAreFactsBeforeTheyAreSentences(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}

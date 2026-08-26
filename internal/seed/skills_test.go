@@ -16,6 +16,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/seed"
+	"github.com/vukyn/hexarena/internal/testfixture"
 )
 
 func mustSkills(t *testing.T) *skill.Book {
@@ -27,10 +28,36 @@ func mustSkills(t *testing.T) *skill.Book {
 	return book
 }
 
-// TestShippedSkillsCoverTheMechanics keeps the seed set honest as a test bed: if
-// a mechanic has no skill exercising it, nothing downstream is really covered.
-func TestShippedSkillsCoverTheMechanics(t *testing.T) {
-	book := mustSkills(t)
+// benchSkills parses the nineteen-skill bench, which is what a mechanism test
+// wants: every element, every shape, both conditions, multi-strike, area splash,
+// a cleanse, a dispel and a shield.
+func benchSkills(t *testing.T) *skill.Book {
+	t.Helper()
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load shapes: %v", err)
+	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load statuses: %v", err)
+	}
+	book, err := skill.ParseBook([]byte(`{"skills":`+testfixture.Skills+`}`),
+		skill.Deps{Patterns: patterns, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("parse the bench skills: %v", err)
+	}
+	return book
+}
+
+// TestTheBenchCoversTheMechanics keeps the bench honest: if a mechanic has no
+// skill exercising it, nothing downstream is really covered.
+//
+// It reads the bench rather than the shipped book, because the shipped book is
+// the cast's now and holds whatever the authored characters need -- four grass
+// skills today. Asking that to cover every mechanism would either be a false
+// pass or a standing obstacle to authoring.
+func TestTheBenchCoversTheMechanics(t *testing.T) {
+	book := benchSkills(t)
 	skills := book.Skills()
 	if len(skills) < 12 {
 		t.Fatalf("the book holds %d skills, want a usable seed set", len(skills))

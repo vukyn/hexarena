@@ -10,16 +10,80 @@ import (
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/seed"
+	"github.com/vukyn/hexarena/internal/testfixture"
 )
+
+// benchBooks is the shipped books with the bench's skill book in place of the
+// shipped one.
+//
+// Only the skills are swapped. Every other book -- the chart, the rules, the
+// bounds, the limits, the shapes, the statuses -- is a shipped constant that the
+// cast being re-authored cannot touch, so an engine test should keep reading the
+// real ones. What a four-skill cast cannot do is reach every mechanism, and that
+// is what the bench is for.
+func benchBooks(t *testing.T) battle.Books {
+	t.Helper()
+	books, err := seed.Books()
+	if err != nil {
+		t.Fatalf("load books: %v", err)
+	}
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load shapes: %v", err)
+	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load statuses: %v", err)
+	}
+	parsed, err := skill.ParseBook([]byte(`{"skills":`+testfixture.Skills+`}`),
+		skill.Deps{Patterns: patterns, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("parse the bench skills: %v", err)
+	}
+	books.Skills = parsed
+	return books
+}
+
+// benchRoster is the ten-unit bench: two full teams reaching every element.
+func benchRoster(t *testing.T) []battle.Roster {
+	t.Helper()
+	characters, err := seed.Cast()
+	if err != nil {
+		t.Fatalf("load the cast: %v", err)
+	}
+	// The bench roster is the flat form, so the cast book is never consulted --
+	// but ParseRoster will not take a nil one, and refusing it is right: a
+	// reference that silently resolved to nothing would be worse.
+	roster, err := seed.ParseRoster([]byte(testfixture.Roster), characters)
+	if err != nil {
+		t.Fatalf("parse the bench roster: %v", err)
+	}
+	return roster
+}
+
+// benchBattle is a battle on the bench, which is what an engine test wants: the
+// shipped cast is one character and cannot emit half the events the engine can.
+func benchBattle(t *testing.T, seedValue uint64) *battle.Battle {
+	t.Helper()
+	fight, err := battle.New(benchBooks(t), seedValue, benchRoster(t))
+	if err != nil {
+		t.Fatalf("seed %d: %v", seedValue, err)
+	}
+	return fight
+}
 
 func TestShippedRosterIsUsable(t *testing.T) {
 	roster, err := seed.Roster()
 	if err != nil {
 		t.Fatalf("load roster: %v", err)
 	}
-	if got, want := len(roster), 2*hex.MaxTeamSize; got != want {
-		t.Fatalf("the roster holds %d units, want two full teams of %d", got, want)
+	// Not a count: the shipped roster is whatever the cast currently supports,
+	// and it grows as characters are authored. What has to hold is that it is a
+	// battle -- both sides present, inside the team limit, and legal to enlist.
+	if len(roster) == 0 {
+		t.Fatal("the shipped roster is empty, so the game has nothing to play")
 	}
 	books, err := seed.Books()
 	if err != nil {
@@ -41,14 +105,21 @@ func TestShippedRosterIsUsable(t *testing.T) {
 		}
 	}
 	for _, side := range []hex.Side{hex.SideAlly, hex.SideEnemy} {
-		if perSide[side] != hex.MaxTeamSize {
-			t.Errorf("the %s side has %d units, want %d", side, perSide[side], hex.MaxTeamSize)
+		// A bound, not a count: the shipped roster is the cast, and it grows as
+		// characters are authored. A full team is what the board allows, not
+		// what the game currently holds.
+		if perSide[side] < 1 || perSide[side] > hex.MaxTeamSize {
+			t.Errorf("the %s side has %d units, want between 1 and %d",
+				side, perSide[side], hex.MaxTeamSize)
 		}
 	}
 	// A roster where both sides share one affinity would never exercise the
 	// element chart, which is most of what a battle is deciding.
-	if len(elements) < 8 {
-		t.Errorf("the roster uses %d distinct affinities, want a spread across the chart", len(elements))
+	// No spread check here any more. Reaching every corner of the chart is a
+	// property of the bench, which exists for exactly that; the shipped roster
+	// is whatever cast has been authored, and today that is one character.
+	if len(elements) == 0 {
+		t.Error("the roster declares no affinity at all")
 	}
 }
 
@@ -127,10 +198,7 @@ func TestSeedBattleReplaysExactly(t *testing.T) {
 func TestEveryEventKindIsReachable(t *testing.T) {
 	seen := make(map[battle.Kind]bool, battle.KindCount)
 	for seedValue := uint64(0); seedValue < 60; seedValue++ {
-		fight, err := seed.NewBattle(seedValue)
-		if err != nil {
-			t.Fatalf("seed %d: %v", seedValue, err)
-		}
+		fight := benchBattle(t, seedValue)
 		fight.Begin()
 		if _, err := fight.RunToEnd(4000); err != nil {
 			t.Fatalf("seed %d: %v", seedValue, err)
@@ -141,7 +209,7 @@ func TestEveryEventKindIsReachable(t *testing.T) {
 	}
 	for kind := 0; kind < battle.KindCount; kind++ {
 		if !seen[battle.Kind(kind)] {
-			t.Errorf("no shipped battle ever emitted %s", battle.Kind(kind))
+			t.Errorf("no battle on the bench ever emitted %s", battle.Kind(kind))
 		}
 	}
 }
@@ -292,10 +360,7 @@ func render(event battle.Event) string {
 }
 
 func TestStatsResolveThroughStatuses(t *testing.T) {
-	fight, err := seed.NewBattle(5)
-	if err != nil {
-		t.Fatalf("assemble: %v", err)
-	}
+	fight := benchBattle(t, 5)
 	unit, ok := fight.Unit("ally.bulwark")
 	if !ok {
 		t.Fatal("the roster has no ally.bulwark")
