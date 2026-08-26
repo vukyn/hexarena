@@ -93,10 +93,24 @@ func (p previewScreen) view(m model) (string, string) {
 	return out.String(), footer
 }
 
-// The rows the preview spends on its own heading, the blank under it and the
-// footer, counted here rather than guessed for the reason the skill form's
-// formRoom records.
-const previewChrome = 5
+// The rows the preview cannot draw a picture in, counted rather than guessed.
+//
+// It was guessed once, at five, and the picture came out three rows too tall at
+// every window size — so the frame replaced the bottom row of the drawing with
+// its "there was more than this" notice, on a screen with visible space above
+// and below the sprite. That is the same arithmetic the skill form's formRoom
+// records having to learn twice, and it is worth naming every row here:
+//
+//	2  the frame's own header and the blank under it
+//	1  the character's id and name
+//	1  the line naming the art, the level and the stage
+//	1  the blank under that
+//	1  the empty string strings.Split leaves after the picture's last newline
+//	2  the blank the frame keeps above the footer, and the footer
+//
+// The last three are the ones a guess misses, because none of them is a row this
+// file writes on purpose.
+const previewChrome = 8
 
 // picture is the cached drawing, rasterised on the first look at this size.
 //

@@ -1000,6 +1000,54 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 	}
 }
 
+// TestThePreviewFitsTheWindowItWasGiven is the row arithmetic, which was wrong
+// when this shipped.
+//
+// previewChrome was guessed at five and the true cost is eight, so the picture
+// came out three rows too tall at every window size and the frame replaced the
+// bottom row of the drawing with its "there was more than this" notice — on a
+// screen with visible space above and below the sprite. The three rows a guess
+// misses are the ones nobody writes on purpose: the empty string Split leaves
+// after the last newline, and the blank and the footer the frame keeps at the
+// bottom.
+//
+// Two things are asserted, because either alone has a cheap wrong answer. The
+// notice must never appear — and a picture pinned to a small constant would also
+// never trigger it, so the drawing must grow with the window too.
+func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
+	lib, err := forge.Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	previous := 0
+	for _, height := range []int{minHeight, 27, 30, 33, 40, 44, 60} {
+		m := newModel(lib, i18n.Vi)
+		m.width, m.height = 92, height
+		m = m.enter(screenBrowse)
+		m.screen = screenPreview
+
+		framed := m.View()
+		if notice := m.text(i18n.Truncated); strings.Contains(framed, notice) {
+			t.Errorf("at %d rows the preview is cut off:\n%s", height, framed)
+		}
+		// The footer has to be the last line, which is the reason the frame cuts
+		// at all: a screen whose keys have scrolled away is one nobody can leave.
+		lines := strings.Split(framed, "\n")
+		if want := m.text(i18n.PreviewFooter); !strings.Contains(lines[len(lines)-1], want) {
+			t.Errorf("at %d rows the last line is %q, want the footer", height, lines[len(lines)-1])
+		}
+
+		body, _ := m.preview.view(m)
+		drawn := strings.Count(body, "\n")
+		if drawn <= previous {
+			t.Errorf("at %d rows the picture is %d lines, no more than the %d it had in a shorter window",
+				height, drawn, previous)
+		}
+		previous = drawn
+	}
+}
+
 // TestQuitKeysWorkFromEveryScreen covers the promise the footers make. ctrl+c
 // has to work even with a question pending, or a modal can trap somebody.
 func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
