@@ -243,6 +243,7 @@ const (
 	CheckDoesNotResolve
 	CheckOverBudget
 	CheckProblem
+	CheckWarning
 	CheckNote
 
 	// The origins catalog and the form that adds to it.
@@ -314,6 +315,7 @@ const (
 	ProblemMissingArt
 	ProblemMissingStageArt
 	ProblemDoesNotResolve
+	WarningShortReach
 	NoteWrote
 	NoteEdited
 	NoteArtMissing

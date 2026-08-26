@@ -66,6 +66,11 @@ func renderReport(out io.Writer, r forge.Report) {
 			fmt.Fprintf(out, "problem: %s\n", problem)
 		}
 	}
+	// Warnings print whether or not the check passed, because a passing check is
+	// exactly when they matter: nothing else is going to say this.
+	for _, warning := range r.Warnings {
+		fmt.Fprintf(out, "warning: %s\n", warning)
+	}
 	fmt.Fprintf(out, "\nnote: this reads %s from disk. The game boots from the copies baked in by\n"+
 		"go:embed, so an edit here needs a rebuild before it reaches a battle.\n", r.Dir)
 }

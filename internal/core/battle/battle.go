@@ -141,6 +141,7 @@ type Battle struct {
 	finished bool
 	winner   hex.Side
 	decided  bool
+	outcome  Outcome
 }
 
 // New sets up a battle. It validates the roster against every book, so a bad
@@ -173,7 +174,100 @@ func New(books Books, seed uint64, roster []Roster) (*Battle, error) {
 			return nil, fmt.Errorf("no unit is on the %s side", side)
 		}
 	}
+	// A unit that can aim at nobody from the slot it was placed in is refused
+	// here, where the roster is still in front of whoever wrote it, rather than
+	// discovered as a turn skipped four thousand times.
+	//
+	// It runs after the whole roster is enlisted because reach is a fact about
+	// the board rather than about a unit: whether a range of three is enough
+	// depends on where the other nine are standing.
+	//
+	// This is necessary and not sufficient, and the shape of the problem is why.
+	// Nothing moves, so a unit's reach is fixed at enlistment — but the set of
+	// cells worth reaching is not, because it shrinks every time somebody dies.
+	// A roster that passes here can still deadlock later, which is what the
+	// Stalemate outcome is for.
+	for _, unit := range fight.units {
+		if fight.canAimAtAnyone(unit) {
+			continue
+		}
+		nearest := fight.nearestTargetable(unit)
+		if nearest == 0 {
+			return nil, fmt.Errorf("unit %q stands at %s knowing no skill it may aim at anybody on the board",
+				unit.ID, unit.Cell)
+		}
+		return nil, fmt.Errorf("unit %q stands at %s, where no skill it knows can be aimed at anyone: "+
+			"its longest range is %d and the nearest unit it may target is %d cells away",
+			unit.ID, unit.Cell, fight.longestRange(unit), nearest)
+	}
 	return fight, nil
+}
+
+// canAimAtAnyone reports whether any skill the unit knows has a legal aim on the
+// board as it currently stands.
+//
+// Cooldowns are deliberately not read. This asks what a unit can ever do, not
+// what it can do this turn, and a cooldown always comes down.
+func (b *Battle) canAimAtAnyone(unit *Unit) bool {
+	for _, id := range unit.Skills {
+		known, err := b.books.Skills.Lookup(id)
+		if err != nil {
+			continue
+		}
+		if len(b.aims(unit, known)) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// longestRange is the furthest any skill the unit knows can be pointed. It is
+// only ever used to explain a refusal.
+func (b *Battle) longestRange(unit *Unit) int {
+	longest := 0
+	for _, id := range unit.Skills {
+		known, err := b.books.Skills.Lookup(id)
+		if err != nil {
+			continue
+		}
+		if known.Range > longest {
+			longest = known.Range
+		}
+	}
+	return longest
+}
+
+// nearestTargetable is the distance to the closest unit that some skill this one
+// knows is allowed to point at, with range ignored: the number an author has to
+// compare a range against.
+//
+// The allowance is read rather than the distance alone, because a kit aimed only
+// at the enemy is not helped by an ally standing beside it, and a refusal
+// quoting that ally's distance would send the author looking in the wrong
+// direction. Zero means there is nobody on the board any of its skills may
+// target at any range, which is a different fault and says so.
+//
+// It is only ever used to explain a refusal.
+func (b *Battle) nearestTargetable(unit *Unit) int {
+	nearest := 0
+	for _, id := range unit.Skills {
+		known, err := b.books.Skills.Lookup(id)
+		if err != nil {
+			continue
+		}
+		for _, other := range b.units {
+			if other == unit || other.Dead {
+				continue
+			}
+			if !known.Target.Reaches(unit.Side, other.Cell.Side()) {
+				continue
+			}
+			if distance := unit.Cell.DistanceTo(other.Cell); nearest == 0 || distance < nearest {
+				nearest = distance
+			}
+		}
+	}
+	return nearest
 }
 
 func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex.Offset]string) (*Unit, error) {
@@ -182,6 +276,13 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 	}
 	if _, clash := b.byID[entry.ID]; clash {
 		return nil, fmt.Errorf("unit %q is listed twice", entry.ID)
+	}
+	// A roster entry that never said which half it fights on is refused here
+	// rather than placed as an ally by default. hex.SideNone is the zero value,
+	// so this is the field a caller is likeliest to have left out, and defaulting
+	// it would put a unit on a side nobody chose.
+	if !entry.Side.Fights() {
+		return nil, fmt.Errorf("unit %q is on no side", entry.ID)
 	}
 	if entry.Slot.Col < 0 || entry.Slot.Col >= hex.FormationCols ||
 		entry.Slot.Row < 0 || entry.Slot.Row >= hex.Rows {
@@ -356,6 +457,11 @@ func (b *Battle) Finished() bool { return b.finished }
 // Winner reports which side won, and whether anyone did.
 func (b *Battle) Winner() (hex.Side, bool) { return b.winner, b.decided }
 
+// Outcome reports how the battle ended, and Undecided while it is still being
+// fought. It is what separates the three ways a battle can finish without a
+// winner from one another, which Winner alone cannot say.
+func (b *Battle) Outcome() Outcome { return b.outcome }
+
 // Unit returns a combatant by id.
 func (b *Battle) Unit(id string) (*Unit, bool) {
 	unit, ok := b.byID[id]
@@ -408,6 +514,9 @@ func (b *Battle) occupant(cell hex.Offset) *Unit {
 	return nil
 }
 
+// checkEnd ends the battle when a side has been emptied. It is called the moment
+// a unit falls, including in the middle of a skill still resolving, so it asks
+// only the question that is safe to ask there: is anyone left.
 func (b *Battle) checkEnd() {
 	if b.finished {
 		return
@@ -416,18 +525,80 @@ func (b *Battle) checkEnd() {
 	if allies > 0 && enemies > 0 {
 		return
 	}
-	b.finished = true
 	switch {
 	case allies > 0:
-		b.winner, b.decided = hex.SideAlly, true
+		b.winner, b.decided, b.outcome = hex.SideAlly, true, Victory
 	case enemies > 0:
-		b.winner, b.decided = hex.SideEnemy, true
+		b.winner, b.decided, b.outcome = hex.SideEnemy, true, Victory
+	default:
+		b.outcome = Annihilation
 	}
-	note := "draw"
-	if b.decided {
-		note = b.winner.String()
+	b.end()
+}
+
+// settle is checkEnd plus the deadlock test, and runs when a turn has finished
+// and the board is at rest.
+//
+// The two are separate because they may be asked at different moments. A side
+// being emptied is true as soon as the last unit falls, wherever that happens;
+// a deadlock is a statement about what can happen next, and asking it halfway
+// through a skill that is still choosing targets would be reading a board that
+// is not the board anyone will act from.
+func (b *Battle) settle() {
+	b.checkEnd()
+	if b.finished || !b.frozen() {
+		return
 	}
-	b.emit(Event{Kind: Ended, Side: b.winner, Note: note})
+	b.outcome = Stalemate
+	b.end()
+}
+
+// end records the outcome the caller has already decided on.
+func (b *Battle) end() {
+	b.finished = true
+	b.emit(Event{Kind: Ended, Side: b.winner, Outcome: b.outcome})
+}
+
+// frozen reports whether the battle can never change again: nobody can act, and
+// nothing pending would give anyone something to do.
+//
+// It is a pure function of the state rather than a count of quiet turns, which
+// is what a replay needs — a battle that draws on one machine has to draw on
+// every other from the same seed, and a counter is one more thing two runs could
+// disagree about.
+//
+// Two things have to be true of every living unit, and both are asked the
+// pessimistic way round: the predicate has to be certain, because declaring a
+// draw on a battle that would have resolved is worse than letting the turn limit
+// catch a real one.
+//
+//   - Nothing timed is on it. A poisoned deadlock is not a deadlock: the poison
+//     will kill somebody, and that ends the battle by emptying a side. So will a
+//     stun wearing off, a debuff expiring or a shield running out. Anything with
+//     a duration left to spend is a promise that the board is not final.
+//   - No skill it knows has a legal aim, cooldowns ignored. A cooldown always
+//     comes down, so a skill cooling down is not a reason a unit cannot act; a
+//     skill with nothing in range is. Note that a self-targeting skill always has
+//     an aim, so a unit that can still buff itself is not frozen — and it will
+//     be holding a timed status the moment it does, which is the first clause
+//     agreeing with the second.
+//
+// Cooldowns and control are what make a skipped turn ordinary. Neither is read
+// here, which is exactly why an ordinary skipped turn cannot be mistaken for
+// this.
+func (b *Battle) frozen() bool {
+	for _, unit := range b.units {
+		if unit.Dead {
+			continue
+		}
+		if unit.Statuses.Timed() {
+			return false
+		}
+		if b.canAimAtAnyone(unit) {
+			return false
+		}
+	}
+	return true
 }
 
 func (b *Battle) kill(unit *Unit) {

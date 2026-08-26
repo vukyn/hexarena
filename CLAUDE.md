@@ -230,9 +230,71 @@ Two tests hold the line: `TestEveryEventKindIsReachable` fails if a declared kin
 is never emitted by any real battle, and `TestEveryEventKindRenders` fails if a
 kind falls through the renderer's default case.
 
-Event kinds and sides serialise **by name**. Do not change that to a number: a
-saved log would silently reinterpret itself the next time a constant was inserted.
-Renaming a kind breaks existing logs, so treat the names as the wire format.
+Event kinds, sides and outcomes serialise **by name**. Do not change that to a
+number: a saved log would silently reinterpret itself the next time a constant was
+inserted. Renaming one breaks existing logs, so treat the names as the wire
+format.
+
+**`hex.SideNone` is the zero value, and that is load-bearing rather than tidy.**
+A side is written with `omitempty`, so whichever side is zero never reaches the
+wire — with `SideAlly` at zero, every ally unit's `started` event wrote no side
+at all and a reader recovered it from a missing field, correct only because ally
+was declared first. A battle with no winner wrote the same thing and meant
+something else entirely. Now nothing is at zero: an absent side means nobody, a
+won battle names its winner, and a draw names none. `Side.Fights()` is the check
+for "is this one of the two", and `battle.New` refuses a roster entry that never
+said. ⚠️ **This broke the log format once** — logs written before it fail
+`--verify`, because the re-run produces `ally` where the file has nothing. That
+was worth doing once, on throwaway files, to stop the format depending on a
+coincidence. Do not put a real value back at zero.
+
+## How a battle ends, and why a draw is an outcome rather than an error
+
+Every ending comes through one `Ended` event carrying a `battle.Outcome`:
+`Victory` (its `Side` names the winner), `Annihilation` (both sides empty) or
+`Stalemate`. **Do not read the ending out of a note or out of what stopped
+happening** — a renderer and `--verify` both switch on it, and an ending only
+English can tell apart is one neither can be trusted with. `Battle.Outcome()`
+is the same fact for a caller holding the battle; `Winner()` cannot say which of
+the two draws it was.
+
+`Stalemate` exists because **nothing on this board moves**. Reach is fixed when a
+unit is enlisted and the enemies worth reaching are not, because they die, so two
+short-ranged survivors on opposite back columns is a battle that can never
+finish — seed 18 once skipped 3955 of 4000 turns and came back as a battle that
+never ended rather than as a result.
+
+Three constraints hold it together, and each is a way it was nearly got wrong:
+
+- **`checkEnd` and `settle` are separate on purpose.** `checkEnd` asks only "is a
+  side empty" and is called from `kill`, which happens in the middle of a skill
+  still choosing targets. `settle` adds the deadlock test and runs only where a
+  turn has finished and the board is at rest — the end of `Act`, the end of
+  `Pass`, and Advance's two skipped-turn returns. Asking the deadlock question
+  from `kill` would read a board nobody will act from.
+- **`frozen` is a pure predicate, not a counter.** For every living unit: nothing
+  timed on it (`status.Set.Timed`, which ignores a trait's permanent status) and
+  no skill with a legal aim, **cooldowns ignored**. Both halves are pessimistic,
+  because a draw declared on a battle that would have resolved is worse than the
+  turn limit catching a real runaway. A count of quiet turns would be one more
+  thing two runs of the same seed could disagree about.
+- **Cooldowns and control are deliberately not read.** They are what make a
+  skipped turn ordinary, and not reading them is exactly why an ordinary skipped
+  turn cannot be mistaken for a deadlock. A poisoned deadlock is not a deadlock:
+  the poison ends the battle by emptying a side.
+
+Note a **self-targeting skill always has an aim**, so a unit that can still buff
+itself is never frozen — correctly, since it can still act. A battle of two such
+units is a genuine runaway and is what the turn limit is now for; `RunToEnd`
+still returns without an error there, and the caller reads `Finished()`.
+
+The cheap half is caught earlier. `battle.New` refuses a roster holding a unit
+that can aim at nobody from its slot, and `hexforge check` **warns** — a
+`forge.Warning`, not a `forge.Problem`, so the check still passes — when a
+character's longest range cannot reach anybody from its archetype's column. Both
+are necessary and neither is sufficient: reach shrinks as units die.
+`hex.ReachNeeded` is where the column-to-distance answer lives, measured through
+`hex.Place` rather than written down.
 
 ## Saturate continuous values, cap discrete ones
 
@@ -723,25 +785,6 @@ is the constraint each piece has to respect.
       it** — `battle.Roster` still takes a resolved kit and a resolved stat line,
       because a learnset and a stage settle before a battle exactly as evolution
       already does. See README → Roadmap.
-- [ ] **A battle nobody can act in has no outcome.** `checkEnd` ends one only by
-      emptying a side, so a mutual deadlock runs to the turn limit and returns an
-      *error*. Real, not hypothetical: seed 18 skipped 3955 of 4000 turns, all
-      "nothing usable", because two survivors stood on the back column with a
-      range-3 kit — measured through `hex.Place`, the furthest enemy slot is 3
-      cells from column 2, 4 from column 1 and 5 from column 0. The root cause is
-      that **nothing moves**: reach is fixed at enlistment, so a situation that
-      would resolve itself in a game with movement cannot here. Two answers, both
-      wanted: refuse the obvious case at authoring (`battle.New` checking every
-      unit can reach someone; `hexforge` warning when a kit's range cannot cover
-      the board) — necessary but not sufficient, since reach shrinks as units die
-      — and end it at runtime as a **draw**. That last needs care: a skipped turn
-      is normal and resolves, so the condition is a full cycle where nobody could
-      act *and* nothing pending would change it (a poisoned deadlock is not one);
-      a draw needs its own event or the log cannot say why the battle stopped; it
-      is not an error, so the turn limit goes back to being only a backstop; and
-      detection must be a pure function of state, because a battle that draws on
-      one machine has to draw on every other from the same seed. See README →
-      Roadmap.
 - [ ] **A real cast — and an asymmetric roster.** The tooling exists, the example
       characters are gone, and `cast.json` now ships **one** character:
       `pokemon.bulbasaur`, three forms, art for each. `roster.json` is no longer

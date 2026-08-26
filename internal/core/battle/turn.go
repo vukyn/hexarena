@@ -68,11 +68,18 @@ func (b *Battle) Advance() (*Prompt, error) {
 	b.retuneAll(turn)
 	if unit.Dead {
 		b.emit(Event{Kind: TurnSkipped, At: turn.At, Turn: turn.Number, Actor: unit.ID, Note: "died"})
+		// A turn that a timed effect took is still a turn that ended, and the
+		// death it ended with may have been the one that froze the board.
+		b.settle()
 		return &Prompt{Unit: unit.ID, Turn: turn.Number, At: turn.At, Skipped: true, Reason: "died"}, nil
 	}
 	if controlled {
 		b.spendCooldowns(unit)
 		b.emit(Event{Kind: TurnSkipped, At: turn.At, Turn: turn.Number, Actor: unit.ID, Note: stunStatus})
+		// Control was read before durations were spent, so the stun that costs
+		// this turn may have expired during the tick that just ran. This is
+		// therefore the turn on which the last timed thing on the board can go.
+		b.settle()
 		return &Prompt{Unit: unit.ID, Turn: turn.Number, At: turn.At, Skipped: true, Reason: stunStatus}, nil
 	}
 
@@ -209,6 +216,10 @@ func (b *Battle) Pass(reason string) error {
 	b.emit(Event{
 		Kind: TurnSkipped, Turn: b.queue.Turns(unit.ID), Actor: unit.ID, Note: reason,
 	})
+	// This is the turn a deadlock is made of, so it is the one that has to ask.
+	// A unit passing for want of anything to use is the symptom the whole
+	// Stalemate outcome exists to catch, and the board is at rest here.
+	b.settle()
 	return nil
 }
 
@@ -332,6 +343,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	if known.Target == skill.Self {
 		b.strip(unit, unit, known, turn)
 		b.retuneAll(turn)
+		b.settle()
 		return nil
 	}
 	shape, err := b.books.Patterns.Lookup(known.Pattern)
@@ -349,6 +361,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		}
 	}
 	b.retuneAll(turn)
+	b.settle()
 	return nil
 }
 

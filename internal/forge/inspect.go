@@ -3,6 +3,8 @@ package forge
 import (
 	"fmt"
 
+	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 )
 
@@ -53,7 +55,54 @@ type Report struct {
 	// is about, and its Error method is the English cmd/hexforge prints, so a
 	// front-end may draw either the sentence or the facts.
 	Problems []Problem
+	// Warnings are things worth saying that are not reasons to fail.
+	//
+	// The distinction is the whole reason there are two lists. A short-ranged
+	// character on a back column is a design an author may well mean — the rest
+	// of the squad stands in front of it, and it is the squad rather than the
+	// character that has to reach — so refusing it here would refuse a legal
+	// game. Saying nothing at all is the other mistake: that is the shape a
+	// battle nobody can act in is built out of, and the moment to notice it is
+	// while the character is still in front of whoever wrote it.
+	Warnings []Warning
 }
+
+// Warning is something a check noticed that is not a reason to fail.
+//
+// It is a closed set of causes with the same shape as Problem, and for the same
+// reason: cmd/hexforge-tui says these in the author's language, and a sentence
+// cannot be translated once it has been built.
+type Warning interface {
+	error
+	warning()
+}
+
+// ShortReachWarning is a character whose longest range cannot touch anybody from
+// the column its archetype puts it in.
+//
+// Reach is fixed at enlistment — nothing on this board moves — so a unit placed
+// where nothing it knows can be aimed will skip every turn of the battle, and a
+// pair of them on opposite back columns is a battle that cannot end. battle.New
+// refuses the roster outright when it happens; this is the same fact noticed
+// earlier, where it costs an author nothing to fix.
+type ShortReachWarning struct {
+	ID        string
+	Archetype string
+	// Column is the archetype's, counted from the back.
+	Column int
+	// Range is the longest the character's kit can be pointed, and Needed is
+	// what that column asks for.
+	Range  int
+	Needed int
+}
+
+func (w *ShortReachWarning) Error() string {
+	return fmt.Sprintf("character %s is a %s on column %d, where the nearest enemy is %d cells away, "+
+		"but the longest range in its kit is %d: it can only act while an ally stands in front of it",
+		w.ID, w.Archetype, w.Column, w.Needed, w.Range)
+}
+
+func (w *ShortReachWarning) warning() {}
 
 // Problem is one reason a check fails.
 //
@@ -176,7 +225,47 @@ func (l *Library) Inspect() Report {
 			report.Problems = append(report.Problems,
 				&ResolveProblem{ID: character.ID, Err: row.Failure})
 		}
+		if short := l.shortReach(character); short != nil {
+			report.Warnings = append(report.Warnings, short)
+		}
 		report.Rows = append(report.Rows, row)
 	}
 	return report
+}
+
+// shortReach measures a character's kit against the column its archetype puts it
+// in, and reports the one case that cannot act alone.
+//
+// The archetype is where the column comes from because that is the only place a
+// character says anything about where it stands: a roster slot is a placement
+// and belongs to a battle, while an archetype is the role, and a role is exactly
+// the claim "this belongs on the front" or "this belongs at the back".
+//
+// A character whose archetype has gone missing, or whose kit holds nothing this
+// library can look up, is not warned about: the first is a problem the parser
+// already refuses and the second would be a warning about nothing.
+func (l *Library) shortReach(character cast.Character) *ShortReachWarning {
+	preset, known := l.archetypes.Get(character.Archetype)
+	if !known {
+		return nil
+	}
+	longest, counted := 0, 0
+	for _, id := range character.Skills {
+		carried, err := l.skills.Lookup(id)
+		if err != nil {
+			continue
+		}
+		counted++
+		if carried.Range > longest {
+			longest = carried.Range
+		}
+	}
+	needed := hex.ReachNeeded(preset.Column)
+	if counted == 0 || needed == 0 || longest >= needed {
+		return nil
+	}
+	return &ShortReachWarning{
+		ID: character.ID, Archetype: preset.ID, Column: preset.Column,
+		Range: longest, Needed: needed,
+	}
 }

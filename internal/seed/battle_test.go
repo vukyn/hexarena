@@ -365,7 +365,13 @@ func render(event battle.Event) string {
 	case battle.Died:
 		return head + fmt.Sprintf("%-18s fell at %s", event.Actor, event.Cell)
 	case battle.Ended:
-		return head + fmt.Sprintf("%-18s %s", "", event.Note)
+		// The outcome and, when there is one, the side that won it. A stalemate
+		// and a mutual kill are both draws and both name no side, so the
+		// outcome is what the golden has to carry.
+		if event.Outcome == battle.Victory {
+			return head + fmt.Sprintf("%-18s %s to the %s side", "", event.Outcome, event.Side)
+		}
+		return head + fmt.Sprintf("%-18s %s", "", event.Outcome)
 	default:
 		return head + fmt.Sprintf("%-18s", event.Actor)
 	}

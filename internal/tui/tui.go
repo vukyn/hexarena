@@ -306,7 +306,20 @@ func Line(event battle.Event, tags map[string]string) string {
 	case battle.Died:
 		return head + fmt.Sprintf(" falls at %s", event.Cell)
 	case battle.Ended:
-		return fmt.Sprintf("\n  the %s side wins", event.Note)
+		// Every ending is drawn from the outcome rather than from the winner,
+		// because three of the four have no winner to name and one of them —
+		// a stalemate — leaves units standing on both sides. Drawing that as
+		// "nobody is left" would be the log telling the reader something false.
+		switch event.Outcome {
+		case battle.Victory:
+			return fmt.Sprintf("\n  the %s side wins", event.Side)
+		case battle.Annihilation:
+			return "\n  a draw: nobody is left standing"
+		case battle.Stalemate:
+			return "\n  a draw: nobody can reach anyone"
+		default:
+			return "\n  the battle ends"
+		}
 	default:
 		return head + " " + event.Kind.String()
 	}

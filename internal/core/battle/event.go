@@ -60,7 +60,13 @@ const (
 	// renderer that drew them the same way would tell a reader a trait had just
 	// been inflicted.
 	PassiveHeld
-	// Ended closes a battle.
+	// Ended closes a battle, and says in its Outcome how. Side names the winner
+	// and is meaningless unless the outcome is a Victory.
+	//
+	// Every way a battle can stop comes through this one kind: a log that simply
+	// ran out of events could not say whether the fight was won, mutually lost
+	// or deadlocked, and a replay comparing two such logs would be comparing two
+	// stories rather than two battles.
 	Ended
 )
 
@@ -168,6 +174,9 @@ type Event struct {
 	// Cell and Side place a unit on the board.
 	Cell hex.Offset `json:"cell,omitempty"`
 	Side hex.Side   `json:"side,omitempty"`
+	// Outcome is how the battle finished, on Ended and nowhere else. Undecided
+	// is the zero value, so every other kind leaves it out.
+	Outcome Outcome `json:"outcome,omitempty"`
 	// Passive names the trait an event came from, on PassiveHeld.
 	Passive string `json:"passive,omitempty"`
 	// Note is a short reason, used only where a kind has one to give.
