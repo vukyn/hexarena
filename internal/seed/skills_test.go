@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -641,6 +642,36 @@ func TestAFreeSkillsFlavourNamesNoBodyItMayNotHave(t *testing.T) {
 			}
 			t.Errorf("%q is free for anybody to carry and its flavour says %q, which is %s: restrict the skill or reword the clause",
 				current.ID, word, what)
+		}
+	}
+}
+
+// countWords are the numbers a flavour clause may not spell out.
+//
+// skill.ParseBook already refuses a digit, and that is the check that protects
+// the guarantee — but it is a check on *characters*, and "hai nhát" walks past it
+// while saying exactly what "2 nhát" would have. The first clause written for
+// fire_fang did precisely that, and the sentence read "Ngoạm hai nhát, ... 2 nhát,
+// mỗi nhát 60% công": the authored half and the derived half saying the same thing
+// twice, one of which would stop being true if the strike count moved.
+//
+// "một" is deliberately absent. It is the indefinite article far more often than
+// it is a count — "một cột lửa", "một loạt lá" — so banning it would cost every
+// clause its natural opening to catch a mistake nobody makes: a skill of one
+// strike is the default, and nobody writes it out.
+var countWords = []string{"hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín", "mười"}
+
+// TestAFlavourClauseSpellsOutNoNumber closes the half of the digit ban that a
+// character check cannot see.
+func TestAFlavourClauseSpellsOutNoNumber(t *testing.T) {
+	for _, current := range mustSkills(t).Skills() {
+		for _, word := range strings.Fields(strings.ToLower(current.Flavour)) {
+			word = strings.Trim(word, ",.;:")
+			if !slices.Contains(countWords, word) {
+				continue
+			}
+			t.Errorf("%q spells out the number %q in its flavour; every figure in a description is derived, and a written one says the same thing twice until it stops being true",
+				current.ID, word)
 		}
 	}
 }

@@ -16,7 +16,7 @@
     {
       "id": "razor_leaf",
       "name": "phi diệp",
-      "flavour": "Búng một loạt lá sắc như dao cắt ngang hàng ngũ đối phương",
+      "flavour": "Bắn một loạt lá sắc như dao cắt ngang hàng ngũ đối phương",
       "element": "grass",
       "range": 3,
       "pattern": "arc_up",
@@ -30,7 +30,7 @@
     {
       "id": "solar_beam",
       "name": "quang kích",
-      "flavour": "Gom nắng vào thân rồi bắn thẳng một luồng sáng xuyên qua trận địa",
+      "flavour": "Tích tụ ánh sáng rồi bắn thẳng một luồng xuyên qua trận địa",
       "element": "light",
       "range": 4,
       "pattern": "single",
@@ -43,7 +43,7 @@
     {
       "id": "sleep_powder",
       "name": "phấn ngủ",
-      "flavour": "Rắc một lớp phấn ru ngủ phủ xuống chỗ đối phương đứng",
+      "flavour": "Rải một lớp phấn ru ngủ phủ xuống chỗ đối phương đứng",
       "element": "grass",
       "range": 2,
       "pattern": "flank_up",
@@ -62,8 +62,8 @@
     },
     {
       "id": "poison_powder",
-      "name": "độc phấn",
-      "flavour": "Thổi phấn độc bay là là sang phía đối phương",
+      "name": "phấn độc",
+      "flavour": "Rải phấn độc bay là là sang phía đối phương",
       "element": "neutral",
       "range": 2,
       "pattern": "flank_up",
@@ -135,7 +135,7 @@
     {
       "id": "synthesis",
       "name": "quang hợp",
-      "flavour": "Đứng yên uống nắng, tự vá lại thân mình",
+      "flavour": "Đứng yên tắm nắng, chậm rãi lành lại",
       "element": "grass",
       "range": 0,
       "pattern": "single",
@@ -154,7 +154,7 @@
     {
       "id": "ingrain",
       "name": "cắm rễ",
-      "flavour": "Đâm rễ xuống nền đá, bám chặt lấy chỗ đứng",
+      "flavour": "Cắm rễ xuống nền đá, bám chặt tại chỗ",
       "element": "grass",
       "range": 0,
       "pattern": "single",
@@ -179,7 +179,7 @@
     {
       "id": "ember",
       "name": "than hồng",
-      "flavour": "Búng một cụm than hồng vào kẻ địch",
+      "flavour": "Bắn một cụm than hồng vào kẻ địch",
       "element": "fire",
       "range": 2,
       "pattern": "single",
@@ -199,7 +199,7 @@
     {
       "id": "flamethrower",
       "name": "phun lửa",
-      "flavour": "Há miệng phun một cột lửa dài về phía trước",
+      "flavour": "Phun một cột lửa dài về phía trước",
       "element": "fire",
       "range": 3,
       "pattern": "single",
@@ -219,7 +219,7 @@
     {
       "id": "fire_fang",
       "name": "nanh lửa",
-      "flavour": "Ngoạm hai nhát, răng nanh bọc lửa xé qua lớp giáp",
+      "flavour": "Ngoạm bằng răng nanh bọc lửa, xé toạc lớp giáp",
       "element": "fire",
       "range": 1,
       "pattern": "single",
@@ -233,7 +233,7 @@
     {
       "id": "fire_spin",
       "name": "xoáy lửa",
-      "flavour": "Cuộn một cột lửa xoáy nhốt lấy cả hàng dọc đối phương",
+      "flavour": "Tạo một cột lửa xoáy nhốt lấy cả hàng dọc đối phương",
       "element": "fire",
       "range": 3,
       "pattern": "column",
@@ -253,7 +253,7 @@
     {
       "id": "heat_wave",
       "name": "sóng nhiệt",
-      "flavour": "Đẩy một luồng khí nóng tràn qua nhiều ô cùng lúc",
+      "flavour": "Đẩy một luồng khí nóng tràn qua trận địa",
       "element": "fire",
       "range": 3,
       "pattern": "wedge_right",
@@ -330,7 +330,7 @@
     {
       "id": "dragon_dance",
       "name": "long vũ",
-      "flavour": "Nhảy một điệu cổ xưa của giống rồng, càng nhảy càng hăng",
+      "flavour": "Nhảy một điệu cổ xưa của loài rồng, càng nhảy càng hăng",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -413,7 +413,7 @@
     {
       "id": "bite",
       "name": "cắn",
-      "flavour": "Đớp một nhát vào chỗ hở, cắn rách lớp phòng thủ",
+      "flavour": "Đớp vào chỗ hở, cắn rách lớp phòng thủ",
       "element": "neutral",
       "range": 1,
       "pattern": "single",
@@ -484,7 +484,7 @@
     {
       "id": "aqua_ring",
       "name": "vòng nước",
-      "flavour": "Quấn một vòng nước quanh mình, nước tự vá vết thương theo thời gian",
+      "flavour": "Quấn một vòng nước quanh mình, nước tự hồi vết thương theo thời gian",
       "element": "water",
       "range": 0,
       "pattern": "single",
