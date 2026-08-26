@@ -673,7 +673,9 @@ sequence, and two identical battles must still produce identical logs.
 ### What a passive still cannot do
 
 Traits exist — see *Passives* above — and one of the four things a passive is
-normally asked to do is built. The other three:
+normally asked to do is built. The other three, which are also step 2 of the
+order under *Learnsets, slots, and choosing to evolve*: a trait slot is only a
+decision once traits differ in kind rather than in number.
 
 - **Add an effect to what the unit already does.** `skill.Application` is the
   existing shape for "this inflicts that, at a fixed chance". A trait
@@ -749,6 +751,22 @@ Four pieces, and they are one mechanism:
   somewhere to persist between battles, and there is no such place: hexarena has
   no meta layer, no inventory and no save. A level is what a character sheet
   knows. An item system is its own future thing, not a clause of this one.
+
+So the order to build it in, and the reason for it:
+
+1. **Gate the traits.** `{id, at_level}` on a character's trait list, bringing
+   every unlocked one. No choice, so no log change, and the `{id, at_level}`
+   shape the slots will need is settled and tested first on the smaller list.
+2. **Then the missing three passive jobs** — see *What a passive still cannot
+   do*. This one is here rather than last because a slot between three stat
+   traits is not a decision, and a resistance or a conditional trait is. Building
+   the slot first would ship a choice with nothing to choose.
+3. **Then the slots**, four skills and one trait, and the log carrying the
+   placement. The expensive half, paid once for both lists.
+
+Step 2 sits in the middle on purpose: it is the only one of the three that is
+*not* about this mechanism, and it is what decides whether the mechanism is worth
+having.
 
 Three things this has to face.
 

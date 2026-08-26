@@ -699,7 +699,12 @@ is the constraint each piece has to respect.
       and one trait, refused at load if it names something unlearned, too many, or
       one twice — and note **gating is separable from slots and much cheaper**, so
       a first slice can gate traits and bring every unlocked one, which is not a
-      choice and needs no log change; **a chosen stage** —
+      choice and needs no log change. **Order: (1) gate the traits**, settling the
+      `{id, at_level}` shape on the smaller list; **(2) the three missing passive
+      jobs**, because a slot between three stat traits is not a decision and a
+      resistance or a conditional trait is — building the slot first ships a
+      choice with nothing to choose; **(3) the slots and the log carrying the
+      placement**. Then **a chosen stage** —
       `Line.StageAt` derives one from a level today, and a level should instead
       *allow* one while the placement names which it fielded, so
       `Resolve(level)` becomes `Resolve(level, stage)`; and **no condition beyond
