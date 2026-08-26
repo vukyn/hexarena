@@ -5,6 +5,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/atb"
 	"github.com/vukyn/hexarena/internal/core/combat"
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
@@ -428,24 +429,125 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	if err != nil {
 		return err
 	}
+	var bitten []*Unit
 	for position, cell := range covers(shape, known, aim) {
 		target := b.occupant(cell)
 		if target == nil {
 			continue
 		}
-		b.resolveAgainst(unit, target, known, shape.Name, position, turn)
+		// Every target takes the whole skill before anybody answers it. A reply
+		// resolved here, in the middle of the loop, could kill the actor while
+		// it still had cells to hit — and "what happens to the rest of the
+		// skill" is a question with no good answer, so the shape of this loop is
+		// what stops it being asked.
+		if dealt := b.resolveAgainst(unit, target, known, shape.Name, position, turn); dealt > 0 {
+			bitten = append(bitten, target)
+		}
 		if b.finished {
 			return nil
 		}
 	}
+	b.answer(unit, bitten, turn)
 	b.retuneAll(turn)
 	b.settle()
 	return nil
 }
 
+// answer is what the units a skill just hurt cost the unit that hurt them.
+//
+// # When it runs, and why here rather than anywhere else
+//
+// After the whole skill, once, per holder. Three of the four rules this feature
+// was designed under are simply where this call sits: a reply answers a *use* of
+// a skill rather than a strike, so a trait's worth cannot scale with somebody
+// else's strike count; the holder takes every strike first, so a striker never
+// dies partway through its own turn; and a reply never triggers a reply, which
+// is closed by the shape of the code rather than by a depth counter — the list
+// is built from the skill loop above and a reply is not in it, so there is
+// nothing here for a second one to answer.
+//
+// # What does not answer
+//
+// A holder the skill killed does not, the way a dead unit cannot be healed.
+// Neither does one whose trait is gated shut, nor the actor itself: a skill that
+// caught its own caster is still not somebody attacking it.
+func (b *Battle) answer(actor *Unit, bitten []*Unit, turn atb.Turn) {
+	if len(bitten) == 0 || b.books.Passives == nil {
+		return
+	}
+	for _, holder := range bitten {
+		if holder.Dead || holder == actor {
+			continue
+		}
+		for _, id := range holder.Passives {
+			held, err := b.books.Passives.Lookup(id)
+			if err != nil {
+				continue
+			}
+			if !held.Replies.Answers() || !b.inForce(holder, held) {
+				continue
+			}
+			b.reply(holder, actor, held, turn)
+			if actor.Dead {
+				// The attacker is gone, so anybody still holding a reply is
+				// answering nothing. Returning rather than breaking is the
+				// difference between a corpse taking one more hit and taking
+				// several.
+				return
+			}
+		}
+	}
+}
+
+// reply resolves one trait's answer against the unit that attacked its holder.
+//
+// The damage goes through combat.Rules and the statuses through inflict, which
+// is the whole of "not a second damage path": a reply is priced by the same
+// curve as a skill, refused by the same resistances, and written to the log as
+// the same kinds — so a replay reads it without knowing it was a trait, and
+// --verify re-runs it from the seed.
+//
+// It may kill. Damage gets no exemption for arriving out of turn, so a battle
+// can end on a turn nobody took; the caller's settle is what notices.
+func (b *Battle) reply(holder, attacker *Unit, held passive.Passive, turn atb.Turn) {
+	from := fromTrait(held)
+	if held.Replies.Power > 0 {
+		// Neutral against whatever the attacker is, and the figure is on the
+		// event anyway. A log that carried the damage but not the multiplier it
+		// was priced with would be a record that cannot account for its own
+		// number — and "it is always neutral" is a fact about today's rule
+		// rather than about this battle.
+		multiplier := b.books.Chart.MultiplierAgainst(from.Element, attacker.Affinity)
+		damage := b.books.Rules.Damage(
+			b.Stats(holder)[from.Scaling],
+			b.Stats(attacker)[progression.Defense],
+			held.Replies.Power,
+			multiplier,
+		)
+		attacker.HP -= damage
+		if attacker.HP < 0 {
+			attacker.HP = 0
+		}
+		b.emit(Event{
+			Kind: Damaged, At: turn.At, Turn: turn.Number, Actor: holder.ID,
+			Target: attacker.ID, Passive: held.ID, Strike: 1,
+			Power: held.Replies.Power, Multiplier: multiplier,
+			Amount: damage, Remaining: attacker.HP,
+		})
+		if attacker.HP <= 0 {
+			b.kill(attacker)
+			return
+		}
+		b.reconsider(attacker, turn)
+	}
+	for _, application := range held.Replies.Applies {
+		b.inflict(holder, attacker, from, application, turn)
+	}
+}
+
 func (b *Battle) applyToSelf(unit *Unit, known skill.Skill, turn atb.Turn) {
 	for _, application := range known.SelfApplies {
-		b.inflict(unit, unit, known, application, turn)
+		b.inflict(unit, unit, fromSkill(known), application, turn)
 	}
 }
 
@@ -469,7 +571,7 @@ func (b *Battle) strip(actor, target *Unit, known skill.Skill, turn atb.Turn) {
 // A splash cell takes a reduced share of the power while the primary takes all of
 // it, which is how an area skill trades focus for spread without being strictly
 // better than a single-target one.
-func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape string, position int, turn atb.Turn) {
+func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape string, position int, turn atb.Turn) (dealt int64) {
 	b.strip(actor, target, known, turn)
 
 	power := known.Power
@@ -516,7 +618,6 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	}
 
 	connected := false
-	dealt := int64(0)
 	if power > 0 {
 		charges := target.Statuses.Stacks(blockStatus)
 		attempts, left := b.books.Rules.Roll(hit, charges, b.source)
@@ -581,7 +682,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 
 	if connected {
 		for _, application := range known.Applies {
-			b.inflict(actor, target, known, application, turn)
+			b.inflict(actor, target, fromSkill(known), application, turn)
 		}
 		// The actor's traits contribute to the same list rather than to a second
 		// pass of their own, so a trait's rider goes through the same roll, the
@@ -594,7 +695,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		// skill is already an attack on whoever it catches.
 		if power > 0 {
 			for _, application := range b.riders(actor) {
-				b.inflict(actor, target, known, application, turn)
+				b.inflict(actor, target, fromSkill(known), application, turn)
 			}
 		}
 	}
@@ -622,6 +723,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		b.kill(target)
 	}
 	_ = shape
+	return dealt
 }
 
 // inflict rolls one status application.
@@ -634,7 +736,42 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 // roll happens. Apply has no dice, so a resistance living there could only refuse
 // outright — a hard cap on a continuous quantity, which this engine has chosen
 // against everywhere else.
-func (b *Battle) inflict(actor, target *Unit, known skill.Skill, application skill.Application, turn atb.Turn) {
+// origin is where an effect came from, and it exists because a trait can now put
+// a status on somebody without a skill being involved.
+//
+// inflict only ever wanted three things out of the skill it used to be handed:
+// what to name in the log, which element to price a tick against, and which of
+// the actor's stats that tick scales off. Naming those three is what lets a
+// reply go through the very same function rather than a copy of it with the
+// skill parts taken out — which is how the two would have started disagreeing
+// about resistances, or about what a status_applied event says.
+type origin struct {
+	// Skill and Passive name the source, and exactly one of them is set. An
+	// event carries whichever it was, so a reader is never asked to work out
+	// from an empty field which kind of thing happened.
+	Skill   string
+	Passive string
+	Element element.Element
+	Scaling progression.Kind
+}
+
+// fromSkill is the origin of anything a skill does.
+func fromSkill(known skill.Skill) origin {
+	return origin{Skill: known.ID, Element: known.Element, Scaling: known.Scaling.Stat}
+}
+
+// fromTrait is the origin of anything a trait does on its own account.
+//
+// Neutral, always: the elemental chart prices what one creature threw at
+// another, and a trait reading it would make a fire creature's blood weak to
+// water for a reason written nowhere on the trait. It scales off attack because
+// that is what every damaging thing in this game scales off unless it says
+// otherwise, and a trait has nowhere to say otherwise.
+func fromTrait(held passive.Passive) origin {
+	return origin{Passive: held.ID, Element: element.Neutral, Scaling: progression.Attack}
+}
+
+func (b *Battle) inflict(actor, target *Unit, from origin, application skill.Application, turn atb.Turn) {
 	kind, err := b.books.Statuses.Lookup(application.Status)
 	if err != nil {
 		return
@@ -648,8 +785,8 @@ func (b *Battle) inflict(actor, target *Unit, known skill.Skill, application ski
 	if !b.source.Chance(chance) {
 		b.emit(Event{
 			Kind: StatusResisted, At: turn.At, Turn: turn.Number, Actor: actor.ID,
-			Target: target.ID, Skill: known.ID, Status: kind.ID, Chance: chance,
-			Refused: refused,
+			Target: target.ID, Skill: from.Skill, Passive: from.Passive,
+			Status: kind.ID, Chance: chance, Refused: refused,
 		})
 		return
 	}
@@ -662,10 +799,10 @@ func (b *Battle) inflict(actor, target *Unit, known skill.Skill, application ski
 		// ratio the author wrote. That is why Pierced is applied by Strike and
 		// not folded into the defence a caller passes.
 		tick = b.books.Rules.Damage(
-			b.Stats(actor)[known.Scaling.Stat],
+			b.Stats(actor)[from.Scaling],
 			b.Stats(target)[progression.Defense],
 			kind.TickPower,
-			b.books.Chart.MultiplierAgainst(known.Element, target.Affinity),
+			b.books.Chart.MultiplierAgainst(from.Element, target.Affinity),
 		)
 	}
 	applied := 0
@@ -681,7 +818,7 @@ func (b *Battle) inflict(actor, target *Unit, known skill.Skill, application ski
 	}
 	b.emit(Event{
 		Kind: StatusApplied, At: turn.At, Turn: turn.Number, Actor: actor.ID,
-		Target: target.ID, Skill: known.ID, Status: kind.ID,
+		Target: target.ID, Skill: from.Skill, Passive: from.Passive, Status: kind.ID,
 		Stacks: applied, Amount: tick, Chance: chance, Refused: refused,
 		Remaining: int64(target.Statuses.Stacks(kind.ID)),
 		Note:      wastedNote(wasted),

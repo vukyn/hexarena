@@ -139,6 +139,7 @@ Chỉ có hiệu lực khi còn <=33% máu.
 Miễn hoàn toàn bỏng.
 
 [trait] venom_blood
+Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2% khả năng.
 Miễn hoàn toàn trúng độc.
 
 == en ==
@@ -282,5 +283,6 @@ In force only at or below 33% health.
 Refuses burn outright.
 
 [trait] venom_blood
+Whatever damages it takes 4% of its attack back, and poison 2% of the time.
 Refuses poison outright.
 

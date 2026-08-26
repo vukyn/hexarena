@@ -68,6 +68,85 @@ func TestDescribeEveryShippedSkillGolden(t *testing.T) {
 	}
 }
 
+// TestEveryTraitDescriptionSaysEveryThingItDoes is the property a golden cannot
+// hold: a golden freezes whatever was generated, including a trait the writer
+// has nothing to say about.
+//
+// A trait accumulates halves — a grant, a resistance, a rider, a gate, a reply —
+// and each was added by someone editing this file. The failure mode is not a bad
+// sentence but a missing one: a shipped trait whose declaration says four things
+// and whose description says three, which reads as a complete answer and is not.
+// So this counts what the declaration promises rather than reading the prose.
+func TestEveryTraitDescriptionSaysEveryThingItDoes(t *testing.T) {
+	passives, err := seed.PassiveBook()
+	if err != nil {
+		t.Fatalf("load the shipped passives: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		for _, held := range passives.All() {
+			description := lang.DescribePassive(held)
+			if strings.TrimSpace(description) == "" {
+				t.Errorf("%s: %q has no description at all", lang, held.ID)
+				continue
+			}
+			lines := len(strings.Split(strings.TrimSpace(description), "\n"))
+			want := len(held.Grants) + len(held.Resists) + len(held.Applies)
+			if held.Replies.Answers() {
+				want++
+			}
+			if held.While != nil {
+				want++
+			}
+			if lines != want {
+				t.Errorf("%s: %q declares %d things and is described in %d lines:\n%s",
+					lang, held.ID, want, lines, description)
+			}
+		}
+	}
+}
+
+// TestAGatedTraitIsNotDescribedAsAlways is the sentence a gate made wrong.
+//
+// A trait's grants read as "always carries" because until a grant could be gated
+// that was simply true. A gated one closes with the line saying when it is in
+// force, so the two sentences would have argued with each other — and a reader
+// deciding whether to field the trait would have to work out which the engine
+// meant.
+func TestAGatedTraitIsNotDescribedAsAlways(t *testing.T) {
+	passives, err := seed.PassiveBook()
+	if err != nil {
+		t.Fatalf("load the shipped passives: %v", err)
+	}
+	// The wordings are matched by their opening clause rather than by a literal,
+	// so this reads the catalog the same way the description does: a translation
+	// reworded tomorrow keeps the test honest, where a copied English string
+	// would quietly stop matching and pass.
+	opening := func(text string) string {
+		return strings.TrimSpace(strings.SplitN(text, "%", 2)[0])
+	}
+	gated := 0
+	for _, held := range passives.All() {
+		if held.While == nil || len(held.Grants) == 0 {
+			continue
+		}
+		gated++
+		for _, lang := range i18n.Langs() {
+			description := lang.DescribePassive(held)
+			if !strings.Contains(description, opening(lang.Text(i18n.BlurbTraitWhile))) {
+				t.Errorf("%s: %q is gated and its description never says when: %q",
+					lang, held.ID, description)
+			}
+			if strings.Contains(description, opening(lang.Text(i18n.BlurbTraitGrants))) {
+				t.Errorf("%s: %q is gated and still says it always applies: %q",
+					lang, held.ID, description)
+			}
+		}
+	}
+	if gated == 0 {
+		t.Skip("no shipped trait both grants and is gated, so there is nothing here to contradict")
+	}
+}
+
 // TestEverySkillDescriptionSaysWhatItDoes is the property a golden cannot hold:
 // a golden freezes whatever was generated, including a skill the generator has
 // nothing to say about. This asserts that every shipped skill, in every
