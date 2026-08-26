@@ -172,18 +172,17 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	out.WriteString(m.label(m.text(i18n.LabelFrom), "%s", from))
 	out.WriteString(m.label(m.text(i18n.LabelPlaystyle), "%s", m.lang.Glossed(character.Archetype)))
 	out.WriteString(m.label(m.text(i18n.LabelElement), "%s", m.lang.GlossedAffinity(character.Element)))
-	out.WriteString(m.label(m.text(i18n.LabelKit), "%s", strings.Join(character.Skills, " ")))
+	// Wrapped, not clipped: nine ids are longer than any terminal, and half an
+	// id is worse than a second row.
+	out.WriteString(m.wrapped(m.text(i18n.LabelKit), detailLabelWidth(m),
+		strings.Join(character.Skills, " ")))
 	// The kit's names go under it rather than beside it: five skills glossed
 	// inline is five brackets on one row, which does not fit. Nothing is drawn
 	// at all when there is nothing to say — in English, or for a kit of skills
 	// the table has no names for — rather than an empty row under a full one.
 	if glossed := m.lang.GlossedKit(m.lib.KitSkills(character.Skills)); glossed != "" {
-		// A kit has no fixed size, so this line is the pane's only unbounded
-		// one: six Vietnamese names came to 84 cells against the 79 there are.
-		// The ids above it are the record and stay whole; the reading below is
-		// what gets shortened.
-		room := minWidth - 3 - detailLabelWidth(m)
-		out.WriteString(m.continued("%s", m.style.dim.Render(clip(glossed, room))))
+		out.WriteString(m.style.dim.Render(
+			m.wrapped("", detailLabelWidth(m), glossed)))
 	}
 	art := character.Image
 	if m.lib.ImageExists(character.Image) {
@@ -194,7 +193,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	out.WriteString(m.label(m.text(i18n.LabelArt), "%s", art))
 	out.WriteString(m.label(m.text(i18n.LabelStages), "%s", m.lang.StageSummary(character)))
 	if character.Bio != "" {
-		out.WriteString(m.label(m.text(i18n.LabelBiography), "%s", character.Bio))
+		out.WriteString(m.wrapped(m.text(i18n.LabelBiography), detailLabelWidth(m), character.Bio))
 	}
 
 	atLevel := m.text(i18n.LabelAtLevel, b.level)
@@ -203,8 +202,11 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 		out.WriteString(m.label(atLevel, "%s", m.style.bad.Render(m.lang.Error(err))))
 		return out.String()
 	}
-	out.WriteString(m.label(atLevel, "%s   %s",
-		values, m.style.dim.Render(m.text(i18n.StageInWords, stage.Name))))
+	// Six stats and a stage name come to 88 cells at the floor, so this wraps
+	// too. It was being clipped by the frame, and what fell off the end was the
+	// stage — the one part of the row that says which form the numbers belong to.
+	out.WriteString(m.wrapped(atLevel, detailLabelWidth(m),
+		fmt.Sprintf("%s   %s", values, m.text(i18n.StageInWords, stage.Name))))
 	budget := m.lib.Budget(values)
 	out.WriteString(m.label(m.text(i18n.LabelEffectiveHP), "%s", budgetLine(m, budget)))
 	return out.String()
