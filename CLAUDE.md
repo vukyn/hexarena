@@ -769,7 +769,12 @@ is the constraint each piece has to respect.
       the skill (a change in `battle`, not a new rule); and conditions are
       `skill.Condition`, which **cannot** express the one a trait most often
       wants — while the holder is below a share of its health — so that term is
-      the work. Both original constraints still hold: a trait changing a number
+      the work, and the shipped `brine` is **parked** on `mire` until it exists
+      (its move doubles under half health; keep the name, move it onto the term
+      when there is one). Build the *threshold*, not a curve: half health is
+      `hp*1000 <= maxHP*500` and reuses `requires`/`bonus_power` for free, while
+      a gradient is a multiplier in `combat` reading the **caster's** health.
+      Both original constraints still hold: a trait changing a number
       **emits an event**, and one touching speed is in force before the first wait
       is computed. See README → Roadmap.
 - [ ] **`venom_blood` is declared and carried by nobody.** Poison immunity is

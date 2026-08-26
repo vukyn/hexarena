@@ -851,6 +851,22 @@ number.
   often wants: *while the holder is below a share of its health*. That is a new
   term, and deciding it is the work.
 
+  A shipped skill is already parked on it. `brine` names a move that doubles
+  against a target at or below half its health, and the one in `skills.json`
+  reads `mire` instead — the same shape `venoshock` uses to read `poison`,
+  chosen because it is the closest thing the vocabulary can say today. The name
+  stays rather than being changed to match the stand-in: when the term arrives,
+  `brine` moves onto it and finally means what it is called.
+
+  Which also settles the shape of the term, because a threshold is not a curve.
+  Half health is a comparison — `hp*1000 <= maxHP*500` — and it reuses
+  `requires` and `bonus_power` unchanged, so the whole addition is one field a
+  condition may carry. A *gradient*, the move that hits harder the further the
+  caster has fallen, is a multiplier on power rather than a bonus to it, belongs
+  in `combat`, and reads the **caster's** health where this one reads the
+  target's. They are two features, not one with an option. The threshold is the
+  one that costs nothing new.
+
 Whatever comes next keeps the two constraints the first slice was built under: a
 trait that changes a number **emits an event**, and one that touches speed is in
 force before the first wait is computed.
