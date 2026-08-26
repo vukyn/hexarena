@@ -91,6 +91,12 @@ const (
 	SkillFieldAccuracy
 	SkillFieldCooldown
 	SkillFieldInflicts
+	SkillFieldOnItself
+	SkillFieldRestores
+	SkillFieldDrains
+	SkillHelpOnItself
+	SkillHelpRestores
+	SkillHelpDrains
 	SkillFieldKeptForElements
 	SkillFieldKeptForRoles
 	SkillFieldKeptForCharacters

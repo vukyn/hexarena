@@ -1317,3 +1317,33 @@ func TestAnAllowlistPickerSaysWhatAnEmptyListMeans(t *testing.T) {
 		}
 	}
 }
+
+// TestTheFormScrollsToTheFieldTheCursorIsOn covers the window rather than the
+// fields: the form outgrew an 80x24 window when healing added three answers, so
+// what has to hold is that tabbing to the last one brings it into view.
+func TestTheFormScrollsToTheFieldTheCursorIsOn(t *testing.T) {
+	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
+		m, _, _ := start(t, lang)
+		form := m.enter(screenSkills)
+		form.skills.adding = true
+		for _, field := range []int{skillFieldID, skillFieldDrains, skillFieldKeptForCharacters} {
+			form.skills.field = field
+			body, _ := form.skills.view(form)
+			label := skillFieldLabel(form, field)
+			if !strings.Contains(body, label) {
+				t.Errorf("%v: the cursor is on %q and the form does not draw it:\n%s",
+					lang, label, body)
+			}
+			for _, line := range strings.Split(body, "\n") {
+				if lipgloss.Width(line) >= minWidth {
+					t.Errorf("%v: a row is %d cells, over the %d there are: %q",
+						lang, lipgloss.Width(line), minWidth-1, line)
+				}
+			}
+			if got := len(strings.Split(body, "\n")); got > form.height-4 {
+				t.Errorf("%v: the body is %d rows, over the %d it has",
+					lang, got, form.height-4)
+			}
+		}
+	}
+}

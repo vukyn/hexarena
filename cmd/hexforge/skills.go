@@ -115,6 +115,12 @@ func runSkillsAdd(args []string) error {
 	set.StringVar(&given.Cooldown, "cooldown", "", "the caster's own turns before it can be used again")
 	set.StringVar(&given.Applies, "applies", "",
 		"statuses it inflicts, comma separated, each status:chance or status:chance:stacks")
+	set.StringVar(&given.SelfApplies, "self-applies", "",
+		"statuses it puts on the caster, written the same way as applies")
+	set.StringVar(&given.Restores, "restores", "",
+		"health it gives its target, in parts per thousand of the caster's scaling stat")
+	set.StringVar(&given.Drains, "drains", "",
+		"share of the damage it deals that comes back to the caster, in parts per thousand")
 	set.StringVar(&given.RestrictElements, "restrict-elements", "",
 		"only these elements may carry it; leave empty for anyone")
 	set.StringVar(&given.RestrictArchetypes, "restrict-archetypes", "",
@@ -207,6 +213,12 @@ func runSkillsEdit(args []string) error {
 	set.StringVar(&given.Cooldown, "cooldown", "", "the caster's own turns before it can be used again")
 	set.StringVar(&given.Applies, "applies", "",
 		"statuses it inflicts, comma separated, each status:chance or status:chance:stacks")
+	set.StringVar(&given.SelfApplies, "self-applies", "",
+		"statuses it puts on the caster, written the same way as applies")
+	set.StringVar(&given.Restores, "restores", "",
+		"health it gives its target, in parts per thousand; an empty value clears it")
+	set.StringVar(&given.Drains, "drains", "",
+		"share of the damage dealt that comes back; an empty value clears it")
 	set.StringVar(&given.RestrictElements, "restrict-elements", "",
 		"only these elements may carry it; an empty value clears the list")
 	set.StringVar(&given.RestrictArchetypes, "restrict-archetypes", "",
@@ -288,6 +300,9 @@ func editFrom(set *flag.FlagSet, given *forge.SkillDraft) forge.SkillEdit {
 		"range": &edit.Range, "pattern": &edit.Pattern, "power": &edit.Power,
 		"strikes": &edit.Strikes, "accuracy": &edit.Accuracy,
 		"cooldown": &edit.Cooldown, "applies": &edit.Applies,
+		"self-applies":        &edit.SelfApplies,
+		"restores":            &edit.Restores,
+		"drains":              &edit.Drains,
 		"restrict-elements":   &edit.RestrictElements,
 		"restrict-archetypes": &edit.RestrictArchetypes,
 		"restrict-characters": &edit.RestrictCharacters,
@@ -418,6 +433,36 @@ func fillSkill(given forge.SkillDraft, lib *forge.Library, prompt *prompter) (fo
 	}); err != nil {
 		return forge.SkillDraft{}, err
 	}
+	// The three that almost no skill answers, so all three are optional and an
+	// empty answer means none of it. They sit after applies because they read as
+	// the same kind of question: what else does this do besides hit.
+	if err := ask(&filled.SelfApplies, question{
+		flag: "self-applies", prompt: "statuses put on the caster, written the same way", optional: true,
+		validate: func(answer string) error {
+			_, err := lib.ParseApplications(answer)
+			return err
+		},
+	}); err != nil {
+		return forge.SkillDraft{}, err
+	}
+	for _, optional := range []struct {
+		field  *string
+		flag   string
+		prompt string
+	}{
+		{&filled.Restores, "restores", "health given to its target, in parts per thousand"},
+		{&filled.Drains, "drains", "share of the damage dealt that comes back"},
+	} {
+		if err := ask(optional.field, question{
+			flag: optional.flag, prompt: optional.prompt, optional: true,
+			validate: func(answer string) error {
+				_, err := forge.ParseNumber(answer)
+				return err
+			},
+		}); err != nil {
+			return forge.SkillDraft{}, err
+		}
+	}
 	// The three allowlists are optional and empty means the common pool, which
 	// is why none of them has a default: a default here would quietly narrow
 	// every skill authored without an opinion.
@@ -483,6 +528,16 @@ func renderSkill(out io.Writer, lib *forge.Library, built skill.Skill) {
 		built.Accuracy, forge.Percent(built.Accuracy), built.Cooldown)
 	if len(built.Applies) > 0 {
 		label("inflicts", "%s", forge.DescribeApplications(built.Applies))
+	}
+	if len(built.SelfApplies) > 0 {
+		label("on itself", "%s", forge.DescribeApplications(built.SelfApplies))
+	}
+	if built.Restores > 0 {
+		label("restores", "%d (%s) of the caster's %s",
+			built.Restores, forge.Percent(built.Restores), forge.ShortStat(built.Scaling.Stat))
+	}
+	if built.Drains > 0 {
+		label("drains", "%d (%s) of the damage it deals", built.Drains, forge.Percent(built.Drains))
 	}
 	label("carried by", "%s", forge.WhoMaySummary(built))
 	preview := lib.PreviewDamage(built)

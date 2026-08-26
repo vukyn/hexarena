@@ -52,6 +52,16 @@ type SkillDraft struct {
 	// Applies is the statuses the skill inflicts, comma separated, each written
 	// "status:chance" or "status:chance:stacks".
 	Applies string
+	// SelfApplies is the same list, put on the caster instead of the target. It
+	// is a separate answer rather than a marker inside Applies because the two
+	// reach different units and a skill regularly does both.
+	SelfApplies string
+	// Restores is health given to whoever the skill targets, in parts per
+	// thousand of the caster's scaling stat.
+	Restores string
+	// Drains is the share of the damage dealt that comes back to the caster,
+	// also in parts per thousand.
+	Drains string
 	// The three allowlists, comma separated. An empty answer is an absent list,
 	// which is what makes the common pool the default shape: a skill authored
 	// with nothing filled in here is written with no restrict block at all,
@@ -126,6 +136,7 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 	}{
 		{"range", d.Range}, {"power", d.Power}, {"strikes", d.Strikes},
 		{"accuracy", d.Accuracy}, {"cooldown", d.Cooldown},
+		{"restores", d.Restores}, {"drains", d.Drains},
 	} {
 		// A map written and read by key, never ranged over into an output: the
 		// fields below are named one at a time.
@@ -136,6 +147,10 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 		numbers[field.name] = value
 	}
 	applies, err := lib.ParseApplications(d.Applies)
+	if err != nil {
+		return skill.Skill{}, err
+	}
+	selfApplies, err := lib.ParseApplications(d.SelfApplies)
 	if err != nil {
 		return skill.Skill{}, err
 	}
@@ -158,6 +173,9 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 	base.Accuracy = numbers["accuracy"]
 	base.Cooldown = numbers["cooldown"]
 	base.Applies = applies
+	base.SelfApplies = selfApplies
+	base.Restores = numbers["restores"]
+	base.Drains = numbers["drains"]
 	base.Restrict = restrict
 	return base, nil
 }
@@ -217,10 +235,13 @@ func SkillAnswers(current skill.Skill) SkillDraft {
 		// The declared count rather than StrikeCount: an unset count means one,
 		// but it is written as the zero it was authored as, so accepting the
 		// field as it stands reproduces the file rather than normalising it.
-		Strikes:  strconv.Itoa(current.Strikes),
-		Accuracy: strconv.Itoa(current.Accuracy),
-		Cooldown: strconv.Itoa(current.Cooldown),
-		Applies:  FormatApplications(current.Applies),
+		Strikes:     strconv.Itoa(current.Strikes),
+		Accuracy:    strconv.Itoa(current.Accuracy),
+		Cooldown:    strconv.Itoa(current.Cooldown),
+		Applies:     FormatApplications(current.Applies),
+		SelfApplies: FormatApplications(current.SelfApplies),
+		Restores:    optionalNumber(current.Restores),
+		Drains:      optionalNumber(current.Drains),
 		// An absent restriction is three empty answers, which is what makes
 		// accepting the form as it stands write no restrict block at all. See
 		// SkillDraft.Restriction.
@@ -406,6 +427,21 @@ func ApplicationChances(applications []skill.Application) string {
 		parts = append(parts, Percent(application.Chance))
 	}
 	return strings.Join(parts, " · ")
+}
+
+// optionalNumber writes a figure the way a form wants it read back: blank when
+// it is nought.
+//
+// The required numbers use strconv.Itoa and show their zero, because a power of
+// nought is an answer. These two are absent by default -- almost no skill heals
+// or drains -- so showing "0" would put a number in front of an author for every
+// skill that has nothing to do with healing, and an emptied field has to mean
+// the same thing as a field never filled.
+func optionalNumber(value int) string {
+	if value == 0 {
+		return ""
+	}
+	return strconv.Itoa(value)
 }
 
 // ValidateNewSkillID rejects a skill with no id or one the book already holds.
