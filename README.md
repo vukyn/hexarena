@@ -849,7 +849,7 @@ typed and only the labels around it are redrawn.
 #### Saving: ctrl+s, and ⌘S where a terminal will pass it
 
 Every form writes on **ctrl+s**, which works everywhere, and also on **⌘S**,
-which works where the terminal lets it. On macOS the footer offers both, `⌘S/^S`;
+which works where the terminal lets it. On macOS the footer offers both, `⌘S ^S`;
 elsewhere it says `ctrl+s`, because there is nothing to choose between.
 
 ⌘S is not something a program can simply ask for. Command is not a modifier the

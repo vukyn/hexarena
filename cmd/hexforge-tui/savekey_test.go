@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -160,6 +161,60 @@ func TestTheSaveLabelAlwaysOffersTheKeyThatAlwaysWorks(t *testing.T) {
 	}
 	if runtime.GOOS != "darwin" && strings.Contains(label, "⌘") {
 		t.Errorf("the save label %q offers a Command key off a Mac", label)
+	}
+}
+
+// TestEverySaveFooterFitsTheSmallestWindow is the budget the save label is
+// spelled against.
+//
+// Three footers carry the label, in two languages, and the label itself depends
+// on the platform — twelve lines, of which the machine running this test draws
+// six. The other six are measured here anyway, because a footer that overruns
+// only on Linux is a footer nobody here would see overrun, and the off-Mac label
+// is the longer of the two.
+//
+// The budget is minWidth-1 rather than minWidth for the reason the sub-screen
+// layout tests use it: writing the last cell of a row is what makes a terminal
+// wrap it, and a wrapped footer pushes itself off the bottom of a window that is
+// exactly tall enough — which is the window this program promises to draw in.
+func TestEverySaveFooterFitsTheSmallestWindow(t *testing.T) {
+	const drawable = minWidth - 1
+	footers := map[string]i18n.Key{
+		"the character form": i18n.FormFooter,
+		"the skill form":     i18n.SkillFormFooter,
+		"the origins form":   i18n.OriginFormFooter,
+	}
+	for _, goos := range []string{"darwin", "linux", "windows"} {
+		label := saveKeyLabelFor(goos)
+		for _, lang := range i18n.Langs() {
+			for name, key := range footers {
+				footer := lang.Say(key, label)
+				if width := lipgloss.Width(footer); width > drawable {
+					t.Errorf("on %s, %s's %s footer draws %d cells, over the %d it has:\n%s",
+						goos, name, lang, width, drawable, footer)
+				}
+			}
+		}
+	}
+}
+
+// TestTheSaveLabelSeparatesItsTwoKeys is the complaint that changed the label.
+//
+// A footer separates one key from the next with a space, so a label naming two
+// keys with nothing between them is read as one key with a strange name. The
+// assertion is on the space rather than on the exact spelling, because the
+// spelling is a layout decision and the separation is not.
+func TestTheSaveLabelSeparatesItsTwoKeys(t *testing.T) {
+	label := saveKeyLabelFor("darwin")
+	command, control, found := strings.Cut(label, " ")
+	if !found {
+		t.Fatalf("the Mac save label %q names two keys with nothing between them", label)
+	}
+	if !strings.Contains(command, "⌘") {
+		t.Errorf("the Mac save label %q does not name the Command key first", label)
+	}
+	if !strings.Contains(control, "^") {
+		t.Errorf("the Mac save label %q names no control-S after the Command key", label)
 	}
 }
 
