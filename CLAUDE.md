@@ -383,6 +383,23 @@ the battle; it may not be a `Dot` or a `Regen`, either of which would tick for t
 whole battle; and `Snapshot` carries the flag so a renderer draws *always* instead
 of the `0t` the countdown alone would give.
 
+**A resistance belongs at `battle.inflict`, never at `status.Set.Apply`.**
+`Apply` is the choke point every status passes through, which makes it the obvious
+home and the wrong one: it has no dice, so a resistance there could only refuse
+outright — a hard cap on a continuous quantity, which this engine rejects
+everywhere. `inflict` is where the chance is rolled, so `Battle.resist` takes its
+share off that. Sources **multiply** what each lets through (two of 600 leave 160),
+so stacking diminishes for free, needs no saturation helper, and can never reach
+the absolute — while a declared 1000 does, which is the same division as a skill
+declaring full accuracy. A single resistance is exact by construction: `surviving`
+comes back as `scale.Base - amount` with nothing lost, so the chance takes one
+truncation. Resistance is **by status id, not by category** — a category cannot
+say "poison but not burn", and an id can name a class by listing it; only a
+`Harmful()` category may be resisted, because refusing a buff is refusing your own
+side's help. And the event carries `Refused`, because `status_resisted` is emitted
+whether the roll failed *or* the target refused it, and a reader given only that
+word cannot tell luck from a property of the unit.
+
 **`cast.Unlock` is the learnset shape, and it is about an id rather than a
 trait.** `{id, at_level}`, with `UnlockedIDs` the one function answering "what is
 in force at level N" — it takes the *list* rather than reading a character, so the
@@ -745,22 +762,24 @@ is the constraint each piece has to respect.
       whole timed-effect layer is tested but not played. A replacement must read
       no randomness and mutate nothing — a client calls it for a hint mid-turn —
       and two identical battles must still produce identical logs.
-- [ ] **What a passive still cannot do.** Traits exist and grant permanent
-      statuses; one of the four usual jobs is built. The other three must reuse
+- [ ] **What a passive still cannot do.** Traits grant permanent statuses and
+      refuse them; two of the four usual jobs are built. The other two must reuse
       the homes they already have rather than growing a parallel vocabulary:
       extra effects are `skill.Application`, assembled from the unit as well as
-      the skill (a change in `battle`, not a new rule); conditions are
+      the skill (a change in `battle`, not a new rule); and conditions are
       `skill.Condition`, which **cannot** express the one a trait most often
       wants — while the holder is below a share of its health — so that term is
-      the work; and **resistance** still has nowhere to live. Its choke point is
-      `battle.inflict`, where the chance is rolled, *not* `status.Set.Apply`: a
-      resistance that reduces a chance is continuous and saturates like
-      everything else, while one that refuses an application outright is a hard
-      cap on a continuous quantity. So it is a ratio per `status.Category`, and a
-      declared full thousand is the explicit way to write true immunity — the
-      mirror of a skill declaring full accuracy. Both original constraints still
-      hold: a trait changing a number **emits an event**, and one touching speed
-      is in force before the first wait is computed. See README → Roadmap.
+      the work. Both original constraints still hold: a trait changing a number
+      **emits an event**, and one touching speed is in force before the first wait
+      is computed. See README → Roadmap.
+- [ ] **`venom_blood` is declared and carried by nobody.** Poison immunity is
+      canon for Bulbasaur and putting it on is one line, but measured across forty
+      auto-battles it takes the whole poison layer out of the shipped fight: 183
+      applications become 0, along with every damage-over-time tick and every
+      `venoshock` amplifier, because both squads are the same poison-immune
+      character. The trait is right and the **mirrored roster** is what makes it
+      degenerate, so this waits on the asymmetric roster below rather than on a
+      smaller number.
 - [ ] **Learnsets, slots, and choosing to evolve.** A character holds every skill
       *and every trait* from level one and brings all of them, so a level is the
       only thing separating a young unit from a grown one. **Skills and traits are

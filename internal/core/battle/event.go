@@ -179,6 +179,16 @@ type Event struct {
 	Outcome Outcome `json:"outcome,omitempty"`
 	// Passive names the trait an event came from, on PassiveHeld.
 	Passive string `json:"passive,omitempty"`
+	// Refused is the share of a status application's chance the target's traits
+	// took off, in parts per thousand, on StatusApplied and StatusResisted.
+	//
+	// It is on the event because Chance alone cannot say why an application was
+	// unlikely: a skill that inflicts on 400 and a skill that inflicts on 800
+	// against a target refusing half are the same figure by the time it is
+	// rolled. And the kind is called status_resisted whether the roll failed or
+	// the target refused it outright, so without this the log gives a reader the
+	// word "resisted" and no way to tell which of the two it means.
+	Refused int `json:"refused,omitempty"`
 	// Note is a short reason, used only where a kind has one to give.
 	Note string `json:"note,omitempty"`
 }

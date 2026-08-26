@@ -355,6 +355,14 @@ func render(event battle.Event) string {
 		return head + fmt.Sprintf("%-18s %s x%d on %s, now %d%s",
 			event.Actor, event.Status, event.Stacks, event.Target, event.Remaining, note)
 	case battle.StatusResisted:
+		// The share refused only when there is one, so a book where nothing
+		// resists reads exactly as it did before resistances existed — and where
+		// something does, the record says whether the roll failed or the target
+		// refused it.
+		if event.Refused > 0 {
+			return head + fmt.Sprintf("%-18s %s resisted %s at %d per mille, %d refused",
+				event.Actor, event.Target, event.Status, event.Chance, event.Refused)
+		}
 		return head + fmt.Sprintf("%-18s %s resisted %s at %d per mille",
 			event.Actor, event.Target, event.Status, event.Chance)
 	case battle.StatusStripped:

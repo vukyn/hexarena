@@ -18,6 +18,23 @@
           "status": "kindled",
           "stacks": 1
         }
+      ],
+      "resists": [
+        {
+          "status": "burn",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "id": "venom_blood",
+      "name": "máu độc",
+      "grants": [],
+      "resists": [
+        {
+          "status": "poison",
+          "amount": 1000
+        }
       ]
     }
   ]

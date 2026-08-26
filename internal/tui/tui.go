@@ -294,7 +294,21 @@ func Line(event battle.Event, tags map[string]string) string {
 		return head + fmt.Sprintf("  %s x%d on %s, now %d%s",
 			event.Status, event.Stacks, tag(event.Target), event.Remaining, note)
 	case battle.StatusResisted:
-		return head + fmt.Sprintf("  %s resists %s (%d%%)", tag(event.Target), event.Status, event.Chance/10)
+		// Two different things end an application, and the kind is called
+		// status_resisted for both: the roll failed, or the target's traits
+		// refused it. Saying which is the whole reason the event carries the
+		// share refused — a reader given only "resists" cannot tell a piece of
+		// luck from a property of the unit.
+		switch {
+		case event.Refused >= 1000:
+			return head + fmt.Sprintf("  %s is immune to %s", tag(event.Target), event.Status)
+		case event.Refused > 0:
+			return head + fmt.Sprintf("  %s shrugs off %s (%d%% chance, %d%% refused)",
+				tag(event.Target), event.Status, event.Chance/10, event.Refused/10)
+		default:
+			return head + fmt.Sprintf("  %s resists %s (%d%%)",
+				tag(event.Target), event.Status, event.Chance/10)
+		}
 	case battle.StatusStripped:
 		return head + fmt.Sprintf("  strips %d off %s", event.Stacks, tag(event.Target))
 	case battle.PassiveHeld:
