@@ -321,6 +321,22 @@ the battle; it may not be a `Dot` or a `Regen`, either of which would tick for t
 whole battle; and `Snapshot` carries the flag so a renderer draws *always* instead
 of the `0t` the countdown alone would give.
 
+**`cast.Unlock` is the learnset shape, and it is about an id rather than a
+trait.** `{id, at_level}`, with `UnlockedIDs` the one function answering "what is
+in force at level N" — it takes the *list* rather than reading a character, so the
+kit gets it unchanged when skills gain their levels. Do not write a second shape
+for the kit: two vocabularies for one idea is the mistake this file keeps a list
+of. Four things that are decisions: an unstated level is **one**, normalised at
+parse so exactly one value in memory means "from the start" — which is why
+`Unlock` carries a `MarshalJSON` that omits a level of one rather than an
+`omitempty` tag; there is **no `at_stage`**, because `Line.StageAt` derives a
+stage from a level so `at_stage: "Ivysaur"` *is* `at_level: 16` until a placement
+names the stage it fielded; the gate is applied in **exactly one place**,
+`seed.ParseRoster`, the only place a character and a level meet (a flat entry
+writes out its own traits and has no level to gate against); and bringing every
+unlocked trait is **not a choice**, which is why this half needed no change to the
+log — the slot is where that is paid for.
+
 **A trait is on before `queue.Add`, not corrected after it.** `battle.enlist`
 calls `grant` and then adds the unit at `b.Stats(unit)` speed. A wait is
 `1_000_000/speed` and the first one has been served by the time `retuneAll` would
@@ -699,8 +715,8 @@ is the constraint each piece has to respect.
       and one trait, refused at load if it names something unlearned, too many, or
       one twice — and note **gating is separable from slots and much cheaper**, so
       a first slice can gate traits and bring every unlocked one, which is not a
-      choice and needs no log change. **Order: (1) gate the traits**, settling the
-      `{id, at_level}` shape on the smaller list; **(2) the three missing passive
+      choice and needs no log change. **Order: (1) gate the traits — DONE**,
+      `cast.Unlock` settled on the smaller list; **(2) the three missing passive
       jobs**, because a slot between three stat traits is not a decision and a
       resistance or a conditional trait is — building the slot first ships a
       choice with nothing to choose; **(3) the slots and the log carrying the

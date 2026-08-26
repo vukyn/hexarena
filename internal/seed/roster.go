@@ -168,7 +168,12 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 	entry.Affinity = character.Element
 	entry.Stats = stats
 	entry.Skills = character.Skills
-	entry.Passives = character.Passives
+	// The traits the character has *at this level*, not every trait it will ever
+	// have. This is the only place the gate is applied, because this is the only
+	// place a character and a level meet: a flat entry states what it holds and
+	// has no level to be gated against, and the engine is handed a resolved list
+	// exactly as it is handed a resolved stat line.
+	entry.Passives = character.PassivesAt(level)
 	return entry, nil
 }
 

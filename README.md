@@ -354,6 +354,53 @@ of what belongs on a roster entry has always been "does a replay read it", not "
 it small": an archetype and an evolution stage are settled *before* a battle and
 leave nothing behind but numbers, while a trait is in force during one.
 
+### A trait comes in at a level
+
+A character does not simply hold its traits; it holds each **from a level
+onwards**:
+
+```json
+"passives": [{ "id": "endurance", "at_level": 16 }]
+```
+
+`cast.Unlock` is that entry, and it is deliberately about an *id* rather than
+about a trait: the kit is the same question — declare many, unlock by
+progression, bring some — so when skills gain their levels they gain this type
+rather than a second one beside it. `UnlockedIDs` is the one function that answers
+"what is in force at level N", and it takes the list rather than reading a
+character, so the kit can use it unchanged.
+
+Four things about the shape are decisions rather than details:
+
+- **An unstated level is one**, the way an unstated strike count is. The common
+  case is a trait a character has always had, and `"at_level": 1` on every entry
+  would be noise on the line that matters least. A parse normalises the absent
+  case to one, so there is exactly one value in memory meaning "from the start"
+  and no caller has to know which spelling it is holding — which is why `Unlock`
+  needs a `MarshalJSON` that omits a level of one rather than an `omitempty` tag.
+- **There is no `at_stage`.** It would read as a different fact and today it is
+  not one: `Line.StageAt` derives a stage from a level, so `at_stage: "Ivysaur"`
+  *is* `at_level: 16` and nothing else. It becomes a second fact only once a
+  placement names the stage it fielded — see *Learnsets, slots, and choosing to
+  evolve*.
+- **The gate is applied in exactly one place**, `seed.ParseRoster`, because that
+  is the only place a character and a level meet. A flat roster entry writes out
+  its own traits and has no level to be gated against; the engine is handed a
+  resolved list exactly as it is handed a resolved stat line.
+- **Bringing every unlocked trait is not a choice**, which is what makes this
+  half cheap: nothing has to be recorded in the log. The slot that turns several
+  unlocked traits into a decision is the expensive half, and it is where the log
+  work is paid for — once, for the kit as well.
+
+`hexforge show` prints every gate, because a character sheet is read all at once.
+The browser prints a gate only while it is **still ahead** — `endurance@16` at
+level 8, a bare `endurance` at 16 — so the mark reads as "not yet" and the row
+changes as the level is walked, which is the one thing a level slider is for.
+
+Bulbasaur's `endurance` comes in at 16, its Ivysaur stage. The shipped roster
+fields it at levels 60, 24 and 8, so the youngest of the three goes without —
+which is what a level being more than a number looks like.
+
 `hexforge passives` lists what is declared and what each grants.
 
 ## Battle logs
@@ -754,9 +801,9 @@ Four pieces, and they are one mechanism:
 
 So the order to build it in, and the reason for it:
 
-1. **Gate the traits.** `{id, at_level}` on a character's trait list, bringing
-   every unlocked one. No choice, so no log change, and the `{id, at_level}`
-   shape the slots will need is settled and tested first on the smaller list.
+1. ~~**Gate the traits.**~~ **Done** — see *A trait comes in at a level*.
+   `cast.Unlock` is the shape the slots will need, settled and tested first on the
+   smaller of the two lists.
 2. **Then the missing three passive jobs** — see *What a passive still cannot
    do*. This one is here rather than last because a slot between three stat
    traits is not a decision, and a resistance or a conditional trait is. Building

@@ -60,14 +60,15 @@ type Character struct {
 	Stages progression.Line `json:"stages"`
 	Skills []string         `json:"skills"`
 	// Passives are the traits the character holds for the whole of every battle,
-	// by id in the passive book. Absent is the ordinary case.
+	// each by id in the passive book and from the level it unlocks at. Absent is
+	// the ordinary case.
 	//
 	// Unlike an archetype, these do reach the engine: battle.Roster carries them
 	// because a passive is in force *during* a battle, where an archetype and an
 	// evolution stage are both settled before one starts. That is the line the
 	// roster's deliberate emptiness is drawn on — not "as little as possible",
 	// but "nothing a replay does not read".
-	Passives []string `json:"passives,omitempty"`
+	Passives []Unlock `json:"passives,omitempty"`
 }
 
 // Resolve flattens the character at a level into the stat line the battle
@@ -121,6 +122,16 @@ func (c Character) Art() []ArtEntry {
 	return out
 }
 
+// PassivesAt is the traits the character holds at a level.
+//
+// It is separate from Resolve rather than a fourth return value: a stat line and
+// a stage answer "what is this unit", while this answers "what does it bring",
+// and the second is the question a placement asks. Keeping them apart is also
+// what lets the kit join it later without Resolve growing a fifth return.
+func (c Character) PassivesAt(level int) []string {
+	return UnlockedIDs(c.Passives, level)
+}
+
 // clone copies the slices a caller could otherwise mutate through.
 func (c Character) clone() Character {
 	out := c
@@ -150,7 +161,7 @@ type characterFile struct {
 	Bio      string            `json:"bio"`
 	Stages   progression.Line  `json:"stages"`
 	Skills   []string          `json:"skills"`
-	Passives []string          `json:"passives"`
+	Passives []Unlock          `json:"passives"`
 }
 
 type bookFile struct {
@@ -459,25 +470,100 @@ func (b *Book) Append(deps Deps, extra ...Character) (*Book, error) {
 // names something needs the book, so a book that was not handed over is a
 // refusal rather than a pass: the alternative is a data file whose traits are
 // checked or unchecked depending on how the caller wired itself up.
-func resolvePassives(kind, owner string, declared []string, book *passive.Book) ([]string, error) {
+func resolvePassives(kind, owner string, declared []Unlock, book *passive.Book) ([]Unlock, error) {
 	if len(declared) == 0 {
 		return nil, nil
 	}
 	if book == nil {
 		return nil, fmt.Errorf("%s %q names passives, which cannot be checked without the passive book", kind, owner)
 	}
-	out := make([]string, 0, len(declared))
-	for _, id := range declared {
-		found, err := book.Lookup(id)
+	out := make([]Unlock, 0, len(declared))
+	for _, entry := range declared {
+		found, err := book.Lookup(entry.ID)
 		if err != nil {
 			return nil, fmt.Errorf("%s %q: %w", kind, owner, err)
 		}
-		if slices.Contains(out, found.ID) {
+		if slices.ContainsFunc(out, func(seen Unlock) bool { return seen.ID == found.ID }) {
 			return nil, fmt.Errorf("%s %q names the passive %q twice", kind, owner, found.ID)
 		}
-		out = append(out, found.ID)
+		// An unstated level is one, the way an unstated strike count is one.
+		level := entry.AtLevel
+		if level == 0 {
+			level = 1
+		}
+		if level < 1 || level > progression.LevelCap {
+			return nil, fmt.Errorf("%s %q unlocks %q at level %d, outside 1..%d",
+				kind, owner, found.ID, entry.AtLevel, progression.LevelCap)
+		}
+		out = append(out, Unlock{ID: found.ID, AtLevel: level})
 	}
 	return out, nil
+}
+
+// Unlock is something a character has from a level onwards.
+//
+// It is the shape a *learnset* is written in, and it is deliberately about an id
+// rather than about a trait: the kit is the same question — declare many, unlock
+// by progression, bring some — so when skills gain their levels they gain this
+// type rather than a second one beside it. Two vocabularies for one idea is the
+// mistake this repository keeps a list of.
+//
+// # What it deliberately cannot say
+//
+// There is no at_stage. A stage gate would read as a different fact from a level
+// gate, and today it is not one: progression.Line.StageAt derives a stage from a
+// level, so at_stage "Ivysaur" *is* at_level 16 and nothing else. It becomes a
+// second fact only once a placement names the stage it fielded, and authoring it
+// before then would be two spellings of one number — see README, Roadmap.
+type Unlock struct {
+	ID string `json:"id"`
+	// AtLevel is the first level the holder has it at. An unstated level is one:
+	// the common case is a trait a character has always had, and writing
+	// "at_level": 1 on every entry would be noise on the line that matters least.
+	AtLevel int `json:"at_level,omitempty"`
+}
+
+// Unlocked reports whether the entry is in force at a level.
+func (u Unlock) Unlocked(level int) bool { return level >= u.AtLevel }
+
+// unlockFile is the shape an entry is written in, and therefore the shape it is
+// read in — the same arrangement skill.Skill has, so the writer cannot describe
+// a field the parser does not read.
+type unlockFile struct {
+	ID      string `json:"id"`
+	AtLevel int    `json:"at_level,omitempty"`
+}
+
+// MarshalJSON writes the entry as the declaration a parse would read back, and
+// omits a gate of one.
+//
+// The field cannot simply carry `omitempty`, because a parse *normalises* an
+// unstated level to one: there is exactly one value in memory meaning "from the
+// start", which is what lets every caller ask Unlocked without first asking
+// which of two spellings it is holding. The cost of that is this method — the
+// writer has to know that one is the value not worth writing.
+func (u Unlock) MarshalJSON() ([]byte, error) {
+	out := unlockFile{ID: u.ID}
+	if u.AtLevel > 1 {
+		out.AtLevel = u.AtLevel
+	}
+	return json.Marshal(out)
+}
+
+// UnlockedIDs is the ids in force at a level, in declaration order.
+//
+// One function rather than one per list, and it takes the list rather than
+// reading a character, so the kit can use it unchanged when skills gain their own
+// levels. Declaration order because the result reaches a roster entry and then an
+// event log: an order a map decided would stop a battle replaying.
+func UnlockedIDs(entries []Unlock, level int) []string {
+	out := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.Unlocked(level) {
+			out = append(out, entry.ID)
+		}
+	}
+	return out
 }
 
 // ValidateImagePath checks the shape of an authored image path. Whether the

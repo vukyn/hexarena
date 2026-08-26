@@ -178,7 +178,10 @@ func passives(t *testing.T) *passive.Book {
 		t.Fatalf("statuses: %v", err)
 	}
 	book, err := passive.ParseBook(
-		[]byte(`{"passives":[{"id":"endurance","grants":[{"status":"toughened"}]}]}`),
+		[]byte(`{"passives":[
+		  {"id":"endurance","grants":[{"status":"toughened"}]},
+		  {"id":"resolve","grants":[{"status":"toughened","stacks":2}]}
+		]}`),
 		passive.Deps{Statuses: statuses})
 	if err != nil {
 		t.Fatalf("passives: %v", err)
@@ -1325,7 +1328,7 @@ func TestAStageImageIsCheckedLikeTheCharactersAndSaysWhichStage(t *testing.T) {
 // so this covers the shared rule twice rather than the same rule twice.
 func TestPassivesAreCheckedOnACharacterAndOnAPreset(t *testing.T) {
 	entry := baseCharacter()
-	entry["passives"] = []string{"endurance"}
+	entry["passives"] = []map[string]any{{"id": "endurance"}}
 	book, err := parse(t, entry)
 	if err != nil {
 		t.Fatalf("a character holding a declared trait was refused: %v", err)
@@ -1334,8 +1337,11 @@ func TestPassivesAreCheckedOnACharacterAndOnAPreset(t *testing.T) {
 	if !ok {
 		t.Fatal("the parsed character is not in the book")
 	}
-	if !reflect.DeepEqual(character.Passives, []string{"endurance"}) {
-		t.Errorf("the character holds %v, want the trait it named", character.Passives)
+	// An unstated level resolves to one rather than staying zero, so a caller
+	// asking "is this in force" never has to know which of the two it is looking
+	// at.
+	if !reflect.DeepEqual(character.Passives, []cast.Unlock{{ID: "endurance", AtLevel: 1}}) {
+		t.Errorf("the character holds %+v, want the trait it named from level one", character.Passives)
 	}
 
 	// Absent is the ordinary case and stays absent rather than becoming empty:
@@ -1351,11 +1357,25 @@ func TestPassivesAreCheckedOnACharacterAndOnAPreset(t *testing.T) {
 
 	for _, test := range []struct {
 		name    string
-		names   []string
+		names   []map[string]any
 		wantErr string
 	}{
-		{"an unknown trait", []string{"nobody-wrote-this"}, "unknown passive"},
-		{"the same trait twice", []string{"endurance", "endurance"}, "twice"},
+		{"an unknown trait", []map[string]any{{"id": "nobody-wrote-this"}}, "unknown passive"},
+		{
+			"the same trait twice",
+			[]map[string]any{{"id": "endurance"}, {"id": "endurance", "at_level": 20}},
+			"twice",
+		},
+		{
+			"a level past the cap",
+			[]map[string]any{{"id": "endurance", "at_level": progression.LevelCap + 1}},
+			"outside 1..",
+		},
+		{
+			"a negative level",
+			[]map[string]any{{"id": "endurance", "at_level": -3}},
+			"outside 1..",
+		},
 	} {
 		broken := baseCharacter()
 		broken["passives"] = test.names
@@ -1372,7 +1392,7 @@ func TestPassivesAreCheckedOnACharacterAndOnAPreset(t *testing.T) {
 	// A preset suggesting a trait is where an archetype finally gains a
 	// mechanical weight, so it is checked the same way.
 	preset := baseArchetype()
-	preset["passives"] = []string{"endurance"}
+	preset["passives"] = []map[string]any{{"id": "endurance", "at_level": 16}}
 	presets, err := archetypes(t, preset)
 	if err != nil {
 		t.Fatalf("a preset suggesting a declared trait was refused: %v", err)
@@ -1381,11 +1401,11 @@ func TestPassivesAreCheckedOnACharacterAndOnAPreset(t *testing.T) {
 	if !ok {
 		t.Fatal("the parsed preset is not in the book")
 	}
-	if !reflect.DeepEqual(suggested.Passives, []string{"endurance"}) {
-		t.Errorf("the preset suggests %v, want the trait it named", suggested.Passives)
+	if !reflect.DeepEqual(suggested.Passives, []cast.Unlock{{ID: "endurance", AtLevel: 16}}) {
+		t.Errorf("the preset suggests %+v, want the trait it named", suggested.Passives)
 	}
 	broken := baseArchetype()
-	broken["passives"] = []string{"nobody-wrote-this"}
+	broken["passives"] = []map[string]any{{"id": "nobody-wrote-this"}}
 	if _, err := archetypes(t, broken); err == nil {
 		t.Error("a preset suggesting an undeclared trait was accepted")
 	}
@@ -1398,7 +1418,7 @@ func TestNamingAPassiveWithoutTheBookIsRefused(t *testing.T) {
 	deps := deps(t)
 	deps.Passives = nil
 	entry := baseCharacter()
-	entry["passives"] = []string{"endurance"}
+	entry["passives"] = []map[string]any{{"id": "endurance"}}
 	raw, err := json.Marshal(map[string]any{"characters": []map[string]any{entry}})
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
