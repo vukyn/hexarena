@@ -1482,6 +1482,44 @@ so no figure measured before a feature can be carried across it without being
 taken again. It flipped back when four slots landed; see *Piercing*, which now
 carries all three measurements.
 
+### Looking a status up
+
+Nothing lists them. `hexforge` has five listings — origins, species, archetypes,
+passives, skills — and the statuses are not one of them, so the only way to learn
+what `mire` does is to open `statuses.json`. In a battle it is worse: the log says
+*resisted mire*, the unit table says *mire*, and a player has no way to find out
+that it is a quarter off speed for two turns.
+
+They are the layer with the most reading to do and the least said about them. A
+skill's description names the status it inflicts and stops there — *gây sa lầy cho
+mục tiêu, 70% khả năng* — which tells a reader something will happen and not what.
+
+The shape follows what is already built. `Lang.DescribeStatus` beside `Describe`
+and `DescribePassive`, **derived** for the same reason those are, in both
+languages, reachable from `?` at the battle prompt the way `?N` and `?TAG` already
+are and from a screen in the authoring tool the way `screenBlurb` is.
+
+What such a description has to carry, and the three traps in it:
+
+- **A life, not a tick.** `poison` at 500 for three turns and `burn` at 800 for
+  two are compared by what they cost over their lives, not by their per-turn
+  figures — `skills.golden` already prints an *over its life* column for exactly
+  that reason, and a reference that printed the tick alone would have a reader
+  rating the wrong one higher. The same goes for a stat change: a percent per
+  stack against a cap of three is a different number from the percent.
+- ⚠️ **Permanent is "always", never "0 turns".** `Snapshot.Permanent` exists
+  because a trait's status has no duration to print and printing its zero reads as
+  one about to expire.
+- ⚠️ **Group by category, or a cleanse cannot be read.** `rapid_spin` strips a
+  `stat_debuff` and a `dot`, and a reader who cannot see which statuses those are
+  cannot tell what the skill removes. The categories have Vietnamese names
+  already; what is missing is the grouping that makes them mean something.
+
+⚠️ And the one that will be got wrong: **a reference describes the declared kind,
+not what a unit will feel.** `virulence` amplifies poison and a resistance refuses
+it, so the 500 in the book is not the number that lands. Say so in the reference
+rather than leaving a reader to discover it when the log shows 650.
+
 ### A health threshold a skill can read
 
 Built. `skill.Condition` reads how hurt the **target** is, where `passive.Condition`
