@@ -6,7 +6,7 @@ pokemon.bulbasaur — Bulbasaur
   element  grass
   species  plant
   art      assets/bulbasaur.svg
-  kit      vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed synthesis ingrain
+  kit      vine_whip razor_leaf poison_powder@8 sleep_powder@12 leech_seed@16 synthesis@20 venoshock@24 sludge_bomb@32 ingrain@36
   stage "Bulbasaur" owns levels 1 to 15, showing assets/bulbasaur.svg
     level 1  hp 900, atk 150, def 130, spd 30, acc 40, ddg 15
              absorbs 1291 of the 11500 budget, 10209 to spare
@@ -29,7 +29,7 @@ pokemon.charmander — Charmander
   element  fire
   species  lizard dragon
   art      assets/charmander.svg
-  kit      ember flamethrower fire_fang fire_spin heat_wave inferno dragon_rage smokescreen dragon_dance
+  kit      ember fire_spin fire_fang@8 smokescreen@12 flamethrower@16 dragon_rage@20 dragon_dance@24 heat_wave@32 inferno@36
   stage "Charmander" owns levels 1 to 15, showing assets/charmander.svg
     level 1  hp 760, atk 180, def 95, spd 46, acc 48, ddg 22
              absorbs 1001 of the 11500 budget, 10499 to spare
@@ -52,7 +52,7 @@ pokemon.squirtle — Squirtle
   element  water
   species  turtle
   art      assets/squirtle.svg
-  kit      water_gun bubble whirlpool bite brine hydro_pump withdraw aqua_ring rapid_spin
+  kit      water_gun bubble bite@8 withdraw@12 whirlpool@16 brine@20 rapid_spin@24 aqua_ring@28 hydro_pump@36
   stage "Squirtle" owns levels 1 to 15, showing assets/squirtle.svg
     level 1  hp 950, atk 120, def 175, spd 24, acc 40, ddg 11
              absorbs 1505 of the 11500 budget, 9995 to spare

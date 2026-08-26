@@ -16,6 +16,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
+	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -768,7 +769,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 		// A long kit is clipped there, so what the screen owes is the beginning
 		// of the reading rather than all of it; that every skill is glossed at
 		// all is GlossedKit's property and is checked on the function.
-		kit := i18n.Vi.GlossedKit(lib.KitSkills(character.Skills))
+		kit := i18n.Vi.GlossedKit(lib.KitSkills(cast.LearnedIDs(character.Skills)))
 		if kit == "" {
 			t.Errorf("%s's kit is not glossed, so this proves nothing", character.ID)
 		} else {
@@ -781,7 +782,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 					character.ID, under, opening)
 			}
 		}
-		for _, carried := range lib.KitSkills(character.Skills) {
+		for _, carried := range lib.KitSkills(cast.LearnedIDs(character.Skills)) {
 			if name := i18n.Vi.SkillName(carried); name == "" {
 				t.Errorf("%s carries %s, which has no Vietnamese name", character.ID, carried.ID)
 			}
@@ -835,8 +836,8 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 		for _, member := range character.Element.Elements() {
 			names = append(names, i18n.Vi.Gloss(member.String()))
 		}
-		for _, id := range character.Skills {
-			names = append(names, i18n.Vi.Gloss(id))
+		for _, entry := range character.Skills {
+			names = append(names, i18n.Vi.Gloss(entry.ID))
 		}
 		for _, held := range lib.KitPassives(character.PassivesAt(1)) {
 			names = append(names, held.Name)
@@ -952,7 +953,7 @@ func TestEveryGlossFitsItsRow(t *testing.T) {
 
 		kits := make(map[string][]string)
 		for _, character := range lib.Characters().All() {
-			kits[character.ID] = character.Skills
+			kits[character.ID] = cast.LearnedIDs(character.Skills)
 		}
 		for _, preset := range lib.Archetypes().All() {
 			kits[preset.ID] = preset.Skills

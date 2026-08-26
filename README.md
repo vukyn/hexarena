@@ -162,13 +162,25 @@ Whether 400 is the *right* number could not be judged at all while the shipped
 roster was a mirror — both squads carried the same kit, so piercing helped each
 by exactly as much and the win rate moved by noise. The roster is no longer a
 mirror (see *The seed roster is the balance instrument*), and the answer is
-modest, and it is no longer even one-directional. Over four thousand
-auto-battles, taking the pierce off used to move the ally win rate from 49.2 per
-cent to 46.5; since `venom_blood` began answering attackers it moves it from 51.9
-to 53.0 instead — the same size, the opposite sign. Piercing helps whoever is
-attacking, so a game where attacking costs something prices it differently. The
-damage table was telling the truth either way: this is a dial that changes who
-armour is good against, not one that decides battles.
+modest — and it has now been measured three times, in three different games, and
+it has not held still:
+
+| the game it was measured in | with the pierce | without it |
+| --- | ---: | ---: |
+| before anything answered back | 49.2% | 46.5% |
+| once `venom_blood` answered attackers | 51.9% | 53.0% |
+| once a placement brought four skills of nine | **49.5%** | **46.0%** |
+
+Piercing helps whoever is attacking, so the middle row is what happened when
+attacking started to cost something: the same size of move, the opposite sign.
+The bottom row is what happened when the ally's Venusaur had to bring
+`razor_leaf` as one of *four* skills rather than one of nine — a dial is worth
+more to a kit that cannot dilute it.
+
+So the figure is not a property of the skill. It is a property of the skill, the
+opposing traits and the loadout together, and the loadout is now a **choice**.
+The damage table was telling the truth in all three: this is a dial that changes
+who armour is good against, not one that decides battles.
 
 ### Why raw health has no floor of its own
 
@@ -505,7 +517,7 @@ Four things about the shape are decisions rather than details:
 - **There is no `at_stage`.** It would read as a different fact and today it is
   not one: `Line.StageAt` derives a stage from a level, so `at_stage: "Ivysaur"`
   *is* `at_level: 16` and nothing else. It becomes a second fact only once a
-  placement names the stage it fielded — see *Learnsets, slots, and choosing to
+  placement names the stage it fielded — see *Choosing to
   evolve*.
 - **The gate is applied in exactly one place**, `seed.ParseRoster`, because that
   is the only place a character and a level meet. A flat roster entry writes out
@@ -812,14 +824,16 @@ is what stopped `razor_leaf`'s piercing value from being judged by anything but
 its damage table — giving it 400 moved the ally win rate from 23 of 40 to 25,
 which is nothing.
 
-Now it measures. Over four thousand auto-battles the roster sits at **51.9 per
+Now it measures. Over four thousand auto-battles the roster sits at **49.5 per
 cent** to the ally, on a roster where the ally holds the only Venusaur and the
-enemy the only Blastoise. It has moved twice, and both times a trait did it: 48.5
-before `blaze` was gated, 49.2 after, and 51.9 once `venom_blood` began answering
-whatever attacked it — the ally's Venusaur is the unit most attacked on the board
-and therefore the one a reply is worth most to. Taking `razor_leaf`'s pierce off
-now moves it to 53.0, which is the same size the move always was and the opposite
-sign; see *Answering back* for why. The 40-seed sweep the test runs reads
+enemy the only Blastoise. It has moved four times, and every move was a feature
+landing rather than a number being tuned: 48.5 before `blaze` was gated, 49.2
+after, 51.9 once `venom_blood` began answering whatever attacked it, and 49.5
+once a placement had to bring four skills out of nine. The reply moved it toward
+the ally because the ally's Venusaur is the unit most attacked on the board; the
+slots moved it back, because that same unit is the one with the deepest kit to
+lose. Taking `razor_leaf`'s pierce off now moves it to 46.0 — see *Piercing* for
+what that figure has done across the three games it has been measured in. The 40-seed sweep the test runs reads
 20–20, and it is far too coarse to tune against: it read 45 per cent on a draft
 whose true rate was 55.
 
@@ -1308,25 +1322,26 @@ dealt three hundred and three hundred off one that dealt six hundred are the sam
 number by the time a reader sees them, and the skill's own figure stopped
 accounting for it the moment a trait could drain too.
 
-**The circular bit, stated so it is chosen rather than discovered.** A character
-brings every trait it has, so giving Bulbasaur all five rows above makes it one
-unit that is better, not two units that are different. Choosing between them needs
-the trait slot under *Learnsets, slots, and choosing to evolve* — and that entry
-says a slot is only a decision once traits differ in **kind** rather than in
-number. So the slot is what makes these builds mean anything, and these builds are
-what make the slot worth building. Either order works; what does not work is
-building neither and expecting the other to justify it.
+**The circular bit, resolved.** A character used to bring every trait it had, so
+giving Bulbasaur all five rows above would have made it one unit that was better
+rather than two that were different. A placement now brings **one** trait, so the
+rows are a choice — which is what makes filling in the missing ones worth doing.
+A slot is only a decision once traits differ in
+**kind** rather than in number, which is why the slot was built last of the
+three: the resistance, the gated grant and the reply are what it now picks
+between. Either order would have worked; what would not have worked is building
+neither and expecting the other to justify it.
 
-Remaining order: **amplifying a status** (the last row of the first build, and the
-first trait to read two units), then the **trait slot** — which is worth more than
-it was, because the traits already differ in kind: a resistance, a gated grant, a
-reply and a drain are four different sorts of thing to choose between. *Answering
-back* and the drain have both left this list; both are built.
+Nothing is left on that order. The gate, *Answering back*, the drain, the
+amplifier and the **trait slot** are all built, and the slot arrived last on
+purpose: by the time it landed the traits differed in **kind** — a resistance, a
+gated grant, a reply, a drain and an amplifier are five different sorts of thing,
+and a placement brings exactly one of them.
 
-⚠️ **`blood_thirst` and `last_gasp` are carried by nobody**, the way `venom_blood`
-shipped and `pierce` before it. Putting either on Bulbasaur without the trait slot
-makes one unit better rather than two units different, which is the whole point of
-the paragraph above — so they wait for the slot rather than for a smaller number.
+⚠️ **`blood_thirst` and `last_gasp` are still carried by nobody**, the way
+`venom_blood` shipped before it. They were waiting for the trait slot, and the
+trait slot now exists — so what remains is a decision about which character holds
+which, and that is authoring rather than mechanism.
 
 Nothing shipped uses `Applies` yet; `blaze` is the only trait using `While`, and
 `venom_blood` the only one using `Replies`.
@@ -1419,18 +1434,21 @@ cannot be big without the roster stopping being a measuring instrument:
 | 80 | 100 | 75.4% |
 | 250 | 500 | 98.3% |
 
-So the shipped reply is a scratch and a two and a half per cent chance of poison,
-and the roster reads **51.9 per cent** to the ally. Anything an author is tempted
+So the shipped reply is a scratch and a two and a half per cent chance of poison.
+⚠️ Every figure in the table above was measured **before** a placement brought
+four skills of nine, which moved the same roster from 51.9 to 49.5 — so read them
+as the shape of the curve rather than as today's numbers. Anything an author is tempted
 to raise here should be measured over thousands of seeds first, because the
 40-seed sweep in the tests cannot see a move of this size.
 
 ⚠️ **It also moved a measurement that was already in this file.** Removing
 `razor_leaf`'s pierce used to cost the ally 2.7 points; against a roster where
-being the attacker costs something, it now *gains* the ally 1.1 (51.9 → 53.0).
-The sign flipped, and it flipped at every reply size tried. Piercing helps
-whoever is attacking, and this is the first thing in the game that charges for
-attacking — so no figure measured before this feature can be carried forward
-without being taken again.
+being the attacker costs something, it *gained* the ally 1.1 instead. The sign
+flipped, and it flipped at every reply size tried. Piercing helps whoever is
+attacking, and this was the first thing in the game that charges for attacking —
+so no figure measured before a feature can be carried across it without being
+taken again. It flipped back when four slots landed; see *Piercing*, which now
+carries all three measurements.
 
 ### A health threshold a skill can read
 
@@ -1467,115 +1485,121 @@ What is still absent is the **gradient**: the move that hits harder the further 
 *caster* has fallen. It is a multiplier on power rather than a bonus to it, belongs
 in `combat`, and reads the other unit — two features, not one with an option.
 
-### Learnsets, slots, and choosing to evolve
+### Learnsets and slots
 
-A character knows every skill it will ever know, from level one, and brings all
-of them. The same is now true of its traits. That makes a level cap the only
-thing separating a young unit from a grown one, and it means authoring a ninth
-skill — or a second trait — makes a character strictly better rather than
-presenting a choice.
+Built, except for the half that could not be built first — see *Choosing to
+evolve* below.
 
-**Skills and traits are one mechanism here, not two.** Both are "declare many,
-unlock by progression, bring some", and building a second unlock system for
-traits would be two vocabularies for one idea — the mistake this repository keeps
-a list of. One `{id, at_level}` shape, one validator, one "what is available at
-level N" function, and two lists using it: a kit with four slots and a trait
-list with **one**.
+A character no longer simply holds a list of skills; it holds a **learnset**,
+each entry from the level it is learned at. A placement then **chooses** four of
+them, and one of the traits, and that choice is what is fielded.
 
-Four pieces, and they are one mechanism:
+```json
+"skills": [
+  { "id": "vine_whip" },
+  { "id": "razor_leaf" },
+  { "id": "poison_powder", "at_level": 8 },
+  { "id": "sludge_bomb",   "at_level": 32 }
+]
+```
 
-- **A learnset.** A character declares *when* it learns each skill and each
-  trait rather than simply holding a list: `{id, at_level}`, or `{id, at_stage}`
-  for one that only a later form can hold. A stage-gated entry is gated behind
-  whatever that stage requires, transitively, which is what makes evolving unlock
-  something rather than merely raise numbers.
+```json
+{ "id": "ally.venusaur", "character": "pokemon.bulbasaur", "level": 60,
+  "side": "ally", "slot": [2, 1],
+  "skills": ["razor_leaf", "sludge_bomb", "venoshock", "leech_seed"],
+  "passives": ["venom_blood"] }
+```
 
-  ⚠️ **`at_stage` cannot be built before chosen evolution**, and building it
-  early would be worse than not building it. `Line.StageAt` derives a stage from
-  a level today, so `at_stage: "Ivysaur"` is *exactly* `at_level: 16` and nothing
-  else — a second spelling of one fact, which is what this codebase refuses
-  everywhere. It becomes a different fact only once a placement names the stage
-  it fielded.
-- **Four slots, and one trait slot.** A placement brings at most four of the
-  skills the character has learned and at most one of its traits. Refused at load
-  if it names something the character has not learned at that level, if it names
-  too many, or if it names one twice. A trait slot is what turns a pile of traits
-  into a decision, for the same reason four skill slots do — and it is worth
-  little until there are traits worth choosing *between*: with only stat traits
-  built, a slot picks between three numbers.
-- **Gating is separable from slots, and much cheaper.** A first slice can gate
-  traits by level and bring **every unlocked one**, which is not a choice and so
-  needs no change to the log. The slots are the expensive half, and they are
-  where the log work below is paid for — once, for both lists.
-- **Evolution is chosen, not derived.** Today `progression.Line.StageAt` reads a
-  stage out of a level, and there is no decision in it. Reaching the threshold
-  should instead *allow* a stage, and the placement names which one it fielded, so
-  `Resolve(level)` becomes `Resolve(level, stage)` with the chosen stage's
-  threshold no higher than the level.
-- **Conditions beyond a level are deliberately out of scope.** Items, a
-  friendship count, a number of battles fought — every one of those needs
-  somewhere to persist between battles, and there is no such place: hexarena has
-  no meta layer, no inventory and no save. A level is what a character sheet
-  knows. An item system is its own future thing, not a clause of this one.
+**Skills and traits are one mechanism, and now demonstrably so.** Both are
+`cast.Unlock` — one `{id, at_level}` shape, one validator, one "what is available
+at level N" function — and the only thing that differs between the two lists is
+how many slots there are. Even the authoring tool shares it: a learnset renders
+through the same `UnlockSummary` a trait list does, so `razor_leaf
+poison_powder@8` is one row and one function rather than two.
 
-So the order to build it in, and the reason for it:
+#### The four rules a placement is refused by
 
-1. ~~**Gate the traits.**~~ **Done** — see *A trait comes in at a level*.
-   `cast.Unlock` is the shape the slots will need, settled and tested first on the
-   smaller of the two lists.
-2. **Then the missing three passive jobs** — see *What a passive still cannot
-   do*. This one is here rather than last because a slot between three stat
-   traits is not a decision, and a resistance or a conditional trait is. Building
-   the slot first would ship a choice with nothing to choose.
-3. **Then the slots**, four skills and one trait, and the log carrying the
-   placement. The expensive half, paid once for both lists.
+| refused | why |
+| --- | --- |
+| naming nothing | a slot is a decision, and a default would be this parser choosing four of nine on an author's behalf and never saying which |
+| naming more than four (or more than one trait) | the slot count is the whole feature |
+| naming the same thing twice | a wasted slot reads as a typo, not as a choice |
+| naming what the level has not learned | the learnset is what makes a young unit different in *kind* rather than merely weaker |
 
-Step 2 sits in the middle on purpose: it is the only one of the three that is
-*not* about this mechanism, and it is what decides whether the mechanism is worth
-having.
+A refusal lists what *was* available, because an author who has just been told
+"no" wants the list rather than a second trip to `cast.json`.
 
-Three things this has to face.
+**The trait slot is optional where the kit is not**, and the asymmetry has a
+reason rather than being a convenience. A unit that brings no skills cannot act,
+so an empty kit is never something anybody chose; a unit that brings no trait is
+an ordinary unit, so an empty trait slot is a decision like any other. Insisting
+would make "I want the plain version" unwritable.
 
-**The log has to carry the placement.** `battle.Log` holds a seed, the decisions
-taken and the events produced — and nothing else. The roster comes from the
-embedded data, so a log is already only valid against the build that wrote it.
-Once the loadout, the trait and the stage are *choices*, a log without them cannot
-be re-run at all, and `--verify` would be comparing two different battles. Writing the placement into the log is
-part of this change rather than a follow-up, and it has the side benefit of
-making a log portable across a data edit, which today it is not.
+**The engine learns none of this.** `battle.Roster` still takes a resolved kit
+and a resolved stat line, because a learnset is settled *before* a battle exactly
+as an evolution already is. What changed is the authoring layer and the
+placement — and the log.
 
-**Four slots is a per-turn nerf, and cooldowns set its size.** A skill on
-cooldown *N* is usable every *N+1* turns, so it contributes `1/(N+1)` actions per
-turn. Measured against Bulbasaur's own cooldowns:
+#### The log carries the placement
 
-| loadout | actions per turn | turns idle |
-| --- | ---: | ---: |
-| four attacks, cooldowns 1, 2, 2, 2 | 1.50 | none, a third wasted |
-| four support skills, cooldowns 3, 4, 4, 4 | 0.85 | 15% |
-| level one, two skills, cooldowns 1 and 4 | 0.70 | **30%** |
+`battle.Log` now records the roster it was fought with, and `--verify` rebuilds
+from that rather than from the embedded data.
 
-So the mechanism works: a level-one unit spends about a third of its turns unable
-to act, which is what being young should feel like. But it **compounds the
-stalemate gap above** — more turns with nothing usable is more chance of a battle
-that cannot end — and it makes a low-cooldown basic close to mandatory, which is
-why every game of this shape has a move you can spam. `strike`, at cooldown zero,
-was exactly that and has been retired; a four-slot world probably needs a
-successor to it.
+It had to. While a roster came out of the data and nothing about it was decided,
+re-running a log meant loading that data again and the two were the same battle
+by construction. Now that a placement picks four of nine, a log that did not say
+which four could not be re-run at all — `--verify` would compare two different
+battles and report the difference as corruption.
+
+It carries the **resolved** form rather than the reference, which buys something
+the reference never could: a log is now readable across a data edit. Retuning a
+stat curve or moving a skill's learn level no longer invalidates every log
+written before it.
+
+⚠️ A log written before this **renders exactly as it always did** — that reads
+the events and nothing else — and refuses to verify, saying why. Re-running
+today's roster against it and calling the mismatch corruption would be a verifier
+lying about which of the two was wrong.
+
+#### What four slots actually cost, measured
+
+The design note predicted a level-one unit idling about a third of its turns, and
+that is right for the unit it described. Across four thousand battles of the
+*shipped* roster the figure is **2.2 per cent** of turns spent with nothing
+usable, because the youngest unit on that roster is level eight with three skills
+rather than level one with two — and the rest are grown units with four good
+ones. No battle failed to finish; the longest ran 63 turns, which is where it was
+before.
+
+The roster reads **49.5 per cent** to the ally, down from 51.9. Cutting nine
+skills to four took most of the swing `venom_blood`'s reply had added, and it
+took it from the ally: the unit that loses most by choosing four is the one that
+had the deepest kit to choose from.
+
+### Choosing to evolve
+
+Not built, and deliberately last. `progression.Line.StageAt` reads a stage out of
+a level and there is no decision in it. Reaching the threshold should instead
+*allow* a stage, with the placement naming which one it fielded, so
+`Resolve(level)` becomes `Resolve(level, stage)` and the chosen stage's threshold
+is no higher than the level.
+
+⚠️ **`at_stage` cannot be built before it**, and building it early would be worse
+than not building it: `at_stage: "Ivysaur"` is *exactly* `at_level: 16` while a
+stage is derived from a level, which is a second spelling of one fact. It becomes
+a different fact only once a placement names the stage.
 
 **Choosing not to evolve is currently strictly worse.** Stage curves only rise,
 so a placement that fields an earlier stage fields a weaker unit for no
-compensation, and the choice is decorative. It becomes a real decision only if an
-earlier stage can hold something a later one cannot — an earlier learn entry the
-grown form never gets. That is worth deciding deliberately rather than
-discovering: as it stands, "may evolve" and "does evolve" are the same thing.
+compensation. It becomes a real decision only if an earlier stage can hold
+something a later one cannot — an earlier learn entry the grown form never gets —
+and now that a learnset exists, that is one field away rather than a mechanism
+away.
 
-The engine learns none of this. `battle.Roster` keeps taking a resolved kit and a
-resolved stat line, because a learnset and a stage choice are settled *before* a
-battle, exactly as evolution already is. What changes is the authoring layer and
-the placement, and `hexforge` gains a reason to show a character's learnset by
-level and to refuse a loadout the level cannot hold. Choosing the four is a
-player's decision, and until there is something to make it with, an automatic
-battle may take any four.
+**Conditions beyond a level are deliberately out of scope.** Items, a friendship
+count, a number of battles fought: every one needs somewhere to persist between
+battles, and there is no such place — no meta layer, no inventory, no save. A
+level is what a character sheet knows.
 
 ### Growing the cast
 

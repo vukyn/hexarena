@@ -367,7 +367,8 @@ func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character
 	label("from", "%s", title)
 	label("tuned from", "%s", character.Archetype)
 	label("element", "%s", character.Element)
-	label("kit", "%s", strings.Join(character.Skills, " "))
+	// The learnset, with its gates, through the same summary the traits use:
+	label("kit", "%s", forge.UnlockSummary(character.Skills))
 	// Only when there are any, on the same terms as the traits line below: most
 	// of a cast is nothing in particular, and a row saying so on every one of
 	// them says nothing.

@@ -199,12 +199,12 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// Wrapped, not clipped: nine ids are longer than any terminal, and half an
 	// id is worse than a second row.
 	out.WriteString(m.wrapped(m.text(i18n.LabelKit), detailLabelWidth(m),
-		strings.Join(character.Skills, " ")))
+		forge.UnlockSummaryAt(character.Skills, b.level)))
 	// The kit's names go under it rather than beside it: five skills glossed
 	// inline is five brackets on one row, which does not fit. Nothing is drawn
 	// at all when there is nothing to say — in English, or for a kit of skills
 	// the table has no names for — rather than an empty row under a full one.
-	if glossed := m.lang.GlossedKit(m.lib.KitSkills(character.Skills)); glossed != "" {
+	if glossed := m.lang.GlossedKit(m.lib.KitSkills(cast.LearnedIDs(character.Skills))); glossed != "" {
 		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
 	}
 	// Traits sit under the kit because they read as the other half of it: what

@@ -898,7 +898,8 @@ const Origins = `[
 ]`
 
 // Characters is the cast the fixture adds.
-const Characters = `[
+const Characters = `
+[
   {
     "id": "fixture-anime.adept",
     "name": "Example Adept",
@@ -943,10 +944,19 @@ const Characters = `[
       }
     ],
     "skills": [
-      "strike",
-      "riptide",
-      "guard_wall",
-      "purify"
+      {
+        "id": "strike"
+      },
+      {
+        "id": "riptide"
+      },
+      {
+        "id": "guard_wall"
+      },
+      {
+        "id": "purify",
+        "at_level": 12
+      }
     ]
   },
   {
@@ -1024,13 +1034,23 @@ const Characters = `[
       }
     ],
     "skills": [
-      "bolt",
-      "venom_fang",
-      "creeping_rot",
-      "arc_bolt"
+      {
+        "id": "bolt"
+      },
+      {
+        "id": "venom_fang"
+      },
+      {
+        "id": "creeping_rot"
+      },
+      {
+        "id": "arc_bolt",
+        "at_level": 12
+      }
     ]
   }
-]`
+]
+`
 
 // Art is a placeholder drawing, small enough to be legible in a diff. The
 // authoring tool only asks whether the file exists.

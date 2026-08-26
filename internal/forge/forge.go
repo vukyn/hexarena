@@ -159,7 +159,12 @@ func (d Draft) Resolve(lib *Library) (cast.Character, error) {
 		Origin: d.Origin, Archetype: d.Archetype,
 		Image: d.Image, Element: affinity, Bio: strings.TrimSpace(d.Bio),
 		Stages: progression.Line{{Name: strings.TrimSpace(d.Name), MinLevel: 1, Stats: table}},
-		Skills: skills, Species: species, Passives: passives,
+		// The preset's kit becomes a learnset every entry of which is known from
+		// level one. An archetype has no level to gate against — it is a
+		// suggestion for authoring rather than a placement — so the levels are
+		// something the author adds afterwards, in the file, where the rest of
+		// the character's shape is edited.
+		Skills: cast.Learn(skills), Species: species, Passives: passives,
 	}
 	if _, err := lib.characters.Append(lib.CastDeps(), character); err != nil {
 		return cast.Character{}, err

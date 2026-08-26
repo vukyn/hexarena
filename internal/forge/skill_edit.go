@@ -275,7 +275,7 @@ func (l *Library) brokenPreset(edited *skill.Book, id string, refused error) err
 func (l *Library) brokenCharacter(edited *skill.Book, id string, refused error) error {
 	broken := &SkillEditBreaksError{Carrier: BrokenCharacter, Skill: id, Err: refused}
 	for _, character := range l.characters.All() {
-		kit, err := kitFrom(edited, character.Skills)
+		kit, err := kitFrom(edited, cast.LearnedIDs(character.Skills))
 		if err != nil {
 			continue
 		}

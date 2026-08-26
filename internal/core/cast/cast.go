@@ -67,7 +67,16 @@ type Character struct {
 	// Stages is the evolution line the character's stats grow along. A
 	// character with one stage is the ordinary case, not a special one.
 	Stages progression.Line `json:"stages"`
-	Skills []string         `json:"skills"`
+	// Skills is the character's learnset: every skill it will ever know, each
+	// from the level it learns it at.
+	//
+	// It is `Unlock`, the type the traits already use, because the two are one
+	// question — declare many, unlock by progression, bring some — and a second
+	// type beside it would be two vocabularies for one idea. What a unit
+	// actually brings into a battle is a *choice made at placement* from the
+	// entries unlocked at its level, which is a different list and lives on the
+	// roster rather than here.
+	Skills []Unlock `json:"skills"`
 	// Passives are the traits the character holds for the whole of every battle,
 	// each by id in the passive book and from the level it unlocks at. Absent is
 	// the ordinary case.
@@ -141,13 +150,20 @@ func (c Character) PassivesAt(level int) []string {
 	return UnlockedIDs(c.Passives, level)
 }
 
+// SkillsAt is the skills the character has learned by a level, in declaration
+// order. It is the list a placement may choose its loadout from, and the same
+// function the traits use — one "what is available at level N" for both lists,
+// which is the whole of "skills and traits are one mechanism".
+func (c Character) SkillsAt(level int) []string {
+	return UnlockedIDs(c.Skills, level)
+}
+
 // clone copies the slices a caller could otherwise mutate through.
 func (c Character) clone() Character {
 	out := c
 	out.Stages = make(progression.Line, len(c.Stages))
 	copy(out.Stages, c.Stages)
-	out.Skills = make([]string, len(c.Skills))
-	copy(out.Skills, c.Skills)
+	out.Skills = slices.Clone(c.Skills)
 	out.Species = slices.Clone(c.Species)
 	out.Passives = slices.Clone(c.Passives)
 	return out
@@ -171,7 +187,7 @@ type characterFile struct {
 	Bio      string            `json:"bio"`
 	Species  []string          `json:"species"`
 	Stages   progression.Line  `json:"stages"`
-	Skills   []string          `json:"skills"`
+	Skills   []Unlock          `json:"skills"`
 	Passives []Unlock          `json:"passives"`
 }
 
@@ -270,8 +286,8 @@ func ParseBook(raw []byte, deps Deps) (*Book, error) {
 // nobody, and is checked the moment the character that carries it exists.
 func checkCharacterRestrictions(book *Book, skills *skill.Book) error {
 	for _, character := range book.characters {
-		for _, id := range character.Skills {
-			carried, err := skills.Lookup(id)
+		for _, entry := range character.Skills {
+			carried, err := skills.Lookup(entry.ID)
 			if err != nil {
 				return err
 			}
@@ -336,7 +352,7 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 	if err != nil {
 		return Character{}, err
 	}
-	kit, err := resolveSkills(declared.Skills, deps.Skills)
+	learnset, kit, err := resolveLearnset(declared.ID, declared.Skills, deps.Skills)
 	if err != nil {
 		return fail("%w", err)
 	}
@@ -396,7 +412,7 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 		ID: declared.ID, Name: declared.Name,
 		Origin: declared.Origin, Archetype: declared.Archetype,
 		Image: declared.Image, Element: *declared.Element, Bio: declared.Bio,
-		Species: species, Stages: declared.Stages, Skills: skillIDs(kit),
+		Species: species, Stages: declared.Stages, Skills: learnset,
 		Passives: passives,
 	}, nil
 }
@@ -456,6 +472,88 @@ func resolveSkills(declared []string, skills *skill.Book) ([]skill.Skill, error)
 		out = append(out, known)
 	}
 	return out, nil
+}
+
+// resolveLearnset checks a character's learnset and hands back both the entries
+// and the skills they name.
+//
+// Two returns because two callers want different halves of one walk: the
+// character keeps the entries, because a level is what the placement will ask
+// about, and everything that checks a *restriction* wants the resolved skills,
+// because a restriction is a property of the skill rather than of when it is
+// learned. Walking twice would be two chances to disagree about which ids are in
+// the kit at all.
+//
+// The level rules are the ones a trait already obeys, read from the same place:
+// unstated is one, and a level outside the cap is a refusal rather than a clamp.
+// A clamp would silently move a skill an author put at 61 to the cap and leave
+// them reading a learnset that does not say what they wrote.
+func resolveLearnset(owner string, declared []Unlock, skills *skill.Book) ([]Unlock, []skill.Skill, error) {
+	if len(declared) == 0 {
+		return nil, nil, fmt.Errorf("knows no skills, so it would have nothing to do on its turn")
+	}
+	entries := make([]Unlock, 0, len(declared))
+	kit := make([]skill.Skill, 0, len(declared))
+	for _, entry := range declared {
+		known, err := skills.Lookup(entry.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		if slices.ContainsFunc(entries, func(seen Unlock) bool { return seen.ID == known.ID }) {
+			return nil, nil, fmt.Errorf("knows %q twice", known.ID)
+		}
+		level := entry.AtLevel
+		if level == 0 {
+			level = 1
+		}
+		if level < 1 || level > progression.LevelCap {
+			return nil, nil, fmt.Errorf("learns %q at level %d, outside 1..%d",
+				known.ID, entry.AtLevel, progression.LevelCap)
+		}
+		entries = append(entries, Unlock{ID: known.ID, AtLevel: level})
+		kit = append(kit, known)
+	}
+	// A character that learns nothing until later has nothing to bring at level
+	// one, and a placement there would be a unit that cannot act. The refusal is
+	// here rather than at placement because it is a fact about the character:
+	// every other level would be legal and the author would only find out by
+	// fielding it.
+	if !slices.ContainsFunc(entries, func(entry Unlock) bool { return entry.AtLevel == 1 }) {
+		return nil, nil, fmt.Errorf("learns nothing at level 1, so it would start with nothing to do")
+	}
+	_ = owner
+	return entries, kit, nil
+}
+
+// Learn turns a plain list of ids into learnset entries every one of which is
+// known from level one.
+//
+// It is what a preset's kit becomes when a character is built from it: an
+// archetype has no level to gate against, so the suggestion it carries is
+// "knows all of this", and somebody editing cast.json afterwards is who decides
+// otherwise. Exported because the authoring tool is the caller and a second
+// copy of this loop there would be the place the two spellings drift.
+func Learn(ids []string) []Unlock {
+	out := make([]Unlock, 0, len(ids))
+	for _, id := range ids {
+		out = append(out, Unlock{ID: id, AtLevel: 1})
+	}
+	return out
+}
+
+// LearnedIDs is every id in a learnset regardless of level, in declaration
+// order.
+//
+// It answers "what does this character ever know", which is a different
+// question from SkillsAt's "what does it know now" — and the one every check
+// about a *restriction* wants, because a restriction is a property of the skill
+// rather than of when it is learned.
+func LearnedIDs(entries []Unlock) []string {
+	out := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		out = append(out, entry.ID)
+	}
+	return out
 }
 
 func skillIDs(kit []skill.Skill) []string {

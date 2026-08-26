@@ -17,11 +17,35 @@ import (
 // battle; this one is the battle.
 type Log struct {
 	Seed uint64 `json:"seed"`
+	// Roster is the placement the battle was fought with: every unit, resolved.
+	//
+	// It is here because a placement became a *choice*. While a roster came out
+	// of the embedded data and nothing about it was decided, re-running a log
+	// meant loading that data again and the two were the same battle by
+	// construction. Now that a placement picks four skills out of nine and one
+	// trait out of two, a log without it cannot be re-run at all — --verify
+	// would be comparing two different fights and reporting the difference as
+	// corruption.
+	//
+	// It carries the resolved form rather than the reference, which has the side
+	// benefit the reference never had: a log is now readable across a data edit.
+	// Retuning a stat curve or moving a skill's learn level no longer
+	// invalidates every log written before it.
+	Roster []Roster `json:"roster,omitempty"`
 	// Choices are the actions taken, in order, including the ones the engine
 	// picked for itself. Replaying them reproduces the fight exactly.
 	Choices []Decision `json:"choices"`
 	Events  []Event    `json:"events"`
 }
+
+// Replayable reports whether the log carries the placement its battle was fought
+// with, which is what re-running it needs.
+//
+// A log written before placements were recorded renders perfectly — that reads
+// the events and nothing else — and cannot be verified, because there is nothing
+// to say which four of nine skills each unit brought. Saying so is better than
+// re-running the shipped roster against it and calling the mismatch corruption.
+func (l Log) Replayable() bool { return len(l.Roster) > 0 }
 
 // Decision is one action as it was taken. A passed turn carries no skill.
 type Decision struct {
