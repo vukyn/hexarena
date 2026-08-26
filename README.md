@@ -699,23 +699,46 @@ Whatever comes next keeps the two constraints the first slice was built under: a
 trait that changes a number **emits an event**, and one that touches speed is in
 force before the first wait is computed.
 
-### Learnsets, four slots, and choosing to evolve
+### Learnsets, slots, and choosing to evolve
 
 A character knows every skill it will ever know, from level one, and brings all
-of them. That makes a level cap the only thing separating a young unit from a
-grown one, and it means authoring a ninth skill makes a character strictly better
-rather than presenting a choice.
+of them. The same is now true of its traits. That makes a level cap the only
+thing separating a young unit from a grown one, and it means authoring a ninth
+skill — or a second trait — makes a character strictly better rather than
+presenting a choice.
+
+**Skills and traits are one mechanism here, not two.** Both are "declare many,
+unlock by progression, bring some", and building a second unlock system for
+traits would be two vocabularies for one idea — the mistake this repository keeps
+a list of. One `{id, at_level}` shape, one validator, one "what is available at
+level N" function, and two lists using it: a kit with four slots and a trait
+list with **one**.
 
 Four pieces, and they are one mechanism:
 
-- **A learnset.** A character declares *when* it learns each skill rather than
-  simply holding a list: `{skill, at_level}`, or `{skill, at_stage}` for one that
-  only a later form can hold. A stage-gated skill is gated behind whatever that
-  stage requires, transitively, which is what makes evolving unlock something
-  rather than merely raise numbers.
-- **Four slots.** A placement brings at most four of what the character has
-  learned. Refused at load if it names one the character has not learned at that
-  level, if it names more than four, or if it names one twice.
+- **A learnset.** A character declares *when* it learns each skill and each
+  trait rather than simply holding a list: `{id, at_level}`, or `{id, at_stage}`
+  for one that only a later form can hold. A stage-gated entry is gated behind
+  whatever that stage requires, transitively, which is what makes evolving unlock
+  something rather than merely raise numbers.
+
+  ⚠️ **`at_stage` cannot be built before chosen evolution**, and building it
+  early would be worse than not building it. `Line.StageAt` derives a stage from
+  a level today, so `at_stage: "Ivysaur"` is *exactly* `at_level: 16` and nothing
+  else — a second spelling of one fact, which is what this codebase refuses
+  everywhere. It becomes a different fact only once a placement names the stage
+  it fielded.
+- **Four slots, and one trait slot.** A placement brings at most four of the
+  skills the character has learned and at most one of its traits. Refused at load
+  if it names something the character has not learned at that level, if it names
+  too many, or if it names one twice. A trait slot is what turns a pile of traits
+  into a decision, for the same reason four skill slots do — and it is worth
+  little until there are traits worth choosing *between*: with only stat traits
+  built, a slot picks between three numbers.
+- **Gating is separable from slots, and much cheaper.** A first slice can gate
+  traits by level and bring **every unlocked one**, which is not a choice and so
+  needs no change to the log. The slots are the expensive half, and they are
+  where the log work below is paid for — once, for both lists.
 - **Evolution is chosen, not derived.** Today `progression.Line.StageAt` reads a
   stage out of a level, and there is no decision in it. Reaching the threshold
   should instead *allow* a stage, and the placement names which one it fielded, so
@@ -729,11 +752,11 @@ Four pieces, and they are one mechanism:
 
 Three things this has to face.
 
-**The log has to carry the placement.** A log holds a seed, the decisions taken
-and the events produced, and the roster comes from the embedded data — so a log
-is already only valid against the build that wrote it. Once the loadout and the
-stage are *choices*, a log without them cannot be re-run at all, and `--verify`
-would be comparing two different battles. Writing the placement into the log is
+**The log has to carry the placement.** `battle.Log` holds a seed, the decisions
+taken and the events produced — and nothing else. The roster comes from the
+embedded data, so a log is already only valid against the build that wrote it.
+Once the loadout, the trait and the stage are *choices*, a log without them cannot
+be re-run at all, and `--verify` would be comparing two different battles. Writing the placement into the log is
 part of this change rather than a follow-up, and it has the side benefit of
 making a log portable across a data edit, which today it is not.
 

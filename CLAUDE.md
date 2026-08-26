@@ -683,13 +683,23 @@ is the constraint each piece has to respect.
       mirror of a skill declaring full accuracy. Both original constraints still
       hold: a trait changing a number **emits an event**, and one touching speed
       is in force before the first wait is computed. See README → Roadmap.
-- [ ] **Learnsets, four slots, and choosing to evolve.** A character holds every
-      skill from level one and brings all of them, so a level is the only thing
-      separating a young unit from a grown one. Four pieces, one mechanism: a
-      **learnset** (`{skill, at_level}`, or `at_stage` for one only a later form
-      can hold, which is what makes evolving *unlock* rather than merely raise
-      numbers); **four slots** on a placement, refused at load if it names an
-      unlearned skill, more than four, or one twice; **a chosen stage** —
+- [ ] **Learnsets, slots, and choosing to evolve.** A character holds every skill
+      *and every trait* from level one and brings all of them, so a level is the
+      only thing separating a young unit from a grown one. **Skills and traits are
+      one mechanism here, not two**: both are "declare many, unlock by
+      progression, bring some", so it is one `{id, at_level}` shape, one
+      validator and one availability function, used by a kit with four slots and a
+      trait list with one. Building a second unlock system for traits would be
+      two vocabularies for one idea. Four pieces, one mechanism: a **learnset**
+      (`{id, at_level}`, or `at_stage` for one only a later form can hold, which
+      is what makes evolving *unlock* rather than merely raise numbers — but
+      ⚠️ **`at_stage` cannot be built before chosen evolution**, because
+      `Line.StageAt` derives a stage from a level today, so `at_stage: "Ivysaur"`
+      *is* `at_level: 16` and nothing else); **slots** on a placement, four skills
+      and one trait, refused at load if it names something unlearned, too many, or
+      one twice — and note **gating is separable from slots and much cheaper**, so
+      a first slice can gate traits and bring every unlocked one, which is not a
+      choice and needs no log change; **a chosen stage** —
       `Line.StageAt` derives one from a level today, and a level should instead
       *allow* one while the placement names which it fielded, so
       `Resolve(level)` becomes `Resolve(level, stage)`; and **no condition beyond
