@@ -787,32 +787,36 @@ Two answers, and they are not alternatives:
     fine; anything reading a clock is not, and a battle that drew on one machine
     has to draw on every other from the same seed.
 
-### A real cast
+### A real cast, and a roster that is not a mirror
 
-The tooling for this exists now — see *Authoring a cast* above.
-`internal/core/cast` holds origins, archetype presets and characters;
-`internal/forge` sequences the authoring and `cmd/hexforge` and
-`cmd/hexforge-tui` are two front-ends over it; `progression.Line` is finally used, with one
-single-stage and one two-stage example in `cast.json`; and a roster entry can
-place a character by reference. What remains is the cast itself:
+The tooling for this exists — see *Authoring a cast* above. What remains is the
+cast, and the shape of the gap has changed since this was written: the example
+characters are gone and `cast.json` ships exactly one, `pokemon.bulbasaur`, with
+three forms and art for each.
 
-- **The characters.** `cast.json` ships two examples that say in their own
-  biographies that they are examples. `roster.json` is still the ten-unit flat
-  test bed, deliberately: it covers every affinity and every mechanic, and
-  turning it into references would change every battle the golden files were
-  measured from.
-- **Art.** `hexforge check` verifies that the file a character names exists, and
-  two placeholder SVGs sit under `internal/seed/data/assets/` so it passes out of
-  the box. Nothing rasterises them yet, which is the same pipeline question the
-  graphical client faces.
+- **One character is not a cast.** Nine skills and three forms all belong to it,
+  so every design question about how two characters differ is unasked.
+- **The roster is a mirror, and that is the blocking half.** `roster.json` is 3v3
+  by reference at levels 60, 24 and 8 — the same character on both sides. A
+  mirror cannot measure balance: a change that helps one side helps the other by
+  exactly as much, so the win rate moves only by noise. Measured over forty
+  auto-battles, giving `razor_leaf` its piercing value moved the ally win rate
+  from 23 to 25 of 40, which says nothing at all. The damage table said the
+  useful things instead. So the value of a second character is not variety, it is
+  that balance becomes measurable.
+- **Art is answered.** `hexforge check` verifies every picture a character names,
+  its own and each form's, and `p` in `hexforge-tui` draws it — the terminal
+  rasterises through `forge.ArtImage`, which narrows the graphical client's
+  pipeline question rather than settling it.
 - **Elements to design around.** `battle.New` refuses a unit carrying a skill of
   an element it does not share, so an archetype's kit constrains the affinity of
-  every character built from it — `skill.CanCarry` is the single declaration of
-  that rule and `hexforge` applies it while you are authoring, so this is a design
-  constraint rather than a trap. `hexforge archetypes` prints each preset's
-  demand: bulwark needs metal, vanguard fire, sentinel water, duelist wind,
-  skirmisher grass and electric. A new preset mixing three elements' skills is
+  every character built from it. `skill.CanCarry` is the single declaration of
+  that rule and `hexforge` applies it while you author, so this is a design
+  constraint rather than a trap. A preset mixing three elements' skills is
   rejected, because no affinity can hold three.
+
+Every character added moves `scenarios.golden` and `replay.golden`. That is the
+point rather than a cost: those diffs are how a balance change gets read.
 
 The stat budget is the constraint to design against: `progression.Limits` bounds
 each stat and, separately, bounds health and defence together, because those two

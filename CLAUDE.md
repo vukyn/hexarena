@@ -682,13 +682,20 @@ is the constraint each piece has to respect.
       detection must be a pure function of state, because a battle that draws on
       one machine has to draw on every other from the same seed. See README →
       Roadmap.
-- [ ] **A real cast.** The tooling now exists: `internal/core/cast` holds origins,
-      archetype presets and characters, `cmd/hexforge` authors them, and
-      `progression.Line` is finally used — `cast.json` ships one single-stage and
-      one two-stage example. What is missing is the cast itself and its art. Design
-      against `progression.Limits`, particularly the joint health-and-defence
-      bound, since those two multiply, and remember that an archetype's kit
-      constrains a character's affinity, which `skill.CanCarry` now enforces at
-      authoring time and `Archetype.Demands` reports. `roster.json` is
-      still the flat test bed on purpose: turning it into character references
-      would change every battle the goldens were measured from.
+- [ ] **A real cast — and an asymmetric roster.** The tooling exists, the example
+      characters are gone, and `cast.json` now ships **one** character:
+      `pokemon.bulbasaur`, three forms, art for each. `roster.json` is no longer
+      the flat test bed either — it is 3v3 by character reference at levels 60,
+      24 and 8, which means **both squads are the same character** and every
+      battle is a mirror. That is the thing to fix, and it is not cosmetic: a
+      mirror cannot measure balance, because a change that helps one side helps
+      the other by exactly as much and the win rate moves only by noise. It is
+      what stopped `razor_leaf`'s piercing value from being judged by anything
+      but its damage table. So the work is a second character first, then a
+      roster where the two sides differ. Design against `progression.Limits`,
+      particularly the joint health-and-defence bound since those two multiply,
+      and remember that an archetype's kit constrains a character's affinity —
+      `skill.CanCarry` enforces it while authoring and `Archetype.Demands`
+      reports it. Every character added moves `scenarios.golden` and
+      `replay.golden`, which is the point rather than a cost: those diffs are how
+      the balance change gets read.
