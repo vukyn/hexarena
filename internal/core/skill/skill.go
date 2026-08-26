@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
@@ -374,7 +375,28 @@ type Skill struct {
 	// table, so the compiled names remain the fallback for the skills that
 	// shipped before this field existed. Being absent by default is also why no
 	// golden moved when it arrived — see skillFile.
-	Name    string
+	Name string
+	// Flavour is one clause saying what the skill *does*, in words rather than in
+	// figures: "vung dây leo quật kẻ địch từ xa". It opens the sentence a
+	// description is built into, and the numbers are appended to it.
+	//
+	// # Why it is authored where nothing else about a description is
+	//
+	// Everything else in a description is derived, on purpose, because an
+	// authored figure drifts the moment the figure it describes moves. Nothing
+	// derives "dây leo" from `vine_whip`: the name is the one fact about a skill
+	// that only a person holds, and a generator reading ids would be guessing.
+	//
+	// ⚠️ **It may not contain a digit**, and ParseBook refuses one that does.
+	// That is the whole of what keeps the guarantee: a clause with no number in
+	// it cannot be made wrong by changing a number, so this is authored prose
+	// that still cannot go stale. A skill that wants to say "twice over" says it
+	// by having a bonus, and the sentence built around this clause reports it.
+	//
+	// It is absent by default, and absent is a real answer: a skill with no
+	// flavour opens with the derived clause instead, which is what every skill
+	// read like before this existed.
+	Flavour string
 	Element element.Element
 	// Range is the hex distance the skill reaches, measured on the shared board.
 	Range int
@@ -477,7 +499,11 @@ type skillFile struct {
 	// file round-trips byte for byte and the tables measured from it do not move.
 	// It sits beside the id because that is where it reads — a skill and the name
 	// it is called by, then the numbers.
-	Name     string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// Flavour sits beside the name for the same reason: both are the words a
+	// skill is read in, and both are omitted when absent so a book that declares
+	// neither round-trips to the bytes it was authored as.
+	Flavour  string `json:"flavour,omitempty"`
 	Element  string `json:"element"`
 	Range    int    `json:"range"`
 	Pattern  string `json:"pattern"`
@@ -571,7 +597,7 @@ func DefaultScaling() Scaling {
 // default, so a file that declared none reads back exactly as it was authored.
 func (s Skill) file() skillFile {
 	out := skillFile{
-		ID: s.ID, Name: s.Name,
+		ID: s.ID, Name: s.Name, Flavour: s.Flavour,
 		Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
 		Power: s.Power, Strikes: s.Strikes, Accuracy: s.Accuracy,
 		Pierce: s.Pierce, Restores: s.Restores, Drains: s.Drains,
@@ -767,6 +793,17 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	// against a character set and not compared with the id.
 	name := strings.TrimSpace(declared.Name)
 
+	// A flavour clause carrying a figure is the one way authored prose can go
+	// stale, so it is refused rather than trusted: every number in a description
+	// is derived, and a clause saying "gấp đôi" would outlive the bonus that made
+	// it true. The check is for digits rather than for a percent sign because
+	// "110" and "gấp 2" are the same mistake wearing different clothes.
+	flavour := strings.TrimSpace(declared.Flavour)
+	if index := strings.IndexFunc(flavour, unicode.IsDigit); index >= 0 {
+		return fail("has a flavour clause carrying the figure %q; every number in a description is derived, and an authored one would outlive what it describes",
+			flavour[index:index+1])
+	}
+
 	applies, err := resolveApplications(declared.ID, "applies", declared.Applies, deps)
 	if err != nil {
 		return Skill{}, err
@@ -862,7 +899,7 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	}
 
 	return Skill{
-		ID: declared.ID, Name: name,
+		ID: declared.ID, Name: name, Flavour: flavour,
 		Element: affinity, Range: declared.Range, Pattern: shape.Name,
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
 		Pierce: declared.Pierce, Scaling: scaling, Applies: applies, SelfApplies: selfApplies,

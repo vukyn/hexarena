@@ -287,13 +287,27 @@ Two tests hold the line: `TestEveryEventKindIsReachable` fails if a declared kin
 is never emitted by any real battle, and `TestEveryEventKindRenders` fails if a
 kind falls through the renderer's default case.
 
-**Skill and trait descriptions are DERIVED, never authored** (`internal/i18n/describe.go`,
-in **both** languages).
+**Every FIGURE in a skill description is derived; exactly one clause is authored**
+(`internal/i18n/describe.go`, in **both** languages). `Skill.Flavour` opens the
+sentence and the numbers are appended. ⚠️ **A flavour clause may not contain a
+digit** — `skill.ParseBook` refuses one that does, and that single rule is the
+whole of why authored prose is safe here: no number in it, nothing a balance
+change can make wrong. Digits rather than a percent sign, because "110" and "gấp
+2" are the same mistake. English has none (like `Skill.Name`, it is authored once
+in Vietnamese) and falls back to the derived opening.
+⚠️ **A clause obeys the same body rule as the name** — `withdraw` was renamed off
+"thu mai" because anybody may carry it, and the first clause written for it said
+"rụt hết vào trong mai": the same defect through a field the name test does not
+look at. `TestAFreeSkillsFlavourNamesNoBodyItMayNotHave` checks an **unrestricted**
+skill's clause against a hand-written `bodyWords` list; a restricted skill is
+exempt because its restriction guarantees the body. It cannot tell whose shell is
+meant, so a body word about anything trips it — reword rather than argue.
 `?N` at the battle prompt describes the Nth offered skill, `?TAG` a unit's traits;
 both reprint the menu and cost no turn. Every number comes from the skill itself,
 because an authored line survives its own numbers moving — "doubles" outlives a
 bonus falling 1000 → 700 — and this repo already refused that trade in
-`Archetype.Demands`. ⚠️ **Never add a `description` field to skills.json.**
+`Archetype.Demands`. ⚠️ **Never add a `description` field to skills.json** — `flavour` is one clause,
+not a description, and the difference is that it holds no figures.
 Numbers are **shares of a stat** ("100% công"), never damage figures: a figure is
 true for one caster against one target and false at the next buff. ⚠️ The block is
 **Vietnamese on an otherwise English screen** — a stated cost, not an oversight;

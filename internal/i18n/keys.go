@@ -335,8 +335,10 @@ const (
 	// wording here is a sentence with numbers dropped into it and never a fact of
 	// its own.
 	BlurbHits
+	BlurbFlavoured
+	LabelFlavour
+	SkillHelpFlavour
 	BlurbAims
-	BlurbCells
 	BlurbStrikes
 	BlurbOnce
 	BlurbPierces
@@ -351,6 +353,7 @@ const (
 	BlurbAmplified
 	BlurbConsumes
 	BlurbCostRange
+	BlurbCostCells
 	BlurbCostSelf
 	BlurbCostAccuracy
 	BlurbCostCooldown

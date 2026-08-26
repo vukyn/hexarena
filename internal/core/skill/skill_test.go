@@ -1219,3 +1219,41 @@ func TestAConditionIsRefusedWhenItCannotMeanAnything(t *testing.T) {
 		}
 	}
 }
+
+// TestAFlavourClauseMayNotCarryAFigure is the one rule that lets authored prose
+// into a description at all.
+//
+// Everything else in a description is derived, because an authored number
+// outlives the number it describes: a clause reading "gấp đôi" survives a bonus
+// falling from 1000 to 700 with nothing to catch it. A clause with no digit in it
+// cannot be made wrong by changing a figure, so the ban is not tidiness — it is
+// the whole of why this field is safe to have.
+func TestAFlavourClauseMayNotCarryAFigure(t *testing.T) {
+	for _, refused := range []string{
+		"Vung dây leo quật kẻ địch, gấp 2 lần",
+		"Đánh 110% sức tấn công",
+		"Trúng 3 ô",
+	} {
+		declared := base()
+		declared["flavour"] = refused
+		if _, err := parse(t, declared); err == nil {
+			t.Errorf("a flavour clause carrying a figure was accepted: %q", refused)
+		}
+	}
+
+	// Prose that says the same thing in words is exactly what the field is for,
+	// because words cannot disagree with a number that moved.
+	declared := base()
+	declared["flavour"] = "Vung dây leo quật kẻ địch từ xa"
+	book, err := parse(t, declared)
+	if err != nil {
+		t.Fatalf("a flavour clause with no figure should parse: %v", err)
+	}
+	found, err := book.Lookup("ember_lance")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if found.Flavour != "Vung dây leo quật kẻ địch từ xa" {
+		t.Errorf("the flavour came back as %q", found.Flavour)
+	}
+}
