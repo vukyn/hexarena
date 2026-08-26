@@ -13,6 +13,15 @@ venoshock       neutral   enemy    2  single          900     1    900   900    
 leech_seed      grass     enemy    3  single          700     1    700   900    3     0      240
 synthesis       grass     self     0  single            0     1      0  1000    4     0        0
 ingrain         grass     self     0  single            0     1      0  1000    4     0        0
+ember           fire      enemy    2  single         1000     1   1000   950    1     0      342
+flamethrower    fire      enemy    3  single         1600     1   1600   900    2     0      548
+fire_fang       fire      enemy    1  single          650     2   1300   880    2   350      556
+fire_spin       fire      enemy    3  column          850     1    850   860    3     0      291
+heat_wave       fire      enemy    3  wedge_right    1100     1   1100   850    4     0      377
+inferno         fire      enemy    2  single         1000     1   1000   880    3     0      342
+dragon_rage     neutral   enemy    3  single         1300     1   1300   920    3     0      445
+smokescreen     neutral   enemy    2  flank_up          0     1      0  1000    3     0        0
+dragon_dance    neutral   self     0  single            0     1      0  1000    4     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -20,13 +29,22 @@ sleep_powder    stun                   1      500       1000              500
 poison_powder   poison                 1      800       1000              800
 sludge_bomb     poison                 1      400        900              360
 ingrain         regrowth (self)        2     1000       1000                -
+ember           burn                   1      300        950              285
+flamethrower    burn                   1      500        900              450
+fire_spin       burn                   1      700        860              602
+heat_wave       burn                   1      400        850              340
+smokescreen     blind                  1      800       1000              800
+dragon_dance    rally (self)           1     1000       1000                -
+dragon_dance    haste (self)           1     1000       1000                -
 
 == conditional amplifiers ==
 skill           needs      stacks   power   amplified   damage   amplified   gain
 venoshock       poison           1     900        1800      308         617  2.00x
+inferno         burn             1    1000        3500      342        1200  3.50x (consumes)
 
 == what a detonate gives up ==
 skill           status   ticks forgone   a plain attack   alternative   burst    ratio
+inferno         burn                 548              342           890    1200    1.34x
 
 == cleanses and dispels ==
 skill           categories                    stacks
@@ -47,6 +65,7 @@ toughened   buff                1       0            0      0               0   
 veil        buff                2       2            0      0               0   dodge +40.0%
 block       shield              3       2            0      0               0   -
 regrowth    regen               3       3          400    137            1644   -
+kindled     buff                1       0            0      0               0   attack +15.0%
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim
