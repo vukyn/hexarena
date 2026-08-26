@@ -1068,7 +1068,7 @@ func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
 // has to work even with a question pending, or a modal can trap somebody.
 func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 	base, _, _ := start(t, i18n.Vi)
-	for _, target := range []screen{screenMenu, screenBrowse, screenOrigins, screenCheck, screenPreview} {
+	for _, target := range []screen{screenMenu, screenBrowse, screenOrigins, screenCheck, screenPreview, screenBlurb} {
 		m := base.enter(target)
 		if _, command := m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"}); !quits(command) {
 			t.Errorf("q did not quit from screen %d", target)

@@ -45,7 +45,7 @@ go run ./cmd/hexforge-tui                        # the same authoring, full scre
 go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG=en does the same, ctrl+l toggles
 
 go test ./...
-go test ./internal/core/hex ./internal/seed ./internal/tui -update   # accept new goldens
+go test ./internal/core/hex ./internal/i18n ./internal/seed ./internal/tui -update   # accept new goldens
 go test ./internal/core/battle -run TestControl                     # one test
 gofmt -l . && go vet ./...
 ```
@@ -287,7 +287,8 @@ Two tests hold the line: `TestEveryEventKindIsReachable` fails if a declared kin
 is never emitted by any real battle, and `TestEveryEventKindRenders` fails if a
 kind falls through the renderer's default case.
 
-**Skill and trait descriptions are DERIVED, never authored** (`internal/tui/describe.go`).
+**Skill and trait descriptions are DERIVED, never authored** (`internal/i18n/describe.go`,
+in **both** languages).
 `?N` at the battle prompt describes the Nth offered skill, `?TAG` a unit's traits;
 both reprint the menu and cost no turn. Every number comes from the skill itself,
 because an authored line survives its own numbers moving — "doubles" outlives a
@@ -297,10 +298,19 @@ Numbers are **shares of a stat** ("100% công"), never damage figures: a figure 
 true for one caster against one target and false at the next buff. ⚠️ The block is
 **Vietnamese on an otherwise English screen** — a stated cost, not an oversight;
 translate the whole battle screen in one piece or not at all. It borrows
-`i18n.Vi.Gloss` rather than growing a second Vietnamese vocabulary (two names for
-one status is how they drift). `testdata/describe.golden` covers **every** shipped
-skill and trait, so a balance change moves a line there — that diff is how a
-number change reads to a player.
+`Lang.Gloss` rather than growing a second vocabulary (two names for one status is
+how they drift) — and in **English a bare id is the name**, so `poison` in an
+English sentence is the reading working, not a missing gloss. Two entrances:
+`?N` / `?TAG` at the battle prompt, and `?` on the hexforge-tui skill listing,
+which raises `screenBlurb`. ⚠️ **The forge form is not the place for it** — 19
+fields already show 13 of themselves in an 80x24 window, so a three-line block
+under the form costs a quarter of the fields; a screen costs nothing until asked
+for. `internal/i18n/testdata/describe.golden` covers **every** shipped skill and
+trait in **both** languages, so a balance change moves a line there — that diff is
+how a number change reads to a player. ⚠️ English needs singular wordings where
+Vietnamese does not (`BlurbCostCooldownOne`, `BlurbStripsOne`): two keys rather
+than a plural rule, because a rule would make Vietnamese pretend it has a
+distinction it does not.
 
 Event kinds, sides and outcomes serialise **by name**. Do not change that to a
 number: a saved log would silently reinterpret itself the next time a constant was
@@ -801,8 +811,8 @@ regenerated on autopilot:
   with what it spends of the effective-health budget, and every character
   resolved at each of its stage boundaries and at the cap.
 
-Run `make golden` (`go test ./internal/core/hex ./internal/seed ./internal/tui
--update`) to accept a change and then
+Run `make golden` (`go test ./internal/core/hex ./internal/i18n ./internal/seed
+./internal/tui -update`) to accept a change and then
 **read the diff**. That diff is what the files are for: a balance change that
 moves numbers you did not expect is a finding, not noise.
 

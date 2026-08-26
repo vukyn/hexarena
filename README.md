@@ -604,12 +604,27 @@ what a skill is worth, this says what it sounds like.
 read; a damage number is true for one caster against one target and stops being
 true at the next buff. A player comparing two skills is comparing the shares.
 
-**Vietnamese, alone on an English screen.** The rest of this package is English
-and stays that way until the whole battle screen is translated in one piece
-rather than a paragraph at a time. This block is the one part read to *decide*,
-so it is worth being legible before the rest catches up, and the mixed screen is
-a stated cost. It borrows `i18n`'s gloss tables rather than growing a second set
-of Vietnamese names, because two vocabularies for one status is how they drift.
+**Both languages, and two places that ask for it.** The sentences live in
+`internal/i18n` beside the gloss tables they borrow every data name from, which
+is what makes a second vocabulary unwritable and a second language cheap. The
+authoring tool needed that: `?` on its skill listing raises the same description,
+and that tool has a language toggle a Vietnamese-only block would have ignored.
+
+In English a bare id **is** the name, so `poison` in an English sentence is the
+reading working rather than a gloss missing. English also needs singular wordings
+where Vietnamese does not — "1 turn to recharge" against "1 turns" — and that is
+two keys rather than a plural rule, because a rule would make Vietnamese pretend
+it has a distinction it does not.
+
+The battle prompt still asks for Vietnamese while the screen around it is
+English. That is a stated cost: the screen gets translated in one piece or not at
+all, and this block is the one part read to *decide*, so it is worth being legible
+before the rest catches up. It is now one word to change rather than a rewrite.
+
+**Not under the authoring form.** That form has nineteen fields and shows
+thirteen of them in an eighty-by-twenty-four window; a three-line block would cost
+a quarter of the fields for something read occasionally. A screen costs nothing
+until it is asked for, which is the same trade the art preview makes.
 
 ## Battle logs
 
@@ -691,7 +706,7 @@ Balance lives in `internal/seed/data`, embedded at build time:
 Changing a number there changes the game without touching Go. The tests will tell
 you what moved: several of them freeze design figures deliberately, and the golden
 files under `testdata` are a record of what the numbers currently produce. Run
-`go test ./internal/core/hex ./internal/seed ./internal/tui -update` to accept a
+`go test ./internal/core/hex ./internal/i18n ./internal/seed ./internal/tui -update` to accept a
 change, and read the diff — that diff is the point of them.
 
 ### The seed roster is the balance instrument
