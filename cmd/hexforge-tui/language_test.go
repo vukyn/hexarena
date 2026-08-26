@@ -14,6 +14,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -1345,5 +1346,68 @@ func TestTheFormScrollsToTheFieldTheCursorIsOn(t *testing.T) {
 					lang, got, form.height-4)
 			}
 		}
+	}
+}
+
+// TestNoDetailRowIsCutOff measures every row the character pane draws, at the
+// floor and at a wider window.
+//
+// It exists because three of its rows have no bound on their length -- a kit, its
+// reading, and a biography -- and they were being clipped by the frame, which
+// takes the tail off silently. A row cut at the window is indistinguishable from
+// a row that ends there.
+func TestNoDetailRowIsCutOff(t *testing.T) {
+	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
+		for _, width := range []int{minWidth, 100, 140} {
+			m, lib, _ := start(t, lang)
+			m = send(t, m, tea.WindowSizeMsg{Width: width, Height: 40})
+			browse := m.enter(screenBrowse)
+			for index := range lib.Characters().All() {
+				browse.browse.cursor = index
+				body, _ := browse.browse.view(browse)
+				for _, line := range strings.Split(body, "\n") {
+					if drawn := lipgloss.Width(line); drawn > width {
+						t.Errorf("%v at %d cells draws a %d-cell row: %q",
+							lang, width, drawn, line)
+					}
+				}
+			}
+		}
+	}
+}
+
+// TestAWrappedRowLinesUpUnderItsValue is the property that makes wrapping worth
+// having over clipping: the tail has to read as a continuation rather than as a
+// new row with a missing label.
+func TestAWrappedRowLinesUpUnderItsValue(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	m = send(t, m, tea.WindowSizeMsg{Width: minWidth, Height: 40})
+	const width = 10
+	drawn := m.wrapped("nhãn", width, strings.Repeat("một hai ba bốn năm ", 8))
+	lines := strings.Split(strings.TrimRight(drawn, "\n"), "\n")
+	if len(lines) < 2 {
+		t.Fatalf("nothing wrapped: %q", drawn)
+	}
+	// Measured as an indent rather than by finding a word: a continuation starts
+	// with whatever word happened to fall there, and the styles put escape codes
+	// in front of the text, so a byte index is not a column.
+	indent := func(line string) int {
+		bare := ansi.Strip(line)
+		return lipgloss.Width(bare) - lipgloss.Width(strings.TrimLeft(bare, " "))
+	}
+	// The first line's indent is the body's own two: its label sits there. Every
+	// continuation is indented past the label column instead, which is the column
+	// the value started in — two, plus the label width, plus the space between.
+	want := 2 + width + 1
+	for i, line := range lines[1:] {
+		if got := indent(line); got != want {
+			t.Errorf("continuation %d is indented %d, want the value column %d: %q",
+				i, got, want, line)
+		}
+	}
+	// A word longer than the room keeps its own line rather than being halved.
+	long := m.wrapped("nhãn", width, "một "+strings.Repeat("x", 200))
+	if !strings.Contains(long, strings.Repeat("x", 200)) {
+		t.Error("a word longer than the room was cut instead of overflowing")
 	}
 }

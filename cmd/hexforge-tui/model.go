@@ -424,6 +424,65 @@ func (m model) continued(format string, args ...any) string {
 	return m.labelAt("", detailLabelWidth(m), format, args...)
 }
 
+// wrapped is label for a value with no bound on its length: it fills the row and
+// carries on underneath, aligned with where the value started.
+//
+// Clipping was wrong for these in two ways at once. It cut at minWidth, which is
+// the *floor* a window has to clear rather than a ceiling on what one may use, so
+// a hundred-cell terminal was being told it had seventy-nine. And a kit of nine
+// ids or a paragraph of biography is longer than any terminal, so widening alone
+// would not have saved it — the tail has to go somewhere, and a row below is
+// where a reader looks for it.
+//
+// The rows this draws are variable in number, so it belongs only on a pane that
+// can afford that. The form counts its rows to scroll them and must not use it.
+func (m model) wrapped(name string, width int, value string) string {
+	room := m.usableWidth() - 2 - width - 1
+	if room < 8 {
+		// Narrower than this and wrapping makes a column of syllables; the
+		// clip is the lesser evil.
+		return m.labelAt(name, width, "%s", clip(value, max(room, 1)))
+	}
+	lines := wrapWords(value, room)
+	var out strings.Builder
+	out.WriteString(m.labelAt(name, width, "%s", lines[0]))
+	for _, line := range lines[1:] {
+		out.WriteString(m.labelAt("", width, "%s", line))
+	}
+	return out.String()
+}
+
+// usableWidth is what a row may spend: the window when there is one, and the
+// floor before the first size message arrives.
+func (m model) usableWidth() int {
+	if m.width < minWidth {
+		return minWidth
+	}
+	return m.width
+}
+
+// wrapWords breaks text on spaces, never mid-word, and never returns nothing.
+//
+// A word longer than the room gets its own line and overflows it rather than
+// being cut: an id is a name, and half a name is worse than a line that runs on
+// and gets clipped by the frame.
+func wrapWords(text string, room int) []string {
+	words := strings.Fields(text)
+	if len(words) == 0 {
+		return []string{""}
+	}
+	lines, current := []string{}, words[0]
+	for _, word := range words[1:] {
+		if lipgloss.Width(current)+1+lipgloss.Width(word) <= room {
+			current += " " + word
+			continue
+		}
+		lines = append(lines, current)
+		current = word
+	}
+	return append(lines, current)
+}
+
 // labelAt is label in a caller-chosen column.
 //
 // The new-character form sizes its own column from the widest field name it is
