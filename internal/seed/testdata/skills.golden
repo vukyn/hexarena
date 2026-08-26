@@ -10,12 +10,16 @@ sleep_powder    grass     enemy    2  flank_up          0     1      0  1000    
 poison_powder   neutral   enemy    2  flank_up          0     1      0  1000    3        0
 sludge_bomb     neutral   enemy    2  single         1300     1   1300   900    2      445
 venoshock       neutral   enemy    2  single          900     1    900   900    2      308
+leech_seed      grass     enemy    3  single          700     1    700   900    3      240
+synthesis       grass     self     0  single            0     1      0  1000    4        0
+ingrain         grass     self     0  single            0     1      0  1000    4        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
 sleep_powder    stun                   1      500       1000              500
 poison_powder   poison                 1      800       1000              800
 sludge_bomb     poison                 1      400        900              360
+ingrain         regrowth (self)        2     1000       1000                -
 
 == conditional amplifiers ==
 skill           needs      stacks   power   amplified   damage   amplified   gain
