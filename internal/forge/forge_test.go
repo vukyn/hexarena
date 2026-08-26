@@ -1,8 +1,12 @@
 package forge
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"image"
+	"image/color"
+	"image/png"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -2105,5 +2109,119 @@ func TestTheStatusBookIsOfferedInItsOwnOrder(t *testing.T) {
 			t.Errorf("%s reads as ticking %v against a tick power of %d",
 				kind.ID, kind.Ticks, declared.TickPower)
 		}
+	}
+}
+
+// TestArtImageFitsTheBoxItWasGiven is the contract a caller lays out against:
+// the size asked for is the size returned, and the picture inside it keeps its
+// own proportions rather than being stretched to the corners.
+func TestArtImageFitsTheBoxItWasGiven(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	character, known := lib.Characters().Get("pokemon.bulbasaur")
+	if !known {
+		t.Skip("the shipped cast no longer holds the character this measures")
+	}
+	art := character.Image
+
+	// A square box on square art fills it; the two are checked together so a
+	// stretch cannot hide behind the box being the right size.
+	square, err := lib.ArtImage(art, 40, 40)
+	if err != nil {
+		t.Fatalf("rasterise into a square: %v", err)
+	}
+	if got := square.Bounds(); got.Dx() != 40 || got.Dy() != 40 {
+		t.Errorf("a 40x40 box came back %v", got)
+	}
+
+	// A box twice as wide as it is tall must leave the sides empty rather than
+	// stretch the picture into them. Measured on the first column, which a
+	// stretched drawing would paint and a fitted one cannot.
+	wide, err := lib.ArtImage(art, 80, 40)
+	if err != nil {
+		t.Fatalf("rasterise into a wide box: %v", err)
+	}
+	if got := wide.Bounds(); got.Dx() != 80 || got.Dy() != 40 {
+		t.Errorf("an 80x40 box came back %v", got)
+	}
+	painted := func(img *image.RGBA, x int) bool {
+		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
+			if img.RGBAAt(x, y).A > 0 {
+				return true
+			}
+		}
+		return false
+	}
+	if painted(wide, 0) || painted(wide, 79) {
+		t.Error("a wide box was filled to its edges, so the art was stretched rather than fitted")
+	}
+	if !painted(wide, 40) {
+		t.Error("the middle of a wide box is empty, so nothing was drawn at all")
+	}
+
+	// The cap is what keeps a preview a preview: an enormous terminal must not
+	// ask for an enormous raster.
+	huge, err := lib.ArtImage(art, MaxArtPixels*4, MaxArtPixels*4)
+	if err != nil {
+		t.Fatalf("rasterise into an oversized box: %v", err)
+	}
+	if got := huge.Bounds(); got.Dx() > MaxArtPixels || got.Dy() > MaxArtPixels {
+		t.Errorf("an oversized box came back %v, over the %d cap", got, MaxArtPixels)
+	}
+}
+
+// TestArtImageRefusesWhatItCannotDraw covers the two answers that are not a
+// picture, because a preview showing a Go error is worse than one saying it
+// cannot open the file.
+func TestArtImageRefusesWhatItCannotDraw(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	if _, err := lib.ArtImage("assets/nobody-drew-this.svg", 40, 40); err == nil {
+		t.Error("art that is not on disk rasterised anyway")
+	}
+	if _, err := lib.ArtImage("assets/bulbasaur.svg", 0, 40); err == nil {
+		t.Error("a box with no width rasterised anyway")
+	}
+}
+
+// TestArtImageDrawsARaster is the .png half of what an authored path allows.
+// Nothing ships as one, so without this the branch is only reachable by an
+// author who tries it.
+func TestArtImageDrawsARaster(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	// A four-pixel picture, red and opaque, so what comes back is checkable
+	// without depending on a resampler's exact weights.
+	source := image.NewRGBA(image.Rect(0, 0, 2, 2))
+	for x := range 2 {
+		for y := range 2 {
+			source.Set(x, y, color.RGBA{R: 255, A: 255})
+		}
+	}
+	var encoded bytes.Buffer
+	if err := png.Encode(&encoded, source); err != nil {
+		t.Fatalf("encode: %v", err)
+	}
+	written := filepath.Join(dir, "assets", "fixture", "raster.png")
+	if err := os.WriteFile(written, encoded.Bytes(), 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	drawn, err := lib.ArtImage("assets/fixture/raster.png", 16, 16)
+	if err != nil {
+		t.Fatalf("rasterise a png: %v", err)
+	}
+	if got := drawn.Bounds(); got.Dx() != 16 || got.Dy() != 16 {
+		t.Errorf("a 16x16 box came back %v", got)
+	}
+	middle := drawn.RGBAAt(8, 8)
+	if middle.A == 0 || middle.R <= middle.G || middle.R <= middle.B {
+		t.Errorf("the middle of a red picture is %+v", middle)
 	}
 }

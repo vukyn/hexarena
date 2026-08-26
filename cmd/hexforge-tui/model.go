@@ -22,6 +22,11 @@ const (
 	screenOrigins
 	screenSkills
 	screenCheck
+	// screenPreview is raised from the browser rather than the menu, because it
+	// draws one character's art and the browser is where a character is chosen.
+	// Appended rather than slotted in beside screenBrowse: nothing serialises
+	// these, but the menu is built from the order they are declared in.
+	screenPreview
 )
 
 // The smallest window the screens fit in.
@@ -102,6 +107,7 @@ type model struct {
 	origins originsScreen
 	skills  skillsScreen
 	check   checkScreen
+	preview previewScreen
 
 	// picker holds the multi-select while it is open, over whichever screen
 	// raised it. It lives here rather than on a screen because two screens raise
@@ -137,6 +143,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		origins: newOriginsScreen(lib),
 		skills:  newSkillsScreen(lib),
 		check:   newCheckScreen(lib),
+		preview: newPreviewScreen(),
 	}
 }
 
@@ -220,6 +227,8 @@ func (m model) key(message tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.skills.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
+	case screenPreview:
+		return m.preview.update(m, message)
 	}
 	return m, nil
 }
@@ -309,6 +318,8 @@ func (m model) View() string {
 		body, footer = m.skills.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
+	case screenPreview:
+		body, footer = m.preview.view(m)
 	}
 	// The picker is drawn over whichever screen raised it, for the same reason
 	// it is a sub-screen at all: a list of nineteen does not fit beside a form.

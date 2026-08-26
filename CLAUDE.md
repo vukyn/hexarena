@@ -288,6 +288,25 @@ without it (an inline stat line is already resolved). `battle.Roster` deliberate
 gains no image, biography or origin field: the engine has no use for them, and the
 event log is what a renderer reads.
 
+**`forge.ArtImage` is the only thing that rasterises, and the preview is the one
+place colour is information.** Reading and drawing a picture is `internal/forge`
+for the same reason `ImageExists` is: `internal/core` may not touch the
+filesystem. What it returns is pixels — a terminal and a graphical client turn
+those into something to look at very differently, and flattening the alpha or
+picking characters here would take that decision away from both. `MaxArtPixels`
+bounds a side because the cost grows with the area and a preview is redrawn on a
+keystroke. In `cmd/hexforge-tui` the preview breaks the palette's rule that
+colour is decoration and never information, deliberately and only there, which is
+why the `NO_COLOR` path is a **different drawing** (a ramp of weights, keeping the
+shading) rather than the same one with the colour stripped (a silhouette in one
+character, keeping only the outline). Its cache is keyed on the file's size and
+modification time, never on the path alone: a drawing that outlives its file, or
+survives the art being redrawn, is this tool lying about the data directory it
+exists to report on. Two earlier versions of that cache's test proved nothing —
+counting map entries (a cacheless preview writes the same key every time) and
+deleting the file (which froze the wrong behaviour) — so it is measured by making
+the bytes unreadable while size and mtime stay put.
+
 **A form's art is optional, and the fallback has one home.**
 `progression.Stage.Image` is a stage's own picture and most stages declare none;
 `cast.Character.StageArt` is the **only** place that falls back to the
