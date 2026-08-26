@@ -44,4 +44,26 @@ pokemon.charmander — Charmander
     level 60 hp 3100, atk 700, def 400, spd 140, acc 150, ddg 70
              absorbs 7242 of the 11500 budget, 4258 to spare
 
-2 characters
+pokemon.squirtle — Squirtle
+  from     Pokémon (anime)
+  preset   warden
+  element  water
+  art      assets/squirtle.svg
+  kit      water_gun bubble whirlpool bite brine hydro_pump withdraw aqua_ring rapid_spin
+  stage "Squirtle" owns levels 1 to 15, showing assets/squirtle.svg
+    level 1  hp 950, atk 120, def 175, spd 24, acc 40, ddg 11
+             absorbs 1505 of the 11500 budget, 9995 to spare
+    level 15 hp 1412, atk 176, def 252, spd 35, acc 57, ddg 15
+             absorbs 2600 of the 11500 budget, 8900 to spare
+  stage "Wartortle" owns levels 16 to 31, showing assets/wartortle.svg
+    level 16 hp 1631, atk 207, def 290, spd 39, acc 63, ddg 17
+             absorbs 3210 of the 11500 budget, 8290 to spare
+    level 31 hp 2183, atk 276, def 385, spd 52, acc 84, ddg 23
+             absorbs 4995 of the 11500 budget, 6505 to spare
+  stage "Blastoise" owns levels 32 to 60, showing assets/blastoise.svg
+    level 32 hp 2461, atk 315, def 438, spd 57, acc 92, ddg 26
+             absorbs 6061 of the 11500 budget, 5439 to spare
+    level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
+             absorbs 11285 of the 11500 budget, 215 to spare
+
+3 characters

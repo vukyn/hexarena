@@ -25,4 +25,16 @@ scorcher, formation column 0
            absorbs 7242 of the 11500 budget, 4258 to spare
   kit      ember flamethrower fire_fang fire_spin heat_wave inferno dragon_rage smokescreen dragon_dance
 
-2 presets
+warden, formation column 0
+  the one that makes the other side's turn not work: slow the approach, shrug off the hit that lands, and still be standing when the burst is spent
+  demands  a character built from it must carry water
+  hp 1200->3600  attack 155->460  defense 215->640  speed 28->85  accuracy 46->135  dodge 13->38
+  level 1  hp 1200, atk 155, def 215, spd 28, acc 46, ddg 13
+           absorbs 2061 of the 11500 budget, 9439 to spare
+  level 30 hp 2379, atk 304, def 423, spd 56, acc 89, ddg 25
+           absorbs 5746 of the 11500 budget, 5754 to spare
+  level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
+           absorbs 11285 of the 11500 budget, 215 to spare
+  kit      water_gun bubble whirlpool bite brine hydro_pump withdraw aqua_ring rapid_spin
+
+3 presets
