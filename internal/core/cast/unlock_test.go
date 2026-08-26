@@ -39,7 +39,7 @@ func TestATraitIsHeldFromTheLevelItUnlocksAt(t *testing.T) {
 		{progression.LevelCap, []string{"endurance", "resolve"}},
 	}
 	for _, test := range cases {
-		if got := character.PassivesAt(test.level); !reflect.DeepEqual(got, test.want) {
+		if got := character.PassivesAt(test.level, progression.Furthest); !reflect.DeepEqual(got, test.want) {
 			t.Errorf("at level %d the character holds %v, want %v", test.level, got, test.want)
 		}
 	}
@@ -60,7 +60,7 @@ func TestAnUnlockedListKeepsTheOrderItWasDeclaredIn(t *testing.T) {
 		t.Fatalf("parse: %v", err)
 	}
 	character, _ := book.Get("a-series.warden")
-	if got := character.PassivesAt(progression.LevelCap); !reflect.DeepEqual(
+	if got := character.PassivesAt(progression.LevelCap, progression.Furthest); !reflect.DeepEqual(
 		got, []string{"resolve", "endurance"}) {
 		t.Errorf("the list came back as %v, want the order it was declared in", got)
 	}
@@ -73,7 +73,7 @@ func TestAnUnlockedListKeepsTheOrderItWasDeclaredIn(t *testing.T) {
 		t.Fatalf("parse: %v", err)
 	}
 	bare, _ := plain.Get("a-series.warden")
-	if got := bare.PassivesAt(progression.LevelCap); len(got) != 0 {
+	if got := bare.PassivesAt(progression.LevelCap, progression.Furthest); len(got) != 0 {
 		t.Errorf("a character with no traits holds %v", got)
 	}
 }
@@ -87,16 +87,16 @@ func TestUnlockedIDsTakesTheListRatherThanTheCharacter(t *testing.T) {
 		{ID: "second", AtLevel: 30},
 		{ID: "third", AtLevel: 60},
 	}
-	if got := cast.UnlockedIDs(entries, 29); !reflect.DeepEqual(got, []string{"first"}) {
+	if got := cast.UnlockedIDs(entries, 29, progression.Furthest); !reflect.DeepEqual(got, []string{"first"}) {
 		t.Errorf("at 29 the list gives %v", got)
 	}
-	if got := cast.UnlockedIDs(entries, 30); !reflect.DeepEqual(got, []string{"first", "second"}) {
+	if got := cast.UnlockedIDs(entries, 30, progression.Furthest); !reflect.DeepEqual(got, []string{"first", "second"}) {
 		t.Errorf("at 30 the list gives %v", got)
 	}
-	if got := cast.UnlockedIDs(entries, 60); len(got) != 3 {
+	if got := cast.UnlockedIDs(entries, 60, progression.Furthest); len(got) != 3 {
 		t.Errorf("at the cap the list gives %v, want all three", got)
 	}
-	if got := cast.UnlockedIDs(nil, 60); len(got) != 0 {
+	if got := cast.UnlockedIDs(nil, 60, progression.Furthest); len(got) != 0 {
 		t.Errorf("an empty list gives %v", got)
 	}
 	// Unlocked is the single comparison every caller goes through, so it is

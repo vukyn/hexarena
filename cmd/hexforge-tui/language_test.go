@@ -17,6 +17,7 @@ import (
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -764,11 +765,15 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 					character.ID, check.label, under, check.name)
 			}
 		}
-		// The kit's names are on the row under the kit's ids, in the same order.
+		// The kit's names are under the kit's ids, in the same order.
 		//
-		// A long kit is clipped there, so what the screen owes is the beginning
-		// of the reading rather than all of it; that every skill is glossed at
-		// all is GlossedKit's property and is checked on the function.
+		// Searched for rather than taken as the very next row: the ids wrap over
+		// as many rows as they need, and how many that is depends on the cast —
+		// a tenth skill or a mark saying which forms may hold one both add a row
+		// without changing what the screen owes. A long kit is clipped there, so
+		// what is owed is the beginning of the reading rather than all of it;
+		// that every skill is glossed at all is GlossedKit's property and is
+		// checked on the function.
 		kit := i18n.Vi.GlossedKit(lib.KitSkills(cast.LearnedIDs(character.Skills)))
 		if kit == "" {
 			t.Errorf("%s's kit is not glossed, so this proves nothing", character.ID)
@@ -777,9 +782,9 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 			if runes := []rune(kit); len(runes) > 12 {
 				opening = string(runes[:12])
 			}
-			if under := rowUnder(t, rows, m.text(i18n.LabelKit)); !strings.Contains(under, opening) {
-				t.Errorf("the row under %s's kit is %q, want it to begin %q",
-					character.ID, under, opening)
+			if !rowsBelow(t, rows, m.text(i18n.LabelKit), opening) {
+				t.Errorf("no row under %s's kit begins %q, in:\n%s",
+					character.ID, opening, strings.Join(rows, "\n"))
 			}
 		}
 		for _, carried := range lib.KitSkills(cast.LearnedIDs(character.Skills)) {
@@ -839,7 +844,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 		for _, entry := range character.Skills {
 			names = append(names, i18n.Vi.Gloss(entry.ID))
 		}
-		for _, held := range lib.KitPassives(character.PassivesAt(1)) {
+		for _, held := range lib.KitPassives(character.PassivesAt(1, progression.Furthest)) {
 			names = append(names, held.Name)
 		}
 		for _, kind := range lib.KitSpecies(character.Species) {
@@ -871,7 +876,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 	asked := 0
 	for index, character := range englishBrowse.browse.rows() {
 		leaks := make([]string, 0, 4)
-		for _, held := range lib.KitPassives(character.PassivesAt(1)) {
+		for _, held := range lib.KitPassives(character.PassivesAt(1, progression.Furthest)) {
 			leaks = append(leaks, held.Name)
 		}
 		for _, kind := range lib.KitSpecies(character.Species) {
@@ -899,6 +904,22 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 func paneRow(t *testing.T, rows []string, label string) string {
 	t.Helper()
 	return rows[paneRowIndex(t, rows, label)]
+}
+
+// rowsBelow reports whether any row after the labelled one contains the text.
+//
+// The pane wraps a long value over several rows, so "under" is a region rather
+// than a single line — and which line a reading lands on is a property of the
+// data's length, which is exactly what a layout test should not be pinned to.
+func rowsBelow(t *testing.T, rows []string, label, want string) bool {
+	t.Helper()
+	at := paneRowIndex(t, rows, label)
+	for _, row := range rows[at+1:] {
+		if strings.Contains(row, want) {
+			return true
+		}
+	}
+	return false
 }
 
 func rowUnder(t *testing.T, rows []string, label string) string {

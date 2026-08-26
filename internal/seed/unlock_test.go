@@ -65,7 +65,7 @@ func TestARosterReferenceBringsOnlyWhatItsLevelHasUnlocked(t *testing.T) {
 			t.Errorf("%s references the unknown character %q", unit.ID, unit.Character)
 			continue
 		}
-		available := character.PassivesAt(unit.Level)
+		available := character.PassivesAt(unit.Level, progression.Furthest)
 		if len(available) < len(character.Passives) {
 			gated++
 		}
@@ -76,7 +76,7 @@ func TestARosterReferenceBringsOnlyWhatItsLevelHasUnlocked(t *testing.T) {
 			}
 		}
 		// And the same rule for the kit, which is the half that is new.
-		learned := character.SkillsAt(unit.Level)
+		learned := character.SkillsAt(unit.Level, progression.Furthest)
 		for _, carried := range roster[i].Skills {
 			if !slices.Contains(learned, carried) {
 				t.Errorf("%s brings %q, which %s has not learned at level %d",
@@ -137,7 +137,7 @@ func TestAReferenceChoosesItsTraitRatherThanRestatingIt(t *testing.T) {
 	// nothing to choose between measures nothing.
 	var chooser cast.Character
 	for _, character := range characters.All() {
-		if len(character.PassivesAt(progression.LevelCap)) >= 2 {
+		if len(character.PassivesAt(progression.LevelCap, progression.Furthest)) >= 2 {
 			chooser = character
 			break
 		}
@@ -145,7 +145,7 @@ func TestAReferenceChoosesItsTraitRatherThanRestatingIt(t *testing.T) {
 	if chooser.ID == "" {
 		t.Skip("no shipped character holds two traits, so a trait slot has nothing to choose between")
 	}
-	held := chooser.PassivesAt(progression.LevelCap)
+	held := chooser.PassivesAt(progression.LevelCap, progression.Furthest)
 	place := func(passives string) error {
 		raw := `{"units":[{"id":"a","side":"ally","slot":[2,1],"character":"` + chooser.ID +
 			`","level":` + strconv.Itoa(progression.LevelCap) +
@@ -196,7 +196,7 @@ func TestAPlacementMustChooseItsLoadout(t *testing.T) {
 	if !strings.Contains(err.Error(), "chooses no skill") {
 		t.Errorf("the refusal reads %q, want it to say nothing was chosen", err)
 	}
-	for _, known := range character.SkillsAt(progression.LevelCap) {
+	for _, known := range character.SkillsAt(progression.LevelCap, progression.Furthest) {
 		if !strings.Contains(err.Error(), known) {
 			t.Errorf("the refusal does not offer %q, which the character knows: %v", known, err)
 		}
@@ -211,7 +211,7 @@ func TestAPlacementCannotBringMoreThanItsSlots(t *testing.T) {
 	}
 	var deep cast.Character
 	for _, character := range characters.All() {
-		if len(character.SkillsAt(progression.LevelCap)) > seed.SkillSlots {
+		if len(character.SkillsAt(progression.LevelCap, progression.Furthest)) > seed.SkillSlots {
 			deep = character
 			break
 		}
@@ -219,7 +219,7 @@ func TestAPlacementCannotBringMoreThanItsSlots(t *testing.T) {
 	if deep.ID == "" {
 		t.Skip("no shipped character learns more than a placement may bring")
 	}
-	known := deep.SkillsAt(progression.LevelCap)
+	known := deep.SkillsAt(progression.LevelCap, progression.Furthest)
 	tooMany, err := json.Marshal(known[:seed.SkillSlots+1])
 	if err != nil {
 		t.Fatalf("marshal: %v", err)

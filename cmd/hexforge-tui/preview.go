@@ -64,7 +64,7 @@ func (p previewScreen) view(m model) (string, string) {
 		return "  " + m.text(i18n.BrowseNothingHere) + "\n", footer
 	}
 	character := rows[clamp(m.browse.cursor, 0, len(rows)-1)]
-	_, stage, err := character.Resolve(m.browse.level)
+	_, stage, err := character.Resolve(m.browse.level, progression.Furthest)
 	if err != nil {
 		return "  " + m.style.bad.Render(m.lang.Error(err)) + "\n", footer
 	}

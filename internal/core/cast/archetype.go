@@ -210,7 +210,9 @@ func resolveArchetype(declared archetypeFile, deps ArchetypeDeps) (Archetype, er
 		return fail("has a kit demanding %d elements (%s), and a unit may carry at most 2",
 			len(demands), strings.Join(names, ", "))
 	}
-	passives, err := resolvePassives("archetype", declared.ID, declared.Passives, deps.Passives)
+	passives, err := // No line: a preset is a suggestion for authoring rather than a unit, so a
+		// stage allowlist on one has nothing to name and is refused as such.
+		resolvePassives("archetype", declared.ID, declared.Passives, deps.Passives, nil)
 	if err != nil {
 		return Archetype{}, err
 	}

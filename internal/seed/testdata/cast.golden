@@ -6,7 +6,7 @@ pokemon.bulbasaur — Bulbasaur
   element  grass
   species  plant
   art      assets/bulbasaur.svg
-  kit      vine_whip razor_leaf poison_powder@8 sleep_powder@12 leech_seed@16 synthesis@20 venoshock@24 sludge_bomb@32 ingrain@36
+  kit      vine_whip razor_leaf poison_powder@8 sleep_powder@12[Bulbasaur,Ivysaur] leech_seed@16 synthesis@20 venoshock@24 sludge_bomb@32 ingrain@36
   stage "Bulbasaur" owns levels 1 to 15, showing assets/bulbasaur.svg
     level 1  hp 900, atk 150, def 130, spd 30, acc 40, ddg 15
              absorbs 1291 of the 11500 budget, 10209 to spare

@@ -142,7 +142,7 @@ func TestEveryShippedCharacterResolves(t *testing.T) {
 	}
 	for _, character := range characters {
 		for _, level := range []int{1, progression.LevelCap} {
-			values, stage, err := character.Resolve(level)
+			values, stage, err := character.Resolve(level, progression.Furthest)
 			if err != nil {
 				t.Errorf("%s at level %d: %v", character.ID, level, err)
 				continue
@@ -157,7 +157,7 @@ func TestEveryShippedCharacterResolves(t *testing.T) {
 		// Every stage boundary resolves to the stage that declares it, which is
 		// the property the whole staged design rests on.
 		for _, stage := range character.Stages {
-			_, reached, err := character.Resolve(stage.MinLevel)
+			_, reached, err := character.Resolve(stage.MinLevel, progression.Furthest)
 			if err != nil {
 				t.Errorf("%s at level %d: %v", character.ID, stage.MinLevel, err)
 				continue
@@ -364,7 +364,7 @@ func TestShippedOriginsAreUsable(t *testing.T) {
 // placement is a choice and this file is where that rule is exercised.
 func loadoutOf(t *testing.T, character cast.Character, level int) string {
 	t.Helper()
-	known := character.SkillsAt(level)
+	known := character.SkillsAt(level, progression.Furthest)
 	if len(known) > seed.SkillSlots {
 		known = known[:seed.SkillSlots]
 	}
@@ -403,7 +403,7 @@ func TestParseRosterResolvesACharacterReference(t *testing.T) {
 	if len(roster) != 2 {
 		t.Fatalf("the roster resolved to %d units, want 2", len(roster))
 	}
-	wanted, _, err := adept.Resolve(progression.LevelCap)
+	wanted, _, err := adept.Resolve(progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("resolve %s: %v", adept.ID, err)
 	}
@@ -439,7 +439,7 @@ func TestParseRosterResolvesACharacterReference(t *testing.T) {
 		if err != nil {
 			t.Fatalf("parse at the stage boundary: %v", err)
 		}
-		wantedLate, stage, err := adept.Resolve(second.MinLevel)
+		wantedLate, stage, err := adept.Resolve(second.MinLevel, progression.Furthest)
 		if err != nil {
 			t.Fatalf("resolve at level %d: %v", second.MinLevel, err)
 		}
@@ -764,7 +764,7 @@ func TestBulbasaurCanBeBuiltTwoWays(t *testing.T) {
 	if !known {
 		t.Fatal("the shipped cast holds no bulbasaur")
 	}
-	available := character.PassivesAt(progression.LevelCap)
+	available := character.PassivesAt(progression.LevelCap, progression.Furthest)
 
 	builds := map[string][]string{
 		"poison":    {"venom_blood", "virulence"},

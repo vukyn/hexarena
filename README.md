@@ -514,15 +514,16 @@ Four things about the shape are decisions rather than details:
   case to one, so there is exactly one value in memory meaning "from the start"
   and no caller has to know which spelling it is holding — which is why `Unlock`
   needs a `MarshalJSON` that omits a level of one rather than an `omitempty` tag.
-- **There is no `at_stage`.** It would read as a different fact and today it is
-  not one: `Line.StageAt` derives a stage from a level, so `at_stage: "Ivysaur"`
-  *is* `at_level: 16` and nothing else. It becomes a second fact only once a
-  placement names the stage it fielded — see *Choosing to
-  evolve*.
-- **The gate is applied in exactly one place**, `seed.ParseRoster`, because that
-  is the only place a character and a level meet. A flat roster entry writes out
-  its own traits and has no level to be gated against; the engine is handed a
-  resolved list exactly as it is handed a resolved stat line.
+- **There is a second gate, and it is a list rather than a threshold.** `stages`
+  names the forms that may hold the entry, and an empty one is every form. A
+  threshold — `at_stage` — would only ever have said "from this form onwards",
+  which is a thing a level already says; a list can say "the bulb forms only",
+  which nothing else can. See *Choosing to evolve*.
+- **Both gates are applied in exactly one place**, `seed.ParseRoster`, because
+  that is the only place a character, a level and a chosen form meet. A flat
+  roster entry writes out its own traits and has neither a level nor an evolution
+  line to be measured against; the engine is handed a resolved list exactly as it
+  is handed a resolved stat line.
 - **Bringing every unlocked trait is not a choice**, which is what makes this
   half cheap: nothing has to be recorded in the log. The slot that turns several
   unlocked traits into a decision is the expensive half, and it is where the log
@@ -1609,23 +1610,63 @@ had the deepest kit to choose from.
 
 ### Choosing to evolve
 
-Not built, and deliberately last. `progression.Line.StageAt` reads a stage out of
-a level and there is no decision in it. Reaching the threshold should instead
-*allow* a stage, with the placement naming which one it fielded, so
-`Resolve(level)` becomes `Resolve(level, stage)` and the chosen stage's threshold
-is no higher than the level.
+Built. A level **allows** a form rather than dictating one, and the placement
+says which one it fielded.
 
-⚠️ **`at_stage` cannot be built before it**, and building it early would be worse
-than not building it: `at_stage: "Ivysaur"` is *exactly* `at_level: 16` while a
-stage is derived from a level, which is a second spelling of one fact. It becomes
-a different fact only once a placement names the stage.
+```json
+{ "id": "ally.ivysaur", "character": "pokemon.bulbasaur", "level": 60,
+  "stage": "Ivysaur",
+  "skills": ["razor_leaf", "sleep_powder", "leech_seed", "sludge_bomb"] }
+```
 
-**Choosing not to evolve is currently strictly worse.** Stage curves only rise,
-so a placement that fields an earlier stage fields a weaker unit for no
-compensation. It becomes a real decision only if an earlier stage can hold
-something a later one cannot — an earlier learn entry the grown form never gets —
-and now that a learnset exists, that is one field away rather than a mechanism
-away.
+`Line.Resolve(level)` became `Resolve(level, stage)`. `progression.Furthest` is
+what a caller passes when it is not choosing — a screen showing a character at
+level 30 has no placement behind it — and it is the behaviour every caller had
+before, so a roster written earlier still says what it always said.
+
+Naming a form the level has not reached is **refused rather than clamped**: a
+clamp would field a different unit from the one written down, which is the one
+outcome worse than saying no. The two refusals are told apart, because they are
+different mistakes — a name the line does not answer to is a typo, and a name
+merely ahead of the level is a placement that has not grown into it.
+
+#### Why the choice is not decorative
+
+Stage curves only rise, so fielding an earlier form is fielding a weaker unit. It
+is a decision only if the earlier form can hold something the grown one cannot,
+so a learnset entry gained a second gate:
+
+```json
+{ "id": "sleep_powder", "at_level": 12, "stages": ["Bulbasaur", "Ivysaur"] }
+```
+
+**The stage gate is an allowlist, not a threshold, and that is the whole of it.**
+A threshold could only ever say "from this form onwards" — so everything an early
+form knew a grown one knew too, and giving up an evolution would buy nothing. A
+list can name one member of a class, which is the same reason `skill.Restriction`
+is an allowlist.
+
+So `sleep_powder` is Bulbasaur's and Ivysaur's, and Venusaur never gets it.
+Fielding Ivysaur at level 60 keeps a control skill and gives up the ace's stat
+line. That is the trade, and it is now expressible in a file rather than a
+paragraph.
+
+⚠️ **The shipped roster does not take it.** Every unit is fielded as the furthest
+form its level reaches, so the balance figure is unchanged at **49.5 per cent**
+and `replay.golden` did not move — the mechanism exists and the roster has not
+been retuned to want it. Choosing an earlier form on that roster today is simply
+worse, because none of the three characters is close enough for one kept skill to
+pay for a whole stage of stats. That is a cast-tuning question rather than a
+mechanism one.
+
+#### `at_stage` was not built, and is not needed
+
+The design note asked for `at_stage` — a threshold — and said it could not be
+built until a placement named its form. It could be now, and it is not, because
+the allowlist above says everything it would have said and one thing more:
+`at_stage: "Ivysaur"` is `stages: ["Ivysaur", "Venusaur"]`, while the case that
+makes evolution a decision has no spelling as a threshold at all. Two fields
+would have been two vocabularies for one idea.
 
 **Conditions beyond a level are deliberately out of scope.** Items, a friendship
 count, a number of battles fought: every one needs somewhere to persist between
