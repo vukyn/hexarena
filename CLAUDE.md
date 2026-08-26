@@ -423,6 +423,16 @@ side's help. And the event carries `Refused`, because `status_resisted` is emitt
 whether the roll failed *or* the target refused it, and a reader given only that
 word cannot tell luck from a property of the unit.
 
+**A stack does not know who applied it, and that is deliberate.** `status.Stack`
+holds its frozen tick amount and its remaining turns — no applier id, because the
+applier may be dead by the time the stack resolves and keeping the id would be
+keeping a pointer to something that no longer exists. The consequence to know
+before answering a question about attribution: `status_applied` is the **only**
+place a source is recorded (it carries the actor, the skill and the frozen
+amount), `status_ticked` names the unit *taking* the damage rather than the one
+that caused it, and two units poisoning one target leave two stacks the state
+cannot tell apart. Attribution is a property of the log, not of the state.
+
 **`cast.Unlock` is the learnset shape, and it is about an id rather than a
 trait.** `{id, at_level}`, with `UnlockedIDs` the one function answering "what is
 in force at level N" — it takes the *list* rather than reading a character, so the
@@ -799,6 +809,23 @@ is the constraint each piece has to respect.
       whose health moved rather than for everybody. Both original constraints
       still hold: a trait changing a number **emits an event**, and one touching
       speed is in force before the first wait is computed. See README → Roadmap.
+- [ ] **Amplifying a status is two features, not one.** A trait that "makes its
+      poison better" means either **a stronger tick** — one multiplication into
+      the tick `battle.inflict` freezes on the stack — or **a better chance**,
+      which is the *same site a resistance already bites*, so the two meet there
+      and the multiplicative composition makes their order irrelevant. Keep them
+      separate: a trait may want either alone, and they read differently in play
+      (a tick is worth more the longer a stack lives, a chance the more often the
+      skill is cast). ⚠️ **This is the first trait to read the *applier's*
+      passives at a site that reads the target's** — `Battle.resist` walks the
+      target's, an amplifier walks the actor's, both inside `inflict`. And the
+      third step is the one that gets skipped: **the amplification has to reach
+      the event**, because `status_applied.amount` already carries the frozen tick,
+      so an amplified poison reads as 260 where it was 201 with nothing saying why
+      — the same trap `Pierce` and `Refused` were added for, now for the third
+      time. The mirror is cheap: a **vulnerability** is `Resists` with a negative
+      share, so opening its 1..1000 bound downwards reuses the whole composition
+      rather than adding a field.
 - [ ] **A health threshold a *skill* can read.** `passive.Condition` answers "how
       hurt is the holder" and a **trait** is the only thing that can ask:
       `skill.Condition` still asks only what the *target* is carrying, and only

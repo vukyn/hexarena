@@ -915,6 +915,56 @@ Whatever comes next keeps the two constraints the first slice was built under: a
 trait that changes a number **emits an event**, and one that touches speed is in
 force before the first wait is computed.
 
+### Amplifying a status, which is two features
+
+A trait that "makes its poison better" is two different things, and they land in
+two different places:
+
+- **The effect.** A stronger tick. The tick is computed once, in `battle.inflict`,
+  from the applier's scaling stat, and frozen on the stack for its whole life — so
+  an amplifier here folds into that one multiplication and nothing later has to
+  know about it.
+- **The chance.** Poison that lands more often. That is the *same site a
+  resistance already bites*, so the two meet naturally: one side's trait raises
+  the chance and the other's lowers it, and because a resistance already composes
+  multiplicatively the order they are applied in cannot matter.
+
+They are separate because a trait may plausibly want either without the other,
+and because they read differently in play: a stronger tick is worth more the
+longer a stack lives, while a better chance is worth more the more often the
+skill is cast.
+
+Three things any implementation has to do, and the third is the one that gets
+skipped:
+
+1. A field on `passive.Passive`, per status, the way `Resists` is.
+2. The multiplication — into the tick for the effect, into the chance for the
+   chance.
+3. **The amplification has to reach the event.** `status_applied` already carries
+   the frozen tick as `amount`, so an amplified poison shows up as 260 where it
+   would have been 201 — and nothing in the log says why. That is exactly what
+   `Pierce` on `damaged` and `Refused` on `status_applied` exist to prevent, and
+   it is the third time the same trap has come up: the mechanism is the easy half.
+
+**This one reads the *applier's* traits at a site that currently reads the
+target's.** `Battle.resist` walks the target's passives; an amplifier walks the
+actor's. Both at once in `inflict`, which is worth knowing before writing it,
+because every other trait so far has read exactly one unit.
+
+And the mirror of it is cheaper than it looks: a **vulnerability** — this unit is
+*easier* to poison — is `Resists` with a negative share rather than a new field.
+The validation bounds it at 1..1000 today, and opening the range downwards is a
+one-line change that reuses the whole composition.
+
+One thing already true and worth stating, because it limits what can be
+attributed after the fact: a `Stack` remembers its frozen amount and nothing else.
+It does not know who applied it, deliberately — the applier may be dead by the
+time the stack resolves, so keeping the id would be keeping a pointer to something
+that no longer exists. So `status_ticked` names the unit *taking* the damage, not
+the one that caused it, and the only place the source is recorded is the
+`status_applied` event. Two units poisoning the same target leave two stacks that
+the state cannot tell apart.
+
 ### A health threshold a skill can read
 
 `passive.Condition` answers "how hurt is the holder", and a **trait** is the only
