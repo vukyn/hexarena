@@ -1,53 +1,64 @@
 {
   "units": [
-    { "id": "ally.bulwark", "name": "Bulwark", "side": "ally", "slot": [2, 1],
-      "element": ["ground", "metal"],
-      "stats": { "hp": 4800, "attack": 480, "defense": 400, "speed": 80, "accuracy": 60, "dodge": 20 },
-      "skills": ["strike", "sever", "guard_wall", "war_cry"] },
-
-    { "id": "ally.vanguard", "name": "Vanguard", "side": "ally", "slot": [2, 0],
-      "element": ["fire", "metal"],
-      "stats": { "hp": 3600, "attack": 620, "defense": 560, "speed": 110, "accuracy": 110, "dodge": 60 },
-      "skills": ["strike", "ember_lance", "detonate", "cinder_burst"] },
-
-    { "id": "ally.sentinel", "name": "Sentinel", "side": "ally", "slot": [2, 2],
-      "element": ["water", "ice"],
-      "stats": { "hp": 3100, "attack": 500, "defense": 800, "speed": 90, "accuracy": 80, "dodge": 30 },
-      "skills": ["strike", "riptide", "guard_wall", "purify"] },
-
-    { "id": "ally.duelist", "name": "Duelist", "side": "ally", "slot": [1, 1],
-      "element": ["wind", "ice"],
-      "stats": { "hp": 2600, "attack": 800, "defense": 320, "speed": 150, "accuracy": 180, "dodge": 90 },
-      "skills": ["strike", "bolt", "gale_slash", "swift_edge", "flurry"] },
-
-    { "id": "ally.skirmisher", "name": "Skirmisher", "side": "ally", "slot": [0, 1],
-      "element": ["grass", "electric"],
-      "stats": { "hp": 2200, "attack": 760, "defense": 250, "speed": 200, "accuracy": 240, "dodge": 150 },
-      "skills": ["bolt", "venom_fang", "creeping_rot", "arc_bolt"] },
-
-    { "id": "foe.bulwark", "name": "Warden", "side": "enemy", "slot": [2, 1],
-      "element": ["fire", "ground"],
-      "stats": { "hp": 4800, "attack": 480, "defense": 400, "speed": 80, "accuracy": 60, "dodge": 20 },
-      "skills": ["strike", "ember_lance", "guard_wall", "war_cry"] },
-
-    { "id": "foe.vanguard", "name": "Bramble", "side": "enemy", "slot": [2, 0],
-      "element": ["grass", "ice"],
-      "stats": { "hp": 3600, "attack": 620, "defense": 560, "speed": 110, "accuracy": 110, "dodge": 60 },
-      "skills": ["strike", "venom_fang", "creeping_rot", "purify"] },
-
-    { "id": "foe.sentinel", "name": "Ironclad", "side": "enemy", "slot": [2, 2],
-      "element": ["metal", "electric"],
-      "stats": { "hp": 3100, "attack": 500, "defense": 800, "speed": 90, "accuracy": 80, "dodge": 30 },
-      "skills": ["strike", "sever", "arc_bolt", "guard_wall"] },
-
-    { "id": "foe.duelist", "name": "Tidecaller", "side": "enemy", "slot": [1, 1],
-      "element": ["water", "wind"],
-      "stats": { "hp": 2600, "attack": 800, "defense": 320, "speed": 150, "accuracy": 180, "dodge": 90 },
-      "skills": ["strike", "bolt", "riptide", "gale_slash", "flurry"] },
-
-    { "id": "foe.skirmisher", "name": "Nightveil", "side": "enemy", "slot": [0, 1],
-      "element": "dark",
-      "stats": { "hp": 2200, "attack": 760, "defense": 250, "speed": 200, "accuracy": 240, "dodge": 150 },
-      "skills": ["bolt", "hex_curse", "unmake", "quickstep"] }
+    {
+      "id": "ally.venusaur",
+      "character": "pokemon.bulbasaur",
+      "level": 60,
+      "side": "ally",
+      "slot": [
+        2,
+        1
+      ]
+    },
+    {
+      "id": "ally.ivysaur",
+      "character": "pokemon.bulbasaur",
+      "level": 24,
+      "side": "ally",
+      "slot": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "ally.bulbasaur",
+      "character": "pokemon.bulbasaur",
+      "level": 8,
+      "side": "ally",
+      "slot": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "foe.venusaur",
+      "character": "pokemon.bulbasaur",
+      "level": 60,
+      "side": "enemy",
+      "slot": [
+        2,
+        1
+      ]
+    },
+    {
+      "id": "foe.ivysaur",
+      "character": "pokemon.bulbasaur",
+      "level": 24,
+      "side": "enemy",
+      "slot": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "foe.bulbasaur",
+      "character": "pokemon.bulbasaur",
+      "level": 8,
+      "side": "enemy",
+      "slot": [
+        0,
+        1
+      ]
+    }
   ]
 }

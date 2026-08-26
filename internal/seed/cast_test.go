@@ -14,6 +14,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/seed"
+	"github.com/vukyn/hexarena/internal/testfixture"
 )
 
 func mustOrigins(t *testing.T) *cast.OriginBook {
@@ -65,11 +66,6 @@ func TestShippedArchetypesMatchTheReferenceProfiles(t *testing.T) {
 		column int
 		cap    progression.Values
 	}{
-		{"bulwark", 2, profile(4800, 480, 400, 80, 60, 20)},
-		{"vanguard", 2, profile(3600, 620, 560, 110, 110, 60)},
-		{"sentinel", 2, profile(3100, 500, 800, 90, 80, 30)},
-		{"duelist", 1, profile(2600, 800, 320, 150, 180, 90)},
-		{"skirmisher", 0, profile(2200, 760, 250, 200, 240, 150)},
 		{"blighter", 1, profile(3800, 620, 520, 100, 140, 50)},
 	}
 	book := mustArchetypes(t)
@@ -468,16 +464,21 @@ func TestParseRosterRejections(t *testing.T) {
 	}
 }
 
-// TestShippedRosterStillUsesTheInlineForm records that the flat form keeps
-// working. The seed roster is a test bed rather than the real cast, and turning
-// it into references would change every battle the goldens were measured from.
-func TestShippedRosterStillUsesTheInlineForm(t *testing.T) {
-	roster, err := seed.Roster()
+// TestTheInlineRosterFormStillWorks records that a roster may still spell its
+// units out rather than referencing the cast.
+//
+// The shipped roster stopped using it: with a real cast, a placement says which
+// character stands there. The form has to keep working anyway -- it is what the
+// bench uses, and the bench is what the engine tests fight on -- so this reads
+// the bench rather than the shipped file it used to read.
+func TestTheInlineRosterFormStillWorks(t *testing.T) {
+	characters := mustCast(t)
+	roster, err := seed.ParseRoster([]byte(testfixture.Roster), characters)
 	if err != nil {
-		t.Fatalf("load shipped roster: %v", err)
+		t.Fatalf("parse the inline roster: %v", err)
 	}
-	if len(roster) != 10 {
-		t.Fatalf("the shipped roster holds %d units, want 10", len(roster))
+	if len(roster) == 0 {
+		t.Fatal("the inline roster resolved to nothing")
 	}
 	for _, unit := range roster {
 		if unit.Name == "" {

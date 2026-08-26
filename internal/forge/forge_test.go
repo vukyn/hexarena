@@ -632,7 +632,7 @@ func TestSaveOriginWritesTheCatalogTheBookWouldWrite(t *testing.T) {
 // from to the engine's own function, so a bar can never be drawn from a second
 // calculation of the same thing.
 func TestBudgetIsTheProgressionArithmetic(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -836,7 +836,7 @@ func TestWrittenSkillsAreStableAndReloads(t *testing.T) {
 // skills.golden's damage column is measured from, or an author reads two numbers
 // for one skill and cannot tell which the design was made from.
 func TestPreviewDamageIsTheEngineArithmetic(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -947,7 +947,7 @@ func TestAuthoringAgainstARestrictedSkillRefusesTheKitAndTheCharacter(t *testing
 // opposite meanings — one skill everybody may carry against one skill nobody
 // may — and only one of them is what an author who pressed Enter meant.
 func TestTheAllowlistValidatorsAcceptNothingAndRefuseTheUnknown(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -1415,7 +1415,7 @@ func TestAnExplicitlyEmptyListClearsARestriction(t *testing.T) {
 // declaration and leaving the references — is a book that does not load, so the
 // refusal says a rename is a separate operation rather than doing part of one.
 func TestEditingTheIDIsRefused(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -1621,7 +1621,7 @@ func TestDescribeApplicationsKeepsFormatParseable(t *testing.T) {
 	// The syntax version must stay exactly what ParseApplications reads back,
 	// because it is what a prefilled form holds. This is the property a
 	// percentage inside FormatApplications would have broken.
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
@@ -1652,7 +1652,7 @@ func TestDescribeApplicationsKeepsFormatParseable(t *testing.T) {
 // full. If a tenth shape or a wider board makes a better cell exist, this fails
 // and the comment gets rewritten with it.
 func TestTheShapeDiagramCellShowsTheMostOfEveryShape(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load the shipped data: %v", err)
 	}
@@ -1766,7 +1766,7 @@ func TestTheShapeDiagramCellShowsTheMostOfEveryShape(t *testing.T) {
 // TestTheSplashShareIsTheBookOwn keeps the figure the diagram's legend quotes
 // tied to the pattern book rather than to a number typed on a screen.
 func TestTheSplashShareIsTheBookOwn(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load the shipped data: %v", err)
 	}
@@ -1876,7 +1876,7 @@ func TestTheDiagramCrossesTheMidlineOnlyForAnAllSidedSkill(t *testing.T) {
 // string typed here, because the string is not the point — a spelling this test
 // agreed with and the parser did not would pass and ship a broken field.
 func TestAddApplicationsWritesWhatTheParserReads(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load the shipped data: %v", err)
 	}
@@ -1945,7 +1945,7 @@ func TestAddApplicationsWritesWhatTheParserReads(t *testing.T) {
 // TestTheStatusBookIsOfferedInItsOwnOrder keeps the picker's rows tied to the
 // data file rather than to a map, which would shuffle them between runs.
 func TestTheStatusBookIsOfferedInItsOwnOrder(t *testing.T) {
-	lib, err := Load(shippedDataDir)
+	lib, err := Load(scratchData(t))
 	if err != nil {
 		t.Fatalf("load the shipped data: %v", err)
 	}

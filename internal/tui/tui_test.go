@@ -10,15 +10,61 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/seed"
+	"github.com/vukyn/hexarena/internal/testfixture"
 	"github.com/vukyn/hexarena/internal/tui"
 )
 
 var update = flag.Bool("update", false, "rewrite the golden files instead of comparing against them")
 
+// benchBattle is a battle on the ten-unit bench rather than on the shipped
+// roster.
+//
+// The renderer's tests want a battle that reaches every case they draw --
+// unusable skills, a full tally, several affinities. The shipped roster is the
+// cast now, and a cast of one character cannot produce those. The bench exists
+// for exactly this and cannot be edited away by authoring.
+func benchBattle(t *testing.T, seedValue uint64) *battle.Battle {
+	t.Helper()
+	books, err := seed.Books()
+	if err != nil {
+		t.Fatalf("load books: %v", err)
+	}
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load shapes: %v", err)
+	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load statuses: %v", err)
+	}
+	parsed, err := skill.ParseBook([]byte(`{"skills":`+testfixture.Skills+`}`),
+		skill.Deps{Patterns: patterns, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("parse the bench skills: %v", err)
+	}
+	books.Skills = parsed
+	characters, err := seed.Cast()
+	if err != nil {
+		t.Fatalf("load the cast: %v", err)
+	}
+	roster, err := seed.ParseRoster([]byte(testfixture.Roster), characters)
+	if err != nil {
+		t.Fatalf("parse the bench roster: %v", err)
+	}
+	fight, err := battle.New(books, seedValue, roster)
+	if err != nil {
+		t.Fatalf("seed %d: %v", seedValue, err)
+	}
+	return fight
+}
+
 func opening(t *testing.T) (*battle.Battle, map[string]string) {
 	t.Helper()
-	fight, err := seed.NewBattle(11)
+	fight := benchBattle(t, 11)
+	var err error
+	_ = err
 	if err != nil {
 		t.Fatalf("assemble: %v", err)
 	}
@@ -352,7 +398,9 @@ func TestOpeningGolden(t *testing.T) {
 
 func autoLog(t *testing.T, seedValue uint64) []battle.Event {
 	t.Helper()
-	fight, err := seed.NewBattle(seedValue)
+	fight := benchBattle(t, seedValue)
+	var err error
+	_ = err
 	if err != nil {
 		t.Fatalf("assemble: %v", err)
 	}
