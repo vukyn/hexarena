@@ -915,6 +915,35 @@ Whatever comes next keeps the two constraints the first slice was built under: a
 trait that changes a number **emits an event**, and one that touches speed is in
 force before the first wait is computed.
 
+### A health threshold a skill can read
+
+`passive.Condition` answers "how hurt is the holder", and a **trait** is the only
+thing that can ask. `skill.Condition` still asks only what the *target* is
+carrying, and only whether it is carrying a status — so a skill cannot say
+"harder against something already hurt".
+
+A shipped skill is already parked on that gap. `brine` names a move that doubles
+against a target at or below half its health, and the one in `skills.json` reads
+`mire` instead — the same shape `venoshock` uses to read `poison`, chosen because
+it is the closest thing the vocabulary can say today. The name stays rather than
+being changed to match the stand-in: when the term arrives, `brine` moves onto it
+and finally means what it is called.
+
+Which also settles the shape, because **a threshold is not a curve**. Half health
+is a comparison — `hp*1000 <= maxHP*500`, the same arithmetic
+`passive.Condition.Holds` already does — and it reuses `requires` and
+`bonus_power` unchanged, so the whole addition is one field a condition may carry.
+A *gradient*, the move that hits harder the further the caster has fallen, is a
+multiplier on power rather than a bonus to it, belongs in `combat`, and reads the
+**caster's** health where this one reads the target's. They are two features, not
+one with an option. The threshold is the one that costs nothing new.
+
+One thing worth deciding rather than discovering: whether the skill's threshold
+and the trait's share a type or only their arithmetic. A trait's asks about its
+holder and a skill's about its target, which are different units — so the reading
+is the same and the subject is not, and that is exactly the kind of pair that ends
+up as one type doing two jobs if nobody decides.
+
 ### Learnsets, slots, and choosing to evolve
 
 A character knows every skill it will ever know, from level one, and brings all
@@ -1061,3 +1090,36 @@ each stat and, separately, bounds health and defence together, because those two
 multiply rather than add. A unit at both ceilings is not merely durable, it is
 durable squared. The five shipped presets spend between 4036 and 11397 of the
 11500 effective-health budget, and `hexforge show` prints what is left.
+
+### What a unit is, not only how it fights
+
+Nothing in the data says what a unit *is*. An element says what it is made of and
+an archetype says how it fights, and neither answers whether it has a shell, roots
+or a lineage — so a skill named after a body is free to land on a body it does not
+fit. `withdraw` is the one that found it: Squirtle pulls into its shell, the name
+read perfectly on the character it was written for, and nothing would have stopped
+a Machop taking it and reading "thu mai" on a creature with no shell.
+
+Two answers, and they are different rules rather than a preference. Where the
+*effect* is general the **name** should be too, which is why `withdraw` is now
+glossed as a stance and not as a shell. Where the identity is the point the name
+stays and the skill carries a restriction — and that is where the gap is, because
+`skill.Restriction` allows a list of elements, a list of archetypes and a list of
+characters, and being a dragon is none of the three.
+
+`dragon_rage` and `dragon_dance` are parked on the third of those, restricted to
+`pokemon.charmander`, and it is the wrong axis on purpose rather than by mistake.
+An archetype restriction would have said a *fighting style* implies a lineage,
+which is the coupling species exists to remove — and a preset may not hold a
+character-restricted skill at all, which is why `scorcher` suggests seven skills
+and Charmander carries nine. That refusal is the engine agreeing: a kit shared by
+every character built from a preset has no room for a skill about one of them.
+
+So the shape: a species is a fourth allowlist on the same `Restriction` and a
+fourth field on a character, declared in its own book the way origins and
+archetypes are, and a unit may have more than one — a fire dragon is both. Nothing
+in `battle` branches on it, exactly as nothing branches on an archetype; it is a
+carry rule and a word on a screen, which is what keeps it cheap. When it lands,
+the two lineage skills move from a character allowlist onto a species one and
+become carryable by every dragon, which is what they should have said all along,
+and `TestABodyBoundSkillIsRestricted` is the list of what else to revisit.
