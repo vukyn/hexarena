@@ -54,6 +54,61 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "poison_powder",
+      "name": "độc phấn",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "flank_up",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "enemy",
+      "applies": [
+        {
+          "status": "poison",
+          "chance": 800,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "sludge_bomb",
+      "name": "độc bộc",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "single",
+      "power": 1300,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "applies": [
+        {
+          "status": "poison",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "venoshock",
+      "name": "độc kích",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "requires": {
+        "status": "poison",
+        "min_stacks": 1,
+        "bonus_power": 900
+      }
     }
   ]
 }

@@ -103,7 +103,10 @@
       "skills": [
         "vine_whip",
         "razor_leaf",
-        "sleep_powder"
+        "sleep_powder",
+        "poison_powder",
+        "sludge_bomb",
+        "venoshock"
       ]
     }
   ]

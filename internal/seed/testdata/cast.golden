@@ -5,7 +5,7 @@ pokemon.bulbasaur — Bulbasaur
   preset   blighter
   element  grass
   art      assets/bulbasaur.svg
-  kit      vine_whip razor_leaf sleep_powder
+  kit      vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock
   stage "Bulbasaur" owns levels 1 to 15
     level 1  hp 900, atk 150, def 130, spd 30, acc 40, ddg 15
              absorbs 1291 of the 11500 budget, 10209 to spare
