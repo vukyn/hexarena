@@ -1116,6 +1116,66 @@ Whatever comes next keeps the two constraints the first slice was built under: a
 trait that changes a number **emits an event**, and one that touches speed is in
 force before the first wait is computed.
 
+### Two builds for one character, which is what the trait work is for
+
+The roadmap entries below are each written as a mechanism. This is the thing they
+add up to, recorded because the order to build them in only makes sense once the
+target is stated: **Bulbasaur should be two different units depending on the trait
+it brings.**
+
+- **The poison specialist.** Immune to poison, its poison hurts more, and
+  attacking it poisons the attacker.
+- **The bloodsucker.** Heals from the damage it deals, and heals *more* the closer
+  it is to dying.
+
+Neither is one feature, and the pieces are already scattered across the entries
+around this one:
+
+| the build wants | where it lives | built |
+| --- | --- | --- |
+| immune to poison | `Resists`, on `venom_blood` | yes |
+| its poison hurts more | *Amplifying a status*, below | no |
+| attacking it poisons the attacker | *Answering back*, below | no |
+| heals from damage dealt | **nothing holds this yet** | no |
+| heals more when nearly dead | `While`, gating that share | half |
+
+**The one that has no home is passive lifesteal.** A skill may `drain` a share of
+what it dealt — `leech_seed` takes 600 — but nothing lets a *trait* say "everything
+this unit does drains". It is the cheapest thing on this page: a share on
+`passive.Passive`, added to whatever the skill already drains, read at the site
+that already resolves a drain. And it is the piece that makes `While` worth
+having, because a **gated share** is legal where a gated grant is not: a grant is
+applied once at enlistment and could not be taken back, which is why `passive`
+refuses that pairing at parse — a share is read fresh on every strike, so a gate
+on one works exactly as written.
+
+That distinction is worth keeping in view, because it decides which fantasies are
+writable today. *Overgrow* — "hits harder when badly hurt" — is a gated **grant**
+and is refused. *Vladimir* — "drains harder when badly hurt" — is a gated **share**
+and is not.
+
+**The circular bit, stated so it is chosen rather than discovered.** A character
+brings every trait it has, so giving Bulbasaur all five rows above makes it one
+unit that is better, not two units that are different. Choosing between them needs
+the trait slot under *Learnsets, slots, and choosing to evolve* — and that entry
+says a slot is only a decision once traits differ in **kind** rather than in
+number. So the slot is what makes these builds mean anything, and these builds are
+what make the slot worth building. Either order works; what does not work is
+building neither and expecting the other to justify it.
+
+Suggested order, cheapest first: **passive lifesteal gated on health** (the whole
+second build, and the first use of `While` by any shipped trait), then
+**amplifying a status** (half the first build, and the first trait to read two
+units), then the **trait slot** (now that two traits differ in kind), then
+**answering back** (the most expensive thing on this page, and the last row of the
+first build).
+
+Nothing shipped uses `Applies` or `While` yet. ⚠️ `Applies` is close to the third
+row above and is **not** it: it adds to what the holder's *own* attack inflicts —
+touch something and it is poisoned — where the row wants the reverse, an answer to
+being attacked. Writing the first and calling it the second would be the cheapest
+way to close this out wrongly.
+
 ### Amplifying a status, which is two features
 
 A trait that "makes its poison better" is two different things, and they land in

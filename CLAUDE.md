@@ -949,6 +949,30 @@ is the constraint each piece has to respect.
       whose health moved rather than for everybody. Both original constraints
       still hold: a trait changing a number **emits an event**, and one touching
       speed is in force before the first wait is computed. See README → Roadmap.
+- [ ] **Two builds for one Bulbasaur — the target the trait entries add up to.**
+      (1) *poison specialist*: immune to poison · its poison hurts more ·
+      attacking it poisons the attacker. (2) *bloodsucker*: heals from damage
+      dealt · heals more the closer it is to dying. Pieces: `Resists` ✅ ·
+      *Amplifying a status* ❌ · *Answering back* ❌ · **passive lifesteal —
+      nothing holds it yet** ❌ · `While` ✅ (unused by any shipped trait).
+- [ ] **Passive lifesteal — the cheapest thing on the roadmap.** A skill may
+      `drain` a share of what it dealt (`leech_seed` 600); **no trait can say
+      "everything this unit does drains"**. A share on `passive.Passive`, added to
+      the skill's own drain, read where a drain already resolves. ⚠️ It is also
+      what makes `While` worth having: a **gated share is legal where a gated
+      grant is not** — a grant is applied once at enlistment and cannot be taken
+      back (refused at parse), a share is read fresh per strike. So *Overgrow*
+      ("hits harder when hurt", a gated grant) is **unwritable** and *Vladimir*
+      ("drains harder when hurt", a gated share) is **writable today**.
+      ⚠️ `Applies` is NOT retaliation: it adds to what the holder's **own** attack
+      inflicts (touch → poisoned), the reverse of answering an attacker. Do not
+      close *Answering back* with it.
+      ⚠️ **Circular, so choose rather than discover it**: a character brings every
+      trait it has, so all five pieces make ONE better unit, not two different
+      ones — choosing needs the **trait slot** (*Learnsets, slots*), and that entry
+      says a slot is only a decision once traits differ in **kind**. Suggested
+      order: passive lifesteal + gate → amplify a status → trait slot → answering
+      back. See README → *Two builds for one character*.
 - [ ] **Amplifying a status is two features, not one.** A trait that "makes its
       poison better" means either **a stronger tick** — one multiplication into
       the tick `battle.inflict` freezes on the stack — or **a better chance**,
