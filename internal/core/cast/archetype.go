@@ -39,7 +39,7 @@ type Archetype struct {
 	// passive it suggests does reach the engine, through whatever character takes
 	// the suggestion — the preset itself still does not, which keeps
 	// battle.Roster free of an archetype exactly as before.
-	Passives []string `json:"passives,omitempty"`
+	Passives []Unlock `json:"passives,omitempty"`
 	// Demands is the distinct non-neutral elements the kit requires, derived
 	// from Skills at parse time by skill.Demands.
 	//
@@ -86,7 +86,7 @@ type archetypeFile struct {
 	// of zeroes.
 	Stats    *progression.Table `json:"stats"`
 	Skills   []string           `json:"skills"`
-	Passives []string           `json:"passives"`
+	Passives []Unlock           `json:"passives"`
 }
 
 type archetypeBookFile struct {

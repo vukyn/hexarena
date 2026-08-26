@@ -380,6 +380,44 @@ func StageSummary(character cast.Character) string {
 	return strings.Join(parts, " → ")
 }
 
+// UnlockSummary writes a learnset as the levels its entries come in at, in the
+// same shape StageSummary writes an evolution line: `id@level`.
+//
+// An entry unlocked at level one prints as a bare id. A gate everybody passes is
+// not information, and printing `@1` on the common case would put a number on
+// every line so that the one line with a real gate stopped standing out.
+func UnlockSummary(entries []cast.Unlock) string {
+	parts := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.AtLevel <= 1 {
+			parts = append(parts, entry.ID)
+			continue
+		}
+		parts = append(parts, fmt.Sprintf("%s@%d", entry.ID, entry.AtLevel))
+	}
+	return strings.Join(parts, " ")
+}
+
+// UnlockSummaryAt is the same list seen from a level: a gate is printed only
+// while it is still ahead.
+//
+// So the row changes as a level is walked — `endurance@16` at level 8 and a bare
+// `endurance` at 24 — and the mark reads as "not yet" rather than as a fact about
+// the trait. A screen that showed every gate at every level would say the same
+// thing at level 1 and at the cap, which is the one thing a level slider is for
+// finding out.
+func UnlockSummaryAt(entries []cast.Unlock, level int) string {
+	parts := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.Unlocked(level) {
+			parts = append(parts, entry.ID)
+			continue
+		}
+		parts = append(parts, fmt.Sprintf("%s@%d", entry.ID, entry.AtLevel))
+	}
+	return strings.Join(parts, " ")
+}
+
 // SuggestedImage proposes where a character's art would live, following the id.
 // It is only a default: any relative path ending .svg or .png is allowed.
 func SuggestedImage(id string) string {

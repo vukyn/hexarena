@@ -114,7 +114,10 @@
         "ingrain"
       ],
       "passives": [
-        "endurance"
+        {
+          "id": "endurance",
+          "at_level": 16
+        }
       ]
     }
   ]

@@ -193,13 +193,6 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// the character uses, then what it simply has. Drawn only when there are
 	// any — a row saying "none" on every character in a cast that holds none is
 	// a row that says nothing.
-	if len(character.Passives) > 0 {
-		out.WriteString(m.wrapped(m.text(i18n.LabelTraits), detailLabelWidth(m),
-			strings.Join(character.Passives, " ")))
-		if glossed := m.lang.GlossedPassives(m.lib.KitPassives(character.Passives)); glossed != "" {
-			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
-		}
-	}
 	out.WriteString(m.label(m.text(i18n.LabelStages), "%s", m.lang.StageSummary(character)))
 	if character.Bio != "" {
 		out.WriteString(m.wrapped(m.text(i18n.LabelBiography), detailLabelWidth(m), character.Bio))
@@ -219,6 +212,20 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// rather than before it because there is no picture to name until the stage
 	// is known, and a character that will not resolve has already returned.
 	out.WriteString(m.label(m.text(i18n.LabelArt), "%s", b.artLine(m, character, stage)))
+	// Traits sit with the art rather than with the kit, because both now answer
+	// "at this level": a gate still ahead is printed and one already passed is
+	// not, so walking the level is what shows a trait coming in. The names go
+	// under it the way the kit's do, and only the ones actually in force are
+	// named — glossing a trait the unit does not have yet would read as a trait
+	// it has.
+	if len(character.Passives) > 0 {
+		out.WriteString(m.wrapped(m.text(i18n.LabelTraits), detailLabelWidth(m),
+			forge.UnlockSummaryAt(character.Passives, b.level)))
+		if glossed := m.lang.GlossedPassives(
+			m.lib.KitPassives(character.PassivesAt(b.level))); glossed != "" {
+			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
+		}
+	}
 	// Six stats and a stage name come to 88 cells at the floor, so this wraps
 	// too. It was being clipped by the frame, and what fell off the end was the
 	// stage — the one part of the row that says which form the numbers belong to.

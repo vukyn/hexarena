@@ -358,7 +358,7 @@ func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character
 	// Only when there are any. A "traits: none" line on every character in a
 	// cast that holds none is a row that says nothing on every screen it is on.
 	if len(character.Passives) > 0 {
-		label("traits", "%s", strings.Join(character.Passives, " "))
+		label("traits", "%s", forge.UnlockSummary(character.Passives))
 	}
 	label("art", "%s", character.Image)
 	if art := character.Art(); len(art) > 1 {
