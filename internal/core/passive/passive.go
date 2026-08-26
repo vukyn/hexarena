@@ -146,10 +146,7 @@ func (c *Condition) Holds(health, maximum int64) bool {
 	if c == nil {
 		return true
 	}
-	if maximum <= 0 {
-		return false
-	}
-	return health*int64(scale.Base) <= int64(c.BelowHealth)*maximum
+	return scale.AtOrBelowShare(health, maximum, c.BelowHealth)
 }
 
 // StatusIDs is the statuses the passive grants, in declaration order. It is what

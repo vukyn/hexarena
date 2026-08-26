@@ -1096,32 +1096,38 @@ attacking rewards hitting hard instead of taxing everybody equally.
 
 ### A health threshold a skill can read
 
-`passive.Condition` answers "how hurt is the holder", and a **trait** is the only
-thing that can ask. `skill.Condition` still asks only what the *target* is
-carrying, and only whether it is carrying a status — so a skill cannot say
-"harder against something already hurt".
+Built. `skill.Condition` reads how hurt the **target** is, where `passive.Condition`
+reads its holder, and `brine` is finally the move it is named after: at or below
+half health it doubles, 1000 power becoming 2000.
 
-A shipped skill is already parked on that gap. `brine` names a move that doubles
-against a target at or below half its health, and the one in `skills.json` reads
-`mire` instead — the same shape `venoshock` uses to read `poison`, chosen because
-it is the closest thing the vocabulary can say today. The name stays rather than
-being changed to match the stand-in: when the term arrives, `brine` moves onto it
-and finally means what it is called.
+```json
+{ "id": "brine", "power": 1000, "requires": { "below_health": 500, "bonus_power": 1000 } }
+```
 
-Which also settles the shape, because **a threshold is not a curve**. Half health
-is a comparison — `hp*1000 <= maxHP*500`, the same arithmetic
-`passive.Condition.Holds` already does — and it reuses `requires` and
-`bonus_power` unchanged, so the whole addition is one field a condition may carry.
-A *gradient*, the move that hits harder the further the caster has fallen, is a
-multiplier on power rather than a bonus to it, belongs in `combat`, and reads the
-**caster's** health where this one reads the target's. They are two features, not
-one with an option. The threshold is the one that costs nothing new.
+**The two conditions share their arithmetic and not their type**, which was the
+thing worth deciding rather than discovering. `scale.AtOrBelowShare` is the one
+comparison and both call it, so a rounding change lands in both at once. One
+`Condition` serving both would have had a `Holds(health, maximum)` that could not
+say *whose* health it meant, and the first mistake would be passing the other
+unit's — and it was unwritable anyway, because `passive` imports `skill`.
 
-One thing worth deciding rather than discovering: whether the skill's threshold
-and the trait's share a type or only their arithmetic. A trait's asks about its
-holder and a skill's about its target, which are different units — so the reading
-is the same and the subject is not, and that is exactly the kind of pair that ends
-up as one type doing two jobs if nobody decides.
+A condition may now read a status, or health, or **both**, and both is *and*: a
+second clause narrows a skill rather than widening it, because a clause that
+widened would make every skill written under one reading wrong under the other.
+Four ways of writing one that cannot mean anything are refused rather than
+defaulted — asking nothing at all, counting stacks of no status, a share outside
+parts per thousand, and consuming a status it never names.
+
+The reading is a `skill.Target`: the stacks the target carries, its health, and its
+maximum. A struct rather than three parameters because two of them are `int64`
+health values that mean nothing apart, and a caller that swapped them would
+compile. `battle` builds one in `conditionTarget`, which both `Suggest` and
+`resolveAgainst` call — a rating built from a different reading than the resolution
+would make the opponent prefer a skill for a bonus it does not get.
+
+What is still absent is the **gradient**: the move that hits harder the further the
+*caster* has fallen. It is a multiplier on power rather than a bonus to it, belongs
+in `combat`, and reads the other unit — two features, not one with an option.
 
 ### Learnsets, slots, and choosing to evolve
 

@@ -1721,3 +1721,109 @@ func mustBattle(t *testing.T, books battle.Books, seed uint64, roster []battle.R
 	}
 	return fight
 }
+
+// TestAConditionReadsTheTargetsHealthAndNotTheCasters is the mix-up this term
+// makes possible and nothing else would catch.
+//
+// A condition on a status reads the target because a status is on somebody; a
+// condition on health has two units to choose from and both have health, so
+// reading the wrong one compiles, runs, and produces a skill that amplifies at
+// the wrong moment. The caster here stays at full health for the whole test, so
+// a reading taken from it can never hold and the amplification never appears.
+func TestAConditionReadsTheTargetsHealthAndNotTheCasters(t *testing.T) {
+	shared := books(t)
+	conditional, err := skill.ParseBook([]byte(`{"skills":[
+	  {"id":"strike","element":"neutral","range":1,"pattern":"single",
+	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"jab","element":"neutral","range":1,"pattern":"single",
+	   "power":60,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"finish","element":"neutral","range":1,"pattern":"single",
+	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "requires":{"below_health":500,"bonus_power":900}}
+	]}`), skill.Deps{Patterns: shared.Patterns, Statuses: shared.Statuses})
+	if err != nil {
+		t.Fatalf("skills: %v", err)
+	}
+	shared.Skills = conditional
+
+	fight, err := battle.New(shared, 7, []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 200),
+			Skills: []string{"strike", "finish"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 100, 400, 1),
+			Skills: []string{"jab"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	fight.Drain()
+
+	act := func(id string) []battle.Event {
+		t.Helper()
+		for {
+			prompt, err := fight.Advance()
+			if err != nil {
+				t.Fatalf("advance: %v", err)
+			}
+			fight.Drain()
+			if prompt.Unit == "a" && !prompt.Skipped {
+				break
+			}
+			if !prompt.Skipped {
+				if err := fight.Act("jab", hex.Offset{Col: 2, Row: 1}); err != nil {
+					t.Fatalf("jab: %v", err)
+				}
+				fight.Drain()
+			}
+		}
+		if err := fight.Act(id, hex.Offset{Col: 3, Row: 1}); err != nil {
+			t.Fatalf("%s: %v", id, err)
+		}
+		return fight.Drain()
+	}
+
+	// Above half: the caster is at full health and so is the target, so nothing
+	// amplifies whichever unit is being read.
+	if events := act("finish"); len(find(events, battle.Amplified)) != 0 {
+		t.Error("the condition held against a target at full health")
+	}
+	foe, _ := fight.Unit("f")
+	if foe.HP*2 <= foe.MaxHP() {
+		t.Fatalf("the target is already at %d of %d health, so this proves nothing",
+			foe.HP, foe.MaxHP())
+	}
+
+	// Drive the target under half while the caster stays untouched.
+	for range 20 {
+		act("strike")
+		foe, _ = fight.Unit("f")
+		if foe.Dead || foe.HP*2 <= foe.MaxHP() {
+			break
+		}
+	}
+	if foe.Dead {
+		t.Fatal("the target died before it could be measured under half health")
+	}
+	if foe.HP*2 > foe.MaxHP() {
+		t.Fatalf("the target is at %d of %d health, never under half", foe.HP, foe.MaxHP())
+	}
+	caster, _ := fight.Unit("a")
+	if caster.HP*2 <= caster.MaxHP() {
+		t.Fatalf("the caster fell to %d of %d health, so a reading from it could hold too",
+			caster.HP, caster.MaxHP())
+	}
+
+	amplified := find(act("finish"), battle.Amplified)
+	if len(amplified) != 1 {
+		t.Fatalf("%d amplifications against a target under half health, want 1", len(amplified))
+	}
+	if amplified[0].Power != 1000 {
+		t.Errorf("the amplified power is %d, want 1000", amplified[0].Power)
+	}
+	if amplified[0].Status != "" {
+		t.Errorf("the amplification names the status %q, and this condition reads no status",
+			amplified[0].Status)
+	}
+}

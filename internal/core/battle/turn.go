@@ -397,9 +397,10 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 
 	power := known.Power
 	if known.Requires != nil {
-		stacks := target.Statuses.Stacks(known.Requires.Status)
-		if known.Amplified(stacks) {
-			power = known.PowerAgainst(stacks)
+		against := conditionTarget(known, target)
+		stacks := against.Stacks
+		if known.Amplified(against) {
+			power = known.PowerAgainst(against)
 			b.emit(Event{
 				Kind: Amplified, At: turn.At, Turn: turn.Number, Actor: actor.ID,
 				Target: target.ID, Skill: known.ID, Status: known.Requires.Status,

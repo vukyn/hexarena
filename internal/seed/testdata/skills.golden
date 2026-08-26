@@ -59,10 +59,10 @@ dragon_rage     -          -                 pokemon.charmander
 dragon_dance    -          -                 pokemon.charmander
 
 == conditional amplifiers ==
-skill           needs      stacks   power   amplified   damage   amplified   gain
-venoshock       poison           1     900        1800      308         617  2.00x
-inferno         burn             1    1000        3500      342        1200  3.50x (consumes)
-brine           mire             1    1000        1900      342         651  1.90x
+skill           needs                       stacks   power   amplified   damage   amplified   gain
+venoshock       poison                            1     900        1800      308         617  2.00x
+inferno         burn                              1    1000        3500      342        1200  3.50x (consumes)
+brine           health <=500 per mille            -    1000        2000      342         685  2.00x
 
 == what a detonate gives up ==
 skill           status   ticks forgone   a plain attack   alternative   burst    ratio

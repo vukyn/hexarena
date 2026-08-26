@@ -132,14 +132,81 @@ type Application struct {
 
 // Condition is the amplifier that pays a skill off for arriving after a status.
 type Condition struct {
-	// Status and MinStacks are what the target must already be carrying.
+	// Status and MinStacks are what the target must already be carrying. A
+	// condition may leave them out when it reads health instead.
 	Status    string
 	MinStacks int
+	// BelowHealth is the share of its maximum health the target must be at or
+	// under, in parts per thousand, and nought is "does not ask". Half is 500.
+	//
+	// It reads the *target*, where passive.Condition reads its holder. The two
+	// share their arithmetic through scale.AtOrBelowShare and deliberately not
+	// their type: one Condition serving both could not say which unit it meant,
+	// and passive imports this package, so the language refuses the shortcut
+	// anyway.
+	BelowHealth int
 	// BonusPower is added to the skill's power when the condition holds.
 	BonusPower int
 	// Consume removes the status, which is what a detonate does: the burst is
 	// paid for by the ticks it throws away.
 	Consume bool
+}
+
+// ReadsStatus reports whether the condition asks what the target is carrying.
+// A condition that reads only health leaves Status empty.
+func (c *Condition) ReadsStatus() bool { return c != nil && c.Status != "" }
+
+// ReadsHealth reports whether the condition asks how hurt the target is.
+func (c *Condition) ReadsHealth() bool { return c != nil && c.BelowHealth > 0 }
+
+// Holds reports whether a target satisfies the condition.
+//
+// Every clause must hold, not any of them: a condition naming both a status and
+// a threshold is "already burning *and* nearly dead", which is the only reading
+// that lets a second clause narrow a skill rather than widen it.
+func (c *Condition) Holds(against Target) bool {
+	if c == nil {
+		return false
+	}
+	if c.ReadsStatus() && against.Stacks < c.MinStacks {
+		return false
+	}
+	if c.ReadsHealth() && !scale.AtOrBelowShare(against.Health, against.Maximum, c.BelowHealth) {
+		return false
+	}
+	return true
+}
+
+// Target is what a condition is allowed to know about the unit a skill is aimed
+// at: the stacks it carries of the named status, and where its health sits.
+//
+// It is a struct rather than three parameters because two of the three are
+// int64 health values that mean nothing apart, and a caller that swapped them
+// would compile. The battle fills it in from the unit; a report fills it in from
+// the numbers it is measuring against.
+type Target struct {
+	Stacks  int
+	Health  int64
+	Maximum int64
+}
+
+// Carrying is the target of a condition that only reads a status, which is what
+// a report or a test measuring the status half wants to say.
+func Carrying(stacks int) Target { return Target{Stacks: stacks} }
+
+// Satisfying is the cheapest target the condition holds against: exactly the
+// stacks it asks for, and health as low as it wants.
+//
+// It is what a preview and a report want — both are answering "what is this
+// skill worth when it goes off", and neither has a real unit to ask. Health of
+// nought out of one is not a unit anybody could meet, and that is the point: it
+// is the *threshold satisfied*, written so it cannot be mistaken for a
+// measurement of somebody.
+func (c *Condition) Satisfying() Target {
+	if c == nil {
+		return Target{}
+	}
+	return Target{Stacks: c.MinStacks, Health: 0, Maximum: 1}
 }
 
 // Cleanse is the statuses a skill strips.
@@ -328,18 +395,15 @@ func (s Skill) StrikeCount() int {
 
 // PowerAgainst returns the power the skill lands with, given how many stacks of
 // its required status the target carries.
-func (s Skill) PowerAgainst(stacks int) int {
-	if s.Requires == nil || stacks < s.Requires.MinStacks {
+func (s Skill) PowerAgainst(against Target) int {
+	if !s.Amplified(against) {
 		return s.Power
 	}
 	return s.Power + s.Requires.BonusPower
 }
 
-// Amplified reports whether the condition holds for a target carrying the given
-// number of stacks.
-func (s Skill) Amplified(stacks int) bool {
-	return s.Requires != nil && stacks >= s.Requires.MinStacks
-}
+// Amplified reports whether the condition holds against a given target.
+func (s Skill) Amplified(against Target) bool { return s.Requires.Holds(against) }
 
 // Guaranteed reports whether the skill cannot miss.
 func (s Skill) Guaranteed() bool { return s.Accuracy >= scale.Base }
@@ -396,10 +460,11 @@ type scalingFile struct {
 }
 
 type conditionFile struct {
-	Status     string `json:"status"`
-	MinStacks  int    `json:"min_stacks"`
-	BonusPower int    `json:"bonus_power"`
-	Consume    bool   `json:"consume,omitempty"`
+	Status      string `json:"status,omitempty"`
+	MinStacks   int    `json:"min_stacks,omitempty"`
+	BelowHealth int    `json:"below_health,omitempty"`
+	BonusPower  int    `json:"bonus_power"`
+	Consume     bool   `json:"consume,omitempty"`
 }
 
 type cleanseFile struct {
@@ -481,7 +546,8 @@ func (s Skill) file() skillFile {
 	if s.Requires != nil {
 		out.Requires = &conditionFile{
 			Status: s.Requires.Status, MinStacks: s.Requires.MinStacks,
-			BonusPower: s.Requires.BonusPower, Consume: s.Requires.Consume,
+			BelowHealth: s.Requires.BelowHealth,
+			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
 		}
 	}
 	if s.Strips != nil {
@@ -664,26 +730,56 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 
 	var requires *Condition
 	if declared.Requires != nil {
-		kind, err := deps.Statuses.Lookup(declared.Requires.Status)
-		if err != nil {
-			return fail("condition: %w", err)
+		// A condition may read a status, or health, or both. What it may not do
+		// is read neither: an empty condition holds against everybody, so it is
+		// a flat power bonus written in the one shape that hides that it is one.
+		readsStatus := declared.Requires.Status != ""
+		readsHealth := declared.Requires.BelowHealth != 0
+		if !readsStatus && !readsHealth {
+			return fail("has a condition that asks nothing, so it would hold against everybody")
 		}
-		minStacks := declared.Requires.MinStacks
-		if minStacks < 1 {
-			minStacks = 1
+
+		statusID, minStacks := "", 0
+		if readsStatus {
+			kind, err := deps.Statuses.Lookup(declared.Requires.Status)
+			if err != nil {
+				return fail("condition: %w", err)
+			}
+			minStacks = declared.Requires.MinStacks
+			if minStacks < 1 {
+				minStacks = 1
+			}
+			if minStacks > kind.MaxStacks {
+				return fail("condition needs %d stacks of %q, which caps at %d",
+					minStacks, kind.ID, kind.MaxStacks)
+			}
+			statusID = kind.ID
+		} else if declared.Requires.MinStacks != 0 {
+			// Stated stacks with nothing to count them of is a half-written
+			// condition, and reading it as "no status" would silently drop the
+			// half the author did write.
+			return fail("condition asks for %d stacks but names no status",
+				declared.Requires.MinStacks)
 		}
-		if minStacks > kind.MaxStacks {
-			return fail("condition needs %d stacks of %q, which caps at %d",
-				minStacks, kind.ID, kind.MaxStacks)
+
+		if readsHealth &&
+			(declared.Requires.BelowHealth < 1 || declared.Requires.BelowHealth > scale.Base) {
+			return fail("condition holds below %d health, want a share in parts per thousand",
+				declared.Requires.BelowHealth)
 		}
 		if declared.Requires.BonusPower < 0 {
 			return fail("condition adds %d power, want zero or more", declared.Requires.BonusPower)
 		}
+		// Consuming is a status rule, so a condition that reads only health has
+		// nothing to consume and saying so is a mistake rather than a no-op.
+		if declared.Requires.Consume && !readsStatus {
+			return fail("condition consumes a status, but it names none")
+		}
 		if declared.Requires.Consume && declared.Requires.BonusPower == 0 {
-			return fail("condition consumes %q for no bonus, which throws the status away for nothing", kind.ID)
+			return fail("condition consumes %q for no bonus, which throws the status away for nothing", statusID)
 		}
 		requires = &Condition{
-			Status: kind.ID, MinStacks: minStacks,
+			Status: statusID, MinStacks: minStacks, BelowHealth: declared.Requires.BelowHealth,
 			BonusPower: declared.Requires.BonusPower, Consume: declared.Requires.Consume,
 		}
 	}

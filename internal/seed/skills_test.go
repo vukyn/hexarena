@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -207,7 +208,7 @@ func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
 			continue
 		}
 		burst := rules.Damage(attackerAttack, referenceDefense,
-			current.PowerAgainst(kind.MaxStacks), neutralAffinity)
+			current.PowerAgainst(skill.Carrying(kind.MaxStacks)), neutralAffinity)
 		// What the ticks would have been worth if left alone, plus what a plain
 		// attack would have dealt with the same turn.
 		perTick := rules.Damage(attackerAttack, referenceDefense, kind.TickPower, neutralAffinity)
@@ -251,6 +252,22 @@ func allowlist(names []string) string {
 		return "-"
 	}
 	return strings.Join(names, " ")
+}
+
+// conditionReads is what a skill's condition asks about its target, written out.
+//
+// Both halves when it asks both, because "and" is the rule: a condition naming a
+// status and a threshold holds only when the target satisfies each, and a report
+// listing one of them would make a narrow skill read as a broad one.
+func conditionReads(condition *skill.Condition) string {
+	parts := make([]string, 0, 2)
+	if condition.ReadsStatus() {
+		parts = append(parts, condition.Status)
+	}
+	if condition.ReadsHealth() {
+		parts = append(parts, fmt.Sprintf("health <=%d per mille", condition.BelowHealth))
+	}
+	return strings.Join(parts, " and ")
 }
 
 func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book, rules combat.Rules) string {
@@ -313,22 +330,33 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 			allowlist(current.Restrict.Characters))
 	}
 
+	// The "needs" column is a sentence rather than a status id because a
+	// condition stopped being one thing to name: it may read a status, or how
+	// hurt the target is, or both, and a column headed "status" with a health
+	// share under it would be the report lying about what it measured.
 	b.WriteString("\n== conditional amplifiers ==\n")
-	b.WriteString("skill           needs      stacks   power   amplified   damage   amplified   gain\n")
+	b.WriteString("skill           needs                       stacks   power   amplified   damage   amplified   gain\n")
 	for _, current := range book.Skills() {
 		if current.Requires == nil {
 			continue
 		}
+		against := current.Requires.Satisfying()
 		plain := rules.Damage(attackerAttack, referenceDefense, current.Power, neutralAffinity)
 		amplified := rules.Damage(attackerAttack, referenceDefense,
-			current.PowerAgainst(current.Requires.MinStacks), neutralAffinity)
+			current.PowerAgainst(against), neutralAffinity)
 		note := ""
 		if current.Requires.Consume {
 			note = " (consumes)"
 		}
-		fmt.Fprintf(&b, "%-16s%-11s%7d%8d%12d%9d%12d%7s%s\n",
-			current.ID, current.Requires.Status, current.Requires.MinStacks,
-			current.Power, current.PowerAgainst(current.Requires.MinStacks),
+		// A stack count belongs to a status, so a condition that names none
+		// prints a dash rather than the 0 the field happens to hold.
+		stacks := "-"
+		if current.Requires.ReadsStatus() {
+			stacks = strconv.Itoa(current.Requires.MinStacks)
+		}
+		fmt.Fprintf(&b, "%-16s%-28s%7s%8d%12d%9d%12d%7s%s\n",
+			current.ID, conditionReads(current.Requires), stacks,
+			current.Power, current.PowerAgainst(against),
 			plain, amplified, ratio(amplified, plain), note)
 	}
 
@@ -346,7 +374,7 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 		forgone := perTick * int64(current.Requires.MinStacks) * int64(kind.Duration)
 		plain := rules.Damage(attackerAttack, referenceDefense, 1000, neutralAffinity)
 		burst := rules.Damage(attackerAttack, referenceDefense,
-			current.PowerAgainst(kind.MaxStacks), neutralAffinity)
+			current.PowerAgainst(skill.Carrying(kind.MaxStacks)), neutralAffinity)
 		fmt.Fprintf(&b, "%-16s%-9s%15d%17d%14d%8d%9s\n",
 			current.ID, kind.ID, forgone, plain, forgone+plain, burst, ratio(burst, forgone+plain))
 	}

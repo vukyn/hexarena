@@ -186,8 +186,21 @@ func Extras(declared skill.Skill) string {
 		if declared.Requires.Consume {
 			verb = "eats"
 		}
-		parts = append(parts, fmt.Sprintf("%s %s x%d for +%d",
-			verb, declared.Requires.Status, declared.Requires.MinStacks, declared.Requires.BonusPower))
+		// A condition reads a status, or how hurt the target is, or both, so the
+		// clause is assembled rather than formatted in one go: the old single
+		// line printed the status field unconditionally and would render a
+		// health-only condition as "needs  x0", which reads as a bug in the
+		// skill rather than as a skill this line cannot describe.
+		clauses := make([]string, 0, 2)
+		if declared.Requires.ReadsStatus() {
+			clauses = append(clauses, fmt.Sprintf("%s x%d",
+				declared.Requires.Status, declared.Requires.MinStacks))
+		}
+		if declared.Requires.ReadsHealth() {
+			clauses = append(clauses, fmt.Sprintf("health <=%d%%", declared.Requires.BelowHealth/10))
+		}
+		parts = append(parts, fmt.Sprintf("%s %s for +%d",
+			verb, strings.Join(clauses, " and "), declared.Requires.BonusPower))
 	}
 	if declared.Strips != nil {
 		names := make([]string, 0, len(declared.Strips.Categories))

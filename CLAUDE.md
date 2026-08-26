@@ -928,32 +928,23 @@ is the constraint each piece has to respect.
       only one that lands first: **a holder killed by the skill does not answer**
       (dead is dead, as it cannot be healed) — which is also the counter to
       retaliation, free: kill it outright and there is no reply.
-- [ ] **A health threshold a *skill* can read.** `passive.Condition` answers "how
-      hurt is the holder" and a **trait** is the only thing that can ask:
-      `skill.Condition` still asks only what the *target* is carrying, and only
-      whether it carries a status — so a skill cannot say "harder against
-      something already hurt". The shipped `brine` is **parked** on `mire` waiting
-      for it: its move doubles against a target at or below half health, so keep
-      the name and move it onto the term when there is one. Build the *threshold*,
-      not a curve — half health is `hp*1000 <= maxHP*500`, the same arithmetic
-      `passive.Condition.Holds` already does, and it reuses
-      `requires`/`bonus_power` for free, while a **gradient** is a multiplier in
-      `combat` reading the *caster's* health and is a second feature rather than an
-      option on this one. ⚠️ Decide rather than discover whether the two thresholds
-      share a type or only their arithmetic: a trait's asks about its holder and a
-      skill's about its target, so the reading is identical and the subject is not
-      — exactly the pair that becomes one type doing two jobs if nobody chooses.
-- [x] **`venom_blood` is carried by Bulbasaur** (from level 1 — immunity is innate,
-      unlike `endurance` at 16). It was one line and it waited on the roster, not on
-      a number: against the **mirror** it zeroed the poison layer outright (183
-      applications → 0, every tick and every `venoshock` amplifier with them),
-      because both squads were the same poison-immune character. With the two sides
-      differing the layer survives — over 40 auto-battles 83 applications → 60, 183
-      ticks → 133, 119 amplified → 104. ⚠️ Ally wins moved 20/40 → 17/40, which is
-      **noise**: 40 battles cannot resolve 3 (the same trap `razor_leaf`'s pierce
-      hit at 23 → 25). Judge a trait on the counts, never on the win rate. The trait
-      is on the **character**, not on `blighter` — spreading poison is a playstyle,
-      being immune to it is what the unit *is*, and that is the species axis.
+- [x] **A health threshold a *skill* can read.** `skill.Condition.BelowHealth`
+      (permille) reads the **target**; `passive.Condition` reads its **holder**.
+      `brine` moved onto it and is finally its canon move — 1000 power → 2000 at or
+      below half health. ⚠️ **They share the arithmetic, not the type**:
+      `scale.AtOrBelowShare` is the one comparison and both call it. One shared
+      `Condition` could not say *whose* health it meant (and `passive` imports
+      `skill`, so it was unwritable). A condition may read a status, health, or
+      both — **both is AND**, so a clause narrows rather than widens. Refused, not
+      defaulted: asks nothing; stacks with no status; share outside 1..1000;
+      consumes a status it never names. The reading is a **`skill.Target`** struct
+      (stacks, health, maximum) — not three params, because two int64 healths swap
+      silently; `Amplified`/`PowerAgainst` take it, `Condition.Satisfying()` is the
+      cheapest holding target for previews/reports. ⚠️ `battle.conditionTarget` is
+      the **single** builder because `Suggest` and `resolveAgainst` must read
+      identically, else the AI prefers a bonus it does not get. Still absent: the
+      **gradient** (harder the further the *caster* fell) — a multiplier in
+      `combat`, reads the other unit, a separate feature.
 - [ ] **Species — what a unit *is*, not how it fights.** An element says what a
       unit is made of and an archetype says how it fights; nothing says whether it
       has a shell, roots or a lineage, so a skill named after a body may land on a

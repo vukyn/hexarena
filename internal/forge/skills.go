@@ -592,7 +592,7 @@ func (l *Library) PreviewDamage(built skill.Skill) SkillPreview {
 	preview.Total = preview.PerStrike * int64(preview.Strikes)
 	if built.Requires != nil {
 		amplified := l.rules.Damage(attack, defense,
-			built.PowerAgainst(built.Requires.MinStacks), combat.PermilleBase)
+			built.PowerAgainst(built.Requires.Satisfying()), combat.PermilleBase)
 		preview.Amplified = amplified * int64(preview.Strikes)
 	}
 	return preview

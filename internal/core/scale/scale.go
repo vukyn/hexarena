@@ -12,6 +12,30 @@ const Base = 1000
 // Apply returns value scaled by a proportional factor.
 func Apply(value, permille int64) int64 { return value * permille / Base }
 
+// AtOrBelowShare reports whether a value is at or under a share of its maximum.
+//
+// It is written as a cross-multiplication rather than as Apply(maximum, share)
+// so the comparison is exact: dividing first would round the threshold down and
+// put a unit sitting exactly on the line on the wrong side of it once every few
+// hundred health.
+//
+// At or under, not strictly under: a threshold of a third means a third counts.
+// A maximum of nought answers no rather than dividing by it — something with no
+// maximum is not something that is low.
+//
+// It lives here because two packages ask the same question about different
+// subjects: a trait asks it about its holder, a skill asks it about its target.
+// Sharing the *type* would leave one Condition that could not say which unit it
+// meant, and the first mistake would be passing the wrong one's health. Sharing
+// the arithmetic costs one function and cannot be passed the wrong thing
+// silently, because the caller names both numbers at the call site.
+func AtOrBelowShare(value, maximum int64, share int) bool {
+	if maximum <= 0 {
+		return false
+	}
+	return value*Base <= int64(share)*maximum
+}
+
 // Saturate applies a change to a base value with diminishing returns, so the
 // result approaches a limit without ever reaching it.
 //

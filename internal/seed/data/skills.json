@@ -419,9 +419,8 @@
       "cooldown": 2,
       "target": "enemy",
       "requires": {
-        "status": "mire",
-        "min_stacks": 1,
-        "bonus_power": 900
+        "below_health": 500,
+        "bonus_power": 1000
       }
     },
     {
