@@ -113,13 +113,104 @@ func TestShippedRosterIsUsable(t *testing.T) {
 				side, perSide[side], hex.MaxTeamSize)
 		}
 	}
-	// A roster where both sides share one affinity would never exercise the
-	// element chart, which is most of what a battle is deciding.
-	// No spread check here any more. Reaching every corner of the chart is a
-	// property of the bench, which exists for exactly that; the shipped roster
-	// is whatever cast has been authored, and today that is one character.
-	if len(elements) == 0 {
-		t.Error("the roster declares no affinity at all")
+	// Reaching every corner of the chart is a property of the bench, which
+	// exists for exactly that. What the shipped roster owes is that the chart
+	// decides something at all: a roster on one affinity would never consult it,
+	// and consulting it is most of what a battle is doing.
+	if len(elements) < 2 {
+		t.Errorf("the roster declares %d affinities, so the element chart decides nothing", len(elements))
+	}
+}
+
+// TestTheShippedRosterIsNotAMirror is the property that makes the roster a
+// measuring instrument rather than a scenario.
+//
+// It used to be the same character three times on each side. A mirror cannot
+// measure anything: a change to a number helps both squads by exactly as much,
+// so the win rate moves only by noise, which is what stopped razor_leaf's
+// piercing value from being judged by anything but its damage table.
+//
+// The check is against the resolved units rather than the authoring form,
+// because that is where the property has to hold. A species and a level resolve
+// to a name, a stat line and a kit; two units agreeing on all three are the same
+// unit however they were written down.
+func TestTheShippedRosterIsNotAMirror(t *testing.T) {
+	roster, err := seed.Roster()
+	if err != nil {
+		t.Fatalf("load roster: %v", err)
+	}
+	twinned := 0
+	for _, ally := range roster {
+		if ally.Side != hex.SideAlly {
+			continue
+		}
+		for _, foe := range roster {
+			if foe.Side != hex.SideEnemy {
+				continue
+			}
+			if ally.Name != foe.Name || ally.Stats != foe.Stats {
+				continue
+			}
+			twinned++
+			t.Errorf("%q and %q are the same unit on both sides: %s at %s",
+				ally.ID, foe.ID, ally.Name, ally.Stats)
+		}
+	}
+	if twinned > 0 {
+		t.Log("a shared unit is a number that weighs the same on both sides, which is a number nothing can measure")
+	}
+}
+
+// TestEveryShippedUnitCanReachEveryEnemy is what keeps the roster from stalling.
+//
+// battle.New only refuses a unit that can reach *nobody*, which is the rule a
+// game needs: a short-ranged unit behind the front line is a legitimate design,
+// because the squad in front of it is what reaches. The seed roster is held to
+// the stricter rule, because it is an instrument and a battle that cannot finish
+// measures nothing.
+//
+// It is not hypothetical. An earlier draft of this roster stood its third unit
+// on slot 1,2, which hex.Place puts **four** cells from the enemy's own 1,2 —
+// past every range in the cast. Five seeds in four thousand ended with those two
+// alive and unable to touch each other, and it was not even a draw: one of them
+// kept refreshing a regeneration on itself, so something was always pending and
+// the board was never final. Those battles ran the turn limit out.
+func TestEveryShippedUnitCanReachEveryEnemy(t *testing.T) {
+	roster, err := seed.Roster()
+	if err != nil {
+		t.Fatalf("load roster: %v", err)
+	}
+	skills, err := seed.SkillBook()
+	if err != nil {
+		t.Fatalf("load skills: %v", err)
+	}
+	longest := func(unit battle.Roster) int {
+		out := 0
+		for _, id := range unit.Skills {
+			carried, err := skills.Lookup(id)
+			if err != nil {
+				t.Fatalf("unit %q: %v", unit.ID, err)
+			}
+			if carried.Range > out {
+				out = carried.Range
+			}
+		}
+		return out
+	}
+	for _, unit := range roster {
+		reach := longest(unit)
+		from := hex.Place(unit.Side, unit.Slot)
+		for _, other := range roster {
+			if other.Side == unit.Side {
+				continue
+			}
+			distance := from.DistanceTo(hex.Place(other.Side, other.Slot))
+			if distance <= reach {
+				continue
+			}
+			t.Errorf("%q at %s reaches %d, but %q stands %d cells away",
+				unit.ID, from, reach, other.ID, distance)
+		}
 	}
 }
 

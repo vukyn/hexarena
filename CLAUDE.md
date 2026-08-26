@@ -719,6 +719,35 @@ drifts. Marshal is also the one place in `cast` that *imposes* an order rather
 than preserving the authored one; everything else keeps declaration order,
 because a map range would randomise it.
 
+**`roster.json` is an instrument, not a scenario, and it has three contracts.**
+It is 3v3 by character reference — ally Venusaur 60 / Wartortle 16 / Charmander 8
+against enemy Blastoise 60 / Charmeleon 28 / Ivysaur 16 — and each of those is
+load-bearing:
+
+- **No unit on both sides.** It used to be the same character three times per
+  side, and a mirror cannot measure anything: a change helps both squads by
+  exactly as much, so the win rate moves only by noise. That is what stopped
+  `razor_leaf`'s pierce being judged by anything but its damage table.
+  `TestTheShippedRosterIsNotAMirror` compares the **resolved** units — name and
+  stat line — because a species and a level resolve to those, and two units
+  agreeing on them are the same unit however they were authored.
+- **Every unit reaches every enemy.** `battle.New` only refuses a unit that can
+  reach *nobody*, which is right for a game; the seed roster is held to the
+  stricter rule by `TestEveryShippedUnitCanReachEveryEnemy`, because a battle that
+  cannot finish measures nothing. ⚠️ Slot `1,2` is **four** cells from the enemy's
+  own `1,2` — past every range in the cast — and a draft that used it stalled 5
+  seeds in 4000, not even as a draw: a survivor kept refreshing a regeneration, so
+  something was always pending and `frozen` correctly never fired. Check a new
+  slot against `hex.Place` rather than against the picture.
+- **Both trait states and all three stages are in play.** Charmander at 8 is below
+  `blaze`'s unlock level and the two 16s sit exactly on `endurance`'s, so a battle
+  exercises a unit with its trait and one without.
+
+⚠️ **The 40-seed sweep in `TestSeedBattlesFinishFromEverySeed` is a smoke test, not
+a measurement.** It read 45 per cent on a draft whose true rate over 4000 seeds
+was 55. Tune levels against a few thousand seeds and quote that figure; the test's
+job is only that the battle finishes and that neither side is a scripted defeat.
+
 Art lives under `internal/seed/data/assets/` and is **not embedded** — the embed
 directive names the JSON files one by one. The two placeholder SVGs there exist so
 `hexforge check` passes out of the box; replace them, do not delete them without
@@ -972,20 +1001,14 @@ is the constraint each piece has to respect.
       it** — `battle.Roster` still takes a resolved kit and a resolved stat line,
       because a learnset and a stage settle before a battle exactly as evolution
       already does. See README → Roadmap.
-- [ ] **A real cast — and an asymmetric roster.** The tooling exists, the example
-      characters are gone, and `cast.json` now ships **one** character:
-      `pokemon.bulbasaur`, three forms, art for each. `roster.json` is no longer
-      the flat test bed either — it is 3v3 by character reference at levels 60,
-      24 and 8, which means **both squads are the same character** and every
-      battle is a mirror. That is the thing to fix, and it is not cosmetic: a
-      mirror cannot measure balance, because a change that helps one side helps
-      the other by exactly as much and the win rate moves only by noise. It is
-      what stopped `razor_leaf`'s piercing value from being judged by anything
-      but its damage table. So the work is a second character first, then a
-      roster where the two sides differ. Design against `progression.Limits`,
-      particularly the joint health-and-defence bound since those two multiply,
-      and remember that an archetype's kit constrains a character's affinity —
-      `skill.CanCarry` enforces it while authoring and `Archetype.Demands`
-      reports it. Every character added moves `scenarios.golden` and
+- [ ] **Grow the cast.** Three characters ship, one per element, and the seed
+      roster is no longer a mirror — so the thing this item was blocking, a
+      measurable balance figure, exists. What is left is content, under two
+      constraints: an archetype's kit constrains a character's affinity
+      (`skill.CanCarry` enforces it while authoring, `Archetype.Demands` reports
+      it), and `progression.Limits` bounds health and defence **together** because
+      those two multiply. Every character added moves `scenarios.golden` and
       `replay.golden`, which is the point rather than a cost: those diffs are how
-      the balance change gets read.
+      the balance change gets read. Read squirtle first — water is the strongest
+      of the three elements and Blastoise still cannot carry an ace slot, because
+      its attack and speed curves are the lowest in the cast.

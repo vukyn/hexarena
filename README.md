@@ -158,10 +158,13 @@ much against the defence ceiling:
 
 It does not warp the kit it sits in: across forty auto-battles `razor_leaf` goes
 from 34 percent of all casts to 37, and the other three attacks keep their share.
-What that sweep cannot say is whether 400 is the right number, because the shipped
-roster is a mirror — both squads carry the same kit, so piercing helps both sides
-equally and the win rate moves by noise. Judging the value needs an asymmetric
-roster, which is the cast's problem rather than piercing's.
+Whether 400 is the *right* number could not be judged at all while the shipped
+roster was a mirror — both squads carried the same kit, so piercing helped each
+by exactly as much and the win rate moved by noise. The roster is no longer a
+mirror (see *The seed roster is the balance instrument*), and the answer is
+modest: over four thousand auto-battles, taking the pierce off moves the ally win
+rate from 48.5 per cent to 46.5. The damage table was telling the truth — this is
+a dial that changes who armour is good against, not one that decides battles.
 
 ### Why raw health has no floor of its own
 
@@ -641,6 +644,63 @@ you what moved: several of them freeze design figures deliberately, and the gold
 files under `testdata` are a record of what the numbers currently produce. Run
 `go test ./internal/core/hex ./internal/seed ./internal/tui -update` to accept a
 change, and read the diff — that diff is the point of them.
+
+### The seed roster is the balance instrument
+
+`roster.json` is 3v3 by character reference, and **no unit appears on both
+sides**:
+
+| | ace | support | young |
+| --- | --- | --- | --- |
+| ally | Venusaur, 60 | Wartortle, 16 | Charmander, 8 |
+| enemy | Blastoise, 60 | Charmeleon, 28 | Ivysaur, 16 |
+
+That is a measuring instrument rather than a scenario, and it is the whole
+reason the file is shaped that way. It used to be the same character three times
+on each side, and **a mirror cannot measure anything**: a change to a number
+helps both squads by exactly as much, so the win rate moves only by noise. That
+is what stopped `razor_leaf`'s piercing value from being judged by anything but
+its damage table — giving it 400 moved the ally win rate from 23 of 40 to 25,
+which is nothing.
+
+Now it measures. Over four thousand auto-battles the roster sits at **48.5 per
+cent** to the ally, and taking `razor_leaf`'s pierce back off moves that to 46.5
+— a real, one-directional move, on a roster where the ally holds the only
+Venusaur and the enemy the only Blastoise. The 40-seed sweep the test runs reads
+20–20, and it is far too coarse to tune against: it read 45 per cent on a draft
+whose true rate was 55.
+
+Four properties earn their place, and each is a way the roster was wrong before:
+
+- **Every number weighs differently on the two sides.** Each species appears at a
+  different level on each, so touching bulbasaur's curve moves an ally ace and an
+  enemy support rather than two identical units. `TestTheShippedRosterIsNotAMirror`
+  holds that, and it compares the *resolved* units — a name, a stat line — because
+  two units agreeing on those are the same unit however they were authored.
+- **Every unit can reach every enemy.** `battle.New` only refuses a unit that can
+  reach nobody, which is the right rule for a game; the seed roster is held to
+  the stricter one, because a battle that cannot finish measures nothing. An
+  earlier draft stood its third unit on slot 1,2, which is **four** cells from
+  the enemy's own 1,2 and past every range in the cast — and five seeds in four
+  thousand ended with two survivors unable to touch each other. It was not even a
+  draw: one kept refreshing a regeneration, so something was always pending and
+  the board was never final. `TestEveryShippedUnitCanReachEveryEnemy` is that
+  lesson.
+- **Every element appears on both sides**, so neither squad holds an answer the
+  other cannot have. The matchups are not a closed triangle: water beats fire and
+  fire beats grass, but **grass against water is neutral**, so grass has no
+  elemental answer at all and pays for it in neutral-element skills —
+  `sludge_bomb` and `venoshock` land at full value on anything.
+- **All three forms and both trait states are in play.** The levels span the
+  final, middle and base stage; Wartortle and Ivysaur sit exactly on
+  `endurance`'s unlock level, and Charmander at 8 is below `blaze`'s — so a
+  battle exercises a unit holding its trait and a unit that has not earned one.
+
+Squirtle is the finding this produced, and it is the kind a mirror hides. Water
+is the strongest of the three elements and Blastoise still cannot carry the ace
+slot on its own: its attack and speed curves are the lowest in the cast, so an
+element advantage does not compensate for a passive stat line. What balances the
+two squads is the levels of the units behind the aces.
 
 ## Authoring a cast
 
@@ -1168,42 +1228,32 @@ level and to refuse a loadout the level cannot hold. Choosing the four is a
 player's decision, and until there is something to make it with, an automatic
 battle may take any four.
 
-### A real cast, and a roster that is not a mirror
+### Growing the cast
 
-The tooling for this exists — see *Authoring a cast* above. What remains is the
-cast, and the shape of the gap has changed since this was written: the example
-characters are gone and `cast.json` ships exactly one, `pokemon.bulbasaur`, with
-three forms and art for each.
+The tooling for this exists — see *Authoring a cast* above — and so does the
+thing it was blocking: three characters ship, one per element, and the seed
+roster is no longer a mirror, so balance is measurable. What remains is content
+rather than a design question, and two constraints shape it.
 
-- **One character is not a cast.** Nine skills and three forms all belong to it,
-  so every design question about how two characters differ is unasked.
-- **The roster is a mirror, and that is the blocking half.** `roster.json` is 3v3
-  by reference at levels 60, 24 and 8 — the same character on both sides. A
-  mirror cannot measure balance: a change that helps one side helps the other by
-  exactly as much, so the win rate moves only by noise. Measured over forty
-  auto-battles, giving `razor_leaf` its piercing value moved the ally win rate
-  from 23 to 25 of 40, which says nothing at all. The damage table said the
-  useful things instead. So the value of a second character is not variety, it is
-  that balance becomes measurable.
-- **Art is answered.** `hexforge check` verifies every picture a character names,
-  its own and each form's, and `p` in `hexforge-tui` draws it — the terminal
-  rasterises through `forge.ArtImage`, which narrows the graphical client's
-  pipeline question rather than settling it.
-- **Elements to design around.** `battle.New` refuses a unit carrying a skill of
-  an element it does not share, so an archetype's kit constrains the affinity of
-  every character built from it. `skill.CanCarry` is the single declaration of
-  that rule and `hexforge` applies it while you author, so this is a design
-  constraint rather than a trap. A preset mixing three elements' skills is
-  rejected, because no affinity can hold three.
+- **An archetype's kit constrains a character's affinity.** `battle.New` refuses
+  a unit carrying a skill of an element it does not share, so a preset's kit
+  decides what a character built from it may be. `skill.CanCarry` is the single
+  declaration of that rule and `hexforge` applies it while you author, so it is a
+  design constraint rather than a trap. A preset mixing three elements' skills is
+  rejected outright, because no affinity can hold three.
+- **The stat budget is the other one.** `progression.Limits` bounds each stat and,
+  separately, bounds health and defence *together*, because those two multiply
+  rather than add: a unit at both ceilings is not merely durable, it is durable
+  squared. The shipped presets spend between 4036 and 11397 of the 11500
+  effective-health budget, and `hexforge show` prints what is left.
 
 Every character added moves `scenarios.golden` and `replay.golden`. That is the
 point rather than a cost: those diffs are how a balance change gets read.
 
-The stat budget is the constraint to design against: `progression.Limits` bounds
-each stat and, separately, bounds health and defence together, because those two
-multiply rather than add. A unit at both ceilings is not merely durable, it is
-durable squared. The five shipped presets spend between 4036 and 11397 of the
-11500 effective-health budget, and `hexforge show` prints what is left.
+Squirtle is worth reading before adding another. Water is the strongest of the
+three elements and Blastoise still loses the ace duel on stats, because its
+attack and speed curves are the lowest in the cast — an element advantage does
+not carry a passive stat line.
 
 ### What a unit is, not only how it fights
 
