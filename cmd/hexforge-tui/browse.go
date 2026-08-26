@@ -178,7 +178,12 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// at all when there is nothing to say — in English, or for a kit of skills
 	// the table has no names for — rather than an empty row under a full one.
 	if glossed := m.lang.GlossedKit(m.lib.KitSkills(character.Skills)); glossed != "" {
-		out.WriteString(m.continued("%s", m.style.dim.Render(glossed)))
+		// A kit has no fixed size, so this line is the pane's only unbounded
+		// one: six Vietnamese names came to 84 cells against the 79 there are.
+		// The ids above it are the record and stay whole; the reading below is
+		// what gets shortened.
+		room := minWidth - 3 - detailLabelWidth(m)
+		out.WriteString(m.continued("%s", m.style.dim.Render(clip(glossed, room))))
 	}
 	art := character.Image
 	if m.lib.ImageExists(character.Image) {

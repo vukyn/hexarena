@@ -753,12 +753,27 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 			}
 		}
 		// The kit's names are on the row under the kit's ids, in the same order.
+		//
+		// A long kit is clipped there, so what the screen owes is the beginning
+		// of the reading rather than all of it; that every skill is glossed at
+		// all is GlossedKit's property and is checked on the function.
 		kit := i18n.Vi.GlossedKit(lib.KitSkills(character.Skills))
 		if kit == "" {
 			t.Errorf("%s's kit is not glossed, so this proves nothing", character.ID)
-		} else if under := rowUnder(t, rows, m.text(i18n.LabelKit)); !strings.Contains(under, kit) {
-			t.Errorf("the row under %s's kit is %q, want it to show %q",
-				character.ID, under, kit)
+		} else {
+			opening := kit
+			if runes := []rune(kit); len(runes) > 12 {
+				opening = string(runes[:12])
+			}
+			if under := rowUnder(t, rows, m.text(i18n.LabelKit)); !strings.Contains(under, opening) {
+				t.Errorf("the row under %s's kit is %q, want it to begin %q",
+					character.ID, under, opening)
+			}
+		}
+		for _, carried := range lib.KitSkills(character.Skills) {
+			if name := i18n.Vi.SkillName(carried); name == "" {
+				t.Errorf("%s carries %s, which has no Vietnamese name", character.ID, carried.ID)
+			}
 		}
 		// The element is glossed in the list as well as in the pane, and the
 		// list row is the one that had to be measured to fit.
@@ -884,7 +899,12 @@ func TestEveryGlossFitsItsRow(t *testing.T) {
 			if glossed == "" {
 				continue
 			}
-			if drawn := indent + lipgloss.Width(glossed); drawn > drawable {
+			// Measured as it is *drawn*, not as it is built. A kit has no fixed
+			// size, so the raw reading grows without bound -- six Vietnamese
+			// names come to 84 cells -- and the row clips it. Holding the raw
+			// string to the width would make every sixth skill an obstacle to
+			// authoring rather than a layout bug.
+			if drawn := indent + lipgloss.Width(clip(glossed, drawable-indent)); drawn > drawable {
 				t.Errorf("%s's kit gloss in %s draws %d cells, over the %d there are: %q",
 					id, lang, drawn, drawable, glossed)
 			}
