@@ -46,6 +46,7 @@ const (
 	skillFieldKeptForElements
 	skillFieldKeptForRoles
 	skillFieldKeptForCharacters
+	skillFieldKeptForSpecies
 	skillFieldCount
 )
 
@@ -84,6 +85,7 @@ type skillsScreen struct {
 	keptElements []string
 	keptRoles    []string
 	keptWho      []string
+	keptKinds    []string
 	touched      bool
 	// shapeDrawn is whether the shape diagram is over the form.
 	//
@@ -145,7 +147,7 @@ func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
 	s.elementIndex = indexOf(forge.ElementNames(), defaultSkillElement)
 	s.targetIndex = indexOf(forge.TargetNames(), defaultSkillTarget)
 	s.shapeIndex = indexOf(lib.PatternNames(), defaultSkillPattern)
-	s.keptElements, s.keptRoles, s.keptWho = nil, nil, nil
+	s.keptElements, s.keptRoles, s.keptWho, s.keptKinds = nil, nil, nil, nil
 	s.field = skillFieldID
 	s.touched = false
 	s.shapeDrawn = false
@@ -190,6 +192,7 @@ func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScr
 	s.keptElements = forge.SplitList(answers.RestrictElements)
 	s.keptRoles = forge.SplitList(answers.RestrictArchetypes)
 	s.keptWho = forge.SplitList(answers.RestrictCharacters)
+	s.keptKinds = forge.SplitList(answers.RestrictSpecies)
 	s.editing = current.ID
 	return s
 }
@@ -237,6 +240,7 @@ func (s skillsScreen) draft(m model) forge.SkillDraft {
 		RestrictElements:   strings.Join(s.keptElements, ","),
 		RestrictArchetypes: strings.Join(s.keptRoles, ","),
 		RestrictCharacters: strings.Join(s.keptWho, ","),
+		RestrictSpecies:    strings.Join(s.keptKinds, ","),
 	}
 }
 
@@ -260,7 +264,8 @@ func skillChooserField(field int) bool {
 // listField reports whether a field is a list chosen on the sub-screen.
 func skillListField(field int) bool {
 	switch field {
-	case skillFieldKeptForElements, skillFieldKeptForRoles, skillFieldKeptForCharacters:
+	case skillFieldKeptForElements, skillFieldKeptForRoles,
+		skillFieldKeptForCharacters, skillFieldKeptForSpecies:
 		return true
 	default:
 		return false
@@ -398,7 +403,7 @@ func (s skillsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, t
 	return m, command
 }
 
-// openAllowlist raises the picker for one of the three lists.
+// openAllowlist raises the picker for one of the four lists.
 //
 // The list is offered rather than typed for the reason the origin and the
 // archetype are on the other form: every entry is an id out of a book, so a
@@ -425,6 +430,17 @@ func (m model) openAllowlist(field int) model {
 			options: idOptions(m.lib.Archetypes().IDs()), chosen: m.skills.keptRoles,
 			apply: func(m model, answer pickAnswer) model {
 				m.skills.keptRoles = answer.Chosen
+				m.skills.touched = true
+				return m
+			},
+		})
+	case skillFieldKeptForSpecies:
+		return m.pick(&pickState{
+			title: i18n.PickerSpeciesTitle, kind: pickSpecies,
+			hint:    i18n.PickerAllowlistHint,
+			options: idOptions(m.lib.Species().IDs()), chosen: m.skills.keptKinds,
+			apply: func(m model, answer pickAnswer) model {
+				m.skills.keptKinds = answer.Chosen
 				m.skills.touched = true
 				return m
 			},
@@ -761,6 +777,7 @@ func skillFieldLabel(m model, field int) string {
 		skillFieldKeptForElements:   i18n.SkillFieldKeptForElements,
 		skillFieldKeptForRoles:      i18n.SkillFieldKeptForRoles,
 		skillFieldKeptForCharacters: i18n.SkillFieldKeptForCharacters,
+		skillFieldKeptForSpecies:    i18n.SkillFieldKeptForSpecies,
 	}
 	return m.text(keys[field])
 }
@@ -797,6 +814,7 @@ func skillFieldHelp(m model, field int) string {
 		skillFieldKeptForElements:   i18n.SkillHelpKeptForElements,
 		skillFieldKeptForRoles:      i18n.SkillHelpKeptForRoles,
 		skillFieldKeptForCharacters: i18n.SkillHelpKeptForCharacters,
+		skillFieldKeptForSpecies:    i18n.SkillHelpKeptForSpecies,
 	}
 	return m.text(keys[clamp(field, 0, skillFieldCount-1)])
 }
@@ -1012,6 +1030,8 @@ func (s skillsScreen) value(m model, field, labelWidth int) string {
 		return s.listValue(m, s.keptRoles, labelWidth)
 	case skillFieldKeptForCharacters:
 		return s.listValue(m, s.keptWho, labelWidth)
+	case skillFieldKeptForSpecies:
+		return s.listValue(m, s.keptKinds, labelWidth)
 	case skillFieldAccuracy, skillFieldPower, skillFieldPierce,
 		skillFieldRestores, skillFieldDrains:
 		// Every one of these is authored in parts per thousand because that is

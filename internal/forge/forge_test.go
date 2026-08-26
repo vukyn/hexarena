@@ -1736,6 +1736,23 @@ func TestEveryShippedSkillTakesABalanceEdit(t *testing.T) {
 		}
 		if _, err := lib.EditSkill(built); err != nil {
 			t.Errorf("%s cannot be rebalanced: %v", current.ID, err)
+			continue
+		}
+		// An edit names one field and must carry every other one through
+		// untouched, and a restriction is the field where losing it is silent:
+		// the file still loads, every carrier still carries, and the skill has
+		// quietly become free to anybody. That is not hypothetical -- the draft
+		// held three allowlists and the fourth arrived with species, so every
+		// balance edit to a lineage skill dropped its lineage until this line
+		// was here to say so.
+		after, err := lib.Skills().Lookup(current.ID)
+		if err != nil {
+			t.Errorf("%s is gone after its own edit: %v", current.ID, err)
+			continue
+		}
+		if !reflect.DeepEqual(current.Restrict, after.Restrict) {
+			t.Errorf("%s was kept for %+v before the edit and %+v after",
+				current.ID, current.Restrict, after.Restrict)
 		}
 	}
 	if _, err := Load(dir); err != nil {

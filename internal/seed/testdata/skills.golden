@@ -52,11 +52,11 @@ withdraw        block (self)           2     1000       1000                -
 aqua_ring       regrowth (self)        2     1000       1000                -
 
 == who may carry, a skill absent here is free to anybody ==
-skill           elements   archetypes        characters
-synthesis       grass      -                 -
-ingrain         grass      -                 -
-dragon_rage     -          -                 pokemon.charmander
-dragon_dance    -          -                 pokemon.charmander
+skill           elements   archetypes        characters          species
+synthesis       grass      -                 -                   -
+ingrain         grass      -                 -                   -
+dragon_rage     -          -                 -                   dragon
+dragon_dance    -          -                 -                   dragon
 
 == conditional amplifiers ==
 skill           needs                       stacks   power   amplified   damage   amplified   gain

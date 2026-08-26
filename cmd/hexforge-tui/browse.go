@@ -218,6 +218,16 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// under it the way the kit's do, and only the ones actually in force are
 	// named — glossing a trait the unit does not have yet would read as a trait
 	// it has.
+	// What it is, when it is anything: the axis a skill kept for a lineage reads,
+	// and the one fact on this screen that the numbers cannot imply. Only when
+	// there is one, on the same terms as the traits row under it.
+	if len(character.Species) > 0 {
+		out.WriteString(m.wrapped(m.text(i18n.FieldSpecies), detailLabelWidth(m),
+			strings.Join(character.Species, " ")))
+		if glossed := m.lang.GlossedSpecies(m.lib.KitSpecies(character.Species)); glossed != "" {
+			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
+		}
+	}
 	if len(character.Passives) > 0 {
 		out.WriteString(m.wrapped(m.text(i18n.LabelTraits), detailLabelWidth(m),
 			forge.UnlockSummaryAt(character.Passives, b.level)))

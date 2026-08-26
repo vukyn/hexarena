@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -308,6 +309,30 @@ func (l Lang) GlossedPassives(held []passive.Passive) string {
 		names = append(names, name)
 	}
 	if !glossed {
+		return ""
+	}
+	return strings.Join(names, kitJoin)
+}
+
+// GlossedSpecies is what a character is, in words rather than ids.
+//
+// The same shape GlossedPassives has and for the same reason: a species is
+// authored with its name beside it, so there is no compiled table behind it and
+// nothing to fall back to. A kind the catalog has lost keeps its id, which is
+// what every id with no name does here.
+func (l Lang) GlossedSpecies(kinds []cast.Species) string {
+	names := make([]string, 0, len(kinds))
+	named := false
+	for _, kind := range kinds {
+		name := strings.TrimSpace(kind.Name)
+		if name == "" {
+			name = kind.ID
+		} else {
+			named = true
+		}
+		names = append(names, name)
+	}
+	if !named {
 		return ""
 	}
 	return strings.Join(names, kitJoin)

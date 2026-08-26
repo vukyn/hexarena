@@ -17,7 +17,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
-//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/archetypes.json data/cast.json data/roster.json
+//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/species.json data/archetypes.json data/cast.json data/roster.json
 var files embed.FS
 
 // ElementsFile is the raw affinity chart declaration.
@@ -142,6 +142,18 @@ func Origins() (*cast.OriginBook, error) {
 	return cast.ParseOrigins(raw)
 }
 
+// SpeciesFile is the raw catalog of what a unit can be.
+func SpeciesFile() ([]byte, error) { return files.ReadFile("data/species.json") }
+
+// Species parses the embedded species catalog.
+func Species() (*cast.SpeciesBook, error) {
+	raw, err := SpeciesFile()
+	if err != nil {
+		return nil, err
+	}
+	return cast.ParseSpecies(raw)
+}
+
 // ArchetypesFile is the raw role-preset declaration.
 func ArchetypesFile() ([]byte, error) { return files.ReadFile("data/archetypes.json") }
 
@@ -198,6 +210,10 @@ func CastDeps() (cast.Deps, error) {
 	if err != nil {
 		return cast.Deps{}, err
 	}
+	species, err := Species()
+	if err != nil {
+		return cast.Deps{}, err
+	}
 	archetypes, err := Archetypes()
 	if err != nil {
 		return cast.Deps{}, err
@@ -223,7 +239,8 @@ func CastDeps() (cast.Deps, error) {
 		return cast.Deps{}, err
 	}
 	return cast.Deps{
-		Origins: origins, Archetypes: archetypes, Skills: skills, Passives: passives,
+		Origins: origins, Species: species, Archetypes: archetypes,
+		Skills: skills, Passives: passives,
 		Chart: chart, Limits: limits, Rules: rules,
 	}, nil
 }

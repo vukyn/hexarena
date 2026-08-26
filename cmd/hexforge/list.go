@@ -103,6 +103,67 @@ func runOriginsAdd(args []string) error {
 	return nil
 }
 
+func runSpecies(args []string) error {
+	if len(args) > 0 && args[0] == "add" {
+		return runSpeciesAdd(args[1:])
+	}
+	lib, err := loadForListing("species", args)
+	if err != nil {
+		return err
+	}
+	renderSpecies(os.Stdout, lib)
+	return nil
+}
+
+// renderSpecies lists what a unit can be, with how many characters are each.
+//
+// The count is the column worth having: a species nobody is is not an error --
+// a catalog may be written before the cast that fills it -- but a skill kept for
+// one nobody is cannot be carried by anybody, and this is where that shows.
+func renderSpecies(out io.Writer, lib *forge.Library) {
+	species := lib.Species().All()
+	if len(species) == 0 {
+		fmt.Fprintf(out, "nothing in the catalog yet; add one with: hexforge species add <id> --name N\n")
+		return
+	}
+	rendered := newTable("id", "cast", "name", "note").rightAlign(1)
+	for _, kind := range species {
+		rendered.add(kind.ID,
+			strconv.Itoa(len(lib.Characters().OfSpecies(kind.ID))), kind.Name, kind.Note)
+	}
+	rendered.render(out)
+	fmt.Fprintf(out, "\n%d kinds\n", len(species))
+}
+
+func runSpeciesAdd(args []string) error {
+	set := newFlagSet("species add")
+	dir := dataFlag(set)
+	name := set.String("name", "", "the word shown beside the id")
+	note := set.String("note", "", "where the line is drawn, which is a judgement worth recording")
+	operands, err := parseArgs(set, args)
+	if err != nil {
+		return err
+	}
+	if len(operands) != 1 {
+		return fmt.Errorf("usage: hexforge species add <id> --name N [--note ...]")
+	}
+	id := operands[0]
+	if *name == "" {
+		return fmt.Errorf("species %q needs --name", id)
+	}
+	lib, err := forge.Load(*dir)
+	if err != nil {
+		return err
+	}
+	// SaveSpecies validates exactly as a load would, so a rejected entry never
+	// reaches the file.
+	if err := lib.SaveSpecies(cast.Species{ID: id, Name: *name, Note: *note}); err != nil {
+		return err
+	}
+	fmt.Printf("added %s (%s) to %s\n", id, *name, lib.Dir())
+	return nil
+}
+
 func runArchetypes(args []string) error {
 	lib, err := loadForListing("archetypes", args)
 	if err != nil {

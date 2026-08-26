@@ -54,6 +54,7 @@ func main() {
 // support, so argv is split by hand and each subcommand owns its own FlagSet.
 var commands = map[string]func([]string) error{
 	"origins":    runOrigins,
+	"species":    runSpecies,
 	"archetypes": runArchetypes,
 	"passives":   runPassives,
 	"skills":     runSkills,
@@ -70,6 +71,9 @@ hexforge authors the cast the battles are fought with.
   hexforge origins                    the works the cast is borrowed from
   hexforge origins add <id> --title T --medium anime [--year N] [--note ...]
                                       add a work to the catalog
+  hexforge species                    what a unit can be, and who is one
+  hexforge species add <id> --name N [--note ...]
+                                      add a kind of creature to the catalog
   hexforge archetypes                 the role presets, their curves and their kits
   hexforge passives                   the declared traits and what each grants
   hexforge skills                     the declared skills and who may carry each
@@ -77,7 +81,7 @@ hexforge authors the cast the battles are fought with.
                                       [--range N] [--pattern P] [--strikes N]
                                       [--cooldown N] [--applies s:c[:n],...]
                                       [--restrict-elements ...] [--restrict-archetypes ...]
-                                      [--restrict-characters ...]
+                                      [--restrict-characters ...] [--restrict-species ...]
                                       author a skill; flags prefill, the wizard
                                       asks for what is still missing. A skill is
                                       balance: the golden files will move
@@ -91,7 +95,9 @@ hexforge authors the cast the battles are fought with.
                                       unable to carry the skill is refused
   hexforge cast                       the authored characters
   hexforge new [id]                   create a character; flags prefill, the
-                                      wizard asks only for what is still missing
+                                      wizard asks only for what is still missing.
+                                      --species names what it is, which is what a
+                                      skill kept for a lineage asks for
   hexforge show <id> [--level N]      resolve one character and show what it costs
   hexforge check                      parse the books from disk, verify the art
                                       is really there, report the stat budget

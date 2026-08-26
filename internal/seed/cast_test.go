@@ -17,6 +17,15 @@ import (
 	"github.com/vukyn/hexarena/internal/testfixture"
 )
 
+func mustSpecies(t *testing.T) *cast.SpeciesBook {
+	t.Helper()
+	book, err := seed.Species()
+	if err != nil {
+		t.Fatalf("load shipped species: %v", err)
+	}
+	return book
+}
+
 func mustOrigins(t *testing.T) *cast.OriginBook {
 	t.Helper()
 	book, err := seed.Origins()
@@ -180,6 +189,45 @@ func TestEveryShippedCharacterNamesSomethingReal(t *testing.T) {
 		}
 		if err := cast.ValidateImagePath(character.Image); err != nil {
 			t.Errorf("%s: %v", character.ID, err)
+		}
+	}
+}
+
+// TestEveryShippedRestrictionNamesSomethingReal checks the names inside a
+// skill's allowlists, for every skill in the book rather than only the carried
+// ones.
+//
+// The parsers deliberately check less than this. cast.checkCharacterRestrictions
+// only looks at skills somebody carries, because a unique skill cannot be
+// written before the character it names and that character cannot be written
+// before its kit -- checking every skill would deadlock authoring. The shipped
+// data has no such excuse: everything it names exists, so a typo in an allowlist
+// nobody carries yet is a typo, and without this it would sit unread until the
+// day somebody picked the skill up and got refused for being the wrong thing.
+func TestEveryShippedRestrictionNamesSomethingReal(t *testing.T) {
+	archetypes, characters, species := mustArchetypes(t), mustCast(t), mustSpecies(t)
+	skills, err := seed.SkillBook()
+	if err != nil {
+		t.Fatalf("load shipped skills: %v", err)
+	}
+	for _, carried := range skills.Skills() {
+		if carried.Restrict == nil {
+			continue
+		}
+		for _, id := range carried.Restrict.Archetypes {
+			if _, known := archetypes.Get(id); !known {
+				t.Errorf("%s is kept for the archetype %q, which no preset has", carried.ID, id)
+			}
+		}
+		for _, id := range carried.Restrict.Characters {
+			if _, known := characters.Get(id); !known {
+				t.Errorf("%s is kept for the character %q, which the cast does not hold", carried.ID, id)
+			}
+		}
+		for _, id := range carried.Restrict.SpeciesNames() {
+			if _, known := species.Get(id); !known {
+				t.Errorf("%s is kept for the species %q, which the catalog does not declare", carried.ID, id)
+			}
 		}
 	}
 }
@@ -492,6 +540,10 @@ func TestTheInlineRosterFormStillWorks(t *testing.T) {
 	}
 }
 
+func TestSpeciesGolden(t *testing.T) {
+	compareGolden(t, "species.golden", speciesReport(mustSpecies(t), mustCast(t)))
+}
+
 func TestOriginsGolden(t *testing.T) {
 	compareGolden(t, "origins.golden", originsReport(mustOrigins(t), mustCast(t)))
 }
@@ -525,6 +577,30 @@ func compareGolden(t *testing.T, name, got string) {
 	if got != string(want) {
 		t.Errorf("the report differs from %s; rerun with -update to accept\n--- got ---\n%s", path, got)
 	}
+}
+
+// speciesReport is the catalog with its carriers under it, which is the pairing
+// that makes the table worth reading: a species nobody is is not an error, and a
+// skill kept for one nobody is, is unplayable -- and only this report shows both
+// halves at once.
+func speciesReport(species *cast.SpeciesBook, characters *cast.Book) string {
+	var b strings.Builder
+	b.WriteString("== what a unit can be ==\n")
+	for _, kind := range species.All() {
+		fmt.Fprintf(&b, "%-16s %s\n", kind.ID, kind.Name)
+		are := characters.OfSpecies(kind.ID)
+		if len(are) == 0 {
+			b.WriteString("                 nobody is one yet\n")
+		}
+		for _, character := range are {
+			fmt.Fprintf(&b, "                 %s (%s)\n", character.ID, character.Name)
+		}
+		if kind.Note != "" {
+			fmt.Fprintf(&b, "                 note: %s\n", kind.Note)
+		}
+	}
+	fmt.Fprintf(&b, "\n%d kinds declared\n", len(species.All()))
+	return b.String()
 }
 
 func originsReport(origins *cast.OriginBook, characters *cast.Book) string {
@@ -597,6 +673,15 @@ func castReport(characters *cast.Book, origins *cast.OriginBook, limits progress
 		fmt.Fprintf(&b, "  from     %s\n", title)
 		fmt.Fprintf(&b, "  preset   %s\n", character.Archetype)
 		fmt.Fprintf(&b, "  element  %s\n", character.Element)
+		// Printed even when there is none, and worded rather than left blank: a
+		// character that is nothing in particular is a real answer -- it is what
+		// a skill kept for a lineage refuses -- and a blank field reads as a
+		// record that forgot to ask.
+		kinds := "nothing in particular"
+		if len(character.Species) > 0 {
+			kinds = strings.Join(character.Species, " ")
+		}
+		fmt.Fprintf(&b, "  species  %s\n", kinds)
 		fmt.Fprintf(&b, "  art      %s\n", character.Image)
 		fmt.Fprintf(&b, "  kit      %s\n", strings.Join(character.Skills, " "))
 		for i, stage := range character.Stages {

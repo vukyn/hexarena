@@ -71,11 +71,16 @@ type pickKind int
 const (
 	// pickSkills is the kit, whose rows say who may carry each skill.
 	pickSkills pickKind = iota
-	// pickElements, pickArchetypes and pickCharacters are a restriction's three
-	// allowlists, whose rows are ids and their Vietnamese names.
+	// pickElements, pickArchetypes, pickCharacters and pickSpecies are a
+	// restriction's four allowlists, whose rows are ids and their Vietnamese
+	// names.
 	pickElements
 	pickArchetypes
 	pickCharacters
+	// pickSpecies is the one whose name comes out of a data file rather than a
+	// compiled gloss, because a species is authored with its name beside it --
+	// the same arrangement a passive has.
+	pickSpecies
 	// pickStatuses is what a skill inflicts, whose rows carry each status's own
 	// facts — how long it lasts, how far it stacks, whether it ticks — because
 	// choosing between "mire" and "expose" on the ids alone is not choosing.
@@ -491,6 +496,15 @@ func (p *pickState) detail(m model, id string) string {
 				facts = name + " · " + facts
 			}
 			return m.style.dim.Render(facts)
+		}
+		return ""
+	}
+	if p.kind == pickSpecies {
+		// The authored name, not a gloss: the species book carries the word
+		// itself, so a lookup in the compiled tables would find nothing and the
+		// row would be a bare id in either language.
+		if kind, known := m.lib.Species().Get(id); known {
+			return m.style.dim.Render(kind.Name)
 		}
 		return ""
 	}

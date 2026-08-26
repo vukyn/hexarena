@@ -44,6 +44,10 @@ func (l Lang) Error(err error) string {
 	if errors.As(err, &unknownOrigin) {
 		return l.Say(ErrorUnknownOrigin, unknownOrigin.ID, unknownOrigin.AddCommand())
 	}
+	var unknownSpecies *forge.UnknownSpeciesError
+	if errors.As(err, &unknownSpecies) {
+		return l.Say(ErrorUnknownSpecies, unknownSpecies.ID, unknownSpecies.AddCommand())
+	}
 	var unknownArchetype *forge.UnknownArchetypeError
 	if errors.As(err, &unknownArchetype) {
 		return l.Say(ErrorUnknownArchetype,
@@ -151,6 +155,11 @@ func (l Lang) Error(err error) string {
 	if errors.As(err, &characterRestricted) {
 		return l.Say(ErrorCharacterRestricted, characterRestricted.Character,
 			characterRestricted.Skill, l.JoinIDs(characterRestricted.Allowed))
+	}
+	var speciesRestricted *forge.SpeciesRestrictedError
+	if errors.As(err, &speciesRestricted) {
+		return l.Say(ErrorSpeciesRestricted, speciesRestricted.Character,
+			speciesRestricted.Skill, l.JoinIDs(speciesRestricted.Allowed))
 	}
 	// The stat field wraps whichever curve refusal happened, so it is asked
 	// before them: errors.As looks through a wrapper, and asking the inner
@@ -304,6 +313,9 @@ func (l Lang) WhoMaySummary(carried skill.Skill) string {
 	}
 	if len(facts.Characters) > 0 {
 		parts = append(parts, l.Say(WhoBelongsTo, l.JoinIDs(facts.Characters)))
+	}
+	if len(facts.Species) > 0 {
+		parts = append(parts, l.Say(WhoKeptForSpecies, l.JoinIDs(facts.Species)))
 	}
 	return strings.Join(parts, ", ")
 }

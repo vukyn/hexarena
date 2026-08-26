@@ -285,8 +285,8 @@
       "cooldown": 3,
       "target": "enemy",
       "restrict": {
-        "characters": [
-          "pokemon.charmander"
+        "species": [
+          "dragon"
         ]
       }
     },
@@ -333,8 +333,8 @@
         }
       ],
       "restrict": {
-        "characters": [
-          "pokemon.charmander"
+        "species": [
+          "dragon"
         ]
       }
     },

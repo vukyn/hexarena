@@ -1,0 +1,24 @@
+{
+  "species": [
+    {
+      "id": "dragon",
+      "name": "rồng",
+      "note": "a lineage rather than a body: what makes a skill about being a dragon carryable by more than one character"
+    },
+    {
+      "id": "lizard",
+      "name": "thằn lằn",
+      "note": "the body, which is what a creature can be at the same time as being a dragon"
+    },
+    {
+      "id": "plant",
+      "name": "thực vật",
+      "note": "something that grows, which is what roots and photosynthesis read as; the two skills that mean it stay restricted by element, because a shared preset holds them"
+    },
+    {
+      "id": "turtle",
+      "name": "rùa",
+      "note": "a shell, which withdraw was named after before it was reworded as a stance"
+    }
+  ]
+}

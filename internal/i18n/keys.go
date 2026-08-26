@@ -56,6 +56,8 @@ const (
 	FieldArchetype
 	FieldArt
 	FieldKit
+	FieldSpecies
+	SpeciesNothingInParticular
 	FieldElement
 	FieldBiography
 	NoneCatalogued
@@ -104,6 +106,7 @@ const (
 	SkillFieldKeptForElements
 	SkillFieldKeptForRoles
 	SkillFieldKeptForCharacters
+	SkillFieldKeptForSpecies
 	LabelDamage
 	DamageLine
 	DamageLineShort
@@ -143,6 +146,7 @@ const (
 	SkillHelpKeptForElements
 	SkillHelpKeptForRoles
 	SkillHelpKeptForCharacters
+	SkillHelpKeptForSpecies
 
 	// The shape diagram, opened from the shape chooser.
 	//
@@ -164,12 +168,14 @@ const (
 	WhoKeptForElements
 	WhoKeptForRoles
 	WhoBelongsTo
+	WhoKeptForSpecies
 
 	// The multi-select sub-screen, and the row that opens it.
 	PickerKitTitle
 	PickerElementsTitle
 	PickerRolesTitle
 	PickerCharactersTitle
+	PickerSpeciesTitle
 	PickerHint
 	PickerAllowlistHint
 	PickerFooter
@@ -286,6 +292,8 @@ const (
 	ErrorCarryRestricted
 	ErrorArchetypeRestricted
 	ErrorCharacterRestricted
+	ErrorUnknownSpecies
+	ErrorSpeciesRestricted
 	ErrorSkillTaken
 	ErrorMissingSkillID
 	ErrorSkillRename

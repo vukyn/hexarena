@@ -129,6 +129,8 @@ func runSkillsAdd(args []string) error {
 		"only these role presets may carry it; leave empty for anyone")
 	set.StringVar(&given.RestrictCharacters, "restrict-characters", "",
 		"only these characters may carry it; leave empty for anyone")
+	set.StringVar(&given.RestrictSpecies, "restrict-species", "",
+		"only these kinds of creature may carry it; leave empty for anyone")
 	confirmed := set.Bool("yes", false, "write without asking for confirmation")
 	operands, err := parseArgs(set, args)
 	if err != nil {
@@ -229,6 +231,8 @@ func runSkillsEdit(args []string) error {
 		"only these role presets may carry it; an empty value clears the list")
 	set.StringVar(&given.RestrictCharacters, "restrict-characters", "",
 		"only these characters may carry it; an empty value clears the list")
+	set.StringVar(&given.RestrictSpecies, "restrict-species", "",
+		"only these kinds of creature may carry it; an empty value clears the list")
 	confirmed := set.Bool("yes", false, "write without asking for confirmation")
 	operands, err := parseArgs(set, args)
 	if err != nil {
@@ -344,6 +348,7 @@ func editBindings(edit *forge.SkillEdit, given *forge.SkillDraft) map[string]edi
 		"restrict-elements":   {&edit.RestrictElements, &given.RestrictElements},
 		"restrict-archetypes": {&edit.RestrictArchetypes, &given.RestrictArchetypes},
 		"restrict-characters": {&edit.RestrictCharacters, &given.RestrictCharacters},
+		"restrict-species":    {&edit.RestrictSpecies, &given.RestrictSpecies},
 	}
 }
 
@@ -510,6 +515,12 @@ func fillSkill(given forge.SkillDraft, lib *forge.Library, prompt *prompter) (fo
 	if err := ask(&filled.RestrictCharacters, question{
 		flag: "restrict-characters", prompt: "characters allowed to carry it, empty for anyone",
 		optional: true, validate: lib.ValidateRestrictedCharacters,
+	}); err != nil {
+		return forge.SkillDraft{}, err
+	}
+	if err := ask(&filled.RestrictSpecies, question{
+		flag: "restrict-species", prompt: "kinds of creature allowed to carry it, empty for anyone",
+		optional: true, validate: lib.ValidateRestrictedSpecies,
 	}); err != nil {
 		return forge.SkillDraft{}, err
 	}
