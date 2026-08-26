@@ -313,10 +313,10 @@ func TestPowerAgainstAppliesTheCondition(t *testing.T) {
 		{3, 2300, true},
 	}
 	for _, testCase := range cases {
-		if got := found.PowerAgainst(testCase.stacks); got != testCase.want {
+		if got := found.PowerAgainst(skill.Carrying(testCase.stacks)); got != testCase.want {
 			t.Errorf("against %d stacks the power is %d, want %d", testCase.stacks, got, testCase.want)
 		}
-		if got := found.Amplified(testCase.stacks); got != testCase.amplified {
+		if got := found.Amplified(skill.Carrying(testCase.stacks)); got != testCase.amplified {
 			t.Errorf("against %d stacks amplified is %v, want %v", testCase.stacks, got, testCase.amplified)
 		}
 	}
@@ -331,10 +331,10 @@ func TestPowerAgainstAppliesTheCondition(t *testing.T) {
 		t.Fatalf("lookup: %v", err)
 	}
 	for _, stacks := range []int{0, 3, 99} {
-		if unconditional.Amplified(stacks) {
+		if unconditional.Amplified(skill.Carrying(stacks)) {
 			t.Errorf("a skill with no condition amplified against %d stacks", stacks)
 		}
-		if got := unconditional.PowerAgainst(stacks); got != 1800 {
+		if got := unconditional.PowerAgainst(skill.Carrying(stacks)); got != 1800 {
 			t.Errorf("a skill with no condition landed at %d power", got)
 		}
 	}
@@ -1106,6 +1106,116 @@ func TestAnAuthoredNameSurvivesTheFileAndIsAbsentByDefault(t *testing.T) {
 		if before.Name != after.Name {
 			t.Errorf("%s's name became %q from %q on the trip through the file",
 				id, after.Name, before.Name)
+		}
+	}
+}
+
+// TestAConditionMayReadHealthInsteadOfAStatus is the term this feature added,
+// asserted from both ends: a threshold alone is a whole condition, and the
+// arithmetic is the one passive.Condition already uses rather than a second copy
+// that could drift from it.
+func TestAConditionMayReadHealthInsteadOfAStatus(t *testing.T) {
+	declared := base()
+	declared["requires"] = map[string]any{"below_health": 500, "bonus_power": 1000}
+	book, err := parse(t, declared)
+	if err != nil {
+		t.Fatalf("a condition reading only health should parse: %v", err)
+	}
+	found, err := book.Lookup("ember_lance")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if found.Requires.ReadsStatus() {
+		t.Error("a condition with no status claims to read one")
+	}
+	if !found.Requires.ReadsHealth() {
+		t.Error("a condition with a threshold claims not to read health")
+	}
+	// At or under, not strictly under: half of a maximum is half.
+	cases := []struct {
+		health, maximum int64
+		want            bool
+	}{
+		{100, 100, false},
+		{51, 100, false},
+		{50, 100, true},
+		{1, 100, true},
+		{0, 100, true},
+		// A maximum of nought is not a unit that is hurt, and dividing by it
+		// would be the other way to answer.
+		{0, 0, false},
+	}
+	for _, testCase := range cases {
+		against := skill.Target{Health: testCase.health, Maximum: testCase.maximum}
+		if got := found.Amplified(against); got != testCase.want {
+			t.Errorf("at %d of %d health amplified is %v, want %v",
+				testCase.health, testCase.maximum, got, testCase.want)
+		}
+		wantPower := 1800
+		if testCase.want {
+			wantPower = 2800
+		}
+		if got := found.PowerAgainst(against); got != wantPower {
+			t.Errorf("at %d of %d health the power is %d, want %d",
+				testCase.health, testCase.maximum, got, wantPower)
+		}
+	}
+}
+
+// TestAConditionNamingBothMustSatisfyBoth pins "and", which is the reading that
+// lets a second clause narrow a skill. Read as "or" the same declaration would
+// widen it, and every skill written under one reading would be wrong under the
+// other with nothing to say so.
+func TestAConditionNamingBothMustSatisfyBoth(t *testing.T) {
+	declared := base()
+	declared["requires"] = map[string]any{
+		"status": "poison", "min_stacks": 2, "below_health": 500, "bonus_power": 500,
+	}
+	book, err := parse(t, declared)
+	if err != nil {
+		t.Fatalf("a condition reading both should parse: %v", err)
+	}
+	found, err := book.Lookup("ember_lance")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	cases := []struct {
+		name    string
+		against skill.Target
+		want    bool
+	}{
+		{"neither", skill.Target{Stacks: 0, Health: 100, Maximum: 100}, false},
+		{"only the status", skill.Target{Stacks: 2, Health: 100, Maximum: 100}, false},
+		{"only the health", skill.Target{Stacks: 0, Health: 10, Maximum: 100}, false},
+		{"both", skill.Target{Stacks: 2, Health: 10, Maximum: 100}, true},
+	}
+	for _, testCase := range cases {
+		if got := found.Amplified(testCase.against); got != testCase.want {
+			t.Errorf("with %s satisfied amplified is %v, want %v", testCase.name, got, testCase.want)
+		}
+	}
+}
+
+// TestAConditionIsRefusedWhenItCannotMeanAnything covers the four ways the new
+// term lets a condition be written wrong. Each is a mistake rather than a shape
+// with an obvious reading, which is why every one is a refusal and none is a
+// default.
+func TestAConditionIsRefusedWhenItCannotMeanAnything(t *testing.T) {
+	cases := []struct {
+		name      string
+		condition map[string]any
+	}{
+		{"asks nothing at all", map[string]any{"bonus_power": 500}},
+		{"counts stacks of no status", map[string]any{"min_stacks": 2, "below_health": 500, "bonus_power": 500}},
+		{"a share over the base", map[string]any{"below_health": 1001, "bonus_power": 500}},
+		{"a negative share", map[string]any{"below_health": -1, "bonus_power": 500}},
+		{"consumes a status it does not name", map[string]any{"below_health": 500, "bonus_power": 500, "consume": true}},
+	}
+	for _, testCase := range cases {
+		declared := base()
+		declared["requires"] = testCase.condition
+		if _, err := parse(t, declared); err == nil {
+			t.Errorf("a condition that %s was accepted", testCase.name)
 		}
 	}
 }

@@ -93,7 +93,7 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 		if target == nil || target.Side == actor.Side {
 			continue
 		}
-		power := declared.PowerAgainst(target.Statuses.Stacks(requiredStatus(declared)))
+		power := declared.PowerAgainst(conditionTarget(declared, target))
 		if position > 0 {
 			power = power * b.books.Patterns.SplashPower / 1000
 		}
@@ -129,6 +129,21 @@ func requiredStatus(declared skill.Skill) string {
 		return ""
 	}
 	return declared.Requires.Status
+}
+
+// conditionTarget is what a skill's condition is allowed to read about a unit.
+//
+// It is one function rather than a literal at each call site because the two
+// callers must agree exactly: Suggest rates a skill by the power it would land,
+// and resolveAgainst then lands it. A rating built from a different reading than
+// the resolution would make the opponent prefer a skill for a bonus it does not
+// get, and nothing would report the disagreement.
+func conditionTarget(declared skill.Skill, target *Unit) skill.Target {
+	return skill.Target{
+		Stacks:  target.Statuses.Stacks(requiredStatus(declared)),
+		Health:  target.HP,
+		Maximum: target.MaxHP(),
+	}
 }
 
 // RunToEnd plays the battle out with Suggest choosing for both sides, stopping at
