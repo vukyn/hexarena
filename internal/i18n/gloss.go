@@ -266,6 +266,22 @@ func (l Lang) GlossedSkill(carried skill.Skill) string {
 // the element table held complete that is unreachable through real data, and it
 // is written down anyway because "unreachable" is a property of today's enum.
 func (l Lang) GlossedAffinity(affinity element.Affinity) string {
+	names := l.AffinityNames(affinity)
+	if names == "" {
+		return affinity.String()
+	}
+	return fmt.Sprintf(glossBracket, affinity, names)
+}
+
+// AffinityNames is the affinity's names without its ids, for the dimmed row a
+// caller draws under the ids themselves — the shape GlossedKit, GlossedPassives
+// and GlossedSpecies all hand back.
+//
+// It is the derivation and GlossedAffinity is the bracketed reading of it, so a
+// screen that puts the names under the ids and one that puts them beside cannot
+// disagree about what the names are. Empty when nothing is glossed, which is what
+// makes an English screen draw no second row at all rather than an empty one.
+func (l Lang) AffinityNames(affinity element.Affinity) string {
 	members := affinity.Elements()
 	names := make([]string, 0, len(members))
 	glossed := false
@@ -280,9 +296,9 @@ func (l Lang) GlossedAffinity(affinity element.Affinity) string {
 		names = append(names, name)
 	}
 	if !glossed {
-		return affinity.String()
+		return ""
 	}
-	return fmt.Sprintf(glossBracket, affinity, strings.Join(names, affinityJoin))
+	return strings.Join(names, affinityJoin)
 }
 
 // GlossedKit is a kit's Vietnamese names, in the kit's own order, for the
@@ -309,7 +325,15 @@ func (l Lang) GlossedAffinity(affinity element.Affinity) string {
 // A trait's name is authored in the passive book and there is no compiled table
 // behind it, unlike a skill's — the traits arrived after names were data, so
 // there was never a version of them that needed one.
+//
+// Nothing in English, exactly as SkillName gives nothing: a data name is
+// Vietnamese because that is what the data files hold, and an English screen shows a
+// data id as the data writes it. Reading the field raw put "bền bỉ · máu độc"
+// under an English traits row for as long as nobody looked at one.
 func (l Lang) GlossedPassives(held []passive.Passive) string {
+	if l != Vi {
+		return ""
+	}
 	names := make([]string, 0, len(held))
 	glossed := false
 	for _, one := range held {
@@ -334,6 +358,9 @@ func (l Lang) GlossedPassives(held []passive.Passive) string {
 // nothing to fall back to. A kind the catalog has lost keeps its id, which is
 // what every id with no name does here.
 func (l Lang) GlossedSpecies(kinds []cast.Species) string {
+	if l != Vi {
+		return ""
+	}
 	names := make([]string, 0, len(kinds))
 	named := false
 	for _, kind := range kinds {

@@ -735,22 +735,32 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 		// the pane — so a whole-screen search passes with either one of them
 		// gone. That was not a hypothetical; it let a mutation through.
 		rows := detailRows(t, body)
+		// The id is on the labelled row and the name is on the row under it, which
+		// is the pane's one convention: the preset and the element are checked the
+		// way the kit already was. Both halves are asserted, because a row holding
+		// the id alone is what an unglossed preset looks like and would otherwise
+		// pass.
 		checks := []struct {
 			label string
-			want  string
+			id    string
+			name  string
 		}{
-			{m.text(i18n.LabelPlaystyle), i18n.Vi.Glossed(character.Archetype)},
-			{m.text(i18n.LabelElement), i18n.Vi.GlossedAffinity(character.Element)},
+			{m.text(i18n.LabelPlaystyle), character.Archetype, i18n.Vi.Gloss(character.Archetype)},
+			{m.text(i18n.LabelElement), character.Element.String(),
+				i18n.Vi.AffinityNames(character.Element)},
 		}
 		for _, check := range checks {
-			if check.want == "" {
+			if check.name == "" {
 				t.Errorf("%s has nothing glossed, so this proves nothing", character.ID)
 				continue
 			}
-			row := paneRow(t, rows, check.label)
-			if !strings.Contains(row, check.want) {
+			if row := paneRow(t, rows, check.label); !strings.Contains(row, check.id) {
 				t.Errorf("the %s row for %s is %q, want it to show %q",
-					check.label, character.ID, row, check.want)
+					check.label, character.ID, row, check.id)
+			}
+			if under := rowUnder(t, rows, check.label); !strings.Contains(under, check.name) {
+				t.Errorf("the row under %s's %s is %q, want it to show %q",
+					character.ID, check.label, under, check.name)
 			}
 		}
 		// The kit's names are on the row under the kit's ids, in the same order.
@@ -790,8 +800,15 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 	browse.browse.cursor = 1
 	sprout, _ := browse.browse.view(browse)
 	for _, want := range []string{
+		// The list still brackets, because a table column has no row underneath
+		// to put a name on. Everything in the pane reads as an id with its name
+		// dimmed under it, and the pair below is what that looks like for a dual
+		// affinity: one row of ids, one row of names, positionally the same.
 		"grass/electric (cỏ/điện)",
-		"skirmisher (du kích)",
+		"grass/electric",
+		"cỏ/điện",
+		"skirmisher",
+		"du kích",
 		"tia bắn · nanh độc · mục rữa · hồ quang",
 	} {
 		if !strings.Contains(sprout, want) {
@@ -802,6 +819,14 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 	// In English the same rows carry the ids alone. Every Vietnamese name of
 	// every id the data holds is checked against every English screen, so a
 	// gloss leaking into the wrong language is caught wherever it is drawn.
+	//
+	// ⚠️ The two halves below are not the same lookup, and collecting only the
+	// first is how a leak survived: a compiled gloss comes out of i18n's own
+	// tables and is empty in English by construction, while a **data** name —
+	// a trait's, a species', a skill's — is a field on the declaration and is
+	// Vietnamese whoever asks. Reading such a field raw put "bền bỉ · máu độc"
+	// under an English traits row, and nothing here objected, because nothing
+	// here knew the name existed.
 	english, _, _ := start(t, i18n.En)
 	english.width, english.height = 200, 60
 	var names []string
@@ -812,6 +837,12 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 		}
 		for _, id := range character.Skills {
 			names = append(names, i18n.Vi.Gloss(id))
+		}
+		for _, held := range lib.KitPassives(character.PassivesAt(1)) {
+			names = append(names, held.Name)
+		}
+		for _, kind := range lib.KitSpecies(character.Species) {
+			names = append(names, kind.Name)
 		}
 	}
 	for name, screen := range everyScreen(t, english) {
@@ -829,6 +860,37 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 		if !strings.Contains(body, want) {
 			t.Errorf("the English browser does not draw %q:\n%s", want, body)
 		}
+	}
+	// Walked per character rather than left on the first, and that is the whole
+	// of why this bites: the cursor opens on a fixture that has no traits and no
+	// species, so a data name leaking into either row was drawn on a pane nobody
+	// asked to see. Every character is asked, and only the ones that have
+	// something to leak prove anything — which is what the count below insists
+	// on.
+	asked := 0
+	for index, character := range englishBrowse.browse.rows() {
+		leaks := make([]string, 0, 4)
+		for _, held := range lib.KitPassives(character.PassivesAt(1)) {
+			leaks = append(leaks, held.Name)
+		}
+		for _, kind := range lib.KitSpecies(character.Species) {
+			leaks = append(leaks, kind.Name)
+		}
+		if len(leaks) == 0 {
+			continue
+		}
+		asked++
+		englishBrowse.browse.cursor = index
+		drawn, _ := englishBrowse.browse.view(englishBrowse)
+		for _, unwanted := range leaks {
+			if unwanted != "" && strings.Contains(drawn, unwanted) {
+				t.Errorf("the English browser holds the data name %q for %s:\n%s",
+					unwanted, character.ID, drawn)
+			}
+		}
+	}
+	if asked == 0 {
+		t.Error("no character in the cast has a trait or a species, so the English pane proves nothing")
 	}
 }
 
