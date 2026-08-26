@@ -568,6 +568,47 @@ The turn limit stays what it always was, a backstop. It is no longer standing in
 for an outcome the engine could not express, so reaching it now means something
 genuinely endless is happening rather than a draw waiting to be recognised.
 
+## What a skill does, in words
+
+The menu is a table of figures, which answers "how much" and not "what happens".
+At the prompt, `?2` asks about the second skill offered and `?A1` asks what a
+unit is carrying; both print and then draw the menu again, because reading is
+part of deciding and cannot cost a turn.
+
+```
+ 2) razor_leaf      grass      rng 3   arc_up        pow 1200   acc 880   x2 cd2
+> ?2
+
+  razor_leaf · phi diệp
+  ----------------------------------------------
+  Đánh 3 ô đối phương, 2 nhát, mỗi nhát 60% công (tổng 120%), xuyên 40% giáp.
+  Tầm 3 · 88% trúng · hồi 2 lượt.
+```
+
+**Every word of it is derived from the skill.** Nothing is authored, and that is
+the whole design rather than an economy: a written description is free to drift
+the moment a value moves, and a line reading "doubles" survives a bonus dropping
+from 1000 to 700 with nothing to catch it. This engine made that trade once
+already and refused it — `Archetype.Demands` is computed from a kit precisely so
+it cannot describe a kit it no longer has. The price is a uniform voice, and a
+flat sentence is worth more than a wrong number.
+
+`testdata/describe.golden` holds every shipped skill's description, so a number
+moving in `skills.json` moves a line there and the diff says how the change reads
+to a player. It is the balance record from the other end: `skills.golden` says
+what a skill is worth, this says what it sounds like.
+
+**Shares rather than damage figures.** "100% of attack" is true wherever it is
+read; a damage number is true for one caster against one target and stops being
+true at the next buff. A player comparing two skills is comparing the shares.
+
+**Vietnamese, alone on an English screen.** The rest of this package is English
+and stays that way until the whole battle screen is translated in one piece
+rather than a paragraph at a time. This block is the one part read to *decide*,
+so it is worth being legible before the rest catches up, and the mixed screen is
+a stated cost. It borrows `i18n`'s gloss tables rather than growing a second set
+of Vietnamese names, because two vocabularies for one status is how they drift.
+
 ## Battle logs
 
 A battle can be written out, read back, printed, and re-run from its seed to check

@@ -17,6 +17,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/tui"
 )
@@ -303,14 +304,73 @@ const (
 // choose runs the two questions a turn needs: which skill, then where. It keeps
 // asking rather than giving up on a bad answer, because a mistyped number should
 // not cost a turn.
+// describe answers a question about the turn in front of the player: a number is
+// one of the offered skills, anything else is a unit's tag.
+//
+// It refuses rather than guessing when it recognises neither. A question that
+// silently printed the wrong thing would be worse than one that says it did not
+// understand, because the player would read a description and act on it.
+func describe(current *session, prompt *battle.Prompt, question string) {
+	if question == "" {
+		fmt.Println("  ask about a skill by its number, or a unit by its tag")
+		return
+	}
+	books := current.fight.Books()
+	if index, err := strconv.Atoi(question); err == nil {
+		if index < 1 || index > len(prompt.Options) {
+			fmt.Printf("  there is no skill %d on this turn\n", index)
+			return
+		}
+		declared, lookupErr := books.Skills.Lookup(prompt.Options[index-1].Skill)
+		if lookupErr != nil {
+			fmt.Printf("  %v\n", lookupErr)
+			return
+		}
+		fmt.Println()
+		fmt.Println(tui.Detail(declared, books.Patterns))
+		return
+	}
+	for id, tag := range current.tags {
+		if !strings.EqualFold(tag, question) {
+			continue
+		}
+		unit, ok := current.fight.Unit(id)
+		if !ok {
+			continue
+		}
+		held := make([]passive.Passive, 0, len(unit.Passives))
+		for _, name := range unit.Passives {
+			// A trait the book has lost is skipped rather than reported: the unit
+			// is carrying it either way, and this is a reading aid, not a place
+			// to discover that the data is broken.
+			if found, lookupErr := books.Passives.Lookup(name); lookupErr == nil {
+				held = append(held, found)
+			}
+		}
+		fmt.Println()
+		fmt.Println(tui.DetailPassives(fmt.Sprintf("%s %s", tag, unit.Name), held))
+		return
+	}
+	fmt.Printf("  %q is not a skill number or a unit tag\n", question)
+}
+
 func choose(current *session, prompt *battle.Prompt, input *bufio.Scanner) (outcome, error) {
 	for {
 		fmt.Println(tui.Order(current.fight.Queue(), current.tags, current.cfg.preview))
 		fmt.Println(tui.Menu(current.fight, prompt, current.tags))
+		fmt.Println("  ?N) what a skill does    ?TAG) a unit's traits")
 		fmt.Println("  a) let the engine pick    p) pass    u) undo    q) quit")
 		answer, ok := ask(input, "> ")
 		if !ok {
 			return quit, nil
+		}
+		// A question is answered and then the menu is drawn again, deliberately
+		// costing nothing: reading what a skill does is part of deciding, so it
+		// cannot be a move, and a player who asks about the wrong one must be
+		// able to ask about the next without spending anything.
+		if question, asked := strings.CutPrefix(answer, "?"); asked {
+			describe(current, prompt, strings.TrimSpace(question))
+			continue
 		}
 		switch answer {
 		case "q":

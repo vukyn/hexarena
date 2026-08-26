@@ -1,0 +1,142 @@
+what a skill does, as the battle prompt says it
+
+vine_whip
+Đánh 1 mục tiêu đối phương, 110% công.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+
+razor_leaf
+Đánh 3 ô đối phương, 2 nhát, mỗi nhát 60% công (tổng 120%), xuyên 40% giáp.
+Tầm 3 · 88% trúng · hồi 2 lượt.
+
+solar_beam
+Đánh 1 mục tiêu đối phương, 240% công.
+Tầm 4 · 85% trúng · hồi 4 lượt.
+
+sleep_powder
+Nhắm 2 ô đối phương.
+Gây choáng cho mục tiêu, 50% khả năng.
+Tầm 2 · 100% trúng · hồi 4 lượt.
+
+poison_powder
+Nhắm 2 ô đối phương.
+Gây trúng độc cho mục tiêu, 80% khả năng.
+Tầm 2 · 100% trúng · hồi 3 lượt.
+
+sludge_bomb
+Đánh 1 mục tiêu đối phương, 130% công.
+Gây trúng độc cho mục tiêu, 40% khả năng.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+
+venoshock
+Đánh 1 mục tiêu đối phương, 90% công.
+Mục tiêu đang dính trúng độc: 180% công.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+
+leech_seed
+Đánh 1 mục tiêu đối phương, 70% công.
+Hút lại 60% sát thương gây ra.
+Tầm 3 · 90% trúng · hồi 3 lượt.
+
+synthesis
+Hồi máu bằng 90% công.
+Bản thân · hồi 4 lượt.
+
+ingrain
+Tự nhận tái sinh x2.
+Bản thân · hồi 4 lượt.
+
+ember
+Đánh 1 mục tiêu đối phương, 100% công.
+Gây bỏng cho mục tiêu, 30% khả năng.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+
+flamethrower
+Đánh 1 mục tiêu đối phương, 160% công.
+Gây bỏng cho mục tiêu, 50% khả năng.
+Tầm 3 · 90% trúng · hồi 2 lượt.
+
+fire_fang
+Đánh 1 mục tiêu đối phương, 2 nhát, mỗi nhát 65% công (tổng 130%), xuyên 35% giáp.
+Tầm 1 · 88% trúng · hồi 2 lượt.
+
+fire_spin
+Đánh 3 ô đối phương, 85% công.
+Gây bỏng cho mục tiêu, 70% khả năng.
+Tầm 3 · 86% trúng · hồi 3 lượt.
+
+heat_wave
+Đánh 3 ô đối phương, 110% công.
+Gây bỏng cho mục tiêu, 40% khả năng.
+Tầm 3 · 85% trúng · hồi 4 lượt.
+
+inferno
+Đánh 1 mục tiêu đối phương, 100% công.
+Mục tiêu đang dính bỏng: 350% công, và tiêu mất bỏng.
+Tầm 2 · 88% trúng · hồi 3 lượt.
+
+dragon_rage
+Đánh 1 mục tiêu đối phương, 130% công.
+Tầm 3 · 92% trúng · hồi 3 lượt.
+
+smokescreen
+Nhắm 2 ô đối phương.
+Gây mù cho mục tiêu, 80% khả năng.
+Tầm 2 · 100% trúng · hồi 3 lượt.
+
+dragon_dance
+Tự nhận sung sức và nhanh chân.
+Bản thân · hồi 4 lượt.
+
+water_gun
+Đánh 1 mục tiêu đối phương, 100% công.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+
+bubble
+Đánh 3 ô đối phương, 70% công.
+Gây sa lầy cho mục tiêu, 70% khả năng.
+Tầm 3 · 90% trúng · hồi 2 lượt.
+
+whirlpool
+Đánh 3 ô đối phương, 80% công.
+Gây sa lầy cho mục tiêu, 60% khả năng.
+Tầm 3 · 85% trúng · hồi 3 lượt.
+
+bite
+Đánh 1 mục tiêu đối phương, 120% công.
+Gây hở sườn cho mục tiêu, 50% khả năng.
+Tầm 1 · 90% trúng · hồi 2 lượt.
+
+brine
+Đánh 1 mục tiêu đối phương, 100% công.
+Mục tiêu còn <=50% máu: 200% công.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+
+hydro_pump
+Đánh 1 mục tiêu đối phương, 220% công.
+Tầm 4 · 80% trúng · hồi 4 lượt.
+
+withdraw
+Hồi máu bằng 50% công.
+Tự nhận đỡ đòn x2.
+Bản thân · hồi 3 lượt.
+
+aqua_ring
+Tự nhận tái sinh x2.
+Bản thân · hồi 4 lượt.
+
+rapid_spin
+Gỡ 1 lớp hiệu ứng giảm chỉ số và hiệu ứng gây hại theo lượt.
+Bản thân · hồi 3 lượt.
+
+traits
+
+endurance
+Luôn mang cứng đòn.
+
+blaze
+Luôn mang rực lửa.
+Miễn hoàn toàn bỏng.
+
+venom_blood
+Miễn hoàn toàn trúng độc.
+
