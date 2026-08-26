@@ -433,3 +433,46 @@ func TestTheShippedSkillBookSurvivesBeingWritten(t *testing.T) {
 		}
 	}
 }
+
+// TestABodyBoundSkillIsRestricted is the rule a name can break without any
+// parser noticing: a skill whose name describes a *body* rather than an effect
+// may not be free for anyone to carry.
+//
+// "withdraw" was the one that showed it. Squirtle pulls into its shell, so the
+// name read perfectly on the character it was written for and would have read
+// as nonsense the first time a Machop took it -- and nothing refused it,
+// because the engine checks elements and allowlists and has no opinion about
+// anatomy. The two ways out are different rules, not a preference: a skill
+// whose *effect* is general gets a name that is general too, which is why
+// "withdraw" is now glossed as a stance rather than as a shell, and a skill
+// whose identity is the point keeps its name and carries a restriction.
+//
+// The list is hand-written on purpose, the way the archetype design table is.
+// There is no property that separates "cắm rễ" from "xoáy nước" -- somebody has
+// to read the name and decide -- so this is the place that decision is recorded,
+// and a shipped skill added to the list without a restriction fails here.
+//
+// The lineage entries are restricted to a *character* rather than to an
+// archetype, which is deliberate and temporary: an archetype says how a unit
+// fights, and being a dragon is not a fighting style. When species exists these
+// move onto it and become carryable by every dragon, which is what they should
+// have said all along. See the species entry in README's roadmap.
+func TestABodyBoundSkillIsRestricted(t *testing.T) {
+	bound := map[string]string{
+		"ingrain":      "roots, so only something that grows may take it",
+		"synthesis":    "photosynthesis, so only something that grows may take it",
+		"dragon_rage":  "a lineage, not a technique",
+		"dragon_dance": "a lineage, not a technique",
+	}
+	book := mustSkills(t)
+	for id, why := range bound {
+		carried, err := book.Lookup(id)
+		if err != nil {
+			t.Errorf("the list names %q, which the shipped book does not hold: %v", id, err)
+			continue
+		}
+		if carried.Restrict == nil {
+			t.Errorf("%q names %s, but anybody may carry it", id, why)
+		}
+	}
+}
