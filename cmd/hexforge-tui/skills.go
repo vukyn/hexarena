@@ -311,6 +311,7 @@ func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 		// preview has with the browser.
 		if len(s.skills) > 0 {
 			m.skills = s
+			m.blurb.from = screenSkills
 			m.screen = screenBlurb
 			return m, nil
 		}

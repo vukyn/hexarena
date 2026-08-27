@@ -363,8 +363,9 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 // truncation; a **trait** is priced in tens, so venom_blood's reply chance of 25
 // printed as "2%" when it is 2.5 — a fifth of the value gone — and any share
 // under ten would have printed as "0%", which reads as a feature that does not
-// work. And there was no listing beside it to check against: hexforge passives
-// has no column for a reply or a drain at all.
+// work. And there was no listing beside it to check against either: hexforge
+// passives had no column for a reply or a drain at all until the trait screen
+// added them.
 //
 // So one renderer for the whole program, in the package that already owns the
 // rule. The author's table and the player's sentence now cannot come to write

@@ -390,8 +390,9 @@ func TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn(t *testing.T) {
 // a trait in tens, so venom_blood's reply chance of 25 printed as "2%" when it is
 // 2.5, and anything under ten would have printed "0%" — a feature reading as one
 // that does not work. The argument for truncating was that the listing beside the
-// sentence carries the exact figure, and for a trait there is no such listing:
-// hexforge passives has no column for a reply or for a drain.
+// sentence carries the exact figure, and for a trait there was no such listing:
+// hexforge passives had no column for a reply or for a drain until the trait
+// screen added them, and a listing is the wrong place to learn a figure anyway.
 //
 // So every share a trait declares has to appear in its description as the figure
 // itself. An immunity is the one exception, and it is a wording rather than a

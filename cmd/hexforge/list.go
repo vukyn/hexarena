@@ -242,7 +242,7 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		fmt.Fprintln(out, "no passives declared")
 		return
 	}
-	rendered := newTable("id", "name", "grants", "adds", "resists", "amplifies", "while")
+	rendered := newTable("id", "name", "grants", "adds", "answers", "drains", "resists", "amplifies", "while")
 	for _, held := range passives {
 		grants := make([]string, 0, len(held.Grants))
 		for _, grant := range held.Grants {
@@ -287,6 +287,31 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 			amplifies = append(amplifies,
 				fmt.Sprintf("%s +%s", raise.Status, strings.Join(shares, " +")))
 		}
+		// The reply, in **one** cell. DescribePassive writes one sentence for the
+		// whole of it deliberately -- what a reader wants is what attacking this
+		// unit costs -- and a damage column filed away from a status column would
+		// leave them adding it up across the table.
+		//
+		// Two of the six jobs a trait can hold had no column at all until this:
+		// blood_thirst printed a row blank after its name and venom_blood's reply
+		// was nowhere, so the listing reported less than the parser accepts.
+		answers := ""
+		if held.Replies.Answers() {
+			parts := make([]string, 0, 2)
+			if held.Replies.Power > 0 {
+				parts = append(parts, forge.Percent(held.Replies.Power)+" attack")
+			}
+			if len(held.Replies.Applies) > 0 {
+				parts = append(parts, forge.DescribeApplications(held.Replies.Applies))
+			}
+			answers = strings.Join(parts, " + ")
+		}
+		// The share a trait takes back off its own damage, which is the other job
+		// that rendered nowhere.
+		drains := ""
+		if held.Drains > 0 {
+			drains = forge.Percent(held.Drains)
+		}
 		// A gate is only worth a column when there is one, and the share is read
 		// as a percentage for the same reason every other permille is.
 		gate := ""
@@ -294,14 +319,17 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 			gate = "under " + forge.Percent(held.While.BelowHealth) + " health"
 		}
 		rendered.add(held.ID, held.Name, strings.Join(grants, ", "),
-			adds, strings.Join(resists, ", "), strings.Join(amplifies, ", "), gate)
+			adds, answers, drains, strings.Join(resists, ", "),
+			strings.Join(amplifies, ", "), gate)
 	}
 	rendered.render(out)
 	fmt.Fprint(out, "\na trait is in force from the moment its holder is enlisted, and nothing takes it off:\n"+
 		"every status it grants is declared permanent, so it has no duration and no cleanse reaches it.\n"+
 		"a resistance takes its share off an incoming application's chance, so a full share never lands.\n"+
 		"what a trait adds rides on its holder's damaging skills only, through the same roll as their own.\n"+
-		"an amplifier raises what its holder inflicts: the effect is the tick frozen on the stack, the chance is the roll.\n")
+		"an amplifier raises what its holder inflicts: the effect is the tick frozen on the stack, the chance is the roll.\n"+
+		"an answer is what attacking the holder costs, and it lands after every strike of the attack rather than the first.\n"+
+		"a drain is a share of the damage its holder deals, added to whatever the skill drains on its own.\n")
 }
 
 func renderArchetypes(out io.Writer, lib *forge.Library) {

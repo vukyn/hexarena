@@ -326,8 +326,8 @@ backwards on `venom_blood`, which replied before it said it was immune.
 lossless for a skill (hundreds of parts per thousand) and lossy for a trait
 (tens): `venom_blood`'s reply chance of 25 printed `2%` for 2.5, and anything under
 10 printed `0%`. The old excuse — the listing beside it carries the exact figure —
-is false for traits, because `hexforge passives` has no reply or drain column at
-all. One renderer for the author's table and the player's sentence. Decimal point,
+was false for traits: `hexforge passives` had no reply or drain column at all
+until *Reading a trait* added them. One renderer for the author's table and the player's sentence. Decimal point,
 not comma, because these figures sit inside sentences that use commas between
 clauses.
 Numbers are **shares of a stat** ("100% công"), never damage figures: a figure is
@@ -337,8 +337,10 @@ translate the whole battle screen in one piece or not at all. It borrows
 `Lang.Gloss` rather than growing a second vocabulary (two names for one status is
 how they drift) — and in **English a bare id is the name**, so `poison` in an
 English sentence is the reading working, not a missing gloss. Two entrances:
-`?N` / `?TAG` at the battle prompt, and `?` on the hexforge-tui skill listing,
-which raises `screenBlurb`. ⚠️ **The forge form is not the place for it** — 19
+`?N` / `?TAG` at the battle prompt, and `?` on the hexforge-tui skill listing
+**or cast browser**, both of which raise `screenBlurb` — one screen branching on
+`blurb.from`, describing a skill from the listing and a character's traits from
+the browser. ⚠️ **The forge form is not the place for it** — 19
 fields already show 13 of themselves in an 80x24 window, so a three-line block
 under the form costs a quarter of the fields; a screen costs nothing until asked
 for. Statuses are the third description, and `Lang.DescribeStatus` is the same
@@ -1251,41 +1253,34 @@ is the constraint each piece has to respect.
       languages.
       ⚠️ Adding a screen to `hexforge-tui` means adding it to `everyScreen` in
       `language_test.go`, or every width and translation test silently skips it.
-- [ ] **Reading a trait — the describer exists and one front-end reads it.**
-      A status went from nothing to `Lang.DescribeStatus` **and three front-ends**
-      in one change. A trait has had `Lang.DescribePassive` — all six jobs, both
-      languages — for far longer and has **one**: `?TAG` at the battle prompt
-      (`tui.DetailPassives`). The tool where a trait is actually tuned prints none
-      of it, two ways. (1) `hexforge passives` is a seven-column table —
-      `newTable("id","name","grants","adds","resists","amplifies","while")` — with
-      **no `replies` and no `drains` column**, so `blood_thirst` prints a row blank
-      after its name and `venom_blood`'s reply is nowhere: **two of the six jobs the
-      parser accepts render nowhere in the tool at all**. (2) hexforge-tui has no
-      trait listing — the menu is cast/origins/skills/**statuses**/check, the browse
-      detail pane prints the id with its glossed name under it and stops
-      (`browse.go`), and `screenBlurb` hardcodes `Describe` on a skill (`blurb.go`),
-      reachable only from `screenSkills`. So an author moving `virulence` from 300
-      to 200 watches the table's `+30%` change and never reads the sentence — **the
-      exact drift `blurb.go`'s own doc says that screen exists to stop**, with
-      chosen actions guarded and traits not.
-      ⚠️ **A screen, not a sixth listing.** `screenBrowse` catching `?` and
-      `blurbScreen` branching on the screen that raised it reuses the `level` and
-      `character.PassivesAt` the detail pane has already resolved — so no second
-      cursor, which is the one thing `screenPreview` and `screenBlurb` both refuse
-      to keep, and the traits described are the ones in force at the level the
-      author is walking. A listing of every declared trait is a **different**
-      feature and answers a different question.
-      ⚠️ **A `replies` column must not split the damage from the status.**
-      `DescribePassive` writes one sentence for a whole reply on purpose: what a
-      reader wants is what attacking that unit costs, and a damage cell filed away
-      from a status cell leaves them to add it up.
-      ⚠️ **The sentences have moved since this was written** and the item has not:
-      a trait now carries a `flavour` lead clause, the derived lines are in
-      narrative order, and a share prints exactly (`2.5%`, not `2%`). This is still
-      about **where** a trait's description can be read.
-      ⚠️ Same trap the status screen just paid: **a new screen has to go into
-      `everyScreen` in `language_test.go`**, or every width and translation test
-      skips it silently.
+- [x] **Reading a trait — SHIPPED.** `?` on `screenBrowse` raises `screenBlurb`
+      for the traits the character under the cursor holds **at the level it is
+      walking**, and `hexforge passives` gained the `answers` and `drains` columns
+      it never had — two of the six jobs the parser accepts had rendered **nowhere**
+      in the tool, so `blood_thirst` printed a row blank after its name.
+      ⚠️ **One screen, not two.** `blurbScreen.from` is the single field it keeps
+      and it is **not a cursor** — it is which screen is behind, which `esc` had to
+      answer anyway and used to answer with a constant. A second screen would be a
+      second copy of the framing, the footer and the escape.
+      ⚠️ **It scrolls, and `scroll` is still not the refused cursor.** A cursor
+      could point at a different character than the browser behind it; an offset
+      selects nothing and every key that changes *what* is described resets it.
+      Five traits at the cap wrap past 80x24 — the declared floor, not an odd case
+      — so the frame would eat the last one.
+      ⚠️ **Wrap to `minWidth`, NOT to `m.usableWidth()`** — the opposite of
+      `m.wrapped`, which carries authored free text and takes whatever width there
+      is. These are the program's own prose: `TestEveryWordingFitsTheMinimumWidth`
+      renders at width 200 and measures against 79, and free text is excused while
+      a derived sentence is not. Unwrapped, the reply line was cut mid-word at the
+      floor ("2.5% khả nă").
+      ⚠️ **The `answers` column is ONE cell** — `DescribePassive` writes one
+      sentence for a whole reply on purpose; a damage cell filed away from a status
+      cell leaves a reader adding it up.
+      ⚠️ Adding a screen (or a *state* of one) to `hexforge-tui` means adding it to
+      `everyScreen` in `language_test.go`, or every width and translation test skips
+      it in silence. Both blurb shapes are in it now; `screenPreview` still is not.
+      Still **not** built: a listing of *every declared* trait. That answers a
+      different question from "what is this character carrying".
 - [x] **A regeneration that heals — SHIPPED.** `regrowth` was declared, glossed,
       described and **inert**: `inflict` computed a tick only for `status.Dot`, so
       a `Regen` stack went on carrying nought and every step below it was already

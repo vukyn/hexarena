@@ -400,6 +400,8 @@ const (
 	BlurbTraitDrains
 	BlurbTraitNone
 	BlurbFooter
+	BlurbTraitsFooter
+	BlurbMore
 
 	// What a timed effect does, in sentences, for somebody who has just read its
 	// name in a log and has nowhere to look it up. Derived from the status book
