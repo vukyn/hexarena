@@ -1564,6 +1564,62 @@ nobody is the sort of thing a reference is for. Left as it is here rather than
 fixed in passing, because the fix moves the goldens and that is a balance change
 with its own diff.
 
+### Reading a trait
+
+A status just went from nothing to a describer and **three** front-ends in a
+single change. A trait has had its describer far longer and has **one**.
+
+`Lang.DescribePassive` says what a trait does in both languages and covers all six
+of the jobs a trait can hold — a grant, an application, a reply, a resistance, a
+drain, an amplification — and derives every number from the trait itself for the
+same reason `Describe` and `DescribeStatus` do. `?TAG` at the battle prompt prints
+the traits the unit under that tag is carrying, which is the reading a *player*
+needs. Nothing else calls it.
+
+So the tool where a trait is actually tuned shows none of it, in two ways.
+
+`hexforge passives` is a table of seven columns — id, name, grants, adds, resists,
+amplifies, while — and **two of the six jobs have no column**. A trait whose only
+job is draining prints a row that is blank after its name; `venom_blood` replies to
+whoever hits it and the table says only that it is immune to poison. Those two
+render nowhere in the tool at all, so the listing quietly reports less than the
+parser accepts.
+
+The terminal tool has no trait listing. Its menu is cast, origins, skills,
+statuses and check; the cast browser's detail pane prints a trait's id with its
+glossed name underneath and stops there; and the description screen is wired to a
+skill and reachable only from the skill listing.
+
+Which leaves the failure that description screen was built to prevent, reproduced
+one layer over. Its own comment states it: an author moving a bonus from 1000 to
+700 can watch the damage figure change and not notice that *doubles* has become
+*amplifies a bit*. Move `virulence` from 300 to 200 and precisely that happens —
+the `+30%` in the table becomes `+20%`, and the sentence a player will read is
+never on screen. Skills are guarded against this. Traits are not.
+
+The shape, and the three things to get right:
+
+- **A screen, not a sixth listing.** `screenBrowse` catching `?` and the blurb
+  screen branching on which screen raised it costs one key and no new state: the
+  detail pane has already resolved the level and `character.PassivesAt`, so the
+  traits described are the ones in force at the level the author is walking with
+  the arrow keys. A listing of its own would need a cursor of its own, and both
+  screens that borrow a cursor today refuse to keep one for the same reason — a
+  second cursor can disagree with the one on the screen behind it. A listing of
+  every declared trait is a different feature answering a different question, and
+  worth having only once this one exists.
+- ⚠️ **A `replies` column must not split the damage from the status.**
+  `DescribePassive` writes one sentence for the whole reply deliberately: what a
+  reader wants to know is what attacking that unit costs, and a damage cell filed
+  apart from a status cell leaves them to add it up themselves.
+- ⚠️ **A new screen has to be added to `everyScreen` in `language_test.go`**, or
+  every width and translation test skips it in silence. The status screen paid
+  that toll one change ago; there is no reason to pay it twice.
+
+It sits beside *Looking a status up* and it is a different item. That one had no
+describer and needed one written. This one has the describer, in both languages,
+and no way into it.
+
 ### A health threshold a skill can read
 
 Built. `skill.Condition` reads how hurt the **target** is, where `passive.Condition`

@@ -1201,6 +1201,9 @@ is the constraint each piece has to respect.
       its furthest form, balance is unchanged at **49.5%** and `replay.golden` did
       not move. None of the three characters is close enough for one kept skill to
       pay for a stage of stats — a cast-tuning question, not a mechanism one.
+      **Conditions beyond a level stay out of scope**: items, a friendship count,
+      battles fought — each needs somewhere to persist between battles, and there is
+      no meta layer, no inventory and no save. A level is what a character sheet knows.
 - [x] **Looking a status up — SHIPPED.** `Lang.DescribeStatus` beside
       `Describe`/`DescribePassive`, derived, both languages, and three front-ends
       read the same sentences: `?mire` / `?*` at the battle prompt, `hexforge
@@ -1227,6 +1230,37 @@ is the constraint each piece has to respect.
       languages.
       ⚠️ Adding a screen to `hexforge-tui` means adding it to `everyScreen` in
       `language_test.go`, or every width and translation test silently skips it.
+- [ ] **Reading a trait — the describer exists and one front-end reads it.**
+      A status went from nothing to `Lang.DescribeStatus` **and three front-ends**
+      in one change. A trait has had `Lang.DescribePassive` — all six jobs, both
+      languages — for far longer and has **one**: `?TAG` at the battle prompt
+      (`tui.DetailPassives`). The tool where a trait is actually tuned prints none
+      of it, two ways. (1) `hexforge passives` is a seven-column table —
+      `newTable("id","name","grants","adds","resists","amplifies","while")` — with
+      **no `replies` and no `drains` column**, so `blood_thirst` prints a row blank
+      after its name and `venom_blood`'s reply is nowhere: **two of the six jobs the
+      parser accepts render nowhere in the tool at all**. (2) hexforge-tui has no
+      trait listing — the menu is cast/origins/skills/**statuses**/check, the browse
+      detail pane prints the id with its glossed name under it and stops
+      (`browse.go`), and `screenBlurb` hardcodes `Describe` on a skill (`blurb.go`),
+      reachable only from `screenSkills`. So an author moving `virulence` from 300
+      to 200 watches the table's `+30%` change and never reads the sentence — **the
+      exact drift `blurb.go`'s own doc says that screen exists to stop**, with
+      chosen actions guarded and traits not.
+      ⚠️ **A screen, not a sixth listing.** `screenBrowse` catching `?` and
+      `blurbScreen` branching on the screen that raised it reuses the `level` and
+      `character.PassivesAt` the detail pane has already resolved — so no second
+      cursor, which is the one thing `screenPreview` and `screenBlurb` both refuse
+      to keep, and the traits described are the ones in force at the level the
+      author is walking. A listing of every declared trait is a **different**
+      feature and answers a different question.
+      ⚠️ **A `replies` column must not split the damage from the status.**
+      `DescribePassive` writes one sentence for a whole reply on purpose: what a
+      reader wants is what attacking that unit costs, and a damage cell filed away
+      from a status cell leaves them to add it up.
+      ⚠️ Same trap the status screen just paid: **a new screen has to go into
+      `everyScreen` in `language_test.go`**, or every width and translation test
+      skips it silently.
 - [ ] **A regeneration that heals.** `regrowth` is declared, glossed, described
       and **inert**: `Battle.inflict` computes a tick only for `status.Dot`, so a
       `Regen` stack is applied with a tick amount of nought, `Set.Tick` adds
@@ -1241,25 +1275,15 @@ is the constraint each piece has to respect.
       `Skill.Restores` already does), and whether `passive.Amplifies` should raise
       a regen (`raise(..., amplifiedEffect)` is on the damage path and the wording
       says "ticks harder"). Both one line, neither obvious.
-- [ ] **Choosing to evolve.** `Line.StageAt` derives a stage from a level and
-      there is no decision in it; a level should *allow* a stage and the placement
-      name which it fielded, so `Resolve(level)` becomes `Resolve(level, stage)`
-      with the chosen stage's threshold no higher than the level.
-      ⚠️ **`at_stage` cannot be built before this** — while a stage is derived,
-      `at_stage: "Ivysaur"` *is* `at_level: 16`, a second spelling of one fact.
-      ⚠️ **Choosing not to evolve is strictly worse as designed**: stage curves only
-      rise, so the choice is decorative unless an earlier stage can learn something
-      the later one cannot — which is now one field away rather than a mechanism
-      away, since the learnset exists.
-      **No condition beyond a level**: items, friendship and battles-fought all
-      need somewhere to persist, and there is no meta layer, no inventory, no save.
 - [ ] **Grow the cast.** Three characters ship, one per element, and the seed
       roster is no longer a mirror — so the thing this item was blocking, a
-      measurable balance figure, exists. What is left is content, under two
+      measurable balance figure, exists. What is left is content, under three
       constraints: an archetype's kit constrains a character's affinity
       (`skill.CanCarry` enforces it while authoring, `Archetype.Demands` reports
-      it), and `progression.Limits` bounds health and defence **together** because
-      those two multiply. Every character added moves `scenarios.golden` and
+      it), `progression.Limits` bounds health and defence **together** because
+      those two multiply, and — softer than the other two — a skill kept for a
+      lineage asks the character to *be* one, so adding a dragon is two lines: the
+      kind in `species.json` and the claim on the character. Every character added moves `scenarios.golden` and
       `replay.golden`, which is the point rather than a cost: those diffs are how
       the balance change gets read. Read squirtle first — water is the strongest
       of the three elements and Blastoise still cannot carry an ace slot, because
