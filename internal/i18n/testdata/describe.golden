@@ -139,6 +139,16 @@ Hô một tiếng vang dọc trận địa, cả hàng bên mình hăng lên the
 Cho mục tiêu cuồng nộ, 100% khả năng.
 Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 
+dragon_claw
+Vuốt rồng bổ thẳng xuống, xé toạc lớp giáp trước khi kịp khép lại, 110% công.
+Gây phá giáp cho mục tiêu, 40% khả năng.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+
+outrage
+Mất trí lao vào quần thảo, đánh xong thì đứng còn không vững, 280% công.
+Nhận sa lầy.
+Tầm 2 · 90% trúng · hồi 3 lượt.
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -171,6 +181,11 @@ Càng thoi thóp, cơn khát càng trỗi dậy.
 Mọi đòn hút lại 40% sát thương gây ra.
 Chỉ có hiệu lực khi còn <=40% máu.
 
+[trait] reckless
+Không giữ lại chút phòng bị nào, dồn tất cả vào đòn đánh.
+Luôn mang dốc sức.
+Luôn mang phơi mình.
+
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
 Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -201,6 +216,11 @@ Giảm tốc 25% mỗi cộng dồn.
 Tối đa là 50%.
 Giảm chỉ số · 2 lượt · tối đa 2 cộng dồn.
 
+[status] bare
+Giảm thủ 40%.
+Giảm né 40%.
+Giảm chỉ số · vĩnh viễn · 1 cộng dồn.
+
 [status] stun
 Bên dính hiệu ứng mất lượt; chiêu vẫn hồi, không ra đòn được.
 Khống chế, mất lượt · 1 lượt · 1 cộng dồn.
@@ -228,6 +248,10 @@ Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 Tăng né 40% mỗi cộng dồn.
 Tối đa là 80%.
 Tăng chỉ số · 2 lượt · tối đa 2 cộng dồn.
+
+[status] unleashed
+Tăng công 30%.
+Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] kindled
 Tăng công 15%.
@@ -377,6 +401,16 @@ Aims at an ally.
 Gives its target fury, 100% of the time.
 Range 1 · 3 cells · 100% to hit · 4 turns to recharge.
 
+dragon_claw
+Hits an enemy for 110% of attack.
+Inflicts expose, 40% of the time.
+Range 2 · 95% to hit · 1 turn to recharge.
+
+outrage
+Hits an enemy for 280% of attack.
+Puts mire on itself.
+Range 2 · 90% to hit · 3 turns to recharge.
+
 [trait] endurance
 Always carries toughened.
 
@@ -401,6 +435,10 @@ Everything it does takes back 25% of the damage dealt.
 [trait] last_gasp
 Everything it does takes back 40% of the damage dealt.
 In force only at or below 40% health.
+
+[trait] reckless
+Always carries unleashed.
+Always carries bare.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.
@@ -432,6 +470,11 @@ Lowers speed by 25% per stack.
 At its cap that is 50%.
 Lowers a stat · 2 turns · up to 2 stacks.
 
+[status] bare
+Lowers defence by 40%.
+Lowers dodge by 40%.
+Lowers a stat · always in force · 1 stack.
+
 [status] stun
 The holder loses its turn; cooldowns still tick, it just cannot act.
 Costs a turn · 1 turn · 1 stack.
@@ -459,6 +502,10 @@ Raises a stat · always in force · 1 stack.
 Raises dodge by 40% per stack.
 At its cap that is 80%.
 Raises a stat · 2 turns · up to 2 stacks.
+
+[status] unleashed
+Raises attack by 30%.
+Raises a stat · always in force · 1 stack.
 
 [status] kindled
 Raises attack by 15%.
