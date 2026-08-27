@@ -131,7 +131,7 @@ Bản thân · hồi 4 lượt.
 
 rapid_spin
 Xoay tít người, hất văng mọi thứ đang bám trên mình.
-Gỡ 1 lần cộng dồn hiệu ứng giảm chỉ số và hiệu ứng gây hại theo lượt.
+Gỡ 1 cộng dồn hiệu ứng giảm chỉ số và hiệu ứng gây hại theo lượt.
 Bản thân · hồi 3 lượt.
 
 [trait] endurance
@@ -167,75 +167,75 @@ Mọi đòn của nó hút lại 40% sát thương gây ra.
 Chỉ có hiệu lực khi còn <=40% máu.
 
 [status] poison
-Đầu lượt của bên dính hiệu ứng, mỗi lần cộng dồn trừ 50% chỉ số bên gây ra.
-Một lần cộng dồn là 150% trong cả đời nó, tối đa là 450%.
-Sát thương mỗi lượt · 3 lượt · tối đa 3 lần cộng dồn.
+Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
+Hết thời lượng, một cộng dồn là 150%, tối đa là 450%.
+Sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 
 [status] burn
-Đầu lượt của bên dính hiệu ứng, mỗi lần cộng dồn trừ 80% chỉ số bên gây ra.
-Một lần cộng dồn là 160% trong cả đời nó, tối đa là 320%.
-Sát thương mỗi lượt · 2 lượt · tối đa 2 lần cộng dồn.
+Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 80% công của bên gây ra.
+Hết thời lượng, một cộng dồn là 160%, tối đa là 320%.
+Sát thương mỗi lượt · 2 lượt · tối đa 2 cộng dồn.
 
 [status] weaken
-Giảm công 30% mỗi lần cộng dồn.
+Giảm công 30% mỗi cộng dồn.
 Tối đa là 90%.
-Giảm chỉ số · 3 lượt · tối đa 3 lần cộng dồn.
+Giảm chỉ số · 3 lượt · tối đa 3 cộng dồn.
 
 [status] expose
-Giảm thủ 30% mỗi lần cộng dồn.
+Giảm thủ 30% mỗi cộng dồn.
 Tối đa là 60%.
-Giảm chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
+Giảm chỉ số · 2 lượt · tối đa 2 cộng dồn.
 
 [status] blind
-Giảm chính xác 40% mỗi lần cộng dồn.
+Giảm chính xác 40% mỗi cộng dồn.
 Tối đa là 80%.
-Giảm chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
+Giảm chỉ số · 2 lượt · tối đa 2 cộng dồn.
 
 [status] mire
-Giảm tốc 25% mỗi lần cộng dồn.
+Giảm tốc 25% mỗi cộng dồn.
 Tối đa là 50%.
-Giảm chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
+Giảm chỉ số · 2 lượt · tối đa 2 cộng dồn.
 
 [status] stun
-Bên dính hiệu ứng mất lượt; chiêu vẫn hồi, chỉ là không ra đòn được.
-Khống chế, mất lượt · 1 lượt · 1 lần cộng dồn.
+Bên dính hiệu ứng mất lượt; chiêu vẫn hồi, không ra đòn được.
+Khống chế, mất lượt · 1 lượt · 1 cộng dồn.
 
 [status] fury
-Tăng công 30% mỗi lần cộng dồn.
+Tăng công 30% mỗi cộng dồn.
 Tối đa là 90%.
-Tăng chỉ số · 3 lượt · tối đa 3 lần cộng dồn.
+Tăng chỉ số · 3 lượt · tối đa 3 cộng dồn.
 
 [status] haste
-Tăng tốc 30% mỗi lần cộng dồn.
+Tăng tốc 30% mỗi cộng dồn.
 Tối đa là 60%.
-Tăng chỉ số · 3 lượt · tối đa 2 lần cộng dồn.
+Tăng chỉ số · 3 lượt · tối đa 2 cộng dồn.
 
 [status] focus
-Tăng chính xác 40% mỗi lần cộng dồn.
+Tăng chính xác 40% mỗi cộng dồn.
 Tối đa là 80%.
-Tăng chỉ số · 3 lượt · tối đa 2 lần cộng dồn.
+Tăng chỉ số · 3 lượt · tối đa 2 cộng dồn.
 
 [status] toughened
 Tăng thủ 15%.
-Tăng chỉ số · vĩnh viễn · 1 lần cộng dồn.
+Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] veil
-Tăng né 40% mỗi lần cộng dồn.
+Tăng né 40% mỗi cộng dồn.
 Tối đa là 80%.
-Tăng chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
+Tăng chỉ số · 2 lượt · tối đa 2 cộng dồn.
 
 [status] kindled
 Tăng công 15%.
-Tăng chỉ số · vĩnh viễn · 1 lần cộng dồn.
+Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] block
-Mỗi lần cộng dồn nuốt trọn một nhát; đòn hai nhát tiêu hai lần.
-Khiên, chặn một đòn · 2 lượt · tối đa 3 lần cộng dồn.
+Mỗi cộng dồn nuốt trọn một nhát; đòn hai nhát tiêu hai cộng dồn.
+Khiên, chặn một đòn · 2 lượt · tối đa 3 cộng dồn.
 
 [status] regrowth
-Đầu lượt của người mang, mỗi lần cộng dồn hồi 40% chỉ số bên đã dán.
-Một lần cộng dồn là 120% trong cả đời nó, tối đa là 360%.
-Hồi máu mỗi lượt · 3 lượt · tối đa 3 lần cộng dồn.
+Đầu lượt người mang, mỗi cộng dồn hồi máu bằng 40% công của bên tạo ra.
+Hết thời lượng, một cộng dồn là 120%, tối đa là 360%.
+Hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 
 == en ==
 
