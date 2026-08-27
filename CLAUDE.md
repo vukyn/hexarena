@@ -41,6 +41,7 @@ go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900   # author a s
 go run ./cmd/hexforge skills edit oath --power 1100                 # change one already in the book
 go run ./cmd/hexforge statuses                   # the timed effects, grouped, and what each does
 go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
+go run ./cmd/hexforge spar some.id --seeds 200   # duel it against the whole cast, both ways, report the rates
 
 go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal), in Vietnamese
 go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG=en does the same, ctrl+l toggles
@@ -1299,6 +1300,57 @@ is the constraint each piece has to respect.
       `Skill.Restores` already does), and whether `passive.Amplifies` should raise
       a regen (`raise(..., amplifiedEffect)` is on the damage path and the wording
       says "ticks harder"). Both one line, neither obvious.
+- [x] **A spar: measuring whether a character *belongs*.** `check` says a
+      character is legal; nothing said whether it stands beside the ones already
+      written. `forge.Library.Spar(id, level, seeds)` duels it against **every**
+      character in the book, itself included, and reports a rate per opponent.
+      Two front-ends, as always: `hexforge spar` and `s` from the TUI's **check**
+      screen (raised there rather than from the browser — the two are halves of one
+      question, and the browse footer was already 78 of its 79 cells).
+      ⚠️ **A spar rate is NOT the roster's win rate and the two must never be
+      compared.** The roster figure (49.5%) is five units a side in their authored
+      slots with authored loadouts; a spar is 1v1, front column, an auto-chosen
+      four-skill kit and no ally to heal or shield. Bulbasaur reads 50.0% in both
+      and that is a coincidence.
+      ⚠️ **Every pairing is fought BOTH WAYS, and that is the measurement rather
+      than thoroughness.** `atb.Queue.order` breaks a tie by enlistment `seq`, so
+      of two units with the same speed the one placed first acts first for the
+      whole battle — worth **72/28** to Bulbasaur against an identical copy of
+      itself. One-way, every rate would be that advantage plus the character with
+      no way to tell them apart. `Matchup.First`/`Second` stay apart on the record
+      precisely so the **control row** (the character against itself) can report
+      what the slot alone was worth: +44.0% Bulbasaur, +23.0% Charmander, +9.0%
+      Squirtle — small where duels run long, because a head start washes out.
+      The control is **excluded from the headline**: it is even by construction, so
+      counting it drags every answer to the middle.
+      ⚠️ **A per-row `Failure` was built and then removed as unreachable.** Both
+      duellists stand in the front column where `hex.ReachNeeded` is 1, every
+      non-self skill must declare a range of at least 1, and a self-aimed skill
+      aims at a cell that is always occupied — so `battle.New` cannot refuse one
+      pairing and accept another, and what it *can* still refuse is a fault in the
+      books that every row would share. A refusal is therefore an error out of
+      `Spar`, and `TestTheDuelSlotAsksTheLeastOfAKit` is what says so if the board
+      ever changes shape. **An ally-only kit does not trigger it** — an ally target
+      reaches its own side's cells, which includes the caster's.
+      ⚠️ **`Endless` is not a draw** and is in neither half of a rate's fraction: a
+      pair that can never resolve would otherwise read as a pair that reliably
+      loses.
+      ⚠️ **A spar chooses a loadout where a roster refuses to**, and the two are
+      not in conflict: a roster *is* the conditions of a battle so it has nobody to
+      state them to; a spar is a measurement, and a measurement states its
+      conditions — which is why `Duellist` carries the kit and both front-ends
+      print it above the figures. It reads **declaration order**, which gives a
+      learnset a meaning it did not have (first declared is first choice); every
+      other rule would be `forge` inventing an opinion about what a character is
+      for.
+      Two things moved to make it possible: `SkillSlots`/`TraitSlots` are now in
+      **`internal/core/cast`** (two callers read them, and a second copy of "four"
+      is how a measurement stops measuring what gets fielded), and `forge.Library`
+      now reads `modifiers.json`, which it never had to before — nothing an author
+      writes is checked against the bounds, but a battle needs them.
+      **Found immediately:** Squirtle loses to Charmander **30.5/69.5** at the cap,
+      with water on the chart against fire. Cast tuning, not a mechanism bug — but
+      nothing before this would have said it.
 - [ ] **Grow the cast.** Three characters ship, one per element, and the seed
       roster is no longer a mirror — so the thing this item was blocking, a
       measurable balance figure, exists. What is left is content, under three

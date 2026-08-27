@@ -28,6 +28,11 @@ const (
 	// Appended rather than slotted in beside screenBrowse: nothing serialises
 	// these, but the menu is built from the order they are declared in.
 	screenPreview
+	// screenSpar is raised from the check screen, which is where a character is
+	// under a cursor and has just been said to be sound. It owns its own level,
+	// unlike the preview, because the level it asks about is its own question
+	// rather than one somebody else was already walking.
+	screenSpar
 	// screenBlurb is raised from the skill listing for the same reason
 	// screenPreview is raised from the browser: it describes the skill under a
 	// cursor, and the listing is where a skill is chosen.
@@ -114,6 +119,7 @@ type model struct {
 	statuses statusesScreen
 	check    checkScreen
 	preview  previewScreen
+	spar     sparScreen
 	blurb    blurbScreen
 
 	// picker holds the multi-select while it is open, over whichever screen
@@ -152,6 +158,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		statuses: newStatusesScreen(lib),
 		check:    newCheckScreen(lib),
 		preview:  newPreviewScreen(),
+		spar:     newSparScreen(),
 	}
 }
 
@@ -240,6 +247,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.check.update(m, message)
 	case screenPreview:
 		return m.preview.update(m, message)
+	case screenSpar:
+		return m.spar.update(m, message)
 	case screenBlurb:
 		return m.blurb.update(m, message)
 	}
@@ -302,6 +311,8 @@ func (m model) enter(target screen) model {
 		m.skills = m.skills.refresh(m.lib)
 	case screenStatuses:
 		m.statuses = m.statuses.refresh(m.lib)
+	case screenSpar:
+		m.spar = m.spar.refresh()
 	}
 	return m
 }
@@ -347,6 +358,8 @@ func (m model) screenContent() string {
 		body, footer = m.check.view(m)
 	case screenPreview:
 		body, footer = m.preview.view(m)
+	case screenSpar:
+		body, footer = m.spar.view(m)
 	case screenBlurb:
 		body, footer = m.blurb.view(m)
 	}

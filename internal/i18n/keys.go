@@ -252,6 +252,23 @@ const (
 	CheckWarning
 	CheckNote
 
+	// The spar screen.
+	SparHeading
+	SparFooter
+	SparSubject
+	SparConditions
+	SparOverall
+	SparAloneInTheCast
+	SparControl
+	ColumnOpponent
+	ColumnRate
+	ColumnRecord
+	ColumnTurns
+	ColumnFirstMove
+	SparRecord
+	SparEndless
+	SparNote
+
 	// The origins catalog and the form that adds to it.
 	OriginsHeading
 	OriginsSubtitle

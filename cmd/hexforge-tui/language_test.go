@@ -66,8 +66,13 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// unfiltered picker does not draw.
 	filtered := addSkill.openAllowlist(skillFieldKeptForCharacters)
 	filtered.picker.nextFilter()
+	// The spar, which is the only screen that runs battles to draw itself. Its
+	// widest state is the one with a row per character, which is what entering it
+	// over a checked library gives.
+	spar := m.enter(screenCheck).enter(screenSpar)
 	return map[string]model{
 		"shape diagram":    shape,
+		"spar":             spar,
 		"menu":             m.enter(screenMenu),
 		"browse":           m.enter(screenBrowse),
 		"form":             form,

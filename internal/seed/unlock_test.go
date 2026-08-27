@@ -211,7 +211,7 @@ func TestAPlacementCannotBringMoreThanItsSlots(t *testing.T) {
 	}
 	var deep cast.Character
 	for _, character := range characters.All() {
-		if len(character.SkillsAt(progression.LevelCap, progression.Furthest)) > seed.SkillSlots {
+		if len(character.SkillsAt(progression.LevelCap, progression.Furthest)) > cast.SkillSlots {
 			deep = character
 			break
 		}
@@ -220,7 +220,7 @@ func TestAPlacementCannotBringMoreThanItsSlots(t *testing.T) {
 		t.Skip("no shipped character learns more than a placement may bring")
 	}
 	known := deep.SkillsAt(progression.LevelCap, progression.Furthest)
-	tooMany, err := json.Marshal(known[:seed.SkillSlots+1])
+	tooMany, err := json.Marshal(known[:cast.SkillSlots+1])
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
@@ -228,7 +228,7 @@ func TestAPlacementCannotBringMoreThanItsSlots(t *testing.T) {
 		`","level":` + strconv.Itoa(progression.LevelCap) + `,"skills":` + string(tooMany) + `}]}`
 	if _, err := seed.ParseRoster([]byte(raw), characters); err == nil {
 		t.Errorf("a placement brought %d skills and there are %d slots",
-			seed.SkillSlots+1, seed.SkillSlots)
+			cast.SkillSlots+1, cast.SkillSlots)
 	} else if !strings.Contains(err.Error(), "slot") {
 		t.Errorf("the refusal reads %q, want it to say the slots are full", err)
 	}

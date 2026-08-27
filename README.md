@@ -13,6 +13,7 @@ implementations of it.
 go run ./cmd/hexarena --seed 11 --side ally    # play a side
 go run ./cmd/hexarena --auto --seed 11         # watch both sides play themselves
 go run ./cmd/hexforge                          # author the cast: see the subcommands
+go run ./cmd/hexforge spar pokemon.squirtle    # ...and fight one against the whole cast
 go run ./cmd/hexforge-tui                      # the same authoring, full screen, in Vietnamese
 go run ./cmd/hexforge-tui --lang en            # ...or in English; ctrl+l swaps them mid-session
 go test ./...
@@ -1022,6 +1023,7 @@ go run ./cmd/hexforge cast             # the authored characters
 go run ./cmd/hexforge new              # create a character
 go run ./cmd/hexforge show some.id --level 30
 go run ./cmd/hexforge check            # parse from disk, verify the art, report the budget
+go run ./cmd/hexforge spar some.id     # fight it against the whole cast and report the rates
 ```
 
 `hexforge new` prefills from flags and prompts only for what is still missing, so
@@ -1063,6 +1065,77 @@ hexforge new --id my-series.lee --name "Lee" --origin my-series \
   --archetype duelist --element wind/ground --yes
 ```
 
+### Whether a character belongs
+
+`hexforge check` says a character is **legal**: the budget is not overspent, the
+affinity carries every skill in the kit, the art is really on disk. None of that
+says whether it *belongs* beside the ones already written, and that question has
+only ever had one honest answer — fight it and count.
+
+```
+go run ./cmd/hexforge spar pokemon.squirtle --seeds 200
+```
+
+```
+pokemon.squirtle — Squirtle at level 60 as Blastoise, water
+brings water_gun bubble bite withdraw and endurance
+3 rows, 200 seeds from each slot, 1200 battles in all
+
+opponent                     rate  won  lost  drawn  turns  first move
+pokemon.bulbasaur            0.0%    0   400      0     30  +0.0%
+pokemon.charmander          30.5%  122   278      0     32  +0.0%
+pokemon.squirtle (control)  50.0%  200   200      0     56  +9.0%
+
+overall 15.2% against 2 opponent(s)
+```
+
+Water is supposed to answer fire, and Squirtle still loses to Charmander seven
+times in ten. That is the sort of thing this exists to find, and four things
+about *how* it finds it, because each one is the difference between a figure and
+a number that merely looks like one.
+
+**Every pairing is fought twice, and that is the measurement rather than
+thoroughness.** The turn queue breaks a tie by enlistment, so of two units with
+the same speed the one placed first acts first for the whole battle. Against an
+identical copy of itself Bulbasaur wins **72 of 100** from that slot — so a
+one-way rate would be that advantage plus the character, with no way to tell
+which was which. Fighting both slots and adding them cancels it exactly. The two
+halves stay on the record, which is what makes the **control row** — a character
+against itself, even by construction — worth drawing at all: its `first move`
+figure is what the slot alone was worth, and it is the number every other row on
+the screen has to be read against. It is +44.0% for Bulbasaur, +23.0% for
+Charmander and +9.0% for Squirtle, and the reason is on the same row: Squirtle's
+duels run fifty-six turns and a head start washes out, Bulbasaur's run
+thirty-four.
+
+**A rate is over seeds, never over a battle.** One duel is a coin toss — the same
+two units at two seeds can end either way — so a screen showing the result of a
+single battle would be showing noise and calling it a finding. A hundred from
+each slot by default; `--seeds` moves it.
+
+**Both sides bring the first four skills and the first trait their learnset
+declares**, and the report says which. A roster refuses to do this — a file that
+picked four of nine on an author's behalf would never say which — and the two are
+not in conflict: a roster *is* the conditions of a battle, so it has nobody to
+state them to, while a spar is a measurement, and a measurement states its
+conditions. It also gives learnset order a meaning it did not have, which is
+deliberate — first declared is first choice, and every other rule (longest range,
+highest power) would be the tool inventing an opinion about what a character is
+for.
+
+**Both stand in the front column.** Nothing on this board moves, so the slot
+decides what a kit can reach, and that is the only column that asks nothing of
+one: `hex.ReachNeeded` is 1 there, which is the shortest range a skill may
+declare, and a skill aimed at its own caster is aimed at a cell that is always
+occupied. So no legal kit can be unaimable from a duel slot, which is why a
+refused pairing is an error rather than a row of zeroes — and
+`TestTheDuelSlotAsksTheLeastOfAKit` is what keeps that true if the board ever
+changes shape.
+
+What the report deliberately does not do is choose an early form. A stage curve
+only rises, so fielding one is a trade an author makes on purpose, and measuring
+a trade nobody asked for would answer a question nobody asked.
+
 `internal/forge` is the one package that touches the filesystem for anything
 beyond reading a data file: it verifies that every picture a character names is
 really there, its own and each of its forms'. `internal/core/cast` checks only the *shape* of an image path
@@ -1090,7 +1163,13 @@ every keystroke:
   typed;
 - an **art preview**, `p` from the browser, which draws the picture of the form
   the level resolved to — so walking the level is how a character's forms are
-  compared, which is the whole reason a form may have art of its own.
+  compared, which is the whole reason a form may have art of its own;
+- a **spar**, `s` from the check screen, which fights the character under the
+  cursor against the whole cast and draws the rates — the level walked with the
+  arrow keys and the number of battles moved with `+` and `-`, both refought as
+  they change. It is raised from the check rather than from the browser because
+  the two are halves of one question, and because a measurement is worth nothing
+  until the data behind it loads, which is the screen that says so.
 
 Both answers come from `internal/forge` — the same functions the write goes
 through, so neither can be a second opinion.

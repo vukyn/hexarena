@@ -221,7 +221,7 @@ q hoặc ctrl+c để thoát`,
 	StageInWords:           "giai đoạn %s",
 
 	CheckHeading:        "kiểm tra",
-	CheckFooter:         "↑/↓ chọn · r đọc lại · ctrl+l English · esc quay lại · q thoát",
+	CheckFooter:         "↑/↓ chọn · s thử trận · r đọc lại · ctrl+l English · esc quay lại · q thoát",
 	CheckPassed:         "ĐẠT — không có vấn đề gì",
 	CheckFailed:         "KHÔNG ĐẠT — %d vấn đề",
 	CheckCounts:         "%s: %d nguồn, %d mẫu vai trò, %d nhân vật",
@@ -233,6 +233,24 @@ q hoặc ctrl+c để thoát`,
 	CheckOverBudget:     "VƯỢT",
 	CheckProblem:        "vấn đề: %s",
 	CheckWarning:        "lưu ý: %s",
+	SparHeading:         "thử trận",
+	SparFooter:          "↑/↓ chọn · ←/→ cấp · +/- số trận · ctrl+l English · esc quay lại · q thoát",
+	SparSubject:         "cấp %d, dạng %s",
+	SparConditions:      "%d hàng · %d hạt giống mỗi chỗ · %d trận tất cả",
+	SparOverall:         "tỉ lệ chung",
+	SparAloneInTheCast:  "chưa có ai khác trong sổ để đấu, nên chỉ còn hàng đối chứng bên dưới",
+	SparControl:         "đối chứng",
+	ColumnOpponent:      "đối thủ",
+	ColumnRate:          "tỉ lệ",
+	ColumnRecord:        "thắng-thua-hòa",
+	ColumnTurns:         "lượt",
+	ColumnFirstMove:     "đi trước",
+	SparRecord:          "%d-%d-%d",
+	SparEndless:         "%d trận không dứt",
+	SparNote: "hai bên đều mang %d kỹ năng và %d nội tại đầu tiên mà nhân vật khai báo.\n" +
+		"mỗi cặp đấu ở cả hai chỗ rồi cộng lại: hàng đợi lượt phá hòa bằng thứ tự xếp,\n" +
+		"nên số đi trước ở hàng đối chứng chính là giá trị riêng của chỗ đứng.",
+
 	CheckNote: "phần này đọc file trên đĩa; game chạy từ bản nhúng sẵn, nên sửa xong phải\n" +
 		"build lại thì mới vào được trận",
 

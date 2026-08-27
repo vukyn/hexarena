@@ -224,7 +224,7 @@ q or ctrl+c to quit`,
 	StageInWords:           "stage %s",
 
 	CheckHeading:        "check",
-	CheckFooter:         "↑/↓ move · r re-read the files · ctrl+l tiếng Việt · esc back · q quit",
+	CheckFooter:         "↑/↓ move · s spar · r re-read the files · ctrl+l tiếng Việt · esc back · q quit",
 	CheckPassed:         "PASSED — no problems found",
 	CheckFailed:         "FAILED — %d problem(s)",
 	CheckCounts:         "%s: %d origins, %d archetypes, %d characters",
@@ -236,6 +236,24 @@ q or ctrl+c to quit`,
 	CheckOverBudget:     "OVER",
 	CheckProblem:        "problem: %s",
 	CheckWarning:        "warning: %s",
+	SparHeading:         "spar",
+	SparFooter:          "↑/↓ move · ←/→ level · +/- battles · ctrl+l tiếng Việt · esc back · q quit",
+	SparSubject:         "level %d as %s",
+	SparConditions:      "%d rows · %d seeds from each slot · %d battles in all",
+	SparOverall:         "overall",
+	SparAloneInTheCast:  "nobody else is in the book yet, so there is only the control below",
+	SparControl:         "control",
+	ColumnOpponent:      "opponent",
+	ColumnRate:          "rate",
+	ColumnRecord:        "won-lost-drawn",
+	ColumnTurns:         "turns",
+	ColumnFirstMove:     "first move",
+	SparRecord:          "%d-%d-%d",
+	SparEndless:         "%d never ended",
+	SparNote: "both sides bring the first %d skills and %d trait their learnset declares.\n" +
+		"every pairing is fought from both slots and added up: the turn queue breaks a\n" +
+		"tie by placement, so the control row shows what a slot alone is worth.",
+
 	CheckNote: "this reads the files from disk; the game boots from the embedded copy, so an\n" +
 		"edit needs a rebuild before it reaches a battle",
 
