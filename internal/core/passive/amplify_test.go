@@ -77,9 +77,10 @@ func TestAmplificationRejections(t *testing.T) {
 			"only a damage-over-time has a tick this could raise"},
 		// A regeneration looks like it should pass — it declares a tick_power and
 		// heals from a frozen amount the way a poison damages from one — and it is
-		// refused because battle.inflict computes a tick for a Dot and nothing
-		// else. See the note on the guard: an applied regeneration freezes nought
-		// and heals nothing, which is a bug older than this field.
+		// refused anyway, though no longer for the reason first written here: a
+		// regeneration used to freeze nought, so a share was a multiplication of
+		// zero, and that stopped being true when the regen was fixed. What keeps
+		// the refusal is the wording, which promises a harder tick.
 		{"an effect on a regeneration",
 			`[{"id":"a","grants":[],"amplifies":[{"status":"regrowth","effect":300}]}]`,
 			"only a damage-over-time has a tick this could raise"},

@@ -326,8 +326,8 @@ backwards on `venom_blood`, which replied before it said it was immune.
 lossless for a skill (hundreds of parts per thousand) and lossy for a trait
 (tens): `venom_blood`'s reply chance of 25 printed `2%` for 2.5, and anything under
 10 printed `0%`. The old excuse — the listing beside it carries the exact figure —
-is false for traits, because `hexforge passives` has no reply or drain column at
-all. One renderer for the author's table and the player's sentence. Decimal point,
+was false for traits: `hexforge passives` had no reply or drain column at all
+until *Reading a trait* added them. One renderer for the author's table and the player's sentence. Decimal point,
 not comma, because these figures sit inside sentences that use commas between
 clauses.
 Numbers are **shares of a stat** ("100% công"), never damage figures: a figure is

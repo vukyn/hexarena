@@ -599,13 +599,14 @@ rather than two.
 Two limits, both deliberate:
 
 - **A regeneration's effect cannot be amplified.** A regen ticks in every sense
-  that matters to a data file, and it is refused anyway, because ⚠️
-  `battle.inflict` computes a tick only for a damage-over-time — so **an applied
-  regeneration freezes nought and heals nothing today**. `ingrain` and
-  `aqua_ring` self-apply `regrowth` and neither has ever healed; nothing noticed
-  because `battle.Suggest` does not cast non-damaging skills. Allowing the share
-  would promise an author a multiplication of zero. The regen is a separate fix
-  and it moves balance.
+  that matters to a data file, and it is refused anyway — but ⚠️ **not for the
+  reason the refusal was first written**. That reason was that `battle.inflict`
+  computed a tick only for a damage-over-time, so an applied regeneration froze
+  nought and a share would have promised a multiplication of zero; *A
+  regeneration that heals* fixed that and the argument expired with it. What
+  keeps the refusal is the wording: `passive.Amplifies` reads *"its poison ticks
+  30% harder"* in both languages, and a share that healed under that sentence
+  would be a description that lies. Lifting it is a wording change first.
 - **Vulnerability is not built.** A target that is *easier* to poison is
   `Resists` with a negative share, which reuses the whole composition rather than
   adding a field — but it needs a decision about a negative `Refused` in the log,
@@ -806,7 +807,8 @@ description is byte-identical after the change — while a trait is priced in
 **tens**, so a reply chance of 25 printed as 2%, a fifth of the value gone, and
 anything under ten would have printed **0%**: a feature reading as one that does
 not work. And there is no listing beside a trait to check against — `hexforge
-passives` has no column for a reply or a drain. So one renderer, `forge.Percent`,
+passives` had no column for a reply or a drain at the time — *Reading a trait*
+added them afterwards. So one renderer, `forge.Percent`,
 for the author's table and the player's sentence both.
 
 A full stop for the decimal rather than a comma, which is not Vietnamese
@@ -1695,16 +1697,13 @@ line of the screen, and the frame cuts from the bottom, so
 `TestTheStatusCaveatSurvivesTheSmallestWindow` measures it at eighty by
 twenty-four in both languages.
 
-⚠️ **`regrowth` heals nothing, and this is what surfaced it.** `Battle.inflict`
-computes a tick only for `status.Dot`, so a `Regen` stack is applied with a tick
-amount of nought and `Set.Tick` adds nought to the healing — `aqua_ring` and the
-regeneration half of `synthesis` are no-ops today, and nothing in
-`internal/core/battle` tests a regen. The reference describes what the book
-declares, which is the honest thing for it to do and is also why the gap became
-visible: writing *hồi 40% mỗi lớp, một lớp là 120%* beside a status that heals
-nobody is the sort of thing a reference is for. Left as it is here rather than
-fixed in passing, because the fix moves the goldens and that is a balance change
-with its own diff.
+**And it is what found the regeneration bug.** `regrowth` was declared, glossed
+and inert: `Battle.inflict` computed a tick only for `status.Dot`, so a `Regen`
+stack went on carrying nought. The reference describes what the book *declares*,
+which is the honest thing for it to do and is exactly why the gap became visible
+— writing *hồi 40% mỗi lớp, một lớp là 120%* beside a status that healed nobody
+is the sort of thing a reference is for. Fixed since, in *A regeneration that
+heals*.
 
 ### Reading a trait
 
