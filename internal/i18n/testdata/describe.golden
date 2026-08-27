@@ -173,12 +173,12 @@ Chỉ có hiệu lực khi còn <=40% máu.
 
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
-Hết thời lượng, một cộng dồn là 150%, tối đa là 450%.
+Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
 Sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 
 [status] burn
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 80% công của bên gây ra.
-Hết thời lượng, một cộng dồn là 160%, tối đa là 320%.
+Trọn 2 lượt, một cộng dồn là 160%, tối đa là 320%.
 Sát thương mỗi lượt · 2 lượt · tối đa 2 cộng dồn.
 
 [status] weaken
@@ -239,7 +239,7 @@ Khiên, chặn một nhát · 2 lượt · tối đa 3 cộng dồn.
 
 [status] regrowth
 Đầu lượt người mang, mỗi cộng dồn hồi máu bằng 40% công của bên tạo ra.
-Hết thời lượng, một cộng dồn là 120%, tối đa là 360%.
+Trọn 3 lượt, một cộng dồn là 120%, tối đa là 360%.
 Hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 
 == en ==
@@ -404,12 +404,12 @@ In force only at or below 40% health.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.
-One stack is 150% over its life, and 450% at its cap.
+Over its 3 turns, one stack is 150%, and 450% at its cap.
 Damages every turn · 3 turns · up to 3 stacks.
 
 [status] burn
 At the holder's turn, each stack costs 80% of the applier's stat.
-One stack is 160% over its life, and 320% at its cap.
+Over its 2 turns, one stack is 160%, and 320% at its cap.
 Damages every turn · 2 turns · up to 2 stacks.
 
 [status] weaken
@@ -470,6 +470,6 @@ Blocks one strike · 2 turns · up to 3 stacks.
 
 [status] regrowth
 At the holder's turn, each stack restores 40% of the applier's stat.
-One stack is 120% over its life, and 360% at its cap.
+Over its 3 turns, one stack is 120%, and 360% at its cap.
 Restores every turn · 3 turns · up to 3 stacks.
 

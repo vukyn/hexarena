@@ -515,9 +515,9 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		life := kind.TickPower * kind.Duration
 		if kind.MaxStacks > 1 {
 			out = append(out, l.Say(BlurbStatusLifeCapped,
-				share(life), share(life*kind.MaxStacks)))
+				l.lasts(kind), share(life), share(life*kind.MaxStacks)))
 		} else {
-			out = append(out, l.Say(BlurbStatusLife, share(life)))
+			out = append(out, l.Say(BlurbStatusLife, l.lasts(kind), share(life)))
 		}
 	case status.Control:
 		out = append(out, l.Text(BlurbStatusControls))
@@ -565,10 +565,8 @@ func (l Lang) describeStatusCosts(kind status.Kind) string {
 	switch {
 	case kind.Permanent:
 		parts = append(parts, l.Text(BlurbStatusAlways))
-	case kind.Duration == 1:
-		parts = append(parts, l.Text(BlurbStatusLastsOne))
 	default:
-		parts = append(parts, l.Say(BlurbStatusLasts, kind.Duration))
+		parts = append(parts, l.lasts(kind))
 	}
 	if kind.MaxStacks == 1 {
 		parts = append(parts, l.Text(BlurbStatusOneStack))
@@ -576,6 +574,20 @@ func (l Lang) describeStatusCosts(kind status.Kind) string {
 		parts = append(parts, l.Say(BlurbStatusStacks, kind.MaxStacks))
 	}
 	return capitalise(strings.Join(parts, " · ") + ".")
+}
+
+// lasts is how long a status stays, as a phrase rather than a number, because
+// the singular has a wording of its own. Two lines want it now — the cost line
+// and the life line — and a second copy of the singular test is how the two
+// would start disagreeing about what one turn is called.
+//
+// Permanent is not handled here: a permanent status has no duration to print,
+// and the one caller that can meet one says so in its own words.
+func (l Lang) lasts(kind status.Kind) string {
+	if kind.Duration == 1 {
+		return l.Text(BlurbStatusLastsOne)
+	}
+	return l.Say(BlurbStatusLasts, kind.Duration)
 }
 
 // statusAmount is how big a modifier term is, at a given number of stacks.
