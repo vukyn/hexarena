@@ -750,6 +750,69 @@ thirteen of them in an eighty-by-twenty-four window; a three-line block would co
 a quarter of the fields for something read occasionally. A screen costs nothing
 until it is asked for, which is the same trade the art preview makes.
 
+### And what a trait is, which needed the same clause
+
+A trait's sentences were derived and nothing else, which is right and is also why
+they read as a field dump:
+
+```
+  venom_blood · máu độc
+    Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2% khả năng.
+    Miễn hoàn toàn trúng độc.
+```
+
+Three things wrong with that, and they are three different kinds of wrong.
+
+**It never says what the trait is.** Every line reports what a number does; the
+authored name *máu độc* is rendered in the heading and never in the sentences, so
+the mechanism arrives with nothing to hang it on. `Passive.Flavour` is the one
+line allowed to say it, under the same digit ban a skill's clause obeys.
+
+⚠️ **A trait's clause may name no body, and there is no exemption.** A skill free
+for anybody may not say *mai* and a restricted one may, because the restriction
+guarantees the body — `ingrain` names roots and only a plant may take it. **A
+trait has no restriction mechanism at all**: no element, no archetype, no species,
+no character. So the ban is unconditional, and it is not a rule waiting to be
+relaxed by a future field — the field would have to be built first.
+`TestATraitFlavourNamesNoBody` holds it, and `TestATraitFlavourSpellsOutNoNumber`
+closes the spelled-numeral half the character check cannot see.
+
+**The order was the order the fields were declared in**, which read backwards on
+the one trait with two halves: `venom_blood` answered an attacker and *then* said
+it was immune to poison, when the fiction runs the other way round. The order is
+now what the holder **is** (grants, resists) → what its **own attacks** do
+(applies, amplifies, drains) → what attacking **it** costs (replies) → **when**
+any of it is true (while).
+
+**And "nó" had no antecedent.** Six of the eleven trait wordings lead with a bare
+pronoun — *Nó gây trúng độc mạnh thêm 30%* — which was a deliberate choice, to
+avoid capitalising a data name at the head of a sentence. The clause fixes it
+without touching a wording: it introduces the subject, and the derived lines refer
+back to it.
+
+```
+  venom_blood · máu độc
+    Máu chảy trong người nó vốn là nọc; ai cắn phải thì tự chuốc lấy.
+    Miễn hoàn toàn trúng độc.
+    Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2.5% khả năng.
+```
+
+⚠️ **2.5%, not 2%.** Every share used to be truncated to whole percent, on the
+argument that a fraction of a percent is a tuning detail whose exact figure is in
+the listing beside the sentence. Both halves failed on traits. A skill is priced
+in **hundreds** of parts per thousand and loses nothing — every shipped skill's
+description is byte-identical after the change — while a trait is priced in
+**tens**, so a reply chance of 25 printed as 2%, a fifth of the value gone, and
+anything under ten would have printed **0%**: a feature reading as one that does
+not work. And there is no listing beside a trait to check against — `hexforge
+passives` has no column for a reply or a drain. So one renderer, `forge.Percent`,
+for the author's table and the player's sentence both.
+
+A full stop for the decimal rather than a comma, which is not Vietnamese
+typography and is deliberate: these figures sit inside sentences that already use
+a comma between clauses, and *dính trúng độc, 2,5% khả năng* makes a reader parse
+the punctuation before the number.
+
 ## Battle logs
 
 A battle can be written out, read back, printed, and re-run from its seed to check
@@ -1619,6 +1682,12 @@ The shape, and the three things to get right:
 It sits beside *Looking a status up* and it is a different item. That one had no
 describer and needed one written. This one has the describer, in both languages,
 and no way into it.
+
+⚠️ **The sentences themselves have moved on since this was written** — see *And
+what a trait is* above. A trait now carries a `flavour` clause, the derived lines
+come in narrative order rather than field order, and a share is printed exactly
+rather than truncated. None of that changes this item: it is still about where a
+trait's description can be read, and the answer is still one place.
 
 ### A health threshold a skill can read
 

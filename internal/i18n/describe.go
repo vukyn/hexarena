@@ -10,6 +10,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
+	"github.com/vukyn/hexarena/internal/forge"
 )
 
 // Describe is what a skill does, in sentences, for somebody deciding whether to
@@ -74,10 +75,10 @@ func (l Lang) describeOpening(declared skill.Skill) string {
 		return l.Say(BlurbAims, aim)
 	}
 	stat := l.describeStat(declared.Scaling.Stat)
-	damage := l.Say(BlurbOnce, percent(declared.Power), stat)
+	damage := l.Say(BlurbOnce, share(declared.Power), stat)
 	if declared.StrikeCount() > 1 {
 		damage = l.Say(BlurbStrikes, declared.StrikeCount(),
-			percent(declared.Power), stat, percent(declared.TotalPower()))
+			share(declared.Power), stat, share(declared.TotalPower()))
 	}
 	// An authored clause replaces the derived one it would otherwise open with,
 	// and the figures are appended to it either way. Nothing derives "dây leo"
@@ -89,7 +90,7 @@ func (l Lang) describeOpening(declared skill.Skill) string {
 		sentence = l.Say(BlurbFlavoured, flavour, damage)
 	}
 	if declared.Pierce > 0 {
-		sentence += l.Say(BlurbPierces, percent(declared.Pierce))
+		sentence += l.Say(BlurbPierces, share(declared.Pierce))
 	}
 	return sentence + "."
 }
@@ -106,6 +107,20 @@ func (l Lang) flavour(declared skill.Skill) string {
 		return ""
 	}
 	return declared.Flavour
+}
+
+// traitFlavour is a trait's authored clause in this language, or nothing.
+//
+// English has none, the same trade skill flavour makes: the clause is authored
+// once and in Vietnamese, so an English reader gets the derived lines rather than
+// a Vietnamese sentence dropped into an English paragraph. A translations table
+// would be a second file to keep in step, and the one it would be out of step
+// with is the one an author actually edits.
+func (l Lang) traitFlavour(held passive.Passive) string {
+	if l != Vi {
+		return ""
+	}
+	return held.Flavour
 }
 
 // describeAim is the side a skill reaches. How many cells it covers is on the
@@ -140,14 +155,14 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 	out := make([]string, 0, 4)
 	if declared.Restores > 0 {
 		out = append(out, l.Say(BlurbRestores,
-			percent(declared.Restores), l.describeStat(declared.Scaling.Stat)))
+			share(declared.Restores), l.describeStat(declared.Scaling.Stat)))
 	}
 	if declared.Drains > 0 {
-		out = append(out, l.Say(BlurbDrains, percent(declared.Drains)))
+		out = append(out, l.Say(BlurbDrains, share(declared.Drains)))
 	}
 	for _, application := range declared.Applies {
 		out = append(out, l.Say(BlurbInflicts,
-			l.stacked(application.Status, application.Stacks), percent(application.Chance)))
+			l.stacked(application.Status, application.Stacks), share(application.Chance)))
 	}
 	// One sentence for all of them rather than one each: a skill granting two
 	// buffs grants them together, on the same turn, and two sentences read as two
@@ -186,11 +201,11 @@ func (l Lang) describeCondition(declared skill.Skill) string {
 			l.stacked(declared.Requires.Status, declared.Requires.MinStacks)))
 	}
 	if declared.Requires.ReadsHealth() {
-		clauses = append(clauses, l.Say(BlurbWhenHurt, percent(declared.Requires.BelowHealth)))
+		clauses = append(clauses, l.Say(BlurbWhenHurt, share(declared.Requires.BelowHealth)))
 	}
 	amplified := declared.PowerAgainst(declared.Requires.Satisfying())
 	sentence := l.Say(BlurbAmplified, l.join(clauses),
-		percent(amplified*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat))
+		share(amplified*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat))
 	if declared.Requires.Consume {
 		sentence += l.Say(BlurbConsumes, l.glossed(declared.Requires.Status))
 	}
@@ -214,7 +229,7 @@ func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 		parts = append(parts, l.Say(BlurbCostCells, covered))
 	}
 	if declared.Power > 0 || len(declared.Applies) > 0 {
-		parts = append(parts, l.Say(BlurbCostAccuracy, percent(declared.Accuracy)))
+		parts = append(parts, l.Say(BlurbCostAccuracy, share(declared.Accuracy)))
 	}
 	if declared.Cooldown == 1 {
 		// One turn is the common case and the one English gets wrong for free:
@@ -232,8 +247,38 @@ func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 
 // DescribePassive is what a trait does. A trait is not chosen, so this answers
 // "what is this unit carrying" rather than "should I use it".
+//
+// # The order the sentences come in
+//
+// Not the order the fields are declared in, which is what it was and which read
+// backwards on the one trait that has two halves: venom_blood answered an
+// attacker and then said it was immune to poison, when the fiction runs the
+// other way — its blood is venom, so nothing poisons it, so whatever bites it is
+// poisoned. Field order is an accident of when each half was built.
+//
+// So: what the holder **is** (grants, resists), then what its **own attacks** do
+// (applies, amplifies, drains), then what attacking **it** costs (replies), then
+// **when** any of it is true (while, which was already last and stays there
+// because it qualifies everything above it).
+//
+// # Why there is a clause here at all
+//
+// Every line below is derived, which is right and is also why a trait read like
+// a field dump: "always carries cứng đòn", "refuses bỏng outright". They say what
+// it does and never what it is, so the mechanism arrives with nothing to hang it
+// on — and the trait's own authored name, máu độc, was rendered nowhere in the
+// sentences. Flavour is the one line allowed to say it, under the digit ban that
+// keeps prose from going stale, exactly as a skill's is.
+//
+// It is a **lead line** rather than a replacement, which is where it differs
+// from a skill's. A skill has one opening sentence for the clause to take over;
+// a trait has between one and six lines and no opening among them, so a clause
+// that replaced one would be replacing whichever happened to sort first.
 func (l Lang) DescribePassive(held passive.Passive) string {
-	lines := make([]string, 0, 3)
+	lines := make([]string, 0, 4)
+	if flavour := l.traitFlavour(held); flavour != "" {
+		lines = append(lines, flavour+".")
+	}
 	// "Always" only where it is true. A gated trait comes and goes with its
 	// holder's health, and the last line below says when — so opening with
 	// "always carries" and closing with "only while under a third" would be two
@@ -246,9 +291,32 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 	for _, grant := range held.Grants {
 		lines = append(lines, l.Say(carries, l.stacked(grant.Status, grant.Stacks)))
 	}
+	for _, resistance := range held.Resists {
+		if resistance.Amount >= scale.Base {
+			lines = append(lines, l.Say(BlurbTraitImmune, l.glossed(resistance.Status)))
+			continue
+		}
+		lines = append(lines, l.Say(BlurbTraitResists,
+			share(resistance.Amount), l.glossed(resistance.Status)))
+	}
 	for _, application := range held.Applies {
 		lines = append(lines, l.Say(BlurbTraitApplies,
-			l.stacked(application.Status, application.Stacks), percent(application.Chance)))
+			l.stacked(application.Status, application.Stacks), share(application.Chance)))
+	}
+	// Both shares, each as its own sentence, and the status named first in both
+	// languages so one arg order serves both.
+	for _, raise := range held.Amplifies {
+		if raise.Effect > 0 {
+			lines = append(lines, l.Say(BlurbTraitAmplifiesEffect,
+				l.glossed(raise.Status), share(raise.Effect)))
+		}
+		if raise.Chance > 0 {
+			lines = append(lines, l.Say(BlurbTraitAmplifiesChance,
+				l.glossed(raise.Status), share(raise.Chance)))
+		}
+	}
+	if held.Drains > 0 {
+		lines = append(lines, l.Say(BlurbTraitDrains, share(held.Drains)))
 	}
 	// One sentence for the whole reply rather than one per part: what a reader
 	// wants is what it costs to attack this unit, and a damage line filed apart
@@ -266,41 +334,18 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 			// for the rest is the change to make when something does.
 			first := held.Replies.Applies[0]
 			lines = append(lines, l.Say(BlurbTraitReplyBoth,
-				percent(held.Replies.Power),
-				l.stacked(first.Status, first.Stacks), percent(first.Chance)))
+				share(held.Replies.Power),
+				l.stacked(first.Status, first.Stacks), share(first.Chance)))
 		case held.Replies.Power > 0:
-			lines = append(lines, l.Say(BlurbTraitReplyDamage, percent(held.Replies.Power)))
+			lines = append(lines, l.Say(BlurbTraitReplyDamage, share(held.Replies.Power)))
 		default:
 			first := held.Replies.Applies[0]
 			lines = append(lines, l.Say(BlurbTraitReplyStatus,
-				l.stacked(first.Status, first.Stacks), percent(first.Chance)))
-		}
-	}
-	for _, resistance := range held.Resists {
-		if resistance.Amount >= scale.Base {
-			lines = append(lines, l.Say(BlurbTraitImmune, l.glossed(resistance.Status)))
-			continue
-		}
-		lines = append(lines, l.Say(BlurbTraitResists,
-			percent(resistance.Amount), l.glossed(resistance.Status)))
-	}
-	if held.Drains > 0 {
-		lines = append(lines, l.Say(BlurbTraitDrains, percent(held.Drains)))
-	}
-	// Both shares, each as its own sentence, and the status named first in both
-	// languages so one arg order serves both.
-	for _, raise := range held.Amplifies {
-		if raise.Effect > 0 {
-			lines = append(lines, l.Say(BlurbTraitAmplifiesEffect,
-				l.glossed(raise.Status), percent(raise.Effect)))
-		}
-		if raise.Chance > 0 {
-			lines = append(lines, l.Say(BlurbTraitAmplifiesChance,
-				l.glossed(raise.Status), percent(raise.Chance)))
+				l.stacked(first.Status, first.Stacks), share(first.Chance)))
 		}
 	}
 	if held.While != nil {
-		lines = append(lines, l.Say(BlurbTraitWhile, percent(held.While.BelowHealth)))
+		lines = append(lines, l.Say(BlurbTraitWhile, share(held.While.BelowHealth)))
 	}
 	if len(lines) == 0 {
 		return l.Text(BlurbTraitNone)
@@ -308,10 +353,28 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 	return strings.Join(lines, "\n")
 }
 
-// percent turns a share in parts per thousand into whole percent. Truncation is
-// deliberate: a share that is not a whole percent is a tuning detail, and the
-// listing beside this carries the exact figure for anybody who wants it.
-func percent(permille int) int { return permille / (scale.Base / 100) }
+// share renders a proportion in parts per thousand, and it is forge.Percent
+// rather than arithmetic of its own.
+//
+// It used to truncate to whole percent, on the argument that a share which is
+// not a whole percent is a tuning detail and the listing beside this carries the
+// exact figure. Both halves of that were wrong once traits were described. A
+// skill is priced in hundreds of parts per thousand and never loses anything to
+// truncation; a **trait** is priced in tens, so venom_blood's reply chance of 25
+// printed as "2%" when it is 2.5 — a fifth of the value gone — and any share
+// under ten would have printed as "0%", which reads as a feature that does not
+// work. And there was no listing beside it to check against: hexforge passives
+// has no column for a reply or a drain at all.
+//
+// So one renderer for the whole program, in the package that already owns the
+// rule. The author's table and the player's sentence now cannot come to write
+// one share two ways, which is the same argument every gloss table here makes.
+//
+// A full stop rather than a comma for the decimal, which is not Vietnamese
+// typography and is deliberate: these figures sit inside sentences that already
+// use a comma to separate clauses, and "dính trúng độc, 2,5% khả năng" makes a
+// reader parse the punctuation before the number.
+func share(permille int) string { return forge.Percent(permille) }
 
 // glossed is a data id under its name in this language, falling back to the id.
 // A miss is a bare id rather than a blank, the same answer every other listing
@@ -430,16 +493,16 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		if kind.Category == status.Regen {
 			ticks = BlurbStatusHeals
 		}
-		out = append(out, l.Say(ticks, percent(kind.TickPower)))
+		out = append(out, l.Say(ticks, share(kind.TickPower)))
 		// A permanent status can be neither of these — ParseBook refuses one —
 		// so a life is always a number here rather than a nought standing in for
 		// "never ends".
 		life := kind.TickPower * kind.Duration
 		if kind.MaxStacks > 1 {
 			out = append(out, l.Say(BlurbStatusLifeCapped,
-				percent(life), kind.MaxStacks, percent(life*kind.MaxStacks)))
+				share(life), kind.MaxStacks, share(life*kind.MaxStacks)))
 		} else {
-			out = append(out, l.Say(BlurbStatusLife, percent(life)))
+			out = append(out, l.Say(BlurbStatusLife, share(life)))
 		}
 	case status.Control:
 		out = append(out, l.Text(BlurbStatusControls))
@@ -508,7 +571,7 @@ func (l Lang) describeStatusCosts(kind status.Kind) string {
 //
 // A percentage and a flat term are printed differently rather than both as
 // percentages, and that matters even though nothing shipped carries a flat one:
-// a flat +50 rendered through percent() would print as "5%", which is a wrong
+// a flat +50 rendered through share() would print as "5%", which is a wrong
 // number rather than a missing one.
 func statusAmount(term modifier.Modifier, stacks int) string {
 	size := term.Amount * int64(stacks)
@@ -516,7 +579,7 @@ func statusAmount(term modifier.Modifier, stacks int) string {
 		size = -size
 	}
 	if term.Mode == modifier.Percent {
-		return itoa(percent(int(size))) + "%"
+		return share(int(size))
 	}
 	return itoa(int(size))
 }
