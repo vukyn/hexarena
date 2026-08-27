@@ -31,6 +31,7 @@ hydro_pump      water     enemy    4  single         2200     1   2200   800    
 withdraw        neutral   self     0  single            0     1      0  1000    3     0        0
 aqua_ring       water     self     0  single            0     1      0  1000    4     0        0
 rapid_spin      neutral   self     0  single            0     1      0  1000    3     0        0
+rally           neutral   ally     1  column            0     1      0  1000    4     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -50,6 +51,7 @@ whirlpool       mire                   1      600        850              510
 bite            expose                 1      500        900              450
 withdraw        block (self)           2     1000       1000                -
 aqua_ring       regrowth (self)        2     1000       1000                -
+rally           fury                   1     1000       1000             1000
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species

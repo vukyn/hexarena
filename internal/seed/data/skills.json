@@ -163,18 +163,18 @@
       "accuracy": 1000,
       "cooldown": 4,
       "target": "self",
+      "restrict": {
+        "species": [
+          "plant"
+        ]
+      },
       "self_applies": [
         {
           "status": "regrowth",
           "chance": 1000,
           "stacks": 2
         }
-      ],
-      "restrict": {
-        "species": [
-          "plant"
-        ]
-      }
+      ]
     },
     {
       "id": "ember",
@@ -339,6 +339,11 @@
       "accuracy": 1000,
       "cooldown": 4,
       "target": "self",
+      "restrict": {
+        "species": [
+          "dragon"
+        ]
+      },
       "self_applies": [
         {
           "status": "fury",
@@ -350,12 +355,7 @@
           "chance": 1000,
           "stacks": 1
         }
-      ],
-      "restrict": {
-        "species": [
-          "dragon"
-        ]
-      }
+      ]
     },
     {
       "id": "water_gun",
@@ -520,6 +520,26 @@
         ],
         "stacks": 1
       }
+    },
+    {
+      "id": "rally",
+      "name": "hiệu triệu",
+      "flavour": "Hô một tiếng vang dọc trận địa, cả hàng bên mình hăng lên theo",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "column",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "ally",
+      "applies": [
+        {
+          "status": "fury",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

@@ -134,6 +134,11 @@ Xoay tít người, hất văng mọi thứ đang bám trên mình.
 Gỡ 1 cộng dồn hiệu ứng giảm chỉ số và hiệu ứng gây hại theo lượt.
 Bản thân · hồi 3 lượt.
 
+rally
+Hô một tiếng vang dọc trận địa, cả hàng bên mình hăng lên theo.
+Cho mục tiêu cuồng nộ, 100% khả năng.
+Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -366,6 +371,11 @@ Itself · 4 turns to recharge.
 rapid_spin
 Strips 1 stack of stat_debuff and dot.
 Itself · 3 turns to recharge.
+
+rally
+Aims at an ally.
+Gives its target fury, 100% of the time.
+Range 1 · 3 cells · 100% to hit · 4 turns to recharge.
 
 [trait] endurance
 Always carries toughened.
