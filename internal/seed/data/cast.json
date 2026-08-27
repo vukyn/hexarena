@@ -476,6 +476,10 @@
         {
           "id": "hydro_pump",
           "at_level": 36
+        },
+        {
+          "id": "taunt",
+          "at_level": 40
         }
       ],
       "passives": [

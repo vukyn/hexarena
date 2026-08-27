@@ -205,6 +205,7 @@ const (
 	CategoryBuff
 	CategoryShield
 	CategoryRegen
+	CategoryTaunt
 
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement
@@ -428,6 +429,7 @@ const (
 	BlurbStatusLife
 	BlurbStatusLifeCapped
 	BlurbStatusControls
+	BlurbStatusTaunts
 	BlurbStatusShields
 	BlurbStatusRaises
 	BlurbStatusLowers

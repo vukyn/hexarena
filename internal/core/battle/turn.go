@@ -372,6 +372,16 @@ func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 	if known.Target == skill.Self {
 		return []hex.Offset{unit.Cell}
 	}
+	// A taunt narrows a hostile skill to the units taunting, and only a hostile
+	// one: a taunted unit may still shield itself, cleanse itself and help its
+	// own side, because what a taunt takes is the choice of *enemy* and not the
+	// turn. A skill aimed at both halves is left alone too — it is not a choice
+	// of enemy in the first place.
+	if known.Target == skill.Enemy {
+		if forced := b.taunters(unit); len(forced) > 0 {
+			return forced
+		}
+	}
 	out := make([]hex.Offset, 0, hex.Cols*hex.Rows)
 	for _, cell := range hex.Cells() {
 		if !known.Target.Reaches(unit.Side, cell.Side()) {
@@ -381,6 +391,34 @@ func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 			continue
 		}
 		if b.occupant(cell) == nil {
+			continue
+		}
+		out = append(out, cell)
+	}
+	return out
+}
+
+// taunters is the cells holding somebody taunting this unit, in the board's own
+// order, and empty when nobody is.
+//
+// Range is not read, which is the whole of what makes a taunt a taunt here.
+// Nothing on this board moves, so a taunt that could be answered by standing far
+// enough away would be ignored by exactly the long-ranged attackers a tank most
+// needs to pull off its own back column — and a tank nobody can be made to
+// attack is furniture. So the taunter is reachable from anywhere, and a skill of
+// range one aimed at a taunter four cells away lands: the damage formula has
+// never read distance, only the legality of the aim did.
+//
+// Several taunters are not an ambiguity, only a smaller list: every one of them
+// is a legal aim and nobody else is.
+func (b *Battle) taunters(unit *Unit) []hex.Offset {
+	out := make([]hex.Offset, 0, hex.MaxTeamSize)
+	for _, cell := range hex.Cells() {
+		if !skill.Enemy.Reaches(unit.Side, cell.Side()) {
+			continue
+		}
+		other := b.occupant(cell)
+		if other == nil || other.Statuses.Stacks(tauntStatus) == 0 {
 			continue
 		}
 		out = append(out, cell)
