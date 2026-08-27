@@ -786,35 +786,46 @@ now what the holder **is** (grants, resists) → what its **own attacks** do
 (applies, amplifies, drains) → what attacking **it** costs (replies) → **when**
 any of it is true (while).
 
-**And "nó" had no antecedent.** Six of the eleven trait wordings lead with a bare
-pronoun — *Nó gây trúng độc mạnh thêm 30%* — which was a deliberate choice, to
-avoid capitalising a data name at the head of a sentence. The clause fixes it
-without touching a wording: it introduces the subject, and the derived lines refer
-back to it.
+**And every sentence leaned on "nó".** Six of the eleven trait wordings led with
+a bare pronoun — *Nó gây trúng độc mạnh thêm 30%*, *Mọi đòn của nó hút lại 25%* —
+which was a deliberate choice at the time, to avoid capitalising a lowercase data
+name at the head of a sentence. It was the wrong trade: a description is about one
+unit and nothing else, so the pronoun carries no information and only makes the
+line longer. The wordings drop it and name the thing instead — *Hiệu quả trúng độc
+mạnh hơn 30%*, *Mọi đòn hút lại 25%* — and the reply says who is being paid back
+rather than leaving two pronouns in one sentence to disagree.
 
 ```
-  venom_blood · máu độc
-    Máu chảy trong người nó vốn là nọc; ai cắn phải thì tự chuốc lấy.
-    Miễn hoàn toàn trúng độc.
-    Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2.5% khả năng.
+  venom_blood (máu độc)
+    Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
+    Miễn nhiễm trúng độc.
+    Ai đánh trúng thì bị phản lại 4% công của người bị đánh, và có 3% khả năng
+    dính trúng độc.
 ```
 
-⚠️ **2.5%, not 2%.** Every share used to be truncated to whole percent, on the
-argument that a fraction of a percent is a tuning detail whose exact figure is in
-the listing beside the sentence. Both halves failed on traits. A skill is priced
-in **hundreds** of parts per thousand and loses nothing — every shipped skill's
-description is byte-identical after the change — while a trait is priced in
-**tens**, so a reply chance of 25 printed as 2%, a fifth of the value gone, and
-anything under ten would have printed **0%**: a feature reading as one that does
-not work. And there is no listing beside a trait to check against — `hexforge
-passives` had no column for a reply or a drain at the time — *Reading a trait*
-added them afterwards. So one renderer, `forge.Percent`,
-for the author's table and the player's sentence both.
+⚠️ **3%, not 2.5% and not 2%, and the two renderers are the point.** A share was
+first *truncated* to whole percent, on the argument that a fraction of a percent
+is a tuning detail whose exact figure sits in the listing beside the sentence.
+Both halves failed on traits: a skill is priced in **hundreds** of parts per
+thousand and loses nothing, while a trait is priced in **tens**, so a reply chance
+of 25 printed as 2% — a fifth of the value gone — and there was no listing beside
+a trait to check against. Truncation was replaced by the exact figure, and the
+tenth it brought is now rounded away again, because a tenth of a percent is a
+precision a *player* cannot act on and a decimal point is the only mark in the
+line that is not a comma.
 
-A full stop for the decimal rather than a comma, which is not Vietnamese
-typography and is deliberate: these figures sit inside sentences that already use
-a comma between clauses, and *dính trúng độc, 2,5% khả năng* makes a reader parse
-the punctuation before the number.
+So `forge.Percent` keeps the tenth for **hexforge's tables**, where an author is
+tuning the number and the tenth is what is being tuned, and `i18n.share` rounds
+for **sentences**. Half away from zero, so 25 becomes 3 rather than the 2 this
+started at.
+
+**What makes the rounding safe is a rule on the data, not a decimal place.**
+Nothing is ever tuned by **less than a percent** — a share that small is one
+nobody feels across a battle, so it is not a tuning anybody authors on purpose,
+and a description of one would come out as *0%*, which reads as a feature that
+does not work. `TestNoShippedShareIsUnderOnePercent` holds it over every shipped
+skill, trait and status. Carrying a tenth in the sentence to survive data the
+rule forbids would be the renderer paying for a case that cannot happen.
 
 ## Battle logs
 
@@ -1741,10 +1752,10 @@ character under the cursor carries **at the level it is sitting on**:
 Bulbasaur  cấp 60
 
   venom_blood (máu độc)
-    Máu chảy trong người nó vốn là nọc; ai cắn phải thì tự chuốc lấy.
-    Miễn hoàn toàn trúng độc.
-    Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2.5% khả
-    năng.
+    Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
+    Miễn nhiễm trúng độc.
+    Ai đánh trúng thì bị phản lại 4% công của người bị đánh, và có 3% khả năng
+    dính trúng độc.
 
   endurance (bền bỉ)
     ...
@@ -1778,7 +1789,7 @@ trait cannot finish reading one.
 `m.wrapped` does, and right for a different reason. Those rows carry authored
 free text, which has to go somewhere and takes whatever width there is; these are
 the program's own prose, and prose has a measure. Before wrapping, the reply
-sentence was cut mid-word at the floor — *2.5% khả nă* — which reads as the tool
+sentence was cut mid-word at the floor — *…3% khả nă* — which reads as the tool
 being broken rather than as a terminal being narrow.
 
 **And `hexforge passives` gained the two columns it never had.** `answers` and

@@ -10,7 +10,6 @@ import (
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
-	"github.com/vukyn/hexarena/internal/forge"
 )
 
 // Describe is what a skill does, in sentences, for somebody deciding whether to
@@ -395,15 +394,19 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 			// once is authorable and nothing shipped does it; a second sentence
 			// for the rest is the change to make when something does.
 			first := held.Replies.Applies[0]
+			// The chance before the status, in both languages. A reply reads as
+			// "and a 3% chance of poison" rather than "and poison, 3% of the
+			// time" -- and once one language wants that order, both take it:
+			// TestTheSameBlanksInEveryLanguage holds one arg order for the pair.
 			lines = append(lines, l.Say(BlurbTraitReplyBoth,
 				share(held.Replies.Power),
-				l.stacked(first.Status, first.Stacks), share(first.Chance)))
+				share(first.Chance), l.stacked(first.Status, first.Stacks)))
 		case held.Replies.Power > 0:
 			lines = append(lines, l.Say(BlurbTraitReplyDamage, share(held.Replies.Power)))
 		default:
 			first := held.Replies.Applies[0]
 			lines = append(lines, l.Say(BlurbTraitReplyStatus,
-				l.stacked(first.Status, first.Stacks), share(first.Chance)))
+				share(first.Chance), l.stacked(first.Status, first.Stacks)))
 		}
 	}
 	if held.While != nil {
@@ -415,29 +418,42 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 	return strings.Join(lines, "\n")
 }
 
-// share renders a proportion in parts per thousand, and it is forge.Percent
-// rather than arithmetic of its own.
+// share renders a proportion in parts per thousand as a whole percent.
 //
-// It used to truncate to whole percent, on the argument that a share which is
-// not a whole percent is a tuning detail and the listing beside this carries the
-// exact figure. Both halves of that were wrong once traits were described. A
-// skill is priced in hundreds of parts per thousand and never loses anything to
-// truncation; a **trait** is priced in tens, so venom_blood's reply chance of 25
-// printed as "2%" when it is 2.5 — a fifth of the value gone — and any share
-// under ten would have printed as "0%", which reads as a feature that does not
-// work. And there was no listing beside it to check against either: hexforge
-// passives had no column for a reply or a drain at all until the trait screen
-// added them.
+// # Rounded here, exact in the tables, and that split is the whole of it
 //
-// So one renderer for the whole program, in the package that already owns the
-// rule. The author's table and the player's sentence now cannot come to write
-// one share two ways, which is the same argument every gloss table here makes.
+// forge.Percent keeps a tenth where there is one — 25 parts per thousand reads
+// as "2.5%" — and that is right for hexforge's tables, which an author reads to
+// tune a number and where the tenth *is* what is being tuned. It is wrong inside
+// a sentence: "và có 2.5% khả năng dính trúng độc" hands a player a precision
+// they cannot act on, and the decimal point is the only mark in the line that is
+// not a comma. So the sentence rounds and the table does not.
 //
-// A full stop rather than a comma for the decimal, which is not Vietnamese
-// typography and is deliberate: these figures sit inside sentences that already
-// use a comma to separate clauses, and "dính trúng độc, 2,5% khả năng" makes a
-// reader parse the punctuation before the number.
-func share(permille int) string { return forge.Percent(permille) }
+// This is a second renderer where there used to be one, and the history matters
+// because the first split was a mistake. share truncated, on the argument that a
+// fraction of a percent is a tuning detail whose exact figure is in the listing
+// beside the sentence — and for a trait there was no such listing, so
+// venom_blood's reply chance of 25 read as "2%". Truncation was replaced by
+// forge.Percent for that reason, and the tenth it brought is what this rounds
+// away again. The difference is that truncation lost a fifth of the value and
+// rounding half away from zero does not: 25 becomes 3, not 2.
+//
+// What makes the rounding safe rather than lossy is a rule on the **data**:
+// nothing is ever tuned by less than a percent, so nothing can land in the range
+// where rounding would print "0%" — a share that small is one nobody feels
+// across a battle, and a description of it reads as a feature that does not
+// work. TestNoShippedShareIsUnderOnePercent holds it over every shipped skill,
+// trait and status. Carrying a decimal place here to survive data nobody will
+// author would be the renderer paying for a case the rule forbids.
+func share(permille int) string {
+	sign := ""
+	if permille < 0 {
+		sign, permille = "-", -permille
+	}
+	// Half away from zero, in integers: 25 becomes 3 rather than 2, so the
+	// rounding never reads as the truncation this replaced.
+	return sign + itoa((permille+5)/10) + "%"
+}
 
 // glossed is a data id under its name in this language, falling back to the id.
 // A miss is a bare id rather than a blank, the same answer every other listing

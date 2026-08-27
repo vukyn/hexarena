@@ -14,7 +14,7 @@
     {
       "id": "blaze",
       "name": "bùng lửa",
-      "flavour": "Càng bị dồn vào đường cùng, ngọn lửa trong nó càng bốc dữ",
+      "flavour": "Càng bị dồn vào đường cùng, ngọn lửa bên trong càng dữ dội",
       "grants": [
         {
           "status": "kindled",
@@ -28,7 +28,7 @@
     {
       "id": "heatproof",
       "name": "chịu nhiệt",
-      "flavour": "Sức nóng bao nhiêu cũng chỉ lướt qua, không bén nổi vào nó",
+      "flavour": "Sức nóng bao nhiêu cũng chỉ lướt qua bên ngoài, không bén vào được",
       "grants": [],
       "resists": [
         {
@@ -40,7 +40,7 @@
     {
       "id": "virulence",
       "name": "độc lực",
-      "flavour": "Nọc của nó đặc và ngấm sâu hơn thứ độc tầm thường",
+      "flavour": "Nọc tiết ra đặc và ngấm sâu hơn thứ độc tầm thường",
       "grants": [],
       "amplifies": [
         {
@@ -53,7 +53,7 @@
     {
       "id": "venom_blood",
       "name": "máu độc",
-      "flavour": "Máu chảy trong người nó vốn là nọc; ai cắn phải thì tự chuốc lấy",
+      "flavour": "Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy",
       "grants": [],
       "replies": {
         "power": 40,
@@ -74,14 +74,14 @@
     {
       "id": "blood_thirst",
       "name": "khát máu",
-      "flavour": "Vết thương nó xé ra lại quay về nuôi chính nó",
+      "flavour": "Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức",
       "grants": [],
       "drains": 250
     },
     {
       "id": "last_gasp",
       "name": "hấp hối",
-      "flavour": "Càng thoi thóp, cơn khát của nó càng trỗi lên dữ",
+      "flavour": "Càng thoi thóp, cơn khát càng trỗi dậy",
       "grants": [],
       "while": {
         "below_health": 400

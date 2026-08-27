@@ -379,15 +379,15 @@ q or ctrl+c to quit`,
 	BlurbTraitApplies:     "Its attacks also inflict %s, %s of the time.",
 	BlurbTraitImmune:      "Refuses %s outright.",
 	BlurbTraitResists:     "Refuses %s of any %s aimed at it.",
-	BlurbTraitReplyDamage: "Whatever damages it takes %s of its attack back.",
-	BlurbTraitReplyStatus: "Whatever damages it is inflicted with %s, %s of the time.",
-	BlurbTraitReplyBoth:   "Whatever damages it takes %s of its attack back, and %s %s of the time.",
+	BlurbTraitReplyDamage: "Whatever damages it takes %s of the struck unit's attack back.",
+	BlurbTraitReplyStatus: "Whatever damages it has a %s chance of catching %s.",
+	BlurbTraitReplyBoth:   "Whatever damages it takes %s of the struck unit's attack back, and has a %s chance of catching %s.",
 	// Two sentences rather than one, because the two shares promise different
 	// things: a stronger tick pays over the life of a stack, a better chance pays
 	// per cast, and a reader deciding what the trait is worth needs to know which
 	// of the two it got.
-	BlurbTraitAmplifiesEffect: "Its %s ticks %s harder.",
-	BlurbTraitAmplifiesChance: "Its %s lands %s more often.",
+	BlurbTraitAmplifiesEffect: "The effect of %s is %s stronger.",
+	BlurbTraitAmplifiesChance: "The chance of inflicting %s is %s higher.",
 	BlurbTraitWhile:           "In force only at or below %s health.",
 	BlurbTraitDrains:          "Everything it does takes back %s of the damage dealt.",
 	BlurbTraitNone:            "Carries no traits.",
