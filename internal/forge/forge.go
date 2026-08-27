@@ -472,6 +472,59 @@ func UnlockSummaryAt(entries []cast.Unlock, level int) string {
 	return strings.Join(parts, " ")
 }
 
+// TraitCarrier is one character that learns a trait, and where in its life.
+type TraitCarrier struct {
+	// Character is the character's id, which is what a listing shows: a name is
+	// authored prose and two characters may share one.
+	Character string
+	// AtLevel is the first level it has the trait at, and Stages the forms that
+	// may hold it — the same two gates cast.Unlock declares, carried through so
+	// a listing can say "endurance@16" without re-reading the learnset.
+	AtLevel int
+	Stages  []string
+}
+
+// TraitCarriers is every character that learns a trait, in cast order.
+//
+// A trait has no restriction mechanism — no element, no archetype, no species,
+// no character — so "who may carry this" is *everybody* and answers nothing. The
+// question worth asking is the other one: who actually **does**. A trait nobody
+// learns is not an error, the way a species nobody is is not an error, but it is
+// a trait that cannot reach a battle, and a listing is where that shows.
+//
+// It walks the cast rather than being indexed off the trait, because the
+// learnset is the character's fact: a trait is declared in passives.json knowing
+// nothing about who takes it, and an index kept the other way round would be a
+// second place for the same edge to live.
+func (l *Library) TraitCarriers(id string) []TraitCarrier {
+	out := make([]TraitCarrier, 0, 4)
+	for _, character := range l.characters.All() {
+		for _, entry := range character.Passives {
+			if entry.ID != id {
+				continue
+			}
+			out = append(out, TraitCarrier{
+				Character: character.ID, AtLevel: entry.AtLevel, Stages: entry.Stages,
+			})
+			break
+		}
+	}
+	return out
+}
+
+// TraitCarrierSummary is those carriers as one scannable row, each token the
+// character id with whatever gates its entry declares — the same shape
+// UnlockSummary gives a learnset, read from the other end.
+func TraitCarrierSummary(carriers []TraitCarrier) string {
+	parts := make([]string, 0, len(carriers))
+	for _, carrier := range carriers {
+		parts = append(parts, unlockLabel(carrier.Character,
+			cast.Unlock{AtLevel: carrier.AtLevel, Stages: carrier.Stages},
+			carrier.AtLevel > 1))
+	}
+	return strings.Join(parts, " ")
+}
+
 // SuggestedImage proposes where a character's art would live, following the id.
 // It is only a default: any relative path ending .svg or .png is allowed.
 func SuggestedImage(id string) string {

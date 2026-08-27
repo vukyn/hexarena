@@ -40,6 +40,7 @@ go run ./cmd/hexforge skills                     # the declared skills and who m
 go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900   # author a skill
 go run ./cmd/hexforge skills edit oath --power 1100                 # change one already in the book
 go run ./cmd/hexforge statuses                   # the timed effects, grouped, and what each does
+go run ./cmd/hexforge passives                   # the declared traits and what each holds
 go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
 go run ./cmd/hexforge spar some.id --seeds 200   # duel it against the whole cast, both ways, report the rates
 
@@ -1279,8 +1280,17 @@ is the constraint each piece has to respect.
       ⚠️ Adding a screen (or a *state* of one) to `hexforge-tui` means adding it to
       `everyScreen` in `language_test.go`, or every width and translation test skips
       it in silence. Both blurb shapes are in it now; `screenPreview` still is not.
-      Still **not** built: a listing of *every declared* trait. That answers a
-      different question from "what is this character carrying".
+      **And the `nội tại` menu**, `screenPassives`: every *declared* trait with the
+      description of the one under the cursor, which is the other question — `?`
+      on the browser is filtered by a level, so a trait nobody has learned yet is
+      reachable from nowhere.
+      ⚠️ **The column is "who carries it", NOT "who may".** A trait has no
+      restriction mechanism, so *may* is everybody. `Library.TraitCarriers` walks
+      the **cast**, not the trait book: the edge lives on the character, and an
+      index the other way round is a second place for it.
+      ⚠️ **Not a column on `hexforge passives`** — nine columns already, and a
+      carrier row is as long as the cast. A clippable row and a cursor are what
+      make it affordable; the CLI has neither.
 - [x] **A regeneration that heals — SHIPPED.** `regrowth` was declared, glossed,
       described and **inert**: `inflict` computed a tick only for `status.Dot`, so
       a `Regen` stack went on carrying nought and every step below it was already

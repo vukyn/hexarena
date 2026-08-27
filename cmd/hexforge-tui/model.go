@@ -22,6 +22,7 @@ const (
 	screenOrigins
 	screenSkills
 	screenStatuses
+	screenPassives
 	screenCheck
 	// screenPreview is raised from the browser rather than the menu, because it
 	// draws one character's art and the browser is where a character is chosen.
@@ -117,6 +118,7 @@ type model struct {
 	origins  originsScreen
 	skills   skillsScreen
 	statuses statusesScreen
+	passives passivesScreen
 	check    checkScreen
 	preview  previewScreen
 	spar     sparScreen
@@ -156,6 +158,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		origins:  newOriginsScreen(lib),
 		skills:   newSkillsScreen(lib),
 		statuses: newStatusesScreen(lib),
+		passives: newPassivesScreen(lib),
 		check:    newCheckScreen(lib),
 		preview:  newPreviewScreen(),
 		spar:     newSparScreen(),
@@ -180,6 +183,7 @@ var menuItems = []menuItem{
 	{i18n.MenuOrigins, i18n.MenuOriginsDetail, screenOrigins},
 	{i18n.MenuSkills, i18n.MenuSkillsDetail, screenSkills},
 	{i18n.MenuStatuses, i18n.MenuStatusesDetail, screenStatuses},
+	{i18n.MenuPassives, i18n.MenuPassivesDetail, screenPassives},
 	{i18n.MenuCheck, i18n.MenuCheckDetail, screenCheck},
 }
 
@@ -243,6 +247,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.skills.update(m, message)
 	case screenStatuses:
 		return m.statuses.update(m, message)
+	case screenPassives:
+		return m.passives.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
@@ -311,6 +317,8 @@ func (m model) enter(target screen) model {
 		m.skills = m.skills.refresh(m.lib)
 	case screenStatuses:
 		m.statuses = m.statuses.refresh(m.lib)
+	case screenPassives:
+		m.passives = m.passives.refresh(m.lib)
 	case screenSpar:
 		m.spar = m.spar.refresh()
 	}
@@ -354,6 +362,8 @@ func (m model) screenContent() string {
 		body, footer = m.skills.view(m)
 	case screenStatuses:
 		body, footer = m.statuses.view(m)
+	case screenPassives:
+		body, footer = m.passives.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:
