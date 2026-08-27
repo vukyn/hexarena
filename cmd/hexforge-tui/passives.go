@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sort"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -62,6 +63,27 @@ func (p passivesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea
 	case "esc":
 		m.screen = screenMenu
 		return m, nil
+	// The trait's own description is already on screen, so ? here reads as
+	// "explain the thing it just named" rather than as "explain this".
+	//
+	// The first named status rather than a choice between them. Every shipped
+	// trait names one, and a picker for a case the data does not hold yet is a
+	// second cursor to keep in step with this one — the trade screenPreview and
+	// screenBlurb both refused. A trait naming two is the change to make when
+	// one exists.
+	case "?":
+		named := i18n.StatusesNamed(p.passives[clamp(p.cursor, 0, len(p.passives)-1)])
+		if len(named) == 0 {
+			return m, nil
+		}
+		statuses, found := m.statuses.focus(named[0])
+		if !found {
+			return m, nil
+		}
+		statuses.from = screenPassives
+		m.statuses = statuses
+		m.screen = screenStatuses
+		return m, nil
 	case "up", "k":
 		p.cursor = clamp(p.cursor-1, 0, len(p.passives)-1)
 	case "down", "j":
@@ -69,6 +91,54 @@ func (p passivesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea
 	}
 	m.passives = p
 	return m, nil
+}
+
+// marked is one sentence of a trait's description with the status names in it
+// picked out.
+//
+// Word by word rather than name by name, because the caller wraps what comes
+// back: a style spanning two words survives strings.Fields only until the wrap
+// puts the words on different lines, and then the first line carries an escape
+// sequence the second one closes. Marking each word whole keeps every word
+// self-contained however the line breaks.
+//
+// Longest first, so a name that begins another name cannot take its opening.
+// The marker is a parameter rather than a style read off the model, which is
+// what makes this testable: the tests run with NO_COLOR set, so every style is
+// the identity and a test asserting on the model's own would be asserting that
+// nothing happened.
+func marked(sentence string, names []string, mark func(string) string) string {
+	sorted := append([]string(nil), names...)
+	sort.SliceStable(sorted, func(i, j int) bool { return len(sorted[i]) > len(sorted[j]) })
+
+	// One left-to-right pass rather than a replacement per name. A pass per name
+	// re-marks its own output — "bỏng" matches inside what "bỏng nặng" just
+	// produced, however the names were ordered — and the ordering only decides
+	// which of the two wrong answers comes out. Scanning once and taking the
+	// longest name that starts here means every character of the sentence is
+	// looked at exactly once, so nothing marked can be marked again.
+	var out strings.Builder
+	for at := 0; at < len(sentence); {
+		hit := ""
+		for _, name := range sorted {
+			if name != "" && strings.HasPrefix(sentence[at:], name) {
+				hit = name
+				break
+			}
+		}
+		if hit == "" {
+			out.WriteByte(sentence[at])
+			at++
+			continue
+		}
+		words := strings.Fields(hit)
+		for index, word := range words {
+			words[index] = mark(word)
+		}
+		out.WriteString(strings.Join(words, " "))
+		at += len(hit)
+	}
+	return out.String()
 }
 
 // passivesRoom is how many rows the listing may draw: the window, less the two
@@ -136,8 +206,21 @@ func (p passivesScreen) view(m model) (string, string) {
 	}
 
 	selected := p.passives[clamp(p.cursor, 0, len(p.passives)-1)]
+	// The names this trait's sentences will use, marked where they are printed
+	// so that ? has something visible to be about. A miss in the glossary drops
+	// out here rather than marking a bare id: an id in the middle of Vietnamese
+	// prose is already the odd word on the line.
+	names := make([]string, 0, 4)
+	for _, id := range i18n.StatusesNamed(selected) {
+		if name := m.lang.Gloss(id); name != "" {
+			names = append(names, name)
+		}
+	}
 	out.WriteString("\n  " + m.style.label.Render(m.lang.GlossedPassive(selected)) + "\n")
 	for _, sentence := range strings.Split(m.lang.DescribePassive(selected), "\n") {
+		sentence = marked(sentence, names, func(word string) string {
+			return m.style.emphasis.Render(word)
+		})
 		// Wrapped to the floor rather than to the window, for the reason the
 		// trait screen wraps: these are the program's own prose, and a sentence
 		// run across a two-hundred-column terminal is a line a reader loses their

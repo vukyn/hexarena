@@ -43,6 +43,12 @@ type statusesScreen struct {
 	// selecting a heading, and a cursor that could land on one would make the
 	// description below blink out for a keystroke.
 	cursor int
+	// from is the screen esc goes back to, and it is a field rather than a
+	// constant because this listing is now reachable two ways: from the menu,
+	// where back is the menu, and from a trait that named a status, where back
+	// is the trait the reader was in the middle of. A reader sent here by one
+	// keystroke expects the next one to undo it.
+	from screen
 }
 
 func newStatusesScreen(lib *forge.Library) statusesScreen {
@@ -81,6 +87,23 @@ func (s statusesScreen) settle(from, step int) int {
 	return from
 }
 
+// focus puts the cursor on a named status and reports whether it found one.
+//
+// It reports rather than settling for the nearest, because the caller is acting
+// on a name it read out of a trait: a book that has lost that status is a book
+// where the trait's own description is printing a bare id, and moving the cursor
+// to whatever sorted next would answer a question nobody asked.
+func (s statusesScreen) focus(id string) (statusesScreen, bool) {
+	for index, row := range s.rows {
+		if row.heading || row.kind.ID != id {
+			continue
+		}
+		s.cursor = index
+		return s, true
+	}
+	return s, false
+}
+
 // move steps to the next status in a direction, or stays put at the end of the
 // list. It steps over headings rather than through them, so one keypress is one
 // status however many category boundaries lie between.
@@ -99,7 +122,12 @@ func (s statusesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea
 	case "q":
 		return m, tea.Quit
 	case "esc":
-		m.screen = screenMenu
+		// The way back is forgotten as it is used, and the assignment below is
+		// what stores that — an early return here would leave the next visit
+		// inheriting this one's history.
+		m.screen = s.from
+		s.from = screenMenu
+		m.statuses = s
 		return m, nil
 	case "up", "k":
 		s = s.move(-1)

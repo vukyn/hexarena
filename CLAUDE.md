@@ -1291,6 +1291,32 @@ is the constraint each piece has to respect.
       ⚠️ **Not a column on `hexforge passives`** — nine columns already, and a
       carrier row is as long as the cast. A clippable row and a cursor are what
       make it affordable; the CLI has neither.
+      **And the name in the sentence is a door.** `?` on `screenPassives` opens
+      `screenStatuses` at the status the trait names, `esc` comes back, and the
+      name is marked (bold, no colour) where it is printed so `?` has something
+      visible to be about. `i18n.StatusesNamed(trait)` serves both halves: the ids
+      a description will name, in the order it names them. Reading the sentences
+      back instead would be substring matching against prose in two languages —
+      it styles a name that happens to sit in a flavour clause and misses one the
+      glossary lacks, since that one prints as a bare id.
+      ⚠️ **It is a second reading of `DescribePassive` and drifts silently.**
+      `TestATraitNamesEveryStatusItsDescriptionNames` holds them together; the
+      rule the shipped book cannot show is pinned apart — **a reply names its
+      first application and no more**, because one sentence has room for one
+      status.
+      ⚠️ **`blood_thirst` and `last_gasp` name nothing** (a drain names no
+      status), so `?` must stay put rather than open whatever the status cursor
+      sat on.
+      ⚠️ **`statusesScreen.from` must be cleared where it is STORED.** The first
+      version returned before the assignment that puts the screen back on the
+      model, so a later visit through the menu inherited the earlier visit's way
+      back. Caught by a test, not by reading.
+      ⚠️ **Marking is ONE left-to-right pass, longest match wins** — a pass per
+      name re-marks its own output in either order (`bỏng` inside the `bỏng nặng`
+      just produced; or `bỏng nặng` never matching). And each **word** is marked
+      whole, not the phrase: the sentences wrap afterwards and the wrap splits on
+      spaces, so a style spanning two words breaks when they land on different
+      lines.
 - [x] **A regeneration that heals — SHIPPED.** `regrowth` was declared, glossed,
       described and **inert**: `inflict` computed a tick only for `status.Dot`, so
       a `Regen` stack went on carrying nought and every step below it was already

@@ -425,7 +425,7 @@ q or ctrl+c to quit`,
 	PassivesHeading:       "traits",
 	PassivesSubtitle:      "the declared traits, and who carries each",
 	PassivesEmpty:         "no traits declared.",
-	PassivesFooter:        "↑/↓ move · ctrl+l tiếng Việt · esc back · q quit",
+	PassivesFooter:        "↑/↓ move · ? the status · ctrl+l tiếng Việt · esc back · q quit",
 	PassivesNobodyCarries: "nobody learns this, so it cannot reach a battle",
 	ColumnCarriedBy:       "carried by",
 }

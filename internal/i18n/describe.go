@@ -259,6 +259,54 @@ func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 	return capitalise(strings.Join(parts, " · ") + ".")
 }
 
+// StatusesNamed is the statuses a trait's description will name, in the order
+// the sentences name them and with each id appearing once.
+//
+// It exists so a screen can act on those names — mark them where they are
+// printed, or offer to look one up — without reading the sentences back to find
+// them. Reading them back would be substring matching against prose in two
+// languages: it would style a name that happens to occur in a flavour clause,
+// and miss one the glossary has no entry for, which prints as a bare id.
+//
+// ⚠️ It has to agree with DescribePassive about which statuses are *named*
+// rather than merely held. A reply names its **first** application and no more,
+// because that is all the one sentence a reply gets has room for — so a trait
+// answering with two statuses holds two and names one.
+// TestATraitNamesEveryStatusItsDescriptionNames holds the two together.
+//
+// Ids rather than names, and therefore no Lang: a caller that wants the name
+// asks Gloss for it, and a caller that wants to jump to the status wants the id
+// anyway.
+func StatusesNamed(held passive.Passive) []string {
+	named := make([]string, 0, 4)
+	seen := make(map[string]bool, 4)
+	add := func(id string) {
+		if id == "" || seen[id] {
+			return
+		}
+		seen[id] = true
+		named = append(named, id)
+	}
+	for _, grant := range held.Grants {
+		add(grant.Status)
+	}
+	for _, resistance := range held.Resists {
+		add(resistance.Status)
+	}
+	for _, application := range held.Applies {
+		add(application.Status)
+	}
+	for _, raise := range held.Amplifies {
+		// Both shares name the same status, and a trait raising neither is
+		// refused at parse, so there is nothing to guard here.
+		add(raise.Status)
+	}
+	if held.Replies.Answers() && len(held.Replies.Applies) > 0 {
+		add(held.Replies.Applies[0].Status)
+	}
+	return named
+}
+
 // DescribePassive is what a trait does. A trait is not chosen, so this answers
 // "what is this unit carrying" rather than "should I use it".
 //
