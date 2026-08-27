@@ -1467,6 +1467,27 @@ Four of the five are built. The poison specialist is most of the way there —
 `venom_blood` refuses poison and answers whoever attacks it, which leaves only
 "its poison hurts more" — and the bloodsucker is finished.
 
+**When the first build arrives.** `venom_blood` was the one trait on Bulbasaur's
+learnset with no level on it, so a Bulbasaur held the strongest of its five from
+level 1. It is gated at **24** now: `endurance` from 16, the answer from 24, the
+amplifier from 32 — the poison specialist assembles across the middle of the
+climb rather than opening with its best piece.
+
+⚠️ It is a **balance change and the figure moved**: 4000 seeds of the shipped
+roster read **49.5% ally before and 53.2% after**. The swing is one-sided by
+construction — `ally.venusaur` is level 60 and keeps the trait, `foe.ivysaur` is
+16 and loses it. That second half is not optional: a placement naming a trait
+above its level is a hard parse error rather than a silent drop, so the roster
+had to change in the same commit or stop loading.
+
+What `foe.ivysaur` takes instead is worth almost nothing — 52.9% with
+`endurance` against 53.2% with none — so the 3.7 points are the loss of the
+trait rather than the gap it left. It fields none, because handing it another
+trait swaps one for another instead of showing the gate, and `ally.charmander`
+already fields none. Compensating on the ally side was measured too and is
+worse: `virulence` in place of `venom_blood` at the cap reads **56.3%**, because
+it is the stronger of the two.
+
 **The second build.** `passive.Passive.Drains` is a share of the damage its holder
 deals, added to whatever the skill already drains and resolved at the site that
 already resolves one. `blood_thirst` takes a quarter of everything; `last_gasp`

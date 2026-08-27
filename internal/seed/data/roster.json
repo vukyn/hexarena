@@ -106,9 +106,7 @@
         "poison_powder",
         "leech_seed"
       ],
-      "passives": [
-        "venom_blood"
-      ]
+      "passives": []
     }
   ]
 }
