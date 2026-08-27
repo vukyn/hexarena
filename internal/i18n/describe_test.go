@@ -366,10 +366,17 @@ func TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn(t *testing.T) {
 		life := kind.TickPower * kind.Duration
 		for _, lang := range i18n.Langs() {
 			description := lang.DescribeStatus(kind)
-			want := lang.Say(i18n.BlurbStatusLife, forge.Percent(life))
+			// The duration is spelled the same way here as the line under it
+			// spells it, singular included: a life stated over "1 lượt" and a
+			// cost line saying "1 turn" would be two names for one number.
+			lasts := lang.Say(i18n.BlurbStatusLasts, kind.Duration)
+			if kind.Duration == 1 {
+				lasts = lang.Text(i18n.BlurbStatusLastsOne)
+			}
+			want := lang.Say(i18n.BlurbStatusLife, lasts, forge.Percent(life))
 			if kind.MaxStacks > 1 {
 				want = lang.Say(i18n.BlurbStatusLifeCapped,
-					forge.Percent(life), forge.Percent(life*kind.MaxStacks))
+					lasts, forge.Percent(life), forge.Percent(life*kind.MaxStacks))
 			}
 			if !strings.Contains(description, want) {
 				t.Errorf("%s: %q is not described over its life; wanted %q in:\n%s",
