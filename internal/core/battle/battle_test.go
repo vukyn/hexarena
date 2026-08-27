@@ -161,6 +161,9 @@ func books(t *testing.T) battle.Books {
 	  {"id":"caustic","replies":{"applies":[{"status":"poison","chance":1000}]}},
 	  {"id":"cornered_spikes","while":{"below_health":500},"replies":{"power":500}},
 	  {"id":"thirst","name":"khát","drains":250},
+	  {"id":"barbed","name":"gai khát","replies":{"power":500},"drains":250},
+	  {"id":"venom_barb","name":"gai độc","drains":250,
+	   "replies":{"applies":[{"status":"poison","chance":1000}]}},
 	  {"id":"parched","name":"khô khát","while":{"below_health":400},"drains":400}
 	]}`), passive.Deps{Statuses: statuses})
 	if err != nil {
