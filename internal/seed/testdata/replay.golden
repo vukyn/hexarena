@@ -129,6 +129,8 @@ event counts
   passive_held         3
   passive_released     0
   ended                1
+  summoned             0
+  left                 0
 
 final board
   ally.venusaur     ally   alive    278 / 3800   hp   grass

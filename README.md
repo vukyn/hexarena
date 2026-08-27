@@ -2286,6 +2286,85 @@ the same order either way and only the survivor changes. It now asserts survival
 a unit on 150 health with a poison worth 200 and a regeneration worth 640 is
 standing at the end of the turn, or the two totals resolved the wrong way round.
 
+### Summoning: a skill that puts somebody on the board
+
+Built, and shipped as an engine with nothing in the cast using it yet — the first
+mechanism here that adds a combatant rather than doing something to one already
+standing.
+
+```json
+{ "id": "shadow_clone", "target": "self", "range": 0, "power": 0,
+  "accuracy": 1000, "cooldown": 5,
+  "summons": { "count": 2, "name": "phân thân", "share": 500,
+               "skills": ["shuriken"], "lasts": 3, "bound": true } }
+```
+
+**Three spellings of the stat line, and exactly one per skill.** A clone and a
+called-up creature are different things wearing one mechanism. `share` is a
+share of the caster's stats **as they stand**, so a caster that buffed itself
+first makes a better copy; `share_of_base` ignores every timed effect, which is
+what an author reaches for when a copy that can be set up beforehand is an
+exploit rather than a play; `stats` is a line of its own, because a toad does not
+get bigger when the ninja levels. Forcing one spelling would mean either a
+creature scaling off somebody it has nothing to do with, or a clone re-authored
+every time its caster's curve moves.
+
+Either share is **frozen at the cast**, the same freeze a damage-over-time's tick
+takes: a copy is a copy of what was there.
+
+**Three ways off the board.** It can be killed like anything else; `lasts` counts
+**its own** turns, for the reason a cooldown counts the caster's — a slow summon
+and a fast one given three turns should each get three; and `bound` sends it home
+when whoever summoned it dies, which is a per-skill flag rather than a rule
+because a clone is an extension of its caster and a creature that was called up
+is not.
+
+**A summon counts.** `checkEnd` sees it like any other unit, so a side holding
+nothing but a clone has not lost. The alternative is a unit the win condition
+cannot see, and a player watching a battle end with somebody still standing.
+
+**It goes through `enlist`,** which is every rule about what may stand here: a
+real formation slot, a free cell, a side inside its strength, a stat line inside
+the progression limits, skills that exist and an element that may carry them. A
+summon that built its own `Unit` would be a second answer to all of it, and the
+first thing to diverge would be the one nobody tests.
+
+**Nothing about it is in the log.** It is derived — the caster, the skill, the
+board and a counter on the caster — so re-running the same decisions from the
+same seed puts the same units in the same cells under the same ids. That is why
+the id is built in the engine and not passed in: an id a caller chose is a fact a
+log would have to carry, and `--verify` would be comparing two different fights.
+
+⚠️ **A vacated cell is never free again.** Every reach in the game is measured
+against where everybody is standing, so taking a corpse off the board would
+change what the other nine can aim at halfway through a fight. A side that has
+lost four has not got four slots back.
+
+⚠️ **Front column first.** `hex.Place` puts the highest formation column against
+the enemy for both sides, so walking columns forward drops a copy where a range
+of one can reach somebody. Walking them backward — which is what `range
+FormationCols` does — puts every summon at the far edge where most kits cannot
+aim at all, and the mechanism looks broken for a reason nowhere near it.
+
+⚠️ **A summon may not summon**, and the check needs a second pass over the
+finished book: the skill being summoned may be declared below the one summoning
+it, so a rule applied while reading one entry has nothing to look up yet. Without
+it a single cast is unbounded — the board would stop it in practice, and "it runs
+out of room" is not a rule anybody can read off the file.
+
+⚠️ **`Suggest` will not cast one.** It takes the highest expected damage and falls
+back to the first usable non-damaging skill, so a skill whose whole effect is
+putting somebody down is one autopilot takes only when it can find nothing to
+hit. `summoned` and `left` are proved reachable by a hand-played battle, the same
+answer `passive_released` needed.
+
+⚠️ **The test that nearly was not one.** A first draft of the vacated-cell test
+set a copy's health to nought and called that a death — it is not one, nothing
+reads health looking for a corpse, and `kill` is what makes a unit dead. The
+board therefore never had a vacated cell on it, and a mutation freeing vacated
+cells passed. It is driven through a summon running out of turns now, which is a
+departure the engine actually performs.
+
 ### Growing the cast
 
 The tooling for this exists — see *Authoring a cast* above — and so does the

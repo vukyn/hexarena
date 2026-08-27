@@ -361,6 +361,17 @@ func Line(event battle.Event, tags map[string]string) string {
 		return head + fmt.Sprintf("  lets go of %s: %s x%d", event.Passive, event.Status, event.Stacks)
 	case battle.Died:
 		return head + fmt.Sprintf(" falls at %s", event.Cell)
+	case battle.Summoned:
+		// The new unit rather than the caster, and its health with it: this is
+		// the line that introduces somebody, so it carries what a started line
+		// carries — a reader meeting a name for the first time needs the same
+		// facts whether the roster placed it or a skill did.
+		return head + fmt.Sprintf("  %s calls up %s at %s, %d hp",
+			event.Skill, event.Target, event.Cell, event.Amount)
+	case battle.Left:
+		// Not "falls". A copy running out of turns is not a unit being beaten,
+		// and the note says which of the two reasons it was.
+		return head + fmt.Sprintf(" leaves at %s (%s)", event.Cell, event.Note)
 	case battle.Ended:
 		// Every ending is drawn from the outcome rather than from the winner,
 		// because three of the four have no winner to name and one of them —

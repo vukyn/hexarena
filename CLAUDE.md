@@ -1502,6 +1502,38 @@ is the constraint each piece has to respect.
       **Found immediately:** Squirtle loses to Charmander **30.5/69.5** at the cap,
       with water on the chart against fire. Cast tuning, not a mechanism bug — but
       nothing before this would have said it.
+- [x] **Summoning — SHIPPED as an engine, nothing in the cast uses it yet.**
+      `skill.Summon` + `battle.summon`: a skill that puts units on the caster's
+      side. Two new event kinds, `Summoned` and `Left`.
+      ⚠️ **Three stat spellings, exactly one per skill**: `share` (the caster's
+      stats **as they stand**), `share_of_base` (ignores timed effects, for when
+      a pre-buffed copy is an exploit), `stats` (a fixed line — a toad is its own
+      animal). Either share is **frozen at the cast**, like a DoT tick.
+      ⚠️ **Three ways off**: killed · `lasts` counts the summon's **own** turns
+      (a cooldown counts the caster's, same reason) · `bound` goes with its
+      summoner. `bound` is per-skill, not a rule: a clone is an extension, a
+      called creature is not.
+      ⚠️ **A summon COUNTS in `checkEnd`** — a side holding only a clone has not
+      lost. And `dismissBound` runs **before** `checkEnd` in `kill`, or a battle
+      is declared running that the next line ends.
+      ⚠️ **Goes through `enlist`**, which is every rule about standing here. A
+      summon building its own `Unit` is a second answer to all of them.
+      ⚠️ **Nothing is in the log** — derived from caster + skill + board + a
+      counter on the caster, so the id is built in the engine. An id a caller
+      chose is a fact `--verify` would have to carry.
+      ⚠️ **A vacated cell is NEVER free again** (reach is measured off the board;
+      removing a corpse changes what all nine can aim at). ⚠️ **Front column
+      first** — `range hex.FormationCols` walks *backward* and drops every summon
+      at the far edge where range 1 reaches nobody.
+      ⚠️ **A summon may not summon**, checked in a **second pass** over the
+      finished book: the summoned skill may be declared below the summoner.
+      ⚠️ **`Suggest` never casts one** (power 0 ⇒ fallback only), so both kinds
+      are proved by a hand-played battle — `aHandPlayedSummon`, beside
+      `aHandPlayedGateCrossing`.
+      ⚠️ **`unit.HP = 0` is NOT a death** — nothing reads health looking for a
+      corpse, `kill` sets `Dead`. A test that "killed" a copy that way left the
+      board with no vacated cell on it and a mutation freeing vacated cells
+      survived. Drive a departure the engine performs.
 - [ ] **Grow the cast.** Three characters ship, one per element, and the seed
       roster is no longer a mirror — so the thing this item was blocking, a
       measurable balance figure, exists. What is left is content, under three

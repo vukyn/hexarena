@@ -65,6 +65,19 @@ func (b *Battle) Advance() (*Prompt, error) {
 	}
 	b.emit(Event{Kind: TurnBegan, At: turn.At, Turn: turn.Number, Actor: unit.ID, Amount: unit.HP})
 
+	// Before the tick, because a summon whose time is up is not on the board to
+	// be poisoned: ticking it first would log damage to a unit that is about to
+	// be told it was never going to act, and could kill it — turning a copy that
+	// ran out into a copy that was beaten.
+	// Before the tick, because a summon whose time is up is not on the board to
+	// be poisoned: ticking it first would log damage to a unit that is about to
+	// be told it was never going to act, and could kill it — turning a copy that
+	// ran out into a copy that was beaten.
+	if b.expired(unit) {
+		b.dismiss(unit, "out of turns")
+		b.settle()
+		return &Prompt{Unit: unit.ID, Turn: turn.Number, At: turn.At, Skipped: true, Reason: "left"}, nil
+	}
 	controlled := unit.Statuses.Has(stunStatus)
 	b.tickStatuses(unit, turn)
 	b.retuneAll(turn)
@@ -442,6 +455,10 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	// would hold for the skill that just applied the fury.
 	spent := b.spend(unit, known, turn)
 	b.applyToSelf(unit, known, turn)
+	// After the self-applies, so a skill that buffs itself and then copies
+	// itself copies the buffed line. That ordering is the only reason the two
+	// are not interchangeable, and it is the reading an author expects.
+	b.summon(unit, known, turn)
 	if known.Target == skill.Self {
 		b.strip(unit, unit, known, turn)
 		b.retuneAll(turn)

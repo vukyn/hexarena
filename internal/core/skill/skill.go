@@ -451,6 +451,9 @@ type Skill struct {
 	Strips *Cleanse
 	// Restrict is who may carry the skill, or nil when anybody may.
 	Restrict *Restriction
+	// Summons is the unit the skill puts on the board, or nil for a skill that
+	// only acts on units already standing there.
+	Summons *Summon
 	// Restores is how much health the skill gives its targets, in parts per
 	// thousand of the caster's scaling stat. It does not pass through defence:
 	// see combat.Rules.Restore for why.
@@ -560,6 +563,19 @@ type skillFile struct {
 	Requires     *conditionFile    `json:"requires,omitempty"`
 	SelfRequires *conditionFile    `json:"self_requires,omitempty"`
 	Strips       *cleanseFile      `json:"strips,omitempty"`
+	Summons      *summonFile       `json:"summons,omitempty"`
+}
+
+type summonFile struct {
+	Count       int                 `json:"count,omitempty"`
+	Name        string              `json:"name,omitempty"`
+	Share       int                 `json:"share,omitempty"`
+	ShareOfBase int                 `json:"share_of_base,omitempty"`
+	Stats       *progression.Values `json:"stats,omitempty"`
+	Affinity    string              `json:"element,omitempty"`
+	Skills      []string            `json:"skills"`
+	Lasts       int                 `json:"lasts,omitempty"`
+	Bound       bool                `json:"bound,omitempty"`
 }
 
 type scalingFile struct {
@@ -674,6 +690,15 @@ func (s Skill) file() skillFile {
 		}
 		out.Strips = &cleanseFile{Categories: categories, Stacks: s.Strips.Stacks}
 	}
+	if s.Summons.Summons() {
+		out.Summons = &summonFile{
+			Count: s.Summons.Count, Name: s.Summons.Name,
+			Share: s.Summons.Share, ShareOfBase: s.Summons.ShareOfBase,
+			Stats: s.Summons.Stats, Affinity: s.Summons.Affinity,
+			Skills: append([]string(nil), s.Summons.Skills...),
+			Lasts:  s.Summons.Lasts, Bound: s.Summons.Bound,
+		}
+	}
 	return out
 }
 
@@ -726,6 +751,14 @@ func ParseBook(raw []byte, deps Deps) (*Book, error) {
 	if len(book.skills) == 0 {
 		return nil, fmt.Errorf("the skill book is empty")
 	}
+	// After the loop, because a summon names skills that may be declared below
+	// it: the rule is about the finished book rather than about one entry, the
+	// same division that keeps a status name out of this file's own reach.
+	for _, declared := range book.skills {
+		if err := WhySummonsCannotRecurse(book, declared); err != nil {
+			return nil, err
+		}
+	}
 	return book, nil
 }
 
@@ -771,7 +804,7 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	case declared.Power < 0:
 		return fail("has power %d, want zero or more", declared.Power)
 	case declared.Power == 0 && len(declared.Applies) == 0 && len(declared.SelfApplies) == 0 &&
-		declared.Strips == nil && declared.Restores == 0:
+		declared.Strips == nil && declared.Restores == 0 && declared.Summons == nil:
 		return fail("has no power and does nothing else, so it would be a wasted turn")
 	case declared.Restores < 0:
 		return fail("restores %d, want zero or more", declared.Restores)
@@ -901,12 +934,20 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		strips = &Cleanse{Categories: categories, Stacks: declared.Strips.Stacks}
 	}
 
+	summons, err := resolveSummon(declared.Summons, func(format string, args ...any) error {
+		return fmt.Errorf("skill %q: "+format, append([]any{declared.ID}, args...)...)
+	})
+	if err != nil {
+		return Skill{}, err
+	}
+
 	return Skill{
 		ID: declared.ID, Name: name, Flavour: flavour,
 		Element: affinity, Range: declared.Range, Pattern: shape.Name,
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
 		Pierce: declared.Pierce, Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
 		Requires: requires, SelfRequires: selfRequires, Strips: strips, Restrict: restrict,
+		Summons:  summons,
 		Restores: declared.Restores, Drains: declared.Drains,
 		Cooldown: declared.Cooldown, Target: target,
 	}, nil
