@@ -8,7 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/seed"
 )
@@ -355,12 +357,13 @@ func TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn(t *testing.T) {
 			continue
 		}
 		ticking++
-		life := kind.TickPower * kind.Duration / 10
+		life := kind.TickPower * kind.Duration
 		for _, lang := range i18n.Langs() {
 			description := lang.DescribeStatus(kind)
-			want := lang.Say(i18n.BlurbStatusLife, life)
+			want := lang.Say(i18n.BlurbStatusLife, forge.Percent(life))
 			if kind.MaxStacks > 1 {
-				want = lang.Say(i18n.BlurbStatusLifeCapped, life, kind.MaxStacks, life*kind.MaxStacks)
+				want = lang.Say(i18n.BlurbStatusLifeCapped,
+					forge.Percent(life), kind.MaxStacks, forge.Percent(life*kind.MaxStacks))
 			}
 			if !strings.Contains(description, want) {
 				t.Errorf("%s: %q is not described over its life; wanted %q in:\n%s",
@@ -370,5 +373,69 @@ func TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn(t *testing.T) {
 	}
 	if ticking == 0 {
 		t.Skip("no shipped status ticks, so nothing here has a life to state")
+	}
+}
+
+// TestATraitsSharesArePrintedExactly is the bug traits found and skills never
+// could.
+//
+// A share used to be truncated to whole percent, which is lossless for a skill
+// and lossy for a trait: a skill is priced in hundreds of parts per thousand and
+// a trait in tens, so venom_blood's reply chance of 25 printed as "2%" when it is
+// 2.5, and anything under ten would have printed "0%" — a feature reading as one
+// that does not work. The argument for truncating was that the listing beside the
+// sentence carries the exact figure, and for a trait there is no such listing:
+// hexforge passives has no column for a reply or for a drain.
+//
+// So every share a trait declares has to appear in its description as the figure
+// itself. An immunity is the one exception, and it is a wording rather than a
+// figure: a full share reads "refuses it outright", which is the fact rather than
+// the number.
+func TestATraitsSharesArePrintedExactly(t *testing.T) {
+	passives, err := seed.PassiveBook()
+	if err != nil {
+		t.Fatalf("load the shipped passives: %v", err)
+	}
+	for _, held := range passives.All() {
+		shares := make([]int, 0, 6)
+		if held.Replies.Answers() {
+			if held.Replies.Power > 0 {
+				shares = append(shares, held.Replies.Power)
+			}
+			for _, application := range held.Replies.Applies {
+				shares = append(shares, application.Chance)
+			}
+		}
+		for _, application := range held.Applies {
+			shares = append(shares, application.Chance)
+		}
+		for _, resistance := range held.Resists {
+			if resistance.Amount < scale.Base {
+				shares = append(shares, resistance.Amount)
+			}
+		}
+		if held.Drains > 0 {
+			shares = append(shares, held.Drains)
+		}
+		for _, raise := range held.Amplifies {
+			if raise.Effect > 0 {
+				shares = append(shares, raise.Effect)
+			}
+			if raise.Chance > 0 {
+				shares = append(shares, raise.Chance)
+			}
+		}
+		if held.While != nil {
+			shares = append(shares, held.While.BelowHealth)
+		}
+		for _, lang := range i18n.Langs() {
+			description := lang.DescribePassive(held)
+			for _, permille := range shares {
+				if !strings.Contains(description, forge.Percent(permille)) {
+					t.Errorf("%s: %q declares %d parts per thousand and its description never says %q:\n%s",
+						lang, held.ID, permille, forge.Percent(permille), description)
+				}
+			}
+		}
 	}
 }

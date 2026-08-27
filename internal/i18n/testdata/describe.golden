@@ -139,7 +139,7 @@ Luôn mang cứng đòn.
 
 [trait] blaze
 Mang rực lửa.
-Chỉ có hiệu lực khi còn <=33% máu.
+Chỉ có hiệu lực khi còn <=33.3% máu.
 
 [trait] heatproof
 Miễn hoàn toàn bỏng.
@@ -149,7 +149,7 @@ Nó gây trúng độc mạnh thêm 30%.
 Khả năng nó gây trúng độc tăng 20%.
 
 [trait] venom_blood
-Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2% khả năng.
+Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2.5% khả năng.
 Miễn hoàn toàn trúng độc.
 
 [trait] blood_thirst
@@ -365,7 +365,7 @@ Always carries toughened.
 
 [trait] blaze
 Carries kindled.
-In force only at or below 33% health.
+In force only at or below 33.3% health.
 
 [trait] heatproof
 Refuses burn outright.
@@ -375,7 +375,7 @@ Its poison ticks 30% harder.
 Its poison lands 20% more often.
 
 [trait] venom_blood
-Whatever damages it takes 4% of its attack back, and poison 2% of the time.
+Whatever damages it takes 4% of its attack back, and poison 2.5% of the time.
 Refuses poison outright.
 
 [trait] blood_thirst
