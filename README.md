@@ -2335,10 +2335,23 @@ same seed puts the same units in the same cells under the same ids. That is why
 the id is built in the engine and not passed in: an id a caller chose is a fact a
 log would have to carry, and `--verify` would be comparing two different fights.
 
-⚠️ **A vacated cell is never free again.** Every reach in the game is measured
-against where everybody is standing, so taking a corpse off the board would
-change what the other nine can aim at halfway through a fight. A side that has
-lost four has not got four slots back.
+⚠️ **A fallen unit keeps its slot; a departed summon does not.** The formation is
+what a roster wrote down, so a side authored with three units in three named
+slots is that arrangement for the whole battle and a summon appearing in a dead
+comrade's cell would be a placement nobody chose. A summon was never in that
+arrangement — it borrowed a slot the formation left empty — so when it is gone
+the slot is empty again.
+
+That second half is what makes a summoning skill something a unit can do twice.
+Counting a departed summon would kill a repeatable skill quietly: the shipped
+formations leave **two** free slots a side, so the third cast of a battle would
+put nothing down and say nothing about it, and a `cooldown: 5` clone in a
+forty-four turn fight would work for the first ten minutes.
+
+⚠️ **The cell is reusable and the id is not.** The counter that names a copy is on
+its caster and never resets, so two copies standing in the same place at
+different times are still two units — an id is what a decision in the log names,
+and one reused would make two of them the same row.
 
 ⚠️ **Front column first.** `hex.Place` puts the highest formation column against
 the enemy for both sides, so walking columns forward drops a copy where a range

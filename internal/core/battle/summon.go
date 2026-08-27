@@ -68,6 +68,10 @@ func (b *Battle) summon(caster *Unit, known skill.Skill, turn atb.Turn) {
 		slot := free[0]
 		free = free[1:]
 
+		// The counter never resets, so two copies are never called the same
+		// thing even when the second stands exactly where the first did. A cell
+		// is reusable and an id is not: the id is what a decision in the log
+		// names, and one reused would make two different units the same row.
 		caster.Summoned++
 		entry := Roster{
 			ID:       caster.ID + "#" + strconv.Itoa(caster.Summoned),
@@ -139,12 +143,27 @@ func (b *Battle) summonStats(caster *Unit, declared *skill.Summon) (progression.
 // census rebuilds what New hands enlist: how many units each side holds and
 // which cells are taken.
 //
-// Dead units are counted. A corpse never leaves the board — every reach on it is
-// measured from where it stands, and taking it away would change what every
-// other unit can aim at, halfway through a fight — so its cell is not free and
-// its side has not shrunk as far as the formation is concerned. hex.MaxTeamSize
-// therefore bounds how many units a side ever *had*, which is what the roster
-// means by it.
+// # Which of the fallen still hold their places
+//
+// A unit the roster placed does, and a summon does not.
+//
+// The formation is what a roster wrote down. A side that was authored with three
+// units in three named slots is that arrangement for the whole battle, and a
+// fourth appearing in a dead comrade's cell would be a placement nobody chose —
+// so a corpse keeps its slot and its side has not shrunk as far as
+// hex.MaxTeamSize is concerned, which is what the roster means by that number.
+//
+// A summon was never in that arrangement. It borrowed a slot the formation left
+// empty, and when it is gone the slot is empty again, so a skill that calls one
+// up every few turns can go on doing it. Counting a departed summon would make
+// such a skill die quietly: the shipped formations leave two free slots a side,
+// so the third cast of a battle would put nothing down and say nothing about it.
+//
+// ⚠️ The first version counted both, and the reason written down for it was
+// wrong — that removing a corpse would change what everybody can aim at. It would
+// not: Battle.occupant already skips the dead, so a corpse is not a target and
+// blocks nothing but a place to stand. The reach check that *is* sensitive to
+// corpses runs in New, over a roster, before any of this.
 //
 // Built from the ordered slice, so the maps are lookups and never a source of
 // order.
@@ -152,6 +171,9 @@ func (b *Battle) census() (map[hex.Side]int, map[hex.Offset]string) {
 	perSide := make(map[hex.Side]int, 2)
 	occupied := make(map[hex.Offset]string, len(b.units))
 	for _, unit := range b.units {
+		if unit.Dead && unit.Summoner != "" {
+			continue
+		}
 		perSide[unit.Side]++
 		occupied[unit.Cell] = unit.ID
 	}

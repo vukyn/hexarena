@@ -1521,8 +1521,17 @@ is the constraint each piece has to respect.
       ⚠️ **Nothing is in the log** — derived from caster + skill + board + a
       counter on the caster, so the id is built in the engine. An id a caller
       chose is a fact `--verify` would have to carry.
-      ⚠️ **A vacated cell is NEVER free again** (reach is measured off the board;
-      removing a corpse changes what all nine can aim at). ⚠️ **Front column
+      ⚠️ **A fallen ROSTER unit keeps its slot; a departed SUMMON does not.** The
+      formation is what the roster wrote down, and a summon was never in it — it
+      borrowed an empty slot. Counting a departed summon kills a repeatable skill
+      **silently**: shipped formations leave 2 free slots a side, so the third
+      cast of a battle puts nothing down and says nothing. ⚠️ The cell is reusable
+      and the **id is not** — `Unit.Summoned` never resets, because an id is what
+      a log decision names. ⚠️ **The first version counted every corpse and the
+      reason written down for it was WRONG** ("removing a corpse changes what
+      everybody can aim at") — `Battle.occupant` already skips the dead, so a
+      corpse is not a target and blocks nothing but a place to stand; the
+      corpse-sensitive reach check is in `New`, over a roster. ⚠️ **Front column
       first** — `range hex.FormationCols` walks *backward* and drops every summon
       at the far edge where range 1 reaches nobody.
       ⚠️ **A summon may not summon**, checked in a **second pass** over the

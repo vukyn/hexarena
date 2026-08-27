@@ -247,21 +247,19 @@ func livingOn(fight *battle.Battle, side hex.Side) int {
 	return count
 }
 
-// TestASlotAUnitHasLeftIsNotFreeAgain is the decision the whole placement rests
-// on, seen through the one departure a test can drive to the turn.
+// TestADepartedSummonsSlotIsFreeAgain is what makes a summoning skill something
+// a unit can do twice.
 //
-// A unit that is off the board never leaves its cell, because every reach in the
-// game is measured against where everybody is standing and taking one away would
-// change what the other nine can aim at, halfway through a fight. So a side that
-// has lost four has not got four slots back, and the second copy has to stand
-// somewhere new.
+// A summon was never part of the formation the roster wrote down — it borrowed a
+// slot the formation left empty — so when it is gone the slot is empty again.
+// Counting it would make a repeatable skill die quietly: the shipped formations
+// leave two free slots a side, so the third cast of a battle would put nothing
+// down and say nothing about it.
 //
-// ⚠️ The first version of this set a copy's health to nought and called that a
-// death. It is not one — nothing reads health looking for a corpse, kill is what
-// makes a unit dead — so the board never had a vacated cell on it and a mutation
-// freeing vacated cells passed. A summon running out of turns is a departure the
-// engine actually performs, which is why it is the one used here.
-func TestASlotAUnitHasLeftIsNotFreeAgain(t *testing.T) {
+// ⚠️ The id is NOT reused with the cell. A cell is a place and an id is what a
+// decision in the log names, so two units standing in the same place at
+// different times are still two units.
+func TestADepartedSummonsSlotIsFreeAgain(t *testing.T) {
 	fight := calling(t, []string{"brief_copy", "jab"})
 	came := arrivals(casts(t, fight, "brief_copy"))
 	if len(came) != 1 {
@@ -278,7 +276,6 @@ func TestASlotAUnitHasLeftIsNotFreeAgain(t *testing.T) {
 		}
 		if !prompt.Skipped {
 			if prompt.Unit == "a" && left {
-				// The copy is gone; cast again and see where the next one lands.
 				if err := fight.Act("brief_copy", unitByID(t, fight, "a").Cell); err != nil {
 					t.Fatalf("brief_copy: %v", err)
 				}
@@ -287,12 +284,13 @@ func TestASlotAUnitHasLeftIsNotFreeAgain(t *testing.T) {
 					t.Fatalf("the second cast summoned %d units, want one", len(again))
 				}
 				second := unitByID(t, fight, again[0].Target)
-				if second.Cell == firstCell {
-					t.Errorf("the second copy took the cell at %s that the first one left",
-						firstCell)
+				if second.Cell != firstCell {
+					t.Errorf("the second copy stands at %s and the first one left %s empty",
+						second.Cell, firstCell)
 				}
 				if second.ID == first.ID {
-					t.Errorf("both copies are called %q", second.ID)
+					t.Errorf("both copies are called %q; a cell may be reused and an id may not",
+						second.ID)
 				}
 				return
 			}
@@ -307,6 +305,80 @@ func TestASlotAUnitHasLeftIsNotFreeAgain(t *testing.T) {
 		}
 	}
 	t.Fatalf("the first copy left=%v and the caster never cast again", left)
+}
+
+// TestARosterUnitsSlotIsNotFreeWhenItFalls is the other half, and the two are
+// the whole of the placement rule.
+//
+// The formation is what a roster wrote down. A side authored with units in named
+// slots is that arrangement for the whole battle, and a summon appearing in a
+// dead comrade's cell would be a placement nobody chose.
+//
+// ⚠️ It is driven through a real death rather than through a zeroed health bar.
+// Nothing reads health looking for a corpse — kill is what makes a unit dead —
+// and a test that set HP to nought would leave the board with no corpse on it at
+// all, which is how the first draft of the test above passed a mutation.
+func TestARosterUnitsSlotIsNotFreeWhenItFalls(t *testing.T) {
+	// The caster stands at the back where nothing can reach it and the ally in
+	// front is the only thing the foe may aim at, so the death below is the one
+	// the test asked for rather than one the engine chose.
+	fight := mustBattle(t, books(t), 5, []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 0, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 20),
+			Skills: []string{"copy"}},
+		{ID: "shield", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 0},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 10),
+			Skills: []string{"jab"}},
+		// The formation mirrors through 180 degrees, so the enemy slot facing the
+		// ally at 2,0 is 2,2 rather than 2,0.
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 2},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 200),
+			Skills: []string{"jab"}},
+	})
+	fight.Begin()
+	fight.Drain()
+	shield := unitByID(t, fight, "shield")
+	shieldCell := shield.Cell
+	shield.HP = 1
+
+	for range 40 {
+		prompt, err := fight.Advance()
+		if err != nil || prompt == nil {
+			break
+		}
+		if prompt.Skipped {
+			fight.Drain()
+			continue
+		}
+		switch {
+		case prompt.Unit == "a" && shield.Dead:
+			if err := fight.Act("copy", unitByID(t, fight, "a").Cell); err != nil {
+				t.Fatalf("copy: %v", err)
+			}
+			came := arrivals(fight.Drain())
+			if len(came) != 1 {
+				t.Fatalf("the cast summoned %d units, want one", len(came))
+			}
+			if cell := unitByID(t, fight, came[0].Target).Cell; cell == shieldCell {
+				t.Errorf("the copy took the fallen ally's cell at %s", shieldCell)
+			}
+			return
+		case prompt.Unit == "f":
+			if choice, ok := fight.Suggest(prompt); ok {
+				if err := fight.Act(choice.Skill, choice.Aim); err != nil {
+					t.Fatalf("act %s: %v", choice.Skill, err)
+				}
+			} else if err := fight.Pass("nothing to do"); err != nil {
+				t.Fatalf("pass: %v", err)
+			}
+		default:
+			if err := fight.Pass("waiting"); err != nil {
+				t.Fatalf("pass: %v", err)
+			}
+		}
+		fight.Drain()
+	}
+	t.Fatalf("the ally in front died=%v and the caster never cast", shield.Dead)
 }
 
 // TestASummonLeavesWhenItRunsOutOfTurnsAndItIsNotADeath is the expiry, and the
