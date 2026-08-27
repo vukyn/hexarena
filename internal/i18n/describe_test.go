@@ -369,7 +369,7 @@ func TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn(t *testing.T) {
 			want := lang.Say(i18n.BlurbStatusLife, forge.Percent(life))
 			if kind.MaxStacks > 1 {
 				want = lang.Say(i18n.BlurbStatusLifeCapped,
-					forge.Percent(life), kind.MaxStacks, forge.Percent(life*kind.MaxStacks))
+					forge.Percent(life), forge.Percent(life*kind.MaxStacks))
 			}
 			if !strings.Contains(description, want) {
 				t.Errorf("%s: %q is not described over its life; wanted %q in:\n%s",
