@@ -384,6 +384,36 @@ const (
 	BlurbTraitNone
 	BlurbFooter
 
+	// What a timed effect does, in sentences, for somebody who has just read its
+	// name in a log and has nowhere to look it up. Derived from the status book
+	// the same way the two above are derived from theirs — see
+	// Lang.DescribeStatus — so a duration moving in statuses.json moves the
+	// sentence with it.
+	BlurbStatusTicks
+	BlurbStatusHeals
+	BlurbStatusLife
+	BlurbStatusLifeCapped
+	BlurbStatusControls
+	BlurbStatusShields
+	BlurbStatusRaises
+	BlurbStatusLowers
+	BlurbStatusRaisesOnce
+	BlurbStatusLowersOnce
+	BlurbStatusStacked
+	BlurbStatusNothing
+	BlurbStatusLasts
+	BlurbStatusLastsOne
+	BlurbStatusAlways
+	BlurbStatusStacks
+	BlurbStatusOneStack
+	BlurbStatusCaveat
+	StatusesHeading
+	StatusesSubtitle
+	StatusesEmpty
+	StatusesFooter
+	MenuStatuses
+	MenuStatusesDetail
+
 	keyCount
 )
 

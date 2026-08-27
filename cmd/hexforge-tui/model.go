@@ -21,6 +21,7 @@ const (
 	screenNew
 	screenOrigins
 	screenSkills
+	screenStatuses
 	screenCheck
 	// screenPreview is raised from the browser rather than the menu, because it
 	// draws one character's art and the browser is where a character is chosen.
@@ -106,13 +107,14 @@ type model struct {
 	screen        screen
 	menu          int
 
-	browse  browseScreen
-	form    formScreen
-	origins originsScreen
-	skills  skillsScreen
-	check   checkScreen
-	preview previewScreen
-	blurb   blurbScreen
+	browse   browseScreen
+	form     formScreen
+	origins  originsScreen
+	skills   skillsScreen
+	statuses statusesScreen
+	check    checkScreen
+	preview  previewScreen
+	blurb    blurbScreen
 
 	// picker holds the multi-select while it is open, over whichever screen
 	// raised it. It lives here rather than on a screen because two screens raise
@@ -140,15 +142,16 @@ type guardState struct {
 func newModel(lib *forge.Library, lang i18n.Lang) model {
 	style := newPalette()
 	return model{
-		lib:     lib,
-		lang:    lang,
-		style:   style,
-		browse:  newBrowseScreen(lib),
-		form:    newFormScreen(lib),
-		origins: newOriginsScreen(lib),
-		skills:  newSkillsScreen(lib),
-		check:   newCheckScreen(lib),
-		preview: newPreviewScreen(),
+		lib:      lib,
+		lang:     lang,
+		style:    style,
+		browse:   newBrowseScreen(lib),
+		form:     newFormScreen(lib),
+		origins:  newOriginsScreen(lib),
+		skills:   newSkillsScreen(lib),
+		statuses: newStatusesScreen(lib),
+		check:    newCheckScreen(lib),
+		preview:  newPreviewScreen(),
 	}
 }
 
@@ -169,6 +172,7 @@ var menuItems = []menuItem{
 	{i18n.MenuNewCharacter, i18n.MenuNewCharacterDetail, screenNew},
 	{i18n.MenuOrigins, i18n.MenuOriginsDetail, screenOrigins},
 	{i18n.MenuSkills, i18n.MenuSkillsDetail, screenSkills},
+	{i18n.MenuStatuses, i18n.MenuStatusesDetail, screenStatuses},
 	{i18n.MenuCheck, i18n.MenuCheckDetail, screenCheck},
 }
 
@@ -230,6 +234,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.origins.update(m, message)
 	case screenSkills:
 		return m.skills.update(m, message)
+	case screenStatuses:
+		return m.statuses.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
@@ -294,6 +300,8 @@ func (m model) enter(target screen) model {
 		m.origins = m.origins.refresh(m.lib)
 	case screenSkills:
 		m.skills = m.skills.refresh(m.lib)
+	case screenStatuses:
+		m.statuses = m.statuses.refresh(m.lib)
 	}
 	return m
 }
@@ -333,6 +341,8 @@ func (m model) screenContent() string {
 		body, footer = m.origins.view(m)
 	case screenSkills:
 		body, footer = m.skills.view(m)
+	case screenStatuses:
+		body, footer = m.statuses.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:

@@ -328,17 +328,26 @@ const (
 // asking rather than giving up on a bad answer, because a mistyped number should
 // not cost a turn.
 // describe answers a question about the turn in front of the player: a number is
-// one of the offered skills, anything else is a unit's tag.
+// one of the offered skills, a star is the whole status reference, and anything
+// else is a unit's tag or the name of a status.
 //
-// It refuses rather than guessing when it recognises neither. A question that
-// silently printed the wrong thing would be worse than one that says it did not
-// understand, because the player would read a description and act on it.
+// It refuses rather than guessing when it recognises none of them. A question
+// that silently printed the wrong thing would be worse than one that says it did
+// not understand, because the player would read a description and act on it.
+//
+// The tags are tried before the statuses and they cannot collide: a tag is a
+// side letter and a number, and no status is named "a1".
 func describe(current *session, prompt *battle.Prompt, question string) {
 	if question == "" {
-		fmt.Println("  ask about a skill by its number, or a unit by its tag")
+		fmt.Println("  ask about a skill by its number, a unit by its tag, or a status by its name")
 		return
 	}
 	books := current.fight.Books()
+	if question == "*" {
+		fmt.Println()
+		fmt.Println(tui.DetailStatuses(i18n.Vi, books.Statuses.Grouped()))
+		return
+	}
 	if index, err := strconv.Atoi(question); err == nil {
 		if index < 1 || index > len(prompt.Options) {
 			fmt.Printf("  there is no skill %d on this turn\n", index)
@@ -374,14 +383,25 @@ func describe(current *session, prompt *battle.Prompt, question string) {
 		fmt.Println(tui.DetailPassives(i18n.Vi, fmt.Sprintf("%s %s", tag, unit.Name), held))
 		return
 	}
-	fmt.Printf("  %q is not a skill number or a unit tag\n", question)
+	// By id or by the name it is printed under, because the player reading a
+	// Vietnamese unit table has only ever seen the second one.
+	for _, kind := range books.Statuses.Kinds() {
+		if !strings.EqualFold(kind.ID, question) &&
+			!strings.EqualFold(i18n.Vi.Gloss(kind.ID), question) {
+			continue
+		}
+		fmt.Println()
+		fmt.Println(tui.DetailStatus(i18n.Vi, kind))
+		return
+	}
+	fmt.Printf("  %q is not a skill number, a unit tag or a status; ?* lists the statuses\n", question)
 }
 
 func choose(current *session, prompt *battle.Prompt, input *bufio.Scanner) (outcome, error) {
 	for {
 		fmt.Println(tui.Order(current.fight.Queue(), current.tags, current.cfg.preview))
 		fmt.Println(tui.Menu(current.fight, prompt, current.tags))
-		fmt.Println("  ?N) what a skill does    ?TAG) a unit's traits")
+		fmt.Println("  ?N) what a skill does    ?TAG) a unit's traits    ?NAME or ?*) a status")
 		fmt.Println("  a) let the engine pick    p) pass    u) undo    q) quit")
 		answer, ok := ask(input, "> ")
 		if !ok {

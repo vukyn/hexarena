@@ -11,6 +11,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/forge"
+	"github.com/vukyn/hexarena/internal/i18n"
 )
 
 func runOrigins(args []string) error {
@@ -162,6 +163,54 @@ func runSpeciesAdd(args []string) error {
 	}
 	fmt.Printf("added %s (%s) to %s\n", id, *name, lib.Dir())
 	return nil
+}
+
+func runStatuses(args []string) error {
+	lib, err := loadForListing("statuses", args)
+	if err != nil {
+		return err
+	}
+	renderStatuses(os.Stdout, lib)
+	return nil
+}
+
+// renderStatuses lists the timed effects, grouped by category, with what each
+// one does spelled out under it.
+//
+// It is the listing that was missing, and the gap it leaves is not an author's
+// but a reader's: every other listing names a status somewhere in its rows --
+// a trait grants one, a skill inflicts one, a cleanse strips a whole category of
+// them -- and none of them says what one is. Until this existed the answer was in
+// statuses.json.
+//
+// Grouped rather than tabulated flat, because the grouping is the half a table
+// cannot carry: a skill that strips a stat_debuff and a dot is unreadable to
+// somebody who cannot see which statuses those two words cover.
+//
+// The sentences are i18n.Lang.DescribeStatus, in English here as the rest of this
+// binary is, so the two front-ends and the battle prompt cannot come to describe
+// one status three ways.
+func renderStatuses(out io.Writer, lib *forge.Library) {
+	groups := lib.Statuses().Grouped()
+	if len(groups) == 0 {
+		fmt.Fprintln(out, "no statuses declared")
+		return
+	}
+	counted := 0
+	for _, group := range groups {
+		fmt.Fprintf(out, "\n%s -- %s\n", group.Category, i18n.En.StatusCategory(group.Category.String()))
+		for _, kind := range group.Kinds {
+			counted++
+			fmt.Fprintf(out, "  %s\n", kind.ID)
+			for _, line := range strings.Split(i18n.En.DescribeStatus(kind), "\n") {
+				fmt.Fprintf(out, "    %s\n", line)
+			}
+		}
+	}
+	fmt.Fprintf(out, "\n%d statuses in %d groups\n", counted, len(groups))
+	// Said once rather than under every status: it is true of all of them, and a
+	// warning repeated fifteen times is a warning nobody finishes reading.
+	fmt.Fprintf(out, "%s\n", i18n.En.Text(i18n.BlurbStatusCaveat))
 }
 
 func runArchetypes(args []string) error {

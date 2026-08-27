@@ -3,11 +3,13 @@ package i18n
 import (
 	"strings"
 
+	"github.com/vukyn/hexarena/internal/core/modifier"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 )
 
 // Describe is what a skill does, in sentences, for somebody deciding whether to
@@ -371,4 +373,150 @@ func itoa(value int) string {
 		value /= 10
 	}
 	return digits
+}
+
+// DescribeStatus is what a timed effect does, for somebody who has just read its
+// name in a log and has nowhere else to look it up.
+//
+// It is the third of these and it answers a third question. Describe answers
+// "should I use this", DescribePassive answers "what is this unit carrying", and
+// this answers "what has just happened to me" — which is the one the game asked
+// most often and had no answer to at all: the log said *resisted mire*, the unit
+// table said *mire*, and nothing anywhere said that mire is a quarter off speed.
+//
+// Derived, for the reason the other two are. It is worth saying twice because a
+// status is the layer most tempting to write a paragraph for: the ids read like
+// words — burn, blind, stun — and a hand-written "burns for a couple of turns"
+// survives the duration moving with nothing to catch it.
+//
+// # Why a life and not a tick
+//
+// Poison at 500 for three turns and burn at 800 for two are compared by what
+// they cost over their lives, and the per-turn figures rank them the wrong way
+// round: burn ticks harder and poison costs more. So both are stated, and the
+// stacked total with them, because a percent per stack against a cap of three is
+// a different number from the percent.
+//
+// One stack's life, and the cap's — not the ramp. skills.golden prints a third
+// figure under the same words, the full ramp of a status reapplied every turn
+// until it caps, and that one is an author's ceiling rather than a player's
+// fact: reaching it needs a skill off cooldown every turn, which no shipped kit
+// has. What is stated here assumes nothing about how often it is applied.
+//
+// # What it deliberately does not know
+//
+// The declared kind, not what a unit will feel. A tick scales off whoever
+// applied it, an amplifier raises it and a resistance refuses it outright, and a
+// stacked stat term saturates rather than adding up — so the figures here are
+// the book's and not the log's. Saying so is the screen's job rather than this
+// one's: BlurbStatusCaveat is printed once per reference, not fifteen times.
+func (l Lang) DescribeStatus(kind status.Kind) string {
+	lines := l.describeStatusEffect(kind)
+	lines = append(lines, l.describeStatusCosts(kind))
+	return strings.Join(lines, "\n")
+}
+
+// describeStatusEffect is what the status does, which is its category's doing
+// plus whatever stat terms it carries.
+//
+// The terms are read outside the switch rather than under the two stat
+// categories, because nothing stops a damage-over-time from carrying one and a
+// description filed by category would silently drop it.
+func (l Lang) describeStatusEffect(kind status.Kind) []string {
+	out := make([]string, 0, 4)
+	switch kind.Category {
+	case status.Dot, status.Regen:
+		ticks := BlurbStatusTicks
+		if kind.Category == status.Regen {
+			ticks = BlurbStatusHeals
+		}
+		out = append(out, l.Say(ticks, percent(kind.TickPower)))
+		// A permanent status can be neither of these — ParseBook refuses one —
+		// so a life is always a number here rather than a nought standing in for
+		// "never ends".
+		life := kind.TickPower * kind.Duration
+		if kind.MaxStacks > 1 {
+			out = append(out, l.Say(BlurbStatusLifeCapped,
+				percent(life), kind.MaxStacks, percent(life*kind.MaxStacks)))
+		} else {
+			out = append(out, l.Say(BlurbStatusLife, percent(life)))
+		}
+	case status.Control:
+		out = append(out, l.Text(BlurbStatusControls))
+	case status.Shield:
+		out = append(out, l.Text(BlurbStatusShields))
+	}
+	for _, term := range kind.Modifiers {
+		// "Per stack" only where there can be a second one. A status capped at
+		// one stack is every permanent status a trait grants, and telling a
+		// reader the rate of something that cannot happen twice reads as a
+		// promise that it can.
+		raises, lowers := BlurbStatusRaisesOnce, BlurbStatusLowersOnce
+		if kind.MaxStacks > 1 {
+			raises, lowers = BlurbStatusRaises, BlurbStatusLowers
+		}
+		moves := raises
+		if term.Amount < 0 {
+			moves = lowers
+		}
+		out = append(out, l.Say(moves, l.describeStat(term.Target.Stat()), statusAmount(term, 1)))
+		if kind.MaxStacks > 1 {
+			out = append(out, l.Say(BlurbStatusStacked, kind.MaxStacks,
+				statusAmount(term, kind.MaxStacks)))
+		}
+	}
+	if len(out) == 0 {
+		// A buff with no terms, which is authorable and does nothing. Saying so
+		// is the point: an empty description would read as this function failing
+		// rather than as the status being empty.
+		out = append(out, l.Text(BlurbStatusNothing))
+	}
+	return out
+}
+
+// describeStatusCosts is the line every status has, and it is the counterpart of
+// describeCosts: what kind of thing it is, how long it stays, how many will
+// layer.
+//
+// Permanent is a word rather than a duration. Snapshot.Permanent exists for the
+// same reason — a permanent status carries no duration, and printing its zero
+// reads as one about to expire.
+func (l Lang) describeStatusCosts(kind status.Kind) string {
+	parts := make([]string, 0, 3)
+	parts = append(parts, l.StatusCategory(kind.Category.String()))
+	switch {
+	case kind.Permanent:
+		parts = append(parts, l.Text(BlurbStatusAlways))
+	case kind.Duration == 1:
+		parts = append(parts, l.Text(BlurbStatusLastsOne))
+	default:
+		parts = append(parts, l.Say(BlurbStatusLasts, kind.Duration))
+	}
+	if kind.MaxStacks == 1 {
+		parts = append(parts, l.Text(BlurbStatusOneStack))
+	} else {
+		parts = append(parts, l.Say(BlurbStatusStacks, kind.MaxStacks))
+	}
+	return capitalise(strings.Join(parts, " · ") + ".")
+}
+
+// statusAmount is how big a modifier term is, at a given number of stacks.
+//
+// Unsigned, because the sentence around it has already chosen between raising
+// and lowering: a minus sign inside "lowers speed by -25%" is the same fact
+// twice and reads as a double negative.
+//
+// A percentage and a flat term are printed differently rather than both as
+// percentages, and that matters even though nothing shipped carries a flat one:
+// a flat +50 rendered through percent() would print as "5%", which is a wrong
+// number rather than a missing one.
+func statusAmount(term modifier.Modifier, stacks int) string {
+	size := term.Amount * int64(stacks)
+	if size < 0 {
+		size = -size
+	}
+	if term.Mode == modifier.Percent {
+		return itoa(percent(int(size))) + "%"
+	}
+	return itoa(int(size))
 }

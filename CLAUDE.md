@@ -39,6 +39,7 @@ go run ./cmd/hexforge new                        # create a character, prompting
 go run ./cmd/hexforge skills                     # the declared skills and who may carry each
 go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900   # author a skill
 go run ./cmd/hexforge skills edit oath --power 1100                 # change one already in the book
+go run ./cmd/hexforge statuses                   # the timed effects, grouped, and what each does
 go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
 
 go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal), in Vietnamese
@@ -319,8 +320,10 @@ English sentence is the reading working, not a missing gloss. Two entrances:
 which raises `screenBlurb`. ⚠️ **The forge form is not the place for it** — 19
 fields already show 13 of themselves in an 80x24 window, so a three-line block
 under the form costs a quarter of the fields; a screen costs nothing until asked
-for. `internal/i18n/testdata/describe.golden` covers **every** shipped skill and
-trait in **both** languages, so a balance change moves a line there — that diff is
+for. Statuses are the third description, and `Lang.DescribeStatus` is the same
+shape from the same house — see *Looking a status up* under Open work.
+`internal/i18n/testdata/describe.golden` covers **every** shipped skill, trait and
+status in **both** languages, so a balance change moves a line there — that diff is
 how a number change reads to a player. ⚠️ English needs singular wordings where
 Vietnamese does not (`BlurbCostCooldownOne`, `BlurbStripsOne`): two keys rather
 than a plural rule, because a rule would make Vietnamese pretend it has a
@@ -1198,24 +1201,46 @@ is the constraint each piece has to respect.
       its furthest form, balance is unchanged at **49.5%** and `replay.golden` did
       not move. None of the three characters is close enough for one kept skill to
       pay for a stage of stats — a cast-tuning question, not a mechanism one.
-- [ ] **Looking a status up — the layer with the most reading and the least said.**
-      `hexforge` lists origins, species, archetypes, passives and skills; **statuses
-      are not one of them**, so `statuses.json` is the only way to learn what `mire`
-      does. In battle it is worse: the log says *resisted mire* and nothing says it
-      is a quarter off speed for two turns. A skill's description names the status
-      and stops — *gây sa lầy, 70% khả năng* — which says something will happen, not
-      what. Shape: `Lang.DescribeStatus` beside `Describe`/`DescribePassive`,
-      **derived**, both languages, reached by `?` at the battle prompt (like
-      `?N`/`?TAG`) and a screen in the tool (like `screenBlurb`). ⚠️ Print a **life,
-      not a tick** — poison 500×3 against burn 800×2 is compared over its life, and
-      `skills.golden` already has that column; same for a percent against its stack
-      cap. ⚠️ **Permanent is "always", never "0 turns"** (`Snapshot.Permanent`).
-      ⚠️ **Group by category** or a cleanse is unreadable — `rapid_spin` strips a
-      `stat_debuff` and a `dot`, and nothing shows which statuses those are.
-      ⚠️ The one that will be got wrong: **it describes the declared kind, not what
-      a unit feels** — `virulence` amplifies and a resistance refuses, so the 500 in
-      the book is not what lands. Say so, or a reader meets it when the log shows
-      650.
+- [x] **Looking a status up — SHIPPED.** `Lang.DescribeStatus` beside
+      `Describe`/`DescribePassive`, derived, both languages, and three front-ends
+      read the same sentences: `?mire` / `?*` at the battle prompt, `hexforge
+      statuses` (the sixth listing), and `screenStatuses` in the tool.
+      ⚠️ **A life, not a tick, and one stack's life — not the ramp.** Poison ticks
+      50% to burn's 80%, so the tick alone ranks them backwards; over their lives
+      it is 150/160 for one stack and **450/320** at their caps. `skills.golden`
+      prints a *third* figure under the same words — the full ramp of a status
+      reapplied every turn (600% for poison) — which needs a skill off cooldown
+      every turn and no shipped kit has one. Two numbers, one phrase: the golden's
+      is an author's ceiling, the reference's assumes nothing.
+      ⚠️ **Permanent is "always"**, and a one-stack status gets **no rate**:
+      `toughened` reads *tăng thủ 15%*, not *15% mỗi lớp*
+      (`TestAPermanentStatusIsNeverGivenARate`).
+      ⚠️ **Grouping lives in core** — `status.Book.Grouped` — because three
+      front-ends working it out is three answers to "which category is this in".
+      In the tool the headings are **rows**, since the listing scrolls and a
+      heading drawn between rows falls off the top; the price is a cursor that can
+      land on one, which `TestTheStatusCursorNeverLandsOnAHeading` refuses.
+      ⚠️ The caveat ("these are the book's figures, an amplifier or a resistance
+      changes what lands") is printed **once** per reference and is the **last**
+      line, and `frame` cuts from the bottom —
+      `TestTheStatusCaveatSurvivesTheSmallestWindow` measures it at 80x24 in both
+      languages.
+      ⚠️ Adding a screen to `hexforge-tui` means adding it to `everyScreen` in
+      `language_test.go`, or every width and translation test silently skips it.
+- [ ] **A regeneration that heals.** `regrowth` is declared, glossed, described
+      and **inert**: `Battle.inflict` computes a tick only for `status.Dot`, so a
+      `Regen` stack is applied with a tick amount of nought, `Set.Tick` adds
+      nought, and `tickStatuses` skips it. `aqua_ring` and the healing half of
+      `synthesis` do nothing, and **nothing in `internal/core/battle` tests a
+      regen** — which is how it survived the healing work, the amplifier work and
+      the drain work untouched. Writing the status reference is what surfaced it.
+      The fix is one condition; it is separate because two skills start working and
+      the replay and scenario goldens move, which is a balance diff.
+      ⚠️ Decide **with** it, not after: which stat a regen scales off
+      (`origin.Scaling` is the applying skill's — attack for both, which is what
+      `Skill.Restores` already does), and whether `passive.Amplifies` should raise
+      a regen (`raise(..., amplifiedEffect)` is on the damage path and the wording
+      says "ticks harder"). Both one line, neither obvious.
 - [ ] **Choosing to evolve.** `Line.StageAt` derives a stage from a level and
       there is no decision in it; a level should *allow* a stage and the placement
       name which it fielded, so `Resolve(level)` becomes `Resolve(level, stage)`

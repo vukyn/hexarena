@@ -685,6 +685,40 @@ func (b *Book) Kinds() []Kind {
 	return out
 }
 
+// Group is every declared status of one category, in declaration order.
+type Group struct {
+	Category Category
+	Kinds    []Kind
+}
+
+// Grouped files the declared statuses under their categories.
+//
+// It exists because a cleanse names a category rather than a status — rapid_spin
+// strips a stat_debuff and a dot — so a reader who cannot see which statuses
+// those are cannot tell what the skill removes. Every front-end that lists the
+// statuses needs the same grouping, and a grouping worked out twice is two
+// answers to "which category is this in" waiting to disagree.
+//
+// Category order is the enum's, kind order is the book's, and a category nothing
+// is declared in is left out rather than printed empty: an empty heading reads as
+// a listing that failed to load its rows.
+func (b *Book) Grouped() []Group {
+	out := make([]Group, 0, CategoryCount)
+	for _, category := range Categories() {
+		var kinds []Kind
+		for _, kind := range b.kinds {
+			if kind.Category == category {
+				kinds = append(kinds, kind)
+			}
+		}
+		if len(kinds) == 0 {
+			continue
+		}
+		out = append(out, Group{Category: category, Kinds: kinds})
+	}
+	return out
+}
+
 // Lookup returns a status by id.
 func (b *Book) Lookup(id string) (Kind, error) {
 	kind, ok := b.byID[id]
