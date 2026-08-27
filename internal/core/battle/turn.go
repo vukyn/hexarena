@@ -553,6 +553,31 @@ func (b *Battle) reply(holder, attacker *Unit, held passive.Passive, turn atb.Tu
 			Power: held.Replies.Power, Multiplier: multiplier,
 			Amount: damage, Remaining: attacker.HP,
 		})
+		// A reply drains like anything else its holder does. The trait's own
+		// share only — a reply has no skill, so there is no skill share to add
+		// to it — but the same cap and the same conservation rule.
+		//
+		// This was missing, and the description was the thing that said so:
+		// "mọi đòn của nó hút lại 25% sát thương gây ra" / "everything it does
+		// takes back 25%". A reply is an đòn. The two jobs sit on one Passive,
+		// so one trait can hold both today — the placement's single trait slot
+		// stops a unit carrying a replier and a drainer, and stops nothing at
+		// all about a trait that is both.
+		//
+		// Before the kill rather than after, which is the skill path's answer to
+		// the same question: resolveAgainst drains from what it dealt whether or
+		// not the target fell, so a reply that finishes somebody has to pay out
+		// too. Draining after the return would make lethal damage the one kind
+		// that is worth nothing to take back.
+		//
+		// No guard on the damage, unlike the skill path. There, dealt is summed
+		// across strikes that may all have missed and can be nought with a skill
+		// behind it; here the branch this sits in has already said the reply has
+		// power, and drain refuses a share of nothing on its own. A guard that
+		// cannot fire is one a reader has to work out the meaning of.
+		if drained := drainShare(b.lifesteal(holder)); drained > 0 {
+			b.drain(holder, damage, drained, turn)
+		}
 		if attacker.HP <= 0 {
 			b.kill(attacker)
 			return

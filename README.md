@@ -1488,6 +1488,25 @@ back cannot exceed damage dealt, the same invariant `skill.resolve` enforces on 
 single share. Saturating instead would have been worse than either, paying out 285
 for a trait that says 400 on a skill that drains nothing.
 
+⚠️ **A reply drains too, and did not until it was looked for.** `resolveAgainst`
+paid out and `reply` did not, so a trait holding both jobs promised a share of an
+answer it never gave — and the thing that said so was the description: *mọi đòn
+của nó hút lại 25% sát thương gây ra*, **everything it does** takes back a share,
+and an answer is one of the things it does. The placement's single trait slot
+stops a unit carrying a replier and a drainer; it stops nothing about a trait that
+is both, and `passive.Passive` holds both fields.
+
+Nothing shipped does it yet — `venom_blood` answers and drains nought,
+`blood_thirst` and `last_gasp` drain and answer nothing — so **no golden moved**.
+That is the same shape the regeneration bug had: a job that renders in the
+sentences and not in the engine, invisible because the data has not yet asked for
+it.
+
+The trait's own share only, since a reply has no skill to add one, and **before**
+the kill rather than after: `resolveAgainst` drains from what it dealt whether or
+not the target fell, so draining after the return would make lethal damage the
+one blow worth nothing to take back.
+
 ⚠️ The heal carries `Drained`, the share it took, for the reason `Pierce` and
 `Refused` exist: `Amount` alone cannot say why. Six hundred off a strike that
 dealt three hundred and three hundred off one that dealt six hundred are the same

@@ -1090,6 +1090,23 @@ is the constraint each piece has to respect.
       *conservation* (cannot take back more than was dealt, the same invariant
       `skill.resolve` holds on one share), not the buff ceiling this engine
       rejects; saturating would pay 285 for a trait that says 400.
+      ⚠️ **A reply drains too — and did not, until it was looked for.**
+      `resolveAgainst` paid out and `reply` did not, so a trait holding both jobs
+      promised a share of an answer it never gave. What said so was the
+      description: *"mọi đòn của nó hút lại…"* / *"everything it does takes
+      back…"*. `TraitSlots = 1` stops a unit carrying a replier **and** a drainer;
+      it stops nothing about a trait that is **both**, and `passive.Passive` holds
+      both fields. Nothing shipped is both, so **no golden moved** — the same
+      shape as the regeneration bug, a job rendering in the sentences and not in
+      the engine.
+      The trait's share only (a reply has no skill), and **before the kill**:
+      `resolveAgainst` drains whether or not the target fell, so draining after
+      the return would make lethal damage the one blow worth nothing.
+      ⚠️ **A `damage > 0` guard beside it was written and removed** — a mutation
+      deleting it survived every test, because the branch it sits in has already
+      said the reply has power and `drain` refuses a share of nothing anyway. The
+      skill path's `dealt > 0` is **not** the same guard: there the sum can be
+      nought after every strike missed.
       ⚠️ The `Healed` event carries **`Drained`**, the share, because `Amount`
       alone cannot say why once a trait can drain too — the `Pierce`/`Refused`
       trap again.
