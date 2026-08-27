@@ -108,7 +108,7 @@ var (
 		"stat_debuff": "hiệu ứng giảm chỉ số",
 		"control":     "hiệu ứng khống chế",
 		"buff":        "hiệu ứng tăng chỉ số",
-		"shield":      "lớp khiên",
+		"shield":      "hiệu ứng khiên chắn",
 		"regen":       "hiệu ứng hồi máu",
 	}
 
