@@ -187,6 +187,10 @@ Không giữ lại chút phòng bị nào, dồn tất cả vào đòn đánh.
 Luôn mang dốc sức.
 Luôn mang phơi mình.
 
+[trait] thorns
+Ai đấm vào nó thì tự chuốc lấy phần đau của mình.
+Ai đánh trúng thì bị phản lại 8% thủ của người bị đánh.
+
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
 Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -441,6 +445,9 @@ In force only at or below 40% health.
 [trait] reckless
 Always carries unleashed.
 Always carries bare.
+
+[trait] thorns
+Whatever damages it takes 8% of the struck unit's defence back.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.

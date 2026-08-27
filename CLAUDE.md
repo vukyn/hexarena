@@ -1158,6 +1158,32 @@ is the constraint each piece has to respect.
       ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
+- [x] **A reply priced off the stat its holder actually has.** `passive.Reply`
+      gained **`Scaling`** (a `skill.Scaling`, so stat *and* base-or-current),
+      authored as `"replies": {"power": 80, "scaling": {"stat": "defense"}}`.
+      ⚠️ **Attack was the wrong default, not a missing field.** A trait that
+      answers whoever hit it belongs to a unit **built to be hit** — armoured, not
+      sharp — so pricing every reply off attack made thorns worth least to exactly
+      the character thorns are for. Blastoise is 640 defence / 460 attack: the
+      same share off the wrong stat is a **third** less.
+      ⚠️ **`origin.Scaling` is now the whole `skill.Scaling`, not a bare Kind**,
+      and all three read sites go through `origin.stat` → `combat.PickScaling`.
+      That fixed a latent bug nobody could reach: a skill declaring
+      `"source":"base"` had its damage read the base line and its **DoT tick read
+      the current one**. No shipped skill declares scaling, so it was unreachable —
+      and would have arrived the day one did.
+      ⚠️ **`skill.ParseScaling` is exported** so a trait and a skill are read by one
+      parser. Health stays refused wherever it is asked for (damage that grows as
+      its owner is healed). Refused too: a reply with **no damage** naming a stat.
+      ⚠️ **The word "attack" was hardcoded in THREE places** — the engine, the
+      i18n reply blurb, and `hexforge passives`. The listing's is in no golden and
+      nothing else reads it: the mutation that put the literal back **passed the
+      whole suite**, and an author would have tuned a thorns trait against a
+      number a third out. `TestThePassiveListingNamesTheStatAReplyIsPricedOff`.
+      Shipped `thorns` (8% defence) on Squirtle@32. Measured in a duel — thorns'
+      best case, since the holder is attacked every turn it lives: **14.2% →
+      15.3%** overall, Charmander matchup 28.5% → 30.7%. ⚠️ **Squirtle still loses
+      to Bulbasaur 0% either way**, which is a cast problem this does not touch.
 - [x] **Answering back — the fifth job.** `venom_blood` now costs whatever bit
       into it: `"replies": {"power": 40, "applies": [{"status":"poison","chance":25}]}`.
       ⚠️ **Not `applies` reworded** — that fires on a target the holder chose,

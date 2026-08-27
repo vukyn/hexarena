@@ -385,9 +385,9 @@ q or ctrl+c to quit`,
 	BlurbTraitApplies:     "Its attacks also inflict %s, %s of the time.",
 	BlurbTraitImmune:      "Refuses %s outright.",
 	BlurbTraitResists:     "Refuses %s of any %s aimed at it.",
-	BlurbTraitReplyDamage: "Whatever damages it takes %s of the struck unit's attack back.",
+	BlurbTraitReplyDamage: "Whatever damages it takes %s of the struck unit's %s back.",
 	BlurbTraitReplyStatus: "Whatever damages it has a %s chance of catching %s.",
-	BlurbTraitReplyBoth:   "Whatever damages it takes %s of the struck unit's attack back, and has a %s chance of catching %s.",
+	BlurbTraitReplyBoth:   "Whatever damages it takes %s of the struck unit's %s back, and has a %s chance of catching %s.",
 	// Two sentences rather than one, because the two shares promise different
 	// things: a stronger tick pays over the life of a stack, a better chance pays
 	// per cast, and a reader deciding what the trait is worth needs to know which

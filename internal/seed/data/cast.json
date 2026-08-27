@@ -482,6 +482,10 @@
         {
           "id": "endurance",
           "at_level": 16
+        },
+        {
+          "id": "thorns",
+          "at_level": 32
         }
       ]
     }

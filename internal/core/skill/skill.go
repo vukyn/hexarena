@@ -845,22 +845,10 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 
 	scaling := DefaultScaling()
 	if declared.Scaling != nil {
-		stat, err := parseStat(declared.Scaling.Stat)
-		if err != nil {
+		var err error
+		if scaling, err = ParseScaling(declared.Scaling.Stat, declared.Scaling.Source); err != nil {
 			return fail("%w", err)
 		}
-		if stat == progression.HP {
-			return fail("scales off health, which would make damage grow as the caster is healed")
-		}
-		source := combat.CurrentStat
-		switch declared.Scaling.Source {
-		case "", "current":
-		case "base":
-			source = combat.BaseStat
-		default:
-			return fail("scales off the %q value, want \"base\" or \"current\"", declared.Scaling.Source)
-		}
-		scaling = Scaling{Stat: stat, Source: source}
 	}
 
 	// The name is text and this package has no opinion about it beyond that: it
@@ -1110,6 +1098,34 @@ func resolveApplications(skillID, field string, declared []applicationFile, deps
 		out = append(out, Application{Status: kind.ID, Chance: entry.Chance, Stacks: stacks})
 	}
 	return out, nil
+}
+
+// ParseScaling resolves a scaling declaration as written in a data file.
+//
+// Exported because a trait's reply is authored the same way and must be read the
+// same way: "off which stat, and the base one or the modified one" is one
+// question, and two parsers answering it would answer it differently the first
+// time either was edited. An empty source is the current value, which is what a
+// skill that says nothing has always meant.
+func ParseScaling(statName, source string) (Scaling, error) {
+	stat, err := parseStat(statName)
+	if err != nil {
+		return Scaling{}, err
+	}
+	// Health is refused wherever it is asked for. A thing that scaled off health
+	// would grow as its owner was healed, which reads as a reward for being
+	// patched up rather than as a stat line.
+	if stat == progression.HP {
+		return Scaling{}, fmt.Errorf("scales off health, which would make damage grow as its owner is healed")
+	}
+	switch source {
+	case "", "current":
+		return Scaling{Stat: stat, Source: combat.CurrentStat}, nil
+	case "base":
+		return Scaling{Stat: stat, Source: combat.BaseStat}, nil
+	default:
+		return Scaling{}, fmt.Errorf("scales off the %q value, want \"base\" or \"current\"", source)
+	}
 }
 
 func parseStat(name string) (progression.Kind, error) {
