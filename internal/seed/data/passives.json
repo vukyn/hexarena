@@ -74,7 +74,7 @@
     {
       "id": "blood_thirst",
       "name": "khát máu",
-      "flavour": "Mỗi đòn giáng xuống là một ngụm máu rút về nuôi mình",
+      "flavour": "Mỗi đòn giáng xuống là một ngụm máu rút ngược về bồi lại sức",
       "grants": [],
       "drains": 250
     },

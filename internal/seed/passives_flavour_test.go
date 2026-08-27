@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/passive"
+	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/seed"
 )
 
@@ -83,6 +84,94 @@ func TestATraitFlavourSpellsOutNoNumber(t *testing.T) {
 			}
 			t.Errorf("%q spells out the number %q in its flavour; every figure in a description is derived, and a written one says the same thing twice until it stops being true",
 				held.ID, word)
+		}
+	}
+}
+
+// TestNoShippedShareIsUnderOnePercent is an authoring rule rather than a
+// defence, and it is stated here because it was decided rather than discovered.
+//
+// **No description will ever tune a figure by less than a percent.** A share
+// that small is one nobody can feel across a battle, so it is not a tuning
+// anybody would author on purpose — and a description of one is worse than
+// useless, because `i18n.share` rounds to a whole percent and anything under
+// five parts per thousand comes out as "0%", which reads as a feature that does
+// not work. This is what makes that rounding safe rather than lossy: the rule
+// keeps the data out of the range where rounding could lie, instead of the
+// renderer carrying a decimal place to survive data nobody will write.
+//
+// The floor is a **percent**, not five parts per thousand, and the gap is
+// deliberate. Half of it is rounding — 6 parts per thousand rounds to 1% and is
+// legal — but a value in that gap is a value somebody typed a zero too many
+// into, and there is no reason to allow it while the rule is "nothing under a
+// percent".
+//
+// It walks the shipped books only. A unit test's fixture is free to use any
+// number it likes: this is a rule about what is *authored*, and a fixture is not
+// authored content.
+func TestNoShippedShareIsUnderOnePercent(t *testing.T) {
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load shipped statuses: %v", err)
+	}
+	// A percent, in the parts-per-thousand the whole engine counts in.
+	const floor = scale.Base / 100
+	check := func(owner, what string, permille int) {
+		t.Helper()
+		if permille != 0 && permille < floor {
+			t.Errorf("%s sets %s to %d parts per thousand, under the one percent a description can say; raise it or drop the field",
+				owner, what, permille)
+		}
+	}
+	for _, held := range mustPassives(t).All() {
+		if held.Replies.Answers() {
+			check(held.ID, "a reply", held.Replies.Power)
+			for _, application := range held.Replies.Applies {
+				check(held.ID, "a reply's chance", application.Chance)
+			}
+		}
+		for _, application := range held.Applies {
+			check(held.ID, "a rider's chance", application.Chance)
+		}
+		for _, resistance := range held.Resists {
+			check(held.ID, "a resistance", resistance.Amount)
+		}
+		check(held.ID, "a drain", held.Drains)
+		for _, raise := range held.Amplifies {
+			check(held.ID, "an amplified effect", raise.Effect)
+			check(held.ID, "an amplified chance", raise.Chance)
+		}
+		if held.While != nil {
+			check(held.ID, "a gate", held.While.BelowHealth)
+		}
+	}
+	for _, kind := range statuses.Kinds() {
+		check(kind.ID, "a tick", kind.TickPower)
+		for _, term := range kind.Modifiers {
+			amount := int(term.Amount)
+			if amount < 0 {
+				amount = -amount
+			}
+			check(kind.ID, "a modifier", amount)
+		}
+	}
+	// The skills too, since every share a skill declares is read out of the same
+	// renderer and nothing about the rule is particular to a trait.
+	for _, current := range mustSkills(t).Skills() {
+		check(current.ID, "a power", current.Power)
+		check(current.ID, "an accuracy", current.Accuracy)
+		check(current.ID, "a pierce", current.Pierce)
+		check(current.ID, "a restore", current.Restores)
+		check(current.ID, "a drain", current.Drains)
+		for _, application := range current.Applies {
+			check(current.ID, "an application's chance", application.Chance)
+		}
+		for _, application := range current.SelfApplies {
+			check(current.ID, "a self-application's chance", application.Chance)
+		}
+		if current.Requires != nil {
+			check(current.ID, "a bonus power", current.Requires.BonusPower)
+			check(current.ID, "a health threshold", current.Requires.BelowHealth)
 		}
 	}
 }

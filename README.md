@@ -819,13 +819,13 @@ tuning the number and the tenth is what is being tuned, and `i18n.share` rounds
 for **sentences**. Half away from zero, so 25 becomes 3 rather than the 2 this
 started at.
 
-⚠️ **Rounding keeps truncation's floor, three quarters of a percent lower.** A
-share under five parts per thousand rounds to nought, and a feature described as
-landing *0% of the time* reads as one that does not work.
-`TestNoShippedShareRoundsAwayToNothing` walks every share on every trait and
-status; the fix when it fires is the **data**, because a share that small is one
-nobody can feel, and putting the tenth back only moves the same failure down a
-decimal place.
+**What makes the rounding safe is a rule on the data, not a decimal place.**
+Nothing is ever tuned by **less than a percent** — a share that small is one
+nobody feels across a battle, so it is not a tuning anybody authors on purpose,
+and a description of one would come out as *0%*, which reads as a feature that
+does not work. `TestNoShippedShareIsUnderOnePercent` holds it over every shipped
+skill, trait and status. Carrying a tenth in the sentence to survive data the
+rule forbids would be the renderer paying for a case that cannot happen.
 
 ## Battle logs
 

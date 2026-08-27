@@ -335,11 +335,12 @@ point is the only mark in the line that is not a comma. History matters: share
 *truncated* first, which turned a trait's 2.5 into 2 (skills are priced in
 hundreds of ‰ and lost nothing; traits are priced in tens). Rounding is not that
 mistake again — 25 becomes 3.
-⚠️ **Rounding keeps truncation's floor**, 0.75% lower: anything under 5‰ rounds to
-`0%`, which reads as a feature that does not work.
-`TestNoShippedShareRoundsAwayToNothing` walks every trait and status share; **the
-fix is the data**, not the renderer — putting the tenth back only moves the same
-failure down a decimal place.
+⚠️ **Rounding is safe because of a rule on the DATA: nothing is ever tuned by
+less than 1%** (`TestNoShippedShareIsUnderOnePercent`, over every shipped skill,
+trait and status). Nobody feels a share that small across a battle, and a
+description of one prints `0%` — a feature reading as broken. So the floor lives
+in the data; carrying a tenth in the sentence to survive data the rule forbids
+would be the renderer paying for a case that cannot happen.
 Numbers are **shares of a stat** ("100% công"), never damage figures: a figure is
 true for one caster against one target and false at the next buff. ⚠️ The block is
 **Vietnamese on an otherwise English screen** — a stated cost, not an oversight;

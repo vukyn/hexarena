@@ -438,10 +438,13 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 // away again. The difference is that truncation lost a fifth of the value and
 // rounding half away from zero does not: 25 becomes 3, not 2.
 //
-// ⚠️ Rounding still has truncation's floor, three quarters of a percent lower.
-// TestNoShippedShareRoundsAwayToNothing keeps a share out of it: a feature
-// described as landing "0% of the time" reads as one that does not work, and the
-// fix for that is the data rather than the renderer.
+// What makes the rounding safe rather than lossy is a rule on the **data**:
+// nothing is ever tuned by less than a percent, so nothing can land in the range
+// where rounding would print "0%" — a share that small is one nobody feels
+// across a battle, and a description of it reads as a feature that does not
+// work. TestNoShippedShareIsUnderOnePercent holds it over every shipped skill,
+// trait and status. Carrying a decimal place here to survive data nobody will
+// author would be the renderer paying for a case the rule forbids.
 func share(permille int) string {
 	sign := ""
 	if permille < 0 {

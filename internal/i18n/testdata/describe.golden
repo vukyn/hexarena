@@ -163,7 +163,7 @@ Miễn nhiễm trúng độc.
 Ai đánh trúng thì bị phản lại 4% công của người bị đánh, và có 3% khả năng dính trúng độc.
 
 [trait] blood_thirst
-Mỗi đòn giáng xuống là một ngụm máu rút về nuôi mình.
+Mỗi đòn giáng xuống là một ngụm máu rút ngược về bồi lại sức.
 Mọi đòn hút lại 25% sát thương gây ra.
 
 [trait] last_gasp
