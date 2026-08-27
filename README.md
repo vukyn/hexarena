@@ -1974,9 +1974,69 @@ compile. `battle` builds one in `conditionTarget`, which both `Suggest` and
 `resolveAgainst` call — a rating built from a different reading than the resolution
 would make the opponent prefer a skill for a bonus it does not get.
 
-What is still absent is the **gradient**: the move that hits harder the further the
-*caster* has fallen. It is a multiplier on power rather than a bonus to it, belongs
-in `combat`, and reads the other unit — two features, not one with an option.
+### A condition a skill reads about itself
+
+Built, and it is the sentence above turned round: `requires` reads the target, and
+**`self_requires` reads the caster**.
+
+```json
+{ "id": "outrage", "power": 2200,
+  "self_requires": { "below_health": 400, "bonus_power": 1200 } }
+```
+
+Two fields rather than one field with a *whose* flag, because the book already
+spells this distinction exactly that way: `applies` lands on whatever the skill
+hit and `self_applies` lands on the caster. A reader who knows what the `self_`
+prefix means there knows what it means here, and a flag would be a third thing to
+get wrong. The type is the same `Condition` — everything about it is the shape of
+a question and nothing about who is being asked.
+
+Until it existed, two obvious skills had **no spelling at all**: *hits harder
+while I am furied* and *hits harder while I am cornered*. `dragon_dance` had been
+a setup with nothing to pay it off since it was written.
+
+⚠️ **It is read once per use, in `Act`, and not in `resolveAgainst`.** That
+function runs once per cell a shape covers, so a condition consumed there would
+charge a column three times and a single-target skill once — a difference written
+on neither skill. `Battle.spend` is that seam, and it sits *before* `applyToSelf`
+so that a skill which both grants and spends a status cannot pay itself.
+
+⚠️ **The bonus joins the power before the splash share is taken**, the same as the
+target's. A shape's edge is worth less however the power was arrived at. This is
+the one that nearly got away: a bonus added *after* the reduction still makes
+every target take more, so the obvious test passes and the edge quietly takes a
+full share. What catches it is the **ratio** between the aim and the edge, not the
+rise.
+
+⚠️ **`conditionCaster` is a second builder beside `conditionTarget`**, not a
+parameter on one. A skill may read one status of its target and another of itself,
+so a single builder would have to be told which condition it was reading — which
+is the reading-versus-resolution mismatch `conditionTarget` was written to
+prevent, arriving through the other door. `Suggest` reads it once outside its own
+loop, which is where it is read for real.
+
+One validator serves both fields. Every rule is about the shape of a condition and
+none is about whose health it counts, so a second copy would be a second set of
+rules nobody wrote down, and the looser of the two is the one an author would
+find. `resolveCondition` carries the field name through every message, because
+"asks nothing" on a skill with two conditions is a refusal nobody can act on. One
+new refusal joins the four: a bonus power on a **self-aimed** skill, which never
+reaches a target for the power to land on.
+
+`skills.golden` grew a **whose** column, and that was not cosmetic — the table read
+only `requires`, so it would have told an author their skill has no amplifier
+while the engine amplified it.
+
+`outrage` is the first user: 2200 power, and 3400 at or below forty per cent
+health. A health gate rather than the `fury` payoff it was designed around, and
+deliberately so — `battle.Suggest` never buffs, so a fury gate would never fire
+under autopilot, while a cornered one fires on its own and pairs with the
+frailty `reckless` buys. The dragon build's figure did not move: 42.5%.
+
+What is still absent is the **gradient**: the move that hits harder in proportion
+to how far the caster has fallen, rather than past a line. It is a multiplier on
+power rather than a bonus to it and belongs in `combat` — `self_requires` is the
+threshold version of the same idea, not a replacement for it.
 
 ### Learnsets and slots
 

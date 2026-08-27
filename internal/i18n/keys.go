@@ -369,6 +369,7 @@ const (
 	BlurbWhenCarrying
 	BlurbWhenHurt
 	BlurbAmplified
+	BlurbSelfAmplified
 	BlurbConsumes
 	BlurbCostRange
 	BlurbCostCells

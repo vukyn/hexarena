@@ -336,30 +336,42 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 	// condition stopped being one thing to name: it may read a status, or how
 	// hurt the target is, or both, and a column headed "status" with a health
 	// share under it would be the report lying about what it measured.
+	// Both conditions, because a table that read only one of them would be the
+	// report telling an author their skill has no amplifier while the engine
+	// amplifies it. The "whose" column is what a reader needs to tell "while the
+	// target is poisoned" from "while I am cornered" -- the two read the same in
+	// the needs column and mean opposite things.
 	b.WriteString("\n== conditional amplifiers ==\n")
-	b.WriteString("skill           needs                       stacks   power   amplified   damage   amplified   gain\n")
+	b.WriteString("skill           whose    needs                       stacks   power   amplified   damage   amplified   gain\n")
 	for _, current := range book.Skills() {
-		if current.Requires == nil {
-			continue
+		for _, side := range []struct {
+			whose     string
+			condition *skill.Condition
+		}{
+			{"target", current.Requires},
+			{"caster", current.SelfRequires},
+		} {
+			if side.condition == nil {
+				continue
+			}
+			plain := rules.Damage(attackerAttack, referenceDefense, current.Power, neutralAffinity)
+			amplified := rules.Damage(attackerAttack, referenceDefense,
+				current.Power+side.condition.BonusPower, neutralAffinity)
+			note := ""
+			if side.condition.Consume {
+				note = " (consumes)"
+			}
+			// A stack count belongs to a status, so a condition that names none
+			// prints a dash rather than the 0 the field happens to hold.
+			stacks := "-"
+			if side.condition.ReadsStatus() {
+				stacks = strconv.Itoa(side.condition.MinStacks)
+			}
+			fmt.Fprintf(&b, "%-16s%-9s%-28s%7s%8d%12d%9d%12d%7s%s\n",
+				current.ID, side.whose, conditionReads(side.condition), stacks,
+				current.Power, current.Power+side.condition.BonusPower,
+				plain, amplified, ratio(amplified, plain), note)
 		}
-		against := current.Requires.Satisfying()
-		plain := rules.Damage(attackerAttack, referenceDefense, current.Power, neutralAffinity)
-		amplified := rules.Damage(attackerAttack, referenceDefense,
-			current.PowerAgainst(against), neutralAffinity)
-		note := ""
-		if current.Requires.Consume {
-			note = " (consumes)"
-		}
-		// A stack count belongs to a status, so a condition that names none
-		// prints a dash rather than the 0 the field happens to hold.
-		stacks := "-"
-		if current.Requires.ReadsStatus() {
-			stacks = strconv.Itoa(current.Requires.MinStacks)
-		}
-		fmt.Fprintf(&b, "%-16s%-28s%7s%8d%12d%9d%12d%7s%s\n",
-			current.ID, conditionReads(current.Requires), stacks,
-			current.Power, current.PowerAgainst(against),
-			plain, amplified, ratio(amplified, plain), note)
 	}
 
 	b.WriteString("\n== what a detonate gives up ==\n")

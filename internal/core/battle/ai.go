@@ -81,6 +81,10 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 		return 0
 	}
 	actorStats := b.Stats(actor)
+	// Read once, outside the loop, because that is when it is read for real. A
+	// rating that asked per cell would still get the same answer today, and
+	// would stop doing so the moment a condition read anything the loop changes.
+	spent := declared.SelfBonus(conditionCaster(declared, actor))
 	total := int64(0)
 	for position, cell := range covers(shape, declared, aim) {
 		target := b.occupant(cell)
@@ -93,7 +97,7 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 		if target == nil || target.Side == actor.Side {
 			continue
 		}
-		power := declared.PowerAgainst(conditionTarget(declared, target))
+		power := declared.PowerAgainst(conditionTarget(declared, target)) + spent
 		if position > 0 {
 			power = power * b.books.Patterns.SplashPower / 1000
 		}
@@ -129,6 +133,29 @@ func requiredStatus(declared skill.Skill) string {
 		return ""
 	}
 	return declared.Requires.Status
+}
+
+func spentStatus(declared skill.Skill) string {
+	if declared.SelfRequires == nil {
+		return ""
+	}
+	return declared.SelfRequires.Status
+}
+
+// conditionCaster is conditionTarget for the unit doing the acting, and it is a
+// second function for exactly one reason: it counts a different status.
+//
+// A skill may read one status of its target and another of itself, so a single
+// builder taking a unit would have to be told which condition it was reading and
+// would be the same mistake conditionTarget exists to prevent -- a reading that
+// does not match the resolution. Two functions, each naming its own condition,
+// cannot be handed the wrong one.
+func conditionCaster(declared skill.Skill, actor *Unit) skill.Target {
+	return skill.Target{
+		Stacks:  actor.Statuses.Stacks(spentStatus(declared)),
+		Health:  actor.HP,
+		Maximum: actor.MaxHP(),
+	}
 }
 
 // conditionTarget is what a skill's condition is allowed to read about a unit.

@@ -33,7 +33,7 @@ aqua_ring       water     self     0  single            0     1      0  1000    
 rapid_spin      neutral   self     0  single            0     1      0  1000    3     0        0
 rally           neutral   ally     1  column            0     1      0  1000    4     0        0
 dragon_claw     neutral   enemy    2  single         1100     1   1100   950    1     0      377
-outrage         neutral   enemy    2  single         2800     1   2800   900    3     0      960
+outrage         neutral   enemy    2  single         2200     1   2200   900    3     0      754
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -67,10 +67,11 @@ dragon_claw     -          -                 -                   dragon
 outrage         -          -                 -                   dragon
 
 == conditional amplifiers ==
-skill           needs                       stacks   power   amplified   damage   amplified   gain
-venoshock       poison                            1     900        1800      308         617  2.00x
-inferno         burn                              1    1000        3500      342        1200  3.50x (consumes)
-brine           health <=500 per mille            -    1000        2000      342         685  2.00x
+skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
+venoshock       target   poison                            1     900        1800      308         617  2.00x
+inferno         target   burn                              1    1000        3500      342        1200  3.50x (consumes)
+brine           target   health <=500 per mille            -    1000        2000      342         685  2.00x
+outrage         caster   health <=400 per mille            -    2200        3400      754        1165  1.54x
 
 == what a detonate gives up ==
 skill           status   ticks forgone   a plain attack   alternative   burst    ratio

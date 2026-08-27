@@ -145,8 +145,9 @@ Gây phá giáp cho mục tiêu, 40% khả năng.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 
 outrage
-Mất trí lao vào quần thảo, đánh xong thì đứng còn không vững, 280% công.
+Mất trí lao vào quần thảo, đánh xong thì đứng còn không vững, 220% công.
 Nhận sa lầy.
+Bản thân còn <=40% máu: 340% công.
 Tầm 2 · 90% trúng · hồi 3 lượt.
 
 [trait] endurance
@@ -407,8 +408,9 @@ Inflicts expose, 40% of the time.
 Range 2 · 95% to hit · 1 turn to recharge.
 
 outrage
-Hits an enemy for 280% of attack.
+Hits an enemy for 220% of attack.
 Puts mire on itself.
+While the caster is at or below 40% health: 340% of attack.
 Range 2 · 90% to hit · 3 turns to recharge.
 
 [trait] endurance
