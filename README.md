@@ -1152,8 +1152,8 @@ go run ./cmd/hexforge-tui              # or: make forge-tui
 
 `hexforge-tui` is a second front-end over the same `internal/forge`: a cast
 browser that resolves a character at any level you walk to with the arrow keys, a
-new-character form, the origin catalog with an add form, the status reference,
-and the check rendered as a screen. Two things it can do that a sequence of prompts cannot — because
+new-character form, the origin catalog with an add form, the status and trait
+references, and the check rendered as a screen. Two things it can do that a sequence of prompts cannot — because
 everything is visible at once and both are pure integer arithmetic recomputed on
 every keystroke:
 
@@ -1770,10 +1770,47 @@ for the whole of it on purpose — what a reader wants is what attacking that un
 costs, and a damage column filed away from a status column leaves them adding it
 up across the table.
 
-A listing of *every declared trait* is still a different feature answering a
-different question, and is still not built. What exists now answers "what is this
-character carrying", which is the question the browser was already halfway through
-asking.
+**And the listing that answers the other question.** `?` on the browser answers
+"what is this character carrying", filtered by a level — so a trait is reachable
+only through a character that already has it, and a trait nobody has learned yet
+is reachable from nowhere at all. The `nội tại` menu answers "what traits are
+there", which is the question somebody has *before* they know which character to
+look at.
+
+```
+nội tại  các nội tại đã khai báo, và ai mang
+
+  id            tên tiếng Việt  ai mang
+> endurance     bền bỉ          pokemon.bulbasaur@16 pokemon.squirtle@16
+  blaze         bùng lửa        pokemon.charmander@16
+  ...
+
+  endurance (bền bỉ)
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang cứng đòn.
+```
+
+⚠️ **The column that earns its place is "who carries it", not "who may".** A trait
+has no restriction mechanism at all, so *may* is everybody and answers nothing.
+Who actually **does** is the fact worth a column — and a trait nobody learns
+cannot reach a battle, which is not an error (a catalog may be written before the
+cast that fills it) but is exactly the sort of thing a listing exists to show. The
+one under the cursor says so in words, because an empty cell in a column reads as
+a column that failed to fill rather than as a fact.
+
+`Library.TraitCarriers` walks the **cast**, not the trait book. A trait is
+declared knowing nothing about who takes it and the edge lives on the character —
+a learnset is the character's fact — so an index kept the other way round would be
+a second place for the same edge to live.
+
+Read-only, like the status reference and unlike the skills listing: a trait carries
+modifier terms and shares of damage, which is balance rather than content, and
+adding one changes what every character holding it does.
+
+⚠️ **Not a column on `hexforge passives`.** That table is nine columns already and
+a carrier row is as long as the cast makes it; a listing row that can be clipped
+and a cursor that can select one are what make the column affordable, and the CLI
+has neither.
 
 ### A health threshold a skill can read
 

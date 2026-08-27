@@ -2386,3 +2386,80 @@ func inkBounds(drawn *image.RGBA) (image.Rectangle, bool) {
 	}
 	return inked, any
 }
+
+// TestTraitCarriersReadsTheLearnsetFromTheOtherEnd is the answer a trait listing
+// needs and the trait book cannot give.
+//
+// A trait is declared in passives.json knowing nothing about who takes it, and
+// the edge lives on the character: a learnset is the character's fact. So this
+// walks the cast rather than indexing off the trait, and the test that matters
+// is that the two ends agree — every carrier it names has the trait in its own
+// learnset, and every character whose learnset holds it is named.
+func TestTraitCarriersReadsTheLearnsetFromTheOtherEnd(t *testing.T) {
+	lib, err := Load(scratchData(t))
+	if err != nil {
+		t.Fatalf("load the scratch data: %v", err)
+	}
+	declared := lib.Passives().All()
+	if len(declared) == 0 {
+		t.Skip("no traits declared")
+	}
+	for _, held := range declared {
+		carriers := lib.TraitCarriers(held.ID)
+		named := make(map[string]TraitCarrier, len(carriers))
+		for _, carrier := range carriers {
+			if _, twice := named[carrier.Character]; twice {
+				t.Errorf("%q names %q as a carrier twice", held.ID, carrier.Character)
+			}
+			named[carrier.Character] = carrier
+		}
+		for _, character := range lib.Characters().All() {
+			holds := false
+			for _, entry := range character.Passives {
+				if entry.ID == held.ID {
+					holds = true
+					// The gates are carried through rather than re-read, so a
+					// listing can print "endurance@16" without the learnset.
+					if carrier, listed := named[character.ID]; !listed {
+						t.Errorf("%q learns %q and TraitCarriers does not name it",
+							character.ID, held.ID)
+					} else if carrier.AtLevel != entry.AtLevel {
+						t.Errorf("%q learns %q at level %d and TraitCarriers says %d",
+							character.ID, held.ID, entry.AtLevel, carrier.AtLevel)
+					}
+					break
+				}
+			}
+			if _, listed := named[character.ID]; listed && !holds {
+				t.Errorf("TraitCarriers names %q as carrying %q, and its learnset does not",
+					character.ID, held.ID)
+			}
+		}
+	}
+}
+
+// TestTraitCarrierSummaryMarksTheGates is the row a listing prints: one token per
+// carrier, with whatever gates the entry declares — the shape UnlockSummary gives
+// a learnset, read from the other end.
+func TestTraitCarrierSummaryMarksTheGates(t *testing.T) {
+	for _, test := range []struct {
+		name     string
+		carriers []TraitCarrier
+		want     string
+	}{
+		{"nobody", nil, ""},
+		{"one from the start", []TraitCarrier{{Character: "a.b"}}, "a.b"},
+		{"a level gate", []TraitCarrier{{Character: "a.b", AtLevel: 16}}, "a.b@16"},
+		{"level one is not a gate", []TraitCarrier{{Character: "a.b", AtLevel: 1}}, "a.b"},
+		{"a form gate", []TraitCarrier{{Character: "a.b", Stages: []string{"Grown"}}}, "a.b[Grown]"},
+		{"both, and two of them",
+			[]TraitCarrier{{Character: "a.b", AtLevel: 16, Stages: []string{"Grown"}}, {Character: "c.d"}},
+			"a.b@16[Grown] c.d"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if got := TraitCarrierSummary(test.carriers); got != test.want {
+				t.Errorf("TraitCarrierSummary = %q, want %q", got, test.want)
+			}
+		})
+	}
+}

@@ -432,6 +432,14 @@ const (
 	StatusesFooter
 	MenuStatuses
 	MenuStatusesDetail
+	MenuPassives
+	MenuPassivesDetail
+	PassivesHeading
+	PassivesSubtitle
+	PassivesEmpty
+	PassivesFooter
+	PassivesNobodyCarries
+	ColumnCarriedBy
 
 	keyCount
 )
