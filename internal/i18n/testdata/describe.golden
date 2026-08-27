@@ -170,7 +170,7 @@ Khả năng gây trúng độc tăng 20%.
 [trait] venom_blood
 Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
 Miễn nhiễm trúng độc.
-Ai đánh trúng thì bị phản lại 4% công của người bị đánh, và có 3% khả năng dính trúng độc.
+Ai đánh trúng thì có 4% khả năng dính trúng độc.
 
 [trait] blood_thirst
 Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức.
@@ -427,7 +427,7 @@ The chance of inflicting poison is 20% higher.
 
 [trait] venom_blood
 Refuses poison outright.
-Whatever damages it takes 4% of the struck unit's attack back, and has a 3% chance of catching poison.
+Whatever damages it has a 4% chance of catching poison.
 
 [trait] blood_thirst
 Everything it does takes back 25% of the damage dealt.

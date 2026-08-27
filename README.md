@@ -1577,6 +1577,38 @@ entry.
 
 Nothing shipped uses `Applies` yet; `blaze` is the only trait using `While` on a
 grant, and `venom_blood` the only one using `Replies`.
+
+**And it answers with poison alone.** The reply's 40 per mille of counter-damage
+was sold to buy chance, because at 25 per mille the poison landed **0.27 times a
+battle** — once every four — which is a trait a player never sees work. Twenty
+thousand seeds of the shipped roster:
+
+| reply | ally | poison landed |
+|---|---:|---:|
+| 25‰ chance · power 40 | 53.0% | 0.27 per battle |
+| **40‰ chance · no power** | **53.1%** | **0.44 per battle** |
+| 50‰ chance · power 40 | 56.1% | 0.54 per battle |
+| 50‰ chance · no power | 54.3% | 0.55 per battle |
+
+So the trade is free and the trait is visible 63% more often for it. Raising the
+chance without selling the damage costs **three points**, which is what the first
+row and the third measure between them.
+
+It reads better too: *máu độc* is blood that poisons whatever bites it, not blood
+that punches back — and dropping `power` is what tells it apart from a thorns
+trait rather than making it one with a rider.
+
+⚠️ **σ is about 0.35 points at twenty thousand seeds**, so a gap under 0.7 is
+noise. The four-thousand-seed sweeps used earlier in this file cannot resolve one,
+which is why these four rows were re-measured at five times the count.
+
+⚠️ **No shipped trait answers with damage any more.** `venom_blood` was the only
+replier in the cast, so a battle from the shipped roster emits no `Damaged`
+carrying a trait at all, and `TestTheShippedRosterAnswersItsAttackers` now asserts
+only the status half. The mechanism is not untested for it — the fixtures in
+`internal/core/battle/reply_test.go` exist for exactly that — but the shipped game
+no longer *does* it, which is a cast fact and comes back the day a trait wants
+counter-damage again.
 ⚠️ `Applies` is close to the third row above and is **not** it: it adds to what the holder's *own* attack inflicts —
 touch something and it is poisoned — where the row wants the reverse, an answer to
 being attacked. Writing the first and calling it the second would be the cheapest

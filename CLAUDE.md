@@ -1186,6 +1186,21 @@ is the constraint each piece has to respect.
       caps how big the trait may be. Measured: power 40 alone 49.5%, **40+25
       (shipped) 51.9%**, 40+200 73.5%, 250+500 **98.3%**. Tune over thousands of
       seeds; the 40-seed sweep cannot see a move this size.
+      ⚠️ **The counter-damage was later sold to buy chance, and `venom_blood`
+      answers with poison alone now** (`{"applies":[{"status":"poison",
+      "chance":40}]}`, no `power`). 20 000 seeds: **25‰+power 40 → 53.0%**,
+      **40‰+power 0 → 53.1%** — the same cost, and the poison lands **0.27 →
+      0.44 per battle**, 63% more often. 50‰ alone was measured at **56.1%** and
+      refused; 50‰+power 0 at 54.3%. ⚠️ **σ ≈ 0.35 points at 20 000 seeds**, so a
+      gap under **0.7** is noise and the 4 000-seed sweeps used earlier cannot
+      resolve one.
+      ⚠️ **No shipped trait answers with damage any more** — `venom_blood` was
+      the only replier in the cast, so a battle from the shipped roster emits no
+      `Damaged` carrying a trait. `TestTheShippedRosterAnswersItsAttackers` was
+      narrowed to the status half and logs the damage count instead of asserting
+      it; the mechanism stays covered by `internal/core/battle/reply_test.go`,
+      whose fixtures exist for it. The bench roster never covered it at all
+      (`endurance` and `blaze` only).
       ⚠️ **It flipped the sign of a figure already in the README.** Removing
       `razor_leaf`'s pierce used to cost the ally 2.7pp; it now gains 1.1pp
       (51.9 → 53.0), at every reply size tried. Piercing helps whoever attacks,
