@@ -501,7 +501,7 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		life := kind.TickPower * kind.Duration
 		if kind.MaxStacks > 1 {
 			out = append(out, l.Say(BlurbStatusLifeCapped,
-				share(life), kind.MaxStacks, share(life*kind.MaxStacks)))
+				share(life), share(life*kind.MaxStacks)))
 		} else {
 			out = append(out, l.Say(BlurbStatusLife, share(life)))
 		}
@@ -525,7 +525,7 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		}
 		out = append(out, l.Say(moves, l.describeStat(term.Target.Stat()), statusAmount(term, 1)))
 		if kind.MaxStacks > 1 {
-			out = append(out, l.Say(BlurbStatusStacked, kind.MaxStacks,
+			out = append(out, l.Say(BlurbStatusStacked,
 				statusAmount(term, kind.MaxStacks)))
 		}
 	}

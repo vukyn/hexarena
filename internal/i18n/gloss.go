@@ -81,8 +81,8 @@ var (
 	statusGloss = map[string]string{
 		"poison": "trúng độc",
 		"burn":   "bỏng",
-		"weaken": "yếu đòn",
-		"expose": "hở sườn",
+		"weaken": "suy yếu",
+		"expose": "phá giáp",
 		"blind":  "mù",
 		"mire":   "sa lầy",
 		"stun":   "choáng",

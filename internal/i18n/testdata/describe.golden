@@ -106,7 +106,7 @@ Tầm 3 · 3 ô · 85% trúng · hồi 3 lượt.
 
 bite
 Đớp vào chỗ hở, cắn rách lớp phòng thủ, 120% công.
-Gây hở sườn cho mục tiêu, 50% khả năng.
+Gây phá giáp cho mục tiêu, 50% khả năng.
 Tầm 1 · 90% trúng · hồi 2 lượt.
 
 brine
@@ -131,7 +131,7 @@ Bản thân · hồi 4 lượt.
 
 rapid_spin
 Xoay tít người, hất văng mọi thứ đang bám trên mình.
-Gỡ 1 lớp hiệu ứng giảm chỉ số và hiệu ứng gây hại theo lượt.
+Gỡ 1 lần cộng dồn hiệu ứng giảm chỉ số và hiệu ứng gây hại theo lượt.
 Bản thân · hồi 3 lượt.
 
 [trait] endurance
@@ -167,75 +167,75 @@ Mọi đòn của nó hút lại 40% sát thương gây ra.
 Chỉ có hiệu lực khi còn <=40% máu.
 
 [status] poison
-Đầu lượt của người mang, mỗi lớp trừ 50% chỉ số của bên gây ra.
-Một lớp là 150% trong cả đời nó, đủ 3 lớp là 450%.
-Sát thương mỗi lượt · 3 lượt · tối đa 3 lớp.
+Đầu lượt của bên dính hiệu ứng, mỗi lần cộng dồn trừ 50% chỉ số bên gây ra.
+Một lần cộng dồn là 150% trong cả đời nó, tối đa là 450%.
+Sát thương mỗi lượt · 3 lượt · tối đa 3 lần cộng dồn.
 
 [status] burn
-Đầu lượt của người mang, mỗi lớp trừ 80% chỉ số của bên gây ra.
-Một lớp là 160% trong cả đời nó, đủ 2 lớp là 320%.
-Sát thương mỗi lượt · 2 lượt · tối đa 2 lớp.
+Đầu lượt của bên dính hiệu ứng, mỗi lần cộng dồn trừ 80% chỉ số bên gây ra.
+Một lần cộng dồn là 160% trong cả đời nó, tối đa là 320%.
+Sát thương mỗi lượt · 2 lượt · tối đa 2 lần cộng dồn.
 
 [status] weaken
-Giảm công 30% mỗi lớp.
-Đủ 3 lớp là 90%.
-Giảm chỉ số · 3 lượt · tối đa 3 lớp.
+Giảm công 30% mỗi lần cộng dồn.
+Tối đa là 90%.
+Giảm chỉ số · 3 lượt · tối đa 3 lần cộng dồn.
 
 [status] expose
-Giảm thủ 30% mỗi lớp.
-Đủ 2 lớp là 60%.
-Giảm chỉ số · 2 lượt · tối đa 2 lớp.
+Giảm thủ 30% mỗi lần cộng dồn.
+Tối đa là 60%.
+Giảm chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
 
 [status] blind
-Giảm chính xác 40% mỗi lớp.
-Đủ 2 lớp là 80%.
-Giảm chỉ số · 2 lượt · tối đa 2 lớp.
+Giảm chính xác 40% mỗi lần cộng dồn.
+Tối đa là 80%.
+Giảm chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
 
 [status] mire
-Giảm tốc 25% mỗi lớp.
-Đủ 2 lớp là 50%.
-Giảm chỉ số · 2 lượt · tối đa 2 lớp.
+Giảm tốc 25% mỗi lần cộng dồn.
+Tối đa là 50%.
+Giảm chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
 
 [status] stun
-Người mang mất lượt; chiêu vẫn hồi, chỉ là không ra đòn được.
-Khống chế, mất lượt · 1 lượt · 1 lớp.
+Bên dính hiệu ứng mất lượt; chiêu vẫn hồi, chỉ là không ra đòn được.
+Khống chế, mất lượt · 1 lượt · 1 lần cộng dồn.
 
 [status] rally
-Tăng công 30% mỗi lớp.
-Đủ 3 lớp là 90%.
-Tăng chỉ số · 3 lượt · tối đa 3 lớp.
+Tăng công 30% mỗi lần cộng dồn.
+Tối đa là 90%.
+Tăng chỉ số · 3 lượt · tối đa 3 lần cộng dồn.
 
 [status] haste
-Tăng tốc 30% mỗi lớp.
-Đủ 2 lớp là 60%.
-Tăng chỉ số · 3 lượt · tối đa 2 lớp.
+Tăng tốc 30% mỗi lần cộng dồn.
+Tối đa là 60%.
+Tăng chỉ số · 3 lượt · tối đa 2 lần cộng dồn.
 
 [status] focus
-Tăng chính xác 40% mỗi lớp.
-Đủ 2 lớp là 80%.
-Tăng chỉ số · 3 lượt · tối đa 2 lớp.
+Tăng chính xác 40% mỗi lần cộng dồn.
+Tối đa là 80%.
+Tăng chỉ số · 3 lượt · tối đa 2 lần cộng dồn.
 
 [status] toughened
 Tăng thủ 15%.
-Tăng chỉ số · vĩnh viễn · 1 lớp.
+Tăng chỉ số · vĩnh viễn · 1 lần cộng dồn.
 
 [status] veil
-Tăng né 40% mỗi lớp.
-Đủ 2 lớp là 80%.
-Tăng chỉ số · 2 lượt · tối đa 2 lớp.
+Tăng né 40% mỗi lần cộng dồn.
+Tối đa là 80%.
+Tăng chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
 
 [status] kindled
 Tăng công 15%.
-Tăng chỉ số · vĩnh viễn · 1 lớp.
+Tăng chỉ số · vĩnh viễn · 1 lần cộng dồn.
 
 [status] block
-Mỗi lớp nuốt trọn một nhát; đòn hai nhát tiêu hai lớp.
-Khiên, chặn một đòn · 2 lượt · tối đa 3 lớp.
+Mỗi lần cộng dồn nuốt trọn một nhát; đòn hai nhát tiêu hai lần.
+Khiên, chặn một đòn · 2 lượt · tối đa 3 lần cộng dồn.
 
 [status] regrowth
-Đầu lượt của người mang, mỗi lớp hồi 40% chỉ số của bên đã dán.
-Một lớp là 120% trong cả đời nó, đủ 3 lớp là 360%.
-Hồi máu mỗi lượt · 3 lượt · tối đa 3 lớp.
+Đầu lượt của người mang, mỗi lần cộng dồn hồi 40% chỉ số bên đã dán.
+Một lần cộng dồn là 120% trong cả đời nó, tối đa là 360%.
+Hồi máu mỗi lượt · 3 lượt · tối đa 3 lần cộng dồn.
 
 == en ==
 
@@ -394,32 +394,32 @@ In force only at or below 40% health.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.
-One stack is 150% over its life, and 3 stacks are 450%.
+One stack is 150% over its life, and 450% at its cap.
 Damages every turn · 3 turns · up to 3 stacks.
 
 [status] burn
 At the holder's turn, each stack costs 80% of the applier's stat.
-One stack is 160% over its life, and 2 stacks are 320%.
+One stack is 160% over its life, and 320% at its cap.
 Damages every turn · 2 turns · up to 2 stacks.
 
 [status] weaken
 Lowers attack by 30% per stack.
-At 3 stacks that is 90%.
+At its cap that is 90%.
 Lowers a stat · 3 turns · up to 3 stacks.
 
 [status] expose
 Lowers defence by 30% per stack.
-At 2 stacks that is 60%.
+At its cap that is 60%.
 Lowers a stat · 2 turns · up to 2 stacks.
 
 [status] blind
 Lowers accuracy by 40% per stack.
-At 2 stacks that is 80%.
+At its cap that is 80%.
 Lowers a stat · 2 turns · up to 2 stacks.
 
 [status] mire
 Lowers speed by 25% per stack.
-At 2 stacks that is 50%.
+At its cap that is 50%.
 Lowers a stat · 2 turns · up to 2 stacks.
 
 [status] stun
@@ -428,17 +428,17 @@ Costs a turn · 1 turn · 1 stack.
 
 [status] rally
 Raises attack by 30% per stack.
-At 3 stacks that is 90%.
+At its cap that is 90%.
 Raises a stat · 3 turns · up to 3 stacks.
 
 [status] haste
 Raises speed by 30% per stack.
-At 2 stacks that is 60%.
+At its cap that is 60%.
 Raises a stat · 3 turns · up to 2 stacks.
 
 [status] focus
 Raises accuracy by 40% per stack.
-At 2 stacks that is 80%.
+At its cap that is 80%.
 Raises a stat · 3 turns · up to 2 stacks.
 
 [status] toughened
@@ -447,7 +447,7 @@ Raises a stat · always in force · 1 stack.
 
 [status] veil
 Raises dodge by 40% per stack.
-At 2 stacks that is 80%.
+At its cap that is 80%.
 Raises a stat · 2 turns · up to 2 stacks.
 
 [status] kindled
@@ -460,6 +460,6 @@ Blocks one strike · 2 turns · up to 3 stacks.
 
 [status] regrowth
 At the holder's turn, each stack restores 40% of the applier's stat.
-One stack is 120% over its life, and 3 stacks are 360%.
+One stack is 120% over its life, and 360% at its cap.
 Restores every turn · 3 turns · up to 3 stacks.
 
