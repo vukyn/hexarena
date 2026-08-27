@@ -457,10 +457,15 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 			// time" -- and once one language wants that order, both take it:
 			// TestTheSameBlanksInEveryLanguage holds one arg order for the pair.
 			lines = append(lines, l.Say(BlurbTraitReplyBoth,
-				share(held.Replies.Power),
+				share(held.Replies.Power), l.describeStat(held.Replies.Scaling.Stat),
 				share(first.Chance), l.stacked(first.Status, first.Stacks)))
 		case held.Replies.Power > 0:
-			lines = append(lines, l.Say(BlurbTraitReplyDamage, share(held.Replies.Power)))
+			// The stat is named rather than assumed. It was "attack" in the
+			// wording itself while every reply was priced off attack, and a
+			// sentence that says attack while the engine reads defence is the one
+			// thing a derived description exists to make impossible.
+			lines = append(lines, l.Say(BlurbTraitReplyDamage,
+				share(held.Replies.Power), l.describeStat(held.Replies.Scaling.Stat)))
 		default:
 			first := held.Replies.Applies[0]
 			lines = append(lines, l.Say(BlurbTraitReplyStatus,

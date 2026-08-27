@@ -559,7 +559,7 @@ func (b *Battle) reply(holder, attacker *Unit, held passive.Passive, turn atb.Tu
 		// rather than about this battle.
 		multiplier := b.books.Chart.MultiplierAgainst(from.Element, attacker.Affinity)
 		damage := b.books.Rules.Damage(
-			b.Stats(holder)[from.Scaling],
+			from.stat(b, holder),
 			b.Stats(attacker)[progression.Defense],
 			held.Replies.Power,
 			multiplier,
@@ -926,23 +926,45 @@ type origin struct {
 	Skill   string
 	Passive string
 	Element element.Element
-	Scaling progression.Kind
+	// Scaling is which stat prices this, and whether it reads the base line or
+	// the modified one.
+	//
+	// The whole declaration rather than just the stat, because the source is
+	// half of it: a skill that says "base" and then had its poison tick read the
+	// current value would be two answers to one question, and the only reason
+	// nothing has noticed is that no shipped skill declares a source at all.
+	Scaling skill.Scaling
 }
 
 // fromSkill is the origin of anything a skill does.
 func fromSkill(known skill.Skill) origin {
-	return origin{Skill: known.ID, Element: known.Element, Scaling: known.Scaling.Stat}
+	return origin{Skill: known.ID, Element: known.Element, Scaling: known.Scaling}
+}
+
+// stat is what this origin is priced against, read off the unit it belongs to.
+func (o origin) stat(b *Battle, unit *Unit) int64 {
+	return combat.PickScaling(o.Scaling.Source,
+		unit.Base[o.Scaling.Stat], b.Stats(unit)[o.Scaling.Stat])
 }
 
 // fromTrait is the origin of anything a trait does on its own account.
 //
 // Neutral, always: the elemental chart prices what one creature threw at
 // another, and a trait reading it would make a fire creature's blood weak to
-// water for a reason written nowhere on the trait. It scales off attack because
-// that is what every damaging thing in this game scales off unless it says
-// otherwise, and a trait has nowhere to say otherwise.
+// water for a reason written nowhere on the trait.
+//
+// The stat is the trait's own now. It used to be attack, on the grounds that a
+// trait had nowhere to say otherwise — and that turned out to be the wrong
+// default rather than a missing field: a trait that answers whoever hit it
+// belongs to a unit built to be hit, which is an armoured unit and not a sharp
+// one, so pricing every reply off attack made thorns worth least to exactly the
+// character thorns are for.
 func fromTrait(held passive.Passive) origin {
-	return origin{Passive: held.ID, Element: element.Neutral, Scaling: progression.Attack}
+	scaling := skill.DefaultScaling()
+	if held.Replies != nil {
+		scaling = held.Replies.Scaling
+	}
+	return origin{Passive: held.ID, Element: element.Neutral, Scaling: scaling}
 }
 
 func (b *Battle) inflict(actor, target *Unit, from origin, application skill.Application, turn atb.Turn) {
@@ -992,7 +1014,7 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 		// ratio the author wrote. That is why Pierced is applied by Strike and
 		// not folded into the defence a caller passes.
 		tick = raise(b.books.Rules.Damage(
-			b.Stats(actor)[from.Scaling],
+			from.stat(b, actor),
 			b.Stats(target)[progression.Defense],
 			kind.TickPower,
 			b.books.Chart.MultiplierAgainst(from.Element, target.Affinity),
@@ -1019,7 +1041,7 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 		// in the words of harm, and a share that heals under a sentence reading
 		// "ticks harder" would be a description that lies — which is the one
 		// thing every derived description in this engine exists to prevent.
-		tick = b.books.Rules.Restore(b.Stats(actor)[from.Scaling], kind.TickPower)
+		tick = b.books.Rules.Restore(from.stat(b, actor), kind.TickPower)
 	}
 	applied := 0
 	wasted := 0

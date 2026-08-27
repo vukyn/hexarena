@@ -380,9 +380,9 @@ q hoặc ctrl+c để thoát`,
 	BlurbTraitApplies:     "Đòn đánh gây thêm %s, %s khả năng.",
 	BlurbTraitImmune:      "Miễn nhiễm %s.",
 	BlurbTraitResists:     "Giảm %s khả năng dính %s.",
-	BlurbTraitReplyDamage: "Ai đánh trúng thì bị phản lại %s công của người bị đánh.",
+	BlurbTraitReplyDamage: "Ai đánh trúng thì bị phản lại %s %s của người bị đánh.",
 	BlurbTraitReplyStatus: "Ai đánh trúng thì có %s khả năng dính %s.",
-	BlurbTraitReplyBoth:   "Ai đánh trúng thì bị phản lại %s công của người bị đánh, và có %s khả năng dính %s.",
+	BlurbTraitReplyBoth:   "Ai đánh trúng thì bị phản lại %s %s của người bị đánh, và có %s khả năng dính %s.",
 	// Worded to open with "nó" rather than with the status's own name, so neither
 	// language needs the name capitalised: a data name is authored lowercase and a
 	// sentence that raised its first letter would be showing a word the data does

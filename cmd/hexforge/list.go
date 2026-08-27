@@ -299,7 +299,12 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 		if held.Replies.Answers() {
 			parts := make([]string, 0, 2)
 			if held.Replies.Power > 0 {
-				parts = append(parts, forge.Percent(held.Replies.Power)+" attack")
+				// The stat the reply is priced against, not the word "attack".
+				// It was that word while every reply was priced off attack, and
+				// a listing that says attack while the engine reads defence is a
+				// listing an author would tune against and be wrong.
+				parts = append(parts, forge.Percent(held.Replies.Power)+
+					" "+held.Replies.Scaling.Stat.String())
 			}
 			if len(held.Replies.Applies) > 0 {
 				parts = append(parts, forge.DescribeApplications(held.Replies.Applies))

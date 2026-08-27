@@ -101,6 +101,18 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "thorns",
+      "name": "phản đòn",
+      "flavour": "Ai đấm vào nó thì tự chuốc lấy phần đau của mình",
+      "grants": [],
+      "replies": {
+        "power": 80,
+        "scaling": {
+          "stat": "defense"
+        }
+      }
     }
   ]
 }

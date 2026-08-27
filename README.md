@@ -1617,14 +1617,53 @@ way to close this out wrongly.
 ### Answering back
 
 Built. `venom_blood` is *máu độc*, and blood that is poisonous now costs whatever
-bit into it: whoever damages the holder takes a share of its attack back, and may
-be poisoned by it.
+bit into it: whoever damages the holder takes a share of a stat back, and may be
+poisoned by it.
 
 ```json
 { "id": "venom_blood",
   "replies": { "power": 40, "applies": [{ "status": "poison", "chance": 25 }] },
   "resists": [{ "status": "poison", "amount": 1000 }] }
 ```
+
+#### The stat a reply is priced against
+
+A reply names it, and until it did, every one was priced off attack.
+
+```json
+{ "id": "thorns", "replies": { "power": 80, "scaling": { "stat": "defense" } } }
+```
+
+⚠️ **Attack was the wrong default rather than a missing field**, and the reason is
+the whole point of the feature. A trait that answers whoever hit it belongs to a
+unit **built to be hit** — which is an armoured unit and not a sharp one — so
+pricing every reply off attack made thorns worth least to exactly the character
+thorns are for. Blastoise carries 640 defence and 460 attack: the same share off
+the wrong stat is a **third** less.
+
+It takes a whole `skill.Scaling`, so it says the stat *and* whether it reads the
+base line or the modified one, and `skill.ParseScaling` is exported so that a
+trait and a skill are read by one parser. Reading the *current* value by default
+is what makes a stat trade work: a trait that gives up speed for defence buys
+thicker armour and harder thorns with one number.
+
+⚠️ Widening `origin` to carry the whole declaration fixed a latent bug nobody
+could reach. A skill declaring `"source": "base"` had its **damage** read the base
+line and its **damage-over-time tick** read the current one — two answers to one
+question. No shipped skill declares scaling at all, so it was unreachable, and it
+would have arrived on the day one did.
+
+⚠️ **The word "attack" was hardcoded in three places**: the engine, the reply
+sentence, and `hexforge passives`. The listing's copy is in no golden and nothing
+else reads it, so the mutation that put the literal back **passed the entire
+suite** — and an author tuning a thorns trait would have read "8% attack" off a
+listing whose engine was multiplying defence, and written a number a third out.
+
+`thorns` ships on Squirtle from 32, at 8% of defence. Measured in a duel, which is
+a reply's best case because the holder is attacked every turn it survives: 14.2% →
+**15.3%** overall, and 28.5% → **30.7%** against Charmander. ⚠️ Squirtle still
+loses to Bulbasaur every time either way — that is a cast problem, and this does
+not touch it.
 
 It is not `applies` wearing a different hat. That one hands the holder's own
 attack an extra application, so it fires on a target the holder chose, at a

@@ -175,9 +175,21 @@ type Passive struct {
 // accuracy roll asks whether contact was made, and contact is the thing that has
 // already happened. So a reply is neutral, and it lands.
 type Reply struct {
-	// Power is the share of the holder's attack the reply deals, in parts per
+	// Power is the share of the stat below that the reply deals, in parts per
 	// thousand. Nought is a reply that only applies statuses.
 	Power int
+	// Scaling is which of the holder's stats the reply is priced against, and
+	// whether it reads the base line or the modified one. Attack unless the
+	// trait says otherwise, which is what every damaging thing in this game
+	// scales off by default.
+	//
+	// It is authored because a reply is the one damaging thing whose owner is
+	// not choosing to use it. A trait that answers whoever hit it belongs to a
+	// unit built to be hit, and such a unit is armoured rather than sharp -- so
+	// pricing every reply off attack made thorns worth least to exactly the
+	// character thorns are for. Blastoise carries 640 defence and 460 attack;
+	// the same share off the wrong stat is a third less.
+	Scaling skill.Scaling
 	// Applies are the statuses the reply puts on the attacker. Timed only, for
 	// the same reason a rider is: a permanent one would be an effect on somebody
 	// else that nothing in the game could ever take off.
@@ -352,8 +364,14 @@ type applicationFile struct {
 	Stacks int    `json:"stacks,omitempty"`
 }
 
+type scalingFile struct {
+	Stat   string `json:"stat"`
+	Source string `json:"source,omitempty"`
+}
+
 type replyFile struct {
 	Power   int               `json:"power,omitempty"`
+	Scaling *scalingFile      `json:"scaling,omitempty"`
 	Applies []applicationFile `json:"applies,omitempty"`
 }
 
@@ -540,11 +558,25 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		if err != nil {
 			return fail("%w", err)
 		}
+		scaling := skill.DefaultScaling()
+		if declared.Replies.Scaling != nil {
+			var err error
+			scaling, err = skill.ParseScaling(
+				declared.Replies.Scaling.Stat, declared.Replies.Scaling.Source)
+			if err != nil {
+				return fail("answers with a share that %w", err)
+			}
+		}
+		// A reply that deals no damage has no stat to be priced against, so
+		// naming one is a clause the author will wait forever to see take effect.
+		if declared.Replies.Power == 0 && declared.Replies.Scaling != nil {
+			return fail("answers with no damage but names a stat to scale it off")
+		}
 		if declared.Replies.Power < 0 {
 			return fail("answers for %d power, and a reply cannot heal what attacked it",
 				declared.Replies.Power)
 		}
-		replies = &Reply{Power: declared.Replies.Power, Applies: answers}
+		replies = &Reply{Power: declared.Replies.Power, Scaling: scaling, Applies: answers}
 		// A reply that neither hurts nor inflicts anything is a rule with no
 		// effect, and the trait around it may well have others — so this is
 		// refused here rather than folded into the "changes nothing" check
@@ -721,6 +753,12 @@ func (b *Book) Marshal() ([]byte, error) {
 				})
 			}
 			replies = &replyFile{Power: current.Replies.Power, Applies: answers}
+			if current.Replies.Scaling != skill.DefaultScaling() {
+				replies.Scaling = &scalingFile{
+					Stat:   current.Replies.Scaling.Stat.String(),
+					Source: current.Replies.Scaling.Source.String(),
+				}
+			}
 		}
 		var while *conditionFile
 		if current.While != nil {

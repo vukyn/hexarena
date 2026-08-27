@@ -3,6 +3,11 @@ package passive_test
 import (
 	"strings"
 	"testing"
+
+	"github.com/vukyn/hexarena/internal/core/combat"
+	"github.com/vukyn/hexarena/internal/core/passive"
+	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
 // TestAReplyIsCarriedThroughTheFile is the declaration surviving a round trip,
@@ -176,5 +181,72 @@ func TestAllHandsOutACopyOfTheReply(t *testing.T) {
 	if again.Replies.Applies[0].Chance != 400 {
 		t.Errorf("editing the copy changed the book's chance to %d",
 			again.Replies.Applies[0].Chance)
+	}
+}
+
+// TestAReplyScalingSurvivesBeingWrittenBack is the round trip every authored
+// field has to make.
+//
+// hexforge reads the book and writes it back, so a field the writer drops is a
+// field an author loses by opening the tool -- and this one would be lost
+// quietly, because the reply still works and simply answers off the wrong stat.
+// A mutation that dropped it passed every other test in the package.
+func TestAReplyScalingSurvivesBeingWrittenBack(t *testing.T) {
+	book, err := passive.ParseBook([]byte(`{"passives":[
+	  {"id":"armoured","grants":[],"replies":{"power":500,"scaling":{"stat":"defense"}}},
+	  {"id":"remembered","grants":[],"replies":{"power":500,"scaling":{"stat":"speed","source":"base"}}},
+	  {"id":"sharp","grants":[],"replies":{"power":500}}
+	]}`), passive.Deps{Statuses: statuses(t)})
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	written, err := book.Marshal()
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	again, err := passive.ParseBook(written, passive.Deps{Statuses: statuses(t)})
+	if err != nil {
+		t.Fatalf("re-parse: %v", err)
+	}
+	for _, want := range []struct {
+		id      string
+		scaling skill.Scaling
+	}{
+		{"armoured", skill.Scaling{Stat: progression.Defense, Source: combat.CurrentStat}},
+		{"remembered", skill.Scaling{Stat: progression.Speed, Source: combat.BaseStat}},
+		{"sharp", skill.DefaultScaling()},
+	} {
+		held, err := again.Lookup(want.id)
+		if err != nil {
+			t.Fatalf("lookup %s: %v", want.id, err)
+		}
+		if held.Replies.Scaling != want.scaling {
+			t.Errorf("%s came back scaling off %+v, wanted %+v",
+				want.id, held.Replies.Scaling, want.scaling)
+		}
+	}
+	// The default is written as nothing, so a book of traits that all take it
+	// reads exactly as it did before the field existed.
+	if strings.Contains(string(written), `"scaling"`) != true {
+		t.Fatal("the two declared scalings were not written at all")
+	}
+	if strings.Count(string(written), `"scaling"`) != 2 {
+		t.Errorf("the default scaling was written out as well: %s", written)
+	}
+}
+
+// TestAReplyWithNoDamageMayNotNameAStat, because there is nothing for the stat
+// to price. A trait that answered with a status alone and named defence would be
+// an author waiting for a change that never arrives.
+func TestAReplyWithNoDamageMayNotNameAStat(t *testing.T) {
+	_, err := passive.ParseBook([]byte(`{"passives":[
+	  {"id":"quiet","grants":[],
+	   "replies":{"applies":[{"status":"poison","chance":100}],"scaling":{"stat":"defense"}}}
+	]}`), passive.Deps{Statuses: statuses(t)})
+	if err == nil {
+		t.Fatal("a reply with no damage was allowed to name a stat to scale it off")
+	}
+	if !strings.Contains(err.Error(), "no damage") {
+		t.Errorf("the refusal says %q, which does not say why", err)
 	}
 }
