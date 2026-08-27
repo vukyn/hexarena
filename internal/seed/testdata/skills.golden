@@ -43,7 +43,7 @@ flamethrower    burn                   1      500        900              450
 fire_spin       burn                   1      700        860              602
 heat_wave       burn                   1      400        850              340
 smokescreen     blind                  1      800       1000              800
-dragon_dance    rally (self)           1     1000       1000                -
+dragon_dance    fury (self)            1     1000       1000                -
 dragon_dance    haste (self)           1     1000       1000                -
 bubble          mire                   1      700        900              630
 whirlpool       mire                   1      600        850              510
@@ -81,7 +81,7 @@ expose      stat_debuff         2       2            0      0               0   
 blind       stat_debuff         2       2            0      0               0   accuracy -40.0%
 mire        stat_debuff         2       2            0      0               0   speed -25.0%
 stun        control             1       1            0      0               0   -
-rally       buff                3       3            0      0               0   attack +30.0%
+fury        buff                3       3            0      0               0   attack +30.0%
 haste       buff                2       3            0      0               0   speed +30.0%
 focus       buff                2       3            0      0               0   accuracy +40.0%
 toughened   buff                1       0            0      0               0   defense +15.0%

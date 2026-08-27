@@ -55,6 +55,37 @@ func TestEveryShippedArchetypeIsGlossed(t *testing.T) {
 	}
 }
 
+// TestEveryShippedStatusIsGlossed is the sibling of the archetype check, and it
+// was written because renaming a status is a change that can only go wrong one
+// way.
+//
+// The status table is the lenient kind — a miss is a bare id, which is right for
+// an id an author has just invented — so nothing said anything when a status was
+// renamed in statuses.json and the gloss was left under the old key. The table
+// would still hold a name, the tests would still pass, and the Vietnamese screen
+// would show "fury" in the middle of a sentence. Three statuses shipped bare
+// before anybody noticed, which is the same failure arriving the slow way.
+//
+// It measures the shipped book rather than the table's length, exactly as the
+// archetype check does: an unshipped id is still free to miss, so this does not
+// become a second place a status has to be registered.
+func TestEveryShippedStatusIsGlossed(t *testing.T) {
+	book, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	kinds := book.Kinds()
+	if len(kinds) == 0 {
+		t.Fatal("the shipped data declares no status, so this asserts nothing")
+	}
+	for _, kind := range kinds {
+		if Vi.Gloss(kind.ID) == "" {
+			t.Errorf("the shipped status %q has no Vietnamese name, so every sentence naming it shows the id bare",
+				kind.ID)
+		}
+	}
+}
+
 func TestEveryElementIsGlossed(t *testing.T) {
 	for _, member := range element.All() {
 		if Vi.Gloss(member.String()) == "" {
