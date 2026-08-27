@@ -150,6 +150,11 @@ Nhận sa lầy.
 Bản thân còn <=40% máu: 340% công.
 Tầm 2 · 90% trúng · hồi 3 lượt.
 
+taunt
+Gõ ầm ĩ và chửi đổng cho cả bên kia chỉ còn muốn nhắm vào mình.
+Nhận bị khiêu khích.
+Bản thân · hồi 3 lượt.
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -270,6 +275,10 @@ Khiên, chặn một nhát · 2 lượt · tối đa 3 cộng dồn.
 Đầu lượt người mang, mỗi cộng dồn hồi máu bằng 40% công của bên tạo ra.
 Trọn 3 lượt, một cộng dồn là 120%, tối đa là 360%.
 Hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
+
+[status] taunting
+Mọi kẻ địch còn đánh được đều phải nhắm vào bên mang, bất kể tầm.
+Ép chọn mục tiêu · 2 lượt · 1 cộng dồn.
 
 == en ==
 
@@ -417,6 +426,10 @@ Puts mire on itself.
 While the caster is at or below 40% health: 340% of attack.
 Range 2 · 90% to hit · 3 turns to recharge.
 
+taunt
+Puts taunting on itself.
+Itself · 3 turns to recharge.
+
 [trait] endurance
 Always carries toughened.
 
@@ -528,4 +541,8 @@ Blocks one strike · 2 turns · up to 3 stacks.
 At the holder's turn, each stack restores 40% of the applier's stat.
 Over its 3 turns, one stack is 120%, and 360% at its cap.
 Restores every turn · 3 turns · up to 3 stacks.
+
+[status] taunting
+Every enemy that can attack at all must aim at the holder, at any range.
+Costs a choice of target · 2 turns · 1 stack.
 

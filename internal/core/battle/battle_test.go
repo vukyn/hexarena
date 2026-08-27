@@ -54,6 +54,7 @@ func books(t *testing.T) battle.Books {
 	    {"id": "haste", "category": "buff", "max_stacks": 2, "duration": 3,
 	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 300}]},
 	    {"id": "stun", "category": "control", "max_stacks": 1, "duration": 1},
+	    {"id": "taunting", "category": "taunt", "max_stacks": 1, "duration": 2},
 	    {"id": "block", "category": "shield", "max_stacks": 3, "duration": 2},
 	    {"id": "fleet", "category": "buff", "max_stacks": 1, "duration": 0, "permanent": true,
 	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 500}]},

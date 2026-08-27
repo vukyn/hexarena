@@ -1158,6 +1158,37 @@ is the constraint each piece has to respect.
       ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
+- [x] **A taunt: the choice of enemy taken away, not the turn.** Status
+      `taunting`, and `Battle.aims` narrows an **enemy-aimed** skill to whoever is
+      taunting. `Suggest` obeys it **with no AI change at all**, because it reads
+      the aims it is offered and nothing else.
+      ⚠️ **The status sits on the TAUNTER, not on the taunted.** A taunt held by
+      its victim would have to remember *who* taunted it, and a `status.Stack`
+      **deliberately does not remember who applied it** (that is what keeps a
+      stack worth the same after its author has died). Held by the taunter it
+      needs no memory: "who must I attack" is read off the board, and a corpse is
+      not on it — `TestATauntDiesWithItsTaunter` needs no cleanup path.
+      ⚠️ **Range is not read.** Nothing on this board moves, so a taunt that could
+      be answered by standing far enough away would be ignored by exactly the
+      long-ranged attackers a tank most needs to pull. A range-1 skill aimed at a
+      taunter four cells away lands: nothing past the *legality* of the aim has
+      ever read distance.
+      ⚠️ **A new category `Taunt`, not a second `Control`.** Stun means "you do not
+      act"; taunt means "you act, and may not pick" — opposite things to a turn. A
+      category exists so a cleanse can name a class, and "strips a control" taking
+      a taunt off with a stun is a cleanse nobody could aim. It also stopped the
+      reference printing *"the holder loses its turn"* under `taunting`, which the
+      shared category had it saying. Declared **last** (serialises by name, but
+      `CategoryCount` and the grouped listing order are declaration order).
+      ⚠️ **`Category.Harmful()` must include it** — that gates what a trait may
+      **resist**, so a taunt outside it makes "cannot be provoked" unwritable.
+      Nothing else noticed: the mutation passed every other test in the repo.
+      ⚠️ **A taunt is spent on the TAUNTER's own turns**, so a fast taunter wastes
+      it before a slow victim ever acts. The slowest unit in a squad makes the best
+      taunter — which is Squirtle (speed 85, slowest in the cast) exactly.
+      A taunt only ever *unfreezes* a stalemate (it adds an aim for a unit that had
+      none), so `frozen()` needs no change; it already goes through `aims`.
+      Shipped `taunt` on Squirtle@40 (self-aimed, cd 3).
 - [x] **A reply priced off the stat its holder actually has.** `passive.Reply`
       gained **`Scaling`** (a `skill.Scaling`, so stat *and* base-or-current),
       authored as `"replies": {"power": 80, "scaling": {"stat": "defense"}}`.

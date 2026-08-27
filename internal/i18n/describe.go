@@ -648,6 +648,8 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		}
 	case status.Control:
 		out = append(out, l.Text(BlurbStatusControls))
+	case status.Taunt:
+		out = append(out, l.Text(BlurbStatusTaunts))
 	case status.Shield:
 		out = append(out, l.Text(BlurbStatusShields))
 	}

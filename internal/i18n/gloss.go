@@ -79,18 +79,19 @@ var (
 	// syntax: an author picking one out of the book is choosing between "mire"
 	// and "expose", and an id is not much to choose on.
 	statusGloss = map[string]string{
-		"poison": "trúng độc",
-		"burn":   "bỏng",
-		"weaken": "suy yếu",
-		"expose": "phá giáp",
-		"blind":  "mù",
-		"mire":   "sa lầy",
-		"stun":   "choáng",
-		"fury":   "cuồng nộ",
-		"haste":  "nhanh nhẹn",
-		"focus":  "tập trung",
-		"veil":   "mờ ảo",
-		"block":  "đỡ đòn",
+		"poison":   "trúng độc",
+		"burn":     "bỏng",
+		"weaken":   "suy yếu",
+		"expose":   "phá giáp",
+		"blind":    "mù",
+		"mire":     "sa lầy",
+		"stun":     "choáng",
+		"taunting": "bị khiêu khích",
+		"fury":     "cuồng nộ",
+		"haste":    "nhanh nhẹn",
+		"focus":    "tập trung",
+		"veil":     "mờ ảo",
+		"block":    "đỡ đòn",
 		// The three that shipped without one. A regen, and the two permanent
 		// statuses a trait grants -- which are the ones a reader is least able
 		// to guess at, because nothing else on screen says what they do.
@@ -112,6 +113,7 @@ var (
 		"buff":        "hiệu ứng tăng chỉ số",
 		"shield":      "hiệu ứng khiên chắn",
 		"regen":       "hiệu ứng hồi máu",
+		"taunt":       "hiệu ứng khiêu khích",
 	}
 
 	// The role presets in archetypes.json.

@@ -594,6 +594,26 @@
         "below_health": 400,
         "bonus_power": 1200
       }
+    },
+    {
+      "id": "taunt",
+      "name": "khiêu khích",
+      "flavour": "Gõ ầm ĩ và chửi đổng cho cả bên kia chỉ còn muốn nhắm vào mình",
+      "element": "neutral",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "self",
+      "self_applies": [
+        {
+          "status": "taunting",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

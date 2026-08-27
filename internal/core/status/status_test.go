@@ -359,8 +359,27 @@ func TestZeroSetIsUsable(t *testing.T) {
 	}
 }
 
+// TestATauntIsSomethingItsHolderWantsGone.
+//
+// Harmful is the split that says which categories are an attack, and it gates
+// what a trait may resist: a trait refusing a buff would be refusing its own
+// side's help. A taunt on the wrong side of that line would make "cannot be
+// provoked" unwritable, and nothing else in the engine would notice -- the
+// mutation that moved it passed every other test in the repository.
+func TestATauntIsSomethingItsHolderWantsGone(t *testing.T) {
+	if !status.Taunt.Harmful() {
+		t.Error("a taunt is not counted as an attack, so no trait can be written to refuse one")
+	}
+	// And the split still holds for the three it must never cover.
+	for _, kind := range []status.Category{status.Buff, status.Shield, status.Regen} {
+		if kind.Harmful() {
+			t.Errorf("%s is counted as an attack, so a trait could refuse its own side's help", kind)
+		}
+	}
+}
+
 func TestCategoryNames(t *testing.T) {
-	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen"}
+	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt"}
 	categories := status.Categories()
 	if len(categories) != len(want) {
 		t.Fatalf("there are %d categories, want %d", len(categories), len(want))

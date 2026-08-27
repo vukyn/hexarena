@@ -56,10 +56,24 @@ const (
 	// amount is frozen when the stack is applied, so two casters stacking one
 	// regeneration each contribute what their own attack was worth.
 	Regen
+	// Taunt takes the holder's choice of enemy rather than its turn.
+	//
+	// Its own category rather than a second Control, because the two do opposite
+	// things to a turn: a stunned unit does not act, and a taunted one acts and
+	// is simply not allowed to pick. A category exists so a cleanse can name a
+	// class without listing its members, and "strips a control" that took a
+	// taunt off along with a stun would be a cleanse nobody could aim.
+	//
+	// Declared last on purpose. The value serialises by name like every other
+	// enum here, so appending cannot reinterpret a saved book or log — but
+	// CategoryCount and the order the grouped reference prints in are built from
+	// the declaration order, and slotting one in beside Control would move every
+	// table below it for no rule.
+	Taunt
 )
 
 // CategoryCount is the number of categories.
-const CategoryCount = int(Regen) + 1
+const CategoryCount = int(Taunt) + 1
 
 var categoryNames = [CategoryCount]string{
 	Dot:        "dot",
@@ -68,6 +82,7 @@ var categoryNames = [CategoryCount]string{
 	Buff:       "buff",
 	Shield:     "shield",
 	Regen:      "regen",
+	Taunt:      "taunt",
 }
 
 func (c Category) String() string {
@@ -84,7 +99,7 @@ func (c Category) Valid() bool { return int(c) < CategoryCount }
 // It is what separates a cleanse from a dispel.
 func (c Category) Harmful() bool {
 	switch c {
-	case Dot, StatDebuff, Control:
+	case Dot, StatDebuff, Control, Taunt:
 		return true
 	default:
 		return false

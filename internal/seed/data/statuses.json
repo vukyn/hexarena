@@ -75,6 +75,12 @@
       "duration": 1
     },
     {
+      "id": "taunting",
+      "category": "taunt",
+      "max_stacks": 1,
+      "duration": 2
+    },
+    {
       "id": "fury",
       "category": "buff",
       "max_stacks": 3,

@@ -40,6 +40,17 @@ const blockStatus = "block"
 // stunStatus is the control effect that costs a unit its action.
 const stunStatus = "stun"
 
+// tauntStatus is the control effect that costs a unit its choice of target.
+//
+// It sits on the unit doing the taunting rather than on the unit being taunted,
+// and that is the design rather than a preference. A taunt held by its victim
+// would have to remember *who* taunted it, and a status.Stack deliberately does
+// not remember who applied it — which is what keeps a stack worth the same after
+// its author has died. Held by the taunter it needs no such memory: "who must I
+// attack" is answered by looking at the board, and a taunter who dies takes the
+// answer with it on the same turn, with nothing to clean up.
+const tauntStatus = "taunting"
+
 // Books are the parsed data a battle reads. They are never modified.
 type Books struct {
 	Rules    combat.Rules

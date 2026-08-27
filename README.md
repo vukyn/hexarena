@@ -1614,6 +1614,56 @@ touch something and it is poisoned — where the row wants the reverse, an answe
 being attacked. Writing the first and calling it the second would be the cheapest
 way to close this out wrongly.
 
+### A taunt
+
+Built. A taunted unit still acts; what it loses is the choice of who to hit.
+
+```json
+{ "id": "taunt", "target": "self", "power": 0,
+  "self_applies": [{ "status": "taunting", "chance": 1000 }] }
+```
+
+`Battle.aims` narrows an **enemy-aimed** skill to whoever is taunting, and
+`battle.Suggest` obeys it **with no change to the opponent at all** — it reads the
+aims it is offered and nothing else, so narrowing the list narrows its choice with
+it. An AI that built its own list would have walked straight past the mechanic,
+which is why there is a test that says so rather than a comment.
+
+⚠️ **The status sits on the taunter, not on the taunted**, and that is the design
+rather than a preference. A taunt held by its victim would have to remember *who*
+taunted it — and a `status.Stack` deliberately does not remember who applied it,
+which is what keeps a stack worth the same after its author has died. Held by the
+taunter it needs no memory at all: "who must I attack" is read off the board, and
+a corpse is not on it. There is no cleanup path, because there is nothing to clean
+up.
+
+⚠️ **Range is not read.** Nothing on this board moves, so a taunt that could be
+answered by standing far enough away would be ignored by exactly the long-ranged
+attackers a tank most needs to pull off its own back column — and a tank nobody can
+be made to attack is furniture. A range-one skill aimed at a taunter four cells
+away lands: nothing past the *legality* of the aim has ever read distance.
+
+⚠️ **It is its own category rather than a second `control`.** A stun means "you do
+not act" and a taunt means "you act, and may not pick" — opposite things to do to
+a turn. A category exists here so a cleanse can name a class without listing its
+members, and *"strips a control"* taking a taunt off along with a stun is a cleanse
+nobody could aim. It also caught the reference printing *"the holder loses its
+turn"* under `taunting`, which is what the shared category had it saying.
+
+⚠️ `Category.Harmful()` has to include it. That split gates what a trait may
+**resist**, so a taunt outside it makes *"cannot be provoked"* unwritable — and
+nothing else in the engine would have noticed. The mutation that moved it passed
+every other test in the repository.
+
+⚠️ **A taunt is spent on the taunter's own turns.** A status is timed in its
+holder's turns, so a taunter much faster than its victim burns the taunt before the
+victim ever acts. The slowest unit in a squad makes the best taunter — which is
+Blastoise, at 85 speed, exactly.
+
+A taunt can only ever *unfreeze* a stalemate, never cause one: it adds an aim for a
+unit that had none and never removes the last one, since the taunter is alive by
+definition. `frozen()` needs no change — it already asks through `aims`.
+
 ### Answering back
 
 Built. `venom_blood` is *máu độc*, and blood that is poisonous now costs whatever
