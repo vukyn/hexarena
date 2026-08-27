@@ -362,6 +362,7 @@ const (
 	BlurbRestores
 	BlurbDrains
 	BlurbInflicts
+	BlurbGives
 	BlurbSelfApplies
 	BlurbStrips
 	BlurbStripsOne

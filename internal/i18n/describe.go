@@ -160,8 +160,22 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 	if declared.Drains > 0 {
 		out = append(out, l.Say(BlurbDrains, share(declared.Drains)))
 	}
+	// The verb turns on which side the skill can reach, because an application is
+	// only an affliction when it lands on somebody the caster is fighting.
+	//
+	// Everything in the book aimed at an enemy until a team buff was written, and
+	// nothing said the sentence had an assumption in it: the first ally-aimed
+	// skill described its own buff as something inflicted on a friend. Enemy is
+	// the one side that can be called hostile without asking anything else --
+	// self and ally are plainly not, and a skill aimed at both halves is landing
+	// on its own squad too, so the neutral verb is the only one true of every
+	// target it catches.
+	given := BlurbInflicts
+	if declared.Target != skill.Enemy {
+		given = BlurbGives
+	}
 	for _, application := range declared.Applies {
-		out = append(out, l.Say(BlurbInflicts,
+		out = append(out, l.Say(given,
 			l.stacked(application.Status, application.Stacks), share(application.Chance)))
 	}
 	// One sentence for all of them rather than one each: a skill granting two
