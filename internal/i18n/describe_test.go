@@ -105,6 +105,12 @@ func TestEveryTraitDescriptionSaysEveryThingItDoes(t *testing.T) {
 			}
 			lines := len(strings.Split(strings.TrimSpace(description), "\n"))
 			want := len(held.Grants) + len(held.Resists) + len(held.Applies)
+			// The authored clause is a line of its own, and only in the language
+			// it was authored in: an English reader gets the derived lines, the
+			// same trade a skill's flavour makes.
+			if held.Flavour != "" && lang == i18n.Vi {
+				want++
+			}
 			if held.Replies.Answers() {
 				want++
 			}

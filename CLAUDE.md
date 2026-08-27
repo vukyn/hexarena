@@ -309,6 +309,26 @@ because an authored line survives its own numbers moving — "doubles" outlives 
 bonus falling 1000 → 700 — and this repo already refused that trade in
 `Archetype.Demands`. ⚠️ **Never add a `description` field to skills.json** — `flavour` is one clause,
 not a description, and the difference is that it holds no figures.
+⚠️ **`passives.json` has `flavour` too, and its ban is stricter.** A skill free for
+anybody may not name a body and a *restricted* one may (`ingrain` says roots, only
+a plant takes it); **a trait has no restriction mechanism at all** — no element,
+archetype, species or character — so for a trait the ban is unconditional and no
+future field relaxes it. It is a **lead line**, not a replacement: a skill has one
+opening sentence to take over, a trait has one to six lines and no opening among
+them. It also fixed the bare `nó` in six of the eleven trait wordings without
+touching a wording — the clause gives the pronoun an antecedent.
+⚠️ **Trait sentence order is narrative, not field order**: what the holder *is*
+(grants, resists) → what its **own attacks** do (applies, amplifies, drains) →
+what attacking **it** costs (replies) → **when** (while). Field order read
+backwards on `venom_blood`, which replied before it said it was immune.
+⚠️ **A share prints through `forge.Percent`, never truncated.** Truncation is
+lossless for a skill (hundreds of parts per thousand) and lossy for a trait
+(tens): `venom_blood`'s reply chance of 25 printed `2%` for 2.5, and anything under
+10 printed `0%`. The old excuse — the listing beside it carries the exact figure —
+is false for traits, because `hexforge passives` has no reply or drain column at
+all. One renderer for the author's table and the player's sentence. Decimal point,
+not comma, because these figures sit inside sentences that use commas between
+clauses.
 Numbers are **shares of a stat** ("100% công"), never damage figures: a figure is
 true for one caster against one target and false at the next buff. ⚠️ The block is
 **Vietnamese on an otherwise English screen** — a stated cost, not an oversight;
@@ -1258,6 +1278,10 @@ is the constraint each piece has to respect.
       `DescribePassive` writes one sentence for a whole reply on purpose: what a
       reader wants is what attacking that unit costs, and a damage cell filed away
       from a status cell leaves them to add it up.
+      ⚠️ **The sentences have moved since this was written** and the item has not:
+      a trait now carries a `flavour` lead clause, the derived lines are in
+      narrative order, and a share prints exactly (`2.5%`, not `2%`). This is still
+      about **where** a trait's description can be read.
       ⚠️ Same trap the status screen just paid: **a new screen has to go into
       `everyScreen` in `language_test.go`**, or every width and translation test
       skips it silently.

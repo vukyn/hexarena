@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -49,6 +50,32 @@ type Passive struct {
 	// sitting, and a separate translations file is a second thing to keep in
 	// step. Absent is a real answer; a passive with no name renders as its id.
 	Name string
+	// Flavour is the authored clause a description opens with, and it is the one
+	// thing about a trait that is written rather than derived.
+	//
+	// It sits beside Name for the same reason skill.Flavour does: both are the
+	// words a trait is read in, and a name alone was never enough. A trait's
+	// sentences are one per declared field — "always carries cứng đòn", "refuses
+	// bỏng outright" — and they say what it does without ever saying what it is,
+	// so a reader meets the mechanism with nothing to hang it on. The clause is
+	// where "máu nó là nọc" is allowed to be said, because nothing derives that
+	// from a resistance and a reply.
+	//
+	// It is safe for exactly one reason: it may carry **no figure**, which
+	// ParseBook enforces. A clause with no number in it cannot be made wrong by
+	// changing a number, which is what lets prose sit beside derived sentences
+	// without the drift that Archetype.Demands was made derived to avoid.
+	//
+	// ⚠️ And it may name **no body**, which is a rule the seed tests hold rather
+	// than this package. A skill free for anybody to carry may not say "mai" and
+	// a restricted one may, because its restriction guarantees the body — a trait
+	// has **no restriction mechanism at all**, so for a trait the ban is
+	// unconditional. Nothing here can be authored its way out of.
+	//
+	// Absent is a real answer, the way it is for a skill: a trait with no clause
+	// opens on its derived sentences, which is what every one of them read like
+	// before this existed.
+	Flavour string
 	// Grants are the statuses the holder carries while the trait is in force,
 	// which is the whole battle unless While says otherwise.
 	//
@@ -306,7 +333,10 @@ type passiveFile struct {
 	ID string `json:"id"`
 	// Written only when there is one, so a book that names none round-trips to
 	// the bytes it was authored as.
-	Name      string              `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// Flavour sits beside the name and is omitted when absent, so a book that
+	// declares neither round-trips to the bytes it was authored as.
+	Flavour   string              `json:"flavour,omitempty"`
 	Grants    []grantFile         `json:"grants"`
 	Applies   []applicationFile   `json:"applies,omitempty"`
 	Replies   *replyFile          `json:"replies,omitempty"`
@@ -384,6 +414,19 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		declared.Drains == 0 && len(declared.Amplifies) == 0 {
 		return fail("grants nothing, resists nothing, adds nothing, answers nothing, drains nothing and amplifies nothing, so holding it would change nothing")
 	}
+	// The one authored clause, and the one rule that makes it safe. A figure in
+	// it is refused rather than trusted, because every number in a description is
+	// derived and a clause reading "gấp đôi" would outlive the amount that made
+	// it true. Digits rather than a percent sign, since "40" and "gấp 2" are the
+	// same mistake wearing different clothes. Said the same way skill.resolve
+	// says it, because it is the same rule and a second wording of one rule is
+	// how the two come to disagree about what counts.
+	flavour := strings.TrimSpace(declared.Flavour)
+	if index := strings.IndexFunc(flavour, unicode.IsDigit); index >= 0 {
+		return fail("has a flavour clause carrying the figure %q; every number in a description is derived, and an authored one would outlive what it describes",
+			flavour[index:index+1])
+	}
+
 	grants := make([]Grant, 0, len(declared.Grants))
 	for _, grant := range declared.Grants {
 		kind, err := deps.Statuses.Lookup(grant.Status)
@@ -521,7 +564,7 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 	}
 
 	return Passive{
-		ID: declared.ID, Name: strings.TrimSpace(declared.Name),
+		ID: declared.ID, Name: strings.TrimSpace(declared.Name), Flavour: flavour,
 		Grants: grants, Applies: applies, Replies: replies,
 		While: while, Resists: resists, Drains: declared.Drains,
 		Amplifies: amplifies,
@@ -683,7 +726,7 @@ func (b *Book) Marshal() ([]byte, error) {
 			})
 		}
 		file.Passives = append(file.Passives, passiveFile{
-			ID: current.ID, Name: current.Name, Grants: grants,
+			ID: current.ID, Name: current.Name, Flavour: current.Flavour, Grants: grants,
 			Applies: applies, Replies: replies, While: while, Resists: resists,
 			Drains: current.Drains, Amplifies: amplifies,
 		})

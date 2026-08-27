@@ -3,6 +3,7 @@
     {
       "id": "endurance",
       "name": "bền bỉ",
+      "flavour": "Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó",
       "grants": [
         {
           "status": "toughened",
@@ -13,6 +14,7 @@
     {
       "id": "blaze",
       "name": "bùng lửa",
+      "flavour": "Càng bị dồn vào đường cùng, ngọn lửa trong nó càng bốc dữ",
       "grants": [
         {
           "status": "kindled",
@@ -26,6 +28,7 @@
     {
       "id": "heatproof",
       "name": "chịu nhiệt",
+      "flavour": "Sức nóng bao nhiêu cũng chỉ lướt qua, không bén nổi vào nó",
       "grants": [],
       "resists": [
         {
@@ -37,6 +40,7 @@
     {
       "id": "virulence",
       "name": "độc lực",
+      "flavour": "Nọc của nó đặc và ngấm sâu hơn thứ độc tầm thường",
       "grants": [],
       "amplifies": [
         {
@@ -49,6 +53,7 @@
     {
       "id": "venom_blood",
       "name": "máu độc",
+      "flavour": "Máu chảy trong người nó vốn là nọc; ai cắn phải thì tự chuốc lấy",
       "grants": [],
       "replies": {
         "power": 40,
@@ -69,12 +74,14 @@
     {
       "id": "blood_thirst",
       "name": "khát máu",
+      "flavour": "Vết thương nó xé ra lại quay về nuôi chính nó",
       "grants": [],
       "drains": 250
     },
     {
       "id": "last_gasp",
       "name": "hấp hối",
+      "flavour": "Càng thoi thóp, cơn khát của nó càng trỗi lên dữ",
       "grants": [],
       "while": {
         "below_health": 400

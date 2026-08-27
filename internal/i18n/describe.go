@@ -109,6 +109,20 @@ func (l Lang) flavour(declared skill.Skill) string {
 	return declared.Flavour
 }
 
+// traitFlavour is a trait's authored clause in this language, or nothing.
+//
+// English has none, the same trade skill flavour makes: the clause is authored
+// once and in Vietnamese, so an English reader gets the derived lines rather than
+// a Vietnamese sentence dropped into an English paragraph. A translations table
+// would be a second file to keep in step, and the one it would be out of step
+// with is the one an author actually edits.
+func (l Lang) traitFlavour(held passive.Passive) string {
+	if l != Vi {
+		return ""
+	}
+	return held.Flavour
+}
+
 // describeAim is the side a skill reaches. How many cells it covers is on the
 // cost line instead — see cellsCovered.
 func (l Lang) describeAim(declared skill.Skill) string {
@@ -233,8 +247,38 @@ func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 
 // DescribePassive is what a trait does. A trait is not chosen, so this answers
 // "what is this unit carrying" rather than "should I use it".
+//
+// # The order the sentences come in
+//
+// Not the order the fields are declared in, which is what it was and which read
+// backwards on the one trait that has two halves: venom_blood answered an
+// attacker and then said it was immune to poison, when the fiction runs the
+// other way — its blood is venom, so nothing poisons it, so whatever bites it is
+// poisoned. Field order is an accident of when each half was built.
+//
+// So: what the holder **is** (grants, resists), then what its **own attacks** do
+// (applies, amplifies, drains), then what attacking **it** costs (replies), then
+// **when** any of it is true (while, which was already last and stays there
+// because it qualifies everything above it).
+//
+// # Why there is a clause here at all
+//
+// Every line below is derived, which is right and is also why a trait read like
+// a field dump: "always carries cứng đòn", "refuses bỏng outright". They say what
+// it does and never what it is, so the mechanism arrives with nothing to hang it
+// on — and the trait's own authored name, máu độc, was rendered nowhere in the
+// sentences. Flavour is the one line allowed to say it, under the digit ban that
+// keeps prose from going stale, exactly as a skill's is.
+//
+// It is a **lead line** rather than a replacement, which is where it differs
+// from a skill's. A skill has one opening sentence for the clause to take over;
+// a trait has between one and six lines and no opening among them, so a clause
+// that replaced one would be replacing whichever happened to sort first.
 func (l Lang) DescribePassive(held passive.Passive) string {
-	lines := make([]string, 0, 3)
+	lines := make([]string, 0, 4)
+	if flavour := l.traitFlavour(held); flavour != "" {
+		lines = append(lines, flavour+".")
+	}
 	// "Always" only where it is true. A gated trait comes and goes with its
 	// holder's health, and the last line below says when — so opening with
 	// "always carries" and closing with "only while under a third" would be two
@@ -247,9 +291,32 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 	for _, grant := range held.Grants {
 		lines = append(lines, l.Say(carries, l.stacked(grant.Status, grant.Stacks)))
 	}
+	for _, resistance := range held.Resists {
+		if resistance.Amount >= scale.Base {
+			lines = append(lines, l.Say(BlurbTraitImmune, l.glossed(resistance.Status)))
+			continue
+		}
+		lines = append(lines, l.Say(BlurbTraitResists,
+			share(resistance.Amount), l.glossed(resistance.Status)))
+	}
 	for _, application := range held.Applies {
 		lines = append(lines, l.Say(BlurbTraitApplies,
 			l.stacked(application.Status, application.Stacks), share(application.Chance)))
+	}
+	// Both shares, each as its own sentence, and the status named first in both
+	// languages so one arg order serves both.
+	for _, raise := range held.Amplifies {
+		if raise.Effect > 0 {
+			lines = append(lines, l.Say(BlurbTraitAmplifiesEffect,
+				l.glossed(raise.Status), share(raise.Effect)))
+		}
+		if raise.Chance > 0 {
+			lines = append(lines, l.Say(BlurbTraitAmplifiesChance,
+				l.glossed(raise.Status), share(raise.Chance)))
+		}
+	}
+	if held.Drains > 0 {
+		lines = append(lines, l.Say(BlurbTraitDrains, share(held.Drains)))
 	}
 	// One sentence for the whole reply rather than one per part: what a reader
 	// wants is what it costs to attack this unit, and a damage line filed apart
@@ -275,29 +342,6 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 			first := held.Replies.Applies[0]
 			lines = append(lines, l.Say(BlurbTraitReplyStatus,
 				l.stacked(first.Status, first.Stacks), share(first.Chance)))
-		}
-	}
-	for _, resistance := range held.Resists {
-		if resistance.Amount >= scale.Base {
-			lines = append(lines, l.Say(BlurbTraitImmune, l.glossed(resistance.Status)))
-			continue
-		}
-		lines = append(lines, l.Say(BlurbTraitResists,
-			share(resistance.Amount), l.glossed(resistance.Status)))
-	}
-	if held.Drains > 0 {
-		lines = append(lines, l.Say(BlurbTraitDrains, share(held.Drains)))
-	}
-	// Both shares, each as its own sentence, and the status named first in both
-	// languages so one arg order serves both.
-	for _, raise := range held.Amplifies {
-		if raise.Effect > 0 {
-			lines = append(lines, l.Say(BlurbTraitAmplifiesEffect,
-				l.glossed(raise.Status), share(raise.Effect)))
-		}
-		if raise.Chance > 0 {
-			lines = append(lines, l.Say(BlurbTraitAmplifiesChance,
-				l.glossed(raise.Status), share(raise.Chance)))
 		}
 	}
 	if held.While != nil {
