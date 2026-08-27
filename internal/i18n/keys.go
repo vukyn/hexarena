@@ -360,6 +360,19 @@ const (
 	BlurbOnce
 	BlurbPierces
 	BlurbRestores
+	// A summon, in two shapes: one that stays and one that does not. Two whole
+	// wordings rather than a clause tacked on, for the reason a reply has three
+	// — a sentence assembled from fragments is a sentence neither language gets
+	// to choose the shape of.
+	BlurbSummons
+	BlurbSummonsBriefly
+	// BlurbSummonedOne and BlurbSummonedMany are what is being called up, which
+	// the two above take as their first blank. Separated because one copy reads
+	// as a name and several read as a count, and a language may put the number
+	// on either side of it.
+	BlurbSummonedOne
+	BlurbSummonedMany
+	BlurbSummonedCopy
 	BlurbDrains
 	BlurbInflicts
 	BlurbGives

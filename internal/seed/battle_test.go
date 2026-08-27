@@ -386,11 +386,93 @@ func TestEveryEventKindIsReachable(t *testing.T) {
 		record(fight.Drain())
 	}
 	record(aHandPlayedGateCrossing(t))
+	record(aHandPlayedSummon(t))
 	for kind := 0; kind < battle.KindCount; kind++ {
 		if !seen[battle.Kind(kind)] {
 			t.Errorf("no battle on the bench ever emitted %s", battle.Kind(kind))
 		}
 	}
+}
+
+// aHandPlayedSummon casts a summon by hand and drives on until the copy leaves,
+// and returns what that logged.
+//
+// It is here rather than folded into the sweep above for the same reason the
+// gate crossing is, and the reason is sharper: Suggest picks the option with the
+// highest expected damage and falls back to the first usable non-damaging skill,
+// so a skill whose whole effect is putting somebody on the board is one it takes
+// only when it can find nothing to hit. On autopilot that is close to never, and
+// widening the sweep until it happened would be a test passing for a reason
+// nobody could name.
+//
+// The copy is bound and lasts one turn, so both new kinds come out of one
+// exchange: it arrives on the cast, acts once, and leaves at the start of the
+// turn after.
+func aHandPlayedSummon(t *testing.T) []battle.Event {
+	t.Helper()
+	fight, err := battle.New(benchBooks(t), 5, []battle.Roster{
+		{ID: "caller", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "fire"), Stats: benchStats(3000, 700, 300, 200),
+			Skills: []string{"echo", "strike"}},
+		{ID: "sparring", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 100),
+			Skills: []string{"strike"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	var events []battle.Event
+	summoned, left := false, false
+	for turn := 0; turn < 200 && !left; turn++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt == nil {
+			break
+		}
+		if !prompt.Skipped {
+			// The caller echoes once and then fights; everybody else, the copy
+			// included, takes whatever the engine would.
+			if prompt.Unit == "caller" && !summoned {
+				if err := fight.Act("echo", unitCell(t, fight, "caller")); err != nil {
+					t.Fatalf("echo: %v", err)
+				}
+			} else if choice, ok := fight.Suggest(prompt); ok {
+				if err := fight.Act(choice.Skill, choice.Aim); err != nil {
+					t.Fatalf("act %s: %v", choice.Skill, err)
+				}
+			} else if err := fight.Pass("nothing to do"); err != nil {
+				t.Fatalf("pass: %v", err)
+			}
+		}
+		for _, event := range fight.Drain() {
+			events = append(events, event)
+			switch event.Kind {
+			case battle.Summoned:
+				summoned = true
+			case battle.Left:
+				left = true
+			}
+		}
+	}
+	if !summoned || !left {
+		t.Fatalf("the hand-played summon logged summoned=%v left=%v; both were wanted",
+			summoned, left)
+	}
+	return events
+}
+
+// unitCell is where a unit is standing, which a self-aimed skill has to be
+// pointed at.
+func unitCell(t *testing.T, fight *battle.Battle, id string) hex.Offset {
+	t.Helper()
+	unit, ok := fight.Unit(id)
+	if !ok {
+		t.Fatalf("no unit %q in the battle", id)
+	}
+	return unit.Cell
 }
 
 // aHandPlayedGateCrossing drives one battle by hand until a gated trait has come

@@ -131,7 +131,25 @@ func books(t *testing.T) battle.Books {
 	   "self_applies":[{"status":"mending","chance":1000,"stacks":1}]},
 	  {"id":"bless","element":"grass","range":1,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"ally",
-	   "applies":[{"status":"mending","chance":1000,"stacks":1}]}
+	   "applies":[{"status":"mending","chance":1000,"stacks":1}]},
+	  {"id":"copy","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "summons":{"count":1,"name":"copy","share":500,"skills":["jab"]}},
+	  {"id":"copy_base","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "summons":{"count":1,"name":"copy","share_of_base":500,"skills":["jab"]}},
+	  {"id":"brief_copy","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "summons":{"count":1,"name":"copy","share":500,"skills":["jab"],
+	              "lasts":2,"bound":true}},
+	  {"id":"call_toad","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "summons":{"count":1,"name":"toad","element":"water","skills":["jab"],
+	              "stats":{"hp":900,"attack":300,"defense":200,"speed":40,
+	                       "accuracy":0,"dodge":0}}},
+	  {"id":"swarm","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "summons":{"count":3,"name":"copy","share":300,"skills":["jab"]}}
 	]}`), skill.Deps{Patterns: patterns, Statuses: statuses})
 	if err != nil {
 		t.Fatalf("skills: %v", err)

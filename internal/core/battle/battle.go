@@ -120,6 +120,20 @@ type Unit struct {
 	Skills    []string
 	Cooldowns []int
 	Statuses  status.Set
+	// Summoner is the unit that put this one on the board, and is empty for one
+	// the roster placed. Summoned counts what this unit has put down, so two
+	// casts cannot name their clones the same thing while the first lot is still
+	// standing. Leaves is how many of its own turns a summon has left, and is
+	// minus one for one that stays; Bound says it goes when its summoner does.
+	//
+	// All four are read by a replay, which is the test for what belongs on a
+	// Unit — but none of them is on Roster, because a summon is derived from the
+	// caster and the skill rather than placed. A log carrying them would be a log
+	// that could disagree with the engine about who is standing there.
+	Summoner string
+	Summoned int
+	Leaves   int
+	Bound    bool
 	// Passives are the ids the unit was enlisted with, kept so the log can say
 	// which trait put a permanent status on. The statuses themselves are already
 	// in Statuses; this is the provenance, and without it a reader sees a
@@ -640,5 +654,10 @@ func (b *Battle) kill(unit *Unit) {
 	unit.HP = 0
 	b.queue.Remove(unit.ID)
 	b.emit(Event{Kind: Died, Actor: unit.ID, Cell: unit.Cell, Side: unit.Side})
+	// Before the end is checked, not after. A bound summon going with its
+	// summoner can be what empties a side, and checking first would declare a
+	// battle still running that the very next line ends — two answers to one
+	// question, in the wrong order.
+	b.dismissBound(unit)
 	b.checkEnd()
 }

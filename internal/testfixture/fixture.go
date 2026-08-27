@@ -373,6 +373,25 @@ const Skills = `[
     "drains": 500,
     "cooldown": 3,
     "target": "enemy"
+  },
+  {
+    "id": "echo",
+    "element": "neutral",
+    "range": 0,
+    "pattern": "single",
+    "power": 0,
+    "strikes": 0,
+    "accuracy": 1000,
+    "cooldown": 4,
+    "target": "self",
+    "summons": {
+      "count": 1,
+      "name": "echo",
+      "share": 400,
+      "skills": ["strike"],
+      "lasts": 1,
+      "bound": true
+    }
   }
 ]`
 

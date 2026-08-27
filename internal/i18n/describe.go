@@ -162,6 +162,9 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 	if declared.Drains > 0 {
 		out = append(out, l.Say(BlurbDrains, share(declared.Drains)))
 	}
+	if declared.Summons.Summons() {
+		out = append(out, l.describeSummon(declared.Summons))
+	}
 	// The verb turns on which side the skill can reach, because an application is
 	// only an affliction when it lands on somebody the caster is fighting.
 	//
@@ -204,6 +207,39 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 	return out
 }
 
+// describeSummon is what a skill puts on the board, in one sentence.
+//
+// The name is the summon's own where it has one and the skill's id where it does
+// not, because a summon with no name is a copy of its caster and a caster's name
+// is not a fact this layer holds — the skill is. A bare id in a Vietnamese
+// sentence is the same fallback every other name in these descriptions takes.
+//
+// Nothing is said about the stat line. A share of a caster is a number a reader
+// cannot check without knowing the caster, and a fixed line is six figures; the
+// listing beside this carries both for anybody tuning them, and what a player
+// wants from a sentence is what arrives and for how long.
+func (l Lang) describeSummon(declared *skill.Summon) string {
+	name := declared.Name
+	if name == "" {
+		name = l.Text(BlurbSummonedCopy)
+	}
+	subject := l.Say(BlurbSummonedOne, name)
+	if declared.Count > 1 {
+		subject = l.Say(BlurbSummonedMany, declared.Count, name)
+	}
+	if declared.Lasts <= 0 {
+		return l.Say(BlurbSummons, subject)
+	}
+	lasts := l.Say(BlurbStatusLasts, declared.Lasts)
+	if declared.Lasts == 1 {
+		lasts = l.Text(BlurbStatusLastsOne)
+	}
+	return l.Say(BlurbSummonsBriefly, subject, lasts)
+}
+
+// describeCondition is the amplifier, written as what the target must be rather
+// than as a bonus figure: a player picking a skill is asking when it is worth
+// using, and "+1000 power" answers a different question.
 // describeCondition is the amplifier read against the target, written as what
 // that target must be rather than as a bonus figure: a player picking a skill is
 // asking when it is worth using, and "+1000 power" answers a different question.

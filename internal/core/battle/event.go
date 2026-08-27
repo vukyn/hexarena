@@ -81,10 +81,24 @@ const (
 	// or deadlocked, and a replay comparing two such logs would be comparing two
 	// stories rather than two battles.
 	Ended
+	// Summoned is a unit arriving mid-battle. Actor is whoever cast, Target is
+	// the unit that arrived, and Name, Cell and Side describe it the way Started
+	// describes a unit the roster placed — a renderer drawing a board needs the
+	// same three facts either way, and needing them from two shapes would be two
+	// code paths for one thing.
+	Summoned
+	// Left is a summoned unit going, which is not a death.
+	//
+	// A death is somebody being beaten and this is a copy running out of turns or
+	// losing the unit it copied, so a log spelling them the same would report a
+	// fight going worse than it went. The consequence is the same — the unit stops
+	// taking turns and its side may be empty without it — and only the reading
+	// differs, which is exactly what a kind is for.
+	Left
 )
 
 // KindCount is the number of event kinds.
-const KindCount = int(Ended) + 1
+const KindCount = int(Left) + 1
 
 var kindNames = [KindCount]string{
 	Started:         "started",
@@ -107,6 +121,8 @@ var kindNames = [KindCount]string{
 	PassiveHeld:     "passive_held",
 	PassiveReleased: "passive_released",
 	Ended:           "ended",
+	Summoned:        "summoned",
+	Left:            "left",
 }
 
 func (k Kind) String() string {
