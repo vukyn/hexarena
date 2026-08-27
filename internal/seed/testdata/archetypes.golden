@@ -37,4 +37,16 @@ warden, formation column 0
            absorbs 11285 of the 11500 budget, 215 to spare
   kit      water_gun bubble whirlpool bite brine hydro_pump withdraw aqua_ring rapid_spin
 
-3 presets
+summoner, formation column 1
+  the one that fights with more bodies than it has: put copies on the board and let them spend the turns, from a row back where the copies are in the way
+  demands  a character built from it must carry wind
+  hp 1020->3200  attack 180->540  defense 130->380  speed 48->120  accuracy 64->155  dodge 26->62
+  level 1  hp 1020, atk 180, def 130, spd 48, acc 64, ddg 26
+           absorbs 1463 of the 11500 budget, 10037 to spare
+  level 30 hp 2091, atk 356, def 252, spd 83, acc 108, ddg 43
+           absorbs 3850 of the 11500 budget, 7650 to spare
+  level 60 hp 3200, atk 540, def 380, spd 120, acc 155, ddg 62
+           absorbs 7256 of the 11500 budget, 4244 to spare
+  kit      kunai wind_shuriken rasengan substitution shadow_clone summon_toad
+
+4 presets

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- PLACEHOLDER. Every other asset in this folder is vtracer output from real
+     artwork; this one is a hand-written stand-in so the character can ship
+     before its picture does. Replace it with a traced drawing at the same
+     630x630 and nothing else has to change.
+
+     Cut out, with no background and no flat bottom edge: the shipped art is
+     silhouettes, and TestTheShippedArtIsCutOutRatherThanFramed measures the four
+     corners of the INKED rectangle to say so. A body ending in a straight wide
+     line paints its own two bottom corners and fails that test. -->
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="630" height="630">
+<ellipse cx="315" cy="404" rx="146" ry="132" fill="#e8823c"/>
+<circle cx="315" cy="220" r="98" fill="#e8b96b"/>
+<rect x="222" y="186" width="186" height="30" rx="15" fill="#2f4a6d"/>
+<circle cx="276" cy="240" r="11" fill="#2b2b2b"/>
+<circle cx="354" cy="240" r="11" fill="#2b2b2b"/>
+<path d="M240 274 L296 274 M334 274 L390 274" stroke="#2b2b2b" stroke-width="7" stroke-linecap="round"/>
+</svg>

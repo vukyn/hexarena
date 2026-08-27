@@ -49,10 +49,14 @@ func TestASummoningSkillSaysWhatItCallsUp(t *testing.T) {
 	if err != nil {
 		t.Fatalf("shapes: %v", err)
 	}
+	// The authored name is Vietnamese, so only Vietnamese prints it; English says
+	// the word, which is the division Gloss makes everywhere else in these
+	// descriptions.
+	want := map[i18n.Lang]string{i18n.Vi: "phân thân", i18n.En: "copies"}
 	for _, lang := range i18n.Langs() {
 		described := lang.Describe(
 			summoner(t, `{"count":2,"name":"phân thân","share":500,"skills":["jab"]}`), patterns)
-		if !strings.Contains(described, "phân thân") {
+		if !strings.Contains(described, want[lang]) {
 			t.Errorf("%s: the description never names what arrives:\n%s", lang, described)
 		}
 		if !strings.Contains(described, "2") {

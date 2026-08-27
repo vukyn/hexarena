@@ -1600,6 +1600,30 @@ is the constraint each piece has to respect.
       corpse, `kill` sets `Dead`. A test that "killed" a copy that way left the
       board with no vacated cell on it and a mutation freeing vacated cells
       survived. Drive a departure the engine performs.
+- [x] **The first summoner, and the second origin — Naruto, cast only.** In the
+      cast and **not the roster**, so the mechanism gets a real user and
+      `replay.golden` does not move.
+      New: origin `naruto` (the first non-Pokémon), preset **`summoner`** (column
+      1 — it stands a row back and lets the copies spend the turns; no existing
+      preset is that), species `human`, six skills, and one character with three
+      stages.
+      **Two summons, one of each kind**: `shadow_clone` is a share (2 copies at
+      400‰, `bound`, `lasts: 4`), `summon_toad` is a fixed line with its own
+      element — the case a share cannot write.
+      ⚠️ **`Suggest` casts neither** (power 0 ⇒ fallback only), so the shipped
+      summoner is proved by a hand-played test in `internal/seed`, and Naruto's
+      spar figures are read **without** the mechanism firing. TODO: teach
+      `expected()` to price a summon — it moves every golden, so it is its own PR.
+      ⚠️ **A new preset needs a row in `cast_test.go`'s hardcoded design table**
+      and a gloss in `archetypeGloss`, or two tests fail by name.
+      ⚠️ **Art is REQUIRED** — `cast.ParseBook` refuses "declares no image".
+      `assets/naruto.svg` is a hand-written **placeholder** and says so; it is cut
+      out with **no background and no flat bottom edge**, because
+      `TestTheShippedArtIsCutOutRatherThanFramed` measures the corners of the
+      **inked** rectangle, not of the canvas.
+      ⚠️ **An authored summon name is Vietnamese**, so `describeSummon` prints it
+      only in `Vi` and says "copy"/"copies" in English — the division `Gloss`
+      makes, and a summon has no id to fall back on.
 - [ ] **Grow the cast.** Three characters ship, one per element, and the seed
       roster is no longer a mirror — so the thing this item was blocking, a
       measurable balance figure, exists. What is left is content, under three

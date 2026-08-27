@@ -492,6 +492,141 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "naruto.naruto",
+      "name": "Naruto",
+      "origin": "naruto",
+      "archetype": "summoner",
+      "element": "wind",
+      "bio": "Đánh bằng số lượng chứ không bằng một đòn: rải phân thân ra chắn đường rồi ném từ phía sau, và khi cần một thân hình to hơn thì ký giao ước gọi cóc lên. Ba giai đoạn: Naruto, Tiên nhân từ cấp 16, Vĩ thú hoá từ cấp 32.",
+      "species": [
+        "human"
+      ],
+      "stages": [
+        {
+          "name": "Naruto",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 1020,
+              "max": 3050
+            },
+            "attack": {
+              "base": 180,
+              "max": 500
+            },
+            "defense": {
+              "base": 130,
+              "max": 350
+            },
+            "speed": {
+              "base": 48,
+              "max": 112
+            },
+            "accuracy": {
+              "base": 64,
+              "max": 150
+            },
+            "dodge": {
+              "base": 26,
+              "max": 58
+            }
+          }
+        },
+        {
+          "name": "Tiên nhân",
+          "min_level": 16,
+          "stats": {
+            "hp": {
+              "base": 1120,
+              "max": 3200
+            },
+            "attack": {
+              "base": 205,
+              "max": 545
+            },
+            "defense": {
+              "base": 140,
+              "max": 375
+            },
+            "speed": {
+              "base": 54,
+              "max": 124
+            },
+            "accuracy": {
+              "base": 70,
+              "max": 158
+            },
+            "dodge": {
+              "base": 29,
+              "max": 64
+            }
+          }
+        },
+        {
+          "name": "Vĩ thú hoá",
+          "min_level": 32,
+          "stats": {
+            "hp": {
+              "base": 1240,
+              "max": 3400
+            },
+            "attack": {
+              "base": 235,
+              "max": 590
+            },
+            "defense": {
+              "base": 152,
+              "max": 400
+            },
+            "speed": {
+              "base": 60,
+              "max": 134
+            },
+            "accuracy": {
+              "base": 76,
+              "max": 165
+            },
+            "dodge": {
+              "base": 32,
+              "max": 70
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "kunai"
+        },
+        {
+          "id": "substitution",
+          "at_level": 8
+        },
+        {
+          "id": "shadow_clone",
+          "at_level": 12
+        },
+        {
+          "id": "wind_shuriken",
+          "at_level": 20
+        },
+        {
+          "id": "summon_toad",
+          "at_level": 28
+        },
+        {
+          "id": "rasengan",
+          "at_level": 36
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        }
+      ],
+      "image": "assets/naruto.svg"
     }
   ]
 }

@@ -2467,6 +2467,57 @@ board therefore never had a vacated cell on it, and a mutation freeing vacated
 cells passed. It is driven through a summon running out of turns now, which is a
 departure the engine actually performs.
 
+### The first summoner, and the second origin
+
+Naruto is in the cast and **not in the roster**, which is the whole shape of this
+change: the mechanism gets a real user without a balance diff to read at the same
+time. `replay.golden` does not move.
+
+```
+naruto.naruto   ok   Vĩ thú hoá   7943 absorbs, 3557 budget left
+                     hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
+
+shadow_clone   Gọi ra 2 phân thân, trụ lại 4 lượt.       Calls up 2 copies, for 4 turns.
+summon_toad    Gọi ra một cóc.                           Calls up a copy.
+```
+
+**A second origin.** `naruto` beside `pokemon` — the first thing in the book that
+is not a Pokémon, which is what the origin catalogue was built for and had never
+had to prove.
+
+**A fourth preset, `summoner`**, in column 1: it fights with more bodies than it
+has, so it stands a row back and lets the copies spend the turns. Nothing among
+blighter, scorcher and warden is that, and a character that borrowed one of them
+would have taken a curve shaped around a fight it does not have.
+
+**A fourth species, `human`.** Not decorative: it is the axis a lineage-kept skill
+reads, and Naruto is the first thing in the cast that is neither a lizard, a plant
+nor a turtle.
+
+**Two summons, one of each kind the mechanism supports.** `shadow_clone` is a
+share — two copies at two fifths of the caster, bound to it, gone after four of
+their own turns — and `summon_toad` is a fixed line with an element of its own,
+which is the case a share cannot write: a toad does not get bigger because the
+ninja levelled.
+
+⚠️ **`Suggest` will not cast either of them**, so the shipped summoner is proved
+by a hand-played test rather than by the sweep. That is a gap in the opponent and
+not in the skill — see *A deeper opponent* — and it means autopilot sparring
+figures for Naruto are read **without** the mechanism firing.
+
+⚠️ **The art is a placeholder.** Every other asset in the folder is vtracer output
+from real artwork; `assets/naruto.svg` is a hand-written silhouette so the
+character can ship before its picture does, and it says so in the file. It is cut
+out with no background and no flat bottom edge, because
+`TestTheShippedArtIsCutOutRatherThanFramed` measures the four corners of the
+**inked** rectangle — a body ending in a straight wide line paints its own bottom
+corners and fails.
+
+⚠️ **An authored summon name is Vietnamese, so English says the word instead.**
+That is the division `Gloss` makes everywhere else, and a summon has no id for
+English to fall back on — so *phân thân* in Vietnamese and *copies* in English,
+rather than a Vietnamese word sitting in an English sentence.
+
 ### Growing the cast
 
 The tooling for this exists — see *Authoring a cast* above — and so does the

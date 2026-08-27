@@ -69,4 +69,27 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-3 characters
+naruto.naruto — Naruto
+  from     Naruto (anime)
+  preset   summoner
+  element  wind
+  species  human
+  art      assets/naruto.svg
+  kit      kunai substitution@8 shadow_clone@12 wind_shuriken@20 summon_toad@28 rasengan@36
+  stage "Naruto" owns levels 1 to 15, showing assets/naruto.svg
+    level 1  hp 1020, atk 180, def 130, spd 48, acc 64, ddg 26
+             absorbs 1463 of the 11500 budget, 10037 to spare
+    level 15 hp 1501, atk 255, def 182, spd 63, acc 84, ddg 33
+             absorbs 2413 of the 11500 budget, 9087 to spare
+  stage "Tiên nhân" owns levels 16 to 31, showing assets/naruto.svg
+    level 16 hp 1648, atk 291, def 199, spd 71, acc 92, ddg 37
+             absorbs 2742 of the 11500 budget, 8758 to spare
+    level 31 hp 2177, atk 377, def 259, spd 89, acc 114, ddg 46
+             absorbs 4061 of the 11500 budget, 7439 to spare
+  stage "Vĩ thú hoá" owns levels 32 to 60, showing assets/naruto.svg
+    level 32 hp 2374, atk 421, def 282, spd 98, acc 122, ddg 51
+             absorbs 4609 of the 11500 budget, 6891 to spare
+    level 60 hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
+             absorbs 7943 of the 11500 budget, 3557 to spare
+
+4 characters

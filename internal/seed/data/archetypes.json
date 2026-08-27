@@ -147,6 +147,51 @@
           "at_level": 16
         }
       ]
+    },
+    {
+      "id": "summoner",
+      "role": "the one that fights with more bodies than it has: put copies on the board and let them spend the turns, from a row back where the copies are in the way",
+      "column": 1,
+      "stats": {
+        "hp": {
+          "base": 1020,
+          "max": 3200
+        },
+        "attack": {
+          "base": 180,
+          "max": 540
+        },
+        "defense": {
+          "base": 130,
+          "max": 380
+        },
+        "speed": {
+          "base": 48,
+          "max": 120
+        },
+        "accuracy": {
+          "base": 64,
+          "max": 155
+        },
+        "dodge": {
+          "base": 26,
+          "max": 62
+        }
+      },
+      "skills": [
+        "kunai",
+        "wind_shuriken",
+        "rasengan",
+        "substitution",
+        "shadow_clone",
+        "summon_toad"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        }
+      ]
     }
   ]
 }

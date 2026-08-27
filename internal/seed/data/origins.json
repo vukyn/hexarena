@@ -5,6 +5,12 @@
       "title": "Pokémon",
       "medium": "anime",
       "year": 0
+    },
+    {
+      "id": "naruto",
+      "title": "Naruto",
+      "medium": "anime",
+      "year": 2002
     }
   ]
 }

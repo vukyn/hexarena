@@ -219,9 +219,17 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 // listing beside this carries both for anybody tuning them, and what a player
 // wants from a sentence is what arrives and for how long.
 func (l Lang) describeSummon(declared *skill.Summon) string {
-	name := declared.Name
-	if name == "" {
-		name = l.Text(BlurbSummonedCopy)
+	// The authored name is Vietnamese, like every other name in the data, so
+	// English says "copy" rather than printing it. That is the division Gloss
+	// makes — a data name is authored once and English shows what it can read —
+	// and a summon has no id for English to fall back on, so the word is the
+	// only thing left that is true in it.
+	name := l.Text(BlurbSummonedCopy)
+	if declared.Count > 1 {
+		name = l.Text(BlurbSummonedCopies)
+	}
+	if l == Vi && declared.Name != "" {
+		name = declared.Name
 	}
 	subject := l.Say(BlurbSummonedOne, name)
 	if declared.Count > 1 {
