@@ -308,6 +308,14 @@
         {
           "id": "inferno",
           "at_level": 36
+        },
+        {
+          "id": "dragon_claw",
+          "at_level": 40
+        },
+        {
+          "id": "outrage",
+          "at_level": 44
         }
       ],
       "passives": [
@@ -318,6 +326,14 @@
         {
           "id": "heatproof",
           "at_level": 16
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 40
+        },
+        {
+          "id": "reckless",
+          "at_level": 44
         }
       ]
     },

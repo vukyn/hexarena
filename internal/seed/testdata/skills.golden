@@ -32,6 +32,8 @@ withdraw        neutral   self     0  single            0     1      0  1000    
 aqua_ring       water     self     0  single            0     1      0  1000    4     0        0
 rapid_spin      neutral   self     0  single            0     1      0  1000    3     0        0
 rally           neutral   ally     1  column            0     1      0  1000    4     0        0
+dragon_claw     neutral   enemy    2  single         1100     1   1100   950    1     0      377
+outrage         neutral   enemy    2  single         2800     1   2800   900    3     0      960
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -52,6 +54,8 @@ bite            expose                 1      500        900              450
 withdraw        block (self)           2     1000       1000                -
 aqua_ring       regrowth (self)        2     1000       1000                -
 rally           fury                   1     1000       1000             1000
+dragon_claw     expose                 1      400        950              380
+outrage         mire (self)            1     1000        900                -
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species
@@ -59,6 +63,8 @@ synthesis       -          -                 -                   plant
 ingrain         -          -                 -                   plant
 dragon_rage     -          -                 -                   dragon
 dragon_dance    -          -                 -                   dragon
+dragon_claw     -          -                 -                   dragon
+outrage         -          -                 -                   dragon
 
 == conditional amplifiers ==
 skill           needs                       stacks   power   amplified   damage   amplified   gain
@@ -90,6 +96,8 @@ toughened   buff                1       0            0      0               0   
 veil        buff                2       2            0      0               0   dodge +40.0%
 block       shield              3       2            0      0               0   -
 regrowth    regen               3       3          400    137            1644   -
+unleashed   buff                1       0            0      0               0   attack +30.0%
+bare        stat_debuff         1       0            0      0               0   defense -40.0%, dodge -40.0%
 kindled     buff                1       0            0      0               0   attack +15.0%
 
 == area shapes a skill can choose ==

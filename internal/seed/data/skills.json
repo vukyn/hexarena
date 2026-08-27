@@ -540,6 +540,56 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "dragon_claw",
+      "name": "long trảo",
+      "flavour": "Vuốt rồng bổ thẳng xuống, xé toạc lớp giáp trước khi kịp khép lại",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "single",
+      "power": 1100,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "dragon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "expose",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "outrage",
+      "name": "cuồng nộ long",
+      "flavour": "Mất trí lao vào quần thảo, đánh xong thì đứng còn không vững",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "single",
+      "power": 2800,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "dragon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "mire",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

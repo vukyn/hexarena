@@ -87,6 +87,21 @@
         "below_health": 400
       },
       "drains": 400
+    },
+    {
+      "id": "reckless",
+      "name": "liều mạng",
+      "flavour": "Không giữ lại chút phòng bị nào, dồn tất cả vào đòn đánh",
+      "grants": [
+        {
+          "status": "unleashed",
+          "stacks": 1
+        },
+        {
+          "status": "bare",
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

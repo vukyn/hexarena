@@ -154,6 +154,39 @@
       "tick_power": 400
     },
     {
+      "id": "unleashed",
+      "category": "buff",
+      "max_stacks": 1,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "attack",
+          "mode": "percent",
+          "amount": 300
+        }
+      ]
+    },
+    {
+      "id": "bare",
+      "category": "stat_debuff",
+      "max_stacks": 1,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "defense",
+          "mode": "percent",
+          "amount": -400
+        },
+        {
+          "target": "dodge",
+          "mode": "percent",
+          "amount": -400
+        }
+      ]
+    },
+    {
       "id": "kindled",
       "category": "buff",
       "max_stacks": 1,
