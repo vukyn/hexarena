@@ -1787,7 +1787,7 @@ nội tại  các nội tại đã khai báo, và ai mang
 
   endurance (bền bỉ)
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
-    Luôn mang cứng đòn.
+    Luôn mang kiên cường.
 ```
 
 ⚠️ **The column that earns its place is "who carries it", not "who may".** A trait
@@ -1811,6 +1811,54 @@ adding one changes what every character holding it does.
 a carrier row is as long as the cast makes it; a listing row that can be clipped
 and a cursor that can select one are what make the column affordable, and the CLI
 has neither.
+
+**And the name in that sentence is now a door.** *Luôn mang **kiên cường*** left
+the one word a reader does not know unexplained, and the reference that explains
+it was a menu and two screens away. `?` on the traits listing opens the status
+reference at the status the trait names, and `esc` comes back to the trait — one
+keystroke each way.
+
+The name is marked where it is printed, so `?` has something visible to be about.
+Bold and no colour: it is standing in a sentence rather than in a column, and a
+coloured word mid-paragraph reads as a link to somewhere the terminal cannot take
+you. Nothing is carried by the marking alone — the sentence says the same thing
+on a monochrome terminal, which is the palette's own rule.
+
+**One function serves both halves.** `i18n.StatusesNamed(trait)` is the ids a
+trait's description will name, in the order the sentences name them. The
+alternative was reading the sentences back to find the names in them, which is
+substring matching against prose in two languages: it styles a name that happens
+to occur in a flavour clause, and misses one the glossary has no entry for,
+because that one prints as a bare id.
+
+⚠️ **It is a second reading of `DescribePassive`'s rules and drifts from them
+silently.** A name the list has and the sentences do not is marked where nothing
+is printed; a name the sentences have and the list does not is the one word on
+screen `?` cannot open. `TestATraitNamesEveryStatusItsDescriptionNames` holds
+the two together against the shipped book, and the rule that book cannot show is
+pinned separately: **a reply names its first application and no more**, because
+the one sentence a reply gets has room for one status — so a trait answering with
+two holds two and names one.
+
+⚠️ **Two shipped traits name nothing at all.** `blood_thirst` and `last_gasp`
+only drain, and a drain names no status. `?` stays put rather than opening
+whatever the status cursor happened to be on, which would answer a question
+nobody asked.
+
+⚠️ **`esc` had one answer and now has two.** The status listing is reachable from
+the menu and from a trait, and a reader sent there by one keystroke expects the
+next to undo it. `statusesScreen.from` is that, and it is **cleared as it is
+used** — the first version returned before storing the cleared value, so a second
+visit through the menu inherited the first visit's way back. A test caught it,
+not a reading.
+
+⚠️ **Marking is one left-to-right pass, not a replacement per name.** A pass per
+name re-marks its own output whichever order the names are tried in: longest
+first and `bỏng` matches inside the `bỏng nặng` just produced, shortest first and
+`bỏng nặng` never matches at all. And each **word** is marked whole rather than
+the name as a phrase, because the sentences are wrapped afterwards and the wrap
+splits on spaces — a style spanning two words survives only until they land on
+different lines, and then the first opens a sequence the second closes.
 
 ### A health threshold a skill can read
 

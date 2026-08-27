@@ -25,6 +25,11 @@ type palette struct {
 	good     lipgloss.Style
 	bad      lipgloss.Style
 	selected lipgloss.Style
+	// emphasis marks a data name inside the program's own prose. Bold and no
+	// colour, because it is standing in a sentence rather than in a column, and
+	// a coloured word mid-paragraph reads as a link to somewhere the terminal
+	// cannot take you.
+	emphasis lipgloss.Style
 	footer   lipgloss.Style
 }
 
@@ -39,7 +44,8 @@ func newPalette() palette {
 		plain := lipgloss.NewStyle()
 		return palette{
 			title: plain, heading: plain, label: plain, dim: plain,
-			good: plain, bad: plain, selected: plain, footer: plain,
+			good: plain, bad: plain, selected: plain, emphasis: plain,
+			footer: plain,
 		}
 	}
 	return palette{
@@ -50,6 +56,7 @@ func newPalette() palette {
 		good:     lipgloss.NewStyle().Foreground(lipgloss.Color("2")),
 		bad:      lipgloss.NewStyle().Foreground(lipgloss.Color("1")),
 		selected: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("5")),
+		emphasis: lipgloss.NewStyle().Bold(true),
 		footer:   lipgloss.NewStyle().Faint(true),
 	}
 }

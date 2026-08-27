@@ -420,7 +420,7 @@ q hoặc ctrl+c để thoát`,
 	PassivesHeading:       "nội tại",
 	PassivesSubtitle:      "các nội tại đã khai báo, và ai mang",
 	PassivesEmpty:         "chưa khai báo nội tại nào.",
-	PassivesFooter:        "↑/↓ chọn · ctrl+l English · esc quay lại · q thoát",
+	PassivesFooter:        "↑/↓ chọn · ? hiệu ứng · ctrl+l English · esc quay lại · q thoát",
 	PassivesNobodyCarries: "chưa nhân vật nào học, nên nội tại này chưa ra trận được",
 	ColumnCarriedBy:       "ai mang",
 }
