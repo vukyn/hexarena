@@ -47,6 +47,9 @@ func (l Lang) Describe(declared skill.Skill, shapes *pattern.Book) string {
 		lines = append(lines, opening)
 	}
 	lines = append(lines, l.describeExtras(declared)...)
+	if condition := l.describeSelfCondition(declared); condition != "" {
+		lines = append(lines, condition)
+	}
 	if condition := l.describeCondition(declared); condition != "" {
 		lines = append(lines, condition)
 	}
@@ -201,26 +204,45 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 	return out
 }
 
-// describeCondition is the amplifier, written as what the target must be rather
-// than as a bonus figure: a player picking a skill is asking when it is worth
-// using, and "+1000 power" answers a different question.
+// describeCondition is the amplifier read against the target, written as what
+// that target must be rather than as a bonus figure: a player picking a skill is
+// asking when it is worth using, and "+1000 power" answers a different question.
 func (l Lang) describeCondition(declared skill.Skill) string {
-	if declared.Requires == nil {
+	return l.conditionSentence(declared, declared.Requires, BlurbAmplified)
+}
+
+// describeSelfCondition is the same sentence about the caster.
+//
+// A separate sentence rather than a second clause on the first, because they are
+// two different bargains: one is about who is in front of you and the other is
+// about what you are spending, and a skill carrying both is offering both.
+func (l Lang) describeSelfCondition(declared skill.Skill) string {
+	return l.conditionSentence(declared, declared.SelfRequires, BlurbSelfAmplified)
+}
+
+// conditionSentence writes one condition, whichever unit it reads.
+//
+// The clauses themselves say nothing about whose health or whose stacks are
+// being counted -- "is carrying poison", "is at or below half health" -- so only
+// the opening changes between the two. That is what makes one function honest
+// here rather than a saving: the sentences really are the same sentence.
+func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition, opening Key) string {
+	if condition == nil {
 		return ""
 	}
 	clauses := make([]string, 0, 2)
-	if declared.Requires.ReadsStatus() {
+	if condition.ReadsStatus() {
 		clauses = append(clauses, l.Say(BlurbWhenCarrying,
-			l.stacked(declared.Requires.Status, declared.Requires.MinStacks)))
+			l.stacked(condition.Status, condition.MinStacks)))
 	}
-	if declared.Requires.ReadsHealth() {
-		clauses = append(clauses, l.Say(BlurbWhenHurt, share(declared.Requires.BelowHealth)))
+	if condition.ReadsHealth() {
+		clauses = append(clauses, l.Say(BlurbWhenHurt, share(condition.BelowHealth)))
 	}
-	amplified := declared.PowerAgainst(declared.Requires.Satisfying())
-	sentence := l.Say(BlurbAmplified, l.join(clauses),
+	amplified := declared.Power + condition.BonusPower
+	sentence := l.Say(opening, l.join(clauses),
 		share(amplified*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat))
-	if declared.Requires.Consume {
-		sentence += l.Say(BlurbConsumes, l.glossed(declared.Requires.Status))
+	if condition.Consume {
+		sentence += l.Say(BlurbConsumes, l.glossed(condition.Status))
 	}
 	return sentence + "."
 }

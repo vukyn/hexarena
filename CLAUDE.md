@@ -1206,6 +1206,37 @@ is the constraint each piece has to respect.
       (51.9 → 53.0), at every reply size tried. Piercing helps whoever attacks,
       and this is the first thing that charges for attacking — so **no balance
       figure measured before this feature carries forward**.
+- [x] **A condition a skill reads about ITSELF.** `skill.Skill.SelfRequires`, the
+      same `*Condition` as `Requires` asked of the caster instead of the target —
+      `Applies`/`SelfApplies` spelled again, two fields rather than one field with
+      a "whose" flag. Until it existed, "hits harder while I am furied" and "hits
+      harder while I am cornered" had **no spelling at all**.
+      ⚠️ **Read ONCE PER USE, in `Act`, not in `resolveAgainst`** — that runs once
+      per cell a shape covers, so a consumed condition would charge a column three
+      times and a single-target skill once, for a difference written on neither
+      skill. `Battle.spend` is that seam, and it sits **before `applyToSelf`** so a
+      skill that grants and spends the same status cannot pay itself.
+      ⚠️ The bonus is added **before** the splash share is taken, like the target's.
+      A bonus added after still makes every target take more, which is why that
+      mutation survived the first draft of the test — assert the **ratio between
+      the aim and the edge**, not the rise.
+      ⚠️ **`conditionCaster` is a second builder beside `conditionTarget`**, not a
+      parameter on one: a skill may read one status of its target and another of
+      itself, so a single builder would have to be *told* which condition it was
+      reading — the exact reading-vs-resolution mismatch `conditionTarget` exists
+      to prevent. `Suggest` reads it once outside its own loop, where it is read
+      for real.
+      ⚠️ **`resolveCondition` is now one validator for both fields**, carrying the
+      field name through every message: two copies would be two sets of rules and
+      the looser is the one an author finds. `TestBothConditionsAreRefusedTheSameWay`
+      runs one table through both. Also refused: a bonus power on a **self-aimed**
+      skill, which deals no damage for it to land on.
+      ⚠️ **The reference table read only `Requires`** and would have told an author
+      their skill has no amplifier while the engine amplified it — `skills.golden`
+      gained a **whose** column. Shipped on `outrage`: 2200 → **3400 below 40%
+      health**, a gate that fires under autopilot where a `fury` payoff never
+      would, and one that pairs with the frailty `reckless` buys. Dragon-vs-fire
+      unmoved at **42.5%**.
 - [x] **A health threshold a *skill* can read.** `skill.Condition.BelowHealth`
       (permille) reads the **target**; `passive.Condition` reads its **holder**.
       `brine` moved onto it and is finally its canon move — 1000 power → 2000 at or
@@ -1220,9 +1251,10 @@ is the constraint each piece has to respect.
       silently; `Amplified`/`PowerAgainst` take it, `Condition.Satisfying()` is the
       cheapest holding target for previews/reports. ⚠️ `battle.conditionTarget` is
       the **single** builder because `Suggest` and `resolveAgainst` must read
-      identically, else the AI prefers a bonus it does not get. Still absent: the
-      **gradient** (harder the further the *caster* fell) — a multiplier in
-      `combat`, reads the other unit, a separate feature.
+      identically, else the AI prefers a bonus it does not get. The **gradient** —
+      smoothly harder the further the *caster* fell, rather than a threshold — is
+      still absent and still a separate feature: a multiplier in `combat` rather
+      than a condition. `SelfRequires` is the threshold version of the same idea.
 - [x] **Learnsets and slots.** A character now holds a **learnset** —
       `Character.Skills` is `[]cast.Unlock`, the *same type as the traits* — and a
       placement **chooses** from it: `SkillSlots = 4`, `TraitSlots = 1`, in

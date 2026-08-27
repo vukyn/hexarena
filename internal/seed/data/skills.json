@@ -573,7 +573,7 @@
       "element": "neutral",
       "range": 2,
       "pattern": "single",
-      "power": 2800,
+      "power": 2200,
       "strikes": 1,
       "accuracy": 900,
       "cooldown": 3,
@@ -589,7 +589,11 @@
           "chance": 1000,
           "stacks": 1
         }
-      ]
+      ],
+      "self_requires": {
+        "below_health": 400,
+        "bonus_power": 1200
+      }
     }
   ]
 }

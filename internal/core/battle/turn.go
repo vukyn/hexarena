@@ -437,6 +437,10 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		Skill: known.ID, Cell: aim, Power: known.Power, Chance: known.Accuracy,
 	})
 
+	// Before applyToSelf, deliberately: a skill that both grants a status and
+	// spends one would otherwise pay itself, and "hits harder while furied"
+	// would hold for the skill that just applied the fury.
+	spent := b.spend(unit, known, turn)
 	b.applyToSelf(unit, known, turn)
 	if known.Target == skill.Self {
 		b.strip(unit, unit, known, turn)
@@ -459,7 +463,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		// it still had cells to hit — and "what happens to the rest of the
 		// skill" is a question with no good answer, so the shape of this loop is
 		// what stops it being asked.
-		if dealt := b.resolveAgainst(unit, target, known, shape.Name, position, turn); dealt > 0 {
+		if dealt := b.resolveAgainst(unit, target, known, shape.Name, position, spent, turn); dealt > 0 {
 			bitten = append(bitten, target)
 		}
 		if b.finished {
@@ -589,6 +593,47 @@ func (b *Battle) reply(holder, attacker *Unit, held passive.Passive, turn atb.Tu
 	}
 }
 
+// spend reads the caster's own condition and reports what it adds to the skill's
+// power, consuming the status if the condition says to.
+//
+// Once per use. That is the whole reason it is here rather than inside
+// resolveAgainst, which runs once per cell a shape covers: a condition consumed
+// per target would charge a column three times and a single-target skill once,
+// and the difference would be written on neither skill.
+//
+// The events are the ones a target-side condition already emits, with the actor
+// as its own target. A reader can tell them apart by that, and a third event kind
+// would have been a third thing for every renderer to learn for no new fact.
+func (b *Battle) spend(unit *Unit, known skill.Skill, turn atb.Turn) int {
+	if known.SelfRequires == nil {
+		return 0
+	}
+	against := conditionCaster(known, unit)
+	if !known.SelfAmplified(against) {
+		return 0
+	}
+	bonus := known.SelfBonus(against)
+	b.emit(Event{
+		Kind: Amplified, At: turn.At, Turn: turn.Number, Actor: unit.ID,
+		Target: unit.ID, Skill: known.ID, Status: known.SelfRequires.Status,
+		Stacks: against.Stacks, Power: known.Power + bonus,
+	})
+	if known.SelfRequires.Consume {
+		consumed, forgone := unit.Statuses.Consume(known.SelfRequires.Status)
+		b.emit(Event{
+			Kind: StatusConsumed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
+			Target: unit.ID, Skill: known.ID, Status: known.SelfRequires.Status,
+			Stacks: consumed, Amount: forgone,
+		})
+		// A consumed stat change is a stat change gone, so the queue has to be
+		// told before the next turn is picked -- the same sweep a status wearing
+		// off gets. Act retunes at the end of a use, and this is a use that has
+		// not finished yet.
+		b.retuneAll(turn)
+	}
+	return bonus
+}
+
 func (b *Battle) applyToSelf(unit *Unit, known skill.Skill, turn atb.Turn) {
 	for _, application := range known.SelfApplies {
 		b.inflict(unit, unit, fromSkill(known), application, turn)
@@ -615,7 +660,7 @@ func (b *Battle) strip(actor, target *Unit, known skill.Skill, turn atb.Turn) {
 // A splash cell takes a reduced share of the power while the primary takes all of
 // it, which is how an area skill trades focus for spread without being strictly
 // better than a single-target one.
-func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape string, position int, turn atb.Turn) (dealt int64) {
+func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape string, position, spent int, turn atb.Turn) (dealt int64) {
 	b.strip(actor, target, known, turn)
 
 	power := known.Power
@@ -639,6 +684,10 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			}
 		}
 	}
+	// The caster's own bonus is added before the splash share is taken, the same
+	// as the target's: it is part of what the skill hits for, and a shape's edge
+	// is worth less however the power was arrived at.
+	power += spent
 	if position > 0 {
 		power = power * b.books.Patterns.SplashPower / scale.Base
 	}

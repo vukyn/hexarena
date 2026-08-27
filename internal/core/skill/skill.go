@@ -137,14 +137,20 @@ type Condition struct {
 	// condition may leave them out when it reads health instead.
 	Status    string
 	MinStacks int
-	// BelowHealth is the share of its maximum health the target must be at or
+	// BelowHealth is the share of its maximum health the unit must be at or
 	// under, in parts per thousand, and nought is "does not ask". Half is 500.
 	//
-	// It reads the *target*, where passive.Condition reads its holder. The two
+	// *Which* unit is the field's business and not this type's: Skill.Requires
+	// reads the target and Skill.SelfRequires reads the caster, exactly as
+	// Applies and SelfApplies say who receives a status. That is why the pair is
+	// two fields rather than one field with a "whose" flag -- the reader already
+	// knows what the self_ prefix means here, and a flag would be a third thing
+	// to get wrong.
+	//
+	// passive.Condition still reads its holder through a type of its own. The two
 	// share their arithmetic through scale.AtOrBelowShare and deliberately not
-	// their type: one Condition serving both could not say which unit it meant,
-	// and passive imports this package, so the language refuses the shortcut
-	// anyway.
+	// their type, because passive imports this package and the language refuses
+	// the shortcut anyway.
 	BelowHealth int
 	// BonusPower is added to the skill's power when the condition holds.
 	BonusPower int
@@ -427,8 +433,20 @@ type Skill struct {
 	// SelfApplies are the statuses the caster gains, which is how a shield or a
 	// self buff is written.
 	SelfApplies []Application
-	// Requires is the amplifier, if the skill has one.
+	// Requires is the amplifier read against the target, if the skill has one.
 	Requires *Condition
+	// SelfRequires is the amplifier read against the caster.
+	//
+	// It is what a skill that spends something of its own needs, and until it
+	// existed such a skill was unwritable: Requires reads the target, so "hits
+	// harder while I am furied" and "hits harder while I am cornered" had no
+	// spelling at all. The two are the same shape asked of two different units,
+	// which is why they are the same type.
+	//
+	// Read once per use rather than once per target -- see Battle.spend. A
+	// condition that consumed per target would pay for a splash three times over
+	// and a single-target skill once, for a difference written on neither.
+	SelfRequires *Condition
 	// Strips is the cleanse or dispel the skill performs, if any.
 	Strips *Cleanse
 	// Restrict is who may carry the skill, or nil when anybody may.
@@ -473,6 +491,23 @@ func (s Skill) PowerAgainst(against Target) int {
 // Amplified reports whether the condition holds against a given target.
 func (s Skill) Amplified(against Target) bool { return s.Requires.Holds(against) }
 
+// SelfAmplified reports whether the caster's own condition holds.
+func (s Skill) SelfAmplified(caster Target) bool { return s.SelfRequires.Holds(caster) }
+
+// SelfBonus is what the caster's own condition adds to the skill's power, and
+// nought when it does not hold or is not declared.
+//
+// A separate function from PowerAgainst rather than folded into it, because the
+// two are read at different moments: the target's condition is read per target,
+// and this one is read once for the whole use. Folding them would make the
+// second follow the first around the shape.
+func (s Skill) SelfBonus(caster Target) int {
+	if !s.SelfAmplified(caster) {
+		return 0
+	}
+	return s.SelfRequires.BonusPower
+}
+
 // Guaranteed reports whether the skill cannot miss.
 func (s Skill) Guaranteed() bool { return s.Accuracy >= scale.Base }
 
@@ -513,17 +548,18 @@ type skillFile struct {
 	// Pierce is written only when there is some, like the two healing figures
 	// below it: no shipped skill pierces, so the shipped book round-trips byte
 	// for byte and the tables measured from it did not move when it arrived.
-	Pierce      int               `json:"pierce,omitempty"`
-	Restores    int               `json:"restores,omitempty"`
-	Drains      int               `json:"drains,omitempty"`
-	Cooldown    int               `json:"cooldown"`
-	Target      string            `json:"target"`
-	Restrict    *restrictFile     `json:"restrict,omitempty"`
-	Scaling     *scalingFile      `json:"scaling,omitempty"`
-	Applies     []applicationFile `json:"applies,omitempty"`
-	SelfApplies []applicationFile `json:"self_applies,omitempty"`
-	Requires    *conditionFile    `json:"requires,omitempty"`
-	Strips      *cleanseFile      `json:"strips,omitempty"`
+	Pierce       int               `json:"pierce,omitempty"`
+	Restores     int               `json:"restores,omitempty"`
+	Drains       int               `json:"drains,omitempty"`
+	Cooldown     int               `json:"cooldown"`
+	Target       string            `json:"target"`
+	Restrict     *restrictFile     `json:"restrict,omitempty"`
+	Scaling      *scalingFile      `json:"scaling,omitempty"`
+	Applies      []applicationFile `json:"applies,omitempty"`
+	SelfApplies  []applicationFile `json:"self_applies,omitempty"`
+	Requires     *conditionFile    `json:"requires,omitempty"`
+	SelfRequires *conditionFile    `json:"self_requires,omitempty"`
+	Strips       *cleanseFile      `json:"strips,omitempty"`
 }
 
 type scalingFile struct {
@@ -615,6 +651,13 @@ func (s Skill) file() skillFile {
 	if s.Scaling != DefaultScaling() {
 		out.Scaling = &scalingFile{
 			Stat: s.Scaling.Stat.String(), Source: s.Scaling.Source.String(),
+		}
+	}
+	if s.SelfRequires != nil {
+		out.SelfRequires = &conditionFile{
+			Status: s.SelfRequires.Status, MinStacks: s.SelfRequires.MinStacks,
+			BelowHealth: s.SelfRequires.BelowHealth,
+			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
 		}
 	}
 	if s.Requires != nil {
@@ -813,60 +856,20 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return Skill{}, err
 	}
 
-	var requires *Condition
-	if declared.Requires != nil {
-		// A condition may read a status, or health, or both. What it may not do
-		// is read neither: an empty condition holds against everybody, so it is
-		// a flat power bonus written in the one shape that hides that it is one.
-		readsStatus := declared.Requires.Status != ""
-		readsHealth := declared.Requires.BelowHealth != 0
-		if !readsStatus && !readsHealth {
-			return fail("has a condition that asks nothing, so it would hold against everybody")
-		}
-
-		statusID, minStacks := "", 0
-		if readsStatus {
-			kind, err := deps.Statuses.Lookup(declared.Requires.Status)
-			if err != nil {
-				return fail("condition: %w", err)
-			}
-			minStacks = declared.Requires.MinStacks
-			if minStacks < 1 {
-				minStacks = 1
-			}
-			if minStacks > kind.MaxStacks {
-				return fail("condition needs %d stacks of %q, which caps at %d",
-					minStacks, kind.ID, kind.MaxStacks)
-			}
-			statusID = kind.ID
-		} else if declared.Requires.MinStacks != 0 {
-			// Stated stacks with nothing to count them of is a half-written
-			// condition, and reading it as "no status" would silently drop the
-			// half the author did write.
-			return fail("condition asks for %d stacks but names no status",
-				declared.Requires.MinStacks)
-		}
-
-		if readsHealth &&
-			(declared.Requires.BelowHealth < 1 || declared.Requires.BelowHealth > scale.Base) {
-			return fail("condition holds below %d health, want a share in parts per thousand",
-				declared.Requires.BelowHealth)
-		}
-		if declared.Requires.BonusPower < 0 {
-			return fail("condition adds %d power, want zero or more", declared.Requires.BonusPower)
-		}
-		// Consuming is a status rule, so a condition that reads only health has
-		// nothing to consume and saying so is a mistake rather than a no-op.
-		if declared.Requires.Consume && !readsStatus {
-			return fail("condition consumes a status, but it names none")
-		}
-		if declared.Requires.Consume && declared.Requires.BonusPower == 0 {
-			return fail("condition consumes %q for no bonus, which throws the status away for nothing", statusID)
-		}
-		requires = &Condition{
-			Status: statusID, MinStacks: minStacks, BelowHealth: declared.Requires.BelowHealth,
-			BonusPower: declared.Requires.BonusPower, Consume: declared.Requires.Consume,
-		}
+	requires, err := resolveCondition(declared.ID, "requires", declared.Requires, deps)
+	if err != nil {
+		return Skill{}, err
+	}
+	selfRequires, err := resolveCondition(declared.ID, "self_requires", declared.SelfRequires, deps)
+	if err != nil {
+		return Skill{}, err
+	}
+	// A skill aimed at its caster never reaches resolveAgainst, so a bonus power
+	// on one lands nowhere. Refused rather than accepted and ignored, which is
+	// the same reason a status may not carry a health term.
+	if selfRequires != nil && declared.Target == Self.String() && selfRequires.BonusPower > 0 {
+		return Skill{}, fmt.Errorf("skill %q: self_requires adds power to a skill aimed at itself, which deals none",
+			declared.ID)
 	}
 
 	restrict, err := resolveRestriction(declared.ID, declared.Restrict)
@@ -903,7 +906,7 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		Element: affinity, Range: declared.Range, Pattern: shape.Name,
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
 		Pierce: declared.Pierce, Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
-		Requires: requires, Strips: strips, Restrict: restrict,
+		Requires: requires, SelfRequires: selfRequires, Strips: strips, Restrict: restrict,
 		Restores: declared.Restores, Drains: declared.Drains,
 		Cooldown: declared.Cooldown, Target: target,
 	}, nil
@@ -967,6 +970,73 @@ func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, e
 		restriction.Elements = append(restriction.Elements, member)
 	}
 	return restriction, nil
+}
+
+// resolveCondition checks one condition, whichever unit it will be read
+// against.
+//
+// One function for both fields because they are one rule: everything below is
+// about the shape of a condition and nothing about whose health or whose stacks
+// it counts. A second copy would be the one an author trusted, and the two would
+// disagree the first time either was edited.
+//
+// The field name is carried through every message, because "condition asks
+// nothing" on a skill with two of them is a refusal that does not say which.
+func resolveCondition(skillID, field string, declared *conditionFile, deps Deps) (*Condition, error) {
+	if declared == nil {
+		return nil, nil
+	}
+	fail := func(format string, args ...any) (*Condition, error) {
+		return nil, fmt.Errorf("skill %q %s: %s", skillID, field, fmt.Sprintf(format, args...))
+	}
+	// A condition may read a status, or health, or both. What it may not do is
+	// read neither: an empty condition holds against everybody, so it is a flat
+	// power bonus written in the one shape that hides that it is one.
+	readsStatus := declared.Status != ""
+	readsHealth := declared.BelowHealth != 0
+	if !readsStatus && !readsHealth {
+		return fail("asks nothing, so it would hold against everybody")
+	}
+
+	statusID, minStacks := "", 0
+	if readsStatus {
+		kind, err := deps.Statuses.Lookup(declared.Status)
+		if err != nil {
+			return fail("%v", err)
+		}
+		minStacks = declared.MinStacks
+		if minStacks < 1 {
+			minStacks = 1
+		}
+		if minStacks > kind.MaxStacks {
+			return fail("needs %d stacks of %q, which caps at %d", minStacks, kind.ID, kind.MaxStacks)
+		}
+		statusID = kind.ID
+	} else if declared.MinStacks != 0 {
+		// Stated stacks with nothing to count them of is a half-written
+		// condition, and reading it as "no status" would silently drop the half
+		// the author did write.
+		return fail("asks for %d stacks but names no status", declared.MinStacks)
+	}
+
+	if readsHealth && (declared.BelowHealth < 1 || declared.BelowHealth > scale.Base) {
+		return fail("holds below %d health, want a share in parts per thousand", declared.BelowHealth)
+	}
+	if declared.BonusPower < 0 {
+		return fail("adds %d power, want zero or more", declared.BonusPower)
+	}
+	// Consuming is a status rule, so a condition that reads only health has
+	// nothing to consume and saying so is a mistake rather than a no-op.
+	if declared.Consume && !readsStatus {
+		return fail("consumes a status, but it names none")
+	}
+	if declared.Consume && declared.BonusPower == 0 {
+		return fail("consumes %q for no bonus, which throws the status away for nothing", statusID)
+	}
+	return &Condition{
+		Status: statusID, MinStacks: minStacks, BelowHealth: declared.BelowHealth,
+		BonusPower: declared.BonusPower, Consume: declared.Consume,
+	}, nil
 }
 
 func resolveApplications(skillID, field string, declared []applicationFile, deps Deps) ([]Application, error) {
