@@ -1961,34 +1961,95 @@ level is what a character sheet knows.
 
 ### A regeneration that heals
 
-`regrowth` is declared, glossed, described and inert. `Battle.inflict` computes a
-tick only for `status.Dot`:
+Built. `regrowth` was declared, glossed, described and inert: `Battle.inflict`
+computed a tick only for `status.Dot`, so a `Regen` stack went on carrying nought
+and every step below it — `Set.Tick`, the per-status loop, `heal` — was already
+written, already correct, and never reached.
+
+The whole fix is one branch:
 
 ```go
-tick := int64(0)
-if kind.Category == status.Dot {
-    tick = raise(b.books.Rules.Damage(...), amplifiedEffect)
-}
+case status.Regen:
+    tick = b.books.Rules.Restore(b.Stats(actor)[from.Scaling], kind.TickPower)
 ```
 
-so a `Regen` stack goes on with a tick amount of nought, `Set.Tick` adds nought to
-its healing total, and `tickStatuses` skips the entry entirely because it prints
-nothing whose amount is nought. `aqua_ring` and the healing half of `synthesis`
-therefore do nothing at all, and nothing in `internal/core/battle` tests a regen —
-which is how it stayed invisible while the surrounding work went past it twice.
+**`Restore`, not `Damage`, and it drops two things on purpose.** No defence curve,
+because `combat.Rules.Restore` already records why — armour turns away what is
+coming *at* a unit and has nothing to do with what is helping it, so dividing here
+would let a unit's own armour quietly weaken its own regeneration. And no
+elemental multiplier, because the chart prices what one creature threw at another:
+a grass unit healing a fire ally is not throwing anything, and reading the chart
+would make the same cast worth two thirds of itself for a reason written on
+neither of them.
 
-The fix is one condition, and the reason it is not made in passing is what it
-drags: two skills start working, so the replay and scenario goldens move, and
-those are the design record rather than fixtures. It is a balance change and wants
-its own diff.
+What it keeps is the actor's scaling stat and the freeze, both the same as a
+damage-over-time's. The freeze is the point, and it is what `status.Regen` already
+promised and nothing was honouring: two casters stacking one regeneration each
+contribute what their own attack was worth at the moment they cast.
 
-⚠️ Two things to decide with it rather than after it. **Which stat a regen scales
-off** — `origin.Scaling` is the applying skill's, which is attack for both of
-them, and a heal scaling off attack is what `Skill.Restores` already does, so the
-consistent answer is to leave it. And **whether an amplifier should raise a
-regen**: `raise(..., amplifiedEffect)` sits on the damage path, `passive.Amplifies`
-is worded as "ticks harder", and a trait amplifying an ally's regeneration is a
-support archetype nobody has written yet. Both are one line; neither is obvious.
+#### The correction
+
+The note this replaces said `aqua_ring` and *the healing half of `synthesis`* did
+nothing. `synthesis` was never affected — it heals through `restores`, which
+always worked. The two dead skills were **`aqua_ring` and `ingrain`**, and neither
+had a working half: both are power 0 with no `restores` and nothing but the
+regeneration, so casting either did *nothing whatsoever*.
+
+#### One event, not two
+
+Fixing the tick surfaced a second bug behind it. `tickStatuses` named the status
+that healed and then healed from the total underneath, so every regeneration tick
+would have logged **two** `Healed` events — a reader adding the amounts up would
+have had every regeneration worth twice what it is. Nothing had caught it because
+no regeneration had ever ticked.
+
+Healing is now applied one entry at a time and `heal` carries the status id, so a
+tick is exactly one event that says what healed, how much landed, and the health
+it left behind. Damage stays resolved from the total, because `wound` emits
+nothing and has no name to carry. The per-entry form is also the truthful
+arithmetic: `heal` stops at full health, so two regenerations worth more than the
+room between them have the second clamped, which a single total would have hidden
+behind one number.
+
+#### The two decisions the note asked for
+
+**Which stat a regen scales off**: the applying skill's, read live off the actor
+at the moment of application — the same expression the damage-over-time branch
+uses two lines up. A heal scaling off attack is what `Skill.Restores` already
+does.
+
+**Whether an amplifier raises a regen**: no. The refusal in `passive.Amplification`
+predates this and its stated reason has now expired — it used to be that accepting
+the share would promise an author a multiplication of zero. It stays refused on
+the ground that was always the stronger of the two: the share is described to a
+player as *"its poison ticks 30% harder"*, in both languages, and a share that
+heals under that sentence is a description that lies — which is the one thing
+every derived description in this engine exists to prevent. Lifting it is a
+wording change first and a one-line condition second, and worth doing when a trait
+actually wants it.
+
+#### No golden moved, and that is the finding
+
+The note expected a balance diff. There is none: **no unit in the shipped roster
+fields either skill**, and `Suggest` picks the highest expected damage and falls
+back to the first usable non-damaging skill, so a self-cast regeneration on a unit
+that can always reach somebody is one the bench never chooses. The two facts
+together are the whole reason a shipped skill could do nothing for this long
+without a single test noticing.
+
+So the proof is hand-played. `TestTheShippedRegenerationHeals` casts `aqua_ring`
+from the shipped books and reads the number back; eight tests in
+`internal/core/battle` cover the tick, the freeze, the two dropped terms, the
+clamp, the single event and the order healing resolves in. Putting a regeneration
+into the roster is a balance decision and belongs with the cast work, not with a
+bug fix.
+
+⚠️ One of those eight was worthless when first written. The order test asserted
+that the `healed` event came before the `status_ticked`, and a mutation putting
+damage first **survived** — `wound` emits nothing, so the two events come out in
+the same order either way and only the survivor changes. It now asserts survival:
+a unit on 150 health with a poison worth 200 and a regeneration worth 640 is
+standing at the end of the turn, or the two totals resolved the wrong way round.
 
 ### Growing the cast
 

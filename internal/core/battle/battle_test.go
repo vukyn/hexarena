@@ -58,7 +58,8 @@ func books(t *testing.T) battle.Books {
 	    {"id": "fleet", "category": "buff", "max_stacks": 1, "duration": 0, "permanent": true,
 	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 500}]},
 	    {"id": "toughened", "category": "buff", "max_stacks": 2, "duration": 0, "permanent": true,
-	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]}
+	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]},
+	    {"id": "mending", "category": "regen", "max_stacks": 3, "duration": 3, "tick_power": 400}
 	  ]
 	}`))
 	if err != nil {
@@ -121,7 +122,16 @@ func books(t *testing.T) battle.Books {
 	   "power":500,"strikes":1,"accuracy":1000,"cooldown":0,"target":"all"},
 	  {"id":"drink","element":"neutral","range":1,"pattern":"single",
 	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
-	   "drains":1000}
+	   "drains":1000},
+	  {"id":"bloom","element":"grass","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "self_applies":[{"status":"mending","chance":1000,"stacks":2}]},
+	  {"id":"dew","element":"grass","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "self_applies":[{"status":"mending","chance":1000,"stacks":1}]},
+	  {"id":"bless","element":"grass","range":1,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"ally",
+	   "applies":[{"status":"mending","chance":1000,"stacks":1}]}
 	]}`), skill.Deps{Patterns: patterns, Statuses: statuses})
 	if err != nil {
 		t.Fatalf("skills: %v", err)

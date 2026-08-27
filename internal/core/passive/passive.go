@@ -490,13 +490,20 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		// mire does not tick, and accepting the field would leave an author
 		// waiting for a change that never arrives.
 		//
-		// A regeneration is refused too, and that one is worth spelling out
-		// because it looks like it should pass: a regen declares a tick_power and
-		// heals from a frozen amount exactly as a poison damages from one. But
-		// battle.inflict computes a tick only for a Dot, so ⚠️ **an applied
-		// regeneration freezes nought and heals nothing today** — a bug older
-		// than this field and not one to fix behind it. Accepting the share here
-		// would promise an author a multiplication of zero.
+		// A regeneration is refused too, and the reason changed under it. It used
+		// to be that battle.inflict computed a tick only for a Dot, so a regen
+		// froze nought and accepting the share would have promised an author a
+		// multiplication of zero. That bug is fixed: a regen now freezes a real
+		// amount and heals from it every turn, so the share would multiply
+		// something.
+		//
+		// It stays refused on the other ground, which was always the stronger of
+		// the two. The share is described to a player as "its poison ticks 30%
+		// harder" — words of harm, in both languages — and a share that heals
+		// under that sentence is a description that lies, which is the one thing
+		// every derived description in this engine exists to prevent. Lifting it
+		// is therefore a wording change first and a one-line condition second,
+		// and worth doing only when a trait actually wants it.
 		if raise.Effect != 0 && kind.Category != status.Dot {
 			return fail("amplifies the effect of %q, which is a %s: only a damage-over-time has a tick this could raise",
 				kind.ID, kind.Category)

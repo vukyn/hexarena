@@ -1286,20 +1286,48 @@ is the constraint each piece has to respect.
       ⚠️ Same trap the status screen just paid: **a new screen has to go into
       `everyScreen` in `language_test.go`**, or every width and translation test
       skips it silently.
-- [ ] **A regeneration that heals.** `regrowth` is declared, glossed, described
-      and **inert**: `Battle.inflict` computes a tick only for `status.Dot`, so a
-      `Regen` stack is applied with a tick amount of nought, `Set.Tick` adds
-      nought, and `tickStatuses` skips it. `aqua_ring` and the healing half of
-      `synthesis` do nothing, and **nothing in `internal/core/battle` tests a
-      regen** — which is how it survived the healing work, the amplifier work and
-      the drain work untouched. Writing the status reference is what surfaced it.
-      The fix is one condition; it is separate because two skills start working and
-      the replay and scenario goldens move, which is a balance diff.
-      ⚠️ Decide **with** it, not after: which stat a regen scales off
-      (`origin.Scaling` is the applying skill's — attack for both, which is what
-      `Skill.Restores` already does), and whether `passive.Amplifies` should raise
-      a regen (`raise(..., amplifiedEffect)` is on the damage path and the wording
-      says "ticks harder"). Both one line, neither obvious.
+- [x] **A regeneration that heals — SHIPPED.** `regrowth` was declared, glossed,
+      described and **inert**: `inflict` computed a tick only for `status.Dot`, so
+      a `Regen` stack went on carrying nought and every step below it was already
+      correct and never reached. One branch:
+      `tick = b.books.Rules.Restore(b.Stats(actor)[from.Scaling], kind.TickPower)`.
+      ⚠️ **`Restore`, not `Damage` — it drops two terms deliberately.** No defence
+      (`combat.Rules.Restore` says why: armour turns away what comes *at* a unit,
+      so dividing lets a unit's own armour weaken its own regeneration) and no
+      elemental multiplier (the chart prices what one creature threw at another; a
+      grass unit healing a fire ally throws nothing). Kept: the actor's scaling
+      stat and the **freeze** — the promise `status.Regen` already made and
+      nothing honoured.
+      ⚠️ **The old note misnamed the casualties.** `synthesis` was never affected
+      — it heals through `restores`, which always worked. The two dead skills were
+      **`aqua_ring` and `ingrain`**, and neither had a working half: power 0, no
+      `restores`, nothing but the regeneration, so casting either did *nothing*.
+      ⚠️ **A second bug was hiding behind the first**: `tickStatuses` named the
+      status that healed and then healed again from the total, so every tick would
+      have logged **two** `Healed` events. Healing is now applied per entry and
+      `heal` carries the status id — one event saying what healed, how much landed
+      and the health left. Damage stays on the total (`wound` emits nothing, and
+      has no name to carry). Per entry is also the truthful arithmetic: `heal`
+      stops at full health, so a second regeneration is clamped where one total
+      would have hidden it.
+      ⚠️ **The two decisions, made.** A regen scales off the applying skill's stat
+      read live off the actor — the same expression the Dot branch uses. And an
+      amplifier does **not** raise a regen: the refusal in `passive.Amplification`
+      stays, but on the other ground, because its old reason ("a multiplication of
+      zero") expired with this fix. The share reads *"its poison ticks 30% harder"*
+      in both languages, and a share that heals under that sentence is a
+      description that lies. Lifting it is a wording change first.
+      ⚠️ **No golden moved, and that is the finding.** The plan expected a balance
+      diff. **No roster unit fields either skill**, and `Suggest` never chooses a
+      self-cast regeneration on a unit that can always reach somebody — those two
+      facts together are why a shipped skill did nothing this long with every test
+      passing. Proof is hand-played (`TestTheShippedRegenerationHeals` on the
+      shipped books) plus eight tests in `internal/core/battle`. Fielding a regen
+      is a **balance** decision and belongs with the cast work.
+      ⚠️ **One of the eight was worthless as first written.** The order test
+      asserted `healed` came before `status_ticked`, and a mutation putting damage
+      first **survived**: `wound` emits nothing, so the events come out in the same
+      order either way and only the survivor changes. It asserts survival now.
 - [x] **A spar: measuring whether a character *belongs*.** `check` says a
       character is legal; nothing said whether it stands beside the ones already
       written. `forge.Library.Spar(id, level, seeds)` duels it against **every**

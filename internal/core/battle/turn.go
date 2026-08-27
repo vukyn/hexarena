@@ -97,7 +97,27 @@ func (b *Battle) Advance() (*Prompt, error) {
 // 513" is much less use than one that names the poison.
 func (b *Battle) tickStatuses(unit *Unit, turn atb.Turn) {
 	before := unit.Statuses.Snapshot()
-	damage, healing, expired := unit.Statuses.Tick()
+	// The healing total is deliberately dropped. status.Set.Tick still computes
+	// it and the status package still tests it — it is a correct thing for a Set
+	// to be able to report — but this caller cannot use it: healing is resolved
+	// per entry below so that each regeneration can name itself, and adding the
+	// total back on top is exactly the double-count this shape exists to avoid.
+	damage, _, expired := unit.Statuses.Tick()
+	// Healing is applied here, entry by entry, while damage is applied once
+	// below from the total. The asymmetry is not an oversight: heal emits its
+	// own event and wound does not, so a regeneration resolved from the total
+	// would either lose the name of the status that healed — the one thing this
+	// loop exists to record — or say it twice, once here and once from heal.
+	// Per entry, each regeneration produces exactly one Healed carrying its own
+	// name, its own amount, and the health it left behind.
+	//
+	// It is also the more truthful arithmetic. heal stops at full health, so two
+	// regenerations worth more than the room between them have the second one
+	// clamped, which a single total would hide behind one number.
+	//
+	// Healing runs before the damage below, deliberately: a regeneration that
+	// would carry a unit past a poison tick should do so, rather than the order
+	// of two totals deciding who lives.
 	for _, entry := range before {
 		if entry.TickAmount <= 0 {
 			continue
@@ -105,12 +125,12 @@ func (b *Battle) tickStatuses(unit *Unit, turn atb.Turn) {
 		// A regeneration reports itself as a heal rather than as a tick, so a
 		// reader is never asked to work out from the status name whether a
 		// number was taken or given.
-		kind := StatusTicked
 		if entry.Category == status.Regen {
-			kind = Healed
+			b.heal(unit, entry.TickAmount, turn, entry.ID)
+			continue
 		}
 		b.emit(Event{
-			Kind: kind, At: turn.At, Turn: turn.Number, Actor: unit.ID,
+			Kind: StatusTicked, At: turn.At, Turn: turn.Number, Actor: unit.ID,
 			Status: entry.ID, Amount: entry.TickAmount, Stacks: entry.Stacks,
 		})
 	}
@@ -118,11 +138,6 @@ func (b *Battle) tickStatuses(unit *Unit, turn atb.Turn) {
 		b.emit(Event{
 			Kind: StatusExpired, At: turn.At, Turn: turn.Number, Actor: unit.ID, Status: id,
 		})
-	}
-	// Healing first: a regeneration that would carry a unit past a poison tick
-	// should do so, rather than the order of two totals deciding who lives.
-	if healing > 0 {
-		b.heal(unit, healing, turn)
 	}
 	if damage > 0 {
 		b.wound(unit, damage, turn)
@@ -136,7 +151,11 @@ func (b *Battle) tickStatuses(unit *Unit, turn atb.Turn) {
 // the maximum the unit was enlisted with, so a regeneration cannot become an
 // uncapped shield. Both are silent — a heal that does nothing is not an error,
 // it is a full-health unit standing in a healing wind.
-func (b *Battle) heal(unit *Unit, amount int64, turn atb.Turn) {
+// The status id is what healed, and it is empty for a skill restoring health
+// directly: a reader of a Healed wants to know whether a number came from a
+// regeneration still on the board or from a cast that is already over, and the
+// event has no other way to tell them apart.
+func (b *Battle) heal(unit *Unit, amount int64, turn atb.Turn, from string) {
 	if amount <= 0 || unit.Dead || unit.HP >= unit.MaxHP() {
 		return
 	}
@@ -146,7 +165,7 @@ func (b *Battle) heal(unit *Unit, amount int64, turn atb.Turn) {
 	unit.HP += amount
 	b.emit(Event{
 		Kind: Healed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
-		Amount: amount, Remaining: unit.HP,
+		Status: from, Amount: amount, Remaining: unit.HP,
 	})
 	b.reconsider(unit, turn)
 }
@@ -711,7 +730,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		b.heal(target, b.books.Rules.Restore(
 			combat.PickScaling(known.Scaling.Source,
 				actor.Base[known.Scaling.Stat], actorStats[known.Scaling.Stat]),
-			restore), turn)
+			restore), turn, "")
 	}
 	// A drain takes its share of what was *dealt*, so a strike that missed or
 	// was blocked returns nothing, and one that overkilled returns only the
@@ -869,8 +888,12 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 		})
 		return
 	}
+	// A ticking status is worth something only if a tick is computed here, where
+	// it is frozen onto the stack. Two categories tick; everything else keeps the
+	// zero, and a stack carrying zero is skipped by the whole downstream path.
 	tick := int64(0)
-	if kind.Category == status.Dot {
+	switch kind.Category {
+	case status.Dot:
 		// Full defence, deliberately, even when the skill applying the status
 		// pierces. A tick is computed once here and frozen on the stack for the
 		// rest of its life, so piercing it would be worth as many pierced hits
@@ -883,6 +906,29 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 			kind.TickPower,
 			b.books.Chart.MultiplierAgainst(from.Element, target.Affinity),
 		), amplifiedEffect)
+	case status.Regen:
+		// Restore rather than Damage, which drops two things and keeps one.
+		//
+		// No defence curve: combat.Rules.Restore records why — armour turns away
+		// what is coming at a unit and has nothing to do with what is helping it,
+		// so dividing here would make a unit's own armour quietly weaken its own
+		// regeneration. And no elemental multiplier: the chart prices what one
+		// creature threw at another, and a grass creature healing itself is not
+		// throwing anything, so reading the chart would make aqua_ring worth more
+		// or less depending on who cast it on whom.
+		//
+		// What is kept is the actor's scaling stat and the freeze. Both are the
+		// same as a damage-over-time's, and the freeze is the point: two casters
+		// stacking one regeneration each contribute what their own attack was
+		// worth at the moment they cast, which is what status.Regen already
+		// documents and what nothing was honouring.
+		//
+		// Not amplified, and that is a decision rather than an omission. See
+		// passive.Amplification: a trait's effect share is described to a player
+		// in the words of harm, and a share that heals under a sentence reading
+		// "ticks harder" would be a description that lies — which is the one
+		// thing every derived description in this engine exists to prevent.
+		tick = b.books.Rules.Restore(b.Stats(actor)[from.Scaling], kind.TickPower)
 	}
 	applied := 0
 	wasted := 0
