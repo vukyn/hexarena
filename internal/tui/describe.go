@@ -7,6 +7,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
 
@@ -48,6 +49,47 @@ func DetailPassives(lang i18n.Lang, name string, held []passive.Passive) string 
 		parts = append(parts, heading+"\n"+indent(lang.DescribePassive(one), "  "))
 	}
 	return block(name, strings.Join(parts, "\n"))
+}
+
+// DetailStatus is one timed effect as a block a prompt can print, with the
+// caveat under it.
+//
+// The caveat is here rather than in the sentence, because it is true of every
+// status and a reader asking about one is asking once: repeating "a trait may
+// change this" fifteen times down a reference trains a reader to stop reading it.
+func DetailStatus(lang i18n.Lang, kind status.Kind) string {
+	title := kind.ID
+	if name := lang.Gloss(kind.ID); name != "" && name != kind.ID {
+		title = fmt.Sprintf("%s · %s", kind.ID, name)
+	}
+	return block(title, lang.DescribeStatus(kind)) + "\n\n" +
+		indent(lang.Text(i18n.BlurbStatusCaveat), "  ")
+}
+
+// DetailStatuses is the whole reference: every declared status under its
+// category, and the caveat once at the foot.
+//
+// Grouped rather than listed flat, because the grouping is the half a flat list
+// cannot carry: a skill that strips a stat_debuff and a dot is unreadable to
+// somebody who cannot see which statuses those two words cover.
+func DetailStatuses(lang i18n.Lang, groups []status.Group) string {
+	var b strings.Builder
+	for _, group := range groups {
+		fmt.Fprintf(&b, "  %s · %s\n",
+			group.Category, lang.StatusCategory(group.Category.String()))
+		b.WriteString("  " + strings.Repeat("-", 46) + "\n")
+		for _, kind := range group.Kinds {
+			name := kind.ID
+			if gloss := lang.Gloss(kind.ID); gloss != "" && gloss != kind.ID {
+				name = fmt.Sprintf("%s · %s", kind.ID, gloss)
+			}
+			b.WriteString("  " + name + "\n")
+			b.WriteString(indent(lang.DescribeStatus(kind), "    ") + "\n")
+		}
+		b.WriteString("\n")
+	}
+	b.WriteString(indent(lang.Text(i18n.BlurbStatusCaveat), "  "))
+	return b.String()
 }
 
 func block(title, body string) string {

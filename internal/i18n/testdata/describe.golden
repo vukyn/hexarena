@@ -159,6 +159,77 @@ Mọi đòn của nó hút lại 25% sát thương gây ra.
 Mọi đòn của nó hút lại 40% sát thương gây ra.
 Chỉ có hiệu lực khi còn <=40% máu.
 
+[status] poison
+Đầu lượt của người mang, mỗi lớp trừ 50% chỉ số của bên gây ra.
+Một lớp là 150% trong cả đời nó, đủ 3 lớp là 450%.
+Sát thương mỗi lượt · 3 lượt · tối đa 3 lớp.
+
+[status] burn
+Đầu lượt của người mang, mỗi lớp trừ 80% chỉ số của bên gây ra.
+Một lớp là 160% trong cả đời nó, đủ 2 lớp là 320%.
+Sát thương mỗi lượt · 2 lượt · tối đa 2 lớp.
+
+[status] weaken
+Giảm công 30% mỗi lớp.
+Đủ 3 lớp là 90%.
+Giảm chỉ số · 3 lượt · tối đa 3 lớp.
+
+[status] expose
+Giảm thủ 30% mỗi lớp.
+Đủ 2 lớp là 60%.
+Giảm chỉ số · 2 lượt · tối đa 2 lớp.
+
+[status] blind
+Giảm chính xác 40% mỗi lớp.
+Đủ 2 lớp là 80%.
+Giảm chỉ số · 2 lượt · tối đa 2 lớp.
+
+[status] mire
+Giảm tốc 25% mỗi lớp.
+Đủ 2 lớp là 50%.
+Giảm chỉ số · 2 lượt · tối đa 2 lớp.
+
+[status] stun
+Người mang mất lượt; chiêu vẫn hồi, chỉ là không ra đòn được.
+Khống chế, mất lượt · 1 lượt · 1 lớp.
+
+[status] rally
+Tăng công 30% mỗi lớp.
+Đủ 3 lớp là 90%.
+Tăng chỉ số · 3 lượt · tối đa 3 lớp.
+
+[status] haste
+Tăng tốc 30% mỗi lớp.
+Đủ 2 lớp là 60%.
+Tăng chỉ số · 3 lượt · tối đa 2 lớp.
+
+[status] focus
+Tăng chính xác 40% mỗi lớp.
+Đủ 2 lớp là 80%.
+Tăng chỉ số · 3 lượt · tối đa 2 lớp.
+
+[status] toughened
+Tăng thủ 15%.
+Tăng chỉ số · vĩnh viễn · 1 lớp.
+
+[status] veil
+Tăng né 40% mỗi lớp.
+Đủ 2 lớp là 80%.
+Tăng chỉ số · 2 lượt · tối đa 2 lớp.
+
+[status] kindled
+Tăng công 15%.
+Tăng chỉ số · vĩnh viễn · 1 lớp.
+
+[status] block
+Mỗi lớp nuốt trọn một nhát; đòn hai nhát tiêu hai lớp.
+Khiên, chặn một đòn · 2 lượt · tối đa 3 lớp.
+
+[status] regrowth
+Đầu lượt của người mang, mỗi lớp hồi 40% chỉ số của bên đã dán.
+Một lớp là 120% trong cả đời nó, đủ 3 lớp là 360%.
+Hồi máu mỗi lượt · 3 lượt · tối đa 3 lớp.
+
 == en ==
 
 vine_whip
@@ -313,4 +384,75 @@ Everything it does takes back 25% of the damage dealt.
 [trait] last_gasp
 Everything it does takes back 40% of the damage dealt.
 In force only at or below 40% health.
+
+[status] poison
+At the holder's turn, each stack costs 50% of the applier's stat.
+One stack is 150% over its life, and 3 stacks are 450%.
+Damages every turn · 3 turns · up to 3 stacks.
+
+[status] burn
+At the holder's turn, each stack costs 80% of the applier's stat.
+One stack is 160% over its life, and 2 stacks are 320%.
+Damages every turn · 2 turns · up to 2 stacks.
+
+[status] weaken
+Lowers attack by 30% per stack.
+At 3 stacks that is 90%.
+Lowers a stat · 3 turns · up to 3 stacks.
+
+[status] expose
+Lowers defence by 30% per stack.
+At 2 stacks that is 60%.
+Lowers a stat · 2 turns · up to 2 stacks.
+
+[status] blind
+Lowers accuracy by 40% per stack.
+At 2 stacks that is 80%.
+Lowers a stat · 2 turns · up to 2 stacks.
+
+[status] mire
+Lowers speed by 25% per stack.
+At 2 stacks that is 50%.
+Lowers a stat · 2 turns · up to 2 stacks.
+
+[status] stun
+The holder loses its turn; cooldowns still tick, it just cannot act.
+Costs a turn · 1 turn · 1 stack.
+
+[status] rally
+Raises attack by 30% per stack.
+At 3 stacks that is 90%.
+Raises a stat · 3 turns · up to 3 stacks.
+
+[status] haste
+Raises speed by 30% per stack.
+At 2 stacks that is 60%.
+Raises a stat · 3 turns · up to 2 stacks.
+
+[status] focus
+Raises accuracy by 40% per stack.
+At 2 stacks that is 80%.
+Raises a stat · 3 turns · up to 2 stacks.
+
+[status] toughened
+Raises defence by 15%.
+Raises a stat · always in force · 1 stack.
+
+[status] veil
+Raises dodge by 40% per stack.
+At 2 stacks that is 80%.
+Raises a stat · 2 turns · up to 2 stacks.
+
+[status] kindled
+Raises attack by 15%.
+Raises a stat · always in force · 1 stack.
+
+[status] block
+Each stack swallows one strike whole; a two-strike skill spends two.
+Blocks one strike · 2 turns · up to 3 stacks.
+
+[status] regrowth
+At the holder's turn, each stack restores 40% of the applier's stat.
+One stack is 120% over its life, and 3 stacks are 360%.
+Restores every turn · 3 turns · up to 3 stacks.
 

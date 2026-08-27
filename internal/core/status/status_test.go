@@ -751,3 +751,54 @@ func permanentBook(t *testing.T) *status.Book {
 	}
 	return book
 }
+
+// TestGroupedFilesEveryKindUnderItsCategory covers the three decisions Grouped
+// makes, and they are all decisions somebody reading a listing would notice.
+//
+// Category order is the enum's rather than the book's, so two books declaring
+// the same statuses in a different order still read the same way down a
+// reference. Kind order inside a group is the book's, because that order is
+// authored and a reference sorting it would be printing something nobody wrote.
+// And a category nothing is declared in is left out rather than printed empty: a
+// heading with no rows reads as a listing that failed to load them.
+func TestGroupedFilesEveryKindUnderItsCategory(t *testing.T) {
+	// Declared out of category order on purpose: the buff sits between the two
+	// dots, so a Grouped that walked the book would come out in three groups
+	// rather than two.
+	book, err := status.ParseBook([]byte(`{
+	  "max_stacks": 5,
+	  "max_duration": 6,
+	  "kinds": [
+	    {"id": "poison", "category": "dot", "max_stacks": 3, "duration": 3, "tick_power": 500},
+	    {"id": "rally", "category": "buff", "max_stacks": 3, "duration": 3,
+	     "modifiers": [{"target": "attack", "mode": "percent", "amount": 300}]},
+	    {"id": "burn", "category": "dot", "max_stacks": 2, "duration": 2, "tick_power": 800}
+	  ]
+	}`))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	groups := book.Grouped()
+	if len(groups) != 2 {
+		t.Fatalf("three kinds of two categories came out in %d groups: %+v", len(groups), groups)
+	}
+	if groups[0].Category != status.Dot || groups[1].Category != status.Buff {
+		t.Errorf("the groups are %s then %s, want the enum's order",
+			groups[0].Category, groups[1].Category)
+	}
+	// The book's order inside the group, which is not the order they were
+	// declared in overall.
+	if got := []string{groups[0].Kinds[0].ID, groups[0].Kinds[1].ID}; got[0] != "poison" || got[1] != "burn" {
+		t.Errorf("the dots came out %v, want the order the book declares them in", got)
+	}
+	counted := 0
+	for _, group := range groups {
+		if len(group.Kinds) == 0 {
+			t.Errorf("%s is a group with nothing in it", group.Category)
+		}
+		counted += len(group.Kinds)
+	}
+	if counted != len(book.Kinds()) {
+		t.Errorf("the book holds %d kinds and the groups hold %d", len(book.Kinds()), counted)
+	}
+}

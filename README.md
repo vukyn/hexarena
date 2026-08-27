@@ -265,6 +265,9 @@ applied a stack may be dead by the time it resolves.
 A tick is never rolled and never offered to a block charge. That is the whole role
 damage over time plays against those two defences, and cleanse is what answers it.
 
+What each declared status actually does is a listing of its own — see *Looking a
+status up*, which is where `?mire` at the prompt and `hexforge statuses` both go.
+
 ## Buffs and debuffs
 
 Terms of the same target sum, then saturate towards a limit they never reach:
@@ -671,9 +674,10 @@ genuinely endless is happening rather than a draw waiting to be recognised.
 ## What a skill does, in words
 
 The menu is a table of figures, which answers "how much" and not "what happens".
-At the prompt, `?2` asks about the second skill offered and `?A1` asks what a
-unit is carrying; both print and then draw the menu again, because reading is
-part of deciding and cannot cost a turn.
+At the prompt, `?2` asks about the second skill offered, `?A1` asks what a unit is
+carrying, and `?mire` or `?*` asks about a status — see *Looking a status up*.
+Each prints and then draws the menu again, because reading is part of deciding and
+cannot cost a turn.
 
 ```
  2) razor_leaf      grass      rng 3   arc_up        pow 1200   acc 880   x2 cd2
@@ -948,6 +952,7 @@ go run ./cmd/hexforge species          # what a unit can be, and who is one
 go run ./cmd/hexforge species add fox --name "cáo"
 go run ./cmd/hexforge archetypes       # the presets, their curves and their kits
 go run ./cmd/hexforge skills           # the declared skills and who may carry each
+go run ./cmd/hexforge statuses         # the timed effects, grouped, and what each does
 go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900
 go run ./cmd/hexforge skills edit oath --power 1100   # change one already in the book
 go run ./cmd/hexforge cast             # the authored characters
@@ -1009,8 +1014,8 @@ go run ./cmd/hexforge-tui              # or: make forge-tui
 
 `hexforge-tui` is a second front-end over the same `internal/forge`: a cast
 browser that resolves a character at any level you walk to with the arrow keys, a
-new-character form, the origin catalog with an add form, and the check rendered
-as a screen. Two things it can do that a sequence of prompts cannot — because
+new-character form, the origin catalog with an add form, the status reference,
+and the check rendered as a screen. Two things it can do that a sequence of prompts cannot — because
 everything is visible at once and both are pure integer arithmetic recomputed on
 every keystroke:
 
@@ -1484,41 +1489,80 @@ carries all three measurements.
 
 ### Looking a status up
 
-Nothing lists them. `hexforge` has five listings — origins, species, archetypes,
-passives, skills — and the statuses are not one of them, so the only way to learn
-what `mire` does is to open `statuses.json`. In a battle it is worse: the log says
-*resisted mire*, the unit table says *mire*, and a player has no way to find out
-that it is a quarter off speed for two turns.
+Built. `Lang.DescribeStatus` sits beside `Describe` and `DescribePassive`, and it
+answers the third question: the first two are *should I use this* and *what is
+this unit carrying*, and this one is *what has just happened to me* — which the
+game asked most often and could not answer at all. The log said *resisted mire*,
+the unit table said *mire*, and nothing anywhere said mire is a quarter off speed
+for two turns.
 
-They are the layer with the most reading to do and the least said about them. A
-skill's description names the status it inflicts and stops there — *gây sa lầy cho
-mục tiêu, 70% khả năng* — which tells a reader something will happen and not what.
+Three places ask for it, all the same sentences:
 
-The shape follows what is already built. `Lang.DescribeStatus` beside `Describe`
-and `DescribePassive`, **derived** for the same reason those are, in both
-languages, reachable from `?` at the battle prompt the way `?N` and `?TAG` already
-are and from a screen in the authoring tool the way `screenBlurb` is.
+```
+> ?mire                        one status, by id or by the name it is printed under
+> ?*                           the whole reference, grouped
+hexforge statuses              the sixth listing, in English like the rest of it
+hexforge-tui → hiệu ứng        a screen with the listing and the description
+```
 
-What such a description has to carry, and the three traps in it:
+```
+  mire · sa lầy
+  ----------------------------------------------
+  Giảm tốc 25% mỗi lớp.
+  Đủ 2 lớp là 50%.
+  Giảm chỉ số · 2 lượt · tối đa 2 lớp.
 
-- **A life, not a tick.** `poison` at 500 for three turns and `burn` at 800 for
-  two are compared by what they cost over their lives, not by their per-turn
-  figures — `skills.golden` already prints an *over its life* column for exactly
-  that reason, and a reference that printed the tick alone would have a reader
-  rating the wrong one higher. The same goes for a stat change: a percent per
-  stack against a cap of three is a different number from the percent.
-- ⚠️ **Permanent is "always", never "0 turns".** `Snapshot.Permanent` exists
-  because a trait's status has no duration to print and printing its zero reads as
-  one about to expire.
-- ⚠️ **Group by category, or a cleanse cannot be read.** `rapid_spin` strips a
-  `stat_debuff` and a `dot`, and a reader who cannot see which statuses those are
-  cannot tell what the skill removes. The categories have Vietnamese names
-  already; what is missing is the grouping that makes them mean something.
+  Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
+```
 
-⚠️ And the one that will be got wrong: **a reference describes the declared kind,
-not what a unit will feel.** `virulence` amplifies poison and a resistance refuses
-it, so the 500 in the book is not the number that lands. Say so in the reference
-rather than leaving a reader to discover it when the log shows 650.
+**A life, not a tick.** `poison` ticks for 50% and `burn` for 80%, so a reference
+printing the tick alone has a reader rating burn the heavier of the two. Over
+their lives poison is 150% to burn's 160% for one stack and **450% to 320% at
+their caps**, which is the other way round at the only place it matters. Both
+figures are stated, and the stacked total with them, because a percent per stack
+against a cap of three is a different number from the percent.
+
+⚠️ **One stack's life and the cap's, not the ramp.** `skills.golden` prints a
+third figure under the same words — the full ramp of a status reapplied every turn
+until it caps, 600% for poison — and that one is an author's ceiling rather than a
+player's fact: reaching it needs a skill off cooldown every turn, which no shipped
+kit has. What the reference states assumes nothing about how often it is applied.
+Two numbers under one phrase is worth the note; they answer different questions.
+
+⚠️ **Permanent is "always", never "0 turns"**, and a one-stack status is never
+given a rate. `toughened` reads *tăng thủ 15%* rather than *15% mỗi lớp*: it caps
+at one stack, so a rate is a promise of something `status.Set` refuses.
+`TestAPermanentStatusIsNeverGivenARate` holds it.
+
+**Grouped, by `status.Book.Grouped`.** The grouping is the half a flat list
+cannot carry: `rapid_spin` strips a `stat_debuff` and a `dot`, and that is
+unreadable to somebody who cannot see which statuses the two words cover. It is
+one function in core rather than one per front-end, because a grouping worked out
+three times is three answers to *which category is this in* waiting to disagree.
+In the tool the headings are **rows**, not something drawn between them — the
+listing scrolls, and a heading computed while rendering falls off the top of the
+window and leaves the rows under it unlabelled. The price is a cursor that can
+index one, which `TestTheStatusCursorNeverLandsOnAHeading` refuses.
+
+⚠️ **It describes the declared kind, not what a unit will feel.** `virulence`
+amplifies poison, a resistance refuses it, and a stacked stat term saturates
+rather than adding up — so the figures are the book's and not the log's. The
+caveat says so **once** per reference rather than under every status: a warning
+repeated fifteen times is a warning nobody finishes reading. It is also the last
+line of the screen, and the frame cuts from the bottom, so
+`TestTheStatusCaveatSurvivesTheSmallestWindow` measures it at eighty by
+twenty-four in both languages.
+
+⚠️ **`regrowth` heals nothing, and this is what surfaced it.** `Battle.inflict`
+computes a tick only for `status.Dot`, so a `Regen` stack is applied with a tick
+amount of nought and `Set.Tick` adds nought to the healing — `aqua_ring` and the
+regeneration half of `synthesis` are no-ops today, and nothing in
+`internal/core/battle` tests a regen. The reference describes what the book
+declares, which is the honest thing for it to do and is also why the gap became
+visible: writing *hồi 40% mỗi lớp, một lớp là 120%* beside a status that heals
+nobody is the sort of thing a reference is for. Left as it is here rather than
+fixed in passing, because the fix moves the goldens and that is a balance change
+with its own diff.
 
 ### A health threshold a skill can read
 
@@ -1710,6 +1754,37 @@ would have been two vocabularies for one idea.
 count, a number of battles fought: every one needs somewhere to persist between
 battles, and there is no such place — no meta layer, no inventory, no save. A
 level is what a character sheet knows.
+
+### A regeneration that heals
+
+`regrowth` is declared, glossed, described and inert. `Battle.inflict` computes a
+tick only for `status.Dot`:
+
+```go
+tick := int64(0)
+if kind.Category == status.Dot {
+    tick = raise(b.books.Rules.Damage(...), amplifiedEffect)
+}
+```
+
+so a `Regen` stack goes on with a tick amount of nought, `Set.Tick` adds nought to
+its healing total, and `tickStatuses` skips the entry entirely because it prints
+nothing whose amount is nought. `aqua_ring` and the healing half of `synthesis`
+therefore do nothing at all, and nothing in `internal/core/battle` tests a regen —
+which is how it stayed invisible while the surrounding work went past it twice.
+
+The fix is one condition, and the reason it is not made in passing is what it
+drags: two skills start working, so the replay and scenario goldens move, and
+those are the design record rather than fixtures. It is a balance change and wants
+its own diff.
+
+⚠️ Two things to decide with it rather than after it. **Which stat a regen scales
+off** — `origin.Scaling` is the applying skill's, which is attack for both of
+them, and a heal scaling off attack is what `Skill.Restores` already does, so the
+consistent answer is to leave it. And **whether an amplifier should raise a
+regen**: `raise(..., amplifiedEffect)` sits on the damage path, `passive.Amplifies`
+is worded as "ticks harder", and a trait amplifying an ally's regeneration is a
+support archetype nobody has written yet. Both are one line; neither is obvious.
 
 ### Growing the cast
 

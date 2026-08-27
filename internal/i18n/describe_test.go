@@ -38,6 +38,10 @@ func TestDescribeEveryShippedSkillGolden(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load the shipped passives: %v", err)
 	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
 
 	var b strings.Builder
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
@@ -47,6 +51,14 @@ func TestDescribeEveryShippedSkillGolden(t *testing.T) {
 		}
 		for _, held := range passives.All() {
 			fmt.Fprintf(&b, "[trait] %s\n%s\n\n", held.ID, lang.DescribePassive(held))
+		}
+		// Grouped, as every reference draws them: the order is the record too,
+		// because a status moving between categories changes what a cleanse
+		// naming that category strips.
+		for _, group := range statuses.Grouped() {
+			for _, kind := range group.Kinds {
+				fmt.Fprintf(&b, "[status] %s\n%s\n\n", kind.ID, lang.DescribeStatus(kind))
+			}
 		}
 	}
 
@@ -224,4 +236,139 @@ func TestEverySkillDescriptionSaysWhatItDoes(t *testing.T) {
 func rangeWord(lang i18n.Lang) string {
 	word, _, _ := strings.Cut(lang.Say(i18n.BlurbCostRange, 0), " 0")
 	return word
+}
+
+// TestEveryStatusDescriptionSaysWhatItIs is the property the golden cannot hold:
+// a golden freezes whatever came out, a status the writer had nothing to say
+// about included.
+//
+// Three things every one of them has to carry, and each is a way the reference
+// has already been wrong somewhere else in this program. It has to say something
+// beyond its cost line, or a category nobody wrote a sentence for reads as a
+// status that does nothing. It has to close on the category, the duration and
+// the stacks, because those are the three facts a player is looking one up for.
+// And a permanent one must never print a duration: Snapshot.Permanent exists
+// because a zero there reads as something about to expire.
+func TestEveryStatusDescriptionSaysWhatItIs(t *testing.T) {
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		for _, kind := range statuses.Kinds() {
+			description := lang.DescribeStatus(kind)
+			lines := strings.Split(description, "\n")
+			if len(lines) < 2 {
+				t.Errorf("%s: %q is described in one line, so it says nothing the cost line does not: %q",
+					lang, kind.ID, description)
+				continue
+			}
+			// Lowered before matching, because the line is capitalised as a
+			// sentence and a test matching the capital would pass for the wrong
+			// reason the day it stopped opening with the category.
+			costs := strings.ToLower(lines[len(lines)-1])
+			if !strings.Contains(costs, strings.ToLower(lang.StatusCategory(kind.Category.String()))) {
+				t.Errorf("%s: %q closes without naming its category: %q", lang, kind.ID, costs)
+			}
+			if kind.Permanent {
+				if !strings.Contains(costs, strings.ToLower(lang.Text(i18n.BlurbStatusAlways))) {
+					t.Errorf("%s: %q is permanent and its cost line does not say so: %q",
+						lang, kind.ID, costs)
+				}
+				continue
+			}
+			want := lang.Say(i18n.BlurbStatusLasts, kind.Duration)
+			if kind.Duration == 1 {
+				want = lang.Text(i18n.BlurbStatusLastsOne)
+			}
+			if !strings.Contains(costs, strings.ToLower(want)) {
+				t.Errorf("%s: %q lasts %d turns and its cost line does not say so: %q",
+					lang, kind.ID, kind.Duration, costs)
+			}
+		}
+	}
+}
+
+// TestAPermanentStatusIsNeverGivenARate is the sentence a permanent status made
+// wrong, and it is the mirror of TestAGatedTraitIsNotDescribedAsAlways.
+//
+// A stat term used to read "raises defence by 15% per stack" whatever carried
+// it. On toughened and kindled — the two permanent statuses a trait grants, and
+// the two a reader is least able to guess at — there can never be a second
+// stack, so a rate is a promise of something the engine refuses: status.Set caps
+// at MaxStacks, and Hold stops at the same cap.
+func TestAPermanentStatusIsNeverGivenARate(t *testing.T) {
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	// Matched by the fixed half of the wording rather than by a literal, so a
+	// translation reworded tomorrow keeps this honest: whatever the per-stack
+	// wording says after its last blank is the clause the other one does not
+	// have.
+	rate := func(lang i18n.Lang) string {
+		text := lang.Text(i18n.BlurbStatusRaises)
+		last := strings.LastIndex(text, "%s")
+		if last < 0 {
+			return ""
+		}
+		return strings.TrimSpace(text[last+len("%s"):])
+	}
+	single := 0
+	for _, kind := range statuses.Kinds() {
+		if kind.MaxStacks > 1 || len(kind.Modifiers) == 0 {
+			continue
+		}
+		single++
+		for _, lang := range i18n.Langs() {
+			suffix := rate(lang)
+			if suffix == "" {
+				t.Fatalf("%s: the two stat wordings share no ending, so this test cannot tell them apart", lang)
+			}
+			if strings.Contains(lang.DescribeStatus(kind), suffix) {
+				t.Errorf("%s: %q allows one stack and is described at a rate per stack:\n%s",
+					lang, kind.ID, lang.DescribeStatus(kind))
+			}
+		}
+	}
+	if single == 0 {
+		t.Skip("no shipped status carries a stat term and caps at one stack")
+	}
+}
+
+// TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn is the comparison the
+// per-turn figure gets backwards.
+//
+// Poison ticks for 50% and burn for 80%, so a reference printing the tick alone
+// has a reader rating burn the heavier of the two. Over their lives poison is
+// 150% to burn's 160% for one stack and 450% to 320% at their caps, which is the
+// other way round at the only place it matters. So the life is asserted to be
+// there and to be the right number, in both languages.
+func TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn(t *testing.T) {
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	ticking := 0
+	for _, kind := range statuses.Kinds() {
+		if kind.TickPower == 0 {
+			continue
+		}
+		ticking++
+		life := kind.TickPower * kind.Duration / 10
+		for _, lang := range i18n.Langs() {
+			description := lang.DescribeStatus(kind)
+			want := lang.Say(i18n.BlurbStatusLife, life)
+			if kind.MaxStacks > 1 {
+				want = lang.Say(i18n.BlurbStatusLifeCapped, life, kind.MaxStacks, life*kind.MaxStacks)
+			}
+			if !strings.Contains(description, want) {
+				t.Errorf("%s: %q is not described over its life; wanted %q in:\n%s",
+					lang, kind.ID, want, description)
+			}
+		}
+	}
+	if ticking == 0 {
+		t.Skip("no shipped status ticks, so nothing here has a life to state")
+	}
 }
