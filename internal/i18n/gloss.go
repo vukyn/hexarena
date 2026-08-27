@@ -86,7 +86,7 @@ var (
 		"blind":  "mù",
 		"mire":   "sa lầy",
 		"stun":   "choáng",
-		"rally":  "sung sức",
+		"fury":   "cuồng nộ",
 		"haste":  "nhanh chân",
 		"focus":  "tập trung",
 		"veil":   "mờ ảo",

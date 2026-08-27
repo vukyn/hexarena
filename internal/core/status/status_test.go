@@ -770,7 +770,7 @@ func TestGroupedFilesEveryKindUnderItsCategory(t *testing.T) {
 	  "max_duration": 6,
 	  "kinds": [
 	    {"id": "poison", "category": "dot", "max_stacks": 3, "duration": 3, "tick_power": 500},
-	    {"id": "rally", "category": "buff", "max_stacks": 3, "duration": 3,
+	    {"id": "fury", "category": "buff", "max_stacks": 3, "duration": 3,
 	     "modifiers": [{"target": "attack", "mode": "percent", "amount": 300}]},
 	    {"id": "burn", "category": "dot", "max_stacks": 2, "duration": 2, "tick_power": 800}
 	  ]

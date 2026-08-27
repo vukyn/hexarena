@@ -284,7 +284,7 @@ const Skills = `[
     "target": "ally",
     "applies": [
       {
-        "status": "rally",
+        "status": "fury",
         "chance": 1000,
         "stacks": 1
       }

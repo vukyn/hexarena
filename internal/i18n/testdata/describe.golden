@@ -87,7 +87,7 @@ Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
 
 dragon_dance
 Nhảy một điệu cổ xưa của loài rồng, càng nhảy càng hăng.
-Nhận sung sức và nhanh chân.
+Nhận cuồng nộ và nhanh chân.
 Bản thân · hồi 4 lượt.
 
 water_gun
@@ -200,7 +200,7 @@ Giảm chỉ số · 2 lượt · tối đa 2 lần cộng dồn.
 Bên dính hiệu ứng mất lượt; chiêu vẫn hồi, chỉ là không ra đòn được.
 Khống chế, mất lượt · 1 lượt · 1 lần cộng dồn.
 
-[status] rally
+[status] fury
 Tăng công 30% mỗi lần cộng dồn.
 Tối đa là 90%.
 Tăng chỉ số · 3 lượt · tối đa 3 lần cộng dồn.
@@ -323,7 +323,7 @@ Inflicts blind, 80% of the time.
 Range 2 · 2 cells · 100% to hit · 3 turns to recharge.
 
 dragon_dance
-Puts rally and haste on itself.
+Puts fury and haste on itself.
 Itself · 4 turns to recharge.
 
 water_gun
@@ -426,7 +426,7 @@ Lowers a stat · 2 turns · up to 2 stacks.
 The holder loses its turn; cooldowns still tick, it just cannot act.
 Costs a turn · 1 turn · 1 stack.
 
-[status] rally
+[status] fury
 Raises attack by 30% per stack.
 At its cap that is 90%.
 Raises a stat · 3 turns · up to 3 stacks.
