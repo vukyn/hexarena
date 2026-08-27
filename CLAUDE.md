@@ -1140,6 +1140,24 @@ is the constraint each piece has to respect.
       amplifier are five different sorts of thing, which is exactly the "differ in
       kind" the slot was waiting for. What is left is putting them on characters.
       See README → *Two builds for one character*.
+      ⚠️ **`venom_blood` is gated at 24 now, and the roster figure moved with
+      it.** It was the one trait on the learnset with no level, so a Bulbasaur
+      had the strongest of the five from level 1. **4000 seeds: 49.5% → 53.2%
+      ally.** Every other measurement in this file reading 49.5% predates it.
+      The swing is one-sided by construction: `ally.venusaur` is level 60 and
+      keeps the trait, while `foe.ivysaur` is 16 and loses it — a placement
+      naming a trait above its level is a **hard parse error**
+      (`chooseFrom`: "has not learned at level 16"), not a silent drop, so the
+      roster had to change in the same commit or stop loading.
+      ⚠️ **What replaced it on `foe.ivysaur` is worth almost nothing**: measured
+      both ways, `endurance` gives 52.9% against 53.2% for no trait at all. The
+      3.7 points are the loss of `venom_blood`, not the gap it left, so the
+      choice between them is a design one — it fields none, because handing it
+      another trait would swap one for another rather than show the gate, and
+      `ally.charmander` already fields none.
+      ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
+      is the *stronger* trait of the two at the cap, so swapping the ally's
+      build to compensate pushes the figure further out, not back.
 - [x] **Answering back — the fifth job.** `venom_blood` now costs whatever bit
       into it: `"replies": {"power": 40, "applies": [{"status":"poison","chance":25}]}`.
       ⚠️ **Not `applies` reworded** — that fires on a target the holder chose,

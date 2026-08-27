@@ -147,7 +147,8 @@
       ],
       "passives": [
         {
-          "id": "venom_blood"
+          "id": "venom_blood",
+          "at_level": 24
         },
         {
           "id": "endurance",
