@@ -10,7 +10,6 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
-	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/seed"
 )
@@ -373,10 +372,10 @@ func TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn(t *testing.T) {
 			if kind.Duration == 1 {
 				lasts = lang.Text(i18n.BlurbStatusLastsOne)
 			}
-			want := lang.Say(i18n.BlurbStatusLife, lasts, forge.Percent(life))
+			want := lang.Say(i18n.BlurbStatusLife, lasts, shareOf(life))
 			if kind.MaxStacks > 1 {
 				want = lang.Say(i18n.BlurbStatusLifeCapped,
-					lasts, forge.Percent(life), forge.Percent(life*kind.MaxStacks))
+					lasts, shareOf(life), shareOf(life*kind.MaxStacks))
 			}
 			if !strings.Contains(description, want) {
 				t.Errorf("%s: %q is not described over its life; wanted %q in:\n%s",
@@ -389,23 +388,20 @@ func TestAStatusIsDescribedOverItsLifeAndNotOnlyPerTurn(t *testing.T) {
 	}
 }
 
-// TestATraitsSharesArePrintedExactly is the bug traits found and skills never
-// could.
+// TestATraitsSharesAreRoundedAndNotTruncated is the bug traits found and skills
+// never could, kept after the answer to it changed.
 //
-// A share used to be truncated to whole percent, which is lossless for a skill
-// and lossy for a trait: a skill is priced in hundreds of parts per thousand and
-// a trait in tens, so venom_blood's reply chance of 25 printed as "2%" when it is
-// 2.5, and anything under ten would have printed "0%" — a feature reading as one
-// that does not work. The argument for truncating was that the listing beside the
-// sentence carries the exact figure, and for a trait there was no such listing:
-// hexforge passives had no column for a reply or for a drain until the trait
-// screen added them, and a listing is the wrong place to learn a figure anyway.
+// A share was once truncated, which is lossless for a skill — priced in hundreds
+// of parts per thousand — and lossy for a trait, priced in tens: venom_blood's
+// reply chance of 25 printed as "2%" for 2.5, a fifth of the value gone. The
+// sentence rounds now rather than printing the tenth, so what is asserted is the
+// rounded figure and, in the next test, that nothing rounds to nothing. Rounding
+// half away from zero is what keeps it from being the old truncation under a new
+// name: 25 becomes 3.
 //
-// So every share a trait declares has to appear in its description as the figure
-// itself. An immunity is the one exception, and it is a wording rather than a
-// figure: a full share reads "refuses it outright", which is the fact rather than
-// the number.
-func TestATraitsSharesArePrintedExactly(t *testing.T) {
+// An immunity is the one exception, and it is a wording rather than a figure: a
+// full share reads "miễn nhiễm", which is the fact rather than the number.
+func TestATraitsSharesAreRoundedAndNotTruncated(t *testing.T) {
 	passives, err := seed.PassiveBook()
 	if err != nil {
 		t.Fatalf("load the shipped passives: %v", err)
@@ -445,11 +441,94 @@ func TestATraitsSharesArePrintedExactly(t *testing.T) {
 		for _, lang := range i18n.Langs() {
 			description := lang.DescribePassive(held)
 			for _, permille := range shares {
-				if !strings.Contains(description, forge.Percent(permille)) {
+				rounded := fmt.Sprintf("%d%%", (permille+5)/10)
+				if !strings.Contains(description, rounded) {
 					t.Errorf("%s: %q declares %d parts per thousand and its description never says %q:\n%s",
-						lang, held.ID, permille, forge.Percent(permille), description)
+						lang, held.ID, permille, rounded, description)
+				}
+				// And never the truncation this replaced, which is a different
+				// number whenever the tenth is five or more.
+				if truncated := fmt.Sprintf("%d%%", permille/10); truncated != rounded &&
+					strings.Contains(description, truncated) {
+					t.Errorf("%s: %q declares %d parts per thousand and its description says %q, the truncation:\n%s",
+						lang, held.ID, permille, truncated, description)
 				}
 			}
 		}
 	}
+}
+
+// TestNoShippedShareRoundsAwayToNothing is the floor rounding kept from the
+// truncation it replaced, three quarters of a percent lower.
+//
+// A share under five parts per thousand rounds to nought, and a feature
+// described as landing "0% of the time" reads as one that does not work — which
+// is worse than describing it imprecisely, because a player will not use it.
+// The fix when this fires is the **data**: a share that small is a share nobody
+// can feel, so either it is worth raising or the field is worth removing. It is
+// not a reason to put the tenth back, because the tenth only moves the floor
+// down one decimal place and leaves the same failure waiting there.
+//
+// It walks the statuses as well as the traits, because a status carries shares
+// of the same size — a tick power, a modifier term — and nothing about the floor
+// is particular to a trait.
+func TestNoShippedShareRoundsAwayToNothing(t *testing.T) {
+	passives, err := seed.PassiveBook()
+	if err != nil {
+		t.Fatalf("load the shipped passives: %v", err)
+	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	check := func(owner, what string, permille int) {
+		t.Helper()
+		if permille != 0 && (permille+5)/10 == 0 {
+			t.Errorf("%s declares %s at %d parts per thousand, which rounds to 0%%: raise it or drop it",
+				owner, what, permille)
+		}
+	}
+	for _, held := range passives.All() {
+		if held.Replies.Answers() {
+			check(held.ID, "a reply", held.Replies.Power)
+			for _, application := range held.Replies.Applies {
+				check(held.ID, "a reply's chance", application.Chance)
+			}
+		}
+		for _, application := range held.Applies {
+			check(held.ID, "a rider's chance", application.Chance)
+		}
+		for _, resistance := range held.Resists {
+			check(held.ID, "a resistance", resistance.Amount)
+		}
+		check(held.ID, "a drain", held.Drains)
+		for _, raise := range held.Amplifies {
+			check(held.ID, "an amplified effect", raise.Effect)
+			check(held.ID, "an amplified chance", raise.Chance)
+		}
+		if held.While != nil {
+			check(held.ID, "a gate", held.While.BelowHealth)
+		}
+	}
+	for _, kind := range statuses.Kinds() {
+		check(kind.ID, "a tick", kind.TickPower)
+		for _, term := range kind.Modifiers {
+			amount := int(term.Amount)
+			if amount < 0 {
+				amount = -amount
+			}
+			check(kind.ID, "a modifier", amount)
+		}
+	}
+}
+
+// shareOf is how a description writes a proportion: rounded to a whole percent,
+// half away from zero. Written here rather than imported because i18n.share is
+// unexported, and written as arithmetic rather than as a literal so a test
+// asserting a figure cannot quietly assert the wrong one.
+func shareOf(permille int) string {
+	if permille < 0 {
+		return "-" + shareOf(-permille)
+	}
+	return fmt.Sprintf("%d%%", (permille+5)/10)
 }

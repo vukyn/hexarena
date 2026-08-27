@@ -317,20 +317,29 @@ a plant takes it); **a trait has no restriction mechanism at all** — no elemen
 archetype, species or character — so for a trait the ban is unconditional and no
 future field relaxes it. It is a **lead line**, not a replacement: a skill has one
 opening sentence to take over, a trait has one to six lines and no opening among
-them. It also fixed the bare `nó` in six of the eleven trait wordings without
-touching a wording — the clause gives the pronoun an antecedent.
+them.
+⚠️ **Trait wordings name the thing, never `nó`.** Six of eleven used to lead with
+a bare pronoun (`Nó gây %s mạnh thêm %s`); a description is about one unit, so the
+pronoun carried nothing and only lengthened the line. Drop it wherever the meaning
+survives — and where a sentence has two subjects, name them: a reply is "ai đánh
+trúng thì bị phản lại … công **của người bị đánh**", not two `nó` in one clause.
 ⚠️ **Trait sentence order is narrative, not field order**: what the holder *is*
 (grants, resists) → what its **own attacks** do (applies, amplifies, drains) →
 what attacking **it** costs (replies) → **when** (while). Field order read
 backwards on `venom_blood`, which replied before it said it was immune.
-⚠️ **A share prints through `forge.Percent`, never truncated.** Truncation is
-lossless for a skill (hundreds of parts per thousand) and lossy for a trait
-(tens): `venom_blood`'s reply chance of 25 printed `2%` for 2.5, and anything under
-10 printed `0%`. The old excuse — the listing beside it carries the exact figure —
-was false for traits: `hexforge passives` had no reply or drain column at all
-until *Reading a trait* added them. One renderer for the author's table and the player's sentence. Decimal point,
-not comma, because these figures sit inside sentences that use commas between
-clauses.
+⚠️ **Two share renderers, on purpose.** `forge.Percent` keeps a tenth (`2.5%`) for
+**hexforge's tables**, where an author tunes the number and the tenth is what is
+being tuned. `i18n.share` **rounds to a whole percent, half away from zero**, for
+**sentences**, because a tenth is precision a player cannot act on and the decimal
+point is the only mark in the line that is not a comma. History matters: share
+*truncated* first, which turned a trait's 2.5 into 2 (skills are priced in
+hundreds of ‰ and lost nothing; traits are priced in tens). Rounding is not that
+mistake again — 25 becomes 3.
+⚠️ **Rounding keeps truncation's floor**, 0.75% lower: anything under 5‰ rounds to
+`0%`, which reads as a feature that does not work.
+`TestNoShippedShareRoundsAwayToNothing` walks every trait and status share; **the
+fix is the data**, not the renderer — putting the tenth back only moves the same
+failure down a decimal place.
 Numbers are **shares of a stat** ("100% công"), never damage figures: a figure is
 true for one caster against one target and false at the next buff. ⚠️ The block is
 **Vietnamese on an otherwise English screen** — a stated cost, not an oversight;
@@ -1290,7 +1299,7 @@ is the constraint each piece has to respect.
       is. These are the program's own prose: `TestEveryWordingFitsTheMinimumWidth`
       renders at width 200 and measures against 79, and free text is excused while
       a derived sentence is not. Unwrapped, the reply line was cut mid-word at the
-      floor ("2.5% khả nă").
+      floor ("…3% khả nă").
       ⚠️ **The `answers` column is ONE cell** — `DescribePassive` writes one
       sentence for a whole reply on purpose; a damage cell filed away from a status
       cell leaves a reader adding it up.

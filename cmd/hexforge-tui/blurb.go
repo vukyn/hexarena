@@ -195,7 +195,7 @@ func (b blurbScreen) viewTraits(m model) (string, string) {
 //
 // Wrapped rather than clipped, and that is not a preference: the derived reply
 // sentence is seventy-six cells before its indent, so the floor cut it mid-word
-// — "2.5% khả nă" — which reads as the tool being broken rather than as a
+// — "…3% khả nă" — which reads as the tool being broken rather than as a
 // terminal being narrow. Every other pane that carries a sentence wraps for the
 // same reason.
 func traitLines(m model, held []passive.Passive) []string {
