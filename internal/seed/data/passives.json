@@ -56,11 +56,10 @@
       "flavour": "Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy",
       "grants": [],
       "replies": {
-        "power": 40,
         "applies": [
           {
             "status": "poison",
-            "chance": 25
+            "chance": 40
           }
         ]
       },

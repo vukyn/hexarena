@@ -341,8 +341,19 @@ func TestTheShippedRosterAnswersItsAttackers(t *testing.T) {
 			}
 		}
 	}
-	if answered == 0 {
-		t.Error("nothing in the shipped roster ever answered an attacker")
+	// ⚠️ The damage half is deliberately NOT asserted, because no shipped trait
+	// answers with damage any more. venom_blood gave up its 40 per mille of
+	// counter-damage to buy a higher poison chance, and it was the only replier
+	// in the cast — so a battle from the shipped roster now emits no Damaged
+	// carrying a trait at all.
+	//
+	// The mechanism is not untested for it: internal/core/battle/reply_test.go
+	// drives it against fixtures built for the purpose. What is gone is the
+	// shipped game *doing* it, which is a cast fact rather than an engine one and
+	// comes back the moment a trait wants counter-damage again. The counter is
+	// kept and logged rather than deleted, so the day one does, this says so.
+	if answered > 0 {
+		t.Logf("%d replies dealt damage; the assertion below can be widened again", answered)
 	}
 	// The poison is the other half of the trait's name, and it is authored at a
 	// low enough chance that forty battles is the smallest sweep that reliably
