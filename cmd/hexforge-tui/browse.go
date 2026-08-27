@@ -111,6 +111,18 @@ func (b browseScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 		m.browse = b
 		m.screen = screenPreview
 		return m, nil
+	case "?":
+		// The same arrangement, for the trait sentences. The row above prints a
+		// trait's id and its name and stops there, which is the whole of what
+		// this tool ever said about a trait — so an author moving virulence from
+		// 300 to 200 watched a figure change and never read the line a player
+		// gets. The screen borrows this cursor and this level rather than
+		// keeping either, so the traits it describes are the ones in force at
+		// the level being walked.
+		m.browse = b
+		m.blurb.from = screenBrowse
+		m.screen = screenBlurb
+		return m, nil
 	}
 	m.browse = b
 	return m, nil

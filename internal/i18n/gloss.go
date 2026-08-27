@@ -254,6 +254,31 @@ func (l Lang) GlossedSkill(carried skill.Skill) string {
 	return fmt.Sprintf(glossBracket, carried.ID, name)
 }
 
+// PassiveName is the name a trait is called by in this language, or nothing.
+//
+// There is no gloss table for traits, unlike skills and statuses: a trait's name
+// is authored in passives.json and nowhere else, so this is the authored field
+// and a trim, with none of SkillName's fallback to a compiled table. Vietnamese
+// only, the same trade every authored name here makes — an English reader gets
+// the id, which in English *is* the name.
+func (l Lang) PassiveName(held passive.Passive) string {
+	if l != Vi {
+		return ""
+	}
+	return strings.TrimSpace(held.Name)
+}
+
+// GlossedPassive is a trait's id with its Vietnamese name beside it, or the bare
+// id when it has none — the same shape GlossedSkill gives a skill, so a screen
+// showing one beside the other names them the same way.
+func (l Lang) GlossedPassive(held passive.Passive) string {
+	name := l.PassiveName(held)
+	if name == "" {
+		return held.ID
+	}
+	return fmt.Sprintf(glossBracket, held.ID, name)
+}
+
 // GlossedAffinity is an affinity — one element or two — with one bracket for
 // the whole of it: grass/electric (cỏ/điện).
 //
@@ -337,7 +362,7 @@ func (l Lang) GlossedPassives(held []passive.Passive) string {
 	names := make([]string, 0, len(held))
 	glossed := false
 	for _, one := range held {
-		name := strings.TrimSpace(one.Name)
+		name := l.PassiveName(one)
 		if name == "" {
 			name = one.ID
 		} else {

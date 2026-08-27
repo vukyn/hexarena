@@ -1708,65 +1708,73 @@ with its own diff.
 
 ### Reading a trait
 
-A status just went from nothing to a describer and **three** front-ends in a
-single change. A trait has had its describer far longer and has **one**.
+Built. `Lang.DescribePassive` had one caller — `?TAG` at the battle prompt — so
+the tool where a trait is actually tuned printed none of it. An author moving
+`virulence` from 300 to 200 watched the table's `+30%` become `+20%` and never
+read the sentence a player gets, which is the exact drift the skill description
+screen exists to prevent, reproduced one layer over.
 
-`Lang.DescribePassive` says what a trait does in both languages and covers all six
-of the jobs a trait can hold — a grant, an application, a reply, a resistance, a
-drain, an amplification — and derives every number from the trait itself for the
-same reason `Describe` and `DescribeStatus` do. `?TAG` at the battle prompt prints
-the traits the unit under that tag is carrying, which is the reading a *player*
-needs. Nothing else calls it.
+Two holes, both closed.
 
-So the tool where a trait is actually tuned shows none of it, in two ways.
+**`?` on the cast browser** now raises the description screen for the traits the
+character under the cursor carries **at the level it is sitting on**:
 
-`hexforge passives` is a table of seven columns — id, name, grants, adds, resists,
-amplifies, while — and **two of the six jobs have no column**. A trait whose only
-job is draining prints a row that is blank after its name; `venom_blood` replies to
-whoever hits it and the table says only that it is immune to poison. Those two
-render nowhere in the tool at all, so the listing quietly reports less than the
-parser accepts.
+```
+Bulbasaur  cấp 60
 
-The terminal tool has no trait listing. Its menu is cast, origins, skills,
-statuses and check; the cast browser's detail pane prints a trait's id with its
-glossed name underneath and stops there; and the description screen is wired to a
-skill and reachable only from the skill listing.
+  venom_blood (máu độc)
+    Máu chảy trong người nó vốn là nọc; ai cắn phải thì tự chuốc lấy.
+    Miễn hoàn toàn trúng độc.
+    Ai đánh trúng nó thì chịu lại 4% công của nó, và dính trúng độc, 2.5% khả
+    năng.
 
-Which leaves the failure that description screen was built to prevent, reproduced
-one layer over. Its own comment states it: an author moving a bonus from 1000 to
-700 can watch the damage figure change and not notice that *doubles* has become
-*amplifies a bit*. Move `virulence` from 300 to 200 and precisely that happens —
-the `+30%` in the table becomes `+20%`, and the sentence a player will read is
-never on screen. Skills are guarded against this. Traits are not.
+  endurance (bền bỉ)
+    ...
+  … 17/23 dòng, pgdn/pgup để cuộn
+```
 
-The shape, and the three things to get right:
+**One screen, not a sixth listing.** `blurbScreen` branches on `from`, the single
+field it keeps — and `from` is not a cursor, it is which screen is behind, a
+question `esc` had to answer anyway and used to answer with a constant because
+there was only ever one answer. A second screen would have been a second copy of
+the framing, the footer and the escape, differing only in which describer it
+called.
 
-- **A screen, not a sixth listing.** `screenBrowse` catching `?` and the blurb
-  screen branching on which screen raised it costs one key and no new state: the
-  detail pane has already resolved the level and `character.PassivesAt`, so the
-  traits described are the ones in force at the level the author is walking with
-  the arrow keys. A listing of its own would need a cursor of its own, and both
-  screens that borrow a cursor today refuse to keep one for the same reason — a
-  second cursor can disagree with the one on the screen behind it. A listing of
-  every declared trait is a different feature answering a different question, and
-  worth having only once this one exists.
-- ⚠️ **A `replies` column must not split the damage from the status.**
-  `DescribePassive` writes one sentence for the whole reply deliberately: what a
-  reader wants to know is what attacking that unit costs, and a damage cell filed
-  apart from a status cell leaves them to add it up themselves.
-- ⚠️ **A new screen has to be added to `everyScreen` in `language_test.go`**, or
-  every width and translation test skips it in silence. The status screen paid
-  that toll one change ago; there is no reason to pay it twice.
+**No cursor and no level of its own**, the same refusal `screenPreview` makes:
+both are read off the browser, so walking either here walks it there and the two
+cannot disagree about what is in front. The level matters more than it looks — a
+trait comes in at a level, so a screen listing every *declared* trait would be
+describing traits the character has not learned. `PassivesAt` at
+`progression.Furthest`, which is what the detail pane behind it resolves with.
 
-It sits beside *Looking a status up* and it is a different item. That one had no
-describer and needed one written. This one has the describer, in both languages,
-and no way into it.
+⚠️ **It scrolls, and a scroll offset is not the cursor that was refused.** The
+difference is what the two can disagree about: a cursor could point at a
+different character than the browser behind it, while an offset selects nothing —
+it is which lines of the browser's own answer are visible, and every key that
+changes *what* is described resets it. Five traits at the cap wrap past an
+eighty-by-twenty-four window, which is the declared floor rather than an unusual
+case, and letting the frame cut it would mean the one screen built for reading a
+trait cannot finish reading one.
 
-⚠️ **The sentences themselves have moved on since this was written** — see *And
-what a trait is* above. A trait now carries a `flavour` clause, the derived lines
-come in narrative order rather than field order, and a share is printed exactly
-rather than truncated. None of that changes this item: it is still about where a
-trait's description can be read, and the answer is still one place.
+⚠️ **The sentences wrap to the floor, not to the window** — the opposite of what
+`m.wrapped` does, and right for a different reason. Those rows carry authored
+free text, which has to go somewhere and takes whatever width there is; these are
+the program's own prose, and prose has a measure. Before wrapping, the reply
+sentence was cut mid-word at the floor — *2.5% khả nă* — which reads as the tool
+being broken rather than as a terminal being narrow.
+
+**And `hexforge passives` gained the two columns it never had.** `answers` and
+`drains`: two of the six jobs the parser accepts rendered **nowhere** in the tool,
+so `blood_thirst` printed a row blank after its name and `venom_blood`'s reply was
+invisible. The reply is **one** cell, because `DescribePassive` writes one sentence
+for the whole of it on purpose — what a reader wants is what attacking that unit
+costs, and a damage column filed away from a status column leaves them adding it
+up across the table.
+
+A listing of *every declared trait* is still a different feature answering a
+different question, and is still not built. What exists now answers "what is this
+character carrying", which is the question the browser was already halfway through
+asking.
 
 ### A health threshold a skill can read
 

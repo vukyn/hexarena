@@ -70,6 +70,17 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// widest state is the one with a row per character, which is what entering it
 	// over a checked library gives.
 	spar := m.enter(screenCheck).enter(screenSpar)
+	// The description screen in both of its shapes. It is one screen branching on
+	// which screen raised it, and the two branches share no line, so measuring
+	// one measures nothing about the other.
+	skillBlurb := m.enter(screenSkills)
+	skillBlurb.blurb.from = screenSkills
+	skillBlurb.screen = screenBlurb
+	traitBlurb := m.enter(screenBrowse)
+	traitBlurb.browse.cursor = widestTraitRow(traitBlurb)
+	traitBlurb.browse.level = progression.LevelCap
+	traitBlurb.blurb.from = screenBrowse
+	traitBlurb.screen = screenBlurb
 	return map[string]model{
 		"shape diagram":    shape,
 		"spar":             spar,
@@ -87,8 +98,25 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"allowlist picker": allowlist,
 		"status picker":    statuses,
 		"filtered picker":  filtered,
+		"skill blurb":      skillBlurb,
+		"trait blurb":      traitBlurb,
 		"check":            m.enter(screenCheck),
 	}
+}
+
+// widestTraitRow is the browser row carrying the most traits, which is the
+// busiest the description screen ever draws — the row a width test wants and the
+// row a shorter fixture would not have.
+func widestTraitRow(m model) int {
+	found, most := 0, 0
+	for index, character := range m.browse.rows() {
+		held := len(m.lib.KitPassives(
+			character.PassivesAt(progression.LevelCap, progression.Furthest)))
+		if held > most {
+			found, most = index, held
+		}
+	}
+	return found
 }
 
 // someSkillChange is a written edit as the screens receive one, built without
