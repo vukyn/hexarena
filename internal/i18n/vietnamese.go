@@ -189,7 +189,7 @@ q hoặc ctrl+c để thoát`,
 	CategoryStatDebuff:  "giảm chỉ số",
 	CategoryControl:     "khống chế, mất lượt",
 	CategoryBuff:        "tăng chỉ số",
-	CategoryShield:      "khiên, chặn một đòn",
+	CategoryShield:      "khiên, chặn một nhát",
 	CategoryRegen:       "hồi máu mỗi lượt",
 
 	KitTakesAnyElement:    "bộ chiêu này toàn chiêu trung tính nên hệ nào cũng mang được",
