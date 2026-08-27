@@ -401,6 +401,22 @@ func (l *Library) ParseApplications(answer string) ([]skill.Application, error) 
 //
 // It lives here rather than in either front-end because both show the same
 // figure and a second copy would eventually round differently.
+// PercentInColumn is Percent with the tenth always printed, which is what a
+// table of the same figure needs and a sentence does not.
+//
+// The two differ over exactly one thing and it is worth being explicit about:
+// Percent drops a trailing zero because a sentence saying "85.0%" is a sentence
+// with a decimal nobody asked for, while a column reading 50%, 100.0%, 39% is a
+// column whose figures cannot be compared down the page. Same arithmetic, same
+// sign handling, one decision apart.
+func PercentInColumn(permille int) string {
+	sign := ""
+	if permille < 0 {
+		sign, permille = "-", -permille
+	}
+	return fmt.Sprintf("%s%d.%d%%", sign, permille/10, permille%10)
+}
+
 func Percent(permille int) string {
 	sign := ""
 	if permille < 0 {

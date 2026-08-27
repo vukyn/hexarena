@@ -365,8 +365,8 @@ func TestShippedOriginsAreUsable(t *testing.T) {
 func loadoutOf(t *testing.T, character cast.Character, level int) string {
 	t.Helper()
 	known := character.SkillsAt(level, progression.Furthest)
-	if len(known) > seed.SkillSlots {
-		known = known[:seed.SkillSlots]
+	if len(known) > cast.SkillSlots {
+		known = known[:cast.SkillSlots]
 	}
 	raw, err := json.Marshal(known)
 	if err != nil {
@@ -786,9 +786,9 @@ func TestBulbasaurCanBeBuiltTwoWays(t *testing.T) {
 	// One slot, so the builds are alternatives rather than a list. If this ever
 	// grows, every trait above becomes an addition and the scenario stops being
 	// a choice.
-	if seed.TraitSlots != 1 {
+	if cast.TraitSlots != 1 {
 		t.Errorf("a placement carries %d traits, and two builds are only a choice at one",
-			seed.TraitSlots)
+			cast.TraitSlots)
 	}
 	if len(available) < 2 {
 		t.Errorf("%d traits are available at the cap, so the one slot decides nothing",

@@ -38,6 +38,15 @@ func (c checkScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 	case "esc":
 		m.screen = screenMenu
 		return m, nil
+	case "s":
+		// The spar is raised from here rather than from the browser for two
+		// reasons, and only one of them is that this footer had room. The other
+		// is that the two screens ask the halves of one question: this one says
+		// whether a character is legal, and a spar says whether it belongs
+		// beside the ones already written. A measurement is also worth nothing
+		// until the data behind it loads, and this is the screen that says so.
+		m.check = c
+		return m.enter(screenSpar), nil
 	case "r":
 		c = c.refresh(m.lib)
 	case "up", "k":

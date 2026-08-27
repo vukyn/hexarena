@@ -192,23 +192,6 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 	return entry, nil
 }
 
-// SkillSlots and TraitSlots are how much a placement may bring.
-//
-// Four and one, and the numbers are here rather than in the engine because they
-// are an authoring rule: battle.Roster keeps taking a resolved kit, exactly as it
-// keeps taking a resolved stat line, and a learnset is settled before a battle
-// the way an evolution already is.
-//
-// Four is a per-turn nerf whose size is set by cooldowns: a skill on cooldown N
-// contributes 1/(N+1) actions per turn, so a level-one unit holding a cooldown-1
-// and a cooldown-4 skill idles about a third of its turns. That is what being
-// young should feel like, and it is also why a low-cooldown basic is close to
-// mandatory in a four-slot world.
-const (
-	SkillSlots = 4
-	TraitSlots = 1
-)
-
 // resolveLoadout is the choice a placement makes, and every way it can be wrong.
 //
 // It is **required**, not defaulted. A default would be this file quietly
@@ -226,12 +209,12 @@ const (
 // about the same form, which they would not be if each worked it out.
 func resolveLoadout(unit rosterEntry, character cast.Character, level int, form string) ([]string, []string, error) {
 	skills, err := chooseFrom("skill", unit.ID, unit.Skills,
-		character.SkillsAt(level, form), SkillSlots, level, required)
+		character.SkillsAt(level, form), cast.SkillSlots, level, required)
 	if err != nil {
 		return nil, nil, err
 	}
 	passives, err := chooseFrom("trait", unit.ID, unit.Passives,
-		character.PassivesAt(level, form), TraitSlots, level, optional)
+		character.PassivesAt(level, form), cast.TraitSlots, level, optional)
 	if err != nil {
 		return nil, nil, err
 	}

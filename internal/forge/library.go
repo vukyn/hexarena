@@ -12,6 +12,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/modifier"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
@@ -30,6 +31,7 @@ const (
 	elementsFile   = "elements.json"
 	combatFile     = "combat.json"
 	limitsFile     = "progression.json"
+	modifiersFile  = "modifiers.json"
 	patternsFile   = "patterns.json"
 	statusesFile   = "statuses.json"
 	passivesFile   = "passives.json"
@@ -61,6 +63,10 @@ type Library struct {
 	rules  combat.Rules
 	chart  *element.Chart
 	limits progression.Limits
+	// bounds is what a buff approaches and what a debuff sinks towards. Nothing
+	// an author writes is checked against it -- it is here because a battle needs
+	// it, and a battle is now something this package can start.
+	bounds modifier.Bounds
 	// patterns and statuses are held rather than discarded after the skill book
 	// is built, because a skill is now authored here too: the shapes and the
 	// statuses are what a skill's declarations are checked against, and writing
@@ -110,6 +116,13 @@ func Load(dir string) (*Library, error) {
 		return nil, err
 	}
 	if lib.limits, err = progression.ParseLimits(raw); err != nil {
+		return nil, err
+	}
+
+	if raw, err = read(modifiersFile); err != nil {
+		return nil, err
+	}
+	if lib.bounds, err = modifier.ParseBounds(raw); err != nil {
 		return nil, err
 	}
 
@@ -177,6 +190,7 @@ func (l *Library) Dir() string { return l.dir }
 // the slices a caller could otherwise mutate through.
 func (l *Library) Rules() combat.Rules             { return l.rules }
 func (l *Library) Limits() progression.Limits      { return l.limits }
+func (l *Library) Bounds() modifier.Bounds         { return l.bounds }
 func (l *Library) Chart() *element.Chart           { return l.chart }
 func (l *Library) Patterns() *pattern.Book         { return l.patterns }
 func (l *Library) Statuses() *status.Book          { return l.statuses }

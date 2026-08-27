@@ -180,6 +180,27 @@ func (c Character) form(level int, stage string) string {
 	return reached.Name
 }
 
+// SkillSlots and TraitSlots are how much a placement may bring of what a
+// character knows.
+//
+// Four and one. They sit beside the learnset rather than beside the engine
+// because they are a rule about learning: battle.Roster keeps taking a resolved
+// kit exactly as it keeps taking a resolved stat line, and which four of the nine
+// are brought is settled before a battle the way an evolution already is. They
+// sit here rather than in internal/seed because two callers now read them — the
+// roster that fields a placement and the spar that measures one — and a second
+// copy of "four" is how a measurement quietly stops measuring what gets fielded.
+//
+// Four is a per-turn nerf whose size is set by cooldowns: a skill on cooldown N
+// contributes 1/(N+1) actions per turn, so a level-one unit holding a cooldown-1
+// and a cooldown-4 skill idles about a third of its turns. That is what being
+// young should feel like, and it is also why a low-cooldown basic is close to
+// mandatory in a four-slot world.
+const (
+	SkillSlots = 4
+	TraitSlots = 1
+)
+
 // SkillsAt is the skills the character has learned by a level, in declaration
 // order. It is the list a placement may choose its loadout from, and the same
 // function the traits use — one "what is available at level N" for both lists,

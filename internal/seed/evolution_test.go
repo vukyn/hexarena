@@ -74,8 +74,8 @@ func TestAPlacementMayFieldAnEarlierForm(t *testing.T) {
 
 	resolve := func(stage string) []byte {
 		known := character.SkillsAt(level, stage)
-		if len(known) > seed.SkillSlots {
-			known = known[:seed.SkillSlots]
+		if len(known) > cast.SkillSlots {
+			known = known[:cast.SkillSlots]
 		}
 		raw, err := place(t, character, level, stage, known)
 		if err != nil {
@@ -106,8 +106,8 @@ func TestAPlacementMayFieldAnEarlierForm(t *testing.T) {
 	// meant before it could choose — so a roster written earlier still says what
 	// it always said.
 	known := character.SkillsAt(level, progression.Furthest)
-	if len(known) > seed.SkillSlots {
-		known = known[:seed.SkillSlots]
+	if len(known) > cast.SkillSlots {
+		known = known[:cast.SkillSlots]
 	}
 	defaultRaw, err := place(t, character, level, progression.Furthest, known)
 	if err != nil {
@@ -190,8 +190,8 @@ func TestGivingUpAnEvolutionKeepsWhatTheGrownFormNeverGets(t *testing.T) {
 func TestAFormThatIsWrongIsRefused(t *testing.T) {
 	character, _ := evolving(t)
 	known := character.SkillsAt(1, progression.Furthest)
-	if len(known) > seed.SkillSlots {
-		known = known[:seed.SkillSlots]
+	if len(known) > cast.SkillSlots {
+		known = known[:cast.SkillSlots]
 	}
 
 	last := character.Stages[len(character.Stages)-1]

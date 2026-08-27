@@ -63,6 +63,7 @@ var commands = map[string]func([]string) error{
 	"new":        runNew,
 	"show":       runShow,
 	"check":      runCheck,
+	"spar":       runSpar,
 }
 
 func usage(out io.Writer) {
@@ -103,6 +104,11 @@ hexforge authors the cast the battles are fought with.
   hexforge show <id> [--level N]      resolve one character and show what it costs
   hexforge check                      parse the books from disk, verify the art
                                       is really there, report the stat budget
+  hexforge spar <id> [--level N] [--seeds N]
+                                      fight one character against every character
+                                      in the book, both ways round, and report
+                                      the win rates. A check says a character is
+                                      legal; this says whether it belongs
 
 Every subcommand takes --data <dir> (default `+forge.DefaultDataDir+`), which is the
 directory it reads and writes. Run any subcommand with -h for its own flags.
