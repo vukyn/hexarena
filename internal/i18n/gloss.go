@@ -87,7 +87,7 @@ var (
 		"mire":   "sa lầy",
 		"stun":   "choáng",
 		"fury":   "cuồng nộ",
-		"haste":  "nhanh chân",
+		"haste":  "nhanh nhẹn",
 		"focus":  "tập trung",
 		"veil":   "mờ ảo",
 		"block":  "đỡ đòn",
@@ -95,8 +95,8 @@ var (
 		// statuses a trait grants -- which are the ones a reader is least able
 		// to guess at, because nothing else on screen says what they do.
 		"regrowth":  "tái sinh",
-		"toughened": "cứng đòn",
-		"kindled":   "rực lửa",
+		"toughened": "kiên cường",
+		"kindled":   "bùng cháy",
 	}
 
 	// The status categories in statuses.json. They are named by a cleanse rather

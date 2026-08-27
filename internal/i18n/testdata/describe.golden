@@ -87,7 +87,7 @@ Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
 
 dragon_dance
 Nhảy một điệu cổ xưa của loài rồng, càng nhảy càng hăng.
-Nhận cuồng nộ và nhanh chân.
+Nhận cuồng nộ và nhanh nhẹn.
 Bản thân · hồi 4 lượt.
 
 water_gun
@@ -136,11 +136,11 @@ Bản thân · hồi 3 lượt.
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
-Luôn mang cứng đòn.
+Luôn mang kiên cường.
 
 [trait] blaze
 Càng bị dồn vào đường cùng, ngọn lửa trong nó càng bốc dữ.
-Mang rực lửa.
+Mang bùng cháy.
 Chỉ có hiệu lực khi còn <=33.3% máu.
 
 [trait] heatproof
@@ -229,7 +229,7 @@ Tăng công 15%.
 Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] block
-Mỗi cộng dồn nuốt trọn một nhát; đòn hai nhát tiêu hai cộng dồn.
+Mỗi cộng dồn triệt tiêu một nhát; đòn hai nhát tiêu hai cộng dồn.
 Khiên, chặn một đòn · 2 lượt · tối đa 3 cộng dồn.
 
 [status] regrowth
