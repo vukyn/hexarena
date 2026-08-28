@@ -562,7 +562,8 @@
               "base": 29,
               "max": 64
             }
-          }
+          },
+          "image": "assets/naruto-shippuden.svg"
         },
         {
           "name": "Vĩ thú hoá",
@@ -592,7 +593,8 @@
               "base": 32,
               "max": 70
             }
-          }
+          },
+          "image": "assets/naruto-sage-mode.svg"
         }
       ],
       "skills": [

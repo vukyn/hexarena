@@ -155,6 +155,33 @@ Gõ ầm ĩ và chửi đổng cho cả bên kia chỉ còn muốn nhắm vào m
 Nhận bị khiêu khích.
 Bản thân · hồi 3 lượt.
 
+kunai
+Rút một nhúm phi tiêu ném đi, không hoa mỹ nhưng bao giờ cũng có sẵn, 70% công.
+Tầm 3 · 95% trúng · dùng mọi lượt.
+
+wind_shuriken
+Nén gió thành một vòng lưỡi sắc rồi thả cho nó tự xé lấy hàng ngũ, 2 nhát, mỗi nhát 62% công (tổng 124%).
+Tầm 3 · 3 ô · 88% trúng · hồi 2 lượt.
+
+rasengan
+Vo chakra thành một khối xoáy trong lòng bàn tay rồi ấn thẳng vào người đối diện, 220% công.
+Tầm 1 · 90% trúng · hồi 4 lượt.
+
+substitution
+Đổi chỗ với một khúc gỗ đúng lúc đòn tới, rồi đứng dậy ở chỗ khác.
+Nhận mờ ảo x2.
+Bản thân · hồi 4 lượt.
+
+shadow_clone
+Chia mình ra làm nhiều, mỗi bản mang theo một phần sức của bản gốc.
+Gọi ra 2 phân thân, trụ lại 4 lượt.
+Bản thân · hồi 5 lượt.
+
+summon_toad
+Ký giao ước bằng máu rồi gọi lên một con cóc to hơn cả người gọi.
+Gọi ra một cóc.
+Bản thân · hồi 6 lượt.
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -429,6 +456,30 @@ Range 2 · 90% to hit · 3 turns to recharge.
 taunt
 Puts taunting on itself.
 Itself · 3 turns to recharge.
+
+kunai
+Hits an enemy for 70% of attack.
+Range 3 · 95% to hit · usable every turn.
+
+wind_shuriken
+Hits an enemy for 2 strikes of 62% of attack each, 124% in all.
+Range 3 · 3 cells · 88% to hit · 2 turns to recharge.
+
+rasengan
+Hits an enemy for 220% of attack.
+Range 1 · 90% to hit · 4 turns to recharge.
+
+substitution
+Puts veil x2 on itself.
+Itself · 4 turns to recharge.
+
+shadow_clone
+Calls up 2 copies, for 4 turns.
+Itself · 5 turns to recharge.
+
+summon_toad
+Calls up a copy.
+Itself · 6 turns to recharge.
 
 [trait] endurance
 Always carries toughened.

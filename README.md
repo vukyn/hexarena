@@ -2505,13 +2505,25 @@ by a hand-played test rather than by the sweep. That is a gap in the opponent an
 not in the skill — see *A deeper opponent* — and it means autopilot sparring
 figures for Naruto are read **without** the mechanism firing.
 
-⚠️ **The art is a placeholder.** Every other asset in the folder is vtracer output
-from real artwork; `assets/naruto.svg` is a hand-written silhouette so the
-character can ship before its picture does, and it says so in the file. It is cut
-out with no background and no flat bottom edge, because
-`TestTheShippedArtIsCutOutRatherThanFramed` measures the four corners of the
-**inked** rectangle — a body ending in a straight wide line paints its own bottom
-corners and fails.
+**Three pictures, one per stage.** Traced with the platform's own `img2svg`, which
+wraps the same vtracer the rest of the folder was made with, at the `balanced`
+preset — 302 to 420 KB, in line with the twenty-one assets already there.
+
+⚠️ **The sources were transparent PNGs saved as JPEG**, so the chequerboard a
+browser paints *behind* transparency had been baked in as pixels. Traced as-is
+that is a grey-and-white chequer wrapped around the character, and
+`TestTheShippedArtIsCutOutRatherThanFramed` catches it — it measures the four
+corners of the **inked** rectangle rather than of the canvas, so a background of
+any kind fails and so does a body that ends in a straight wide line.
+
+Removing it is `img2svg --decheck`, and the shape of that is worth recording
+because the obvious version is wrong twice over. Erasing by colour punches holes
+through an eye highlight, a white fur collar and a metal headband; flood-filling
+from the border spares those but cannot reach a chequer patch enclosed between an
+arm and a coat. What separates the two is the **grid**: the chequer alternates on
+a fixed pitch, fitted from the border where the background is certainly chequer,
+and an enclosed patch is cut only when nine tenths of it agrees with that pitch.
+A drawing's own greys do not, however many tones they carry.
 
 ⚠️ **An authored summon name is Vietnamese, so English says the word instead.**
 That is the division `Gloss` makes everywhere else, and a summon has no id for

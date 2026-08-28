@@ -1616,11 +1616,18 @@ is the constraint each piece has to respect.
       `expected()` to price a summon — it moves every golden, so it is its own PR.
       ⚠️ **A new preset needs a row in `cast_test.go`'s hardcoded design table**
       and a gloss in `archetypeGloss`, or two tests fail by name.
-      ⚠️ **Art is REQUIRED** — `cast.ParseBook` refuses "declares no image".
-      `assets/naruto.svg` is a hand-written **placeholder** and says so; it is cut
-      out with **no background and no flat bottom edge**, because
-      `TestTheShippedArtIsCutOutRatherThanFramed` measures the corners of the
-      **inked** rectangle, not of the canvas.
+      ⚠️ **Art is REQUIRED** — `cast.ParseBook` refuses "declares no image". Three
+      pictures, one per stage, traced with **`img2svg -q balanced`** (302–420 KB,
+      in line with the 21 assets already there). `faithful` came out at 849 KB for
+      the busiest of them.
+      ⚠️ **A PNG-saved-as-JPEG carries the transparency chequer as PIXELS**, and
+      tracing that wraps the character in a grey-and-white background.
+      `TestTheShippedArtIsCutOutRatherThanFramed` catches it — it measures the
+      corners of the **inked** rectangle, not of the canvas, so any background
+      fails and so does a body ending in a straight wide line. Strip it with
+      `img2svg --decheck`: erasing by colour holes an eye highlight, a white fur
+      collar and a metal headband, and a border flood alone cannot reach a patch
+      enclosed between an arm and a coat.
       ⚠️ **An authored summon name is Vietnamese**, so `describeSummon` prints it
       only in `Vi` and says "copy"/"copies" in English — the division `Gloss`
       makes, and a summon has no id to fall back on.
