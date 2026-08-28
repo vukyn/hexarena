@@ -59,7 +59,10 @@ is only so the shape is readable.
 - [ ] **A deeper opponent — what is left is waiting.** Passing a turn because the
       next one is worth more needs a **lookahead**, and *where* in the order an extra
       turn falls needs the **queue**. Tempo, all-sided skills and not wasting a
-      scarce skill are all priced. → `CLAUDE.md` § Open work.
+      scarce skill are all priced. **Declining a losing turn is done** — an option
+      priced below nought is no longer the fallback, so the opponent stops casting
+      what it has itself priced as a loss; that is not waiting, which still needs
+      to know what the next turn is worth. → `CLAUDE.md` § Open work.
 - [ ] **`reckless` is the dragon build's 22.1%, and a detonate does not fix it.**
       The line has one now (`dragon_drive`, off its own `expose`) and fielding it
       moves 22.0% → **21.2%**. ⚠️ Measured one change at a time: the detonate is
