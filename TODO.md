@@ -68,7 +68,10 @@ is only so the shape is readable.
   edits the file next. ⚠️ The levels were deliberately **not** touched: the 20..30
   dial spans 40–82% on the screened board, so it is not the lever it looks like.
   A field is priced with `weigh` against a copy of its own carrier, because the
-  roster win rate is **non-monotone in ally damage** and prices nothing.
+  roster win rate is **non-monotone in ally damage** and prices nothing. The
+  first crit chances were authored that way: `razor_leaf` and `wind_shuriken` at
+  200‰, worth **+8.4%** and **+6.9%** to their carriers, while the same chance on
+  `bite` was worth +0.2% and on `kunai` **−1.7%**.
 
 - **Squads.** A side is built in the TUI — who is in it, what each brings, where
   each stands — saved to `squads.json`, and fought against another over N seeds
@@ -106,15 +109,15 @@ is only so the shape is readable.
       ⚠️ `TestRecklessIsATradeAndNotAGift` asks whether *something* is given up
       and cannot ask whether **too much** is, which is why nothing caught this.
       → `dragon_test.go` § `TestTheDragonLineCanSpendWhatItApplies` for the table.
-- [ ] **The crit balance data itself is still unwritten.** #135 shipped the
-      mechanic inert — **every shipped skill declares `crit: 0`** — and the
-      instrument to price one now exists, so what is left is the authoring: which
-      skills crit, at what chance, and what each is worth to its carrier.
-      ⚠️ A weigh figure is a price on **one carrier at one level against itself**.
-      It is not a win rate and **it does not carry across a data change**, so a
-      number taken now has to be re-taken after the roster or a placement moves.
-      Read `worth` and `turns` together — a row inside the band whose turns moved
-      is a real effect. → `CLAUDE.md` § Pricing one number.
+- [ ] **The rest of the cast still crits at nothing.** Two skills carry a chance
+      now, chosen by what `weigh` priced rather than by what the names suggest.
+      The other twenty-six damaging skills are open, and each is its own reading:
+      the price is a fact about the **carrier's whole line**, not about the
+      skill's shape. ⚠️ Do not author one from a theme. `bite` and `kunai` are as
+      pointed a blow as `razor_leaf` is and priced +0.2% and **−1.7%**; a cheap
+      skill given a crit gets cast *more* and crowds out a better one, which is
+      the `outrage` lesson wearing a different hat. → `CLAUDE.md` § Pricing one
+      number.
 - [ ] **A `--carriers all` sweep for `hexforge weigh`.** Unblocked now that
       `Weigh` exists and deliberately not built with it: one carrier is one
       question, and a table over the whole cast is a different one that needs to
