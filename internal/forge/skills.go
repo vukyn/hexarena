@@ -236,8 +236,17 @@ func (d SkillDraft) ResolveEdit(lib *Library, id string) (skill.Skill, error) {
 // list, and either would turn "change nothing" into a change.
 func SkillAnswers(current skill.Skill) SkillDraft {
 	return SkillDraft{
-		ID:      current.ID,
-		Name:    current.Name,
+		ID:   current.ID,
+		Name: current.Name,
+		// ⚠️ Every field resolveOnto *assigns* has to be read back here, or an
+		// edit that never touches it overwrites it with a zero. This one was
+		// missing and every balance edit silently wiped the skill's flavour --
+		// the second field to be lost that way after restrict.species, because
+		// this function and resolveOnto are hand-maintained inverses with no
+		// compile-time link between them. TestEveryShippedSkillTakesABalanceEdit
+		// now compares the whole skill rather than a chosen field, so a third
+		// omission fails rather than shipping.
+		Flavour: current.Flavour,
 		Element: current.Element.String(),
 		Target:  current.Target.String(),
 		Range:   strconv.Itoa(current.Range),

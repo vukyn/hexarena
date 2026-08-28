@@ -175,7 +175,7 @@
       "archetype": "scorcher",
       "image": "assets/charmander.svg",
       "element": "fire",
-      "bio": "Ngọn lửa trên chóp đuôi cháy từ lúc chào đời, và tắt là hết một đời. Vui thì lửa bùng, mệt thì lửa lụi, nên Charmander giấu được mọi thứ trừ tâm trạng của chính mình.",
+      "bio": "Ngọn lửa trên chóp đuôi cháy từ lúc chào đời và chưa bao giờ tắt. Lúc hăng thì cháy to, lúc mệt thì cháy nhỏ, nên Charmander giấu được mọi thứ trừ tâm trạng của chính mình.",
       "species": [
         "lizard",
         "dragon"
@@ -344,7 +344,7 @@
       "archetype": "warden",
       "element": "water",
       "image": "assets/squirtle.svg",
-      "bio": "Cái mai không chỉ để trốn: mặt trong nhẵn bóng vì bao nhiêu đời rúc ra rúc vào, và Squirtle thuộc từng chỗ lồi lõm bên trong. Ra khỏi mai thì hiền, rúc vào rồi thì đừng mong gọi ra sớm.",
+      "bio": "Cái mai không chỉ để trốn: mặt trong nhẵn bóng vì rúc ra rúc vào cả ngày, và Squirtle thuộc từng chỗ lồi lõm bên trong. Ra khỏi mai thì hiền, rúc vào rồi thì đừng mong gọi ra sớm.",
       "species": [
         "turtle"
       ],

@@ -727,13 +727,24 @@ func TestASingleStrikesFlavourDescribesNoVolley(t *testing.T) {
 		if current.Strikes > 1 {
 			continue
 		}
-		lowered := strings.ToLower(current.Flavour)
-		for word, what := range volleyWords {
-			if !strings.Contains(lowered, word) {
+		// Whole words, not substrings. Every one of these is a short syllable
+		// that sits inside ordinary Vietnamese: "mớ" is inside **mới**, which is
+		// as common a word as there is, and matching it as a substring rejected
+		// three clauses that promise nothing. The sibling number ban already
+		// splits into words for exactly this reason; this one did not, and the
+		// gap only showed once a clause happened to say "mới".
+		//
+		// Unlike bodyWords, which is deliberately blunt — a shell named anywhere
+		// in a clause is worth a second look whoever it belongs to — a volley
+		// word means nothing except as its own word.
+		for _, spoken := range strings.Fields(strings.ToLower(current.Flavour)) {
+			spoken = strings.Trim(spoken, ",.;:—")
+			what, promised := volleyWords[spoken]
+			if !promised {
 				continue
 			}
 			t.Errorf("%q lands once and its flavour says %q, which is %s: a clause that promises several throws above a derived half that strikes once says the count twice and gets it wrong both times",
-				current.ID, word, what)
+				current.ID, spoken, what)
 		}
 	}
 }

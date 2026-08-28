@@ -40,7 +40,7 @@
     {
       "id": "solar_beam",
       "name": "quang kích",
-      "flavour": "Gom cả một trời nắng vào một điểm rồi thả ra thành cột sáng trắng xoá",
+      "flavour": "Gom nắng vào một điểm rồi phóng ra thành cột sáng trắng xoá",
       "element": "light",
       "range": 4,
       "pattern": "single",
@@ -108,7 +108,7 @@
     {
       "id": "sludge_bomb",
       "name": "độc bùn",
-      "flavour": "Nhổ một cục bùn đặc quánh, vỡ ra là mùi nồng bốc lên khét lẹt",
+      "flavour": "Nhổ một cục bùn đặc quánh, vỡ ra là mùi tanh nồng bốc lên",
       "element": "neutral",
       "range": 2,
       "pattern": "single",
@@ -175,7 +175,7 @@
     {
       "id": "synthesis",
       "name": "quang hợp",
-      "flavour": "Đứng yên phơi mình dưới nắng, để cái ấm ngấm dần vào từng thớ",
+      "flavour": "Đứng yên phơi mình dưới nắng, để cái ấm ngấm dần vào cơ thể",
       "element": "grass",
       "range": 0,
       "pattern": "single",
@@ -319,7 +319,7 @@
     {
       "id": "heat_wave",
       "name": "sóng nhiệt",
-      "flavour": "Đẩy một luồng khí khô rát tràn qua, mặt đất phía trước rung rinh",
+      "flavour": "Đẩy một luồng khí khô rát tràn qua, táp vào mặt như vừa mở cửa lò",
       "element": "fire",
       "range": 3,
       "pattern": "wedge_right",
@@ -368,7 +368,7 @@
     {
       "id": "dragon_rage",
       "name": "long nộ",
-      "flavour": "Gầm một tiếng làm không khí trước mặt nứt ra thành từng lằn",
+      "flavour": "Gầm một tiếng thấp và nặng, tiếng dội đi trước rồi sức mới tới",
       "element": "neutral",
       "range": 3,
       "pattern": "single",
@@ -389,7 +389,7 @@
     {
       "id": "smokescreen",
       "name": "màn khói",
-      "flavour": "Phun một màn khói đen kịt, đặc tới mức nuốt cả tiếng động",
+      "flavour": "Tạo một màn khói đen dày, quánh lại và rất lâu mới tan",
       "element": "neutral",
       "range": 2,
       "pattern": "flank_up",
@@ -409,7 +409,7 @@
     {
       "id": "dragon_dance",
       "name": "long vũ",
-      "flavour": "Giậm chân theo một nhịp cổ xưa của loài rồng, đất dưới chân nảy theo",
+      "flavour": "Giậm chân theo nhịp cổ xưa của loài rồng, một điệu chỉ rồng mới nhớ",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -530,7 +530,7 @@
     {
       "id": "brine",
       "name": "nước mặn",
-      "flavour": "Tạt một chậu nước biển mặn chát, xối từ trên đầu xuống",
+      "flavour": "Xối nước biển vào chỗ da đã rách, rách càng sâu thì càng buốt",
       "element": "water",
       "range": 2,
       "pattern": "single",
@@ -552,7 +552,7 @@
     {
       "id": "hydro_pump",
       "name": "thủy pháo",
-      "flavour": "Nén cả một dòng nước vào một điểm rồi bắn ra, tiếng rít nghe rợn người",
+      "flavour": "Nén cả một tấn nước vào một điểm rồi bắn ra, tiếng rít nghe rợn người",
       "element": "water",
       "range": 4,
       "pattern": "single",
@@ -570,7 +570,7 @@
     {
       "id": "withdraw",
       "name": "thủ thế",
-      "flavour": "Thu mình lại, thở chậm, chờ cho đợt đòn đi qua",
+      "flavour": "Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -815,7 +815,7 @@
     {
       "id": "shadow_clone",
       "name": "phân thân",
-      "flavour": "Bung chakra ra thành hình hài đứng được, đủ đặc để chắn đường và đủ sức để ném",
+      "flavour": "Kết ấn một cái, những cái bóng y hệt bước ra — mỏng hơn bản thật nhưng cũng biết ném dao",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -876,7 +876,7 @@
     },
     {
       "id": "water_pulse",
-      "name": "thủy ba",
+      "name": "sóng nước",
       "flavour": "Dội một vòng sóng ép thẳng vào giữa, sức nén dội lại từ mọi phía",
       "element": "water",
       "range": 2,
