@@ -903,6 +903,7 @@ Balance lives in `internal/seed/data`, embedded at build time:
 | `archetypes.json` | the role presets: a suggested stat curve and kit per role |
 | `cast.json` | the authored characters, each with an evolution line |
 | `roster.json` | a seed roster to exercise the engine with |
+| `builds.json` | the late-game builds a character may be fielded as |
 
 Changing a number there changes the game without touching Go. The tests will tell
 you what moved: several of them freeze design figures deliberately, and the golden
@@ -1369,29 +1370,110 @@ Open questions before starting:
 
 ### A deeper opponent
 
-`battle.Suggest` picks the option with the highest expected damage and falls back
-to the first usable non-damaging skill. It is enough to run a battle to its end
-and it is fully deterministic, which is what the tests need, but it does not play
-the game:
+Built, and built as one rule applied six times: **a thing that is not damage is
+priced in damage, from the function that resolves it, over an explicit and capped
+horizon.** That is the shape *Pricing a summon* established; this is the rest of
+the game brought under it. `battle.Suggest` still looks one turn deep, still reads
+no randomness and still mutates nothing — what changed is that the timed-effect
+layer is now *played* rather than merely present.
 
-- It never buffs, never cleanses, never shields.
-- It never sets a status up in order to detonate it. Across a full battle of five
-  hundred events a detonate fires once and a cleanse never does.
-- It **does** cast a summon now, and how that was done is the shape the rest of
-  this wants: a thing that is not damage is played by being priced *in damage*,
-  from the same functions that resolve it, over an explicit and capped horizon.
-  See *Pricing a summon* further down — including what it cost, which was a
-  balance answer rather than a golden.
-- It does not read the elemental matchup when choosing a target beyond what the
-  expected damage already implies, and it does not consider the turn order at all.
+Before it, a skill with no power was reached only when nothing at all could be
+hurt. So a unit holding a poison and a weapon used the weapon every turn of every
+battle, guards were a thing only a player cast, and across five hundred events a
+detonate fired once and a cleanse never.
 
-So the whole timed-effect layer is present, tested, and not actually being played.
-That also caps how deep a hand-played battle feels, because an opponent that never
-cleanses is one the player never has to think about.
+| job | what it is worth | read from |
+| --- | --- | --- |
+| a status on an enemy | its ticks over the turns it owes, or the turn a stun takes away, or what a debuff blunts | `inflict`'s own tick arithmetic, origin and all |
+| a stat buff | what it adds to the holder's best attack **plus** what it takes off the worst attack aimed at them | `modifier.Set.Stat` through `Battle.Stats` |
+| a block charge | the strikes it eats | the status book's stack cap, through `Set.With` |
+| a heal or a regeneration | the health an enemy could otherwise have taken off | `combat.Rules.Restore`, and `heal`'s own room clamp |
+| a cleanse or a dispel | exactly what the removed stacks would have done — the terms above, negated | `Set.Cleanse`, through `Set.Without` |
+| a lethal hit | the health it takes off **plus** the turns of attacking it takes away | `bestStrike`, over `killHorizon` |
 
-Constraints any replacement must keep: `Suggest` reads no randomness and mutates
-nothing, so a client may call it for a hint without disturbing the battle's own
-sequence, and two identical battles must still produce identical logs.
+**The setup for a detonate needed no term of its own, and that is the point.** Once
+a status is priced, `poison_powder`, `smokescreen` and `fire_spin` are worth
+casting, and the skill that spends the status is already rated correctly the turn it
+becomes available — `conditionTarget` is deliberately the one builder `Suggest` and
+`resolveAgainst` share. A "this unlocks that" term would have double-counted the
+status and needed a horizon over future turns, which is the unbounded reading every
+cap here exists to refuse.
+
+Four horizons, in the holder's own turns: `buffHorizon = 3`, `guardHorizon = 2`,
+`healHorizon = 2`, `killHorizon = 1`. Each is capped rather than honest for the
+reason `summonHorizon` is — the honest horizon for a regeneration on a unit nobody
+is attacking is "the rest of the battle" — and the direction of the error is chosen:
+under-pricing costs a cast that was marginal, over-pricing costs a kill.
+
+⚠️ **The clamps are the design, not the safety net.** Three of them carry the whole
+feature, and each was found by the rating misbehaving rather than by reasoning:
+
+- **A damage-over-time is clamped at the target's remaining health**, exactly as a
+  strike is. Unclamped, three stacks over three turns is the largest number in the
+  rating by a wide margin, and the opponent spends the battle re-poisoning a unit
+  that is about to fall over. This one clamp is worth **19 points** of the shipped
+  roster's win rate.
+- **A heal is clamped at what an enemy could actually take off.** Without it a heal
+  outranks a kill *by construction*: damage is clamped at the target's remaining
+  health, so finishing a unit standing at forty rates forty, while topping an ally
+  up rates the whole bar of room. It also answers two cases for free — an ally at
+  full health is worth nothing, and an ally nothing can reach is worth nothing.
+- **A kill is worth more than the health it removes.** That is the other half of the
+  same asymmetry: everything defensive is paid over a horizon, so damage needed one
+  too, and the turns of attacking a kill takes away *is* that horizon read from the
+  other end.
+
+⚠️ **A permanent status carries zero duration, not a large one.** `min(duration,
+horizon)` therefore prices every permanent buff, fortification and permanent debuff
+at nothing — the defence buff in the tests rated nought while its own arithmetic
+said seventy-two. `turnsOf` is the one place that reads it, and it is the same case
+`summonWorth` already had to get right for a summon that never leaves.
+
+⚠️ **`expected` reads the occupant of a cell, so a hypothetical unit handed to it
+is silently replaced by the real one.** The first version of the buff term did
+exactly that and the entire defensive half of the pricing was dead: every stat
+change came out worth nothing, and every test that only checked *which skill* was
+chosen still passed. `Battle.against` takes the unit rather than the cell, and
+`expected` now goes through it too, so there is one reading rather than two.
+
+⚠️ **A hypothetical must not be built by copying a unit and applying to it.** A
+`status.Set` holds its entries in a slice and each entry holds its stacks in
+another, so a value copy shares both arrays — and `Apply` writes *through* them,
+refreshing every stack already there. `Set.With` deep-copies and layers the
+application through `Apply` itself, so the cap and the refresh are the ones that
+resolve for real. A shallow copy would have `Suggest` quietly refresh the real
+unit's durations every time it thought about a status, from inside the one function
+in the engine that promises not to, and **no golden would have said so**: a
+refreshed poison looks exactly like sustained pressure.
+
+**What it deliberately still cannot do**, each one a separate piece of work: read
+the turn queue, so a speed buff is worth nothing to it and `haste` is a player's
+tool; hold a skill for a turn that has not arrived; rate an all-sided skill at all,
+because `expected` skips a unit on the caster's own side rather than subtracting it,
+and relaxing that guard alone produces the opponent that bombs its own squad and
+calls it a gain; and see the cost of a self-inflicted status that only moves speed,
+which is why `outrage`'s recoil is invisible to it.
+
+**What it moved.** The shipped roster read **53.1% ally** before and **46.6% after
+the status and support terms**, then **79.0%** once a kill was priced — over 4000
+seeds, no stalls either way, mean battle length 44 turns before and 47 after. The
+same roster with the two squads exchanged reads 82.5% for the same squad, so the
+rating is side-neutral and the swing is a fact about the cast: **the roster's
+calibration was resting on the opponent not playing statuses.** The ally squad owns
+the only applier-and-detonate pair in the roster (`sludge_bomb` into `venoshock`)
+and the enemy's fire unit throws burn at a water squad that halves it.
+
+⚠️ **So the instrument needs re-levelling before it can measure anything else**, and
+that is a **data** change — levels in `roster.json` — deliberately not folded in
+here. This change's entire claim is that the shipped data was never being played, so
+the honest order is play it, measure it, then tune it. No JSON was touched.
+
+The support builds gained what the roadmap said they would, on the same seeds:
+Squirtle's tank build 517 → **676** turns, its semi-tank 30 → **39**; Bulbasaur's
+parasite build 17 → **23** turns and 964 → **2818** health recovered. The two
+Charmander builds moved the other way — 42.5% → 26.6% for the dragon line — because
+the fire line has a detonate and the dragon line has none, which is a cast finding
+rather than an engine one.
 
 ### A gated grant: a stat change that comes and goes
 
@@ -1975,6 +2057,102 @@ mille of defence never meets it. `endurance` was already through the same gap.
 
 `wide_guard` is in `sharedPool`: standing in front of somebody is the same tactic
 `taunt` is, pointed the other way, and neither belongs to one fiction.
+
+### A build is a decision, so it is written down
+
+Built. The slots said a character *may* be fielded several ways and nothing said
+which ways were worth fielding. Nine skills and five traits in four kinds is more
+combinations than anybody would ever bring, so the only kit the repository could
+actually name was "the first four a learnset declares" — the order the file
+happens to list, which is not a decision anyone made. `builds.json` is the
+decision, authored, and `hexforge-tui` has a screen that reads it.
+
+| character | build | build |
+| --- | --- | --- |
+| Venusaur | **rải độc** — `poison_powder` `sludge_bomb` `venoshock` `razor_leaf`, `virulence` | **ký sinh** — `leech_seed` `synthesis` `ingrain` `razor_leaf`, `blood_thirst` |
+| Charizard | **thiêu đốt** — `flamethrower` `inferno` `ember` `fire_spin`, `blaze` | **long tộc** — `dragon_claw` `outrage` `dragon_rage` `dragon_dance`, `reckless` |
+| Blastoise | **cố thủ** — `taunt` `withdraw` `wide_guard` `aqua_ring`, `thorns` | **giáp kích** — `skull_bash` `water_gun` `whirlpool` `withdraw`, `ballast` |
+| Naruto | *none* | |
+
+`cast.ParseBuilds` checks every entry against the cast book **at the level cap on
+the furthest form**, which is the only reading that catches the case a build is
+most likely to get wrong: `sleep_powder` is stage-gated to Bulbasaur and Ivysaur,
+so a build written from the file rather than from the form would field a move
+Venusaur never learns. The refusal comes with the list of what that form does
+know, because an author who has just been told no wants the list rather than a
+second trip to `cast.json`.
+
+A build adds exactly two things over the loadout it names — a `name` and a
+one-clause `intent` — and **nothing numeric**. Everything it does is already
+described by its skills and its trait, so a figure in either field is a second
+place for the same number to live and drift from, and it is refused at parse. That
+is the rule a skill's `flavour` lives under, applied to the one new field that
+could have broken it.
+
+**A character listed there has at least two builds.** One build is not a build,
+it is that character's kit: nothing is being chosen, and a screen offering a
+single option tells a player they have a decision they do not have. Naruto having
+none is the honest case rather than a gap — its learnset has no second direction
+yet, and inventing one to fill the row would be the catalogue saying something
+untrue. `TestABuildIsACatalogueOfChoicesRatherThanOfKits` is that claim.
+
+**Bulbasaur is now measured the way the other two are.** It was the character the
+whole trait layer was built for and the only one whose two directions had never
+been fought:
+
+| | rải độc | ký sinh |
+| --- | --- | --- |
+| what the three non-weapon slots buy | a poison, a second poison, and a hit that spends one | a drain, a restore, and a regeneration |
+| measured | **13 turns**, 139 damage a turn, recovering nothing | **17 turns**, 47 damage a turn, recovering 964 |
+
+⚠️ **A poison tick names no author, and a metric that forgets it punishes the
+build it is measuring.** Damage from a status is a `StatusTicked` on the unit
+*carrying* the poison; the event says what it took and nothing anywhere says who
+put it there. Counting "damage I dealt" as `Damaged` events with my own id — which
+is the obvious reading, and there is exactly one `Kind: Damaged` in the engine, the
+passive reply — reported the poison build at **106** a turn against **139** counted
+properly. A quarter of its whole plan was invisible, and the build it was being
+compared against lost almost nothing to the same mistake. It also made `virulence`
+read as *worse* than a plain stat trait, which is the one thing that trait cannot
+be. In a duel the side is enough to attribute a tick; in a squad it would not be.
+
+⚠️ **The two builds are not fought against each other, and the reason is not the
+one Squirtle's builds had.** Squirtle's tank kit carries no power at all, so it
+cannot finish a battle. Both of Bulbasaur's kill perfectly well — and a mirror
+duel is decided by which side outlasts the other, which is exactly what one of
+them is built to do. Over six hundred duels fought both ways the poison kit takes
+about one in ten. That figure measures the twin, not the build. Fighting a build
+against the thing it is *for* is the measurement; the numbers above are taken
+against the shipped Charizard, held still, because two kits are only comparable
+against one opponent.
+
+⚠️ **The catalogue cannot drift from what was measured.** `poisonBuild` and
+`sustainBuild` in `bulbasaur_test.go`, `fireBuild`/`dragonBuild` in
+`dragon_test.go`, `tankBuild`/`semiBuild` in `squirtle_test.go` stay hardcoded in
+the tests that took the figures — they are the design record, and a change to the
+data must not quietly rewrite what a claim was about.
+`TestTheShippedBuildsAreTheOnesTheTestsMeasure` fails if the shipped catalogue
+disagrees with them on a kit **or on a trait**: a kit is half a build, `ballast`
+belongs to the attacking Squirtle and `endurance` to the standing one, and
+swapping those two changes which build survives without touching a single skill.
+So shipping a build means measuring it first and adding the row second.
+
+⚠️ **Both figures above are still understatements**, and for the reason the
+Squirtle table carries the same warning: `battle.Suggest` reaches for a skill of
+no power only when it can find nothing to hit, so `synthesis` and `ingrain` are
+cast in the turns nothing is in range rather than in the turns they are wanted.
+See *A deeper opponent*. That is now the largest single thing standing between
+these tables and what a build is actually worth.
+
+The screen lists the catalogue grouped under its characters, with the kit, the
+trait and the intent of whatever the cursor is on; the cursor lands only on
+builds, since a character is a heading. ⚠️ The "no build written for this one yet"
+note rides **on the character's own heading row** rather than taking a row of its
+own: as its own row it scrolled away from the character it meant, so at eighty by
+twenty-four the top line of the window said a character had no build without
+saying which. The trait row is drawn even when a build takes none, unlike the cast
+browser — there a character has what it has, here a slot was either spent or
+deliberately left empty, and an absent row cannot say which of those happened.
 
 ### Looking a status up
 

@@ -136,10 +136,11 @@ func TestBallastIsATradeAndNotAGift(t *testing.T) {
 // skill that reads correctly, describes itself correctly, and shields the wrong
 // unit. Nothing but watching where the stack lands can tell them apart.
 //
-// Played by hand rather than left to autopilot, and that is not a convenience:
-// battle.Suggest takes a skill of no power only when it can find nothing at all
-// to hit, so a guard would essentially never be cast in a battle that runs
-// itself. The mechanic is a player's.
+// Played by hand rather than left to autopilot, and that is still not a
+// convenience. Suggest does cast a guard now — it prices one in the strikes the
+// charge would eat — but it casts it on whoever is worth guarding, which is not
+// necessarily the ally this test is about. A hand-played cast is the only way to
+// aim the skill at the cell whose stack is the question.
 func TestWideGuardShieldsTheAllyAndNotItsCaster(t *testing.T) {
 	books, err := seed.Books()
 	if err != nil {
@@ -219,12 +220,13 @@ func TestWideGuardShieldsTheAllyAndNotItsCaster(t *testing.T) {
 // them is the shape of what they do: how long one stands, and how fast the other
 // works.
 //
-// ⚠️ Both figures are taken on autopilot and both are understatements, for the
-// same reason. battle.Suggest attacks whenever it can and reaches for a skill of
-// no power only when it cannot, so the tank build's whole kit is used only
-// because it has nothing to attack with, and the semi-tank build hardly ever
-// stops to guard. A player using either deliberately gets more out of it than
-// this measures.
+// ⚠️ Both figures are taken on autopilot and both are still understatements, but
+// far less so than they were: the opponent now prices a guard, a regeneration and
+// a status rather than reaching for them only when it can find nothing to hit. The
+// tank build's figure moved from 517 turns to 676 and the semi-tank's from 30 to
+// 39 on the same seeds, which is the size of what autopilot used to be leaving on
+// the table. What it still cannot do is hold a skill for the turn it is wanted, so
+// a player using either deliberately gets more than this measures.
 func TestTheTwoSquirtleBuildsAreDifferentUnits(t *testing.T) {
 	tankTurns, tankDealt := squirtleFight(t, tankBuild, "thorns")
 	semiTurns, semiDealt := squirtleFight(t, semiBuild, "ballast")
