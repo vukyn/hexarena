@@ -9,7 +9,7 @@ Bắn một loạt lá mỏng như dao cạo, cắt tiếng gió thành từng n
 Tầm 3 · 3 ô · 88% trúng · hồi 2 lượt.
 
 solar_beam
-Gom cả một trời nắng vào một điểm rồi thả ra thành cột sáng trắng xoá, 240% công.
+Gom nắng vào một điểm rồi phóng ra thành cột sáng trắng xoá, 240% công.
 Tầm 4 · 85% trúng · hồi 4 lượt.
 
 sleep_powder
@@ -23,7 +23,7 @@ Gây trúng độc cho mục tiêu, 80% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
 
 sludge_bomb
-Nhổ một cục bùn đặc quánh, vỡ ra là mùi nồng bốc lên khét lẹt, 130% công.
+Nhổ một cục bùn đặc quánh, vỡ ra là mùi tanh nồng bốc lên, 130% công.
 Gây trúng độc cho mục tiêu, 40% khả năng.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 
@@ -38,7 +38,7 @@ Hút lại 60% sát thương gây ra.
 Tầm 3 · 90% trúng · hồi 3 lượt.
 
 synthesis
-Đứng yên phơi mình dưới nắng, để cái ấm ngấm dần vào từng thớ.
+Đứng yên phơi mình dưới nắng, để cái ấm ngấm dần vào cơ thể.
 Hồi máu bằng 90% công.
 Bản thân · hồi 4 lượt.
 
@@ -67,7 +67,7 @@ Gây bỏng cho mục tiêu, 70% khả năng.
 Tầm 3 · 3 ô · 86% trúng · hồi 3 lượt.
 
 heat_wave
-Đẩy một luồng khí khô rát tràn qua, mặt đất phía trước rung rinh, 110% công.
+Đẩy một luồng khí khô rát tràn qua, táp vào mặt như vừa mở cửa lò, 110% công.
 Gây bỏng cho mục tiêu, 40% khả năng.
 Tầm 3 · 3 ô · 85% trúng · hồi 4 lượt.
 
@@ -77,16 +77,16 @@ Mục tiêu đang dính bỏng: 350% công, và tiêu mất bỏng.
 Tầm 2 · 88% trúng · hồi 3 lượt.
 
 dragon_rage
-Gầm một tiếng làm không khí trước mặt nứt ra thành từng lằn, 130% công.
+Gầm một tiếng thấp và nặng, tiếng dội đi trước rồi sức mới tới, 130% công.
 Tầm 3 · 92% trúng · hồi 3 lượt.
 
 smokescreen
-Phun một màn khói đen kịt, đặc tới mức nuốt cả tiếng động.
+Tạo một màn khói đen dày, quánh lại và rất lâu mới tan.
 Gây mù cho mục tiêu, 80% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
 
 dragon_dance
-Giậm chân theo một nhịp cổ xưa của loài rồng, đất dưới chân nảy theo.
+Giậm chân theo nhịp cổ xưa của loài rồng, một điệu chỉ rồng mới nhớ.
 Nhận cuồng nộ và nhanh nhẹn.
 Bản thân · hồi 4 lượt.
 
@@ -110,16 +110,16 @@ Gây phá giáp cho mục tiêu, 50% khả năng.
 Tầm 1 · 90% trúng · hồi 2 lượt.
 
 brine
-Tạt một chậu nước biển mặn chát, xối từ trên đầu xuống, 100% công.
+Xối nước biển vào chỗ da đã rách, rách càng sâu thì càng buốt, 100% công.
 Mục tiêu còn <=50% máu: 200% công.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 
 hydro_pump
-Nén cả một dòng nước vào một điểm rồi bắn ra, tiếng rít nghe rợn người, 220% công.
+Nén cả một tấn nước vào một điểm rồi bắn ra, tiếng rít nghe rợn người, 220% công.
 Tầm 4 · 80% trúng · hồi 4 lượt.
 
 withdraw
-Thu mình lại, thở chậm, chờ cho đợt đòn đi qua.
+Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
 Hồi máu bằng 50% công.
 Nhận đỡ đòn x2.
 Bản thân · hồi 3 lượt.
@@ -173,7 +173,7 @@ Nhận mờ ảo x2.
 Bản thân · hồi 4 lượt.
 
 shadow_clone
-Bung chakra ra thành hình hài đứng được, đủ đặc để chắn đường và đủ sức để ném.
+Kết ấn một cái, những cái bóng y hệt bước ra — mỏng hơn bản thật nhưng cũng biết ném dao.
 Gọi ra 2 phân thân, mỗi bên mang 40% chỉ số người gọi, trụ lại 4 lượt.
 Bản thân · hồi 5 lượt.
 

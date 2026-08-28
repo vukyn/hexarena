@@ -49,7 +49,7 @@
       "id": "charmander.dragon",
       "character": "pokemon.charmander",
       "name": "long tộc",
-      "intent": "Bỏ lửa lấy nanh vuốt, đánh ai cũng một nhịp như nhau",
+      "intent": "Bỏ lửa lấy nanh vuốt: đòn trung tính nên gặp hệ nào cũng ăn như nhau, không sợ bị khắc",
       "skills": [
         "dragon_claw",
         "outrage",
@@ -64,7 +64,7 @@
       "id": "squirtle.fortress",
       "character": "pokemon.squirtle",
       "name": "cố thủ",
-      "intent": "Gọi đòn về phía mình, đỡ cho đồng đội và đứng lâu hơn bên kia",
+      "intent": "Thu hút sát thương về phía mình, đỡ cho đồng đội và trụ lâu hơn bên kia",
       "skills": [
         "taunt",
         "withdraw",
