@@ -1832,6 +1832,59 @@ func TestAnAllowlistPickerSaysWhatAnEmptyListMeans(t *testing.T) {
 	}
 }
 
+// TestTheSquadPickersSayWhatTheirOwnListsAre is the allowlist's defect one
+// screen further on, and it was wrong in the same shape for the same reason.
+//
+// Both builder pickers borrowed the form's kit hint, which names a ! for a row
+// the character cannot take. The form is choosing out of the whole skill book,
+// so that mark is real there; the builder's rows come out of the learnset and
+// carry no refusal at all, so the hint named a mark neither list can draw. The
+// trait half was wrong twice over — it called a trait a skill, and there is one
+// slot, so an order says nothing about it.
+//
+// The refusal is asserted beside the wording rather than left to it. A hint is a
+// sentence and a sentence can be made true by editing it; what says the sentence
+// stays true is that the rows behind it hold nothing to mark.
+func TestTheSquadPickersSayWhatTheirOwnListsAre(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m = menuTo(t, m, screenSquads)
+		m.squad = someSquad(t, m)
+		member := m
+		member.squad = member.squad.editUnit(0)
+		holder, holds := aTraitHolder(m)
+		if !holds {
+			t.Skip("no character in the book learns a trait, so the trait list has no rows")
+		}
+		for _, list := range []struct {
+			what   string
+			opened model
+			hint   i18n.Key
+		}{
+			{"kit", member.openSquadSkills(), i18n.SquadKitHint},
+			{"trait", holder.openSquadPassives(), i18n.SquadTraitHint},
+		} {
+			if list.opened.picker == nil || len(list.opened.picker.options) == 0 {
+				t.Fatalf("the %s %s field raised no picker with rows in it", lang, list.what)
+			}
+			body, _ := list.opened.picker.view(list.opened)
+			if want := lang.Text(list.hint); !strings.Contains(body, want) {
+				t.Errorf("the %s %s picker is missing its own hint %q:\n%s",
+					lang, list.what, want, body)
+			}
+			if unwanted := lang.Text(i18n.PickerHint); strings.Contains(body, unwanted) {
+				t.Errorf("the %s %s picker still borrows the form's kit hint", lang, list.what)
+			}
+			for _, option := range list.opened.picker.options {
+				if option.refusal != nil {
+					t.Errorf("the %s %s picker refuses %s, so the mark its hint no longer names is reachable",
+						lang, list.what, option.id)
+				}
+			}
+		}
+	}
+}
+
 // TestTheFormScrollsToTheFieldTheCursorIsOn covers the window rather than the
 // fields: the form outgrew an 80x24 window when healing added three answers, so
 // what has to hold is that tabbing to the last one brings it into view.

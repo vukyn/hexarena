@@ -1441,6 +1441,27 @@ traits — every test that had opened that picker had opened an empty one. It is
 own kind of picker now, read out of `passives.json`, and the fixture's blind spot
 is covered by a screen built from whichever character in the book learns the most.
 
+⚠️ **And the line over both lists was describing a different picker.** Both were
+drawn under the form's kit hint — *space chooses · the number is the order · `!`
+is one this character cannot take* — which is true where the form uses it: that
+one is chosen out of the **whole skill book**, so a row there really does carry
+`forge.CheckSkill`'s refusal and really is marked. These two are the **learnset**
+already — what this character knows at this level as this form — and
+`squadOptions` sets no refusal at all, so **no row here can ever draw a `!`** and
+the hint was naming a mark that does not exist. The trait half was wrong twice
+over: the Vietnamese called a trait a *chiêu*, and `cast.TraitSlots` is **one**,
+so *the number is the order* was ordering a list with one slot in it.
+
+They have a hint each now — the kit's keeps the order and says the rows are all
+learned, the trait's says **one trait, or none**, which is `cast.Optional` at the
+`cast.ChooseFrom` call and was on the screen nowhere — and both announce `?`, the
+way the footer beside them does, because both of these lists describe. Two hints
+rather than one shared *nothing here can be refused*: that sentence would have
+covered the mark and left the trait list ordering itself, and what is left to say
+after it differs — four slots in an order against a single slot that may be left
+empty. `PickerHint` is untouched and still says exactly what it says, on the one
+picker it is true of.
+
 #### Fighting two squads
 
 `f` on a squad in the catalogue raises the fight: that squad against another,

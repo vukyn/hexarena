@@ -568,6 +568,13 @@ const (
 	SquadNothingChosen
 	SquadPickSkills
 	SquadPickPassives
+	// A hint each rather than the picker's default, because the builder's two
+	// lists are already the character's own learnset: nothing on either can be
+	// refused, so the mark the default names never appears. They are two rather
+	// than one because the lists differ in what is left to say — four slots in
+	// an order against a single slot that may be left empty.
+	SquadKitHint
+	SquadTraitHint
 	SquadFormation
 	SquadFormationLegend
 	SquadDiscard
