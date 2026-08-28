@@ -11,7 +11,12 @@
       "strikes": 1,
       "accuracy": 950,
       "cooldown": 1,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     },
     {
       "id": "razor_leaf",
@@ -25,7 +30,12 @@
       "accuracy": 880,
       "pierce": 400,
       "cooldown": 2,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     },
     {
       "id": "solar_beam",
@@ -38,7 +48,12 @@
       "strikes": 1,
       "accuracy": 850,
       "cooldown": 4,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     },
     {
       "id": "sleep_powder",
@@ -52,6 +67,11 @@
       "accuracy": 1000,
       "cooldown": 4,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "stun",
@@ -72,6 +92,11 @@
       "accuracy": 1000,
       "cooldown": 3,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "poison",
@@ -92,6 +117,11 @@
       "accuracy": 900,
       "cooldown": 2,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "poison",
@@ -112,6 +142,11 @@
       "accuracy": 900,
       "cooldown": 2,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "requires": {
         "status": "poison",
         "min_stacks": 1,
@@ -130,7 +165,12 @@
       "accuracy": 900,
       "drains": 600,
       "cooldown": 3,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     },
     {
       "id": "synthesis",
@@ -148,6 +188,9 @@
       "restrict": {
         "species": [
           "plant"
+        ],
+        "origins": [
+          "pokemon"
         ]
       }
     },
@@ -166,6 +209,9 @@
       "restrict": {
         "species": [
           "plant"
+        ],
+        "origins": [
+          "pokemon"
         ]
       },
       "self_applies": [
@@ -188,6 +234,11 @@
       "accuracy": 950,
       "cooldown": 1,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "burn",
@@ -208,6 +259,11 @@
       "accuracy": 900,
       "cooldown": 2,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "burn",
@@ -228,7 +284,12 @@
       "accuracy": 880,
       "pierce": 350,
       "cooldown": 2,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     },
     {
       "id": "fire_spin",
@@ -242,6 +303,11 @@
       "accuracy": 860,
       "cooldown": 3,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "burn",
@@ -262,6 +328,11 @@
       "accuracy": 850,
       "cooldown": 4,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "burn",
@@ -282,6 +353,11 @@
       "accuracy": 880,
       "cooldown": 3,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "requires": {
         "status": "burn",
         "min_stacks": 1,
@@ -304,6 +380,9 @@
       "restrict": {
         "species": [
           "dragon"
+        ],
+        "origins": [
+          "pokemon"
         ]
       }
     },
@@ -342,6 +421,9 @@
       "restrict": {
         "species": [
           "dragon"
+        ],
+        "origins": [
+          "pokemon"
         ]
       },
       "self_applies": [
@@ -368,7 +450,12 @@
       "strikes": 1,
       "accuracy": 950,
       "cooldown": 1,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     },
     {
       "id": "bubble",
@@ -382,6 +469,11 @@
       "accuracy": 900,
       "cooldown": 2,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "mire",
@@ -402,6 +494,11 @@
       "accuracy": 850,
       "cooldown": 3,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "applies": [
         {
           "status": "mire",
@@ -442,6 +539,11 @@
       "accuracy": 900,
       "cooldown": 2,
       "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "requires": {
         "below_health": 500,
         "bonus_power": 1000
@@ -458,7 +560,12 @@
       "strikes": 1,
       "accuracy": 800,
       "cooldown": 4,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     },
     {
       "id": "withdraw",
@@ -493,6 +600,11 @@
       "accuracy": 1000,
       "cooldown": 4,
       "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
       "self_applies": [
         {
           "status": "regrowth",
@@ -556,6 +668,9 @@
       "restrict": {
         "species": [
           "dragon"
+        ],
+        "origins": [
+          "pokemon"
         ]
       },
       "applies": [
@@ -581,6 +696,9 @@
       "restrict": {
         "species": [
           "dragon"
+        ],
+        "origins": [
+          "pokemon"
         ]
       },
       "self_applies": [
@@ -626,7 +744,12 @@
       "strikes": 1,
       "accuracy": 950,
       "cooldown": 0,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "naruto"
+        ]
+      }
     },
     {
       "id": "wind_shuriken",
@@ -639,7 +762,12 @@
       "strikes": 2,
       "accuracy": 880,
       "cooldown": 2,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "naruto"
+        ]
+      }
     },
     {
       "id": "rasengan",
@@ -652,7 +780,12 @@
       "strikes": 1,
       "accuracy": 900,
       "cooldown": 4,
-      "target": "enemy"
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "naruto"
+        ]
+      }
     },
     {
       "id": "substitution",
@@ -666,6 +799,11 @@
       "accuracy": 1000,
       "cooldown": 4,
       "target": "self",
+      "restrict": {
+        "origins": [
+          "naruto"
+        ]
+      },
       "self_applies": [
         {
           "status": "veil",
@@ -686,6 +824,11 @@
       "accuracy": 1000,
       "cooldown": 5,
       "target": "self",
+      "restrict": {
+        "origins": [
+          "naruto"
+        ]
+      },
       "summons": {
         "count": 2,
         "name": "phân thân",
@@ -709,6 +852,11 @@
       "accuracy": 1000,
       "cooldown": 6,
       "target": "self",
+      "restrict": {
+        "origins": [
+          "naruto"
+        ]
+      },
       "summons": {
         "count": 1,
         "name": "cóc",

@@ -67,13 +67,39 @@ taunt           taunting (self)        1     1000       1000                -
 substitution    veil (self)            2     1000       1000                -
 
 == who may carry, a skill absent here is free to anybody ==
-skill           elements   archetypes        characters          species
-synthesis       -          -                 -                   plant
-ingrain         -          -                 -                   plant
-dragon_rage     -          -                 -                   dragon
-dragon_dance    -          -                 -                   dragon
-dragon_claw     -          -                 -                   dragon
-outrage         -          -                 -                   dragon
+skill           elements   archetypes        characters          species   origins
+vine_whip       -          -                 -                   -         pokemon
+razor_leaf      -          -                 -                   -         pokemon
+solar_beam      -          -                 -                   -         pokemon
+sleep_powder    -          -                 -                   -         pokemon
+poison_powder   -          -                 -                   -         pokemon
+sludge_bomb     -          -                 -                   -         pokemon
+venoshock       -          -                 -                   -         pokemon
+leech_seed      -          -                 -                   -         pokemon
+synthesis       -          -                 -                   plant     pokemon
+ingrain         -          -                 -                   plant     pokemon
+ember           -          -                 -                   -         pokemon
+flamethrower    -          -                 -                   -         pokemon
+fire_fang       -          -                 -                   -         pokemon
+fire_spin       -          -                 -                   -         pokemon
+heat_wave       -          -                 -                   -         pokemon
+inferno         -          -                 -                   -         pokemon
+dragon_rage     -          -                 -                   dragon    pokemon
+dragon_dance    -          -                 -                   dragon    pokemon
+water_gun       -          -                 -                   -         pokemon
+bubble          -          -                 -                   -         pokemon
+whirlpool       -          -                 -                   -         pokemon
+brine           -          -                 -                   -         pokemon
+hydro_pump      -          -                 -                   -         pokemon
+aqua_ring       -          -                 -                   -         pokemon
+dragon_claw     -          -                 -                   dragon    pokemon
+outrage         -          -                 -                   dragon    pokemon
+kunai           -          -                 -                   -         naruto
+wind_shuriken   -          -                 -                   -         naruto
+rasengan        -          -                 -                   -         naruto
+substitution    -          -                 -                   -         naruto
+shadow_clone    -          -                 -                   -         naruto
+summon_toad     -          -                 -                   -         naruto
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain

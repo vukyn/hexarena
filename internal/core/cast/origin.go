@@ -196,6 +196,17 @@ func (b *OriginBook) All() []Origin {
 	return out
 }
 
+// IDs returns every origin id in declaration order, on SpeciesBook.IDs's terms:
+// a picker and a refusal both want the alternatives, and both want them in the
+// order the file was written rather than sorted a second way.
+func (b *OriginBook) IDs() []string {
+	out := make([]string, 0, len(b.origins))
+	for _, one := range b.origins {
+		out = append(out, one.ID)
+	}
+	return out
+}
+
 // Marshal writes the catalog as a data file: two-space indented JSON with the
 // origins sorted by id, for the same reason Book.Marshal sorts.
 func (b *OriginBook) Marshal() ([]byte, error) {

@@ -1483,20 +1483,35 @@ func TestTheListingHeaderLinesUpWithItsRows(t *testing.T) {
 		body, _ := m.skills.view(m)
 		lines := strings.Split(body, "\n")
 
+		// The comparable row is an unrestricted one, because its last cell is
+		// short enough to be drawn whole: every other cell in that column can
+		// end in an ellipsis, and an offset measured to a clip is measured to
+		// nothing. Which page holds one is data, not layout — the first page did
+		// until every skill in the book was given the work it comes out of — so
+		// the cursor walks the listing until a screen has both.
 		header, row := "", ""
-		for _, line := range lines {
-			switch {
-			case strings.Contains(line, lang.Text(i18n.ColumnWhoMayCarry)):
-				header = line
-			// Any row but the cursor's, so the marker is the same two cells as
-			// the header's and the offsets are comparable.
-			case row == "" && strings.HasPrefix(line, "  ") &&
-				strings.Contains(line, lang.Text(i18n.WhoAnyone)):
-				row = line
+		for step := 0; step <= len(m.skills.skills); step++ {
+			for _, line := range lines {
+				switch {
+				case strings.Contains(line, lang.Text(i18n.ColumnWhoMayCarry)):
+					header = line
+				// Any row but the cursor's, so the marker is the same two cells
+				// as the header's and the offsets are comparable.
+				case row == "" && strings.HasPrefix(line, "  ") &&
+					strings.Contains(line, lang.Text(i18n.WhoAnyone)):
+					row = line
+				}
 			}
+			if header != "" && row != "" {
+				break
+			}
+			m = key(t, m, "down")
+			body, _ = m.skills.view(m)
+			lines = strings.Split(body, "\n")
 		}
 		if header == "" || row == "" {
-			t.Fatalf("the %s listing has no header or no plain row:\n%s", lang, body)
+			t.Fatalf("the %s listing never draws a header and an unrestricted row together:\n%s",
+				lang, body)
 		}
 		// Cell offsets, not byte offsets: a Vietnamese header is multi-byte and
 		// strings.Index would compare two different units.

@@ -69,7 +69,7 @@ type SkillDraft struct {
 	// Drains is the share of the damage dealt that comes back to the caster,
 	// also in parts per thousand.
 	Drains string
-	// The four allowlists, comma separated. An empty answer is an absent list,
+	// The five allowlists, comma separated. An empty answer is an absent list,
 	// which is what makes the common pool the default shape: a skill authored
 	// with nothing filled in here is written with no restrict block at all,
 	// rather than with an empty one, which would be the error case.
@@ -77,6 +77,7 @@ type SkillDraft struct {
 	RestrictArchetypes string
 	RestrictCharacters string
 	RestrictSpecies    string
+	RestrictOrigins    string
 }
 
 // Resolve turns a draft into a skill, or says which answer is wrong.
@@ -256,7 +257,7 @@ func SkillAnswers(current skill.Skill) SkillDraft {
 		SelfApplies: FormatApplications(current.SelfApplies),
 		Restores:    optionalNumber(current.Restores),
 		Drains:      optionalNumber(current.Drains),
-		// An absent restriction is four empty answers, which is what makes
+		// An absent restriction is five empty answers, which is what makes
 		// accepting the form as it stands write no restrict block at all. See
 		// SkillDraft.Restriction.
 		//
@@ -269,10 +270,11 @@ func SkillAnswers(current skill.Skill) SkillDraft {
 		RestrictArchetypes: strings.Join(restrictedArchetypes(current), ","),
 		RestrictCharacters: strings.Join(restrictedCharacters(current), ","),
 		RestrictSpecies:    strings.Join(current.Restrict.SpeciesNames(), ","),
+		RestrictOrigins:    strings.Join(current.Restrict.OriginNames(), ","),
 	}
 }
 
-// Restriction is the four allowlists a draft names, or nil when it names none.
+// Restriction is the five allowlists a draft names, or nil when it names none.
 //
 // Nil rather than an empty block is the whole of the common pool being the
 // default: skill.ParseBook refuses a restrict block that restricts nothing, so a
@@ -282,12 +284,14 @@ func (d SkillDraft) Restriction() (*skill.Restriction, error) {
 	archetypes := SplitList(d.RestrictArchetypes)
 	characters := SplitList(d.RestrictCharacters)
 	species := SplitList(d.RestrictSpecies)
+	origins := SplitList(d.RestrictOrigins)
 	if len(elements) == 0 && len(archetypes) == 0 &&
-		len(characters) == 0 && len(species) == 0 {
+		len(characters) == 0 && len(species) == 0 && len(origins) == 0 {
 		return nil, nil
 	}
 	restriction := &skill.Restriction{
-		Archetypes: archetypes, Characters: characters, Species: species,
+		Archetypes: archetypes, Characters: characters,
+		Species: species, Origins: origins,
 	}
 	for _, name := range elements {
 		member, err := ParseElement(name)
@@ -645,12 +649,13 @@ type CarryFacts struct {
 	// Element is the skill's own element, empty when it is neutral and
 	// therefore gates nobody.
 	Element string
-	// Elements, Archetypes, Characters and Species are the allowlists it
-	// declares.
+	// Elements, Archetypes, Characters, Species and Origins are the allowlists
+	// it declares.
 	Elements   []string
 	Archetypes []string
 	Characters []string
 	Species    []string
+	Origins    []string
 }
 
 // WhoMayCarry reads a skill's gates without wording any of them.
@@ -660,6 +665,7 @@ func WhoMayCarry(carried skill.Skill) CarryFacts {
 		Archetypes: append([]string(nil), restrictedArchetypes(carried)...),
 		Characters: append([]string(nil), restrictedCharacters(carried)...),
 		Species:    carried.Restrict.SpeciesNames(),
+		Origins:    carried.Restrict.OriginNames(),
 	}
 	if carried.Element != element.Neutral {
 		facts.Element = carried.Element.String()
@@ -688,7 +694,7 @@ func WhoMaySummary(carried skill.Skill) string {
 	if facts.Anyone {
 		return "anyone"
 	}
-	parts := make([]string, 0, 4)
+	parts := make([]string, 0, 6)
 	if facts.Element != "" {
 		parts = append(parts, facts.Element+" units")
 	}
@@ -703,6 +709,9 @@ func WhoMaySummary(carried skill.Skill) string {
 	}
 	if len(facts.Species) > 0 {
 		parts = append(parts, "kept for a "+strings.Join(facts.Species, " or "))
+	}
+	if len(facts.Origins) > 0 {
+		parts = append(parts, "out of "+strings.Join(facts.Origins, " or "))
 	}
 	return strings.Join(parts, ", ")
 }

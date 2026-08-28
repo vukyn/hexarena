@@ -578,6 +578,8 @@ func TestARestrictionParsesTheHalfThisPackageCanSee(t *testing.T) {
 			"elements":   []string{"fire", "metal"},
 			"archetypes": []string{"bulwark"},
 			"characters": []string{"example.adept"},
+			"species":    []string{"dragon"},
+			"origins":    []string{"a-series"},
 		},
 	}))
 	if err != nil {
@@ -599,8 +601,16 @@ func TestARestrictionParsesTheHalfThisPackageCanSee(t *testing.T) {
 	if !found.Restrict.AllowsCharacter("example.adept") || found.Restrict.AllowsCharacter("example.other") {
 		t.Errorf("the character allowlist %v admits the wrong characters", found.Restrict.Characters)
 	}
-	if !found.Restrict.NamesCharacters() {
-		t.Error("a skill naming one character does not report itself as belonging to somebody")
+	if !found.Restrict.AllowsSpecies([]string{"lizard", "dragon"}) ||
+		found.Restrict.AllowsSpecies([]string{"lizard"}) {
+		t.Errorf("the species allowlist %v admits the wrong kinds", found.Restrict.SpeciesNames())
+	}
+	if !found.Restrict.AllowsOrigin("a-series") || found.Restrict.AllowsOrigin("a-game") {
+		t.Errorf("the origin allowlist %v admits the wrong works", found.Restrict.OriginNames())
+	}
+	if !found.Restrict.NamesCharacters() || !found.Restrict.NamesSpecies() ||
+		!found.Restrict.NamesOrigins() {
+		t.Error("a skill naming a character, a lineage and a work does not report all three")
 	}
 }
 
@@ -621,10 +631,13 @@ func TestAnAbsentRestrictionRestrictsNothing(t *testing.T) {
 		t.Fatalf("single: %v", err)
 	}
 	if !strike.Restrict.AllowsElement(fire) || !strike.Restrict.AllowsArchetype("anything") ||
-		!strike.Restrict.AllowsCharacter("anyone") {
+		!strike.Restrict.AllowsCharacter("anyone") ||
+		!strike.Restrict.AllowsSpecies([]string{"anything"}) ||
+		!strike.Restrict.AllowsOrigin("anywhere") {
 		t.Error("an absent restriction refused somebody")
 	}
-	if strike.Restrict.NamesCharacters() || strike.Restrict.ElementNames() != nil {
+	if strike.Restrict.NamesCharacters() || strike.Restrict.ElementNames() != nil ||
+		strike.Restrict.NamesOrigins() || strike.Restrict.OriginNames() != nil {
 		t.Error("an absent restriction reported a list")
 	}
 }
@@ -646,6 +659,8 @@ func TestARestrictionRejects(t *testing.T) {
 		{"an element that is not one", map[string]any{"elements": []string{"custard"}}, "custard"},
 		{"a repeated element", map[string]any{"elements": []string{"fire", "fire"}}, "twice"},
 		{"a repeated character", map[string]any{"characters": []string{"a", "a"}}, "twice"},
+		{"an empty origin list", map[string]any{"origins": []string{}}, "empty list"},
+		{"a repeated origin", map[string]any{"origins": []string{"a", "a"}}, "twice"},
 		{"a blank name", map[string]any{"archetypes": []string{""}}, "empty name"},
 	}
 	for _, test := range cases {

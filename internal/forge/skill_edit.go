@@ -74,6 +74,7 @@ type SkillEdit struct {
 	RestrictArchetypes *string
 	RestrictCharacters *string
 	RestrictSpecies    *string
+	RestrictOrigins    *string
 }
 
 // Draft lays a partial change over a skill as it stands, producing the whole set
@@ -108,6 +109,7 @@ func (e SkillEdit) Draft(current skill.Skill) SkillDraft {
 		{&drafted.RestrictArchetypes, e.RestrictArchetypes},
 		{&drafted.RestrictCharacters, e.RestrictCharacters},
 		{&drafted.RestrictSpecies, e.RestrictSpecies},
+		{&drafted.RestrictOrigins, e.RestrictOrigins},
 	} {
 		if field.given != nil {
 			*field.into = *field.given
@@ -282,6 +284,7 @@ func (l *Library) brokenCharacter(edited *skill.Book, id string, refused error) 
 		who := Carrier{
 			ID: character.ID, Archetype: character.Archetype,
 			Affinity: character.Element, HasAffinity: true,
+			Species: character.Species, Origin: character.Origin,
 		}
 		if reason := CheckKit(who, kit); reason != nil {
 			broken.ID, broken.Err = character.ID, reason
@@ -309,21 +312,29 @@ func kitFrom(book *skill.Book, named []string) ([]skill.Skill, error) {
 // CheckPresetKit reports why an archetype preset's kit could not hold one of its
 // skills, or nil when it may hold all of them.
 //
-// It is cast.resolveArchetype's two restriction rules brought forward, in the
+// It is cast.resolveArchetype's three restriction rules brought forward, in the
 // order that function applies them, exactly as CheckSkill brings forward
-// resolveCharacter's three. The predicates are skill.Restriction's own, so this
+// resolveCharacter's five. There is no fourth: a preset may hold an
+// origin-restricted skill, for the reason written down in resolveArchetype. The predicates are skill.Restriction's own, so this
 // asks the same questions rather than asking equivalent ones.
 //
-// The first rule is the one worth remembering: a skill kept for named characters
-// cannot sit in a preset's kit at all, because a preset is the starting point for
-// every character built from it, so the refusal would land on the author of the
-// next character rather than on whoever narrowed the skill.
+// The first two rules are one rule worth remembering: a skill kept for named
+// characters or for a lineage cannot sit in a preset's kit at all, because a
+// preset is the starting point for every character built from it, so the
+// refusal would land on the author of the next character rather than on whoever
+// narrowed the skill.
 func CheckPresetKit(archetype string, kit []skill.Skill) error {
 	for _, carried := range kit {
 		if carried.Restrict.NamesCharacters() {
 			return &PresetOwnedSkillError{
 				Archetype: archetype, Skill: carried.ID,
 				Allowed: append([]string(nil), carried.Restrict.Characters...),
+			}
+		}
+		if carried.Restrict.NamesSpecies() {
+			return &PresetLineageSkillError{
+				Archetype: archetype, Skill: carried.ID,
+				Allowed: carried.Restrict.SpeciesNames(),
 			}
 		}
 		if err := CheckSkill(Carrier{Archetype: archetype}, carried); err != nil {

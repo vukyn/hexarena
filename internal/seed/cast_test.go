@@ -209,7 +209,8 @@ func TestEveryShippedCharacterNamesSomethingReal(t *testing.T) {
 // nobody carries yet is a typo, and without this it would sit unread until the
 // day somebody picked the skill up and got refused for being the wrong thing.
 func TestEveryShippedRestrictionNamesSomethingReal(t *testing.T) {
-	archetypes, characters, species := mustArchetypes(t), mustCast(t), mustSpecies(t)
+	archetypes, characters := mustArchetypes(t), mustCast(t)
+	species, origins := mustSpecies(t), mustOrigins(t)
 	skills, err := seed.SkillBook()
 	if err != nil {
 		t.Fatalf("load shipped skills: %v", err)
@@ -231,6 +232,11 @@ func TestEveryShippedRestrictionNamesSomethingReal(t *testing.T) {
 		for _, id := range carried.Restrict.SpeciesNames() {
 			if _, known := species.Get(id); !known {
 				t.Errorf("%s is kept for the species %q, which the catalog does not declare", carried.ID, id)
+			}
+		}
+		for _, id := range carried.Restrict.OriginNames() {
+			if _, known := origins.Get(id); !known {
+				t.Errorf("%s is kept for the origin %q, which the catalog does not declare", carried.ID, id)
 			}
 		}
 	}

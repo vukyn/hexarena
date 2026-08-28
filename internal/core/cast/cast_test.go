@@ -68,7 +68,10 @@ func skills(t *testing.T) *skill.Book {
 	     "power": 1500, "accuracy": 900, "target": "enemy"},
 	    {"id": "lineage_roar", "element": "neutral", "range": 1, "pattern": "single",
 	     "power": 1200, "accuracy": 900, "target": "enemy",
-	     "restrict": {"species": ["dragon"]}}
+	     "restrict": {"species": ["dragon"]}},
+	    {"id": "signature_throw", "element": "neutral", "range": 1, "pattern": "single",
+	     "power": 1200, "accuracy": 900, "target": "enemy",
+	     "restrict": {"origins": ["a-series"]}}
 	  ]
 	}`), skill.Deps{Patterns: patterns, Statuses: statuses})
 	if err != nil {

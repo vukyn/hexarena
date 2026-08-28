@@ -107,6 +107,7 @@ const (
 	SkillFieldKeptForRoles
 	SkillFieldKeptForCharacters
 	SkillFieldKeptForSpecies
+	SkillFieldKeptForOrigins
 	LabelDamage
 	DamageLine
 	DamageLineShort
@@ -147,6 +148,7 @@ const (
 	SkillHelpKeptForRoles
 	SkillHelpKeptForCharacters
 	SkillHelpKeptForSpecies
+	SkillHelpKeptForOrigins
 
 	// The shape diagram, opened from the shape chooser.
 	//
@@ -169,6 +171,7 @@ const (
 	WhoKeptForRoles
 	WhoBelongsTo
 	WhoKeptForSpecies
+	WhoKeptForOrigins
 
 	// The multi-select sub-screen, and the row that opens it.
 	PickerKitTitle
@@ -176,6 +179,7 @@ const (
 	PickerRolesTitle
 	PickerCharactersTitle
 	PickerSpeciesTitle
+	PickerOriginsTitle
 	PickerHint
 	PickerAllowlistHint
 	PickerFooter
@@ -312,10 +316,12 @@ const (
 	ErrorCharacterRestricted
 	ErrorUnknownSpecies
 	ErrorSpeciesRestricted
+	ErrorOriginRestricted
 	ErrorSkillTaken
 	ErrorMissingSkillID
 	ErrorSkillRename
 	ErrorPresetOwnedSkill
+	ErrorPresetLineageSkill
 	ErrorSkillEditBreaksCharacter
 	ErrorSkillEditBreaksPreset
 	ErrorSkillEditBreaks

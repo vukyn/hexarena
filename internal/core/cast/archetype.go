@@ -176,7 +176,22 @@ func resolveArchetype(declared archetypeFile, deps ArchetypeDeps) (Archetype, er
 	// a second lookup.
 	//
 	// A species-restricted skill is refused on exactly the same ground, and that
-	// is what keeps the two axes from collapsing into each other. The price is
+	// is what keeps the two axes from collapsing into each other.
+	//
+	// ⚠️ An origin-restricted one is NOT, and the asymmetry is deliberate. The
+	// argument for the ban is the same sentence — a preset is shared and the
+	// refusal would land on the next author — but the arithmetic is not: a
+	// lineage is exceptional and a work is universal. Every skill in the book
+	// comes out of some fiction, so a rule that kept world-restricted skills out
+	// of presets would empty every preset in the directory rather than trim two
+	// entries off two of them. `summoner` is the proof: its kit is one origin's
+	// six skills exactly, and an empty kit does not load.
+	//
+	// What is left of the harm is real and is left where it lands: a character
+	// of another work authored from this preset *without naming its own skills*
+	// is refused, by forge.CheckKit, in a sentence that says the kit is out of
+	// another work. That refusal is legible, and it is the only one, because a
+	// character that names a learnset never reads the preset's kit at all. The price is
 	// real and has been paid twice: `scorcher` gave up the two lineage skills and
 	// `blighter` gave up `ingrain` and `synthesis`, so both presets suggest seven
 	// skills while the characters built from them carry nine. A preset losing an

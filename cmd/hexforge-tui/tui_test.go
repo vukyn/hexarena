@@ -1348,14 +1348,24 @@ func TestTheKitListSaysWhatThisCharacterCannotTakeAndWhy(t *testing.T) {
 // other and the second re-checks against the first — and neither silently drops
 // the other's answer.
 func TestEitherOrderWorksBetweenTheKitAndTheElement(t *testing.T) {
-	// Nothing answered: nothing is unavailable, because an unanswered element
-	// restricts nothing. Without this the kit could only be filled in second.
+	// Nothing typed: nothing is unavailable *for an element*, because an
+	// unanswered element restricts nothing. Without this the kit could only be
+	// filled in second.
+	//
+	// ⚠️ "Nothing answered" is not true of every axis, and reading it that way
+	// is what made this test wrong once. The origin is a chooser rather than a
+	// text field, so it holds the first work in the catalog from the moment the
+	// form opens — there is no keystroke at which it is unanswered — and a skill
+	// kept for another work is correctly unavailable straight away. What this
+	// asserts is therefore the narrower and true thing: every refusal on an
+	// untouched form is about the origin that is already answered.
 	m, lib, _ := start(t, i18n.Vi)
 	m = m.enter(screenNew)
 	m = formCursorTo(t, m, fieldKit)
 	m = key(t, m, "space")
 	for _, option := range m.picker.options {
-		if option.refusal != nil {
+		var byWork *forge.OriginRestrictedError
+		if option.refusal != nil && !errors.As(option.refusal, &byWork) {
 			t.Errorf("%q is unavailable before an element was answered: %v",
 				option.id, option.refusal)
 		}
