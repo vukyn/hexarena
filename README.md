@@ -1458,14 +1458,30 @@ would have hidden it.
 The roadmap entries below are each written as a mechanism. This is the thing they
 add up to, recorded because the order to build them in only makes sense once the
 target is stated: **Bulbasaur should be two different units depending on the trait
-it brings.**
+it brings.** Built — `bulbasaur.poison` and `bulbasaur.parasite` in `builds.json`,
+measured before they were listed. **Two builds a character** is the target, and
+every Pokémon now has its pair.
 
-- **The poison specialist.** Immune to poison, its poison hurts more, and
-  attacking it poisons the attacker.
+- **The poison specialist.** Its poison hurts more.
 - **The bloodsucker.** Heals from the damage it deals, and heals *more* the closer
   it is to dying.
 
-Neither is one feature, and the pieces are already scattered across the entries
+⚠️ **The poison specialist was written asking for three things and can only have
+two of them.** It wanted to be immune to poison, sharper with it, *and* to poison
+whoever attacked it — but the immunity and the reply are both `venom_blood` while
+the amplifier is `virulence`, and `TraitSlots = 1`. Two traits, one slot.
+
+What ships is the amplifier, so the poison build **hits harder and is not
+immune**. That is not a piece missing: every row below is built, and the
+constraint is the slot. `venom_blood` is the reserve entry of that direction the
+way `last_gasp` is of the other, and a build carrying it would be a **third**
+build rather than a second trait.
+
+⚠️ So `Resists` is a mechanism **no shipped build carries**. It works, it is
+tested, `heatproof` and `venom_blood` declare it, and nothing a player can field
+today is immune to anything.
+
+Neither build is one feature, and the pieces are scattered across the entries
 around this one:
 
 | the build wants | where it lives | built |
@@ -1479,9 +1495,9 @@ around this one:
 `While` is the row that moved: it gates the whole of a trait, grants included,
 and `blaze` is the first shipped trait to use it.
 
-Four of the five are built. The poison specialist is most of the way there —
-`venom_blood` refuses poison and answers whoever attacks it, which leaves only
-"its poison hurts more" — and the bloodsucker is finished.
+All five are built. What separates the two builds is therefore the **choice**
+rather than any remaining mechanism: one slot, five traits on the learnset, and
+each direction holding two of them with the second in reserve.
 
 **When the first build arrives.** `venom_blood` was the one trait on Bulbasaur's
 learnset with no level on it, so a Bulbasaur held the strongest of its five from

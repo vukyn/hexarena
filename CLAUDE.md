@@ -1208,14 +1208,26 @@ is the constraint each piece has to respect.
       every arrangement tried a trait came back off **once**. So `passive_released`
       is proved by a **hand-played** battle in `TestEveryEventKindIsReachable`, not
       by widening the sweep until the rare case shows up.
-- [ ] **Two builds for one Bulbasaur — the target the trait entries add up to.**
-      (1) *poison specialist*: immune to poison · its poison hurts more ·
-      attacking it poisons the attacker. (2) *bloodsucker*: heals from damage
-      dealt · heals more the closer it is to dying. Pieces: `Resists` ✅ ·
-      *Amplifying a status* ✅ (`virulence`, carried from Venusaur onwards) ·
-      *Answering back* ✅ (`venom_blood` replies) — **so build (1), the poison
-      specialist, is complete**: immune, sharper, and it bites back ·
-      **passive lifesteal** ✅ · `While` ✅ (`blaze` is gated).
+- [x] **Two builds for one Bulbasaur — SHIPPED** (#114), as `bulbasaur.poison`
+      ("rải độc") and `bulbasaur.parasite` ("ký sinh") in `builds.json`, measured
+      by `TestTheTwoBulbasaurBuildsAreDifferentUnits` before they were listed.
+      Two builds a character is the target and every Pokémon now has its pair;
+      **Naruto is the one with none**, which the catalogue treats as the honest
+      case rather than a gap to fill with a duplicate.
+      ⚠️ **The build this entry originally described could not be built.** It
+      asked build (1) to be *immune to poison* **and** *sharper* **and** *biting
+      back* — but immunity and the reply are both `venom_blood` while the
+      amplifier is `virulence`, and `TraitSlots = 1`. Two traits, one slot. What
+      ships is the amplifier, so the poison build **hits harder and is not
+      immune**; `venom_blood` is the reserve entry of that direction, the way
+      `last_gasp` is of the other, and `TestBulbasaurCanBeBuiltTwoWays` checks
+      only that neither direction loses its **last** trait.
+      So `Resists` has a mechanism (✅, `heatproof` and `venom_blood`, `amount:
+      1000` is total immunity) and **no shipped build carries one** — a third
+      build is where that would go, not a second trait slot.
+      Pieces, all ✅: `Resists` · *amplifying a status* (`virulence`) ·
+      *answering back* (`venom_blood`) · **passive lifesteal** (`blood_thirst`,
+      `last_gasp`) · `While` (`blaze` is gated).
 - [x] **Passive lifesteal — SHIPPED.** `passive.Passive.Drains`, a share of the
       damage its holder deals, added to the skill's own drain and resolved where a
       drain already is. `blood_thirst` 250 · `last_gasp` 400 gated at 400.
