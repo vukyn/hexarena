@@ -1377,6 +1377,11 @@ the game:
 - It never buffs, never cleanses, never shields.
 - It never sets a status up in order to detonate it. Across a full battle of five
   hundred events a detonate fires once and a cleanse never does.
+- It **does** cast a summon now, and how that was done is the shape the rest of
+  this wants: a thing that is not damage is played by being priced *in damage*,
+  from the same functions that resolve it, over an explicit and capped horizon.
+  See *Pricing a summon* further down — including what it cost, which was a
+  balance answer rather than a golden.
 - It does not read the elemental matchup when choosing a target beyond what the
   expected damage already implies, and it does not consider the turn order at all.
 
@@ -2517,11 +2522,13 @@ it, so a rule applied while reading one entry has nothing to look up yet. Withou
 it a single cast is unbounded — the board would stop it in practice, and "it runs
 out of room" is not a rule anybody can read off the file.
 
-⚠️ **`Suggest` will not cast one.** It takes the highest expected damage and falls
-back to the first usable non-damaging skill, so a skill whose whole effect is
-putting somebody down is one autopilot takes only when it can find nothing to
-hit. `summoned` and `left` are proved reachable by a hand-played battle, the same
-answer `passive_released` needed.
+⚠️ **`Suggest` would not cast one** — it took the highest expected damage and
+fell back to the first usable non-damaging skill, so a skill whose whole effect is
+putting somebody down was one autopilot took only when it could find nothing to
+hit. That is fixed; see *Pricing a summon*. `summoned` and `left` are still proved
+reachable by a hand-played battle, because a reachability test driven by the
+opponent's preference stops being a reachability test the next time that
+preference moves.
 
 ⚠️ **The test that nearly was not one.** A first draft of the vacated-cell test
 set a copy's health to nought and called that a death — it is not one, nothing
@@ -2572,6 +2579,63 @@ for the other skill's weapon.
 `chùm` is deliberately not on that list, on the judgement that kept teeth out of
 `bodyWords`: a cluster of bubbles leaves as one puff and lands as one hit, which
 is what `bubble` says and what `bubble` does.
+
+### Pricing a summon, so the opponent casts one
+
+`battle.Suggest` rates everything in one unit — the damage it would deal this
+turn — and a summon deals none. So it had no rating, fell to the fallback, and
+the shipped summoner never called anybody up while it had a kunai in reach. Every
+figure ever measured of that character was measured with its own mechanism idle.
+
+**A summon is the only thing in the book that buys turns rather than spending
+one**, so the turns are the price. `summonWorth` puts a hypothetical copy in the
+cell `summonPlaces` would give it, at the line `summonStats` would give it, with
+the elements `summonAffinity` would give it, and multiplies its best single-turn
+attack by a horizon. The copy is never enlisted: a rating a client can call for a
+hint may not put a unit on the board to find out what it was worth.
+
+⚠️ **Two of those four functions were extracted for this**, and that is the point
+rather than tidying. `conditionTarget` already exists in this file for the same
+reason: a rating built from its own reading of a rule the resolution reads
+differently prefers a skill for something the skill does not do, and nothing
+reports the disagreement. A rating with its own idea of *where the copies would
+stand* pays for a copy the board has no room for, on exactly the boards where the
+answer matters.
+
+⚠️ **The horizon is capped.** The honest horizon for a summon that *stays* is the
+rest of the battle, which this rating cannot see and which would put such a skill
+above every attack in the book for ever. So a summon is priced for its own
+`lasts` when that is shorter, and for `summonHorizon` when it is longer or absent
+— `summon_toad` is the case that needs it, since it declares no `lasts` at all.
+The direction is deliberate: over-pricing costs a kill, under-pricing costs a
+cast that was marginal anyway.
+
+⚠️ **A cast worth nothing falls through to the fallback rather than scoring
+nought.** A rating of nought is still a rating, and beats "no damaging option at
+all" — so on a side already at full strength it would take the turn ahead of a
+shield that would have done something.
+
+⚠️ **No golden moved, and that is not the same as no effect.** Naruto is
+cast-only and nothing in the roster summons, so `scenarios.golden` and
+`replay.golden` cannot see this at all. What moved is the balance answer, at 2000
+seeds a slot:
+
+| | before | after |
+|---|---|---|
+| `naruto.naruto` overall | 56.4% | **93.8%** |
+| · vs `pokemon.bulbasaur` | 0.0% | 81.5% |
+| · vs `pokemon.charmander` | 69.5% | 100.0% |
+| `pokemon.bulbasaur` overall | 66.6% | **39.5%** |
+| naruto mirror, mean turns | 36 | 303 |
+
+The summoner was **losing every single battle to Bulbasaur** and now wins 81.5%
+of them. Nothing about the character changed — the opponent started using its
+kit — so the shipped numbers were never measuring the character that ships, and
+**Naruto needs a retune**. That is a data change and not part of this.
+
+The mirror is worth its own look before that retune: its slot skew flipped from
+**+27.1% to −71.8%** and its battles got eight times longer. Not the turn limit
+(4000, and no draws) — two summoners regenerating bodies at each other.
 
 ### The first summoner, and the second origin
 

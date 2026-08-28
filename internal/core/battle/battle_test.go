@@ -150,7 +150,19 @@ func books(t *testing.T) battle.Books {
 	                       "accuracy":0,"dodge":0}}},
 	  {"id":"swarm","element":"neutral","range":0,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
-	   "summons":{"count":3,"name":"copy","share":300,"skills":["jab"]}}
+	   "summons":{"count":3,"name":"copy","share":300,"skills":["jab"]}},
+	  {"id":"long_copy","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "summons":{"count":1,"name":"copy","share":500,"skills":["jab"],
+	              "lasts":100}},
+	  {"id":"brief_swarm","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "summons":{"count":3,"name":"copy","share":300,"skills":["jab"],
+	              "lasts":1}},
+	  {"id":"long_swarm","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "summons":{"count":3,"name":"copy","share":300,"skills":["jab"],
+	              "lasts":100}}
 	]}`), skill.Deps{Patterns: patterns, Statuses: statuses})
 	if err != nil {
 		t.Fatalf("skills: %v", err)

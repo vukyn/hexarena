@@ -12,6 +12,24 @@ import (
 // and a replay cannot diverge from the log over a turn of phrase.
 const NoActionReason = "nothing usable"
 
+// summonHorizon is how many of a summoned unit's own turns a rating is allowed
+// to pay for.
+//
+// A summon converts one of the caster's turns into several of somebody else's,
+// and that conversion is the whole of what makes one worth casting — so the
+// number of turns belongs in the price, and leaving it out is what kept Suggest
+// from ever casting one. But the honest horizon for a summon that stays is "the
+// rest of the battle", which this rating cannot see and which would put such a
+// skill above every attack in the book for ever.
+//
+// So the horizon is capped rather than read: a summon is priced for its own
+// `lasts` when that is shorter, and for this many turns when it is longer or
+// when the summon never leaves. The cap is deliberately low. Over-pricing a
+// summon costs a kill — Suggest would call up a body instead of finishing a unit
+// standing at a sliver of health — and under-pricing it costs a cast that was
+// only marginal anyway.
+const summonHorizon = 4
+
 // Choice is an action picked for a unit.
 type Choice struct {
 	Skill string
@@ -22,7 +40,9 @@ type Choice struct {
 //
 // It is deliberately shallow: it takes the option with the highest expected
 // damage across everything the shape would catch, and falls back to the first
-// usable non-damaging skill when nothing can be hurt. That is enough to run a
+// usable non-damaging skill when nothing can be hurt. A summoning skill is the
+// one exception to "damage this turn" — see summonWorth — because it is the only
+// thing in the book that buys turns rather than spends one. That is enough to run a
 // battle to its end without a player, which is what the tests and the enemy side
 // need, and it is fully deterministic so a replay stays a replay.
 //
@@ -46,6 +66,25 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 		declared, err := b.books.Skills.Lookup(option.Skill)
 		if err != nil {
 			continue
+		}
+		// Before the power check, because a summoning skill has no power of its
+		// own and would otherwise stay the fallback it used to be: every one of
+		// them was reached only when nothing could be hurt, so the shipped
+		// summoner never called anybody up while it had a kunai in reach.
+		if declared.Summons.Summons() {
+			// A cast worth nothing falls through to the fallback below rather
+			// than being rated at nought, which is what it was before this
+			// branch existed. The two differ on a board with no room: a rating
+			// of nought is still a rating, so it would beat "no damaging option
+			// at all" and take the turn ahead of a shield or a cleanse that
+			// would have done something.
+			if value := b.summonWorth(actor, declared); value > 0 {
+				if value > bestValue {
+					best, bestValue, found =
+						Choice{Skill: option.Skill, Aim: option.Aims[0]}, value, true
+				}
+				continue
+			}
 		}
 		if declared.Power == 0 {
 			if !hasFallback {
@@ -126,6 +165,81 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 		total += landed
 	}
 	return total
+}
+
+// summonWorth is what a cast is worth in the one unit the rest of Suggest counts
+// in: damage.
+//
+// A summon deals none this turn, so the price is the damage the copies would
+// deal over the turns they are given — their own best attack, from the cell each
+// would actually stand in, against whoever is standing there to be hit, times
+// the capped horizon. Everything it reads comes from the functions that do the
+// real thing: summonPlaces puts the copies down, summonStats gives them their
+// line, summonAffinity gives them their elements, and expected rates the attack.
+// A second reading of any of those would let the rating prefer a cast for
+// something the cast does not produce.
+//
+// ⚠️ It is an upper bound and says so. The turns are what the skill promises,
+// not what the board will grant: a copy can be killed on the turn it arrives,
+// and a bound one leaves the moment its summoner does. A shallow rating cannot
+// know either, so it pays the promise — which is why the horizon above is capped
+// low rather than honest.
+//
+// The hypothetical unit is built here and never enlisted, so nothing is mutated
+// and no id is spent. Deliberately not through enlist: enlist appends to the
+// battle, and a rating that put a unit on the board to find out what it was
+// worth would be a rating a client could not call for a hint.
+func (b *Battle) summonWorth(caster *Unit, declared skill.Skill) int64 {
+	stats, err := b.summonStats(caster, declared.Summons)
+	if err != nil {
+		return 0
+	}
+	affinity, err := b.summonAffinity(caster, declared.Summons)
+	if err != nil {
+		return 0
+	}
+	turns := int64(summonHorizon)
+	if lasts := int64(declared.Summons.Lasts); lasts > 0 && lasts < turns {
+		turns = lasts
+	}
+	// One slot per copy and each a different one, because summonPlaces walks the
+	// free list once rather than answering the same question per copy. Nothing
+	// inside the loop has to book a cell against the next iteration — a pair of
+	// lines here that did was dead, and read as though it were load-bearing.
+	perSide, occupied := b.census()
+	total := int64(0)
+	for _, slot := range b.summonPlaces(caster, declared.Summons, perSide, occupied) {
+		copied := &Unit{
+			Side: caster.Side, Cell: hex.Place(caster.Side, slot),
+			Affinity: affinity, Base: stats, HP: stats[progression.HP],
+			Skills: declared.Summons.Skills,
+		}
+		total += b.bestStrike(copied) * turns
+	}
+	return total
+}
+
+// bestStrike is the most damage a unit could do on one turn with the kit it
+// holds: Suggest's own rating, restricted to one unit's attacks.
+//
+// It walks the skill list rather than b.options, because options reads the unit's
+// cooldowns by index and a unit that has never acted has none — and because a
+// summon arriving with everything off cooldown is not an approximation, it is
+// what enlist gives it.
+func (b *Battle) bestStrike(unit *Unit) int64 {
+	best := int64(0)
+	for _, id := range unit.Skills {
+		declared, err := b.books.Skills.Lookup(id)
+		if err != nil || declared.Power == 0 || declared.Target != skill.Enemy {
+			continue
+		}
+		for _, aim := range b.aims(unit, declared) {
+			if value := b.expected(unit, declared, aim); value > best {
+				best = value
+			}
+		}
+	}
+	return best
 }
 
 func requiredStatus(declared skill.Skill) string {

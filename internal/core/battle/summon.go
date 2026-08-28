@@ -38,17 +38,9 @@ func (b *Battle) summon(caster *Unit, known skill.Skill, turn atb.Turn) {
 	if err != nil {
 		return
 	}
-	affinity := caster.Affinity
-	if known.Summons.Affinity != "" {
-		parsed, err := element.Parse(known.Summons.Affinity)
-		if err != nil {
-			return
-		}
-		single, err := element.Single(parsed)
-		if err != nil {
-			return
-		}
-		affinity = single
+	affinity, err := b.summonAffinity(caster, known.Summons)
+	if err != nil {
+		return
 	}
 	name := known.Summons.Name
 	if name == "" {
@@ -56,18 +48,7 @@ func (b *Battle) summon(caster *Unit, known skill.Skill, turn atb.Turn) {
 	}
 
 	perSide, occupied := b.census()
-	free := b.freeSlots(caster.Side, occupied)
-	for range known.Summons.Count {
-		if len(free) == 0 || perSide[caster.Side] >= hex.MaxTeamSize {
-			// Out of room is a fact about the board rather than a fault in the
-			// skill, so the cast is not refused and the shortfall is simply
-			// fewer units. The log says how many arrived; nothing has to say how
-			// many did not, because the board already does.
-			return
-		}
-		slot := free[0]
-		free = free[1:]
-
+	for _, slot := range b.summonPlaces(caster, known.Summons, perSide, occupied) {
 		// The counter never resets, so two copies are never called the same
 		// thing even when the second stands exactly where the first did. A cell
 		// is reusable and an id is not: the id is what a decision in the log
@@ -109,6 +90,58 @@ func (b *Battle) summon(caster *Unit, known skill.Skill, turn atb.Turn) {
 			Amount: unit.HP,
 		})
 	}
+}
+
+// summonAffinity is the elements a summoned unit holds: the caster's, or the one
+// the skill names instead.
+//
+// A function rather than a few lines inside summon because battle.Suggest reads
+// it too, and an element decides every matchup on the board — a rating that
+// guessed the caster's element for a toad the skill declares as water would
+// price the cast against the wrong half of the chart, and nothing would report
+// the disagreement. The same reason conditionTarget is one function.
+func (b *Battle) summonAffinity(caster *Unit, declared *skill.Summon) (element.Affinity, error) {
+	if declared.Affinity == "" {
+		return caster.Affinity, nil
+	}
+	parsed, err := element.Parse(declared.Affinity)
+	if err != nil {
+		return element.Affinity{}, err
+	}
+	return element.Single(parsed)
+}
+
+// summonPlaces is the formation slots a cast would actually put copies in, in
+// the order it would fill them.
+//
+// One function for the same reason summonAffinity is one: Suggest prices a cast
+// by what it would put on the board, and this is what puts it there. Two
+// readings of "how many fit" would let the rating pay for a copy the board has
+// no room for, on exactly the boards where the answer matters.
+//
+// Three things bound it, and the last is the one a caller would forget: the
+// skill's own count, the slots nobody is standing in, and the side's strength.
+// A side has nine formation slots and may fill five of them, so free slots are
+// not the same question as room — and the count is read against perSide as it
+// grows, because each copy enlisted is one more unit on that side.
+func (b *Battle) summonPlaces(
+	caster *Unit, declared *skill.Summon,
+	perSide map[hex.Side]int, occupied map[hex.Offset]string,
+) []hex.Offset {
+	free := b.freeSlots(caster.Side, occupied)
+	// Out of room is a fact about the board rather than a fault in the skill, so
+	// a cast is not refused and the shortfall is simply fewer units. The log says
+	// how many arrived; nothing has to say how many did not, because the board
+	// already does.
+	room := hex.MaxTeamSize - perSide[caster.Side]
+	out := make([]hex.Offset, 0, declared.Count)
+	for i := range declared.Count {
+		if i >= len(free) || i >= room {
+			break
+		}
+		out = append(out, free[i])
+	}
+	return out
 }
 
 // summonStats is the stat line a summoned unit stands at, in whichever of the
