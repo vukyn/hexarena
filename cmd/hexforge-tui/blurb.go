@@ -134,7 +134,21 @@ func (b blurbScreen) view(m model) (string, string) {
 	out.WriteString(m.style.heading.Render(m.lang.GlossedSkill(declared)) + "  " +
 		m.style.dim.Render(m.text(i18n.ChoicePosition,
 			clamp(m.skills.cursor, 0, len(skills)-1)+1, len(skills))) + "\n\n")
+	// The status names these sentences will use, marked where they are printed,
+	// exactly as the trait listing marks its own -- the two screens are read one
+	// after the other, and a name that is bold on one and plain on the other reads
+	// as a difference between the effects rather than between the screens. A miss
+	// in the glossary drops out here rather than marking a bare id.
+	names := make([]string, 0, 4)
+	for _, id := range i18n.StatusesInSkill(declared) {
+		if name := m.lang.Gloss(id); name != "" {
+			names = append(names, name)
+		}
+	}
 	for _, line := range strings.Split(m.lang.Describe(declared, m.lib.Patterns()), "\n") {
+		line = marked(line, names, func(word string) string {
+			return m.style.emphasis.Render(word)
+		})
 		out.WriteString("  " + line + "\n")
 	}
 	return out.String(), footer

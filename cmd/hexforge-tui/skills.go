@@ -728,7 +728,15 @@ func (s skillsScreen) view(m model) (string, string) {
 			current.ID, m.lang.SkillName(current),
 			current.Element.String(),
 			strconv.Itoa(current.Power)+"x"+strconv.Itoa(current.StrikeCount()), "")
-		row += clip(m.lang.WhoMaySummary(current), minWidth-3-lipgloss.Width(row))
+		// Measured against the window rather than against the floor. minWidth is
+		// the width this program promises to draw in, not a ceiling on what it
+		// may spend, and this last column is data: a restriction cut to "để dành
+		// cho loài dr…" is a row that stopped saying which species it is for,
+		// on a terminal with a hundred spare columns beside it. Prose still
+		// wraps at the floor — a paragraph run across a wide terminal is a line
+		// a reader loses their place in — but a table cell is read by scanning
+		// down it, so width is the one thing it can always use.
+		row += clip(m.lang.WhoMaySummary(current), m.usableWidth()-3-lipgloss.Width(row))
 		if index == s.cursor {
 			marker = "> "
 			row = m.style.selected.Render(row)

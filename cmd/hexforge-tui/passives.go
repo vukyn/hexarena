@@ -196,7 +196,10 @@ func (p passivesScreen) view(m model) (string, string) {
 		held := p.passives[index]
 		row := passiveRow(column+1, glossColumn,
 			held.ID, m.lang.PassiveName(held), p.carriers[held.ID])
-		row = clip(row, minWidth-3)
+		// The window, for the reason the skill listing's last column uses it:
+		// the carriers cell is data, and cutting it on a wide terminal hides
+		// which characters hold the trait.
+		row = clip(row, m.usableWidth()-3)
 		marker := "  "
 		if index == p.cursor {
 			marker = "> "

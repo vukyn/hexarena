@@ -122,3 +122,44 @@ func mustStatuses(t *testing.T) *status.Book {
 	}
 	return statuses
 }
+
+// TestASkillNamesEveryStatusItsDescriptionNames is the trait test's twin, and it
+// exists for the same reason: StatusesInSkill is a second reading of Describe's
+// rules, and two readings of one thing drift silently in both directions.
+func TestASkillNamesEveryStatusItsDescriptionNames(t *testing.T) {
+	skills, err := seed.SkillBook()
+	if err != nil {
+		t.Fatalf("load the shipped skills: %v", err)
+	}
+	shapes, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load the shipped patterns: %v", err)
+	}
+	checked := 0
+	for _, declared := range skills.Skills() {
+		named := i18n.StatusesInSkill(declared)
+		if len(named) == 0 {
+			continue
+		}
+		checked++
+		described := i18n.Vi.Describe(declared, shapes)
+		seen := map[string]bool{}
+		for _, id := range named {
+			if seen[id] {
+				t.Errorf("%s names %q twice", declared.ID, id)
+			}
+			seen[id] = true
+			name := i18n.Vi.Gloss(id)
+			if name == "" {
+				name = id
+			}
+			if !strings.Contains(described, name) {
+				t.Errorf("%s names %q and its description never says %q:\n%s",
+					declared.ID, id, name, described)
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no shipped skill names a status, so nothing here was measured")
+	}
+}

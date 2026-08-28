@@ -28,7 +28,7 @@
     {
       "id": "heatproof",
       "name": "chịu nhiệt",
-      "flavour": "Sức nóng bao nhiêu cũng chỉ lướt qua bên ngoài, không bén vào được",
+      "flavour": "Sức nóng bao nhiêu cũng chỉ lướt qua bên ngoài, không gây bỏng được",
       "grants": [],
       "resists": [
         {

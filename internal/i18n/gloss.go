@@ -95,8 +95,8 @@ var (
 		// The three that shipped without one. A regen, and the two permanent
 		// statuses a trait grants -- which are the ones a reader is least able
 		// to guess at, because nothing else on screen says what they do.
-		"unleashed": "dốc sức",
-		"bare":      "phơi mình",
+		"unleashed": "bộc phát",
+		"bare":      "trần trụi",
 		"regrowth":  "tái sinh",
 		"toughened": "kiên cường",
 		"kindled":   "bùng cháy",
