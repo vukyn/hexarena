@@ -29,7 +29,7 @@ pokemon.charmander — Charmander
   element  fire
   species  lizard dragon
   art      assets/charmander.svg
-  kit      ember fire_spin fire_fang@8 smokescreen@12 flamethrower@16 dragon_rage@20 dragon_dance@24 heat_wave@32 inferno@36 dragon_claw@40 outrage@44
+  kit      ember fire_spin fire_fang@8 smokescreen@12 flamethrower@16 dragon_rage@20 dragon_dance@24 heat_wave@32 inferno@36 dragon_claw@40 outrage@44 dragon_drive@48
   stage "Charmander" owns levels 1 to 15, showing assets/charmander.svg
     level 1  hp 760, atk 180, def 95, spd 46, acc 48, ddg 22
              absorbs 1001 of the 11500 budget, 10499 to spare

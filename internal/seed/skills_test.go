@@ -193,10 +193,51 @@ func TestEverySkillsReachIsUsable(t *testing.T) {
 	}
 }
 
+// forgoneBy is what a detonate throws away: the status it consumes, priced in
+// the damage it would have been worth over the rest of its life if left alone.
+//
+// ⚠️ There are two currencies, and a detonate has to be priced in the one it
+// actually spends. A damage-over-time status is worth its remaining **ticks**,
+// which land whatever the attacker does next. A stat debuff ticks for nothing
+// and is worth the **extra damage its holder takes from ordinary attacks** while
+// it is up, so `expose` is priced by hitting the lowered defence and the real
+// one with the same plain attack and charging the difference for every turn the
+// debuff had left.
+//
+// The second reading did not exist until a detonate wanted a status that was not
+// a damage-over-time, and its absence was not a missing feature but a wrong
+// answer: TickPower is nought for a stat debuff, so the old arithmetic priced
+// consuming one at **nothing at all** and would have waved through a burst of any
+// size. `dragon_drive` is the skill that found it.
+//
+// ok is false for a status this cannot price, rather than nought, because nought
+// is indistinguishable from "gives up nothing" and that is exactly the lie this
+// is here to stop.
+func forgoneBy(t *testing.T, kind status.Kind, stacks int, rules combat.Rules) (int64, bool) {
+	t.Helper()
+	turns := int64(kind.Duration)
+	if kind.TickPower > 0 {
+		perTick := rules.Damage(attackerAttack, referenceDefense, kind.TickPower, neutralAffinity)
+		return perTick * int64(stacks) * turns, true
+	}
+	carried := status.Set{}
+	for range stacks {
+		carried.Apply(kind, 0)
+	}
+	var reference progression.Values
+	reference[progression.Defense] = referenceDefense
+	lowered := carried.Modifiers().Stats(reference, mustCeilings(t), mustBounds(t))
+	if lowered[progression.Defense] == referenceDefense {
+		return 0, false
+	}
+	plain := rules.Damage(attackerAttack, referenceDefense, 1000, neutralAffinity)
+	against := rules.Damage(attackerAttack, lowered[progression.Defense], 1000, neutralAffinity)
+	return (against - plain) * turns, true
+}
+
 // TestADetonateIsWorthLessThanItsBreakEven is the pricing rule for a burst that
-// consumes a status: it may beat leaving the ticks alone, but not by so much that
-// applying the status and immediately detonating it is the only line worth
-// playing.
+// consumes a status: it may beat leaving the status alone, but not by so much
+// that applying it and immediately detonating it is the only line worth playing.
 func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
 	book, statuses, rules := mustSkills(t), mustStatuses(t), mustRules(t)
 	for _, current := range book.Skills() {
@@ -210,10 +251,15 @@ func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
 		}
 		burst := rules.Damage(attackerAttack, referenceDefense,
 			current.PowerAgainst(skill.Carrying(kind.MaxStacks)), neutralAffinity)
-		// What the ticks would have been worth if left alone, plus what a plain
+		// What the status would have been worth if left alone, plus what a plain
 		// attack would have dealt with the same turn.
-		perTick := rules.Damage(attackerAttack, referenceDefense, kind.TickPower, neutralAffinity)
-		forgone := perTick * int64(current.Requires.MinStacks) * int64(kind.Duration)
+		forgone, priced := forgoneBy(t, kind, current.Requires.MinStacks, rules)
+		if !priced {
+			t.Errorf("skill %q consumes %q, which has neither ticks nor a defence term, so what "+
+				"detonating gives up cannot be priced and the burst would be bounded by nothing",
+				current.ID, kind.ID)
+			continue
+		}
 		plain := rules.Damage(attackerAttack, referenceDefense, 1000, neutralAffinity)
 		alternative := forgone + plain
 		if burst <= alternative {
@@ -228,7 +274,7 @@ func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
 }
 
 func TestSkillBookGolden(t *testing.T) {
-	got := skillReport(mustSkills(t), mustStatuses(t), mustBook(t), mustRules(t))
+	got := skillReport(t, mustSkills(t), mustStatuses(t), mustBook(t), mustRules(t))
 	path := filepath.Join("testdata", "skills.golden")
 	if *update {
 		if err := os.WriteFile(path, []byte(got), 0o600); err != nil {
@@ -271,7 +317,7 @@ func conditionReads(condition *skill.Condition) string {
 	return strings.Join(parts, " and ")
 }
 
-func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book, rules combat.Rules) string {
+func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns *pattern.Book, rules combat.Rules) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "damage is against %d defence at %d attack, a neutral matchup and no accuracy stat\n",
 		referenceDefense, attackerAttack)
@@ -382,7 +428,8 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 	}
 
 	b.WriteString("\n== what a detonate gives up ==\n")
-	b.WriteString("skill           status   ticks forgone   a plain attack   alternative   burst    ratio\n")
+	b.WriteString("the ticks of a damage-over-time, or the extra damage a stat debuff was letting through\n")
+	b.WriteString("skill           status   spends     forgone   a plain attack   alternative   burst    ratio\n")
 	for _, current := range book.Skills() {
 		if current.Requires == nil || !current.Requires.Consume {
 			continue
@@ -391,13 +438,19 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 		if err != nil {
 			continue
 		}
-		perTick := rules.Damage(attackerAttack, referenceDefense, kind.TickPower, neutralAffinity)
-		forgone := perTick * int64(current.Requires.MinStacks) * int64(kind.Duration)
+		forgone, priced := forgoneBy(t, kind, current.Requires.MinStacks, rules)
+		spends := "ticks"
+		if kind.TickPower == 0 {
+			spends = "defence"
+		}
+		if !priced {
+			spends = "unpriced"
+		}
 		plain := rules.Damage(attackerAttack, referenceDefense, 1000, neutralAffinity)
 		burst := rules.Damage(attackerAttack, referenceDefense,
 			current.PowerAgainst(skill.Carrying(kind.MaxStacks)), neutralAffinity)
-		fmt.Fprintf(&b, "%-16s%-9s%15d%17d%14d%8d%9s\n",
-			current.ID, kind.ID, forgone, plain, forgone+plain, burst, ratio(burst, forgone+plain))
+		fmt.Fprintf(&b, "%-16s%-9s%-9s%9d%17d%14d%8d%9s\n",
+			current.ID, kind.ID, spends, forgone, plain, forgone+plain, burst, ratio(burst, forgone+plain))
 	}
 
 	b.WriteString("\n== cleanses and dispels ==\n")

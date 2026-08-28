@@ -57,10 +57,11 @@ is only so the shape is readable.
       later turn, and all-sided skills. ⚠️ **Tempo is no longer one of them** —
       it is priced off the speed stat, and what needs the queue is only *where*
       in the order an extra turn falls. → `CLAUDE.md` § Open work.
-- [ ] **The dragon build has no detonate.** 22.1% against the fire line, which is
-      a **data** answer and not an engine one — a rating that can finally see
-      `outrage`'s recoil is reading the line correctly. → `README.md` § A deeper
-      opponent.
+- [ ] **`reckless` is the dragon build's 22.1%, and a detonate does not fix it.**
+      The line has one now (`dragon_drive`, off its own `expose`) and fielding it
+      moves 22.0% → **21.2%**. ⚠️ Measured one change at a time: the detonate is
+      worth **−0.8**, the trait **+33.1**. Still a **data** answer, just a
+      different one. → `dragon_test.go` § `TestTheDragonLineCanSpendWhatItApplies`.
 - [ ] **Every event logs `"cell":{"col":0,"row":0}`.** `omitempty` does nothing on
       a nested struct and `omitzero` would be wrong, because `{0,0}` is a real
       cell. Needs an off-board `Offset` (a pointer, or a sentinel) before the

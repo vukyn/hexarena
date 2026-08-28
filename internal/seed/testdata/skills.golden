@@ -34,6 +34,7 @@ rapid_spin      neutral   self     0  single            0     1      0  1000    
 rally           neutral   ally     1  column            0     1      0  1000    4     0        0
 dragon_claw     neutral   enemy    2  single         1100     1   1100   950    1     0      377
 outrage         neutral   enemy    2  single         2200     1   2200   900    3     0      754
+dragon_drive    neutral   enemy    2  single          900     1    900   900    3     0      308
 taunt           neutral   self     0  single            0     1      0  1000    3     0        0
 kunai           neutral   enemy    3  single          700     1    700   950    0     0      240
 wind_shuriken   wind      enemy    3  arc_up          620     2   1240   880    2     0      424
@@ -99,6 +100,7 @@ hydro_pump      -          -                 -                   -         pokem
 aqua_ring       -          -                 -                   -         pokemon
 dragon_claw     -          -                 -                   dragon    pokemon
 outrage         -          -                 -                   dragon    pokemon
+dragon_drive    -          -                 -                   dragon    pokemon
 kunai           -          -                 -                   -         naruto
 wind_shuriken   -          -                 -                   -         naruto
 rasengan        -          -                 -                   -         naruto
@@ -114,10 +116,13 @@ venoshock       target   poison                            1     900        1800
 inferno         target   burn                              1    1000        3500      342        1200  3.50x (consumes)
 brine           target   health <=500 per mille            -    1000        2000      342         685  2.00x
 outrage         caster   health <=400 per mille            -    2200        3400      754        1165  1.54x
+dragon_drive    target   expose                            1     900        2300      308         788  2.55x (consumes)
 
 == what a detonate gives up ==
-skill           status   ticks forgone   a plain attack   alternative   burst    ratio
-inferno         burn                 548              342           890    1200    1.34x
+the ticks of a damage-over-time, or the extra damage a stat debuff was letting through
+skill           status   spends     forgone   a plain attack   alternative   burst    ratio
+inferno         burn     ticks          548              342           890    1200    1.34x
+dragon_drive    expose   defence        102              342           444     788    1.77x
 
 == cleanses and dispels ==
 skill           categories                    stacks
