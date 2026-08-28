@@ -122,6 +122,16 @@ hexforge authors the cast the battles are fought with.
                                       band beside both. Every report carries its
                                       own control row, and one that is not
                                       exactly even refuses the whole report
+  hexforge weigh --carriers all <skill> --field F --values a,b,c [--level N] [--seeds N]
+                                      the same price taken once per carrier that
+                                      brings the skill, as a table. Each row has
+                                      its own control and its own refusal; a
+                                      character that cannot bring it is absent
+                                      rather than nought. There is NO headline
+                                      figure and no average, deliberately: two
+                                      rows were fought against two different
+                                      opponents, so a carrier may be compared
+                                      only to itself at another value
 
 Every subcommand takes --data <dir> (default `+forge.DefaultDataDir+`), which is the
 directory it reads and writes. Run any subcommand with -h for its own flags.
@@ -156,17 +166,32 @@ func newFlagSet(name string) *flag.FlagSet {
 // be read. Pulling the leading operands off first means an id may come before
 // its flags, which is how the commands are documented and how anyone types
 // them.
+//
+// It takes and parses in turns rather than once, so an operand may sit *between*
+// two flags as well as before or after them. `hexforge weigh --carriers all
+// razor_leaf --field crit` is the form that needs it: the selection comes first
+// because it decides whether there is a character operand at all, so the skill
+// lands in the middle. Taking the leading operands once and parsing the rest
+// would stop at `razor_leaf` and hand `--field` back as a fifth operand.
 func parseArgs(set *flag.FlagSet, args []string) ([]string, error) {
-	operands := args
-	rest := []string(nil)
-	for i, arg := range args {
-		if strings.HasPrefix(arg, "-") && arg != "-" {
-			operands, rest = args[:i:i], args[i:]
-			break
+	operands := []string(nil)
+	rest := args
+	for len(rest) > 0 {
+		split := len(rest)
+		for i, arg := range rest {
+			if strings.HasPrefix(arg, "-") && arg != "-" {
+				split = i
+				break
+			}
 		}
+		operands = append(operands, rest[:split]...)
+		if err := set.Parse(rest[split:]); err != nil {
+			return nil, err
+		}
+		// Parse stops at the first operand it meets, so whatever it hands back
+		// is the next round of the same split. It cannot fail to shrink: either
+		// it consumed a flag, or there was none left to consume.
+		rest = set.Args()
 	}
-	if err := set.Parse(rest); err != nil {
-		return nil, err
-	}
-	return append(operands, set.Args()...), nil
+	return operands, nil
 }

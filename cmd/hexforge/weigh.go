@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -22,6 +23,9 @@ import (
 // nothing needs, at a cost paid on every run.
 const defaultWeighSeeds = 10000
 
+// carriersAll is the one selection --carriers accepts.
+const carriersAll = "all"
+
 func runWeigh(args []string) error {
 	set := newFlagSet("weigh")
 	dir := dataFlag(set)
@@ -36,12 +40,34 @@ func runWeigh(args []string) error {
 	// finding — the one thing this instrument exists to stop.
 	values := set.String("values", "",
 		"the values to sweep, comma separated. The skill's own value is always added as the control")
+	// A string rather than a bool because "all" is a selection and a bool cannot
+	// grow into one. Only "all" is accepted today, and anything else is refused
+	// by name rather than ignored: a mistyped selection that silently priced the
+	// whole cast would be a table nobody asked for.
+	carriers := set.String("carriers", "",
+		"price the skill on every carrier that brings it: --carriers all. The character operand is "+
+			"then left off, and the default --seeds drops to "+strconv.Itoa(defaultCarrierSeeds)+
+			" because a table costs one weighing per carrier")
 	operands, err := parseArgs(set, args)
 	if err != nil {
 		return err
 	}
-	if len(operands) != 2 {
-		return fmt.Errorf("usage: hexforge weigh <character> <skill> --field F --values a,b,c [--level N] [--seeds N]")
+	across := strings.TrimSpace(*carriers)
+	if across != "" && across != carriersAll {
+		return fmt.Errorf("--carriers takes only %q, which is every character whose fielded kit brings "+
+			"the skill; %q is not a selection this tool makes", carriersAll, across)
+	}
+	// A sweep takes one operand fewer, because the carrier is discovered rather
+	// than named.
+	sweeping := across == carriersAll
+	wanted := 2
+	if sweeping {
+		wanted = 1
+	}
+	if len(operands) != wanted {
+		return fmt.Errorf("usage: hexforge weigh <character> <skill> --field F --values a,b,c " +
+			"[--level N] [--seeds N]\n   or: hexforge weigh --carriers all <skill> --field F " +
+			"--values a,b,c [--level N] [--seeds N]")
 	}
 	if strings.TrimSpace(*field) == "" {
 		return fmt.Errorf("--field is required: name one of %s", strings.Join(forge.FieldNames(), ", "))
@@ -58,9 +84,27 @@ func runWeigh(args []string) error {
 	if err != nil {
 		return err
 	}
+	// The seed default follows the shape of the run rather than the flag, but
+	// only where the author did not say: a table is one weighing per carrier, so
+	// the figure that makes one question quick makes a table something nobody
+	// runs twice.
+	if sweeping && !wasSet(set, "seeds") {
+		*seeds = defaultCarrierSeeds
+	}
 	lib, err := forge.Load(*dir)
 	if err != nil {
 		return err
+	}
+	if sweeping {
+		table, err := lib.WeighCarriers(forge.CarriersRequest{
+			Skill: operands[0], Field: weighed,
+			Values: swept, Level: *level, Seeds: *seeds,
+		})
+		if err != nil {
+			return err
+		}
+		renderCarriers(os.Stdout, table)
+		return nil
 	}
 	report, err := lib.Weigh(forge.WeighRequest{
 		Character: operands[0], Skill: operands[1], Field: weighed,
@@ -71,6 +115,23 @@ func runWeigh(args []string) error {
 	}
 	renderWeigh(os.Stdout, report)
 	return nil
+}
+
+// wasSet reports whether a flag was given on the command line, as against left
+// at its default.
+//
+// flag has no other way to ask: a --seeds of 10000 typed by hand and a --seeds
+// nobody typed are the same int. The difference matters exactly once here, where
+// the default depends on whether the run is one carrier or the whole cast, and
+// an author who named a number must get that number either way.
+func wasSet(set *flag.FlagSet, name string) bool {
+	given := false
+	set.Visit(func(flagged *flag.Flag) {
+		if flagged.Name == name {
+			given = true
+		}
+	})
+	return given
 }
 
 // parseValues reads the comma-separated sweep.
