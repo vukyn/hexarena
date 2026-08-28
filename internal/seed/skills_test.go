@@ -316,20 +316,27 @@ func skillReport(book *skill.Book, statuses *status.Book, patterns *pattern.Book
 	// A restriction changes who may play a skill at all, which is a louder fact
 	// about the shipped book than any number beside it, and it was the one rule
 	// this report could not state. The unrestricted skills are left out rather
-	// than listed with three dashes: "free to anybody" is the common case and
-	// the majority of the book, so printing it would bury the four rows that
-	// are the point. The header says so instead.
+	// than listed with dashes: the header says what their absence means.
+	//
+	// ⚠️ That reading flipped once and the report did not notice. "Free to
+	// anybody" was the common case and the majority of the book, and it stopped
+	// being either when every skill was given the work it comes out of, so the
+	// listed rows are now the book and the absent ones the exception. A column
+	// missing from this header is a restriction the design record cannot show:
+	// origins arrived and thirty-two rows appeared here with nothing but dashes
+	// across them until it was added.
 	b.WriteString("\n== who may carry, a skill absent here is free to anybody ==\n")
-	b.WriteString("skill           elements   archetypes        characters          species\n")
+	b.WriteString("skill           elements   archetypes        characters          species   origins\n")
 	for _, current := range book.Skills() {
 		if current.Restrict == nil {
 			continue
 		}
-		fmt.Fprintf(&b, "%-16s%-11s%-18s%-20s%s\n", current.ID,
+		fmt.Fprintf(&b, "%-16s%-11s%-18s%-20s%-10s%s\n", current.ID,
 			allowlist(current.Restrict.ElementNames()),
 			allowlist(current.Restrict.Archetypes),
 			allowlist(current.Restrict.Characters),
-			allowlist(current.Restrict.SpeciesNames()))
+			allowlist(current.Restrict.SpeciesNames()),
+			allowlist(current.Restrict.OriginNames()))
 	}
 
 	// The "needs" column is a sentence rather than a status id because a
@@ -565,6 +572,7 @@ func TestABodyBoundSkillIsRestricted(t *testing.T) {
 			"archetypes": carried.Restrict.Archetypes,
 			"characters": carried.Restrict.Characters,
 			"species":    carried.Restrict.SpeciesNames(),
+			"origins":    carried.Restrict.OriginNames(),
 		}
 		if len(axes[expected.axis]) == 0 {
 			t.Errorf("%q names %s and should be kept by its %s, but that list is empty; it is kept by %s",
@@ -580,7 +588,7 @@ func allowlistedAxes(axes map[string][]string) string {
 	// Ranged in a fixed order rather than over the map: this reaches a failure
 	// message, and Go randomises map order.
 	named := make([]string, 0, len(axes))
-	for _, axis := range []string{"elements", "archetypes", "characters", "species"} {
+	for _, axis := range []string{"elements", "archetypes", "characters", "species", "origins"} {
 		if len(axes[axis]) > 0 {
 			named = append(named, axis+" "+allowlist(axes[axis]))
 		}
@@ -762,6 +770,62 @@ func TestASummonsFlavourClaimsNothingAboutItsCaster(t *testing.T) {
 			}
 			t.Errorf("%q summons and its flavour says %q: a share of the caster is already printed as a figure, and a fixed stat line cannot be compared to somebody this layer has never seen",
 				current.ID, word)
+		}
+	}
+}
+
+// sharedPool is every shipped skill that deliberately belongs to no work, with
+// the reason it is loose.
+//
+// A named list rather than a rule about names, because "does this word belong to
+// one fiction" is a judgement and not a pattern: `bite` and `withdraw` are
+// Pokémon moves by provenance and ordinary English by sound, so a ninja doing
+// either reads as a ninja doing either. What matters is that widening the pool
+// costs a line here and an argument for it, rather than happening by omission.
+var sharedPool = map[string]string{
+	"smokescreen": "throwing smoke to be harder to hit is not one fiction's idea",
+	"bite":        "a mouth is a mouth",
+	"withdraw":    "guarding rather than striking, which anything with a guard can do",
+	"rapid_spin":  "spinning out of a hold, on the same terms",
+	"rally":       "the only skill in the book that helps an ally, and encouragement belongs to nobody",
+	"taunt":       "drawing an attack onto yourself is a tactic, not a technique",
+}
+
+// TestEverySkillSaysWhichWorkItIsFrom is the shipped half of the origin gate.
+//
+// The gate itself is an allowlist, so it does nothing by default: a Naruto skill
+// authored without one is carried by a Pokémon, silently, and the book still
+// loads. That is the failure this catches, and it catches it by default —
+// omitting the list fails, and the only way to pass without one is to say here
+// why the skill belongs to nobody.
+//
+// ⚠️ It is not the pool being small that makes the rule work, it is the pool
+// being *written down*. A version of this that exempted, say, every neutral
+// skill would have exempted `rasengan` on a technicality.
+func TestEverySkillSaysWhichWorkItIsFrom(t *testing.T) {
+	origins := mustOrigins(t)
+	for _, carried := range mustSkills(t).Skills() {
+		named := carried.Restrict.OriginNames()
+		why, loose := sharedPool[carried.ID]
+		switch {
+		case loose && len(named) > 0:
+			t.Errorf("%s is in the shared pool (%s) and is also kept for %s; it cannot be both",
+				carried.ID, why, strings.Join(named, " or "))
+		case loose:
+			continue
+		case len(named) == 0:
+			t.Errorf("%s names no work, so anybody out of any of them may carry it; give it restrict.origins, or add it to sharedPool with the reason it belongs to nobody",
+				carried.ID)
+		}
+		for _, id := range named {
+			if _, known := origins.Get(id); !known {
+				t.Errorf("%s is kept for %q, which the origin catalog does not declare", carried.ID, id)
+			}
+		}
+	}
+	for id := range sharedPool {
+		if _, err := mustSkills(t).Lookup(id); err != nil {
+			t.Errorf("the shared pool names %q, which the book does not hold: %v", id, err)
 		}
 	}
 }

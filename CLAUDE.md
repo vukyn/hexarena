@@ -242,7 +242,7 @@ answers rather than screen logic:
   and `hex.Render`, so the drawing cannot disagree with what the engine catches.
   Both replaced a static footnote that stated the parts-per-thousand convention
   and was not read. A field that needs a *list* — the statuses a skill inflicts,
-  and the three allowlists — opens the same picker as the kit; each picker names
+  and each of the five allowlists — opens the same picker as the kit; each picker names
   its own hint, because the kit's (order, and what this character cannot take)
   says nothing true about an allowlist.
 - A skill's **Vietnamese name is data, not Go**: `skill.Skill.Name` is opaque
@@ -774,8 +774,8 @@ walking `CheckKit` and `CheckPresetKit`), exactly like `checkAffinity` classifyi
 after the element chart has already said no — nothing there can turn a no into a
 yes, and a refusal neither walk recognises names nobody and keeps the parser's own
 words. `forge.CheckPresetKit` is the preset half of that, bringing forward
-`cast.resolveArchetype`'s two restriction rules the way `CheckSkill` brings
-forward `resolveCharacter`'s three. Two other things an edit must keep: an
+`cast.resolveArchetype`'s three restriction rules the way `CheckSkill` brings
+forward `resolveCharacter`'s five. Two other things an edit must keep: an
 **absent** field and a field set to **zero** are different answers (hence
 `SkillEdit`'s pointers and `FlagSet.Visit` in `cmd/hexforge`, and an explicitly
 empty list is how a restriction is cleared), and a skill's **id is not editable** —
@@ -888,11 +888,11 @@ it did not share and the authoring layer had no idea, so `hexforge new
 the mistake the "one source for a recorded string" note above is about.
 
 **What a restriction can enforce, and what it cannot.** A skill may declare
-`restrict`, an optional allowlist of `elements`, `archetypes` and `characters`
-(any list absent means unrestricted; a list **present and empty is an error**,
-because an allowlist nobody satisfies is a mistake every time). The three are
-not enforced in the same place, and the split is a layer fact rather than an
-omission:
+`restrict`, an optional allowlist of `elements`, `archetypes`, `characters`,
+`species` and `origins` (any list absent means unrestricted; a list **present and
+empty is an error**, because an allowlist nobody satisfies is a mistake every
+time). They are not enforced in the same place, and the split is a layer fact
+rather than an omission:
 
 - **`elements` reaches the engine.** It is checked by `skill.WhyCannotCarry`
   beside the shared-element rule, so `battle.enlist`, `cast.ParseBook` and
@@ -902,20 +902,20 @@ omission:
   advice: one is fixed by taking the skill's element, the other cannot be, since
   the skill's element is already shared. The list is what makes a **neutral**
   skill restrictable at all.
-- **`archetypes` and `characters` cannot reach the engine.** `battle.Roster`
-  carries stats, skills, an affinity and a slot — no archetype and no character
-  identity — because evolution and archetype are resolved *before* a battle
-  starts. So both are **authoring-time only**, enforced in `cast.ParseBook`
-  (`resolveCharacter`). **Do not push either into `battle` to "complete" the
+- **The other four cannot reach the engine.** `battle.Roster` carries stats,
+  skills, an affinity and a slot — no archetype, no character identity, no
+  species and no origin — because all of those are resolved *before* a battle
+  starts. So they are **authoring-time only**, enforced in `cast.ParseBook`
+  (`resolveCharacter`). **Do not push any of them into `battle` to "complete" the
   feature**: it would put a fact into the replayable core that no replay reads,
   and `battle.Roster`'s deliberate emptiness is recorded above for the same
   reason.
 
 `skill` itself validates only what it can see — the element names are real, no
 list is present-but-empty, no entry blank or repeated — because `cast` imports
-`skill` and the reverse would be an import cycle. Archetype and character *names*
-are therefore checked one layer up, exactly like a skill's pattern and status
-names. Two consequences worth knowing:
+`skill` and the reverse would be an import cycle. Archetype, character, species
+and origin *names* are therefore checked one layer up, exactly like a skill's
+pattern and status names. Two consequences worth knowing:
 
 - The character allowlist is checked **after the whole cast has been read**
   (`checkCharacterRestrictions`), so it may name somebody declared further down
@@ -942,6 +942,19 @@ moving a skill back onto `elements` — grass was only ever a proxy for "somethi
 that grows", and a grass construct with no roots could take both. A preset losing an
 entry is the smaller loss.
 
+⚠️ **There is deliberately no origin version of that ban, and it looks like a
+hole.** The sentence is just as true of a work — a preset is shared, so the
+refusal would land on the next author — but the arithmetic is not: a lineage is
+exceptional and a work is universal. Every skill in the book comes out of some
+fiction, so banning world-restricted skills from presets would **empty every
+preset in the directory** rather than trim two entries off two of them, and
+`resolveSkills` refuses an empty kit ("knows no skills"). `summoner` is the
+proof: its kit is one origin's six skills exactly. What is left of the harm lands
+where it belongs — a character out of another work built from a preset *without
+naming its own skills* is refused by `forge.CheckKit`, in a sentence that says
+which work the kit is out of. `TestAPresetMayHoldASkillKeptForAWork` holds the
+asymmetry down so it is not "fixed" later.
+
 What `resolveArchetype` deliberately does not attempt is whether an element allowlist
 and the kit's `Demands` are jointly satisfiable — that needs the element chart,
 which a preset is validated without, the same gap
@@ -965,7 +978,7 @@ deliberately the thinnest axis in the repository: an id, a word for a screen, an
 optional note, and no stats, no kit and no rule of its own.
 
 - **A fourth allowlist, not a fourth concept.** `skill.Restriction.Species` sits
-  beside the other three and composes the same way, so `dragon_rage` and
+  beside the others and composes the same way, so `dragon_rage` and
   `dragon_dance` moved off `characters: [pokemon.charmander]` — the wrong axis, on
   purpose, for as long as there was no right one — and are now carryable by *every*
   dragon. A character declares `species` as a list because a unit may be several
@@ -986,6 +999,39 @@ optional note, and no stats, no kit and no rule of its own.
   file still loading and every carrier still carrying.
   `TestEveryShippedSkillTakesABalanceEdit` now compares the restriction across the
   edit, which is the general form of that check rather than a species-shaped one.
+
+## Origins: which story a skill is out of
+
+Shipped. `restrict.origins` is the fifth allowlist and the **broadest**: a
+species says what a holder must be and an origin says which fiction it must come
+out of, so `rasengan` is closed to every Pokémon and open to every Naruto
+character, including the ones nobody has authored yet. It is a list because a
+crossover is a thing that happens, and because every other axis here is one.
+
+- **The axis exists because `characters` was the wrong one.** A work outlives
+  every character in it, so gating `rasengan` on `naruto.naruto` would say "only
+  this one may carry it" and would have to be edited the next time that work lent
+  the cast anybody — the same argument `species` makes about a lineage.
+- **Enforced in `cast.resolveCharacter` against `declared.Origin`**, beside the
+  species check, and brought forward to a half-filled form by
+  `forge.CheckSkill`. ⚠️ On that form the origin is a **chooser**, so unlike the
+  element and the species list it is answered from the moment the form opens —
+  there is no keystroke at which it is unanswered, and a skill kept for another
+  work is correctly greyed out straight away. A test that read "nothing answered
+  ⇒ nothing unavailable" as covering every axis was wrong about this one.
+- **Nearly the whole book is gated now**, which inverts a reading the golden
+  report was built on: "free to anybody" used to be the majority and is now six
+  skills. That list is `internal/seed`'s `sharedPool`, **written down with a
+  reason each**, and `TestEverySkillSaysWhichWorkItIsFrom` fails a skill that
+  declares neither. The gate is an allowlist, so an omitted one is silent — a
+  Naruto skill authored without it is carried by a Pokémon and the book still
+  loads — and that test is the only thing standing between the rule and the
+  omission. **A pattern-based exemption would not do**: "every neutral skill" would
+  have exempted `rasengan` on a technicality.
+- ⚠️ **A column missing from the golden report is a restriction the design
+  record cannot show.** Origins arrived and thirty-two rows appeared in
+  `skills.golden`'s "who may carry" table with nothing but dashes across them,
+  because the report had four columns and the book had five.
 
 ## Amplifying a status, which really is two features
 
@@ -1655,6 +1701,9 @@ is the constraint each piece has to respect.
       ⚠️ **An authored summon name is Vietnamese**, so `describeSummon` prints it
       only in `Vi` and says "copy"/"copies" in English — the division `Gloss`
       makes, and a summon has no id to fall back on.
+      Its six skills are now `restrict.origins: [naruto]` — see **Origins**
+      above; the `summoner` preset keeps them, which is why that ban does not
+      exist.
 - [ ] **Grow the cast.** Three characters ship, one per element, and the seed
       roster is no longer a mirror — so the thing this item was blocking, a
       measurable balance figure, exists. What is left is content, under three
@@ -1663,7 +1712,10 @@ is the constraint each piece has to respect.
       it), `progression.Limits` bounds health and defence **together** because
       those two multiply, and — softer than the other two — a skill kept for a
       lineage asks the character to *be* one, so adding a dragon is two lines: the
-      kind in `species.json` and the claim on the character. Every character added moves `scenarios.golden` and
+      kind in `species.json` and the claim on the character. **A new skill also
+      has to say which story it is out of** — `restrict.origins`, or a line in
+      `sharedPool` arguing it belongs to nobody; `TestEverySkillSaysWhichWorkItIsFrom`
+      refuses the omission. Every character added moves `scenarios.golden` and
       `replay.golden`, which is the point rather than a cost: those diffs are how
       the balance change gets read. Read squirtle first — water is the strongest
       of the three elements and Blastoise still cannot carry an ace slot, because

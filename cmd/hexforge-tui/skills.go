@@ -48,6 +48,7 @@ const (
 	skillFieldKeptForRoles
 	skillFieldKeptForCharacters
 	skillFieldKeptForSpecies
+	skillFieldKeptForOrigins
 	skillFieldCount
 )
 
@@ -87,6 +88,7 @@ type skillsScreen struct {
 	keptRoles    []string
 	keptWho      []string
 	keptKinds    []string
+	keptWorlds   []string
 	touched      bool
 	// shapeDrawn is whether the shape diagram is over the form.
 	//
@@ -149,7 +151,8 @@ func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
 	s.elementIndex = indexOf(forge.ElementNames(), defaultSkillElement)
 	s.targetIndex = indexOf(forge.TargetNames(), defaultSkillTarget)
 	s.shapeIndex = indexOf(lib.PatternNames(), defaultSkillPattern)
-	s.keptElements, s.keptRoles, s.keptWho, s.keptKinds = nil, nil, nil, nil
+	s.keptElements, s.keptRoles, s.keptWho = nil, nil, nil
+	s.keptKinds, s.keptWorlds = nil, nil
 	s.field = skillFieldID
 	s.touched = false
 	s.shapeDrawn = false
@@ -196,6 +199,7 @@ func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScr
 	s.keptRoles = forge.SplitList(answers.RestrictArchetypes)
 	s.keptWho = forge.SplitList(answers.RestrictCharacters)
 	s.keptKinds = forge.SplitList(answers.RestrictSpecies)
+	s.keptWorlds = forge.SplitList(answers.RestrictOrigins)
 	s.editing = current.ID
 	return s
 }
@@ -245,6 +249,7 @@ func (s skillsScreen) draft(m model) forge.SkillDraft {
 		RestrictArchetypes: strings.Join(s.keptRoles, ","),
 		RestrictCharacters: strings.Join(s.keptWho, ","),
 		RestrictSpecies:    strings.Join(s.keptKinds, ","),
+		RestrictOrigins:    strings.Join(s.keptWorlds, ","),
 	}
 }
 
@@ -269,7 +274,8 @@ func skillChooserField(field int) bool {
 func skillListField(field int) bool {
 	switch field {
 	case skillFieldKeptForElements, skillFieldKeptForRoles,
-		skillFieldKeptForCharacters, skillFieldKeptForSpecies:
+		skillFieldKeptForCharacters, skillFieldKeptForSpecies,
+		skillFieldKeptForOrigins:
 		return true
 	default:
 		return false
@@ -444,6 +450,17 @@ func (m model) openAllowlist(field int) model {
 			options: idOptions(m.lib.Archetypes().IDs()), chosen: m.skills.keptRoles,
 			apply: func(m model, answer pickAnswer) model {
 				m.skills.keptRoles = answer.Chosen
+				m.skills.touched = true
+				return m
+			},
+		})
+	case skillFieldKeptForOrigins:
+		return m.pick(&pickState{
+			title: i18n.PickerOriginsTitle, kind: pickOrigins,
+			hint:    i18n.PickerAllowlistHint,
+			options: idOptions(m.lib.Origins().IDs()), chosen: m.skills.keptWorlds,
+			apply: func(m model, answer pickAnswer) model {
+				m.skills.keptWorlds = answer.Chosen
 				m.skills.touched = true
 				return m
 			},
@@ -801,6 +818,7 @@ func skillFieldLabel(m model, field int) string {
 		skillFieldKeptForRoles:      i18n.SkillFieldKeptForRoles,
 		skillFieldKeptForCharacters: i18n.SkillFieldKeptForCharacters,
 		skillFieldKeptForSpecies:    i18n.SkillFieldKeptForSpecies,
+		skillFieldKeptForOrigins:    i18n.SkillFieldKeptForOrigins,
 	}
 	return m.text(keys[field])
 }
@@ -839,6 +857,7 @@ func skillFieldHelp(m model, field int) string {
 		skillFieldKeptForRoles:      i18n.SkillHelpKeptForRoles,
 		skillFieldKeptForCharacters: i18n.SkillHelpKeptForCharacters,
 		skillFieldKeptForSpecies:    i18n.SkillHelpKeptForSpecies,
+		skillFieldKeptForOrigins:    i18n.SkillHelpKeptForOrigins,
 	}
 	return m.text(keys[clamp(field, 0, skillFieldCount-1)])
 }
@@ -1056,6 +1075,8 @@ func (s skillsScreen) value(m model, field, labelWidth int) string {
 		return s.listValue(m, s.keptWho, labelWidth)
 	case skillFieldKeptForSpecies:
 		return s.listValue(m, s.keptKinds, labelWidth)
+	case skillFieldKeptForOrigins:
+		return s.listValue(m, s.keptWorlds, labelWidth)
 	case skillFieldAccuracy, skillFieldPower, skillFieldPierce,
 		skillFieldRestores, skillFieldDrains:
 		// Every one of these is authored in parts per thousand because that is

@@ -462,6 +462,20 @@ func TestARestrictionIsWordedFromItsFacts(t *testing.T) {
 			vi: `"example.adept" không mang được chiêu "dragon_rage"; chiêu này để dành cho loài dragon`,
 			en: `"example.adept" cannot carry the skill "dragon_rage"; it is kept for a dragon`,
 		},
+		{
+			// The fifth, and the broadest: it names the story rather than the
+			// body or the fighting style. The Vietnamese takes the user's own
+			// word for it — a work is a vũ trụ — and the English spells out
+			// "characters out of", because a bare "kept for naruto" beside the
+			// first case's "kept for fire and metal" reads as the same kind of
+			// list twice.
+			name: "an origin allowlist",
+			err: &forge.OriginRestrictedError{
+				Character: "pokemon.bulbasaur", Skill: "rasengan", Allowed: []string{"naruto"},
+			},
+			vi: `"pokemon.bulbasaur" không mang được chiêu "rasengan"; chiêu này để dành cho vũ trụ naruto`,
+			en: `"pokemon.bulbasaur" cannot carry the skill "rasengan"; it is kept for characters out of naruto`,
+		},
 	}
 	for _, test := range cases {
 		if got := Vi.Error(test.err); got != test.vi {

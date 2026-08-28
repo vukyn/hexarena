@@ -111,6 +111,28 @@ func (e *SpeciesRestrictedError) Error() string {
 		e.Character, e.Skill, strings.Join(e.Allowed, " or "))
 }
 
+// OriginRestrictedError is a skill kept for a work the character was not
+// borrowed from.
+//
+// It carries the character for SpeciesRestrictedError's reason, and it is a
+// type of its own rather than a species error with a different list because the
+// two refusals are about different things: one says the holder is the wrong
+// kind of creature and the other says it is out of the wrong story, and a
+// front-end has to be able to say which.
+type OriginRestrictedError struct {
+	Character string
+	Skill     string
+	Allowed   []string
+}
+
+func (e *OriginRestrictedError) Error() string {
+	// "kept for characters out of" rather than "kept for", which is what an
+	// element allowlist already says: a bare "kept for naruto" beside a bare
+	// "kept for fire" reads as one kind of thing twice.
+	return fmt.Sprintf("%q cannot carry the skill %q; it is kept for characters out of %s",
+		e.Character, e.Skill, strings.Join(e.Allowed, " or "))
+}
+
 // UnknownCharacterError is a name that is not in the cast. It is raised by an
 // allowlist naming somebody who does not exist, which is the same mistake as an
 // empty allowlist: nobody satisfies it.
@@ -173,6 +195,35 @@ type PresetOwnedSkillError struct {
 // well would say it twice in one line.
 func (e *PresetOwnedSkillError) Error() string {
 	return fmt.Sprintf("%q belongs to %s, and a preset is shared by every character built from it",
+		e.Skill, strings.Join(e.Allowed, " or "))
+}
+
+// PresetLineageSkillError is an archetype preset whose kit holds a skill kept
+// for a lineage.
+//
+// Its own type beside PresetOwnedSkillError rather than one type with an axis
+// field, because the two sentences have nothing in common but their shape: one
+// says the skill belongs to somebody and the other that it belongs to a kind of
+// body. A reader of the refusal needs to be told which, and a single type would
+// make that a switch at every place that words it.
+//
+// ⚠️ This closes a gap rather than opening a feature. cast has refused a lineage
+// skill in a preset since that axis arrived, and this walk did not recognise the
+// refusal — which was never a wrong answer, because the re-parse is the
+// authority here and a refusal nobody recognises keeps the parser's own words,
+// but it was a refusal that named nobody.
+//
+// There is deliberately no origin twin. See cast.resolveArchetype: a work is
+// universal where a lineage is exceptional, so that ban would empty every
+// preset rather than trim two.
+type PresetLineageSkillError struct {
+	Archetype string
+	Skill     string
+	Allowed   []string
+}
+
+func (e *PresetLineageSkillError) Error() string {
+	return fmt.Sprintf("%q is kept for a %s, and a preset says how a character fights rather than what it is",
 		e.Skill, strings.Join(e.Allowed, " or "))
 }
 

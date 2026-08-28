@@ -413,8 +413,8 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 	// in a battle — an author has no reason to know the engine has an opinion
 	// about this.
 	//
-	// The other two halves of a restriction are enforced only here, because the
-	// engine has neither an archetype nor a character identity to check them
+	// The other four are enforced only here, because the engine has none of an
+	// archetype, a character identity, a species or an origin to check them
 	// against. Each refusal names the skill and what the restriction allows, so
 	// that somebody who did not write the restriction can act on it without
 	// opening skills.json.
@@ -451,6 +451,19 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 		if !carried.Restrict.AllowsSpecies(species) {
 			return fail("cannot carry %q, which only a %s may carry",
 				carried.ID, strings.Join(carried.Restrict.SpeciesNames(), " or "))
+		}
+		// An unknown origin is refused for the reason an unknown species is: the
+		// gate would admit nobody, and an allowlist nobody satisfies is silent
+		// about being a typo. The origin book is not optional the way the
+		// species book is, so this needs no "without the book" case.
+		for _, named := range carried.Restrict.OriginNames() {
+			if _, known := deps.Origins.Get(named); !known {
+				return fail("carries %q, which is kept for the unknown origin %q", carried.ID, named)
+			}
+		}
+		if !carried.Restrict.AllowsOrigin(declared.Origin) {
+			return fail("was borrowed from %q and cannot carry %q, which only somebody from %s may carry",
+				declared.Origin, carried.ID, strings.Join(carried.Restrict.OriginNames(), " or "))
 		}
 	}
 

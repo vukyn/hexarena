@@ -231,20 +231,20 @@ type Cleanse struct {
 // time, and reading it as "no restriction" would turn that mistake into a skill
 // silently available to everyone.
 //
-// # Why three of the four are plain strings
+// # Why four of the five are plain strings
 //
 // Elements are parsed here because this package already knows what an element
-// is. Archetypes, characters and species are not: internal/core/cast declares
-// all three, and cast imports this package, so a skill that named a cast type
-// would be an import cycle. So they travel as the ids they were written with
-// and are checked one layer up, by cast.ParseBook and cast.ParseArchetypes —
-// exactly the way a skill's pattern and status names are checked by whoever
+// is. Archetypes, characters, species and origins are not: internal/core/cast
+// declares all four, and cast imports this package, so a skill that named a cast
+// type would be an import cycle. So they travel as the ids they were written
+// with and are checked one layer up, by cast.ParseBook and cast.ParseArchetypes
+// — exactly the way a skill's pattern and status names are checked by whoever
 // holds those books rather than by whoever declares the skill.
 //
 // The layering has a consequence worth stating rather than working around:
 // battle.Roster carries stats, skills, an affinity and a slot, and no archetype,
 // no character identity and no species, because all three are resolved before a
-// battle starts. So Elements is enforceable at battle load and the other three
+// battle starts. So Elements is enforceable at battle load and the other four
 // are not. They are authoring-time rules, and pushing any of them into the engine
 // to "complete" the feature would put a fact into the replayable core that no
 // replay needs. See CLAUDE.md, "What a restriction can enforce".
@@ -273,6 +273,19 @@ type Restriction struct {
 	// character that first had it, so `dragon_rage` restricted to one character
 	// said "only this one may carry it" when it meant "only a dragon may".
 	Species []string
+	// Origins is the works allowed to carry it, by id in the origin book: a
+	// character qualifies by having been borrowed from any one of them.
+	//
+	// The broadest gate here, and the one that says a skill belongs to a
+	// fiction rather than to a body or a fighting style. A work outlives every
+	// character in it, which is the same argument Species makes about a
+	// lineage: `rasengan` restricted to naruto.naruto would say "only this one
+	// may carry it" when it means "only somebody from Naruto may", and would
+	// have to be edited every time that work lends another character.
+	//
+	// It is a list rather than one id because a crossover is a thing that
+	// happens, and because every other axis here is a list.
+	Origins []string
 }
 
 // AllowsElement reports whether the element allowlist admits an affinity.
@@ -319,6 +332,16 @@ func (r *Restriction) AllowsSpecies(kinds []string) bool {
 	return false
 }
 
+// AllowsOrigin reports whether the origin allowlist admits the work a character
+// was borrowed from.
+//
+// A character with no origin fails a restricted list, for AllowsSpecies's
+// reason: the allowlist names where a holder must be from, and nowhere is not
+// one of those places.
+func (r *Restriction) AllowsOrigin(id string) bool {
+	return r == nil || len(r.Origins) == 0 || slices.Contains(r.Origins, id)
+}
+
 // NamesCharacters reports whether the skill belongs to named characters, which
 // is what makes it unusable in a preset shared by every character built from
 // it.
@@ -331,6 +354,13 @@ func (r *Restriction) NamesCharacters() bool { return r != nil && len(r.Characte
 // land on whoever wrote the character rather than on whoever wrote the preset.
 func (r *Restriction) NamesSpecies() bool { return r != nil && len(r.Species) > 0 }
 
+// NamesOrigins reports whether the skill belongs to named works, which keeps it
+// out of a preset for the third time and the same reason: a preset says how a
+// character fights, so every character built from one that was borrowed from
+// another work would be refused, and the refusal would land on whoever wrote
+// the character.
+func (r *Restriction) NamesOrigins() bool { return r != nil && len(r.Origins) > 0 }
+
 // SpeciesNames is the species allowlist written out.
 //
 // It exists so that a caller can walk the list without reaching through the
@@ -341,6 +371,15 @@ func (r *Restriction) SpeciesNames() []string {
 		return nil
 	}
 	return append([]string(nil), r.Species...)
+}
+
+// OriginNames is the origin allowlist written out, and reaches through the
+// pointer safely for SpeciesNames's reason.
+func (r *Restriction) OriginNames() []string {
+	if r == nil {
+		return nil
+	}
+	return append([]string(nil), r.Origins...)
 }
 
 // ElementNames is the element allowlist written out, which is what a refusal
@@ -601,6 +640,7 @@ type restrictFile struct {
 	Archetypes []string `json:"archetypes,omitempty"`
 	Characters []string `json:"characters,omitempty"`
 	Species    []string `json:"species,omitempty"`
+	Origins    []string `json:"origins,omitempty"`
 }
 
 type applicationFile struct {
@@ -662,6 +702,7 @@ func (s Skill) file() skillFile {
 			Archetypes: append([]string(nil), s.Restrict.Archetypes...),
 			Characters: append([]string(nil), s.Restrict.Characters...),
 			Species:    append([]string(nil), s.Restrict.Species...),
+			Origins:    append([]string(nil), s.Restrict.Origins...),
 		}
 	}
 	if s.Scaling != DefaultScaling() {
@@ -945,8 +986,8 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 //
 // Element names are real, no list is present-but-empty, no entry is blank and
 // no entry is repeated. What it deliberately does not check is whether an
-// archetype or a character id exists, because the books that declare those are
-// one layer up — see Restriction. cast.ParseArchetypes and cast.ParseBook make
+// archetype, a character, a species or an origin id exists, because the books
+// that declare those are one layer up — see Restriction. cast.ParseArchetypes and cast.ParseBook make
 // that check, which is the same division as a skill's pattern and status names.
 func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, error) {
 	if declared == nil {
@@ -956,7 +997,8 @@ func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, e
 		return fmt.Errorf("skill %q restricts "+format, append([]any{skillID}, args...)...)
 	}
 	if declared.Elements == nil && declared.Archetypes == nil &&
-		declared.Characters == nil && declared.Species == nil {
+		declared.Characters == nil && declared.Species == nil &&
+		declared.Origins == nil {
 		return nil, fail("nothing, because it names no lists; leave the block out to restrict nothing")
 	}
 	// A present-but-empty list is refused rather than read as "unrestricted".
@@ -970,6 +1012,7 @@ func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, e
 		{"archetypes", declared.Archetypes},
 		{"characters", declared.Characters},
 		{"species", declared.Species},
+		{"origins", declared.Origins},
 	} {
 		if list.entries != nil && len(list.entries) == 0 {
 			return nil, fail("its %s to an empty list, which nobody satisfies; leave the list out to restrict nothing",
@@ -990,6 +1033,7 @@ func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, e
 		Archetypes: append([]string(nil), declared.Archetypes...),
 		Characters: append([]string(nil), declared.Characters...),
 		Species:    append([]string(nil), declared.Species...),
+		Origins:    append([]string(nil), declared.Origins...),
 	}
 	for _, name := range declared.Elements {
 		member, err := element.Parse(name)

@@ -85,6 +85,7 @@ hexforge authors the cast the battles are fought with.
                                       [--cooldown N] [--applies s:c[:n],...]
                                       [--restrict-elements ...] [--restrict-archetypes ...]
                                       [--restrict-characters ...] [--restrict-species ...]
+                                      [--restrict-origins ...]
                                       author a skill; flags prefill, the wizard
                                       asks for what is still missing. A skill is
                                       balance: the golden files will move

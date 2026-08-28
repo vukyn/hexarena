@@ -94,6 +94,10 @@ func (l Lang) Error(err error) string {
 	if errors.As(err, &presetOwned) {
 		return l.Say(ErrorPresetOwnedSkill, presetOwned.Skill, l.JoinIDs(presetOwned.Allowed))
 	}
+	var presetLineage *forge.PresetLineageSkillError
+	if errors.As(err, &presetLineage) {
+		return l.Say(ErrorPresetLineageSkill, presetLineage.Skill, l.JoinIDs(presetLineage.Allowed))
+	}
 	var unknownPattern *forge.UnknownPatternError
 	if errors.As(err, &unknownPattern) {
 		return l.Say(ErrorUnknownPattern, unknownPattern.Name)
@@ -160,6 +164,11 @@ func (l Lang) Error(err error) string {
 	if errors.As(err, &speciesRestricted) {
 		return l.Say(ErrorSpeciesRestricted, speciesRestricted.Character,
 			speciesRestricted.Skill, l.JoinIDs(speciesRestricted.Allowed))
+	}
+	var originRestricted *forge.OriginRestrictedError
+	if errors.As(err, &originRestricted) {
+		return l.Say(ErrorOriginRestricted, originRestricted.Character,
+			originRestricted.Skill, l.JoinIDs(originRestricted.Allowed))
 	}
 	// The stat field wraps whichever curve refusal happened, so it is asked
 	// before them: errors.As looks through a wrapper, and asking the inner
@@ -301,7 +310,7 @@ func (l Lang) WhoMaySummary(carried skill.Skill) string {
 	if facts.Anyone {
 		return l.Text(WhoAnyone)
 	}
-	parts := make([]string, 0, 4)
+	parts := make([]string, 0, 6)
 	if facts.Element != "" {
 		parts = append(parts, l.Say(WhoElementUnits, facts.Element))
 	}
@@ -316,6 +325,9 @@ func (l Lang) WhoMaySummary(carried skill.Skill) string {
 	}
 	if len(facts.Species) > 0 {
 		parts = append(parts, l.Say(WhoKeptForSpecies, l.JoinIDs(facts.Species)))
+	}
+	if len(facts.Origins) > 0 {
+		parts = append(parts, l.Say(WhoKeptForOrigins, l.JoinIDs(facts.Origins)))
 	}
 	return strings.Join(parts, ", ")
 }

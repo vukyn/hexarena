@@ -38,6 +38,9 @@ func TestARefusalKeepsTheWordingTheCommandLinePrints(t *testing.T) {
 		{&SpeciesRestrictedError{
 			Character: "example.adept", Skill: "dragon_rage", Allowed: []string{"dragon"},
 		}, `"example.adept" cannot carry the skill "dragon_rage"; it is kept for a dragon`},
+		{&OriginRestrictedError{
+			Character: "pokemon.bulbasaur", Skill: "rasengan", Allowed: []string{"naruto"},
+		}, `"pokemon.bulbasaur" cannot carry the skill "rasengan"; it is kept for characters out of naruto`},
 		{&EmptyKitError{}, "a character with no skills would have nothing to do on its turn"},
 		{&DuplicateSkillError{ID: "strike"}, `"strike" is named twice`},
 		{&MissingElementError{}, "no element given"},
@@ -60,6 +63,9 @@ func TestARefusalKeepsTheWordingTheCommandLinePrints(t *testing.T) {
 		{&PresetOwnedSkillError{
 			Archetype: "bulwark", Skill: "sever", Allowed: []string{"a.one", "a.two"},
 		}, `"sever" belongs to a.one or a.two, and a preset is shared by every character built from it`},
+		{&PresetLineageSkillError{
+			Archetype: "bulwark", Skill: "ingrain", Allowed: []string{"plant"},
+		}, `"ingrain" is kept for a plant, and a preset says how a character fights rather than what it is`},
 		{&SkillEditBreaksError{
 			Carrier: BrokenCharacter, ID: "a.one", Skill: "riptide",
 			Err: errors.New("because"),

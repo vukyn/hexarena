@@ -202,9 +202,9 @@ func (d Draft) Table(lib *Library) (progression.Table, error) {
 	return table, nil
 }
 
-// Carrier is the draft as a kit check wants it: the id, the preset, the element
-// and what the character is, with an unreadable or unanswered element left out
-// rather than guessed at.
+// Carrier is the draft as a kit check wants it: the id, the preset, the element,
+// what the character is and where it is from, with an unreadable or unanswered
+// element left out rather than guessed at.
 //
 // Draft.Resolve refuses a bad element on its own account; this is for the
 // checks a half-filled form makes as it is typed, where an element that is not
@@ -212,7 +212,7 @@ func (d Draft) Table(lib *Library) (progression.Table, error) {
 func (d Draft) Carrier() Carrier {
 	who := Carrier{
 		ID: strings.TrimSpace(d.ID), Archetype: strings.TrimSpace(d.Archetype),
-		Species: SplitList(d.Species),
+		Species: SplitList(d.Species), Origin: strings.TrimSpace(d.Origin),
 	}
 	if affinity, err := ParseAffinity(d.Element); err == nil {
 		who.Affinity, who.HasAffinity = affinity, true
@@ -290,6 +290,10 @@ type Carrier struct {
 	// before a species is settled is refused at the write rather than at the
 	// keystroke -- and picked after it, at the keystroke.
 	Species []string
+	// Origin is the work the character was borrowed from, and is unanswered
+	// while it is empty for the reason Species is: on a half-filled form it is
+	// a question nobody has reached, not an answer of "from nowhere".
+	Origin string
 }
 
 // CheckSkill reports why a carrier may not carry one skill, or nil when it may.
@@ -297,9 +301,9 @@ type Carrier struct {
 // The element half is skill.WhyCannotCarry's judgement, which cast.ParseBook
 // and battle.enlist also call, so this is only bringing the same answer forward:
 // a wrong element should cost one line at the moment it is typed rather than the
-// whole session at the moment it is saved. The other two halves are
-// cast.ParseBook's alone — the engine has no archetype and no character
-// identity — and this brings those forward too, from the same predicates on
+// whole session at the moment it is saved. The other four are cast.ParseBook's
+// alone — the engine has no archetype, no character identity, no species and no
+// origin — and this brings those forward too, from the same predicates on
 // skill.Restriction.
 //
 // Every answer comes back as a typed error holding what it is about rather than
@@ -331,6 +335,12 @@ func CheckSkill(who Carrier, carried skill.Skill) error {
 		return &SpeciesRestrictedError{
 			Character: who.ID, Skill: carried.ID,
 			Allowed: carried.Restrict.SpeciesNames(),
+		}
+	}
+	if who.Origin != "" && !carried.Restrict.AllowsOrigin(who.Origin) {
+		return &OriginRestrictedError{
+			Character: who.ID, Skill: carried.ID,
+			Allowed: carried.Restrict.OriginNames(),
 		}
 	}
 	return nil

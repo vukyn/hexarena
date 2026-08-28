@@ -811,10 +811,19 @@ func TestCheckSkillAnswersEachRestrictionAndSkipsWhatIsUnanswered(t *testing.T) 
 		ID: "bloom", Element: element.Neutral,
 		Restrict: &skill.Restriction{Characters: []string{"example.sprout"}},
 	}
+	keptForDragons := skill.Skill{
+		ID: "roar", Element: element.Neutral,
+		Restrict: &skill.Restriction{Species: []string{"dragon"}},
+	}
+	keptForAWork := skill.Skill{
+		ID: "rasengan", Element: element.Neutral,
+		Restrict: &skill.Restriction{Origins: []string{"naruto"}},
+	}
 	unrestricted := skill.Skill{ID: "strike", Element: element.Neutral}
 
 	answered := Carrier{
 		ID: "example.adept", Archetype: "duelist", Affinity: water, HasAffinity: true,
+		Species: []string{"lizard"}, Origin: "pokemon",
 	}
 	var carry *CarryError
 	if err := CheckSkill(answered, keptForFire); !errors.As(err, &carry) {
@@ -837,14 +846,31 @@ func TestCheckSkillAnswersEachRestrictionAndSkipsWhatIsUnanswered(t *testing.T) 
 	if err := CheckSkill(answered, keptForSprout); !errors.As(err, &byCharacter) {
 		t.Fatalf("a skill kept for one character was allowed to another: %v", err)
 	}
+	var byLineage *SpeciesRestrictedError
+	if err := CheckSkill(answered, keptForDragons); !errors.As(err, &byLineage) {
+		t.Fatalf("a skill kept for a lineage was allowed to something else: %v", err)
+	}
+	var byWork *OriginRestrictedError
+	if err := CheckSkill(answered, keptForAWork); !errors.As(err, &byWork) {
+		t.Fatalf("a skill kept for one work was allowed to a character out of another: %v", err)
+	}
+	if byWork.Character != "example.adept" || byWork.Skill != "rasengan" ||
+		len(byWork.Allowed) != 1 || byWork.Allowed[0] != "naruto" {
+		t.Errorf("the refusal reads %+v", byWork)
+	}
 	if err := CheckSkill(answered, unrestricted); err != nil {
 		t.Errorf("an unrestricted skill was refused: %v", err)
 	}
 
 	// Nothing answered yet: the kit may be filled in first, and none of the
-	// three lists has anything to judge against.
+	// five lists has anything to judge against. An empty origin is "not asked"
+	// rather than "out of nowhere" — the same reading an empty species list
+	// gets, and the reason a half-filled form does not refuse a skill the
+	// finished one will accept.
 	empty := Carrier{}
-	for _, carried := range []skill.Skill{keptForFire, keptForBulwark, keptForSprout} {
+	for _, carried := range []skill.Skill{
+		keptForFire, keptForBulwark, keptForSprout, keptForDragons, keptForAWork,
+	} {
 		if err := CheckSkill(empty, carried); err != nil {
 			t.Errorf("%q was refused before anything was answered: %v", carried.ID, err)
 		}
@@ -1416,6 +1442,54 @@ func TestAnEditThatWouldOrphanAShippedCharacterIsRefused(t *testing.T) {
 	}
 	if _, err := Load(dir); err != nil {
 		t.Errorf("the data directory no longer loads: %v", err)
+	}
+}
+
+// TestAnEditNarrowingASkillToAnotherWorkNamesItsCarrier is the same refusal on
+// the axis a character carries rather than declares, and it is here because the
+// walk that names the carrier was not looking at it.
+//
+// brokenPreset and brokenCharacter classify a refusal the re-parse has already
+// made, so a walk that cannot see an axis does not let a bad edit through — it
+// just blames nobody for it. The character walk was building a Carrier out of an
+// id, a preset and an element, so a species or an origin refusal came back with
+// the parser's words and an empty ID field. Both are handed over now, and this
+// test is on the origin because that is the axis the walk was missing on the day
+// it arrived.
+func TestAnEditNarrowingASkillToAnotherWorkNamesItsCarrier(t *testing.T) {
+	dir := scratchData(t)
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	carrier, holds := lib.Characters().Get("fixture-anime.adept")
+	if !holds || !slices.Contains(cast.LearnedIDs(carrier.Skills), "riptide") {
+		t.Skip("the fixture cast no longer has a character carrying riptide")
+	}
+	current, err := lib.Skills().Lookup("riptide")
+	if err != nil {
+		t.Fatalf("look up riptide: %v", err)
+	}
+	elsewhere := "fixture-film"
+	built, err := (SkillEdit{RestrictOrigins: &elsewhere}).Draft(current).ResolveEdit(lib, "riptide")
+	if err != nil {
+		t.Fatalf("the skill itself is legal, so resolving it should pass: %v", err)
+	}
+	_, err = lib.EditSkill(built)
+	var broken *SkillEditBreaksError
+	if !errors.As(err, &broken) {
+		t.Fatalf("keeping a carried skill for another work was accepted: %v", err)
+	}
+	if broken.ID != carrier.ID || broken.Carrier != BrokenCharacter {
+		t.Errorf("the refusal is about %v %q, want the character %q",
+			broken.Carrier, broken.ID, carrier.ID)
+	}
+	var refused *OriginRestrictedError
+	if !errors.As(err, &refused) {
+		t.Fatalf("the reason is %T, want an origin refusal", broken.Err)
+	}
+	if len(refused.Allowed) != 1 || refused.Allowed[0] != elsewhere {
+		t.Errorf("the refusal carries the allowlist %v", refused.Allowed)
 	}
 }
 
