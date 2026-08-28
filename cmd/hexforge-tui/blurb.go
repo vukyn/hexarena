@@ -7,6 +7,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
 
@@ -134,6 +135,21 @@ func (b blurbScreen) view(m model) (string, string) {
 	out.WriteString(m.style.heading.Render(m.lang.GlossedSkill(declared)) + "  " +
 		m.style.dim.Render(m.text(i18n.ChoicePosition,
 			clamp(m.skills.cursor, 0, len(skills)-1)+1, len(skills))) + "\n\n")
+	for _, line := range skillLines(m, declared) {
+		out.WriteString(line + "\n")
+	}
+	return out.String(), footer
+}
+
+// skillLines is what a skill does, one line per sentence and already marked.
+//
+// A function rather than the second copy it was about to become: the picker
+// reads the skill under its own cursor and this screen reads the one under the
+// listing's, which is the same paragraph asked for from two places. A second
+// copy of the marking is a second thing that can decide a name is worth
+// pointing out — and the comment above this screen already refused to write a
+// second copy of a framing for the same reason.
+func skillLines(m model, declared skill.Skill) []string {
 	// The status names these sentences will use, marked where they are printed,
 	// exactly as the trait listing marks its own -- the two screens are read one
 	// after the other, and a name that is bold on one and plain on the other reads
@@ -145,13 +161,13 @@ func (b blurbScreen) view(m model) (string, string) {
 			names = append(names, name)
 		}
 	}
+	out := make([]string, 0, 4)
 	for _, line := range strings.Split(m.lang.Describe(declared, m.lib.Patterns()), "\n") {
-		line = marked(line, names, func(word string) string {
+		out = append(out, "  "+marked(line, names, func(word string) string {
 			return m.style.emphasis.Render(word)
-		})
-		out.WriteString("  " + line + "\n")
+		}))
 	}
-	return out.String(), footer
+	return out
 }
 
 // viewTraits is what the character under the browser's cursor carries, at the
@@ -213,6 +229,25 @@ func (b blurbScreen) viewTraits(m model) (string, string) {
 // terminal being narrow. Every other pane that carries a sentence wraps for the
 // same reason.
 func traitLines(m model, held []passive.Passive) []string {
+	out := make([]string, 0, 6*len(held))
+	for index, one := range held {
+		if index > 0 {
+			out = append(out, "")
+		}
+		out = append(out, "  "+m.style.label.Render(m.lang.GlossedPassive(one)))
+		out = append(out, traitSentences(m, one)...)
+	}
+	return out
+}
+
+// traitSentences is one trait's description, wrapped and indented under
+// whatever named it above.
+//
+// Split off the loop above rather than duplicated into the picker, which reads
+// a trait under a cursor of its own and carries the name in its heading instead
+// of in the body: what the two share is the measure and the indent, and those
+// are exactly the parts a second copy would be free to disagree about.
+func traitSentences(m model, one passive.Passive) []string {
 	// Wrapped to the floor rather than to the window, which is the opposite of
 	// what m.wrapped does and is right for a different reason. Those rows carry
 	// authored free text -- a biography, a kit of nine ids -- which has to go
@@ -221,16 +256,10 @@ func traitLines(m model, held []passive.Passive) []string {
 	// terminal is a line a reader loses their place in, and it is also a line
 	// TestEveryWordingFitsTheMinimumWidth measures against the floor.
 	room := minWidth - 1 - traitIndent
-	out := make([]string, 0, 6*len(held))
-	for index, one := range held {
-		if index > 0 {
-			out = append(out, "")
-		}
-		out = append(out, "  "+m.style.label.Render(m.lang.GlossedPassive(one)))
-		for _, sentence := range strings.Split(m.lang.DescribePassive(one), "\n") {
-			for _, line := range wrapWords(sentence, max(room, 8)) {
-				out = append(out, strings.Repeat(" ", traitIndent)+line)
-			}
+	out := make([]string, 0, 6)
+	for _, sentence := range strings.Split(m.lang.DescribePassive(one), "\n") {
+		for _, line := range wrapWords(sentence, max(room, 8)) {
+			out = append(out, strings.Repeat(" ", traitIndent)+line)
 		}
 	}
 	return out
@@ -243,6 +272,11 @@ const traitIndent = 4
 
 // traitRoom is how many lines of sentences fit: the window, less the two the
 // heading takes and the one the position line does.
+//
+// The picker's reading state shares it rather than counting again. The two spend
+// their lines on the same four things in the same order, so two counts would be
+// two answers to one question — and the one that was wrong would be the one that
+// let frame cut the line saying there is more to read.
 //
 // The position line is counted whether or not it is drawn. Counting it only when
 // it appears would make the answer one line taller the moment it fits, which is

@@ -189,6 +189,11 @@ q or ctrl+c to quit`,
 	PickerNothingInGroup: "no characters from this work yet.",
 	PickerFilterFooter:   "space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt",
 
+	// ⚠️ Measured at 79 cells, which is every cell the minimum window leaves.
+	// A word added to this line is a word taken off another one.
+	PickerDescribeFooter: "space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt",
+	PickerReadingFooter:  "↑/↓ move · pgdn/pgup scroll · ? or esc back · ctrl+l tiếng Việt",
+
 	PickerStatusesTitle: "the statuses this skill inflicts",
 	PickerStatusHint:    "space chooses a status · type the chance in parts per thousand",
 	PickerStatusFooter:  "space pick · ↑/↓ move · 0-9 chance · enter done · esc back · ctrl+l tiếng Việt",

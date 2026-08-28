@@ -186,6 +186,9 @@ q hoặc ctrl+c để thoát`,
 	PickerNothingInGroup: "nguồn này chưa có nhân vật nào.",
 	PickerFilterFooter:   "space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English",
 
+	PickerDescribeFooter: "space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English",
+	PickerReadingFooter:  "↑/↓ chọn · pgdn/pgup cuộn · ? hoặc esc quay lại · ctrl+l English",
+
 	PickerStatusesTitle: "chiêu này gây hiệu ứng gì",
 	PickerStatusHint:    "space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn",
 	PickerStatusFooter:  "space chọn · ↑/↓ di chuyển · gõ số · enter xong · esc bỏ · ctrl+l English",

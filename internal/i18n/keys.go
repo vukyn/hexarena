@@ -197,6 +197,13 @@ const (
 	PickerNothingInGroup
 	PickerFilterFooter
 
+	// Reading the row under the cursor rather than choosing it, which is the
+	// picker's other state. Only two of the kinds have a describer behind them,
+	// so the key is announced on a footer of its own rather than on the one
+	// every picker shares.
+	PickerDescribeFooter
+	PickerReadingFooter
+
 	// The status picker, which is the multi-select with one answer more: a
 	// status is an id *and* a chance, so it collects a number beside the list
 	// rather than sending an author back to a text field to remember a syntax.

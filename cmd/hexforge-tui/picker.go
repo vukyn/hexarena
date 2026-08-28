@@ -88,6 +88,14 @@ const (
 	// facts — how long it lasts, how far it stacks, whether it ticks — because
 	// choosing between "mire" and "expose" on the ids alone is not choosing.
 	pickStatuses
+	// pickPassives is the trait a placement keeps, and it exists because the
+	// squad builder was raising its trait picker as pickSkills: the rows were
+	// trait ids and the detail looked each one up in the skill book, so every
+	// row on that screen drew "unknown skill" in red where its detail belonged.
+	// A kind of its own rather than a lookup that tries both books, for the
+	// reason every other kind here is one — what a row *is* decides how it
+	// reads, and a detail guessing at that is a detail that can guess wrong.
+	pickPassives
 )
 
 // pickOption is one row: an id, and why the carrier may not take it.
@@ -147,8 +155,53 @@ type pickState struct {
 	// having on is the one that grows with the cast, which is the characters.
 	groups []string
 	filter int
+	// reading is whether the description of the row under the cursor is in
+	// front of the list, and scroll is how far down that description has been
+	// walked.
+	//
+	// A state of the picker rather than a screen, and that is forced rather than
+	// preferred: the picker is drawn over whichever screen raised it and takes
+	// keys before any screen does, so a description reached by switching screens
+	// would be a screen the picker went on swallowing the keys of. It is the
+	// same reading blurbScreen gives, from the one place a kit is actually
+	// chosen — an author picking four of nine wants to know what the fifth does
+	// *there*, not on the listing two screens away.
+	//
+	// scroll is not a second cursor, for the reason blurbScreen's is not: it
+	// selects nothing, it is which lines of one answer are visible, and every
+	// key that changes *which* row is described resets it so it cannot survive
+	// into a shorter answer and leave a reader looking at nothing.
+	//
+	// ⚠️ **Measured: no shipped description reaches it.** blurbScreen scrolls
+	// because it draws all five of a character's traits at once, which is some
+	// thirty lines against the seventeen an eighty-by-twenty-four window leaves;
+	// one row is at most three, in either language, across every shipped skill
+	// and trait. So this is the guard and not a live path — kept because a trait
+	// is allowed six sentences and the room falls to three in a small window, and
+	// because dropping it would leave the one screen built for reading a
+	// description unable to finish reading one the day somebody writes a long
+	// one. What that costs is two cases; what the answer being clamped where it
+	// is *read* buys is that an offset past a short answer still draws it.
+	reading bool
+	scroll  int
 	// apply hands the answer back to whoever raised the picker.
 	apply func(model, pickAnswer) model
+}
+
+// describes reports whether the row under the cursor has a description behind
+// it, which is what decides whether ? is offered at all.
+//
+// Two of the eight kinds, and the division is which books hold a describer a
+// player would read: a skill has Describe and a trait has DescribePassive. An
+// element, a role, a character, a species and an origin have none — a row there
+// is an id and its name, which is already the whole of what could be said.
+//
+// A status has one and is deliberately left out. Its rows already carry the
+// facts a description would derive, its picker spends the keys under the list on
+// a chance field, and Lang.DescribeStatus has a reference screen of its own that
+// reaches every status rather than only the ones a skill happens to inflict.
+func (p *pickState) describes() bool {
+	return p.kind == pickSkills || p.kind == pickPassives
 }
 
 // visible is the rows the filter in force leaves on screen.
@@ -205,7 +258,15 @@ func (m model) pick(state *pickState) model {
 		state.hint = i18n.PickerHint
 	}
 	if state.footer == 0 {
+		// The footer that names ? is the default only where ? does something.
+		// A key announced on a screen that ignores it is worse than one nobody
+		// was told about, and the two footers are one line each rather than one
+		// line assembled from parts, because the line has to be measured whole:
+		// the English one is 79 cells of the 79 the minimum window leaves.
 		state.footer = i18n.PickerFooter
+		if state.describes() {
+			state.footer = i18n.PickerDescribeFooter
+		}
 	}
 	m.picker = state
 	return m
@@ -323,7 +384,18 @@ func statusOptions(lib *forge.Library) []pickOption {
 }
 
 func (p *pickState) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if p.reading {
+		return p.read(m, message)
+	}
 	switch message.String() {
+	case "?":
+		// Only where a row has something behind it. Elsewhere ? goes nowhere,
+		// which is what it did before and what f does on a picker with no
+		// groups — and the one thing that could still have wanted it, the
+		// chance field, refuses it already, because ? is not a digit.
+		if p.describes() {
+			p.reading, p.scroll = true, 0
+		}
 	case "esc":
 		m.picker = nil
 		return m, nil
@@ -364,6 +436,38 @@ func (p *pickState) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 			m.picker = p
 			return m, command
 		}
+	}
+	m.picker = p
+	return m, nil
+}
+
+// read is the picker with a description in front of the list.
+//
+// The keys are blurbScreen's, deliberately: an author who has read a skill from
+// the listing should not have a second interaction to learn for the same job
+// here. ? or esc closes it, and closes only it — the list comes back with
+// everything that was chosen still chosen, because a description is a question
+// asked *while* choosing and answering it must not cost the answer.
+//
+// Walking the cursor from here is why one description can be read after the
+// next without going back and forth, and it walks the picker's own cursor
+// rather than a cursor of this state's — the same borrowing blurbScreen does,
+// and for the same reason: two cursors are two things that can point at
+// different rows.
+func (p *pickState) read(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	switch message.String() {
+	case "?", "esc":
+		p.reading = false
+	case "pgdown":
+		p.scroll++
+	case "pgup":
+		p.scroll = max(p.scroll-1, 0)
+	case "up", "k":
+		p.cursor = clamp(p.cursor-1, 0, len(p.visible())-1)
+		p.scroll = 0
+	case "down", "j":
+		p.cursor = clamp(p.cursor+1, 0, len(p.visible())-1)
+		p.scroll = 0
 	}
 	m.picker = p
 	return m, nil
@@ -518,6 +622,22 @@ func (p *pickState) detail(m model, id string) string {
 		}
 		return ""
 	}
+	if p.kind == pickPassives {
+		held, err := m.lib.Passives().Lookup(id)
+		if err != nil {
+			// Unreachable for the reason the skill branch below is: a learnset
+			// names traits the passive book has already been parsed against.
+			// Written down rather than ignored, since the alternative is the
+			// blank cell this kind was added to stop being a red one.
+			return m.style.bad.Render(m.lang.Error(err))
+		}
+		// The trait's own name, which is what the listing puts beside an id and
+		// what GlossedPassives gives a kit — authored in the passive book, in
+		// the one language the data is written in. So an English row is the
+		// bare id, exactly as the listing drops its gloss column there, and ?
+		// is what an English reader gets the sentences from.
+		return m.style.dim.Render(m.lang.PassiveName(held))
+	}
 	if p.kind != pickSkills {
 		return m.style.dim.Render(m.lang.Gloss(id))
 	}
@@ -541,6 +661,9 @@ func refusalUnderCursor(rows []pickOption, cursor int) error {
 }
 
 func (p *pickState) view(m model) (string, string) {
+	if p.reading {
+		return p.viewReading(m)
+	}
 	var out strings.Builder
 	out.WriteString(m.style.heading.Render(m.text(p.title)) + "  " +
 		m.style.dim.Render(m.text(i18n.ChoicePosition, len(p.chosen), len(p.options))) + "\n")
@@ -634,4 +757,64 @@ func (p *pickState) view(m model) (string, string) {
 			p.typed.View() + reading)
 	}
 	return out.String(), m.text(p.footer)
+}
+
+// viewReading is the description of the row under the cursor, over the list
+// rather than beside it.
+//
+// Over it for the reason the list itself covers the form that raised it: the
+// sentences run to more lines than an eighty-by-twenty-four window has beside
+// thirteen rows, and a trait's already wrap past that on their own. It scrolls
+// for the same reason blurbScreen does, and shares that screen's room: the two
+// spend their lines identically — a heading, a blank, the sentences, and the
+// line saying how much is left.
+func (p *pickState) viewReading(m model) (string, string) {
+	footer := m.text(i18n.PickerReadingFooter)
+	rows := p.visible()
+	if len(rows) == 0 {
+		return "  " + m.text(i18n.PickerNothingToPick) + "\n", footer
+	}
+	cursor := clamp(p.cursor, 0, len(rows)-1)
+	name, body := p.described(m, rows[cursor].id)
+
+	var out strings.Builder
+	out.WriteString(m.style.heading.Render(name) + "  " +
+		m.style.dim.Render(m.text(i18n.ChoicePosition, cursor+1, len(rows))) + "\n\n")
+	room := traitRoom(m)
+	// Clamped here rather than where it is incremented, because the key that
+	// moves it does not know how long the answer is: the answer belongs to the
+	// row under the cursor, and that can have moved since.
+	scroll := clamp(p.scroll, 0, max(len(body)-room, 0))
+	for _, line := range body[scroll:min(scroll+room, len(body))] {
+		out.WriteString(line + "\n")
+	}
+	if len(body) > room {
+		out.WriteString(m.style.dim.Render("  " + m.text(i18n.BlurbMore,
+			min(scroll+room, len(body)), len(body))))
+	}
+	// No trailing newline, for the reason the trait blurb has none: frame splits
+	// this on newlines and cuts from the bottom, so a trailing one costs the
+	// line saying there is more to read.
+	return strings.TrimRight(out.String(), "\n"), footer
+}
+
+// described is one row's name and the lines under it, from the describer its
+// kind belongs to.
+//
+// One method for both halves rather than a title function beside a body
+// function, because the two are one lookup: asking the book twice is asking it
+// to answer differently once.
+func (p *pickState) described(m model, id string) (string, []string) {
+	if p.kind == pickPassives {
+		held, err := m.lib.Passives().Lookup(id)
+		if err != nil {
+			return id, []string{"  " + m.style.bad.Render(m.lang.Error(err))}
+		}
+		return m.lang.GlossedPassive(held), traitSentences(m, held)
+	}
+	declared, err := m.lib.Skills().Lookup(id)
+	if err != nil {
+		return id, []string{"  " + m.style.bad.Render(m.lang.Error(err))}
+	}
+	return m.lang.GlossedSkill(declared), skillLines(m, declared)
 }

@@ -588,7 +588,7 @@ func (m model) openSquadPassives() model {
 	}
 	return m.pick(&pickState{
 		title:   i18n.SquadPickPassives,
-		kind:    pickSkills,
+		kind:    pickPassives,
 		options: squadOptions(character.PassivesAt(s.unit.Level, s.form())),
 		chosen:  append([]string(nil), s.unit.Passives...),
 		apply: func(m model, answer pickAnswer) model {

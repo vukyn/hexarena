@@ -2295,6 +2295,38 @@ func TestTheStatusPickerFitsTheSmallestWindow(t *testing.T) {
 	}
 }
 
+// TestAPickerWithNoDescriberIgnoresTheQuestionMark is the other half of ? being
+// offered on two kinds of picker only.
+//
+// The status picker is the one that could have been hurt, because it is the one
+// with a text field under its list — and it is unhurt for a reason worth keeping
+// rather than rediscovering: ? is not a digit, so numberKey has always refused
+// it. On every other kind ? goes nowhere, exactly as f does on a picker with no
+// groups.
+func TestAPickerWithNoDescriberIgnoresTheQuestionMark(t *testing.T) {
+	if numberKey(tea.KeyPressMsg{Code: '?', Text: "?"}) {
+		t.Error("? is taken for a digit, so it would be typed into a chance")
+	}
+	m, _, _ := start(t, i18n.En)
+	m = m.enter(screenSkills)
+	m.skills.adding = true
+	m.skills.field = skillFieldInflicts
+	m = m.openStatuses()
+	if m.picker.describes() {
+		t.Fatal("the status picker offers a description it has no describer for")
+	}
+	m = typeText(t, m, "?")
+	if m.picker == nil {
+		t.Fatal("? closed the picker")
+	}
+	if m.picker.reading {
+		t.Error("? opened a description on a picker with none")
+	}
+	if typed := m.picker.typed.Value(); typed != "" {
+		t.Errorf("? reached the chance field, which now holds %q", typed)
+	}
+}
+
 // TestTheCharacterAllowlistNarrowsByOrigin is item six: the list of characters
 // grows with the cast, so it gets a filter, and the filter is the cast browser's
 // — same key, same cycle, same axis — rather than a second interaction for the

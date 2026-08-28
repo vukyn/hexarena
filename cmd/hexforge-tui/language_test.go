@@ -118,6 +118,15 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	member.squad = member.squad.editUnit(0)
 	skillPick := member.openSquadSkills()
 	traitPick := member.openSquadPassives()
+	// And each picker with a description in front of its list, which is the
+	// picker's other state and shares no line with the list. The trait one needs
+	// a member that actually learns a trait: the fixture cast declares none, so
+	// every test that had opened that picker had opened an empty one — which is
+	// how it shipped drawing an error where each row's detail belongs.
+	skillReading := reading(skillPick)
+	traitHolder, holds := aTraitHolder(building)
+	traitRows := traitHolder.openSquadPassives()
+	traitReading := reading(traitRows)
 	// The fight, which is the only screen here that runs battles to draw itself.
 	// It needs a squad the library has actually been told about, because the run
 	// looks the pair up there rather than on the screen — so this one is saved
@@ -140,7 +149,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		}
 		finished = typeText(t, finished, "a")
 	}
-	return map[string]model{
+	screens := map[string]model{
 		"shape diagram":    shape,
 		"spar":             spar,
 		"menu":             m.enter(screenMenu),
@@ -171,6 +180,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"a squad member":   member,
 		"a squad kit":      skillPick,
 		"a squad trait":    traitPick,
+		"reading a skill":  skillReading,
 		"a fight":          fight,
 		"nothing to fight": noSquads,
 		"a battle":         battle,
@@ -178,6 +188,60 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"a battle over":    finished,
 		"traitless build":  traitless,
 	}
+	// The two states a trait picker only has once something in the book learns
+	// one. Skipped rather than faked when nothing does: a picker over invented
+	// rows would measure wording against a trait nobody could reach.
+	if holds {
+		screens["a squad trait held"] = traitRows
+		screens["reading a trait"] = traitReading
+	}
+	return screens
+}
+
+// aTraitHolder is the squad in hand with its member pointed at whichever
+// character in the book learns the most traits, and false when none does.
+//
+// It looks the character up rather than naming one, which is the rule the
+// fixture exists to keep — and it is needed at all because the fixture cast
+// learns no traits, so every screen that had opened the squad trait picker had
+// opened an empty one and nothing measured a row of it.
+func aTraitHolder(m model) (model, bool) {
+	s := m.squad
+	found, most := -1, 0
+	for index, character := range s.characters {
+		if held := len(character.PassivesAt(
+			progression.LevelCap, progression.Furthest)); held > most {
+			found, most = index, held
+		}
+	}
+	if found < 0 || len(s.editing.Units) == 0 {
+		return m, false
+	}
+	character := s.characters[found]
+	unit := s.editing.Units[0]
+	unit.Character, unit.Level, unit.Stage = character.ID, progression.LevelCap, ""
+	known := character.SkillsAt(unit.Level, progression.Furthest)
+	if len(known) > cast.SkillSlots {
+		known = known[:cast.SkillSlots]
+	}
+	unit.Skills = known
+	unit.Passives = character.PassivesAt(unit.Level, progression.Furthest)[:cast.TraitSlots]
+	s.editing.Units = []placement.Placement{unit}
+	m.squad = s.editUnit(0)
+	return m, true
+}
+
+// reading is the picker in hand with a description in front of its list.
+//
+// The pickState is cloned rather than flipped in place, because m.picker is a
+// pointer and every model copied off this one shares it: setting the flag on the
+// picker itself would put the entry beside this one into a state it is not here
+// to measure.
+func reading(m model) model {
+	clone := *m.picker
+	clone.reading = true
+	m.picker = &clone
+	return m
 }
 
 // widestElementRow is the element whose chart entry takes the most cells, which

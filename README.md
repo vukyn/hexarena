@@ -1374,7 +1374,7 @@ because they are one decision taken at three depths:
 | --- | --- | --- |
 | the catalogue | every squad built here | `n` new, `enter` edit, `d` delete |
 | a squad | an id, a name, and up to five members | `enter` open a member, `ctrl+x` remove one, `ctrl+s` save |
-| a member | who it is, how grown, what it brings, where it stands | `←/→` change, `enter` choose from a list |
+| a member | who it is, how grown, what it brings, where it stands | `←/→` change, `enter` choose from a list, `?` describe a row of one |
 
 A member is **character, level, form, cell, four skills and one trait** — the
 same six facts a roster entry carries, because they are the same decision written
@@ -1402,6 +1402,44 @@ than the screen's.
 what lets one be measured against several opponents and against a copy of itself
 — and it is why `Take` prefixes the unit ids with the side it took. Two halves of
 a mirror have to be told apart in a log, and nothing else in a squad can do it.
+
+#### Reading a row while choosing it
+
+Both lists a member picks from — the kit and the trait — answer **`?`** with what
+the row under the cursor does, in the sentences a player reads rather than the
+figures an author types. `?` or `esc` puts the list back with everything that was
+chosen still chosen, `↑/↓` walks on to the next description so two can be
+compared, and `pgdn`/`pgup` scrolls one that runs past the window.
+
+⚠️ **That last one is a guard rather than a live path, and it was measured.** The
+trait screen scrolls because it draws all five of a character's traits at once,
+which is some thirty lines against the seventeen an 80x24 window leaves; one row
+of a picker is at most **three** lines, in either language, across every shipped
+skill and trait. It is kept because a trait is allowed six sentences and the room
+falls to three in a small window — and what the offset being clamped where the
+answer is *read* buys today is that scrolling past the end of a short answer
+still draws it, rather than drawing nothing.
+
+It is a **state of the picker** and not a screen, which is forced rather than
+tidy: the picker is drawn over whichever screen raised it and takes keys before
+any screen does, so a description reached by switching screens would be a screen
+the picker went on swallowing the keys of.
+
+Offered on those two lists and on no others, because those are the two with a
+describer behind them — a skill has `Describe`, a trait has `DescribePassive`. An
+element, a role, a character, a species and an origin have nothing a row does not
+already say. A status has a describer and is still left out on purpose: its rows
+already carry the facts a description would derive, the keys under its list belong
+to the chance field it collects, and the status reference reaches **every** status
+rather than only the ones some skill happens to inflict.
+
+⚠️ **The trait picker was reading the wrong book, and this is what found it.** It
+was raised as the *kit* picker with trait ids in it, so every row looked itself up
+among the skills, missed, and drew `unknown skill "venom_blood"` in red where its
+detail belongs. Nothing caught it because the test fixture's cast learns no
+traits — every test that had opened that picker had opened an empty one. It is its
+own kind of picker now, read out of `passives.json`, and the fixture's blind spot
+is covered by a screen built from whichever character in the book learns the most.
 
 #### Fighting two squads
 
