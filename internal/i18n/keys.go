@@ -374,6 +374,7 @@ const (
 	BlurbSummonedOne
 	BlurbSummonedMany
 	BlurbSummonedCopy
+	BlurbSummonedCopies
 	BlurbDrains
 	BlurbInflicts
 	BlurbGives

@@ -35,6 +35,12 @@ rally           neutral   ally     1  column            0     1      0  1000    
 dragon_claw     neutral   enemy    2  single         1100     1   1100   950    1     0      377
 outrage         neutral   enemy    2  single         2200     1   2200   900    3     0      754
 taunt           neutral   self     0  single            0     1      0  1000    3     0        0
+kunai           neutral   enemy    3  single          700     1    700   950    0     0      240
+wind_shuriken   wind      enemy    3  arc_up          620     2   1240   880    2     0      424
+rasengan        wind      enemy    1  single         2200     1   2200   900    4     0      754
+substitution    neutral   self     0  single            0     1      0  1000    4     0        0
+shadow_clone    neutral   self     0  single            0     1      0  1000    5     0        0
+summon_toad     neutral   self     0  single            0     1      0  1000    6     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -58,6 +64,7 @@ rally           fury                   1     1000       1000             1000
 dragon_claw     expose                 1      400        950              380
 outrage         mire (self)            1     1000        900                -
 taunt           taunting (self)        1     1000       1000                -
+substitution    veil (self)            2     1000       1000                -
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species

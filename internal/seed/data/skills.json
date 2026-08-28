@@ -614,6 +614,117 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "kunai",
+      "name": "phi tiêu",
+      "flavour": "Rút một nhúm phi tiêu ném đi, không hoa mỹ nhưng bao giờ cũng có sẵn",
+      "element": "neutral",
+      "range": 3,
+      "pattern": "single",
+      "power": 700,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 0,
+      "target": "enemy"
+    },
+    {
+      "id": "wind_shuriken",
+      "name": "phong ma thủ lý kiếm",
+      "flavour": "Nén gió thành một vòng lưỡi sắc rồi thả cho nó tự xé lấy hàng ngũ",
+      "element": "wind",
+      "range": 3,
+      "pattern": "arc_up",
+      "power": 620,
+      "strikes": 2,
+      "accuracy": 880,
+      "cooldown": 2,
+      "target": "enemy"
+    },
+    {
+      "id": "rasengan",
+      "name": "xoáy cầu",
+      "flavour": "Vo chakra thành một khối xoáy trong lòng bàn tay rồi ấn thẳng vào người đối diện",
+      "element": "wind",
+      "range": 1,
+      "pattern": "single",
+      "power": 2200,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 4,
+      "target": "enemy"
+    },
+    {
+      "id": "substitution",
+      "name": "thế thân",
+      "flavour": "Đổi chỗ với một khúc gỗ đúng lúc đòn tới, rồi đứng dậy ở chỗ khác",
+      "element": "neutral",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "self_applies": [
+        {
+          "status": "veil",
+          "chance": 1000,
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "shadow_clone",
+      "name": "phân thân",
+      "flavour": "Chia mình ra làm nhiều, mỗi bản mang theo một phần sức của bản gốc",
+      "element": "neutral",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 5,
+      "target": "self",
+      "summons": {
+        "count": 2,
+        "name": "phân thân",
+        "share": 400,
+        "skills": [
+          "kunai"
+        ],
+        "lasts": 4,
+        "bound": true
+      }
+    },
+    {
+      "id": "summon_toad",
+      "name": "triệu hồi cóc",
+      "flavour": "Ký giao ước bằng máu rồi gọi lên một con cóc to hơn cả người gọi",
+      "element": "neutral",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 6,
+      "target": "self",
+      "summons": {
+        "count": 1,
+        "name": "cóc",
+        "element": "water",
+        "skills": [
+          "water_gun"
+        ],
+        "stats": {
+          "hp": 2400,
+          "attack": 420,
+          "defense": 460,
+          "speed": 55,
+          "accuracy": 110,
+          "dodge": 20
+        }
+      }
     }
   ]
 }
