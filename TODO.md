@@ -24,17 +24,23 @@ is only so the shape is readable.
   there is one — replay, undo. Draws for a battle nobody can act in and for a
   deadlock. Piercing, healing, draining, regeneration. Conditions read the target
   *or* the caster, as a threshold or as a gradient that grows with the caster's
-  own wounds. Summons. Taunt.
+  own wounds. Reach counted in ranks from the far side rather than in cells from
+  the caster. A resistance share may be negative, so a target can be made easier
+  to afflict and not only harder. Summons. Taunt.
 - **Traits.** A character carries traits as well as a kit: permanent grants,
   gated grants that come and go, resistances, replies to whatever attacked,
   amplifiers, drains, and a permanent speed change.
 - **Progression.** Learnsets as unlocks, a placement choosing four skills and one
   trait, evolution stages as an allowlist, and late-game builds as data with a
-  screen of their own.
+  screen of their own. A line may fork — `Stage.After` names a predecessor, so it
+  is a tree — and is read **by order or by name, never both**, with `Furthest`
+  refusing on a fork rather than picking an arm.
 - **Authoring.** `hexforge` (CLI, for pipes) and `hexforge-tui` (full screen)
   over one `internal/forge`, so the two cannot disagree. Skill authoring and
   editing, art picker, kit and allowlist pickers, budget bounds, spar, `weigh`
-  and `check`.
+  and `check`. A flavour clause is authorable from the flags as well as the
+  wizard, and the damage preview reads the caster's own terms rather than only
+  the target's.
 - **Reference screens.** Statuses, traits, elements, species, and the affinity
   chart drawn as closed ASCII loops in element colour.
 - **Vietnamese.** The TUI is Vietnamese-first with an English toggle; every
@@ -45,27 +51,16 @@ is only so the shape is readable.
   broken by what an option costs to have spent rather than by kit order. The roster
   was re-levelled once along the way, which is what makes every rate quoted anywhere
   comparable.
+- **Balance.** Every enemy-aimed range re-read under the rank rule, and each ace
+  moved to its own back column behind a screen — 27.6% ally → **47.3%**. Both were
+  data answers, and the formation is guarded by a test rather than by whoever
+  edits the file next. ⚠️ The levels were deliberately **not** touched: the 20..30
+  dial spans 40–82% on the screened board, so it is not the lever it looks like.
+  A field is priced with `weigh` against a copy of its own carrier, because the
+  roster win rate is **non-monotone in ally damage** and prices nothing.
 
 ## Not done
 
-- [x] **Every skill's range re-read under the rank rule. Done** — 21 of 31
-      enemy-aimed ranges moved onto the depth tiers (1 contact, 2 over the line,
-      3 the back line), and `maxRange` tightened to the three ranks a side has.
-- [x] **`roster.json` re-levelled under blocking. Done** — each ace moved to its
-      own **back** column behind the two young units, on both sides, and nothing
-      else changed: 27.6% ally → **47.3%** over 4000 seeds, 12/40 → 24/40 on the
-      smoke test. It was a placement answer as filed. ⚠️ Placement is purely
-      defensive now, so the shape is guarded by
-      `TestTheShippedFormationScreensItsAce` rather than left to whoever edits the
-      file next. The levels were **not** touched: the 20..30 dial spans 40–82% on
-      the screened board, and 30/30 is the bottom of it.
-
-- [x] **An evolution line that forks. Done** — `Stage.After` names a stage's
-      predecessor, so a line is a tree: two arms may share a threshold and a stage
-      may sit past a fork on one arm. ⚠️ A line is read **by order or by name,
-      never both**, and `Furthest` — the half that would have failed silently —
-      refuses on a fork instead of picking an arm. Nothing shipped forks yet, on
-      purpose. → `CLAUDE.md` § Open work.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
@@ -93,36 +88,6 @@ is only so the shape is readable.
       ⚠️ `TestRecklessIsATradeAndNotAGift` asks whether *something* is given up
       and cannot ask whether **too much** is, which is why nothing caught this.
       → `dragon_test.go` § `TestTheDragonLineCanSpendWhatItApplies` for the table.
-- [x] **Vulnerability. Done** — a negative `Resists` share, composing through the
-      same multiply. `Refused` stays one signed field; a negative is a share the
-      target *added*. ⚠️ No shipped trait uses it yet: `reckless` ("liều mạng",
-      which already keeps no guard back) is the natural first user and is a
-      **balance** change, so it is data work rather than this. → `README.md`.
-- [x] **`forge.PreviewDamage` reads the caster's own terms. Done** — the
-      amplified figure is now the skill with everything it asks for holding
-      (`requires`, `self_requires`, `self_gradient`), composed through the new
-      `combat.Swung` so the preview and the battle share one expression.
-      ⚠️ That extraction found the ordering — bonus first, share second — was
-      guarded by **nothing**: swapping the two halves passed the whole suite.
-      `TestSwungAddsTheBonusBeforeTakingTheShare` is the missing claim.
-- [x] **`hexforge` can author a flavour clause. Done** — `--flavour` on both
-      `skills add` and `skills edit`, and a prompt beside the name in the wizard.
-      An empty string clears it, on the same terms as an allowlist. The parser's
-      rules still apply through the flag rather than around it: a digit in a
-      clause is refused at the write, which the end-to-end test asserts.
-- [x] **`hexforge weigh` — an instrument that prices ONE field on ONE skill. Done.**
-      The carrier fights a copy of itself whose only difference is that field, so
-      the deviation from an even split is the field's whole worth: kit, stats,
-      placement, level and turn order all cancel. Eight scalar fields; the sweep
-      always inserts the skill's own value as a control, and **a control row that
-      is not exactly 500‰ refuses the whole report** rather than printing a
-      number. `worth` and `turns` are co-equal headline columns.
-      ⚠️ **It replaced a measurement that was proven unsound**: the roster win
-      rate is **non-monotone in ally damage** — +5% power on an ally-only skill
-      *lowered* it 1.75pp, and the same change read +2.40pp before #136 and
-      −2.14pp after. → `CLAUDE.md` § Pricing one number.
-      **No balance data was authored**: `internal/core`, `internal/seed/data` and
-      every golden are untouched.
 - [ ] **The crit balance data itself is still unwritten.** #135 shipped the
       mechanic inert — **every shipped skill declares `crit: 0`** — and the
       instrument to price one now exists, so what is left is the authoring: which
