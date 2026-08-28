@@ -47,10 +47,13 @@ const bulbasaurSeeds = 30
 // build against the thing it is for is the measurement; fighting it against its
 // own twin measures the twin.
 //
-// ⚠️ Both figures are taken on autopilot and both understate the sustain kit.
-// battle.Suggest attacks whenever it can and reaches for a skill of no power only
-// when it cannot, so synthesis and ingrain are cast only in the turns nothing is
-// in range. A player holding them for the turn they are needed gets more.
+// ⚠️ Both figures are taken on autopilot, which used to mean the sustain kit was
+// barely played at all: a skill of no power was reached only when nothing could be
+// hit, so synthesis and ingrain were cast in the turns nothing was in range rather
+// than in the turns they were wanted. The opponent now prices a heal by the health
+// an enemy could otherwise take off, and the kit's figures moved with it — 17 turns
+// recovering 964 became 23 turns recovering 2818 on the same seeds. What autopilot
+// still cannot do is save a skill for a turn that has not arrived.
 func TestTheTwoBulbasaurBuildsAreDifferentUnits(t *testing.T) {
 	poisonTurns, poisonDealt, poisonHealed := bulbasaurFight(t, poisonBuild, "virulence")
 	sustainTurns, sustainDealt, sustainHealed := bulbasaurFight(t, sustainBuild, "blood_thirst")

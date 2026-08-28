@@ -38,16 +38,27 @@ type Choice struct {
 
 // Suggest picks an action for the acting unit.
 //
-// It is deliberately shallow: it takes the option with the highest expected
-// damage across everything the shape would catch, and falls back to the first
-// usable non-damaging skill when nothing can be hurt. A summoning skill is the
-// one exception to "damage this turn" — see summonWorth — because it is the only
-// thing in the book that buys turns rather than spends one. That is enough to run a
-// battle to its end without a player, which is what the tests and the enemy side
-// need, and it is fully deterministic so a replay stays a replay.
+// It takes the option worth the most, in one unit: damage. Everything that is not
+// damage is *priced* in damage rather than left to a fallback — a poison by the
+// ticks it owes, a buff by what it adds to an attack and takes off one coming in,
+// a guard by the strikes it eats, a heal by the health an enemy could otherwise
+// have taken off, a cleanse by the harm it lifts, a summon by the turns it buys.
+// See price.go for one rule per job and the capped horizon each is paid over.
+//
+// It is still shallow, and deliberately: one turn deep, no search, no memory of
+// what it did last turn. What changed is that the whole timed-effect layer is now
+// played rather than merely present — before this, a skill of no power was reached
+// only when nothing could be hurt, so the opponent never poisoned anybody it could
+// hit instead, never guarded and never healed on purpose.
+//
+// The fallback survives for what a price cannot reach: a skill worth nothing to
+// anybody standing where they are (a taunt, a shield on a unit already at its cap)
+// still gets taken when there is nothing better, exactly as it did.
 //
 // It reads no randomness and mutates nothing, so a client may call it to offer a
-// hint without disturbing the battle's own sequence.
+// hint without disturbing the battle's own sequence. Every price obeys that too:
+// the chance an application would be rolled against is read as a weight, and a
+// hypothetical unit is built beside the real one rather than out of it.
 func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 	if prompt == nil || prompt.Skipped {
 		return Choice{}, false
@@ -58,6 +69,7 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 	}
 	best, bestValue, found := Choice{}, int64(-1), false
 	fallback, hasFallback := Choice{}, false
+	prices := b.newPricing()
 
 	for _, option := range prompt.Options {
 		if !option.Available() {
@@ -67,17 +79,18 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 		if err != nil {
 			continue
 		}
-		// Before the power check, because a summoning skill has no power of its
-		// own and would otherwise stay the fallback it used to be: every one of
-		// them was reached only when nothing could be hurt, so the shipped
-		// summoner never called anybody up while it had a kunai in reach.
+		// Before the shape, because a summoning skill has no power of its own and
+		// would otherwise stay the fallback it used to be: every one of them was
+		// reached only when nothing could be hurt, so the shipped summoner never
+		// called anybody up while it had a kunai in reach.
 		if declared.Summons.Summons() {
 			// A cast worth nothing falls through to the fallback below rather
 			// than being rated at nought, which is what it was before this
 			// branch existed. The two differ on a board with no room: a rating
 			// of nought is still a rating, so it would beat "no damaging option
 			// at all" and take the turn ahead of a shield or a cleanse that
-			// would have done something.
+			// would have done something. Every priced job below is written the
+			// same way for the same reason.
 			if value := b.summonWorth(actor, declared); value > 0 {
 				if value > bestValue {
 					best, bestValue, found =
@@ -86,20 +99,22 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 				continue
 			}
 		}
-		if declared.Power == 0 {
-			if !hasFallback {
-				fallback, hasFallback = Choice{Skill: option.Skill, Aim: option.Aims[0]}, true
-			}
-			continue
-		}
-		if declared.Target != skill.Enemy {
-			continue
-		}
+		rated := false
 		for _, aim := range option.Aims {
-			value := b.expected(actor, declared, aim)
+			value := prices.rate(actor, declared, aim)
+			if value <= 0 {
+				continue
+			}
+			rated = true
 			if value > bestValue {
 				best, bestValue, found = Choice{Skill: option.Skill, Aim: aim}, value, true
 			}
+		}
+		// Worth nothing to anybody it could reach: the fallback, on the same terms
+		// as before. The first such skill in kit order is kept, and it is taken
+		// only if nothing at all was worth doing.
+		if !rated && !hasFallback {
+			fallback, hasFallback = Choice{Skill: option.Skill, Aim: option.Aims[0]}, true
 		}
 	}
 	if found {
@@ -136,35 +151,49 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 		if target == nil || target.Side == actor.Side {
 			continue
 		}
-		power := declared.PowerAgainst(conditionTarget(declared, target)) + spent
-		if position > 0 {
-			power = power * b.books.Patterns.SplashPower / 1000
-		}
-		targetStats := b.Stats(target)
-		multiplier := b.books.Chart.MultiplierAgainst(declared.Element, target.Affinity)
-		multiplier = actor.Statuses.Modifiers().Affinity(
-			multiplier, b.books.Chart.Multipliers().Neutral, b.books.Bounds)
-		hit := combat.Hit{
-			Scaling: combat.PickScaling(declared.Scaling.Source,
-				actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat]),
-			Multiplier:    power,
-			Strikes:       declared.StrikeCount(),
-			Affinity:      multiplier,
-			Defense:       targetStats[progression.Defense],
-			Pierce:        declared.Pierce,
-			SkillAccuracy: declared.Accuracy,
-			AccuracyStat:  actorStats[progression.Accuracy],
-			DodgeStat:     targetStats[progression.Dodge],
-		}
-		landed := b.books.Rules.Total(hit) * int64(b.books.Rules.Chance(hit)) / combat.PermilleBase
-		// Damage past a target's remaining health is wasted, so a finishing blow
-		// is not rated above one that would kill twice over.
-		if landed > target.HP {
-			landed = target.HP
-		}
-		total += landed
+		total += b.against(actor, actorStats, declared, target, position, spent)
 	}
 	return total
+}
+
+// against is one target's share of what a skill would do to it, and it takes the
+// unit rather than the cell for one reason: a rating asks the same question about
+// a unit that is *not* on the board — the same unit holding a buff it has not been
+// given, so that a stat change can be priced by the difference it would make.
+//
+// Reading the occupant of a cell instead is what the first version of this did,
+// and the whole defensive half of the pricing was silently dead: every
+// hypothetical was handed straight back to the real board and every stat change
+// came out worth nothing.
+func (b *Battle) against(actor *Unit, actorStats progression.Values, declared skill.Skill,
+	target *Unit, position, spent int) int64 {
+	power := declared.PowerAgainst(conditionTarget(declared, target)) + spent
+	if position > 0 {
+		power = power * b.books.Patterns.SplashPower / 1000
+	}
+	targetStats := b.Stats(target)
+	multiplier := b.books.Chart.MultiplierAgainst(declared.Element, target.Affinity)
+	multiplier = actor.Statuses.Modifiers().Affinity(
+		multiplier, b.books.Chart.Multipliers().Neutral, b.books.Bounds)
+	hit := combat.Hit{
+		Scaling: combat.PickScaling(declared.Scaling.Source,
+			actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat]),
+		Multiplier:    power,
+		Strikes:       declared.StrikeCount(),
+		Affinity:      multiplier,
+		Defense:       targetStats[progression.Defense],
+		Pierce:        declared.Pierce,
+		SkillAccuracy: declared.Accuracy,
+		AccuracyStat:  actorStats[progression.Accuracy],
+		DodgeStat:     targetStats[progression.Dodge],
+	}
+	landed := b.books.Rules.Total(hit) * int64(b.books.Rules.Chance(hit)) / combat.PermilleBase
+	// Damage past a target's remaining health is wasted, so a finishing blow is not
+	// rated above one that would kill twice over.
+	if landed > target.HP {
+		landed = target.HP
+	}
+	return landed
 }
 
 // summonWorth is what a cast is worth in the one unit the rest of Suggest counts

@@ -106,6 +106,9 @@ func books(t *testing.T) battle.Books {
 	  {"id":"dash","element":"neutral","range":0,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
 	   "self_applies":[{"status":"haste","chance":1000}]},
+	  {"id":"steel","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "self_applies":[{"status":"toughened","chance":1000,"stacks":2}]},
 	  {"id":"mend","element":"neutral","range":1,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"ally",
 	   "strips":{"categories":["dot","stat_debuff","control"],"stacks":3}},
@@ -1355,9 +1358,11 @@ func TestSuggestLeavesAnAllSidedAttackAlone(t *testing.T) {
 			"skill is skipped, not rated", choice.Skill)
 	}
 
-	// A skill with no power is a different case and does get used, because the
-	// fallback does not ask which side it aims at — which is what a
-	// battlefield-wide buff or cleanse needs.
+	// A skill with no power is a different case and does get used. It reaches the
+	// fallback rather than being rated: rate refuses an all-sided skill outright,
+	// so a battlefield-wide buff is worth nothing to the rating and is taken only
+	// when nothing else was worth doing — which is what keeps the guard above
+	// meaning one thing rather than two.
 	quiet := duel(t, []string{"anthem"}, []string{"jab"}, 120, 100)
 	prompt, err = quiet.Advance()
 	if err != nil {

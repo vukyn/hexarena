@@ -65,6 +65,55 @@ There is no linter config — `gofmt` and `go vet` are the whole of it.
 `go test ./... -update` fails on the rest. A new package with a golden has to be
 added to that command **and** to the `golden` target.
 
+## Rating an action: how Suggest prices what is not damage
+
+`battle.Suggest` rates every option in one unit — damage — and everything that is
+not damage is priced *in* damage, from the function that resolves it, over a capped
+horizon (`price.go`). Four horizons: `buffHorizon` 3, `guardHorizon` 2,
+`healHorizon` 2, `killHorizon` 1. Under-pricing costs a marginal cast; over-pricing
+costs a kill.
+
+Rules for anything added to that file:
+
+- **Read the resolving function, never a second copy of its arithmetic.** A status
+  tick comes from `inflict`'s own expression, origin and all; a restore from
+  `combat.Rules.Restore`; a stat change from `modifier.Set.Stat` through
+  `Battle.Stats`; a stack cap from the status book through `Set.With`. A price built
+  from a second reading lets the opponent prefer a skill for something the skill
+  does not do, and nothing reports the disagreement.
+- **Weight a chance, never roll one.** `Suggest` may not touch `b.source`. Compose
+  `amplify` (the *actor*) with `resist` (the *target*) and clamp last, exactly as
+  `inflict` does. ⚠️ Those two take the same Go type: swapping them compiles,
+  changes every price, and only `TestPricingAStatusUsesTheChanceThatWouldBeRolled`
+  says so.
+- **Worth nothing means not rated, never rated at nought.** A rating of nought is
+  still a rating and would beat "found nothing", taking the turn ahead of whatever
+  the fallback would have chosen.
+- **Clamp every term against what the board can actually deliver.** A
+  damage-over-time at the target's remaining health, a heal at the room *and* at
+  what an enemy could take off, a charge at the strikes there are to eat. The
+  unclamped versions are not conservative — they are the largest numbers in the
+  file, and one of them was worth 19 points of the shipped roster's win rate.
+- ⚠️ **A permanent status carries zero duration.** `min(duration, horizon)` prices
+  it at nothing. Go through `turnsOf`.
+- ⚠️ **`expected` reads the occupant of a cell**, so handing it a hypothetical unit
+  silently gets the real one back. `Battle.against` takes the unit; use it.
+- ⚠️ **Build a hypothetical with `status.Set.With`, never by copying a unit and
+  applying to it.** A `Set`'s entries and each entry's stacks are slices, and
+  `Apply` writes through them — a shallow copy refreshes the real unit's durations
+  from inside the rating, and a refreshed status is indistinguishable from sustained
+  pressure in every golden.
+- **Out of scope on purpose:** the turn queue (so a speed buff is worth nothing —
+  `haste` is a player's tool), holding a skill for a later turn, all-sided skills
+  (`expected` skips an ally rather than subtracting it), and any lookahead. The
+  detonate setup needs none: price the status and the payoff rates itself.
+
+⚠️ **No balance figure carries across this change.** The shipped roster read 53.1%
+ally before and 79.0% after, side-neutral (82.5% for the same squad with the sides
+exchanged), 0 stalls, 4000 seeds. That is a cast finding — the roster's calibration
+rested on the opponent not playing statuses — and re-levelling it is a **data**
+change that is deliberately not part of this one.
+
 ## The layer rule
 
 Everything under `internal/core/` except `battle` is a **pure function of its
@@ -1170,17 +1219,15 @@ is the constraint each piece has to respect.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
       at build time or rasterised at load, because ebiten draws neither.
-- [ ] **A deeper opponent.** `battle.Suggest` picks the highest expected damage
-      and never buffs, cleanses, shields or sets up a detonate, so most of the
-      timed-effect layer is tested but not played. A replacement must read no
-      randomness and mutate nothing — a client calls it for a hint mid-turn — and
-      two identical battles must still produce identical logs.
-      **Summoning is out of this item and done** (*Pricing a summon* below), and
-      the way it was done is the template: a thing that is not damage gets played
-      by being priced *in damage*, from the same functions that resolve it, with
-      an explicit and capped horizon. What it cost is also the template — the
-      summoner's spar rate went 56.4% → 93.8% the moment the AI used its kit, so
-      **expect a balance answer to move, not a golden**.
+- [x] **A deeper opponent. Done** — see *Rating an action* above for the rules and
+      *A deeper opponent* in `README.md` for what moved. Statuses, buffs, guards,
+      heals, cleanses and kills are all priced in damage now, over capped horizons,
+      and the detonate setup came free with pricing the status. What is still out,
+      each a separate piece of work: the turn queue (so a speed buff is worth
+      nothing to the rating), holding a skill for a later turn, and all-sided
+      skills. ⚠️ It cost a **balance answer, not a golden**, exactly as the summon
+      did: the shipped roster went 53.1% → 79.0% ally, which is a cast finding —
+      re-levelling `roster.json` is the follow-up **data** change.
 - [x] **A gated grant: a stat change that comes and goes.** `blaze` is now what
       it is named after — `{"grants":[{"status":"kindled"}],"while":{"below_health":333}}`
       — and its burn immunity moved to `heatproof`, because **a gate covers the

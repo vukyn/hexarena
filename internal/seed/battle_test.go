@@ -479,18 +479,20 @@ func unitCell(t *testing.T, fight *battle.Battle, id string) hex.Offset {
 // on and gone off again, and returns what it logged.
 //
 // It is here rather than folded into the sweep above because of something the
-// sweep measured: on autopilot a gated trait is very nearly a one way door. A
-// unit that falls below a third of its health is a unit that is losing, and the
-// opponent never buffs, never cleanses and never heals anybody — the only
-// healing in sixty battles is what a drain returns to its own caster, which is
-// worth about a fortieth of a health bar against damage worth a tenth. Across
-// four thousand battle-seeds of every arrangement tried, a trait came back off
-// once.
+// sweep measured: on autopilot a gated trait is very nearly a one way door. A unit
+// that falls below a third of its health is a unit that is losing, and while the
+// opponent will now heal on purpose — it prices a restore by the health an enemy
+// could otherwise take off — it heals whoever is worth healing, which is rarely the
+// unit whose gate this test is about, and it cannot hold a heal for a turn that has
+// not arrived.
 //
-// So passive_released is reachable, and reachable is what this test is about: a
-// player heals, and Suggest does not. Proving it with a hand-played battle says
-// exactly that, where widening the sweep until the rare case turned up would
-// have been a test that passed for a reason nobody could name.
+// So passive_released stays a case to play by hand rather than to wait for, and
+// that is the point: proving it deliberately says what is reachable, where widening
+// the sweep until the rare case turned up would have been a test that passed for a
+// reason nobody could name. ⚠️ The one figure worth re-measuring if the horizons in
+// price.go ever move is how often a gate crosses back on the bench: a heal priced
+// too generously would keep every unit above every threshold, and the whole gated
+// layer would quietly stop being exercised.
 func aHandPlayedGateCrossing(t *testing.T) []battle.Event {
 	t.Helper()
 	fight, err := battle.New(benchBooks(t), 3, []battle.Roster{

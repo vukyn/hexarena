@@ -30,6 +30,7 @@ package status
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"sort"
 
 	"github.com/vukyn/hexarena/internal/core/modifier"
@@ -562,6 +563,69 @@ func (s *Set) Snapshot() []Snapshot {
 		})
 	}
 	return out
+}
+
+// With is a copy of this set with one application layered on, for a caller that
+// wants to know what a status would do before anything does it.
+//
+// It exists for Suggest, which may not mutate: the rating prices a buff, a guard
+// or a regeneration by building the unit that would hold it and reading the
+// numbers off that, so it needs the set the application *would* produce. The
+// application itself goes through Apply, so the cap, the duration refresh and
+// the wasted-stack rule are the ones that resolve for real rather than a second
+// reading of them.
+//
+// ⚠️ The copy is deep, and it has to be. A Set holds its entries in a slice and
+// each entry holds its stacks in another, so a value copy shares both arrays --
+// and Apply writes *through* them, refreshing every existing stack's Remaining.
+// A shallow copy here would therefore have Suggest quietly refresh the real
+// unit's durations every time it rated a status, which is a mutation in the one
+// function that promises not to, and no existing test would have failed.
+func (s *Set) With(kind Kind, tickAmount int64, stacks int) Set {
+	copied := Set{}
+	if len(s.entries) > 0 {
+		copied.entries = make([]entry, len(s.entries))
+		for i := range s.entries {
+			copied.entries[i] = entry{
+				kind:   s.entries[i].kind,
+				stacks: slices.Clone(s.entries[i].stacks),
+			}
+		}
+	}
+	for range stacks {
+		copied.Apply(kind, tickAmount)
+	}
+	return copied
+}
+
+// Without is With pointed the other way: a copy of this set with stacks taken
+// off, which is what prices a cleanse.
+//
+// Same deep copy and the same reason, and the removal goes through Cleanse so
+// the stacks it takes are the ones a cleanse would actually take -- a price that
+// chose its own stacks could name a figure the skill never delivers.
+func (s *Set) Without(categories []Category, count int) Set {
+	copied := s.With(Kind{}, 0, 0)
+	copied.Cleanse(categories, count)
+	return copied
+}
+
+// Pending is what every ticking stack in this set still owes over the turns it
+// has left: the frozen tick amount times the remaining duration, per stack.
+//
+// Per stack rather than per status, because TickAmount totals a status's stacks
+// while Remaining reports the longest of them — multiplying those two would
+// charge every stack for the longest one's duration. A cleanse is priced by this
+// figure, and a price that over-counted would have the opponent cleansing ahead
+// of finishing a unit off.
+func (s *Set) Pending() int64 {
+	total := int64(0)
+	for i := range s.entries {
+		for _, stack := range s.entries[i].stacks {
+			total += stack.TickAmount * int64(stack.Remaining)
+		}
+	}
+	return total
 }
 
 // Book is the declared statuses plus the limits they obey.
