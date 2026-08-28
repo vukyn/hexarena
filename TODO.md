@@ -38,7 +38,9 @@ is only so the shape is readable.
 - **Vietnamese.** The TUI is Vietnamese-first with an English toggle; every
   description is derived from the data, and only the flavour clause is authored.
 - **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
-  kills and summons in damage over capped horizons.
+  kills, summons and **tempo** in damage over capped horizons — tempo off the
+  speed stat, never off the queue. The roster was re-levelled afterwards, which
+  is what makes every rate quoted anywhere comparable.
 
 ## Not done
 
@@ -51,12 +53,18 @@ is only so the shape is readable.
 - [ ] **Grow the cast.** Three characters, one per element. This is content, and
       the constraints that bound it are written down. Read Squirtle first.
       → `CLAUDE.md` § Open work.
-- [ ] **A deeper opponent — the three pieces left over.** The turn queue (so a
-      speed buff is worth nothing to the rating), holding a skill for a later
-      turn, and all-sided skills. → `CLAUDE.md` § Open work.
-- [ ] **Re-level `roster.json`.** The deeper opponent moved the shipped roster
-      from 53.1% to 79.0% ally. That is a cast finding, and the follow-up is a
-      **data** change. → `CLAUDE.md` § Open work.
+- [ ] **A deeper opponent — the two pieces left over.** Holding a skill for a
+      later turn, and all-sided skills. ⚠️ **Tempo is no longer one of them** —
+      it is priced off the speed stat, and what needs the queue is only *where*
+      in the order an extra turn falls. → `CLAUDE.md` § Open work.
+- [ ] **The dragon build has no detonate.** 22.1% against the fire line, which is
+      a **data** answer and not an engine one — a rating that can finally see
+      `outrage`'s recoil is reading the line correctly. → `README.md` § A deeper
+      opponent.
+- [ ] **Every event logs `"cell":{"col":0,"row":0}`.** `omitempty` does nothing on
+      a nested struct and `omitzero` would be wrong, because `{0,0}` is a real
+      cell. Needs an off-board `Offset` (a pointer, or a sentinel) before the
+      field can be dropped. The one item here with no prose home yet.
 - [ ] **Vulnerability.** A target *easier* to poison is `Resists` with a negative
       share, which reuses the whole composition. Needs a decision about a
       negative `Refused` in the log — `resist` returns early when nothing is
