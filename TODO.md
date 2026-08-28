@@ -64,15 +64,13 @@ is only so the shape is readable.
   A field is priced with `weigh` against a copy of its own carrier, because the
   roster win rate is **non-monotone in ally damage** and prices nothing.
 
+- **Squads.** A side is built in the TUI — who is in it, what each brings, where
+  each stands — saved to `squads.json`, and fought against another over N seeds
+  **both ways round**, which is what makes a mirror read exactly even instead of
+  reporting the first slot's advantage as the squad's.
+
 ## Not done
 
-- [ ] **Fight two squads in the TUI.** The builder writes them and
-      `placement.Squad.Take(side, cast)` fields one as either half, so what is
-      left is a screen: pick two, fight them over N seeds, draw the rate — the
-      shape `forge.Library.Spar` already has for one character against the cast.
-      ⚠️ Quote the seed count beside any rate, and remember a squad rate is **not**
-      the roster's win rate: the roster is the instrument and a squad is whatever
-      somebody built. → `README.md` § Building a squad.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.

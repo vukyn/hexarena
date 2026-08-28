@@ -59,6 +59,10 @@ const (
 	// screenPreview was — nothing serialises these, but the menu is built from
 	// the order they are declared in.
 	screenSquads
+	// screenFight is raised from the squad catalogue rather than the menu, for
+	// the reason screenSpar is raised from the check: that is where a squad is
+	// under a cursor, and a measurement wants a subject before anything else.
+	screenFight
 )
 
 // The smallest window the screens fit in.
@@ -144,6 +148,7 @@ type model struct {
 	species  speciesScreen
 	builds   buildsScreen
 	squad    squadScreen
+	fight    fightScreen
 	// chart holds nothing: it is drawn from the library every time and has no
 	// cursor. It is a field anyway so that the screen is dispatched to like every
 	// other one, rather than being a special case in three switches.
@@ -191,6 +196,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		species:  newSpeciesScreen(lib),
 		builds:   newBuildsScreen(lib),
 		squad:    newSquadScreen(lib),
+		fight:    newFightScreen(),
 		check:    newCheckScreen(lib),
 		preview:  newPreviewScreen(),
 		spar:     newSparScreen(),
@@ -293,6 +299,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.builds.update(m, message)
 	case screenSquads:
 		return m.squad.update(m, message)
+	case screenFight:
+		return m.fight.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
@@ -371,6 +379,8 @@ func (m model) enter(target screen) model {
 		m.builds = m.builds.refresh(m.lib)
 	case screenSquads:
 		m.squad = m.squad.refresh(m.lib)
+	case screenFight:
+		m.fight = m.fight.refresh()
 	case screenSpar:
 		m.spar = m.spar.refresh()
 	}
@@ -424,6 +434,8 @@ func (m model) screenContent() string {
 		body, footer = m.builds.view(m)
 	case screenSquads:
 		body, footer = m.squad.view(m)
+	case screenFight:
+		body, footer = m.fight.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:
