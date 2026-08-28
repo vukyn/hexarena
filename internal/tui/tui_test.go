@@ -300,7 +300,7 @@ func TestEveryEventKindRenders(t *testing.T) {
 			Actor: "a", Target: "f", Skill: "ember_lance", Status: "burn",
 			Amount: 617, Before: 100, Stacks: 2, Strike: 1, Chance: 900,
 			Multiplier: 1500, Power: 1800, Remaining: 2400,
-			Cell: hex.Offset{Col: 3, Row: 1}, Side: hex.SideAlly, Note: "ally",
+			Cell: hex.At(hex.Offset{Col: 3, Row: 1}), Side: hex.SideAlly, Note: "ally",
 		}
 		line := tui.Line(event, tags)
 		if strings.TrimSpace(line) == "" {

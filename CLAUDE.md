@@ -459,6 +459,23 @@ said. ⚠️ **This broke the log format once** — logs written before it fail
 was worth doing once, on throwaway files, to stop the format depending on a
 coincidence. Do not put a real value back at zero.
 
+**`hex.Cell` is an `Offset` that may be nowhere, and `Event.Cell` /
+`Decision.Aim` are the two fields that need it.** The opposite trap to the one
+above: `{0,0}` is the ally back corner, so the coordinate has no spare value to
+mean "no cell" — and `omitempty` does nothing to a struct field, so every kind
+that places nobody wrote the back corner into the log, as did every passed turn's
+aim. `omitzero` on the offset only inverts the error. So absence lives in a
+second, unexported field, the tag is **`omitzero`** (the repo's first use; go.mod
+is `go 1.27.0`), and readers unwrap with the comma-ok `Cell.Offset()`. ⚠️ **It is
+a value, not a pointer, and must stay one** — `--verify` and
+`internal/seed/battle_test.go` compare whole events with `==`, which a pointer
+satisfies **by address** with nothing to compile-fail on, so every log would fail
+verification and no test would say why. `Cell.String()` prints `"none"` when
+absent, which is what keeps the TUI goldens byte-identical. ⚠️ **This broke the
+log format a second time** — a log saved earlier fails `--verify` on its first
+event. `Unit.Cell` and `Roster.Slot` stay plain `hex.Offset`: they are always
+meaningful and they key nine `map[hex.Offset]` sites.
+
 ## How a battle ends, and why a draw is an outcome rather than an error
 
 Every ending comes through one `Ended` event carrying a `battle.Outcome`:

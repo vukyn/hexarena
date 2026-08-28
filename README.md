@@ -869,6 +869,26 @@ happened to be declared first — and a battle with no winner wrote exactly the
 same thing while meaning the opposite. A won battle now names its winner and a
 draw names nobody. Logs written before that change do not `--verify`.
 
+A cell is written the same way: only when the event is about somebody standing
+somewhere. Five kinds place a unit on the board — a unit's opening record, a
+summon arriving, a summon leaving, a death, and the cell a skill was pointed at —
+and until now the other twenty-odd wrote `"cell":{"col":0,"row":0}` all the same,
+because `omitempty` does nothing to a struct field. That is not an empty value,
+it is the ally back corner: a real cell, on every line of the file, claimed by
+events that placed nobody at all. `omitzero` on the coordinate would only have
+swapped the error round and dropped the corner from the events that meant it, so
+the cell became a type that can be nowhere and keeps the two apart. A passed turn
+records no aim for the same reason — it pointed nothing anywhere. Both stayed
+values rather than pointers, because `--verify` compares whole events with `==`
+and pointers would have compared addresses without a word from the compiler.
+
+⚠️ This is a break in the log format. A log saved before it carries the back
+corner on kinds that never meant one, so `--verify` re-runs the seed, produces an
+event with no cell where the file has `{"col":0,"row":0}`, and reports a mismatch
+on the first event it reaches. There is no compatibility shim and no version
+field: re-run the battle and save it again. Nothing committed is affected, since
+no testdata in the repository is a saved log.
+
 ## Layout
 
 ```

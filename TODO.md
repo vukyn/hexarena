@@ -20,8 +20,9 @@ The honest record is the git history — every entry below is a merged PR and
 is only so the shape is readable.
 
 - **Engine.** Turn-based battle on an odd-q hex grid, action-value turn order,
-  elemental chart. Verifiable logs, replay, undo. Draws for a battle nobody can
-  act in and for a deadlock. Piercing, healing, draining, regeneration.
+  elemental chart. Verifiable logs — a cell and an aim are written only where
+  there is one — replay, undo. Draws for a battle nobody can act in and for a
+  deadlock. Piercing, healing, draining, regeneration.
   Conditions read the target *or* the caster. Summons. Taunt.
 - **Traits.** A character carries traits as well as a kit: permanent grants,
   gated grants that come and go, resistances, replies to whatever attacked,
@@ -64,10 +65,6 @@ is only so the shape is readable.
       moves 22.0% → **21.2%**. ⚠️ Measured one change at a time: the detonate is
       worth **−0.8**, the trait **+33.1**. Still a **data** answer, just a
       different one. → `dragon_test.go` § `TestTheDragonLineCanSpendWhatItApplies`.
-- [ ] **Every event logs `"cell":{"col":0,"row":0}`.** `omitempty` does nothing on
-      a nested struct and `omitzero` would be wrong, because `{0,0}` is a real
-      cell. Needs an off-board `Offset` (a pointer, or a sentinel) before the
-      field can be dropped. The one item here with no prose home yet.
 - [x] **Vulnerability. Done** — a negative `Resists` share, composing through the
       same multiply. `Refused` stays one signed field; a negative is a share the
       target *added*. ⚠️ No shipped trait uses it yet: `reckless` ("liều mạng",

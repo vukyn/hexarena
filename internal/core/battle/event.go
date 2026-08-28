@@ -201,9 +201,11 @@ type Event struct {
 	// Remaining is the target's health after the event, or charges left after a
 	// block.
 	Remaining int64 `json:"remaining,omitempty"`
-	// Cell and Side place a unit on the board.
-	Cell hex.Offset `json:"cell,omitempty"`
-	Side hex.Side   `json:"side,omitempty"`
+	// Cell and Side place a unit on the board. Most kinds place nobody, so the
+	// cell is optional rather than a coordinate every event has to supply: see
+	// hex.Cell for why the absence needs a field of its own.
+	Cell hex.Cell `json:"cell,omitzero"`
+	Side hex.Side `json:"side,omitempty"`
 	// Outcome is how the battle finished, on Ended and nowhere else. Undecided
 	// is the zero value, so every other kind leaves it out.
 	Outcome Outcome `json:"outcome,omitempty"`

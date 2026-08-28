@@ -237,6 +237,94 @@ func TestNoSideIsTheZeroValue(t *testing.T) {
 	}
 }
 
+// TestTheBackCornerIsACellLikeAnyOther is the case the old event field got
+// wrong, stated on its own.
+//
+// `{0,0}` is where an ally back-row unit stands, so a cell there has to survive
+// every tag and every round trip that an absent cell is dropped by. This is the
+// half a sentinel or an `omitzero` on the coordinate itself would quietly lose.
+func TestTheBackCornerIsACellLikeAnyOther(t *testing.T) {
+	corner := At(Offset{Col: AllyBackCol, Row: 0})
+	raw, err := json.Marshal(corner)
+	if err != nil {
+		t.Fatalf("encode the back corner: %v", err)
+	}
+	if got, want := string(raw), `{"col":0,"row":0}`; got != want {
+		t.Errorf("the back corner encodes as %s, want %s", got, want)
+	}
+	type carrier struct {
+		Cell Cell `json:"cell,omitzero"`
+	}
+	held, err := json.Marshal(carrier{Cell: corner})
+	if err != nil {
+		t.Fatalf("encode a carried back corner: %v", err)
+	}
+	if !strings.Contains(string(held), `"cell"`) {
+		t.Errorf("the back corner was omitted from %s", held)
+	}
+	empty, err := json.Marshal(carrier{})
+	if err != nil {
+		t.Fatalf("encode a carried absence: %v", err)
+	}
+	if strings.Contains(string(empty), "cell") {
+		t.Errorf("no cell at all encodes as %s, want the field left out", empty)
+	}
+}
+
+// TestAnAbsentCellIsTheZeroValue is the other half: absence is what a Cell
+// carries when nothing was written, so an omitted field reads back as one.
+func TestAnAbsentCellIsTheZeroValue(t *testing.T) {
+	var unset Cell
+	if offset, filled := unset.Offset(); filled {
+		t.Errorf("the zero value reports the cell %s", offset)
+	}
+	if got := unset.String(); got != "none" {
+		t.Errorf("the zero value prints %q, want %q", got, "none")
+	}
+	// Comparability is the contract --verify rests on: a re-run's events are
+	// compared with == against the ones the log holds, so two cells at the same
+	// place have to be the same value and an absence must never equal a place.
+	somewhere := Offset{Col: 3, Row: 1}
+	if At(somewhere) != At(somewhere) {
+		t.Error("two cells at one coordinate do not compare equal")
+	}
+	if At(somewhere) == At(Offset{Col: 3, Row: 2}) {
+		t.Error("two cells at different coordinates compare equal")
+	}
+	if unset == At(Offset{}) {
+		t.Error("no cell at all compares equal to the back corner")
+	}
+	// Round trips, both ways round, through a field that drops the absence.
+	type carrier struct {
+		Cell Cell `json:"cell,omitzero"`
+	}
+	for _, one := range []Cell{unset, At(somewhere), At(Offset{})} {
+		raw, err := json.Marshal(carrier{Cell: one})
+		if err != nil {
+			t.Fatalf("encode %s: %v", one, err)
+		}
+		var back carrier
+		if err := json.Unmarshal(raw, &back); err != nil {
+			t.Fatalf("decode %s: %v", raw, err)
+		}
+		if back.Cell != one {
+			t.Errorf("%s came back as %s, through %s", one, back.Cell, raw)
+		}
+	}
+	// An explicit null is the same absence, so a writer that spells it out and a
+	// writer that leaves the field off agree.
+	var spelled carrier
+	if err := json.Unmarshal([]byte(`{"cell":null}`), &spelled); err != nil {
+		t.Fatalf("decode an explicit null: %v", err)
+	}
+	if spelled.Cell != unset {
+		t.Errorf("an explicit null decoded as %s", spelled.Cell)
+	}
+	if err := json.Unmarshal([]byte(`{"cell":"3,1"}`), &carrier{}); err == nil {
+		t.Error("a cell that is not a coordinate was decoded")
+	}
+}
+
 // TestReachNeededRisesTowardsTheBackColumn is the geometry behind a deadlock,
 // stated as the three numbers an author has to size a kit against.
 //

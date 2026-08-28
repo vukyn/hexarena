@@ -485,7 +485,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	turn := atb.Turn{At: b.queue.Now(), Number: b.queue.Turns(unit.ID)}
 	b.emit(Event{
 		Kind: SkillUsed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
-		Skill: known.ID, Cell: aim, Power: known.Power, Chance: known.Accuracy,
+		Skill: known.ID, Cell: hex.At(aim), Power: known.Power, Chance: known.Accuracy,
 	})
 
 	// Before applyToSelf, deliberately: a skill that both grants a status and
