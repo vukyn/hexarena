@@ -51,6 +51,15 @@ type SkillEdit struct {
 	// wording one of its own. See SkillDraft.ResolveEdit.
 	ID   *string
 	Name *string
+	// Flavour is the authored opening clause. It is here so that the CLI can
+	// write one at all: until it was, the clause could only be typed into the
+	// TUI or into the JSON by hand, which made the one field a person actually
+	// composes the one field a pipe could not reach.
+	//
+	// An empty string clears it, on the same terms as the allowlists below — a
+	// skill with no clause opens with the derived sentence instead, which is a
+	// real answer rather than a missing one.
+	Flavour *string
 	// Element and the rest are the fields an edit may name.
 	Element  *string
 	Target   *string
@@ -92,6 +101,7 @@ func (e SkillEdit) Draft(current skill.Skill) SkillDraft {
 	}{
 		{&drafted.ID, e.ID},
 		{&drafted.Name, e.Name},
+		{&drafted.Flavour, e.Flavour},
 		{&drafted.Element, e.Element},
 		{&drafted.Target, e.Target},
 		{&drafted.Range, e.Range},

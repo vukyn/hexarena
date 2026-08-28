@@ -99,12 +99,18 @@ var targetUsage = "who it aims at: " + strings.Join(forge.TargetNames(), ", ")
 // which is what every skill did before the field existed.
 const nameUsage = "the skill's display name; empty shows the id instead"
 
+// flavourUsage is one sentence about a field that has three rules on it, so it
+// names the rules rather than the field: an author reaching for --flavour is
+// about to write the only sentence in the book nothing derives for them.
+const flavourUsage = "the skill's opening clause, in Vietnamese, no digits; empty opens with the derived sentence instead"
+
 func runSkillsAdd(args []string) error {
 	set := newFlagSet("skills add")
 	dir := dataFlag(set)
 	var given forge.SkillDraft
 	set.StringVar(&given.ID, "id", "", "the skill's id")
 	set.StringVar(&given.Name, "name", "", nameUsage)
+	set.StringVar(&given.Flavour, "flavour", "", flavourUsage)
 	set.StringVar(&given.Element, "element", "", "the skill's element; neutral is the common pool")
 	set.StringVar(&given.Target, "target", "", targetUsage)
 	set.StringVar(&given.Range, "range", "", "how far it reaches, in hexes")
@@ -209,6 +215,7 @@ func runSkillsEdit(args []string) error {
 	var given forge.SkillDraft
 	set.StringVar(&given.ID, "id", "", "refused: a skill's id cannot be edited")
 	set.StringVar(&given.Name, "name", "", nameUsage)
+	set.StringVar(&given.Flavour, "flavour", "", flavourUsage)
 	set.StringVar(&given.Element, "element", "", "the skill's element; neutral is the common pool")
 	set.StringVar(&given.Target, "target", "", targetUsage)
 	set.StringVar(&given.Range, "range", "", "how far it reaches, in hexes")
@@ -336,6 +343,7 @@ func editBindings(edit *forge.SkillEdit, given *forge.SkillDraft) map[string]edi
 	return map[string]editBinding{
 		"id":                  {&edit.ID, &given.ID},
 		"name":                {&edit.Name, &given.Name},
+		"flavour":             {&edit.Flavour, &given.Flavour},
 		"element":             {&edit.Element, &given.Element},
 		"target":              {&edit.Target, &given.Target},
 		"range":               {&edit.Range, &given.Range},
@@ -395,6 +403,17 @@ func fillSkill(given forge.SkillDraft, lib *forge.Library, prompt *prompter) (fo
 	// has no default and no validation: any text is a name and no text is no name.
 	if err := ask(&filled.Name, question{
 		flag: "name", prompt: "display name", optional: true,
+	}); err != nil {
+		return forge.SkillDraft{}, err
+	}
+	// The clause goes next to the name because it is authored in the same breath
+	// and in the same language, and it is optional for the same reason: a skill
+	// with none opens with its derived sentence, which is an answer rather than
+	// a hole. No validation here — the digit ban and the rest are the parser's,
+	// and a prompt enforcing half of them would be a second copy of a rule that
+	// refuses the write anyway.
+	if err := ask(&filled.Flavour, question{
+		flag: "flavour", prompt: "opening clause", optional: true,
 	}); err != nil {
 		return forge.SkillDraft{}, err
 	}

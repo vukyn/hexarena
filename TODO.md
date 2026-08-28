@@ -72,9 +72,11 @@ is only so the shape is readable.
 - [ ] **A damage gradient off the caster's own health.** `SelfRequires` is a
       *threshold* ("below 40%, +bonus"); a gradient that grows as the caster
       falls is a multiplier in `combat` reading the other unit. Separate feature.
-- [ ] **`hexforge` cannot author a flavour clause.** The CLI stopped *wiping* it
-      (#115) but still cannot set one — there is no `--flavour` flag, so a clause
-      can only be written in the TUI or by hand in JSON.
+- [x] **`hexforge` can author a flavour clause. Done** — `--flavour` on both
+      `skills add` and `skills edit`, and a prompt beside the name in the wizard.
+      An empty string clears it, on the same terms as an allowlist. The parser's
+      rules still apply through the flag rather than around it: a digit in a
+      clause is refused at the write, which the end-to-end test asserts.
 
 ## Decided against — do not re-raise
 

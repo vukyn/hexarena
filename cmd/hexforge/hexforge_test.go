@@ -490,7 +490,8 @@ func TestSkillsAddRunsEndToEndThroughAPipe(t *testing.T) {
 
 	output, err := run("skills", "add", "oath", "--data", dir,
 		"--power", "1200", "--accuracy", "900", "--cooldown", "2",
-		"--applies", "burn:500", "--restrict-elements", "fire,metal", "--yes")
+		"--applies", "burn:500", "--restrict-elements", "fire,metal",
+		"--flavour", "Thề một lời rồi đánh cho bằng được", "--yes")
 	if err != nil {
 		t.Fatalf("a flags-only run through a pipe failed: %v\n%s", err, output)
 	}
@@ -515,6 +516,12 @@ func TestSkillsAddRunsEndToEndThroughAPipe(t *testing.T) {
 	written, err := lib.Skills().Lookup("oath")
 	if err != nil {
 		t.Fatalf("the skill was not written: %v", err)
+	}
+	// The clause is authored in the same run as the numbers, which is the whole
+	// point of the flag: a skill written through a pipe arrives complete rather
+	// than needing a second pass in another front-end to gain its one sentence.
+	if written.Flavour != "Thề một lời rồi đánh cho bằng được" {
+		t.Errorf("the authored clause is %q", written.Flavour)
 	}
 	if written.Element != element.Neutral || written.Power != 1200 || written.Cooldown != 2 {
 		t.Errorf("the written skill is %+v", written)
@@ -642,6 +649,33 @@ func TestSkillsEditRunsEndToEndThroughAPipe(t *testing.T) {
 	}
 	if raised := held("riptide"); raised.Power != 1100 || raised.Cooldown != 0 {
 		t.Errorf("the second edit produced %+v", raised)
+	}
+
+	// The clause a person actually composes, through the front-end a pipe can
+	// reach. Until --flavour existed this was the one field the CLI could not
+	// write: #115 stopped it *wiping* the clause, and an author still had to open
+	// the TUI or the JSON to put one there.
+	output, err = run("skills", "edit", "riptide", "--data", dir,
+		"--flavour", "Sóng ngầm kéo chân đối phương xuống", "--yes")
+	if err != nil {
+		t.Fatalf("a flavour edit was refused: %v\n%s", err, output)
+	}
+	if got := held("riptide").Flavour; got != "Sóng ngầm kéo chân đối phương xuống" {
+		t.Errorf("the clause landed as %q", got)
+	}
+	// An explicitly empty clause clears it, on the same terms as a list: a skill
+	// with none opens with its derived sentence.
+	if _, err := run("skills", "edit", "riptide", "--data", dir, "--flavour", "", "--yes"); err != nil {
+		t.Fatalf("clearing a clause was refused: %v", err)
+	}
+	if got := held("riptide").Flavour; got != "" {
+		t.Errorf("the cleared clause is still %q", got)
+	}
+	// And the parser's rules still apply through the flag, rather than the flag
+	// being a way round them: a digit in a clause is refused at the write.
+	output, err = run("skills", "edit", "riptide", "--data", dir, "--flavour", "Đánh 2 nhát", "--yes")
+	if err == nil {
+		t.Fatalf("a clause with a digit in it was written:\n%s", output)
 	}
 
 	// An explicitly empty list clears a restriction, which is the only way this
