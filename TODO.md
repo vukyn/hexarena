@@ -136,6 +136,16 @@ is only so the shape is readable.
       `Weigh` exists and deliberately not built with it: one carrier is one
       question, and a table over the whole cast is a different one that needs to
       decide what an average of prices taken against different opponents means.
+- [ ] **`weigh` prices neither a field that is two numbers nor a skill that
+      deals none.** `self_gradient` is a bonus *and* a share, so sweeping it is a
+      surface where the tool answers curves — it is out of the field table for
+      that reason rather than for being hard, and a second report is what it
+      wants, not a ninth constant. Separately, a row that lands nothing is
+      refused rather than reported as even, which is right — *worth nothing* and
+      *not rated* are different answers — but it leaves every **support** skill
+      unweighable: a `cooldown` weighing on `poison_powder` refuses, because
+      power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
+      that is not a count of landings. → `CLAUDE.md` § Pricing one number.
 
 ## Decided against — do not re-raise
 
