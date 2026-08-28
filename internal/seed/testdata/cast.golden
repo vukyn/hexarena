@@ -75,7 +75,7 @@ naruto.naruto — Naruto
   element  wind
   species  human
   art      assets/naruto.svg
-  kit      kunai substitution@8 shadow_clone@12 wind_shuriken@20 summon_toad@28 rasengan@36
+  kit      kunai substitution@8 shadow_clone@12 wind_shuriken@20 summon_toad@28 rasengan@36 comeback@44
   stage "Naruto" owns levels 1 to 15, showing assets/naruto.svg
     level 1  hp 1020, atk 180, def 130, spd 48, acc 64, ddg 26
              absorbs 1463 of the 11500 budget, 10037 to spare

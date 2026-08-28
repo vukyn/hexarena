@@ -184,6 +184,32 @@ func (c *Condition) Holds(against Target) bool {
 	return true
 }
 
+// Gradient is how much harder a skill hits as its caster falls, declared by the
+// one number an author has to choose: what it is worth at the very bottom.
+//
+// One field rather than a pair, because the top of the curve is not a choice —
+// a caster at full health has nothing to be desperate about, so the gradient is
+// worth nothing there by definition. An author picking a floor as well as a
+// ceiling would be picking a threshold, and the threshold already exists.
+type Gradient struct {
+	// AtEmpty is the share added to the skill's power as the caster approaches
+	// no health, in parts per thousand. A thousand is double power at the bottom.
+	AtEmpty int
+}
+
+// Share returns what the gradient adds at a given health, in parts per thousand,
+// and nought for a skill that declares none.
+//
+// Nil-safe like Condition.Holds, and for the same reason: the caller is asking
+// what a skill does, and "it does not have one" is an answer rather than a state
+// worth branching on at every call site.
+func (g *Gradient) Share(health, maximum int64) int {
+	if g == nil {
+		return 0
+	}
+	return combat.Gradient(health, maximum, g.AtEmpty)
+}
+
 // Target is what a condition is allowed to know about the unit a skill is aimed
 // at: the stacks it carries of the named status, and where its health sits.
 //
@@ -486,6 +512,20 @@ type Skill struct {
 	// condition that consumed per target would pay for a splash three times over
 	// and a single-target skill once, for a difference written on neither.
 	SelfRequires *Condition
+	// SelfGradient is how much harder the skill hits the further its caster has
+	// fallen, and it is the smooth twin of SelfRequires rather than a second
+	// copy of it.
+	//
+	// A condition answers yes or no, so it can only ever say "at or below this
+	// line, take this much". There is no line here and no yes or no: every point
+	// of health lost is worth the same as the last. That is why it is a share
+	// multiplied into the power rather than a bonus added to it, why the
+	// arithmetic lives in combat.Gradient, and why it is a type of its own
+	// instead of a fourth field on Condition that the other three would have to
+	// leave empty.
+	//
+	// Read once per use, exactly like SelfRequires and for the same reason.
+	SelfGradient *Gradient
 	// Strips is the cleanse or dispel the skill performs, if any.
 	Strips *Cleanse
 	// Restrict is who may carry the skill, or nil when anybody may.
@@ -550,6 +590,16 @@ func (s Skill) SelfBonus(caster Target) int {
 	return s.SelfRequires.BonusPower
 }
 
+// SelfScale is the share the caster's own wounds add to the skill's power, in
+// parts per thousand, and nought for a skill with no gradient.
+//
+// It takes the two numbers rather than a Target because a Target carries a stack
+// count as well, and a gradient has nothing to do with what anybody is carrying.
+// Handing it one would say it might.
+func (s Skill) SelfScale(health, maximum int64) int {
+	return s.SelfGradient.Share(health, maximum)
+}
+
 // Guaranteed reports whether the skill cannot miss.
 func (s Skill) Guaranteed() bool { return s.Accuracy >= scale.Base }
 
@@ -601,6 +651,7 @@ type skillFile struct {
 	SelfApplies  []applicationFile `json:"self_applies,omitempty"`
 	Requires     *conditionFile    `json:"requires,omitempty"`
 	SelfRequires *conditionFile    `json:"self_requires,omitempty"`
+	SelfGradient *gradientFile     `json:"self_gradient,omitempty"`
 	Strips       *cleanseFile      `json:"strips,omitempty"`
 	Summons      *summonFile       `json:"summons,omitempty"`
 }
@@ -628,6 +679,13 @@ type conditionFile struct {
 	BelowHealth int    `json:"below_health,omitempty"`
 	BonusPower  int    `json:"bonus_power"`
 	Consume     bool   `json:"consume,omitempty"`
+}
+
+// gradientFile is its own shape rather than a field on conditionFile, because a
+// conditionFile with nothing but an at_empty would be a condition that asks
+// nothing — which the parser refuses, and rightly.
+type gradientFile struct {
+	AtEmpty int `json:"at_empty"`
 }
 
 type cleanseFile struct {
@@ -716,6 +774,9 @@ func (s Skill) file() skillFile {
 			BelowHealth: s.SelfRequires.BelowHealth,
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
 		}
+	}
+	if s.SelfGradient != nil {
+		out.SelfGradient = &gradientFile{AtEmpty: s.SelfGradient.AtEmpty}
 	}
 	if s.Requires != nil {
 		out.Requires = &conditionFile{
@@ -933,6 +994,10 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return Skill{}, fmt.Errorf("skill %q: self_requires adds power to a skill aimed at itself, which deals none",
 			declared.ID)
 	}
+	selfGradient, err := resolveGradient(declared, selfRequires)
+	if err != nil {
+		return Skill{}, err
+	}
 
 	restrict, err := resolveRestriction(declared.ID, declared.Restrict)
 	if err != nil {
@@ -975,7 +1040,8 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		Element: affinity, Range: declared.Range, Pattern: shape.Name,
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
 		Pierce: declared.Pierce, Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
-		Requires: requires, SelfRequires: selfRequires, Strips: strips, Restrict: restrict,
+		Requires: requires, SelfRequires: selfRequires, SelfGradient: selfGradient,
+		Strips: strips, Restrict: restrict,
 		Summons:  summons,
 		Restores: declared.Restores, Drains: declared.Drains,
 		Cooldown: declared.Cooldown, Target: target,
@@ -1055,6 +1121,51 @@ func resolveRestriction(skillID string, declared *restrictFile) (*Restriction, e
 //
 // The field name is carried through every message, because "condition asks
 // nothing" on a skill with two of them is a refusal that does not say which.
+// resolveGradient checks the caster's health gradient, and it takes the whole
+// declared skill rather than just its own block because every refusal below is
+// about the gradient's relationship with something else on the skill.
+//
+// It is a second function beside resolveCondition rather than a branch inside
+// it: a gradient shares no rule with a condition. It names no status, asks no
+// threshold, consumes nothing, and has exactly one number — so the four
+// refusals resolveCondition exists for would all be dead code here, and the one
+// refusal that matters (a gradient beside a health threshold) is not a rule
+// about conditions at all.
+func resolveGradient(declared skillFile, selfRequires *Condition) (*Gradient, error) {
+	if declared.SelfGradient == nil {
+		return nil, nil
+	}
+	fail := func(format string, args ...any) (*Gradient, error) {
+		return nil, fmt.Errorf("skill %q self_gradient: %s", declared.ID, fmt.Sprintf(format, args...))
+	}
+	// No upper bound, deliberately, and unlike pierce. Piercing more than all of
+	// the armour is meaningless, so that one caps at the base; a share added to
+	// power has no such ceiling — doubling at the bottom is a thousand and
+	// tripling is two, and both are designs somebody may want.
+	if declared.SelfGradient.AtEmpty < 1 {
+		return fail("adds %d at no health, want a share in parts per thousand", declared.SelfGradient.AtEmpty)
+	}
+	// The two refusals a bonus power already has, for the same two reasons: a
+	// skill aimed at its caster never reaches a target, and a share of nothing
+	// is nothing however the caster is doing.
+	if declared.Target == Self.String() {
+		return fail("scales the power of a skill aimed at itself, which deals none")
+	}
+	if declared.Power == 0 {
+		return fail("scales a power of nought, so the whole curve is worth nothing")
+	}
+	// ⚠️ A gradient and a health threshold are two answers to one question, and
+	// an author reading the skill back could not say which of the two produced a
+	// number. A threshold on a *status* is a different question and composes
+	// fine, which is why this asks what the condition reads rather than whether
+	// there is one.
+	if selfRequires.ReadsHealth() {
+		return fail("reads the caster's health, and self_requires already reads it as a threshold: " +
+			"two curves off one number is a skill nobody can price")
+	}
+	return &Gradient{AtEmpty: declared.SelfGradient.AtEmpty}, nil
+}
+
 func resolveCondition(skillID, field string, declared *conditionFile, deps Deps) (*Condition, error) {
 	if declared == nil {
 		return nil, nil

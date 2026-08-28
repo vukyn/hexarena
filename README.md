@@ -2820,10 +2820,116 @@ deliberately so — `battle.Suggest` never buffs, so a fury gate would never fir
 under autopilot, while a cornered one fires on its own and pairs with the
 frailty `reckless` buys. The dragon build's figure did not move: 42.5%.
 
-What is still absent is the **gradient**: the move that hits harder in proportion
-to how far the caster has fallen, rather than past a line. It is a multiplier on
-power rather than a bonus to it and belongs in `combat` — `self_requires` is the
-threshold version of the same idea, not a replacement for it.
+The **gradient** — the move that hits harder in proportion to how far the caster
+has fallen, rather than past a line — is the section below, and `self_requires`
+stays the threshold version of the same idea rather than a replacement for it.
+
+### A damage gradient off the caster's own health
+
+Built.
+
+```json
+"self_gradient": { "at_empty": 900 }
+```
+
+One number, and it is the number at the **bottom**. The top of the curve is not a
+choice: a caster at full health has nothing to be desperate about, so the gradient
+is worth nothing there by definition, and an author picking a floor as well as a
+ceiling would be picking a threshold. `comeback` is the first user — 900 power,
+and 1710 of it with nothing left in the bar.
+
+⚠️ **A multiplier rather than a bonus, and that is the whole reason it is
+arithmetic in `combat` rather than a fourth field on `Condition`.** A bonus is a
+number added to power and would have to be added to *something* — the declared
+power, which is not what a skill lands at once a detonate has amplified it. A
+share of whatever power the skill arrived at means a caster swinging harder swings
+harder at the power it actually has, and the two terms compose instead of arguing
+about which one goes first. A `Condition` could not express it either way, because
+a condition answers yes or no and there is no yes or no here.
+
+**`combat.Gradient` returns the share added, not the multiplier.** Nought then
+means "nothing happened" everywhere downstream — in the struct that carries it, in
+the log, and in the report tables — which is the shape `Pierce`, `Refused` and
+`Drained` already have, and the reason a log written before any skill declared one
+is byte for byte what it was. The caller adds the base itself, in one place.
+
+⚠️ **It is read once per *use*, and here the seam has teeth.** `Battle.spend`
+already records why a caster's term cannot be read inside the loop that walks a
+shape: that loop runs once per cell, so a cost paid there would charge a column
+three times. A gradient has no cost to pay twice, so the same rule looked like
+mere tidiness — and it is not. **A draining skill heals its own caster inside that
+loop.** A gradient read per cell would have the second unit in a column swung at
+from a health the first one changed: a column that softens as it lands, written on
+no skill and visible in no table.
+`TestTheGradientIsReadOncePerUseAndNotOncePerTarget` is a ratio rather than a
+comparison for exactly that reason — the edge and the middle take different damage
+by design, but being hurt has to multiply *both* by the same amount, and a second
+reading hands the edge about 1180 per mille where the middle got 1500.
+
+**The two caster-side terms now travel as one struct.** `swing{Bonus, Share}`
+replaced the bare `spent int` that `resolveAgainst` and `against` both took,
+because the two are ints sitting next to each other in every signature they pass
+through — a caller handing the bonus where the share goes would compile, would
+silently divide the power by a thousand, and would read as a balance change rather
+than a bug. `swingOf` is the single reading, for the reason `conditionTarget` is:
+`Suggest` rates a skill by the power it would land and the engine then lands it.
+
+**The share reaches the log**, on `skill_used`, and it had to. `Power` on that
+event carries what the skill *declares*, which is the figure a reader already has
+from the book — so a hurt caster's strike lands for more than the log states, with
+nothing anywhere to bridge them. That is the trap `Pierce`, `Refused` and `Drained`
+are each on an event to avoid, arriving through a fourth door, and it is worse than
+a pierce in one respect: a pierce is a property of the skill and the same on every
+cast, where this changes every time the caster is hit.
+
+**One new refusal that is not about arithmetic:** a gradient beside a
+`self_requires` that reads **health**. Two curves off one number is a skill nobody
+can price and a reader could not say which of the two produced a figure. A
+threshold on a *status* is a different question and composes fine, which is why the
+rule asks what the condition reads rather than whether there is one. The other
+three refusals are the ones a bonus power already has — nothing at the bottom, a
+share of no power, and a skill aimed at its own caster. There is **no upper
+bound**, deliberately and unlike `pierce`: piercing more than all of the armour is
+meaningless so that one caps at the base, while a share added to power has no such
+ceiling and doubling or tripling at the bottom are both designs somebody may want.
+
+#### What the numbers were picked against
+
+Swapping `comeback` in for `kunai` reads about three battles in four at every power
+from 500 to 1100 — which sounds like a finding and is not one. `kunai` is a
+700-power skill on no cooldown, so the fourth slot of that kit is nearly free and
+beating it says nothing about what was put there. The swap against **rasengan** is
+the one that discriminates:
+
+| power / at_empty / cooldown | for `kunai` | for `rasengan` |
+| --- | --- | --- |
+| 1100 / 900 / 2 | 91.6% | 84.7% |
+| **900 / 900 / 2** | **83.0%** | **48.3%** |
+| 800 / 1000 / 2 | 77.3% | 38.2% |
+| 700 / 900 / 2 | 75.0% | 14.3% |
+| 600 / 900 / 2 | 75.6% | 7.8% |
+
+The shipped figures are the ones that make it a **choice** rather than a
+replacement for the signature skill. It never out-hits `rasengan` on power — 900 at
+full and 1710 with nothing left, against a flat 2200 — and what it buys instead is
+turns, at a cooldown of two against four.
+
+⚠️ **The mirror was measuring itself before it measured anything else.** The first
+version of the harness swapped the two *sides* between the halves of the sweep and
+left the roster order alone — and the queue breaks a tie by enlistment, so
+whichever kit was written first was enlisted first in **both** halves. A unit
+fighting an identical copy of itself read **58.8%**, and every figure taken through
+it was that advantage plus the kit, with the advantage the larger half. Swapping the
+*kits* rather than the sides is the fix, and
+`TestTheMirrorIsFairBeforeAnythingIsMeasuredThroughIt` is now a control that
+demands exactly even before anything else in the file is believed.
+
+`self_gradient` joins `requires`, `self_requires`, `strips`, `scaling` and
+`summons` as a block the authoring form does not ask about — each is a composite
+worth several questions of its own — and it survives a save untouched through
+`Skill.MarshalJSON`. ⚠️ That list was written down in three places and every copy
+was wrong the same way: each named `self_applies`, which the form *does* ask, and
+none named `self_requires` or `summons`, which it does not.
 
 ### Learnsets and slots
 

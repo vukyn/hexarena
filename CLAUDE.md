@@ -1780,8 +1780,62 @@ is the constraint each piece has to respect.
       the **single** builder because `Suggest` and `resolveAgainst` must read
       identically, else the AI prefers a bonus it does not get. The **gradient** —
       smoothly harder the further the *caster* fell, rather than a threshold — is
-      still absent and still a separate feature: a multiplier in `combat` rather
-      than a condition. `SelfRequires` is the threshold version of the same idea.
+      the separate feature below; `SelfRequires` stays the threshold version.
+- [x] **A damage gradient off the caster's own health. Done** — `self_gradient`
+      with one number, `at_empty`, the share it adds at the bottom of the bar.
+      `combat.Gradient` is the arithmetic; `comeback` is the first user (900 power,
+      1710 with nothing left). ⚠️ **A multiplier, not a bonus, which is why it is
+      in `combat` and not a fourth field on `Condition`**: a bonus would have to be
+      added to the *declared* power, which is not what a skill lands at once a
+      detonate has amplified it; a share scales whatever power the skill arrived at,
+      so the two compose instead of arguing about order. A condition could not
+      express it at all — a condition answers yes or no.
+      ⚠️ **`combat.Gradient` returns the share ADDED, not the multiplier**, so
+      nought means "nothing happened" in the struct, in the log and in the tables —
+      the shape `Pierce`/`Refused`/`Drained` already have, and the reason every log
+      written before this is byte for byte what it was. `swing.applied` adds
+      `PermilleBase`, once.
+      ⚠️ **Read once per USE, and here that seam has teeth.** `Battle.spend` records
+      the rule for a *cost*; a gradient has no cost to pay twice, so the rule looked
+      like tidiness. It is not: **a draining skill heals its own caster inside the
+      loop that walks a shape**, so a per-cell reading gives the second unit in a
+      column a softer swing than the first, written on no skill.
+      `TestTheGradientIsReadOncePerUseAndNotOncePerTarget` catches it as a **ratio** —
+      edge and middle differ by design, but being hurt must multiply both the same,
+      and a re-read hands the edge ~1180 per mille where the middle got 1500.
+      ⚠️ **`swing{Bonus, Share}` replaced the bare `spent int`** that
+      `resolveAgainst` and `against` both took. Two adjacent ints in every
+      signature: handing the bonus where the share goes compiles, divides the power
+      by a thousand, and reads as a balance change. `swingOf` is the single reading,
+      for the reason `conditionTarget` is.
+      **The share is on `skill_used`.** `Power` there is what the skill *declares*,
+      so without it a hurt caster's strike lands for more than the log states with
+      nothing to bridge them — worse than a pierce, which is at least the same on
+      every cast.
+      **One new refusal that is not arithmetic:** a gradient beside a
+      `self_requires` reading **health**. Two curves off one number is unpriceable
+      and unreadable; a threshold on a *status* composes fine, which is why the rule
+      asks what the condition reads, not whether there is one. **No upper bound**,
+      unlike `pierce` — piercing past all the armour is meaningless, a share added
+      to power has no such ceiling.
+      ⚠️ **A mirror duel that swaps SIDES rather than KITS measures itself.** The
+      queue breaks a tie by enlistment, so leaving the roster order alone enlists
+      the first-written kit first in *both* halves: a unit against an identical copy
+      of itself read **58.8%**. Swap the kits.
+      `TestTheMirrorIsFairBeforeAnythingIsMeasuredThroughIt` demands exactly even
+      before anything else in that file is believed. ⚠️ And the swap that
+      discriminates is against **rasengan**, not against the kit's filler — dropping
+      `kunai` wins ~75% at *every* power from 500 to 1100, because a 700-power
+      cooldown-0 skill makes the fourth slot nearly free.
+      ⚠️ **The "blocks the form does not ask about" list was wrong in all three
+      places it was written down** (`cmd/hexforge-tui/skills.go`,
+      `internal/forge/skills.go`, `TestTheShippedSkillBookSurvivesBeingWritten`):
+      each named `self_applies`, which the form *does* ask, and none named
+      `self_requires` or `summons`, which it does not. Corrected, with
+      `self_gradient` joining them.
+      ⚠️ **`forge.PreviewDamage` still reads only the target's condition**, so
+      neither `self_requires` nor `self_gradient` shows in the authoring preview.
+      Pre-existing and not fixed here; it wants one change covering both.
 - [x] **Learnsets and slots.** A character now holds a **learnset** —
       `Character.Skills` is `[]cast.Unlock`, the *same type as the traits* — and a
       placement **chooses** from it: `SkillSlots = 4`, `TraitSlots = 1`, in

@@ -51,6 +51,9 @@ func (l Lang) Describe(declared skill.Skill, shapes *pattern.Book) string {
 	if condition := l.describeSelfCondition(declared); condition != "" {
 		lines = append(lines, condition)
 	}
+	if gradient := l.describeSelfGradient(declared); gradient != "" {
+		lines = append(lines, gradient)
+	}
 	if condition := l.describeCondition(declared); condition != "" {
 		lines = append(lines, condition)
 	}
@@ -294,6 +297,25 @@ func (l Lang) describeCondition(declared skill.Skill) string {
 // about what you are spending, and a skill carrying both is offering both.
 func (l Lang) describeSelfCondition(declared skill.Skill) string {
 	return l.conditionSentence(declared, declared.SelfRequires, BlurbSelfAmplified)
+}
+
+// describeSelfGradient is the caster's health read as a slope rather than a
+// line, and it is a sentence of its own rather than a clause on the condition
+// above for the same reason that one is separate: it is a different bargain.
+//
+// ⚠️ It quotes the **bottom** of the curve and only the bottom. Every other
+// figure in a description is what the skill does when its clause holds, and there
+// is no moment at which this one holds — it is worth a little at a scratch and
+// everything at a sliver, so the only number an author or a player can act on is
+// the one at the end. The opening says which end it is; a reader who wants the
+// middle has the word "càng" and the word "more" and a straight line between.
+func (l Lang) describeSelfGradient(declared skill.Skill) string {
+	if declared.SelfGradient == nil {
+		return ""
+	}
+	atEmpty := declared.Power * (scale.Base + declared.SelfGradient.AtEmpty) / scale.Base
+	return l.Say(BlurbSelfGradient,
+		share(atEmpty*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat)) + "."
 }
 
 // conditionSentence writes one condition, whichever unit it reads.

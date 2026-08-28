@@ -18,11 +18,18 @@ import (
 
 // The fields of the new-skill form, in the order they are walked.
 //
-// Nine core fields, the display name, the statuses it inflicts, and the three
-// allowlists. What is deliberately absent is requires, strips, scaling and
-// self_applies: each is a composite worth several questions of its own, and a
-// form that asked twelve more would be worse than an edit to skills.json. They
-// survive a save untouched — see skill.Skill.MarshalJSON.
+// Nine core fields, the display name, the statuses it inflicts (both sides), and
+// the three allowlists. What is deliberately absent is requires, self_requires,
+// self_gradient, strips, scaling and summons: each is a composite worth several
+// questions of its own, and a form that asked a dozen more would be worse than an
+// edit to skills.json. They survive a save untouched — see skill.Skill.MarshalJSON.
+//
+// ⚠️ This list was written down in three places (here, forge.resolveOnto, and
+// TestTheShippedSkillBookSurvivesBeingWritten) and every copy was wrong the same
+// way: each named self_applies, which this form *does* ask about, and none named
+// self_requires or summons, which it does not. Corrected when self_gradient
+// joined them. A list restated three times drifts three times; if it drifts
+// again, derive it.
 //
 // The name sits second because that is where it is authored: a skill and the name
 // it is called by are one thought, which is also why the name is a field on

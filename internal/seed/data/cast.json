@@ -640,6 +640,10 @@
         {
           "id": "rasengan",
           "at_level": 36
+        },
+        {
+          "id": "comeback",
+          "at_level": 44
         }
       ],
       "passives": [

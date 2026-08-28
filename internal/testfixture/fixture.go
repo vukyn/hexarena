@@ -22,9 +22,14 @@ import (
 	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
-// Skills is the bench the authoring tests exercise: nineteen skills covering
-// every element, every shape, both kinds of condition, multi-strike, area
-// splash, cleansing and a shield.
+// Skills is the bench the authoring tests exercise: twenty skills covering every
+// element, every shape, both kinds of condition, a gradient off the caster's own
+// health, multi-strike, area splash, cleansing and a shield.
+//
+// ⚠️ "Both kinds of condition" means status and health, not target and caster.
+// No bench skill declares a `self_requires` — the only one anywhere is `outrage`
+// in the shipped book — so a test that needs the caster side has to build it,
+// and `desperate` covers only the gradient.
 //
 // They used to be the shipped skill book, and the tests named them directly.
 // That coupled a hundred assertions to content the author is free to delete --
@@ -138,6 +143,20 @@ const Skills = `[
       "min_stacks": 1,
       "bonus_power": 2200,
       "consume": true
+    }
+  },
+  {
+    "id": "desperate",
+    "element": "neutral",
+    "range": 1,
+    "pattern": "single",
+    "power": 1000,
+    "strikes": 1,
+    "accuracy": 900,
+    "cooldown": 2,
+    "target": "enemy",
+    "self_gradient": {
+      "at_empty": 1000
     }
   },
   {

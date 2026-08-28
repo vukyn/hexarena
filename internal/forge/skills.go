@@ -116,8 +116,9 @@ func (d SkillDraft) Resolve(lib *Library) (skill.Skill, error) {
 //
 // The base is the load-bearing half. A new skill is built onto an empty one, so
 // every field it does not describe is that field's zero value. An edited skill
-// is built onto the skill as it stands, so the four blocks this form never asks
-// about — requires, strips, scaling and self_applies — carry through untouched,
+// is built onto the skill as it stands, so the six blocks this form never asks
+// about — requires, self_requires, self_gradient, strips, scaling and summons —
+// carry through untouched,
 // which is the same losslessness Skill.MarshalJSON gives a rewrite and is worth
 // nothing unless an edit keeps it too. Building an edit onto an empty skill
 // would silently wipe a hand-authored condition, and wipe it in a file the

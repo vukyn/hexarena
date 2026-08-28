@@ -178,10 +178,12 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 		return 0
 	}
 	actorStats := b.Stats(actor)
-	// Read once, outside the loop, because that is when it is read for real. A
-	// rating that asked per cell would still get the same answer today, and
-	// would stop doing so the moment a condition read anything the loop changes.
-	spent := declared.SelfBonus(conditionCaster(declared, actor))
+	// Read once, outside the loop, because that is when it is read for real.
+	// ⚠️ This used to say a per-cell reading would get the same answer anyway and
+	// would stop doing so the moment a caster's term read something the loop
+	// changes. That moment has arrived: the gradient reads the caster's health,
+	// and a draining skill heals its caster inside the loop.
+	brought := swingOf(declared, actor)
 	total := int64(0)
 	for position, cell := range covers(shape, declared, aim) {
 		target := b.occupant(cell)
@@ -194,7 +196,7 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 		if target == nil || target.Side == actor.Side {
 			continue
 		}
-		total += b.against(actor, actorStats, declared, target, position, spent)
+		total += b.against(actor, actorStats, declared, target, position, brought)
 	}
 	return total
 }
@@ -209,8 +211,8 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 // hypothetical was handed straight back to the real board and every stat change
 // came out worth nothing.
 func (b *Battle) against(actor *Unit, actorStats progression.Values, declared skill.Skill,
-	target *Unit, position, spent int) int64 {
-	power := declared.PowerAgainst(conditionTarget(declared, target)) + spent
+	target *Unit, position int, brought swing) int64 {
+	power := brought.applied(declared.PowerAgainst(conditionTarget(declared, target)))
 	if position > 0 {
 		power = power * b.books.Patterns.SplashPower / 1000
 	}
@@ -357,6 +359,58 @@ func conditionCaster(declared skill.Skill, actor *Unit) skill.Target {
 		Stacks:  actor.Statuses.Stacks(spentStatus(declared)),
 		Health:  actor.HP,
 		Maximum: actor.MaxHP(),
+	}
+}
+
+// swing is everything the caster's own state puts into a use of its own skill:
+// the bonus a threshold adds, and the share a gradient multiplies in.
+//
+// One struct rather than two parameters, because the two are ints that sit next
+// to each other in every signature they travel through -- and a caller that
+// handed the bonus where the share goes would compile, would silently divide the
+// power by a thousand, and would look like a balance change rather than a bug.
+// Naming them at the one place they are built is what makes that unwritable.
+type swing struct {
+	// Bonus is added to the power, from Skill.SelfBonus.
+	Bonus int
+	// Share is added to the multiplier, in parts per thousand, from
+	// Skill.SelfScale. Nought is a skill with no gradient, or a caster at full
+	// health.
+	Share int
+}
+
+// applied is the power a skill lands at once the caster's own terms are in.
+//
+// ⚠️ The bonus first and the share second, and the order is a design rather than
+// an accident: a caster swinging harder swings harder at the power it actually
+// has, so a detonate that arrives at three thousand four hundred is what the
+// wound is a share of. The other order would make the gradient a share of the
+// declared power and quietly worth less on exactly the skills it should be worth
+// most on.
+//
+// PermilleBase is added here rather than returned by combat.Gradient, so that
+// nought means "nothing happened" everywhere else -- in the struct above, in the
+// event log, and in the report tables.
+func (s swing) applied(power int) int {
+	return (power + s.Bonus) * (combat.PermilleBase + s.Share) / combat.PermilleBase
+}
+
+// swingOf reads both terms at once, and is the single reading for the same
+// reason conditionTarget is: Suggest rates a skill by the power it would land
+// and the battle then lands it, so a rating built from a different reading than
+// the resolution would make the opponent prefer a skill for a bonus it does not
+// get, with nothing anywhere reporting the disagreement.
+//
+// ⚠️ Read once per *use*, never once per target. A gradient asks how hurt the
+// caster is, and a draining skill heals its caster inside the loop that walks a
+// shape -- so a reading taken per cell would have the second cell of a column
+// swing softer than the first, for a difference written on no skill. That is the
+// same trap Battle.spend records, arriving through a field that has no status to
+// consume.
+func swingOf(declared skill.Skill, actor *Unit) swing {
+	return swing{
+		Bonus: declared.SelfBonus(conditionCaster(declared, actor)),
+		Share: declared.SelfScale(actor.HP, actor.MaxHP()),
 	}
 }
 
