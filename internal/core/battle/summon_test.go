@@ -521,3 +521,136 @@ func TestASummonCountsWhenTheBattleIsDecided(t *testing.T) {
 		t.Error("the battle ended with a summon still standing on the losing side")
 	}
 }
+
+// suggested is the skill autopilot would use on the first turn of a duel where
+// the ally holds one summoning skill and one attack.
+func suggested(t *testing.T, allySkills []string) string {
+	t.Helper()
+	fight := duel(t, allySkills, []string{"jab"}, 120, 100)
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	choice, ok := fight.Suggest(prompt)
+	if !ok {
+		t.Fatalf("Suggest offered nothing at all for %v", allySkills)
+	}
+	return choice.Skill
+}
+
+// TestSuggestPricesASummonByTheTurnsItBuys is the whole of the opponent's side
+// of summoning, in the three answers that separate a price from a guess.
+//
+// Before this, a summoning skill had no power of its own, so it reached Suggest
+// only as the fallback — the option taken when nothing at all could be hurt. The
+// shipped summoner therefore never called anybody up while it had a kunai in
+// reach, and every figure measured of it was measured without its own mechanism
+// firing.
+//
+// A summon is the only thing in the book that buys turns rather than spending
+// one, so the turns are the price. Which makes three things checkable that a
+// flat "summons are good" would not:
+//
+//   - a swarm of three copies beats a jab, so a cast happens at all;
+//   - the same swarm for one turn does not, so the number of turns is read
+//     rather than assumed;
+//   - the same swarm for a hundred turns still loses to a strike, so the horizon
+//     is capped rather than believed.
+func TestSuggestPricesASummonByTheTurnsItBuys(t *testing.T) {
+	if got := suggested(t, []string{"swarm", "jab"}); got != "swarm" {
+		t.Errorf("autopilot picked %q over three copies that would each outlast the "+
+			"jab twice; a summon priced at nothing is a summon never cast", got)
+	}
+	// lasts:1 against the same three copies at the same share: one turn each
+	// instead of the capped four, and the jab wins.
+	if got := suggested(t, []string{"brief_swarm", "jab"}); got != "jab" {
+		t.Errorf("autopilot picked %q, want the jab: copies that leave after one turn "+
+			"each are worth a quarter of ones that stay, and the price has to say so", got)
+	}
+	// lasts:100 is the cap's own case. A hundred turns of three copies would
+	// dwarf any single attack in the book, so a rating that believed the skill
+	// would take this over a strike every time and for ever.
+	if got := suggested(t, []string{"long_swarm", "strike"}); got != "strike" {
+		t.Errorf("autopilot picked %q over the strike: a summon that lasts a hundred "+
+			"turns is priced for %d of them, not for the hundred it claims", got, 4)
+	}
+}
+
+// TestASummonTheBoardHasNoRoomForIsNotPricedAtAll is the board's half of the
+// price, and it is a different failure from getting the arithmetic wrong.
+//
+// summonPlaces is what puts copies down, and Suggest pays for exactly what it
+// returns — so a side already at full strength pays for nothing, and the skill
+// goes back to being the fallback it was. That is not the same as rating it at
+// nought: a rating of nought is still a rating, and it would beat "no damaging
+// option at all" and take the turn ahead of a shield or a cleanse.
+//
+// The contrast is the test. The same kit on a board with room casts the summon.
+func TestASummonTheBoardHasNoRoomForIsNotPricedAtAll(t *testing.T) {
+	if got := suggested(t, []string{"swarm", "jab"}); got != "swarm" {
+		t.Fatalf("the control picked %q, so this measures nothing", got)
+	}
+	// Five on a side is hex.MaxTeamSize, so nothing else may stand there however
+	// many formation slots are empty.
+	roster := []battle.Roster{
+		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 120),
+			Skills: []string{"swarm", "jab"}},
+		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 100),
+			Skills: []string{"jab"}},
+	}
+	// ⚠️ The crowd leaves 2,2 empty on purpose, and that is what makes this
+	// measure the room rather than the reach. Only two cells on this side are
+	// within a jab of the duel slot — the caster's own and 2,2 — so a board whose
+	// every free slot were out of range would price a copy at nothing whatever
+	// the strength bound said, and a mutation dropping that bound would pass.
+	for _, slot := range []hex.Offset{
+		{Col: 2, Row: 0}, {Col: 1, Row: 0}, {Col: 1, Row: 1}, {Col: 1, Row: 2},
+	} {
+		roster = append(roster, battle.Roster{
+			ID: "crowd" + slot.String(), Side: hex.SideAlly, Slot: slot,
+			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 1),
+			// lob rather than jab: New refuses a roster unit that cannot aim at
+			// anybody, and the back rows are two cells from the duel slot. The
+			// crowd is here to fill the side, not to fight.
+			Skills: []string{"lob"},
+		})
+	}
+	fight := mustBattle(t, books(t), 7, roster)
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	if prompt.Unit != "a" {
+		t.Fatalf("the first turn went to %s", prompt.Unit)
+	}
+	choice, ok := fight.Suggest(prompt)
+	if !ok {
+		t.Fatal("Suggest offered nothing at all")
+	}
+	if choice.Skill != "jab" {
+		t.Errorf("autopilot picked %q on a side with no room for a copy, want the jab",
+			choice.Skill)
+	}
+
+	// And the half that separates "not priced" from "priced at nought". Swap the
+	// jab for a shield and there is nothing to rate at all, so the fallback
+	// decides — and the fallback is the first usable skill with no power, which
+	// is the shield standing ahead of the summon in this kit. A summon rated at
+	// nought would beat it, because a rating of nought still sets found.
+	roster[0].Skills = []string{"brace", "swarm"}
+	shielding := mustBattle(t, books(t), 7, roster)
+	prompt, err = shielding.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	choice, ok = shielding.Suggest(prompt)
+	if !ok {
+		t.Fatal("Suggest offered nothing at all")
+	}
+	if choice.Skill != "brace" {
+		t.Errorf("autopilot picked %q, want the shield: a cast the board has no room "+
+			"for is worth nothing, and nothing is not a score", choice.Skill)
+	}
+}

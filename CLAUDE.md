@@ -1033,6 +1033,56 @@ crossover is a thing that happens, and because every other axis here is one.
   `skills.golden`'s "who may carry" table with nothing but dashes across them,
   because the report had four columns and the book had five.
 
+## Pricing a summon, so the opponent casts one
+
+Shipped. `battle.Suggest` rates a summoning skill in the one unit it counts in —
+damage — as **the damage the copies would deal over the turns they are given**.
+Before it, a summon had no power of its own, so it reached `Suggest` only as the
+*fallback*: the option taken when nothing at all could be hurt. The shipped
+summoner therefore never called anybody up while it had a kunai in reach.
+
+- **A summon is the only thing in the book that buys turns rather than spending
+  one**, so the turns are the price: `summonWorth` puts a hypothetical copy in
+  the cell `summonPlaces` would give it, at the line `summonStats` would give it,
+  with the elements `summonAffinity` would give it, and multiplies its best
+  single-turn attack by the horizon. All four are the functions that do the real
+  thing — ⚠️ **two of them were extracted for this**, because a rating built from
+  its own reading of "where would the copies stand" is a rating that pays for a
+  copy the board has no room for.
+- ⚠️ **The horizon is capped, at `summonHorizon`.** The honest horizon for a
+  summon that *stays* is the rest of the battle, which this rating cannot see and
+  which would put such a skill above every attack in the book for ever. So a
+  summon is priced for its own `lasts` when that is shorter and for the cap when
+  it is longer or absent. `summon_toad` is the case that needs it: no `lasts` at
+  all. The cap direction is deliberate — over-pricing costs a kill, under-pricing
+  costs a cast that was marginal anyway.
+- **It is an upper bound and says so**: the turns are what the skill promises,
+  not what the board will grant. A copy can be killed on arrival, and a `bound`
+  one leaves when its summoner does. A shallow rating knows neither.
+- ⚠️ **A cast worth nothing falls through to the fallback rather than scoring
+  nought.** A rating of nought is still a rating — it beats "no damaging option
+  at all" — so on a full board it would take the turn ahead of a shield that
+  would have done something.
+- ⚠️ **No golden moved and that is not "no effect".** Naruto is cast-only, and
+  nothing in the roster summons, so `scenarios.golden` and `replay.golden` cannot
+  see this. What moved is the **balance answer**, at 2000 seeds a slot:
+
+  | | before | after |
+  |---|---|---|
+  | naruto.naruto overall | 56.4% | **93.8%** |
+  | · vs bulbasaur | 0.0% | 81.5% |
+  | · vs charmander | 69.5% | 100.0% |
+  | pokemon.bulbasaur overall | 66.6% | **39.5%** |
+  | naruto mirror, turns | 36 | 303 |
+
+  The summoner was **losing every single battle to Bulbasaur** and now wins 81.5%
+  of them. Nothing about the character changed; the opponent started using its
+  kit. So the shipped numbers were never measuring the character that ships, and
+  **Naruto now needs a retune** — that is a data PR, not this one.
+- The mirror's slot skew flipped from **+27.1% to −71.8%** and its battles got
+  eight times longer. Not a limit being hit (4000, and no draws) — two summoners
+  regenerating bodies at each other. Worth a look before the retune.
+
 ## Amplifying a status, which really is two features
 
 Shipped. A trait may declare `amplifies`, per status, with two optional shares:
@@ -1094,11 +1144,17 @@ is the constraint each piece has to respect.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
       at build time or rasterised at load, because ebiten draws neither.
-- [ ] **A deeper opponent.** `battle.Suggest` currently picks the highest expected
-      damage and never buffs, cleanses, shields or sets up a detonate, so the
-      whole timed-effect layer is tested but not played. A replacement must read
-      no randomness and mutate nothing — a client calls it for a hint mid-turn —
-      and two identical battles must still produce identical logs.
+- [ ] **A deeper opponent.** `battle.Suggest` picks the highest expected damage
+      and never buffs, cleanses, shields or sets up a detonate, so most of the
+      timed-effect layer is tested but not played. A replacement must read no
+      randomness and mutate nothing — a client calls it for a hint mid-turn — and
+      two identical battles must still produce identical logs.
+      **Summoning is out of this item and done** (*Pricing a summon* below), and
+      the way it was done is the template: a thing that is not damage gets played
+      by being priced *in damage*, from the same functions that resolve it, with
+      an explicit and capped horizon. What it cost is also the template — the
+      summoner's spar rate went 56.4% → 93.8% the moment the AI used its kit, so
+      **expect a balance answer to move, not a golden**.
 - [x] **A gated grant: a stat change that comes and goes.** `blaze` is now what
       it is named after — `{"grants":[{"status":"kindled"}],"while":{"below_health":333}}`
       — and its burn immunity moved to `heatproof`, because **a gate covers the
@@ -1709,10 +1765,9 @@ is the constraint each piece has to respect.
       **Two summons, one of each kind**: `shadow_clone` is a share (2 copies at
       400‰, `bound`, `lasts: 4`), `summon_toad` is a fixed line with its own
       element — the case a share cannot write.
-      ⚠️ **`Suggest` casts neither** (power 0 ⇒ fallback only), so the shipped
-      summoner is proved by a hand-played test in `internal/seed`, and Naruto's
-      spar figures are read **without** the mechanism firing. TODO: teach
-      `expected()` to price a summon — it moves every golden, so it is its own PR.
+      ⚠️ **`Suggest` now casts both** — see *Pricing a summon* below. It did not
+      when this shipped (power 0 ⇒ fallback only), so every figure ever measured
+      of the summoner was measured with its own mechanism idle.
       ⚠️ **A new preset needs a row in `cast_test.go`'s hardcoded design table**
       and a gloss in `archetypeGloss`, or two tests fail by name.
       ⚠️ **Art is REQUIRED** — `cast.ParseBook` refuses "declares no image". Three
