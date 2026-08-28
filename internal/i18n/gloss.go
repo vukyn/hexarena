@@ -51,8 +51,8 @@ var (
 		"ice":      "băng",
 		"metal":    "kim loại",
 		"electric": "điện",
-		"light":    "sáng",
-		"dark":     "tối",
+		"light":    "ánh sáng",
+		"dark":     "bóng tối",
 		"neutral":  "trung tính",
 	}
 
