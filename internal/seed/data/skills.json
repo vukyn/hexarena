@@ -868,6 +868,27 @@
       }
     },
     {
+      "id": "comeback",
+      "name": "vùng lên",
+      "flavour": "Ngã xuống thì chống tay đứng lên, càng bị dồn thì càng lì",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "naruto"
+        ]
+      },
+      "self_gradient": {
+        "at_empty": 900
+      }
+    },
+    {
       "id": "summon_toad",
       "name": "triệu hồi cóc",
       "flavour": "Ký giao ước bằng máu rồi gọi lên một con cóc khổng lồ, chậm chạp nhưng lì đòn",

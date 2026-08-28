@@ -15,6 +15,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/seed"
@@ -68,6 +69,7 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 		multiStrike, area, amplifier, detonate bool
 		cleanse, dispel, shield, selfBuff      bool
 		guaranteed, speedScaled, longRange     bool
+		gradient                               bool
 	)
 	elements := make(map[element.Element]bool)
 	sides := make(map[skill.Side]bool)
@@ -85,6 +87,9 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 			if current.Requires.Consume {
 				detonate = true
 			}
+		}
+		if current.SelfGradient != nil {
+			gradient = true
 		}
 		if current.Strips != nil {
 			harmful := false
@@ -129,6 +134,7 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 		{"an area skill", area},
 		{"a conditional amplifier", amplifier},
 		{"a detonate", detonate},
+		{"a gradient off the caster's own health", gradient},
 		{"a cleanse", cleanse},
 		{"a dispel", dispel},
 		{"a shield", shield},
@@ -427,6 +433,26 @@ func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns
 		}
 	}
 
+	// A section of its own rather than a row in the amplifiers above, because the
+	// column that table is built around is "needs", and a gradient needs nothing.
+	// It is always on and always partly on, which is the whole difference between
+	// the two features — folding it in would give it a blank in the one column
+	// that says what a conditional skill is conditional on.
+	b.WriteString("\n== a gradient off the caster's own health ==\n")
+	b.WriteString("what the caster's own wounds add, at the bottom of the bar\n")
+	b.WriteString("skill           at empty   power   at the bottom   damage   at the bottom    gain\n")
+	for _, current := range book.Skills() {
+		if current.SelfGradient == nil {
+			continue
+		}
+		bottom := current.Power * (scale.Base + current.SelfGradient.AtEmpty) / scale.Base
+		plain := rules.Damage(attackerAttack, referenceDefense, current.Power, neutralAffinity)
+		hurt := rules.Damage(attackerAttack, referenceDefense, bottom, neutralAffinity)
+		fmt.Fprintf(&b, "%-16s%9d%8d%16d%9d%16d%8s\n",
+			current.ID, current.SelfGradient.AtEmpty, current.Power, bottom, plain, hurt,
+			ratio(hurt, plain))
+	}
+
 	b.WriteString("\n== what a detonate gives up ==\n")
 	b.WriteString("the ticks of a damage-over-time, or the extra damage a stat debuff was letting through\n")
 	b.WriteString("skill           status   spends     forgone   a plain attack   alternative   burst    ratio\n")
@@ -518,9 +544,10 @@ func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns
 //
 // It matters because cmd/hexforge now writes this file: it rewrites the whole
 // book on every addition, so a field the authoring form does not ask about has
-// to survive a save it was not part of. Four blocks are in that position today —
-// requires, strips, scaling and self_applies — and the shipped set uses all
-// four, which is what makes this test worth more than the fixture version of it.
+// to survive a save it was not part of. Six blocks are in that position today —
+// requires, self_requires, self_gradient, strips, scaling and summons — and the
+// shipped set uses every one, which is what makes this test worth more than the
+// fixture version of it.
 func TestTheShippedSkillBookSurvivesBeingWritten(t *testing.T) {
 	book := mustSkills(t)
 	patterns, err := seed.PatternBook()
@@ -552,6 +579,10 @@ func TestTheShippedSkillBookSurvivesBeingWritten(t *testing.T) {
 		switch {
 		case (current.Requires == nil) != (before.Requires == nil):
 			t.Errorf("%q lost or gained its condition", current.ID)
+		case (current.SelfRequires == nil) != (before.SelfRequires == nil):
+			t.Errorf("%q lost or gained the condition it reads about itself", current.ID)
+		case (current.SelfGradient == nil) != (before.SelfGradient == nil):
+			t.Errorf("%q lost or gained its gradient", current.ID)
 		case (current.Strips == nil) != (before.Strips == nil):
 			t.Errorf("%q lost or gained its cleanse", current.ID)
 		case current.Scaling != before.Scaling:

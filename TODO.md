@@ -22,8 +22,9 @@ is only so the shape is readable.
 - **Engine.** Turn-based battle on an odd-q hex grid, action-value turn order,
   elemental chart. Verifiable logs — a cell and an aim are written only where
   there is one — replay, undo. Draws for a battle nobody can act in and for a
-  deadlock. Piercing, healing, draining, regeneration.
-  Conditions read the target *or* the caster. Summons. Taunt.
+  deadlock. Piercing, healing, draining, regeneration. Conditions read the target
+  *or* the caster, as a threshold or as a gradient that grows with the caster's
+  own wounds. Summons. Taunt.
 - **Traits.** A character carries traits as well as a kit: permanent grants,
   gated grants that come and go, resistances, replies to whatever attacked,
   amplifiers, drains, and a permanent speed change.
@@ -73,9 +74,10 @@ is only so the shape is readable.
       target *added*. ⚠️ No shipped trait uses it yet: `reckless` ("liều mạng",
       which already keeps no guard back) is the natural first user and is a
       **balance** change, so it is data work rather than this. → `README.md`.
-- [ ] **A damage gradient off the caster's own health.** `SelfRequires` is a
-      *threshold* ("below 40%, +bonus"); a gradient that grows as the caster
-      falls is a multiplier in `combat` reading the other unit. Separate feature.
+- [ ] **`forge.PreviewDamage` cannot see a caster-side term.** It reads only the
+      target's condition, so neither `self_requires` nor `self_gradient` shows in
+      the authoring preview — `outrage` and `comeback` both preview as their plain
+      power. Pre-existing; one change covers both. → `CLAUDE.md` § Open work.
 - [x] **`hexforge` can author a flavour clause. Done** — `--flavour` on both
       `skills add` and `skills edit`, and a prompt beside the name in the wizard.
       An empty string clears it, on the same terms as an allowlist. The parser's

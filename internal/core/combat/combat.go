@@ -426,3 +426,52 @@ func (r Rules) Resolve(h Hit) []int64 {
 func (r Rules) Total(h Hit) int64 {
 	return r.Strike(h) * int64(h.StrikeCount())
 }
+
+// Gradient returns the share a hurt caster adds to its own skill's power, in
+// parts per thousand: nought at full health, atEmpty as it approaches nothing,
+// and a straight line between the two.
+//
+// It is the smooth half of an idea whose stepped half already exists.
+// `self_requires` asks a *threshold* -- at or below forty per cent, take a fixed
+// bonus -- and a threshold is the right shape for a skill that becomes a
+// different skill once a line is crossed. This is the other shape: the move that
+// grows with the wound rather than switching at one, where every point of health
+// lost is worth the same as the last and there is no line for either side to play
+// around.
+//
+// ⚠️ **A multiplier rather than a bonus, and that is the whole reason it is
+// arithmetic here rather than a second Condition in skill.** A bonus is a number
+// added to power and would have to be added to *something* -- the declared power,
+// which is not what a skill lands at once a detonate has amplified it. A share of
+// whatever power the skill arrived at means a caster swinging harder swings
+// harder at the power it actually has, and the two terms compose instead of
+// arguing about which goes first. A Condition could not express it either way,
+// because a Condition answers yes or no and there is no yes or no here.
+//
+// ⚠️ **It returns the share added, not the multiplier**, which is what makes
+// nought mean "nothing happened" — the same shape as Pierce, Refused and Drained,
+// all of which are the share that moved a number and are absent from the log when
+// none did. The caller adds PermilleBase itself, in one place.
+//
+// A maximum of nought is answered with nought rather than divided by: something
+// with no maximum is not something that is hurt.
+//
+// ⚠️ The `=` half of the full-health guard is redundant with the arithmetic below
+// and always will be — at exactly full health the missing share is nought, so the
+// last line already answers nought — which means mutating it to `>` survives the
+// whole suite. It is kept anyway because the `>` half is *not* redundant: a unit
+// somehow past its own bar would otherwise earn a negative share and hand a hurt
+// skill less power than a healthy one. Written down so the next person to mutate
+// this stops looking for the missing test.
+func Gradient(health, maximum int64, atEmpty int) int {
+	if maximum <= 0 || atEmpty <= 0 || health >= maximum {
+		return 0
+	}
+	if health <= 0 {
+		return atEmpty
+	}
+	// One division, at the end, like everything else in this package: the share
+	// of health missing and the share of the bonus earned are the same fraction,
+	// so they are multiplied before they are divided.
+	return int(int64(atEmpty) * (maximum - health) / maximum)
+}

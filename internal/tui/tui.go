@@ -291,7 +291,8 @@ func Line(event battle.Event, tags map[string]string) string {
 	case battle.TurnSkipped:
 		return head + fmt.Sprintf(" loses the turn (%s)", event.Note)
 	case battle.SkillUsed:
-		return head + fmt.Sprintf(" uses %s at %s", event.Skill, event.Cell)
+		return head + fmt.Sprintf(" uses %s at %s%s", event.Skill, event.Cell,
+			gradientNote(event.Gradient))
 	case battle.Amplified:
 		return head + fmt.Sprintf("  %s is amplified by %s x%d, power %d",
 			event.Skill, event.Status, event.Stacks, event.Power)
@@ -430,6 +431,17 @@ func affinityNote(multiplier int) string {
 // produce a different figure, and a log a reader cannot reproduce is the log
 // lying. The share rather than the defence it left, because the share is the
 // skill's own property and the defence is the defender's.
+// gradientNote is what a hurt caster added to its own skill, and it is worded as
+// a share rather than a power because the share is the part a reader cannot
+// work out: the power on the event is the book's figure, and the strike that
+// follows is larger than it with nothing else to say why.
+func gradientNote(gradient int) string {
+	if gradient <= 0 {
+		return ""
+	}
+	return fmt.Sprintf(" (hurt, +%d%%)", gradient/10)
+}
+
 func pierceNote(pierce int) string {
 	if pierce <= 0 {
 		return ""

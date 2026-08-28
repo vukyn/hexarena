@@ -182,6 +182,11 @@ Kết ấn một cái, những cái bóng y hệt bước ra — yếu hơn bả
 Gọi ra 2 phân thân, mỗi bên mang 40% chỉ số người gọi, trụ lại 4 lượt.
 Bản thân · hồi 5 lượt.
 
+comeback
+Ngã xuống thì chống tay đứng lên, càng bị dồn thì càng lì, 90% công.
+Càng mất máu càng nặng đòn: cạn máu là 171% công.
+Tầm 1 · 95% trúng · hồi 2 lượt.
+
 summon_toad
 Ký giao ước bằng máu rồi gọi lên một con cóc khổng lồ, chậm chạp nhưng lì đòn.
 Gọi ra một cóc.
@@ -565,6 +570,11 @@ Itself · 4 turns to recharge.
 shadow_clone
 Calls up 2 copies, each with 40% of the caster's stats, for 4 turns.
 Itself · 5 turns to recharge.
+
+comeback
+Hits an enemy for 90% of attack.
+The more hurt the caster, the harder it lands: 171% of attack at no health.
+Range 1 · 95% to hit · 2 turns to recharge.
 
 summon_toad
 Calls up a creature.

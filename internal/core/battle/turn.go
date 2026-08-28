@@ -483,15 +483,21 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	unit.Cooldowns[index] = known.Cooldown
 	b.awaiting, b.prompt = false, nil
 	turn := atb.Turn{At: b.queue.Now(), Number: b.queue.Turns(unit.ID)}
+	// Read before the use is announced, because the announcement carries it: a
+	// gradient that moved the power and left no trace in the log would be the trap
+	// Pierce, Refused and Drained each record -- a number a reader cannot account
+	// for from the skill and the stats alone.
+	brought := swingOf(known, unit)
 	b.emit(Event{
 		Kind: SkillUsed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
 		Skill: known.ID, Cell: hex.At(aim), Power: known.Power, Chance: known.Accuracy,
+		Gradient: brought.Share,
 	})
 
 	// Before applyToSelf, deliberately: a skill that both grants a status and
 	// spends one would otherwise pay itself, and "hits harder while furied"
 	// would hold for the skill that just applied the fury.
-	spent := b.spend(unit, known, turn)
+	b.spend(unit, known, brought, turn)
 	b.applyToSelf(unit, known, turn)
 	// After the self-applies, so a skill that buffs itself and then copies
 	// itself copies the buffed line. That ordering is the only reason the two
@@ -518,7 +524,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		// it still had cells to hit — and "what happens to the rest of the
 		// skill" is a question with no good answer, so the shape of this loop is
 		// what stops it being asked.
-		if dealt := b.resolveAgainst(unit, target, known, shape.Name, position, spent, turn); dealt > 0 {
+		if dealt := b.resolveAgainst(unit, target, known, shape.Name, position, brought, turn); dealt > 0 {
 			bitten = append(bitten, target)
 		}
 		if b.finished {
@@ -659,19 +665,18 @@ func (b *Battle) reply(holder, attacker *Unit, held passive.Passive, turn atb.Tu
 // The events are the ones a target-side condition already emits, with the actor
 // as its own target. A reader can tell them apart by that, and a third event kind
 // would have been a third thing for every renderer to learn for no new fact.
-func (b *Battle) spend(unit *Unit, known skill.Skill, turn atb.Turn) int {
+func (b *Battle) spend(unit *Unit, known skill.Skill, brought swing, turn atb.Turn) {
 	if known.SelfRequires == nil {
-		return 0
+		return
 	}
 	against := conditionCaster(known, unit)
 	if !known.SelfAmplified(against) {
-		return 0
+		return
 	}
-	bonus := known.SelfBonus(against)
 	b.emit(Event{
 		Kind: Amplified, At: turn.At, Turn: turn.Number, Actor: unit.ID,
 		Target: unit.ID, Skill: known.ID, Status: known.SelfRequires.Status,
-		Stacks: against.Stacks, Power: known.Power + bonus,
+		Stacks: against.Stacks, Power: known.Power + brought.Bonus,
 	})
 	if known.SelfRequires.Consume {
 		consumed, forgone := unit.Statuses.Consume(known.SelfRequires.Status)
@@ -686,7 +691,6 @@ func (b *Battle) spend(unit *Unit, known skill.Skill, turn atb.Turn) int {
 		// not finished yet.
 		b.retuneAll(turn)
 	}
-	return bonus
 }
 
 func (b *Battle) applyToSelf(unit *Unit, known skill.Skill, turn atb.Turn) {
@@ -715,7 +719,8 @@ func (b *Battle) strip(actor, target *Unit, known skill.Skill, turn atb.Turn) {
 // A splash cell takes a reduced share of the power while the primary takes all of
 // it, which is how an area skill trades focus for spread without being strictly
 // better than a single-target one.
-func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape string, position, spent int, turn atb.Turn) (dealt int64) {
+func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape string,
+	position int, brought swing, turn atb.Turn) (dealt int64) {
 	b.strip(actor, target, known, turn)
 
 	power := known.Power
@@ -739,10 +744,10 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			}
 		}
 	}
-	// The caster's own bonus is added before the splash share is taken, the same
-	// as the target's: it is part of what the skill hits for, and a shape's edge
+	// The caster's own terms land before the splash share is taken, the same as
+	// the target's: they are part of what the skill hits for, and a shape's edge
 	// is worth less however the power was arrived at.
-	power += spent
+	power = brought.applied(power)
 	if position > 0 {
 		power = power * b.books.Patterns.SplashPower / scale.Base
 	}

@@ -252,6 +252,25 @@ type Event struct {
 	// book made until a trait declared one.
 	AmplifiedChance int `json:"amplified_chance,omitempty"`
 	AmplifiedEffect int `json:"amplified_effect,omitempty"`
+	// Gradient is the share the caster's own wounds added to its skill's power,
+	// in parts per thousand, on SkillUsed.
+	//
+	// It is on the event for the reason Pierce, Refused and Drained are: the
+	// numbers that follow cannot be reproduced without it. Power on the same
+	// event carries what the skill *declares*, which is the figure a reader has
+	// in front of them from the book — so a hurt caster's strike lands for more
+	// than the book says and nothing anywhere accounts for the difference. It is
+	// worse than a pierce in one respect: a pierce is a property of the skill and
+	// the same on every cast, where this changes every time the caster is hit.
+	//
+	// The share added rather than the multiplier, so nought means nothing
+	// happened and omitempty drops it — which is why every log written before a
+	// skill declared a gradient is byte for byte what it was.
+	//
+	// It sits on SkillUsed rather than on the strike because it is read once per
+	// use: a column that catches three units swings once, not three times, and an
+	// event per target would say otherwise.
+	Gradient int `json:"gradient,omitempty"`
 	// Note is a short reason, used only where a kind has one to give.
 	Note string `json:"note,omitempty"`
 }

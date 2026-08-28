@@ -211,14 +211,17 @@ func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset
 		return 0
 	}
 	actorStats := p.fight.Stats(actor)
-	spent := declared.SelfBonus(conditionCaster(declared, actor))
+	// Read once, outside the loop, exactly as expected does: the caster is the
+	// same caster for every cell its own bomb catches, and a gradient asks how
+	// hurt it is.
+	brought := swingOf(declared, actor)
 	total := int64(0)
 	for position, cell := range covers(shape, declared, aim) {
 		target := p.fight.occupant(cell)
 		if target == nil || target.Side != actor.Side {
 			continue
 		}
-		dealt := p.fight.against(actor, actorStats, declared, target, position, spent)
+		dealt := p.fight.against(actor, actorStats, declared, target, position, brought)
 		total += dealt
 		// ⚠️ Every cell, splash included — where finished reads only the primary
 		// one. The two are not inconsistent: finished asks expected what the skill
@@ -728,7 +731,7 @@ func (b *Battle) bestAgainst(actor, victim *Unit) int64 {
 			continue
 		}
 		if value := b.against(actor, b.Stats(actor), declared, victim, 0,
-			declared.SelfBonus(conditionCaster(declared, actor))); value > best {
+			swingOf(declared, actor)); value > best {
 			best = value
 		}
 	}
