@@ -2549,6 +2549,43 @@ nothing** (both arrangements fight the same seeds) and fixing it would mean an
 **Left at their defaults, deliberately:** a `--carriers all` sweep (a follow-up,
 now that `Weigh` exists) and `self_gradient` support (excluded, above).
 
+### What the first crit chances cost, and what the readings taught
+
+The first two were authored off `weigh`, one carrier each, 2000 seeds, band
+±1.6%, a chance of 200‰ throughout:
+
+| carrier | skill | worth |
+|---|---|---|
+| `pokemon.bulbasaur` | `razor_leaf` | **+8.4%** |
+| `naruto.naruto` | `wind_shuriken` | **+6.9%** |
+| `pokemon.charmander` | `fire_fang` | +1.0% — inside the band |
+| `pokemon.squirtle` | `bite` | +0.2% |
+| `naruto.naruto` | `kunai` | **−1.7%** |
+
+The first two shipped and the last three did not.
+
+⚠️ **A theme is not a price.** The rule these were picked under first was that a
+crit belongs to a blow that strikes a point rather than to a spray, and the
+measurement disagreed: `bite` and `kunai` are as pointed as `razor_leaf` is and
+are worth nothing and less than nothing. What the price actually reads is the
+**carrier's whole line** — `razor_leaf` and `wind_shuriken` are what their
+carriers spend their turns on, `bite` sits in a squirtle mirror that grinds for
+141 turns where damage barely decides, and `kunai` is cheap enough that making it
+better gets it **cast more often**, crowding out the skill that should have been
+cast. That last one is `outrage` wearing a different hat: a rating that likes a
+skill more will reach for it more, and *more often* is not the same as *better*.
+
+⚠️ `kunai` reading **negative** is the most useful row in the table, because it
+is the proof that the instrument can see a buff make its carrier worse. A win
+rate on the roster could not; that is what § *Pricing one number* is about.
+
+The roster moved **47.56% → 49.73% ally** over 20,000 seeds afterwards, and
+**8.02%** of all damaging strikes are now critical against nought before. Both
+are recorded as observations. The roster figure prices nothing — `razor_leaf` is
+carried by a level 60 ace on one side and a level 30 unit on the other, so the
+shift is mostly whose hand it is in — and the strike share is the mechanism
+check, not a result.
+
 ## Fighting two ratings: `forge.Bout`, and the exact control it rests on
 
 A roster win rate cannot see a rating. Both sides use `Suggest`, so a change that

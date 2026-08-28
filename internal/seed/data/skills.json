@@ -29,6 +29,7 @@
       "strikes": 2,
       "accuracy": 880,
       "pierce": 400,
+      "crit": 200,
       "cooldown": 2,
       "target": "enemy",
       "restrict": {
@@ -788,6 +789,7 @@
       "power": 620,
       "strikes": 2,
       "accuracy": 880,
+      "crit": 200,
       "cooldown": 2,
       "target": "enemy",
       "restrict": {

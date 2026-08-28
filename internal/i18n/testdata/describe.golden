@@ -5,7 +5,7 @@ Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% c
 Tầm 1 · 95% trúng · hồi 1 lượt.
 
 razor_leaf
-Bắn một loạt lá mỏng như dao cạo, cắt tiếng gió thành từng nhát, 2 nhát, mỗi nhát 60% công (tổng 120%), xuyên 40% giáp.
+Bắn một loạt lá mỏng như dao cạo, cắt tiếng gió thành từng nhát, 2 nhát, mỗi nhát 60% công (tổng 120%), xuyên 40% giáp, 20% khả năng chí mạng.
 Tầm 2 · 3 ô · 88% trúng · hồi 2 lượt.
 
 solar_beam
@@ -165,7 +165,7 @@ Rút một lưỡi ném đi, không hoa mỹ nhưng bao giờ cũng có sẵn, 7
 Tầm 2 · 95% trúng · dùng mọi lượt.
 
 wind_shuriken
-Nén gió thành một vòng lưỡi mỏng rồi thả ra, gió tự lo phần còn lại, 2 nhát, mỗi nhát 62% công (tổng 124%).
+Nén gió thành một vòng lưỡi mỏng rồi thả ra, gió tự lo phần còn lại, 2 nhát, mỗi nhát 62% công (tổng 124%), 20% khả năng chí mạng.
 Tầm 2 · 3 ô · 88% trúng · hồi 2 lượt.
 
 rasengan
@@ -403,7 +403,7 @@ Hits an enemy for 110% of attack.
 Range 1 · 95% to hit · 1 turn to recharge.
 
 razor_leaf
-Hits an enemy for 2 strikes of 60% of attack each, 120% in all, through 40% of the armour.
+Hits an enemy for 2 strikes of 60% of attack each, 120% in all, through 40% of the armour, critical 20% of the time.
 Range 2 · 3 cells · 88% to hit · 2 turns to recharge.
 
 solar_beam
@@ -556,7 +556,7 @@ Hits an enemy for 70% of attack.
 Range 2 · 95% to hit · usable every turn.
 
 wind_shuriken
-Hits an enemy for 2 strikes of 62% of attack each, 124% in all.
+Hits an enemy for 2 strikes of 62% of attack each, 124% in all, critical 20% of the time.
 Range 2 · 3 cells · 88% to hit · 2 turns to recharge.
 
 rasengan
