@@ -1,0 +1,94 @@
+{
+  "builds": [
+    {
+      "id": "bulbasaur.poison",
+      "character": "pokemon.bulbasaur",
+      "name": "rải độc",
+      "intent": "Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có",
+      "skills": [
+        "poison_powder",
+        "sludge_bomb",
+        "venoshock",
+        "razor_leaf"
+      ],
+      "passives": [
+        "virulence"
+      ]
+    },
+    {
+      "id": "bulbasaur.parasite",
+      "character": "pokemon.bulbasaur",
+      "name": "ký sinh",
+      "intent": "Bám vào kẻ địch mà sống, lấy lại từng phần sinh lực đã mất",
+      "skills": [
+        "leech_seed",
+        "synthesis",
+        "ingrain",
+        "razor_leaf"
+      ],
+      "passives": [
+        "blood_thirst"
+      ]
+    },
+    {
+      "id": "charmander.scorch",
+      "character": "pokemon.charmander",
+      "name": "thiêu đốt",
+      "intent": "Đốt trước rồi thu tiền bỏng, thắng trong lúc lửa còn hăng",
+      "skills": [
+        "flamethrower",
+        "inferno",
+        "ember",
+        "fire_spin"
+      ],
+      "passives": [
+        "blaze"
+      ]
+    },
+    {
+      "id": "charmander.dragon",
+      "character": "pokemon.charmander",
+      "name": "long tộc",
+      "intent": "Bỏ lửa lấy nanh vuốt, đánh ai cũng một nhịp như nhau",
+      "skills": [
+        "dragon_claw",
+        "outrage",
+        "dragon_rage",
+        "dragon_dance"
+      ],
+      "passives": [
+        "reckless"
+      ]
+    },
+    {
+      "id": "squirtle.fortress",
+      "character": "pokemon.squirtle",
+      "name": "cố thủ",
+      "intent": "Gọi đòn về phía mình, đỡ cho đồng đội và đứng lâu hơn bên kia",
+      "skills": [
+        "taunt",
+        "withdraw",
+        "wide_guard",
+        "aqua_ring"
+      ],
+      "passives": [
+        "thorns"
+      ]
+    },
+    {
+      "id": "squirtle.ram",
+      "character": "pokemon.squirtle",
+      "name": "giáp kích",
+      "intent": "Lấy mai làm vũ khí, càng dày giáp thì cú tông càng nặng",
+      "skills": [
+        "skull_bash",
+        "water_gun",
+        "whirlpool",
+        "withdraw"
+      ],
+      "passives": [
+        "ballast"
+      ]
+    }
+  ]
+}

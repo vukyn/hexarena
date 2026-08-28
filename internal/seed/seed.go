@@ -17,7 +17,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
-//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/species.json data/archetypes.json data/cast.json data/roster.json
+//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/species.json data/archetypes.json data/cast.json data/roster.json data/builds.json
 var files embed.FS
 
 // ElementsFile is the raw affinity chart declaration.
@@ -200,6 +200,23 @@ func Cast() (*cast.Book, error) {
 		return nil, err
 	}
 	return cast.ParseBook(raw, deps)
+}
+
+// BuildsFile is the raw build-catalogue declaration.
+func BuildsFile() ([]byte, error) { return files.ReadFile("data/builds.json") }
+
+// Builds parses the embedded build catalogue against the cast, which is what
+// says whether a build's kit is one its character could field.
+func Builds() (*cast.BuildBook, error) {
+	raw, err := BuildsFile()
+	if err != nil {
+		return nil, err
+	}
+	characters, err := Cast()
+	if err != nil {
+		return nil, err
+	}
+	return cast.ParseBuilds(raw, characters)
 }
 
 // CastDeps assembles everything a character is validated against. It is

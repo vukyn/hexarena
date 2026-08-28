@@ -40,7 +40,18 @@ const (
 	speciesFile    = "species.json"
 	archetypesFile = "archetypes.json"
 	castFile       = "cast.json"
+	buildsFile     = "builds.json"
 )
+
+// emptyCatalogue is what a data directory with no build catalogue reads as.
+//
+// A working directory is a copy somebody made, and every copy taken before
+// builds.json existed has everything else in it — so a missing catalogue is an
+// older data directory rather than a broken one, and refusing to load would
+// break the tool over a file that has nothing to do with the character being
+// authored. It goes through the parser rather than round it: an empty catalogue
+// is one the parser has agreed to, not one this file assembled by hand.
+var emptyCatalogue = []byte(`{"builds": []}`)
 
 // assetsDir is the folder inside a data directory that art lives under.
 //
@@ -81,6 +92,10 @@ type Library struct {
 	species    *cast.SpeciesBook
 	archetypes *cast.ArchetypeBook
 	characters *cast.Book
+	// builds is the authored late-game loadouts, which is the one book that is
+	// read *through* another: a build is checked against the cast, so it is
+	// parsed last and cannot be held without the characters beside it.
+	builds *cast.BuildBook
 }
 
 // Load reads every book from a data directory.
@@ -179,6 +194,21 @@ func Load(dir string) (*Library, error) {
 	if lib.characters, err = cast.ParseBook(raw, lib.CastDeps()); err != nil {
 		return nil, err
 	}
+
+	// The catalogue is optional and only this one is, which is why the absence is
+	// spelled out here rather than made a property of read: every other book is a
+	// rule the game cannot start without, while a build is a decision somebody
+	// wrote down about a character that is already legal without it.
+	raw, err = read(buildsFile)
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+		raw = emptyCatalogue
+	case err != nil:
+		return nil, err
+	}
+	if lib.builds, err = cast.ParseBuilds(raw, lib.characters); err != nil {
+		return nil, err
+	}
 	return lib, nil
 }
 
@@ -200,6 +230,24 @@ func (l *Library) Origins() *cast.OriginBook       { return l.origins }
 func (l *Library) Species() *cast.SpeciesBook      { return l.species }
 func (l *Library) Archetypes() *cast.ArchetypeBook { return l.archetypes }
 func (l *Library) Characters() *cast.Book          { return l.characters }
+
+// Builds is every authored build, in declaration order.
+//
+// It hands out the slice rather than the book, unlike every accessor above it: a
+// front-end listing builds wants them in order and a front-end asking about one
+// character wants BuildsOf, and those two are the whole of what the book is read
+// for here. Handing the book over would give a screen a third way to ask — by a
+// build's own id — which is the lookup nothing on a screen has, because a screen
+// has the row it drew.
+func (l *Library) Builds() []cast.Build { return l.builds.All() }
+
+// BuildsOf is one character's builds, in declaration order, and is empty for a
+// character nobody has written a direction for.
+//
+// Empty is an answer rather than a miss, which is a fact a caller has to carry:
+// a listing that dropped a character with no build would be saying the cast is
+// shorter than it is.
+func (l *Library) BuildsOf(character string) []cast.Build { return l.builds.Of(character) }
 
 // SkillDeps is what a skill is checked against: the shapes it can cover and the
 // statuses it can inflict.
