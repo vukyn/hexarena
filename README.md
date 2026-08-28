@@ -919,7 +919,7 @@ sides**:
 | | ace | support | young |
 | --- | --- | --- | --- |
 | ally | Venusaur, 60 | Wartortle, 16 | Charmander, 8 |
-| enemy | Blastoise, 60 | Charmeleon, 28 | Ivysaur, 16 |
+| enemy | Blastoise, 60 | Charmeleon, 30 | Ivysaur, 30 |
 
 That is a measuring instrument rather than a scenario, and it is the whole
 reason the file is shaped that way. It used to be the same character three times
@@ -964,12 +964,41 @@ Four properties earn their place, and each is a way the roster was wrong before:
   elemental answer at all and pays for it in neutral-element skills —
   `sludge_bomb` and `venoshock` land at full value on anything.
 - **All three forms and every trait state are in play.** The levels span the
-  final, middle and base stage; Wartortle and Ivysaur sit exactly on
-  `endurance`'s unlock level, and Charmander at 8 is below `blaze`'s — so a
-  battle exercises a unit holding its trait and a unit that has not earned one.
-  Since `blaze` became gated there is a third state: Charmeleon has earned it and
-  is not yet in it, so a shipped log carries a `passive_held` partway down rather
-  than only at the opening board.
+  final, middle and base stage; Wartortle sits exactly on `endurance`'s unlock
+  level, Charmander at 8 is below `blaze`'s, and Ivysaur at 30 has earned two
+  traits and fields neither — so a battle exercises a unit holding its trait, a
+  unit that has not earned one, and a unit that declined. Since `blaze` became
+  gated there is a third state: Charmeleon has earned it and is not yet in it, so a
+  shipped log carries a `passive_held` partway down rather than only at the opening
+  board.
+
+### Re-levelling the instrument after the opponent learned to play
+
+The two young enemies were **Charmeleon 28 and Ivysaur 16** for as long as
+`battle.Suggest` did not play the timed-effect layer. The moment it did — see *A
+deeper opponent* — the roster read **80.0% ally over 20,000 seeds**, and an
+instrument that lopsided cannot measure the next change. It is now **Charmeleon 30
+and Ivysaur 30**, which reads **49.1%**.
+
+Three things about that, because each of them is the sort of thing the next person
+re-levelling will want:
+
+- **Only the two young enemies moved.** The ace levels are the whole squad and the
+  curve there is *savage*: Venusaur 60 → 50 with everything else held takes the ally
+  side from 79.0% to **4.0%**, and 60 → 45 to **0.4%**. There is no fine tuning to be
+  done on an ace; the young units are the dial.
+- **The neighbours were measured, not assumed.** 31/28 reads 52.5%, 29/31 reads
+  48.2%, 31/31 reads 46.5%, 31/24 reads 62.2%. 30/30 is the closest to even and it
+  is symmetric, which is worth something in a file that is read as much as it is run.
+- **The loadouts did not move.** Ivysaur at 30 could now field `synthesis`,
+  `venoshock` or a trait, and fields none of them: the point of this change is the
+  level, and changing two things at once would leave neither measured. What it may
+  field later is a separate change with its own figure.
+
+⚠️ **A level is not a small edit here.** Every figure quoted anywhere in this file
+was measured against some roster, and this is the second time the whole set has been
+invalidated at once (the first was `venom_blood`'s gate). Quote the seed count beside
+any rate, and re-measure rather than carrying a number across.
 
 Squirtle is the finding this produced, and it is the kind a mirror hides. Water
 is the strongest of the three elements and Blastoise still cannot carry the ace
@@ -1463,10 +1492,15 @@ calibration was resting on the opponent not playing statuses.** The ally squad o
 the only applier-and-detonate pair in the roster (`sludge_bomb` into `venoshock`)
 and the enemy's fire unit throws burn at a water squad that halves it.
 
-⚠️ **So the instrument needs re-levelling before it can measure anything else**, and
-that is a **data** change — levels in `roster.json` — deliberately not folded in
-here. This change's entire claim is that the shipped data was never being played, so
-the honest order is play it, measure it, then tune it. No JSON was touched.
+⚠️ **So the instrument needed re-levelling before it could measure anything else**,
+and that was kept as a separate **data** change for a reason: this one's entire claim
+is that the shipped data was never being played, so the honest order is play it,
+measure it, then tune it. It has since been done — the two young enemies moved to
+Charmeleon 30 and Ivysaur 30 and the roster reads 49.1% over 20,000 seeds; see
+*Re-levelling the instrument after the opponent learned to play* above. **Every rate
+in this section is the figure at the moment the opponent changed, measured against
+the old levels, and is kept for what it says about the change rather than as a
+current reading.**
 
 The support builds gained what the roadmap said they would, on the same seeds:
 Squirtle's tank build 517 → **676** turns, its semi-tank 30 → **39**; Bulbasaur's
@@ -1588,7 +1622,9 @@ amplifier from 32 — the poison specialist assembles across the middle of the
 climb rather than opening with its best piece.
 
 ⚠️ It is a **balance change and the figure moved**: 4000 seeds of the shipped
-roster read **49.5% ally before and 53.2% after**. The swing is one-sided by
+roster read **49.5% ally before and 53.2% after**. (Both were measured against the
+shallow opponent and the old levels — see *Re-levelling the instrument* — so they say
+what the gate was worth then, not what the roster reads now.) The swing is one-sided by
 construction — `ally.venusaur` is level 60 and keeps the trait, `foe.ivysaur` is
 16 and loses it. That second half is not optional: a placement naming a trait
 above its level is a hard parse error rather than a silent drop, so the roster

@@ -1,5 +1,5 @@
 == battle from seed 11 ==
-50 turns, 239 events, enemy won
+46 turns, 222 events, enemy won
 
 the first 90 events
        0 started         ally.venusaur      ally   2,1  3800 hp
@@ -8,124 +8,124 @@ the first 90 events
        0 started         ally.charmander    ally   1,1  954 hp
        0 started         foe.blastoise      enemy  3,1  3600 hp
        0 passive_held    foe.blastoise      endurance: toughened x1
-       0 started         foe.charmeleon     enemy  4,2  1735 hp
-       0 started         foe.ivysaur        enemy  4,1  1684 hp
+       0 started         foe.charmeleon     enemy  4,2  1799 hp
+       0 started         foe.ivysaur        enemy  4,1  2230 hp
    10000 turn_began      ally.venusaur      turn 1   3800 hp
    10000 skill_used      ally.venusaur      sludge_bomb at 4,2
-   10000 damaged         ally.venusaur      sludge_bomb hit foe.charmeleon for 465, x1000 affinity, 1270 hp left
+   10000 damaged         ally.venusaur      sludge_bomb hit foe.charmeleon for 457, x1000 affinity, 1342 hp left
    10000 status_resisted ally.venusaur      foe.charmeleon resisted poison at 400 per mille
-   11363 turn_began      foe.charmeleon     turn 1   1270 hp
-   11363 skill_used      foe.charmeleon     fire_spin at 1,1
-   11363 damaged         foe.charmeleon     fire_spin hit ally.charmander for 245, x1000 affinity, 709 hp left
-   11363 status_applied  foe.charmeleon     burn x1 on ally.charmander, now 1, 231 per tick
-   11363 damaged         foe.charmeleon     fire_spin hit ally.wartortle for 54, x667 affinity, 1577 hp left
-   11363 status_resisted foe.charmeleon     ally.wartortle resisted burn at 700 per mille
+   10989 turn_began      foe.charmeleon     turn 1   1342 hp
+   10989 skill_used      foe.charmeleon     fire_spin at 1,1
+   10989 damaged         foe.charmeleon     fire_spin hit ally.charmander for 253, x1000 affinity, 701 hp left
+   10989 status_applied  foe.charmeleon     burn x1 on ally.charmander, now 1, 238 per tick
+   10989 damaged         foe.charmeleon     fire_spin hit ally.wartortle for 55, x667 affinity, 1576 hp left
+   10989 status_resisted foe.charmeleon     ally.wartortle resisted burn at 700 per mille
    11764 turn_began      foe.blastoise      turn 1   3600 hp
    11764 skill_used      foe.blastoise      hydro_pump at 1,1
    11764 damaged         foe.blastoise      hydro_pump hit ally.charmander for 1089, x1500 affinity, 0 hp left
    11764 died            ally.charmander    fell at 1,1
-   19230 turn_began      foe.ivysaur        turn 1   1684 hp
-   19230 skill_used      foe.ivysaur        razor_leaf at 1,0
-   19230 damaged         foe.ivysaur        razor_leaf hit ally.wartortle for 101, x1000 affinity, 400 per mille pierced, 1476 hp left
-   19230 damaged         foe.ivysaur        razor_leaf hit ally.wartortle for 101, x1000 affinity, 400 per mille pierced, 1375 hp left
+   15151 turn_began      foe.ivysaur        turn 1   2230 hp
+   15151 skill_used      foe.ivysaur        razor_leaf at 1,0
+   15151 damaged         foe.ivysaur        razor_leaf hit ally.wartortle for 132, x1000 affinity, 400 per mille pierced, 1444 hp left
+   15151 damaged         foe.ivysaur        razor_leaf hit ally.wartortle for 132, x1000 affinity, 400 per mille pierced, 1312 hp left
    20000 turn_began      ally.venusaur      turn 2   3800 hp
    20000 skill_used      ally.venusaur      razor_leaf at 4,2
-   20000 damaged         ally.venusaur      razor_leaf hit foe.charmeleon for 172, x667 affinity, 400 per mille pierced, 1098 hp left
-   20000 damaged         ally.venusaur      razor_leaf hit foe.charmeleon for 172, x667 affinity, 400 per mille pierced, 926 hp left
-   20000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 125, x1000 affinity, 400 per mille pierced, 1559 hp left
-   20000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 125, x1000 affinity, 400 per mille pierced, 1434 hp left
-   22726 turn_began      foe.charmeleon     turn 2   926 hp
-   22726 skill_used      foe.charmeleon     flamethrower at 2,1
-   22726 damaged         foe.charmeleon     flamethrower hit ally.venusaur for 353, x1500 affinity, 3447 hp left
-   22726 status_applied  foe.charmeleon     burn x1 on ally.venusaur, now 1, 176 per tick
-   22726 status_resisted ally.venusaur      foe.charmeleon resisted poison at 40 per mille
+   20000 damaged         ally.venusaur      razor_leaf hit foe.charmeleon for 170, x667 affinity, 400 per mille pierced, 1172 hp left
+   20000 damaged         ally.venusaur      razor_leaf hit foe.charmeleon for 170, x667 affinity, 400 per mille pierced, 1002 hp left
+   20000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 114, x1000 affinity, 400 per mille pierced, 2116 hp left
+   20000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 114, x1000 affinity, 400 per mille pierced, 2002 hp left
+   21978 turn_began      foe.charmeleon     turn 2   1002 hp
+   21978 skill_used      foe.charmeleon     flamethrower at 2,1
+   21978 damaged         foe.charmeleon     flamethrower hit ally.venusaur for 365, x1500 affinity, 3435 hp left
+   21978 status_applied  foe.charmeleon     burn x1 on ally.venusaur, now 1, 182 per tick
+   21978 status_resisted ally.venusaur      foe.charmeleon resisted poison at 40 per mille
    23528 turn_began      foe.blastoise      turn 2   3600 hp
    23528 skill_used      foe.blastoise      water_gun at 1,0
-   23528 damaged         foe.blastoise      water_gun hit ally.wartortle for 218, x1000 affinity, 1157 hp left
-   25641 turn_began      ally.wartortle     turn 1   1157 hp
+   23528 damaged         foe.blastoise      water_gun hit ally.wartortle for 218, x1000 affinity, 1094 hp left
+   25641 turn_began      ally.wartortle     turn 1   1094 hp
    25641 skill_used      ally.wartortle     whirlpool at 4,2
-   25641 damaged         ally.wartortle     whirlpool hit foe.charmeleon for 143, x1500 affinity, 783 hp left
+   25641 damaged         ally.wartortle     whirlpool hit foe.charmeleon for 141, x1500 affinity, 861 hp left
    25641 status_resisted ally.wartortle     foe.charmeleon resisted mire at 600 per mille
-   25641 damaged         ally.wartortle     whirlpool hit foe.ivysaur for 46, x1000 affinity, 1388 hp left
+   25641 damaged         ally.wartortle     whirlpool hit foe.ivysaur for 40, x1000 affinity, 1962 hp left
    25641 status_applied  ally.wartortle     mire x1 on foe.ivysaur, now 1
-   25641 speed_changed   foe.ivysaur        speed 52 to 42
-   30000 turn_began      ally.venusaur      turn 3   3447 hp
-   30000 status_ticked   ally.venusaur      burn x1  176 damage
+   25641 speed_changed   foe.ivysaur        speed 66 to 53
+   30000 turn_began      ally.venusaur      turn 3   3435 hp
+   30000 status_ticked   ally.venusaur      burn x1  182 damage
    30000 skill_used      ally.venusaur      venoshock at 4,2
-   30000 damaged         ally.venusaur      venoshock hit foe.charmeleon for 321, x1000 affinity, 462 hp left
+   30000 damaged         ally.venusaur      venoshock hit foe.charmeleon for 317, x1000 affinity, 544 hp left
    30000 passive_held    foe.charmeleon     blaze: kindled x1
-   34089 turn_began      foe.charmeleon     turn 3   462 hp
-   34089 skill_used      foe.charmeleon     dragon_rage at 1,0
-   34089 damaged         foe.charmeleon     dragon_rage hit ally.wartortle for 284, x1000 affinity, 873 hp left
+   31445 turn_began      foe.ivysaur        turn 2   1962 hp
+   31445 skill_used      foe.ivysaur        vine_whip at 2,1
+   31445 damaged         foe.ivysaur        vine_whip hit ally.venusaur for 147, x1000 affinity, 3106 hp left
+   31445 status_resisted ally.venusaur      foe.ivysaur resisted poison at 40 per mille
+   32967 turn_began      foe.charmeleon     turn 3   544 hp
+   32967 skill_used      foe.charmeleon     dragon_rage at 1,0
+   32967 damaged         foe.charmeleon     dragon_rage hit ally.wartortle for 293, x1000 affinity, 801 hp left
    35292 turn_began      foe.blastoise      turn 3   3600 hp
    35292 skill_used      foe.blastoise      brine at 1,0
-   35292 missed          foe.blastoise      brine missed ally.wartortle at 941 per mille
-   40000 turn_began      ally.venusaur      turn 4   3271 hp
-   40000 status_ticked   ally.venusaur      burn x1  176 damage
+   35292 amplified       foe.blastoise      brine on  x0, power 2000
+   35292 damaged         foe.blastoise      brine hit ally.wartortle for 436, x1000 affinity, 365 hp left
+   40000 turn_began      ally.venusaur      turn 4   3106 hp
+   40000 status_ticked   ally.venusaur      burn x1  182 damage
    40000 status_expired  ally.venusaur      burn wore off
-   40000 skill_used      ally.venusaur      sludge_bomb at 4,1
-   40000 damaged         ally.venusaur      sludge_bomb hit foe.ivysaur for 447, x1000 affinity, 941 hp left
-   40000 status_applied  ally.venusaur      poison x1 on foe.ivysaur, now 1, 172 per tick
-   41512 turn_began      foe.ivysaur        turn 2   941 hp
-   41512 status_ticked   foe.ivysaur        poison x1  172 damage
-   41512 skill_used      foe.ivysaur        vine_whip at 2,1
-   41512 damaged         foe.ivysaur        vine_whip hit ally.venusaur for 113, x1000 affinity, 2982 hp left
-   41512 status_resisted ally.venusaur      foe.ivysaur resisted poison at 40 per mille
-   45452 turn_began      foe.charmeleon     turn 4   462 hp
-   45452 turn_skipped    foe.charmeleon     nothing usable
+   40000 skill_used      ally.venusaur      sludge_bomb at 4,2
+   40000 damaged         ally.venusaur      sludge_bomb hit foe.charmeleon for 457, x1000 affinity, 87 hp left
+   40000 status_resisted ally.venusaur      foe.charmeleon resisted poison at 400 per mille
+   43956 turn_began      foe.charmeleon     turn 4   87 hp
+   43956 turn_skipped    foe.charmeleon     nothing usable
    47056 turn_began      foe.blastoise      turn 4   3600 hp
    47056 skill_used      foe.blastoise      water_gun at 1,0
-   47056 damaged         foe.blastoise      water_gun hit ally.wartortle for 218, x1000 affinity, 655 hp left
-   50000 turn_began      ally.venusaur      turn 5   2982 hp
+   47056 damaged         foe.blastoise      water_gun hit ally.wartortle for 218, x1000 affinity, 147 hp left
+   50000 turn_began      ally.venusaur      turn 5   2924 hp
    50000 skill_used      ally.venusaur      razor_leaf at 4,2
-   50000 damaged         ally.venusaur      razor_leaf hit foe.charmeleon for 172, x667 affinity, 400 per mille pierced, 290 hp left
-   50000 damaged         ally.venusaur      razor_leaf hit foe.charmeleon for 172, x667 affinity, 400 per mille pierced, 118 hp left
-   50000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 125, x1000 affinity, 400 per mille pierced, 644 hp left
-   50000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 125, x1000 affinity, 400 per mille pierced, 519 hp left
-   51282 turn_began      ally.wartortle     turn 2   655 hp
+   50000 damaged         ally.venusaur      razor_leaf hit foe.charmeleon for 170, x667 affinity, 400 per mille pierced, 0 hp left
+   50000 died            foe.charmeleon     fell at 4,2
+   50000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 114, x1000 affinity, 400 per mille pierced, 1848 hp left
+   50000 damaged         ally.venusaur      razor_leaf hit foe.ivysaur for 114, x1000 affinity, 400 per mille pierced, 1734 hp left
+   50312 turn_began      foe.ivysaur        turn 3   1734 hp
+   50312 status_expired  foe.ivysaur        mire wore off
+   50312 speed_changed   foe.ivysaur        speed 53 to 66
+   50312 skill_used      foe.ivysaur        leech_seed at 1,0
+   50312 damaged         foe.ivysaur        leech_seed hit ally.wartortle for 121, x1000 affinity, 26 hp left
+   50312 healed          foe.ivysaur       
+   51282 turn_began      ally.wartortle     turn 2   26 hp
    51282 skill_used      ally.wartortle     bubble at 4,1
-   51282 damaged         ally.wartortle     bubble hit foe.ivysaur for 80, x1000 affinity, 439 hp left
-   51282 status_applied  ally.wartortle     mire x1 on foe.ivysaur, now 2
-   51282 damaged         ally.wartortle     bubble hit foe.charmeleon for 62, x1500 affinity, 56 hp left
-   51282 status_resisted ally.wartortle     foe.charmeleon resisted mire at 700 per mille
-   51282 speed_changed   foe.ivysaur        speed 42 to 36
-   56815 turn_began      foe.charmeleon     turn 5   56 hp
-   56815 skill_used      foe.charmeleon     flamethrower at 2,1
-   56815 damaged         foe.charmeleon     flamethrower hit ally.venusaur for 404, x1500 affinity, 2578 hp left
-... 149 more
+   51282 damaged         ally.wartortle     bubble hit foe.ivysaur for 71, x1000 affinity, 1735 hp left
+   51282 status_applied  ally.wartortle     mire x1 on foe.ivysaur, now 1
+... 132 more
 
 the last 12 events
-  189056 missed          ally.wartortle     water_gun missed foe.blastoise at 941 per mille
-  191485 turn_began      foe.blastoise      turn 16  323 hp
-  191485 status_ticked   foe.blastoise      poison x2  180 damage
-  191485 status_expired  foe.blastoise      poison wore off
-  191485 skill_used      foe.blastoise      hydro_pump at 2,1
-  191485 damaged         foe.blastoise      hydro_pump hit ally.venusaur for 370, x1000 affinity, 0 hp left
-  191485 died            ally.venusaur      fell at 2,1
-  203249 turn_began      foe.blastoise      turn 17  143 hp
-  203249 skill_used      foe.blastoise      water_gun at 1,0
-  203249 damaged         foe.blastoise      water_gun hit ally.wartortle for 218, x1000 affinity, 0 hp left
-  203249 died            ally.wartortle     fell at 1,0
-  203249 ended                              victory to the enemy side
+  187165 status_expired  ally.venusaur      mire wore off
+  187165 speed_changed   ally.venusaur      speed 81 to 100
+  187165 skill_used      ally.venusaur      venoshock at 3,1
+  187165 amplified       ally.venusaur      venoshock on poison x2, power 1800
+  187165 damaged         ally.venusaur      venoshock hit foe.blastoise for 324, x1000 affinity, 1027 hp left
+  188224 turn_began      foe.blastoise      turn 16  1027 hp
+  188224 status_ticked   foe.blastoise      poison x2  180 damage
+  188224 status_expired  foe.blastoise      poison wore off
+  188224 skill_used      foe.blastoise      hydro_pump at 2,1
+  188224 damaged         foe.blastoise      hydro_pump hit ally.venusaur for 370, x1000 affinity, 0 hp left
+  188224 died            ally.venusaur      fell at 2,1
+  188224 ended                              victory to the enemy side
 
 event counts
   started              6
-  turn_began          50
-  status_ticked       10
-  status_expired       7
-  speed_changed       10
-  turn_skipped         2
-  skill_used          48
+  turn_began          46
+  status_ticked        7
+  status_expired       6
+  speed_changed        8
+  turn_skipped         1
+  skill_used          45
   amplified            5
   status_consumed      0
-  missed               5
+  missed               3
   blocked              0
-  damaged             57
-  status_applied      12
-  status_resisted     18
+  damaged             56
+  status_applied       9
+  status_resisted     20
   status_stripped      0
   died                 5
-  healed               0
+  healed               1
   passive_held         3
   passive_released     0
   ended                1
@@ -136,6 +136,6 @@ final board
   ally.venusaur     ally   dead       0 / 3800   hp   grass
   ally.wartortle    ally   dead       0 / 1631   hp   water
   ally.charmander   ally   dead       0 / 954    hp   fire
-  foe.blastoise     enemy  alive    143 / 3600   hp   water
-  foe.charmeleon    enemy  dead       0 / 1735   hp   fire
-  foe.ivysaur       enemy  dead       0 / 1684   hp   grass
+  foe.blastoise     enemy  alive    847 / 3600   hp   water
+  foe.charmeleon    enemy  dead       0 / 1799   hp   fire
+  foe.ivysaur       enemy  dead       0 / 2230   hp   grass
