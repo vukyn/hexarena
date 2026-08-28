@@ -557,6 +557,45 @@ Offset coordinates exist only for authoring and rendering. `hex.Place` maps an
 enemy formation with a 180 degree rotation — remove it and the two halves stop
 mirroring, silently.
 
+⚠️ **Reach is counted in RANKS from the far side, not in cells from the caster.**
+A skill of range N reaches the first N **occupied** columns of the opposing half,
+counted from that half's own frontline (`hex.Ranks`, `Battle.reachableRanks`). An
+empty column costs nothing — there is nobody there to shoot past — so a range of
+one finds the enemy's foremost survivor wherever it stands. Blocking is by the
+**whole rank**: one unit anywhere in a column shields every column behind it,
+which is what makes killing the front rank the move that opens the board. It is
+deliberately not per-file, which would let one gap expose a whole column.
+
+*Why it changed:* a unit never moves and most skills declare range 1, so measuring
+from the caster's own cell made a back-line placement unable to use its own kit —
+the range it needed was a fact about where the author had put it rather than about
+the skill.
+
+**Two rules hang off it.** An **ally-aimed skill ignores range entirely**: reach is
+a fact about the far side, and helping the squad you stand in is not a question of
+distance. A **taunt is not filtered at all** — `aims` returns the taunters before
+reach is consulted — so a taunter in the back rank drags an attack through
+everything in front of it, because a taunt a front rank could wall off would be a
+status the front rank cancels.
+
+⚠️ **A board can no longer freeze for want of distance.** The reach guard in
+`battle.New` was deleted because it had become unreachable, and with it
+`canAimAtAnyone`, `longestRange` and `nearestTargetable`, which only ever phrased
+its refusal. `Stalemate` survives for the cause that remains — no kit holding
+anything to throw — and `TestNoPlacementCanPutAUnitOutOfReach` is what stops the
+guard being re-added on a hunch.
+
+⚠️ **The caster's own column is now purely defensive** (it decides who is reached
+first), and rows no longer affect reach at all — only pattern shapes. The odd-q
+geometry and the 180° rotation still pay for themselves through patterns; they no
+longer drive targeting.
+
+⚠️ **A range above three saturates.** Three ranks is the whole of a side, so
+`solar_beam` at 4 and `arc_bolt` at 5 mean exactly what 3 means. The parse bound
+is still the board diagonal and the shipped numbers are untouched **on purpose**:
+this change is the mechanism, and re-reading all 26 enemy-aimed ranges is the
+balance pass that follows it.
+
 **Element chart.** `element.Chart.Validate` enforces that every element is
 classified exactly once, that a pair is only mutually strong when declared so, and
 that every cycled element has the same number of strengths as weaknesses. Adding a

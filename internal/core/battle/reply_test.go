@@ -158,7 +158,11 @@ func TestAHolderKilledByTheSkillDoesNotAnswer(t *testing.T) {
 		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: single("neutral"), Stats: stats(600, 800, 100, 90),
 			Skills: []string{"jab"}, Passives: []string{"spiked"}},
-		{ID: "b", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 0},
+		// Behind the holder rather than beside it: reach is counted in ranks now,
+		// so a companion in the same rank is an equally legal aim and the attack
+		// lands on whichever comes first in cell order — which is not the unit
+		// this case is about.
+		{ID: "b", Side: hex.SideAlly, Slot: hex.Offset{Col: 0, Row: 0},
 			Affinity: single("neutral"), Stats: stats(4800, 800, 400, 10),
 			Skills: []string{"lob"}},
 		{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},

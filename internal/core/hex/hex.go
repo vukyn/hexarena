@@ -75,6 +75,18 @@ const (
 // Fights reports whether the side is one a unit can be on. SideNone is not.
 func (s Side) Fights() bool { return s == SideAlly || s == SideEnemy }
 
+// Opposing is the other half of the battlefield, and SideNone for anything that
+// is not fighting — a draw has no other side to name.
+func (s Side) Opposing() Side {
+	switch s {
+	case SideAlly:
+		return SideEnemy
+	case SideEnemy:
+		return SideAlly
+	}
+	return SideNone
+}
+
 func (s Side) String() string {
 	switch s {
 	case SideAlly:
@@ -353,6 +365,30 @@ func SideCells(side Side) []Offset {
 		if cell.Side() == side {
 			out = append(out, cell)
 		}
+	}
+	return out
+}
+
+// Ranks returns a side's three columns ordered from its own frontline
+// backwards, which is the order an attack arrives in.
+//
+// It exists because "how deep into that side is this cell" is not a column
+// number: the ally side counts down from 2 to 0 and the enemy side counts up
+// from 3 to 5, so the same depth is a different column on each half. Reading the
+// column directly is the mistake this replaces — it works for whichever side the
+// author happened to be thinking about and is backwards for the other.
+func Ranks(side Side) [][]Offset {
+	out := make([][]Offset, 0, FormationCols)
+	for depth := range FormationCols {
+		col := EnemyFrontCol + depth
+		if side == SideAlly {
+			col = AllyFrontCol - depth
+		}
+		rank := make([]Offset, 0, Rows)
+		for row := range Rows {
+			rank = append(rank, Offset{Col: col, Row: row})
+		}
+		out = append(out, rank)
 	}
 	return out
 }

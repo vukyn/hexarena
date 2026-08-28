@@ -7,13 +7,15 @@ import (
 	"github.com/vukyn/hexarena/internal/core/hex"
 )
 
-// unreachable is two units that cannot touch each other: the far corners of the
-// two halves, which `hex.Place` puts four cells apart — past every range in the
-// fixture's book.
+// unreachable is two units that can never do anything to each other.
 //
-// The pair is what the roster's own reach rule exists to keep off the board, and
-// that rule is exactly why this has to be built by hand: nothing shipped can get
-// here, and the engine still has to answer for it.
+// ⚠️ It used to mean *out of range* — the far corners of the two halves, four
+// cells apart, past every range in the fixture's book. Reach is now counted in
+// ranks from the far side, so distance can no longer put anybody out of reach:
+// a range of one finds the enemy's foremost survivor from anywhere on the board.
+// What is left, and all that is left, is a pair of kits with nothing in them to
+// throw. The board this builds is still the board the predicate has to answer
+// for; only the reason it is stuck has changed.
 func unreachable(t *testing.T, allySkills, foeSkills []string) *battle.Battle {
 	t.Helper()
 	fight, err := battle.New(books(t), 7, []battle.Roster{
@@ -43,9 +45,9 @@ func unreachable(t *testing.T, allySkills, foeSkills []string) *battle.Battle {
 // about what happened. A draft roster using slot `1,2` hit exactly this in 5 seeds
 // of 4000.
 func TestABoardNobodyCanReachIsADrawEvenWhileSomethingIsStillTicking(t *testing.T) {
-	// Both sides hold a self-aimed regeneration and a weapon that cannot reach.
-	// The regeneration is the only thing either will ever manage to do.
-	fight := unreachable(t, []string{"strike", "bloom"}, []string{"strike", "bloom"})
+	// Both sides hold a self-aimed regeneration and nothing else. The
+	// regeneration is the only thing either will ever manage to do.
+	fight := unreachable(t, []string{"bloom"}, []string{"bloom"})
 	turns, err := fight.RunToEnd(4000)
 	if err != nil {
 		t.Fatalf("run: %v", err)
@@ -79,7 +81,7 @@ func TestABoardNobodyCanReachIsADrawEvenWhileSomethingIsStillTicking(t *testing.
 // the clause: a poison on a board nobody can reach *will* end it, by killing
 // somebody and emptying a side.
 func TestAPoisonedDeadlockIsStillNotADeadlock(t *testing.T) {
-	fight := unreachable(t, []string{"strike", "brace"}, []string{"strike", "brace"})
+	fight := unreachable(t, []string{"brace"}, []string{"brace"})
 	// Low enough that the ticks finish it: the claim is that a poison ends the
 	// battle, not that any amount of poison ends any unit.
 	atHealth(t, fight, "f", 150)

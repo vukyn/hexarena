@@ -382,18 +382,77 @@ func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 			return forced
 		}
 	}
+	reachable := b.reachableRanks(unit, known)
 	out := make([]hex.Offset, 0, hex.Cols*hex.Rows)
 	for _, cell := range hex.Cells() {
 		if !known.Target.Reaches(unit.Side, cell.Side()) {
 			continue
 		}
-		if unit.Cell.DistanceTo(cell) > known.Range {
-			continue
-		}
 		if b.occupant(cell) == nil {
 			continue
 		}
+		// A cell on the caster's own half costs no range at all: helping the
+		// squad you are standing in is not a question of reach. That covers the
+		// ally-aimed skills and the own half of an all-sided one, and it is why
+		// only the opposing half is filtered below.
+		if cell.Side() != unit.Side && !reachable[cell] {
+			continue
+		}
 		out = append(out, cell)
+	}
+	return out
+}
+
+// reachableRanks is the set of opposing cells a skill may be pointed at, by
+// **rank** rather than by distance.
+//
+// # Why not distance
+//
+// A unit never moves, and most skills declare a range of one, so measuring from
+// the caster's own cell meant a unit placed at the back could not use its own
+// kit — the range it needed was a fact about where the author had put it rather
+// than about the skill. Reach is now read from the *far* side: how many of the
+// enemy's ranks an attack can get through, counted from their frontline.
+//
+// # The rule
+//
+// Range N reaches the first N **occupied** ranks. An empty rank costs nothing —
+// there is nobody there to shoot past — so a range of one finds the enemy's
+// foremost survivors wherever they are standing.
+//
+// Blocking is by the whole rank: one unit anywhere in a rank shields everybody
+// behind it. That is the decision that gives the board its shape — killing the
+// front rank is what opens the one behind — and it is deliberately not a
+// per-file rule, which would let a single gap expose a whole column.
+//
+// ⚠️ A taunt is not filtered by any of this, and that is settled above rather
+// than here: `aims` returns the taunters before this is called, so a taunter in
+// the back rank drags an attack through everything in front of it. Taking the
+// choice of enemy is the whole of what a taunt does, and a taunt that could be
+// walled off would be a status the front rank cancels.
+func (b *Battle) reachableRanks(unit *Unit, known skill.Skill) map[hex.Offset]bool {
+	out := make(map[hex.Offset]bool, hex.FormationCols*hex.Rows)
+	if known.Range <= 0 {
+		return out
+	}
+	spent := 0
+	for _, rank := range hex.Ranks(unit.Side.Opposing()) {
+		held := make([]hex.Offset, 0, hex.Rows)
+		for _, cell := range rank {
+			if b.occupant(cell) != nil {
+				held = append(held, cell)
+			}
+		}
+		if len(held) == 0 {
+			continue
+		}
+		spent++
+		if spent > known.Range {
+			break
+		}
+		for _, cell := range held {
+			out[cell] = true
+		}
 	}
 	return out
 }

@@ -48,6 +48,14 @@ is only so the shape is readable.
 
 ## Not done
 
+- [ ] **Re-read every skill's range under the rank rule.** Reach is counted in
+      ranks now and the shipped numbers were written for cells, so 26 enemy-aimed
+      skills mean something different from what their author intended: range 1 went
+      from unusable on a back line to always reaching the enemy's foremost rank,
+      and anything above 3 saturates. The mechanism shipped without touching a
+      number so the balance move could be attributed; this is that move.
+      → `CLAUDE.md` § Invariants.
+
 - [ ] **An evolution line that forks.** A placement chooses how far along one
       path, never which path. ⚠️ The parse rule is the small half; `Furthest`
       is the large half and fails **silently**. → `CLAUDE.md` § Open work.

@@ -203,101 +203,30 @@ func New(books Books, seed uint64, roster []Roster) (*Battle, error) {
 			return nil, fmt.Errorf("no unit is on the %s side", side)
 		}
 	}
-	// A unit that can aim at nobody from the slot it was placed in is refused
-	// here, where the roster is still in front of whoever wrote it, rather than
-	// discovered as a turn skipped four thousand times.
+	// ⚠️ A reach guard stood here, refusing a unit that could aim at nobody from
+	// the slot it was placed in. It is gone because it can no longer fire, not
+	// because it stopped mattering.
 	//
-	// It runs after the whole roster is enlisted because reach is a fact about
-	// the board rather than about a unit: whether a range of three is enough
-	// depends on where the other nine are standing.
+	// Reach is counted in ranks from the far side now, so a range of one finds
+	// the enemy's foremost survivor wherever it stands, and both sides are known
+	// to be occupied by the checks above. Every unit holding an offensive skill
+	// can therefore always aim at somebody, and one holding none can always aim
+	// at itself. No placement is left for the guard to catch, and a branch that
+	// cannot be reached is worse than no branch: it reads as a protection
+	// somebody is relying on.
 	//
-	// This is necessary and not sufficient, and the shape of the problem is why.
-	// Nothing moves, so a unit's reach is fixed at enlistment — but the set of
-	// cells worth reaching is not, because it shrinks every time somebody dies.
-	// A roster that passes here can still deadlock later, which is what the
-	// Stalemate outcome is for.
-	for _, unit := range fight.units {
-		if fight.canAimAtAnyone(unit) {
-			continue
-		}
-		nearest := fight.nearestTargetable(unit)
-		if nearest == 0 {
-			return nil, fmt.Errorf("unit %q stands at %s knowing no skill it may aim at anybody on the board",
-				unit.ID, unit.Cell)
-		}
-		return nil, fmt.Errorf("unit %q stands at %s, where no skill it knows can be aimed at anyone: "+
-			"its longest range is %d and the nearest unit it may target is %d cells away",
-			unit.ID, unit.Cell, fight.longestRange(unit), nearest)
-	}
+	// The half of the problem that survives is not about distance at all — a
+	// board can still freeze because no kit holds anything to throw — and that
+	// is what the Stalemate outcome now answers for on its own.
 	return fight, nil
 }
 
-// canAimAtAnyone reports whether any skill the unit knows has a legal aim on the
-// board as it currently stands.
-//
-// Cooldowns are deliberately not read. This asks what a unit can ever do, not
-// what it can do this turn, and a cooldown always comes down.
-func (b *Battle) canAimAtAnyone(unit *Unit) bool {
-	for _, id := range unit.Skills {
-		known, err := b.books.Skills.Lookup(id)
-		if err != nil {
-			continue
-		}
-		if len(b.aims(unit, known)) > 0 {
-			return true
-		}
-	}
-	return false
-}
-
-// longestRange is the furthest any skill the unit knows can be pointed. It is
-// only ever used to explain a refusal.
-func (b *Battle) longestRange(unit *Unit) int {
-	longest := 0
-	for _, id := range unit.Skills {
-		known, err := b.books.Skills.Lookup(id)
-		if err != nil {
-			continue
-		}
-		if known.Range > longest {
-			longest = known.Range
-		}
-	}
-	return longest
-}
-
-// nearestTargetable is the distance to the closest unit that some skill this one
-// knows is allowed to point at, with range ignored: the number an author has to
-// compare a range against.
-//
-// The allowance is read rather than the distance alone, because a kit aimed only
-// at the enemy is not helped by an ally standing beside it, and a refusal
-// quoting that ally's distance would send the author looking in the wrong
-// direction. Zero means there is nobody on the board any of its skills may
-// target at any range, which is a different fault and says so.
-//
-// It is only ever used to explain a refusal.
-func (b *Battle) nearestTargetable(unit *Unit) int {
-	nearest := 0
-	for _, id := range unit.Skills {
-		known, err := b.books.Skills.Lookup(id)
-		if err != nil {
-			continue
-		}
-		for _, other := range b.units {
-			if other == unit || other.Dead {
-				continue
-			}
-			if !known.Target.Reaches(unit.Side, other.Cell.Side()) {
-				continue
-			}
-			if distance := unit.Cell.DistanceTo(other.Cell); nearest == 0 || distance < nearest {
-				nearest = distance
-			}
-		}
-	}
-	return nearest
-}
+// ⚠️ canAimAtAnyone, longestRange and nearestTargetable were deleted here along
+// with the reach guard in New. All three existed only to phrase its refusal —
+// "its longest range is 3 and the nearest unit it may target is 5 cells away" —
+// and that sentence cannot be true of any board now that reach is counted in
+// ranks rather than in cells. They are named here so that a reader looking for
+// them learns where they went instead of assuming the file lost them.
 
 func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex.Offset]string) (*Unit, error) {
 	if entry.ID == "" {
