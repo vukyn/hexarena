@@ -2005,6 +2005,77 @@ so no figure measured before a feature can be carried across it without being
 taken again. It flipped back when four slots landed; see *Piercing*, which now
 carries all three measurements.
 
+### Naruto's three forms are the three the story has
+
+```
+Naruto@1  →  Shippuden@16  →  Tiên nhân@32
+naruto.svg   naruto-shippuden.svg   naruto-sage-mode.svg
+```
+
+Before the two years of training, after them, and after learning the sage art.
+Three forms, three pictures, and the same three all along — **what was wrong was
+the names, not the count**.
+
+⚠️ **Both names sat one form ahead of their own picture.** The middle form was
+called *Tiên nhân* — the sage — while showing the Shippuden art, and the last was
+called *Vĩ thú hoá* — the tailed beast — while showing the sage-mode art. Read
+down the column the art was right the whole time and the labels were off by one,
+which is the shape a rename makes when it is applied to the wrong row.
+
+The tailed-beast form was never a stage of this character. **A stage is the same
+unit later; that form is a different unit**, so it belongs beside Naruto in the
+cast rather than at the end of its curve, and it will be built as its own
+character.
+
+⚠️ **No stat moved and nothing rebalanced.** The three stat lines are untouched,
+the level cap still resolves to the third, and Naruto still absorbs 7943 of the
+budget — so the sweep below, which was measured against this line, still stands.
+A stage's name is what a screen prints; it is not a number anything reads.
+
+### A speed trait, and the house figure that does not transfer
+
+`swiftness` ("thần tốc") grants `quickened`, a permanent buff of **+80** per mille
+of speed, and Naruto carries it from 24. It is the second trait on the only
+character that had one, so Naruto now has a choice where it had a default.
+
+⚠️ **Every other permanent buff a trait grants is 150** — `toughened`, `kindled`,
+`unleashed` — and that reads as the house figure. **It does not transfer to
+speed**, because a point of speed is worth more here than a point of anything
+else: speed is *turns*, and a turn is every other stat applied again.
+
+Measured in the **share of the turn order** the trait buys — one Naruto against
+another with the same four skills, counting both sides of the same battles:
+
+| `quickened` | +30 | +40 | +50 | +60 | **+80** | +100 | +150 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| turns over `endurance` | 2.6% | 3.5% | 4.4% | 5.6% | **7.9%** | 9.9% | 14.8% |
+
+⚠️ **A win rate was tried first and does not work here**, which is worth the
+paragraph because a mirror duel *looks* like the obvious measurement. Over 300
+duels both ways round it does not even order the amounts it is measuring:
+
+```
++30 59.6%   +40 63.3%   +50 74.0%   +60 63.0%
++80 73.0%   +100 57.0%  +150 59.0%
+```
+
+Priced at the house figure of 150 the trait comes back **below** the same trait
+priced at 50. That is not subtlety: the turn queue is **discrete**, so what a few
+points of speed buy is whether one more turn lands before the other unit acts,
+and which side of that line a seed falls on is lumpy. Since `battle.Suggest`
+learned to cast a skill with no power there is a summon in the queue as well, and
+the lumps got larger. A band over that number would have let a trait priced at
+150 sit comfortably inside it — the mutation proves it: at 150 the win-rate band
+passes and the turn-share band fails.
+
+The share of turns is the same thing without the noise, because it is what the
+trait *does* rather than what eventually comes of it, and it is monotone across
+the whole sweep.
+
+`TestSwiftnessActuallyBuysTurns` counts turns off the log rather than trusting the
+rate — 1099 against 981 — because a trait that raised speed without the queue
+reading it would still win more often through whatever else it changed.
+
 ### The budget bounds a line nobody fights on
 
 `hexforge check` now prints the stat line a character actually fights on — its
@@ -2733,6 +2804,41 @@ count, a number of battles fought: every one needs somewhere to persist between
 battles, and there is no such place — no meta layer, no inventory, no save. A
 level is what a character sheet knows.
 
+#### A line that forks — wanted, not built
+
+Everything above chooses **how far** along one path a character is fielded. What
+it cannot do is choose **which path**: an Eevee, two forms at one threshold, pick
+one and the other is gone. Worth recording because the halves are so unevenly
+sized.
+
+The parse rule is the small half. `progression.Line` is an ordered list and
+`Line.Validate` refuses a stage whose `MinLevel <= previous`, so two forms at the
+same threshold cannot be written down at all — one error, and it fails loudly
+with the two levels in it.
+
+⚠️ **`Furthest` is the large half, and its failure mode is silence.**
+`Line.Allowed` returns a **prefix** of the list and `StageAt` returns the last
+stage reached, so with a fork there is no single furthest — and every caller that
+passes `progression.Furthest` (the character browser, `hexforge check`'s budget
+row, `fielded` in the balance tests) would take whichever arm the file happens to
+list last. Nothing would say so. A parse error is a bad afternoon; a browser
+quietly showing the wrong form's stat line is a balance table nobody can trust.
+
+⚠️ **A prefix cannot express a stage *after* a fork either.** Both arms stay
+allowed forever once passed, because nothing marks them as alternatives, so the
+line has to stop being a list and become a tree — or a stage has to name its
+predecessor. That is a bigger change than the fork, and it is the one to design
+first.
+
+The budget needs nothing: `Line.Validate` already walks every stage and checks
+each on its own, so branches are priced separately the day they exist.
+
+⚠️ **This is not what the tailed-beast Naruto is.** That form is a **separate
+character** standing beside Naruto, not a branch of its line — a stage is the
+same unit later, and that is a different unit. The two ideas look alike from the
+outside and want completely different mechanisms; merging them would give one
+character a form it is not.
+
 ### A regeneration that heals
 
 Built. `regrowth` was declared, glossed, described and inert: `Battle.inflict`
@@ -3026,7 +3132,7 @@ change: the mechanism gets a real user without a balance diff to read at the sam
 time. `replay.golden` does not move.
 
 ```
-naruto.naruto   ok   Vĩ thú hoá   7943 absorbs, 3557 budget left
+naruto.naruto   ok   Tiên nhân   7943 absorbs, 3557 budget left
                      hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
 
 shadow_clone   Gọi ra 2 phân thân, trụ lại 4 lượt.       Calls up 2 copies, for 4 turns.

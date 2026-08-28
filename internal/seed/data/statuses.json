@@ -221,6 +221,20 @@
       ]
     },
     {
+      "id": "quickened",
+      "category": "buff",
+      "max_stacks": 1,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "speed",
+          "mode": "percent",
+          "amount": 80
+        }
+      ]
+    },
+    {
       "id": "encumber",
       "category": "stat_debuff",
       "max_stacks": 1,

@@ -237,6 +237,10 @@ Luôn mang trần trụi.
 Ai đấm vào nó thì tự chuốc lấy phần đau của mình.
 Ai đánh trúng thì bị phản lại 8% thủ của người bị đánh.
 
+[trait] swiftness
+Quen chạy hơn quen đứng, ra tay xong đã ở chỗ khác.
+Luôn mang thoăn thoắt.
+
 [trait] ballast
 Chọn đứng vững thay vì đi nhanh, và không đổi ý giữa chừng.
 Luôn mang kiên cố.
@@ -320,6 +324,10 @@ Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] fortified
 Tăng thủ 25%.
+Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
+
+[status] quickened
+Tăng tốc 8%.
 Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] block
@@ -598,6 +606,9 @@ Always carries bare.
 [trait] thorns
 Whatever damages it takes 8% of the struck unit's defence back.
 
+[trait] swiftness
+Always carries quickened.
+
 [trait] ballast
 Always carries fortified.
 Always carries encumber.
@@ -680,6 +691,10 @@ Raises a stat · always in force · 1 stack.
 
 [status] fortified
 Raises defence by 25%.
+Raises a stat · always in force · 1 stack.
+
+[status] quickened
+Raises speed by 8%.
 Raises a stat · always in force · 1 stack.
 
 [status] block

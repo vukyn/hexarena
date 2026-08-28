@@ -1234,6 +1234,25 @@ cast.
 Detail and the open questions are in `README.md` under Roadmap. What matters here
 is the constraint each piece has to respect.
 
+- [ ] **An evolution line that forks.** Today a placement chooses **how far**
+      along one path (`Resolve(level, stage)`, the allowlist); it cannot choose
+      **which path** — two forms at one threshold, pick one and lose the other.
+      The parse rule is the small half: `Line.Validate` refuses
+      `MinLevel <= previous`, so a fork cannot be written down.
+      ⚠️ **`Furthest` is the large half and it fails silently.** `Line.Allowed`
+      returns a **prefix** and `StageAt` the last reached, so with a fork there is
+      no single furthest — the browser, `hexforge check`'s budget row and
+      `fielded` in the balance tests would all take whichever arm the file lists
+      last, saying nothing.
+      ⚠️ **A prefix cannot express a stage *after* a fork**: both arms stay
+      allowed once passed, nothing marks them exclusive, so the line has to become
+      a tree (or a stage has to name its predecessor). Design that before the
+      parse rule.
+      The budget is fine as it stands — `Line.Validate` prices every stage
+      separately already.
+      ⚠️ **Not the same thing as the tailed-beast Naruto**, which is a separate
+      *character* beside Naruto: a stage is the same unit later, and that is a
+      different unit. The two want completely different mechanisms.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
@@ -1364,6 +1383,44 @@ is the constraint each piece has to respect.
       ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
+- [x] **Naruto's three forms renamed to the three the story has.**
+      `Naruto@1 → Shippuden@16 → Tiên nhân@32`, against `naruto.svg`,
+      `naruto-shippuden.svg` and `naruto-sage-mode.svg`: before the two years of
+      training, after them, and after learning the sage art.
+      ⚠️ **The count was right and both names were one form ahead of their own
+      picture** — the middle was called *Tiên nhân* while showing Shippuden art,
+      the last *Vĩ thú hoá* while showing sage-mode art. The art was right the
+      whole way down; the labels were off by one.
+      The tailed-beast form was never a stage: **a stage is the same unit later,
+      and that is a different unit**, so it becomes its own character later.
+      ⚠️ **No stat moved, nothing rebalanced** — a stage name is printed, never
+      read, so every measurement taken against this line still holds.
+      Naruto has **no build** in `builds.json` and now has two traits, so it is
+      the character the "two builds each" target is waiting on.
+- [x] **A permanent speed trait — `swiftness` on Naruto.** Grants `quickened`,
+      permanent, **+80** speed. Naruto's second trait, so the only character with
+      a default now has a choice.
+      ⚠️ **The house figure for a permanent buff is 150** (`toughened`, `kindled`,
+      `unleashed`) **and it does not transfer to speed** — a point of speed is
+      worth more than a point of anything else, because speed is turns and a turn
+      is every other stat applied again. Priced in the **share of the turn order**
+      it buys: `+30` 2.6% · `+50` 4.4% · **`+80` 7.9%** · `+100` 9.9% · `+150`
+      14.8% more turns than `endurance` gets in the same battles.
+      ⚠️ **A win rate does not measure this and a band over one is a trap.** Over
+      300 mirror duels the rate does not even *order* the amounts — `+150` comes
+      back at 59.0% while `+50` reads 74.0% — because the turn queue is discrete,
+      so a few points of speed buy whether one more turn lands before the other
+      unit acts, and that is lumpy per seed. `Suggest` casting no-power skills put
+      a summon in the queue too and made the lumps larger. **At 150 the win-rate
+      band passes and the turn-share band fails**, which is how it was caught.
+      ⚠️ The first turn test compared **two separate sweeps' totals**, which
+      measures battle *length* — and the faster unit ends its battles sooner. It
+      passed until `Suggest` changed, then reported swiftness with **fewer** turns
+      while being exactly as fast. Both sides of **one** battle is the comparison
+      that cannot say that.
+      ⚠️ Naming: `haste` already glosses "nhanh nhẹn" so `quickened` is "thoăn
+      thoắt"; the trait was "nhanh chân" until **`chân` turned out to be a
+      `bodyWord`**, and is "thần tốc".
 - [x] **The budget bounds a line nobody fights on**, and `hexforge check` now
       says so: a second table of the line each character actually fights on, per
       trait, via `forge.Library.Held`.
