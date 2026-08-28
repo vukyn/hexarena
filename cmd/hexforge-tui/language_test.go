@@ -227,6 +227,50 @@ func freeText(lib *forge.Library) []string {
 	return free
 }
 
+// whoMayCarry is the restriction column of the skills listing, for every skill
+// in the book.
+//
+// It is free text for the width measurement and not for the language one, which
+// is why it is a second list rather than part of freeText: the wording around
+// the data ("hệ ...", "để dành cho loài ...") is the program's and has to be
+// translated, but the data it wraps -- an element and a species, both named by
+// the book -- has no length the program can promise. The kit rows above are
+// exempted for exactly that reason; this column reached the same shape once a
+// species restriction was authored.
+func whoMayCarry(lang i18n.Lang, lib *forge.Library) []string {
+	out := make([]string, 0, len(lib.Skills().Skills()))
+	for _, declared := range lib.Skills().Skills() {
+		if summary := lang.WhoMaySummary(declared); summary != "" {
+			out = append(out, summary)
+		}
+	}
+	return out
+}
+
+// traitCarriers is the "who carries it" column of the traits listing, for every
+// trait in the book.
+//
+// whoMayCarry's twin, and exempt for the same reason: the cell is character ids
+// the book named, and a listing that clipped it to the floor would hide which
+// characters hold a trait on a terminal with columns to spare. It is a separate
+// list from that one because the two columns are built by different callers, and
+// a single list of "data cells" is a list nobody would remember to add to.
+//
+// ⚠️ It went missing for one change and one character. The column fitted the
+// floor while two characters carried the busiest trait, so the skills column was
+// exempted and this one was not noticed; a third carrier arrived with the cast's
+// second origin and the line went to 88 cells. A column exempted by length
+// rather than by kind is a column waiting for the next row.
+func traitCarriers(lib *forge.Library) []string {
+	out := make([]string, 0, len(lib.Passives().All()))
+	for _, held := range lib.Passives().All() {
+		if summary := forge.TraitCarrierSummary(lib.TraitCarriers(held.ID)); summary != "" {
+			out = append(out, summary)
+		}
+	}
+	return out
+}
+
 // carriesFreeText reports whether a line is showing authored text, which is not
 // the program's to translate or to keep inside a column.
 func carriesFreeText(line string, free []string) bool {
@@ -417,7 +461,8 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		base, lib, _ := start(t, lang)
 		base.width, base.height = 200, 60
-		free := freeText(lib)
+		free := append(freeText(lib), whoMayCarry(lang, lib)...)
+		free = append(free, traitCarriers(lib)...)
 		for name, m := range everyScreen(t, base) {
 			m.width, m.height = 200, 60
 			for _, line := range strings.Split(m.screenContent(), "\n") {

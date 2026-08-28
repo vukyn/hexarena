@@ -2544,3 +2544,56 @@ func TestATransparentCellIsLeftAlone(t *testing.T) {
 		t.Error("a white pixel drew as a space, so a pale shape would come out hollow")
 	}
 }
+
+// TestAWideWindowShowsTheWholeRestrictionColumn is the column that was being cut
+// on a terminal with room to spare.
+//
+// The listing's last cell was clipped to minWidth, which is the floor a window
+// has to clear rather than a ceiling on what one may spend, so "để dành cho loài
+// dragon" reached a hundred-column terminal as "để dành cho loài dr…" — a row
+// that has stopped saying which species it is for, which is the one thing that
+// column exists to say.
+func TestAWideWindowShowsTheWholeRestrictionColumn(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m.width, m.height = 160, 60
+		m = m.enter(screenSkills)
+		m = skillListTo(t, m, "dragon_claw")
+		restricted := m.skills.skills[m.skills.cursor]
+		summary := m.lang.WhoMaySummary(restricted)
+		if !strings.Contains(summary, "dragon") {
+			t.Fatalf("%s no longer names a species (%q), so this measures nothing",
+				restricted.ID, summary)
+		}
+		drawn := m.screenContent()
+		if !strings.Contains(drawn, summary) {
+			t.Errorf("the %s listing never draws %q whole at 160 columns:\n%s",
+				lang, summary, drawn)
+		}
+		// And the width really is what widened it: the same row at the floor has
+		// nowhere to put the tail and clips. Only worth asserting for a language
+		// whose row does not fit the floor anyway -- English says "kept for a
+		// dragon" in half the cells, so there it would be measuring nothing.
+		if !rowOverflowsTheFloor(drawn, restricted.ID) {
+			continue
+		}
+		narrow := m
+		narrow.width, narrow.height = minWidth, minHeight
+		if strings.Contains(narrow.screenContent(), summary) {
+			t.Errorf("the %s listing draws %q whole at the floor too, so the "+
+				"width it was given is not what widened it", lang, summary)
+		}
+	}
+}
+
+// rowOverflowsTheFloor reports whether the listing row for one id is longer than
+// the minimum window, which is what decides whether clipping at the floor has
+// anything to cut.
+func rowOverflowsTheFloor(drawn, id string) bool {
+	for _, line := range strings.Split(drawn, "\n") {
+		if strings.Contains(line, id) && lipgloss.Width(line) > minWidth-1 {
+			return true
+		}
+	}
+	return false
+}

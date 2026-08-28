@@ -324,6 +324,47 @@ func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 	return capitalise(strings.Join(parts, " · ") + ".")
 }
 
+// StatusesInSkill is the statuses a skill's description will name, in the order
+// the sentences name them and with each id appearing once.
+//
+// The skill-side twin of StatusesNamed, and it exists for the same reason: a
+// screen marking those names where they are printed must not find them by
+// matching substrings against its own prose, which would style a word that
+// happens to sit in an authored flavour clause.
+//
+// ⚠️ It has to agree with Describe about which statuses are *named*. The order
+// is Describe's order -- applications, then what the caster gives itself, then
+// the caster's own condition, then the target's -- because a caller marking a
+// sentence walks the sentences in that order too.
+//
+// Strips names *categories* rather than statuses, so nothing from it belongs
+// here: a category has its own glossary, and a caller wanting those asks
+// StatusCategory for them.
+func StatusesInSkill(declared skill.Skill) []string {
+	named := make([]string, 0, 4)
+	seen := make(map[string]bool, 4)
+	add := func(id string) {
+		if id == "" || seen[id] {
+			return
+		}
+		seen[id] = true
+		named = append(named, id)
+	}
+	for _, application := range declared.Applies {
+		add(application.Status)
+	}
+	for _, application := range declared.SelfApplies {
+		add(application.Status)
+	}
+	if declared.SelfRequires.ReadsStatus() {
+		add(declared.SelfRequires.Status)
+	}
+	if declared.Requires.ReadsStatus() {
+		add(declared.Requires.Status)
+	}
+	return named
+}
+
 // StatusesNamed is the statuses a trait's description will name, in the order
 // the sentences name them and with each id appearing once.
 //

@@ -484,7 +484,7 @@
     {
       "id": "aqua_ring",
       "name": "vòng nước",
-      "flavour": "Quấn một vòng nước quanh mình, nước tự hồi vết thương theo thời gian",
+      "flavour": "Tạo một vòng nước quanh bản thân, nước hỗ trợ hồi vết thương theo thời gian",
       "element": "water",
       "range": 0,
       "pattern": "single",
@@ -523,7 +523,7 @@
     },
     {
       "id": "rally",
-      "name": "hiệu triệu",
+      "name": "khích lệ",
       "flavour": "Hô một tiếng vang dọc trận địa, cả hàng bên mình hăng lên theo",
       "element": "neutral",
       "range": 1,
@@ -544,7 +544,7 @@
     {
       "id": "dragon_claw",
       "name": "long trảo",
-      "flavour": "Vuốt rồng bổ thẳng xuống, xé toạc lớp giáp trước khi kịp khép lại",
+      "flavour": "Vuốt rồng bổ thẳng xuống, xé toạc lớp giáp",
       "element": "neutral",
       "range": 2,
       "pattern": "single",
@@ -569,7 +569,7 @@
     {
       "id": "outrage",
       "name": "cuồng nộ long",
-      "flavour": "Mất trí lao vào quần thảo, đánh xong thì đứng còn không vững",
+      "flavour": "Mất trí lao vào đánh túi bụi, đánh xong thì không còn đứng vững",
       "element": "neutral",
       "range": 2,
       "pattern": "single",

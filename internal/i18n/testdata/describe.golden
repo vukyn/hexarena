@@ -125,7 +125,7 @@ Nhận đỡ đòn x2.
 Bản thân · hồi 3 lượt.
 
 aqua_ring
-Quấn một vòng nước quanh mình, nước tự hồi vết thương theo thời gian.
+Tạo một vòng nước quanh bản thân, nước hỗ trợ hồi vết thương theo thời gian.
 Nhận tái sinh x2.
 Bản thân · hồi 4 lượt.
 
@@ -140,12 +140,12 @@ Cho mục tiêu cuồng nộ, 100% khả năng.
 Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 
 dragon_claw
-Vuốt rồng bổ thẳng xuống, xé toạc lớp giáp trước khi kịp khép lại, 110% công.
+Vuốt rồng bổ thẳng xuống, xé toạc lớp giáp, 110% công.
 Gây phá giáp cho mục tiêu, 40% khả năng.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 
 outrage
-Mất trí lao vào quần thảo, đánh xong thì đứng còn không vững, 220% công.
+Mất trí lao vào đánh túi bụi, đánh xong thì không còn đứng vững, 220% công.
 Nhận sa lầy.
 Bản thân còn <=40% máu: 340% công.
 Tầm 2 · 90% trúng · hồi 3 lượt.
@@ -192,7 +192,7 @@ Mang bùng cháy.
 Chỉ có hiệu lực khi còn <=33% máu.
 
 [trait] heatproof
-Sức nóng bao nhiêu cũng chỉ lướt qua bên ngoài, không bén vào được.
+Sức nóng bao nhiêu cũng chỉ lướt qua bên ngoài, không gây bỏng được.
 Miễn nhiễm bỏng.
 
 [trait] virulence
@@ -216,8 +216,8 @@ Chỉ có hiệu lực khi còn <=40% máu.
 
 [trait] reckless
 Không giữ lại chút phòng bị nào, dồn tất cả vào đòn đánh.
-Luôn mang dốc sức.
-Luôn mang phơi mình.
+Luôn mang bộc phát.
+Luôn mang trần trụi.
 
 [trait] thorns
 Ai đấm vào nó thì tự chuốc lấy phần đau của mình.
