@@ -156,7 +156,7 @@
     {
       "id": "leech_seed",
       "name": "hạt ký sinh",
-      "flavour": "Ném một hạt nhỏ dính vào người đối phương, chỉ qua một nhịp là mầm đã bén",
+      "flavour": "Ném một hạt nhỏ, chạm vào người là bám chặt lấy không gỡ ra được",
       "element": "grass",
       "range": 3,
       "pattern": "single",
@@ -319,7 +319,7 @@
     {
       "id": "heat_wave",
       "name": "sóng nhiệt",
-      "flavour": "Đẩy một luồng khí khô rát tràn qua, táp vào mặt như vừa mở cửa lò",
+      "flavour": "Đẩy một luồng khí khô rát tràn qua, táp thẳng vào mặt",
       "element": "fire",
       "range": 3,
       "pattern": "wedge_right",
@@ -344,7 +344,7 @@
     {
       "id": "inferno",
       "name": "hỏa ngục",
-      "flavour": "Rút sạch dưỡng khí quanh kẻ địch rồi trả lại bằng một cột lửa trắng",
+      "flavour": "Dồn hết sức nóng vào một chỗ cho tới khi lửa chuyển sang màu trắng",
       "element": "fire",
       "range": 2,
       "pattern": "single",
@@ -368,7 +368,7 @@
     {
       "id": "dragon_rage",
       "name": "long nộ",
-      "flavour": "Gầm một tiếng thấp và nặng, tiếng dội đi trước rồi sức mới tới",
+      "flavour": "Gầm một tiếng vang trời, luồng khí phả theo đập thẳng vào đối phương",
       "element": "neutral",
       "range": 3,
       "pattern": "single",
@@ -409,7 +409,7 @@
     {
       "id": "dragon_dance",
       "name": "long vũ",
-      "flavour": "Giậm chân theo nhịp cổ xưa của loài rồng, một điệu chỉ rồng mới nhớ",
+      "flavour": "Giậm chân theo nhịp cổ xưa của loài rồng, một điệu nhảy chỉ rồng mới nhớ",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -442,7 +442,7 @@
     {
       "id": "water_gun",
       "name": "súng nước",
-      "flavour": "Bắn một tia nước nén chặt, mảnh mà rát như roi",
+      "flavour": "Bắn một tia nước nén chặt, mảnh mà cực rát",
       "element": "water",
       "range": 2,
       "pattern": "single",
@@ -530,7 +530,7 @@
     {
       "id": "brine",
       "name": "nước mặn",
-      "flavour": "Xối nước biển vào chỗ da đã rách, rách càng sâu thì càng buốt",
+      "flavour": "Xối nước biển vào chỗ da đã rách, rách càng to thì càng buốt",
       "element": "water",
       "range": 2,
       "pattern": "single",
@@ -790,7 +790,7 @@
     {
       "id": "substitution",
       "name": "thế thân",
-      "flavour": "Đổi chỗ với một khúc gỗ đúng lúc đòn tới, để lại một làn khói trắng",
+      "flavour": "Đổi chỗ với một khúc gỗ trong chớp mắt, để lại một làn khói trắng",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -815,7 +815,7 @@
     {
       "id": "shadow_clone",
       "name": "phân thân",
-      "flavour": "Kết ấn một cái, những cái bóng y hệt bước ra — mỏng hơn bản thật nhưng cũng biết ném dao",
+      "flavour": "Kết ấn một cái, những cái bóng y hệt bước ra — yếu hơn bản thể gốc nhưng cũng tấn công được",
       "element": "neutral",
       "range": 0,
       "pattern": "single",

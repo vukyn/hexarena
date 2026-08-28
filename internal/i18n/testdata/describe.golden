@@ -33,7 +33,7 @@ Mục tiêu đang dính trúng độc: 180% công.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 
 leech_seed
-Ném một hạt nhỏ dính vào người đối phương, chỉ qua một nhịp là mầm đã bén, 70% công.
+Ném một hạt nhỏ, chạm vào người là bám chặt lấy không gỡ ra được, 70% công.
 Hút lại 60% sát thương gây ra.
 Tầm 3 · 90% trúng · hồi 3 lượt.
 
@@ -67,17 +67,17 @@ Gây bỏng cho mục tiêu, 70% khả năng.
 Tầm 3 · 3 ô · 86% trúng · hồi 3 lượt.
 
 heat_wave
-Đẩy một luồng khí khô rát tràn qua, táp vào mặt như vừa mở cửa lò, 110% công.
+Đẩy một luồng khí khô rát tràn qua, táp thẳng vào mặt, 110% công.
 Gây bỏng cho mục tiêu, 40% khả năng.
 Tầm 3 · 3 ô · 85% trúng · hồi 4 lượt.
 
 inferno
-Rút sạch dưỡng khí quanh kẻ địch rồi trả lại bằng một cột lửa trắng, 100% công.
+Dồn hết sức nóng vào một chỗ cho tới khi lửa chuyển sang màu trắng, 100% công.
 Mục tiêu đang dính bỏng: 350% công, và tiêu mất bỏng.
 Tầm 2 · 88% trúng · hồi 3 lượt.
 
 dragon_rage
-Gầm một tiếng thấp và nặng, tiếng dội đi trước rồi sức mới tới, 130% công.
+Gầm một tiếng vang trời, luồng khí phả theo đập thẳng vào đối phương, 130% công.
 Tầm 3 · 92% trúng · hồi 3 lượt.
 
 smokescreen
@@ -86,12 +86,12 @@ Gây mù cho mục tiêu, 80% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
 
 dragon_dance
-Giậm chân theo nhịp cổ xưa của loài rồng, một điệu chỉ rồng mới nhớ.
+Giậm chân theo nhịp cổ xưa của loài rồng, một điệu nhảy chỉ rồng mới nhớ.
 Nhận cuồng nộ và nhanh nhẹn.
 Bản thân · hồi 4 lượt.
 
 water_gun
-Bắn một tia nước nén chặt, mảnh mà rát như roi, 100% công.
+Bắn một tia nước nén chặt, mảnh mà cực rát, 100% công.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 
 bubble
@@ -110,7 +110,7 @@ Gây phá giáp cho mục tiêu, 50% khả năng.
 Tầm 1 · 90% trúng · hồi 2 lượt.
 
 brine
-Xối nước biển vào chỗ da đã rách, rách càng sâu thì càng buốt, 100% công.
+Xối nước biển vào chỗ da đã rách, rách càng to thì càng buốt, 100% công.
 Mục tiêu còn <=50% máu: 200% công.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 
@@ -168,12 +168,12 @@ Vo chakra thành một khối xoáy trong lòng bàn tay rồi ấn thẳng vào
 Tầm 1 · 90% trúng · hồi 4 lượt.
 
 substitution
-Đổi chỗ với một khúc gỗ đúng lúc đòn tới, để lại một làn khói trắng.
+Đổi chỗ với một khúc gỗ trong chớp mắt, để lại một làn khói trắng.
 Nhận mờ ảo x2.
 Bản thân · hồi 4 lượt.
 
 shadow_clone
-Kết ấn một cái, những cái bóng y hệt bước ra — mỏng hơn bản thật nhưng cũng biết ném dao.
+Kết ấn một cái, những cái bóng y hệt bước ra — yếu hơn bản thể gốc nhưng cũng tấn công được.
 Gọi ra 2 phân thân, mỗi bên mang 40% chỉ số người gọi, trụ lại 4 lượt.
 Bản thân · hồi 5 lượt.
 
