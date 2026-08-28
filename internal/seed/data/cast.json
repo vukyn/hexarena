@@ -7,7 +7,7 @@
       "archetype": "blighter",
       "image": "assets/bulbasaur.svg",
       "element": "grass",
-      "bio": "Hạt giống trên lưng lớn cùng nó và nuôi nó bằng ánh nắng. Đánh chậm, trụ đòn tốt, thắng bằng cách rải độc rồi cầm cự lâu hơn đối phương. Ba giai đoạn: Bulbasaur, Ivysaur từ cấp 16, Venusaur từ cấp 32.",
+      "bio": "Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ nhiều, đi chậm, hiếm khi tỏ ra vội — cái gì cần thời gian thì cứ để thời gian làm.",
       "species": [
         "plant"
       ],
@@ -175,7 +175,7 @@
       "archetype": "scorcher",
       "image": "assets/charmander.svg",
       "element": "fire",
-      "bio": "Ngọn lửa trên đuôi cháy theo sức sống của nó, càng hăng thì càng bùng. Đánh nhanh, sát thương cao, nhưng mỏng đòn: thắng bằng cách đốt trước rồi thu tiền bỏng, thua nếu để trận kéo dài. Ba giai đoạn: Charmander, Charmeleon từ cấp 16, Charizard từ cấp 32.",
+      "bio": "Ngọn lửa trên chóp đuôi cháy từ lúc chào đời, và tắt là hết một đời. Vui thì lửa bùng, mệt thì lửa lụi, nên Charmander giấu được mọi thứ trừ tâm trạng của chính mình.",
       "species": [
         "lizard",
         "dragon"
@@ -344,7 +344,7 @@
       "archetype": "warden",
       "element": "water",
       "image": "assets/squirtle.svg",
-      "bio": "Rút vào mai để né đòn, rồi bắn nước ra từ chỗ trú. Chậm và đấm nhẹ, nhưng khó gục: làm đối phương lê chân, cởi được thứ dính trên người, và cầm cự đến khi bên kia hết bài. Ba giai đoạn: Squirtle, Wartortle từ cấp 16, Blastoise từ cấp 32.",
+      "bio": "Cái mai không chỉ để trốn: mặt trong nhẵn bóng vì bao nhiêu đời rúc ra rúc vào, và Squirtle thuộc từng chỗ lồi lõm bên trong. Ra khỏi mai thì hiền, rúc vào rồi thì đừng mong gọi ra sớm.",
       "species": [
         "turtle"
       ],
@@ -515,7 +515,7 @@
       "origin": "naruto",
       "archetype": "summoner",
       "element": "wind",
-      "bio": "Đánh bằng số lượng chứ không bằng một đòn: rải phân thân ra chắn đường rồi ném từ phía sau, và khi cần một thân hình khổng lồ thì ký giao ước gọi cóc lên. Ba giai đoạn: Naruto, Tiên nhân từ cấp 16, Vĩ thú hoá từ cấp 32.",
+      "bio": "Ồn ào, lì lợm, và chưa bao giờ chịu đứng một mình lâu — thiếu người thì tự nhân mình ra cho đủ. Đã ký giao ước với loài cóc bằng máu, nên khi cần một cái bóng lớn hơn thì cứ gọi, và cóc thì bao giờ cũng cằn nhằn trước khi chịu đánh.",
       "species": [
         "human"
       ],

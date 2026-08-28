@@ -1,125 +1,125 @@
 == vi ==
 
 vine_whip
-Vung dây leo quật kẻ địch từ xa, 110% công.
+Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 
 razor_leaf
-Bắn một loạt lá sắc như dao cắt ngang hàng ngũ đối phương, 2 nhát, mỗi nhát 60% công (tổng 120%), xuyên 40% giáp.
+Bắn một loạt lá mỏng như dao cạo, cắt tiếng gió thành từng nhát, 2 nhát, mỗi nhát 60% công (tổng 120%), xuyên 40% giáp.
 Tầm 3 · 3 ô · 88% trúng · hồi 2 lượt.
 
 solar_beam
-Tích tụ ánh sáng rồi bắn thẳng một luồng xuyên qua trận địa, 240% công.
+Gom cả một trời nắng vào một điểm rồi thả ra thành cột sáng trắng xoá, 240% công.
 Tầm 4 · 85% trúng · hồi 4 lượt.
 
 sleep_powder
-Rải một lớp phấn ru ngủ phủ xuống chỗ đối phương đứng.
+Rải một lớp phấn vàng mịn, hít phải là mí mắt trĩu xuống không cưỡng nổi.
 Gây choáng cho mục tiêu, 50% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 4 lượt.
 
 poison_powder
-Rải phấn độc bay là là sang phía đối phương.
+Rải một lớp phấn tím bay là là, chạm vào da là bắt đầu ngứa rồi rát.
 Gây trúng độc cho mục tiêu, 80% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
 
 sludge_bomb
-Nhổ một cục bùn độc đặc quánh vào kẻ địch, 130% công.
+Nhổ một cục bùn đặc quánh, vỡ ra là mùi nồng bốc lên khét lẹt, 130% công.
 Gây trúng độc cho mục tiêu, 40% khả năng.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 
 venoshock
-Dội dung dịch ăn mòn lên vết độc đang có sẵn, 90% công.
+Dội một thứ dung dịch xanh lét, chạm vào đâu là khói bốc lên tới đó, 90% công.
 Mục tiêu đang dính trúng độc: 180% công.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 
 leech_seed
-Cấy một hạt ký sinh bám vào kẻ địch mà hút ngược sinh lực về, 70% công.
+Ném một hạt nhỏ dính vào người đối phương, chỉ qua một nhịp là mầm đã bén, 70% công.
 Hút lại 60% sát thương gây ra.
 Tầm 3 · 90% trúng · hồi 3 lượt.
 
 synthesis
-Đứng yên tắm nắng, chậm rãi lành lại.
+Đứng yên phơi mình dưới nắng, để cái ấm ngấm dần vào từng thớ.
 Hồi máu bằng 90% công.
 Bản thân · hồi 4 lượt.
 
 ingrain
-Cắm rễ xuống nền đá, bám chặt tại chỗ.
+Cắm rễ xuyên qua kẽ đá, dò tới tận mạch nước bên dưới.
 Nhận tái sinh x2.
 Bản thân · hồi 4 lượt.
 
 ember
-Bắn một cụm than hồng vào kẻ địch, 100% công.
+Bắn một cụm than còn đỏ rực, rơi xuống đâu là âm ỉ ở đó, 100% công.
 Gây bỏng cho mục tiêu, 30% khả năng.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 
 flamethrower
-Phun một cột lửa dài về phía trước, 160% công.
+Phun một cột lửa dài, không khí phía trước méo đi vì nóng, 160% công.
 Gây bỏng cho mục tiêu, 50% khả năng.
 Tầm 3 · 90% trúng · hồi 2 lượt.
 
 fire_fang
-Ngoạm bằng răng nanh bọc lửa, xé toạc lớp giáp, 2 nhát, mỗi nhát 65% công (tổng 130%), xuyên 35% giáp.
+Ngoạm bằng hàm răng bọc lửa, khói bốc lên ngay từ chỗ vừa cắn, 2 nhát, mỗi nhát 65% công (tổng 130%), xuyên 35% giáp.
 Tầm 1 · 88% trúng · hồi 2 lượt.
 
 fire_spin
-Tạo một cột lửa xoáy nhốt lấy cả hàng dọc đối phương, 85% công.
+Tạo một cột lửa xoáy tít, hơi nóng cuốn lên thành vòng, 85% công.
 Gây bỏng cho mục tiêu, 70% khả năng.
 Tầm 3 · 3 ô · 86% trúng · hồi 3 lượt.
 
 heat_wave
-Đẩy một luồng khí nóng tràn qua trận địa, 110% công.
+Đẩy một luồng khí khô rát tràn qua, mặt đất phía trước rung rinh, 110% công.
 Gây bỏng cho mục tiêu, 40% khả năng.
 Tầm 3 · 3 ô · 85% trúng · hồi 4 lượt.
 
 inferno
-Ép ngọn lửa đang cháy trên người kẻ địch bùng lên một lần cuối, 100% công.
+Rút sạch dưỡng khí quanh kẻ địch rồi trả lại bằng một cột lửa trắng, 100% công.
 Mục tiêu đang dính bỏng: 350% công, và tiêu mất bỏng.
 Tầm 2 · 88% trúng · hồi 3 lượt.
 
 dragon_rage
-Gầm lên một luồng khí rồng thuần chất, không nóng cũng không lạnh, 130% công.
+Gầm một tiếng làm không khí trước mặt nứt ra thành từng lằn, 130% công.
 Tầm 3 · 92% trúng · hồi 3 lượt.
 
 smokescreen
-Phun một màn khói đặc che kín tầm nhìn đối phương.
+Phun một màn khói đen kịt, đặc tới mức nuốt cả tiếng động.
 Gây mù cho mục tiêu, 80% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
 
 dragon_dance
-Nhảy một điệu cổ xưa của loài rồng, càng nhảy càng hăng.
+Giậm chân theo một nhịp cổ xưa của loài rồng, đất dưới chân nảy theo.
 Nhận cuồng nộ và nhanh nhẹn.
 Bản thân · hồi 4 lượt.
 
 water_gun
-Bắn một tia nước mạnh vào kẻ địch, 100% công.
+Bắn một tia nước nén chặt, mảnh mà rát như roi, 100% công.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 
 bubble
-Thổi một chùm bọt nước bám dính lấy đối phương, 70% công.
+Thổi ra một chùm bọt óng ánh, trông vô hại cho tới lúc vỡ, 70% công.
 Gây sa lầy cho mục tiêu, 70% khả năng.
 Tầm 3 · 3 ô · 90% trúng · hồi 2 lượt.
 
 whirlpool
-Xoáy nước cuốn lấy cả hàng dọc, ghì chúng lại giữa dòng, 80% công.
+Khuấy nước thành một vòng xoáy sâu hoắm, đáy tối om, 80% công.
 Gây sa lầy cho mục tiêu, 60% khả năng.
 Tầm 3 · 3 ô · 85% trúng · hồi 3 lượt.
 
 bite
-Đớp vào chỗ hở, cắn rách lớp phòng thủ, 120% công.
+Đớp một phát dứt khoát vào chỗ hở, hàm siết lại không buông, 120% công.
 Gây phá giáp cho mục tiêu, 50% khả năng.
 Tầm 1 · 90% trúng · hồi 2 lượt.
 
 brine
-Tạt nước mặn xối thẳng vào vết thương đang hở, 100% công.
+Tạt một chậu nước biển mặn chát, xối từ trên đầu xuống, 100% công.
 Mục tiêu còn <=50% máu: 200% công.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 
 hydro_pump
-Dồn toàn lực bắn một cột nước áp suất cao xuyên qua trận địa, 220% công.
+Nén cả một dòng nước vào một điểm rồi bắn ra, tiếng rít nghe rợn người, 220% công.
 Tầm 4 · 80% trúng · hồi 4 lượt.
 
 withdraw
-Thu mình lại, dồn hết vào việc chống đỡ.
+Thu mình lại, thở chậm, chờ cho đợt đòn đi qua.
 Hồi máu bằng 50% công.
 Nhận đỡ đòn x2.
 Bản thân · hồi 3 lượt.
@@ -135,7 +135,7 @@ Gỡ 1 cộng dồn hiệu ứng giảm chỉ số và hiệu ứng gây hại t
 Bản thân · hồi 3 lượt.
 
 rally
-Hô một tiếng vang dọc trận địa, cả hàng bên mình hăng lên theo.
+Hô một tiếng vang dọc trận địa, khàn cả giọng mà vẫn hô.
 Cho mục tiêu cuồng nộ, 100% khả năng.
 Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 
@@ -160,7 +160,7 @@ Rút một lưỡi ném đi, không hoa mỹ nhưng bao giờ cũng có sẵn, 7
 Tầm 3 · 95% trúng · dùng mọi lượt.
 
 wind_shuriken
-Nén gió thành một vòng lưỡi sắc rồi thả cho nó tự xé lấy hàng ngũ, 2 nhát, mỗi nhát 62% công (tổng 124%).
+Nén gió thành một vòng lưỡi mỏng rồi thả ra, gió tự lo phần còn lại, 2 nhát, mỗi nhát 62% công (tổng 124%).
 Tầm 3 · 3 ô · 88% trúng · hồi 2 lượt.
 
 rasengan
@@ -168,7 +168,7 @@ Vo chakra thành một khối xoáy trong lòng bàn tay rồi ấn thẳng vào
 Tầm 1 · 90% trúng · hồi 4 lượt.
 
 substitution
-Đổi chỗ với một khúc gỗ đúng lúc đòn tới, rồi đứng dậy ở chỗ khác.
+Đổi chỗ với một khúc gỗ đúng lúc đòn tới, để lại một làn khói trắng.
 Nhận mờ ảo x2.
 Bản thân · hồi 4 lượt.
 
