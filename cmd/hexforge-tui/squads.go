@@ -133,6 +133,14 @@ func (s squadScreen) updateList(m model, message tea.KeyPressMsg) (tea.Model, te
 		if len(s.saved) > 0 {
 			s = s.open(s.saved[clamp(s.cursor, 0, len(s.saved)-1)])
 		}
+	case "f":
+		// The fight is raised from here because this is where a squad is under a
+		// cursor. It reads that cursor rather than being handed a copy: a second
+		// copy is a second thing to keep in step.
+		if len(s.saved) > 0 {
+			m.squad = s
+			return m.enter(screenFight), nil
+		}
 	case "d":
 		if len(s.saved) > 0 {
 			id := s.saved[clamp(s.cursor, 0, len(s.saved)-1)].ID

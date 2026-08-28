@@ -118,6 +118,14 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	member.squad = member.squad.editUnit(0)
 	skillPick := member.openSquadSkills()
 	traitPick := member.openSquadPassives()
+	// The fight, which is the only screen here that runs battles to draw itself.
+	// It needs a squad the library has actually been told about, because the run
+	// looks the pair up there rather than on the screen — so this one is saved
+	// rather than held. Fought against itself, which is the control and the one
+	// pairing a fixture cast is guaranteed to be able to field.
+	fight := withASquadSaved(t, building).enter(screenFight)
+	// And the same screen with nothing to fight, which is a different line.
+	noSquads := m.enter(screenFight)
 	return map[string]model{
 		"shape diagram":    shape,
 		"spar":             spar,
@@ -149,6 +157,8 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"a squad member":   member,
 		"a squad kit":      skillPick,
 		"a squad trait":    traitPick,
+		"a fight":          fight,
+		"nothing to fight": noSquads,
 		"traitless build":  traitless,
 	}
 }
@@ -231,6 +241,18 @@ func someSquad(t *testing.T, m model) squadScreen {
 	s.editing.Units = []placement.Placement{unit}
 	s.unit = unit
 	return s
+}
+
+// withASquadSaved writes the squad in hand into the library and hands back a
+// model that can see it, which is what a fight needs: the run looks its pair up
+// in the catalogue rather than taking them from the screen.
+func withASquadSaved(t *testing.T, m model) model {
+	t.Helper()
+	if err := m.lib.SaveSquad(m.squad.editing); err != nil {
+		t.Fatalf("save the fixture squad: %v", err)
+	}
+	m.squad = m.squad.refresh(m.lib)
+	return m
 }
 
 func withNoTraitTaken(t *testing.T, b buildsScreen) buildsScreen {

@@ -567,6 +567,23 @@ const (
 	MenuSquads
 	MenuSquadsDetail
 
+	// The squad fight: two sides measured against each other.
+	FightHeading
+	FightAgainst
+	FightControl
+	FightConditions
+	FightRate
+	FightRecord
+	FightRecordLine
+	FightBySide
+	FightBySideLine
+	FightLength
+	FightLengthLine
+	FightEndless
+	FightEndlessLine
+	FightCaution
+	FightFooter
+
 	keyCount
 )
 

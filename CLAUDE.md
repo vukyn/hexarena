@@ -351,6 +351,24 @@ answers rather than screen logic:
     already in the book is something units carry, while a squad is a working
     document whose whole edit loop is saving it again. It validates through
     `Take`, so nothing is written that could not be fielded.
+- The **fight** (`cmd/hexforge-tui/fight.go`, `forge.Library.FightSquads`) is
+  raised from the squad catalogue with `f`, the way the spar is raised from the
+  check: that is where a squad is under a cursor. Home is read off that cursor,
+  the opponent is this screen's own chooser, and the runs are cached by
+  `home|away|seeds` because a value receiver throws away a field written while
+  drawing.
+  - ⚠️ **Both ways round is the measurement, not a refinement.** Roster order
+    decides the turn-queue tie-break, so one arrangement reports the *first
+    slot's* advantage as the squad's — a mirror read **58.8%** the last time one
+    was measured without swapping. Both halves run the **same** seeds.
+  - **A squad against itself is a control**: exactly 500 per mille, by
+    construction. `TestASquadAgainstACopyOfItselfIsExactlyEven` is what breaks
+    first if the swap stops cancelling. The halves are reported apart too,
+    because their difference is what *standing on a side* is worth — 18 points on
+    the fixture pairing.
+  - ⚠️ A squad rate is **not** the roster's win rate, and the screen says so in
+    prose under the figure. That line is wrapped against **minWidth**, not the
+    window in hand, for the reason the art chooser measures its room that way.
 - ⚠️ **One loadout rule, and it had quietly become two.** "Which four of the nine
   may this unit bring" existed as `seed.chooseFrom` *and* `cast.chosenFor`, both
   unexported, both worded slightly differently — and the builder needed it a

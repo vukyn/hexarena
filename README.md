@@ -1403,6 +1403,49 @@ what lets one be measured against several opponents and against a copy of itself
 — and it is why `Take` prefixes the unit ids with the side it took. Two halves of
 a mirror have to be told apart in a log, and nothing else in a squad can do it.
 
+#### Fighting two squads
+
+`f` on a squad in the catalogue raises the fight: that squad against another,
+over a hundred battles by default (`+`/`-` doubles and halves it, 10 to 1000),
+with the opponent walked with `←`/`→`.
+
+```
+đánh thử  do-thu  gặp  < khac >
+
+  100 trận mỗi chiều, 200 trận cả thảy, có đổi phe
+
+  tỉ lệ         52%
+  thành tích    thắng 105, thua 95, hoà 0
+  theo phe      59% khi cầm phe nhà, 45% khi cầm phe khách
+  độ dài        65 lượt, lấy trận ở giữa
+```
+
+⚠️ **Both ways round is not a refinement, it is the measurement.** The engine
+enlists in roster order and breaks a tie in the turn queue by it, so the squad
+placed as the ally is listed first and moves first on a tie. Fighting one
+arrangement would report that advantage as though it belonged to the squad — the
+last time this repository measured a mirror without swapping, it read **58.8%**.
+So every seed is fought twice with the squads swapped, and both halves run the
+**same** seeds: halves fought over different seeds cancel nothing, they are two
+measurements of two different things.
+
+Which is why **a squad against a copy of itself is a control**: it reads exactly
+500 per mille, to the point rather than approximately, because every battle it
+wins as the ally it loses as the enemy. `TestASquadAgainstACopyOfItselfIsExactlyEven`
+is that claim, and it is the thing that would break first if the swap stopped
+cancelling.
+
+The two halves are reported **apart** as well as folded, because the difference
+between them is a finding in its own right: it is what standing on a side is
+worth. On the fixture pairing above that is eighteen points, which is not a
+rounding error and is not something a single-arrangement figure would have said
+out loud.
+
+⚠️ **A squad rate is not the roster's win rate**, and the screen says so under
+the figure. The roster is the instrument — levelled, guarded by tests, the thing
+every balance number in this repository is quoted against — and a squad is
+whatever somebody built this afternoon.
+
 #### One loadout rule, which had quietly become two
 
 "Which four of the nine may this unit bring" was written down **twice** before
