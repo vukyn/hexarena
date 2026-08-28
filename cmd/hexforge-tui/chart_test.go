@@ -24,58 +24,167 @@ func openChart(t *testing.T, m model) model {
 	return m
 }
 
-// TestTheChartScreenDrawsEveryDeclaredRelation is the property that makes the
-// picture worth trusting: a reader who learns the rings has learnt the chart,
-// which is only true if every edge is in one of them.
+// TestTheDrawnLoopIsTheDeclaredRing is the property that makes the picture worth
+// trusting: what a reader follows round the loop has to be the ring the chart is
+// declared with, in that order.
 //
-// Measured against the resolved edges rather than against the rings, and that is
-// the whole of the test. The rings are what was *declared* and the matrix is what
-// the game *plays*, so a ring dropped from the picture — or an edge added by a
-// mutual pair nobody drew — is a chart that reads complete and is not.
-func TestTheChartScreenDrawsEveryDeclaredRelation(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		m, _, _ := start(t, lang)
-		m.width, m.height = 200, 60
-		m = openChart(t, m)
-		drawn := m.screenContent()
-		// Whitespace collapsed before scanning, because a ring too long for a
-		// line continues under itself: the cross ring's closing bracket sits on
-		// the row below the arrow that points at it, and the edge is drawn even
-		// though the two are not adjacent in the bytes. A mark only ever appears
-		// inside a chain, so joining the lines cannot invent an edge.
-		flat := strings.Join(strings.Fields(drawn), " ")
+// It reads the drawing back rather than asking the chart again — a test that
+// asked the chart twice would only prove the chart agrees with itself. Following
+// the picture is what a reader does, so following the picture is what is checked:
+// along the top row left to right, then along the return leg **right to left**,
+// which is the way its arrows point.
+//
+// Two of the edges in a split ring are drawn by the rules at the corners rather
+// than by any adjacent pair of names — the last name on the top row reaches the
+// first name of the return leg down the right-hand edge, and the last name of the
+// return leg reaches the first name of all up the left. Those are exactly the
+// edges a text-adjacency test cannot see and a reader can, which is why this
+// walks the order instead of scanning for pairs.
+func TestTheDrawnLoopIsTheDeclaredRing(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	cycles := m.lib.Chart().Cycles()
+	if len(cycles) == 0 {
+		t.Fatal("the shipped chart declares no ring, so this measures nothing")
+	}
+	split := 0
+	for _, cycle := range cycles {
+		lines := ringLines(elementIDs(cycle.Chain), chartRoom())
+		if len(lines) > 2 {
+			split++
+		}
+		got := walkLoop(t, lines)
+		want := elementIDs(cycle.Chain)
+		if len(got) != len(want) {
+			t.Errorf("%s: the drawing walks %v, want the ring %v", cycle.Name, got, want)
+			continue
+		}
+		for index := range want {
+			if got[index] != want[index] {
+				t.Errorf("%s: the drawing walks %v, want the ring %v", cycle.Name, got, want)
+				break
+			}
+		}
+	}
+	// And at least one ring really is split over two legs, or the harder half of
+	// walkLoop — the reversed return leg — was never exercised.
+	if split == 0 {
+		t.Error("no shipped ring is drawn over two legs, so the return leg is untested")
+	}
+}
 
-		chart := m.lib.Chart()
-		for _, attacker := range element.All() {
-			for _, defender := range chart.Strengths(attacker) {
-				if !chartShows(flat, attacker, defender) {
-					t.Errorf("%s: the chart never shows %v beating %v:\n%s",
-						lang, attacker, defender, drawn)
-				}
+// walkLoop reads a drawn ring back into the order a reader follows it in.
+//
+// The top leg reads left to right and the return leg right to left, which is the
+// way each one's arrows point. Anything that is not an element id — the rules,
+// the corners, the marks — is skipped, so the walk is the names alone.
+func walkLoop(t *testing.T, lines []string) []string {
+	t.Helper()
+	if len(lines) == 0 {
+		t.Fatal("the ring drew nothing")
+	}
+	out := namesIn(lines[0])
+	switch len(lines) {
+	case 2:
+		// One leg and the rule that closes it under.
+		return out
+	case 3:
+		// Two legs and the connector between their ends.
+		return append(out, reversed(namesIn(lines[2]))...)
+	}
+	t.Fatalf("a ring drew %d lines, want one leg or two", len(lines))
+	return nil
+}
+
+// namesIn is every element id on one line, in the order it is written.
+func namesIn(line string) []string {
+	out := make([]string, 0, 8)
+	for _, word := range strings.Fields(line) {
+		word = strings.Trim(word, ",'`|<->-()")
+		if _, err := element.Parse(word); err == nil {
+			out = append(out, word)
+		}
+	}
+	return out
+}
+
+// TestEveryRingClosesAtTheFloor is the rule an author has to be held to when a
+// twelfth element is added: **the drawing has to still be a drawing**.
+//
+// The picture is generated, so adding an element cannot make it *wrong* — it
+// redraws itself, which is the whole reason it is allowed to be a picture at all.
+// What adding an element can do is make it not fit, and then ringLines falls back
+// to a plain chain and the chart quietly stops being a loop. That is the failure
+// this holds shut, at the floor, which is the width every reader gets.
+//
+// It also checks the box actually closes: every line the same width, the opening
+// corner above the closing one, and each member drawn exactly once. A loop that
+// is one cell out is a loop nobody trusts.
+func TestEveryRingClosesAtTheFloor(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	cycles := m.lib.Chart().Cycles()
+	if len(cycles) == 0 {
+		t.Fatal("the shipped chart declares no ring, so this measures nothing")
+	}
+	for _, cycle := range cycles {
+		names := elementIDs(cycle.Chain)
+		lines := ringLines(names, chartRoom())
+		if len(lines) == 1 {
+			t.Errorf("%s fell back to a plain chain at %d columns; it no longer draws as a loop: %q",
+				cycle.Name, chartRoom(), lines[0])
+			continue
+		}
+		width := len(lines[0])
+		if width > chartRoom() {
+			t.Errorf("%s is %d columns wide, over the %d the floor gives it",
+				cycle.Name, width, chartRoom())
+		}
+		for index, line := range lines {
+			if len(line) != width {
+				t.Errorf("%s: line %d is %d cells and the first is %d, so the box does not close:\n%s",
+					cycle.Name, index, len(line), width, strings.Join(lines, "\n"))
+			}
+		}
+		if opened, closed := lines[0][0], lines[len(lines)-1][0]; opened != ',' || (closed != '`' && closed != '\'') {
+			t.Errorf("%s opens with %q and closes with %q:\n%s",
+				cycle.Name, string(opened), string(closed), strings.Join(lines, "\n"))
+		}
+		drawn := strings.Join(lines, "\n")
+		for _, name := range names {
+			if strings.Count(drawn, name) != 1 {
+				t.Errorf("%s draws %q %d times, want once:\n%s",
+					cycle.Name, name, strings.Count(drawn, name), drawn)
 			}
 		}
 	}
 }
 
-// chartShows reports whether the picture puts one element immediately before
-// another, in a ring or across a pair.
+// TestARingTooWideFallsBackToAChain is the escape hatch, and it is here so that
+// the fallback is a decision rather than a surprise.
 //
-// Adjacency in the drawn text rather than a lookup, because that is what a reader
-// does: the claim being tested is that the *picture* carries the edge, and a test
-// that asked the chart again would only prove the chart agrees with itself.
-func chartShows(drawn string, attacker, defender element.Element) bool {
-	for _, mark := range []string{beatsMark, mutualMark} {
-		if strings.Contains(drawn, attacker.String()+mark+defender.String()) {
-			return true
-		}
-		// A ring closes on the name it opened with, in brackets.
-		if strings.Contains(drawn, attacker.String()+mark+"("+defender.String()+")") {
-			return true
+// A ring wide enough to beat two legs cannot be drawn as a loop a reader can
+// follow — a third leg would run left to right again and the arrows would stop
+// meaning anything. What it must not do is draw a broken box: it drops to the
+// plain chain, which is honest about being a list, and still names every member.
+func TestARingTooWideFallsBackToAChain(t *testing.T) {
+	huge := make([]string, 0, 8)
+	for _, letter := range "abcdefgh" {
+		huge = append(huge, strings.Repeat(string(letter), 20))
+	}
+	lines := ringLines(huge, chartRoom())
+	if len(lines) != 1 {
+		t.Fatalf("a ring too wide for two legs drew %d lines, want the chain fallback:\n%s",
+			len(lines), strings.Join(lines, "\n"))
+	}
+	for _, name := range huge {
+		if !strings.Contains(lines[0], name) {
+			t.Errorf("the fallback drops %q: %s", name, lines[0])
 		}
 	}
-	// A pair is drawn once, from whichever side was declared first, and it is
-	// true both ways.
-	return strings.Contains(drawn, defender.String()+mutualMark+attacker.String())
+	// And it still says the ring closes, which is the one thing the box was
+	// carrying that a list does not.
+	if !strings.Contains(lines[0], "("+huge[0]+")") {
+		t.Errorf("the fallback does not close on its first member: %s", lines[0])
+	}
 }
 
 // TestTheChartNamesTheInertElement is the row a picture of edges cannot have.
