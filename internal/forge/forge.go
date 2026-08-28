@@ -44,6 +44,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 )
 
 // Draft is every answer that makes a character, held as the strings a flag, a
@@ -265,6 +266,60 @@ func (l *Library) Budget(values progression.Values) Budget {
 		Headroom:  l.limits.MaxEffectiveHP - effective,
 		Pierced:   progression.EffectiveHPAgainst(values, l.rules, scale.Base),
 	}
+}
+
+// Held is the stat line a character actually fights on: its resolved values with
+// every permanent status its trait grants already applied.
+//
+// # Why this is not the line the budget is checked against, and should be
+//
+// progression.Limits.CheckValues takes six numbers and nothing else, so the line
+// it bounds is the one on paper. A trait is not in those six: it is named beside
+// the stat line on a placement, and its grants are put on at enlistment, after
+// everything that could have refused them. The result is that battle.New will
+// reject a base line of 740 defence as over budget and then hand the same unit
+// 786 through a trait, in the same call.
+//
+// The gap is only ever this wide for a **permanent** status, which is all a
+// trait can grant: status.Set.Hold refuses a timed one. A timed buff going over
+// the bound is what a buff is for, and a gated trait is off until its condition
+// holds — the trait's own gate is checked at every turn and cannot be
+// read off a character. What is left is the case with no gate and no clock,
+// which is a stat line wearing a different hat: nothing dispels it, nothing
+// expires it, and a reader comparing two characters has no way to see it.
+//
+// Closing the gap by refusing the line is not a change this can make. endurance
+// is the default trait of three of the four archetypes, so a check that failed
+// on it would fail every character shipped — the figure has to be visible before
+// anybody can decide whether the bound belongs to the paper line or the fought
+// one. This is that figure.
+func (l *Library) Held(base progression.Values, traits []string) (progression.Values, error) {
+	carried := status.Set{}
+	for _, id := range traits {
+		held, err := l.passives.Lookup(id)
+		if err != nil {
+			return base, err
+		}
+		// A gated trait is off until the gate holds, and the gate reads a
+		// health that no character has outside a battle. Counting it here would
+		// price blaze as though a Charizard walked in already burning.
+		if held.While != nil {
+			continue
+		}
+		for _, grant := range held.Grants {
+			kind, err := l.statuses.Lookup(grant.Status)
+			if err != nil {
+				return base, err
+			}
+			// Hold is the gate rather than a check here: it refuses a timed
+			// status outright, for the reason it exists at all — a trait that
+			// granted one would wear off on its holder's turns with nothing to
+			// put it back. Repeating the condition here would be a second place
+			// for it to be wrong.
+			carried.Hold(kind, grant.Stacks)
+		}
+	}
+	return carried.Modifiers().Stats(base, l.limits.Ceilings, l.bounds), nil
 }
 
 // Carrier is who a kit is being checked for: the four facts a skill's

@@ -348,6 +348,7 @@ const (
 	ProblemMissingStageArt
 	ProblemDoesNotResolve
 	WarningShortReach
+	WarningHeldBudget
 	NoteWrote
 	NoteEdited
 	NoteArtMissing

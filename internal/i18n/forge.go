@@ -472,6 +472,9 @@ func (l Lang) Problem(problem forge.Problem) string {
 // Warning is one thing a check noticed that is not a reason to fail.
 func (l Lang) Warning(warning forge.Warning) string {
 	switch typed := warning.(type) {
+	case *forge.HeldBudgetWarning:
+		return l.Say(WarningHeldBudget,
+			typed.ID, l.glossed(typed.Trait), typed.Effective, typed.Max)
 	case *forge.ShortReachWarning:
 		return l.Say(WarningShortReach,
 			typed.ID, typed.Archetype, typed.Column, typed.Needed, typed.Range)

@@ -59,6 +59,7 @@ func renderReport(out io.Writer, r forge.Report) {
 		rendered.render(out)
 		fmt.Fprintln(out)
 	}
+	renderHeld(out, r)
 	if r.OK() {
 		fmt.Fprintln(out, "no problems found")
 	} else {
@@ -73,4 +74,35 @@ func renderReport(out io.Writer, r forge.Report) {
 	}
 	fmt.Fprintf(out, "\nnote: this reads %s from disk. The game boots from the copies baked in by\n"+
 		"go:embed, so an edit here needs a rebuild before it reaches a battle.\n", r.Dir)
+}
+
+// renderHeld is the same budget again, once per trait, because the table above
+// it measures a line nobody fights on.
+//
+// A second table rather than more columns on the first: how many rows a
+// character has here is how many traits its learnset reaches, which is not one
+// and is not the same for every character. Squeezing that into the stat-line
+// table would either repeat the character on every row of it or hide all but the
+// first trait.
+func renderHeld(out io.Writer, r forge.Report) {
+	rendered := newTable("character", "trait", "absorbs", "budget left", "stats while held").
+		rightAlign(2, 3)
+	rows := 0
+	for _, row := range r.Rows {
+		for _, carried := range row.Traits {
+			rendered.add(row.ID, carried.Trait,
+				strconv.FormatInt(carried.Budget.Effective, 10),
+				strconv.FormatInt(carried.Budget.Headroom, 10),
+				carried.Values.String())
+			rows++
+		}
+	}
+	if rows == 0 {
+		return
+	}
+	rendered.render(out)
+	fmt.Fprintf(out, "\nthe budget is checked against the line above this table, not the one in it: a\n"+
+		"trait is named on a placement and its grants go on at enlistment, after everything\n"+
+		"that could have refused them. Only permanent grants are counted here — a timed buff\n"+
+		"going over the bound is what a buff is for, and a gated one is off until it holds.\n\n")
 }

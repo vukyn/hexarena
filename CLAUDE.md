@@ -1260,6 +1260,28 @@ is the constraint each piece has to respect.
       ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
+- [x] **The budget bounds a line nobody fights on**, and `hexforge check` now
+      says so: a second table of the line each character actually fights on, per
+      trait, via `forge.Library.Held`.
+      ⚠️ `progression.Limits.CheckValues` takes **six numbers and nothing else**,
+      so the bound is on the paper line. A trait is named on a *placement* and its
+      grants go on at enlistment — **`battle.New` rejects a base line of 740
+      defence and then hands the same unit 786 through a trait, in the same
+      call.**
+      ⚠️ Only **permanent** grants count, which is all a trait can give
+      (`status.Set.Hold` refuses a timed one). A gated trait (`blaze`) is skipped:
+      its condition reads a health no character has outside a battle.
+      ⚠️ **Warns, never fails.** `endurance` is the default trait of 3 of the 4
+      archetypes, so failing would fail the whole cast. Closing it properly means
+      deciding whether 11500 bounds the **paper** line or the **fought** one — the
+      second answer retunes every stat line. `TestNoTraitCarriesACharacterFarPastTheBudget`
+      bounds the hole at 120% (shipped worst: Squirtle/`ballast` at 113.4%).
+      Found the moment the table existed: **Bulbasaur/`endurance` has 157 left**;
+      `reckless` is *under* the bound (`bare` costs more than `unleashed` buys).
+      ⚠️ Three existing guards caught the wording: the TUI's 79-cell width test,
+      the renamed-label ban (**"absorbs" is banned in English**, "máu quy đổi" is
+      the Vietnamese), and the short-reach test's `len(Warnings) != 0` — which had
+      to start counting **its own kind** rather than every kind.
 - [x] **Two Squirtle builds out of one learnset**, in data only — three skills
       (`skull_bash`, `wide_guard`, `water_pulse`), one trait (`ballast`), two
       permanent statuses (`fortified`, `encumber`), no engine change at all.

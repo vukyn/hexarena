@@ -1808,6 +1808,51 @@ so no figure measured before a feature can be carried across it without being
 taken again. It flipped back when four slots landed; see *Piercing*, which now
 carries all three measurements.
 
+### The budget bounds a line nobody fights on
+
+`hexforge check` now prints the stat line a character actually fights on — its
+own, with every permanent status its trait grants already applied — beside the
+one the bound is checked against.
+
+```
+character           trait       absorbs  budget left  stats while held
+pokemon.bulbasaur   endurance     11343          157  hp 3800, atk 620, def 594, ...
+pokemon.squirtle    endurance     12413         -913  hp 3600, atk 460, def 731, ...
+pokemon.squirtle    ballast       13043        -1543  hp 3600, atk 460, def 786, ...
+pokemon.charmander  reckless       6102         5398  hp 3100, atk 886, def 290, ...
+```
+
+⚠️ **`progression.Limits.CheckValues` takes six numbers and nothing else**, so the
+line it bounds is the one on paper. A trait is not in those six: it is named
+beside the stat line on a *placement*, and its grants go on at enlistment, after
+everything that could have refused them. The result is that `battle.New` will
+**reject a base line of 740 defence as over budget and then hand the same unit
+786 through a trait, in the same call.**
+
+⚠️ The gap is only ever this wide for a **permanent** status, which is all a
+trait can grant — `status.Set.Hold` refuses a timed one. A timed buff going over
+the bound is what a buff is for; a gated trait is off until its condition holds,
+and its condition reads a health no character has outside a battle, so `blaze` is
+not counted. What is left is the case with **no gate and no clock**: a stat line
+wearing a different hat, which nothing dispels, nothing expires, and no reader
+comparing two characters can see.
+
+⚠️ **This warns and does not fail, and that is the whole shape of it.**
+`endurance` is the default trait of three of the four archetypes, so a check that
+refused it would refuse every character in the game and say nothing anybody could
+act on. Closing the gap properly means deciding whether **11500 belongs to the
+paper line or the fought one** — and the second answer moves every stat line in
+the cast. The figure has to be on screen before that decision can be taken.
+
+What the table said the moment it existed: **Bulbasaur under `endurance` has 157
+left**, which nothing had ever shown, and `reckless` is comfortably *under* the
+bound because `bare` takes more defence off than `unleashed` puts attack on.
+
+`TestNoTraitCarriesACharacterFarPastTheBudget` bounds the hole at 120% of the
+budget rather than closing it — the shipped worst is Squirtle under `ballast` at
+113.4%, and a new trait handing out half again as much durability as the bound
+allows would otherwise pass every test in the repository.
+
 ### Two builds out of one learnset
 
 Built, and built entirely in the data: three skills, one trait, two statuses, and
