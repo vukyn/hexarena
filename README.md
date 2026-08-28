@@ -1837,12 +1837,56 @@ not counted. What is left is the case with **no gate and no clock**: a stat line
 wearing a different hat, which nothing dispels, nothing expires, and no reader
 comparing two characters can see.
 
-⚠️ **This warns and does not fail, and that is the whole shape of it.**
-`endurance` is the default trait of three of the four archetypes, so a check that
-refused it would refuse every character in the game and say nothing anybody could
-act on. Closing the gap properly means deciding whether **11500 belongs to the
-paper line or the fought one** — and the second answer moves every stat line in
-the cast. The figure has to be on screen before that decision can be taken.
+⚠️ **The bound is the paper line's, and that is settled.** A ceiling and the
+budget bound what an **author** may write into a character at the level cap;
+going past either in a battle is not a leak but the point — a buff that could not
+take a stat past its ceiling would be a buff with a cliff in it, and the same
+goes for a trait and for whatever a rune turns out to be.
+
+What holds the **fought** line is not the budget but the saturation:
+`modifier.Set.Stat` rescales every change against `ceiling × headroom`, so
+nothing reaches **three times a ceiling** however much is stacked on it, and
+nothing reaches the floor beneath it either. So this prints a figure and raises
+nothing: the fought line is what a battle is decided on, and until now nothing
+printed it.
+
+`TestNoTraitCarriesACharacterFarPastTheBudget` is a **tripwire, not a bound**: a
+trait is allowed out of the budget, and this says how far (120%, against a
+shipped worst of Squirtle under `ballast` at 113.4%), because a trait that
+doubled a character's durability would be a balance change nobody was told about.
+
+## The floor, and why speed cannot reach nought
+
+A speed of nought is a unit that never acts again, and a pair of them is a battle
+that cannot end. **Four** guards stand between the data and that, and none of
+them said so:
+
+1. `modifier.Set.Stat` floors a debuff at **a tenth of base**, and
+   `scale.Saturate` **approaches that without arriving** — in both directions,
+   which is what keeps a debuff worth authoring past a hundred percent.
+2. The same function returns **1** for anything that still comes out below it.
+3. `atb.Wait` clamps a speed under one before dividing by it.
+4. `atb.Queue.Add` and `Reschedule` clamp it again.
+
+`TestNoShippedDebuffCanFreezeAUnit` stacks **every harmful shipped status fifty
+deep** onto every shipped character and asks whether the queue still turns, and
+`TestTheFloorIsNeverReached` says the floor is approached rather than clamped to.
+
+⚠️ **In practice `max_stacks` binds long before the floor does.** `expose` caps at
+two stacks, so Squirtle's defence bottoms out at **410 of 640** — the floor is 64,
+about six times further down, and a hundred applications land the same two stacks.
+If armour should be strippable harder, the levers are the status's amount and its
+`max_stacks`, **not the floor** — or `pierce`, which is the counter armour was
+given and ignores defence outright.
+
+⚠️ **`TestStatNeverDropsBelowOne` was passing for the wrong reason.** It crushed a
+base of three and checked the answer was at least one, which it always is and
+never because of the guard: the saturation cannot cross its own floor, so for any
+base of one or more the branch is dead and deleting it left the test green. **A
+base of nought is the one line that reaches it** — Saturate is handed a gap of
+nought and hands the base straight back — and that is not hypothetical, because a
+summon is authored with a fixed stat line and nought dodge is an ordinary thing
+to write.
 
 What the table said the moment it existed: **Bulbasaur under `endurance` has 157
 left**, which nothing had ever shown, and `reckless` is comfortably *under* the

@@ -7,26 +7,29 @@ import (
 )
 
 // heldOvershoot is the widest a trait may carry a character past the joint
-// health-and-defence bound before this stops being a figure worth looking at and
-// becomes a bound nobody is keeping, in parts per thousand of the bound itself.
+// health-and-defence bound, in parts per thousand of the bound itself.
 //
-// It is set above where the shipped cast sits rather than at it. The number is
-// not a target — the point of the table this guards is that the bound is checked
-// against a line nobody fights on, and closing that properly means deciding
-// whether 11500 belongs to the paper line or the fought one, which moves every
-// stat line in the game. What this refuses in the meantime is the hole getting
-// quietly wider: a new trait handing out half again as much durability as the
-// bound allows would pass every other test in the repository.
+// # The bound is the paper line's, deliberately
+//
+// A ceiling and the budget bound what an **author** may write into a character
+// at the level cap. Going past either in a battle is not a leak: a buff is for
+// exactly that, and a trait, and whatever a rune turns out to be. What holds the
+// fought line is not the budget but the saturation — modifier.Set.Stat rescales
+// every change against ceiling × headroom, so no stack of anything reaches three
+// times the ceiling, however much is piled on.
+//
+// So this is a tripwire and not a bound. A trait is allowed out of the budget and
+// this says how far, because a trait that doubled a character's durability would
+// be a balance change nobody was told about, and it would pass every other test
+// in the repository.
 const heldOvershoot = 200
 
-// TestNoTraitCarriesACharacterFarPastTheBudget is the bound on the hole.
+// TestNoTraitCarriesACharacterFarPastTheBudget is that tripwire.
 //
-// ⚠️ It does not assert that nothing is over. Two shipped pairs are — Squirtle
-// absorbs 12413 under endurance and 13043 under ballast against a bound of 11500
-// — and a test that refused them would have to refuse endurance, which is the
-// default trait of three of the four archetypes and therefore the whole cast.
-// The figure is on screen now, in `hexforge check`; this keeps it from growing
-// while nobody is looking.
+// ⚠️ It does not assert that nothing is over, because being over is the design.
+// Two shipped pairs are: Squirtle comes to 12413 under endurance and 13043 under
+// ballast against a bound of 11500, and both are fine. What is refused is the
+// figure growing while nobody is looking.
 func TestNoTraitCarriesACharacterFarPastTheBudget(t *testing.T) {
 	report := mustInspect(t)
 	worst, worstAt := int64(0), ""
@@ -53,48 +56,40 @@ func TestNoTraitCarriesACharacterFarPastTheBudget(t *testing.T) {
 	t.Logf("the widest is %s at %d.%d%% of the budget", worstAt, worst/10, worst%10)
 }
 
-// TestTheHeldBudgetIsWarnedAboutExactlyWhereItIsOver is the wiring, and it is
-// asserted in both directions because only one of them is interesting.
+// TestTheHeldTableReportsBothSidesOfTheBound is the table earning its place.
 //
-// A warning on everything is a warning on nothing: three of the four shipped
-// characters stay inside the bound under every trait they can carry, and if they
-// were warned about too then the two that matter would be four lines down a list
-// nobody reads.
-func TestTheHeldBudgetIsWarnedAboutExactlyWhereItIsOver(t *testing.T) {
+// A column that read the same on every row would be a column nobody needs to
+// look at. What makes this one worth printing is that the same character is
+// inside the bound under one trait and outside it under another — Squirtle is at
+// 11285 bare, 11285 under thorns, 12413 under endurance and 13043 under ballast
+// — so the figure is a fact about the *pairing* and not about either half.
+func TestTheHeldTableReportsBothSidesOfTheBound(t *testing.T) {
 	report := mustInspect(t)
-	warned := map[string]bool{}
-	for _, warning := range report.Warnings {
-		held, is := warning.(*HeldBudgetWarning)
-		if !is {
-			continue
-		}
-		warned[held.ID+"/"+held.Trait] = true
-	}
-	over, inside := 0, 0
+	over, inside, pairs := 0, 0, 0
 	for _, row := range report.Rows {
 		for _, carried := range row.Traits {
-			key := row.ID + "/" + carried.Trait
-			switch {
-			case carried.Budget.Over() && !warned[key]:
-				t.Errorf("%s absorbs %d of %d and nothing said so",
-					key, carried.Budget.Effective, carried.Budget.Max)
-			case carried.Budget.Over():
-				over++
-			case warned[key]:
-				t.Errorf("%s absorbs %d of %d, which is inside the bound, and was warned about anyway",
-					key, carried.Budget.Effective, carried.Budget.Max)
-			default:
-				inside++
+			pairs++
+			if carried.Budget.Max == 0 {
+				t.Fatalf("%s under %s reports no bound at all", row.ID, carried.Trait)
 			}
+			if carried.Budget.Over() {
+				over++
+				continue
+			}
+			inside++
 		}
 	}
+	if pairs == 0 {
+		t.Fatal("no character reports a line for any trait, so nothing was measured")
+	}
 	if over == 0 {
-		t.Fatal("no shipped pair is over the bound, so the warning is never reached")
+		t.Error("no shipped pair fights outside the bound, so the table says the same thing " +
+			"as the one above it and neither is worth two tables")
 	}
 	if inside == 0 {
-		t.Fatal("every shipped pair is over the bound, so the warning says nothing")
+		t.Error("every shipped pair fights outside the bound, so the column is a constant")
 	}
-	t.Logf("%d pairs over the bound, %d inside", over, inside)
+	t.Logf("%d pairs: %d outside the bound, %d inside", pairs, over, inside)
 }
 
 // TestAGatedTraitIsNotCountedAgainstTheBudget is the one exclusion Held makes on

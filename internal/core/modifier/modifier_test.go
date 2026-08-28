@@ -134,10 +134,40 @@ func TestDebuffsSaturateTowardsTheFloor(t *testing.T) {
 	}
 }
 
+// TestStatNeverDropsBelowOne covers the last net, and it takes a base of nought
+// to reach it.
+//
+// ⚠️ It used to crush a base of three and check the answer was at least one,
+// which it always is and never because of the guard: the saturation cannot cross
+// its own floor, so for any base of one or more the arithmetic lands above nought
+// on its own and the branch is dead. Deleting the branch left that version
+// passing.
+//
+// A base of nought is the one line that reaches it. Saturate is handed a gap of
+// nought, returns the base it was given, and the guard is the only thing between
+// that and a stat of nought on the board — which for speed is a unit that never
+// acts again. It is not a hypothetical stat line: a summon is authored with a
+// fixed one, and nought dodge is an ordinary thing to write.
 func TestStatNeverDropsBelowOne(t *testing.T) {
-	set := setOf(t, flat(modifier.Attack, -5000))
-	if got := set.Stat(progression.Attack, 3, 800, bounds()); got < 1 {
+	// The old case, kept: what it proves is that the saturation floors itself,
+	// which is worth saying even though it is not what the name claims.
+	if got := setOf(t, flat(modifier.Attack, -5000)).
+		Stat(progression.Attack, 3, 800, bounds()); got < 1 {
 		t.Errorf("a crushed stat is %d, want at least 1", got)
+	}
+	for _, term := range []struct {
+		name string
+		set  modifier.Set
+	}{
+		{"no term at all", modifier.Set{}},
+		{"a flat penalty", setOf(t, flat(modifier.Speed, -5000))},
+		{"a percentage penalty", setOf(t, percent(modifier.Speed, -100000))},
+		{"a buff", setOf(t, percent(modifier.Speed, 5000))},
+	} {
+		if got := term.set.Stat(progression.Speed, 0, 200, bounds()); got < 1 {
+			t.Errorf("a stat line of nought speed under %s resolves to %d, "+
+				"which is a unit that never acts again", term.name, got)
+		}
 	}
 }
 

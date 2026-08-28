@@ -338,7 +338,6 @@ q or ctrl+c to quit`,
 	ProblemMissingArt:      "character %s names the art %s, which is not at %s",
 	ProblemMissingStageArt: "character %s names the art %s for its %s stage, which is not at %s",
 	ProblemDoesNotResolve:  "character %s does not resolve: %v",
-	WarningHeldBudget:      "%s holds %s: effective hp %d/%d",
 	WarningShortReach: "character %s is a %s on column %d, where the nearest enemy is %d cells away, " +
 		"but the longest range in its kit is %d: it can only act while an ally stands in front of it",
 	NoteWrote:              "wrote %s to %s",

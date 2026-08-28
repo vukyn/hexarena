@@ -95,39 +95,6 @@ type Warning interface {
 	warning()
 }
 
-// HeldBudgetWarning is a character that fights over the joint health-and-defence
-// bound because of a trait it carries.
-//
-// A warning and not a problem, and that is the whole shape of this: endurance is
-// the default trait of three of the four archetypes, so a check that failed here
-// would fail every character in the game and say nothing anybody could act on.
-// What is wanted first is the number on screen — the bound was written for the
-// line on paper, the game is played on a different one, and which of the two it
-// is meant to bound is a decision that has to be taken with the figures in view.
-//
-// It says the trait as well as the character, because the same character is
-// inside the bound under one trait and outside it under another: Squirtle is at
-// 11285 of 11500 bare, 12413 under endurance and 13043 under ballast.
-// It carries no bare figure, though the whole point is the gap between the two:
-// the row this hangs off already has it, and a warning has one line on a screen
-// eighty cells wide. What is wanted here is which pair, and by how much.
-type HeldBudgetWarning struct {
-	ID    string
-	Trait string
-	// Effective is what the character's line comes to with the trait held, and
-	// Max is the bound it is being read against.
-	Effective int64
-	Max       int64
-}
-
-func (w *HeldBudgetWarning) Error() string {
-	return fmt.Sprintf("character %s holds %s and comes to %d effective hp against a budget of %d, "+
-		"which is a trait the budget never sees: a permanent grant is a stat line nothing dispels",
-		w.ID, w.Trait, w.Effective, w.Max)
-}
-
-func (w *HeldBudgetWarning) warning() {}
-
 // ShortReachWarning is a character whose longest range cannot touch anybody from
 // the column its archetype puts it in.
 //
@@ -278,15 +245,6 @@ func (l *Library) Inspect() Report {
 		}
 		if row.Failure == nil {
 			row.Traits = l.heldBudgets(character, stage.Name, values)
-			for _, carried := range row.Traits {
-				if !carried.Budget.Over() || row.Budget.Over() {
-					continue
-				}
-				report.Warnings = append(report.Warnings, &HeldBudgetWarning{
-					ID: character.ID, Trait: carried.Trait,
-					Effective: carried.Budget.Effective, Max: carried.Budget.Max,
-				})
-			}
 		}
 		if short := l.shortReach(character); short != nil {
 			report.Warnings = append(report.Warnings, short)

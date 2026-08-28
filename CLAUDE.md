@@ -1271,17 +1271,34 @@ is the constraint each piece has to respect.
       ⚠️ Only **permanent** grants count, which is all a trait can give
       (`status.Set.Hold` refuses a timed one). A gated trait (`blaze`) is skipped:
       its condition reads a health no character has outside a battle.
-      ⚠️ **Warns, never fails.** `endurance` is the default trait of 3 of the 4
-      archetypes, so failing would fail the whole cast. Closing it properly means
-      deciding whether 11500 bounds the **paper** line or the **fought** one — the
-      second answer retunes every stat line. `TestNoTraitCarriesACharacterFarPastTheBudget`
-      bounds the hole at 120% (shipped worst: Squirtle/`ballast` at 113.4%).
+      ⚠️ **SETTLED: the bound is the PAPER line's.** A ceiling and the budget
+      bound what an **author** writes at the cap; going past them in a battle is
+      the point, not a leak — for a buff, a trait, and whatever a rune becomes.
+      What holds the **fought** line is the **saturation**: `ceiling × headroom`,
+      so nothing reaches 3× a ceiling however much is stacked.
+      So this prints a figure and raises nothing. `TestNoTraitCarriesACharacterFarPastTheBudget`
+      is a **tripwire not a bound** — 120%, shipped worst Squirtle/`ballast` 113.4%.
       Found the moment the table existed: **Bulbasaur/`endurance` has 157 left**;
       `reckless` is *under* the bound (`bare` costs more than `unleashed` buys).
-      ⚠️ Three existing guards caught the wording: the TUI's 79-cell width test,
-      the renamed-label ban (**"absorbs" is banned in English**, "máu quy đổi" is
-      the Vietnamese), and the short-reach test's `len(Warnings) != 0` — which had
-      to start counting **its own kind** rather than every kind.
+      ⚠️ Three existing guards caught the first wording: the TUI's 79-cell width
+      test, the renamed-label ban (**"absorbs" is banned in English**), and the
+      short-reach test's `len(Warnings) != 0`.
+- [x] **Speed cannot reach nought, and now something says so.** Four guards stood
+      between the data and a unit that never acts again — the floor at a tenth of
+      base (approached, never reached), `Stat`'s return of 1, `atb.Wait`'s clamp,
+      and `atb.Queue.Add`/`Reschedule`'s — and none of them stated the invariant.
+      `TestNoShippedDebuffCanFreezeAUnit` stacks every harmful shipped status 50
+      deep on every character and asks whether the queue still turns.
+      ⚠️ **`max_stacks` binds long before the floor.** `expose` caps at 2, so
+      Squirtle's defence bottoms at **410 of 640** — the floor is 64, ~6× further.
+      To strip armour harder the levers are the amount and `max_stacks`, **not the
+      floor**, or `pierce` (the counter armour was given).
+      ⚠️ **`TestStatNeverDropsBelowOne` was passing for the wrong reason** — it
+      crushed a base of 3, where the saturation lands above nought by arithmetic
+      and the branch is dead; deleting the branch left it green. **Only a base of
+      nought reaches the guard** (Saturate gets a gap of nought and returns the
+      base), which is real: a summon is authored with a fixed line and nought
+      dodge is ordinary.
 - [x] **Two Squirtle builds out of one learnset**, in data only — three skills
       (`skull_bash`, `wide_guard`, `water_pulse`), one trait (`ballast`), two
       permanent statuses (`fortified`, `encumber`), no engine change at all.

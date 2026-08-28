@@ -271,28 +271,28 @@ func (l *Library) Budget(values progression.Values) Budget {
 // Held is the stat line a character actually fights on: its resolved values with
 // every permanent status its trait grants already applied.
 //
-// # Why this is not the line the budget is checked against, and should be
+// # Why the budget is not checked against this, and is not meant to be
 //
 // progression.Limits.CheckValues takes six numbers and nothing else, so the line
-// it bounds is the one on paper. A trait is not in those six: it is named beside
-// the stat line on a placement, and its grants are put on at enlistment, after
-// everything that could have refused them. The result is that battle.New will
-// reject a base line of 740 defence as over budget and then hand the same unit
-// 786 through a trait, in the same call.
+// it bounds is the one on paper — which is the line an **author** writes. A
+// trait is not in those six: it is named beside the stat line on a placement,
+// and its grants are put on at enlistment, after everything that could have
+// refused them. So battle.New will reject a base line of 740 defence as over
+// budget and then hand the same unit 786 through a trait, in the same call.
 //
-// The gap is only ever this wide for a **permanent** status, which is all a
-// trait can grant: status.Set.Hold refuses a timed one. A timed buff going over
-// the bound is what a buff is for, and a gated trait is off until its condition
-// holds — the trait's own gate is checked at every turn and cannot be
-// read off a character. What is left is the case with no gate and no clock,
-// which is a stat line wearing a different hat: nothing dispels it, nothing
-// expires it, and a reader comparing two characters has no way to see it.
+// That is the intended split rather than a leak. A ceiling and the budget bound
+// what may be **authored**; a battle is where a stat is supposed to move, and a
+// buff that could not take one past its ceiling would be a buff with a cliff in
+// it. What holds the fought line is the saturation: modifier.Set.Stat rescales
+// every change against ceiling × headroom, so nothing reaches three times a
+// ceiling however much is stacked on it, and nothing reaches the floor beneath
+// it either. Whatever a rune turns out to be, it lands in a system that already
+// bounds it.
 //
-// Closing the gap by refusing the line is not a change this can make. endurance
-// is the default trait of three of the four archetypes, so a check that failed
-// on it would fail every character shipped — the figure has to be visible before
-// anybody can decide whether the bound belongs to the paper line or the fought
-// one. This is that figure.
+// What was missing was not a check but a figure. The fought line is the one a
+// battle is decided on, and nothing printed it — so a trait's whole contribution
+// was invisible beside the stat line it modifies. This is that figure, and
+// hexforge check prints it beside the authored one.
 func (l *Library) Held(base progression.Values, traits []string) (progression.Values, error) {
 	carried := status.Set{}
 	for _, id := range traits {

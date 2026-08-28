@@ -116,13 +116,8 @@ func TestInspectWarnsAboutAKitThatCannotCoverTheBoard(t *testing.T) {
 	if err != nil {
 		t.Fatalf("inspect the copy: %v", err)
 	}
-	// Its own kind rather than every kind. The fixture is a copy of the shipped
-	// data, and the shipped data warns about a trait carrying a character past
-	// the budget -- which has nothing to do with reach and would make this test
-	// fail whenever the cast is retuned.
-	if reached := shortReaches(before); reached != 0 {
-		t.Fatalf("the fixture already warns about reach, so this measures nothing: %v",
-			before.Warnings)
+	if len(before.Warnings) != 0 {
+		t.Fatalf("the fixture already warns, so this measures nothing: %v", before.Warnings)
 	}
 
 	lib, err := Load(dir)
@@ -154,14 +149,12 @@ func TestInspectWarnsAboutAKitThatCannotCoverTheBoard(t *testing.T) {
 	if !after.OK() {
 		t.Errorf("a short kit failed the check: %v", after.Problems)
 	}
-	if reached := shortReaches(after); reached != 1 {
-		t.Fatalf("%d reach warnings reported, want 1: %v", reached, after.Warnings)
+	if len(after.Warnings) != 1 {
+		t.Fatalf("%d warnings reported, want 1: %v", len(after.Warnings), after.Warnings)
 	}
-	var short *ShortReachWarning
-	for _, warning := range after.Warnings {
-		if typed, is := warning.(*ShortReachWarning); is {
-			short = typed
-		}
+	short, isShort := after.Warnings[0].(*ShortReachWarning)
+	if !isShort {
+		t.Fatalf("the warning is a %T, want a *ShortReachWarning", after.Warnings[0])
 	}
 	if short.ID != character.ID || short.Range != 1 || short.Needed != 3 || short.Column != 0 {
 		t.Errorf("the warning reads %+v", short)
@@ -169,17 +162,6 @@ func TestInspectWarnsAboutAKitThatCannotCoverTheBoard(t *testing.T) {
 	if !strings.Contains(short.Error(), character.ID) {
 		t.Errorf("the warning %q does not name the character", short)
 	}
-}
-
-// shortReaches is how many of a report's warnings are about reach.
-func shortReaches(report Report) int {
-	count := 0
-	for _, warning := range report.Warnings {
-		if _, is := warning.(*ShortReachWarning); is {
-			count++
-		}
-	}
-	return count
 }
 
 // TestInspectNoticesMissingArt is the one question internal/core/cast is not
