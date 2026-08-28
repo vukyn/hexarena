@@ -408,6 +408,21 @@ answers rather than screen logic:
     screen is a value; a `*battle.Battle` is a pointer, so a mutation reaches
     every copy of the model. The battle is stepped in `update` and **never**
     touched in `view`, which is what stops a redraw playing a turn.
+  - **`ctrl+s` writes a `battle.Log`** through `Library.SaveBattleLog` into
+    `<data>/battles/<home>-vs-<away>-seed<n>.json` — the pairing and the seed
+    identify a battle, so saving twice overwrites rather than accumulating.
+    Saveable mid-battle: a half-played battle replays as exactly that half.
+    ⚠️ **`--verify` re-runs against the embedded copy**, not the directory being
+    edited, so a log written after an unbuilt edit will not verify — which is
+    what `NoteBattleVerify` says, and why it is a note of its own rather than the
+    generic rebuild line.
+    ⚠️ File names are built from author-typed squad ids and are made safe here
+    (`fileToken`), not by tightening what an id may be: what a file name may hold
+    is `forge`'s problem, and a data rule change deserves its own reason.
+    ⚠️ `replaceFile` now `MkdirAll`s the target's folder and puts the temp file
+    **in that folder** — a rename across folders is not an atomic swap. The test
+    that proved a failed write leaves the old file alone had to change its
+    mechanism: a missing folder is created now, so it fails on one under a *file*.
   - `take`/`skip` are two methods rather than one taking a `Decision`, so a
     decision with a skill and no aim — which the engine refuses and nothing here
     should be able to build — cannot be written at all.

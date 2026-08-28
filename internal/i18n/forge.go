@@ -429,6 +429,8 @@ func (l Lang) Note(note forge.Note) string {
 		return l.Say(NoteWrote, note.ID, note.Path)
 	case forge.NoteEdited:
 		return l.Say(NoteEdited, note.ID, note.Path)
+	case forge.NoteBattleVerify:
+		return l.Say(NoteBattleVerify, note.Path)
 	case forge.NoteArtMissing:
 		return l.Say(NoteArtMissing, note.Path)
 	case forge.NoteGoldensMove:

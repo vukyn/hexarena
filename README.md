@@ -1492,6 +1492,34 @@ the same property `--verify` rests on, and it is why the engine's turns are
 written into the script too — a half that was not written down would replay as a
 different battle.
 
+**`ctrl+s` writes the battle out**, into `battles/` beside the art, under a name
+built from the pairing and the seed — those three are what identify a battle, so
+saving the same one twice writes over itself rather than leaving two copies of
+one thing to tell apart later. The log carries the seed, the **resolved roster**
+and the whole script, which is exactly what the game client re-runs:
+
+```
+hexarena --replay internal/seed/data/battles/greens-vs-reds-seed3.json --verify
+```
+
+It may be pressed at any point rather than only at the end, and that is not a
+concession: a battle stopped halfway is a battle, its script is consistent, and
+re-running it reproduces exactly the half that was played. What a log records is
+what happened, not what finished.
+
+⚠️ **A log is verified against the game's data, not the directory being edited.**
+`--verify` re-runs from the copy `go:embed` baked into the binary, while this
+client reads the files an author is changing — so a log written after an edit
+nobody has rebuilt will not verify, and the mismatch is the edit rather than
+corruption. The note the save leaves says so, which is why it is a note of its
+own rather than the generic rebuild line: on a log, "rebuild first" is part of
+the instruction rather than a caution beside it.
+
+The file name is built from author-typed ids, so it is made safe first —
+everything outside letters, digits, dash and underscore becomes a dash. A squad
+called `../../escaped` writes into `battles/`, like everything else.
+`TestASquadNameCannotClimbOutOfTheBattlesFolder` is that claim.
+
 ⚠️ **This screen is the one thing the model does not copy.** Every other screen
 is a value, so a field written while drawing is thrown away with the copy; a
 battle is a pointer, and a mutation reaches every copy of the model there is. So
