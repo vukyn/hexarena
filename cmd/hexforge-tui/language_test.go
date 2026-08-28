@@ -97,6 +97,13 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	species := m.enter(screenSpecies)
 	unclaimed := m.enter(screenSpecies)
 	unclaimed.species = withNobodyClaiming(unclaimed.species)
+	// The build catalogue twice. Every shipped build spends its trait slot, so the
+	// row that says a slot was deliberately left empty is drawn only by a
+	// catalogue that has one — and it is wording like any other, so it is measured
+	// here rather than left to the first traitless build somebody writes.
+	builds := m.enter(screenBuilds)
+	traitless := m.enter(screenBuilds)
+	traitless.builds = withNoTraitTaken(t, traitless.builds)
 	return map[string]model{
 		"shape diagram":    shape,
 		"spar":             spar,
@@ -122,6 +129,8 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"chart":            graph,
 		"species":          species,
 		"unclaimed kind":   unclaimed,
+		"builds":           builds,
+		"traitless build":  traitless,
 	}
 }
 
@@ -156,6 +165,37 @@ func withNobodyClaiming(s speciesScreen) speciesScreen {
 	}
 	s.claimed = claimed
 	return s
+}
+
+// withNoTraitTaken is the build catalogue as a build that spends no trait slot
+// draws it: the build under the cursor with its trait taken off, which is what
+// puts the "takes no trait" row on screen.
+//
+// The rows are copied rather than written into, because the screen it came from is
+// one of the models everyScreen hands back and a shared slice would empty that
+// one's build too.
+//
+// A build with no trait is legal — cast.ParseBuilds insists on the kit and not on
+// the trait, because a unit with no skills cannot act while a unit with no trait
+// is an ordinary one — and nothing shipped is one. That is exactly the case a
+// state built by hand is for: the alternative is wording no test ever renders.
+func withNoTraitTaken(t *testing.T, b buildsScreen) buildsScreen {
+	t.Helper()
+	rows := append([]buildRow(nil), b.rows...)
+	found := false
+	for index, row := range rows {
+		if !row.build() {
+			continue
+		}
+		rows[index].built.Passives = nil
+		b.cursor, found = index, true
+		break
+	}
+	if !found {
+		t.Fatal("the catalogue holds no build, so there is no trait to take off")
+	}
+	b.rows = rows
+	return b
 }
 
 // widestTraitRow is the browser row carrying the most traits, which is the
@@ -283,6 +323,17 @@ func freeText(lib *forge.Library) []string {
 	for _, kind := range lib.Species().All() {
 		if kind.Note != "" {
 			free = append(free, kind.Note)
+		}
+	}
+	// A build's name and its intent are authored in the catalogue, and the intent
+	// is printed in both languages for the reason a species' note is: a name has an
+	// id to fall back to and prose has nothing, so dropping it would leave the row
+	// empty rather than untranslated. Both go in, because the Vietnamese screen
+	// draws the name as well.
+	for _, built := range lib.Builds() {
+		free = append(free, built.Name)
+		if built.Intent != "" {
+			free = append(free, built.Intent)
 		}
 	}
 	// A kit is a list of authored skill ids, so the rows that show one — the

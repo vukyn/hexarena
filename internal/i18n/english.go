@@ -474,4 +474,17 @@ q or ctrl+c to quit`,
 	SpeciesFooter:      "↑/↓ move · ctrl+l tiếng Việt · esc back · q quit",
 	SpeciesNobodyIs:    "no character is one",
 	SpeciesNoNote:      "nothing written about where this line is drawn.",
+
+	BuildsHeading:  "builds",
+	BuildsSubtitle: "the kit and the trait a character fields at level %d, furthest form",
+	BuildsFooter:   "↑/↓ move · ctrl+l tiếng Việt · esc back · q quit",
+	// The listing is built from the cast, so the only way it holds nothing is a
+	// cast that holds nothing: a catalogue with no builds in it still draws a row
+	// per character, each saying so.
+	BuildsEmpty:          "no characters authored, so there is nothing to build.",
+	BuildsNoneForThisOne: "no build written for this one yet",
+	BuildsNoTrait:        "takes no trait",
+	LabelIntent:          "intent",
+	MenuBuilds:           "builds",
+	MenuBuildsDetail:     "look a build up: which skills and which trait it takes",
 }

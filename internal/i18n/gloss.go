@@ -301,6 +301,36 @@ func (l Lang) GlossedPassive(held passive.Passive) string {
 	return fmt.Sprintf(glossBracket, held.ID, name)
 }
 
+// BuildName is what a build is called in this language, or nothing.
+//
+// The same trade PassiveName and SpeciesName make, and the reason is worth
+// repeating for a build because a build is *mostly* its name: the field is
+// authored in builds.json, in the one language the data is written in, so
+// showing it on an English screen would be showing Vietnamese rather than
+// translating anything. An English reader gets the id, which is a build's own
+// summary — bulbasaur.poison says what "rải độc" says.
+//
+// What is *not* dropped in English is the intent beside it: a name is a label an
+// id can stand in for, and an intent is prose with nothing behind it, which is
+// the division an origin's note and a species' note already sit on.
+func (l Lang) BuildName(built cast.Build) string {
+	if l != Vi {
+		return ""
+	}
+	return strings.TrimSpace(built.Name)
+}
+
+// GlossedBuild is a build's id with its Vietnamese name beside it, or the bare id
+// when it has none — the shape GlossedPassive gives a trait, so a pane naming a
+// build above a trait names both the same way.
+func (l Lang) GlossedBuild(built cast.Build) string {
+	name := l.BuildName(built)
+	if name == "" {
+		return built.ID
+	}
+	return fmt.Sprintf(glossBracket, built.ID, name)
+}
+
 // GlossedAffinity is an affinity — one element or two — with one bracket for
 // the whole of it: grass/electric (cỏ/điện).
 //

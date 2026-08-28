@@ -469,4 +469,17 @@ q hoặc ctrl+c để thoát`,
 	SpeciesFooter:      "↑/↓ chọn · ctrl+l English · esc quay lại · q thoát",
 	SpeciesNobodyIs:    "chưa nhân vật nào thuộc loài này",
 	SpeciesNoNote:      "chưa ghi chú gì về ranh giới của loài này.",
+
+	BuildsHeading:  "bản dựng",
+	BuildsSubtitle: "bộ chiêu và nội tại một nhân vật ra trận ở cấp %d, dạng cuối",
+	BuildsFooter:   "↑/↓ chọn · ctrl+l English · esc quay lại · q thoát",
+	// The listing is built from the cast, so the only way it holds nothing is a
+	// cast that holds nothing: a catalogue with no builds in it still draws a row
+	// per character, each saying so.
+	BuildsEmpty:          "chưa có nhân vật nào, nên chưa có gì để dựng.",
+	BuildsNoneForThisOne: "chưa viết bản dựng nào cho nhân vật này",
+	BuildsNoTrait:        "không lấy nội tại nào",
+	LabelIntent:          "ý đồ",
+	MenuBuilds:           "bản dựng",
+	MenuBuildsDetail:     "tra cứu bản dựng: lấy chiêu gì, nội tại gì",
 }

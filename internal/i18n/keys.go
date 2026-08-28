@@ -514,6 +514,17 @@ const (
 	SpeciesNobodyIs
 	SpeciesNoNote
 
+	// The build catalogue.
+	BuildsHeading
+	BuildsSubtitle
+	BuildsFooter
+	BuildsEmpty
+	BuildsNoneForThisOne
+	BuildsNoTrait
+	LabelIntent
+	MenuBuilds
+	MenuBuildsDetail
+
 	keyCount
 )
 
