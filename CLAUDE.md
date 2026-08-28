@@ -1422,9 +1422,9 @@ is the constraint each piece has to respect.
       passed until `Suggest` changed, then reported swiftness with **fewer** turns
       while being exactly as fast. Both sides of **one** battle is the comparison
       that cannot say that.
-      ⚠️ Naming: `haste` already glosses "nhanh nhẹn" so `quickened` is "thoăn
-      thoắt"; the trait was "nhanh chân" until **`chân` turned out to be a
-      `bodyWord`**, and is "thần tốc".
+      ⚠️ Naming: `haste` already glosses "nhanh nhẹn" so `quickened` is "gia
+      tốc" (it read "thoăn thoắt" first); the trait was "nhanh chân" until
+      **`chân` turned out to be a `bodyWord`**, and is "thần tốc".
 - [x] **The budget bounds a line nobody fights on**, and `hexforge check` now
       says so: a second table of the line each character actually fights on, per
       trait, via `forge.Library.Held`.

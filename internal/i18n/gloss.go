@@ -100,7 +100,7 @@ var (
 		"regrowth":  "tái sinh",
 		"toughened": "kiên cường",
 		"kindled":   "bùng cháy",
-		"quickened": "thoăn thoắt",
+		"quickened": "gia tốc",
 		"fortified": "kiên cố",
 		"encumber":  "nặng nề",
 	}
