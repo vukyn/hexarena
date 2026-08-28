@@ -63,6 +63,9 @@ type SkillDraft struct {
 	// Pierce is the share of the target's defence the skill ignores, in parts
 	// per thousand. Empty is the common case and means none.
 	Pierce string
+	// Crit is the chance each strike lands critically, in parts per thousand.
+	// Empty is the common case and means never.
+	Crit string
 	// Restores is health given to whoever the skill targets, in parts per
 	// thousand of the caster's scaling stat.
 	Restores string
@@ -146,7 +149,8 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 	}{
 		{"range", d.Range}, {"power", d.Power}, {"strikes", d.Strikes},
 		{"accuracy", d.Accuracy}, {"cooldown", d.Cooldown},
-		{"pierce", d.Pierce}, {"restores", d.Restores}, {"drains", d.Drains},
+		{"pierce", d.Pierce}, {"crit", d.Crit},
+		{"restores", d.Restores}, {"drains", d.Drains},
 	} {
 		// A map written and read by key, never ranged over into an output: the
 		// fields below are named one at a time.
@@ -183,6 +187,7 @@ func (d SkillDraft) resolveOnto(lib *Library, base skill.Skill) (skill.Skill, er
 	base.Strikes = numbers["strikes"]
 	base.Accuracy = numbers["accuracy"]
 	base.Pierce = numbers["pierce"]
+	base.Crit = numbers["crit"]
 	base.Cooldown = numbers["cooldown"]
 	base.Applies = applies
 	base.SelfApplies = selfApplies
@@ -262,7 +267,11 @@ func SkillAnswers(current skill.Skill) SkillDraft {
 		// Optional, so an unpierced skill comes back as an empty answer rather
 		// than a nought: accepting the form as it stands has to write the file
 		// that was read, and a nought would add a "pierce": 0 key to it.
-		Pierce:      optionalNumber(current.Pierce),
+		Pierce: optionalNumber(current.Pierce),
+		// Optional for the same reason, and it has to be read back for the same
+		// reason too: a skill that crits, edited through either front-end, must
+		// come back out of the form still critting.
+		Crit:        optionalNumber(current.Crit),
 		Applies:     FormatApplications(current.Applies),
 		SelfApplies: FormatApplications(current.SelfApplies),
 		Restores:    optionalNumber(current.Restores),

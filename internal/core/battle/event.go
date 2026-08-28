@@ -198,6 +198,23 @@ type Event struct {
 	// the log is the only contract a renderer has. Absent on every hit that
 	// pierces nothing, which is every hit the shipped book can produce today.
 	Pierce int `json:"pierce,omitempty"`
+	// Critical says the strike landed critically, on Damaged.
+	//
+	// Two things about it are worth writing down. --verify compares whole events
+	// with ==, and a bool is comparable, so nothing there changes and no log
+	// needs a reader that knows about this. And omitempty drops a false bool, so
+	// every log written before this field existed is byte for byte what it was:
+	// the format did not break a third time.
+	//
+	// It is a flag where Pierce, Refused, Drained and the two Amplified fields
+	// are permille integers, and the difference is deliberate rather than an
+	// inconsistency. Those five are shares that vary from cast to cast, so a
+	// reader cannot reproduce the figure without being told which share applied.
+	// This one multiplier is a single game-wide constant on combat.Rules, the
+	// same on every critical strike ever logged — writing it onto each of them
+	// would be the constant restated once per event, and a reader who wants it
+	// reads the rules.
+	Critical bool `json:"critical,omitempty"`
 	// Remaining is the target's health after the event, or charges left after a
 	// block.
 	Remaining int64 `json:"remaining,omitempty"`

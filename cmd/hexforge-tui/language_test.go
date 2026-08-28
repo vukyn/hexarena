@@ -1683,7 +1683,11 @@ func TestTheFormScrollsToTheFieldTheCursorIsOn(t *testing.T) {
 		m, _, _ := start(t, lang)
 		form := m.enter(screenSkills)
 		form.skills.adding = true
-		for _, field := range []int{skillFieldID, skillFieldDrains, skillFieldKeptForCharacters} {
+		// Every field, not a chosen three. The help line under the form is the
+		// *focused* field's, so a wording is only measured on the state that
+		// focuses it — a field left out of this loop is a wording nothing in the
+		// suite has ever drawn at the minimum width.
+		for field := 0; field < skillFieldCount; field++ {
 			form.skills.field = field
 			body, _ := form.skills.view(form)
 			label := skillFieldLabel(form, field)

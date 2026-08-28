@@ -228,11 +228,15 @@ func (b *Battle) against(actor *Unit, actorStats progression.Values, declared sk
 		Affinity:      multiplier,
 		Defense:       targetStats[progression.Defense],
 		Pierce:        declared.Pierce,
+		Crit:          declared.Crit,
 		SkillAccuracy: declared.Accuracy,
 		AccuracyStat:  actorStats[progression.Accuracy],
 		DodgeStat:     targetStats[progression.Dodge],
 	}
-	landed := b.books.Rules.Total(hit) * int64(b.books.Rules.Chance(hit)) / combat.PermilleBase
+	// Expected rather than Total: a critical is a chance, and this file weights
+	// chances rather than rolling them. It returns Total exactly whenever the
+	// skill cannot crit, which is every skill in the book today.
+	landed := b.books.Rules.Expected(hit) * int64(b.books.Rules.Chance(hit)) / combat.PermilleBase
 	// Damage past a target's remaining health is wasted, so a finishing blow is not
 	// rated above one that would kill twice over.
 	if landed > target.HP {

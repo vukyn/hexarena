@@ -96,7 +96,8 @@ func limits(t *testing.T) progression.Limits {
 func rules(t *testing.T) combat.Rules {
 	t.Helper()
 	parsed, err := combat.ParseRules([]byte(`{
-	  "defense_constant": 300, "minimum_damage": 1, "min_hit_chance": 150, "max_block_charges": 3
+	  "defense_constant": 300, "minimum_damage": 1, "critical_multiplier": 1250,
+	  "min_hit_chance": 150, "max_block_charges": 3
 	}`))
 	if err != nil {
 		t.Fatalf("rules: %v", err)

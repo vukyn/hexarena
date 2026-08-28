@@ -168,6 +168,7 @@ func TestNoShippedShareIsUnderOnePercent(t *testing.T) {
 		check(current.ID, "a power", current.Power)
 		check(current.ID, "an accuracy", current.Accuracy)
 		check(current.ID, "a pierce", current.Pierce)
+		check(current.ID, "a critical chance", current.Crit)
 		check(current.ID, "a restore", current.Restores)
 		check(current.ID, "a drain", current.Drains)
 		for _, application := range current.Applies {

@@ -678,6 +678,38 @@ func TestSkillsEditRunsEndToEndThroughAPipe(t *testing.T) {
 		t.Fatalf("a clause with a digit in it was written:\n%s", output)
 	}
 
+	// A critical chance is authored through the same flag as everything else, and
+	// — this is the part worth a test — a later edit that names something else
+	// leaves it alone. If it did not, every balance edit through either front-end
+	// would silently zero a skill's critical chance, with the file still loading
+	// and every test green.
+	if _, err := run("skills", "edit", "riptide", "--data", dir, "--crit", "200", "--yes"); err != nil {
+		t.Fatalf("a critical chance was refused: %v", err)
+	}
+	if got := held("riptide").Crit; got != 200 {
+		t.Fatalf("the critical chance landed as %d, want 200", got)
+	}
+	if _, err := run("skills", "edit", "riptide", "--data", dir, "--power", "1000", "--yes"); err != nil {
+		t.Fatalf("a power edit on a critting skill was refused: %v", err)
+	}
+	if after := held("riptide"); after.Crit != 200 || after.Power != 1000 {
+		t.Errorf("a power edit left the skill at power %d and crit %d, want 1000 and 200",
+			after.Power, after.Crit)
+	}
+	// And an explicit zero clears it, on the same terms as every other figure.
+	if _, err := run("skills", "edit", "riptide", "--data", dir, "--crit", "0", "--yes"); err != nil {
+		t.Fatalf("clearing a critical chance was refused: %v", err)
+	}
+	if got := held("riptide").Crit; got != 0 {
+		t.Errorf("the cleared critical chance is still %d", got)
+	}
+	// The parser's rules apply through the flag rather than the flag being a way
+	// round them.
+	output, err = run("skills", "edit", "riptide", "--data", dir, "--crit", "1200", "--yes")
+	if err == nil {
+		t.Fatalf("a critical chance past certainty was written:\n%s", output)
+	}
+
 	// An explicitly empty list clears a restriction, which is the only way this
 	// front-end can widen a skill again. The skill is one nobody carries, so
 	// narrowing it in the first place is legal.

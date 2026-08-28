@@ -1529,6 +1529,8 @@ func TestTheSkillFormProducesTheSkillTheCommandLineProduces(t *testing.T) {
 	m = typeText(t, m, "1200")
 	m = skillFormTo(t, m, skillFieldAccuracy)
 	m = typeText(t, m, "900")
+	m = skillFormTo(t, m, skillFieldCrit)
+	m = typeText(t, m, "200")
 	m = skillFormTo(t, m, skillFieldInflicts)
 	m = typeText(t, m, "burn:500")
 	// The allowlist is chosen from the book rather than typed, so a name that
@@ -1550,7 +1552,7 @@ func TestTheSkillFormProducesTheSkillTheCommandLineProduces(t *testing.T) {
 		ID: "oath", Name: "lời thề",
 		Element: "fire", Target: "enemy", Range: "1", Pattern: "single",
 		Power: "1200", Strikes: "1", Accuracy: "900", Cooldown: "0",
-		Applies: "burn:500", RestrictArchetypes: "bulwark",
+		Crit: "200", Applies: "burn:500", RestrictArchetypes: "bulwark",
 	}.Resolve(lib)
 	if err != nil {
 		t.Fatalf("the flag-only draft does not resolve: %v", err)

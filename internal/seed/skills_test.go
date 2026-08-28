@@ -337,7 +337,11 @@ func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns
 	// damage figure beside it is measured against the armour that skill leaves
 	// standing, so without the column the table holds two skills of the same
 	// power and different damage and cannot say why.
-	b.WriteString("skill           element   tgt    rng  shape          power  hits  total   acc   cd   prc   damage\n")
+	// The crit column is here while every entry in it is nought, and that is the
+	// point: a property the design record cannot show is a property nobody
+	// compares two skills by, so the column arrives with the mechanic rather
+	// than with the first skill to use it.
+	b.WriteString("skill           element   tgt    rng  shape          power  hits  total   acc   cd   prc  crit   damage\n")
 	for _, current := range book.Skills() {
 		damage := int64(0)
 		if current.Power > 0 {
@@ -346,10 +350,10 @@ func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns
 				Affinity: neutralAffinity, Defense: referenceDefense, Pierce: current.Pierce,
 			})
 		}
-		fmt.Fprintf(&b, "%-16s%-10s%-6s%4d  %-14s%5d%6d%7d%6d%5d%6d%9d\n",
+		fmt.Fprintf(&b, "%-16s%-10s%-6s%4d  %-14s%5d%6d%7d%6d%5d%6d%6d%9d\n",
 			current.ID, current.Element, current.Target, current.Range, current.Pattern,
 			current.Power, current.StrikeCount(), current.TotalPower(),
-			current.Accuracy, current.Cooldown, current.Pierce, damage)
+			current.Accuracy, current.Cooldown, current.Pierce, current.Crit, damage)
 	}
 
 	b.WriteString("\n== statuses inflicted, chance is fixed and no stat moves it ==\n")

@@ -413,6 +413,44 @@ func TestADamagedLineSaysWhatArmourItWentThrough(t *testing.T) {
 	}
 }
 
+// TestADamagedLineSaysWhenAStrikeLandedWell is the pierce rule again through the
+// one field that is a flag rather than a share: the event says a strike crit, and
+// a reader who cannot see that has a figure larger than the skill's own numbers
+// explain.
+//
+// It names no multiplier, for the same reason the description does not: what a
+// critical is worth is one constant the rules hold, and this renderer reads events
+// rather than rules.
+func TestADamagedLineSaysWhenAStrikeLandedWell(t *testing.T) {
+	line := func(critical bool) string {
+		return tui.Line(battle.Event{
+			Kind: battle.Damaged, Actor: "a", Target: "f",
+			Amount: 500, Multiplier: 1000, Critical: critical, Remaining: 1000,
+		}, nil)
+	}
+	if got := line(false); strings.Contains(got, "critical") {
+		t.Errorf("an ordinary strike rendered as %q", got)
+	}
+	got := line(true)
+	if !strings.Contains(got, "critical") {
+		t.Errorf("a critical strike rendered as %q, with nothing to say it landed well", got)
+	}
+	for _, forbidden := range []string{"1250", "125%", "1.25"} {
+		if strings.Contains(got, forbidden) {
+			t.Errorf("the line names the critical multiplier (%q): %q", forbidden, got)
+		}
+	}
+	// A reply cannot crit, so the reply branch is deliberately left alone and
+	// must stay that way: a flag arriving there would be a figure nothing rolled.
+	reply := tui.Line(battle.Event{
+		Kind: battle.Damaged, Actor: "f", Target: "a",
+		Amount: 200, Multiplier: 1000, Passive: "spiked", Critical: true, Remaining: 900,
+	}, nil)
+	if strings.Contains(reply, "critical") {
+		t.Errorf("a reply rendered as %q; a reply is not a strike anybody rolled", reply)
+	}
+}
+
 func TestLineFallsBackToTheIdWhenUntagged(t *testing.T) {
 	line := tui.Line(battle.Event{Kind: battle.Damaged, Actor: "stranger", Target: "other"}, nil)
 	if !strings.Contains(line, "stranger") || !strings.Contains(line, "other") {

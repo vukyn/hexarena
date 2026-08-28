@@ -1845,6 +1845,45 @@ func TestEveryShippedSkillTakesABalanceEdit(t *testing.T) {
 			t.Errorf("%s: the edit set power to %d, want %d",
 				current.ID, after.Power, current.Power+1)
 		}
+		// Crit is nought on every shipped skill, so the whole-value comparison
+		// above would pass just as happily with the field dropped from the
+		// answers. Give the skill one and rebalance it again: this is the
+		// assertion that an edit through either front-end does not silently zero
+		// a skill's critical chance, which is the failure that would leave
+		// skills.json able to carry the field and the tools unable to keep it.
+		if after.Power == 0 {
+			continue
+		}
+		const critted = 200
+		crit := strconv.Itoa(critted)
+		withCrit, err := (SkillEdit{Crit: &crit}).Draft(after).ResolveEdit(lib, current.ID)
+		if err != nil {
+			t.Errorf("%s cannot be given a critical chance: %v", current.ID, err)
+			continue
+		}
+		if _, err := lib.EditSkill(withCrit); err != nil {
+			t.Errorf("%s cannot be given a critical chance: %v", current.ID, err)
+			continue
+		}
+		again := strconv.Itoa(withCrit.Power + 1)
+		rebalanced, err := (SkillEdit{Power: &again}).Draft(withCrit).ResolveEdit(lib, current.ID)
+		if err != nil {
+			t.Errorf("%s cannot be rebalanced once it crits: %v", current.ID, err)
+			continue
+		}
+		if _, err := lib.EditSkill(rebalanced); err != nil {
+			t.Errorf("%s cannot be rebalanced once it crits: %v", current.ID, err)
+			continue
+		}
+		final, err := lib.Skills().Lookup(current.ID)
+		if err != nil {
+			t.Errorf("%s is gone after its own edit: %v", current.ID, err)
+			continue
+		}
+		if final.Crit != critted {
+			t.Errorf("%s: a power edit left the critical chance at %d, want %d",
+				current.ID, final.Crit, critted)
+		}
 	}
 	if _, err := Load(dir); err != nil {
 		t.Errorf("the data directory no longer loads after editing every skill: %v", err)

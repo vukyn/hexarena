@@ -9,7 +9,7 @@ import (
 )
 
 func rules() combat.Rules {
-	return combat.Rules{DefenseConstant: 300, MinimumDamage: 1, MinHitChance: 150, MaxBlockCharges: 3}
+	return combat.Rules{DefenseConstant: 300, MinimumDamage: 1, CriticalMultiplier: 1250, MinHitChance: 150, MaxBlockCharges: 3}
 }
 
 // TestDefenseCurveAnchors pins the three points that define the curve's shape.
@@ -138,12 +138,12 @@ func TestParseRulesRejects(t *testing.T) {
 		name, raw, wantErr string
 	}{
 		{"malformed json", "{", "decode combat rules"},
-		{"zero defence constant", `{"defense_constant":0,"minimum_damage":1,"min_hit_chance":150,"max_block_charges":3}`, "want a positive value"},
-		{"negative defence constant", `{"defense_constant":-300,"minimum_damage":1,"min_hit_chance":150,"max_block_charges":3}`, "want a positive value"},
-		{"negative minimum damage", `{"defense_constant":300,"minimum_damage":-1,"min_hit_chance":150,"max_block_charges":3}`, "want zero or more"},
-		{"no hit chance floor", `{"defense_constant":300,"minimum_damage":1,"min_hit_chance":0,"max_block_charges":3}`, "min_hit_chance"},
-		{"a hit chance floor at certainty", `{"defense_constant":300,"minimum_damage":1,"min_hit_chance":1000,"max_block_charges":3}`, "somewhere to go"},
-		{"no block charges allowed", `{"defense_constant":300,"minimum_damage":1,"min_hit_chance":150,"max_block_charges":0}`, "max_block_charges"},
+		{"zero defence constant", `{"defense_constant":0,"minimum_damage":1,"critical_multiplier":1250,"min_hit_chance":150,"max_block_charges":3}`, "want a positive value"},
+		{"negative defence constant", `{"defense_constant":-300,"minimum_damage":1,"critical_multiplier":1250,"min_hit_chance":150,"max_block_charges":3}`, "want a positive value"},
+		{"negative minimum damage", `{"defense_constant":300,"minimum_damage":-1,"critical_multiplier":1250,"min_hit_chance":150,"max_block_charges":3}`, "want zero or more"},
+		{"no hit chance floor", `{"defense_constant":300,"minimum_damage":1,"critical_multiplier":1250,"min_hit_chance":0,"max_block_charges":3}`, "min_hit_chance"},
+		{"a hit chance floor at certainty", `{"defense_constant":300,"minimum_damage":1,"critical_multiplier":1250,"min_hit_chance":1000,"max_block_charges":3}`, "somewhere to go"},
+		{"no block charges allowed", `{"defense_constant":300,"minimum_damage":1,"critical_multiplier":1250,"min_hit_chance":150,"max_block_charges":0}`, "max_block_charges"},
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.name, func(t *testing.T) {
