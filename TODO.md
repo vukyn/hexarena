@@ -33,8 +33,8 @@ is only so the shape is readable.
   screen of their own.
 - **Authoring.** `hexforge` (CLI, for pipes) and `hexforge-tui` (full screen)
   over one `internal/forge`, so the two cannot disagree. Skill authoring and
-  editing, art picker, kit and allowlist pickers, budget bounds, spar, and
-  `check`.
+  editing, art picker, kit and allowlist pickers, budget bounds, spar, `weigh`
+  and `check`.
 - **Reference screens.** Statuses, traits, elements, species, and the affinity
   chart drawn as closed ASCII loops in element colour.
 - **Vietnamese.** The TUI is Vietnamese-first with an English toggle; every
@@ -110,6 +110,32 @@ is only so the shape is readable.
       An empty string clears it, on the same terms as an allowlist. The parser's
       rules still apply through the flag rather than around it: a digit in a
       clause is refused at the write, which the end-to-end test asserts.
+- [x] **`hexforge weigh` — an instrument that prices ONE field on ONE skill. Done.**
+      The carrier fights a copy of itself whose only difference is that field, so
+      the deviation from an even split is the field's whole worth: kit, stats,
+      placement, level and turn order all cancel. Eight scalar fields; the sweep
+      always inserts the skill's own value as a control, and **a control row that
+      is not exactly 500‰ refuses the whole report** rather than printing a
+      number. `worth` and `turns` are co-equal headline columns.
+      ⚠️ **It replaced a measurement that was proven unsound**: the roster win
+      rate is **non-monotone in ally damage** — +5% power on an ally-only skill
+      *lowered* it 1.75pp, and the same change read +2.40pp before #136 and
+      −2.14pp after. → `CLAUDE.md` § Pricing one number.
+      **No balance data was authored**: `internal/core`, `internal/seed/data` and
+      every golden are untouched.
+- [ ] **The crit balance data itself is still unwritten.** #135 shipped the
+      mechanic inert — **every shipped skill declares `crit: 0`** — and the
+      instrument to price one now exists, so what is left is the authoring: which
+      skills crit, at what chance, and what each is worth to its carrier.
+      ⚠️ A weigh figure is a price on **one carrier at one level against itself**.
+      It is not a win rate and **it does not carry across a data change**, so a
+      number taken now has to be re-taken after the roster or a placement moves.
+      Read `worth` and `turns` together — a row inside the band whose turns moved
+      is a real effect. → `CLAUDE.md` § Pricing one number.
+- [ ] **A `--carriers all` sweep for `hexforge weigh`.** Unblocked now that
+      `Weigh` exists and deliberately not built with it: one carrier is one
+      question, and a table over the whole cast is a different one that needs to
+      decide what an average of prices taken against different opponents means.
 
 ## Decided against — do not re-raise
 

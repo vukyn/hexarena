@@ -3,3 +3,10 @@ bin/
 .claude/
 .env
 .DS_Store
+
+# Throwaway measurement harnesses. A balance question is answered by fighting a
+# few thousand battles from a scratch test, and the file that fought them is
+# worth nothing afterwards — it names values that have since moved and asserts
+# nothing. They must never be committed: a measurement frozen into the suite is a
+# golden nobody wrote down, and it fails the day the data it measured changes.
+zz_*_test.go

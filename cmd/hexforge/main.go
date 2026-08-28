@@ -64,6 +64,7 @@ var commands = map[string]func([]string) error{
 	"show":       runShow,
 	"check":      runCheck,
 	"spar":       runSpar,
+	"weigh":      runWeigh,
 }
 
 func usage(out io.Writer) {
@@ -110,6 +111,17 @@ hexforge authors the cast the battles are fought with.
                                       in the book, both ways round, and report
                                       the win rates. A check says a character is
                                       legal; this says whether it belongs
+  hexforge weigh <id> <skill> --field F --values a,b,c [--level N] [--seeds N]
+                                      price ONE field on ONE skill. The carrier
+                                      fights a copy of itself whose only
+                                      difference is that field, so the deviation
+                                      from an even split is the field's whole
+                                      worth. A spar says whether a character
+                                      belongs; this says what a number is worth.
+                                      Read worth and turns together, and the
+                                      band beside both. Every report carries its
+                                      own control row, and one that is not
+                                      exactly even refuses the whole report
 
 Every subcommand takes --data <dir> (default `+forge.DefaultDataDir+`), which is the
 directory it reads and writes. Run any subcommand with -h for its own flags.
