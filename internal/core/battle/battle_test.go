@@ -60,7 +60,9 @@ func books(t *testing.T) battle.Books {
 	     "modifiers": [{"target": "speed", "mode": "percent", "amount": 500}]},
 	    {"id": "toughened", "category": "buff", "max_stacks": 2, "duration": 0, "permanent": true,
 	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]},
-	    {"id": "mending", "category": "regen", "max_stacks": 3, "duration": 3, "tick_power": 400}
+	    {"id": "mending", "category": "regen", "max_stacks": 3, "duration": 3, "tick_power": 400},
+	    {"id": "crawl", "category": "stat_debuff", "max_stacks": 1, "duration": 3,
+	     "modifiers": [{"target": "speed", "mode": "percent", "amount": -400}]}
 	  ]
 	}`))
 	if err != nil {
@@ -106,6 +108,9 @@ func books(t *testing.T) battle.Books {
 	  {"id":"dash","element":"neutral","range":0,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
 	   "self_applies":[{"status":"haste","chance":1000}]},
+	  {"id":"recoil","element":"neutral","range":1,"pattern":"single",
+	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "self_applies":[{"status":"crawl","chance":1000}]},
 	  {"id":"steel","element":"neutral","range":0,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
 	   "self_applies":[{"status":"toughened","chance":1000,"stacks":2}]},

@@ -103,8 +103,16 @@ Rules for anything added to that file:
   `Apply` writes through them — a shallow copy refreshes the real unit's durations
   from inside the rating, and a refreshed status is indistinguishable from sustained
   pressure in every golden.
-- **Out of scope on purpose:** the turn queue (so a speed buff is worth nothing —
-  `haste` is a player's tool), holding a skill for a later turn, all-sided skills
+- **Tempo is priced from the stat, never the queue.** A wait is `atb.Scale / speed`,
+  so a share on the stat is that share of the unit's turns; `tempo` reads that and
+  asks nothing about who acts next. ⚠️ A turn is worth `turnWorth` — the **mean** over
+  what a unit could point at somebody — and **not** `bestStrike`: charged at the best
+  attack, `outrage`'s recoil made the dragon build avoid its own heaviest skill and
+  its duel rate fell 26.6% → 20.0%, a rating playing worse while believing it had
+  improved. The same figure prices both directions, so a haste and a slow cost the
+  same.
+- **Out of scope on purpose:** *where* an extra turn falls in the order (that is the
+  part that needs the queue), holding a skill for a later turn, all-sided skills
   (`expected` skips an ally rather than subtracting it), and any lookahead. The
   detonate setup needs none: price the status and the payoff rates itself.
 

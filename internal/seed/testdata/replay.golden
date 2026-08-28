@@ -1,5 +1,5 @@
 == battle from seed 11 ==
-46 turns, 222 events, enemy won
+50 turns, 236 events, ally won
 
 the first 90 events
        0 started         ally.venusaur      ally   2,1  3800 hp
@@ -92,37 +92,37 @@ the first 90 events
    51282 skill_used      ally.wartortle     bubble at 4,1
    51282 damaged         ally.wartortle     bubble hit foe.ivysaur for 71, x1000 affinity, 1735 hp left
    51282 status_applied  ally.wartortle     mire x1 on foe.ivysaur, now 1
-... 132 more
+... 146 more
 
 the last 12 events
-  187165 status_expired  ally.venusaur      mire wore off
-  187165 speed_changed   ally.venusaur      speed 81 to 100
-  187165 skill_used      ally.venusaur      venoshock at 3,1
-  187165 amplified       ally.venusaur      venoshock on poison x2, power 1800
-  187165 damaged         ally.venusaur      venoshock hit foe.blastoise for 324, x1000 affinity, 1027 hp left
-  188224 turn_began      foe.blastoise      turn 16  1027 hp
-  188224 status_ticked   foe.blastoise      poison x2  180 damage
-  188224 status_expired  foe.blastoise      poison wore off
-  188224 skill_used      foe.blastoise      hydro_pump at 2,1
-  188224 damaged         foe.blastoise      hydro_pump hit ally.venusaur for 370, x1000 affinity, 0 hp left
-  188224 died            ally.venusaur      fell at 2,1
-  188224 ended                              victory to the enemy side
+  193311 status_resisted ally.venusaur      foe.blastoise resisted poison at 400 per mille
+  199988 turn_began      foe.blastoise      turn 17  546 hp
+  199988 status_ticked   foe.blastoise      poison x3  270 damage
+  199988 status_expired  foe.blastoise      poison wore off
+  199988 skill_used      foe.blastoise      whirlpool at 2,1
+  199988 missed          foe.blastoise      whirlpool missed ally.venusaur at 875 per mille
+  203311 turn_began      ally.venusaur      turn 20  715 hp
+  203311 skill_used      ally.venusaur      razor_leaf at 3,1
+  203311 damaged         ally.venusaur      razor_leaf hit foe.blastoise for 151, x1000 affinity, 400 per mille pierced, 125 hp left
+  203311 damaged         ally.venusaur      razor_leaf hit foe.blastoise for 151, x1000 affinity, 400 per mille pierced, 0 hp left
+  203311 died            foe.blastoise      fell at 3,1
+  203311 ended                              victory to the ally side
 
 event counts
   started              6
-  turn_began          46
-  status_ticked        7
-  status_expired       6
-  speed_changed        8
+  turn_began          50
+  status_ticked       10
+  status_expired       5
+  speed_changed        6
   turn_skipped         1
-  skill_used          45
-  amplified            5
+  skill_used          49
+  amplified            7
   status_consumed      0
-  missed               3
+  missed               7
   blocked              0
-  damaged             56
+  damaged             57
   status_applied       9
-  status_resisted     20
+  status_resisted     19
   status_stripped      0
   died                 5
   healed               1
@@ -133,9 +133,9 @@ event counts
   left                 0
 
 final board
-  ally.venusaur     ally   dead       0 / 3800   hp   grass
+  ally.venusaur     ally   alive    715 / 3800   hp   grass
   ally.wartortle    ally   dead       0 / 1631   hp   water
   ally.charmander   ally   dead       0 / 954    hp   fire
-  foe.blastoise     enemy  alive    847 / 3600   hp   water
+  foe.blastoise     enemy  dead       0 / 3600   hp   water
   foe.charmeleon    enemy  dead       0 / 1799   hp   fire
   foe.ivysaur       enemy  dead       0 / 2230   hp   grass

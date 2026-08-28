@@ -310,6 +310,37 @@ func (s *Set) Timed() bool {
 	return false
 }
 
+// TimedIn is Timed narrowed to a set of categories: does the unit hold a stack
+// with a duration still to spend, in one of these kinds of effect.
+//
+// It exists because "will anything change on its own" and "can anything change
+// how this battle *ends*" are different questions, and a deadlock predicate wants
+// the second. A regeneration ticking away on a unit nobody can reach changes a
+// number for ever and changes nothing else; a poison on the same unit will kill
+// it, which empties a side.
+//
+// Categories rather than ids, and a list rather than one, because that is how
+// Cleanse already asks the same shape of question — a caller naming ids would be
+// naming today's data instead of the rule.
+func (s *Set) TimedIn(categories []Category) bool {
+	wanted := [CategoryCount]bool{}
+	for _, category := range categories {
+		if category.Valid() {
+			wanted[category] = true
+		}
+	}
+	for i := range s.entries {
+		entry := s.entries[i]
+		if entry.kind.Permanent || len(entry.stacks) == 0 {
+			continue
+		}
+		if wanted[entry.kind.Category] {
+			return true
+		}
+	}
+	return false
+}
+
 // Modifiers returns the stat terms every active stack contributes, accumulated.
 //
 // Stacks contribute their terms once each, so three stacks of a debuff are three

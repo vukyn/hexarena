@@ -628,33 +628,106 @@ func (b *Battle) end() {
 // draw on a battle that would have resolved is worse than letting the turn limit
 // catch a real one.
 //
-//   - Nothing timed is on it. A poisoned deadlock is not a deadlock: the poison
-//     will kill somebody, and that ends the battle by emptying a side. So will a
-//     stun wearing off, a debuff expiring or a shield running out. Anything with
-//     a duration left to spend is a promise that the board is not final.
-//   - No skill it knows has a legal aim, cooldowns ignored. A cooldown always
-//     comes down, so a skill cooling down is not a reason a unit cannot act; a
-//     skill with nothing in range is. Note that a self-targeting skill always has
-//     an aim, so a unit that can still buff itself is not frozen — and it will
-//     be holding a timed status the moment it does, which is the first clause
-//     agreeing with the second.
+//   - Nothing timed is on it **that could change how the battle ends**. A poisoned
+//     deadlock is not a deadlock: the poison will kill somebody, and that ends the
+//     battle by emptying a side. A taunt is the other one — it narrows who a unit
+//     may aim at, so a unit with no legal aim today may have one the moment the
+//     taunt expires.
+//
+//     ⚠️ Everything else timed is deliberately *not* a reason to keep the board
+//     open, and reading "anything with a duration" was a real hole rather than a
+//     conservative choice. A regeneration, a buff and a shield cannot kill anybody
+//     and cannot make anybody reachable, so a unit refreshing its own regeneration
+//     every turn held a frozen board open **for ever**: the draw was never
+//     declared, and the battle ran the four-thousand-turn limit out instead of
+//     ending. That is what a draft roster using slot `1,2` hit in 5 seeds of 4000 —
+//     two survivors past every range in the cast, one of them tending its own
+//     garden. It is not even reported as a draw, which is the part that matters: a
+//     replay of it says nothing at all about what happened.
+//
+//     A stat debuff and a control effect are in the same class: neither changes
+//     what a unit can aim at, and a stunned unit is already "not frozen" by the
+//     clause below, because an aim it cannot take this turn is still an aim. A
+//     taunt is the same, for a reason worth knowing — see outcomeChanging.
+//
+//   - No skill it knows can be aimed at an **enemy**, cooldowns ignored. A cooldown
+//     always comes down, so a skill cooling down is not a reason a unit cannot act;
+//     a skill with nothing in range is.
+//
+//     ⚠️ "At an enemy" rather than "at anyone", and that was the other half of the
+//     same hole. A self-targeting skill *always* has an aim — its caster — so a
+//     unit holding one could never be frozen, whatever else was true of the board.
+//     Two survivors past every range in the cast, each able to tend its own
+//     garden, therefore never drew: clause one saw a regeneration ticking and
+//     clause two saw a legal aim, and each was agreeing with the other about the
+//     wrong thing. Buffing yourself for ever is not something happening; it is the
+//     shape a deadlock takes when the units in it have support skills.
+//
+//     An ally-aimed skill is out for the same reason and one more: the only way
+//     healing an ally changes an outcome is by outlasting something that is
+//     killing it, and that something is a damage-over-time, which the clause above
+//     already keeps the board open for.
 //
 // Cooldowns and control are what make a skipped turn ordinary. Neither is read
 // here, which is exactly why an ordinary skipped turn cannot be mistaken for
 // this.
+// outcomeChanging is the timed effects that can still decide a battle nobody can
+// act in, and there is exactly one: damage over time, because it kills, and a kill
+// empties a side.
+//
+// A taunt looks like it belongs here — it decides who may be aimed at, so a unit
+// with no legal aim while one is in force has an aim again when it expires — and it
+// is deliberately absent, because the clause below already covers it: `aims` offers
+// a taunted unit its taunter **whether or not the taunter is in reach**, so a
+// taunted unit always has an aim and is never frozen. A second entry saying the
+// same thing would be a claim no test could reach, and this file has no room for
+// one.
+var outcomeChanging = []status.Category{status.Dot}
+
 func (b *Battle) frozen() bool {
 	for _, unit := range b.units {
 		if unit.Dead {
 			continue
 		}
-		if unit.Statuses.Timed() {
+		if unit.Statuses.TimedIn(outcomeChanging) {
 			return false
 		}
-		if b.canAimAtAnyone(unit) {
+		if b.canAimAtAnEnemy(unit) {
 			return false
 		}
 	}
 	return true
+}
+
+// canAimAtAnEnemy is canAimAtAnyone restricted to the aims that can change how a
+// battle ends: an enemy-aimed skill, or an all-sided one, with somebody in reach.
+//
+// It is a second function rather than a flag on the first because the two callers
+// are asking different questions. Placement asks "can this unit ever act", where a
+// support-only unit is a legal thing to field; the deadlock predicate asks "can
+// anything still change", where it is not.
+func (b *Battle) canAimAtAnEnemy(unit *Unit) bool {
+	for _, id := range unit.Skills {
+		known, err := b.books.Skills.Lookup(id)
+		if err != nil {
+			continue
+		}
+		// A summoning skill counts wherever it is aimed, and that is the third
+		// thing that can change an outcome from a self-aimed cast: it puts a unit
+		// on the board that the board did not have, and the new one may reach what
+		// its summoner cannot. Leaving it out made a caster holding nothing but a
+		// summon read as deadlocked the moment its escort fell.
+		if known.Summons.Summons() {
+			return true
+		}
+		if known.Target == skill.Self || known.Target == skill.Ally {
+			continue
+		}
+		if len(b.aims(unit, known)) > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func (b *Battle) kill(unit *Unit) {
