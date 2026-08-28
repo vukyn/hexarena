@@ -1102,6 +1102,75 @@ func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 	}
 }
 
+// TestAnUndatedWorkPrintsNoYearRatherThanAZero is the year nobody recorded, and
+// it is here because the shipped data stopped covering it.
+//
+// cast.Origin.Year is optional and zero means "not recorded", so three places
+// render the absence: this row leaves the cell blank, cmd/hexforge leaves it
+// empty, and the golden report writes "undated". All three were exercised by one
+// shipped origin — Pokémon, undated until its year was filled in — and by
+// nothing else, because every fixture work carries a year. So an undated one is
+// authored here instead.
+//
+// ⚠️ The assertion is the blank and NOT the alignment, and the first version of
+// this test had that backwards. A row is id, medium, year, count and title at
+// fixed widths, so it reads as though a missing guard would shift every column
+// after it — but pad gives the cell its five cells whatever is in it, so
+// removing the guard entirely left the table perfectly aligned and printed
+// "anime 0" beside "0 nhân vật". Both mutations passed. What the guard is for is
+// the word, so that is what is measured: the cell a dated row puts its year in
+// has nothing in it on an undated one.
+func TestAnUndatedWorkPrintsNoYearRatherThanAZero(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	m = m.enter(screenOrigins)
+	m = typeText(t, m, "a")
+	m = typeText(t, m, "example-undated")
+	m = key(t, m, "down")
+	m = typeText(t, m, "Example Undated")
+	m = key(t, m, "down") // medium: keep the first
+	m = key(t, m, "down") // year: leave it empty, which is the whole point
+	m = key(t, m, "ctrl+s")
+	if m.origins.err != nil {
+		t.Fatalf("a work with no year was refused: %v", m.origins.err)
+	}
+	added, known := m.lib.Origins().Get("example-undated")
+	if !known {
+		t.Fatal("the work is not in the catalog")
+	}
+	if added.Year != 0 {
+		t.Errorf("an empty year came back as %d, so this measures nothing", added.Year)
+	}
+	dated, holds := m.lib.Origins().Get("naruto")
+	if !holds || dated.Year == 0 {
+		t.Skip("the catalog no longer has a dated work to compare against")
+	}
+
+	body, _ := m.origins.view(m)
+	row := func(id string) string {
+		t.Helper()
+		for _, line := range strings.Split(body, "\n") {
+			if strings.Contains(line, id) {
+				return line
+			}
+		}
+		t.Fatalf("the listing has no row for %s:\n%s", id, body)
+		return ""
+	}
+	// Where the year lives, read off the row that has one rather than declared
+	// here: the column widths are origins.go's and a second copy of them would
+	// be the thing that drifts.
+	written := strconv.Itoa(dated.Year)
+	at := strings.Index(row(dated.ID), written)
+	if at < 0 {
+		t.Fatalf("the dated row does not draw its year:\n%s", row(dated.ID))
+	}
+	blank := row("example-undated")
+	if cell := blank[at : at+len(written)]; strings.TrimSpace(cell) != "" {
+		t.Errorf("an undated row draws %q where a year goes:\n%s\n%s",
+			cell, row(dated.ID), blank)
+	}
+}
+
 // TestAddingAWorkWritesTheCatalog covers the origins screen, which exists so an
 // author who finds the work they want missing does not have to leave.
 func TestAddingAWorkWritesTheCatalog(t *testing.T) {
