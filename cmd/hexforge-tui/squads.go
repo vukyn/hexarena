@@ -557,6 +557,12 @@ func (s squadScreen) form() string {
 // than one taking a field because each writes a different half of the loadout
 // back, and a picker that decided which half it was would be a switch inside a
 // callback.
+//
+// Each names its own hint for the reason the allowlists do: the picker's default
+// is the form's, and the form is choosing out of the whole skill book, where a
+// row may carry a refusal. Here the options are the learnset already, so a mark
+// for what cannot be taken names something no row can ever draw — and on the
+// trait list an order says nothing either, since there is one slot to fill.
 func (m model) openSquadSkills() model {
 	s := m.squad
 	character, known := s.character()
@@ -565,6 +571,7 @@ func (m model) openSquadSkills() model {
 	}
 	return m.pick(&pickState{
 		title:   i18n.SquadPickSkills,
+		hint:    i18n.SquadKitHint,
 		kind:    pickSkills,
 		options: squadOptions(character.SkillsAt(s.unit.Level, s.form())),
 		chosen:  append([]string(nil), s.unit.Skills...),
@@ -588,7 +595,8 @@ func (m model) openSquadPassives() model {
 	}
 	return m.pick(&pickState{
 		title:   i18n.SquadPickPassives,
-		kind:    pickSkills,
+		hint:    i18n.SquadTraitHint,
+		kind:    pickPassives,
 		options: squadOptions(character.PassivesAt(s.unit.Level, s.form())),
 		chosen:  append([]string(nil), s.unit.Passives...),
 		apply: func(m model, answer pickAnswer) model {

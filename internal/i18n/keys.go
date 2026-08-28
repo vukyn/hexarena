@@ -197,6 +197,13 @@ const (
 	PickerNothingInGroup
 	PickerFilterFooter
 
+	// Reading the row under the cursor rather than choosing it, which is the
+	// picker's other state. Only two of the kinds have a describer behind them,
+	// so the key is announced on a footer of its own rather than on the one
+	// every picker shares.
+	PickerDescribeFooter
+	PickerReadingFooter
+
 	// The status picker, which is the multi-select with one answer more: a
 	// status is an id *and* a chance, so it collects a number beside the list
 	// rather than sending an author back to a text field to remember a syntax.
@@ -561,6 +568,13 @@ const (
 	SquadNothingChosen
 	SquadPickSkills
 	SquadPickPassives
+	// A hint each rather than the picker's default, because the builder's two
+	// lists are already the character's own learnset: nothing on either can be
+	// refused, so the mark the default names never appears. They are two rather
+	// than one because the lists differ in what is left to say — four slots in
+	// an order against a single slot that may be left empty.
+	SquadKitHint
+	SquadTraitHint
 	SquadFormation
 	SquadFormationLegend
 	SquadDiscard

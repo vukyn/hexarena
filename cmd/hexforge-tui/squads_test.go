@@ -3,8 +3,11 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
+
+	tea "charm.land/bubbletea/v2"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/hex"
@@ -236,5 +239,244 @@ func TestTheSquadKitIsCappedByTheSameRuleTheWriteUses(t *testing.T) {
 	// words are the rule's own and not the screen's.
 	if !strings.Contains(err.Error(), "slot(s)") && !strings.Contains(err.Error(), "twice") {
 		t.Errorf("the refusal is %q, want the loadout rule's own words", err)
+	}
+}
+
+// aSquadPicker is a squad under construction with one of its two loadout
+// pickers open, driven through the keys a person presses.
+func aSquadPicker(t *testing.T, lang i18n.Lang, id string, field int) model {
+	t.Helper()
+	m, _, _ := start(t, lang)
+	m = menuTo(t, m, screenSquads)
+	m = typeText(t, m, "n")
+	m = typeText(t, m, id)
+	m = key(t, m, "enter")
+	for m.squad.field != field {
+		m = key(t, m, "down")
+	}
+	m = key(t, m, "enter")
+	if m.picker == nil {
+		t.Fatalf("the field raised no picker")
+	}
+	return m
+}
+
+// TestTheSquadTraitPickerReadsTheTraitBook is the bug the reading state
+// uncovered, kept as a regression.
+//
+// The builder raised its trait picker as pickSkills while handing it trait ids,
+// so every row looked itself up in the skill book, missed, and drew "unknown
+// skill" in red where its detail belongs. Nothing caught it because the fixture
+// cast learns no traits: every test that opened that picker opened an empty one.
+func TestTheSquadTraitPickerReadsTheTraitBook(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m = menuTo(t, m, screenSquads)
+		m.squad = someSquad(t, m)
+		m, holds := aTraitHolder(m)
+		if !holds {
+			t.Skip("no character in the book learns a trait, so there is no row to draw")
+		}
+		m = m.openSquadPassives()
+		if m.picker == nil || len(m.picker.options) == 0 {
+			t.Fatal("the trait field raised no picker with rows in it")
+		}
+		if m.picker.kind != pickPassives {
+			t.Errorf("the trait picker is a %v, so its rows are read out of the wrong book",
+				m.picker.kind)
+		}
+		body, _ := m.picker.view(m)
+		for _, option := range m.picker.options {
+			// A trait sharing a name with a skill would prove nothing either
+			// way, so only the ids the skill book really refuses are asked
+			// about — and what they must not put on screen is its refusal.
+			_, err := m.lib.Skills().Lookup(option.id)
+			if err == nil {
+				continue
+			}
+			if refusal := m.lang.Error(err); strings.Contains(body, refusal) {
+				t.Errorf("the %s trait picker draws %q where %s's detail belongs:\n%s",
+					lang, refusal, option.id, body)
+			}
+		}
+		// And it draws the trait's own name, which is what the listing puts
+		// beside an id -- nothing in English, where a data name is not
+		// translated and the id is the whole row.
+		rows := m.picker.visible()
+		held, err := m.lib.Passives().Lookup(rows[m.picker.cursor].id)
+		if err != nil {
+			t.Fatalf("the row under the cursor is not a trait the book holds: %v", err)
+		}
+		if name := m.lang.PassiveName(held); name != "" && !strings.Contains(body, name) {
+			t.Errorf("the %s trait picker does not name %s:\n%s", lang, held.ID, body)
+		}
+
+		// And ? reads the trait out of the same book, in the sentences the
+		// blurb screen gives -- which is the half a row's detail is too narrow
+		// to carry, and the whole reason an English row being a bare id costs
+		// nothing.
+		m = typeText(t, m, "?")
+		if !m.picker.reading {
+			t.Fatalf("? opened no description on the %s trait picker", lang)
+		}
+		body, _ = m.picker.view(m)
+		if !strings.Contains(body, m.lang.GlossedPassive(held)) {
+			t.Errorf("the %s description does not name %s:\n%s", lang, held.ID, body)
+		}
+		for _, line := range traitSentences(m, held) {
+			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
+				t.Errorf("the %s description of %s is missing %q:\n%s",
+					lang, held.ID, sentence, body)
+			}
+		}
+	}
+}
+
+// TestTheSquadPickerDescribesTheRowUnderItsCursor is what ? is for: an author
+// choosing four of nine is deciding, and a description of what a skill does is
+// the thing that decision needs.
+//
+// Closing it again is half the test. The picker takes keys before any screen
+// does, so a description here cannot be a screen switch — and a reading state
+// that lost the answer on the way out would make ? something to be careful
+// about rather than something to press.
+func TestTheSquadPickerDescribesTheRowUnderItsCursor(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m := aSquadPicker(t, lang, "doc", unitSkills)
+		m = key(t, m, "space")
+		chosen := append([]string(nil), m.picker.chosen...)
+		if len(chosen) == 0 {
+			t.Fatal("nothing was chosen, so nothing could be lost")
+		}
+		rows := m.picker.visible()
+		declared, err := m.lib.Skills().Lookup(rows[m.picker.cursor].id)
+		if err != nil {
+			t.Fatalf("the row under the cursor is not a skill the book holds: %v", err)
+		}
+
+		m = typeText(t, m, "?")
+		if !m.picker.reading {
+			t.Fatalf("? did not open a description on the %s kit picker", lang)
+		}
+		body, footer := m.picker.view(m)
+		if !strings.Contains(body, m.lang.GlossedSkill(declared)) {
+			t.Errorf("the %s description does not name %s:\n%s", lang, declared.ID, body)
+		}
+		for _, line := range skillLines(m, declared) {
+			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
+				t.Errorf("the %s description is missing %q:\n%s", lang, sentence, body)
+			}
+		}
+		if want := m.text(i18n.PickerReadingFooter); footer != want {
+			t.Errorf("the %s footer while reading is %q, want %q", lang, footer, want)
+		}
+
+		// esc closes the description and only the description.
+		m = key(t, m, "esc")
+		if m.picker == nil {
+			t.Fatalf("esc while reading closed the whole %s picker", lang)
+		}
+		if m.picker.reading {
+			t.Errorf("esc left the %s description open", lang)
+		}
+		if !slices.Equal(m.picker.chosen, chosen) {
+			t.Errorf("reading cost the %s picker its answer: %v, want %v",
+				lang, m.picker.chosen, chosen)
+		}
+		// And ? is its own way back, which is the blurb screen's contract.
+		m = typeText(t, m, "?")
+		m = typeText(t, m, "?")
+		if m.picker.reading {
+			t.Errorf("? did not close the %s description it opened", lang)
+		}
+		if !slices.Equal(m.picker.chosen, chosen) {
+			t.Errorf("the %s answer is %v, want %v", lang, m.picker.chosen, chosen)
+		}
+		// Enter still hands back exactly what was chosen before any of it.
+		m = key(t, m, "enter")
+		if !slices.Equal(m.squad.unit.Skills, chosen) {
+			t.Errorf("the %s picker handed back %v, want %v", lang, m.squad.unit.Skills, chosen)
+		}
+	}
+}
+
+// TestWalkingWhileReadingMovesToTheNextDescription is why the cursor keys are
+// live here at all: comparing two skills means reading one after the other, and
+// going back to the list between them is the interaction the blurb screen
+// already refused.
+func TestWalkingWhileReadingMovesToTheNextDescription(t *testing.T) {
+	m := aSquadPicker(t, i18n.Vi, "doc", unitSkills)
+	if len(m.picker.visible()) < 2 {
+		t.Skip("the learnset holds one skill, so there is no next description")
+	}
+	m = typeText(t, m, "?")
+	first, _ := m.picker.view(m)
+	was := m.picker.cursor
+
+	// Scrolled first, so the offset can be shown to be dropped rather than
+	// carried into an answer it means nothing about.
+	m = send(t, m, tea.KeyPressMsg{Code: tea.KeyPgDown})
+	m = key(t, m, "down")
+	if !m.picker.reading {
+		t.Fatal("moving the cursor closed the description")
+	}
+	if m.picker.cursor == was {
+		t.Fatal("the cursor did not move")
+	}
+	if m.picker.scroll != 0 {
+		t.Errorf("the offset into the last answer survived into this one: %d", m.picker.scroll)
+	}
+	if second, _ := m.picker.view(m); second == first {
+		t.Errorf("the description did not change with the cursor:\n%s", second)
+	}
+	// And the list comes back on the row that was being read, not the one it
+	// was opened on.
+	m = key(t, m, "esc")
+	if m.picker.cursor == was {
+		t.Errorf("the list came back on row %d, the one reading started from", was)
+	}
+}
+
+// TestTheReadingStateIsNotCutAndCannotBeScrolledOffItsAnswer is the offset,
+// asserted from both ends.
+//
+// ⚠️ No shipped description is long enough to need it — one row is at most three
+// lines against the seventeen the smallest window leaves, which is why this
+// measures the guard rather than a scroll. What it holds is that the offset is
+// clamped where the answer is **read** and not where the key moves it: a picker
+// scrolled to the bottom of a long answer and walked onto a short one has an
+// offset past the end of it, and clamping at the other end would draw nothing.
+func TestTheReadingStateIsNotCutAndCannotBeScrolledOffItsAnswer(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m := aSquadPicker(t, lang, "doc", unitSkills)
+		m.width, m.height = minWidth, minHeight
+		declared, err := m.lib.Skills().Lookup(m.picker.visible()[m.picker.cursor].id)
+		if err != nil {
+			t.Fatalf("the row under the cursor is not a skill the book holds: %v", err)
+		}
+		m = typeText(t, m, "?")
+		if drawn := m.screenContent(); strings.Contains(drawn, m.text(i18n.Truncated)) {
+			t.Errorf("the %s description is cut by the frame at %dx%d:\n%s",
+				lang, minWidth, minHeight, drawn)
+		}
+		if m.picker.scroll != 0 {
+			t.Fatalf("the %s description opened already scrolled to %d", lang, m.picker.scroll)
+		}
+		m = send(t, m, tea.KeyPressMsg{Code: tea.KeyPgUp})
+		if m.picker.scroll != 0 {
+			t.Errorf("pgup at the top of the %s description left it at %d",
+				lang, m.picker.scroll)
+		}
+		// Far past the end, which every line of the answer has to survive.
+		for range 40 {
+			m = send(t, m, tea.KeyPressMsg{Code: tea.KeyPgDown})
+		}
+		body, _ := m.picker.view(m)
+		for _, line := range skillLines(m, declared) {
+			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
+				t.Errorf("scrolling past the end of the %s description lost %q:\n%s",
+					lang, sentence, body)
+			}
+		}
 	}
 }

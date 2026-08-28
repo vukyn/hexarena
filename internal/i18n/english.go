@@ -189,6 +189,11 @@ q or ctrl+c to quit`,
 	PickerNothingInGroup: "no characters from this work yet.",
 	PickerFilterFooter:   "space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt",
 
+	// ⚠️ Measured at 79 cells, which is every cell the minimum window leaves.
+	// A word added to this line is a word taken off another one.
+	PickerDescribeFooter: "space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt",
+	PickerReadingFooter:  "↑/↓ move · pgdn/pgup scroll · ? or esc back · ctrl+l tiếng Việt",
+
 	PickerStatusesTitle: "the statuses this skill inflicts",
 	PickerStatusHint:    "space chooses a status · type the chance in parts per thousand",
 	PickerStatusFooter:  "space pick · ↑/↓ move · 0-9 chance · enter done · esc back · ctrl+l tiếng Việt",
@@ -520,6 +525,8 @@ q or ctrl+c to quit`,
 	SquadNothingChosen:   "nothing chosen, %d slot(s)",
 	SquadPickSkills:      "what this unit brings",
 	SquadPickPassives:    "the trait it holds",
+	SquadKitHint:         "space chooses · the number is the order · ? describes · these are all learned",
+	SquadTraitHint:       "space chooses · one trait, or none · ? describes · these are all learned",
 	SquadFormation:       "the formation, the rank that meets the enemy first on the left",
 	SquadFormationLegend: "[n] stands there  (n) the one being edited  . nobody",
 	SquadDiscard:         "this squad has changes nobody has saved. leave it?",

@@ -118,6 +118,15 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	member.squad = member.squad.editUnit(0)
 	skillPick := member.openSquadSkills()
 	traitPick := member.openSquadPassives()
+	// And each picker with a description in front of its list, which is the
+	// picker's other state and shares no line with the list. The trait one needs
+	// a member that actually learns a trait: the fixture cast declares none, so
+	// every test that had opened that picker had opened an empty one — which is
+	// how it shipped drawing an error where each row's detail belongs.
+	skillReading := reading(skillPick)
+	traitHolder, holds := aTraitHolder(building)
+	traitRows := traitHolder.openSquadPassives()
+	traitReading := reading(traitRows)
 	// The fight, which is the only screen here that runs battles to draw itself.
 	// It needs a squad the library has actually been told about, because the run
 	// looks the pair up there rather than on the screen — so this one is saved
@@ -140,7 +149,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		}
 		finished = typeText(t, finished, "a")
 	}
-	return map[string]model{
+	screens := map[string]model{
 		"shape diagram":    shape,
 		"spar":             spar,
 		"menu":             m.enter(screenMenu),
@@ -171,6 +180,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"a squad member":   member,
 		"a squad kit":      skillPick,
 		"a squad trait":    traitPick,
+		"reading a skill":  skillReading,
 		"a fight":          fight,
 		"nothing to fight": noSquads,
 		"a battle":         battle,
@@ -178,6 +188,60 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"a battle over":    finished,
 		"traitless build":  traitless,
 	}
+	// The two states a trait picker only has once something in the book learns
+	// one. Skipped rather than faked when nothing does: a picker over invented
+	// rows would measure wording against a trait nobody could reach.
+	if holds {
+		screens["a squad trait held"] = traitRows
+		screens["reading a trait"] = traitReading
+	}
+	return screens
+}
+
+// aTraitHolder is the squad in hand with its member pointed at whichever
+// character in the book learns the most traits, and false when none does.
+//
+// It looks the character up rather than naming one, which is the rule the
+// fixture exists to keep — and it is needed at all because the fixture cast
+// learns no traits, so every screen that had opened the squad trait picker had
+// opened an empty one and nothing measured a row of it.
+func aTraitHolder(m model) (model, bool) {
+	s := m.squad
+	found, most := -1, 0
+	for index, character := range s.characters {
+		if held := len(character.PassivesAt(
+			progression.LevelCap, progression.Furthest)); held > most {
+			found, most = index, held
+		}
+	}
+	if found < 0 || len(s.editing.Units) == 0 {
+		return m, false
+	}
+	character := s.characters[found]
+	unit := s.editing.Units[0]
+	unit.Character, unit.Level, unit.Stage = character.ID, progression.LevelCap, ""
+	known := character.SkillsAt(unit.Level, progression.Furthest)
+	if len(known) > cast.SkillSlots {
+		known = known[:cast.SkillSlots]
+	}
+	unit.Skills = known
+	unit.Passives = character.PassivesAt(unit.Level, progression.Furthest)[:cast.TraitSlots]
+	s.editing.Units = []placement.Placement{unit}
+	m.squad = s.editUnit(0)
+	return m, true
+}
+
+// reading is the picker in hand with a description in front of its list.
+//
+// The pickState is cloned rather than flipped in place, because m.picker is a
+// pointer and every model copied off this one shares it: setting the flag on the
+// picker itself would put the entry beside this one into a state it is not here
+// to measure.
+func reading(m model) model {
+	clone := *m.picker
+	clone.reading = true
+	m.picker = &clone
+	return m
 }
 
 // widestElementRow is the element whose chart entry takes the most cells, which
@@ -1763,6 +1827,59 @@ func TestAnAllowlistPickerSaysWhatAnEmptyListMeans(t *testing.T) {
 			}
 			if unwanted := lang.Text(i18n.PickerHint); strings.Contains(body, unwanted) {
 				t.Errorf("%v field %d still borrows the kit's hint", lang, field)
+			}
+		}
+	}
+}
+
+// TestTheSquadPickersSayWhatTheirOwnListsAre is the allowlist's defect one
+// screen further on, and it was wrong in the same shape for the same reason.
+//
+// Both builder pickers borrowed the form's kit hint, which names a ! for a row
+// the character cannot take. The form is choosing out of the whole skill book,
+// so that mark is real there; the builder's rows come out of the learnset and
+// carry no refusal at all, so the hint named a mark neither list can draw. The
+// trait half was wrong twice over — it called a trait a skill, and there is one
+// slot, so an order says nothing about it.
+//
+// The refusal is asserted beside the wording rather than left to it. A hint is a
+// sentence and a sentence can be made true by editing it; what says the sentence
+// stays true is that the rows behind it hold nothing to mark.
+func TestTheSquadPickersSayWhatTheirOwnListsAre(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m = menuTo(t, m, screenSquads)
+		m.squad = someSquad(t, m)
+		member := m
+		member.squad = member.squad.editUnit(0)
+		holder, holds := aTraitHolder(m)
+		if !holds {
+			t.Skip("no character in the book learns a trait, so the trait list has no rows")
+		}
+		for _, list := range []struct {
+			what   string
+			opened model
+			hint   i18n.Key
+		}{
+			{"kit", member.openSquadSkills(), i18n.SquadKitHint},
+			{"trait", holder.openSquadPassives(), i18n.SquadTraitHint},
+		} {
+			if list.opened.picker == nil || len(list.opened.picker.options) == 0 {
+				t.Fatalf("the %s %s field raised no picker with rows in it", lang, list.what)
+			}
+			body, _ := list.opened.picker.view(list.opened)
+			if want := lang.Text(list.hint); !strings.Contains(body, want) {
+				t.Errorf("the %s %s picker is missing its own hint %q:\n%s",
+					lang, list.what, want, body)
+			}
+			if unwanted := lang.Text(i18n.PickerHint); strings.Contains(body, unwanted) {
+				t.Errorf("the %s %s picker still borrows the form's kit hint", lang, list.what)
+			}
+			for _, option := range list.opened.picker.options {
+				if option.refusal != nil {
+					t.Errorf("the %s %s picker refuses %s, so the mark its hint no longer names is reachable",
+						lang, list.what, option.id)
+				}
 			}
 		}
 	}
