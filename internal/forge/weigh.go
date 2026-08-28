@@ -311,6 +311,52 @@ const endlessShare = 5
 // field made larger cannot show it, so the row cannot price anything above it.
 const saturated = 990
 
+// NotBroughtError is a skill the carrier does not field.
+//
+// It is a type rather than a sentence for one reason, and it is not
+// translation: a sweep over the whole cast has to decide which characters are
+// *in* the table, and "brings the skill" is exactly this refusal read as a
+// question. A sweep that answered it for itself would hold a second copy of the
+// kit rule — free to disagree with the one a single weighing enforces — so the
+// membership test is this error, matched with errors.As.
+//
+// The wording is what Weigh printed before the type existed, unchanged.
+type NotBroughtError struct {
+	Carrier string
+	Skill   string
+	Level   int
+	Stage   string
+	// Brings is the kit the carrier actually fielded, which is the half of the
+	// sentence that tells an author what to weigh instead.
+	Brings []string
+}
+
+func (e *NotBroughtError) Error() string {
+	return fmt.Sprintf("%s does not bring %s at level %d as %s; it brings %s",
+		e.Carrier, e.Skill, e.Level, e.Stage, strings.Join(e.Brings, " "))
+}
+
+// UnevenControlError is a control row that did not come out exactly even.
+//
+// It is a type for the reason above and one more: across a table of carriers
+// every other refusal says the *carrier* is uninteresting, and this one says the
+// *harness* leaked. Those must not print as the same kind of line, and a reader
+// asked to tell them apart by reading the sentence will one day not.
+type UnevenControlError struct {
+	Skill string
+	Field WeighField
+	Value int
+	Rate  int
+	Tally Tally
+}
+
+func (e *UnevenControlError) Error() string {
+	return fmt.Sprintf(
+		"the control row (%s %d, the value %s declares) came to %d rather than an even %d, "+
+			"so the two sides are not the same fight and no other row on this sweep means anything: %+v",
+		e.Field, e.Value, e.Skill, e.Rate, scale.Base/2, e.Tally)
+}
+
 // Weigh prices one field on one skill, as one character carries it, against a
 // copy of itself.
 //
@@ -363,10 +409,10 @@ func (l *Library) Weigh(request WeighRequest) (WeighReport, error) {
 	// would cast it, and the row would come back an even split — a price of
 	// nought on a skill that was never in the fight.
 	if !slices.Contains(carrier.Skills, request.Skill) {
-		return WeighReport{}, fmt.Errorf(
-			"%s does not bring %s at level %d as %s; it brings %s",
-			carrier.ID, request.Skill, carrier.Level, carrier.Stage,
-			strings.Join(carrier.Skills, " "))
+		return WeighReport{}, &NotBroughtError{
+			Carrier: carrier.ID, Skill: request.Skill, Level: carrier.Level,
+			Stage: carrier.Stage, Brings: carrier.Skills,
+		}
 	}
 
 	control := request.Field.of(shipped)
@@ -431,10 +477,10 @@ func refuseUnevenControl(control Weighing, field WeighField, skillID string) err
 	if control.Rate == scale.Base/2 {
 		return nil
 	}
-	return fmt.Errorf(
-		"the control row (%s %d, the value %s declares) came to %d rather than an even %d, "+
-			"so the two sides are not the same fight and no other row on this sweep means anything: %+v",
-		field, control.Value, skillID, control.Rate, scale.Base/2, control.Tally)
+	return &UnevenControlError{
+		Skill: skillID, Field: field, Value: control.Value,
+		Rate: control.Rate, Tally: control.Tally,
+	}
 }
 
 // variantOf is the in-memory copy of a skill with one field moved, and the book

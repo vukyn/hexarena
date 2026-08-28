@@ -75,6 +75,11 @@ is only so the shape is readable.
   first crit chances were authored that way: `razor_leaf` and `wind_shuriken` at
   200‰, worth **+8.4%** and **+6.9%** to their carriers, while the same chance on
   `bite` was worth +0.2% and on `kunai` **−1.7%**.
+  `weigh --carriers all` takes that table in one command, one row per carrier
+  that brings the skill, each with its own control and its own refusal — and with
+  **no headline figure**, because two rows are prices against two different
+  opponents and an average of them has no referent.
+  → `CLAUDE.md` § Pricing one number.
 
 - **Squads.** A side is built in the TUI — who is in it, what each brings, where
   each stands — saved to `squads.json`, and fought against another over N seeds
@@ -114,10 +119,6 @@ is only so the shape is readable.
       skill given a crit gets cast *more* and crowds out a better one, which is
       the `outrage` lesson wearing a different hat. → `CLAUDE.md` § Pricing one
       number.
-- [ ] **A `--carriers all` sweep for `hexforge weigh`.** Unblocked now that
-      `Weigh` exists and deliberately not built with it: one carrier is one
-      question, and a table over the whole cast is a different one that needs to
-      decide what an average of prices taken against different opponents means.
 - [ ] **`weigh` prices neither a field that is two numbers nor a skill that
       deals none.** `self_gradient` is a bonus *and* a share, so sweeping it is a
       surface where the tool answers curves — it is out of the field table for

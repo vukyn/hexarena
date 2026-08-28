@@ -2581,8 +2581,71 @@ so changing one side re-scrambles every draw after it — roll drift. It **biase
 nothing** (both arrangements fight the same seeds) and fixing it would mean an
 `internal/core` change to make a measurement prettier.
 
-**Left at their defaults, deliberately:** a `--carriers all` sweep (a follow-up,
-now that `Weigh` exists) and `self_gradient` support (excluded, above).
+### Across the whole cast: `--carriers all`, and why there is no average
+
+`hexforge weigh --carriers all <skill> --field F --values a,b,c` takes the same
+price once per character whose **fielded kit** brings the skill and prints a
+table. `forge.WeighCarriers` is the sweep, `internal/forge/carriers.go`;
+`cmd/hexforge/carriers.go` only draws it. The character operand is dropped: the
+carrier is discovered rather than named.
+
+⚠️ **It has no headline figure and must never grow one.** A weighing is a price
+against a copy of *the carrier* — that is the only reason it is a price, because
+everything else has been made identical on both sides and cancelled — so two
+rows were fought against **two different opponents** and are not two readings of
+one quantity. An average of them has no opponent it was taken against and no
+board it was taken on, which is the exact shape of number this repository has
+twice been burnt by: the roster win rate (non-monotone in ally damage, sign
+flipped by a placement change) and the mirror-duel speed reading (could not order
+`swiftness` at all). **A carrier may be compared only to itself, at another
+value, along its own row.** The footer says that in words and
+`TestTheCarrierFooterRefusesTheCrossCarrierComparison` asserts the sentence is
+still there.
+
+**One row is one weighing**, not a second instrument: same control, same band,
+same fold, and `TestOneCarrierWeighedAloneAndInTheTableAgreeRowForRow` holds the
+row identical to `hexforge weigh` on that carrier alone. What the table adds is
+who is in it and in what order:
+
+- **Membership** is `forge.NotBroughtError` caught with `errors.As`, so exactly
+  one place knows what "brings" means. A character that cannot bring the skill is
+  **absent** rather than a row of noughts — the same distinction as refusing a
+  row that landed nothing instead of pricing it at nought — and the footer counts
+  the skips and says why.
+- **Refusals are per row.** A refused carrier keeps its line with a dash where
+  its figures would be, spelled out under the table, and the other rows stand.
+  ⚠️ Except a **control that is not exactly 500‰**: it is marked `⚠️ HARNESS` and
+  sorts above every priced row, because every other refusal says *this carrier is
+  uninteresting* and that one says *the run leaked*. Drawn alike they would be
+  the same dash in the same column.
+- **A value is refused whole, and once.** It is a fact about the skill rather
+  than about any carrier, so every variant is built before a die is rolled — one
+  parser sentence, instead of the same sentence per row discovered after the
+  first carrier's battles had been paid for.
+- **Order** is worth at the largest swept value, descending, ties by character
+  id, harness refusals first and other refusals last. It is stated in the footer
+  and is never the order the cast was read in — `internal/core` bans a map
+  iteration that reaches an output, and this is the same discipline one layer up.
+- Each cell is **`worth/turns`**, because the two are co-equal columns here for
+  the reason they are in `renderWeigh` and cannot be adjacent columns on a table
+  this wide. A row whose own sweep is not monotone is marked `not ordered` on its
+  own line: a dial that is not monotone is not priced, and on a table the figures
+  are all a reader sees.
+
+**Cost** is `2 × seeds × values × carriers`, printed above the table. `--seeds`
+defaults to **2000** here (band **±1.6%**) rather than 10,000, because the table
+multiplies — that is the count the first crit chances were actually authored at.
+Re-take an interesting row on its own with `hexforge weigh` at the full ten
+thousand.
+
+⚠️ **No shipped character shares a skill with another**, so on
+`internal/seed/data` today every `--carriers all` table has exactly one row and a
+footer of three skips. That is the tool working rather than failing: the skips
+are the part that was previously noticed by eye.
+
+**Left at its default, deliberately:** `self_gradient` support (excluded, above).
+A second field per row is not coming either — that is a surface, and a surface is
+not something a column of figures can report.
 
 ### What the first crit chances cost, and what the readings taught
 
