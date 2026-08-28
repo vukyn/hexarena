@@ -47,7 +47,9 @@ const buildSeeds = 300
 // mattered more — dragon_dance is now cast in every battle, and the fire build's
 // burn-then-inferno detonate is now played too. The fire line has a detonate and
 // the dragon line has none, so the side with a combo gained more from the same
-// change, and the measured figure fell to about a quarter.
+// change, and the measured figure fell to about a quarter — then to **22.1%** when
+// tempo was priced, because `outrage` charges its user a slow and the rating can now
+// see it. Two findings in one number, both about the cast rather than the engine.
 //
 // So the band is wider than a design would like, and deliberately: what it still
 // asserts is that neither build is a scripted defeat, which is the claim that can

@@ -1419,6 +1419,7 @@ detonate fired once and a cleanse never.
 | a heal or a regeneration | the health an enemy could otherwise have taken off | `combat.Rules.Restore`, and `heal`'s own room clamp |
 | a cleanse or a dispel | exactly what the removed stacks would have done — the terms above, negated | `Set.Cleanse`, through `Set.Without` |
 | a lethal hit | the health it takes off **plus** the turns of attacking it takes away | `bestStrike`, over `killHorizon` |
+| a change of speed | the turns it adds or takes away, in what an ordinary turn is worth | the stat, through `atb`'s own wait formula |
 
 **The setup for a detonate needed no term of its own, and that is the point.** Once
 a status is priced, `poison_powder`, `smokescreen` and `fire_spin` are worth
@@ -1475,13 +1476,34 @@ unit's durations every time it thought about a status, from inside the one funct
 in the engine that promises not to, and **no golden would have said so**: a
 refreshed poison looks exactly like sustained pressure.
 
-**What it deliberately still cannot do**, each one a separate piece of work: read
-the turn queue, so a speed buff is worth nothing to it and `haste` is a player's
-tool; hold a skill for a turn that has not arrived; rate an all-sided skill at all,
-because `expected` skips a unit on the caster's own side rather than subtracting it,
-and relaxing that guard alone produces the opponent that bombs its own squad and
-calls it a gain; and see the cost of a self-inflicted status that only moves speed,
-which is why `outrage`'s recoil is invisible to it.
+**Tempo is priced from the stat, never from the queue**, and that distinction is
+what makes the term legal at all. A wait is the scale over a unit's speed, so a
+share added to the stat is that share added to its turns: over a horizon of H turns
+a speed moving from `was` to `now` buys `H × (now − was) / was` of them. Nothing
+asks who acts next — only how often this unit acts — so a rating still reads no
+state it could disagree with.
+
+⚠️ **A turn is priced at what an *ordinary* turn is worth, not the best attack in
+the kit**, and that correction came from a measurement rather than from reasoning.
+Charged at the best strike, `outrage`'s recoil made the dragon build avoid its own
+heaviest skill and its duel rate fell from 26.6% to 20.0% — a rating playing worse
+while believing it had learned something. `turnWorth` is the mean over what a unit
+could point at somebody, which is the cheapest honest figure, and it is deliberately
+the same number in both directions so the turns a haste buys and the turns a slow
+takes away cost the same.
+
+Note what the arithmetic implies, because it is an answer rather than an accident: a
+buff is worth `horizon × share` of a turn, so a thirty per cent haste over three
+turns is worth nine tenths of one turn and **can never beat the best attack a unit
+has**. It wins exactly where it should — while that attack is recharging.
+
+**What it deliberately still cannot do**, each one a separate piece of work: say
+*where* in the order an extra turn falls, and so whether it arrives before the blow
+that would have killed its holder — that is the part that would need the queue; hold
+a skill for a turn that has not arrived; and rate an all-sided skill at all, because
+`expected` skips a unit on the caster's own side rather than subtracting it, and
+relaxing that guard alone produces the opponent that bombs its own squad and calls it
+a gain.
 
 **What it moved.** The shipped roster read **53.1% ally** before and **46.6% after
 the status and support terms**, then **79.0%** once a kill was priced — over 4000
@@ -1505,9 +1527,50 @@ current reading.**
 The support builds gained what the roadmap said they would, on the same seeds:
 Squirtle's tank build 517 → **676** turns, its semi-tank 30 → **39**; Bulbasaur's
 parasite build 17 → **23** turns and 964 → **2818** health recovered. The two
-Charmander builds moved the other way — 42.5% → 26.6% for the dragon line — because
-the fire line has a detonate and the dragon line has none, which is a cast finding
-rather than an engine one.
+Charmander builds moved the other way — 42.5% → 26.6% for the dragon line, and
+**22.1%** once tempo made `outrage`'s recoil cost something — because the fire line
+has a detonate and the dragon line has none, and its heaviest skill charges a price
+the old rating could not see. Both are cast findings rather than engine ones.
+
+Pricing tempo left the shipped roster where it was: **49.1% → 49.4% ally** over
+20,000 seeds, which is inside the noise at that count, so the instrument did not need
+levelling a second time.
+
+### A draw nobody can act in
+
+Built, and then fixed. `frozen` is the predicate that turns a board nobody can
+change into a declared draw rather than a battle that runs its turn limit out, and
+it asked two questions that were each slightly wrong.
+
+It refused to call a deadlock while **anything** timed was on the board, on the
+grounds that a duration left to spend is a promise the board is not final. True of a
+poison — it kills, and a kill empties a side — and false of a regeneration, a buff or
+a shield, which change a number for ever and change nothing else. And it counted
+**any** legal aim as a unit still having something to do, including a self-aimed one,
+which every unit holding a support skill always has.
+
+Together they meant a unit tending its own regeneration held a frozen board open
+permanently: the draw was never declared and the battle ran to the four-thousand
+turn limit, which is worse than a wrong answer because a log of it says nothing about
+what happened. A draft roster using slot `1,2` hit exactly that in 5 seeds of 4000.
+
+Now: a timed status keeps the board open only if it can decide the ending, which is
+damage over time and nothing else; and an aim counts only if it is pointed at an
+enemy — or is a **summon**, which puts a unit on the board that may reach what its
+summoner cannot. Buffing yourself for ever is not something happening; it is the
+shape a deadlock takes when the units caught in it have support skills.
+
+⚠️ A taunt looks like it belongs in that list and does not, which a mutation is what
+established: `aims` offers a taunted unit its taunter **whether or not the taunter is
+in reach**, so a taunted unit always has an aim and is never frozen. Adding the
+category as well would have been a claim no test could reach. The board it matters on
+— a reachable enemy and a taunting one out of reach — is still tested, and what that
+test pins is the `aims` behaviour from the outside: the day a taunted unit that
+cannot reach its taunter stops being offered it, that board becomes a wrongly
+declared draw, and the test is where it shows.
+
+Nothing shipped can reach any of these boards — the roster's own reach rule is what
+keeps them off it — so no golden moved. The engine still has to answer for them.
 
 ### A gated grant: a stat change that comes and goes
 

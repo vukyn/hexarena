@@ -286,14 +286,86 @@ func TestABuffIsPricedByWhatItAddsAndNotByItsExistence(t *testing.T) {
 			choice.Skill)
 	}
 
-	// And the finding worth pinning beside them: haste moves speed, speed is not
-	// damage, and a rating counted in damage per turn cannot see it. The tempo half
-	// of the game is deliberately outside this rating — a term that claimed to
-	// price it would be claiming to read the turn queue.
-	tempo := squad(t, []string{"jab", "dash"}, []string{"lob"}, []string{"strike"}, 0, 0, 0)
-	if choice := chosen(t, tempo); choice.Skill != "jab" {
-		t.Errorf("Suggest picked %q, want jab: a speed buff is worth nothing to a "+
-			"rating counted in damage", choice.Skill)
+}
+
+// TestASpeedBuffIsWorthTheTurnsItBuys is the tempo half of the game, which used to
+// be worth nothing at all to the rating: haste, quickstep, substitution and the
+// speed side of every stat trade were invisible, and so was the recoil on a skill
+// whose cost is a slow on its own caster.
+//
+// A wait is the scale over a unit's speed, so a share added to the stat is that
+// share added to its turns — the term reads the stat and never the queue, which is
+// what makes it a thing a rating may do at all.
+//
+// ⚠️ Note what the arithmetic implies, because it is a design answer rather than an
+// accident: a buff is worth `horizon × share` of a turn, so a thirty per cent haste
+// over three turns is worth nine tenths of one turn's damage, and **it can never
+// beat the best attack the unit has**. It wins where it should — while that attack
+// is recharging, which is the case below.
+func TestASpeedBuffIsWorthTheTurnsItBuys(t *testing.T) {
+	// clout is the best thing in the kit and cools down for three turns; jab is the
+	// filler. On the turn after clout is spent, hasting is worth more than the
+	// filler, because the turns it buys are turns of clout.
+	fight := squad(t, []string{"clout", "jab", "dash"}, []string{"lob"},
+		[]string{"strike"}, 0, 0, 0)
+	first := chosen(t, fight)
+	if first.Skill != "clout" {
+		t.Fatalf("Suggest opened with %q, want clout", first.Skill)
+	}
+	if err := fight.Act(first.Skill, first.Aim); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+	fight.Drain()
+
+	// Walk to this unit's next turn.
+	for range 20 {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt == nil {
+			t.Fatal("the battle ended before the caster acted again")
+		}
+		if prompt.Unit == "a" {
+			choice, ok := fight.Suggest(prompt)
+			if !ok {
+				t.Fatal("Suggest offered nothing at all")
+			}
+			if choice.Skill != "dash" {
+				t.Errorf("Suggest picked %q with its best attack recharging, want dash: "+
+					"the turns a haste buys are turns of that attack", choice.Skill)
+			}
+			return
+		}
+		choice, ok := fight.Suggest(prompt)
+		if !ok {
+			if err := fight.Pass(battle.NoActionReason); err != nil {
+				t.Fatalf("pass: %v", err)
+			}
+		} else if err := fight.Act(choice.Skill, choice.Aim); err != nil {
+			t.Fatalf("act: %v", err)
+		}
+		fight.Drain()
+	}
+	t.Fatal("the caster never got another turn")
+}
+
+// TestASelfInflictedSlowIsACostAndNotFree is the same term with the sign the other
+// way round, and the case it was missing: a skill whose price is a status on its own
+// caster.
+//
+// A slow on the caster takes turns away from the caster, so the skill is worth its
+// damage *minus* those turns. Before the tempo term the cost was invisible — mire
+// only moves speed, and speed was worth nothing — so an all-out attack that slows
+// its user read as though it were free.
+func TestASelfInflictedSlowIsACostAndNotFree(t *testing.T) {
+	// Two attacks of the same power, one of which slows its caster. The plain one
+	// must win, and it can only win on the cost.
+	fight := squad(t, []string{"strike", "recoil"}, []string{"lob"},
+		[]string{"strike"}, 0, 0, 0)
+	if choice := chosen(t, fight); choice.Skill != "strike" {
+		t.Errorf("Suggest picked %q, want strike: the two hit equally hard and one of "+
+			"them slows its own caster", choice.Skill)
 	}
 }
 

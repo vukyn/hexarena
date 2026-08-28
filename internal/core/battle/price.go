@@ -369,11 +369,89 @@ func (p *pricing) standing(target *Unit, kind status.Kind, stacks int) int64 {
 	changed := p.fight.hypothetical(target, terms)
 	gained := p.fight.bestStrike(changed) - p.strike(target)
 	saved := p.threat(target) - p.threatAgainst(changed)
-	worth := gained + saved
+	worth := (gained + saved) * turnsOf(kind, buffHorizon)
+	worth += p.tempo(target, changed, turnsOf(kind, buffHorizon))
 	if worth <= 0 {
 		return 0
 	}
-	return worth * turnsOf(kind, buffHorizon)
+	return worth
+}
+
+// tempo is what a change of speed is worth: the turns it adds or takes away, in
+// the damage those turns are worth.
+//
+// A wait is `atb.Scale / speed`, so a unit's turns over a stretch of the battle are
+// proportional to its speed and a share added to the stat is that share added to
+// its turns. Over a horizon of H of its own turns, a speed moving from `was` to
+// `now` is worth `H × (now − was) / was` extra turns — and a turn is worth what the
+// unit would do with it, which is the same `bestStrike` every other term here is
+// priced against.
+//
+// ⚠️ **It reads the stat, not the queue.** That distinction is the whole of why this
+// term is allowed to exist: the earlier work left tempo out on the grounds that
+// pricing it meant reading `atb.Queue`, which is state a rating must not touch and
+// an ordering a rating could disagree with. It does not. Speed *is* turn frequency
+// by construction, so the arithmetic above is exact for the thing it claims —
+// nothing here asks who acts next, only how often this unit acts.
+//
+// What it deliberately does not model: where in the order the extra turn falls, and
+// therefore whether it arrives before the blow that would have killed its holder.
+// That is the part that would need the queue, and a term claiming it would be
+// claiming a reading it cannot make.
+//
+// Before this, `haste`, `quickstep`, `substitution` and the speed half of every
+// stat trade were worth **nothing at all** to the opponent, and so was the recoil on
+// `outrage` — a skill whose cost is a slow on its own caster was priced as though it
+// had no cost.
+func (p *pricing) tempo(before, after *Unit, horizon int64) int64 {
+	was := p.fight.Stats(before)[progression.Speed]
+	now := p.fight.Stats(after)[progression.Speed]
+	if was <= 0 || now == was {
+		return 0
+	}
+	// A debuff arrives here with `now` below `was`, so the whole term comes out
+	// negative and the caller subtracts it.
+	return p.turnWorth(before) * horizon * (now - was) / was
+}
+
+// turnWorth is what one of a unit's turns is worth on average, and it is the one
+// place in this file that does *not* use the best attack in the kit.
+//
+// ⚠️ That is a correction rather than a preference, and the measurement is what
+// said so. An extra turn is not another cast of the unit's heaviest skill — that
+// one is on cooldown most of the time — it is an ordinary turn, and pricing tempo
+// against the best strike over-charged every cost by the gap between the two.
+// Charged that way, `outrage`'s recoil made the dragon build *avoid* its own best
+// skill: its duel rate against the fire build fell from 26.6% to 20.0%, which is a
+// rating playing worse while believing it had learned something.
+//
+// The mean over what the unit could point at somebody is the cheapest honest
+// figure. It is still an over-estimate — a real turn can miss, or be spent
+// guarding — and it is deliberately the same number in both directions, so the
+// turns a haste buys and the turns a slow takes away are priced identically.
+func (p *pricing) turnWorth(unit *Unit) int64 {
+	total, counted := int64(0), int64(0)
+	for _, id := range unit.Skills {
+		declared, err := p.fight.books.Skills.Lookup(id)
+		if err != nil || declared.Power == 0 || declared.Target != skill.Enemy {
+			continue
+		}
+		best := int64(0)
+		for _, aim := range p.fight.aims(unit, declared) {
+			if value := p.fight.expected(unit, declared, aim); value > best {
+				best = value
+			}
+		}
+		if best <= 0 {
+			continue
+		}
+		total += best
+		counted++
+	}
+	if counted == 0 {
+		return 0
+	}
+	return total / counted
 }
 
 // cleansed is what taking a harmful status off one's own side is worth: exactly
@@ -504,12 +582,15 @@ func (p *pricing) standingLost(target *Unit, kind status.Kind, stacks int) int64
 		return 0
 	}
 	weakened := p.fight.hypothetical(target, terms)
-	lost := p.strike(target) - p.fight.bestStrike(weakened)
-	lost += p.threatAgainst(weakened) - p.threat(target)
+	lost := (p.strike(target) - p.fight.bestStrike(weakened)) * turnsOf(kind, buffHorizon)
+	lost += (p.threatAgainst(weakened) - p.threat(target)) * turnsOf(kind, buffHorizon)
+	// A slow is the mirror of a haste: the turns it takes off somebody are turns
+	// nobody has to answer, which is the same figure with the sign of who holds it.
+	lost -= p.tempo(target, weakened, turnsOf(kind, buffHorizon))
 	if lost <= 0 {
 		return 0
 	}
-	return lost * turnsOf(kind, buffHorizon)
+	return lost
 }
 
 // strikeThreat is threat for a single strike rather than a whole turn, which is
