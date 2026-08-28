@@ -352,8 +352,10 @@ func TestCombatGolden(t *testing.T) {
 
 func combatReport(chart *element.Chart, rules combat.Rules) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "== damage formula ==\nattack * skill * affinity * K / (K + defence),  K = %d, floor %d\n",
+	fmt.Fprintf(&b, "== damage formula ==\nattack * skill * affinity * crit * K / (K + defence),  K = %d, floor %d\n",
 		rules.DefenseConstant, rules.MinimumDamage)
+	fmt.Fprintf(&b, "crit is %d on a critical strike and %d otherwise, so an ordinary hit is untouched\n",
+		rules.CriticalMultiplier, combat.PermilleBase)
 	fmt.Fprintf(&b, "multipliers are parts per thousand, base %d\n\n", combat.PermilleBase)
 
 	b.WriteString("== defence curve, share of damage getting through ==\n")
@@ -384,6 +386,17 @@ func combatReport(chart *element.Chart, rules combat.Rules) string {
 		}
 		b.WriteString("\n")
 	}
+	// A skill's description names how often it crits and never what a critical
+	// is worth, because the multiplier is one game-wide constant rather than
+	// anything a skill declares. That makes this record the place the figure is
+	// written down, once, against the same ceiling the rows above use.
+	fmt.Fprintf(&b, "%-19s", fmt.Sprintf("neutral crit %4d", rules.CriticalMultiplier))
+	for defense := int64(0); defense <= 800; defense += 200 {
+		fmt.Fprintf(&b, "%7d", rules.CriticalStrike(combat.Hit{
+			Scaling: 800, Multiplier: 1800, Affinity: combat.PermilleBase, Defense: defense,
+		}))
+	}
+	b.WriteString("\n")
 
 	b.WriteString("\n== dual defence, attacker across, multiplier per mille ==\n")
 	pairs := chart.LegalPairs()

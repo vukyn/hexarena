@@ -39,6 +39,17 @@ type Rules struct {
 	// resisted attack against a heavily armoured target still moves the
 	// battle forward instead of stalling it.
 	MinimumDamage int64 `json:"minimum_damage"`
+	// CriticalMultiplier is what a critical strike multiplies the whole damage
+	// expression by, in parts per thousand. It is one game-wide constant rather
+	// than a figure a skill declares: how *often* a skill crits is what makes
+	// one skill different from the next, and a second per-skill number would
+	// only let two skills disagree about what the word means.
+	//
+	// Validate requires it rather than tolerating an absent one. A missing
+	// value reads as nought, which drives every critical strike straight to
+	// MinimumDamage — the mechanic silently inverted, with the book still
+	// loading and every ordinary hit still correct.
+	CriticalMultiplier int `json:"critical_multiplier"`
 	// MinHitChance is the limit dodge drives a hit chance towards without ever
 	// reaching it, in parts per thousand. Without a floor a dodge-stacked unit
 	// would eventually be untouchable, which is not a defensive stat but an
@@ -74,6 +85,8 @@ func (r Rules) Validate() error {
 		return fmt.Errorf("defense_constant is %d, want a positive value", r.DefenseConstant)
 	case r.MinimumDamage < 0:
 		return fmt.Errorf("minimum_damage is %d, want zero or more", r.MinimumDamage)
+	case r.CriticalMultiplier <= PermilleBase:
+		return fmt.Errorf("critical_multiplier is %d, want more than %d so a critical hit is bigger than an ordinary one", r.CriticalMultiplier, PermilleBase)
 	case r.MinHitChance <= 0:
 		return fmt.Errorf("min_hit_chance is %d, want a positive value", r.MinHitChance)
 	case r.MinHitChance >= scale.Base:
@@ -112,20 +125,38 @@ func (r Rules) GrantBlocks(held, granted int) (total, wasted int) {
 // no power behind it deals nothing at all.
 //
 // defense is the defence as it applies to this hit, piercing already taken off.
-// Piercing is Pierced's job rather than a fifth parameter here: five positional
-// integers is a signature a mis-ordered argument passes silently, and Hit is the
-// struct that exists precisely to carry an attack whose terms are all settled.
-// A caller that reaches this directly rather than through Strike is asking for
-// the raw curve, and a damage-over-time tick is exactly that — see turn.go.
+// Piercing is Pierced's job rather than a fifth parameter here: what this
+// signature refuses is a fifth positional *non-multiplier*. attack and defense
+// are not interchangeable and a mis-ordered pair passes silently at every
+// caller; Hit is the struct that exists precisely to carry an attack whose terms
+// are all settled. A caller that reaches this directly rather than through
+// Strike is asking for the raw curve, and a damage-over-time tick is exactly
+// that — see turn.go.
+//
+// The private damage below is allowed the fifth argument the public one is not,
+// because a critical multiplier is a *multiplier*: the three of them commute, so
+// a mis-order among them cannot change a figure, and it is unexported so no
+// caller outside this package can mis-order them anyway. It exists so the
+// package resolves through exactly one expression, and so a critical strike
+// truncates once rather than multiplying an already-floored result.
 func (r Rules) Damage(attack, defense int64, skillMultiplier, affinityMultiplier int) int64 {
-	if attack <= 0 || skillMultiplier <= 0 || affinityMultiplier <= 0 {
+	return r.damage(attack, defense, skillMultiplier, affinityMultiplier, PermilleBase)
+}
+
+// damage is the one damage expression this package has. critMultiplier folds
+// into the numerator with a matching PermilleBase in the denominator, so an
+// ordinary hit passes PermilleBase and multiplies and divides by the same
+// thousand: floor(1000a/1000b) == floor(a/b), exactly. That identity is why
+// adding the mechanic moved no damage figure anywhere.
+func (r Rules) damage(attack, defense int64, skillMultiplier, affinityMultiplier, critMultiplier int) int64 {
+	if attack <= 0 || skillMultiplier <= 0 || affinityMultiplier <= 0 || critMultiplier <= 0 {
 		return 0
 	}
 	if defense < 0 {
 		defense = 0
 	}
-	numerator := attack * int64(skillMultiplier) * int64(affinityMultiplier) * r.DefenseConstant
-	denominator := int64(PermilleBase) * int64(PermilleBase) * (r.DefenseConstant + defense)
+	numerator := attack * int64(skillMultiplier) * int64(affinityMultiplier) * int64(critMultiplier) * r.DefenseConstant
+	denominator := int64(PermilleBase) * int64(PermilleBase) * int64(PermilleBase) * (r.DefenseConstant + defense)
 	damage := numerator / denominator
 	if damage < r.MinimumDamage {
 		return r.MinimumDamage
@@ -215,6 +246,18 @@ type Hit struct {
 	// ordinary one leaves the log unable to explain its own numbers, which is
 	// the same trap a silent passive would set.
 	Pierce int
+	// Crit is the chance each strike lands critically, in parts per thousand,
+	// and it is the *skill's* own figure. No stat moves it: progression.Values
+	// is a fixed-size array behind a schema of six required pointers, and a
+	// seventh kind is not something a stat line may grow — so a skill that crits
+	// crits at the same rate in every hand that carries it, and how often is the
+	// thing that distinguishes one skill from the next.
+	//
+	// Zero is every skill in the book today, which is why adding it moved no
+	// battle golden and no saved log: rng.Source.Chance returns without drawing
+	// at a chance of nought, so the stream is untouched. Pierce used the same
+	// trick, for the same reason.
+	Crit int
 	// SkillAccuracy is the skill's own chance to connect, in parts per
 	// thousand. Zero means the skill never lands, so it must be set.
 	SkillAccuracy int
@@ -332,6 +375,14 @@ func (o Outcome) String() string {
 type Attempt struct {
 	Outcome Outcome
 	Damage  int64
+	// Critical says this strike landed critically. It is a flag beside the
+	// outcome rather than a fourth Outcome, and that is deliberate:
+	// Count(attempts, Struck) is how the engine counts landings — drains,
+	// on-hit riders and every tally read it — so a Critted outcome would
+	// silently change what that counts, and every one of those callers would
+	// start missing exactly the strikes that hit hardest. A critical strike is
+	// a strike that landed well, not a different thing from a strike.
+	Critical bool
 }
 
 // Roll resolves every strike of a hit against its chance to connect, spending
@@ -351,7 +402,11 @@ type Attempt struct {
 // one.
 func (r Rules) Roll(h Hit, blocks int, source *rng.Source) (attempts []Attempt, blocksLeft int) {
 	chance := r.Chance(h)
+	// Both figures a strike can come to, resolved once outside the loop. There
+	// are only two because the critical multiplier is a game-wide constant; a
+	// per-skill one would have made this a per-strike computation for nothing.
 	damage := r.Strike(h)
+	critical := r.CriticalStrike(h)
 	count := h.StrikeCount()
 	out := make([]Attempt, 0, count)
 	remaining := blocks
@@ -363,6 +418,16 @@ func (r Rules) Roll(h Hit, blocks int, source *rng.Source) (attempts []Attempt, 
 			remaining--
 			out = append(out, Attempt{Outcome: Blocked})
 		default:
+			// The critical is rolled here rather than above the switch, and per
+			// strike rather than per skill. A missed or blocked strike never
+			// happened, so there is nothing for it to have landed well; rolling
+			// above the switch would draw on every miss and move the stream for
+			// a strike that deals nothing, which is a battle that replays
+			// differently from the one before this line existed.
+			if source.Chance(h.Crit) {
+				out = append(out, Attempt{Outcome: Struck, Damage: critical, Critical: true})
+				continue
+			}
 			out = append(out, Attempt{Outcome: Struck, Damage: damage})
 		}
 	}
@@ -401,8 +466,20 @@ func (h Hit) StrikeCount() int {
 
 // Strike returns the damage of a single strike, against whatever defence the
 // hit's piercing leaves standing.
-func (r Rules) Strike(h Hit) int64 {
-	return r.Damage(h.Scaling, Pierced(h.Defense, h.Pierce), h.Multiplier, h.Affinity)
+func (r Rules) Strike(h Hit) int64 { return r.strike(h, PermilleBase) }
+
+// CriticalStrike returns the damage of a single strike that landed critically.
+//
+// It is the same expression with the game-wide multiplier folded into it rather
+// than Strike's answer multiplied afterwards. Multiplying afterwards would be a
+// second truncation, so a critical hit would sometimes come to one point less
+// than the formula says — and the shortfall would depend on the defence curve,
+// which is the one thing this package resolves in a single division precisely so
+// nobody has to reason about that.
+func (r Rules) CriticalStrike(h Hit) int64 { return r.strike(h, r.CriticalMultiplier) }
+
+func (r Rules) strike(h Hit, critMultiplier int) int64 {
+	return r.damage(h.Scaling, Pierced(h.Defense, h.Pierce), h.Multiplier, h.Affinity, critMultiplier)
 }
 
 // Resolve returns the damage of each strike in order.
@@ -422,9 +499,49 @@ func (r Rules) Resolve(h Hit) []int64 {
 	return out
 }
 
-// Total returns the damage of every strike combined.
+// Total returns the damage of every strike combined, ignoring the chance of a
+// critical.
+//
+// ⚠️ It stays because its remaining caller is internal/seed's skillReport, which
+// writes skills.golden's damage column, and that column is a *deterministic*
+// figure the design record is read against — a number that moved with an
+// expected value would stop being the thing an author compares two skills by.
+// Anything rating a hypothetical action wants Expected instead. Do not delete
+// this as dead weight: doing so takes the golden column with it.
 func (r Rules) Total(h Hit) int64 {
 	return r.Strike(h) * int64(h.StrikeCount())
+}
+
+// ExpectedStrike returns what one strike is worth before it is rolled, with the
+// chance of a critical priced in.
+//
+// It exists so a rating can charge for a critical without drawing one: Suggest
+// may not touch the battle's source, and it may not keep a second copy of the
+// resolving arithmetic either, so this is composed from the same two functions
+// Roll resolves through.
+//
+// A skill that cannot crit takes the early return rather than the weighting,
+// which is what makes this bit-identical to Strike for every skill in the book
+// today — and therefore why the opponent's choices did not move.
+func (r Rules) ExpectedStrike(h Hit) int64 {
+	if h.Crit <= 0 {
+		return r.Strike(h)
+	}
+	chance := int64(h.Crit)
+	if chance > PermilleBase {
+		chance = PermilleBase
+	}
+	ordinary := r.Strike(h)
+	critical := r.CriticalStrike(h)
+	return (ordinary*(int64(PermilleBase)-chance) + critical*chance) / int64(PermilleBase)
+}
+
+// Expected returns what every strike of a hit is worth before any is rolled.
+//
+// Because ExpectedStrike returns early at a chance of nought, this is bit for
+// bit Total for every shipped skill.
+func (r Rules) Expected(h Hit) int64 {
+	return r.ExpectedStrike(h) * int64(h.StrikeCount())
 }
 
 // Gradient returns the share a hurt caster adds to its own skill's power, in

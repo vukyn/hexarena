@@ -97,10 +97,12 @@ const (
 	SkillFieldInflicts
 	SkillFieldOnItself
 	SkillFieldPierce
+	SkillFieldCrit
 	SkillFieldRestores
 	SkillFieldDrains
 	SkillHelpOnItself
 	SkillHelpPierce
+	SkillHelpCrit
 	SkillHelpRestores
 	SkillHelpDrains
 	SkillFieldKeptForElements
@@ -366,6 +368,10 @@ const (
 	BlurbStrikes
 	BlurbOnce
 	BlurbPierces
+	// The chance only. What a critical strike multiplies by is one game-wide
+	// constant on combat.Rules, and this package may not import that — nor
+	// should a description restate a number every skill in the game shares.
+	BlurbCritical
 	BlurbRestores
 	// A summon, in two shapes: one that stays and one that does not. Two whole
 	// wordings rather than a clause tacked on, for the reason a reply has three

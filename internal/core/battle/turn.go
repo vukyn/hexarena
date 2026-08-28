@@ -824,6 +824,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		Affinity:      multiplier,
 		Defense:       targetStats[progression.Defense],
 		Pierce:        known.Pierce,
+		Crit:          known.Crit,
 		SkillAccuracy: known.Accuracy,
 		AccuracyStat:  actorStats[progression.Accuracy],
 		DodgeStat:     targetStats[progression.Dodge],
@@ -857,6 +858,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			default:
 				event.Kind = Damaged
 				event.Amount = attempt.Damage
+				event.Critical = attempt.Critical
 				dealt += attempt.Damage
 				target.HP -= attempt.Damage
 				if target.HP < 0 {

@@ -1,5 +1,6 @@
 == damage formula ==
-attack * skill * affinity * K / (K + defence),  K = 300, floor 1
+attack * skill * affinity * crit * K / (K + defence),  K = 300, floor 1
+crit is 1250 on a critical strike and 1000 otherwise, so an ordinary hit is untouched
 multipliers are parts per thousand, base 1000
 
 == defence curve, share of damage getting through ==
@@ -25,6 +26,7 @@ resisted     667       960    576    411    320    261
 neutral     1000      1440    864    617    480    392
 weak        1500      2160   1296    925    720    589
 both weak   2250      3240   1944   1388   1080    883
+neutral crit 1250     1800   1080    771    600    490
 
 == dual defence, attacker across, multiplier per mille ==
                    neutral    water     fire    grass   ground      ice    metal     wind electric    light     dark

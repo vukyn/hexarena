@@ -491,7 +491,15 @@ type Skill struct {
 	// once when the stack is applied and frozen for the stack's whole life — so
 	// a pierced tick is worth several pierced hits, which is a larger effect
 	// than an author setting a per-strike ratio is asking for.
-	Pierce  int
+	Pierce int
+	// Crit is the chance each of its strikes lands critically, in parts per
+	// thousand. What a critical strike is worth is one game-wide constant on
+	// combat.Rules, so this is the whole of what makes one skill crit more than
+	// another — and it belongs to the skill rather than to whoever casts it,
+	// because progression.Values has no seventh kind to hold it.
+	//
+	// Every shipped skill declares nought.
+	Crit    int
 	Scaling Scaling
 	// Applies are the statuses inflicted on each target it hits.
 	Applies []Application
@@ -640,7 +648,10 @@ type skillFile struct {
 	// Pierce is written only when there is some, like the two healing figures
 	// below it: no shipped skill pierces, so the shipped book round-trips byte
 	// for byte and the tables measured from it did not move when it arrived.
-	Pierce       int               `json:"pierce,omitempty"`
+	Pierce int `json:"pierce,omitempty"`
+	// Crit is written only when there is some, for the same reason Pierce is:
+	// no shipped skill crits, so the shipped book round-trips byte for byte.
+	Crit         int               `json:"crit,omitempty"`
 	Restores     int               `json:"restores,omitempty"`
 	Drains       int               `json:"drains,omitempty"`
 	Cooldown     int               `json:"cooldown"`
@@ -750,7 +761,7 @@ func (s Skill) file() skillFile {
 		ID: s.ID, Name: s.Name, Flavour: s.Flavour,
 		Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
 		Power: s.Power, Strikes: s.Strikes, Accuracy: s.Accuracy,
-		Pierce: s.Pierce, Restores: s.Restores, Drains: s.Drains,
+		Pierce: s.Pierce, Crit: s.Crit, Restores: s.Restores, Drains: s.Drains,
 		Cooldown: s.Cooldown, Target: s.Target.String(),
 		Applies: applicationFiles(s.Applies), SelfApplies: applicationFiles(s.SelfApplies),
 	}
@@ -922,6 +933,13 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return fail("pierces %d, want a share in parts per thousand", declared.Pierce)
 	case declared.Pierce > 0 && declared.Power == 0:
 		return fail("pierces defence it never attacks through")
+	case declared.Crit < 0 || declared.Crit > scale.Base:
+		return fail("crits %d, want a share in parts per thousand", declared.Crit)
+	// Not tidiness: turn.go's power <= 0 branch never reaches combat.Roll, so a
+	// crit chance on a skill that deals no damage is data nothing would ever
+	// read.
+	case declared.Crit > 0 && declared.Power == 0:
+		return fail("crits on damage it never deals")
 	case declared.Restores > 0 && target == Enemy:
 		return fail("restores health to the enemy, which nobody means")
 	case declared.Cooldown < 0:
@@ -1035,7 +1053,8 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		ID: declared.ID, Name: name, Flavour: flavour,
 		Element: affinity, Range: declared.Range, Pattern: shape.Name,
 		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
-		Pierce: declared.Pierce, Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
+		Pierce: declared.Pierce, Crit: declared.Crit,
+		Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
 		Requires: requires, SelfRequires: selfRequires, SelfGradient: selfGradient,
 		Strips: strips, Restrict: restrict,
 		Summons:  summons,

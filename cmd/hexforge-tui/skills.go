@@ -49,6 +49,8 @@ const (
 	skillFieldInflicts
 	skillFieldOnItself
 	skillFieldPierce
+	// Beside pierce, so the form reads in the order the file is written in.
+	skillFieldCrit
 	skillFieldRestores
 	skillFieldDrains
 	skillFieldKeptForElements
@@ -194,6 +196,7 @@ func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScr
 		{skillFieldInflicts, answers.Applies},
 		{skillFieldOnItself, answers.SelfApplies},
 		{skillFieldPierce, answers.Pierce},
+		{skillFieldCrit, answers.Crit},
 		{skillFieldRestores, answers.Restores},
 		{skillFieldDrains, answers.Drains},
 	} {
@@ -250,6 +253,7 @@ func (s skillsScreen) draft(m model) forge.SkillDraft {
 		Applies:            s.inputs[skillFieldInflicts].Value(),
 		SelfApplies:        s.inputs[skillFieldOnItself].Value(),
 		Pierce:             s.inputs[skillFieldPierce].Value(),
+		Crit:               s.inputs[skillFieldCrit].Value(),
 		Restores:           s.inputs[skillFieldRestores].Value(),
 		Drains:             s.inputs[skillFieldDrains].Value(),
 		RestrictElements:   strings.Join(s.keptElements, ","),
@@ -819,6 +823,7 @@ func skillFieldLabel(m model, field int) string {
 		skillFieldInflicts:          i18n.SkillFieldInflicts,
 		skillFieldOnItself:          i18n.SkillFieldOnItself,
 		skillFieldPierce:            i18n.SkillFieldPierce,
+		skillFieldCrit:              i18n.SkillFieldCrit,
 		skillFieldRestores:          i18n.SkillFieldRestores,
 		skillFieldDrains:            i18n.SkillFieldDrains,
 		skillFieldKeptForElements:   i18n.SkillFieldKeptForElements,
@@ -858,6 +863,7 @@ func skillFieldHelp(m model, field int) string {
 		skillFieldInflicts:          i18n.SkillHelpInflicts,
 		skillFieldOnItself:          i18n.SkillHelpOnItself,
 		skillFieldPierce:            i18n.SkillHelpPierce,
+		skillFieldCrit:              i18n.SkillHelpCrit,
 		skillFieldRestores:          i18n.SkillHelpRestores,
 		skillFieldDrains:            i18n.SkillHelpDrains,
 		skillFieldKeptForElements:   i18n.SkillHelpKeptForElements,
@@ -1084,7 +1090,7 @@ func (s skillsScreen) value(m model, field, labelWidth int) string {
 		return s.listValue(m, s.keptKinds, labelWidth)
 	case skillFieldKeptForOrigins:
 		return s.listValue(m, s.keptWorlds, labelWidth)
-	case skillFieldAccuracy, skillFieldPower, skillFieldPierce,
+	case skillFieldAccuracy, skillFieldPower, skillFieldPierce, skillFieldCrit,
 		skillFieldRestores, skillFieldDrains:
 		// Every one of these is authored in parts per thousand because that is
 		// what the engine multiplies and divides by, but nobody reads 850 as a

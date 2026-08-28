@@ -314,9 +314,9 @@ func Line(event battle.Event, tags map[string]string) string {
 				tag(event.Target), event.Passive, event.Amount,
 				affinityNote(event.Multiplier), event.Remaining)
 		}
-		return head + fmt.Sprintf("  hits %s for %d%s%s, %d left",
+		return head + fmt.Sprintf("  hits %s for %d%s%s%s, %d left",
 			tag(event.Target), event.Amount, affinityNote(event.Multiplier),
-			pierceNote(event.Pierce), event.Remaining)
+			pierceNote(event.Pierce), criticalNote(event.Critical), event.Remaining)
 	case battle.StatusApplied:
 		note := ""
 		if event.Note != "" {
@@ -450,6 +450,16 @@ func pierceNote(pierce int) string {
 		return " (straight through the armour)"
 	}
 	return fmt.Sprintf(" (through %d%% of the armour)", pierce/10)
+}
+
+// criticalNote marks a strike that landed critically. Like pierceNote it names
+// no figure: what a critical is worth is one constant the rules hold, and this
+// renderer reads events rather than the rules.
+func criticalNote(critical bool) string {
+	if !critical {
+		return ""
+	}
+	return " (critical)"
 }
 
 // Log renders a run of events.

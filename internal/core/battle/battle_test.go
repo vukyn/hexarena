@@ -218,7 +218,7 @@ func books(t *testing.T) battle.Books {
 		t.Fatalf("passives: %v", err)
 	}
 	return battle.Books{
-		Rules: combat.Rules{DefenseConstant: 300, MinimumDamage: 1, MinHitChance: 150, MaxBlockCharges: 3},
+		Rules: combat.Rules{DefenseConstant: 300, MinimumDamage: 1, CriticalMultiplier: 1250, MinHitChance: 150, MaxBlockCharges: 3},
 		Chart: chart,
 		Bounds: modifier.Bounds{
 			Headroom: 3000, FloorFraction: 100, MaxAffinityScale: 1000,

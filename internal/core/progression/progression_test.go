@@ -10,7 +10,7 @@ import (
 )
 
 func rules() combat.Rules {
-	return combat.Rules{DefenseConstant: 300, MinimumDamage: 1, MinHitChance: 150}
+	return combat.Rules{DefenseConstant: 300, MinimumDamage: 1, CriticalMultiplier: 1250, MinHitChance: 150}
 }
 
 func limits() progression.Limits {

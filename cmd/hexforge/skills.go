@@ -125,6 +125,8 @@ func runSkillsAdd(args []string) error {
 		"statuses it puts on the caster, written the same way as applies")
 	set.StringVar(&given.Pierce, "pierce", "",
 		"share of the target's defence it ignores, in parts per thousand")
+	set.StringVar(&given.Crit, "crit", "",
+		"chance each strike lands critically, in parts per thousand")
 	set.StringVar(&given.Restores, "restores", "",
 		"health it gives its target, in parts per thousand of the caster's scaling stat")
 	set.StringVar(&given.Drains, "drains", "",
@@ -230,6 +232,8 @@ func runSkillsEdit(args []string) error {
 		"statuses it puts on the caster, written the same way as applies")
 	set.StringVar(&given.Pierce, "pierce", "",
 		"share of the target's defence it ignores; an empty value clears it")
+	set.StringVar(&given.Crit, "crit", "",
+		"chance each strike lands critically; an empty value clears it")
 	set.StringVar(&given.Restores, "restores", "",
 		"health it gives its target, in parts per thousand; an empty value clears it")
 	set.StringVar(&given.Drains, "drains", "",
@@ -355,6 +359,7 @@ func editBindings(edit *forge.SkillEdit, given *forge.SkillDraft) map[string]edi
 		"applies":             {&edit.Applies, &given.Applies},
 		"self-applies":        {&edit.SelfApplies, &given.SelfApplies},
 		"pierce":              {&edit.Pierce, &given.Pierce},
+		"crit":                {&edit.Crit, &given.Crit},
 		"restores":            {&edit.Restores, &given.Restores},
 		"drains":              {&edit.Drains, &given.Drains},
 		"restrict-elements":   {&edit.RestrictElements, &given.RestrictElements},
@@ -500,6 +505,7 @@ func fillSkill(given forge.SkillDraft, lib *forge.Library, prompt *prompter) (fo
 		prompt string
 	}{
 		{&filled.Pierce, "pierce", "share of the target's defence it ignores, in parts per thousand"},
+		{&filled.Crit, "crit", "chance each strike lands critically, in parts per thousand"},
 		{&filled.Restores, "restores", "health given to its target, in parts per thousand"},
 		{&filled.Drains, "drains", "share of the damage dealt that comes back"},
 	} {
@@ -596,6 +602,9 @@ func renderSkill(out io.Writer, lib *forge.Library, built skill.Skill) {
 	}
 	if built.Pierce > 0 {
 		label("pierces", "%d (%s) of the target's defence", built.Pierce, forge.Percent(built.Pierce))
+	}
+	if built.Crit > 0 {
+		label("crits", "%d (%s) of its strikes", built.Crit, forge.Percent(built.Crit))
 	}
 	if built.Restores > 0 {
 		label("restores", "%d (%s) of the caster's %s",

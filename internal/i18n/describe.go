@@ -98,6 +98,14 @@ func (l Lang) describeOpening(declared skill.Skill) string {
 	if declared.Pierce > 0 {
 		sentence += l.Say(BlurbPierces, share(declared.Pierce))
 	}
+	// The chance and nothing else. What a critical strike is worth is a
+	// game-wide constant living on combat.Rules, and naming it here would need
+	// this package to import that one — which would put the rules book behind
+	// every sentence a renderer draws, to print a figure identical on every
+	// skill in the game.
+	if declared.Crit > 0 {
+		sentence += l.Say(BlurbCritical, share(declared.Crit))
+	}
 	return sentence + "."
 }
 
