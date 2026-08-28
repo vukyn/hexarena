@@ -432,10 +432,29 @@ func conditionTarget(declared skill.Skill, target *Unit) skill.Target {
 	}
 }
 
-// RunToEnd plays the battle out with Suggest choosing for both sides, stopping at
-// the turn limit so a runaway cannot hang a caller. It reports how many turns
-// were taken, and the caller reads Finished to know whether that was the end or
-// the limit.
+// Chooser picks an action for whoever is prompted. Battle.Suggest is one.
+//
+// It is called once per open turn and reports false when there is nothing it can
+// take, which is a legal answer: the turn is passed for it. Like Suggest, a
+// Chooser must **mutate nothing and draw no randomness** — so the same battle,
+// driven by the same Chooser from the same seed, replays exactly. A Chooser that
+// rolled would advance the battle's own source and every draw after it would come
+// out differently, which is the one way a decision here can break the replay
+// contract the whole engine rests on.
+//
+// The type exists so that two ratings can be fought against each other rather
+// than only run: see internal/forge.Bout.
+type Chooser func(*Prompt) (Choice, bool)
+
+// RunToEnd plays the battle out with Suggest choosing for both sides. It is
+// RunToEndWith fixed to the rating the game ships, which is what every caller
+// wanting "play this out" means.
+func (b *Battle) RunToEnd(maxTurns int) (int, error) { return b.RunToEndWith(maxTurns, b.Suggest) }
+
+// RunToEndWith plays the battle out with the given Chooser deciding every open
+// turn, stopping at the turn limit so a runaway cannot hang a caller. It reports
+// how many turns were taken, and the caller reads Finished to know whether that
+// was the end or the limit.
 //
 // The limit is a backstop and nothing else. It used to be the only thing that
 // noticed a battle nobody could act in, which made it stand in for an outcome
@@ -443,7 +462,12 @@ func conditionTarget(declared skill.Skill, target *Unit) skill.Target {
 // reaching the limit means something genuinely endless is happening — two units
 // buffing themselves at each other for ever — rather than a draw waiting to be
 // recognised.
-func (b *Battle) RunToEnd(maxTurns int) (int, error) {
+//
+// One Chooser decides for both sides, because a Chooser is handed the prompt and
+// not a side. A caller wanting a rating per side composes one that reads the
+// prompted unit's side and delegates; keeping that out of here is what stops the
+// engine from having an opinion about who is playing.
+func (b *Battle) RunToEndWith(maxTurns int, choose Chooser) (int, error) {
 	taken := 0
 	for !b.finished && taken < maxTurns {
 		prompt, err := b.Advance()
@@ -454,10 +478,11 @@ func (b *Battle) RunToEnd(maxTurns int) (int, error) {
 		if prompt.Skipped {
 			continue
 		}
-		choice, ok := b.Suggest(prompt)
+		choice, ok := choose(prompt)
 		if !ok {
-			// Nothing is usable, which is a legal state: every skill is either
-			// cooling down or out of reach.
+			// The Chooser took nothing, which is a legal answer: every skill is
+			// cooling down or out of reach, or the rating declined what was on
+			// offer. Either way the turn is spent and its cooldowns come down.
 			if err := b.Pass(NoActionReason); err != nil {
 				return taken, err
 			}

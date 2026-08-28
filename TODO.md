@@ -51,6 +51,11 @@ is only so the shape is readable.
   broken by what an option costs to have spent rather than by kit order. The roster
   was re-levelled once along the way, which is what makes every rate quoted anywhere
   comparable.
+- **Measuring the opponent.** `forge.Bout` fights two ratings head to head over the
+  same seeds from both ends of the board, on an **exactly even** control it refuses
+  to print a figure without, against a frozen ruler (`FirstUsable`) that may never
+  be improved. `Suggest` beats it **78.0%** over 10,000 seeds, band ±0.8pp, and
+  finishes sooner (45 turns against the control's 48).
 - **Balance.** Every enemy-aimed range re-read under the rank rule, and each ace
   moved to its own back column behind a screen — 27.6% ally → **47.3%**. Both were
   data answers, and the formation is guarded by a test rather than by whoever
@@ -74,13 +79,13 @@ is only so the shape is readable.
 - [ ] **Grow the cast.** Four ship across two origins, one per element (grass,
       fire, water, wind). This is content, and the constraints that bound it are
       written down. Read Squirtle first. → `CLAUDE.md` § Open work.
-- [ ] **A deeper opponent — what is left is waiting.** Passing a turn because the
-      next one is worth more needs a **lookahead**, and *where* in the order an extra
-      turn falls needs the **queue**. Tempo, all-sided skills and not wasting a
-      scarce skill are all priced. **Declining a losing turn is done** — an option
-      priced below nought is no longer the fallback, so the opponent stops casting
-      what it has itself priced as a loss; that is not waiting, which still needs
-      to know what the next turn is worth. → `CLAUDE.md` § Open work.
+- [ ] **A deeper opponent — what is left is the queue.** *Where* in the order an
+      extra turn falls is the one thing `Suggest` still cannot see, and it lands as
+      a **tie-break** rather than a term: a queue reading may be **compared**, never
+      added or multiplied, because a value that reaches an arithmetic expression is
+      tempo and tempo is priced from the speed stat. Everything else is priced —
+      tempo, all-sided skills, not wasting a scarce skill, and declining a losing
+      turn. Waiting is decided against; see below. → `CLAUDE.md` § Rating an action.
 - [ ] **`reckless` is the dragon build's 22.1%, and a detonate does not fix it.**
       The trait grants `unleashed` (+300‰ attack) **and** `bare` (−400‰ defence
       *and* −400‰ dodge), all permanent: two stats paid for one, into a matchup
@@ -121,6 +126,15 @@ is only so the shape is readable.
 
 ## Decided against — do not re-raise
 
+- **Waiting — passing a turn because the next one is worth more.** It is
+  **arithmetically empty in this engine**, not under-built: `spendCooldowns`
+  decrements *every* cooldown at the end of an act, a pass and a stunned turn
+  alike, so the skill being waited for comes back on the same turn either way and
+  acting dominates waiting by exactly what the action is worth. The two available
+  lookaheads each break a rule of `price.go` — one rolls, the other is a second
+  copy of the resolving arithmetic — and either costs about ×36 a turn.
+  → `CLAUDE.md` § Rating an action; `TestAPassBuysNoCooldownAnActDoesNot` and
+  `TestNothingWaitsOnPurpose`.
 - **`at_stage` on a learnset entry.** Unblocked and deliberately not built:
   `at_stage: "Ivysaur"` is exactly `stages: ["Ivysaur","Venusaur"]`, and two
   vocabularies for one idea is the cost. → `README.md`.

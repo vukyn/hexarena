@@ -1,6 +1,11 @@
 package battle_test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/hex"
+)
 
 // TestAScarceSkillIsNotSpentOnWhatACommonOneBuys is the whole of what "holding a
 // skill for a later turn" comes to in a rating one turn deep.
@@ -55,4 +60,118 @@ func TestTheCheaperSkillDoesNotWinOnValue(t *testing.T) {
 		t.Errorf("Suggest picked %q against a healthy unit, want clout: the "+
 			"tie-break may not outrank what an option is worth", choice.Skill)
 	}
+}
+
+// TestAPassBuysNoCooldownAnActDoesNot is why *waiting* is not a thing this engine
+// can be made to want, and it is the arithmetic rather than an opinion.
+//
+// spendCooldowns brings **every** cooldown down by the turn just served, and it
+// runs at the end of Act, at the end of Pass and on a turn control took. Act then
+// starts a cooldown on the one skill it cast and on nothing else. So the skill a
+// unit might be said to be "waiting for" comes back on exactly the same turn
+// whether the unit acts or not: across its next two turns, acting is worth
+// `bestValue` now plus next turn's best, and waiting is worth nought now plus the
+// same next turn's best. Acting dominates by exactly `bestValue`, and an option
+// priced below nought is already declined — so there is no residue for a waiting
+// rule to collect.
+//
+// This test is that dominance made executable. It is what fails if somebody ever
+// makes a Pass cheaper than an Act — a pass that spent two turns of cooldown, or
+// an act that spent none — because that is the one change that would give waiting
+// something to buy, and it would otherwise be found only by a rating quietly
+// getting worse.
+func TestAPassBuysNoCooldownAnActDoesNot(t *testing.T) {
+	// slow_copy is the skill being held for later: it is put on cooldown by hand
+	// so that there is something for a wait to be waiting on. clout is what the
+	// acting fixture spends its turn on, and it has a cooldown of its own so that
+	// the *only* difference the two fixtures may show is the cast skill's own.
+	const held, cast = "slow_copy", "clout"
+	kit := []string{held, cast, "jab"}
+
+	waited := squad(t, kit, []string{"lob"}, []string{"jab"}, 0, 0, 0)
+	coolingDown(t, waited, "a", held, 3)
+	if _, err := waited.Advance(); err != nil {
+		t.Fatalf("advance the waiting fixture: %v", err)
+	}
+	if err := waited.Pass("held"); err != nil {
+		t.Fatalf("pass: %v", err)
+	}
+
+	acted := squad(t, kit, []string{"lob"}, []string{"jab"}, 0, 0, 0)
+	coolingDown(t, acted, "a", held, 3)
+	prompt, err := acted.Advance()
+	if err != nil {
+		t.Fatalf("advance the acting fixture: %v", err)
+	}
+	aim, aimed := firstAim(prompt, cast)
+	if !aimed {
+		t.Fatalf("%s could not be aimed at anything, so the fixture proves nothing", cast)
+	}
+	if err := acted.Act(cast, aim); err != nil {
+		t.Fatalf("act: %v", err)
+	}
+
+	waiting, acting := cooldowns(t, waited, "a"), cooldowns(t, acted, "a")
+	for index, id := range kit {
+		if id == cast {
+			continue
+		}
+		if waiting[index] != acting[index] {
+			t.Errorf("%s cools to %d after a pass and to %d after an act: a turn spent "+
+				"acting has to buy exactly as much cooldown as a turn spent waiting, or "+
+				"waiting is worth something and Suggest is wrong to refuse it",
+				id, waiting[index], acting[index])
+		}
+	}
+	// The held skill has to have actually moved, or the loop above is comparing
+	// two numbers that were never going to differ.
+	if waiting[0] != 2 {
+		t.Errorf("%s sits at %d after one turn of a three-turn cooldown, want 2: a turn "+
+			"that bought no cooldown at all is a fixture that tests nothing", held, waiting[0])
+	}
+	// And the one difference an act is allowed to make is the skill it cast.
+	if acting[1] == waiting[1] {
+		t.Errorf("%s reads %d after being cast and %d after a pass: an act pays its own "+
+			"cooldown, and a fixture where it does not cannot tell the two apart",
+			cast, acting[1], waiting[1])
+	}
+}
+
+// coolingDown puts a skill on cooldown by hand, the way atHealth puts a unit at a
+// health: a battle has no way to spend a turn on purpose, and a case about a skill
+// that is already recharging should not have to fight one down to get there.
+func coolingDown(t *testing.T, fight *battle.Battle, id, skillID string, turns int) {
+	t.Helper()
+	unit, known := fight.Unit(id)
+	if !known {
+		t.Fatalf("no unit %q", id)
+	}
+	for index, carried := range unit.Skills {
+		if carried == skillID {
+			unit.Cooldowns[index] = turns
+			return
+		}
+	}
+	t.Fatalf("%s does not carry %s", id, skillID)
+}
+
+// cooldowns is a unit's cooldowns as they stand.
+func cooldowns(t *testing.T, fight *battle.Battle, id string) []int {
+	t.Helper()
+	unit, known := fight.Unit(id)
+	if !known {
+		t.Fatalf("no unit %q", id)
+	}
+	return unit.Cooldowns
+}
+
+// firstAim is where a named option may be pointed, or false when it is not on
+// offer at all.
+func firstAim(prompt *battle.Prompt, skillID string) (hex.Offset, bool) {
+	for _, option := range prompt.Options {
+		if option.Skill == skillID && option.Available() {
+			return option.Aims[0], true
+		}
+	}
+	return hex.Offset{}, false
 }
