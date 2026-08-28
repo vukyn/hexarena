@@ -642,6 +642,10 @@
         {
           "id": "endurance",
           "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
         }
       ],
       "image": "assets/naruto.svg"

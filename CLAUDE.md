@@ -1356,6 +1356,23 @@ is the constraint each piece has to respect.
       ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
+- [x] **A permanent speed trait — `swiftness` on Naruto.** Grants `quickened`,
+      permanent, **+80** speed. Naruto's second trait, so the only character with
+      a default now has a choice.
+      ⚠️ **The house figure for a permanent buff is 150** (`toughened`, `kindled`,
+      `unleashed`) **and it does not transfer to speed** — a point of speed is
+      worth more than a point of anything else, because speed is turns and a turn
+      is every other stat applied again. At 150 it takes **84 mirror duels in
+      100** against `endurance`: one trait and one trap. At +80, 63.6%. At +30 it
+      is a fair 50.3% and buys nothing (134 → 138).
+      ⚠️ **Naruto was already at 96.6% against the cast** on its own best four —
+      pre-existing, not created here, and the reason the mirror column is the one
+      that means anything.
+      `TestSwiftnessActuallyBuysTurns` counts turns off the log (1099 vs 981), so
+      a trait that raised speed without the queue reading it would still fail.
+      ⚠️ Naming: `haste` already glosses "nhanh nhẹn" so `quickened` is "thoăn
+      thoắt"; the trait was "nhanh chân" until **`chân` turned out to be a
+      `bodyWord`**, and is "thần tốc".
 - [x] **The budget bounds a line nobody fights on**, and `hexforge check` now
       says so: a second table of the line each character actually fights on, per
       trait, via `forge.Library.Held`.

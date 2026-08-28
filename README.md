@@ -1942,6 +1942,42 @@ so no figure measured before a feature can be carried across it without being
 taken again. It flipped back when four slots landed; see *Piercing*, which now
 carries all three measurements.
 
+### A speed trait, and the house figure that does not transfer
+
+`swiftness` ("thần tốc") grants `quickened`, a permanent buff of **+80** per mille
+of speed, and Naruto carries it from 24. It is the second trait on the only
+character that had one, so Naruto now has a choice where it had a default.
+
+⚠️ **Every other permanent buff a trait grants is 150** — `toughened`, `kindled`,
+`unleashed` — and that reads as the house figure. **It does not transfer to
+speed**, because a point of speed is worth more here than a point of anything
+else: speed is *turns*, and a turn is every other stat applied again.
+
+Measured rather than reasoned, one Naruto against another over 300 mirror duels
+with the same four skills and both ways round:
+
+| `quickened` | swiftness vs endurance | Naruto vs the cast |
+| --- | --- | --- |
+| +30 | 50.3% | 96.3% |
+| +50 | 64.6% | 97.7% |
+| **+80** | **63.6%** | 99.1% |
+| +100 | 66.0% | 99.4% |
+| +150 | **83.6%** | 99.4% |
+
+At the house figure it takes **84 duels in 100**, which is not a choice between
+two traits — it is one trait and one trap. At +80 it is a favourite, which is
+what a trait suiting a fast, thin character is supposed to be. At +30 it is a
+choice and buys nothing: 134 speed becomes 138.
+
+⚠️ **Naruto was already at 96.6% against the cast before this**, on a kit of its
+own four best skills. That is a pre-existing figure this did not create and does
+not fix; what the table says about the trait is the mirror column, and the
+right-hand one is there so nobody reads 99.1% as something `swiftness` did.
+
+`TestSwiftnessActuallyBuysTurns` counts turns off the log rather than trusting the
+rate — 1099 against 981 — because a trait that raised speed without the queue
+reading it would still win more often through whatever else it changed.
+
 ### The budget bounds a line nobody fights on
 
 `hexforge check` now prints the stat line a character actually fights on — its
