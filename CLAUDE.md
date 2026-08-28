@@ -1395,14 +1395,21 @@ is the constraint each piece has to respect.
       ⚠️ **The house figure for a permanent buff is 150** (`toughened`, `kindled`,
       `unleashed`) **and it does not transfer to speed** — a point of speed is
       worth more than a point of anything else, because speed is turns and a turn
-      is every other stat applied again. At 150 it takes **84 mirror duels in
-      100** against `endurance`: one trait and one trap. At +80, 63.6%. At +30 it
-      is a fair 50.3% and buys nothing (134 → 138).
-      ⚠️ **Naruto was already at 96.6% against the cast** on its own best four —
-      pre-existing, not created here, and the reason the mirror column is the one
-      that means anything.
-      `TestSwiftnessActuallyBuysTurns` counts turns off the log (1099 vs 981), so
-      a trait that raised speed without the queue reading it would still fail.
+      is every other stat applied again. Priced in the **share of the turn order**
+      it buys: `+30` 2.6% · `+50` 4.4% · **`+80` 7.9%** · `+100` 9.9% · `+150`
+      14.8% more turns than `endurance` gets in the same battles.
+      ⚠️ **A win rate does not measure this and a band over one is a trap.** Over
+      300 mirror duels the rate does not even *order* the amounts — `+150` comes
+      back at 59.0% while `+50` reads 74.0% — because the turn queue is discrete,
+      so a few points of speed buy whether one more turn lands before the other
+      unit acts, and that is lumpy per seed. `Suggest` casting no-power skills put
+      a summon in the queue too and made the lumps larger. **At 150 the win-rate
+      band passes and the turn-share band fails**, which is how it was caught.
+      ⚠️ The first turn test compared **two separate sweeps' totals**, which
+      measures battle *length* — and the faster unit ends its battles sooner. It
+      passed until `Suggest` changed, then reported swiftness with **fewer** turns
+      while being exactly as fast. Both sides of **one** battle is the comparison
+      that cannot say that.
       ⚠️ Naming: `haste` already glosses "nhanh nhẹn" so `quickened` is "thoăn
       thoắt"; the trait was "nhanh chân" until **`chân` turned out to be a
       `bodyWord`**, and is "thần tốc".

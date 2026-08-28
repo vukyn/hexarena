@@ -1980,26 +1980,34 @@ character that had one, so Naruto now has a choice where it had a default.
 speed**, because a point of speed is worth more here than a point of anything
 else: speed is *turns*, and a turn is every other stat applied again.
 
-Measured rather than reasoned, one Naruto against another over 300 mirror duels
-with the same four skills and both ways round:
+Measured in the **share of the turn order** the trait buys — one Naruto against
+another with the same four skills, counting both sides of the same battles:
 
-| `quickened` | swiftness vs endurance | Naruto vs the cast |
-| --- | --- | --- |
-| +30 | 50.3% | 96.3% |
-| +50 | 64.6% | 97.7% |
-| **+80** | **63.6%** | 99.1% |
-| +100 | 66.0% | 99.4% |
-| +150 | **83.6%** | 99.4% |
+| `quickened` | +30 | +40 | +50 | +60 | **+80** | +100 | +150 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| turns over `endurance` | 2.6% | 3.5% | 4.4% | 5.6% | **7.9%** | 9.9% | 14.8% |
 
-At the house figure it takes **84 duels in 100**, which is not a choice between
-two traits — it is one trait and one trap. At +80 it is a favourite, which is
-what a trait suiting a fast, thin character is supposed to be. At +30 it is a
-choice and buys nothing: 134 speed becomes 138.
+⚠️ **A win rate was tried first and does not work here**, which is worth the
+paragraph because a mirror duel *looks* like the obvious measurement. Over 300
+duels both ways round it does not even order the amounts it is measuring:
 
-⚠️ **Naruto was already at 96.6% against the cast before this**, on a kit of its
-own four best skills. That is a pre-existing figure this did not create and does
-not fix; what the table says about the trait is the mirror column, and the
-right-hand one is there so nobody reads 99.1% as something `swiftness` did.
+```
++30 59.6%   +40 63.3%   +50 74.0%   +60 63.0%
++80 73.0%   +100 57.0%  +150 59.0%
+```
+
+Priced at the house figure of 150 the trait comes back **below** the same trait
+priced at 50. That is not subtlety: the turn queue is **discrete**, so what a few
+points of speed buy is whether one more turn lands before the other unit acts,
+and which side of that line a seed falls on is lumpy. Since `battle.Suggest`
+learned to cast a skill with no power there is a summon in the queue as well, and
+the lumps got larger. A band over that number would have let a trait priced at
+150 sit comfortably inside it — the mutation proves it: at 150 the win-rate band
+passes and the turn-share band fails.
+
+The share of turns is the same thing without the noise, because it is what the
+trait *does* rather than what eventually comes of it, and it is monotone across
+the whole sweep.
 
 `TestSwiftnessActuallyBuysTurns` counts turns off the log rather than trusting the
 rate — 1099 against 981 — because a trait that raised speed without the queue

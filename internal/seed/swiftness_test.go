@@ -55,11 +55,11 @@ func TestSwiftnessBuysSpeedAndNothingElse(t *testing.T) {
 // transfer, because a point of speed is worth more here than a point of anything
 // else: speed is turns, and a turn is every other stat applied again.
 //
-// ⚠️ Measured rather than reasoned. At 150 a Naruto holding this beats the same
-// Naruto holding `endurance` in **84 mirror duels out of 100**, which is not a
-// choice between two traits, it is one trait and one trap. At 80 it is 64, which
-// is a favourite — and a favourite is what a trait suiting a fast, fragile
-// character is supposed to be.
+// ⚠️ Measured rather than reasoned, in the share of the turn order the trait
+// buys: 150 hands its holder **14.8% more turns** than `endurance` gets in the
+// same battles, where 80 hands it 7.9% and 30 hands it 2.6%. The sweep and why
+// it is counted in turns rather than in wins are in
+// TestSwiftnessBuysAShareOfTheTurnsAndNotAllOfThem.
 func TestASpeedTraitIsPricedBelowTheOtherPermanentBuffs(t *testing.T) {
 	statuses := mustStatuses(t)
 	quick, err := statuses.Lookup("quickened")
@@ -90,93 +90,78 @@ func TestASpeedTraitIsPricedBelowTheOtherPermanentBuffs(t *testing.T) {
 	}
 }
 
-// TestSwiftnessIsAFavouriteAndNotALock is the claim the figure above was tuned
-// against, fought rather than read.
+// TestSwiftnessBuysAShareOfTheTurnsAndNotAllOfThem is the figure the trait was
+// priced against, and it is a share of turns rather than a win rate on purpose.
 //
-// One Naruto against another with the same four skills, so the trait is the whole
-// difference — and both ways round, because atb.Queue breaks a tie by enlistment
-// and a one-way mirror would report that instead.
+// ⚠️ A win rate was tried first and abandoned, which is worth the paragraph
+// because the mirror duel *looks* like the obvious measurement. Over 300 duels
+// both ways round it does not order the amounts it is supposed to be measuring:
 //
-// ⚠️ The band is wide and deliberately one that a **trait suiting its character**
-// sits inside. Naruto is fast and thin; a defensive trait was never going to be
-// its best. What the upper bound refuses is `endurance` becoming unpickable.
-func TestSwiftnessIsAFavouriteAndNotALock(t *testing.T) {
-	swift, tough := 0, 0
-	for _, swap := range []bool{false, true} {
-		for seedValue := 1; seedValue <= swiftSeeds; seedValue++ {
-			winner, decided := narutoMirror(t, swap, uint64(seedValue))
-			if !decided {
-				continue
-			}
-			if (winner == hex.SideAlly) != swap {
-				swift++
-			} else {
-				tough++
-			}
-		}
+//	+30  59.6%    +40  63.3%    +50  74.0%    +60  63.0%
+//	+80  73.0%    +100 57.0%    +150 59.0%
+//
+// Priced at the house figure of 150 the trait comes back *below* the same trait
+// priced at 50. That is not the trait being subtle: the turn queue is discrete,
+// so what a few points of speed buy is whether an extra turn lands before the
+// other unit acts, and which side of that line a seed falls on is lumpy. Since
+// battle.Suggest learned to cast a skill with no power there is a summon in the
+// queue as well, and the lumps got larger. A band over that number would have
+// let a trait priced at 150 sit comfortably inside it.
+//
+// The share of turns is the same measurement without the noise, because it is
+// what the trait actually does rather than what eventually comes of it:
+//
+//	+30 2.6%    +40 3.5%    +50 4.4%    +60 5.6%
+//	+80 7.9%    +100 9.9%   +150 14.8%
+//
+// Monotone across the whole sweep. The band keeps the trait buying a real share
+// of the turn order without buying the fight: below the floor it is a trait
+// nobody would spend a slot on, and above the ceiling `endurance` is not a
+// choice.
+func TestSwiftnessBuysAShareOfTheTurnsAndNotAllOfThem(t *testing.T) {
+	swift, tough := narutoTurnShare(t)
+	if tough == 0 {
+		t.Fatal("the other side never acted, so nothing was measured")
 	}
-	fought := swift + tough
-	if fought == 0 {
-		t.Fatal("no mirror duel ended, so nothing was measured")
+	over := (swift - tough) * scale.Base / tough
+	const lowest, highest = 40, 130
+	if over < lowest || over > highest {
+		t.Errorf("swiftness takes %d.%d%% more turns than endurance in the same battles, "+
+			"outside %d.%d..%d.%d%%: under the floor the trait buys nothing worth a slot, "+
+			"over the ceiling endurance is not a choice",
+			over/10, over%10, lowest/10, lowest%10, highest/10, highest%10)
 	}
-	rate := swift * scale.Base / fought
-	const lowest, highest = 500, 750
-	if rate < lowest || rate > highest {
-		t.Errorf("swiftness takes %d.%d%% of %d mirror duels against endurance, outside %d..%d: "+
-			"below the floor it buys nothing, above the ceiling endurance is not a choice",
-			rate/10, rate%10, fought, lowest, highest)
-	}
-	t.Logf("swiftness %d, endurance %d over %d duels: %d.%d%%",
-		swift, tough, fought, rate/10, rate%10)
+	t.Logf("swiftness acts %d.%d%% more often: %d turns against %d",
+		over/10, over%10, swift, tough)
 }
 
-// TestSwiftnessActuallyBuysTurns is what a speed trait is *for*, and the thing a
-// win rate cannot say.
+// narutoTurnShare is how the two traits split the turns of the battles they
+// fight against each other, counted off the log rather than worked out from the
+// stat line.
 //
-// A rate says which side won; it does not say why, and a trait that raised speed
-// without the queue reading it would still win more often through whatever else
-// changed. This counts the turns each side is handed.
-func TestSwiftnessActuallyBuysTurns(t *testing.T) {
-	swiftTurns, toughTurns := narutoTurns(t, "swiftness"), narutoTurns(t, "endurance")
-	if swiftTurns <= toughTurns {
-		t.Errorf("a Naruto holding swiftness took %d turns and one holding endurance %d: "+
-			"the trait raises speed and speed is turns, so it has to be handed more of them",
-			swiftTurns, toughTurns)
-	}
-	t.Logf("turns taken: swiftness %d, endurance %d", swiftTurns, toughTurns)
-}
-
-// narutoMirror fights one Naruto trait against the other over one seed.
-func narutoMirror(t *testing.T, swap bool, seedValue uint64) (hex.Side, bool) {
+// Both figures come out of the same battles on purpose: whatever else moves the
+// length of a fight moves it for both sides at once, so the comparison survives
+// a change to what the opponent decides to cast.
+func narutoTurnShare(t *testing.T) (swift, tough int) {
 	t.Helper()
-	first, second := "swiftness", "endurance"
-	if swap {
-		first, second = second, first
-	}
-	fight := narutoBattle(t, first, second, seedValue)
-	if _, err := fight.RunToEnd(4000); err != nil {
-		t.Fatalf("run: %v", err)
-	}
-	return fight.Winner()
-}
-
-// narutoTurns is how many turns a Naruto under one trait is handed across the
-// sweep, counted off the log rather than worked out from the stat line.
-func narutoTurns(t *testing.T, trait string) int {
-	t.Helper()
-	taken := 0
 	for seedValue := 1; seedValue <= swiftSeeds/5; seedValue++ {
-		fight := narutoBattle(t, trait, "endurance", uint64(seedValue))
+		fight := narutoBattle(t, "swiftness", "endurance", uint64(seedValue))
 		if _, err := fight.RunToEnd(4000); err != nil {
 			t.Fatalf("run: %v", err)
 		}
 		for _, event := range fight.Drain() {
-			if event.Kind == battle.TurnBegan && event.Actor == "mine" {
-				taken++
+			if event.Kind != battle.TurnBegan {
+				continue
+			}
+			switch event.Actor {
+			case "mine":
+				swift++
+			case "theirs":
+				tough++
 			}
 		}
 	}
-	return taken
+	return swift, tough
 }
 
 // narutoBattle is one Naruto against another, the kit held still and the trait
