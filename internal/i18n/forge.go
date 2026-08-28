@@ -474,7 +474,7 @@ func (l Lang) Warning(warning forge.Warning) string {
 	switch typed := warning.(type) {
 	case *forge.ShortReachWarning:
 		return l.Say(WarningShortReach,
-			typed.ID, typed.Archetype, typed.Column, typed.Needed, typed.Range)
+			typed.ID, typed.Archetype, typed.Range)
 	default:
 		return l.Say(ErrorAsGiven, warning)
 	}

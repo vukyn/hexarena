@@ -590,11 +590,22 @@ first), and rows no longer affect reach at all — only pattern shapes. The odd-
 geometry and the 180° rotation still pay for themselves through patterns; they no
 longer drive targeting.
 
-⚠️ **A range above three saturates.** Three ranks is the whole of a side, so
-`solar_beam` at 4 and `arc_bolt` at 5 mean exactly what 3 means. The parse bound
-is still the board diagonal and the shipped numbers are untouched **on purpose**:
-this change is the mechanism, and re-reading all 26 enemy-aimed ranges is the
-balance pass that follows it.
+**Range is penetration depth, and the tiers mean something.** `maxRange` is
+`hex.FormationCols` — three ranks is the whole of a side, so a four would have
+meant what a three means. The shipped book reads: **1** for contact weapons and
+the basic attacks, which have to go through the front rank and are the norm;
+**2** for shapes that sweep, gas that drifts and things thrown over the line;
+**3** for the two heaviest skills in the book, `solar_beam` and `hydro_pump`,
+which are the only things that reach a back line through two held ranks.
+
+⚠️ **The numbers are what turned blocking on, and they cost a balance answer.**
+Under the ranges the mechanism shipped with, most skills were depth 2 or 3 and
+went round a held front rank as a matter of course; at 14 of 31 skills stopping
+at the first rank, holding a front line finally decides fights. The shipped
+roster was levelled for a board where it did not, and the instrument moved from
+19/40 ally to **12/40**. That is a placement finding rather than a skill finding
+— both sides lost depth about equally — and re-levelling `roster.json` under
+blocking is the follow-up, filed in `TODO.md`.
 
 **Element chart.** `element.Chart.Validate` enforces that every element is
 classified exactly once, that a pair is only mutually strong when declared so, and

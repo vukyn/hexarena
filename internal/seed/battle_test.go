@@ -185,32 +185,37 @@ func TestEveryShippedUnitCanReachEveryEnemy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load skills: %v", err)
 	}
-	longest := func(unit battle.Roster) int {
-		out := 0
+	// ⚠️ This used to compare a kit's longest range against the cell distance to
+	// every enemy, and that is no longer a question the board can be asked: reach
+	// is counted in ranks from the far side, so distance decides nothing and a
+	// range of one always finds whoever is foremost.
+	//
+	// What is worth holding instead is that the roster is not built out of units
+	// that can only ever hit the front rank. A cast where nothing can reach past a
+	// held front line is one where the whole back half is decoration until the
+	// front dies — playable, but not what this roster is for — so every unit is
+	// required to carry at least one skill that gets past the first rank.
+	for _, unit := range roster {
+		deepest := 0
 		for _, id := range unit.Skills {
 			carried, err := skills.Lookup(id)
 			if err != nil {
 				t.Fatalf("unit %q: %v", unit.ID, err)
 			}
-			if carried.Range > out {
-				out = carried.Range
+			if carried.Target != skill.Enemy {
+				continue
+			}
+			if carried.Range > deepest {
+				deepest = carried.Range
 			}
 		}
-		return out
-	}
-	for _, unit := range roster {
-		reach := longest(unit)
-		from := hex.Place(unit.Side, unit.Slot)
-		for _, other := range roster {
-			if other.Side == unit.Side {
-				continue
-			}
-			distance := from.DistanceTo(hex.Place(other.Side, other.Slot))
-			if distance <= reach {
-				continue
-			}
-			t.Errorf("%q at %s reaches %d, but %q stands %d cells away",
-				unit.ID, from, reach, other.ID, distance)
+		if deepest == 0 {
+			t.Errorf("%q carries no skill aimed at an enemy at all", unit.ID)
+			continue
+		}
+		if deepest < 2 {
+			t.Errorf("%q reaches only the front rank, so it can do nothing until the "+
+				"enemy's front line is dead", unit.ID)
 		}
 	}
 }

@@ -202,7 +202,7 @@ const Skills = `[
   {
     "id": "hex_curse",
     "element": "dark",
-    "range": 4,
+    "range": 3,
     "pattern": "single",
     "power": 800,
     "strikes": 1,
@@ -243,7 +243,7 @@ const Skills = `[
   {
     "id": "arc_bolt",
     "element": "electric",
-    "range": 5,
+    "range": 3,
     "pattern": "single",
     "power": 1500,
     "strikes": 1,
