@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"unicode"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/cast"
@@ -800,5 +801,64 @@ func TestBulbasaurCanBeBuiltTwoWays(t *testing.T) {
 	if len(available) < 2 {
 		t.Errorf("%d traits are available at the cap, so the one slot decides nothing",
 			len(available))
+	}
+}
+
+// TestABiographyCarriesNoFigure closes, for a character's prose, the hole the
+// digit ban already closes for a skill's.
+//
+// Every number about a character is derived and drawn on the pane the biography
+// sits in: the stages row prints where each form starts, the effective-hp row
+// prints what the stat line is worth, and the level the browser is walking is on
+// screen the whole time. A figure written into the prose says the same thing
+// twice until the day it stops being true — and the shipped biographies were
+// doing exactly that, each ending "Ivysaur từ cấp 16, Venusaur từ cấp 32", which
+// one edit to a stage's min_level turns into a lie nothing would have caught.
+func TestABiographyCarriesNoFigure(t *testing.T) {
+	checked := 0
+	for _, character := range mustCast(t).All() {
+		if character.Bio == "" {
+			continue
+		}
+		checked++
+		for _, letter := range character.Bio {
+			if unicode.IsDigit(letter) {
+				t.Errorf("%s: its biography writes the figure %q, and every figure about a character is derived beside it",
+					character.ID, string(letter))
+				break
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no shipped character has a biography, so this measures nothing")
+	}
+}
+
+// TestABiographyNamesNoLaterForm is the other half of the same restatement, and
+// the half a digit ban cannot see.
+//
+// The stages row already lists every form and where it starts. A biography that
+// walks the evolution line in prose is that row again, in worse form and without
+// its numbers — and it goes stale the moment a form is renamed or a fourth added.
+//
+// The **first** form is free, and deliberately: it is what the character is
+// called before anything happens, so "Charmander giấu được mọi thứ trừ tâm
+// trạng" is the creature's name rather than a list of what it turns into.
+func TestABiographyNamesNoLaterForm(t *testing.T) {
+	checked := 0
+	for _, character := range mustCast(t).All() {
+		if character.Bio == "" || len(character.Stages) < 2 {
+			continue
+		}
+		checked++
+		for _, stage := range character.Stages[1:] {
+			if strings.Contains(character.Bio, stage.Name) {
+				t.Errorf("%s: its biography names the later form %q, which the stages row beside it already lists",
+					character.ID, stage.Name)
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no shipped character has both a biography and a second form, so this measures nothing")
 	}
 }
