@@ -55,8 +55,15 @@ is only so the shape is readable.
       holding a front rank decide fights — 14 of 31 skills now stop at the first
       rank — and the shipped roster was placed for a board where it did not. The
       instrument went 19/40 ally to 12/40 on the numbers alone, with both sides
-      losing depth about equally, so this is a **placement** answer and not a
-      skill one. → `CLAUDE.md` § Invariants.
+      losing depth about equally (ally 8 skills moved, enemy 10), so this is a
+      **placement** answer and not a skill one.
+      ⚠️ Two dead ends already checked, so nobody walks them twice: `hydro_pump`
+      is the only depth-3 skill and only the enemy fields it, but setting it back
+      to 2 leaves the rate at **exactly** 12/40 — it is not the driver; and the
+      per-unit range diff is near-symmetric, so it is not a kit imbalance either.
+      What is left is where the units stand: a front rank now shields the two
+      behind it, and the formations were authored when it did not.
+      → `CLAUDE.md` § Invariants.
 
 - [ ] **An evolution line that forks.** A placement chooses how far along one
       path, never which path. ⚠️ The parse rule is the small half; `Furthest`
