@@ -2549,10 +2549,14 @@ func TestATransparentCellIsLeftAlone(t *testing.T) {
 // on a terminal with room to spare.
 //
 // The listing's last cell was clipped to minWidth, which is the floor a window
-// has to clear rather than a ceiling on what one may spend, so "để dành cho loài
-// dragon" reached a hundred-column terminal as "để dành cho loài dr…" — a row
-// that has stopped saying which species it is for, which is the one thing that
-// column exists to say.
+// has to clear rather than a ceiling on what one may spend, so the species cell
+// reached a hundred-column terminal cut short of the species — a row that has
+// stopped saying which species it is for, which is the one thing that column
+// exists to say.
+//
+// The cell is not quoted here on purpose. It was "để dành cho loài dragon" when
+// this was written and is "chủng loài dragon" now, and a shorter wording is not
+// a fix: it moves the width the clip bites at without moving the clip.
 func TestAWideWindowShowsTheWholeRestrictionColumn(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		m, _, _ := start(t, lang)

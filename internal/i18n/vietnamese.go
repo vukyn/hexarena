@@ -162,7 +162,7 @@ q hoặc ctrl+c để thoát`,
 	WhoKeptForElements: "để dành cho %s",
 	WhoKeptForRoles:    "để dành cho mẫu %s",
 	WhoBelongsTo:       "của riêng %s",
-	WhoKeptForSpecies:  "để dành cho loài %s",
+	WhoKeptForSpecies:  "chủng loài %s",
 
 	PickerKitTitle:        "bộ chiêu",
 	PickerElementsTitle:   "hệ nào được học chiêu này",
