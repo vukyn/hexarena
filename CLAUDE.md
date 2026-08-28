@@ -111,8 +111,10 @@ Rules for anything added to that file:
 ⚠️ **No balance figure carries across this change.** The shipped roster read 53.1%
 ally before and 79.0% after, side-neutral (82.5% for the same squad with the sides
 exchanged), 0 stalls, 4000 seeds. That is a cast finding — the roster's calibration
-rested on the opponent not playing statuses — and re-levelling it is a **data**
-change that is deliberately not part of this one.
+rested on the opponent not playing statuses. It has been re-levelled since, as a
+separate data change: **Charmeleon 30 / Ivysaur 30, reading 49.1% over 20,000
+seeds**. Any rate quoted anywhere in this file predating that pass is a reading of a
+different instrument.
 
 ## The layer rule
 
@@ -882,11 +884,20 @@ load-bearing:
   something was always pending and `frozen` correctly never fired. Check a new
   slot against `hex.Place` rather than against the picture.
 - **Both trait states and all three stages are in play.** Charmander at 8 is below
-  `blaze`'s unlock level and the two 16s sit exactly on `endurance`'s, so a battle
-  exercises a unit with its trait and one without. Since `blaze` became gated it
-  carries a third state as well: Charmeleon holds it from the opening board and
-  only comes *into* it partway down, which is what a shipped log now shows a
-  `passive_held` for mid-battle.
+  `blaze`'s unlock level, Wartortle at 16 sits exactly on `endurance`'s, and Ivysaur
+  at 30 has earned two traits and fields neither — so a battle exercises a unit with
+  its trait, one that has not earned one, and one that declined. Since `blaze`
+  became gated it carries a third state as well: Charmeleon holds it from the
+  opening board and only comes *into* it partway down, which is what a shipped log
+  now shows a `passive_held` for mid-battle.
+- ⚠️ **The levels are calibrated against how well the opponent plays, so an AI
+  change invalidates them.** The two young enemies were 28 and 16 until `Suggest`
+  learned to price statuses; the roster then read **80.0% ally over 20,000 seeds**
+  and had to be re-levelled to **Charmeleon 30 / Ivysaur 30**, which reads 49.1%.
+  ⚠️ **The ace level is not a dial** — Venusaur 60 → 50 alone takes the ally side
+  from 79.0% to 4.0% at 4000 seeds. Tune the young units, and change one thing at a
+  time: the loadouts were deliberately left alone in that pass so the level was the
+  only thing measured.
 
 ⚠️ **The 40-seed sweep in `TestSeedBattlesFinishFromEverySeed` is a smoke test, not
 a measurement.** It read 45 per cent on a draft whose true rate over 4000 seeds

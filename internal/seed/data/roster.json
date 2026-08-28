@@ -75,7 +75,7 @@
     {
       "id": "foe.charmeleon",
       "character": "pokemon.charmander",
-      "level": 28,
+      "level": 30,
       "side": "enemy",
       "slot": [
         1,
@@ -94,7 +94,7 @@
     {
       "id": "foe.ivysaur",
       "character": "pokemon.bulbasaur",
-      "level": 16,
+      "level": 30,
       "side": "enemy",
       "slot": [
         1,
