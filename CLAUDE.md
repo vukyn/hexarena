@@ -1158,6 +1158,30 @@ is the constraint each piece has to respect.
       ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
+- [x] **A summon says how strong it arrives.** `describeSummon` prints the
+      **share** and still not the fixed stat line, because they are not the same
+      kind of number: a share is one figure that means the same thing wherever it
+      is read, and a fixed line is six nobody can compare without the caster.
+      ⚠️ It was left out because "the listing beside this carries it" — **no
+      listing does.** Neither `hexforge` nor `hexforge-tui` mentions a summon at
+      all, so the sentence is the only place one is described.
+      ⚠️ **`share` and `share_of_base` must read differently** — one rewards
+      buffing before the cast and one ignores every buff — and **one copy and
+      several need different wordings**, since a pair handed the singular reads as
+      a pair carrying 40% between them. Comparing the two descriptions does not
+      catch that: they differ in their count either way, so the test asks about
+      the share clause by splitting the wording on its blanks.
+      ⚠️ **A creature is not a copy.** English falls back to a word, and the word
+      was "copy" for everything: the shipped toad read as a copy of the ninja who
+      called it. Told apart by the stat spelling, which is the line the engine
+      already draws.
+      Data rules that came out of it: a summon's flavour may claim nothing about
+      its caster (`casterWords` — both shipped Naruto summons did, and the toad's
+      "to hơn cả người gọi" is contradicted by its own stat line), and a
+      one-strike flavour may describe no volley (`volleyWords` — `kunai` said "một
+      nhúm", which is the count said twice **and** the wrong weapon, since a
+      handful thrown at once is the shuriken beside it; renamed `phi đao`).
+      `chùm` is off that list on the judgement that kept teeth out of `bodyWords`.
 - [x] **A taunt: the choice of enemy taken away, not the turn.** Status
       `taunting`, and `Battle.aims` narrows an **enemy-aimed** skill to whoever is
       taunting. `Suggest` obeys it **with no AI change at all**, because it reads

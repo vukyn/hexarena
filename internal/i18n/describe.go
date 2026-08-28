@@ -214,19 +214,35 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 // is not a fact this layer holds — the skill is. A bare id in a Vietnamese
 // sentence is the same fallback every other name in these descriptions takes.
 //
-// Nothing is said about the stat line. A share of a caster is a number a reader
-// cannot check without knowing the caster, and a fixed line is six figures; the
-// listing beside this carries both for anybody tuning them, and what a player
-// wants from a sentence is what arrives and for how long.
+// # The share is said and the fixed line is not
+//
+// They are not the same kind of number and were wrong to be treated as one. A
+// share is a single figure that means the same thing wherever it is read — a
+// copy at 40% of whoever made it is half as good as one at 80%, whichever
+// character is holding the skill — which is the argument this whole file makes
+// for printing power as a share of a stat rather than as damage. A fixed line is
+// six figures nobody can compare without the caster in front of them, and it
+// belongs where a stat line belongs.
+//
+// The share was left out on the reasoning that a listing beside this carries it.
+// No listing does: neither hexforge nor its full-screen twin mentions a summon
+// at all, so this sentence is the only place a summon is described, and what it
+// left out was simply gone. A copy is the one thing a skill puts on the board
+// whose strength is a choice the author made, and a description of it that
+// cannot say how strong describes a different mechanic.
 func (l Lang) describeSummon(declared *skill.Summon) string {
 	// The authored name is Vietnamese, like every other name in the data, so
 	// English says "copy" rather than printing it. That is the division Gloss
 	// makes — a data name is authored once and English shows what it can read —
 	// and a summon has no id for English to fall back on, so the word is the
 	// only thing left that is true in it.
-	name := l.Text(BlurbSummonedCopy)
+	one, many := BlurbSummonedCopy, BlurbSummonedCopies
+	if declared.Stats != nil {
+		one, many = BlurbSummonedCreature, BlurbSummonedCreatures
+	}
+	name := l.Text(one)
 	if declared.Count > 1 {
-		name = l.Text(BlurbSummonedCopies)
+		name = l.Text(many)
 	}
 	if l == Vi && declared.Name != "" {
 		name = declared.Name
@@ -234,6 +250,21 @@ func (l Lang) describeSummon(declared *skill.Summon) string {
 	subject := l.Say(BlurbSummonedOne, name)
 	if declared.Count > 1 {
 		subject = l.Say(BlurbSummonedMany, declared.Count, name)
+	}
+	// Exactly one of the two shares is ever set, and a summon with a fixed stat
+	// line sets neither, so the sum is the share there is and nought is the
+	// answer that there is none. Which of the two it was still has to be said:
+	// they differ in whether buffing before the cast reaches the copy.
+	if shared := declared.Share + declared.ShareOfBase; shared > 0 {
+		of := l.Text(BlurbSummonedOfCurrent)
+		if declared.ShareOfBase > 0 {
+			of = l.Text(BlurbSummonedOfBase)
+		}
+		wording := BlurbSummonedShare
+		if declared.Count > 1 {
+			wording = BlurbSummonedShareEach
+		}
+		subject = l.Say(wording, subject, share(shared), of)
 	}
 	if declared.Lasts <= 0 {
 		return l.Say(BlurbSummons, subject)

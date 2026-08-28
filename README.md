@@ -2467,6 +2467,49 @@ board therefore never had a vacated cell on it, and a mutation freeing vacated
 cells passed. It is driven through a summon running out of turns now, which is a
 departure the engine actually performs.
 
+⚠️ **The share is described and the fixed stat line is not**, and the two were
+wrong to be treated as one number. A share is a single figure meaning the same
+thing wherever it is read — a copy at 40% of whoever made it is half as good as
+one at 80%, whichever character holds the skill — which is the argument this
+whole engine makes for describing power as a share of a stat rather than as
+damage. A fixed line is six figures nobody can compare without the caster in
+front of them.
+
+The share was left out on the reasoning that a listing beside the sentence
+carries it. **No listing does**: neither `hexforge` nor its full-screen twin
+mentions a summon at all, so the description is the only place a summon is
+described, and the one number the author chose was simply gone. Two copies at a
+tenth of their caster and two at four fifths read identically.
+
+⚠️ **A creature is not a copy.** English does not print an authored Vietnamese
+name, so it falls back to a word — and the word was "copy" for everything, which
+made the shipped toad read as *"calls up a creature"* only after this: before it,
+a toad was a copy of the ninja who called it. The engine already draws that line
+and the fallback now reads it, since a copy is written as a share of its caster
+and a creature as a stat line of its own.
+
+⚠️ **A summon's flavour may claim nothing about its caster**, and both shipped
+Naruto summons did. The clone said its copies carried *"một phần sức của bản
+gốc"* — the share the sentence now prints as a figure, said twice. The toad was
+*"to hơn cả người gọi"* and is not: its stat line has **less** health and **less**
+attack than the ninja who calls it, and only more defence. Where the summon is a
+share the comparison is derived; where it is a fixed line it cannot be checked at
+all, because this layer holds the skill and not whoever carries it.
+
+⚠️ **A one-strike flavour may describe no volley.** `skill.ParseBook` refuses a
+digit and `TestAFlavourClauseSpellsOutNoNumber` refuses a spelled one, and *"một
+nhúm phi tiêu"* walks past both while promising exactly what `2 nhát` would have.
+That was `kunai`: a handful of blades thrown, above a derived half that struck
+once — and it read as the wrong **weapon** on top of the wrong number, because a
+handful thrown at once is the `wind_shuriken` standing next to it in the same
+kit. A kunai is one blade thrown one at a time, which is what it now says, under
+the name `phi đao` rather than `phi tiêu` — the word a reader of the origin uses
+for the other skill's weapon.
+
+`chùm` is deliberately not on that list, on the judgement that kept teeth out of
+`bodyWords`: a cluster of bubbles leaves as one puff and lands as one hit, which
+is what `bubble` says and what `bubble` does.
+
 ### The first summoner, and the second origin
 
 Naruto is in the cast and **not in the roster**, which is the whole shape of this
