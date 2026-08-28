@@ -117,6 +117,8 @@ func books(t *testing.T) battle.Books {
 	  {"id":"mend","element":"neutral","range":1,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"ally",
 	   "strips":{"categories":["dot","stat_debuff","control"],"stacks":3}},
+	  {"id":"reach","element":"neutral","range":2,"pattern":"single",
+	   "power":800,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"lob","element":"neutral","range":3,"pattern":"single",
 	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"spit","element":"neutral","range":3,"pattern":"single",
@@ -872,36 +874,44 @@ func TestActRejects(t *testing.T) {
 	}
 }
 
-// deadlocked is the roster the Stalemate outcome exists for: a short-ranged pair
-// on the front column who can reach each other, and a longer-ranged pair on the
-// back column who can reach the front but not each other.
+// deadlocked is the roster the Stalemate outcome exists for: a fragile pair who
+// can fight, and a durable pair whose kits hold nothing they can point at an
+// enemy at all.
 //
-// It starts legal — battle.New refuses a unit that can aim at nobody, and every
-// one of these four can — and stops being legal the moment the two front units
-// die, because reach is fixed at enlistment and nothing on this board moves.
-// That is the whole shape of the problem: measured through hex.Place, the back
-// column is five cells from the enemy's back column and three from its front.
-// frontSkills is what the two front units carry, and it is a parameter for one
-// reason: a front unit that can also touch the enemy's back column is how a
-// timed effect gets onto a survivor of the deadlock.
+// ⚠️ **The cause used to be geometry and no longer can be.** It was a pair on the
+// back column whose range could not span the board once the front rank died —
+// reach was fixed at enlistment, nothing moved, and the fight could not continue.
+// Range is now counted in *ranks from the far side*, so a range of one finds the
+// enemy's foremost survivor wherever it stands: no living unit with an offensive
+// skill is ever out of reach, and a board can never freeze for want of distance.
+//
+// What can still freeze is a board where nobody has anything to *throw*. The two
+// survivors here know only `steel`, a self-buff, so they may act forever and can
+// never change the outcome, which is exactly what frozen() asks. The shape of the
+// test is unchanged — legal at enlistment, fighting while the front pair lives,
+// settled as a draw the moment they are gone — and only the reason is different.
+//
+// frontSkills is what the two fragile units carry, and it is a parameter for one
+// reason: a front unit that can also land a timed effect is how a poison gets
+// onto a survivor of the deadlock.
 func deadlocked(t *testing.T, frontSkills []string, speeds [4]int64) []battle.Roster {
 	t.Helper()
 	return []battle.Roster{
 		{ID: "a.front", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: single("neutral"), Stats: stats(10, 800, 400, speeds[0]), Skills: frontSkills},
 		{ID: "a.back", Side: hex.SideAlly, Slot: hex.Offset{Col: 0, Row: 1},
-			Affinity: single("neutral"), Stats: stats(4000, 800, 400, speeds[1]), Skills: []string{"lob"}},
+			Affinity: single("neutral"), Stats: stats(4000, 800, 400, speeds[1]), Skills: []string{"steel"}},
 		{ID: "f.front", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
-			Affinity: single("neutral"), Stats: stats(10, 800, 400, speeds[2]), Skills: []string{"strike"}},
+			Affinity: single("neutral"), Stats: stats(10, 800, 400, speeds[2]), Skills: []string{"steel"}},
 		{ID: "f.back", Side: hex.SideEnemy, Slot: hex.Offset{Col: 0, Row: 1},
-			Affinity: single("neutral"), Stats: stats(4000, 800, 400, speeds[3]), Skills: []string{"lob"}},
+			Affinity: single("neutral"), Stats: stats(4000, 800, 400, speeds[3]), Skills: []string{"steel"}},
 	}
 }
 
 // TestABattleNobodyCanActInIsADraw is seed 18 as a test: the fight that used to
 // skip 3955 of its 4000 turns and come back as a battle that never finished.
 func TestABattleNobodyCanActInIsADraw(t *testing.T) {
-	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"strike"}, [4]int64{40, 150, 50, 100}))
+	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"steel"}, [4]int64{40, 150, 50, 100}))
 	if err != nil {
 		t.Fatalf("new battle: %v", err)
 	}
@@ -944,7 +954,7 @@ func TestABattleNobodyCanActInIsADraw(t *testing.T) {
 // another.
 func TestADrawIsTheSameFromTheSameSeed(t *testing.T) {
 	run := func() []battle.Event {
-		fight, err := battle.New(books(t), 5150, deadlocked(t, []string{"strike"}, [4]int64{40, 150, 50, 100}))
+		fight, err := battle.New(books(t), 5150, deadlocked(t, []string{"steel"}, [4]int64{40, 150, 50, 100}))
 		if err != nil {
 			t.Fatalf("new battle: %v", err)
 		}
@@ -982,20 +992,34 @@ func TestADrawIsTheSameFromTheSameSeed(t *testing.T) {
 // survivor. Letting the opponent choose would measure whether that moment
 // happened to arrive.
 func TestAPoisonedDeadlockIsNotADeadlock(t *testing.T) {
-	// The ally front acts first, so its poison lands before anyone dies, and
-	// the enemy front acts last, so it never acts at all.
-	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"spit"}, [4]int64{200, 60, 50, 100}))
+	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"steel"}, [4]int64{200, 60, 50, 100}))
 	if err != nil {
 		t.Fatalf("new battle: %v", err)
 	}
 	fight.Begin()
-	allyFront, _ := fight.Unit("a.front")
-	allyBack, _ := fight.Unit("a.back")
-	foeFront, _ := fight.Unit("f.front")
-	foeBack, _ := fight.Unit("f.back")
+	fight.Drain()
+	// Put the poison on directly rather than landing it with a skill. Reach is
+	// counted in ranks, so any unit holding an offensive skill can always point
+	// it at somebody — a board with a poisoner on it is a board that is not
+	// frozen, and staging the tick by casting would destroy the very state this
+	// is about. The status is the subject here; how it arrived is not.
+	foeBack := unitByID(t, fight, "f.back")
+	carrying(t, fight, "f.back", "poison", 1)
+	if !foeBack.Statuses.Has("poison") {
+		t.Fatal("the poison did not go on, so this measures nothing")
+	}
 
-	spat, held := false, false
+	// Nobody can act on anybody: every kit here is self-aimed. The only thing
+	// keeping the battle open is the tick, and ending now would be the engine
+	// calling a draw on a board that had not settled.
+	held := false
 	for turns := 0; turns < 200 && !fight.Finished(); turns++ {
+		if foeBack.Statuses.Has("poison") {
+			held = true
+			if fight.Finished() {
+				t.Fatalf("turn %d: the battle drew while %s was still poisoned", turns, foeBack.ID)
+			}
+		}
 		prompt, err := fight.Advance()
 		if err != nil {
 			t.Fatalf("turn %d: %v", turns, err)
@@ -1003,34 +1027,8 @@ func TestAPoisonedDeadlockIsNotADeadlock(t *testing.T) {
 		if prompt.Skipped {
 			continue
 		}
-		switch {
-		case prompt.Unit == "a.front" && !spat:
-			if err := fight.Act("spit", foeBack.Cell); err != nil {
-				t.Fatalf("turn %d: spit: %v", turns, err)
-			}
-			spat = true
-		case prompt.Unit == "a.back" && !foeFront.Dead:
-			if err := fight.Act("lob", foeFront.Cell); err != nil {
-				t.Fatalf("turn %d: lob: %v", turns, err)
-			}
-		case prompt.Unit == "f.back" && !allyFront.Dead:
-			if err := fight.Act("lob", allyFront.Cell); err != nil {
-				t.Fatalf("turn %d: lob: %v", turns, err)
-			}
-		default:
-			if err := fight.Pass(""); err != nil {
-				t.Fatalf("turn %d: pass: %v", turns, err)
-			}
-		}
-		if !allyFront.Dead || !foeFront.Dead || !foeBack.Statuses.Has("poison") {
-			continue
-		}
-		// Nobody can act and both sides are alive, so the only thing keeping
-		// this battle open is the poison. Ending here would be the engine
-		// calling a draw on a board that had not settled.
-		held = true
-		if fight.Finished() {
-			t.Fatalf("turn %d: the battle drew while %s was still poisoned", turns, foeBack.ID)
+		if err := fight.Pass(""); err != nil {
+			t.Fatalf("turn %d: pass: %v", turns, err)
 		}
 	}
 	if !held {
@@ -1042,7 +1040,7 @@ func TestAPoisonedDeadlockIsNotADeadlock(t *testing.T) {
 	if foeBack.Statuses.Has("poison") {
 		t.Error("the draw was declared with the poison still on")
 	}
-	if allyBack.Dead || foeBack.Dead {
+	if unitByID(t, fight, "a.back").Dead || foeBack.Dead {
 		t.Error("a survivor of the draw is dead")
 	}
 }
@@ -1090,7 +1088,7 @@ func TestASavedLogNamesTheWinnerAndTheDrawNamesNobody(t *testing.T) {
 		t.Errorf("a won battle does not name its winner on the wire: %s", raw)
 	}
 
-	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"strike"}, [4]int64{40, 150, 50, 100}))
+	fight, err := battle.New(books(t), 3, deadlocked(t, []string{"steel"}, [4]int64{40, 150, 50, 100}))
 	if err != nil {
 		t.Fatalf("new battle: %v", err)
 	}
@@ -1106,20 +1104,53 @@ func TestASavedLogNamesTheWinnerAndTheDrawNamesNobody(t *testing.T) {
 	}
 }
 
-// TestNewRefusesAUnitThatCanReachNobody is the authoring half of the same
-// problem: the case worth catching where an error is cheapest.
-func TestNewRefusesAUnitThatCanReachNobody(t *testing.T) {
-	roster := deadlocked(t, []string{"strike"}, [4]int64{40, 150, 50, 100})
-	// Range one from the back column, where the nearest enemy is three cells
-	// away: a unit that could never have acted at all.
-	roster[1].Skills = []string{"strike"}
-	_, err := battle.New(books(t), 1, roster)
-	if err == nil {
-		t.Fatal("a unit that can aim at nobody was enlisted")
-	}
-	for _, want := range []string{"a.back", "longest range is 1", "3 cells away"} {
-		if !strings.Contains(err.Error(), want) {
-			t.Errorf("the refusal %q does not say %q", err, want)
+// TestNoPlacementCanPutAUnitOutOfReach is the guard that used to live in
+// battle.New, written as the property that replaced it.
+//
+// The old test enlisted a range-one unit on the back column, three cells from
+// the nearest enemy, and required New to refuse it. Reach is counted in ranks
+// from the far side now, so that unit is perfectly able to fight: a range of one
+// finds the enemy's foremost survivor from anywhere on the board.
+//
+// So the refusal is gone, and this is here to stop it coming back by accident.
+// It walks every slot on the board with the shortest range in the book and
+// requires all of them to have an aim — if that ever stops being true, the
+// deleted guard has become reachable again and should be reinstated rather than
+// left to a turn skipped four thousand times.
+func TestNoPlacementCanPutAUnitOutOfReach(t *testing.T) {
+	for col := range hex.FormationCols {
+		for row := range hex.Rows {
+			slot := hex.Offset{Col: col, Row: row}
+			fight, err := battle.New(books(t), 1, []battle.Roster{
+				{ID: "a", Side: hex.SideAlly, Slot: slot,
+					Affinity: single("neutral"), Stats: stats(3000, 800, 400, 120),
+					Skills: []string{"strike"}},
+				{ID: "f", Side: hex.SideEnemy, Slot: hex.Offset{Col: 0, Row: 0},
+					Affinity: single("neutral"), Stats: stats(3000, 800, 400, 20),
+					Skills: []string{"strike"}},
+			})
+			if err != nil {
+				t.Fatalf("slot %v was refused: %v", slot, err)
+			}
+			fight.Begin()
+			fight.Drain()
+			prompt, err := fight.Advance()
+			if err != nil {
+				t.Fatalf("slot %v: advance: %v", slot, err)
+			}
+			if prompt.Unit != "a" {
+				continue
+			}
+			available := false
+			for _, option := range prompt.Options {
+				if option.Available() {
+					available = true
+				}
+			}
+			if !available {
+				t.Errorf("a range-one unit at %v can aim at nothing, so the deleted "+
+					"reach guard is reachable again: %+v", slot, prompt.Options)
+			}
 		}
 	}
 }

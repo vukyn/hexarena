@@ -37,11 +37,18 @@ next: A5 E5 A4 E4 A2 E2 A5 E5
 
 A5 Skirmisher, turn 1 at 0,1
  1) bolt            neutral    rng 3   single        pow 800    acc 940
-  - venom_fang      grass      rng 1   single        pow 1200   acc 950   cd1  poison 90%  <nothing in reach>
+ 2) venom_fang      grass      rng 1   single        pow 1200   acc 950   cd1  poison 90%
  3) creeping_rot    grass      rng 3   column        pow 700    acc 880   cd3  poison 65%
  4) arc_bolt        electric   rng 5   single        pow 1500   acc 830   cd3  stun 25%
 
 aim bolt at:
+ 1) 3,0   E3 Ironclad
+ 2) 3,1   E1 Warden
+ 3) 3,2   E2 Bramble
+ 4) 4,1   E4 Tidecaller
+ 5) 5,1   E5 Nightveil
+
+aim venom_fang at:
  1) 3,0   E3 Ironclad
  2) 3,1   E1 Warden
  3) 3,2   E2 Bramble
@@ -50,6 +57,8 @@ aim creeping_rot at:
  1) 3,0   E3 Ironclad, E1 Warden
  2) 3,1   E1 Warden, E3 Ironclad, E2 Bramble
  3) 3,2   E2 Bramble, E1 Warden
+ 4) 4,1   E4 Tidecaller
+ 5) 5,1   E5 Nightveil
 
 aim arc_bolt at:
  1) 3,0   E3 Ironclad

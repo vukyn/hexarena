@@ -217,11 +217,48 @@ func TestOrderShowsWhatIsComing(t *testing.T) {
 // exists and is two turns away.
 func TestMenuShowsUnusableSkillsWithTheirReason(t *testing.T) {
 	fight, tags := opening(t)
-	prompt, err := fight.Advance()
-	if err != nil {
-		t.Fatalf("advance: %v", err)
+
+	// Played forward until something really is unusable, rather than read off the
+	// opening prompt.
+	//
+	// ⚠️ It used to rely on the backline unit holding a melee skill out of range,
+	// and reach is counted in ranks now: a range of one finds the enemy's foremost
+	// survivor from anywhere, so no opening placement has an out-of-reach skill any
+	// more. The reason this test is named for is the cooldown — "a skill exists and
+	// is two turns away" is its own doc comment — and that one is reached by taking
+	// a few turns.
+	var prompt *battle.Prompt
+	for turns := 0; turns < 60 && prompt == nil; turns++ {
+		next, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("turn %d: %v", turns, err)
+		}
+		if next.Skipped {
+			continue
+		}
+		for _, option := range next.Options {
+			if !option.Available() && option.Reason != "" {
+				prompt = next
+			}
+		}
+		if prompt != nil {
+			break
+		}
+		choice, ok := fight.Suggest(next)
+		if !ok {
+			if err := fight.Pass(""); err != nil {
+				t.Fatalf("turn %d: pass: %v", turns, err)
+			}
+			continue
+		}
+		if err := fight.Act(choice.Skill, choice.Aim); err != nil {
+			t.Fatalf("turn %d: act: %v", turns, err)
+		}
 	}
-	unit, _ := fight.Unit(prompt.Unit)
+	if prompt == nil {
+		t.Fatal("no unit reached a turn with an unusable skill, so the reason path is untested")
+	}
+
 	menu := tui.Menu(fight, prompt, tags)
 	lines := strings.Split(menu, "\n")
 	if len(lines) != len(prompt.Options) {
@@ -240,10 +277,8 @@ func TestMenuShowsUnusableSkillsWithTheirReason(t *testing.T) {
 			t.Errorf("line %d does not give the reason %q", i, option.Reason)
 		}
 	}
-	// The backline unit that opens this battle has a melee skill it cannot use,
-	// which is exactly the case the reason exists for.
 	if unusable == 0 {
-		t.Errorf("unit %q had nothing unusable, so the reason path is untested", unit.ID)
+		t.Error("the chosen prompt had nothing unusable after all")
 	}
 }
 
