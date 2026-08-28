@@ -33,10 +33,28 @@ type CharacterReport struct {
 	Stage  string
 	Values progression.Values
 	Budget Budget
+	// Traits is what the same character costs once a trait is on it, one entry
+	// per trait its learnset can reach at the cap.
+	//
+	// One row per trait rather than one number, because a trait is chosen on a
+	// placement and not on a character: which of them is carried is a decision
+	// nobody has made yet at this point, so the honest answer is all of them.
+	Traits []TraitBudget
 	// Failure is set when the character will not resolve at the level cap,
 	// which the parser cannot catch on its own because a line only has to be
 	// valid, not reachable at every level.
 	Failure error
+}
+
+// TraitBudget is what one character costs while one trait is held.
+//
+// It exists because the budget on the row above it is measured against a line
+// nobody fights on. See Library.Held for the whole of why that is, and why the
+// answer here is a figure rather than a refusal.
+type TraitBudget struct {
+	Trait  string
+	Values progression.Values
+	Budget Budget
 }
 
 // Report is the whole result of an inspection, assembled without printing
@@ -225,12 +243,33 @@ func (l *Library) Inspect() Report {
 			report.Problems = append(report.Problems,
 				&ResolveProblem{ID: character.ID, Err: row.Failure})
 		}
+		if row.Failure == nil {
+			row.Traits = l.heldBudgets(character, stage.Name, values)
+		}
 		if short := l.shortReach(character); short != nil {
 			report.Warnings = append(report.Warnings, short)
 		}
 		report.Rows = append(report.Rows, row)
 	}
 	return report
+}
+
+// heldBudgets is one row per trait the character can reach at the cap.
+//
+// A trait it cannot reach is left out rather than shown at nought: the question
+// is what this character can be fielded as, and a trait no placement of it could
+// name is not one of the answers.
+func (l *Library) heldBudgets(character cast.Character, stage string,
+	values progression.Values) []TraitBudget {
+	var out []TraitBudget
+	for _, trait := range character.PassivesAt(progression.LevelCap, stage) {
+		held, err := l.Held(values, []string{trait})
+		if err != nil {
+			continue
+		}
+		out = append(out, TraitBudget{Trait: trait, Values: held, Budget: l.Budget(held)})
+	}
+	return out
 }
 
 // shortReach measures a character's kit against the column its archetype puts it
