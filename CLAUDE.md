@@ -331,6 +331,34 @@ answers rather than screen logic:
   (`Lang.DamageWithin`): the pair is identical on every skill and named in the
   field's own help, while the two numbers being authored are the reason the row
   exists.
+- The **squad builder** (`cmd/hexforge-tui/squads.go`) is the one screen that
+  writes something the game does not ship: every other file here is the game's
+  data, and `squads.json` is the author's own — a side built to be fought with.
+  Three modes in one screen (`squadList`/`squadEdit`/`squadUnit`), because they
+  are one decision at three depths and splitting them would put the half-built
+  squad somewhere two screens could reach.
+  - A member is **character, level, form, cell, four skills, one trait** — the
+    same six facts a roster entry carries. Everything under the character is read
+    against it, so changing the character **empties the kit**; the form chooser
+    offers *furthest* plus every form by name, which is what a **forking** line
+    needs; the slot chooser **steps over** an occupied cell rather than letting
+    the save refuse it later.
+  - ⚠️ **A squad carries no side.** `placement.Squad.Take(side, cast)` fields it
+    as either half and **prefixes the unit ids with the side**, so a squad fought
+    against a copy of itself has two halves a log can tell apart.
+  - `Library.SaveSquad` **replaces** the squad of the same id rather than
+    refusing it, which is the opposite of `SaveSkill` and deliberate: a skill
+    already in the book is something units carry, while a squad is a working
+    document whose whole edit loop is saving it again. It validates through
+    `Take`, so nothing is written that could not be fielded.
+- ⚠️ **One loadout rule, and it had quietly become two.** "Which four of the nine
+  may this unit bring" existed as `seed.chooseFrom` *and* `cast.chosenFor`, both
+  unexported, both worded slightly differently — and the builder needed it a
+  third time. It is **`cast.ChooseLoadout` / `cast.ChooseFrom`** now and all three
+  call it; the subject is a worded noun phrase (`unit "x"`, `the build "x"`) so
+  each caller still says what it is talking about. The builder shows the refusal
+  **as the kit is chosen**, which can only match the write because it is the same
+  call.
 - Every field carries a **help line describing the focused one**, and a shape
   chooser draws the cells it covers on a sub-screen built from `pattern.Targets`
   and `hex.Render`, so the drawing cannot disagree with what the engine catches.

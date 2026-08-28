@@ -3,12 +3,12 @@ package seed
 import (
 	"encoding/json"
 	"fmt"
-	"slices"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
 )
 
@@ -185,95 +185,12 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 	// this is the only place a character and a level meet. A flat entry states
 	// what it brings and has no learnset to choose from, and the engine is handed
 	// a resolved kit exactly as it is handed a resolved stat line.
-	entry.Skills, entry.Passives, err = resolveLoadout(unit, character, level, form.Name)
+	entry.Skills, entry.Passives, err = cast.ChooseLoadout(
+		fmt.Sprintf("unit %q", unit.ID), unit.Skills, unit.Passives, character, level, form.Name)
 	if err != nil {
 		return battle.Roster{}, err
 	}
 	return entry, nil
-}
-
-// resolveLoadout is the choice a placement makes, and every way it can be wrong.
-//
-// It is **required**, not defaulted. A default would be this file quietly
-// choosing four of nine on an author's behalf and never saying which — and the
-// whole point of a slot is that somebody decided. The refusal names what was
-// available to choose from, because an author who has just been told "no" wants
-// the list rather than a second trip to cast.json.
-//
-// Both halves obey one rule read from one place: what is available to this level
-// *as this form*. Skills and traits are one mechanism, and the only thing that
-// differs between them here is the number of slots.
-//
-// The form comes from Resolve rather than from the entry, so a placement that
-// named no stage is asking about the furthest one — and both lists are asking
-// about the same form, which they would not be if each worked it out.
-func resolveLoadout(unit rosterEntry, character cast.Character, level int, form string) ([]string, []string, error) {
-	skills, err := chooseFrom("skill", unit.ID, unit.Skills,
-		character.SkillsAt(level, form), cast.SkillSlots, level, required)
-	if err != nil {
-		return nil, nil, err
-	}
-	passives, err := chooseFrom("trait", unit.ID, unit.Passives,
-		character.PassivesAt(level, form), cast.TraitSlots, level, optional)
-	if err != nil {
-		return nil, nil, err
-	}
-	return skills, passives, nil
-}
-
-// required and optional are whether a list has to be chosen or may be left
-// empty, named rather than passed as a bare true so the call site says which
-// rule it is asking for.
-//
-// The two lists differ here and nowhere else, and the reason is not symmetry but
-// what the empty list means. A unit that brings no skills cannot act, so an
-// empty kit is never something anybody chose; a unit that brings no trait is an
-// ordinary unit, so an empty trait slot is a decision like any other. Insisting
-// on one would make "I want the plain version" unwritable.
-const (
-	required = true
-	optional = false
-)
-
-// chooseFrom picks a loadout out of what is available, or says why it cannot.
-//
-// A character that has nothing of this sort at this level brings none of it, and
-// that is not the same as leaving the choice out: naming one it does not have is
-// still refused, because a placement asking for something that does not exist is
-// a typo whichever list it is in.
-func chooseFrom(kind, unit string, chosen, available []string, slots, level int, insist bool) ([]string, error) {
-	if len(available) == 0 {
-		if len(chosen) > 0 {
-			return nil, fmt.Errorf("unit %q brings the %s %q, and it has none at level %d",
-				unit, kind, chosen[0], level)
-		}
-		return nil, nil
-	}
-	if len(chosen) == 0 {
-		if !insist {
-			return nil, nil
-		}
-		return nil, fmt.Errorf(
-			"unit %q chooses no %ss; a placement brings up to %d of what it knows at level %d, which is %v",
-			unit, kind, slots, level, available)
-	}
-	if len(chosen) > slots {
-		return nil, fmt.Errorf("unit %q brings %d %ss and a placement has %d slot(s)",
-			unit, len(chosen), kind, slots)
-	}
-	out := make([]string, 0, len(chosen))
-	for _, id := range chosen {
-		if slices.Contains(out, id) {
-			return nil, fmt.Errorf("unit %q brings the %s %q twice", unit, kind, id)
-		}
-		if !slices.Contains(available, id) {
-			return nil, fmt.Errorf(
-				"unit %q brings the %s %q, which it has not learned at level %d; it knows %v",
-				unit, kind, id, level, available)
-		}
-		out = append(out, id)
-	}
-	return out, nil
 }
 
 // Books assembles every parsed book a battle needs.
@@ -327,4 +244,23 @@ func NewBattle(seed uint64) (*battle.Battle, error) {
 		return nil, err
 	}
 	return battle.New(books, seed, roster)
+}
+
+// SquadsFile is the raw squad catalogue: the sides an author has built to fight
+// each other, as against the seed roster, which is the instrument.
+func SquadsFile() ([]byte, error) { return files.ReadFile("data/squads.json") }
+
+// Squads parses the embedded squad catalogue.
+//
+// It ships empty, and that is the honest state: a squad is something a person
+// builds, and the file exists so there is somewhere for one to go. The game
+// boots from the copy go:embed baked in, so a squad built in the authoring tool
+// reaches a battle at the next build — the same rule every other data file lives
+// under.
+func Squads() ([]placement.Squad, error) {
+	raw, err := SquadsFile()
+	if err != nil {
+		return nil, err
+	}
+	return placement.Parse(raw)
 }

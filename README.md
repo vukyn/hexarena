@@ -1359,6 +1359,65 @@ naming the two that work, and `ctrl+l` swaps the languages from any screen —
 mid-form included, without losing a keystroke, because a field holds what was
 typed and only the labels around it are redrawn.
 
+#### Building a squad
+
+```
+go run ./cmd/hexforge-tui        # đội hình / squads, from the menu
+```
+
+Everything else in this client edits **the game's** data: a character, a skill, a
+work. The squad builder edits the **author's own** — a side, built to be fought
+with. It is three views of one thing, and they are one screen rather than three
+because they are one decision taken at three depths:
+
+| view | what it holds | keys |
+| --- | --- | --- |
+| the catalogue | every squad built here | `n` new, `enter` edit, `d` delete |
+| a squad | an id, a name, and up to five members | `enter` open a member, `ctrl+x` remove one, `ctrl+s` save |
+| a member | who it is, how grown, what it brings, where it stands | `←/→` change, `enter` choose from a list |
+
+A member is **character, level, form, cell, four skills and one trait** — the
+same six facts a roster entry carries, because they are the same decision written
+in a different file. Two things about it are worth stating:
+
+- **Everything under the character is read against it.** The level bounds the
+  forms, the form bounds the learnset, and the kit is chosen out of that — so
+  changing the character empties the kit rather than carrying names the new one
+  has never heard of into a refusal at save time. The form chooser offers *the
+  furthest* and then every form by name, which is what a line that **forks** needs:
+  there is no furthest on one, and the arms have to be nameable.
+- **The cell is part of the decision.** A front rank shields the columns behind
+  it, so where a squad stands is most of what it is — the shipped roster's own
+  formation is worth twenty points of win rate. The chooser steps *over* a cell
+  somebody else stands on rather than refusing it afterwards, and the 3x3 is drawn
+  beside the fields with the member being edited marked.
+
+A squad is saved into `squads.json` beside the other data files, and it ships
+**empty**: the file exists so there is somewhere for one to go. It is validated
+by the same call a battle makes of it — `Squad.Take` — so no squad is written
+that could not be fielded, and the refusal is the loadout rule's own words rather
+than the screen's.
+
+⚠️ **A squad has no side.** It is fielded as either half of a battle, which is
+what lets one be measured against several opponents and against a copy of itself
+— and it is why `Take` prefixes the unit ids with the side it took. Two halves of
+a mirror have to be told apart in a log, and nothing else in a squad can do it.
+
+#### One loadout rule, which had quietly become two
+
+"Which four of the nine may this unit bring" was written down **twice** before
+this — `chooseFrom` beside the seed roster and `chosenFor` inside `resolveBuild`,
+both unexported, both saying the same thing in slightly different words — and a
+squad builder needed it a third time. It is `cast.ChooseLoadout` now, and all
+three call it. The subject is a worded noun phrase rather than an id so each
+caller still says what it is talking about: a placement is a *unit*, a build is a
+*build*.
+
+That matters more than tidiness here. The builder shows the refusal **as the kit
+is chosen**, so an over-filled slot is a line under the picker rather than a
+surprise at the save — and it can only be the same answer the write gives if it
+is literally the same call.
+
 #### Saving: ctrl+s, and ⌘S where a terminal will pass it
 
 Every form writes on **ctrl+s**, which works everywhere, and also on **⌘S**,

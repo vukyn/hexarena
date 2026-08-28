@@ -18,6 +18,8 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -104,6 +106,18 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	builds := m.enter(screenBuilds)
 	traitless := m.enter(screenBuilds)
 	traitless.builds = withNoTraitTaken(t, traitless.builds)
+	// The squad builder in each of its three depths, plus the two pickers it
+	// raises. The catalogue ships empty, so the listing with a squad in it and
+	// the two views under it are drawn only by a squad built here — and every
+	// line of them is wording, so they are measured rather than left to whoever
+	// builds the first one.
+	squadEmpty := m.enter(screenSquads)
+	building := squadEmpty
+	building.squad = someSquad(t, building)
+	member := building
+	member.squad = member.squad.editUnit(0)
+	skillPick := member.openSquadSkills()
+	traitPick := member.openSquadPassives()
 	return map[string]model{
 		"shape diagram":    shape,
 		"spar":             spar,
@@ -130,6 +144,11 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"species":          species,
 		"unclaimed kind":   unclaimed,
 		"builds":           builds,
+		"squads":           squadEmpty,
+		"a squad":          building,
+		"a squad member":   member,
+		"a squad kit":      skillPick,
+		"a squad trait":    traitPick,
 		"traitless build":  traitless,
 	}
 }
@@ -179,6 +198,41 @@ func withNobodyClaiming(s speciesScreen) speciesScreen {
 // the trait, because a unit with no skills cannot act while a unit with no trait
 // is an ordinary one — and nothing shipped is one. That is exactly the case a
 // state built by hand is for: the alternative is wording no test ever renders.
+// someSquad is a squad built by hand, because the catalogue ships empty.
+//
+// It is the widest state the builder draws: an id and a name typed, somebody in
+// the front rank, and a full kit — every one of which is a line the empty
+// listing never renders and every one of which is wording.
+func someSquad(t *testing.T, m model) squadScreen {
+	t.Helper()
+	s := m.squad.begin()
+	s.editing.ID = "do-thu"
+	s.editing.Name = "đội thử"
+	s.idInput.SetValue(s.editing.ID)
+	s.nameInput.SetValue(s.editing.Name)
+	if len(s.characters) == 0 {
+		t.Fatal("the fixture cast is empty, so no squad can be built from it")
+	}
+	character := s.characters[0]
+	unit := placement.Placement{
+		ID:        "mot",
+		Character: character.ID,
+		Level:     progression.LevelCap,
+		Slot:      hex.Offset{Col: hex.FormationCols - 1, Row: 1},
+	}
+	known := character.SkillsAt(unit.Level, progression.Furthest)
+	if len(known) > cast.SkillSlots {
+		known = known[:cast.SkillSlots]
+	}
+	unit.Skills = known
+	if traits := character.PassivesAt(unit.Level, progression.Furthest); len(traits) > 0 {
+		unit.Passives = traits[:cast.TraitSlots]
+	}
+	s.editing.Units = []placement.Placement{unit}
+	s.unit = unit
+	return s
+}
+
 func withNoTraitTaken(t *testing.T, b buildsScreen) buildsScreen {
 	t.Helper()
 	rows := append([]buildRow(nil), b.rows...)

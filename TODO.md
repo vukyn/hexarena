@@ -66,6 +66,13 @@ is only so the shape is readable.
       never both**, and `Furthest` — the half that would have failed silently —
       refuses on a fork instead of picking an arm. Nothing shipped forks yet, on
       purpose. → `CLAUDE.md` § Open work.
+- [ ] **Fight two squads in the TUI.** The builder writes them and
+      `placement.Squad.Take(side, cast)` fields one as either half, so what is
+      left is a screen: pick two, fight them over N seeds, draw the rate — the
+      shape `forge.Library.Spar` already has for one character against the cast.
+      ⚠️ Quote the seed count beside any rate, and remember a squad rate is **not**
+      the roster's win rate: the roster is the instrument and a squad is whatever
+      somebody built. → `README.md` § Building a squad.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
