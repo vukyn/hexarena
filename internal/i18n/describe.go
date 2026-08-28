@@ -543,6 +543,16 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 			lines = append(lines, l.Say(BlurbTraitImmune, l.glossed(resistance.Status)))
 			continue
 		}
+		// A negative share is a vulnerability, and it gets its own sentence
+		// rather than the resistance one with a minus in it: "refuses -30% of
+		// any poison" is arithmetic on a screen, and what the trait does is the
+		// opposite of refusing. The share is printed as its size, because the
+		// sign is carried by the verb.
+		if resistance.Amount < 0 {
+			lines = append(lines, l.Say(BlurbTraitVulnerable,
+				share(-resistance.Amount), l.glossed(resistance.Status)))
+			continue
+		}
 		lines = append(lines, l.Say(BlurbTraitResists,
 			share(resistance.Amount), l.glossed(resistance.Status)))
 	}

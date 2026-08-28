@@ -262,6 +262,15 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 				resists = append(resists, resist.Status+" (immune)")
 				continue
 			}
+			// A negative share is a vulnerability, and it says so in the word
+			// rather than by a minus sign in a column headed "resists" — the
+			// reader would have to notice the sign to avoid reading it exactly
+			// backwards.
+			if resist.Amount < 0 {
+				resists = append(resists,
+					fmt.Sprintf("%s +%s taken", resist.Status, forge.Percent(-resist.Amount)))
+				continue
+			}
 			resists = append(resists,
 				fmt.Sprintf("%s %s", resist.Status, forge.Percent(resist.Amount)))
 		}
@@ -330,7 +339,8 @@ func renderPassives(out io.Writer, lib *forge.Library) {
 	rendered.render(out)
 	fmt.Fprint(out, "\na trait is in force from the moment its holder is enlisted, and nothing takes it off:\n"+
 		"every status it grants is declared permanent, so it has no duration and no cleanse reaches it.\n"+
-		"a resistance takes its share off an incoming application's chance, so a full share never lands.\n"+
+		"a resistance takes its share off an incoming application's chance, so a full share never lands;\n"+
+		"a negative share is a vulnerability and puts its share back on, so the status lands more often.\n"+
 		"what a trait adds rides on its holder's damaging skills only, through the same roll as their own.\n"+
 		"an amplifier raises what its holder inflicts: the effect is the tick frozen on the stack, the chance is the roll.\n"+
 		"an answer is what attacking the holder costs, and it lands after every strike of the attack rather than the first.\n"+

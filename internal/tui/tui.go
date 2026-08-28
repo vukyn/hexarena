@@ -328,6 +328,12 @@ func Line(event battle.Event, tags map[string]string) string {
 		if event.Passive != "" {
 			source = " (" + event.Passive + ")"
 		}
+		// A vulnerability shows on the line where the status lands, because that
+		// is the case it exists to cause — the refusal arm below never runs for a
+		// target that made itself easier to hit and still got lucky.
+		if event.Refused < 0 {
+			source += fmt.Sprintf(" (%d%% invited)", -event.Refused/10)
+		}
 		return head + fmt.Sprintf("  %s x%d on %s, now %d%s%s",
 			event.Status, event.Stacks, tag(event.Target), event.Remaining, note, source)
 	case battle.StatusResisted:
@@ -342,6 +348,13 @@ func Line(event battle.Event, tags map[string]string) string {
 		case event.Refused > 0:
 			return head + fmt.Sprintf("  %s shrugs off %s (%d%% chance, %d%% refused)",
 				tag(event.Target), event.Status, event.Chance/10, event.Refused/10)
+		case event.Refused < 0:
+			// A vulnerability, which is a refusal of a negative share. Without
+			// this line the roll below prints a chance higher than the skill's
+			// own and nothing on screen says why — and explaining its own figures
+			// is the whole job of this renderer.
+			return head + fmt.Sprintf("  %s is wide open to %s (%d%% chance, %d%% invited)",
+				tag(event.Target), event.Status, event.Chance/10, -event.Refused/10)
 		default:
 			return head + fmt.Sprintf("  %s resists %s (%d%%)",
 				tag(event.Target), event.Status, event.Chance/10)

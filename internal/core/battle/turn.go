@@ -1158,7 +1158,11 @@ func (b *Battle) resist(target *Unit, statusID string, chance int) (effective, r
 			continue
 		}
 		amount := held.Refuses(statusID)
-		if amount <= 0 {
+		// Nought only. A **negative** share is a vulnerability and has to reach
+		// the multiply below — skipping it here is how this silently did nothing
+		// for the whole time a negative was refused at parse and this line went
+		// unread.
+		if amount == 0 {
 			continue
 		}
 		// The gate is read here rather than at enlistment, so a trait that only
@@ -1168,9 +1172,23 @@ func (b *Battle) resist(target *Unit, statusID string, chance int) (effective, r
 		}
 		surviving = surviving * (scale.Base - amount) / scale.Base
 	}
-	if surviving >= scale.Base {
+	// Only the exact base is nothing happening. It used to be `>=`, which was
+	// right while a share could only refuse — and is the line that would have
+	// dropped a vulnerability on the floor, because a trait that invites a status
+	// leaves *more* than the base surviving and would have taken this door out
+	// with the chance untouched.
+	if surviving == scale.Base {
 		return chance, 0
 	}
+	// Refused is signed, and that is the decision this feature turned on. It is
+	// the share the target took off the chance, so a share it *added* is a
+	// negative — and the event it lands on is already named for the application
+	// failing rather than for a resistance existing (a unit with no traits at all
+	// emits it with a nought). Reading "refused -300" as "invited 30%" is the
+	// same sentence the field already carries, in the other direction.
+	//
+	// The alternative was a second field, which would have been two names for one
+	// number and left every reader to check both.
 	return chance * surviving / scale.Base, scale.Base - surviving
 }
 

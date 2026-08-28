@@ -797,10 +797,20 @@ func amplification(event battle.Event) string {
 	if event.AmplifiedChance > 0 {
 		parts = append(parts, fmt.Sprintf("+%d chance", event.AmplifiedChance))
 	}
-	if len(parts) == 0 {
-		return ""
+	note := ""
+	if len(parts) > 0 {
+		note = ", amplified " + strings.Join(parts, " ")
 	}
-	return ", amplified " + strings.Join(parts, " ")
+	// A vulnerability is a refusal of a negative share, and it is reported here
+	// rather than beside the refused share above because the case it matters in
+	// is the one where the status **lands** — this suffix reaches StatusApplied
+	// and that branch does not. Without it the record shows a status landing
+	// more often than the skill declares, with nothing on the line saying why,
+	// which is the exact hole Refused was added to close in the other direction.
+	if event.Refused < 0 {
+		note += fmt.Sprintf(", invited %d", -event.Refused)
+	}
+	return note
 }
 
 func TestStatsResolveThroughStatuses(t *testing.T) {

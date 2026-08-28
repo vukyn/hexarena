@@ -187,6 +187,7 @@ func books(t *testing.T) battle.Books {
 	  {"id":"clean_blood","grants":[],"resists":[{"status":"poison","amount":1000}]},
 	  {"id":"thick_blood","grants":[],"resists":[{"status":"poison","amount":600}]},
 	  {"id":"cold_blood","grants":[],"resists":[{"status":"poison","amount":600}]},
+	  {"id":"thin_blood","grants":[],"resists":[{"status":"poison","amount":-500}]},
 	  {"id":"venomous","grants":[],"applies":[{"status":"poison","chance":1000}]},
 	  {"id":"virulent","grants":[],"amplifies":[{"status":"poison","effect":300,"chance":200}]},
 	  {"id":"corrosive","grants":[],"amplifies":[{"status":"poison","effect":300}]},

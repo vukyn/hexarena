@@ -439,6 +439,7 @@ const (
 	BlurbTraitApplies
 	BlurbTraitImmune
 	BlurbTraitResists
+	BlurbTraitVulnerable
 	BlurbTraitReplyDamage
 	BlurbTraitReplyStatus
 	BlurbTraitReplyBoth

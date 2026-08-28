@@ -197,3 +197,61 @@ func target(t *testing.T, fight *battle.Battle) *battle.Unit {
 	}
 	return unit
 }
+
+// TestANegativeShareIsAVulnerability is the feature, measured at the only place
+// it is observable: the chance actually rolled.
+//
+// It borrows amplify_test's tainter because `taint` inflicts on four hundred
+// rather than a full thousand — a vulnerability measured against a certainty
+// would be measuring the clamp — and hangs the trait on the target, which is
+// whose business a resistance is.
+//
+// A trait that refuses -500 lets 1500 through, so a skill declaring 400 rolls
+// 600 against its holder. The share is reported as a negative refusal, which is
+// the decision this feature turned on: Refused is the amount the target took off
+// the chance, and a target that put some on took off a negative.
+func TestANegativeShareIsAVulnerability(t *testing.T) {
+	bare := chanceRolled(t, taints(t, tainter(t, nil, nil), "taint"))
+	if bare.Chance != 400 {
+		t.Fatalf("the skill rolled %d against an untraited target, want its declared 400", bare.Chance)
+	}
+
+	got := chanceRolled(t, taints(t, tainter(t, nil, []string{"thin_blood"}), "taint"))
+	if got.Chance != 600 {
+		t.Errorf("a -500 share rolled %d, want 400 raised by half to 600", got.Chance)
+	}
+	if got.Refused != -500 {
+		t.Errorf("the event reports %d refused, want the share as a negative", got.Refused)
+	}
+}
+
+// TestAVulnerabilityAndAResistanceDoNotCancel is the arithmetic somebody will
+// expect to be addition and is not.
+//
+// Chances compose by multiplying what each lets through, so a -500 and a +600
+// leave 1500*400/1000 = 600 surviving rather than nothing. Written down because
+// "they cancel out" is the natural reading and is wrong.
+func TestAVulnerabilityAndAResistanceDoNotCancel(t *testing.T) {
+	got := chanceRolled(t, taints(t,
+		tainter(t, nil, []string{"thin_blood", "cold_blood"}), "taint"))
+	if got.Chance == 400 {
+		t.Fatal("the pair left the chance untouched, so they were read as cancelling")
+	}
+	if got.Chance != 240 || got.Refused != 400 {
+		t.Errorf("the pair rolled %d with %d refused, want 240 and 400", got.Chance, got.Refused)
+	}
+}
+
+// TestAVulnerabilityCannotPushAChancePastCertainty is the clamp, which lives at
+// the call site rather than inside resist so that the two sides compose in any
+// order.
+func TestAVulnerabilityCannotPushAChancePastCertainty(t *testing.T) {
+	// envenom declares the full thousand, so a vulnerability has nowhere to go.
+	got := chanceRolled(t, taints(t, tainter(t, nil, []string{"thin_blood"}), "envenom"))
+	if got.Chance != 1000 {
+		t.Errorf("a certain application rolled %d, want it clamped to certainty", got.Chance)
+	}
+	if got.Refused != -500 {
+		t.Errorf("the event reports %d refused; the clamp is on the chance, not on the share", got.Refused)
+	}
+}

@@ -68,10 +68,11 @@ is only so the shape is readable.
       a nested struct and `omitzero` would be wrong, because `{0,0}` is a real
       cell. Needs an off-board `Offset` (a pointer, or a sentinel) before the
       field can be dropped. The one item here with no prose home yet.
-- [ ] **Vulnerability.** A target *easier* to poison is `Resists` with a negative
-      share, which reuses the whole composition. Needs a decision about a
-      negative `Refused` in the log — `resist` returns early when nothing is
-      refused and would drop it. → `README.md` § Roadmap.
+- [x] **Vulnerability. Done** — a negative `Resists` share, composing through the
+      same multiply. `Refused` stays one signed field; a negative is a share the
+      target *added*. ⚠️ No shipped trait uses it yet: `reckless` ("liều mạng",
+      which already keeps no guard back) is the natural first user and is a
+      **balance** change, so it is data work rather than this. → `README.md`.
 - [ ] **A damage gradient off the caster's own health.** `SelfRequires` is a
       *threshold* ("below 40%, +bonus"); a gradient that grows as the caster
       falls is a multiplier in `combat` reading the other unit. Separate feature.
