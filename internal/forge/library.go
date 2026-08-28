@@ -12,9 +12,11 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/modifier"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
+	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
@@ -41,6 +43,7 @@ const (
 	archetypesFile = "archetypes.json"
 	castFile       = "cast.json"
 	buildsFile     = "builds.json"
+	squadsFile     = "squads.json"
 )
 
 // emptyCatalogue is what a data directory with no build catalogue reads as.
@@ -52,6 +55,9 @@ const (
 // authored. It goes through the parser rather than round it: an empty catalogue
 // is one the parser has agreed to, not one this file assembled by hand.
 var emptyCatalogue = []byte(`{"builds": []}`)
+
+// emptySquads is what a data directory with nobody's squads in it reads as.
+var emptySquads = []byte(`{"squads": []}`)
 
 // assetsDir is the folder inside a data directory that art lives under.
 //
@@ -96,6 +102,11 @@ type Library struct {
 	// read *through* another: a build is checked against the cast, so it is
 	// parsed last and cannot be held without the characters beside it.
 	builds *cast.BuildBook
+	// squads is the sides an author has built to fight each other. It is the one
+	// book this package *writes for its own sake*: every other file here is the
+	// game's, and a squad is the tool's — which is why it is held as a plain
+	// slice rather than a book, and why nothing outside a squad refers to one.
+	squads []placement.Squad
 }
 
 // Load reads every book from a data directory.
@@ -207,6 +218,20 @@ func Load(dir string) (*Library, error) {
 		return nil, err
 	}
 	if lib.builds, err = cast.ParseBuilds(raw, lib.characters); err != nil {
+		return nil, err
+	}
+
+	// Squads are optional on the same terms and for a stronger reason: the file
+	// ships empty, so a data directory that has never had one built in it is the
+	// ordinary case rather than an old copy.
+	raw, err = read(squadsFile)
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+		raw = emptySquads
+	case err != nil:
+		return nil, err
+	}
+	if lib.squads, err = placement.Parse(raw); err != nil {
 		return nil, err
 	}
 	return lib, nil
@@ -545,6 +570,85 @@ func (l *Library) SaveSkill(built skill.Skill) error {
 		return err
 	}
 	l.skills = grown
+	return nil
+}
+
+// Squads is every squad built in this directory, in the order they were saved.
+//
+// A copy, because the caller edits one: a builder holds a squad half-finished
+// for as long as somebody is thinking, and a slice shared with the library would
+// have those keystrokes reaching the file's idea of what is saved.
+func (l *Library) Squads() []placement.Squad {
+	out := make([]placement.Squad, len(l.squads))
+	for i, squad := range l.squads {
+		out[i] = squad.Clone()
+	}
+	return out
+}
+
+// SquadsPath is where a saved squad lands, for a front-end that says so.
+func (l *Library) SquadsPath() string { return filepath.Join(l.dir, squadsFile) }
+
+// SaveSquad writes one squad into the catalogue, replacing the squad of the same
+// id if there is one and appending it if there is not.
+//
+// ⚠️ **Replacing rather than refusing is the opposite of what SaveSkill does**,
+// and the difference is what the two files are. A skill already in the book is
+// something units carry, so writing over it is an accident to be caught; a squad
+// is the author's own working document, and the whole way one is built is by
+// saving it again. A clash there would mean deleting before every save.
+//
+// The squad is validated first, and it is validated by the same call a battle
+// would make of it — no squad is written that could not be fielded, because a
+// file that holds one is a file whose next reader gets the refusal instead.
+func (l *Library) SaveSquad(squad placement.Squad) error {
+	if _, err := squad.Take(hex.SideAlly, l.characters); err != nil {
+		return err
+	}
+	grown := make([]placement.Squad, 0, len(l.squads)+1)
+	replaced := false
+	for _, held := range l.squads {
+		if held.ID == squad.ID {
+			grown = append(grown, squad.Clone())
+			replaced = true
+			continue
+		}
+		grown = append(grown, held)
+	}
+	if !replaced {
+		grown = append(grown, squad.Clone())
+	}
+	raw, err := placement.Marshal(grown)
+	if err != nil {
+		return err
+	}
+	if err := l.replaceFile(squadsFile, raw); err != nil {
+		return err
+	}
+	l.squads = grown
+	return nil
+}
+
+// DeleteSquad removes one by id, and says so when there was none.
+func (l *Library) DeleteSquad(id string) error {
+	kept := make([]placement.Squad, 0, len(l.squads))
+	for _, held := range l.squads {
+		if held.ID == id {
+			continue
+		}
+		kept = append(kept, held)
+	}
+	if len(kept) == len(l.squads) {
+		return fmt.Errorf("no squad is called %q", id)
+	}
+	raw, err := placement.Marshal(kept)
+	if err != nil {
+		return err
+	}
+	if err := l.replaceFile(squadsFile, raw); err != nil {
+		return err
+	}
+	l.squads = kept
 	return nil
 }
 

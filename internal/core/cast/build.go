@@ -146,13 +146,8 @@ func resolveBuild(entry buildFile, characters *Book) (Build, error) {
 	if err != nil {
 		return Build{}, fmt.Errorf("resolve %s for the build %q: %w", entry.Character, entry.ID, err)
 	}
-	skills, err := chosenFor(entry.ID, "skill", entry.Skills,
-		character.SkillsAt(progression.LevelCap, stage.Name), SkillSlots, insisted)
-	if err != nil {
-		return Build{}, err
-	}
-	passives, err := chosenFor(entry.ID, "trait", entry.Passives,
-		character.PassivesAt(progression.LevelCap, stage.Name), TraitSlots, allowedEmpty)
+	skills, passives, err := ChooseLoadout(fmt.Sprintf("the build %q", entry.ID),
+		entry.Skills, entry.Passives, character, progression.LevelCap, stage.Name)
 	if err != nil {
 		return Build{}, err
 	}
@@ -164,48 +159,6 @@ func resolveBuild(entry buildFile, characters *Book) (Build, error) {
 		Skills:    skills,
 		Passives:  passives,
 	}, nil
-}
-
-// insisted and allowedEmpty are whether a half of the loadout has to be filled,
-// named rather than passed as a bare boolean so the call site says which rule it
-// is asking for.
-//
-// They differ for the reason the roster's own pair does: a build that brings no
-// skills cannot act, so an empty kit is nothing anybody chose, while a build that
-// brings no trait is an ordinary unit and that is a decision like any other.
-const (
-	insisted     = true
-	allowedEmpty = false
-)
-
-// chosenFor picks one half of a build's loadout out of what the capped form
-// knows, or says why it cannot — with the list, because an author who has just
-// been told "no" wants to see what was on offer.
-func chosenFor(build, kind string, chosen, available []string, slots int, insist bool) ([]string, error) {
-	if len(chosen) == 0 {
-		if !insist {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("the build %q chooses no %ss; it has %d slot(s) to fill out of %v",
-			build, kind, slots, available)
-	}
-	if len(chosen) > slots {
-		return nil, fmt.Errorf("the build %q brings %d %ss and there are %d slot(s)",
-			build, len(chosen), kind, slots)
-	}
-	out := make([]string, 0, len(chosen))
-	for _, id := range chosen {
-		if slices.Contains(out, id) {
-			return nil, fmt.Errorf("the build %q brings the %s %q twice", build, kind, id)
-		}
-		if !slices.Contains(available, id) {
-			return nil, fmt.Errorf(
-				"the build %q brings the %s %q, which its capped form has not learned; it knows %v",
-				build, kind, id, available)
-		}
-		out = append(out, id)
-	}
-	return out, nil
 }
 
 // All is every build, in the order they were declared.

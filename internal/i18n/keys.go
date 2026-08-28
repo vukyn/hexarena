@@ -533,6 +533,40 @@ const (
 	MenuBuilds
 	MenuBuildsDetail
 
+	// The squad builder: the sides an author builds to fight each other.
+	SquadsHeading
+	SquadsSubtitle
+	SquadsEmpty
+	SquadsFooter
+	SquadColumnID
+	SquadColumnMembers
+	SquadMemberCount
+	SquadHeading
+	SquadEditFooter
+	SquadFieldID
+	SquadFieldName
+	SquadAddMember
+	SquadFull
+	SquadFurthest
+	SquadLoadoutCount
+	SquadUnitHeading
+	SquadUnitFooter
+	SquadFieldCharacter
+	SquadFieldLevel
+	SquadFieldStage
+	SquadFieldSlot
+	SquadFieldSkills
+	SquadFieldPassives
+	SquadNothingChosen
+	SquadPickSkills
+	SquadPickPassives
+	SquadFormation
+	SquadFormationLegend
+	SquadDiscard
+	SquadDiscardSaved
+	MenuSquads
+	MenuSquadsDetail
+
 	keyCount
 )
 

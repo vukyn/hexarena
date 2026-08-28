@@ -17,7 +17,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
-//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/species.json data/archetypes.json data/cast.json data/roster.json data/builds.json
+//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/species.json data/archetypes.json data/cast.json data/roster.json data/builds.json data/squads.json
 var files embed.FS
 
 // ElementsFile is the raw affinity chart declaration.

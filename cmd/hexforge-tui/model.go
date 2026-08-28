@@ -53,6 +53,12 @@ const (
 	// Appended for the reason screenPreview was: nothing serialises these, but the
 	// menu is built from the order they are declared in.
 	screenBuilds
+	// screenSquads is the first screen that writes something the game does not
+	// ship: every other file here is the game's data and this one is the
+	// author's own, a side built to be fought with. Appended for the reason
+	// screenPreview was — nothing serialises these, but the menu is built from
+	// the order they are declared in.
+	screenSquads
 )
 
 // The smallest window the screens fit in.
@@ -137,6 +143,7 @@ type model struct {
 	elements elementsScreen
 	species  speciesScreen
 	builds   buildsScreen
+	squad    squadScreen
 	// chart holds nothing: it is drawn from the library every time and has no
 	// cursor. It is a field anyway so that the screen is dispatched to like every
 	// other one, rather than being a special case in three switches.
@@ -183,6 +190,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		passives: newPassivesScreen(lib),
 		species:  newSpeciesScreen(lib),
 		builds:   newBuildsScreen(lib),
+		squad:    newSquadScreen(lib),
 		check:    newCheckScreen(lib),
 		preview:  newPreviewScreen(),
 		spar:     newSparScreen(),
@@ -211,6 +219,7 @@ var menuItems = []menuItem{
 	{i18n.MenuElements, i18n.MenuElementsDetail, screenElements},
 	{i18n.MenuSpecies, i18n.MenuSpeciesDetail, screenSpecies},
 	{i18n.MenuBuilds, i18n.MenuBuildsDetail, screenBuilds},
+	{i18n.MenuSquads, i18n.MenuSquadsDetail, screenSquads},
 	{i18n.MenuCheck, i18n.MenuCheckDetail, screenCheck},
 }
 
@@ -282,6 +291,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.species.update(m, message)
 	case screenBuilds:
 		return m.builds.update(m, message)
+	case screenSquads:
+		return m.squad.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
@@ -358,6 +369,8 @@ func (m model) enter(target screen) model {
 		m.species = m.species.refresh(m.lib)
 	case screenBuilds:
 		m.builds = m.builds.refresh(m.lib)
+	case screenSquads:
+		m.squad = m.squad.refresh(m.lib)
 	case screenSpar:
 		m.spar = m.spar.refresh()
 	}
@@ -409,6 +422,8 @@ func (m model) screenContent() string {
 		body, footer = m.species.view(m)
 	case screenBuilds:
 		body, footer = m.builds.view(m)
+	case screenSquads:
+		body, footer = m.squad.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:
