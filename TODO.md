@@ -51,19 +51,14 @@ is only so the shape is readable.
 - [x] **Every skill's range re-read under the rank rule. Done** — 21 of 31
       enemy-aimed ranges moved onto the depth tiers (1 contact, 2 over the line,
       3 the back line), and `maxRange` tightened to the three ranks a side has.
-- [ ] **Re-level `roster.json` under blocking.** The range pass is what made
-      holding a front rank decide fights — 14 of 31 skills now stop at the first
-      rank — and the shipped roster was placed for a board where it did not. The
-      instrument went 19/40 ally to 12/40 on the numbers alone, with both sides
-      losing depth about equally (ally 8 skills moved, enemy 10), so this is a
-      **placement** answer and not a skill one.
-      ⚠️ Two dead ends already checked, so nobody walks them twice: `hydro_pump`
-      is the only depth-3 skill and only the enemy fields it, but setting it back
-      to 2 leaves the rate at **exactly** 12/40 — it is not the driver; and the
-      per-unit range diff is near-symmetric, so it is not a kit imbalance either.
-      What is left is where the units stand: a front rank now shields the two
-      behind it, and the formations were authored when it did not.
-      → `CLAUDE.md` § Invariants.
+- [x] **`roster.json` re-levelled under blocking. Done** — each ace moved to its
+      own **back** column behind the two young units, on both sides, and nothing
+      else changed: 27.6% ally → **47.3%** over 4000 seeds, 12/40 → 24/40 on the
+      smoke test. It was a placement answer as filed. ⚠️ Placement is purely
+      defensive now, so the shape is guarded by
+      `TestTheShippedFormationScreensItsAce` rather than left to whoever edits the
+      file next. The levels were **not** touched: the 20..30 dial spans 40–82% on
+      the screened board, and 30/30 is the bottom of it.
 
 - [ ] **An evolution line that forks.** A placement chooses how far along one
       path, never which path. ⚠️ The parse rule is the small half; `Furthest`

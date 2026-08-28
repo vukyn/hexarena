@@ -6,7 +6,7 @@
       "level": 60,
       "side": "ally",
       "slot": [
-        2,
+        0,
         1
       ],
       "skills": [
@@ -59,7 +59,7 @@
       "level": 60,
       "side": "enemy",
       "slot": [
-        2,
+        0,
         1
       ],
       "skills": [

@@ -176,6 +176,68 @@ func TestTheShippedRosterIsNotAMirror(t *testing.T) {
 // alive and unable to touch each other, and it was not even a draw: one of them
 // kept refreshing a regeneration on itself, so something was always pending and
 // the board was never final. Those battles ran the turn limit out.
+// TestTheShippedFormationScreensItsAce is the placement half of the roster's
+// contract, and it exists because placement stopped being about distance.
+//
+// Reach is counted in occupied ranks, so where a unit stands changes nothing
+// about what it can hit and everything about what can hit it: standing behind an
+// occupied rank is the whole of a unit's defence. The shipped roster puts each
+// side's strongest unit in the back column behind an adjacent pair, and that
+// shape is worth the difference between a 27.6% ally rate and 47.3% over 4000
+// seeds — so flattening it is a balance change disguised as a tidy-up, and this
+// is what refuses it quietly.
+func TestTheShippedFormationScreensItsAce(t *testing.T) {
+	roster, err := seed.Roster()
+	if err != nil {
+		t.Fatalf("load roster: %v", err)
+	}
+	for _, side := range []hex.Side{hex.SideAlly, hex.SideEnemy} {
+		var ace battle.Roster
+		squad := map[hex.Offset]string{}
+		for _, unit := range roster {
+			if unit.Side != side {
+				continue
+			}
+			squad[unit.Slot] = unit.ID
+			if unit.Stats.Get(progression.HP) > ace.Stats.Get(progression.HP) {
+				ace = unit
+			}
+		}
+		// The ace is behind a screen: some ally of its stands in a rank nearer
+		// the enemy than its own, so a depth-one skill meets that one first.
+		screened := false
+		for slot := range squad {
+			if slot.Col > ace.Slot.Col {
+				screened = true
+			}
+		}
+		if !screened {
+			t.Errorf("the %s ace %q stands at %s with nobody in front of it: "+
+				"every skill in the game reaches it on the opening turn", side, ace.ID, ace.Slot)
+		}
+		// The screen is adjacent, because an area shape that catches both of the
+		// units in front is most of what they are there for.
+		for slot, id := range squad {
+			if slot == ace.Slot {
+				continue
+			}
+			touching := false
+			for other, otherID := range squad {
+				if otherID == id || other == ace.Slot {
+					continue
+				}
+				if hex.Place(side, slot).DistanceTo(hex.Place(side, other)) == 1 {
+					touching = true
+				}
+			}
+			if !touching {
+				t.Errorf("the %s screen is split: %q at %s touches nothing else in front of the ace",
+					side, id, slot)
+			}
+		}
+	}
+}
+
 func TestEveryShippedUnitCanReachEveryEnemy(t *testing.T) {
 	roster, err := seed.Roster()
 	if err != nil {

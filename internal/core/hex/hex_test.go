@@ -325,56 +325,6 @@ func TestAnAbsentCellIsTheZeroValue(t *testing.T) {
 	}
 }
 
-// TestReachNeededRisesTowardsTheBackColumn is the geometry behind a deadlock,
-// stated as the three numbers an author has to size a kit against.
-//
-// It is asserted against measured distances rather than against the literals
-// one, two and three, so the check stays true of whatever board Place produces
-// rather than of the board it happens to produce today. The literals are
-// asserted separately, because the current answers are worth noticing if they
-// ever move.
-func TestReachNeededRisesTowardsTheBackColumn(t *testing.T) {
-	for col := 0; col < FormationCols; col++ {
-		needed := ReachNeeded(col)
-		for row := 0; row < Rows; row++ {
-			mine := Place(SideAlly, Offset{Col: col, Row: row})
-			within := 0
-			for _, theirs := range SideCells(SideEnemy) {
-				if mine.DistanceTo(theirs) <= needed {
-					within++
-				}
-			}
-			if within == 0 {
-				t.Errorf("a range of %d from %s reaches nothing, but that is what column %d needs",
-					needed, mine, col)
-			}
-			if needed <= 1 {
-				continue
-			}
-			// One short must reach nobody, or the number is not the shortest
-			// range that works and a warning built on it would be wrong.
-			for _, theirs := range SideCells(SideEnemy) {
-				if mine.DistanceTo(theirs) <= needed-1 {
-					t.Errorf("a range of %d already reaches %s from %s, so column %d does not need %d",
-						needed-1, theirs, mine, col, needed)
-				}
-			}
-		}
-	}
-	// The front column is next to the enemy's, and every column behind it is one
-	// further out. Worth pinning: these are the numbers a kit is sized against.
-	for col, want := range map[int]int{2: 1, 1: 2, 0: 3} {
-		if got := ReachNeeded(col); got != want {
-			t.Errorf("column %d needs a range of %d, want %d", col, got, want)
-		}
-	}
-	for _, col := range []int{-1, FormationCols, Cols} {
-		if got := ReachNeeded(col); got != 0 {
-			t.Errorf("column %d is not a formation column but needs %d", col, got)
-		}
-	}
-}
-
 func TestRingAndDiskSizes(t *testing.T) {
 	center := Offset{2, 1}.Cube()
 	for radius := 0; radius <= 4; radius++ {

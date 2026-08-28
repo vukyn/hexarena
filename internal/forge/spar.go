@@ -29,14 +29,18 @@ func (l *Library) Books() battle.Books {
 
 // duelSlot is where both duellists stand: the front column, middle row.
 //
-// Nothing on this board moves, so the slot decides what a kit can reach, and the
-// front column is the only one that asks nothing of a kit — hex.ReachNeeded is
-// one there, which is the shortest range a skill can have. Any other column
-// would refuse a melee character before it had swung, and a measurement that
-// cannot measure short-ranged characters is not a measurement of the cast.
+// ⚠️ The column used to be load-bearing and no longer is. Reach was distance
+// from the caster once, so the front column was the only one that asked nothing
+// of a kit and any other would have refused a melee character before it had
+// swung. Reach is depth into the enemy's half now, and a duel puts exactly one
+// unit on each side, so the single occupied rank is at depth one from anywhere:
+// every column asks the same of a kit, which is the shortest range a skill can
+// declare.
 //
-// The middle row for the same reason on the other axis: it is the row the odd-q
-// push does not tilt away from its opposite number.
+// It stays the front column because a duel should look like the board's ordinary
+// case, and the middle row for a reason that is still live: it is the row the
+// odd-q push does not tilt away from its opposite number, which is what area
+// shapes are measured through.
 var duelSlot = hex.Offset{Col: hex.FormationCols - 1, Row: hex.Rows / 2}
 
 // sparTurnLimit is when a duel is abandoned. It is the number cmd/hexarena stops
