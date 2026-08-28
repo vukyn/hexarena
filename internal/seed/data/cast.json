@@ -316,6 +316,10 @@
         {
           "id": "outrage",
           "at_level": 44
+        },
+        {
+          "id": "dragon_drive",
+          "at_level": 48
         }
       ],
       "passives": [

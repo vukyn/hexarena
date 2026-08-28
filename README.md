@@ -1531,10 +1531,71 @@ Charmander builds moved the other way — 42.5% → 26.6% for the dragon line, a
 **22.1%** once tempo made `outrage`'s recoil cost something — because the fire line
 has a detonate and the dragon line has none, and its heaviest skill charges a price
 the old rating could not see. Both are cast findings rather than engine ones.
+⚠️ **The first of those two explanations has since been tested and is wrong**; see
+*What the dragon line's detonate was worth* below.
 
 Pricing tempo left the shipped roster where it was: **49.1% → 49.4% ally** over
 20,000 seeds, which is inside the noise at that count, so the instrument did not need
 levelling a second time.
+
+### What the dragon line's detonate was worth
+
+Nothing, and the finding is that the roadmap item asking for it had named the wrong
+cause.
+
+The line was given `dragon_drive` — a neutral, dragon-only skill that detonates the
+`expose` its own `dragon_claw` applies, which is exactly the shape `flamethrower`
+into `inferno` has on the fire side. It works: over sixty battles the claw lands
+`expose` twenty-four times and the drive finds it nineteen, spending the stack every
+time. It changes nothing. Fielding it in place of `dragon_rage` moves the mirror
+**22.0% → 21.2%**, a hair the wrong way.
+
+⚠️ **A detonate is only as big as the status it spends, and `expose` is cheap.** The
+pricing rule is that a burst may beat leaving the status alone, but not by more than
+a factor of two — so what a detonate is allowed to hit for is set by what consuming
+it throws away. `burn` throws away 548 in ticks. `expose` throws away 102: two turns
+of a defence share, priced as the extra damage a plain attack was landing while it
+was up. A third of the fuel is a third of the burst, and a third of a burst does not
+turn a matchup. The dragon line cannot have a big detonate without first having a
+status worth detonating, which is a different piece of work.
+
+**Decomposed over 3000 battles both ways round, one change at a time:**
+
+| change | rate | Δ |
+| --- | --- | --- |
+| shipped | 22.0% | — |
+| dragon fields the detonate | 21.2% | **−0.8** |
+| fire loses its detonate | 32.9% | +10.9 |
+| dragon drops `reckless` for `blood_thirst` | 55.1% | **+33.1** |
+| dragon drops `reckless` for `blaze` | 38.9% | +16.9 |
+| both changes at once | 53.4% | +31.4 |
+
+So the fire line's detonate really is worth about eleven points — to *fire*, because
+it spends a status worth five times as much — and no detonate the dragon line is
+allowed to have can answer it. **`reckless` is the rest of the gap and then some.**
+It grants `unleashed` and `bare` together: thirty per cent of attack bought with
+forty per cent of defence *and* forty per cent of dodge, carried into a build whose
+opponent's heaviest skill is amplified three and a half times off a status.
+`TestRecklessIsATradeAndNotAGift` asks whether the trait gives something up and
+passes; it cannot ask whether it gives up too much, which is the same shape of gap a
+win rate had against `swiftness`.
+
+What to do about the trait is left open on purpose. `blood_thirst` beats it in the
+mirror *and* against the rest of the cast (100% either way, where `reckless` reads
+98.6% and 96.0%), so swapping the build's trait would be a power increase rather than
+a rebalance. Softening the cost is the other lever, and it is at least uncoupled —
+`bare` is granted by `reckless` and by nothing else, and no skill applies it — but
+nothing in the suite holds its magnitude either, so whatever it becomes has to be
+measured and written down the same way this was.
+
+⚠️ **The change also found a live reporting bug.** Both places that price a detonate
+— `TestADetonateIsWorthLessThanItsBreakEven` and the *what a detonate gives up* table
+— computed what was forgone as `tick power × stacks × duration`, which is **nought
+for anything that is not a damage-over-time**. A detonate off a stat debuff was
+therefore priced as giving up nothing at all, and a burst of any size would have
+passed. Both now price the two currencies separately and **refuse** a status they can
+price in neither, because nought and "gives up nothing" are the same number and only
+one of them is true.
 
 ### A draw nobody can act in
 

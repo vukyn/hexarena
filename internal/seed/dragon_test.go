@@ -23,6 +23,12 @@ var (
 	dragonBuild = []string{"dragon_claw", "outrage", "dragon_rage", "dragon_dance"}
 )
 
+// driveBuild is the dragon line with its own detonate in, spending the slot
+// `dragon_rage` holds in the shipped build. It is not the shipped build and is
+// deliberately not measured as one: see TestTheDragonLineCanSpendWhatItApplies
+// for what fielding it is worth, which is nothing.
+var driveBuild = []string{"dragon_claw", "dragon_drive", "outrage", "dragon_dance"}
+
 // buildSeeds is how many battles each half of the comparison is fought over.
 const buildSeeds = 300
 
@@ -53,9 +59,15 @@ const buildSeeds = 300
 //
 // So the band is wider than a design would like, and deliberately: what it still
 // asserts is that neither build is a scripted defeat, which is the claim that can
-// be made honestly today. Closing the gap is a **data** change — the dragon line
-// wants something to spend a status on — and it is not folded in here, because
-// this change's whole claim is that the shipped data was never being played.
+// be made honestly today.
+//
+// ⚠️ **"The dragon line wants something to spend a status on" was the guess that
+// stood here, and it was wrong.** The line was given one — `dragon_drive`, which
+// detonates the `expose` its own `dragon_claw` applies — and fielding it moves the
+// figure 22.0% → 21.2%, which is nothing and slightly the wrong way. The gap is
+// `reckless`, worth about **+33 points** on its own. The decomposition is in
+// TestTheDragonLineCanSpendWhatItApplies, and what to do about the trait is still
+// open.
 func TestTheDragonBuildIsASidegradeAndNotAnUpgrade(t *testing.T) {
 	dragon, fire := 0, 0
 	for _, arrangement := range []struct {
@@ -99,6 +111,95 @@ func TestTheDragonBuildIsASidegradeAndNotAnUpgrade(t *testing.T) {
 			rate/10, rate%10, fought, lowest, highest)
 	}
 	t.Logf("dragon %d, fire %d over %d battles: %d.%d%%", dragon, fire, fought, rate/10, rate%10)
+}
+
+// TestTheDragonLineCanSpendWhatItApplies is the mechanism `dragon_drive` was
+// added for, asserted as a mechanism rather than as a rate.
+//
+// A rate cannot see it. The line's detonate is worth **nothing** to the duel --
+// over 3000 battles both ways round, fielding it moves 22.0% to 21.2%, a hair
+// the wrong way -- and that is the pricing rule doing its job rather than the
+// skill being broken. A detonate may not beat leaving the status alone by more
+// than a factor of two, and `expose` is a cheap status: two turns of a defence
+// share, worth 102 where `burn` is worth 548 in ticks. So the dragon line's
+// detonate is capped near a third of `inferno`'s burst, and a third of a burst
+// does not turn a matchup.
+//
+// ⚠️ **That is the answer to the roadmap item and it is not the answer the item
+// predicted.** The 22.1% was written down as "the fire line has a detonate and
+// the dragon line has none". Decomposed over the same 3000 battles, one thing
+// changed at a time:
+//
+//	shipped                                   22.0%
+//	dragon fields the detonate                21.2%    -0.8
+//	fire loses its detonate                   32.9%   +10.9
+//	dragon drops reckless for blood_thirst    55.1%   +33.1
+//	dragon drops reckless for blaze           38.9%   +16.9
+//	both changes at once                      53.4%   +31.4
+//
+// The missing detonate is the small term, and it is not recoverable by adding
+// one: the fire line's is worth 10.9 because it spends a status worth five times
+// as much. **`reckless` is the rest of the gap**, worth three times what any
+// detonate could be. It grants `unleashed` and `bare` -- thirty per cent of
+// attack bought with forty per cent of defence *and* forty per cent of dodge --
+// into a build whose opponent's heaviest skill is amplified three and a half
+// times off a status. TestRecklessIsATradeAndNotAGift asks whether something is
+// given up and cannot ask whether too much is. What to do about that is a balance
+// decision and deliberately not folded in here.
+//
+// So this asserts what was actually built: the line applies a status and now owns
+// a skill that spends it, and both halves fire in a real battle. A kit that
+// declared the combo and never played it would pass every golden and fail here.
+func TestTheDragonLineCanSpendWhatItApplies(t *testing.T) {
+	books, err := seed.Books()
+	if err != nil {
+		t.Fatalf("load the shipped books: %v", err)
+	}
+	stats, affinity, _, _ := fielded(t, "pokemon.charmander")
+	applied, amplified, consumed := 0, 0, 0
+	for which := 1; which <= buildSeeds/10; which++ {
+		fight, err := battle.New(books, uint64(which), []battle.Roster{
+			{ID: "dragon", Side: hex.SideAlly, Slot: buildSlot, Affinity: affinity, Stats: stats,
+				Skills: driveBuild, Passives: []string{"reckless"}},
+			{ID: "fire", Side: hex.SideEnemy, Slot: buildSlot, Affinity: affinity, Stats: stats,
+				Skills: fireBuild, Passives: []string{"blaze"}},
+		})
+		if err != nil {
+			t.Fatalf("new battle: %v", err)
+		}
+		fight.Begin()
+		if _, err := fight.RunToEnd(4000); err != nil {
+			t.Fatalf("run: %v", err)
+		}
+		for _, event := range fight.Drain() {
+			if event.Actor != "dragon" || event.Status != "expose" {
+				continue
+			}
+			switch event.Kind {
+			case battle.StatusApplied:
+				applied++
+			case battle.Amplified:
+				amplified++
+			case battle.StatusConsumed:
+				consumed++
+			}
+		}
+	}
+	if applied == 0 {
+		t.Error("the dragon line never landed expose, so it has nothing to spend")
+	}
+	if amplified == 0 {
+		t.Error("dragon_drive never found the status its own line applies, so the combo is " +
+			"declared in the data and never played")
+	}
+	// Every amplified cast must also have eaten the stack. A detonate that
+	// amplifies without consuming is exactly the strictly-better skill the pricing
+	// rule exists to refuse, and nothing else in the suite would notice.
+	if consumed != amplified {
+		t.Errorf("dragon_drive was amplified %d times and consumed the status %d times: "+
+			"a burst that keeps what it spent is being paid for twice", amplified, consumed)
+	}
+	t.Logf("expose applied %d, drive amplified %d, consumed %d", applied, amplified, consumed)
 }
 
 // TestRecklessIsATradeAndNotAGift is the whole of what the trait is for, and it

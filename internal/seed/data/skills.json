@@ -714,6 +714,33 @@
       }
     },
     {
+      "id": "dragon_drive",
+      "name": "long xung",
+      "flavour": "Lấy đà một nhịp rồi lao cả thân mình tới, dồn hết sức nặng vào một điểm",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "dragon"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "requires": {
+        "status": "expose",
+        "min_stacks": 1,
+        "bonus_power": 1400,
+        "consume": true
+      }
+    },
+    {
       "id": "taunt",
       "name": "khiêu khích",
       "flavour": "Gõ ầm ĩ và chửi đổng cho cả bên kia chỉ còn muốn nhắm vào mình",

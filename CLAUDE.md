@@ -1229,6 +1229,46 @@ cast.
   early return in `resist` that treats "nothing refused" as "nothing to do" would
   silently drop it.
 
+## Pricing a detonate, so the burst is paid for
+
+A detonate is `requires` with `consume: true`: the skill is amplified while the
+target carries a status, and eats it on the way through. The rule is that it may
+beat leaving the status alone, but **not by more than a factor of two** —
+otherwise applying a status and immediately spending it is the only line worth
+playing, and the status is a cast animation.
+
+- **A detonate is only as big as what it spends.** The ceiling is set by what
+  consuming the status throws away, so the fuel decides the skill, not the other
+  way round. `burn` throws away **548**; `expose` throws away **102**. That is why
+  `inferno` bursts for 1200 and `dragon_drive` for 788, and why a line whose only
+  status is a stat debuff cannot have a big detonate without first being given a
+  status worth detonating.
+- ⚠️ **There are two currencies and the arithmetic is different.** A
+  damage-over-time is worth its remaining **ticks**, which land whatever the
+  attacker does next. A stat debuff ticks for nothing and is worth the **extra
+  damage ordinary attacks land while it is up** — priced by hitting the lowered
+  defence and the real one with the same plain attack and charging the difference
+  for every turn the debuff had left. `forgoneBy` in `skills_test.go` is the one
+  place that knows both, and the golden table names which one each skill spends.
+- ⚠️ **The tick-only reading was shipped and was a wrong answer, not a missing
+  feature.** `tick power × stacks × duration` is **nought** for a stat debuff, so
+  a detonate off one was priced as giving up *nothing* and a burst of any size
+  would have passed. It went unnoticed because every detonate was off a DoT.
+  Both the test and the table now **refuse** a status they can price in neither
+  currency, rather than returning nought — nought and "gives up nothing" are the
+  same number and only one of them is true.
+- **The consume happens before the damage is computed**, in `resolveAgainst`:
+  `target.Statuses.Consume` runs, *then* `b.Stats(target)` is read. So a detonate
+  off `expose` hits into the defence it just handed back — it pays for its own
+  burst, including against itself. Nothing had to be written for that; it is the
+  ordering, and it is worth not disturbing.
+- **A detonate is a mechanism, so assert it as one.** A win rate cannot see
+  whether the combo is played: `TestTheDragonLineCanSpendWhatItApplies` counts
+  `StatusApplied`, `Amplified` and `StatusConsumed` off the log and requires the
+  last two to be **equal**. A burst that amplifies without consuming is the
+  strictly-better skill this whole rule exists to refuse, and no golden would
+  notice.
+
 ## Open work
 
 Detail and the open questions are in `README.md` under Roadmap. What matters here
@@ -1257,6 +1297,28 @@ is the constraint each piece has to respect.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
       at build time or rasterised at load, because ebiten draws neither.
+- [ ] **`reckless` is the dragon build's 22.1%.** The roadmap said the gap was the
+      missing detonate. It was tested: the line was given one (`dragon_drive`, off
+      the `expose` its own `dragon_claw` applies, and it does fire — 19 amplified
+      casts in 60 battles), and fielding it reads **21.2%** against 22.0%, which is
+      nothing and slightly the wrong way. ⚠️ **Measured one change at a time over
+      3000 battles**: the detonate **−0.8**, `reckless → blood_thirst` **+33.1**,
+      `reckless → blaze` **+16.9**, fire losing *its* detonate **+10.9**. The trait
+      grants `unleashed` **and** `bare` — 30% of attack for 40% of defence *and*
+      40% of dodge — into a build whose opponent amplifies its heaviest skill three
+      and a half times off a status.
+      ⚠️ **`TestRecklessIsATradeAndNotAGift` cannot see this.** It asks whether
+      something is given up and passes; whether *too much* is given up is a
+      different question, and the same shape of gap a win rate had against
+      `swiftness`.
+      ⚠️ **Do not just swap the build's trait.** `blood_thirst` beats `reckless` in
+      the mirror **and** against the rest of the cast (100%/100% against 98.6%/96.0%),
+      so the swap is a power increase rather than a rebalance. Softening the cost is
+      the other lever and it is uncoupled — `bare` is granted by `reckless` and by
+      nothing else, and no skill applies it — but there is **no test holding its
+      magnitude**, so whatever it becomes has to be measured and written down the
+      same way. Decide what the trait is *for* first.
+      → `README.md` § *What the dragon line's detonate was worth*.
 - [x] **A deeper opponent. Done** — see *Rating an action* above for the rules and
       *A deeper opponent* in `README.md` for what moved. Statuses, buffs, guards,
       heals, cleanses and kills are all priced in damage now, over capped horizons,
