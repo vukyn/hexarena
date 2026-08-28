@@ -2285,3 +2285,101 @@ is the constraint each piece has to respect.
       the balance change gets read. Read squirtle first — water is the strongest
       of the three elements and Blastoise still cannot carry an ace slot, because
       its attack and speed curves are the lowest in the cast.
+
+## Pricing one number: `hexforge weigh`, and why a roster win rate could not
+
+`hexforge weigh <character> <skill> --field F --values a,b,c` prices **one field
+on one skill** by fighting the carrier against a copy of itself whose only
+difference is that field. `forge.WeighReport` is the measurement, `internal/forge/weigh.go`;
+`cmd/hexforge/weigh.go` only draws it. **It authors no balance data** — the
+variant lives in memory, `skill.Book.Append` marshals and re-parses it, and
+`internal/seed/data` never moves.
+
+⚠️ **The roster win rate does not price anything, and the control experiment is
+why.** Over all 20,000 seeds, post-#136 roster, baseline **47.55%** ally:
+
+| change | ally rate | Δ |
+|---|---:|---:|
+| `razor_leaf` crit 200 (ally lands it 3.2:1) | 45.41% | **−2.14pp** |
+| `sludge_bomb` crit 200 (**ally-only**, enemy never casts it) | 45.15% | **−2.40pp** |
+| `sludge_bomb` power **+5%, no crit at all** | 45.80% | **−1.75pp** |
+
+The last row is the control: **giving the ally more damage *lowers* its win
+rate**, by about as much as the crit did, with no crit involved. The roster rate
+is **non-monotone in ally damage** — a dial that is sometimes worth less the more
+of it you have is not priced by that dial's reading. The same change also read
+**+2.40pp before #136 and −2.14pp after**: the sign flipped on an unrelated
+*placement* change. The engine was never the problem — the mechanism measured
+**20.46%** against **20.00%** declared over 3,670 landing strikes.
+
+**What a weigh figure is.** A price in **parts per thousand**, on a named
+carrier, at a named level, against a copy of itself, with that carrier's kit and
+stats and placement all cancelled. It is **not a win rate**, it says nothing
+about the roster, and **it does not carry across a data change** — a placement
+move can reverse its sign, which is exactly what happened above. Quote it with
+the carrier and the level attached or do not quote it.
+
+⚠️ **Swap the KITS, not the sides.** `forge.duel` already does. The queue breaks
+a tie by enlistment, so leaving the roster order alone enlists the first-written
+kit first in *both* halves and a unit against an identical copy of itself reads
+**58.8%** — see the `self_gradient` entry above, where that trap was first paid
+for. Reusing `duel` is the whole reason a weighing can claim its two halves
+cancel. A `Damaged` event carries `Actor` and **no `Side` at all**, so the strike
+tally follows the kit swap too: the challenger is `first` in one half and
+`second` in the other, and folding on the wrong id reports the *opponent's*
+strikes with nothing on screen looking wrong.
+`TestAMatchupCountsTheChallengersStrikesAndNotTheOpponents` is what holds it.
+
+⚠️ **The control is a row of every report, not a test somewhere else.** The
+sweep always inserts the skill's own declared value, and that row **must read
+exactly 500‰** or the whole report is refused before a figure is printed. A test
+proves the code was right once; this proves the twenty thousand battles just
+fought were the twenty thousand intended — a variant leaked into both kits, a
+side read backwards or a perturbed rng each produce rows that look exactly like
+good rows and a control that is not even.
+
+⚠️ **`turns` is a headline column, read beside `worth`, not a footnote.** A
+mirror-duel rate once failed to even *order* speed amounts (`swiftness`, above:
+`+150` read 59.0% while `+50` read 74.0%) because the turn queue is discrete, and
+the fix was measuring inside one battle. Damage is lumpy at the **kill
+threshold** for the same reason — a little more of it buys whether the last
+strike lands this turn or next. Median turns-to-finish is the inside-one-battle
+reading: more damage kills sooner, monotonically, with no win/lose boundary to be
+lumpy at. **A row whose `worth` is inside the band but whose `turns` moved is a
+real effect**, and the footer says so. Monotonicity is reported for the two
+columns **separately**, because they can disagree and the disagreement is the
+finding.
+
+**The band.** `2σ = 1000/√N` permille over `N = 2 × seeds` battles, integer
+square root and ceiling division — no float anywhere, permille throughout, and
+never zero. The default of **10,000 seeds** (20,000 battles, ~7.5s, band
+**±0.8pp**) comes from that arithmetic and not from taste: the effects above were
+1.75–2.40pp, two to three times the band.
+
+**Refusals, each because the row would otherwise print as an ordinary number.**
+Seeds below one; a level outside `1..LevelCap`; an unknown character or skill; a
+skill the carrier does not bring at that level and form (it would be *measured* —
+an even row priced at nought on a skill nobody cast); a variant id the book
+already declares; a value the parser refuses (returned in **the parser's own
+words, unwrapped**, because every bound is `skill.resolve`'s and a second copy
+would be free to disagree); a row that **landed the skill zero times** — worth
+nothing means *not rated*, never *rated at nought*, which is the `fire_fang`
+ally-0 lesson made permanent; a row where the mechanism never fired (crit is the
+only field with a mark of its own on an event); a row whose `Endless` exceeds a
+fifth of its battles; and a row with a **saturated half** (`First.Rate() >= 990`
+or `Second.Rate() <= 10`), which has no room left for the field to move.
+
+⚠️ Only **scalars** are weighable: `power`, `accuracy`, `pierce`, `crit`,
+`strikes`, `drains`, `cooldown`, `range`. `self_gradient` is excluded because it
+is two numbers, so a curve becomes a surface; `applies`, `strips`, `summons`,
+`restriction`, `element`, `target` and `pattern` are excluded because changing one
+**authors a different skill** rather than moving a dial, and the deviation would
+be that other skill's worth.
+
+⚠️ **Do not try to seed the two twins separately.** They share one `*rng.Source`,
+so changing one side re-scrambles every draw after it — roll drift. It **biases
+nothing** (both arrangements fight the same seeds) and fixing it would mean an
+`internal/core` change to make a measurement prettier.
+
+**Left at their defaults, deliberately:** a `--carriers all` sweep (a follow-up,
+now that `Weigh` exists) and `self_gradient` support (excluded, above).

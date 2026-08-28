@@ -122,6 +122,69 @@ func (t Tally) add(other Tally) Tally {
 	}
 }
 
+// Strikes is what one unit's attacking came to over a set of duels.
+//
+// It is here rather than derived from a rate because a rate cannot say whether
+// anything happened. A skill that was never cast, or cast and never landed, has
+// a perfectly ordinary-looking win rate beside it — and a figure that prices a
+// mechanism which never fired is worth less than no figure at all, because it
+// reads as "rated at nought" when it means "not rated". Cast, Landed and
+// Critical are what let a report refuse such a row instead of printing it.
+//
+// Cast counts one per use, Landed counts one per strike that connected, so a
+// two-strike skill lands twice per cast at most and the two columns are not
+// comparable to each other. Damage is the total dealt, which is the size of what
+// the other three are counting.
+type Strikes struct {
+	Cast     int
+	Landed   int
+	Critical int
+	Damage   int64
+}
+
+// add folds one set of strikes into another.
+func (s Strikes) add(other Strikes) Strikes {
+	return Strikes{
+		Cast: s.Cast + other.Cast, Landed: s.Landed + other.Landed,
+		Critical: s.Critical + other.Critical, Damage: s.Damage + other.Damage,
+	}
+}
+
+// fold counts one battle's events into the tally, reading only the events one
+// unit produced with its own skills.
+//
+// ⚠️ The unit is named by roster id, and the roster id of the challenger is not
+// the same in both halves of a matchup — it is enlisted first in one and second
+// in the other. A Damaged event carries Actor and no Side at all, so reading the
+// wrong id here reports the *opponent's* strikes under the challenger's name and
+// nothing on screen would look wrong. The caller passes the id that follows the
+// kit swap; see duel.
+//
+// A reply is left out. It carries Passive rather than Skill and is what a unit
+// *is* rather than what its skill did, so counting it would price a trait under
+// a skill's name. A summoned unit acts under its own roster id and is left out
+// by the same test.
+func (s *Strikes) fold(events []battle.Event, actor, counting string) {
+	for _, event := range events {
+		if event.Actor != actor || event.Passive != "" {
+			continue
+		}
+		if counting != "" && event.Skill != counting {
+			continue
+		}
+		switch event.Kind {
+		case battle.SkillUsed:
+			s.Cast++
+		case battle.Damaged:
+			s.Landed++
+			s.Damage += event.Amount
+			if event.Critical {
+				s.Critical++
+			}
+		}
+	}
+}
+
 // Matchup is what happened over every seed against one opponent, both ways
 // round.
 //
@@ -145,6 +208,14 @@ type Matchup struct {
 	// did. A pairing whose win rate is even can still be badly matched — forty
 	// turns of nothing is not the same fight as four — and a rate cannot say so.
 	Turns int
+	// Strikes is **the challenger's**, across both halves, and counts only the
+	// skill the caller asked to count.
+	//
+	// Whose it is has to be written down because nothing in the type says so and
+	// nothing on a screen would: the challenger stands in the ally slot for one
+	// half and the enemy slot for the other, so a reader — and a fold that took
+	// the wrong id — would get the opponent's attacks with no sign of it.
+	Strikes Strikes
 	// Mirror marks the row where a character meets itself. It is the control,
 	// and it reads as one only because the halves are kept apart: the combined
 	// rate of a mirror is exactly even by construction and therefore says
@@ -243,7 +314,10 @@ func (l *Library) Spar(id string, level, seeds int) (SparReport, error) {
 			return SparReport{}, fmt.Errorf("%s cannot be fielded at level %d: %w",
 				other.ID, level, err)
 		}
-		fought, err := duel(books, challenger, opponent, seeds, other.ID == character.ID)
+		// Nothing is counted: a spar reports which character is better, and a
+		// strike tally would be four skills added together with no way to tell
+		// which of them moved.
+		fought, err := duel(books, challenger, opponent, seeds, other.ID == character.ID, "")
 		if err != nil {
 			return SparReport{}, fmt.Errorf("%s cannot be measured against %s: %w",
 				challenger.ID, opponent.ID, err)
@@ -315,7 +389,13 @@ const (
 // refuse one pairing while accepting another — what is left it can refuse is a
 // fault in the books, which is the same fault in every row.
 // TestTheDuelSlotAsksTheLeastOfAKit is what holds that true.
-func duel(books battle.Books, challenger, opponent Duellist, seeds int, mirror bool) (Matchup, error) {
+//
+// counting names the one skill whose casts, landings and criticals are tallied
+// onto the challenger, or is empty to count every skill it used. It is a
+// parameter rather than always-everything because the thing a price is taken on
+// is one skill, and a total over four of them would move for reasons that have
+// nothing to do with the one being moved.
+func duel(books battle.Books, challenger, opponent Duellist, seeds int, mirror bool, counting string) (Matchup, error) {
 	matchup := Matchup{Against: opponent, Mirror: mirror}
 	lengths := make([]int, 0, 2*seeds)
 
@@ -327,25 +407,31 @@ func duel(books battle.Books, challenger, opponent Duellist, seeds int, mirror b
 		// mine is the side the challenger is standing on in this arrangement,
 		// because a Result is always read from the challenger.
 		mine hex.Side
-		into *Tally
+		// acting is the challenger's roster id in this arrangement. It follows
+		// the kit swap rather than the side, because that is what an event's
+		// Actor carries — the two halves put the challenger under two different
+		// ids and an event says nothing about which side produced it.
+		acting string
+		into   *Tally
 	}{
 		{[]battle.Roster{
 			place(firstID, challenger, hex.SideAlly),
 			place(secondID, opponent, hex.SideEnemy),
-		}, hex.SideAlly, &matchup.First},
+		}, hex.SideAlly, firstID, &matchup.First},
 		{[]battle.Roster{
 			place(firstID, opponent, hex.SideAlly),
 			place(secondID, challenger, hex.SideEnemy),
-		}, hex.SideEnemy, &matchup.Second},
+		}, hex.SideEnemy, secondID, &matchup.Second},
 	} {
 		for seed := 1; seed <= seeds; seed++ {
-			result, turns, err := fight(books, arrangement.roster, arrangement.mine, uint64(seed))
+			result, turns, events, err := fight(books, arrangement.roster, arrangement.mine, uint64(seed))
 			if err != nil {
 				// The first refusal ends the row. Every seed would refuse for the
 				// same reason — a roster is checked before a die is rolled — so
 				// fighting the rest would be a slower way to be told once.
 				return Matchup{}, err
 			}
+			matchup.Strikes.fold(events, arrangement.acting, counting)
 			arrangement.into.count(result)
 			if result != Endless {
 				lengths = append(lengths, turns)
@@ -379,29 +465,36 @@ func place(id string, who Duellist, side hex.Side) battle.Roster {
 	}
 }
 
-// fight runs one duel and reports how it ended for the given side, and how long
-// it took.
-func fight(books battle.Books, roster []battle.Roster, mine hex.Side, seed uint64) (Result, int, error) {
+// fight runs one duel and reports how it ended for the given side, how long it
+// took, and everything the battle recorded.
+//
+// The events come back rather than a count taken here, because the event log is
+// the only contract a reader of a battle has and this package is a reader like
+// any other: a fight that summed its own strikes would be a second place where
+// what a battle did is decided. They are drained once, after the battle has
+// finished, so a caller that ignores them pays only for the slice.
+func fight(books battle.Books, roster []battle.Roster, mine hex.Side, seed uint64) (Result, int, []battle.Event, error) {
 	fought, err := battle.New(books, seed, roster)
 	if err != nil {
-		return Drawn, 0, err
+		return Drawn, 0, nil, err
 	}
 	fought.Begin()
 	turns, err := fought.RunToEnd(sparTurnLimit)
 	if err != nil {
-		return Drawn, turns, err
+		return Drawn, turns, fought.Drain(), err
 	}
+	events := fought.Drain()
 	if !fought.Finished() {
-		return Endless, turns, nil
+		return Endless, turns, events, nil
 	}
 	winner, decided := fought.Winner()
 	switch {
 	case !decided:
-		return Drawn, turns, nil
+		return Drawn, turns, events, nil
 	case winner == mine:
-		return Won, turns, nil
+		return Won, turns, events, nil
 	default:
-		return Lost, turns, nil
+		return Lost, turns, events, nil
 	}
 }
 

@@ -283,7 +283,7 @@ func TestAnUnaimableKitIsRefusedRatherThanCounted(t *testing.T) {
 	unarmed := armed
 	unarmed.ID, unarmed.Name, unarmed.Skills, unarmed.Passives = "empty", "Empty", nil, nil
 
-	fought, err := duel(lib.Books(), armed, unarmed, sparSeeds, false)
+	fought, err := duel(lib.Books(), armed, unarmed, sparSeeds, false, "")
 	if err == nil {
 		t.Fatalf("a duellist with no skill at all was counted as %+v", fought.Total())
 	}
@@ -407,4 +407,100 @@ func abs(value int) int {
 		return -value
 	}
 	return value
+}
+
+// TestAMatchupCountsTheChallengersStrikesAndNotTheOpponents is the assertion
+// that catches the one bug shape a strike tally can have and never show.
+//
+// A Damaged event carries an Actor and **no Side at all**, and the challenger
+// stands in the ally slot for one half of a matchup and the enemy slot for the
+// other — so it is enlisted under one roster id in the first arrangement and the
+// other in the second. A fold that read the wrong id would file the *opponent's*
+// attacks under the challenger's name, and every column on the screen would look
+// exactly as it looks now.
+//
+// It is asserted by counting a skill only one of the two brings. The challenger
+// cannot have cast what it does not carry, so a count above nought against it is
+// the opponent's, stated without any reference to how the fold is written.
+func TestAMatchupCountsTheChallengersStrikesAndNotTheOpponents(t *testing.T) {
+	lib := sparLibrary(t)
+	adept, err := lib.duellist(mustCharacter(t, lib, "fixture-anime.adept"), progression.LevelCap)
+	if err != nil {
+		t.Fatalf("field the adept: %v", err)
+	}
+	sprout, err := lib.duellist(mustCharacter(t, lib, "fixture-game.sprout"), progression.LevelCap)
+	if err != nil {
+		t.Fatalf("field the sprout: %v", err)
+	}
+	mine, theirs := adept.Skills[0], sprout.Skills[0]
+	if mine == theirs {
+		t.Fatalf("both fixtures lead with %s, so nothing here can tell the two apart", mine)
+	}
+	if slices.Contains(adept.Skills, theirs) || slices.Contains(sprout.Skills, mine) {
+		t.Fatalf("the two kits overlap on %s or %s, so a count cannot say whose it was", mine, theirs)
+	}
+
+	for _, test := range []struct {
+		name                 string
+		challenger, opponent Duellist
+		ours, theirs         string
+	}{
+		{"the adept challenging", adept, sprout, mine, theirs},
+		{"the sprout challenging", sprout, adept, theirs, mine},
+	} {
+		ours, err := duel(lib.Books(), test.challenger, test.opponent, sparSeeds, false, test.ours)
+		if err != nil {
+			t.Fatalf("%s: %v", test.name, err)
+		}
+		if ours.Strikes.Cast == 0 {
+			t.Errorf("%s never cast %s, which it brings, so the tally is reading nobody",
+				test.name, test.ours)
+		}
+		notOurs, err := duel(lib.Books(), test.challenger, test.opponent, sparSeeds, false, test.theirs)
+		if err != nil {
+			t.Fatalf("%s: %v", test.name, err)
+		}
+		if notOurs.Strikes.Cast != 0 || notOurs.Strikes.Landed != 0 {
+			t.Errorf("%s was credited with %d cast(s) and %d landing(s) of %s, which only its opponent brings",
+				test.name, notOurs.Strikes.Cast, notOurs.Strikes.Landed, test.theirs)
+		}
+	}
+}
+
+// TestCountingOneSkillAgreesWithCountingThemAll is the other half: the filter
+// only ever narrows, and never drops or duplicates.
+//
+// The whole kit counted at once has to be the kit's skills counted one at a
+// time and added up. A fold that let a reply, a summon's turn or a status tick
+// through would break this in one direction, and one that dropped a strike would
+// break it in the other.
+func TestCountingOneSkillAgreesWithCountingThemAll(t *testing.T) {
+	lib := sparLibrary(t)
+	challenger, err := lib.duellist(mustCharacter(t, lib, "fixture-anime.adept"), progression.LevelCap)
+	if err != nil {
+		t.Fatalf("field the challenger: %v", err)
+	}
+	opponent, err := lib.duellist(mustCharacter(t, lib, "fixture-game.sprout"), progression.LevelCap)
+	if err != nil {
+		t.Fatalf("field the opponent: %v", err)
+	}
+	everything, err := duel(lib.Books(), challenger, opponent, sparSeeds, false, "")
+	if err != nil {
+		t.Fatalf("count them all: %v", err)
+	}
+	added := Strikes{}
+	for _, held := range challenger.Skills {
+		one, err := duel(lib.Books(), challenger, opponent, sparSeeds, false, held)
+		if err != nil {
+			t.Fatalf("count %s: %v", held, err)
+		}
+		added = added.add(one.Strikes)
+	}
+	if added != everything.Strikes {
+		t.Errorf("the kit counted one skill at a time comes to %+v and counted at once to %+v",
+			added, everything.Strikes)
+	}
+	if everything.Strikes.Cast == 0 {
+		t.Error("nothing was cast at all, so this test compared two empty tallies")
+	}
 }
