@@ -90,6 +90,10 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// row with an empty members cell and the line that explains it are drawn
 	// only by a book that has one — and they are wording like any other, so they
 	// are measured rather than left to the first unclaimed kind somebody writes.
+	// The chart, whose widest line is the longest ring — a fixed thing the data
+	// decides, so entering it is the whole of its worst case.
+	graph := m.enter(screenElements)
+	graph.screen = screenChart
 	species := m.enter(screenSpecies)
 	unclaimed := m.enter(screenSpecies)
 	unclaimed.species = withNobodyClaiming(unclaimed.species)
@@ -115,6 +119,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"trait blurb":      traitBlurb,
 		"check":            m.enter(screenCheck),
 		"elements":         elements,
+		"chart":            graph,
 		"species":          species,
 		"unclaimed kind":   unclaimed,
 	}

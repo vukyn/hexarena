@@ -24,6 +24,7 @@ package element
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"sort"
 )
 
@@ -109,6 +110,33 @@ type Chart struct {
 	mutual      [Count]bool
 	mutualPair  [Count][Count]bool
 	inert       [Count]bool
+	// cycles and pairs are the shape the chart was *declared* in, kept beside
+	// the resolved edges rather than dropped once they had been walked into
+	// them.
+	//
+	// The resolved form answers "does fire beat grass"; it cannot answer "what
+	// is the ring fire is in", because a ring is a fact about the declaration
+	// and the matrix is the same eight edges however they were grouped. A reader
+	// learning the chart learns the rings — four names in a circle is one thing
+	// to remember and eight arrows is eight — so a renderer that wants to *teach*
+	// the chart needs what the author wrote, not only what it compiled to.
+	//
+	// Slices in declaration order, and handed out as copies, because they reach
+	// a rendered line: a caller that could sort or append in place would be
+	// editing the chart through its own reference.
+	cycles []Cycle
+	pairs  [][2]Element
+}
+
+// Cycle is one declared ring: each member beats the next, and the last beats the
+// first.
+//
+// The name is the author's own word for the grouping ("organic", "cross"). It
+// carries no rule — nothing in battle reads it — and exists so a reference can
+// say which ring an edge came out of rather than listing edges nobody can group.
+type Cycle struct {
+	Name  string
+	Chain []Element
 }
 
 type chartFile struct {
@@ -154,6 +182,7 @@ func ParseChart(raw []byte) (*Chart, error) {
 			chart.cycled[attacker] = true
 			chart.cycled[defender] = true
 		}
+		chart.cycles = append(chart.cycles, Cycle{Name: cycle.Name, Chain: chain})
 	}
 
 	for _, pair := range file.Mutual {
@@ -176,6 +205,7 @@ func ParseChart(raw []byte) (*Chart, error) {
 		}
 		chart.mutual[left], chart.mutual[right] = true, true
 		chart.mutualPair[left][right], chart.mutualPair[right][left] = true, true
+		chart.pairs = append(chart.pairs, [2]Element{left, right})
 	}
 
 	for _, name := range file.Inert {
@@ -319,6 +349,47 @@ func (c *Chart) Scale(damage int64, attacker, defender Element) int64 {
 
 // Multipliers returns the three configured outcomes.
 func (c *Chart) Multipliers() Multipliers { return c.multipliers }
+
+// Cycles returns the declared rings, in declaration order, as copies.
+//
+// Copies because a caller holding the chart's own slices could sort or overwrite
+// them and change what every later reader sees — the chart is loaded once and
+// shared, and a reference screen sorting a ring for display would silently
+// reorder the ring the game itself was declared with.
+func (c *Chart) Cycles() []Cycle {
+	out := make([]Cycle, 0, len(c.cycles))
+	for _, cycle := range c.cycles {
+		out = append(out, Cycle{Name: cycle.Name, Chain: slices.Clone(cycle.Chain)})
+	}
+	return out
+}
+
+// MutualPairs returns the declared two-way pairs, in declaration order.
+//
+// A pair is not a cycle of two: both members beat each other, so neither is safe
+// from the other, and rendering one as a two-link ring would draw it as though
+// one of the arrows were the way round it was declared. light and dark are the
+// only pair today and they are each other's whole matchup.
+func (c *Chart) MutualPairs() [][2]Element {
+	return slices.Clone(c.pairs)
+}
+
+// Inert returns the elements in no cycle and no pair, in element order.
+//
+// Read off the resolved flags rather than off the declaration, because being
+// inert is the absence of edges rather than a thing that was written: an element
+// left out of every cycle by accident is inert in play whatever the "inert" list
+// says, and a reference that reported the list would describe a chart the game
+// is not using.
+func (c *Chart) Inert() []Element {
+	out := make([]Element, 0, 2)
+	for _, member := range All() {
+		if len(c.Strengths(member)) == 0 && len(c.Weaknesses(member)) == 0 {
+			out = append(out, member)
+		}
+	}
+	return out
+}
 
 // Strengths returns the elements the given element is strong against, in
 // declaration order.

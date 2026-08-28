@@ -6,6 +6,8 @@ import (
 
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/lipgloss/v2"
+
+	"github.com/vukyn/hexarena/internal/core/element"
 )
 
 // palette is every style the screens draw with.
@@ -31,6 +33,44 @@ type palette struct {
 	// cannot take you.
 	emphasis lipgloss.Style
 	footer   lipgloss.Style
+	// elements is one style per element, indexed by the enum.
+	//
+	// It is the one place in this program where colour is *about* the data
+	// rather than about the layout, and it still is not information: the chart
+	// screen names every element in words and draws every relation with an
+	// arrow, so the colours only make a ring easier to follow with the eye. Take
+	// them away and the same screen says the same thing — which is the test the
+	// palette's rule really is.
+	//
+	// An array rather than a map: it is indexed by an enum whose Count is fixed
+	// and checked, and a map would let an element go unstyled without anything
+	// saying so.
+	elements [element.Count]lipgloss.Style
+}
+
+// elementColours is the ANSI colour each element is drawn in.
+//
+// The basic sixteen rather than 256-colour codes, because these are the ones a
+// terminal theme remaps: a reader with a light background gets their own idea of
+// "red" rather than one chosen against a dark one. The pairing is the obvious
+// one wherever the element has an obvious colour, which is most of them, and the
+// point is only that two elements in the same ring are told apart at a glance.
+//
+// neutral is deliberately faint rather than coloured. It is the element that
+// does nothing, and giving it a colour of its own would put it on the same
+// footing as the ten that trade.
+var elementColours = [element.Count]string{
+	element.Neutral:  "",
+	element.Fire:     "1",  // red
+	element.Water:    "4",  // blue
+	element.Grass:    "2",  // green
+	element.Ground:   "3",  // yellow, the closest the basic sixteen get to earth
+	element.Wind:     "14", // bright cyan
+	element.Ice:      "6",  // cyan
+	element.Metal:    "7",  // white, for something that catches the light
+	element.Electric: "11", // bright yellow
+	element.Light:    "15", // bright white
+	element.Dark:     "5",  // magenta, since black on black is nothing
 }
 
 // newPalette picks the styles for the terminal in front of it.
@@ -42,13 +82,17 @@ type palette struct {
 func newPalette() palette {
 	if plainTerminal() {
 		plain := lipgloss.NewStyle()
-		return palette{
+		blank := palette{
 			title: plain, heading: plain, label: plain, dim: plain,
 			good: plain, bad: plain, selected: plain, emphasis: plain,
 			footer: plain,
 		}
+		for member := range blank.elements {
+			blank.elements[member] = plain
+		}
+		return blank
 	}
-	return palette{
+	drawn := palette{
 		title:    lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("6")),
 		heading:  lipgloss.NewStyle().Bold(true),
 		label:    lipgloss.NewStyle().Foreground(lipgloss.Color("4")),
@@ -59,6 +103,26 @@ func newPalette() palette {
 		emphasis: lipgloss.NewStyle().Bold(true),
 		footer:   lipgloss.NewStyle().Faint(true),
 	}
+	for member, colour := range elementColours {
+		if colour == "" {
+			// The one element with no colour of its own draws faint, which is
+			// how every other "this does nothing" line on these screens reads.
+			drawn.elements[member] = lipgloss.NewStyle().Faint(true)
+			continue
+		}
+		drawn.elements[member] = lipgloss.NewStyle().Foreground(lipgloss.Color(colour))
+	}
+	return drawn
+}
+
+// element is the style one element is drawn in, or plain for an id the enum does
+// not have — which nothing in the book can produce, and is written down rather
+// than left to panic on the day something does.
+func (p palette) element(member element.Element) lipgloss.Style {
+	if !member.Valid() {
+		return lipgloss.NewStyle()
+	}
+	return p.elements[member]
 }
 
 // newInput is a text field dressed the way this program draws them.

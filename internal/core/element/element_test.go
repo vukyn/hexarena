@@ -489,3 +489,116 @@ func TestWeaknessAndResistanceCancel(t *testing.T) {
 		t.Errorf("ScaleAgainst gave %d, want %d", got, want)
 	}
 }
+
+// TestTheDeclaredRingsAgreeWithTheResolvedEdges is the anti-drift test the
+// retained declaration exists behind.
+//
+// Cycles and MutualPairs hand back what the author wrote; Strengths answers from
+// the matrix those were walked into. Two readings of one thing drift, and here
+// the drift is silent in both directions: a ring kept but not walked would draw
+// an edge the game does not play, and an edge walked but not kept would be
+// missing from every picture of the chart.
+func TestTheDeclaredRingsAgreeWithTheResolvedEdges(t *testing.T) {
+	chart, err := element.ParseChart(valid().encode(t))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	declared := map[[2]element.Element]bool{}
+	cycles := chart.Cycles()
+	if len(cycles) == 0 {
+		t.Fatal("the fixture declares no cycle, so this measures nothing")
+	}
+	for _, cycle := range cycles {
+		for index, attacker := range cycle.Chain {
+			declared[[2]element.Element{attacker, cycle.Chain[(index+1)%len(cycle.Chain)]}] = true
+		}
+	}
+	pairs := chart.MutualPairs()
+	if len(pairs) == 0 {
+		t.Fatal("the fixture declares no mutual pair, so half of this measures nothing")
+	}
+	for _, pair := range pairs {
+		declared[[2]element.Element{pair[0], pair[1]}] = true
+		declared[[2]element.Element{pair[1], pair[0]}] = true
+	}
+
+	resolved := map[[2]element.Element]bool{}
+	for _, attacker := range element.All() {
+		for _, defender := range chart.Strengths(attacker) {
+			resolved[[2]element.Element{attacker, defender}] = true
+		}
+	}
+	for edge := range declared {
+		if !resolved[edge] {
+			t.Errorf("%v > %v is declared and not resolved", edge[0], edge[1])
+		}
+	}
+	for edge := range resolved {
+		if !declared[edge] {
+			t.Errorf("%v > %v is resolved and in no declaration", edge[0], edge[1])
+		}
+	}
+}
+
+// TestTheDeclarationIsHandedOutAsCopies is what stops a reference screen editing
+// the chart the game is playing.
+//
+// The chart is loaded once and shared, so a caller holding the live slices could
+// sort a ring for display and reorder the ring every later reader sees.
+func TestTheDeclarationIsHandedOutAsCopies(t *testing.T) {
+	chart, err := element.ParseChart(valid().encode(t))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	first := chart.Cycles()
+	if len(first) == 0 || len(first[0].Chain) < 2 {
+		t.Fatal("the fixture has no ring to scribble on")
+	}
+	opened := first[0].Chain[0]
+	first[0].Name = "scribbled"
+	first[0].Chain[0], first[0].Chain[1] = first[0].Chain[1], first[0].Chain[0]
+	pairs := chart.MutualPairs()
+	if len(pairs) == 0 {
+		t.Fatal("the fixture has no pair to scribble on")
+	}
+	scribbled := [2]element.Element{element.Fire, element.Fire}
+	pairs[0] = scribbled
+
+	again := chart.Cycles()
+	if again[0].Name == "scribbled" {
+		t.Error("a caller renamed a ring through the chart's own slice")
+	}
+	if again[0].Chain[0] != opened {
+		t.Error("a caller reordered a ring through the chart's own slice")
+	}
+	if chart.MutualPairs()[0] == scribbled {
+		t.Error("a caller rewrote a pair through the chart's own slice")
+	}
+}
+
+// TestInertIsReadFromTheEdgesRatherThanTheList is the difference between what a
+// chart says about itself and what it does.
+//
+// The "inert" list in the file is a declaration; being inert in play is having no
+// edges. The two cannot disagree the other way round — addEdge and Validate
+// refuse an element that is listed inert and given edges — so what is left to
+// hold is that every element the chart gives no edges is reported as one.
+func TestInertIsReadFromTheEdgesRatherThanTheList(t *testing.T) {
+	chart, err := element.ParseChart(valid().encode(t))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	reported := map[element.Element]bool{}
+	for _, member := range chart.Inert() {
+		reported[member] = true
+	}
+	if len(reported) == 0 {
+		t.Fatal("the fixture leaves no element edgeless, so this measures nothing")
+	}
+	for _, member := range element.All() {
+		edgeless := len(chart.Strengths(member)) == 0 && len(chart.Weaknesses(member)) == 0
+		if edgeless != reported[member] {
+			t.Errorf("%v: edgeless=%v but Inert reports %v", member, edgeless, reported[member])
+		}
+	}
+}
