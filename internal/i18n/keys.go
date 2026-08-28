@@ -458,6 +458,25 @@ const (
 	PassivesFooter
 	PassivesNobodyCarries
 	ColumnCarriedBy
+	BlurbElementStrong
+	BlurbElementWeak
+	BlurbElementInert
+	BlurbElementCaveat
+	ElementsHeading
+	ElementsSubtitle
+	ElementsFooter
+	MenuElements
+	MenuElementsDetail
+	MenuSpecies
+	MenuSpeciesDetail
+	SpeciesHeading
+	SpeciesSubtitle
+	SpeciesEmpty
+	SpeciesFooter
+	SpeciesNobodyIs
+	SpeciesNoNote
+	SpeciesKeptSkills
+	ColumnWhoIs
 
 	keyCount
 )

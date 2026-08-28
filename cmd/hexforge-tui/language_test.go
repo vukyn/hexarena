@@ -17,6 +17,7 @@ import (
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -81,6 +82,17 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	traitBlurb.browse.level = progression.LevelCap
 	traitBlurb.blurb.from = screenBrowse
 	traitBlurb.screen = screenBlurb
+	// The affinity chart, on the element whose description is longest: the rows
+	// are all one shape, so what varies is the pane below them.
+	elements := m.enter(screenElements)
+	elements.elements.cursor = widestElementRow(elements)
+	// The species reference twice. The shipped cast claims every kind, so the
+	// row with an empty members cell and the line that explains it are drawn
+	// only by a book that has one — and they are wording like any other, so they
+	// are measured rather than left to the first unclaimed kind somebody writes.
+	species := m.enter(screenSpecies)
+	unclaimed := m.enter(screenSpecies)
+	unclaimed.species = withNobodyClaiming(unclaimed.species)
 	return map[string]model{
 		"shape diagram":    shape,
 		"spar":             spar,
@@ -102,7 +114,43 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"skill blurb":      skillBlurb,
 		"trait blurb":      traitBlurb,
 		"check":            m.enter(screenCheck),
+		"elements":         elements,
+		"species":          species,
+		"unclaimed kind":   unclaimed,
 	}
+}
+
+// widestElementRow is the element whose chart entry takes the most cells, which
+// is the busiest the description pane under the listing ever draws.
+func widestElementRow(m model) int {
+	found, most := 0, 0
+	for index, member := range element.All() {
+		for _, line := range strings.Split(m.lang.DescribeElement(member, m.lib.Chart()), "\n") {
+			if width := lipgloss.Width(line); width > most {
+				found, most = index, width
+			}
+		}
+	}
+	return found
+}
+
+// withNobodyClaiming is the species reference as a book with an unclaimed kind
+// draws it: the members cell of the kind under the cursor emptied, which is what
+// puts the "nobody is one" line on screen.
+//
+// A copy of the map rather than a write into it, because the screen it came from
+// is one of the models this helper hands back and a shared map would empty that
+// one's cell too.
+func withNobodyClaiming(s speciesScreen) speciesScreen {
+	members := make(map[string]string, len(s.members))
+	for id, who := range s.members {
+		members[id] = who
+	}
+	if len(s.kinds) > 0 {
+		members[s.kinds[clamp(s.cursor, 0, len(s.kinds)-1)].ID] = ""
+	}
+	s.members = members
+	return s
 }
 
 // widestTraitRow is the browser row carrying the most traits, which is the
@@ -218,6 +266,20 @@ func freeText(lib *forge.Library) []string {
 		}
 		free = append(free, origin.Title)
 	}
+	// A species' note is authored prose like a biography or an origin's, and the
+	// species reference prints it whole in both languages.
+	//
+	// Both languages, unlike the *name* beside it, and the two are not the same
+	// call. A name is a translation of an id: printing the Vietnamese one on an
+	// English screen is a wrong translation, and the bare id is the right answer,
+	// which is why SpeciesName is empty in English. A note has no id to fall back
+	// to, so dropping it leaves nothing — the trade an origin's note already
+	// takes.
+	for _, kind := range lib.Species().All() {
+		if kind.Note != "" {
+			free = append(free, kind.Note)
+		}
+	}
 	// A kit is a list of authored skill ids, so the rows that show one — the
 	// archetype chooser and the kit field — are as long as the data makes them.
 	// They are clipped like a biography rather than wrapped.
@@ -276,6 +338,33 @@ func traitCarriers(lib *forge.Library) []string {
 func carriesFreeText(line string, free []string) bool {
 	for _, text := range free {
 		if text != "" && strings.Contains(line, firstWords(text)) {
+			return true
+		}
+	}
+	return false
+}
+
+// partOfFreeText reports whether a line is one *wrapped* line of authored prose.
+//
+// carriesFreeText recognises a value by its opening, which is enough for text
+// that is clipped — a biography on one row, cut at the window. It cannot see the
+// second line of text that is **wrapped**, and the species note is the first
+// authored prose in the tool that wraps: its opening is on one line and the rest
+// on the next, so a name occurring in the tail was read as a name the program had
+// looked up.
+//
+// The test is containment the other way round: a wrapped line is a run of the
+// original's own words, so the original contains it. Short lines are refused
+// because a two-word one would be contained by half the prose in the book, and
+// the point of this is to exempt prose rather than to exempt everything narrow.
+func partOfFreeText(line string, free []string) bool {
+	const enoughToBeSure = 12
+	trimmed := strings.TrimSpace(line)
+	if len(trimmed) < enoughToBeSure {
+		return false
+	}
+	for _, text := range free {
+		if strings.Contains(text, trimmed) {
 			return true
 		}
 	}
@@ -931,12 +1020,27 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 			names = append(names, kind.Name)
 		}
 	}
+	// Line by line, skipping the lines that carry authored prose. What this is
+	// hunting is a data name in a **column** — a row that resolved an id to its
+	// Vietnamese word for an English reader, which is a wrong translation where
+	// the bare id was the right answer. A name occurring *inside* authored prose
+	// is not that: a species' note reads "chất rồng" and a biography may name a
+	// trait, and neither is a lookup the program performed. Whole-screen matching
+	// could not tell the two apart, so the first Vietnamese note put on screen
+	// failed here for the wrong reason.
+	free := freeText(lib)
 	for name, screen := range everyScreen(t, english) {
 		screen.width, screen.height = 200, 60
 		drawn := screen.screenContent()
-		for _, unwanted := range names {
-			if unwanted != "" && strings.Contains(drawn, unwanted) {
-				t.Errorf("the %s screen in English holds the gloss %q:\n%s", name, unwanted, drawn)
+		for _, line := range strings.Split(drawn, "\n") {
+			if carriesFreeText(line, free) || partOfFreeText(line, free) {
+				continue
+			}
+			for _, unwanted := range names {
+				if unwanted != "" && strings.Contains(line, unwanted) {
+					t.Errorf("the %s screen in English holds the gloss %q:\n%s",
+						name, unwanted, drawn)
+				}
 			}
 		}
 	}

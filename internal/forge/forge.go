@@ -37,6 +37,7 @@ package forge
 import (
 	"fmt"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
@@ -507,6 +508,28 @@ func (l *Library) TraitCarriers(id string) []TraitCarrier {
 				Character: character.ID, AtLevel: entry.AtLevel, Stages: entry.Stages,
 			})
 			break
+		}
+	}
+	return out
+}
+
+// SkillsForSpecies is every skill kept for one kind of creature, by id and in
+// book order.
+//
+// A species is the one gate in the tool that names something a character *is*
+// rather than something it chose, so the question a reference gets asked about
+// one is which skills it unlocks -- "what is a dragon for" is answered by
+// dragon_claw and outrage, not by the note beside the id.
+//
+// It walks the skill book rather than being indexed off the species, for the
+// reason TraitCarriers walks the cast: the restriction is the skill's fact, and
+// an index kept the other way round would be a second place for the same edge to
+// live.
+func (l *Library) SkillsForSpecies(id string) []string {
+	out := make([]string, 0, 4)
+	for _, declared := range l.skills.Skills() {
+		if slices.Contains(declared.Restrict.SpeciesNames(), id) {
+			out = append(out, declared.ID)
 		}
 	}
 	return out

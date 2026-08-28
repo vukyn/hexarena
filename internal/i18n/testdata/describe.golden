@@ -307,6 +307,49 @@ Hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 Mọi kẻ địch còn đánh được đều phải nhắm vào bên mang, bất kể tầm.
 Ép chọn mục tiêu · 2 lượt · 1 cộng dồn.
 
+[element] neutral
+Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
+
+[element] water
+Khắc fire và metal: đòn hệ này gây 150% sát thương lên chúng.
+Bị ground và electric khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] fire
+Khắc grass và ice: đòn hệ này gây 150% sát thương lên chúng.
+Bị water và wind khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] grass
+Khắc ground và wind: đòn hệ này gây 150% sát thương lên chúng.
+Bị fire và metal khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] ground
+Khắc water và electric: đòn hệ này gây 150% sát thương lên chúng.
+Bị grass và ice khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] ice
+Khắc ground và metal: đòn hệ này gây 150% sát thương lên chúng.
+Bị fire và electric khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] metal
+Khắc grass và wind: đòn hệ này gây 150% sát thương lên chúng.
+Bị water và ice khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] wind
+Khắc fire và electric: đòn hệ này gây 150% sát thương lên chúng.
+Bị grass và metal khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] electric
+Khắc water và ice: đòn hệ này gây 150% sát thương lên chúng.
+Bị ground và wind khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] light
+Khắc dark: đòn hệ này gây 150% sát thương lên chúng.
+Bị dark khắc: đòn hệ đó gây 67% sát thương lên mình.
+
+[element] dark
+Khắc light: đòn hệ này gây 150% sát thương lên chúng.
+Bị light khắc: đòn hệ đó gây 67% sát thương lên mình.
+
 == en ==
 
 vine_whip
@@ -596,4 +639,47 @@ Restores every turn · 3 turns · up to 3 stacks.
 [status] taunting
 Every enemy that can attack at all must aim at the holder, at any range.
 Costs a choice of target · 2 turns · 1 stack.
+
+[element] neutral
+Inert: it beats nothing and nothing beats it; every trade is 100%.
+
+[element] water
+Strong against fire and metal: an attack of this element deals 150%.
+Weak to ground and electric: an attack of theirs deals 67% to it.
+
+[element] fire
+Strong against grass and ice: an attack of this element deals 150%.
+Weak to water and wind: an attack of theirs deals 67% to it.
+
+[element] grass
+Strong against ground and wind: an attack of this element deals 150%.
+Weak to fire and metal: an attack of theirs deals 67% to it.
+
+[element] ground
+Strong against water and electric: an attack of this element deals 150%.
+Weak to grass and ice: an attack of theirs deals 67% to it.
+
+[element] ice
+Strong against ground and metal: an attack of this element deals 150%.
+Weak to fire and electric: an attack of theirs deals 67% to it.
+
+[element] metal
+Strong against grass and wind: an attack of this element deals 150%.
+Weak to water and ice: an attack of theirs deals 67% to it.
+
+[element] wind
+Strong against fire and electric: an attack of this element deals 150%.
+Weak to grass and metal: an attack of theirs deals 67% to it.
+
+[element] electric
+Strong against water and ice: an attack of this element deals 150%.
+Weak to ground and wind: an attack of theirs deals 67% to it.
+
+[element] light
+Strong against dark: an attack of this element deals 150%.
+Weak to dark: an attack of theirs deals 67% to it.
+
+[element] dark
+Strong against light: an attack of this element deals 150%.
+Weak to light: an attack of theirs deals 67% to it.
 

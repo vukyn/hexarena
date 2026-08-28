@@ -273,6 +273,21 @@ func (l Lang) PassiveName(held passive.Passive) string {
 	return strings.TrimSpace(held.Name)
 }
 
+// SpeciesName is a kind's authored name in this language, or nothing.
+//
+// English gets nothing, the same trade PassiveName makes: the word beside the id
+// is authored once and in Vietnamese, and a Vietnamese name on an English screen
+// is a leak rather than a translation. TestTheScreensGlossEveryDataName is what
+// caught the distinction being missed — a data name is a field on the
+// declaration and is Vietnamese whoever asks, unlike a compiled gloss, which is
+// empty in English by construction.
+func (l Lang) SpeciesName(kind cast.Species) string {
+	if l != Vi {
+		return ""
+	}
+	return strings.TrimSpace(kind.Name)
+}
+
 // GlossedPassive is a trait's id with its Vietnamese name beside it, or the bare
 // id when it has none — the same shape GlossedSkill gives a skill, so a screen
 // showing one beside the other names them the same way.
