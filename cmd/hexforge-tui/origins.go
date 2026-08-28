@@ -216,7 +216,13 @@ func (o originsScreen) view(m model) (string, string) {
 	counted := originsCountWidth(m)
 	for i, origin := range o.origins {
 		marker := "  "
-		year := "     "
+		// Blank rather than a figure when nobody recorded one, which is what
+		// makes a zero year readable: pad below gives the cell its five cells
+		// either way, so the guard is about the word and not the width.
+		// Blank rather than a figure when nobody recorded one, which is what
+		// makes a zero year readable: pad below gives the cell its five cells
+		// either way, so the guard is about the word and not the width.
+		year := ""
 		if origin.Year != 0 {
 			year = strconv.Itoa(origin.Year)
 		}
