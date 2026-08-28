@@ -126,9 +126,14 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 				continue
 			}
 		}
-		rated := false
+		rated, priced, bestPriced := false, false, int64(0)
 		for _, aim := range option.Aims {
 			value := prices.rate(actor, declared, aim)
+			// The best this option manages anywhere, kept even when it is a loss,
+			// because a loss is the one thing the fallback below must not pick up.
+			if !priced || value > bestPriced {
+				bestPriced, priced = value, true
+			}
 			if value <= 0 {
 				continue
 			}
@@ -138,6 +143,19 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 		// Worth nothing to anybody it could reach: the fallback, on the same terms
 		// as before. The first such skill in kit order is kept, and it is taken
 		// only if nothing at all was worth doing.
+		//
+		// ⚠️ Worth nothing and worth **less than nothing** are different, and
+		// lumping them together is what made this rating cast a skill it had just
+		// priced as a loss. rate subtracts friendly fire and the recoil a skill
+		// puts on its own caster, so a negative total is reachable and means
+		// something precise: taking this turn leaves the board worse than not
+		// taking it. A taunt nobody is standing near is worth nothing and is a
+		// perfectly good thing to do with a turn nobody else wants; outrage
+		// against a target on a sliver is worth *less* than nothing, because the
+		// damage clamps at what is left of the target while the recoil does not.
+		if bestPriced < 0 {
+			continue
+		}
 		if !rated && !hasFallback {
 			fallback, hasFallback = Choice{Skill: option.Skill, Aim: option.Aims[0]}, true
 		}

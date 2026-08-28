@@ -625,3 +625,62 @@ func occupantOf(fight *battle.Battle, cell hex.Offset) (*battle.Unit, bool) {
 	}
 	return nil, false
 }
+
+// suggestion is chosen without the fatal, for the cases where declining is the
+// right answer.
+func suggestion(t *testing.T, fight *battle.Battle) (battle.Choice, bool) {
+	t.Helper()
+	prompt, err := fight.Advance()
+	if err != nil {
+		t.Fatalf("advance: %v", err)
+	}
+	return fight.Suggest(prompt)
+}
+
+// TestAnOptionWorthLessThanNothingIsNotTheFallback is the turn the opponent used
+// to throw away.
+//
+// rate subtracts friendly fire and the recoil a skill puts on its own caster, so
+// a negative total is reachable and means something exact: taking this turn
+// leaves the board worse than not taking it. The rating already knew — it scored
+// the skill, saw the loss and skipped it — and then the fallback picked the same
+// skill straight back up, because "worth nothing" and "worth less than nothing"
+// were one bucket.
+//
+// quake across the midline is that case: it catches one enemy and comes back onto
+// the caster and the ally standing behind. With both of those on a sliver it kills
+// two of its own to graze one of theirs, and the rating says so in the sign.
+// Declining hands the turn to Pass, which the engine has had since the stalemate
+// work and which every caller already drives.
+func TestAnOptionWorthLessThanNothingIsNotTheFallback(t *testing.T) {
+	// The only thing this unit can do kills its own side for a graze.
+	costly := crossfire(t, []string{"quake"}, 1, true, 1)
+	if choice, ok := suggestion(t, costly); ok {
+		t.Errorf("Suggest took %q, which it had just priced as a loss", choice.Skill)
+	}
+
+	// The control, and the half that stops this being a test that refuses
+	// everything: with nobody of its own in the blast the same skill is worth
+	// casting and is still chosen.
+	clear := crossfire(t, []string{"quake"}, 0, false, 0)
+	choice, ok := suggestion(t, clear)
+	if !ok {
+		t.Fatal("Suggest declined a skill that is plainly worth casting")
+	}
+	if choice.Skill != "quake" {
+		t.Errorf("Suggest picked %q, want the only skill in the kit", choice.Skill)
+	}
+}
+
+// TestASkillWorthNothingIsStillTaken keeps the distinction the fix turns on:
+// nothing and less-than-nothing are different answers.
+//
+// A skill that helps nobody standing where they are is worth nought, and a turn
+// spent on it costs nothing. That is still the fallback, exactly as before — the
+// change refuses a loss, not an idle turn.
+func TestASkillWorthNothingIsStillTaken(t *testing.T) {
+	fight := squad(t, []string{"steel"}, []string{"lob"}, []string{"strike"}, 0, 0, 0)
+	if _, ok := suggestion(t, fight); !ok {
+		t.Error("Suggest declined a skill that is merely worth nothing, which is a turn thrown away")
+	}
+}

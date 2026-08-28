@@ -89,6 +89,16 @@ Rules for anything added to that file:
 - **Worth nothing means not rated, never rated at nought.** A rating of nought is
   still a rating and would beat "found nothing", taking the turn ahead of whatever
   the fallback would have chosen.
+- ⚠️ **Worth *less* than nothing is not the same as worth nothing, and may not be
+  the fallback.** `rate` subtracts friendly fire and the recoil a skill puts on its
+  own caster, so a negative total is reachable and means something exact: taking
+  this turn leaves the board worse than not taking it. The two used to share a
+  bucket — an option was skipped for scoring `<= 0` and then picked straight back
+  up by the fallback — so the opponent cast skills it had just priced as a loss.
+  A loss is now dropped from the fallback, and a unit with nothing but losses
+  declines; `Suggest` returning false is the existing route to `Pass`, which every
+  caller already drives. An option worth exactly nought is still a fine way to
+  spend a turn nobody else wants.
 - **Clamp every term against what the board can actually deliver.** A
   damage-over-time at the target's remaining health, a heal at the room *and* at
   what an enemy could take off, a charge at the strikes there are to eat. The
