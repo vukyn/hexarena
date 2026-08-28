@@ -484,18 +484,7 @@ func fight(books battle.Books, roster []battle.Roster, mine hex.Side, seed uint6
 		return Drawn, turns, fought.Drain(), err
 	}
 	events := fought.Drain()
-	if !fought.Finished() {
-		return Endless, turns, events, nil
-	}
-	winner, decided := fought.Winner()
-	switch {
-	case !decided:
-		return Drawn, turns, events, nil
-	case winner == mine:
-		return Won, turns, events, nil
-	default:
-		return Lost, turns, events, nil
-	}
+	return outcome(fought, mine), turns, events, nil
 }
 
 // median is the middle length, or the lower of the two middles on an even count.

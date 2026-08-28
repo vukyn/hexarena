@@ -139,10 +139,32 @@ Rules for anything added to that file:
   corrected for. Measure a change like this **head to head** (the tie-break on one
   side at a time): both sides use `Suggest`, so the roster rate shows which squad's
   kit gained, not whether the rating improved.
-- **Out of scope on purpose:** *where* an extra turn falls in the order (that is the
-  part that needs the queue), **waiting** — passing a turn because the next one is
-  worth more — and any lookahead. The detonate setup needs none: price the status
-  and the payoff rates itself.
+- **Waiting is arithmetically empty in this engine**, and is therefore *decided
+  against* rather than unbuilt. `spendCooldowns` brings **every** cooldown down by
+  the turn just served, and it runs at the end of `Act` (`turn.go:541`), at the end
+  of `Pass` (`:323`) and on a turn control took (`:92`); `Act` then starts a
+  cooldown on the one skill it cast and on nothing else. So the skill being "waited
+  for" comes back on the same turn whichever the unit does, and across its next two
+  turns *act now* is worth `bestValue` plus next turn's best while *wait now* is
+  worth nought plus that same next turn's best. **Acting dominates by exactly
+  `bestValue`**, and an option priced below nought is already declined — so there
+  is no residue for a waiting rule to collect.
+  `TestAPassBuysNoCooldownAnActDoesNot` holds the premise (a pass buys no cooldown
+  an act does not) and `TestNothingWaitsOnPurpose` holds the consequence (a skipped
+  turn carries one of three forced reasons and never a fourth).
+  ⚠️ **Two further bars, if it is ever re-raised.** A *simulating* lookahead has to
+  clone a `*Battle` — an unexported queue, `[]*Unit`, a `status.Set` whose entries
+  are slices, and the `*rng.Source` — and then resolve into the clone. That is
+  either `resolveAgainst`, which **rolls**, breaking *weight a chance, never roll
+  one*; or a weighted twin of it, breaking *read the resolving function, never a
+  second copy of its arithmetic*. Two available implementations, one broken rule
+  each. And it costs roughly **×36 a turn** on the shipped kits, taking a
+  20,000-battle sweep from ~7.5s to ~4.5 minutes.
+- **Still out of scope:** *where* an extra turn falls in the order — the only part
+  that would need the queue, and a **tie-break** rather than a term when it lands,
+  because a queue reading that reached an arithmetic expression would be tempo, and
+  tempo is priced from the speed stat. The detonate setup needs neither: price the
+  status and the payoff rates itself.
 
 ⚠️ **No balance figure carries across this change.** The shipped roster read 53.1%
 ally before and 79.0% after, side-neutral (82.5% for the same squad with the sides
@@ -1509,10 +1531,12 @@ is the constraint each piece has to respect.
       strike. **All-sided skills are rated too** (`friendlyFire`, the own half
       subtracted), and *holding a skill for a later turn* is answered as far as a
       one-turn-deep rating honestly can: a **tie-break on cooldown**, so a scarce
-      skill is not spent on what a common one buys. What is still out: **waiting** —
-      passing a turn because the next is worth more, which needs a lookahead — and
-      *where* in the order an extra turn falls, the only part that would need the
-      queue.
+      skill is not spent on what a common one buys. **Waiting is no longer "still
+      out" — it is decided against**: a pass buys no cooldown an act does not, so
+      acting dominates by exactly what the action is worth, and the two available
+      lookaheads each break a rule of the file. See *Rating an action* above for
+      the arithmetic. What is left is *where* in the order an extra turn falls,
+      the only part that would need the queue.
       ⚠️ It cost a **balance answer, not a golden**, exactly as the summon did:
       the shipped roster went 53.1% → 79.0% ally, which is a cast finding.
       **Re-levelled since** (Charmeleon 30 / Ivysaur 30, 49.1%, and 49.4% once
@@ -2411,3 +2435,61 @@ nothing** (both arrangements fight the same seeds) and fixing it would mean an
 
 **Left at their defaults, deliberately:** a `--carriers all` sweep (a follow-up,
 now that `Weigh` exists) and `self_gradient` support (excluded, above).
+
+## Fighting two ratings: `forge.Bout`, and the exact control it rests on
+
+A roster win rate cannot see a rating. Both sides use `Suggest`, so a change that
+helps both leaves the rate where it was, and what moves is whichever squad's kit
+had more to gain — which is why the tie-break was measured by hand with itself
+switched on for one side at a time. `Bout` is that procedure made an instrument:
+two `Brain`s, the shipped roster, and a share read from the challenger.
+
+**The two arrangements.** Every seed is fought twice — challenger driving the ally
+squad, then the two exchanged — over the same seeds `1..N`, and the challenger's
+wins are counted over all `2N` battles.
+
+⚠️ **The control is exact, not statistical, and is asserted at exactly 500‰.** When
+both `Brain`s are the same, the two arrangements are the *same battle* — same seed,
+same roster, same decisions — so they have the same winner and the challenger holds
+the winning side in exactly one of the two. That is `N` wins and `N` losses **by
+construction**; a draw lands in both arrangements and counts half to each side, so
+it does not disturb it either. `Bout` runs that control before it measures anything
+and **refuses to print a figure** unless it comes out exactly even. Never assert it
+within a band: a band is precisely what a bookkeeping leak would hide behind.
+
+**The board does not have to be symmetric**, because the roster's asymmetry is
+fought from both ends and cancels exactly — that is the whole content of the
+paragraph above. So a bout measures on the **shipped** roster, which is the board
+every other figure in this file is quoted on. ⚠️ The ban on a mirror roster is
+about a **data** change — the shipped cast may not be flattened into two copies of
+itself to make a number easier to read — and does not apply here: nothing is
+authored, the roster is a parameter, and the mirror is in the procedure.
+
+⚠️ **`FirstUsable` is a ruler and may never be improved.** It is `Suggest` before
+any pricing landed: first option in kit order that is available, aimed at the first
+cell offered, nothing compared. Every claim about a rating is of the shape "beats
+`FirstUsable` by X‰ over N seeds", and X is comparable across this repository's
+history only while the thing it is measured against never moves. A sharper ruler
+would silently re-scale every figure ever quoted against it and nothing would
+report the disagreement. `TestTheRulerIsNotAnOpponent` pins it. If a second, harder
+baseline is wanted, **add one beside it**.
+
+**The figure.** The shipped rating against the ruler, on the shipped roster, over
+**10,000 seeds (20,000 battles): 78.0%**, band ±0.8pp, median **45** turns. The
+control on the same board and the same seeds is 500‰ exactly at a median of **48**
+turns — so the priced rating both wins far more often *and* finishes sooner, which
+is the second reading and the one a rate alone cannot give.
+
+**It refuses**: seeds below one; a control that is not exactly even; and a run whose
+`Endless` share passes `endlessShare`, because two better opponents stalling each
+other is a real risk of any change to a rating and must not be filed as a draw.
+
+⚠️ **Roll drift, accepted and not fixed.** The two arrangements share one
+`*rng.Source` per battle, so the first decision the two ratings disagree on
+re-scrambles every draw after it. It **biases nothing** — both arrangements fight
+the same seeds — and fixing it would mean an `internal/core` change to make a
+measurement prettier. Same note `Weigh` carries; see § *Pricing one number*.
+
+`Bout` takes the roster as a **parameter**, so `internal/forge` keeps not importing
+`internal/seed`: a tool that read the embedded copy would keep reporting on the cast
+as it was at the last build.

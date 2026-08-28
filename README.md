@@ -1684,14 +1684,16 @@ buff is worth `horizon × share` of a turn, so a thirty per cent haste over thre
 turns is worth nine tenths of one turn and **can never beat the best attack a unit
 has**. It wins exactly where it should — while that attack is recharging.
 
-**What it deliberately still cannot do**, now down to one piece of work and one
-refusal: say *where* in the order an extra turn falls, and so whether it arrives
-before the blow that would have killed its holder — that is the part that would need
-the queue. And it will not wait: **holding a skill for a turn that has not arrived**
-is read as narrowly as a rating one turn deep can honestly read it — see *Not
-spending a scarce turn on what a common one buys* below — because knowing that next
-turn is worth more than this one is a lookahead, and every guess of that shape here
-has been wrong in the direction of playing worse.
+**What it deliberately still cannot do** is now one piece of work and one settled
+refusal. The work: say *where* in the order an extra turn falls, and so whether it
+arrives before the blow that would have killed its holder — that is the part that
+would need the queue, and it lands as a tie-break rather than a term, because a
+queue reading that reached an arithmetic expression would be tempo and tempo is
+priced from the speed stat.
+
+The refusal is **waiting**, and it has moved from "not built yet" to "decided
+against", because the arithmetic says there is nothing there — see *Waiting is
+empty, and here is the arithmetic* below.
 
 **What it moved.** The shipped roster read **53.1% ally** before and **46.6% after
 the status and support terms**, then **79.0%** once a kill was priced — over 4000
@@ -1828,8 +1830,9 @@ This is a blind spot closed, and it will be measured the day a skill takes the v
 ### Not spending a scarce turn on what a common one buys
 
 Built, and it is the honest half of *holding a skill for a later turn*. The other
-half — waiting, passing a turn because the next one is worth more — needs to know
-what the next turn is worth, and that is the lookahead this rating does not have.
+half — waiting, passing a turn because the next one is worth more — turns out not to
+exist at all in this engine; see *Waiting is empty, and here is the arithmetic*
+below for why, and why it is now a refusal rather than an unbuilt feature.
 
 What it can see is **waste**. Damage is clamped at a target's remaining health, so
 against a unit standing at a sliver the heaviest skill in a kit and the filler beside
@@ -1866,6 +1869,117 @@ re-levelled**: the levels are coarse — Ivysaur 16 → 30 moved that figure by 
 points — so a dial does not exist at this size. `replay.golden` moved by exactly one
 choice on seed 11 (236 → 235 events, one fewer amplified poison), same fifty turns,
 same winner.
+
+### Waiting is empty, and here is the arithmetic
+
+Not built, and **not because it is hard**. It was carried for a long time as the
+last thing left to do to the opponent — "passing a turn because the next one is
+worth more needs a lookahead" — and it is worth writing down exactly why that
+sentence was wrong, because it reads so plausibly.
+
+`spendCooldowns` brings **every** cooldown on a unit down by one, and it runs at the
+end of `Act`, at the end of `Pass`, and on a turn control took. Then, and only then,
+`Act` starts a cooldown on the one skill it just cast. Nothing else in the engine
+touches a cooldown.
+
+So the skill a unit might be said to be *waiting for* comes off cooldown on exactly
+the same turn whether the unit acts or waits. Across the acting unit's next two
+turns:
+
+| | this turn | next turn |
+|---|---|---|
+| act now | `bestValue` | next turn's best |
+| wait now | 0 | the same next turn's best |
+
+Acting dominates waiting by exactly `bestValue`, on every board, for every kit. And
+an option priced below nought is already declined, so a turn genuinely worth giving
+up is already given up. **There is no residue.** A waiting rule could only ever pass
+a turn that was worth taking.
+
+Two further bars, in case somebody reasons their way back to it. A *simulating*
+lookahead — one that plays a turn out to see what next turn is really worth — has to
+clone a `*Battle`, and that means the unexported turn queue, the unit slice, a
+`status.Set` whose entries are slices, and the random source. Then it has to resolve
+into the clone, which is either the real resolving function, which **rolls** — and
+*weight a chance, never roll one* is the rule that keeps a rating from disturbing
+the battle it is rating — or a weighted twin of it, which is *a second copy of the
+resolving arithmetic*, the other rule. Two available implementations, one broken
+rule each. And the cost is about **×36 a turn** on the shipped kits: a
+20,000-battle sweep goes from around seven and a half seconds to four and a half
+minutes.
+
+It is held by two tests rather than by this paragraph.
+`TestAPassBuysNoCooldownAnActDoesNot` drives one fixture through a pass and an
+identical one through an act and requires every *other* skill's cooldown to come out
+the same — it is the premise, and it is what fails the day somebody makes a pass
+cheaper. `TestNothingWaitsOnPurpose` plays the shipped roster over two hundred seeds
+and requires every skipped turn to carry one of the three **forced** reasons — a
+unit died to a timed effect, control took the turn, or nothing was usable. A waiting
+rule would pass a turn on purpose, that pass would carry a fourth reason, and this
+is the test that names it.
+
+### Fighting two ratings against each other
+
+Built, and it is the first instrument that can make a true claim about `Suggest` at
+all.
+
+Every figure quoted about the opponent before this was a **roster win rate**, and a
+roster win rate cannot see a rating: both sides use `Suggest`, so a change that
+helps both leaves the rate exactly where it was, and what moves is whichever squad's
+kit had more to gain. That is why the cooldown tie-break above had to be measured by
+hand, with the term switched on for one side at a time. `forge.Bout` is that
+procedure made an instrument.
+
+**How it works.** Two ratings, the shipped roster, and every seed fought twice: once
+with the challenger driving the ally squad and the incumbent driving the enemy, once
+with the two exchanged. Same seeds both ways. The challenger's wins are counted over
+all `2N` battles.
+
+**The control is exact, and that is the whole design.** Give it the same rating
+twice and the two arrangements are the *same battle* — same seed, same roster, same
+decisions — so they have the same winner, and the challenger is holding the winning
+side in exactly one of the two. Over `N` seeds that is `N` wins and `N` losses:
+**500 parts per thousand by construction**, not by convergence. A draw lands in both
+arrangements and counts half to each side, so it does not disturb it either. `Bout`
+runs that control before it measures anything and **refuses to report a figure**
+unless it comes out exactly even — asserted on the number itself and never within a
+band, because a band is precisely what a bookkeeping leak would hide behind.
+
+A consequence worth stating, because it is the reason this measures anything useful:
+**the board does not have to be symmetric.** The roster's own bias is fought from
+both ends and cancels exactly. So a bout runs on the *shipped* roster, which is the
+board every other figure in this project is quoted on, rather than on a mirror built
+to be fair. (The project bans a mirror roster; that ban is about a **data** change —
+flattening the cast into two copies of itself to make a number easier to read — and
+does not apply to a mirror that lives in the procedure.)
+
+**The ruler is frozen on purpose.** `FirstUsable` is `Suggest` as it was before any
+pricing landed: the first option in kit order that can be used, aimed at the first
+cell offered, nothing compared to anything. Every claim about a rating from here on
+is of the shape "beats `FirstUsable` by X over N seeds", and X is only comparable
+across this project's history while the thing it is measured against never moves. A
+better ruler would silently re-scale every figure ever quoted against it and nothing
+would report the disagreement — so `TestTheRulerIsNotAnOpponent` pins its behaviour,
+and a future improvement to it is meant to fail the suite. A second, harder baseline
+goes *beside* it.
+
+**The figure.** The shipped rating against the ruler, on the shipped roster, over
+**10,000 seeds — 20,000 battles — is 78.0%**, band ±0.8pp, median 45 turns. The
+control on the same board is 500‰ exactly at a median of 48 turns. So the priced
+rating both wins far more often *and* finishes sooner, which is the second reading
+and the one a rate alone cannot give: a rating that won no more often but ended
+battles three turns earlier would still have improved.
+
+**It refuses** seeds below one, a control that is not exactly even, and a run that
+left more than a fifth of its battles undecided — two better opponents stalling each
+other is a real risk of any change to a rating, and it must not be quietly filed as
+a draw.
+
+⚠️ It shares `Weigh`'s **roll drift** and does not fix it: the two arrangements use
+one random source per battle, so the first decision the two ratings disagree on
+re-scrambles every draw after it. It biases nothing — both arrangements fight the
+same seeds — and fixing it would mean changing the engine to make a measurement
+prettier.
 
 ### A draw nobody can act in
 

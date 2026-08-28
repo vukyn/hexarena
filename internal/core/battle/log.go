@@ -118,7 +118,8 @@ func ParseLog(raw []byte) (Log, error) {
 type Script []Decision
 
 // Replay plays a script back into a battle, using the fallback to decide any turn
-// the script does not cover. It returns the decisions actually taken and, when it
+// the script does not cover. The fallback is a Chooser — the type Suggest
+// satisfies — so a log can be finished by whatever rating the caller is holding. It returns the decisions actually taken and, when it
 // stopped because a turn needs a decision it has none for, the prompt it stopped
 // on. That prompt is nil when the battle ended or the turn limit was reached.
 //
@@ -134,7 +135,7 @@ type Script []Decision
 // actually in, and nothing has to be deep copied for it to work. Handing back the
 // pending prompt is what saves the caller from advancing a turn that has already
 // begun.
-func (b *Battle) Replay(script Script, limit int, fallback func(*Prompt) (Choice, bool)) (Script, *Prompt, error) {
+func (b *Battle) Replay(script Script, limit int, fallback Chooser) (Script, *Prompt, error) {
 	taken := Script{}
 	for turns := 0; !b.finished && turns < limit; turns++ {
 		// A turn already open is taken up rather than advanced past, so a replay
