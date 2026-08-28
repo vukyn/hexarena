@@ -607,11 +607,24 @@ Two limits, both deliberate:
   keeps the refusal is the wording: `passive.Amplifies` reads *"its poison ticks
   30% harder"* in both languages, and a share that healed under that sentence
   would be a description that lies. Lifting it is a wording change first.
-- **Vulnerability is not built.** A target that is *easier* to poison is
-  `Resists` with a negative share, which reuses the whole composition rather than
-  adding a field — but it needs a decision about a negative `Refused` in the log,
-  and `resist` returns early when nothing is refused, which would silently drop
-  it.
+- **Vulnerability is built.** A target that is *easier* to poison is `Resists`
+  with a negative share, reusing the whole composition rather than adding a
+  field: the chance is multiplied by what the resistance lets through, so `-300`
+  lets 1300 through. The two questions it was parked on both got answered.
+  `Refused` **stays one signed field** — it is the share the target took off the
+  chance, so a share it added is a negative, and the event it rides on is already
+  named for the application failing rather than for a resistance existing. A
+  sibling field would have been two names for one number. And `resist` returned
+  early on `surviving >= scale.Base`, which a vulnerability also satisfies: that
+  is now `==`, and the per-trait `amount <= 0` skip is now `== 0`. Both were
+  needed — either one alone leaves the feature inert, which a mutation of each
+  confirms.
+  ⚠️ A vulnerability and a resistance **do not cancel**: chances compose by
+  multiplying, so `-500` with `+600` leaves 600 surviving rather than the full
+  chance. Reading them as addition is the natural mistake and is wrong.
+  ⚠️ It inherits the harmful-only gate, which is the right answer rather than a
+  happy accident — inviting a status your own side puts on you is as meaningless
+  as refusing one. "Vulnerable to a shield" stays unwritable.
 
 One thing already true and worth stating, because it limits what can be
 attributed after the fact: a `Stack` remembers its frozen amount and nothing else.

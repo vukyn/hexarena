@@ -228,8 +228,30 @@ func (r *Reply) Answers() bool {
 // then the explicit way to write true immunity — exactly as a skill declaring
 // full accuracy is the explicit way to write an effect that must land. The
 // absolute is available to whoever authors it and never falls out of stacking.
+//
+// # A negative share is a vulnerability
+//
+// Amount may be negative, and then the status lands **more** easily on the
+// holder. That is a whole feature reusing the arithmetic rather than a second
+// field: the chance is multiplied by what the resistance lets through, so a
+// share of -300 lets 1300 through and a trait that says "no guard at all" costs
+// what it says. Nought is refused in both directions — a share of nothing is a
+// status the trait does not touch, and the way to write that is to leave the
+// entry out.
+//
+// It inherits the harmful-only rule for free, and that is the right answer
+// rather than a happy accident: refusing a status the holder's own side puts on
+// it is nonsense, and so is *inviting* one. A vulnerability is about being easier
+// to hurt.
+//
+// ⚠️ It composes with a resistance to the same status through the same multiply,
+// so the two do not cancel to nothing — a -500 and a +500 leave 1500*500/1000 =
+// 750, three quarters, not the full chance. Anybody expecting them to annihilate
+// is reading it as addition, which is what shares do and chances do not.
 type Resistance struct {
 	Status string
+	// Amount is the share refused, in parts per thousand. Negative is a
+	// vulnerability; the full base is declared immunity; nought is refused.
 	Amount int
 }
 
@@ -482,8 +504,17 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			return fail("resists %q, which is a %s: there is nothing to refuse in a status the holder's own side puts on it",
 				kind.ID, kind.Category)
 		}
-		if resist.Amount < 1 || resist.Amount > scale.Base {
-			return fail("resists %q by %d, want a share in parts per thousand",
+		// A negative share is a **vulnerability**: the status lands more easily
+		// on the holder rather than less. It reuses the whole composition rather
+		// than adding a field, because it is the same multiplication read in the
+		// other direction — see Resistance.Amount.
+		//
+		// Nought is refused in both directions. A share of nothing is a trait
+		// naming a status it does not touch, and the way to say that is to leave
+		// the entry out; writing it down would be a line in the description
+		// promising an effect of zero.
+		if resist.Amount < -scale.Base || resist.Amount > scale.Base || resist.Amount == 0 {
+			return fail("resists %q by %d, want a share in parts per thousand — negative to be more easily afflicted, and not nought",
 				kind.ID, resist.Amount)
 		}
 		if slices.ContainsFunc(resists, func(seen Resistance) bool { return seen.Status == kind.ID }) {

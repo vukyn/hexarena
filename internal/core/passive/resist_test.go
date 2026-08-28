@@ -84,9 +84,20 @@ func TestResistanceRejections(t *testing.T) {
 			"parts per thousand",
 		},
 		{
-			"a negative share",
-			`[{"id":"odd","resists":[{"status":"poison","amount":-100}]}]`,
+			// A negative share is a vulnerability and is accepted; what is still
+			// refused is one past the base in that direction too, so the chance
+			// a trait can invite is bounded by the same number that bounds the
+			// chance it can refuse.
+			"a vulnerability past a thousand",
+			`[{"id":"reckless","resists":[{"status":"poison","amount":-1500}]}]`,
 			"parts per thousand",
+		},
+		{
+			// Nought says nothing in either direction, and the way to say nothing
+			// is to leave the entry out.
+			"a share of nothing",
+			`[{"id":"idle-share","resists":[{"status":"poison","amount":0}]}]`,
+			"not nought",
 		},
 		{
 			"the same status twice",

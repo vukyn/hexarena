@@ -118,6 +118,13 @@ func TestNoShippedShareIsUnderOnePercent(t *testing.T) {
 	const floor = scale.Base / 100
 	check := func(owner, what string, permille int) {
 		t.Helper()
+		// The magnitude, because a resistance may now be negative: a
+		// vulnerability of -5 is as unsayable as a resistance of 5, and
+		// comparing the value rather than its size would wave every negative
+		// through while telling the author to "raise it".
+		if permille < 0 {
+			permille = -permille
+		}
 		if permille != 0 && permille < floor {
 			t.Errorf("%s sets %s to %d parts per thousand, under the one percent a description can say; raise it or drop the field",
 				owner, what, permille)
