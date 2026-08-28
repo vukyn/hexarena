@@ -424,7 +424,10 @@ func TestLineValidateRejects(t *testing.T) {
 		{"stages that do not advance", progression.Line{
 			{Name: "one", MinLevel: 1, Stats: table(320, 1600, 40, 200, 30, 150, 70, 90)},
 			{Name: "two", MinLevel: 1, Stats: table(320, 1600, 40, 200, 30, 150, 70, 90)},
-		}, "not after the previous"},
+			// The refusal names the predecessor rather than "the previous
+			// stage": with a fork the two are different stages, and a reader
+			// sent to the wrong one finds nothing wrong with it.
+		}, `not after "one"'s 1`},
 		{"a stage past the level cap", progression.Line{
 			{Name: "one", MinLevel: 1, Stats: table(320, 1600, 40, 200, 30, 150, 70, 90)},
 			{Name: "two", MinLevel: progression.LevelCap + 1, Stats: table(320, 1600, 40, 200, 30, 150, 70, 90)},

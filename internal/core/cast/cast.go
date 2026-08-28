@@ -105,6 +105,17 @@ func (c Character) StagesAt(level int) ([]progression.Stage, error) {
 	return c.Stages.Allowed(level)
 }
 
+// FurthestAt is the grown end of each of the character's lines: one form on a
+// line that does not fork, and one per arm on a line that does.
+//
+// It exists for the callers that have to say something about "the character at
+// the cap" and cannot pass progression.Furthest to do it, because a fork has no
+// single furthest. A budget row is the example: the stat budget bites at the end
+// of a line, and a forking character has two ends that are priced separately.
+func (c Character) FurthestAt(level int) ([]progression.Stage, error) {
+	return c.Stages.Furthest(level)
+}
+
 // StageArt is the picture of one of the character's forms: the stage's own art
 // when it declares any, and the character's when it does not.
 //

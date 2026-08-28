@@ -1414,22 +1414,35 @@ playing, and the status is a cast animation.
 Detail and the open questions are in `README.md` under Roadmap. What matters here
 is the constraint each piece has to respect.
 
-- [ ] **An evolution line that forks.** Today a placement chooses **how far**
-      along one path (`Resolve(level, stage)`, the allowlist); it cannot choose
-      **which path** — two forms at one threshold, pick one and lose the other.
-      The parse rule is the small half: `Line.Validate` refuses
-      `MinLevel <= previous`, so a fork cannot be written down.
-      ⚠️ **`Furthest` is the large half and it fails silently.** `Line.Allowed`
-      returns a **prefix** and `StageAt` the last reached, so with a fork there is
-      no single furthest — the browser, `hexforge check`'s budget row and
-      `fielded` in the balance tests would all take whichever arm the file lists
-      last, saying nothing.
-      ⚠️ **A prefix cannot express a stage *after* a fork**: both arms stay
-      allowed once passed, nothing marks them exclusive, so the line has to become
-      a tree (or a stage has to name its predecessor). Design that before the
-      parse rule.
-      The budget is fine as it stands — `Line.Validate` prices every stage
-      separately already.
+- [x] **An evolution line that forks. Done** — a placement chooses **which path**
+      as well as how far. `progression.Stage.After` names the stage a stage grows
+      out of, so the line stops being an ordered list and becomes a **tree**; two
+      arms may share a threshold, and a stage may sit past a fork on one arm only.
+      ⚠️ **A line is read by order *or* by name, never both.** A line where no
+      stage names an `after` is read by order — stage `i` grows out of `i-1`,
+      which is what every line meant before this and why no shipped file moved.
+      The moment any stage names one, every stage but the root has to, and each
+      must name a predecessor **declared before it** (which is what makes a cycle
+      unwritable rather than something to detect). Mixing is refused: the order of
+      a file deciding parentage in a file that also states it is a wrong stat line
+      rather than an error.
+      ⚠️ **`Furthest` was the large half and its failure mode was silence, so it
+      refuses now.** `Line.Furthest(level)` returns the tip of **every** arm;
+      `StageAt` is the single-answer wrapper and errors — naming both arms — when
+      there is more than one. Every caller that passes `progression.Furthest`
+      already had an error path, so the whole change is compile-clean: a browser,
+      a placement and a balance harness each get a refusal where they would have
+      got whichever arm the file happened to list last.
+      ⚠️ **`hexforge check` prices one row per arm.** The budget bites at the
+      grown end of a line and a forking character has two, so `Library.Inspect`
+      loops `Character.FurthestAt(LevelCap)` — art on the first row only, since
+      art belongs to the character rather than to an arm.
+      ⚠️ **`StageSummary` draws arms bracketed** — `Eevee@1 → (Vaporeon@32 |
+      Jolteon@32)` — because joining them with the same arrow reads as a chain.
+      `i18n.Lang.StageSummary` delegates to `forge.StageSummary` now instead of
+      repeating the shape; the two were byte-identical.
+      **Nothing shipped forks yet**, deliberately: the mechanism lands without a
+      balance move, the way crit did. An Eevee is content and its own decision.
       ⚠️ **Not the same thing as the tailed-beast Naruto**, which is a separate
       *character* beside Naruto: a stage is the same unit later, and that is a
       different unit. The two want completely different mechanisms.

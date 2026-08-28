@@ -478,10 +478,64 @@ func StageFacts(character cast.Character) []Stage {
 
 // StageSummary writes an evolution line as the levels its stages take over at,
 // which is the one thing a table cell has room for.
+//
+// ⚠️ **A line that forks is not a chain, and drawing it as one is a lie a table
+// tells quietly.** Joining every stage with an arrow reads `Eevee@1 → Vaporeon@32
+// → Jolteon@32` — three forms one after another, when the last two are
+// alternatives at one threshold. Children share a bracket instead:
+//
+//	Eevee@1 → (Vaporeon@32 | Jolteon@32 → Tempest@48)
+//
+// A line that does not fork is unchanged, brackets and all: one child is drawn
+// as the arrow it always was, so every shipped character reads exactly as before.
+// The parentage comes from progression.Line.Parents rather than from the order
+// of the file, because that rule lives in one place.
 func StageSummary(character cast.Character) string {
-	stages := StageFacts(character)
-	parts := make([]string, 0, len(stages))
-	for _, stage := range stages {
+	parents, err := character.Stages.Parents()
+	if err != nil || len(character.Stages) == 0 {
+		// A line the parser would refuse still has to print as something: the
+		// flat list is what it says, and the check screen beside it is where the
+		// refusal is reported.
+		return flatStages(character)
+	}
+	children := make([][]int, len(character.Stages))
+	root := -1
+	for i, parent := range parents {
+		if parent < 0 {
+			root = i
+			continue
+		}
+		children[parent] = append(children[parent], i)
+	}
+	if root < 0 {
+		return flatStages(character)
+	}
+	return stageBranch(character, children, root)
+}
+
+// stageBranch draws one stage and everything growing out of it.
+func stageBranch(character cast.Character, children [][]int, at int) string {
+	stage := character.Stages[at]
+	drawn := fmt.Sprintf("%s@%d", stage.Name, stage.MinLevel)
+	grown := children[at]
+	switch len(grown) {
+	case 0:
+		return drawn
+	case 1:
+		return drawn + " → " + stageBranch(character, children, grown[0])
+	}
+	arms := make([]string, 0, len(grown))
+	for _, child := range grown {
+		arms = append(arms, stageBranch(character, children, child))
+	}
+	return drawn + " → (" + strings.Join(arms, " | ") + ")"
+}
+
+// flatStages is the line in file order, which is what there is to say about one
+// nothing can make sense of.
+func flatStages(character cast.Character) string {
+	parts := make([]string, 0, len(character.Stages))
+	for _, stage := range StageFacts(character) {
 		parts = append(parts, fmt.Sprintf("%s@%d", stage.Name, stage.MinLevel))
 	}
 	return strings.Join(parts, " → ")

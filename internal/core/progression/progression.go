@@ -341,29 +341,58 @@ type Stage struct {
 	// cast.ValidateImagePath's job, the same division a skill's pattern name
 	// follows.
 	Image string `json:"image,omitempty"`
+	// After is the stage this one grows out of, by name, and it is what lets a
+	// line fork: two stages naming the same predecessor are alternatives, and a
+	// placement picks which arm it fielded.
+	//
+	// It is optional, and its absence means "the stage declared before this one"
+	// — which is what every line meant before forks existed, so a linear line
+	// writes nothing and reads as it always did. ⚠️ **A line may not mix the
+	// two.** The moment any stage names a predecessor, every stage but the root
+	// has to, because otherwise the *order of the file* would decide who a stage
+	// grows out of in a file that also says so explicitly — which is a silent
+	// wrong answer rather than an error, and the exact failure this whole change
+	// is written to avoid. Line.Validate refuses the mixture.
+	After string `json:"after,omitempty"`
 	Stats Table  `json:"stats"`
 }
 
 // Line is a unit's full evolution line, ordered by MinLevel.
 type Line []Stage
 
-// Validate checks the line covers every level exactly once and that no stage
-// breaks the stat budget.
+// Validate checks the line is a tree rooted at level one, that every stage
+// starts after the one it grows out of, and that no stage breaks the stat
+// budget.
 func (l Line) Validate(limits Limits, rules combat.Rules) error {
 	if len(l) == 0 {
 		return fmt.Errorf("an evolution line needs at least one stage")
 	}
-	previous := 0
+	parents, err := l.Parents()
+	if err != nil {
+		return err
+	}
+	seen := make(map[string]bool, len(l))
 	for i, stage := range l {
 		if stage.Name == "" {
 			return fmt.Errorf("stage %d has no name", i)
 		}
+		if seen[stage.Name] {
+			return fmt.Errorf("two stages are called %q, so naming one of them chooses neither", stage.Name)
+		}
+		seen[stage.Name] = true
+		after := 0
+		if parents[i] >= 0 {
+			after = l[parents[i]].MinLevel
+		}
 		switch {
 		case i == 0 && stage.MinLevel != 1:
 			return fmt.Errorf("the first stage %q starts at level %d, want 1", stage.Name, stage.MinLevel)
-		case stage.MinLevel <= previous:
-			return fmt.Errorf("stage %q starts at level %d, not after the previous stage's %d",
-				stage.Name, stage.MinLevel, previous)
+		case stage.MinLevel <= after:
+			// The message names the predecessor rather than "the previous
+			// stage", because with a fork the two are not the same thing and a
+			// reader chasing the wrong one finds nothing wrong with it.
+			return fmt.Errorf("stage %q starts at level %d, not after %q's %d",
+				stage.Name, stage.MinLevel, l[parents[i]].Name, after)
 		case stage.MinLevel > LevelCap:
 			return fmt.Errorf("stage %q starts at level %d, past the cap of %d",
 				stage.Name, stage.MinLevel, LevelCap)
@@ -371,9 +400,111 @@ func (l Line) Validate(limits Limits, rules combat.Rules) error {
 		if err := limits.CheckTable(stage.Stats, rules); err != nil {
 			return fmt.Errorf("stage %q: %w", stage.Name, err)
 		}
-		previous = stage.MinLevel
 	}
 	return nil
+}
+
+// Parents is each stage's predecessor by index, and -1 for the root.
+//
+// It is exported because a summary line has to draw the shape of a line and
+// cannot work the parentage out a second time: two readings of the same rule are
+// how a screen comes to disagree with the engine about what a file says.
+//
+// It is the one place the two spellings of a line meet. A line where nothing
+// names an After is read by order — stage i grows out of stage i-1, which is
+// what a line meant before it could fork. A line where anything names one is
+// read by name only, and every stage but the first has to name a predecessor
+// **declared before it**: that ordering requirement is what makes a cycle
+// unwritable rather than something to go looking for, and it keeps a file
+// readable top to bottom.
+//
+// ⚠️ Mixing the two is refused rather than resolved. A file that names some
+// edges and leaves others to the order would have the order deciding parentage
+// in a file that also states it, and the wrong answer would be a stat line
+// rather than an error.
+func (l Line) Parents() ([]int, error) {
+	explicit := false
+	for _, stage := range l {
+		if stage.After != "" {
+			explicit = true
+			break
+		}
+	}
+	out := make([]int, len(l))
+	for i := range l {
+		out[i] = i - 1
+	}
+	if !explicit {
+		return out, nil
+	}
+	at := make(map[string]int, len(l))
+	for i, stage := range l {
+		if i > 0 && stage.After == "" {
+			return nil, fmt.Errorf("stage %q names no predecessor while %q does: "+
+				"a line that forks has to say what every stage grows out of, "+
+				"because the order of the file cannot say it for one stage and not another",
+				stage.Name, l[firstNamed(l)].Name)
+		}
+		if i == 0 && stage.After != "" {
+			return nil, fmt.Errorf("the first stage %q grows out of %q, and nothing comes before the first",
+				stage.Name, stage.After)
+		}
+		if i > 0 {
+			parent, known := at[stage.After]
+			if !known {
+				return nil, fmt.Errorf("stage %q grows out of %q, which is not declared before it",
+					stage.Name, stage.After)
+			}
+			out[i] = parent
+		}
+		at[stage.Name] = i
+	}
+	return out, nil
+}
+
+// firstNamed is the index of the first stage that names a predecessor, for a
+// refusal that can point at the stage the file's own rule came from.
+func firstNamed(l Line) int {
+	for i, stage := range l {
+		if stage.After != "" {
+			return i
+		}
+	}
+	return 0
+}
+
+// reached reports, for each stage, whether a level has grown into it: the stage
+// itself and every stage it grows out of, all the way to the root.
+//
+// A stage past the level is not reached, and neither is one whose predecessor is
+// past it.
+//
+// ⚠️ The second half is redundant on a **validated** line and always will be: a
+// stage has to start after what it grows out of, so a level reaching the child
+// has reached the parent already. Mutating it to plain `true` survives the whole
+// suite. It is kept because this is asked of lines nobody has validated — a
+// fixture, a file half-edited by a tool — and there the difference is a stat line
+// rather than an error. Written down so the next person to mutate it stops
+// looking for the missing test.
+func (l Line) reached(level int) ([]bool, error) {
+	parents, err := l.Parents()
+	if err != nil {
+		return nil, err
+	}
+	out := make([]bool, len(l))
+	for i, stage := range l {
+		// Parents are declared before their children, so a single pass in file
+		// order always has the answer it needs.
+		if stage.MinLevel > level {
+			continue
+		}
+		if parents[i] < 0 {
+			out[i] = true
+			continue
+		}
+		out[i] = out[parents[i]]
+	}
+	return out, nil
 }
 
 // Furthest is the stage a level reaches on its own, and it is what a caller
@@ -385,45 +516,94 @@ func (l Line) Validate(limits Limits, rules combat.Rules) error {
 // is what keeps `Resolve(level, "")` from reading as a caller that forgot.
 const Furthest = ""
 
-// StageAt returns the furthest stage a unit of the given level has reached.
+// StageAt returns the furthest stage a unit of the given level has reached, and
+// refuses when there is more than one.
 //
 // This is what a level *allows*, not what a unit *is*: a placement may field an
 // earlier form, and Allowed is the list it may choose from. What this answers is
 // the question a browser asks — "show me this character at level 30" — where
 // there is no placement and therefore nobody to have chosen.
+//
+// ⚠️ **A line that forks has no single furthest, and that is an error rather
+// than a pick.** The furthest stages are the reached ones with no reached stage
+// growing out of them, and on a linear line there is exactly one — so nothing
+// about a line without forks changes. Where two arms are reachable, taking
+// "whichever the file lists last" would hand a browser, a budget row or a
+// balance table the wrong form's stat line with nothing anywhere saying so. The
+// refusal names both arms, because the caller's fix is to choose one.
 func (l Line) StageAt(level int) (Stage, error) {
+	furthest, err := l.Furthest(level)
+	if err != nil {
+		return Stage{}, err
+	}
+	if len(furthest) > 1 {
+		return Stage{}, fmt.Errorf("level %d reaches %v, which are alternatives: name the one being fielded",
+			level, StageNames(furthest))
+	}
+	return furthest[0], nil
+}
+
+// Furthest is every stage a level has reached that nothing reached grows out of:
+// one stage on a line that does not fork, and one per arm on a line that does.
+//
+// It is exported because "what are the alternatives" is a question a front-end
+// asks in its own right — a picker offering the arms, a refusal listing them —
+// and working it out from Allowed a second time is how two screens come to
+// disagree about what a fork is.
+func (l Line) Furthest(level int) ([]Stage, error) {
 	if level < 1 || level > LevelCap {
-		return Stage{}, fmt.Errorf("level %d is outside 1..%d", level, LevelCap)
+		return nil, fmt.Errorf("level %d is outside 1..%d", level, LevelCap)
 	}
-	reached := -1
-	for i, stage := range l {
-		if stage.MinLevel > level {
-			break
+	reached, err := l.reached(level)
+	if err != nil {
+		return nil, err
+	}
+	parents, err := l.Parents()
+	if err != nil {
+		return nil, err
+	}
+	grown := make([]bool, len(l))
+	for i := range l {
+		if reached[i] && parents[i] >= 0 {
+			grown[parents[i]] = true
 		}
-		reached = i
 	}
-	if reached < 0 {
-		return Stage{}, fmt.Errorf("no stage covers level %d", level)
+	out := make([]Stage, 0, len(l))
+	for i, stage := range l {
+		if reached[i] && !grown[i] {
+			out = append(out, stage)
+		}
 	}
-	return l[reached], nil
+	if len(out) == 0 {
+		return nil, fmt.Errorf("no stage covers level %d", level)
+	}
+	return out, nil
 }
 
 // Allowed is every stage a level may be fielded as, in line order.
 //
-// A level reaching Venusaur reaches Ivysaur and Bulbasaur too, so this is a
-// prefix of the line rather than a filter over it — which is what makes
-// "evolving" a threshold that is passed rather than a door that closes behind
-// the unit.
+// A level reaching Venusaur reaches Ivysaur and Bulbasaur too, so a line that
+// does not fork answers with a prefix of itself — which is what makes "evolving"
+// a threshold that is passed rather than a door that closes behind the unit.
+//
+// A fork answers with **both arms** and everything before them, because each is
+// a form the level may legally be fielded as. Fielding one is what makes the
+// other moot, and that choice lives in the placement rather than here: nothing
+// in the line marks an arm as taken, because nothing in a line knows about a
+// unit.
 func (l Line) Allowed(level int) ([]Stage, error) {
 	if level < 1 || level > LevelCap {
 		return nil, fmt.Errorf("level %d is outside 1..%d", level, LevelCap)
 	}
+	reached, err := l.reached(level)
+	if err != nil {
+		return nil, err
+	}
 	out := make([]Stage, 0, len(l))
-	for _, stage := range l {
-		if stage.MinLevel > level {
-			break
+	for i, stage := range l {
+		if reached[i] {
+			out = append(out, stage)
 		}
-		out = append(out, stage)
 	}
 	if len(out) == 0 {
 		return nil, fmt.Errorf("no stage covers level %d", level)

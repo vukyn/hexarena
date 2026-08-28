@@ -984,6 +984,45 @@ func TestWrittenSkillsAreStableAndReloads(t *testing.T) {
 	}
 }
 
+// TestStageSummaryDrawsAForkAsAFork is the summary line's half of a line that
+// forks, and it exists because the honest-looking answer is the wrong one.
+//
+// Joining every stage with an arrow is what the line always did and it is right
+// for every shipped character. On a fork it reads as three forms in a row when
+// the last two are alternatives — a table quietly saying something the file does
+// not, which is the failure this whole feature is written against.
+func TestStageSummaryDrawsAForkAsAFork(t *testing.T) {
+	stage := func(name string, level int, after string) progression.Stage {
+		return progression.Stage{Name: name, MinLevel: level, After: after}
+	}
+	for _, testCase := range []struct {
+		name string
+		line progression.Line
+		want string
+	}{
+		{"a line that does not fork reads as it always did", progression.Line{
+			stage("Bulbasaur", 1, ""), stage("Ivysaur", 16, ""), stage("Venusaur", 32, ""),
+		}, "Bulbasaur@1 → Ivysaur@16 → Venusaur@32"},
+		{"two arms share a bracket", progression.Line{
+			stage("Eevee", 1, ""), stage("Vaporeon", 32, "Eevee"), stage("Jolteon", 32, "Eevee"),
+		}, "Eevee@1 → (Vaporeon@32 | Jolteon@32)"},
+		{"a stage past the fork stays on its own arm", progression.Line{
+			stage("Eevee", 1, ""), stage("Vaporeon", 32, "Eevee"),
+			stage("Jolteon", 32, "Eevee"), stage("Tempest", 48, "Jolteon"),
+		}, "Eevee@1 → (Vaporeon@32 | Jolteon@32 → Tempest@48)"},
+		{"an explicit line that happens not to fork keeps its arrows", progression.Line{
+			stage("Eevee", 1, ""), stage("Vaporeon", 32, "Eevee"),
+		}, "Eevee@1 → Vaporeon@32"},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			got := StageSummary(cast.Character{Stages: testCase.line})
+			if got != testCase.want {
+				t.Errorf("the line reads %q, want %q", got, testCase.want)
+			}
+		})
+	}
+}
+
 // TestPreviewDamageIsTheEngineArithmetic pins the reference pair, because it is
 // the whole reason the figure is worth showing: it has to be the same pair
 // skills.golden's damage column is measured from, or an author reads two numbers
