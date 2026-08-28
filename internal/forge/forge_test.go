@@ -156,7 +156,7 @@ func TestInspectWarnsAboutAKitThatCannotCoverTheBoard(t *testing.T) {
 	if !isShort {
 		t.Fatalf("the warning is a %T, want a *ShortReachWarning", after.Warnings[0])
 	}
-	if short.ID != character.ID || short.Range != 1 || short.Needed != 3 || short.Column != 0 {
+	if short.ID != character.ID || short.Range != 1 {
 		t.Errorf("the warning reads %+v", short)
 	}
 	if !strings.Contains(short.Error(), character.ID) {

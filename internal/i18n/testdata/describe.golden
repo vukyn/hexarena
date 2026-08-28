@@ -2,15 +2,15 @@
 
 vine_whip
 Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
-Tầm 2 · 95% trúng · hồi 1 lượt.
+Tầm 1 · 95% trúng · hồi 1 lượt.
 
 razor_leaf
 Bắn một loạt lá mỏng như dao cạo, cắt tiếng gió thành từng nhát, 2 nhát, mỗi nhát 60% công (tổng 120%), xuyên 40% giáp.
-Tầm 3 · 3 ô · 88% trúng · hồi 2 lượt.
+Tầm 2 · 3 ô · 88% trúng · hồi 2 lượt.
 
 solar_beam
 Gom nắng vào một điểm rồi phóng ra thành cột sáng trắng xoá, 240% công.
-Tầm 4 · 85% trúng · hồi 4 lượt.
+Tầm 3 · 85% trúng · hồi 4 lượt.
 
 sleep_powder
 Rải một lớp phấn vàng mịn, hít phải là mí mắt trĩu xuống không cưỡng nổi.
@@ -30,12 +30,12 @@ Tầm 2 · 90% trúng · hồi 2 lượt.
 venoshock
 Dội một thứ dung dịch xanh lét, chạm vào đâu là khói bốc lên tới đó, 90% công.
 Mục tiêu đang dính trúng độc: 180% công.
-Tầm 2 · 90% trúng · hồi 2 lượt.
+Tầm 1 · 90% trúng · hồi 2 lượt.
 
 leech_seed
 Ném một hạt nhỏ, chạm vào người là bám chặt lấy không gỡ ra được, 70% công.
 Hút lại 60% sát thương gây ra.
-Tầm 3 · 90% trúng · hồi 3 lượt.
+Tầm 2 · 90% trúng · hồi 3 lượt.
 
 synthesis
 Đứng yên phơi mình dưới nắng, để cái ấm ngấm dần vào cơ thể.
@@ -50,12 +50,12 @@ Bản thân · hồi 4 lượt.
 ember
 Bắn một cụm than còn đỏ rực, rơi xuống đâu là âm ỉ ở đó, 100% công.
 Gây bỏng cho mục tiêu, 30% khả năng.
-Tầm 2 · 95% trúng · hồi 1 lượt.
+Tầm 1 · 95% trúng · hồi 1 lượt.
 
 flamethrower
 Phun một cột lửa dài, không khí phía trước méo đi vì nóng, 160% công.
 Gây bỏng cho mục tiêu, 50% khả năng.
-Tầm 3 · 90% trúng · hồi 2 lượt.
+Tầm 2 · 90% trúng · hồi 2 lượt.
 
 fire_fang
 Ngoạm bằng hàm răng bọc lửa, khói bốc lên ngay từ chỗ vừa cắn, 2 nhát, mỗi nhát 65% công (tổng 130%), xuyên 35% giáp.
@@ -64,21 +64,21 @@ Tầm 1 · 88% trúng · hồi 2 lượt.
 fire_spin
 Tạo một cột lửa xoáy tít, hơi nóng cuốn lên thành vòng, 85% công.
 Gây bỏng cho mục tiêu, 70% khả năng.
-Tầm 3 · 3 ô · 86% trúng · hồi 3 lượt.
+Tầm 2 · 3 ô · 86% trúng · hồi 3 lượt.
 
 heat_wave
 Đẩy một luồng khí khô rát tràn qua, táp thẳng vào mặt, 110% công.
 Gây bỏng cho mục tiêu, 40% khả năng.
-Tầm 3 · 3 ô · 85% trúng · hồi 4 lượt.
+Tầm 2 · 3 ô · 85% trúng · hồi 4 lượt.
 
 inferno
 Dồn hết sức nóng vào một chỗ cho tới khi lửa chuyển sang màu trắng, 100% công.
 Mục tiêu đang dính bỏng: 350% công, và tiêu mất bỏng.
-Tầm 2 · 88% trúng · hồi 3 lượt.
+Tầm 1 · 88% trúng · hồi 3 lượt.
 
 dragon_rage
 Gầm một tiếng vang trời, luồng khí phả theo đập thẳng vào đối phương, 130% công.
-Tầm 3 · 92% trúng · hồi 3 lượt.
+Tầm 2 · 92% trúng · hồi 3 lượt.
 
 smokescreen
 Tạo một màn khói đen dày, quánh lại và rất lâu mới tan.
@@ -92,17 +92,17 @@ Bản thân · hồi 4 lượt.
 
 water_gun
 Bắn một tia nước nén chặt, mảnh mà cực rát, 100% công.
-Tầm 2 · 95% trúng · hồi 1 lượt.
+Tầm 1 · 95% trúng · hồi 1 lượt.
 
 bubble
 Thổi ra một chùm bọt óng ánh, trông vô hại cho tới lúc vỡ, 70% công.
 Gây sa lầy cho mục tiêu, 70% khả năng.
-Tầm 3 · 3 ô · 90% trúng · hồi 2 lượt.
+Tầm 2 · 3 ô · 90% trúng · hồi 2 lượt.
 
 whirlpool
 Khuấy nước thành một vòng xoáy sâu hoắm, đáy tối om, 80% công.
 Gây sa lầy cho mục tiêu, 60% khả năng.
-Tầm 3 · 3 ô · 85% trúng · hồi 3 lượt.
+Tầm 2 · 3 ô · 85% trúng · hồi 3 lượt.
 
 bite
 Đớp một phát dứt khoát vào chỗ hở, hàm siết lại không buông, 120% công.
@@ -112,11 +112,11 @@ Tầm 1 · 90% trúng · hồi 2 lượt.
 brine
 Xối nước biển vào chỗ da đã rách, rách càng to thì càng buốt, 100% công.
 Mục tiêu còn <=50% máu: 200% công.
-Tầm 2 · 90% trúng · hồi 2 lượt.
+Tầm 1 · 90% trúng · hồi 2 lượt.
 
 hydro_pump
 Nén cả một tấn nước vào một điểm rồi bắn ra, tiếng rít nghe rợn người, 220% công.
-Tầm 4 · 80% trúng · hồi 4 lượt.
+Tầm 3 · 80% trúng · hồi 4 lượt.
 
 withdraw
 Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
@@ -142,18 +142,18 @@ Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 dragon_claw
 Vuốt rồng bổ thẳng xuống, xé toạc lớp giáp, 110% công.
 Gây phá giáp cho mục tiêu, 40% khả năng.
-Tầm 2 · 95% trúng · hồi 1 lượt.
+Tầm 1 · 95% trúng · hồi 1 lượt.
 
 outrage
 Mất trí lao vào đánh túi bụi, đánh xong thì không còn đứng vững, 220% công.
 Nhận sa lầy.
 Bản thân còn <=40% máu: 340% công.
-Tầm 2 · 90% trúng · hồi 3 lượt.
+Tầm 1 · 90% trúng · hồi 3 lượt.
 
 dragon_drive
 Lấy đà một nhịp rồi lao cả thân mình tới, dồn hết sức nặng vào một điểm, 90% công.
 Mục tiêu đang dính phá giáp: 230% công, và tiêu mất phá giáp.
-Tầm 2 · 90% trúng · hồi 3 lượt.
+Tầm 1 · 90% trúng · hồi 3 lượt.
 
 taunt
 Gõ ầm ĩ và chửi đổng cho cả bên kia chỉ còn muốn nhắm vào mình.
@@ -162,11 +162,11 @@ Bản thân · hồi 3 lượt.
 
 kunai
 Rút một lưỡi ném đi, không hoa mỹ nhưng bao giờ cũng có sẵn, 70% công.
-Tầm 3 · 95% trúng · dùng mọi lượt.
+Tầm 2 · 95% trúng · dùng mọi lượt.
 
 wind_shuriken
 Nén gió thành một vòng lưỡi mỏng rồi thả ra, gió tự lo phần còn lại, 2 nhát, mỗi nhát 62% công (tổng 124%).
-Tầm 3 · 3 ô · 88% trúng · hồi 2 lượt.
+Tầm 2 · 3 ô · 88% trúng · hồi 2 lượt.
 
 rasengan
 Vo chakra thành một khối xoáy trong lòng bàn tay rồi ấn thẳng vào người đối diện, 220% công.
@@ -400,15 +400,15 @@ Bị light khắc: đòn hệ đó gây 67% sát thương lên mình.
 
 vine_whip
 Hits an enemy for 110% of attack.
-Range 2 · 95% to hit · 1 turn to recharge.
+Range 1 · 95% to hit · 1 turn to recharge.
 
 razor_leaf
 Hits an enemy for 2 strikes of 60% of attack each, 120% in all, through 40% of the armour.
-Range 3 · 3 cells · 88% to hit · 2 turns to recharge.
+Range 2 · 3 cells · 88% to hit · 2 turns to recharge.
 
 solar_beam
 Hits an enemy for 240% of attack.
-Range 4 · 85% to hit · 4 turns to recharge.
+Range 3 · 85% to hit · 4 turns to recharge.
 
 sleep_powder
 Aims at an enemy.
@@ -428,12 +428,12 @@ Range 2 · 90% to hit · 2 turns to recharge.
 venoshock
 Hits an enemy for 90% of attack.
 While the target is carrying poison: 180% of attack.
-Range 2 · 90% to hit · 2 turns to recharge.
+Range 1 · 90% to hit · 2 turns to recharge.
 
 leech_seed
 Hits an enemy for 70% of attack.
 Takes back 60% of the damage it deals.
-Range 3 · 90% to hit · 3 turns to recharge.
+Range 2 · 90% to hit · 3 turns to recharge.
 
 synthesis
 Heals for 90% of attack.
@@ -446,12 +446,12 @@ Itself · 4 turns to recharge.
 ember
 Hits an enemy for 100% of attack.
 Inflicts burn, 30% of the time.
-Range 2 · 95% to hit · 1 turn to recharge.
+Range 1 · 95% to hit · 1 turn to recharge.
 
 flamethrower
 Hits an enemy for 160% of attack.
 Inflicts burn, 50% of the time.
-Range 3 · 90% to hit · 2 turns to recharge.
+Range 2 · 90% to hit · 2 turns to recharge.
 
 fire_fang
 Hits an enemy for 2 strikes of 65% of attack each, 130% in all, through 35% of the armour.
@@ -460,21 +460,21 @@ Range 1 · 88% to hit · 2 turns to recharge.
 fire_spin
 Hits an enemy for 85% of attack.
 Inflicts burn, 70% of the time.
-Range 3 · 3 cells · 86% to hit · 3 turns to recharge.
+Range 2 · 3 cells · 86% to hit · 3 turns to recharge.
 
 heat_wave
 Hits an enemy for 110% of attack.
 Inflicts burn, 40% of the time.
-Range 3 · 3 cells · 85% to hit · 4 turns to recharge.
+Range 2 · 3 cells · 85% to hit · 4 turns to recharge.
 
 inferno
 Hits an enemy for 100% of attack.
 While the target is carrying burn: 350% of attack, and eats the burn.
-Range 2 · 88% to hit · 3 turns to recharge.
+Range 1 · 88% to hit · 3 turns to recharge.
 
 dragon_rage
 Hits an enemy for 130% of attack.
-Range 3 · 92% to hit · 3 turns to recharge.
+Range 2 · 92% to hit · 3 turns to recharge.
 
 smokescreen
 Aims at an enemy.
@@ -487,17 +487,17 @@ Itself · 4 turns to recharge.
 
 water_gun
 Hits an enemy for 100% of attack.
-Range 2 · 95% to hit · 1 turn to recharge.
+Range 1 · 95% to hit · 1 turn to recharge.
 
 bubble
 Hits an enemy for 70% of attack.
 Inflicts mire, 70% of the time.
-Range 3 · 3 cells · 90% to hit · 2 turns to recharge.
+Range 2 · 3 cells · 90% to hit · 2 turns to recharge.
 
 whirlpool
 Hits an enemy for 80% of attack.
 Inflicts mire, 60% of the time.
-Range 3 · 3 cells · 85% to hit · 3 turns to recharge.
+Range 2 · 3 cells · 85% to hit · 3 turns to recharge.
 
 bite
 Hits an enemy for 120% of attack.
@@ -507,11 +507,11 @@ Range 1 · 90% to hit · 2 turns to recharge.
 brine
 Hits an enemy for 100% of attack.
 While the target is at or below 50% health: 200% of attack.
-Range 2 · 90% to hit · 2 turns to recharge.
+Range 1 · 90% to hit · 2 turns to recharge.
 
 hydro_pump
 Hits an enemy for 220% of attack.
-Range 4 · 80% to hit · 4 turns to recharge.
+Range 3 · 80% to hit · 4 turns to recharge.
 
 withdraw
 Heals for 50% of attack.
@@ -534,18 +534,18 @@ Range 1 · 3 cells · 100% to hit · 4 turns to recharge.
 dragon_claw
 Hits an enemy for 110% of attack.
 Inflicts expose, 40% of the time.
-Range 2 · 95% to hit · 1 turn to recharge.
+Range 1 · 95% to hit · 1 turn to recharge.
 
 outrage
 Hits an enemy for 220% of attack.
 Puts mire on itself.
 While the caster is at or below 40% health: 340% of attack.
-Range 2 · 90% to hit · 3 turns to recharge.
+Range 1 · 90% to hit · 3 turns to recharge.
 
 dragon_drive
 Hits an enemy for 90% of attack.
 While the target is carrying expose: 230% of attack, and eats the expose.
-Range 2 · 90% to hit · 3 turns to recharge.
+Range 1 · 90% to hit · 3 turns to recharge.
 
 taunt
 Puts taunting on itself.
@@ -553,11 +553,11 @@ Itself · 3 turns to recharge.
 
 kunai
 Hits an enemy for 70% of attack.
-Range 3 · 95% to hit · usable every turn.
+Range 2 · 95% to hit · usable every turn.
 
 wind_shuriken
 Hits an enemy for 2 strikes of 62% of attack each, 124% in all.
-Range 3 · 3 cells · 88% to hit · 2 turns to recharge.
+Range 2 · 3 cells · 88% to hit · 2 turns to recharge.
 
 rasengan
 Hits an enemy for 220% of attack.

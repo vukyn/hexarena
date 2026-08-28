@@ -122,7 +122,10 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 					current.ID)
 			}
 		}
-		if current.Range >= 4 {
+		// Three ranks is the whole of a side, so reaching the back line is a
+		// range of three now rather than the four it took when reach was
+		// measured in cells.
+		if current.Range >= hex.FormationCols {
 			longRange = true
 		}
 	}

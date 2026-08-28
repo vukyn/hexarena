@@ -864,19 +864,15 @@ func ParseBook(raw []byte, deps Deps) (*Book, error) {
 	return book, nil
 }
 
-// maxRange is the longest distance on the board, so a skill cannot declare a
-// reach that means nothing.
-var maxRange = func() int {
-	longest := 0
-	for _, from := range hex.Cells() {
-		for _, to := range hex.Cells() {
-			if distance := from.DistanceTo(to); distance > longest {
-				longest = distance
-			}
-		}
-	}
-	return longest
-}()
+// maxRange is how deep into the far side a skill can be pointed, so it cannot
+// declare a reach that means nothing.
+//
+// It is the number of columns in one formation, because reach is counted in
+// **ranks** rather than in cells: a range of three already clears the enemy's
+// whole half, and a four meant exactly what a three meant. It used to be the
+// board's longest diagonal — five — which was the right bound while a range was
+// a distance and is a lie now.
+const maxRange = hex.FormationCols
 
 func resolve(declared skillFile, deps Deps) (Skill, error) {
 	if declared.ID == "" {

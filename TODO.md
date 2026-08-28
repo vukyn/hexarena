@@ -48,12 +48,21 @@ is only so the shape is readable.
 
 ## Not done
 
-- [ ] **Re-read every skill's range under the rank rule.** Reach is counted in
-      ranks now and the shipped numbers were written for cells, so 26 enemy-aimed
-      skills mean something different from what their author intended: range 1 went
-      from unusable on a back line to always reaching the enemy's foremost rank,
-      and anything above 3 saturates. The mechanism shipped without touching a
-      number so the balance move could be attributed; this is that move.
+- [x] **Every skill's range re-read under the rank rule. Done** — 21 of 31
+      enemy-aimed ranges moved onto the depth tiers (1 contact, 2 over the line,
+      3 the back line), and `maxRange` tightened to the three ranks a side has.
+- [ ] **Re-level `roster.json` under blocking.** The range pass is what made
+      holding a front rank decide fights — 14 of 31 skills now stop at the first
+      rank — and the shipped roster was placed for a board where it did not. The
+      instrument went 19/40 ally to 12/40 on the numbers alone, with both sides
+      losing depth about equally (ally 8 skills moved, enemy 10), so this is a
+      **placement** answer and not a skill one.
+      ⚠️ Two dead ends already checked, so nobody walks them twice: `hydro_pump`
+      is the only depth-3 skill and only the enemy fields it, but setting it back
+      to 2 leaves the rate at **exactly** 12/40 — it is not the driver; and the
+      per-unit range diff is near-symmetric, so it is not a kit imbalance either.
+      What is left is where the units stand: a front rank now shields the two
+      behind it, and the formations were authored when it did not.
       → `CLAUDE.md` § Invariants.
 
 - [ ] **An evolution line that forks.** A placement chooses how far along one

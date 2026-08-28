@@ -333,7 +333,7 @@ q hoặc ctrl+c để thoát`,
 	ProblemMissingArt:      "nhân vật %s dùng ảnh %s, nhưng không thấy file ở %s",
 	ProblemMissingStageArt: "nhân vật %s dùng ảnh %s cho giai đoạn %s, nhưng không thấy file ở %s",
 	ProblemDoesNotResolve:  "nhân vật %s không tính được chỉ số: %v",
-	WarningShortReach: "nhân vật %s theo lối %s đứng ở cột %d, cách địch gần nhất %d ô, " +
+	WarningShortReach: "nhân vật %s theo lối %s có bộ chiêu chỉ chạm tới hàng %d: " +
 		"mà chiêu xa nhất trong bộ kỹ năng chỉ tới %d ô: nó chỉ ra đòn được khi có đồng đội đứng chắn phía trước",
 	NoteWrote:              "đã ghi %s vào %s",
 	NoteEdited:             "đã sửa %s trong %s",

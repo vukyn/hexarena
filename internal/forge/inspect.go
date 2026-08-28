@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
-	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
 // ArtReport is one of a character's pictures and whether it is really there.
@@ -95,29 +95,30 @@ type Warning interface {
 	warning()
 }
 
-// ShortReachWarning is a character whose longest range cannot touch anybody from
-// the column its archetype puts it in.
+// ShortReachWarning is a character whose kit can only ever hit the enemy's front
+// rank.
 //
-// Reach is fixed at enlistment — nothing on this board moves — so a unit placed
-// where nothing it knows can be aimed will skip every turn of the battle, and a
-// pair of them on opposite back columns is a battle that cannot end. battle.New
-// refuses the roster outright when it happens; this is the same fact noticed
-// earlier, where it costs an author nothing to fix.
+// ⚠️ It used to mean something else: a unit whose range could not span the cells
+// between it and the nearest enemy, which battle.New refused outright. Reach is
+// counted in ranks now, so distance can no longer strand anybody and that
+// refusal is gone — see CLAUDE.md § Invariants.
+//
+// What is left is worth saying at authoring time all the same. A kit that stops
+// at the first rank can do nothing at all until the enemy's front line is dead,
+// so the character is a passenger for the opening of every battle it is in. That
+// is a legal thing to build and sometimes a deliberate one, which is why it is a
+// warning rather than a refusal.
 type ShortReachWarning struct {
 	ID        string
 	Archetype string
-	// Column is the archetype's, counted from the back.
-	Column int
-	// Range is the longest the character's kit can be pointed, and Needed is
-	// what that column asks for.
-	Range  int
-	Needed int
+	// Range is the deepest the character's kit can be pointed, in ranks.
+	Range int
 }
 
 func (w *ShortReachWarning) Error() string {
-	return fmt.Sprintf("character %s is a %s on column %d, where the nearest enemy is %d cells away, "+
-		"but the longest range in its kit is %d: it can only act while an ally stands in front of it",
-		w.ID, w.Archetype, w.Column, w.Needed, w.Range)
+	return fmt.Sprintf("character %s is a %s whose kit reaches only rank %d: "+
+		"it can do nothing until the enemy's front line is dead",
+		w.ID, w.Archetype, w.Range)
 }
 
 func (w *ShortReachWarning) warning() {}
@@ -288,23 +289,24 @@ func (l *Library) shortReach(character cast.Character) *ShortReachWarning {
 	if !known {
 		return nil
 	}
-	longest, counted := 0, 0
+	deepest, counted := 0, 0
 	for _, entry := range character.Skills {
 		carried, err := l.skills.Lookup(entry.ID)
 		if err != nil {
 			continue
 		}
+		if carried.Target != skill.Enemy {
+			continue
+		}
 		counted++
-		if carried.Range > longest {
-			longest = carried.Range
+		if carried.Range > deepest {
+			deepest = carried.Range
 		}
 	}
-	needed := hex.ReachNeeded(preset.Column)
-	if counted == 0 || needed == 0 || longest >= needed {
+	// A kit with nothing aimed at an enemy is a different fault and is not this
+	// one: a healer that never attacks is not short of reach.
+	if counted == 0 || deepest > 1 {
 		return nil
 	}
-	return &ShortReachWarning{
-		ID: character.ID, Archetype: preset.ID, Column: preset.Column,
-		Range: longest, Needed: needed,
-	}
+	return &ShortReachWarning{ID: character.ID, Archetype: preset.ID, Range: deepest}
 }

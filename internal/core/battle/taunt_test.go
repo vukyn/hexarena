@@ -19,7 +19,7 @@ func tauntBooks(t *testing.T) battle.Books {
 	   "self_applies":[{"status":"taunting","chance":1000,"stacks":1}]},
 	  {"id":"poke","element":"neutral","range":1,"pattern":"single",
 	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
-	  {"id":"snipe","element":"neutral","range":5,"pattern":"single",
+	  {"id":"snipe","element":"neutral","range":3,"pattern":"single",
 	   "power":100,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"guard","element":"neutral","range":2,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"ally",
