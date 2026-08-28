@@ -2537,3 +2537,64 @@ func TestTraitCarrierSummaryMarksTheGates(t *testing.T) {
 		})
 	}
 }
+
+// TestADataDirectoryWithNoCatalogueStillLoads is the one book a working directory
+// is allowed to be missing, and it is worth a test because of the shape the
+// failure would otherwise take: the whole tool refusing to start over a file that
+// has nothing to do with the character being authored.
+//
+// A working directory is a copy somebody took, and every copy taken before
+// builds.json existed is complete in every other way. So the absence reads as an
+// older directory rather than a broken one, and what it reads as is an empty
+// catalogue — which is exactly what a catalogue holding no builds says.
+func TestADataDirectoryWithNoCatalogueStillLoads(t *testing.T) {
+	dir := scratchData(t)
+	if err := os.Remove(filepath.Join(dir, buildsFile)); err != nil {
+		t.Fatalf("take the catalogue away: %v", err)
+	}
+	lib, err := Load(dir)
+	if err != nil {
+		t.Fatalf("load a directory with no catalogue: %v", err)
+	}
+	if builds := lib.Builds(); len(builds) != 0 {
+		t.Errorf("a directory with no catalogue holds %d builds", len(builds))
+	}
+	// And the per-character question answers the same way, because that is the one
+	// a screen asks per row: a book left nil and reached through it would panic on
+	// the first character drawn rather than on the load.
+	for _, character := range lib.Characters().All() {
+		if found := lib.BuildsOf(character.ID); len(found) != 0 {
+			t.Errorf("%s has %d builds out of a directory with no catalogue",
+				character.ID, len(found))
+		}
+	}
+}
+
+// TestTheShippedCatalogueIsReadThroughTheLibrary is the plumbing a screen stands
+// on: the two questions a listing asks — every build, and one character's — have
+// to agree, because the listing is built by asking the second once per character
+// and is measured against the first.
+func TestTheShippedCatalogueIsReadThroughTheLibrary(t *testing.T) {
+	lib, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	every := lib.Builds()
+	if len(every) == 0 {
+		t.Fatal("the shipped catalogue is empty, so nothing below proves anything")
+	}
+	grouped := 0
+	for _, character := range lib.Characters().All() {
+		for _, built := range lib.BuildsOf(character.ID) {
+			if built.Character != character.ID {
+				t.Errorf("%s's builds include %q, which is for %q",
+					character.ID, built.ID, built.Character)
+			}
+			grouped++
+		}
+	}
+	if grouped != len(every) {
+		t.Errorf("the catalogue holds %d builds and the characters account for %d",
+			len(every), grouped)
+	}
+}

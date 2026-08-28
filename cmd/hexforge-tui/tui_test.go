@@ -1068,7 +1068,7 @@ func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
 // has to work even with a question pending, or a modal can trap somebody.
 func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 	base, _, _ := start(t, i18n.Vi)
-	for _, target := range []screen{screenMenu, screenBrowse, screenOrigins, screenCheck, screenPreview, screenBlurb} {
+	for _, target := range []screen{screenMenu, screenBrowse, screenOrigins, screenCheck, screenPreview, screenBlurb, screenBuilds} {
 		m := base.enter(target)
 		if _, command := m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"}); !quits(command) {
 			t.Errorf("q did not quit from screen %d", target)
@@ -1255,6 +1255,10 @@ func TestTheFooterNamesTheKeysOfTheScreenInFront(t *testing.T) {
 		// this screen is more than a table.
 		{screenSkills, []string{"a", "e", "esc", "q"}},
 		{screenCheck, []string{"r", "esc", "q"}},
+		// The build catalogue has nothing but the keys every listing has, which is
+		// the point of asserting them: a read-only screen is where a footer is
+		// easiest to leave saying nothing.
+		{screenBuilds, []string{"↑/↓", "esc", "q"}},
 	}
 	for _, lang := range i18n.Langs() {
 		base, _, _ := start(t, lang)

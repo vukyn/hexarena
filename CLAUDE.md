@@ -60,7 +60,8 @@ binaries; `make forge ARGS="show some.id"` passes arguments through. `make check
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
 
-`-update` is only defined in the three packages that hold golden files, so
+`-update` is only defined in the four packages that hold golden files
+(`internal/core/hex`, `internal/i18n`, `internal/seed`, `internal/tui`), so
 `go test ./... -update` fails on the rest. A new package with a golden has to be
 added to that command **and** to the `golden` target.
 
@@ -842,6 +843,31 @@ load-bearing:
 a measurement.** It read 45 per cent on a draft whose true rate over 4000 seeds
 was 55. Tune levels against a few thousand seeds and quote that figure; the test's
 job is only that the battle finishes and that neither side is a scripted defeat.
+
+**`builds.json` is the late-game catalogue: which four skills and which trait a
+character is *for*.** A learnset of nine skills and five traits offers more
+combinations than anybody would field, and before the file existed the only kit
+the repository could name was "the first four declared" — the order the file
+happens to list, which is not a decision. `cast.ParseBuilds` checks every entry
+against the cast book at `progression.LevelCap` on the furthest form, so a build
+naming a move only an earlier form knows (`sleep_powder`) is refused with the list
+of what that form does know.
+
+- A build adds exactly two things over the loadout it names — a `name` and a
+  one-clause `intent` — and **nothing numeric**: everything it does is already
+  described by its skills and its trait, so a figure in either field is refused at
+  parse time (the same rule skill `flavour` lives under).
+- **A character listed there has at least two builds.** One build is not a build,
+  it is that character's kit, and a screen offering a single option tells a player
+  they have a decision they do not have. A character with none is the honest case —
+  Naruto today — and `TestABuildIsACatalogueOfChoicesRatherThanOfKits` is the claim.
+- ⚠️ **The catalogue and the design tables in the tests must agree.**
+  `poisonBuild`/`sustainBuild` (`bulbasaur_test.go`), `fireBuild`/`dragonBuild`
+  (`dragon_test.go`) and `tankBuild`/`semiBuild` (`squirtle_test.go`) are hardcoded
+  on purpose — they are what was measured — and
+  `TestTheShippedBuildsAreTheOnesTheTestsMeasure` fails if the data drifts from
+  them, kit **or** trait. Shipping a new build means measuring it in a test first,
+  then adding the row.
 
 Art lives under `internal/seed/data/assets/` and is **not embedded** — the embed
 directive names the JSON files one by one. The two placeholder SVGs there exist so

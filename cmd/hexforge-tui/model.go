@@ -45,6 +45,14 @@ const (
 	// round — the shape of the chart rather than one element's place in it — and
 	// at the floor the window will not hold both.
 	screenChart
+	// screenBuilds is the seventh listing and is reached from the menu, like the
+	// other references and unlike the screens above it: a build belongs to a
+	// character but the question it answers — which directions are written down —
+	// is one a reader has before they have chosen a character to look at.
+	//
+	// Appended for the reason screenPreview was: nothing serialises these, but the
+	// menu is built from the order they are declared in.
+	screenBuilds
 )
 
 // The smallest window the screens fit in.
@@ -71,7 +79,7 @@ const (
 var detailLabels = []i18n.Key{
 	i18n.LabelFrom, i18n.LabelPlaystyle, i18n.LabelElement, i18n.LabelKit,
 	i18n.LabelArt, i18n.LabelStages, i18n.LabelBiography, i18n.LabelEffectiveHP,
-	i18n.LabelNote,
+	i18n.LabelNote, i18n.LabelIntent,
 }
 
 // detailLabelWidth is the column every detail pane's row name sits in,
@@ -128,6 +136,7 @@ type model struct {
 	passives passivesScreen
 	elements elementsScreen
 	species  speciesScreen
+	builds   buildsScreen
 	// chart holds nothing: it is drawn from the library every time and has no
 	// cursor. It is a field anyway so that the screen is dispatched to like every
 	// other one, rather than being a special case in three switches.
@@ -173,6 +182,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		statuses: newStatusesScreen(lib),
 		passives: newPassivesScreen(lib),
 		species:  newSpeciesScreen(lib),
+		builds:   newBuildsScreen(lib),
 		check:    newCheckScreen(lib),
 		preview:  newPreviewScreen(),
 		spar:     newSparScreen(),
@@ -200,6 +210,7 @@ var menuItems = []menuItem{
 	{i18n.MenuPassives, i18n.MenuPassivesDetail, screenPassives},
 	{i18n.MenuElements, i18n.MenuElementsDetail, screenElements},
 	{i18n.MenuSpecies, i18n.MenuSpeciesDetail, screenSpecies},
+	{i18n.MenuBuilds, i18n.MenuBuildsDetail, screenBuilds},
 	{i18n.MenuCheck, i18n.MenuCheckDetail, screenCheck},
 }
 
@@ -269,6 +280,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.elements.update(m, message)
 	case screenSpecies:
 		return m.species.update(m, message)
+	case screenBuilds:
+		return m.builds.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
@@ -343,6 +356,8 @@ func (m model) enter(target screen) model {
 		m.passives = m.passives.refresh(m.lib)
 	case screenSpecies:
 		m.species = m.species.refresh(m.lib)
+	case screenBuilds:
+		m.builds = m.builds.refresh(m.lib)
 	case screenSpar:
 		m.spar = m.spar.refresh()
 	}
@@ -392,6 +407,8 @@ func (m model) screenContent() string {
 		body, footer = m.elements.view(m)
 	case screenSpecies:
 		body, footer = m.species.view(m)
+	case screenBuilds:
+		body, footer = m.builds.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:
