@@ -50,9 +50,9 @@ is only so the shape is readable.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
-- [ ] **Grow the cast.** Three characters, one per element. This is content, and
-      the constraints that bound it are written down. Read Squirtle first.
-      → `CLAUDE.md` § Open work.
+- [ ] **Grow the cast.** Four ship across two origins, one per element (grass,
+      fire, water, wind). This is content, and the constraints that bound it are
+      written down. Read Squirtle first. → `CLAUDE.md` § Open work.
 - [ ] **A deeper opponent — the two pieces left over.** Holding a skill for a
       later turn, and all-sided skills. ⚠️ **Tempo is no longer one of them** —
       it is priced off the speed stat, and what needs the queue is only *where*

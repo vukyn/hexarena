@@ -1992,7 +1992,10 @@ is the constraint each piece has to respect.
       Its six skills are now `restrict.origins: [naruto]` — see **Origins**
       above; the `summoner` preset keeps them, which is why that ban does not
       exist.
-- [ ] **Grow the cast.** Three characters ship, one per element, and the seed
+- [ ] **Grow the cast.** Four characters ship across two origins — Bulbasaur,
+      Charmander and Squirtle out of Pokémon, Naruto out of his own — one per
+      element (grass, fire, water, wind). This item said "three, one per element"
+      until 2026-08-28, which was written before Naruto landed in #98. The seed
       roster is no longer a mirror — so the thing this item was blocking, a
       measurable balance figure, exists. What is left is content, under three
       constraints: an archetype's kit constrains a character's affinity
