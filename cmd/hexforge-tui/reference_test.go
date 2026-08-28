@@ -114,53 +114,70 @@ func TestTheInertElementSaysSoRatherThanDrawingTwoBlanks(t *testing.T) {
 	}
 }
 
-// TestTheSpeciesScreenSaysWhatBeingOneUnlocks is the half the skills listing
-// could not give: its restriction column says "chủng loài dragon" and had
-// nowhere to go.
-func TestTheSpeciesScreenSaysWhatBeingOneUnlocks(t *testing.T) {
+// TestTheSpeciesScreenSaysWhatTheWordMeans is the half the skills listing could
+// not give: its restriction column says "chủng loài dragon" and had nowhere to
+// go, and the note that answers it reached nobody.
+func TestTheSpeciesScreenSaysWhatTheWordMeans(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	m = m.enter(screenSpecies)
 	m = speciesTo(t, m, "dragon")
 
-	kept := m.lib.SkillsForSpecies("dragon")
-	if len(kept) == 0 {
-		t.Fatal("no shipped skill is kept for a dragon, so this measures nothing")
+	kind, known := m.lib.Species().Get("dragon")
+	if !known || kind.Note == "" {
+		t.Fatal("the shipped dragon carries no note, so this measures nothing")
 	}
 	drawn := m.screenContent()
-	if want := m.text(i18n.SpeciesKeptSkills, strings.Join(kept, " ")); !strings.Contains(drawn, want) {
-		t.Errorf("the species screen never says %q:\n%s", want, drawn)
-	}
-	// The note beside the id, which is the only prose a species carries and was
-	// reaching nobody before this screen existed.
-	kind, known := m.lib.Species().Get("dragon")
-	if !known {
-		t.Fatal("the shipped book has lost the dragon")
-	}
 	if !strings.Contains(drawn, firstWords(kind.Note)) {
 		t.Errorf("the species screen drops the authored note:\n%s", drawn)
 	}
-	// And who is one, which is the column that earns its place: a kind nobody is
-	// is a gate that cannot open.
-	for _, character := range m.lib.Characters().OfSpecies("dragon") {
-		if !strings.Contains(drawn, character.ID) {
-			t.Errorf("the species screen never names %q, which is a dragon:\n%s",
-				character.ID, drawn)
+}
+
+// TestTheSpeciesScreenListsNoCastAndNoKit is the shape the screen deliberately
+// does not have.
+//
+// Both cells it once drew were lists that grow with the books — who is one grows
+// with the cast, the kit kept for a kind grows with the skills — and a column
+// whose width is the size of another book stops fitting on the row that has the
+// most to say. Written down as a test because the argument for adding either one
+// back is a good one every time it is made, and the reason not to only shows up
+// at a scale the shipped data does not have yet.
+func TestTheSpeciesScreenListsNoCastAndNoKit(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m = m.enter(screenSpecies)
+		m = speciesTo(t, m, "dragon")
+		drawn := m.screenContent()
+		for _, character := range m.lib.Characters().OfSpecies("dragon") {
+			if strings.Contains(drawn, character.ID) {
+				t.Errorf("%s: the species screen names the dragon %q:\n%s",
+					lang, character.ID, drawn)
+			}
+		}
+		for _, declared := range m.lib.Skills().Skills() {
+			if len(declared.Restrict.SpeciesNames()) == 0 {
+				continue
+			}
+			if strings.Contains(drawn, declared.ID) {
+				t.Errorf("%s: the species screen names the restricted skill %q:\n%s",
+					lang, declared.ID, drawn)
+			}
 		}
 	}
 }
 
-// TestAKindNobodyIsSaysSoInWords is the empty cell the shipped cast never draws.
+// TestAKindNobodyIsSaysSoInWords is the one fact about a species that is not on
+// its own row, and the shipped cast never puts it on screen.
 //
-// Every kind in the book is claimed today, so the row is only ever reached by a
-// book that has one — and an empty last cell reads as a column that failed to
-// fill rather than as the fact that nothing is one.
+// Every kind in the book is claimed today, so this is only ever reached by a book
+// that has an unclaimed one. It is the whole of what the members column was worth
+// having for, and the half of it that does not grow with the cast.
 func TestAKindNobodyIsSaysSoInWords(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		m, _, _ := start(t, lang)
 		m = m.enter(screenSpecies)
 		m = speciesTo(t, m, "dragon")
-		if m.species.members["dragon"] == "" {
-			t.Fatal("nobody is a dragon in the shipped cast, so emptying it measures nothing")
+		if m.species.claimed["dragon"] == 0 {
+			t.Fatal("nobody is a dragon in the shipped cast, so clearing it measures nothing")
 		}
 		m.species = withNobodyClaiming(m.species)
 		if drawn := m.screenContent(); !strings.Contains(drawn, m.text(i18n.SpeciesNobodyIs)) {
@@ -228,15 +245,14 @@ func TestBothReferencesFitTheSmallestWindow(t *testing.T) {
 			t.Errorf("%s: the species reference is truncated at %dx%d:\n%s",
 				lang, minWidth, minHeight, drawn)
 		}
-		// And the line the overrun would have eaten is really on screen, which is
-		// what makes the reserve worth spending rather than a number that happens
-		// to be big enough.
+		// And the note itself survives whole, which is what makes the reserve worth
+		// spending rather than a number that happens to be big enough: its last
+		// line is the one the frame would cut first.
 		selected := kinds.species.kinds[kinds.species.cursor]
-		if kept := kinds.lib.SkillsForSpecies(selected.ID); len(kept) > 0 {
-			want := kinds.text(i18n.SpeciesKeptSkills, strings.Join(kept, " "))
-			if !strings.Contains(drawn, want) {
-				t.Errorf("%s: the smallest window drops %q:\n%s", lang, want, drawn)
-			}
+		wrapped := wrapWords(selected.Note, minWidth-3)
+		if last := wrapped[len(wrapped)-1]; !strings.Contains(drawn, last) {
+			t.Errorf("%s: the smallest window cuts the note short of %q:\n%s",
+				lang, last, drawn)
 		}
 	}
 }

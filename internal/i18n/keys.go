@@ -506,8 +506,6 @@ const (
 	SpeciesFooter
 	SpeciesNobodyIs
 	SpeciesNoNote
-	SpeciesKeptSkills
-	ColumnWhoIs
 
 	keyCount
 )

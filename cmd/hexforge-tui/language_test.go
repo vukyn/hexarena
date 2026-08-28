@@ -135,21 +135,21 @@ func widestElementRow(m model) int {
 }
 
 // withNobodyClaiming is the species reference as a book with an unclaimed kind
-// draws it: the members cell of the kind under the cursor emptied, which is what
-// puts the "nobody is one" line on screen.
+// draws it: the kind under the cursor counted down to nobody, which is what puts
+// the "nobody is one" line on screen.
 //
 // A copy of the map rather than a write into it, because the screen it came from
-// is one of the models this helper hands back and a shared map would empty that
-// one's cell too.
+// is one of the models this helper hands back and a shared map would clear that
+// one's count too.
 func withNobodyClaiming(s speciesScreen) speciesScreen {
-	members := make(map[string]string, len(s.members))
-	for id, who := range s.members {
-		members[id] = who
+	claimed := make(map[string]int, len(s.claimed))
+	for id, count := range s.claimed {
+		claimed[id] = count
 	}
 	if len(s.kinds) > 0 {
-		members[s.kinds[clamp(s.cursor, 0, len(s.kinds)-1)].ID] = ""
+		claimed[s.kinds[clamp(s.cursor, 0, len(s.kinds)-1)].ID] = 0
 	}
-	s.members = members
+	s.claimed = claimed
 	return s
 }
 

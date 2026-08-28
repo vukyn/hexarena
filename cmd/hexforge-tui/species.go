@@ -11,8 +11,8 @@ import (
 	"github.com/vukyn/hexarena/internal/i18n"
 )
 
-// speciesScreen is what a character can *be*, with the skills that fact unlocks
-// under the cursor.
+// speciesScreen is what a character can *be*: the declared kinds, each under its
+// name, with the note that says where the line is drawn under the cursor.
 //
 // It is the other half of the restriction column the skills listing draws. That
 // column says "chủng loài dragon" and had nowhere to go: a species was reachable
@@ -20,12 +20,29 @@ import (
 // middle of authoring a restriction could not find out what the word covered,
 // and the note the author wrote beside it reached nobody at all.
 //
-// The column that earns its place is **who is one**, the same shape the trait
-// listing's carriers column has and for the same reason: a species is not
-// restricted, it is claimed, so "who may be one" is everybody and answers
-// nothing. A species nobody is is not an error — a kind may be written before
-// the character that fills it, exactly as a trait may — but it is a gate that
-// cannot open, and a listing is where that shows.
+// ⚠️ It does not list the skills kept for a kind either, and for the same reason
+// it does not list who is one: both are lists that grow with the books. Four
+// dragon skills fit on a line and fourteen do not, and the reader who wants them
+// is on the skills listing, whose restriction column names the kind on every row
+// that has one. This screen answers "what does this word mean", once, and leaves
+// the cross-reference to the listings that are already sorted for it.
+//
+// ⚠️ There is no **who is one** column, and that is a decision rather than an
+// omission. It was drawn here first, as the twin of the trait listing's carriers
+// column: a species is not restricted, it is *claimed*, so "who may be one" is
+// everybody and answers nothing, while who actually is one is a fact. But the
+// two columns scale differently. A trait is carried by the handful of characters
+// that learn it; a species is what a character **is**, so every character in the
+// book lands in exactly one or two kinds — and a cast of thirty puts thirty ids
+// on five rows. A column whose width is the size of the cast is a column that
+// stops fitting, and it stops fitting on the row that has the most to say.
+//
+// What survives is the half that does not grow: a kind **nobody** is still says
+// so, in words, under the cursor. That is the fact the column was worth having
+// for — a kind may be written before the character that fills it, exactly as a
+// trait may, and it is not an error, but it is a gate that cannot open. Who is
+// one is answered the other way round, by the browser, where a character says
+// what it is.
 //
 // Read-only, unlike the origins listing. A species is a word plus a note today,
 // but the gate it drives is a skill's allowlist, so adding one is only ever half
@@ -33,11 +50,15 @@ import (
 // skills form. A form here would offer to make a kind nothing can use.
 type speciesScreen struct {
 	kinds []cast.Species
-	// members and skills are keyed by species id and read by key only; nothing
+	// claimed and skills are keyed by species id and read by key only; nothing
 	// ranges over either into an ordered output, so neither can reach a rendered
 	// line out of order.
-	members map[string]string
-	skills  map[string]string
+	//
+	// claimed counts rather than naming, because the names are no longer drawn:
+	// all the screen asks is whether anybody is one, and keeping the joined list
+	// for a question that is answered by "is it nought" would be a row's worth of
+	// string built per kind per refresh and thrown away.
+	claimed map[string]int
 	cursor  int
 }
 
@@ -47,15 +68,9 @@ func newSpeciesScreen(lib *forge.Library) speciesScreen {
 
 func (s speciesScreen) refresh(lib *forge.Library) speciesScreen {
 	s.kinds = lib.Species().All()
-	s.members = make(map[string]string, len(s.kinds))
-	s.skills = make(map[string]string, len(s.kinds))
+	s.claimed = make(map[string]int, len(s.kinds))
 	for _, kind := range s.kinds {
-		names := make([]string, 0, 4)
-		for _, character := range lib.Characters().OfSpecies(kind.ID) {
-			names = append(names, character.ID)
-		}
-		s.members[kind.ID] = strings.Join(names, " ")
-		s.skills[kind.ID] = strings.Join(lib.SkillsForSpecies(kind.ID), " ")
+		s.claimed[kind.ID] = len(lib.Characters().OfSpecies(kind.ID))
 	}
 	s.cursor = clamp(s.cursor, 0, len(s.kinds)-1)
 	return s
@@ -77,7 +92,7 @@ func (s speciesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.
 }
 
 // speciesRoom is how many rows the listing may draw: the window less the heading
-// pair above and the note, the skills line and the empty-kind line below.
+// pair above and the note and the empty-kind line below.
 //
 // All of the lines below are reserved whether or not the kind under the cursor
 // draws them, for the reason every other listing reserves its worst case: a room
@@ -88,13 +103,12 @@ func (s speciesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.
 // constant gets wrong. A note is authored prose of no fixed length — it is the
 // one place in this book somebody writes a sentence — so it wraps, and a reserve
 // of one line for a note that takes three lets the body overrun the window. The
-// frame cuts from the bottom, so what an overrun costs is the skills line: the
-// derived half of the pane, silently gone, on exactly the kinds whose note is
-// longest.
+// frame cuts from the bottom, so what an overrun costs is the line saying nobody
+// is this kind, on exactly the kinds whose note is longest.
 func speciesRoom(m model, s speciesScreen) int {
 	const (
 		above = 2 // the heading and the blank line under it
-		other = 4 // a blank, the skills line, a blank, the empty-kind line
+		other = 3 // a blank, a blank, the empty-kind line
 	)
 	room := m.height - 4 - above - other - s.longestNote()
 	if room < 3 {
@@ -129,12 +143,11 @@ func (s speciesScreen) longestNote() int {
 // in the other language by construction, so drawing it in English would be a
 // leak rather than a translation. Dropped rather than blanked, because a column
 // of empty cells reads as data the book has lost.
-func speciesRow(idColumn, nameColumn int, id, name, members string) string {
-	row := pad(id, idColumn)
-	if nameColumn > 0 {
-		row += " " + pad(name, nameColumn)
+func speciesRow(idColumn, nameColumn int, id, name string) string {
+	if nameColumn == 0 {
+		return id
 	}
-	return row + " " + members
+	return pad(id, idColumn) + " " + name
 }
 
 func (s speciesScreen) view(m model) (string, string) {
@@ -169,17 +182,17 @@ func (s speciesScreen) view(m model) (string, string) {
 		}
 	}
 	out.WriteString("  " + m.style.dim.Render(speciesRow(column+1, nameColumn,
-		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss),
-		m.text(i18n.ColumnWhoIs))) + "\n")
+		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss))) + "\n")
 
 	from, to := window(len(s.kinds), s.cursor, speciesRoom(m, s))
 	for index := from; index < to; index++ {
 		kind := s.kinds[index]
-		// Against the window rather than the floor, as the skills and traits
-		// listings measure their last column: the members cell is data, and
-		// cutting it on a wide terminal hides which characters are one.
-		row := clip(speciesRow(column+1, nameColumn, kind.ID, m.lang.SpeciesName(kind),
-			s.members[kind.ID]), m.usableWidth()-3)
+		// No clip. Both cells are bounded by the book rather than by the cast:
+		// an id and an authored word, each measured into its own column above.
+		// The listings that clip do it because their last cell is a list that
+		// grows with the cast, which is exactly the cell this screen no longer
+		// draws.
+		row := speciesRow(column+1, nameColumn, kind.ID, m.lang.SpeciesName(kind))
 		marker := "  "
 		if index == s.cursor {
 			marker = "> "
@@ -201,16 +214,11 @@ func (s speciesScreen) view(m model) (string, string) {
 	for _, line := range wrapWords(note, minWidth-3) {
 		out.WriteString("  " + line + "\n")
 	}
-	// What being this kind unlocks, and only when it unlocks something: a kind no
-	// skill is kept for is a gate nothing is behind, and an empty list after the
-	// colon reads as a lookup that failed rather than as an answer.
-	if kept := s.skills[selected.ID]; kept != "" {
-		out.WriteString("  " + m.text(i18n.SpeciesKeptSkills, kept) + "\n")
-	}
-	// And the row above says "nobody is one" with an empty cell, which reads as a
-	// column that failed to fill rather than as a fact. This says it in words, and
-	// only for the kind being read.
-	if s.members[selected.ID] == "" {
+	// A kind nobody is, said in words and only for the kind being read. It is the
+	// one fact about a species that is not on its own row, and the only one worth
+	// a line: a gate that cannot open, on a screen whose whole job is to say what
+	// the gates are.
+	if s.claimed[selected.ID] == 0 {
 		out.WriteString("\n  " + m.style.dim.Render(m.text(i18n.SpeciesNobodyIs)))
 	}
 	return strings.TrimRight(out.String(), "\n"), footer
