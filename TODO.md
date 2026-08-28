@@ -39,8 +39,10 @@ is only so the shape is readable.
   description is derived from the data, and only the flavour clause is authored.
 - **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
   kills, summons and **tempo** in damage over capped horizons — tempo off the
-  speed stat, never off the queue. The roster was re-levelled afterwards, which
-  is what makes every rate quoted anywhere comparable.
+  speed stat, never off the queue. Both halves of an all-sided skill, and a tie
+  broken by what an option costs to have spent rather than by kit order. The roster
+  was re-levelled once along the way, which is what makes every rate quoted anywhere
+  comparable.
 
 ## Not done
 
@@ -53,10 +55,10 @@ is only so the shape is readable.
 - [ ] **Grow the cast.** Four ship across two origins, one per element (grass,
       fire, water, wind). This is content, and the constraints that bound it are
       written down. Read Squirtle first. → `CLAUDE.md` § Open work.
-- [ ] **A deeper opponent — the two pieces left over.** Holding a skill for a
-      later turn, and all-sided skills. ⚠️ **Tempo is no longer one of them** —
-      it is priced off the speed stat, and what needs the queue is only *where*
-      in the order an extra turn falls. → `CLAUDE.md` § Open work.
+- [ ] **A deeper opponent — what is left is waiting.** Passing a turn because the
+      next one is worth more needs a **lookahead**, and *where* in the order an extra
+      turn falls needs the **queue**. Tempo, all-sided skills and not wasting a
+      scarce skill are all priced. → `CLAUDE.md` § Open work.
 - [ ] **`reckless` is the dragon build's 22.1%, and a detonate does not fix it.**
       The line has one now (`dragon_drive`, off its own `expose`) and fielding it
       moves 22.0% → **21.2%**. ⚠️ Measured one change at a time: the detonate is

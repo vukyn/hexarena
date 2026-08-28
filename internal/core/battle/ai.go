@@ -55,6 +55,22 @@ type Choice struct {
 // anybody standing where they are (a taunt, a shield on a unit already at its cap)
 // still gets taken when there is nothing better, exactly as it did.
 //
+// **Holding a skill for a later turn** is read as narrowly as a rating this
+// shallow can honestly read it: not as waiting — that would need to know what next
+// turn is worth, which is the lookahead this file does not have — but as refusing
+// to *spend* a scarce turn on what a plentiful one buys. Damage is clamped at a
+// target's remaining health, so the heaviest skill in a kit and the filler beside
+// it are worth exactly the same against a unit standing at a sliver, and before
+// this the tie went to whichever came first in the kit: the nuke was burnt on five
+// points of health and cooled down for three turns for it. The tie now goes to the
+// skill that will be there again next turn.
+//
+// It is a tie-break rather than a discount for two reasons. A discount would price
+// scarcity, which means guessing at the turns being given up, and every guess of
+// that shape in this file has been wrong in the direction of playing worse. And a
+// tie is where the whole of the waste is: an option worth strictly more is worth
+// more *now*, which is the only tense a one-turn-deep rating has.
+//
 // It reads no randomness and mutates nothing, so a client may call it to offer a
 // hint without disturbing the battle's own sequence. Every price obeys that too:
 // the chance an application would be rolled against is read as a weight, and a
@@ -67,9 +83,22 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 	if !known || actor.Dead {
 		return Choice{}, false
 	}
-	best, bestValue, found := Choice{}, int64(-1), false
+	best, bestValue, bestCooldown, found := Choice{}, int64(-1), 0, false
 	fallback, hasFallback := Choice{}, false
 	prices := b.newPricing()
+
+	// take is the whole of the decision, and it is a pair rather than a number:
+	// what an option is worth first, and only on a tie what it costs to have spent
+	// it. See holding a skill for a later turn, below.
+	take := func(choice Choice, value int64, cooldown int) {
+		switch {
+		case value > bestValue:
+		case value == bestValue && cooldown < bestCooldown:
+		default:
+			return
+		}
+		best, bestValue, bestCooldown, found = choice, value, cooldown, true
+	}
 
 	for _, option := range prompt.Options {
 		if !option.Available() {
@@ -92,10 +121,8 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 			// would have done something. Every priced job below is written the
 			// same way for the same reason.
 			if value := b.summonWorth(actor, declared); value > 0 {
-				if value > bestValue {
-					best, bestValue, found =
-						Choice{Skill: option.Skill, Aim: option.Aims[0]}, value, true
-				}
+				take(Choice{Skill: option.Skill, Aim: option.Aims[0]}, value,
+					declared.Cooldown)
 				continue
 			}
 		}
@@ -106,9 +133,7 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 				continue
 			}
 			rated = true
-			if value > bestValue {
-				best, bestValue, found = Choice{Skill: option.Skill, Aim: aim}, value, true
-			}
+			take(Choice{Skill: option.Skill, Aim: aim}, value, declared.Cooldown)
 		}
 		// Worth nothing to anybody it could reach: the fallback, on the same terms
 		// as before. The first such skill in kit order is kept, and it is taken

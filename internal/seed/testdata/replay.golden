@@ -1,5 +1,5 @@
 == battle from seed 11 ==
-50 turns, 236 events, ally won
+50 turns, 235 events, ally won
 
 the first 90 events
        0 started         ally.venusaur      ally   2,1  3800 hp
@@ -92,7 +92,7 @@ the first 90 events
    51282 skill_used      ally.wartortle     bubble at 4,1
    51282 damaged         ally.wartortle     bubble hit foe.ivysaur for 71, x1000 affinity, 1735 hp left
    51282 status_applied  ally.wartortle     mire x1 on foe.ivysaur, now 1
-... 146 more
+... 145 more
 
 the last 12 events
   193311 status_resisted ally.venusaur      foe.blastoise resisted poison at 400 per mille
@@ -116,7 +116,7 @@ event counts
   speed_changed        6
   turn_skipped         1
   skill_used          49
-  amplified            7
+  amplified            6
   status_consumed      0
   missed               7
   blocked              0

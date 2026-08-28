@@ -111,10 +111,28 @@ Rules for anything added to that file:
   its duel rate fell 26.6% → 20.0%, a rating playing worse while believing it had
   improved. The same figure prices both directions, so a haste and a slow cost the
   same.
+- **An all-sided skill is rated by both halves.** `expected` gives the enemy half
+  (it skips a unit on the caster's own side) and `friendlyFire` subtracts the own
+  half — damage plus the turns lost with anything it kills, the caster **included**,
+  because a shape can cover the cell it is cast from. ⚠️ The old refusal was not an
+  oversight: the guard and "expected does not subtract an ally" were two halves of
+  one decision, so relaxing either alone is the opponent that bombs its own squad.
+  An all-sided attack also counts as an attack in `bestStrike`, `turnWorth`,
+  `bestAgainst` and `worstStrikes`, through `aimedAtAnEnemy` so the four cannot
+  disagree.
+- **A tie is broken by what an option costs to have spent**, never by kit order:
+  `take` compares value first and `declared.Cooldown` only on a tie. That is all
+  *holding a skill for a later turn* honestly comes to here — damage is clamped at
+  the target's health, so a nuke and a filler are worth the same against a sliver
+  and the nuke was being burnt on it. ⚠️ A **discount** rather than a tie-break
+  would price scarcity by guessing at turns, which is the mistake tempo was
+  corrected for. Measure a change like this **head to head** (the tie-break on one
+  side at a time): both sides use `Suggest`, so the roster rate shows which squad's
+  kit gained, not whether the rating improved.
 - **Out of scope on purpose:** *where* an extra turn falls in the order (that is the
-  part that needs the queue), holding a skill for a later turn, all-sided skills
-  (`expected` skips an ally rather than subtracting it), and any lookahead. The
-  detonate setup needs none: price the status and the payoff rates itself.
+  part that needs the queue), **waiting** — passing a turn because the next one is
+  worth more — and any lookahead. The detonate setup needs none: price the status
+  and the payoff rates itself.
 
 ⚠️ **No balance figure carries across this change.** The shipped roster read 53.1%
 ally before and 79.0% after, side-neutral (82.5% for the same squad with the sides
@@ -1325,9 +1343,13 @@ is the constraint each piece has to respect.
       and the detonate setup came free with pricing the status. **Tempo followed**
       and is priced too — off the speed stat, so nothing reads the queue; see
       *Rating an action* for why a turn is worth `turnWorth` and not the best
-      strike. What is still out, each a separate piece of work: holding a skill
-      for a later turn, all-sided skills, and *where* in the order an extra turn
-      falls, which is the only part that would need the queue.
+      strike. **All-sided skills are rated too** (`friendlyFire`, the own half
+      subtracted), and *holding a skill for a later turn* is answered as far as a
+      one-turn-deep rating honestly can: a **tie-break on cooldown**, so a scarce
+      skill is not spent on what a common one buys. What is still out: **waiting** —
+      passing a turn because the next is worth more, which needs a lookahead — and
+      *where* in the order an extra turn falls, the only part that would need the
+      queue.
       ⚠️ It cost a **balance answer, not a golden**, exactly as the summon did:
       the shipped roster went 53.1% → 79.0% ally, which is a cast finding.
       **Re-levelled since** (Charmeleon 30 / Ivysaur 30, 49.1%, and 49.4% once
