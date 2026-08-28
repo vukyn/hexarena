@@ -139,6 +139,41 @@ Rules for anything added to that file:
   corrected for. Measure a change like this **head to head** (the tie-break on one
   side at a time): both sides use `Suggest`, so the roster rate shows which squad's
   kit gained, not whether the rating improved.
+- ⚠️ **The queue may break a tie; it may never set a price.** A queue reading is
+  **compared**, never added or multiplied. A value that reaches an arithmetic
+  expression is tempo, and tempo is priced from the **speed stat** — see the tempo
+  bullet above. The reason is not taste: the queue is discrete and lumpy, so a few
+  points of speed buy whether one more turn lands before the other unit acts, and a
+  mirror-duel win rate could not even *order* the shipped speed amounts (`+150` read
+  59.0% while `+50` read 74.0%; see `swiftness` under § *Open work*). A number that
+  lumpy may decide which of two equals to take. It may not say what either is worth.
+  The rule stands even though nothing currently uses it, because it is the line
+  between a tie-break and a second tempo.
+  ⚠️ **A third key under `cooldown` was built, measured and thrown away.** It took
+  the aim whose occupant acted soonest, off the non-mutating `atb.Queue.Pending`.
+  Head to head against the rating without it (`forge.Bout`, 10,000 seeds, control
+  exactly 500‰): **500‰ exactly, 10,000 wins and 10,000 losses.** Not "inside the
+  band" — the *control signature*, meaning the two ratings played the identical
+  battle every time. It moved **0 of 93,320 decisions** over 2,000 shipped battles,
+  and a census found **0 prompts** where two options came out level on both value
+  and cooldown. **No golden moved.**
+  The premise was wrong rather than the code. "One skill pointed at several cells
+  has the same cooldown on every call, so the winner is whichever cell `hex.Cells`
+  lists first" is true, but a tie needs the **values** level too, and shipped units
+  differ in health, defence and affinity, so two aims almost never rate to the same
+  integer. Reaching the key at all needed a fixture tying two enemies at identical
+  health on purpose. **Do not rebuild it without first showing the tie exists on the
+  board in hand.**
+  ⚠️ Two things learned building it are worth more than the key was. **Absence must
+  be carried beside a queue reading, never encoded into it** — `Queue.Pending`
+  answers 0 for a unit it has never heard of and 0 is *soonest*, so an aim with
+  nobody to read would have outranked every aim with somebody; a self-aim has to be
+  *declared* unread rather than detected, since the cell is occupied by the actor
+  and a fast unit would otherwise have every self-aimed skill outrank every attack.
+  And **`Suggest` may not call `Standings`**: it orders the real slice in place, so
+  a rating that called it would move nothing on the board — `describeBoard` could
+  not see it — while changing the order units act in afterwards, arriving in every
+  golden at once with nothing naming it. Read `Pending` or `Preview`.
 - **Waiting is arithmetically empty in this engine**, and is therefore *decided
   against* rather than unbuilt. `spendCooldowns` brings **every** cooldown down by
   the turn just served, and it runs at the end of `Act` (`turn.go:541`), at the end
@@ -220,11 +255,11 @@ Rules for anything added to that file:
   `friendlyFire` was — a rating that cannot see a cost prefers the option carrying
   it — with the honest note that it buys nothing today and starts paying the
   moment a reply worth authoring is authored.
-- **Still out of scope:** *where* an extra turn falls in the order — the only part
-  that would need the queue, and a **tie-break** rather than a term when it lands,
-  because a queue reading that reached an arithmetic expression would be tempo, and
-  tempo is priced from the speed stat. The detonate setup needs neither: price the
-  status and the payoff rates itself.
+- **Still out of scope:** *where* an extra turn falls in the order, as a **term**.
+  As a tie-break it was built and thrown away for measuring a null (above); as a
+  term it is what the rule forbids — a queue reading that priced how many turns
+  something buys is tempo, and tempo is priced from the speed stat. The detonate
+  setup needs neither: price the status and the payoff rates itself.
 
 ⚠️ **No balance figure carries across this change.** The shipped roster read 53.1%
 ally before and 79.0% after, side-neutral (82.5% for the same squad with the sides
