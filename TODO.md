@@ -47,14 +47,20 @@ is only so the shape is readable.
   description is derived from the data, and only the flavour clause is authored.
 - **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
   kills, summons and **tempo** in damage over capped horizons — tempo off the
-  speed stat, never off the queue. Both halves of an all-sided skill, and a tie
-  broken by what an option costs to have spent rather than by kit order. The roster
-  was re-levelled once along the way, which is what makes every rate quoted anywhere
-  comparable.
+  speed stat, never off the queue. Both halves of an all-sided skill, a tie
+  broken by what an option costs to have spent rather than by kit order, and the
+  two costs of acting: what a skill does to its own side and **what the units it
+  hurts answer with**. The roster was re-levelled once along the way, which is
+  what makes every rate quoted anywhere comparable.
+  ⚠️ The reply cost is the one term landed on a **null** measurement — 499‰
+  against the same rating without it, 10,000 seeds, band ±8‰ — because the
+  shipped board's only answering trait is a 4% poison on one unit. Given every
+  unit a reply worth having it reads 513‰ and 607‰, so what is null is the data
+  and not the term; → `CLAUDE.md` § Rating an action.
 - **Measuring the opponent.** `forge.Bout` fights two ratings head to head over the
   same seeds from both ends of the board, on an **exactly even** control it refuses
   to print a figure without, against a frozen ruler (`FirstUsable`) that may never
-  be improved. `Suggest` beats it **78.0%** over 10,000 seeds, band ±0.8pp, and
+  be improved. `Suggest` beats it **77.9%** over 10,000 seeds, band ±0.8pp, and
   finishes sooner (45 turns against the control's 48).
 - **Balance.** Every enemy-aimed range re-read under the rank rule, and each ace
   moved to its own back column behind a screen — 27.6% ally → **47.3%**. Both were

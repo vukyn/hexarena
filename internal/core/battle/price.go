@@ -71,8 +71,15 @@ func (b *Battle) newPricing() *pricing {
 // guard without friendlyFire is exactly the opponent that bombs its own squad and
 // reads it as a gain — that was the reason the refusal stood, and it is answered
 // here rather than removed.
+//
+// There are two costs of acting subtracted here and not one. friendlyFire is what
+// a skill does to the caster's own side; replied is what the units it hurts do
+// back. They are the same shape for the same reason — a rating that cannot see a
+// cost prefers the option that carries it — and the second was missing for as
+// long as this file did not mention passive.Replies at all.
 func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 {
 	total := int64(0)
+	from := fromSkill(declared)
 	if aimedAtAnEnemy(declared) {
 		total += p.fight.expected(actor, declared, aim)
 		total += p.finished(actor, declared, aim)
@@ -80,16 +87,21 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 	if declared.Target == skill.All {
 		total -= p.friendlyFire(actor, declared, aim)
 	}
+	// And what the units it hurts hurt back. It is friendlyFire's other half — a
+	// cost of acting rather than a gain from it — and it is subtracted for the
+	// same reason: a rating that cannot see it prefers the attack that answers
+	// itself.
+	total -= p.replied(actor, declared, aim)
 	// SelfApplies land on the caster whatever the skill is aimed at, which is how
 	// a unit shields or braces itself, so they are priced outside the shape.
-	total += p.granted(actor, actor, declared, declared.SelfApplies)
+	total += p.granted(actor, actor, from, declared.SelfApplies)
 	// And what a unit does to itself is not always a gift. A skill whose cost is a
 	// status on its own caster — the recoil on an all-out attack — is worth its
 	// damage *minus* that, and a rating that read only the gain would spend every
 	// turn on the most expensive thing in the kit and call it the best. The cost is
 	// the same figure the gain would be if it landed on somebody else, which is why
 	// it is the same function pointed at the caster.
-	total -= p.inflictedOn(actor, actor, declared, declared.SelfApplies)
+	total -= p.inflictedOn(actor, actor, from, declared.SelfApplies)
 
 	shape, err := p.fight.books.Patterns.Lookup(declared.Pattern)
 	if err != nil {
@@ -111,16 +123,16 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 		}
 		if friendly {
 			total += p.restored(actor, target, declared)
-			total += p.granted(actor, target, declared, declared.Applies)
+			total += p.granted(actor, target, from, declared.Applies)
 			total += p.cleansed(target, declared)
 			// Symmetry with the caster's own cost above: a harmful status landing
 			// on one's own side is a price, not a benefit, wherever it comes from.
-			total -= p.inflictedOn(actor, target, declared, declared.Applies)
+			total -= p.inflictedOn(actor, target, from, declared.Applies)
 		} else {
-			total += p.inflictedOn(actor, target, declared, declared.Applies)
+			total += p.inflictedOn(actor, target, from, declared.Applies)
 			total += p.dispelled(target, declared)
 			// And a benefit landing on an enemy is a price for the same reason.
-			total -= p.granted(actor, target, declared, declared.Applies)
+			total -= p.granted(actor, target, from, declared.Applies)
 		}
 	}
 	return total
@@ -232,6 +244,181 @@ func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset
 		// on splash and nothing else.
 		if dealt >= target.HP {
 			total += p.strike(target) * killHorizon
+		}
+	}
+	return total
+}
+
+// replied is what an attack costs its own caster in answers: the damage the
+// units it hurts strike back with, the statuses they put on it, and the turns it
+// loses if one of them finishes it.
+//
+// It is the exact mirror of friendlyFire — a cost of acting, subtracted by rate,
+// priced from the functions that resolve it — and it exists because price.go did
+// not mention passive.Replies at all. Attacking a venom_blood or a thorns holder
+// was charged nothing for the blow that comes back, which is the same blind spot
+// friendlyFire was written to close on the other side of the board.
+//
+// # Whose reply, and when
+//
+// Battle.answer runs over every unit the skill actually damaged, and it never
+// asks which side they are on — so an all-sided or multi-target skill provokes
+// several answers, and an ally caught by the shape answers its own caster. This
+// walks the same cells in the same order. Three units are skipped for the three
+// reasons answer skips them: the caster itself (a skill that caught its own
+// caster is still not somebody attacking it), a holder the blow would kill (the
+// dead do not answer), and a holder whose gate is shut.
+//
+// # Once per cast, never once per strike
+//
+// answer is called after the whole skill loop, once per holder, and its own
+// comment says why: a reply answers a *use* of a skill rather than a strike, so
+// a trait's worth cannot scale with somebody else's strike count. So a
+// three-strike skill is charged for exactly one answer per holder, and a rating
+// that multiplied by StrikeCount would decline the triple and take the single
+// for a difference the engine does not resolve.
+//
+// # The chance
+//
+// Two of them, and both are weighted rather than rolled. A reply answers a blow
+// that *landed*, so the whole per-holder charge is weighted by the chance the
+// attack connects — read from combat.Rules.Chance through the one Hit
+// Battle.hitAgainst builds, which is the same Hit against weights the damage
+// with. And the statuses a reply applies go through inflictedOn, which composes
+// the holder's amplifier with the attacker's resistance in landed exactly as
+// inflict does — which is what makes venom_blood's poison cost nothing at all
+// against a target that refuses poison.
+//
+// ⚠️ The connect chance is one strike's, not "at least one of them", so a
+// multi-strike skill is under-charged by the gap. That is the accepted direction
+// and it is deliberately not corrected here: the correction is a second
+// expression over StrikeCount, and combat exposes no helper for it.
+//
+// # The horizon
+//
+// None on the damage: a reply is health taken off *now* rather than over a
+// stretch of turns, so it is charged at its face value clamped at what the
+// caster has left. The status half has no horizon here either — it goes through
+// inflictedOn, which already prices an inflicted status over the horizons this
+// file declares, rather than through a second copy of them.
+//
+// # A dead attacker
+//
+// A reply may kill, and Battle.reply gives damage no exemption for arriving out
+// of turn. So the caster's health is tracked down the walk the way reply spends
+// it, and when an answer would take the last of it two things follow, both read
+// off the resolving code rather than assumed:
+//
+//   - the caster's own death is charged the way friendlyFire charges an ally's,
+//     at strike × killHorizon — the turns of attacking it will now never take;
+//   - nothing after that is charged at all, because reply returns before its own
+//     statuses land and answer returns before the next holder gets a turn.
+//     Under-charging what a corpse would still have suffered is the accepted
+//     direction, and it is also simply what happens.
+//
+// Getting this the other way round is the failure worth naming: a rating blind
+// to it walks its own unit into a reply that kills it, and a rating that charged
+// the death without the return would decline every attack on a board with two
+// repliers on it.
+//
+// # Why it cannot double-count
+//
+// Nothing else in this file reads passive.Replies — expected, finished,
+// friendlyFire, threat, bestAgainst and turnWorth are all built out of the skill
+// book, and a reply is not a skill. TestNoOtherTermChargesForAReply holds that,
+// by pricing an option against a bare target and against a replier and showing
+// the whole of the difference is this term.
+func (p *pricing) replied(actor *Unit, declared skill.Skill, aim hex.Offset) int64 {
+	// A skill of no power bites nobody, and Act returns before the shape for a
+	// self-aimed one — so neither reaches answer, and neither is charged.
+	if declared.Power == 0 || declared.Target == skill.Self || p.fight.books.Passives == nil {
+		return 0
+	}
+	shape, err := p.fight.books.Patterns.Lookup(declared.Pattern)
+	if err != nil {
+		return 0
+	}
+	actorStats := p.fight.Stats(actor)
+	// Read once, outside the loop, exactly as expected and friendlyFire do.
+	brought := swingOf(declared, actor)
+	// What the caster has left as the answers land, spent down the walk the way
+	// reply spends it. In expectation rather than in health: every other figure
+	// in this file is an expectation, and a reply that only half arrives should
+	// only half kill.
+	remaining := actor.HP
+	total := int64(0)
+	for position, cell := range covers(shape, declared, aim) {
+		holder := p.fight.occupant(cell)
+		// answer skips the caster by identity, and so does this: a shape that
+		// covers the cell it was cast from hurts its caster, but nobody is
+		// attacking the caster.
+		if holder == nil || holder == actor {
+			continue
+		}
+		dealt := p.fight.against(actor, actorStats, declared, holder, position, brought)
+		// Not bitten, so not in answer's list. And a holder the blow finishes does
+		// not answer, which is the same reading finished and friendlyFire take of
+		// the same figure.
+		if dealt <= 0 || dealt >= holder.HP {
+			continue
+		}
+		connected := int64(p.fight.books.Rules.Chance(
+			p.fight.hitAgainst(actor, actorStats, declared, holder, position, brought)))
+		if connected <= 0 {
+			continue
+		}
+		for _, id := range holder.Passives {
+			held, err := p.fight.books.Passives.Lookup(id)
+			if err != nil || !held.Replies.Answers() {
+				continue
+			}
+			// ⚠️ The gate is read on the holder as the board stands, while answer
+			// reads it on the holder as this very blow left it. The two can only
+			// differ one way: passive.Condition carries nothing but BelowHealth, so
+			// a gate can turn *on* as its holder is hurt and can never turn off. So
+			// this misses a trait the attack itself wakes up and over-charges for
+			// none, which is the direction every cap in this file errs in — and it
+			// costs no hypothetical unit to be exact about.
+			if !p.fight.inForce(holder, held) {
+				continue
+			}
+			cost, lethal := int64(0), false
+			if held.Replies.Power > 0 {
+				damage, _ := p.fight.replyDamage(holder, actor, held)
+				if damage >= remaining {
+					damage, lethal = remaining, true
+				}
+				cost += damage
+				remaining -= damage * connected / scale.Base
+			}
+			if lethal {
+				// The turns the caster will now never take, at the same horizon
+				// friendlyFire charges for an ally it kills. reply returns before
+				// its own statuses land, so they are not added.
+				cost += p.strike(actor) * killHorizon
+			} else {
+				from := fromTrait(held)
+				// The harm the answer puts on the caster, and — for symmetry with
+				// rate's own two branches — anything it hands the caster read back
+				// off the bill. Both through the terms that already price a status.
+				cost += p.inflictedOn(holder, actor, from, held.Replies.Applies)
+				cost -= p.granted(holder, actor, from, held.Replies.Applies)
+			}
+			// ⚠️ Clamped at nought per answer, and this is the sign guard. rate
+			// *subtracts* what comes back, so a negative charge here would make an
+			// attack more attractive for being answered — the opponent hunting
+			// venom_blood holders, which reads as a plausible strategy rather than
+			// as a bug. A reply worth less than nothing to its holder is worth
+			// nothing to the unit it answers.
+			if cost > 0 {
+				total += cost * connected / scale.Base
+			}
+			if lethal {
+				// answer returns the moment the attacker dies rather than breaking,
+				// so no further holder answers and no further trait of this one
+				// does either.
+				return total
+			}
 		}
 	}
 	return total
@@ -351,14 +538,20 @@ func worthHealing(restored int64, target *Unit, threat int64) int64 {
 	return restored
 }
 
-// granted is what the statuses a skill puts on its own side are worth: a buff, a
-// shield, a regeneration.
+// granted is what the statuses an application puts on its recipient are worth: a
+// buff, a shield, a regeneration.
 //
 // Each is priced by what the recipient would be *with* it, built through
 // status.Set.With so the cap, the duration refresh and the wasted stack are the
 // ones Apply resolves. A status already at its cap is therefore worth nothing,
 // which is also the term that stops two units buffing each other for ever.
-func (p *pricing) granted(actor, target *Unit, declared skill.Skill,
+//
+// ⚠️ It takes an origin rather than the skill, because inflict does: a skill and
+// a trait's reply both reach inflict, and everything this function needs to know
+// about the source — which element prices it and which of the actor's stats it
+// scales off — is what origin was extracted to name. Handing it the skill made a
+// reply impossible to price without a second copy of the Regen expression below.
+func (p *pricing) granted(actor, target *Unit, from origin,
 	applications []skill.Application) int64 {
 	total := int64(0)
 	for _, application := range applications {
@@ -377,7 +570,7 @@ func (p *pricing) granted(actor, target *Unit, declared skill.Skill,
 			// caster's own scaling stat, no defence curve and no elemental
 			// multiplier, times the turns the stack will tick for.
 			tick := p.fight.books.Rules.Restore(
-				fromSkill(declared).stat(p.fight, actor), kind.TickPower)
+				from.stat(p.fight, actor), kind.TickPower)
 			ticks := turnsOf(kind, healHorizon) * int64(application.Stacks)
 			value = worthHealing(tick*ticks, target, p.threat(target))
 		case status.Shield:
@@ -580,7 +773,11 @@ func (p *pricing) dispelled(target *Unit, declared skill.Skill) int64 {
 // remaining ticks slightly over-counts when the caster's own detonate is about to
 // consume them. The direction is the accepted one: over-pricing costs a kill,
 // under-pricing costs a marginal cast.
-func (p *pricing) inflictedOn(actor, target *Unit, declared skill.Skill,
+// ⚠️ It takes an origin rather than the skill, for the reason granted does: a
+// trait's reply reaches inflict through the very same function, so the only way
+// to price one without a second copy of the Dot expression below is to name the
+// three things inflict actually reads off its source.
+func (p *pricing) inflictedOn(actor, target *Unit, from origin,
 	applications []skill.Application) int64 {
 	total := int64(0)
 	for _, application := range applications {
@@ -597,10 +794,9 @@ func (p *pricing) inflictedOn(actor, target *Unit, declared skill.Skill,
 		case status.Dot:
 			before := target.Statuses.Pending()
 			// The expression inflict's Dot branch freezes onto the stack, origin
-			// and all: the skill's own scaling stat and its own element, the
+			// and all: the source's own scaling stat and its own element, the
 			// target's full defence even when the skill pierces, and the acting
 			// unit's amplifier.
-			from := fromSkill(declared)
 			amplifiedEffect, _ := p.fight.amplify(actor, kind.ID)
 			tick := raise(p.fight.books.Rules.Damage(
 				from.stat(p.fight, actor),
