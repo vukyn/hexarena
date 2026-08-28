@@ -1260,12 +1260,16 @@ is the constraint each piece has to respect.
 - [x] **A deeper opponent. Done** — see *Rating an action* above for the rules and
       *A deeper opponent* in `README.md` for what moved. Statuses, buffs, guards,
       heals, cleanses and kills are all priced in damage now, over capped horizons,
-      and the detonate setup came free with pricing the status. What is still out,
-      each a separate piece of work: the turn queue (so a speed buff is worth
-      nothing to the rating), holding a skill for a later turn, and all-sided
-      skills. ⚠️ It cost a **balance answer, not a golden**, exactly as the summon
-      did: the shipped roster went 53.1% → 79.0% ally, which is a cast finding —
-      re-levelling `roster.json` is the follow-up **data** change.
+      and the detonate setup came free with pricing the status. **Tempo followed**
+      and is priced too — off the speed stat, so nothing reads the queue; see
+      *Rating an action* for why a turn is worth `turnWorth` and not the best
+      strike. What is still out, each a separate piece of work: holding a skill
+      for a later turn, all-sided skills, and *where* in the order an extra turn
+      falls, which is the only part that would need the queue.
+      ⚠️ It cost a **balance answer, not a golden**, exactly as the summon did:
+      the shipped roster went 53.1% → 79.0% ally, which is a cast finding.
+      **Re-levelled since** (Charmeleon 30 / Ivysaur 30, 49.1%, and 49.4% once
+      tempo was priced), so every rate quoted anywhere is on the same instrument.
 - [x] **A gated grant: a stat change that comes and goes.** `blaze` is now what
       it is named after — `{"grants":[{"status":"kindled"}],"while":{"below_health":333}}`
       — and its burn immunity moved to `heatproof`, because **a gate covers the
