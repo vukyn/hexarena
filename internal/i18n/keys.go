@@ -496,6 +496,13 @@ const (
 	ElementsHeading
 	ElementsSubtitle
 	ElementsFooter
+	ChartHeading
+	ChartSubtitle
+	ChartFooter
+	ChartEmpty
+	ChartMutual
+	ChartInert
+	ChartRates
 	MenuElements
 	MenuElementsDetail
 	MenuSpecies

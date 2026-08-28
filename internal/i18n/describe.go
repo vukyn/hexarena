@@ -636,6 +636,16 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 // work. TestNoShippedShareIsUnderOnePercent holds it over every shipped skill,
 // trait and status. Carrying a decimal place here to survive data nobody will
 // author would be the renderer paying for a case the rule forbids.
+// Share is share for a caller outside this package, which is one screen: the
+// chart drawing the three multipliers under the rings.
+//
+// Exported rather than the screen reaching for forge.Percent, which is the other
+// permille-to-percent in this repository and rounds differently — it keeps a
+// tenth, so 667 comes out "66.7%" there and "67%" here. Both are right for what
+// they were written for; what is wrong is one figure spelt two ways on two
+// screens a keystroke apart, and the elements reference already says 67%.
+func Share(permille int) string { return share(permille) }
+
 func share(permille int) string {
 	sign := ""
 	if permille < 0 {

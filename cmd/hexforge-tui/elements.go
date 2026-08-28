@@ -40,6 +40,12 @@ func (s elementsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea
 		return m, tea.Quit
 	case "esc":
 		m.screen = screenMenu
+	case "g":
+		// The shape of the chart, which this listing answers one row at a time.
+		// A key rather than a menu entry: the question "so what beats what" is
+		// one a reader has while looking at a row, not one they leave the
+		// reference to go and ask.
+		m.screen = screenChart
 	case "up", "k":
 		s.cursor = clamp(s.cursor-1, 0, len(members)-1)
 	case "down", "j":
@@ -96,14 +102,27 @@ func (s elementsScreen) view(m model) (string, string) {
 		// The id and its name, and no third column. A count of edges is the one
 		// figure a row could carry, and it is two words of the description
 		// directly below — the same reason the status listing prints no numbers.
-		line := member.String()
+		// The id in the element's own colour, which is the same colour the chart
+		// draws it in: a reader who walks from one screen to the other is
+		// following the word, and a word that changes colour on the way is a
+		// second word. Decoration only — the id is right there in text.
+		id := m.style.element(member).Render(member.String())
+		line := id
 		if glossColumn > 0 {
-			line = pad(line, column+1) + " " + m.lang.Gloss(member.String())
+			line = id + strings.Repeat(" ", column+1-lipgloss.Width(member.String())) +
+				" " + m.lang.Gloss(member.String())
 		}
 		marker := "  "
 		if index == clamp(s.cursor, 0, len(members)-1) {
 			marker = "> "
-			line = m.style.selected.Render(line)
+			// The selection is bold and takes the row whole, colour and all: a
+			// cursor that recoloured the id would hide the one thing the colour
+			// is for.
+			line = m.style.selected.Render(member.String())
+			if glossColumn > 0 {
+				line = m.style.selected.Render(
+					pad(member.String(), column+1) + " " + m.lang.Gloss(member.String()))
+			}
 		}
 		out.WriteString(marker + line + "\n")
 	}

@@ -40,6 +40,11 @@ const (
 	// screenPreview is raised from the browser: it describes the skill under a
 	// cursor, and the listing is where a skill is chosen.
 	screenBlurb
+	// screenChart is raised from the elements listing, for the reason screenBlurb
+	// is raised from the skills one: it is the same subject read the other way
+	// round — the shape of the chart rather than one element's place in it — and
+	// at the floor the window will not hold both.
+	screenChart
 )
 
 // The smallest window the screens fit in.
@@ -123,10 +128,14 @@ type model struct {
 	passives passivesScreen
 	elements elementsScreen
 	species  speciesScreen
-	check    checkScreen
-	preview  previewScreen
-	spar     sparScreen
-	blurb    blurbScreen
+	// chart holds nothing: it is drawn from the library every time and has no
+	// cursor. It is a field anyway so that the screen is dispatched to like every
+	// other one, rather than being a special case in three switches.
+	chart   chartScreen
+	check   checkScreen
+	preview previewScreen
+	spar    sparScreen
+	blurb   blurbScreen
 
 	// picker holds the multi-select while it is open, over whichever screen
 	// raised it. It lives here rather than on a screen because two screens raise
@@ -268,6 +277,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.spar.update(m, message)
 	case screenBlurb:
 		return m.blurb.update(m, message)
+	case screenChart:
+		return m.chart.update(m, message)
 	}
 	return m, nil
 }
@@ -389,6 +400,8 @@ func (m model) screenContent() string {
 		body, footer = m.spar.view(m)
 	case screenBlurb:
 		body, footer = m.blurb.view(m)
+	case screenChart:
+		body, footer = m.chart.view(m)
 	}
 	// The picker is drawn over whichever screen raised it, for the same reason
 	// it is a sub-screen at all: a list of nineteen does not fit beside a form.
