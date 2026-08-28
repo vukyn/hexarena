@@ -1034,6 +1034,73 @@ func TestPreviewDamageIsTheEngineArithmetic(t *testing.T) {
 	}
 }
 
+// TestPreviewDamageReadsTheCastersOwnTerms is the caster half of the figure, and
+// it exists because the preview did not have one.
+//
+// Three terms can raise a skill's power and only one of them reads the target.
+// `self_requires` is a threshold on the caster and `self_gradient` is a curve off
+// its wounds, so a preview that read `requires` alone showed `outrage` and
+// `comeback` at their plain power — the two skills whose whole design is the term
+// it was not reading — and an author editing either had no figure for it at all.
+//
+// The composition is combat.Swung, the expression the battle resolves through:
+// the bonus is added to the power and the share is taken of the sum, so a skill
+// declaring both is worth more than a reading that took the share of the declared
+// power. The all-three case below is chosen so the two orders disagree, because a
+// case where they agree would pass whichever way round the arithmetic went.
+func TestPreviewDamageReadsTheCastersOwnTerms(t *testing.T) {
+	lib, err := Load(scratchData(t))
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	damage := func(power int) int64 {
+		reference := lib.Limits().Ceilings[progression.Defense] / 2
+		return lib.Rules().Damage(lib.Limits().Ceilings[progression.Attack], reference, power, 1000)
+	}
+
+	// A gradient: worth its whole share at the bottom of the caster's health, so
+	// a thousand per mille on a power of a thousand previews as two thousand.
+	desperate, err := lib.Skills().Lookup("desperate")
+	if err != nil {
+		t.Fatalf("lookup: %v", err)
+	}
+	if got, want := lib.PreviewDamage(desperate).Amplified, damage(2000); got != want {
+		t.Errorf("desperate previews %d with its gradient at the bottom, want %d", got, want)
+	}
+
+	// A threshold on the caster: a plain addition to the power, exactly as the
+	// target's own condition is.
+	reckless := desperate
+	reckless.ID = "reckless_swing"
+	reckless.SelfGradient = nil
+	reckless.SelfRequires = &skill.Condition{BelowHealth: 400, BonusPower: 1200}
+	if got, want := lib.PreviewDamage(reckless).Amplified, damage(2200); got != want {
+		t.Errorf("a caster threshold previews %d, want %d", got, want)
+	}
+
+	// All three at once, and the figure has to be the engine's composition of
+	// them rather than any other order. 1000 + 900 amplified by the target's
+	// condition, + 500 for the caster's threshold, all of it doubled by a
+	// gradient at the bottom: 4800. Taking the share of the declared power first
+	// would give 3400, which is what this catches.
+	everything := reckless
+	everything.ID = "everything"
+	everything.Requires = &skill.Condition{Status: "burn", MinStacks: 1, BonusPower: 900}
+	everything.SelfRequires = &skill.Condition{BelowHealth: 400, BonusPower: 500}
+	everything.SelfGradient = &skill.Gradient{AtEmpty: 1000}
+	if got, want := lib.PreviewDamage(everything).Amplified, damage(4800); got != want {
+		t.Errorf("a skill declaring all three previews %d, want %d", got, want)
+	}
+
+	// And a skill declaring nothing still reports nothing, so the figure keeps
+	// meaning "this skill has a ceiling worth naming".
+	plain := desperate
+	plain.SelfGradient = nil
+	if got := lib.PreviewDamage(plain).Amplified; got != 0 {
+		t.Errorf("a skill with no term at all reports %d amplified", got)
+	}
+}
+
 // TestAPiercingSkillIsAuthoredAndPreviewsAgainstTheArmourItLeaves is the
 // authoring end of piercing: the answer reaches the skill, and the damage figure
 // the form shows is measured against the defence the skill actually faces.

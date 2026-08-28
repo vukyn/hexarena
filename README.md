@@ -1315,6 +1315,38 @@ through, so neither can be a second opinion.
 `TestTheFormProducesTheCharacterTheCommandLineProduces` asserts that the same
 answers typed into the form and passed as flags resolve to the same character.
 
+#### What a skill is worth before it is written
+
+A skill is balance rather than content, so the question in front of an author is
+not whether the answers parse but what they do. The form answers it as the power
+is typed: `forge.PreviewDamage` runs `combat.Rules.Damage` against the attack
+ceiling and **half** the defence ceiling — the pair `skills.golden`'s own damage
+column is measured from, so the figure before a write is the figure the table
+shows after one — and truncates **per strike** rather than once over the total,
+exactly as a battle does. Three strikes of 600 are 615 and not 617.
+
+Beside it, when a skill has one, is what it is worth **with everything it asks
+for holding**. Three terms can raise a power and only one of them reads the
+target:
+
+| term | read against | shape |
+| --- | --- | --- |
+| `requires` | the target | a threshold, adding a bonus |
+| `self_requires` | the caster | a threshold, adding a bonus |
+| `self_gradient` | the caster | a curve, multiplying by how hurt it is |
+
+⚠️ **The preview read only the first of those, so `outrage` and `comeback`
+previewed at their plain power** — the two skills in the book whose entire design
+is a caster-side term, showing an author nothing for the thing being authored.
+All three are read now, and composed through `combat.Swung` in the order the
+battle composes them, so the ceiling shown is a ceiling the engine could resolve
+rather than one no reading produces. `outrage` reads 2200 power and 3400 with its
+threshold met; `comeback` 900 and 1710 at the bottom of its bar.
+
+The caster is asked at health nought out of one — the shape `Condition.Satisfying`
+already used, and for the same reason: it is the *bottom of the curve*, written so
+it cannot be mistaken for a measurement of somebody. Nobody fights at no health.
+
 It speaks **Vietnamese and English, Vietnamese by default**.
 
 ```
@@ -2936,6 +2968,18 @@ through — a caller handing the bonus where the share goes would compile, would
 silently divide the power by a thousand, and would read as a balance change rather
 than a bug. `swingOf` is the single reading, for the reason `conditionTarget` is:
 `Suggest` rates a skill by the power it would land and the engine then lands it.
+
+**And the composition itself is `combat.Swung`**, beside `combat.Gradient`, so the
+battle is not the only thing that can ask what a skill lands at. The authoring
+preview needs the same expression — see *What a skill is worth before it is
+written* — and one arithmetic in one place is what stops a figure an author reads
+before a write from disagreeing with the blow the engine lands after one.
+⚠️ **The bonus first and the share second was an ordering nothing tested.**
+Swapping the two halves passed the entire suite, which is how it stayed
+unguarded until the preview asked for the same expression;
+`TestSwungAddsTheBonusBeforeTakingTheShare` is the missing claim, and it needs
+both terms present to say anything, because the two orders agree whenever one of
+them is nought.
 
 **The share reaches the log**, on `skill_used`, and it had to. `Power` on that
 event carries what the skill *declares*, which is the figure a reader already has

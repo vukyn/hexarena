@@ -610,9 +610,16 @@ type SkillPreview struct {
 	// the figure to compare two skills of different strike counts by.
 	PerStrike, Total int64
 	Strikes          int
-	// Amplified is Total with the skill's condition holding, or zero when the
-	// skill has no condition. The authoring form cannot write a condition, but
-	// it can edit the power of a skill that has one.
+	// Amplified is Total with everything the skill asks for holding, or zero when
+	// it asks for nothing. The authoring form cannot write a condition, but it
+	// can edit the power of a skill that has one.
+	//
+	// ⚠️ **Everything, not only the target's condition.** A skill has three terms
+	// that can raise its power and two of them are read against the *caster* —
+	// `self_requires` as a threshold and `self_gradient` as a curve — so a preview
+	// that read only `requires` showed `outrage` and `comeback` at their plain
+	// power and an author editing either had no figure at all for the thing that
+	// makes the skill what it is.
 	Amplified int64
 }
 
@@ -646,12 +653,34 @@ func (l *Library) PreviewDamage(built skill.Skill) SkillPreview {
 	// truncated once would read a few points high on a multi-strike skill.
 	preview.PerStrike = l.rules.Damage(attack, defense, built.Power, combat.PermilleBase)
 	preview.Total = preview.PerStrike * int64(preview.Strikes)
-	if built.Requires != nil {
-		amplified := l.rules.Damage(attack, defense,
-			built.PowerAgainst(built.Requires.Satisfying()), combat.PermilleBase)
+	if best := bestPower(built); best > built.Power {
+		amplified := l.rules.Damage(attack, defense, best, combat.PermilleBase)
 		preview.Amplified = amplified * int64(preview.Strikes)
 	}
 	return preview
+}
+
+// bestPower is the power a skill lands at with every term it declares holding at
+// once: the target's condition, the caster's own threshold, and the caster's
+// gradient at the bottom of its health.
+//
+// The three are composed through combat.Swung in the order the battle composes
+// them, so the ceiling an author is shown is the ceiling the engine would resolve
+// — a skill declaring all three is legal, and reading them apart would show a
+// number no battle could produce.
+//
+// The caster is asked at health nought out of one, the same shape
+// Condition.Satisfying uses and for the same reason: it is the *bottom of the
+// curve*, written so it cannot be mistaken for a measurement of somebody. A
+// caster with no health left is not a unit anybody meets, and the figure it
+// produces is what the gradient is worth rather than what any battle showed.
+func bestPower(built skill.Skill) int {
+	const empty, wholly = 0, 1
+	return combat.Swung(
+		built.PowerAgainst(built.Requires.Satisfying()),
+		built.SelfBonus(built.SelfRequires.Satisfying()),
+		built.SelfScale(empty, wholly),
+	)
 }
 
 // CarryFacts is who may take a skill, as the facts rather than as a sentence.

@@ -320,7 +320,13 @@ answers rather than screen logic:
   guess: they are the pair `skills.golden`'s own damage column is measured from
   (800 and 400), so the figure before a write is the figure the golden shows
   after one. It truncates **per strike** rather than once over the total, as a
-  battle does — three strikes of 600 are 615, not 617. The row drops its
+  battle does — three strikes of 600 are 615, not 617. The amplified figure beside
+  it is the skill with **everything it asks for holding**: the target's
+  `requires`, the caster's `self_requires`, and `self_gradient` at the bottom of
+  the caster's health, composed through `combat.Swung` in the order the battle
+  composes them. ⚠️ It read only `requires` until then, which showed `outrage` and
+  `comeback` — the two skills whose whole design is a caster-side term — at their
+  plain power. The row drops its
   reference pair rather than its figures when it will not fit
   (`Lang.DamageWithin`): the pair is identical on every skill and named in the
   field's own help, while the two numbers being authored are the reason the row
@@ -1922,9 +1928,10 @@ is the constraint each piece has to respect.
       each named `self_applies`, which the form *does* ask, and none named
       `self_requires` or `summons`, which it does not. Corrected, with
       `self_gradient` joining them.
-      ⚠️ **`forge.PreviewDamage` still reads only the target's condition**, so
-      neither `self_requires` nor `self_gradient` shows in the authoring preview.
-      Pre-existing and not fixed here; it wants one change covering both.
+      ⚠️ **`forge.PreviewDamage` used to read only the target's condition**, so
+      neither `self_requires` nor `self_gradient` showed in the authoring preview.
+      Fixed since — one change covered both, and the composition moved into
+      `combat.Swung` so the preview and the battle share the expression.
 - [x] **Learnsets and slots.** A character now holds a **learnset** —
       `Character.Skills` is `[]cast.Unlock`, the *same type as the traits* — and a
       placement **chooses** from it: `SkillSlots = 4`, `TraitSlots = 1`, in
