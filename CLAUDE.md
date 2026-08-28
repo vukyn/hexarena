@@ -1226,6 +1226,25 @@ cast.
 Detail and the open questions are in `README.md` under Roadmap. What matters here
 is the constraint each piece has to respect.
 
+- [ ] **An evolution line that forks.** Today a placement chooses **how far**
+      along one path (`Resolve(level, stage)`, the allowlist); it cannot choose
+      **which path** — two forms at one threshold, pick one and lose the other.
+      The parse rule is the small half: `Line.Validate` refuses
+      `MinLevel <= previous`, so a fork cannot be written down.
+      ⚠️ **`Furthest` is the large half and it fails silently.** `Line.Allowed`
+      returns a **prefix** and `StageAt` the last reached, so with a fork there is
+      no single furthest — the browser, `hexforge check`'s budget row and
+      `fielded` in the balance tests would all take whichever arm the file lists
+      last, saying nothing.
+      ⚠️ **A prefix cannot express a stage *after* a fork**: both arms stay
+      allowed once passed, nothing marks them exclusive, so the line has to become
+      a tree (or a stage has to name its predecessor). Design that before the
+      parse rule.
+      The budget is fine as it stands — `Line.Validate` prices every stage
+      separately already.
+      ⚠️ **Not the same thing as the tailed-beast Naruto**, which is a separate
+      *character* beside Naruto: a stage is the same unit later, and that is a
+      different unit. The two want completely different mechanisms.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
