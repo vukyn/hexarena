@@ -232,7 +232,7 @@ func freeText(lib *forge.Library) []string {
 //
 // It is free text for the width measurement and not for the language one, which
 // is why it is a second list rather than part of freeText: the wording around
-// the data ("hệ ...", "để dành cho loài ...") is the program's and has to be
+// the data ("hệ ...", "chủng loài ...") is the program's and has to be
 // translated, but the data it wraps -- an element and a species, both named by
 // the book -- has no length the program can promise. The kit rows above are
 // exempted for exactly that reason; this column reached the same shape once a
