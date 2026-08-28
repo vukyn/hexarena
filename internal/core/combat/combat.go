@@ -592,3 +592,22 @@ func Gradient(health, maximum int64, atEmpty int) int {
 	// so they are multiplied before they are divided.
 	return int(int64(atEmpty) * (maximum - health) / maximum)
 }
+
+// Swung is the power a skill lands at once the caster's own terms are in: the
+// bonus a threshold on the caster adds, and the share a gradient multiplies in.
+//
+// ⚠️ **The bonus first and the share second, and the order is a design rather
+// than an accident:** a caster swinging harder swings harder at the power it
+// actually has, so a detonate that arrives at three thousand four hundred is what
+// the wound is a share of. The other order would make the gradient a share of the
+// declared power and quietly worth less on exactly the skills it should be worth
+// most on.
+//
+// It lives here, beside Gradient, because two callers have to agree on it
+// exactly and neither may own it. The battle resolves a hit through it and the
+// authoring preview measures an unwritten skill through it, so an author reading
+// a figure before a write and the engine landing the blow afterwards are reading
+// one arithmetic rather than two that agree today.
+func Swung(power, bonus, share int) int {
+	return (power + bonus) * (PermilleBase + share) / PermilleBase
+}

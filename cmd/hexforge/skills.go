@@ -618,7 +618,7 @@ func renderSkill(out io.Writer, lib *forge.Library, built skill.Skill) {
 	label("damage", "%d per strike, %d in total, against %d attack and %d defence",
 		preview.PerStrike, preview.Total, preview.Attack, preview.Defense)
 	if preview.Amplified > 0 {
-		label("", "%d with its condition holding", preview.Amplified)
+		label("", "%d with everything it asks for holding", preview.Amplified)
 	}
 	label("", "the same reference the skills table is measured from, at level %d",
 		progression.LevelCap)

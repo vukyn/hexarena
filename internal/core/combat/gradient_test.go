@@ -116,3 +116,35 @@ func TestTheGradientDoesNotOverflow(t *testing.T) {
 		t.Errorf("the gradient at absurd inputs is %d, want a positive multiplier", got)
 	}
 }
+
+// TestSwungAddsTheBonusBeforeTakingTheShare is the ordering claim, and it had no
+// test at all until the authoring preview needed the same expression: swapping
+// the two halves of Swung passed the whole suite.
+//
+// The order is a design. A caster swinging harder swings harder at the power it
+// actually has, so the wound is a share of what the skill arrived at rather than
+// of what it declared — which is worth most on exactly the skills a gradient is
+// written for. The two orders only disagree when both terms are present, which
+// is why the cases below carry both.
+func TestSwungAddsTheBonusBeforeTakingTheShare(t *testing.T) {
+	for _, testCase := range []struct {
+		name                string
+		power, bonus, share int
+		want                int
+	}{
+		// 1500 doubled, not 2000 plus 500.
+		{"both terms", 1000, 500, 1000, 3000},
+		{"the bonus alone", 1000, 500, 0, 1500},
+		{"the share alone", 1000, 0, 500, 1500},
+		{"neither", 1000, 0, 0, 1000},
+		// A skill with no power of its own still earns what the bonus brings.
+		{"no declared power", 0, 800, 1000, 1600},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			if got := combat.Swung(testCase.power, testCase.bonus, testCase.share); got != testCase.want {
+				t.Errorf("a power of %d with a bonus of %d and a share of %d swings at %d, want %d",
+					testCase.power, testCase.bonus, testCase.share, got, testCase.want)
+			}
+		})
+	}
+}

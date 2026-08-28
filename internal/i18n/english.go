@@ -129,7 +129,7 @@ q or ctrl+c to quit`,
 	// array is free to read better, which is what the package comment says.
 	DamageLine:           "%d per strike, %d in all, against %d atk and %d def",
 	DamageLineShort:      "%d per strike, %d in all",
-	DamageAmplified:      "%d with its condition holding",
+	DamageAmplified:      "%d with everything it asks for holding",
 	DamageMoved:          "%d → %d per strike, %d → %d in all",
 	SkillAdded:           "added %s to %s",
 	SkillEdited:          "edited %s in %s",

@@ -385,18 +385,17 @@ type swing struct {
 
 // applied is the power a skill lands at once the caster's own terms are in.
 //
-// ⚠️ The bonus first and the share second, and the order is a design rather than
-// an accident: a caster swinging harder swings harder at the power it actually
-// has, so a detonate that arrives at three thousand four hundred is what the
-// wound is a share of. The other order would make the gradient a share of the
-// declared power and quietly worth less on exactly the skills it should be worth
-// most on.
+// The arithmetic is combat.Swung, and it is there rather than here because the
+// authoring preview measures an unwritten skill through the same two terms: a
+// figure an author reads before a write and the blow the engine lands afterwards
+// have to come out of one expression. What stays here is the *reading* -- which
+// unit is asked, and once per use rather than once per target.
 //
-// PermilleBase is added here rather than returned by combat.Gradient, so that
-// nought means "nothing happened" everywhere else -- in the struct above, in the
-// event log, and in the report tables.
+// PermilleBase is added inside Swung rather than returned by combat.Gradient, so
+// that nought means "nothing happened" everywhere else -- in the struct above, in
+// the event log, and in the report tables.
 func (s swing) applied(power int) int {
-	return (power + s.Bonus) * (combat.PermilleBase + s.Share) / combat.PermilleBase
+	return combat.Swung(power, s.Bonus, s.Share)
 }
 
 // swingOf reads both terms at once, and is the single reading for the same

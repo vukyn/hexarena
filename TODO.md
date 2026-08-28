@@ -86,10 +86,13 @@ is only so the shape is readable.
       target *added*. ⚠️ No shipped trait uses it yet: `reckless` ("liều mạng",
       which already keeps no guard back) is the natural first user and is a
       **balance** change, so it is data work rather than this. → `README.md`.
-- [ ] **`forge.PreviewDamage` cannot see a caster-side term.** It reads only the
-      target's condition, so neither `self_requires` nor `self_gradient` shows in
-      the authoring preview — `outrage` and `comeback` both preview as their plain
-      power. Pre-existing; one change covers both. → `CLAUDE.md` § Open work.
+- [x] **`forge.PreviewDamage` reads the caster's own terms. Done** — the
+      amplified figure is now the skill with everything it asks for holding
+      (`requires`, `self_requires`, `self_gradient`), composed through the new
+      `combat.Swung` so the preview and the battle share one expression.
+      ⚠️ That extraction found the ordering — bonus first, share second — was
+      guarded by **nothing**: swapping the two halves passed the whole suite.
+      `TestSwungAddsTheBonusBeforeTakingTheShare` is the missing claim.
 - [x] **`hexforge` can author a flavour clause. Done** — `--flavour` on both
       `skills add` and `skills edit`, and a prompt beside the name in the wizard.
       An empty string clears it, on the same terms as an allowlist. The parser's
