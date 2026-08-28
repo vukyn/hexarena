@@ -787,8 +787,9 @@ var sharedPool = map[string]string{
 	"bite":        "a mouth is a mouth",
 	"withdraw":    "guarding rather than striking, which anything with a guard can do",
 	"rapid_spin":  "spinning out of a hold, on the same terms",
-	"rally":       "the only skill in the book that helps an ally, and encouragement belongs to nobody",
+	"rally":       "encouragement belongs to nobody",
 	"taunt":       "drawing an attack onto yourself is a tactic, not a technique",
+	"wide_guard":  "standing in front of somebody is the same tactic pointed the other way",
 }
 
 // TestEverySkillSaysWhichWorkItIsFrom is the shipped half of the origin gate.

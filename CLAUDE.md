@@ -1204,6 +1204,35 @@ is the constraint each piece has to respect.
       ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
+- [x] **Two Squirtle builds out of one learnset**, in data only — three skills
+      (`skull_bash`, `wide_guard`, `water_pulse`), one trait (`ballast`), two
+      permanent statuses (`fortified`, `encumber`), no engine change at all.
+      A placement spends 4 skill slots and 1 trait slot, so two kits out of one
+      learnset is what that system is for.
+      ⚠️ **The stat line cannot differ**: Squirtle absorbs 11285 of the 11500
+      budget. The split has to live in the slots because it cannot live anywhere
+      else.
+      `skull_bash` is the **first shipped skill to scale off anything but
+      attack** — `skill.Scaling` had no shipped user until now. def 640 / atk 460
+      = **1.39×** a point of power, so a defence-scaled skill wants ~0.72× the
+      power of an attack-scaled one.
+      ⚠️ **`ballast` is the attacking build's trait and not the tank's**, which
+      is measured, not intended: survival is gated on how often `withdraw` can be
+      cast, so **a tenth off speed is worth more than a quarter onto defence** —
+      the tank build survives 1/30 with `ballast` against 29/30 with `endurance`.
+      ⚠️ **A test may not raise a stat**: `battle.New` checks the roster line
+      against the budget. `skull_bash`'s scaling is proved by *halving attack*
+      (figure comes back **exactly equal**, while `water_gun` halves). A stat
+      falling and damage falling with it proves nothing — the unit also dies
+      sooner and swings fewer times.
+      ⚠️ **A trait's permanent statuses are outside the budget** — `CheckValues`
+      takes a resolved stat line and never sees a passive. `endurance` was
+      already through that gap.
+      ⚠️ Tank + `endurance` is **unkillable in a duel** (29/30 hit the 4000-turn
+      cap, dealing nothing); a squad puts five times the damage into it.
+      ⚠️ Both build figures are understatements: `Suggest` takes a no-power skill
+      only when it can find nothing to hit, so the tank kit is exercised only
+      because it carries no weapon. `hexforge spar` cannot measure either build.
 - [x] **A summon says how strong it arrives.** `describeSummon` prints the
       **share** and still not the fixed stat line, because they are not the same
       kind of number: a share is one figure that means the same thing wherever it

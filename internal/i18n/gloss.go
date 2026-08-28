@@ -100,6 +100,8 @@ var (
 		"regrowth":  "tái sinh",
 		"toughened": "kiên cường",
 		"kindled":   "bùng cháy",
+		"fortified": "kiên cố",
+		"encumber":  "nặng nề",
 	}
 
 	// The status categories in statuses.json. They are named by a cleanse rather
