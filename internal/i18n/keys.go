@@ -375,6 +375,31 @@ const (
 	BlurbSummonedMany
 	BlurbSummonedCopy
 	BlurbSummonedCopies
+	// BlurbSummonedCreature and BlurbSummonedCreatures are the same fallback for
+	// a summon that is its own animal rather than a copy of its caster, told
+	// apart by the stat spelling: a fixed line is what an author writes for
+	// something that does not scale off whoever called it. Calling a toad a copy
+	// was the fallback saying the one thing about it that is untrue.
+	BlurbSummonedCreature
+	BlurbSummonedCreatures
+	// BlurbSummonedShare and BlurbSummonedShareEach put a copy's share of its
+	// caster inside the subject rather than beside it, because the share is part
+	// of what arrives: "two copies" and "two copies at a tenth of you" are
+	// different things on the board, and a sentence that takes one subject
+	// should be handed the whole of it.
+	//
+	// Two of them for the reason BlurbSummonedOne and BlurbSummonedMany are two:
+	// several copies each carry the share and one copy simply has it, and a
+	// language decides for itself whether that distinction needs a word.
+	BlurbSummonedShare
+	BlurbSummonedShareEach
+	// BlurbSummonedOfCurrent and BlurbSummonedOfBase name *which* stats the
+	// share is of, which is a difference a player can act on: a share of the
+	// caster as it stands rewards buffing before the copy is made, and a share
+	// of its base ignores every buff on the board. One wording for both would be
+	// a sentence that is wrong for whichever of the two it was not written for.
+	BlurbSummonedOfCurrent
+	BlurbSummonedOfBase
 	BlurbDrains
 	BlurbInflicts
 	BlurbGives

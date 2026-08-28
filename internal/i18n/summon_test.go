@@ -105,3 +105,163 @@ func TestASummonWithNoNameIsStillNamed(t *testing.T) {
 		t.Errorf("an unnamed summon is described as %q", described)
 	}
 }
+
+// TestASummonSaysHowStrongItArrives is the figure the sentence used to leave out.
+//
+// A copy is the only thing a skill puts on the board whose strength is a number
+// the author chose, and it was the one number the description did not carry: two
+// copies at a tenth of their caster and two at four fifths read identically, so
+// a reader deciding whether the skill was worth a turn was deciding without it.
+// The share was left out on the reasoning that a listing beside the sentence
+// carries it, and no listing does — neither hexforge nor its full-screen twin
+// mentions a summon at all.
+func TestASummonSaysHowStrongItArrives(t *testing.T) {
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("shapes: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		described := lang.Describe(
+			summoner(t, `{"count":2,"name":"phân thân","share":400,"skills":["jab"]}`), patterns)
+		if !strings.Contains(described, "40%") {
+			t.Errorf("%s: a copy at 400 parts per thousand never says 40%%:\n%s", lang, described)
+		}
+	}
+}
+
+// TestTwoSummonsAtDifferentSharesReadDifferently is the same rule stated as the
+// thing that would break: a figure printed but never varying is a figure copied
+// into the wording, and this is a description whose whole claim is that it is
+// derived.
+func TestTwoSummonsAtDifferentSharesReadDifferently(t *testing.T) {
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("shapes: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		weak := lang.Describe(
+			summoner(t, `{"count":2,"name":"phân thân","share":200,"skills":["jab"]}`), patterns)
+		strong := lang.Describe(
+			summoner(t, `{"count":2,"name":"phân thân","share":800,"skills":["jab"]}`), patterns)
+		if weak == strong {
+			t.Errorf("%s: a copy at a fifth and one at four fifths read the same:\n%s",
+				lang, weak)
+		}
+	}
+}
+
+// TestAShareOfBaseReadsDifferentlyFromAShare is the distinction the two spellings
+// exist for, and it is one a player acts on: a share of the caster as it stands
+// pays for buffing before the cast, and a share of its base ignores every buff on
+// the board. One wording for both would describe whichever it was not written for
+// as the other.
+func TestAShareOfBaseReadsDifferentlyFromAShare(t *testing.T) {
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("shapes: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		now := lang.Describe(
+			summoner(t, `{"name":"phân thân","share":400,"skills":["jab"]}`), patterns)
+		base := lang.Describe(
+			summoner(t, `{"name":"phân thân","share_of_base":400,"skills":["jab"]}`), patterns)
+		if now == base {
+			t.Errorf("%s: a share of the caster and a share of its base read the same:\n%s",
+				lang, now)
+		}
+	}
+}
+
+// TestASummonOnAFixedLineClaimsNoShare is the other half: six figures nobody can
+// compare without the caster in front of them stay out, and a summon that has no
+// share must not be handed one. A percent sign in a toad's sentence would be a
+// number invented by the renderer.
+func TestASummonOnAFixedLineClaimsNoShare(t *testing.T) {
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("shapes: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		described := lang.Describe(summoner(t, `{"name":"cóc","stats":{"hp":900,"attack":300,`+
+			`"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns)
+		if strings.Contains(described, "%") {
+			t.Errorf("%s: a summon on a fixed stat line is described with a share:\n%s",
+				lang, described)
+		}
+	}
+}
+
+// TestACreatureIsNotDescribedAsACopy is the fallback telling the truth.
+//
+// English does not print an authored Vietnamese name, so it falls back to a word
+// — and the word was "copy" for everything, which made the shipped toad read as
+// "calls up a copy". A toad is not a copy of the ninja who called it, and the
+// engine already draws that line: a copy is written as a share of its caster and
+// a creature as a stat line of its own.
+func TestACreatureIsNotDescribedAsACopy(t *testing.T) {
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("shapes: %v", err)
+	}
+	clone := i18n.En.Describe(summoner(t, `{"share":400,"skills":["jab"]}`), patterns)
+	beast := i18n.En.Describe(summoner(t, `{"stats":{"hp":900,"attack":300,`+
+		`"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns)
+	if !strings.Contains(clone, "copy") {
+		t.Errorf("a summon made of a share of its caster is not called a copy: %q", clone)
+	}
+	if strings.Contains(beast, "copy") {
+		t.Errorf("a summon on a stat line of its own is called a copy: %q", beast)
+	}
+}
+
+// holds reports whether described carries every literal of a wording, which is
+// how a test asks "was this wording the one used" without knowing the language.
+//
+// A format string is its blanks and the words between them; the blanks are filled
+// with things this test does not want to predict, and the words between them are
+// the wording itself. Splitting on the verb and asking for the pieces is the only
+// check here that stays true when a translation is reworded, which is a thing
+// these tables are for.
+func holds(described, wording string) bool {
+	for _, literal := range strings.Split(wording, "%s") {
+		if literal == "" {
+			continue
+		}
+		if !strings.Contains(described, literal) {
+			return false
+		}
+	}
+	return true
+}
+
+// TestOneCopyAndSeveralSayTheShareDifferently is the reason there are two share
+// wordings rather than one.
+//
+// Several copies each carry the share and one copy simply has it, and a language
+// decides for itself whether that needs a word — Vietnamese wants "mỗi bên" and
+// English wants "each". Handing the singular wording to a pair reads as a pair
+// that carries 40% between them, which is half of what arrives.
+//
+// Comparing the two descriptions would not catch it: they differ in their count
+// whatever wording the share takes, so the difference has to be asked about the
+// share clause itself.
+func TestOneCopyAndSeveralSayTheShareDifferently(t *testing.T) {
+	patterns, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("shapes: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		alone := lang.Describe(
+			summoner(t, `{"count":1,"name":"phân thân","share":400,"skills":["jab"]}`), patterns)
+		pair := lang.Describe(
+			summoner(t, `{"count":2,"name":"phân thân","share":400,"skills":["jab"]}`), patterns)
+		if !holds(pair, lang.Text(i18n.BlurbSummonedShareEach)) {
+			t.Errorf("%s: two copies are described with the wording written for one:\n%s",
+				lang, pair)
+		}
+		if holds(alone, lang.Text(i18n.BlurbSummonedShareEach)) {
+			t.Errorf("%s: one copy is described with the wording written for several:\n%s",
+				lang, alone)
+		}
+	}
+}

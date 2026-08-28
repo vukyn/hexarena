@@ -687,3 +687,81 @@ func TestAFlavourClauseSpellsOutNoNumber(t *testing.T) {
 		}
 	}
 }
+
+// volleyWords are the words that describe several things leaving the hand one
+// after another, and a skill that lands once may not use them.
+//
+// This is the half of the number ban that neither of the two checks above can
+// see: skill.ParseBook refuses a digit, TestAFlavourClauseSpellsOutNoNumber
+// refuses a spelled one, and "một nhúm phi tiêu" walks past both while promising
+// exactly what "2 nhát" would have. The shipped clause for kunai did precisely
+// that — a handful of blades thrown, above a derived half that struck once — and
+// it read as the wrong weapon on top of reading as the wrong number, because a
+// handful thrown at once is the shuriken standing next to it in the same kit.
+//
+// "chùm" is deliberately absent, on the same judgement that kept teeth out of
+// bodyWords. A cluster of bubbles leaves as one puff and lands as one hit, which
+// is what `bubble` says and what `bubble` does; these four are things released
+// separately, and a skill that releases them separately strikes more than once.
+var volleyWords = map[string]string{
+	"nhúm":  "a handful",
+	"loạt":  "a volley",
+	"tràng": "a salvo",
+	"mớ":    "a bunch",
+}
+
+// TestASingleStrikesFlavourDescribesNoVolley holds it over the shipped book.
+//
+// It fires on nought strikes as well as one: a skill that puts a status on
+// somebody or calls somebody up does not throw a volley of anything either.
+func TestASingleStrikesFlavourDescribesNoVolley(t *testing.T) {
+	for _, current := range mustSkills(t).Skills() {
+		if current.Strikes > 1 {
+			continue
+		}
+		lowered := strings.ToLower(current.Flavour)
+		for word, what := range volleyWords {
+			if !strings.Contains(lowered, word) {
+				continue
+			}
+			t.Errorf("%q lands once and its flavour says %q, which is %s: a clause that promises several throws above a derived half that strikes once says the count twice and gets it wrong both times",
+				current.ID, word, what)
+		}
+	}
+}
+
+// casterWords are the ways a summon's flavour can reach for whoever called it up,
+// and a summoning skill may not use any of them.
+//
+// A summon is the only thing in this book with a second party in its sentence, so
+// it is the only place the temptation arises — and it is wrong in both directions
+// at once. Where the summon is a share of its caster the comparison is *derived*,
+// and printing it in the authored half is fire_fang's "hai nhát" again in another
+// field. Where the summon is a fixed stat line the comparison cannot be checked at
+// all: this layer holds the skill and not whoever carries it, so a clause about
+// the caster is a claim about somebody nobody here has met.
+//
+// Both shipped Naruto summons did it and both were wrong. The clone said its
+// copies carried "một phần sức của bản gốc", which is the share the sentence now
+// prints as a figure. The toad was called "to hơn cả người gọi" and is not: its
+// stat line has less health and less attack than the ninja who calls it, and only
+// more defence — the one comparison the clause could have made was the one it did
+// not.
+var casterWords = []string{"người gọi", "kẻ gọi", "bản gốc", "chủ nhân"}
+
+// TestASummonsFlavourClaimsNothingAboutItsCaster holds it over the shipped book.
+func TestASummonsFlavourClaimsNothingAboutItsCaster(t *testing.T) {
+	for _, current := range mustSkills(t).Skills() {
+		if !current.Summons.Summons() {
+			continue
+		}
+		lowered := strings.ToLower(current.Flavour)
+		for _, word := range casterWords {
+			if !strings.Contains(lowered, word) {
+				continue
+			}
+			t.Errorf("%q summons and its flavour says %q: a share of the caster is already printed as a figure, and a fixed stat line cannot be compared to somebody this layer has never seen",
+				current.ID, word)
+		}
+	}
+}

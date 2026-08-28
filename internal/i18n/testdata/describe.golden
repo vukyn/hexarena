@@ -156,7 +156,7 @@ Nhận bị khiêu khích.
 Bản thân · hồi 3 lượt.
 
 kunai
-Rút một nhúm phi tiêu ném đi, không hoa mỹ nhưng bao giờ cũng có sẵn, 70% công.
+Rút một lưỡi ném đi, không hoa mỹ nhưng bao giờ cũng có sẵn, 70% công.
 Tầm 3 · 95% trúng · dùng mọi lượt.
 
 wind_shuriken
@@ -173,12 +173,12 @@ Nhận mờ ảo x2.
 Bản thân · hồi 4 lượt.
 
 shadow_clone
-Chia mình ra làm nhiều, mỗi bản mang theo một phần sức của bản gốc.
-Gọi ra 2 phân thân, trụ lại 4 lượt.
+Bung chakra ra thành hình hài đứng được, đủ đặc để chắn đường và đủ sức để ném.
+Gọi ra 2 phân thân, mỗi bên mang 40% chỉ số người gọi, trụ lại 4 lượt.
 Bản thân · hồi 5 lượt.
 
 summon_toad
-Ký giao ước bằng máu rồi gọi lên một con cóc to hơn cả người gọi.
+Ký giao ước bằng máu rồi gọi lên một con cóc khổng lồ, chậm chạp nhưng lì đòn.
 Gọi ra một cóc.
 Bản thân · hồi 6 lượt.
 
@@ -517,11 +517,11 @@ Puts veil x2 on itself.
 Itself · 4 turns to recharge.
 
 shadow_clone
-Calls up 2 copies, for 4 turns.
+Calls up 2 copies, each with 40% of the caster's stats, for 4 turns.
 Itself · 5 turns to recharge.
 
 summon_toad
-Calls up a copy.
+Calls up a creature.
 Itself · 6 turns to recharge.
 
 [trait] endurance
