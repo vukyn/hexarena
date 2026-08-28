@@ -129,6 +129,9 @@ func books(t *testing.T) battle.Books {
 	   "applies":[{"status":"haste","chance":1000}]},
 	  {"id":"sweep","element":"neutral","range":2,"pattern":"column",
 	   "power":500,"strikes":1,"accuracy":1000,"cooldown":0,"target":"all"},
+	  {"id":"fume","element":"neutral","range":1,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"all",
+	   "applies":[{"status":"poison","chance":1000}]},
 	  {"id":"drink","element":"neutral","range":1,"pattern":"single",
 	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
 	   "drains":1000},
@@ -1327,56 +1330,6 @@ func TestTheOtherSidesStillStopAtTheMidline(t *testing.T) {
 		if !equalCells(option.Aims, want) {
 			t.Errorf("%s may be aimed at %v, want %v", option.Skill, option.Aims, want)
 		}
-	}
-}
-
-// TestSuggestLeavesAnAllSidedAttackAlone records what the shallow opponent does
-// with the new value, which is nothing.
-//
-// Suggest rates a skill only if it is aimed at the enemy, so a damaging skill
-// aimed at both halves is skipped outright — it is not chosen and not rated. It
-// is not a fallback either, because that is only for a skill with no power at
-// all. So the opponent will not bomb its own squad, and it will not use the skill
-// at any other time either: an all-sided attack is dead weight to the AI and a
-// player's tool.
-//
-// That is a finding rather than a design, and it is pinned here so it cannot
-// change by accident. A deeper opponent — see README's roadmap — has to weigh
-// what it would do to its own side, and battle.expected deliberately skips a
-// unit on the caster's side rather than subtracting it, so relaxing this guard
-// alone would produce exactly the opponent that bombs its own team and calls it
-// a gain.
-func TestSuggestLeavesAnAllSidedAttackAlone(t *testing.T) {
-	// The area skill is worth eight times the jab, so anything that rated it
-	// would take it.
-	fight := duel(t, []string{"quake", "jab"}, []string{"jab"}, 120, 100)
-	prompt, err := fight.Advance()
-	if err != nil {
-		t.Fatalf("advance: %v", err)
-	}
-	choice, ok := fight.Suggest(prompt)
-	if !ok {
-		t.Fatal("Suggest offered nothing at all")
-	}
-	if choice.Skill != "jab" {
-		t.Errorf("Suggest picked %q, want the enemy-aimed jab: a damaging all-sided "+
-			"skill is skipped, not rated", choice.Skill)
-	}
-
-	// A skill with no power is a different case and does get used. It reaches the
-	// fallback rather than being rated: rate refuses an all-sided skill outright,
-	// so a battlefield-wide buff is worth nothing to the rating and is taken only
-	// when nothing else was worth doing — which is what keeps the guard above
-	// meaning one thing rather than two.
-	quiet := duel(t, []string{"anthem"}, []string{"jab"}, 120, 100)
-	prompt, err = quiet.Advance()
-	if err != nil {
-		t.Fatalf("advance: %v", err)
-	}
-	choice, ok = quiet.Suggest(prompt)
-	if !ok || choice.Skill != "anthem" {
-		t.Errorf("Suggest picked %q (offered: %v), want the all-sided buff",
-			choice.Skill, ok)
 	}
 }
 

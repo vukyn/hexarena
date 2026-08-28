@@ -255,11 +255,19 @@ func (b *Battle) summonWorth(caster *Unit, declared skill.Skill) int64 {
 // cooldowns by index and a unit that has never acted has none — and because a
 // summon arriving with everything off cooldown is not an approximation, it is
 // what enlist gives it.
+//
+// An all-sided attack counts, and it counts as exactly what it would do to the
+// other side: expected skips a unit on the caster's own half, so the figure that
+// comes back is the harm and not the cost. Leaving it out is what made a unit
+// whose only attack was all-sided read as threatening nobody — so a heal on the
+// ally it was about to hit was worth nothing, and a shield against it ate
+// nothing. Nothing shipped is all-sided, so this is a blind spot closed rather
+// than a number moved.
 func (b *Battle) bestStrike(unit *Unit) int64 {
 	best := int64(0)
 	for _, id := range unit.Skills {
 		declared, err := b.books.Skills.Lookup(id)
-		if err != nil || declared.Power == 0 || declared.Target != skill.Enemy {
+		if err != nil || declared.Power == 0 || !aimedAtAnEnemy(declared) {
 			continue
 		}
 		for _, aim := range b.aims(unit, declared) {
@@ -269,6 +277,14 @@ func (b *Battle) bestStrike(unit *Unit) int64 {
 		}
 	}
 	return best
+}
+
+// aimedAtAnEnemy reports whether a skill can hurt the other side at all, which is
+// the question both bestStrike and turnWorth are really asking. It is one function
+// because the two must agree: a skill counted as an attack in one and not the
+// other would make a turn worth less than the threat it poses.
+func aimedAtAnEnemy(declared skill.Skill) bool {
+	return declared.Target == skill.Enemy || declared.Target == skill.All
 }
 
 func requiredStatus(declared skill.Skill) string {
