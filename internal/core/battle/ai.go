@@ -212,6 +212,32 @@ func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int
 // came out worth nothing.
 func (b *Battle) against(actor *Unit, actorStats progression.Values, declared skill.Skill,
 	target *Unit, position int, brought swing) int64 {
+	hit := b.hitAgainst(actor, actorStats, declared, target, position, brought)
+	// Expected rather than Total: a critical is a chance, and this file weights
+	// chances rather than rolling them. It returns Total exactly whenever the
+	// skill cannot crit, which is every skill in the book today.
+	landed := b.books.Rules.Expected(hit) * int64(b.books.Rules.Chance(hit)) / combat.PermilleBase
+	// Damage past a target's remaining health is wasted, so a finishing blow is not
+	// rated above one that would kill twice over.
+	if landed > target.HP {
+		landed = target.HP
+	}
+	return landed
+}
+
+// hitAgainst is the combat.Hit one target would be struck with, and it is a
+// function of its own so that the *chance* the blow connects has one reading
+// rather than two.
+//
+// against wants the damage, and it weights the damage by combat.Rules.Chance.
+// The reply price wants the same chance on its own — a reply answers a blow that
+// landed, so a blow that misses provokes none — and building a second Hit to ask
+// for it would be exactly the second copy of the resolving arithmetic price.go
+// exists not to have: the two would drift the day a pierce, a gradient or an
+// affinity modifier moved, and the rating would charge for a reply to a hit it
+// no longer thinks it lands.
+func (b *Battle) hitAgainst(actor *Unit, actorStats progression.Values, declared skill.Skill,
+	target *Unit, position int, brought swing) combat.Hit {
 	power := brought.applied(declared.PowerAgainst(conditionTarget(declared, target)))
 	if position > 0 {
 		power = power * b.books.Patterns.SplashPower / 1000
@@ -220,7 +246,7 @@ func (b *Battle) against(actor *Unit, actorStats progression.Values, declared sk
 	multiplier := b.books.Chart.MultiplierAgainst(declared.Element, target.Affinity)
 	multiplier = actor.Statuses.Modifiers().Affinity(
 		multiplier, b.books.Chart.Multipliers().Neutral, b.books.Bounds)
-	hit := combat.Hit{
+	return combat.Hit{
 		Scaling: combat.PickScaling(declared.Scaling.Source,
 			actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat]),
 		Multiplier:    power,
@@ -233,16 +259,6 @@ func (b *Battle) against(actor *Unit, actorStats progression.Values, declared sk
 		AccuracyStat:  actorStats[progression.Accuracy],
 		DodgeStat:     targetStats[progression.Dodge],
 	}
-	// Expected rather than Total: a critical is a chance, and this file weights
-	// chances rather than rolling them. It returns Total exactly whenever the
-	// skill cannot crit, which is every skill in the book today.
-	landed := b.books.Rules.Expected(hit) * int64(b.books.Rules.Chance(hit)) / combat.PermilleBase
-	// Damage past a target's remaining health is wasted, so a finishing blow is not
-	// rated above one that would kill twice over.
-	if landed > target.HP {
-		landed = target.HP
-	}
-	return landed
 }
 
 // summonWorth is what a cast is worth in the one unit the rest of Suggest counts

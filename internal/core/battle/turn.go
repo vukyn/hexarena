@@ -655,18 +655,7 @@ func (b *Battle) answer(actor *Unit, bitten []*Unit, turn atb.Turn) {
 func (b *Battle) reply(holder, attacker *Unit, held passive.Passive, turn atb.Turn) {
 	from := fromTrait(held)
 	if held.Replies.Power > 0 {
-		// Neutral against whatever the attacker is, and the figure is on the
-		// event anyway. A log that carried the damage but not the multiplier it
-		// was priced with would be a record that cannot account for its own
-		// number — and "it is always neutral" is a fact about today's rule
-		// rather than about this battle.
-		multiplier := b.books.Chart.MultiplierAgainst(from.Element, attacker.Affinity)
-		damage := b.books.Rules.Damage(
-			from.stat(b, holder),
-			b.Stats(attacker)[progression.Defense],
-			held.Replies.Power,
-			multiplier,
-		)
+		damage, multiplier := b.replyDamage(holder, attacker, held)
 		attacker.HP -= damage
 		if attacker.HP < 0 {
 			attacker.HP = 0
@@ -1063,6 +1052,33 @@ func (o origin) stat(b *Battle, unit *Unit) int64 {
 // belongs to a unit built to be hit, which is an armoured unit and not a sharp
 // one, so pricing every reply off attack made thorns worth least to exactly the
 // character thorns are for.
+// replyDamage is what one trait's answer takes off the unit that attacked its
+// holder, and the elemental multiplier it was priced with.
+//
+// Neutral against whatever the attacker is, and the figure is returned rather
+// than recomputed by a caller wanting it: a log that carried the damage but not
+// the multiplier it was priced with would be a record that cannot account for
+// its own number — and "it is always neutral" is a fact about today's rule
+// rather than about this battle.
+//
+// It is a function of its own because the rating has to charge an option for the
+// reply it provokes, and CLAUDE.md § Rating an action allows exactly one reading
+// of any figure the resolution uses. reply lands this number and
+// pricing.replied charges for it; a second expression in price.go would let the
+// opponent decline an attack over a blow the trait does not actually strike.
+//
+// ⚠️ It mutates nothing, which is what makes it callable from a rating at all.
+func (b *Battle) replyDamage(holder, attacker *Unit, held passive.Passive) (damage int64, multiplier int) {
+	from := fromTrait(held)
+	multiplier = b.books.Chart.MultiplierAgainst(from.Element, attacker.Affinity)
+	return b.books.Rules.Damage(
+		from.stat(b, holder),
+		b.Stats(attacker)[progression.Defense],
+		held.Replies.Power,
+		multiplier,
+	), multiplier
+}
+
 func fromTrait(held passive.Passive) origin {
 	scaling := skill.DefaultScaling()
 	if held.Replies != nil {

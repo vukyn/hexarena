@@ -160,6 +160,66 @@ Rules for anything added to that file:
   second copy of its arithmetic*. Two available implementations, one broken rule
   each. And it costs roughly **×36 a turn** on the shipped kits, taking a
   20,000-battle sweep from ~7.5s to ~4.5 minutes.
+- **An attack is charged for the reply it provokes.** `friendlyFire` is what a
+  skill costs its own side; `replied` is what the units it hurts cost it back, and
+  the two are subtracted side by side in `rate`. Before it, `price.go` did not
+  mention `passive.Replies` at all, so attacking a `venom_blood` or a `thorns`
+  holder was free — the same blind spot `friendlyFire` exists to close, pointed
+  the other way. It reads `Battle.answer` rather than a second copy of it, and
+  every decision that function makes is a decision here: **once per cast, never
+  per strike** (a reply answers a *use*, so a three-strike skill pays one answer,
+  and charging three declines it outright); **every unit the shape actually
+  damages, whichever side they are on**, because `answer` never asks; not the
+  caster itself; not a holder the blow kills; not a holder whose gate is shut. The
+  damage is charged at face value clamped at what the caster has left and over
+  **no horizon at all** — a reply is health taken off *now* — while the statuses
+  go through `inflictedOn`, which already prices an inflicted status over the
+  horizons above, rather than through a second copy of them. Both halves are
+  weighted by the chance the attack connects, read off the one `combat.Hit`
+  `Battle.hitAgainst` builds, which is the same Hit `against` weights the damage
+  with.
+  ⚠️ **A dead attacker is priced, and both halves of it.** A reply may kill —
+  `Battle.reply` gives its damage no exemption for arriving out of turn — so the
+  caster's health is spent down the walk the way `reply` spends it, a lethal
+  answer is charged the turns the caster will now never take at `killHorizon`
+  (exactly as `friendlyFire` charges an ally it kills), and **nothing after it is
+  charged at all**, because `reply` returns before its own statuses land and
+  `answer` returns before the next holder answers. Backwards in one direction the
+  opponent is suicidal, in the other it is paralysed.
+  ⚠️ **The charge is clamped at nought per answer, and that is the sign guard.**
+  `rate` *subtracts* it, so a negative charge would make an attack **more**
+  attractive for being answered — and "the opponent hunts the `venom_blood`
+  holder" reads as a plausible strategy rather than as a sign pointing the wrong
+  way. `TestAReplyRepelsRatherThanAttracts` asserts the direction from both sides
+  of the board, because one side alone cannot tell a cost from a tie.
+  ⚠️ **The gate is read on the holder as the board stands**, while `answer` reads
+  it on the holder as the blow left it. That can only err one way, and it is a
+  property of the type rather than a hope: `passive.Condition` carries nothing but
+  `BelowHealth`, so a gate can turn *on* as its holder is hurt and can never turn
+  off — this therefore misses a trait the attack itself wakes up and over-charges
+  for none, which is the direction every cap in this file errs in, and it costs no
+  hypothetical unit to be exact about.
+  **Measured, and it is a wash — reported rather than papered over.** Head to head
+  against the same rating with the term added back (`forge.Bout`, 10,000 seeds,
+  control exactly 500‰): **499‰, band ±8‰, median 48 turns**. Inside the band, so
+  not a finding. Against the frozen ruler it reads **779‰ (band ±8‰, median 45)**
+  where the term-less rating reads **780‰** on the same seeds — the standing
+  figure, reproduced exactly, which is what says the comparison is honest. The
+  reason is the **data** and not the term: the shipped roster's only answering
+  trait is `venom_blood` on `ally.venusaur`, a poison at a **4%** chance, so the
+  charge is a rounding error and the term changes a decision in **22 of 500**
+  shipped battles. Given every unit a shipped reply instead, all three are still
+  a wash: `thorns` 497‰, `ballast` 499‰, `venom_blood` on all six 500‰ exactly —
+  not one decision moved, because a charge both aims carry cancels.
+  **And the term does win, on a board where a reply is worth something.** The same
+  head to head with every unit answering off its defence: at 400‰ **503‰** (median
+  38 turns against 48), at 800‰ **513‰ — clear of the ±8‰ band**, median 34, and
+  at 200‰ *plus a certain poison* **607‰**, median 34. So the null on the shipped
+  roster is a reading of the **data** and not of the term: the shipped replies are 80‰ and 50‰ of defence and a 4% poison, which is
+  too small to change a decision worth changing. It is kept for the reason
+  `friendlyFire` was — a rating that cannot see a cost prefers the option carrying
+  it — with the honest note that it buys nothing today and starts paying the
+  moment a reply worth authoring is authored.
 - **Still out of scope:** *where* an extra turn falls in the order — the only part
   that would need the queue, and a **tie-break** rather than a term when it lands,
   because a queue reading that reached an arithmetic expression would be tempo, and
@@ -2528,7 +2588,7 @@ report the disagreement. `TestTheRulerIsNotAnOpponent` pins it. If a second, har
 baseline is wanted, **add one beside it**.
 
 **The figure.** The shipped rating against the ruler, on the shipped roster, over
-**10,000 seeds (20,000 battles): 78.0%**, band ±0.8pp, median **45** turns. The
+**10,000 seeds (20,000 battles): 77.9%**, band ±0.8pp, median **45** turns. The
 control on the same board and the same seeds is 500‰ exactly at a median of **48**
 turns — so the priced rating both wins far more often *and* finishes sooner, which
 is the second reading and the one a rate alone cannot give.

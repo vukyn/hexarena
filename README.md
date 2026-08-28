@@ -2087,7 +2087,7 @@ and a future improvement to it is meant to fail the suite. A second, harder base
 goes *beside* it.
 
 **The figure.** The shipped rating against the ruler, on the shipped roster, over
-**10,000 seeds — 20,000 battles — is 78.0%**, band ±0.8pp, median 45 turns. The
+**10,000 seeds — 20,000 battles — is 77.9%**, band ±0.8pp, median 45 turns. The
 control on the same board is 500‰ exactly at a median of 48 turns. So the priced
 rating both wins far more often *and* finishes sooner, which is the second reading
 and the one a rate alone cannot give: a rating that won no more often but ended
