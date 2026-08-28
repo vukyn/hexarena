@@ -227,30 +227,52 @@ func (l *Library) Inspect() Report {
 				})
 			}
 		}
+		if short := l.shortReach(character); short != nil {
+			report.Warnings = append(report.Warnings, short)
+		}
 		// Both ends of the line are resolved: the first level a character can
-		// exist at and the last, which is where the stat budget bites.
+		// exist at and the last, which is where the stat budget bites. Level one
+		// is always the root, so it has one answer however the line branches.
 		if _, _, err := character.Resolve(1, progression.Furthest); err != nil {
 			row.Failure = err
 		}
-		values, stage, err := character.Resolve(progression.LevelCap, progression.Furthest)
+		// ⚠️ **The grown end is not one form on a line that forks**, and asking
+		// for "the furthest" would be refused rather than answered. The budget
+		// bites per arm — progression.Line.Validate already prices branches
+		// separately — so the report says so too: one row per grown form, which
+		// is also what a reader has to see before choosing between them.
+		forms, err := character.FurthestAt(progression.LevelCap)
 		if err != nil {
 			row.Failure = err
-		} else {
-			row.Stage = stage.Name
-			row.Values = values
-			row.Budget = l.Budget(values)
 		}
 		if row.Failure != nil {
 			report.Problems = append(report.Problems,
 				&ResolveProblem{ID: character.ID, Err: row.Failure})
+			report.Rows = append(report.Rows, row)
+			continue
 		}
-		if row.Failure == nil {
-			row.Traits = l.heldBudgets(character, stage.Name, values)
+		for i, form := range forms {
+			arm := row
+			// The art belongs to the character rather than to an arm, so it is
+			// listed once. A second copy of the same list under the same id
+			// would read as a second set of files to go and check.
+			if i > 0 {
+				arm.Art = nil
+			}
+			values, stage, err := character.Resolve(progression.LevelCap, form.Name)
+			if err != nil {
+				arm.Failure = err
+				report.Problems = append(report.Problems,
+					&ResolveProblem{ID: character.ID, Err: err})
+				report.Rows = append(report.Rows, arm)
+				continue
+			}
+			arm.Stage = stage.Name
+			arm.Values = values
+			arm.Budget = l.Budget(values)
+			arm.Traits = l.heldBudgets(character, stage.Name, values)
+			report.Rows = append(report.Rows, arm)
 		}
-		if short := l.shortReach(character); short != nil {
-			report.Warnings = append(report.Warnings, short)
-		}
-		report.Rows = append(report.Rows, row)
 	}
 	return report
 }

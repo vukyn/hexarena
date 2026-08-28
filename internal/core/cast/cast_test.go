@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -857,6 +858,85 @@ func TestResolveAtAStageBoundary(t *testing.T) {
 	}
 	if _, _, err := character.Resolve(progression.LevelCap+1, progression.Furthest); err == nil {
 		t.Error("a level past the cap resolved")
+	}
+}
+
+// TestAForkedLineIsChosenBetweenRatherThanWalked is the character-level half of
+// a line that forks: the choice reaches the learnset, and a caller that has not
+// made it is refused rather than answered.
+//
+// The payoff is the second assertion. A stage gate on a learnset entry is an
+// allowlist, so an arm can keep a skill the other arm never gets — which is what
+// makes picking an arm a decision rather than a skin. Before a line could fork,
+// every stage was on one path and an allowlist could only ever carve a *window*
+// out of it.
+func TestAForkedLineIsChosenBetweenRatherThanWalked(t *testing.T) {
+	entry := baseCharacter()
+	entry["stages"] = []map[string]any{
+		{"name": "Warden", "min_level": 1, "stats": table()},
+		{"name": "Tide", "min_level": 16, "after": "Warden", "stats": table()},
+		{"name": "Frost", "min_level": 16, "after": "Warden", "stats": table()},
+	}
+	entry["skills"] = []map[string]any{
+		{"id": "strike"},
+		{"id": "riptide", "at_level": 16, "stages": []string{"Tide"}},
+	}
+	book, err := parse(t, entry)
+	if err != nil {
+		t.Fatalf("parse a forked line: %v", err)
+	}
+	character, ok := book.Get("a-series.warden")
+	if !ok {
+		t.Fatal("the parsed character is not in the book")
+	}
+
+	// Nobody choosing is refused, and the refusal names the arms, because
+	// choosing one is the caller's only way forward.
+	if _, _, err := character.Resolve(20, progression.Furthest); err == nil {
+		t.Error("a fork resolved with nobody choosing an arm")
+	} else {
+		for _, arm := range []string{"Tide", "Frost"} {
+			if !strings.Contains(err.Error(), arm) {
+				t.Errorf("the refusal %q does not name %s", err, arm)
+			}
+		}
+	}
+
+	// The choice reaches what the unit knows: the skill is Tide's, and Frost
+	// never learns it however high the level goes.
+	if got := character.SkillsAt(progression.LevelCap, "Tide"); !slices.Contains(got, "riptide") {
+		t.Errorf("Tide knows %v, want riptide among them", got)
+	}
+	if got := character.SkillsAt(progression.LevelCap, "Frost"); slices.Contains(got, "riptide") {
+		t.Errorf("Frost knows %v, and riptide is the other arm's", got)
+	}
+	// And both arms are offered to whoever is choosing.
+	stages, err := character.StagesAt(20)
+	if err != nil {
+		t.Fatalf("stages at 20: %v", err)
+	}
+	if got := progression.StageNames(stages); len(got) != 3 {
+		t.Errorf("level 20 may be fielded as %v, want the root and both arms", got)
+	}
+
+	// The shape survives being written back out. hexforge rewrites the whole
+	// cast file on every save, so a predecessor dropped on the way through would
+	// turn a tree quietly back into a list — the arms would still be there, still
+	// parse, and mean something else.
+	raw, err := book.Marshal()
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	again, err := cast.ParseBook(raw, deps(t))
+	if err != nil {
+		t.Fatalf("re-parse: %v", err)
+	}
+	written, ok := again.Get("a-series.warden")
+	if !ok {
+		t.Fatal("the character did not survive the round trip")
+	}
+	if _, _, err := written.Resolve(20, progression.Furthest); err == nil {
+		t.Error("the written character no longer forks: its arms came back as one path")
 	}
 }
 

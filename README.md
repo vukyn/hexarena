@@ -3194,40 +3194,87 @@ count, a number of battles fought: every one needs somewhere to persist between
 battles, and there is no such place — no meta layer, no inventory, no save. A
 level is what a character sheet knows.
 
-#### A line that forks — wanted, not built
+#### A line that forks
 
-Everything above chooses **how far** along one path a character is fielded. What
-it cannot do is choose **which path**: an Eevee, two forms at one threshold, pick
-one and the other is gone. Worth recording because the halves are so unevenly
-sized.
+Everything above chooses **how far** along one path a character is fielded. This
+is the other axis: **which path**. An Eevee, two forms at one threshold, pick one
+and the other is gone.
 
-The parse rule is the small half. `progression.Line` is an ordered list and
-`Line.Validate` refuses a stage whose `MinLevel <= previous`, so two forms at the
-same threshold cannot be written down at all — one error, and it fails loudly
-with the two levels in it.
+A stage names what it grows out of:
 
-⚠️ **`Furthest` is the large half, and its failure mode is silence.**
-`Line.Allowed` returns a **prefix** of the list and `StageAt` returns the last
-stage reached, so with a fork there is no single furthest — and every caller that
-passes `progression.Furthest` (the character browser, `hexforge check`'s budget
-row, `fielded` in the balance tests) would take whichever arm the file happens to
-list last. Nothing would say so. A parse error is a bad afternoon; a browser
-quietly showing the wrong form's stat line is a balance table nobody can trust.
+```json
+"stages": [
+  { "name": "Eevee",    "min_level": 1,  "stats": { ... } },
+  { "name": "Vaporeon", "min_level": 32, "after": "Eevee",    "stats": { ... } },
+  { "name": "Jolteon",  "min_level": 32, "after": "Eevee",    "stats": { ... } },
+  { "name": "Tempest",  "min_level": 48, "after": "Jolteon",  "stats": { ... } }
+]
+```
 
-⚠️ **A prefix cannot express a stage *after* a fork either.** Both arms stay
-allowed forever once passed, because nothing marks them as alternatives, so the
-line has to stop being a list and become a tree — or a stage has to name its
-predecessor. That is a bigger change than the fork, and it is the one to design
-first.
+So the line stops being an ordered list and becomes a **tree**. Two arms share a
+threshold — which `Line.Validate` used to refuse outright, because on a list the
+only predecessor a stage can have is the one before it — and a stage may sit past
+the fork on one arm only, which a prefix could never express.
 
-The budget needs nothing: `Line.Validate` already walks every stage and checks
-each on its own, so branches are priced separately the day they exist.
+**A line is read by order *or* by name, and never both.** A line where nothing
+names an `after` is read by order: stage *i* grows out of stage *i−1*, which is
+what every line meant before this existed, so no shipped character moved a byte.
+The moment any stage names one, **every stage but the root has to**, and each has
+to name a predecessor declared before it — which is what makes a cycle unwritable
+rather than something to go looking for, and keeps a file readable top to bottom.
+⚠️ The mixture is refused rather than resolved: a file naming some edges and
+leaving the rest to the order would have the *order* deciding parentage in a
+document that also states it, and the wrong answer would be a stat line rather
+than an error.
 
-⚠️ **This is not what the tailed-beast Naruto is.** That form is a **separate
-character** standing beside Naruto, not a branch of its line — a stage is the
-same unit later, and that is a different unit. The two ideas look alike from the
-outside and want completely different mechanisms; merging them would give one
-character a form it is not.
+⚠️ **`Furthest` was the half that failed silently, and it refuses now.** With two
+arms reachable there is no single furthest, and every caller that passes
+`progression.Furthest` — the character browser, `hexforge check`'s budget row,
+the balance harnesses — would have taken whichever arm the file listed last with
+nothing anywhere saying so. A parse error is a bad afternoon; a browser quietly
+showing the wrong form's stat line is a balance table nobody can trust. So:
+
+| call | on a line that does not fork | on one that does |
+| --- | --- | --- |
+| `Line.Allowed(level)` | a prefix, as before | both arms and everything before them |
+| `Line.Furthest(level)` | the one grown form | the tip of **every** arm |
+| `Line.StageAt(level)` | that form | an **error** naming the arms |
+| `Resolve(level, Furthest)` | the stat line | that same error |
+| `Resolve(level, "Jolteon")` | — | Jolteon's stat line |
+
+The change is compile-clean because every one of those callers already had an
+error path: a fork simply reaches it. A placement that names no stage for a
+forking character is refused with the arms listed, which is the message a person
+can act on.
+
+**`hexforge check` prices one row per arm.** The stat budget bites at the grown
+end of a line and a forking character has two ends, so the report loops
+`Character.FurthestAt(LevelCap)` and emits a row for each — art on the first row
+only, because art belongs to the character rather than to an arm and a second
+copy of the same list would read as a second set of files to go and check.
+`Line.Validate` already priced every stage on its own, so branches needed nothing
+there.
+
+**The summary line draws a fork as a fork.** An evolution line is written into a
+table cell as `Bulbasaur@1 → Ivysaur@16 → Venusaur@32`, and joining arms with the
+same arrow would read as three forms in a row when the last two are alternatives.
+Children share a bracket instead — `Eevee@1 → (Vaporeon@32 | Jolteon@32 →
+Tempest@48)` — and a line with no fork keeps exactly the arrows it had.
+`i18n.Lang.StageSummary` now delegates to `forge.StageSummary` rather than
+repeating the shape: nothing about a stage name or a level is language-specific,
+and a second copy of the rule is how a screen comes to disagree with the command
+line about what a file says.
+
+**Nothing in the shipped cast forks yet, deliberately.** The mechanism lands
+without a balance move — the way a critical hit did — so `replay.golden` and every
+rate quoted anywhere are untouched. An Eevee is content, and content is its own
+decision.
+
+⚠️ **This is still not what the tailed-beast Naruto is.** That form is a
+**separate character** standing beside Naruto, not a branch of its line — a stage
+is the same unit later, and that is a different unit. The two ideas look alike
+from the outside and want completely different mechanisms; merging them would
+give one character a form it is not.
 
 ### A regeneration that heals
 

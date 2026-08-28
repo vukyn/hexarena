@@ -2,7 +2,6 @@ package i18n
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"charm.land/lipgloss/v2"
@@ -383,16 +382,14 @@ func (l Lang) DamageWithin(preview forge.SkillPreview, room int) string {
 
 // StageSummary writes an evolution line as the levels its stages take over at.
 //
-// The form is the same in both languages, and the arrow rather than a word is
-// why: a stage's name is authored text and the level is a number, so there is
-// nothing here to translate.
+// It delegates rather than repeating the shape: a line that forks is drawn with
+// its arms bracketed, and a second copy of that rule here would be a screen that
+// can disagree with the command line about what a file says. Nothing in it is
+// language-specific — a stage name is authored and a level is a number — so the
+// method exists to keep every summary reachable through Lang rather than to
+// translate anything.
 func (l Lang) StageSummary(character cast.Character) string {
-	stages := forge.StageFacts(character)
-	parts := make([]string, 0, len(stages))
-	for _, stage := range stages {
-		parts = append(parts, fmt.Sprintf("%s@%d", stage.Name, stage.MinLevel))
-	}
-	return strings.Join(parts, " → ")
+	return forge.StageSummary(character)
 }
 
 // Budget words what a stat line spends of the joint health-and-defence bound.

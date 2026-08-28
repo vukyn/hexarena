@@ -60,9 +60,12 @@ is only so the shape is readable.
       file next. The levels were **not** touched: the 20..30 dial spans 40–82% on
       the screened board, and 30/30 is the bottom of it.
 
-- [ ] **An evolution line that forks.** A placement chooses how far along one
-      path, never which path. ⚠️ The parse rule is the small half; `Furthest`
-      is the large half and fails **silently**. → `CLAUDE.md` § Open work.
+- [x] **An evolution line that forks. Done** — `Stage.After` names a stage's
+      predecessor, so a line is a tree: two arms may share a threshold and a stage
+      may sit past a fork on one arm. ⚠️ A line is read **by order or by name,
+      never both**, and `Furthest` — the half that would have failed silently —
+      refuses on a fork instead of picking an arm. Nothing shipped forks yet, on
+      purpose. → `CLAUDE.md` § Open work.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
@@ -77,10 +80,19 @@ is only so the shape is readable.
       what it has itself priced as a loss; that is not waiting, which still needs
       to know what the next turn is worth. → `CLAUDE.md` § Open work.
 - [ ] **`reckless` is the dragon build's 22.1%, and a detonate does not fix it.**
-      The line has one now (`dragon_drive`, off its own `expose`) and fielding it
-      moves 22.0% → **21.2%**. ⚠️ Measured one change at a time: the detonate is
-      worth **−0.8**, the trait **+33.1**. Still a **data** answer, just a
-      different one. → `dragon_test.go` § `TestTheDragonLineCanSpendWhatItApplies`.
+      The trait grants `unleashed` (+300‰ attack) **and** `bare` (−400‰ defence
+      *and* −400‰ dodge), all permanent: two stats paid for one, into a matchup
+      whose `inferno` amplifies ×3.5 off a status. Swapping it for `blood_thirst`
+      reads 55.1% and for `blaze` 38.9%; the missing detonate is worth −0.8 by
+      comparison, so **the theory this item was filed under is disproved and
+      should not be re-raised**. The levers are all data — soften `bare`, drop its
+      dodge clause, or raise `unleashed`.
+      ⚠️ **Whatever lands has to land with `vulnerability`, not before it.** A
+      negative `Resists` share is built and `reckless` is its natural first user;
+      adding it alone sinks the build further, so the two are one change.
+      ⚠️ `TestRecklessIsATradeAndNotAGift` asks whether *something* is given up
+      and cannot ask whether **too much** is, which is why nothing caught this.
+      → `dragon_test.go` § `TestTheDragonLineCanSpendWhatItApplies` for the table.
 - [x] **Vulnerability. Done** — a negative `Resists` share, composing through the
       same multiply. `Refused` stays one signed field; a negative is a share the
       target *added*. ⚠️ No shipped trait uses it yet: `reckless` ("liều mạng",
