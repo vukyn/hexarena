@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
 	"github.com/vukyn/hexarena/internal/core/element"
@@ -66,6 +67,15 @@ var emptySquads = []byte(`{"squads": []}`)
 // to choose from, which ArtFiles answers. Two spellings of one folder name is
 // how a picker ends up offering paths a suggestion never proposes.
 const assetsDir = "assets"
+
+// battlesDir is the folder inside a data directory that battle logs land in.
+//
+// A folder beside the art rather than a file beside the books, and for the same
+// reason art has one: a log is an **artefact** rather than data. Nothing loads
+// it, nothing validates against it, and it is written by whoever happened to
+// play a battle — so it does not belong among the files a battle is fought
+// under, and it is not embedded.
+const battlesDir = "battles"
 
 // Library is every book a character is validated against, loaded from one data
 // directory.
@@ -652,6 +662,70 @@ func (l *Library) DeleteSquad(id string) error {
 	return nil
 }
 
+// BattlesPath is the folder battle logs land in, for a front-end that says so.
+func (l *Library) BattlesPath() string { return filepath.Join(l.dir, battlesDir) }
+
+// SaveBattleLog writes a battle out where the game client can replay it, and
+// reports the path it landed on.
+//
+// The name is built from the pairing and the seed rather than asked for, because
+// those three are what identifies a battle: the same pairing at the same seed is
+// the same battle, so saving it twice writes over itself rather than leaving two
+// copies of one thing to tell apart later.
+//
+// ⚠️ **A log is verified against the game's data, not this directory's.**
+// `hexarena --verify` re-runs from the copy go:embed baked into the binary, and
+// this library is the files an author is editing — so a log written after an
+// edit that has not been rebuilt will not verify, and the mismatch is the edit
+// rather than corruption. That is the same rebuild note every write here
+// carries, arriving through a different door.
+func (l *Library) SaveBattleLog(home, away string, seed uint64, log battle.Log) (string, error) {
+	if !log.Replayable() {
+		return "", fmt.Errorf("this battle records no placement, so nothing could re-run it")
+	}
+	raw, err := battle.MarshalLog(log)
+	if err != nil {
+		return "", err
+	}
+	name := filepath.Join(battlesDir,
+		fmt.Sprintf("%s-vs-%s-seed%d.json", fileToken(home), fileToken(away), seed))
+	if err := l.replaceFile(name, raw); err != nil {
+		return "", err
+	}
+	return filepath.Join(l.dir, name), nil
+}
+
+// fileToken is an id made safe to put in a file name.
+//
+// A squad id is typed by whoever built the squad and nothing about a squad says
+// it has to be a word: a slash in one would be a path rather than a name, and
+// dots would climb out of the folder. Everything outside letters, digits, dash
+// and underscore becomes a dash, which loses information a file name never
+// carried anyway — the log itself holds the roster, and that is what says who
+// fought.
+//
+// ⚠️ The rule lives here rather than on placement.Squad on purpose: what a file
+// name may hold is this package's problem, and tightening what an id may be is a
+// change to the data that deserves its own reason.
+func fileToken(id string) string {
+	if id == "" {
+		return "squad"
+	}
+	safe := make([]rune, 0, len(id))
+	for _, letter := range id {
+		switch {
+		case letter >= 'a' && letter <= 'z',
+			letter >= 'A' && letter <= 'Z',
+			letter >= '0' && letter <= '9',
+			letter == '-', letter == '_':
+			safe = append(safe, letter)
+		default:
+			safe = append(safe, '-')
+		}
+	}
+	return string(safe)
+}
+
 // NoteKind is which of the things a front-end says after a write.
 type NoteKind int
 
@@ -669,6 +743,11 @@ const (
 	// because the two are different events to the reader: one added something
 	// nobody carries yet, and the other changed something units already carry.
 	NoteEdited
+	// NoteBattleVerify is what to do with a battle log once it is written, and
+	// it carries the rebuild warning rather than sitting beside one: a log is
+	// re-run against the copy baked into the game binary, so "rebuild first" is
+	// part of the instruction rather than a separate caution about this file.
+	NoteBattleVerify
 	// NoteGoldensMove warns that a balance change has moved the golden files,
 	// and that reading that diff is the next step rather than an afterthought.
 	// It follows a skill, because a skill is balance: its power reaches the
@@ -756,7 +835,15 @@ func (l *Library) noteLines(facts []Note) []string {
 // truncate is a data file that stops the game booting.
 func (l *Library) replaceFile(name string, data []byte) error {
 	target := filepath.Join(l.dir, name)
-	temp, err := os.CreateTemp(l.dir, name+".*")
+	// The temporary file goes in the target's own folder rather than the data
+	// directory, because a name may now carry one: a rename across folders is
+	// not the atomic swap this relies on, and a name with a separator in it
+	// would not have been a legal temp pattern either.
+	folder := filepath.Dir(target)
+	if err := os.MkdirAll(folder, 0o755); err != nil {
+		return fmt.Errorf("make %s: %w", folder, err)
+	}
+	temp, err := os.CreateTemp(folder, filepath.Base(target)+".*")
 	if err != nil {
 		return fmt.Errorf("create a temporary file beside %s: %w", target, err)
 	}

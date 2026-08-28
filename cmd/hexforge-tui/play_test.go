@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -233,4 +235,111 @@ func TestABattlePlayedOutEndsAndSaysHow(t *testing.T) {
 		t.Errorf("the script holds %v, want turns from both sides", sides)
 	}
 	var _ battle.Script = m.play.script
+}
+
+// ⚠️ The screen as a save leaves it is deliberately **not** in everyScreen. Its
+// first line names the file's absolute path, which under a test's temporary
+// directory is longer than any window — so the width sweep would be measuring
+// where the test happened to run rather than anything anybody wrote. The wording
+// itself is held by the two-language key tests, and that a save says something
+// at all is held below.
+//
+// TestASavedBattleReplaysExactly is the whole point of writing one out: a log
+// that could not be re-run would be a picture of a battle rather than a record
+// of it.
+//
+// It re-runs the log the way `hexarena --verify` does — build from the log's own
+// roster and seed, replay its choices, compare every event — and against this
+// library's books rather than the embedded copy, which is the one difference
+// between the two and the reason the save carries a rebuild note.
+func TestASavedBattleReplaysExactly(t *testing.T) {
+	m, lib, dir := start(t, i18n.En)
+	m = atTheBattle(t, m)
+	// A few turns in, so the script has both sides in it and the save is not
+	// recording an opening board.
+	for range 6 {
+		if m.play.fight.Finished() {
+			break
+		}
+		m = typeText(t, m, "a")
+	}
+	m = key(t, m, "ctrl+s")
+	if m.play.err != nil {
+		t.Fatalf("the save was refused: %v", m.play.err)
+	}
+	if len(m.play.notes) == 0 {
+		t.Fatal("a write said nothing")
+	}
+	// It landed in the battles folder, under a name built from the pairing.
+	written, err := filepath.Glob(filepath.Join(dir, "battles", "*.json"))
+	if err != nil || len(written) != 1 {
+		t.Fatalf("the battles folder holds %v (%v)", written, err)
+	}
+	raw, err := os.ReadFile(written[0])
+	if err != nil {
+		t.Fatalf("read it back: %v", err)
+	}
+	log, err := battle.ParseLog(raw)
+	if err != nil {
+		t.Fatalf("parse the log: %v", err)
+	}
+	if !log.Replayable() {
+		t.Fatal("the log records no placement, so nothing could re-run it")
+	}
+	if log.Seed != m.play.seed || len(log.Choices) != len(m.play.script) {
+		t.Errorf("the log holds seed %d and %d choices, want %d and %d",
+			log.Seed, len(log.Choices), m.play.seed, len(m.play.script))
+	}
+
+	rerun, err := battle.New(lib.Books(), log.Seed, log.Roster)
+	if err != nil {
+		t.Fatalf("rebuild: %v", err)
+	}
+	rerun.Begin()
+	if _, _, err := rerun.Replay(log.Choices, playTurnLimit, nil); err != nil {
+		t.Fatalf("re-running the battle: %v", err)
+	}
+	produced := rerun.Drain()
+	if len(produced) != len(log.Events) {
+		t.Fatalf("the log records %d events but re-running produced %d",
+			len(log.Events), len(produced))
+	}
+	for index := range produced {
+		if produced[index] != log.Events[index] {
+			t.Fatalf("event %d differs from the log:\nlogged  %+v\nre-ran  %+v",
+				index, log.Events[index], produced[index])
+		}
+	}
+
+	// Saving the same battle again writes over itself rather than leaving two
+	// copies of one thing: the pairing and the seed are what a battle is.
+	m = key(t, m, "ctrl+s")
+	again, err := filepath.Glob(filepath.Join(dir, "battles", "*.json"))
+	if err != nil || len(again) != 1 {
+		t.Errorf("saving twice left %v", again)
+	}
+}
+
+// TestASquadNameCannotClimbOutOfTheBattlesFolder is the one thing a file name
+// built from author-typed text has to be checked for.
+func TestASquadNameCannotClimbOutOfTheBattlesFolder(t *testing.T) {
+	m, _, dir := start(t, i18n.En)
+	m = menuTo(t, m, screenSquads)
+	m.squad = someSquad(t, m)
+	m.squad.editing.ID = "../../escaped"
+	m = withASquadSaved(t, m)
+	m = key(t, m, "esc")
+	m = typeText(t, m, "f")
+	m = typeText(t, m, "p")
+	m = key(t, m, "ctrl+s")
+	if m.play.err != nil {
+		t.Fatalf("the save was refused: %v", m.play.err)
+	}
+	written, err := filepath.Glob(filepath.Join(dir, "battles", "*.json"))
+	if err != nil || len(written) != 1 {
+		t.Fatalf("the battles folder holds %v (%v)", written, err)
+	}
+	if strings.Contains(filepath.Base(written[0]), "..") {
+		t.Errorf("the log landed at %q", written[0])
+	}
 }

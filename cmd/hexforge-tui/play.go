@@ -5,8 +5,11 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"path/filepath"
+
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/tui"
 )
@@ -35,7 +38,12 @@ type playScreen struct {
 	// than the one being played against.
 	side hex.Side
 
-	fight  *battle.Battle
+	fight *battle.Battle
+	// roster is what the battle was built from, kept because a log records it:
+	// a log carrying the resolved placement is what makes it re-runnable across
+	// a data edit, and asking the battle for it afterwards would be asking for
+	// the units as they are now rather than as they were placed.
+	roster []battle.Roster
 	tags   map[string]string
 	names  map[string]string
 	events []battle.Event
@@ -55,6 +63,9 @@ type playScreen struct {
 	aiming bool
 
 	err error
+	// notes are what a write left behind, held as facts rather than as a
+	// sentence so ctrl+l redraws them in the other language.
+	notes []forge.Note
 }
 
 // playTurnLimit is where a battle is abandoned, and it is cmd/hexarena's number
@@ -70,9 +81,10 @@ func newPlayScreen() playScreen {
 // player's first decision.
 func (p playScreen) begin(m model) playScreen {
 	p.fight, p.tags, p.names = nil, nil, nil
+	p.roster = nil
 	p.events, p.script, p.pending = nil, nil, nil
 	p.option, p.aim, p.aiming = 0, 0, false
-	p.err = nil
+	p.err, p.notes = nil, nil
 
 	home, away, ok := m.fight.sides(m)
 	if !ok {
@@ -88,13 +100,15 @@ func (p playScreen) begin(m model) playScreen {
 		p.err = err
 		return p
 	}
-	fight, err := battle.New(m.lib.Books(), p.seed, append(roster, facing...))
+	placed := append(roster, facing...)
+	fight, err := battle.New(m.lib.Books(), p.seed, placed)
 	if err != nil {
 		p.err = err
 		return p
 	}
 	fight.Begin()
 	p.fight = fight
+	p.roster = placed
 	p.tags = tui.Tags(fight.Units())
 	p.names = tui.Names(fight.Units())
 	p.collect()
@@ -261,6 +275,13 @@ func (p playScreen) undo(m model) playScreen {
 }
 
 func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	// Saving is asked before the switch because it answers to more than one
+	// keystroke; isSaveKey is the single declaration of which.
+	if isSaveKey(message) {
+		p = p.save(m)
+		m.play = p
+		return m, nil
+	}
 	switch message.String() {
 	case "esc":
 		if p.aiming {
@@ -356,6 +377,47 @@ func (p playScreen) choose(m model) playScreen {
 	return p.run()
 }
 
+// save writes the battle out where the game client can replay it.
+//
+// It may be pressed at any point rather than only at the end, and that is not a
+// concession: a battle stopped halfway is a battle, its script is consistent,
+// and re-running it reproduces exactly the half that was played. What a log
+// records is what happened, not what finished.
+func (p playScreen) save(m model) playScreen {
+	if p.fight == nil {
+		return p
+	}
+	home, away, ok := m.fight.sides(m)
+	if !ok {
+		return p
+	}
+	path, err := m.lib.SaveBattleLog(home.ID, away.ID, p.seed, battle.Log{
+		Seed: p.seed, Roster: p.roster, Choices: p.script, Events: p.events,
+	})
+	if err != nil {
+		p.err, p.notes = err, nil
+		return p
+	}
+	p.err = nil
+	// The second note is the whole reason the first one is worth having, and it
+	// carries the rebuild warning itself: --verify re-runs against the copy
+	// baked into the game binary, so a log written after an edit nobody rebuilt
+	// will not verify, and the mismatch would read as corruption.
+	//
+	// It names the file relative to the data directory, because what goes after
+	// --replay is a path somebody has to type and the absolute one is mostly the
+	// part they are already standing in.
+	relative := path
+	if shortened, err := filepath.Rel(m.lib.Dir(), path); err == nil {
+		relative = shortened
+	}
+	p.notes = []forge.Note{
+		{Kind: forge.NoteWrote, ID: filepath.Base(path), Path: path},
+		{Kind: forge.NoteBattleVerify, Path: relative},
+	}
+	return p
+}
+
 // playLogLines is how much of the log the screen keeps in front of the player.
 //
 // The last few rather than all of it: what a player has to read is what happened
@@ -364,7 +426,7 @@ func (p playScreen) choose(m model) playScreen {
 const playLogLines = 8
 
 func (p playScreen) view(m model) (string, string) {
-	footer := m.text(i18n.PlayFooter)
+	footer := m.text(i18n.PlayFooter, saveKeyLabel())
 	if p.aiming {
 		footer = m.text(i18n.PlayAimFooter)
 	}
@@ -385,12 +447,14 @@ func (p playScreen) view(m model) (string, string) {
 	out.WriteString(p.recent(m))
 	if p.fight.Finished() {
 		out.WriteString("\n" + m.style.emphasis.Render(p.ending(m)) + "\n")
-		return strings.TrimRight(out.String(), "\n"), m.text(i18n.PlayOverFooter)
+		out.WriteString(p.wrote(m))
+		return strings.TrimRight(out.String(), "\n"), m.text(i18n.PlayOverFooter, saveKeyLabel())
 	}
 	if p.pending == nil {
 		return strings.TrimRight(out.String(), "\n"), footer
 	}
 	out.WriteString("\n" + p.choices(m))
+	out.WriteString(p.wrote(m))
 	return strings.TrimRight(out.String(), "\n"), footer
 }
 
@@ -483,4 +547,27 @@ func (p playScreen) ending(m model) string {
 	default:
 		return m.text(i18n.PlayEmptied)
 	}
+}
+
+// wrote is the line a save leaves behind, in the shape every other write in this
+// client reports itself.
+func (p playScreen) wrote(m model) string {
+	if len(p.notes) == 0 {
+		return ""
+	}
+	var out strings.Builder
+	out.WriteString("\n")
+	for index, note := range m.lang.Notes(p.notes) {
+		style := m.style.dim
+		if index == 0 {
+			style = m.style.good
+		}
+		// Wrapped against minWidth rather than the window in hand, for the
+		// reason the fight's caution is: measuring the real terminal would give
+		// one sentence two shapes and leave the width sweep nothing to hold.
+		for _, line := range wrapWords(note, minWidth-1) {
+			out.WriteString(style.Render(line) + "\n")
+		}
+	}
+	return out.String()
 }

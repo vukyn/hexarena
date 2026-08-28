@@ -691,9 +691,11 @@ func TestReplaceFileLeavesTheOldOneOnFailure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read: %v", err)
 	}
-	// A directory where the temp file has to go cannot be written into, so the
-	// replacement fails before the target is touched.
-	lib.dir = filepath.Join(dir, "does-not-exist")
+	// ⚠️ A **missing** folder used to be the way to make this fail, and is not
+	// any more: a write may now name a folder of its own — a battle log lands in
+	// one — so the writer creates what is not there. The failure has to come
+	// from a folder that cannot be made at all, which is one under a file.
+	lib.dir = filepath.Join(dir, castFile, "under-a-file")
 	if err := lib.replaceFile(castFile, []byte("{}")); err == nil {
 		t.Fatal("writing into a missing directory succeeded")
 	}

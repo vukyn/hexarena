@@ -351,6 +351,7 @@ const (
 	ProblemDoesNotResolve
 	WarningShortReach
 	NoteWrote
+	NoteBattleVerify
 	NoteEdited
 	NoteArtMissing
 	NoteRebuild

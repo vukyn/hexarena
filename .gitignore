@@ -10,3 +10,8 @@ bin/
 # nothing. They must never be committed: a measurement frozen into the suite is a
 # golden nobody wrote down, and it fails the day the data it measured changes.
 zz_*_test.go
+
+# Battle logs written from the authoring client. A log is an artefact of a
+# battle somebody played rather than data the game is fought under, and it
+# carries its own roster, so it is readable and verifiable without being tracked.
+internal/seed/data/battles/
