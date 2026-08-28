@@ -903,6 +903,7 @@ Balance lives in `internal/seed/data`, embedded at build time:
 | `archetypes.json` | the role presets: a suggested stat curve and kit per role |
 | `cast.json` | the authored characters, each with an evolution line |
 | `roster.json` | a seed roster to exercise the engine with |
+| `builds.json` | the late-game builds a character may be fielded as |
 
 Changing a number there changes the game without touching Go. The tests will tell
 you what moved: several of them freeze design figures deliberately, and the golden
@@ -1959,6 +1960,102 @@ mille of defence never meets it. `endurance` was already through the same gap.
 
 `wide_guard` is in `sharedPool`: standing in front of somebody is the same tactic
 `taunt` is, pointed the other way, and neither belongs to one fiction.
+
+### A build is a decision, so it is written down
+
+Built. The slots said a character *may* be fielded several ways and nothing said
+which ways were worth fielding. Nine skills and five traits in four kinds is more
+combinations than anybody would ever bring, so the only kit the repository could
+actually name was "the first four a learnset declares" — the order the file
+happens to list, which is not a decision anyone made. `builds.json` is the
+decision, authored, and `hexforge-tui` has a screen that reads it.
+
+| character | build | build |
+| --- | --- | --- |
+| Venusaur | **rải độc** — `poison_powder` `sludge_bomb` `venoshock` `razor_leaf`, `virulence` | **ký sinh** — `leech_seed` `synthesis` `ingrain` `razor_leaf`, `blood_thirst` |
+| Charizard | **thiêu đốt** — `flamethrower` `inferno` `ember` `fire_spin`, `blaze` | **long tộc** — `dragon_claw` `outrage` `dragon_rage` `dragon_dance`, `reckless` |
+| Blastoise | **cố thủ** — `taunt` `withdraw` `wide_guard` `aqua_ring`, `thorns` | **giáp kích** — `skull_bash` `water_gun` `whirlpool` `withdraw`, `ballast` |
+| Naruto | *none* | |
+
+`cast.ParseBuilds` checks every entry against the cast book **at the level cap on
+the furthest form**, which is the only reading that catches the case a build is
+most likely to get wrong: `sleep_powder` is stage-gated to Bulbasaur and Ivysaur,
+so a build written from the file rather than from the form would field a move
+Venusaur never learns. The refusal comes with the list of what that form does
+know, because an author who has just been told no wants the list rather than a
+second trip to `cast.json`.
+
+A build adds exactly two things over the loadout it names — a `name` and a
+one-clause `intent` — and **nothing numeric**. Everything it does is already
+described by its skills and its trait, so a figure in either field is a second
+place for the same number to live and drift from, and it is refused at parse. That
+is the rule a skill's `flavour` lives under, applied to the one new field that
+could have broken it.
+
+**A character listed there has at least two builds.** One build is not a build,
+it is that character's kit: nothing is being chosen, and a screen offering a
+single option tells a player they have a decision they do not have. Naruto having
+none is the honest case rather than a gap — its learnset has no second direction
+yet, and inventing one to fill the row would be the catalogue saying something
+untrue. `TestABuildIsACatalogueOfChoicesRatherThanOfKits` is that claim.
+
+**Bulbasaur is now measured the way the other two are.** It was the character the
+whole trait layer was built for and the only one whose two directions had never
+been fought:
+
+| | rải độc | ký sinh |
+| --- | --- | --- |
+| what the three non-weapon slots buy | a poison, a second poison, and a hit that spends one | a drain, a restore, and a regeneration |
+| measured | **13 turns**, 139 damage a turn, recovering nothing | **17 turns**, 47 damage a turn, recovering 964 |
+
+⚠️ **A poison tick names no author, and a metric that forgets it punishes the
+build it is measuring.** Damage from a status is a `StatusTicked` on the unit
+*carrying* the poison; the event says what it took and nothing anywhere says who
+put it there. Counting "damage I dealt" as `Damaged` events with my own id — which
+is the obvious reading, and there is exactly one `Kind: Damaged` in the engine, the
+passive reply — reported the poison build at **106** a turn against **139** counted
+properly. A quarter of its whole plan was invisible, and the build it was being
+compared against lost almost nothing to the same mistake. It also made `virulence`
+read as *worse* than a plain stat trait, which is the one thing that trait cannot
+be. In a duel the side is enough to attribute a tick; in a squad it would not be.
+
+⚠️ **The two builds are not fought against each other, and the reason is not the
+one Squirtle's builds had.** Squirtle's tank kit carries no power at all, so it
+cannot finish a battle. Both of Bulbasaur's kill perfectly well — and a mirror
+duel is decided by which side outlasts the other, which is exactly what one of
+them is built to do. Over six hundred duels fought both ways the poison kit takes
+about one in ten. That figure measures the twin, not the build. Fighting a build
+against the thing it is *for* is the measurement; the numbers above are taken
+against the shipped Charizard, held still, because two kits are only comparable
+against one opponent.
+
+⚠️ **The catalogue cannot drift from what was measured.** `poisonBuild` and
+`sustainBuild` in `bulbasaur_test.go`, `fireBuild`/`dragonBuild` in
+`dragon_test.go`, `tankBuild`/`semiBuild` in `squirtle_test.go` stay hardcoded in
+the tests that took the figures — they are the design record, and a change to the
+data must not quietly rewrite what a claim was about.
+`TestTheShippedBuildsAreTheOnesTheTestsMeasure` fails if the shipped catalogue
+disagrees with them on a kit **or on a trait**: a kit is half a build, `ballast`
+belongs to the attacking Squirtle and `endurance` to the standing one, and
+swapping those two changes which build survives without touching a single skill.
+So shipping a build means measuring it first and adding the row second.
+
+⚠️ **Both figures above are still understatements**, and for the reason the
+Squirtle table carries the same warning: `battle.Suggest` reaches for a skill of
+no power only when it can find nothing to hit, so `synthesis` and `ingrain` are
+cast in the turns nothing is in range rather than in the turns they are wanted.
+See *A deeper opponent*. That is now the largest single thing standing between
+these tables and what a build is actually worth.
+
+The screen lists the catalogue grouped under its characters, with the kit, the
+trait and the intent of whatever the cursor is on; the cursor lands only on
+builds, since a character is a heading. ⚠️ The "no build written for this one yet"
+note rides **on the character's own heading row** rather than taking a row of its
+own: as its own row it scrolled away from the character it meant, so at eighty by
+twenty-four the top line of the window said a character had no build without
+saying which. The trait row is drawn even when a build takes none, unlike the cast
+browser — there a character has what it has, here a slot was either spent or
+deliberately left empty, and an absent row cannot say which of those happened.
 
 ### Looking a status up
 
