@@ -1356,6 +1356,20 @@ is the constraint each piece has to respect.
       ⚠️ **`virulence` on `ally.venusaur` was measured and rejected: 56.3%.** It
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
+- [x] **Naruto's three forms renamed to the three the story has.**
+      `Naruto@1 → Shippuden@16 → Tiên nhân@32`, against `naruto.svg`,
+      `naruto-shippuden.svg` and `naruto-sage-mode.svg`: before the two years of
+      training, after them, and after learning the sage art.
+      ⚠️ **The count was right and both names were one form ahead of their own
+      picture** — the middle was called *Tiên nhân* while showing Shippuden art,
+      the last *Vĩ thú hoá* while showing sage-mode art. The art was right the
+      whole way down; the labels were off by one.
+      The tailed-beast form was never a stage: **a stage is the same unit later,
+      and that is a different unit**, so it becomes its own character later.
+      ⚠️ **No stat moved, nothing rebalanced** — a stage name is printed, never
+      read, so every measurement taken against this line still holds.
+      Naruto has **no build** in `builds.json` and now has two traits, so it is
+      the character the "two builds each" target is waiting on.
 - [x] **A permanent speed trait — `swiftness` on Naruto.** Grants `quickened`,
       permanent, **+80** speed. Naruto's second trait, so the only character with
       a default now has a choice.

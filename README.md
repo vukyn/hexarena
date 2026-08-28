@@ -1942,6 +1942,33 @@ so no figure measured before a feature can be carried across it without being
 taken again. It flipped back when four slots landed; see *Piercing*, which now
 carries all three measurements.
 
+### Naruto's three forms are the three the story has
+
+```
+Naruto@1  →  Shippuden@16  →  Tiên nhân@32
+naruto.svg   naruto-shippuden.svg   naruto-sage-mode.svg
+```
+
+Before the two years of training, after them, and after learning the sage art.
+Three forms, three pictures, and the same three all along — **what was wrong was
+the names, not the count**.
+
+⚠️ **Both names sat one form ahead of their own picture.** The middle form was
+called *Tiên nhân* — the sage — while showing the Shippuden art, and the last was
+called *Vĩ thú hoá* — the tailed beast — while showing the sage-mode art. Read
+down the column the art was right the whole time and the labels were off by one,
+which is the shape a rename makes when it is applied to the wrong row.
+
+The tailed-beast form was never a stage of this character. **A stage is the same
+unit later; that form is a different unit**, so it belongs beside Naruto in the
+cast rather than at the end of its curve, and it will be built as its own
+character.
+
+⚠️ **No stat moved and nothing rebalanced.** The three stat lines are untouched,
+the level cap still resolves to the third, and Naruto still absorbs 7943 of the
+budget — so the sweep below, which was measured against this line, still stands.
+A stage's name is what a screen prints; it is not a number anything reads.
+
 ### A speed trait, and the house figure that does not transfer
 
 `swiftness` ("thần tốc") grants `quickened`, a permanent buff of **+80** per mille
@@ -2999,7 +3026,7 @@ change: the mechanism gets a real user without a balance diff to read at the sam
 time. `replay.golden` does not move.
 
 ```
-naruto.naruto   ok   Vĩ thú hoá   7943 absorbs, 3557 budget left
+naruto.naruto   ok   Tiên nhân   7943 absorbs, 3557 budget left
                      hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
 
 shadow_clone   Gọi ra 2 phân thân, trụ lại 4 lượt.       Calls up 2 copies, for 4 turns.

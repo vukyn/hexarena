@@ -551,7 +551,7 @@
           }
         },
         {
-          "name": "Tiên nhân",
+          "name": "Shippuden",
           "min_level": 16,
           "stats": {
             "hp": {
@@ -582,7 +582,7 @@
           "image": "assets/naruto-shippuden.svg"
         },
         {
-          "name": "Vĩ thú hoá",
+          "name": "Tiên nhân",
           "min_level": 32,
           "stats": {
             "hp": {
