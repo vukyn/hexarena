@@ -3,6 +3,7 @@ package i18n
 import (
 	"strings"
 
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/modifier"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
@@ -322,6 +323,53 @@ func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 		parts = append(parts, l.Text(BlurbCostEveryTurn))
 	}
 	return capitalise(strings.Join(parts, " · ") + ".")
+}
+
+// DescribeElement is where one element sits in the affinity chart: what it
+// beats, what beats it, and what each of those is worth.
+//
+// Derived from the chart for the reason every description here is derived: the
+// multipliers and the cycles are data, and the three figures in elements.json
+// are the ones every damage number in the game is scaled by. An authored line
+// reading "takes half again" survives advantage dropping from 1500 to 1300 with
+// nothing to catch it.
+//
+// The elements inside it are bare ids, as they are in the skills listing and in
+// WhoMaySummary: an id is what the data files hold and what an author types, and
+// the reference this is printed under has the name in the column above.
+//
+// An inert element -- neutral, and nothing else today -- gets a sentence of its
+// own rather than two empty ones. "Beats nothing" and "nothing beats it" as two
+// lines reads as two separate facts about a broken entry; it is one fact, and it
+// is the whole of what being inert means.
+func (l Lang) DescribeElement(member element.Element, chart *element.Chart) string {
+	if chart == nil || !member.Valid() {
+		return ""
+	}
+	rates := chart.Multipliers()
+	strong, weak := chart.Strengths(member), chart.Weaknesses(member)
+	if len(strong) == 0 && len(weak) == 0 {
+		return l.Say(BlurbElementInert, share(rates.Neutral))
+	}
+	lines := make([]string, 0, 2)
+	if len(strong) > 0 {
+		lines = append(lines, l.Say(BlurbElementStrong,
+			l.JoinIDs(elementIDs(strong)), share(rates.Advantage)))
+	}
+	if len(weak) > 0 {
+		lines = append(lines, l.Say(BlurbElementWeak,
+			l.JoinIDs(elementIDs(weak)), share(rates.Disadvantage)))
+	}
+	return strings.Join(lines, "\n")
+}
+
+// elementIDs is a run of elements as the ids they are written with.
+func elementIDs(members []element.Element) []string {
+	out := make([]string, 0, len(members))
+	for _, member := range members {
+		out = append(out, member.String())
+	}
+	return out
 }
 
 // StatusesInSkill is the statuses a skill's description will name, in the order

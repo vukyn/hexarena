@@ -23,6 +23,8 @@ const (
 	screenSkills
 	screenStatuses
 	screenPassives
+	screenElements
+	screenSpecies
 	screenCheck
 	// screenPreview is raised from the browser rather than the menu, because it
 	// draws one character's art and the browser is where a character is chosen.
@@ -119,6 +121,8 @@ type model struct {
 	skills   skillsScreen
 	statuses statusesScreen
 	passives passivesScreen
+	elements elementsScreen
+	species  speciesScreen
 	check    checkScreen
 	preview  previewScreen
 	spar     sparScreen
@@ -159,6 +163,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		skills:   newSkillsScreen(lib),
 		statuses: newStatusesScreen(lib),
 		passives: newPassivesScreen(lib),
+		species:  newSpeciesScreen(lib),
 		check:    newCheckScreen(lib),
 		preview:  newPreviewScreen(),
 		spar:     newSparScreen(),
@@ -184,6 +189,8 @@ var menuItems = []menuItem{
 	{i18n.MenuSkills, i18n.MenuSkillsDetail, screenSkills},
 	{i18n.MenuStatuses, i18n.MenuStatusesDetail, screenStatuses},
 	{i18n.MenuPassives, i18n.MenuPassivesDetail, screenPassives},
+	{i18n.MenuElements, i18n.MenuElementsDetail, screenElements},
+	{i18n.MenuSpecies, i18n.MenuSpeciesDetail, screenSpecies},
 	{i18n.MenuCheck, i18n.MenuCheckDetail, screenCheck},
 }
 
@@ -249,6 +256,10 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.statuses.update(m, message)
 	case screenPassives:
 		return m.passives.update(m, message)
+	case screenElements:
+		return m.elements.update(m, message)
+	case screenSpecies:
+		return m.species.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
@@ -319,6 +330,8 @@ func (m model) enter(target screen) model {
 		m.statuses = m.statuses.refresh(m.lib)
 	case screenPassives:
 		m.passives = m.passives.refresh(m.lib)
+	case screenSpecies:
+		m.species = m.species.refresh(m.lib)
 	case screenSpar:
 		m.spar = m.spar.refresh()
 	}
@@ -364,6 +377,10 @@ func (m model) screenContent() string {
 		body, footer = m.statuses.view(m)
 	case screenPassives:
 		body, footer = m.passives.view(m)
+	case screenElements:
+		body, footer = m.elements.view(m)
+	case screenSpecies:
+		body, footer = m.species.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:

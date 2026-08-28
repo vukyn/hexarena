@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -43,6 +44,10 @@ func TestDescribeEveryShippedSkillGolden(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load the shipped statuses: %v", err)
 	}
+	chart, err := seed.ElementChart()
+	if err != nil {
+		t.Fatalf("load the shipped chart: %v", err)
+	}
 
 	var b strings.Builder
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
@@ -60,6 +65,13 @@ func TestDescribeEveryShippedSkillGolden(t *testing.T) {
 			for _, kind := range group.Kinds {
 				fmt.Fprintf(&b, "[status] %s\n%s\n\n", kind.ID, lang.DescribeStatus(kind))
 			}
+		}
+		// The chart last, and every member of it including the inert one. It is
+		// the design record with the widest blast radius in the file: an edge
+		// moving here rescales every damage figure above it at once, and the
+		// diff is the only place that shows which way round.
+		for _, member := range element.All() {
+			fmt.Fprintf(&b, "[element] %s\n%s\n\n", member, lang.DescribeElement(member, chart))
 		}
 	}
 
