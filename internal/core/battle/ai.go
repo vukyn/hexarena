@@ -55,6 +55,22 @@ type Choice struct {
 // anybody standing where they are (a taunt, a shield on a unit already at its cap)
 // still gets taken when there is nothing better, exactly as it did.
 //
+// **Holding a skill for a later turn** is read as narrowly as a rating this
+// shallow can honestly read it: not as waiting — that would need to know what next
+// turn is worth, which is the lookahead this file does not have — but as refusing
+// to *spend* a scarce turn on what a plentiful one buys. Damage is clamped at a
+// target's remaining health, so the heaviest skill in a kit and the filler beside
+// it are worth exactly the same against a unit standing at a sliver, and before
+// this the tie went to whichever came first in the kit: the nuke was burnt on five
+// points of health and cooled down for three turns for it. The tie now goes to the
+// skill that will be there again next turn.
+//
+// It is a tie-break rather than a discount for two reasons. A discount would price
+// scarcity, which means guessing at the turns being given up, and every guess of
+// that shape in this file has been wrong in the direction of playing worse. And a
+// tie is where the whole of the waste is: an option worth strictly more is worth
+// more *now*, which is the only tense a one-turn-deep rating has.
+//
 // It reads no randomness and mutates nothing, so a client may call it to offer a
 // hint without disturbing the battle's own sequence. Every price obeys that too:
 // the chance an application would be rolled against is read as a weight, and a
@@ -67,9 +83,22 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 	if !known || actor.Dead {
 		return Choice{}, false
 	}
-	best, bestValue, found := Choice{}, int64(-1), false
+	best, bestValue, bestCooldown, found := Choice{}, int64(-1), 0, false
 	fallback, hasFallback := Choice{}, false
 	prices := b.newPricing()
+
+	// take is the whole of the decision, and it is a pair rather than a number:
+	// what an option is worth first, and only on a tie what it costs to have spent
+	// it. See holding a skill for a later turn, below.
+	take := func(choice Choice, value int64, cooldown int) {
+		switch {
+		case value > bestValue:
+		case value == bestValue && cooldown < bestCooldown:
+		default:
+			return
+		}
+		best, bestValue, bestCooldown, found = choice, value, cooldown, true
+	}
 
 	for _, option := range prompt.Options {
 		if !option.Available() {
@@ -92,10 +121,8 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 			// would have done something. Every priced job below is written the
 			// same way for the same reason.
 			if value := b.summonWorth(actor, declared); value > 0 {
-				if value > bestValue {
-					best, bestValue, found =
-						Choice{Skill: option.Skill, Aim: option.Aims[0]}, value, true
-				}
+				take(Choice{Skill: option.Skill, Aim: option.Aims[0]}, value,
+					declared.Cooldown)
 				continue
 			}
 		}
@@ -106,9 +133,7 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 				continue
 			}
 			rated = true
-			if value > bestValue {
-				best, bestValue, found = Choice{Skill: option.Skill, Aim: aim}, value, true
-			}
+			take(Choice{Skill: option.Skill, Aim: aim}, value, declared.Cooldown)
 		}
 		// Worth nothing to anybody it could reach: the fallback, on the same terms
 		// as before. The first such skill in kit order is kept, and it is taken
@@ -255,11 +280,19 @@ func (b *Battle) summonWorth(caster *Unit, declared skill.Skill) int64 {
 // cooldowns by index and a unit that has never acted has none — and because a
 // summon arriving with everything off cooldown is not an approximation, it is
 // what enlist gives it.
+//
+// An all-sided attack counts, and it counts as exactly what it would do to the
+// other side: expected skips a unit on the caster's own half, so the figure that
+// comes back is the harm and not the cost. Leaving it out is what made a unit
+// whose only attack was all-sided read as threatening nobody — so a heal on the
+// ally it was about to hit was worth nothing, and a shield against it ate
+// nothing. Nothing shipped is all-sided, so this is a blind spot closed rather
+// than a number moved.
 func (b *Battle) bestStrike(unit *Unit) int64 {
 	best := int64(0)
 	for _, id := range unit.Skills {
 		declared, err := b.books.Skills.Lookup(id)
-		if err != nil || declared.Power == 0 || declared.Target != skill.Enemy {
+		if err != nil || declared.Power == 0 || !aimedAtAnEnemy(declared) {
 			continue
 		}
 		for _, aim := range b.aims(unit, declared) {
@@ -269,6 +302,14 @@ func (b *Battle) bestStrike(unit *Unit) int64 {
 		}
 	}
 	return best
+}
+
+// aimedAtAnEnemy reports whether a skill can hurt the other side at all, which is
+// the question both bestStrike and turnWorth are really asking. It is one function
+// because the two must agree: a skill counted as an attack in one and not the
+// other would make a turn worth less than the threat it poses.
+func aimedAtAnEnemy(declared skill.Skill) bool {
+	return declared.Target == skill.Enemy || declared.Target == skill.All
 }
 
 func requiredStatus(declared skill.Skill) string {

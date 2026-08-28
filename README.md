@@ -1497,13 +1497,14 @@ buff is worth `horizon × share` of a turn, so a thirty per cent haste over thre
 turns is worth nine tenths of one turn and **can never beat the best attack a unit
 has**. It wins exactly where it should — while that attack is recharging.
 
-**What it deliberately still cannot do**, each one a separate piece of work: say
-*where* in the order an extra turn falls, and so whether it arrives before the blow
-that would have killed its holder — that is the part that would need the queue; hold
-a skill for a turn that has not arrived; and rate an all-sided skill at all, because
-`expected` skips a unit on the caster's own side rather than subtracting it, and
-relaxing that guard alone produces the opponent that bombs its own squad and calls it
-a gain.
+**What it deliberately still cannot do**, now down to one piece of work and one
+refusal: say *where* in the order an extra turn falls, and so whether it arrives
+before the blow that would have killed its holder — that is the part that would need
+the queue. And it will not wait: **holding a skill for a turn that has not arrived**
+is read as narrowly as a rating one turn deep can honestly read it — see *Not
+spending a scarce turn on what a common one buys* below — because knowing that next
+turn is worth more than this one is a lookahead, and every guess of that shape here
+has been wrong in the direction of playing worse.
 
 **What it moved.** The shipped roster read **53.1% ally** before and **46.6% after
 the status and support terms**, then **79.0%** once a kill was priced — over 4000
@@ -1596,6 +1597,88 @@ therefore priced as giving up nothing at all, and a burst of any size would have
 passed. Both now price the two currencies separately and **refuse** a status they can
 price in neither, because nought and "gives up nothing" are the same number and only
 one of them is true.
+### Both halves of an all-sided skill
+
+Built. `skill.All` aims at either half of the board and a shape aimed that way
+spreads across the midline, so a skill declared with it hurts the caster's own squad
+as well — that is the point of the value rather than a flaw in it. `Suggest` refused
+to rate one at all, and **the refusal was sound rather than an oversight**:
+`expected` skips a unit on the caster's own side instead of subtracting it, so a
+rating allowed to see one would have counted the harm and not the cost. The guard
+and that reason were two halves of one decision, which is why lifting the guard
+meant answering the other half rather than deleting a line.
+
+`friendlyFire` is that answer: `expected` and `finished` pointed the other way, over
+the caster's own side. It is a separate function rather than a sign flipped inside
+those two, because every other question they are asked means *"what could this unit
+do to somebody else"* — an all-sided skill is the only place the caster's half of
+the board is damage at all.
+
+- ⚠️ **The caster is not skipped.** A shape can cover the cell it is cast from —
+  the wedge in the tests does — and `resolveAgainst` has never asked whose side a
+  target is on, so the caster really does take the hit. A rating that left itself
+  out would prefer the skill that hurts nobody but itself.
+- ⚠️ **A kill on a splash cell is priced, where `finished` reads the primary cell
+  only.** The two are consistent rather than in tension: `finished` asks `expected`
+  what the skill would do *aimed at* a cell, which over-states an edge, while the
+  share this loop already holds is the reduced one.
+- The status half needed the skip **relaxed rather than replaced**. The loop already
+  reads each occupant by the branch that fits it — harm on an enemy is a gain and on
+  one's own side a cost, help the other way round — and what the guard did was keep
+  one of those branches from ever running. ⚠️ Only a mutation said so: every test
+  about a damaging all-sided skill passed with the enemy half of the *status* loop
+  skipped, because `expected` does that half.
+- **An all-sided attack now counts as an attack** in the four places that ask what a
+  unit could do — `bestStrike`, `turnWorth`, `bestAgainst`, `worstStrikes` — through
+  one predicate so they cannot disagree. Each goes through `expected` or `against` on
+  a single victim, so the figure is the harm and not the cost. Leaving them out made
+  a unit whose only attack was all-sided read as threatening **nobody**: a heal on
+  the ally it was about to hit was worth nothing and a shield against it ate nothing.
+
+**Nothing shipped is all-sided**, so no golden moved and no balance figure changed.
+This is a blind spot closed, and it will be measured the day a skill takes the value.
+
+### Not spending a scarce turn on what a common one buys
+
+Built, and it is the honest half of *holding a skill for a later turn*. The other
+half — waiting, passing a turn because the next one is worth more — needs to know
+what the next turn is worth, and that is the lookahead this rating does not have.
+
+What it can see is **waste**. Damage is clamped at a target's remaining health, so
+against a unit standing at a sliver the heaviest skill in a kit and the filler beside
+it are worth **exactly the same**; before this the tie went to whichever came first
+in the kit, so the nuke was burnt on ten points of health and cooled down for three
+turns for it. The tie now goes to the skill that will be there again next turn.
+
+It is a **tie-break and not a discount**, for two reasons. A discount would price
+scarcity, which means guessing at the turns being given up — and a tie is where the
+whole of the waste is anyway: an option worth strictly more is worth more *now*,
+which is the only tense a one-turn-deep rating has.
+
+⚠️ **It is measured head to head, because the roster's win rate cannot see it.**
+Both sides use `Suggest`, so a change that helps both leaves the rate where it was —
+what the rate shows is whichever squad's kit had more to gain. So the sweep was run
+with the tie-break on **one** side at a time, 20,000 seeds each way:
+
+| | baseline | with the tie-break | delta |
+|---|---:|---:|---:|
+| ally side | 49.4% | 49.4% | 0.0 |
+| enemy side | 50.6% | 51.5% | **+0.9** |
+| both sides (the shipped figure) | 49.4% | **48.5%** | — |
+
+Never worse on either side, better on one — which is the bar a correctly-read cost
+has to clear, and the same bar the `bestStrike`→`turnWorth` correction was found by.
+**The asymmetry is a cast fact, not a bias**: the ally ace's kit is cooldown 2/2/2/3,
+almost no spread, while the enemy fields `hydro_pump` at cooldown 4 next to
+`water_gun` at 1 — the nuke-and-filler pair this whole term is about. 0 stalls, mean
+battle length 49 turns either way, and every build duel unmoved (dragon 22.1%,
+Squirtle 676/39 turns, Bulbasaur 23 turns and 2818 recovered).
+
+The shipped roster sits 1.5 points off even, and that is **left alone rather than
+re-levelled**: the levels are coarse — Ivysaur 16 → 30 moved that figure by tens of
+points — so a dial does not exist at this size. `replay.golden` moved by exactly one
+choice on seed 11 (236 → 235 events, one fewer amplified poison), same fifty turns,
+same winner.
 
 ### A draw nobody can act in
 

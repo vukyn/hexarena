@@ -64,18 +64,21 @@ func (b *Battle) newPricing() *pricing {
 // of the capped horizons above. A skill that does both is worth the sum, because
 // a skill that hits and poisons does both things.
 //
-// ⚠️ An all-sided skill is still not rated at all. expected skips a unit on the
-// caster's own side rather than subtracting it, so an opponent allowed to rate one
-// would happily bomb its own squad and read it as a gain — the guard and the
-// reason are two halves of one decision, and relaxing either alone is the bug.
+// An all-sided skill is rated by **both** halves of what it does, which is the
+// only way it can be rated at all: expected skips a unit on the caster's own side
+// rather than subtracting it, so the guard that used to refuse the whole skill and
+// the subtraction that replaces it are two halves of one decision. Relaxing the
+// guard without friendlyFire is exactly the opponent that bombs its own squad and
+// reads it as a gain — that was the reason the refusal stood, and it is answered
+// here rather than removed.
 func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 {
-	if declared.Target == skill.All {
-		return 0
-	}
 	total := int64(0)
-	if declared.Target == skill.Enemy {
+	if aimedAtAnEnemy(declared) {
 		total += p.fight.expected(actor, declared, aim)
 		total += p.finished(actor, declared, aim)
+	}
+	if declared.Target == skill.All {
+		total -= p.friendlyFire(actor, declared, aim)
 	}
 	// SelfApplies land on the caster whatever the skill is aimed at, which is how
 	// a unit shields or braces itself, so they are priced outside the shape.
@@ -98,7 +101,12 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 			continue
 		}
 		friendly := target.Side == actor.Side
-		if (declared.Target == skill.Enemy) == friendly {
+		// An all-sided skill reaches both halves, so neither is skipped and each
+		// is read by the branch that fits it — a benefit is a gain on one's own
+		// side and a cost on the enemy's, and a harm is the other way round. The
+		// two branches below already say that; what the skip did was keep one of
+		// them from ever running.
+		if declared.Target != skill.All && (declared.Target == skill.Enemy) == friendly {
 			continue
 		}
 		if friendly {
@@ -168,6 +176,60 @@ func (p *pricing) finished(actor *Unit, declared skill.Skill, aim hex.Offset) in
 			continue
 		}
 		total += p.strike(target) * killHorizon
+	}
+	return total
+}
+
+// friendlyFire is what an all-sided attack costs its own side: the damage it deals
+// to the caster's own units, and the turns of attacking it takes away from any of
+// them it would kill.
+//
+// It is expected and finished pointed the other way, and it is a separate function
+// rather than a sign flipped inside those two because both are asked a great many
+// other questions in this file — bestStrike, turnWorth, the hypothetical units —
+// and every one of them means "what could this unit do to somebody else". A skill
+// that hurts its own side is the only place the caster's half of the board is
+// damage at all.
+//
+// ⚠️ The caster is not skipped. A shape can cover the cell its own caster stands
+// in, and resolveAgainst has never asked whose side a target is on, so it really
+// does take the hit — a rating that left itself out would prefer the skill that
+// hurts nobody but itself.
+//
+// ⚠️ It is an under-estimate of a squad-killing cast, on purpose and in the same
+// direction as every other cap here: the turns lost with an ally are priced at
+// killHorizon, exactly as an enemy's are, and no term says that losing a unit
+// loses the battle. What it is enough for is the decision it exists to make —
+// a bomb is worth casting when the enemy half outweighs the own half, and not
+// otherwise.
+func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset) int64 {
+	if declared.Power == 0 {
+		return 0
+	}
+	shape, err := p.fight.books.Patterns.Lookup(declared.Pattern)
+	if err != nil {
+		return 0
+	}
+	actorStats := p.fight.Stats(actor)
+	spent := declared.SelfBonus(conditionCaster(declared, actor))
+	total := int64(0)
+	for position, cell := range covers(shape, declared, aim) {
+		target := p.fight.occupant(cell)
+		if target == nil || target.Side != actor.Side {
+			continue
+		}
+		dealt := p.fight.against(actor, actorStats, declared, target, position, spent)
+		total += dealt
+		// ⚠️ Every cell, splash included — where finished reads only the primary
+		// one. The two are not inconsistent: finished asks expected what the skill
+		// would do *aimed at* a cell, which over-states an edge, while the share
+		// this loop already holds is the reduced one. So a shape that really would
+		// finish an ally on its edge is priced for it, and the case is not
+		// hypothetical: this wedge catches its own caster and the unit behind it
+		// on splash and nothing else.
+		if dealt >= target.HP {
+			total += p.strike(target) * killHorizon
+		}
 	}
 	return total
 }
@@ -433,7 +495,7 @@ func (p *pricing) turnWorth(unit *Unit) int64 {
 	total, counted := int64(0), int64(0)
 	for _, id := range unit.Skills {
 		declared, err := p.fight.books.Skills.Lookup(id)
-		if err != nil || declared.Power == 0 || declared.Target != skill.Enemy {
+		if err != nil || declared.Power == 0 || !aimedAtAnEnemy(declared) {
 			continue
 		}
 		best := int64(0)
@@ -613,7 +675,7 @@ func (p *pricing) worstStrikes(unit *Unit) int {
 		}
 		for _, id := range other.Skills {
 			declared, err := p.fight.books.Skills.Lookup(id)
-			if err != nil || declared.Power == 0 || declared.Target != skill.Enemy {
+			if err != nil || declared.Power == 0 || !aimedAtAnEnemy(declared) {
 				continue
 			}
 			if count := declared.StrikeCount(); count > strikes {
@@ -652,7 +714,7 @@ func (b *Battle) bestAgainst(actor, victim *Unit) int64 {
 	best := int64(0)
 	for _, id := range actor.Skills {
 		declared, err := b.books.Skills.Lookup(id)
-		if err != nil || declared.Power == 0 || declared.Target != skill.Enemy {
+		if err != nil || declared.Power == 0 || !aimedAtAnEnemy(declared) {
 			continue
 		}
 		reaches := false
