@@ -391,6 +391,26 @@ answers rather than screen logic:
   - ⚠️ A squad rate is **not** the roster's win rate, and the screen says so in
     prose under the figure. That line is wrapped against **minWidth**, not the
     window in hand, for the reason the art chooser measures its room that way.
+- The **played battle** (`cmd/hexforge-tui/play.go`) is raised from the fight
+  with `p`: the same pairing, one battle, the opponent played by
+  `battle.Suggest`. `↑/↓` a skill, `enter` takes it and asks *where* only when
+  there is more than one cell, `a` hands the turn to the engine, `p` passes, `u`
+  undoes, `n` is another seed.
+  - It draws with `internal/tui` — `Board`, `Roster`, `Order`, `Line` — rather
+    than with drawings of its own: what is played here has to look like what the
+    game client plays, and a second drawing of a battle is a second thing that
+    can disagree about what happened.
+  - **Undo is a shorter script replayed**, not an unwinding: the script is cut at
+    the player's last decision and the battle rebuilt from the seed. The engine's
+    turns are recorded too, because a half that was not written down would replay
+    as a different battle.
+  - ⚠️ **The only screen holding something the model does not copy.** Every other
+    screen is a value; a `*battle.Battle` is a pointer, so a mutation reaches
+    every copy of the model. The battle is stepped in `update` and **never**
+    touched in `view`, which is what stops a redraw playing a turn.
+  - `take`/`skip` are two methods rather than one taking a `Decision`, so a
+    decision with a skill and no aim — which the engine refuses and nothing here
+    should be able to build — cannot be written at all.
 - ⚠️ **One loadout rule, and it had quietly become two.** "Which four of the nine
   may this unit bring" existed as `seed.chooseFrom` *and* `cast.chosenFor`, both
   unexported, both worded slightly differently — and the builder needed it a

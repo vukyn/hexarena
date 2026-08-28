@@ -584,6 +584,19 @@ const (
 	FightCaution
 	FightFooter
 
+	// Playing a battle by hand against the opponent the engine plays.
+	PlayHeading
+	PlaySeed
+	PlayYourTurn
+	PlayAimAt
+	PlayWon
+	PlayLost
+	PlayDrawn
+	PlayEmptied
+	PlayFooter
+	PlayAimFooter
+	PlayOverFooter
+
 	keyCount
 )
 

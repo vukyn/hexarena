@@ -1446,6 +1446,58 @@ the figure. The roster is the instrument — levelled, guarded by tests, the thi
 every balance number in this repository is quoted against — and a squad is
 whatever somebody built this afternoon.
 
+#### Playing one yourself
+
+`p` on the fight screen hands the same pairing to you instead of to the engine:
+one battle, your squad against the one the chooser is on, with the opponent
+played by `battle.Suggest`.
+
+```
+trận đấu  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ ...
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [#########.]  2856/3100     73   mire (1t)
+E1   Example Adept        [#########.]  2964/3100     90   block x2 (2t)
+
+next: E1 A1 E1 A1 E1 A1
+
+    E1   hits A1 for 122, 2856 left
+    E1   mire x1 on A1, now 1
+  A1  turn 2
+
+A1 Example Adept, lượt 2
+> strike
+  riptide
+  guard_wall
+  purify
+```
+
+`↑/↓` picks a skill, `enter` takes it — and asks **where** only when there is
+more than one legal cell, because a question with one answer is not a decision.
+`a` hands the turn to the engine, `p` passes it, `u` takes back your last one,
+`n` is another seed, `esc` leaves.
+
+The board, the roster, the queue and the log lines are `internal/tui`'s own
+drawing — the game client's, not the forge's. That is deliberate: what you play
+here has to look like what you play there, and a second drawing of a battle is a
+second thing that can disagree about what happened.
+
+**Undo is not an unwinding.** A battle is a pure function of its seed and the
+decisions taken, so taking one back is a *shorter list replayed*: the script is
+cut at your last decision and the whole battle is rebuilt from the seed. That is
+the same property `--verify` rests on, and it is why the engine's turns are
+written into the script too — a half that was not written down would replay as a
+different battle.
+
+⚠️ **This screen is the one thing the model does not copy.** Every other screen
+is a value, so a field written while drawing is thrown away with the copy; a
+battle is a pointer, and a mutation reaches every copy of the model there is. So
+the battle is stepped in `update` and never touched in `view` — which is what
+keeps a redraw from playing a turn.
+
 #### One loadout rule, which had quietly become two
 
 "Which four of the nine may this unit bring" was written down **twice** before

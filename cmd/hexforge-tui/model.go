@@ -63,6 +63,10 @@ const (
 	// the reason screenSpar is raised from the check: that is where a squad is
 	// under a cursor, and a measurement wants a subject before anything else.
 	screenFight
+	// screenPlay is raised from the fight, for the reason the fight is raised
+	// from the catalogue: that is where a pairing is already chosen, and a
+	// battle wants two squads before it wants anything else.
+	screenPlay
 )
 
 // The smallest window the screens fit in.
@@ -149,6 +153,7 @@ type model struct {
 	builds   buildsScreen
 	squad    squadScreen
 	fight    fightScreen
+	play     playScreen
 	// chart holds nothing: it is drawn from the library every time and has no
 	// cursor. It is a field anyway so that the screen is dispatched to like every
 	// other one, rather than being a special case in three switches.
@@ -197,6 +202,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		builds:   newBuildsScreen(lib),
 		squad:    newSquadScreen(lib),
 		fight:    newFightScreen(),
+		play:     newPlayScreen(),
 		check:    newCheckScreen(lib),
 		preview:  newPreviewScreen(),
 		spar:     newSparScreen(),
@@ -301,6 +307,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.squad.update(m, message)
 	case screenFight:
 		return m.fight.update(m, message)
+	case screenPlay:
+		return m.play.update(m, message)
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
@@ -381,6 +389,11 @@ func (m model) enter(target screen) model {
 		m.squad = m.squad.refresh(m.lib)
 	case screenFight:
 		m.fight = m.fight.refresh()
+	case screenPlay:
+		// A battle is built on the way in rather than lazily in the view: the
+		// screen holds a pointer, and building one while drawing would be a
+		// redraw with a side effect.
+		m.play = m.play.begin(m)
 	case screenSpar:
 		m.spar = m.spar.refresh()
 	}
@@ -436,6 +449,8 @@ func (m model) screenContent() string {
 		body, footer = m.squad.view(m)
 	case screenFight:
 		body, footer = m.fight.view(m)
+	case screenPlay:
+		body, footer = m.play.view(m)
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:

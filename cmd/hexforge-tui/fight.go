@@ -85,6 +85,15 @@ func (f fightScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 		if len(squads) > 0 {
 			f.away = (f.away + 1) % len(squads)
 		}
+	case "p":
+		// Play the pairing by hand. What the run answers over two hundred
+		// battles, one played battle answers once — and the two belong beside
+		// each other, because a rate says which squad is better and playing one
+		// says why.
+		if len(squads) > 0 {
+			m.fight = f
+			return m.enter(screenPlay), nil
+		}
 	case "+", "=":
 		f.seeds = clamp(f.seeds*2, fightMinSeeds, fightMaxSeeds)
 	case "-":

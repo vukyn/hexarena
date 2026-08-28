@@ -126,6 +126,20 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	fight := withASquadSaved(t, building).enter(screenFight)
 	// And the same screen with nothing to fight, which is a different line.
 	noSquads := m.enter(screenFight)
+	// The battle, in each of the three states it draws: waiting on a skill,
+	// waiting on a cell, and over. The board and the roster in it are the game
+	// client's own drawing rather than this one's, and they are measured here
+	// because this is the screen that has to fit them beside a menu.
+	battle := fight.enter(screenPlay)
+	aiming := battle
+	aiming.play.aiming = true
+	finished := battle
+	for range 200 {
+		if finished.play.fight == nil || finished.play.fight.Finished() {
+			break
+		}
+		finished = typeText(t, finished, "a")
+	}
 	return map[string]model{
 		"shape diagram":    shape,
 		"spar":             spar,
@@ -159,6 +173,9 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"a squad trait":    traitPick,
 		"a fight":          fight,
 		"nothing to fight": noSquads,
+		"a battle":         battle,
+		"aiming":           aiming,
+		"a battle over":    finished,
 		"traitless build":  traitless,
 	}
 }

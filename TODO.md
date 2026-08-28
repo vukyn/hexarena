@@ -67,10 +67,17 @@ is only so the shape is readable.
 - **Squads.** A side is built in the TUI — who is in it, what each brings, where
   each stands — saved to `squads.json`, and fought against another over N seeds
   **both ways round**, which is what makes a mirror read exactly even instead of
-  reporting the first slot's advantage as the squad's.
+  reporting the first slot's advantage as the squad's — or played by hand against
+  the engine, one battle at a time, with undo.
 
 ## Not done
 
+- [ ] **Write a played battle out as a log.** The play screen already holds
+      everything `battle.Log` wants — the seed, the roster and the whole script,
+      both sides in it — so a save key would make a hand-played battle replayable
+      and **verifiable** by the game client. Left out of the screen that built it
+      deliberately, to keep that change one thing. → `README.md` § Playing one
+      yourself.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
