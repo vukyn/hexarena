@@ -966,9 +966,9 @@ drifts. Marshal is also the one place in `cast` that *imposes* an order rather
 than preserving the authored one; everything else keeps declaration order,
 because a map range would randomise it.
 
-**`roster.json` is an instrument, not a scenario, and it has three contracts.**
+**`roster.json` is an instrument, not a scenario, and it has four contracts.**
 It is 3v3 by character reference — ally Venusaur 60 / Wartortle 16 / Charmander 8
-against enemy Blastoise 60 / Charmeleon 28 / Ivysaur 16 — and each of those is
+against enemy Blastoise 60 / Charmeleon 30 / Ivysaur 30 — and each of those is
 load-bearing:
 
 - **No unit on both sides.** It used to be the same character three times per
@@ -978,14 +978,18 @@ load-bearing:
   `TestTheShippedRosterIsNotAMirror` compares the **resolved** units — name and
   stat line — because a species and a level resolve to those, and two units
   agreeing on them are the same unit however they were authored.
-- **Every unit reaches every enemy.** `battle.New` only refuses a unit that can
-  reach *nobody*, which is right for a game; the seed roster is held to the
-  stricter rule by `TestEveryShippedUnitCanReachEveryEnemy`, because a battle that
-  cannot finish measures nothing. ⚠️ Slot `1,2` is **four** cells from the enemy's
-  own `1,2` — past every range in the cast — and a draft that used it stalled 5
-  seeds in 4000, not even as a draw: a survivor kept refreshing a regeneration, so
-  something was always pending and `frozen` correctly never fired. Check a new
-  slot against `hex.Place` rather than against the picture.
+- **Every unit reaches past the enemy's front rank.** `battle.New` refuses
+  nothing on reach any more — it cannot, because a range of one always finds
+  whoever is foremost — so the roster is held to the stricter rule by
+  `TestEveryShippedUnitCanReachEveryEnemy`: every unit carries at least one skill
+  of depth two or more. A squad whose whole back half is decoration until the
+  enemy's front line dies is playable, and it is not what this roster is for.
+  ⚠️ **This contract used to be about cells and no longer is.** Slot `1,2` was
+  once **four** cells from the enemy's own `1,2` — past every range in the cast —
+  and a draft that used it stalled 5 seeds in 4000, not even as a draw: a
+  survivor kept refreshing a regeneration, so something was always pending and
+  `frozen` correctly never fired. Distance cannot strand anybody now; **depth**
+  can, which is why the check moved onto the kit.
 - **Both trait states and all three stages are in play.** Charmander at 8 is below
   `blaze`'s unlock level, Wartortle at 16 sits exactly on `endurance`'s, and Ivysaur
   at 30 has earned two traits and fields neither — so a battle exercises a unit with
@@ -993,6 +997,34 @@ load-bearing:
   became gated it carries a third state as well: Charmeleon holds it from the
   opening board and only comes *into* it partway down, which is what a shipped log
   now shows a `passive_held` for mid-battle.
+- ⚠️ **The formation is what makes the figure, and it is placed to be screened.**
+  Every unit stands where it does for a reason: each ace holds its side's **back**
+  column at `0,1`, the two young units share the middle column at `1,0` and `1,1`,
+  and the **front column is empty on both sides**.
+  ⚠️ **Placement is purely defensive now** — a unit's reach does not depend on
+  where it stands, only on what it can be aimed past — so "ace at the back" is the
+  dominant placement, and the roster ships it on **both** sides rather than handing
+  it to one. The shipped roster had the aces in **front**, authored for a board
+  where reach was distance, and it read **27.6%** ally over 4000 seeds once ranks
+  landed. Moving the two aces to the back column and changing nothing else — not a
+  level, not a loadout — reads **47.3%**, and the 40-seed smoke test moved 12/40 to
+  24/40 with it. Three separate things ride on that shape, and all three were
+  measured:
+  - **The ace is behind a screen.** Reach is counted in occupied ranks, so the
+    pair in the middle is the first rank an attacker meets and the ace is the
+    second — out of reach of every depth-one skill until the screen dies, which
+    is the blocking rule doing the thing it exists for.
+  - **The empty front column is deliberate.** An empty rank costs no range, so the
+    ace sits at depth **two** rather than three and both sides can still be fought
+    to a finish. The shipped board is therefore the standing demonstration of that
+    rule as well as of blocking.
+  - **The screen is adjacent.** `1,0` and `1,1` touch; splitting the pair to
+    `1,0` and `1,2` reads **31.1%** against the adjacent pair's 47.3% over the
+    same 4000 seeds, because an area shape that catches both of them is most of
+    what the young units are for.
+
+  `TestTheShippedFormationScreensItsAce` holds the first and the third of those,
+  because a flattened formation is a balance change that reads as a tidy-up.
 - ⚠️ **The levels are calibrated against how well the opponent plays, so an AI
   change invalidates them.** The two young enemies were 28 and 16 until `Suggest`
   learned to price statuses; the roster then read **80.0% ally over 20,000 seeds**
@@ -1001,6 +1033,13 @@ load-bearing:
   from 79.0% to 4.0% at 4000 seeds. Tune the young units, and change one thing at a
   time: the loadouts were deliberately left alone in that pass so the level was the
   only thing measured.
+  ⚠️ **They were left alone in the blocking pass too, and the room is narrower
+  than it looks.** Charmeleon cannot go below **20** (`dragon_rage` is learned
+  there) and Ivysaur cannot go below **20** either (two traits earned is the
+  contract above), so the whole dial is 20..30 on each. Swept over that grid on
+  the screened formation it spans **40% to 82%** ally, and the shipped 30/30 sits
+  at the bottom of it — which is why the placement was the answer and the levels
+  were left alone.
 
 ⚠️ **The 40-seed sweep in `TestSeedBattlesFinishFromEverySeed` is a smoke test, not
 a measurement.** It read 45 per cent on a draft whose true rate over 4000 seeds

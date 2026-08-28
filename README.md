@@ -47,19 +47,41 @@ board. Without that rotation the two halves would not mirror: odd columns sit
 half a cell lower, so identically-authored slots would have different distance
 profiles and the matchup would be quietly unbalanced.
 
-Range is hex distance on that shared grid, which gives it a legible ladder:
+**Range is depth into the enemy's half, not distance from the caster.** A skill
+of range N reaches the first N *occupied* columns of the opposing side, counted
+from that side's own frontline:
 
 | range | reaches |
 | --- | --- |
-| 1 | the opposing frontline |
-| 2 | its middle column |
-| 3 | its backline |
-| 5 | anywhere on the board |
+| 1 | whoever stands foremost, wherever that is |
+| 2 | that rank and the next occupied one behind it |
+| 3 | the whole of the opposing half |
 
-A hex has six neighbours and no diagonal to argue about, which is why the grid is
-hex rather than square. On a square grid with Chebyshev distance the three rows
-stop mattering as soon as the columns are two apart; with Manhattan distance a
-melee unit cannot reach the enemy standing diagonally in front of it.
+Three follow from it, and each is a rule in its own right:
+
+- **An empty column costs nothing.** There is nobody there to shoot past, so a
+  range of one finds the enemy's foremost survivor however far back it has been
+  pushed by its own losses.
+- **Blocking is by the whole rank.** One unit anywhere in a column shields every
+  column behind it, which is what makes killing the front rank the move that opens
+  the board. Deliberately not per-row: a single gap would otherwise expose a whole
+  column, and a screen you can shoot the corner of is not a screen.
+- **A unit's own column changes nothing about its reach.** Nothing on this board
+  moves, so measuring reach from the caster's cell made a back-line placement
+  unable to use its own kit — a range-one unit in the back corner had nothing it
+  could ever do, which is a fact about where its author put it rather than about
+  the skill. Placement is therefore purely **defensive** now: where a unit stands
+  decides what can be aimed at it, and nothing else.
+
+⚠️ **The old ladder — 1 = frontline, 2 = middle, 3 = backline, 5 = anywhere — is
+dead.** Three ranks are the whole of a side, so `maxRange` is three and a four
+would have meant what a three means.
+
+The grid is still hex, and for the reason it always was: a hex has six neighbours
+and no diagonal to argue about. Area shapes are measured on it — on a square grid
+with Chebyshev distance the three rows stop mattering as soon as the columns are
+two apart, and with Manhattan distance a melee unit cannot reach the enemy
+standing diagonally in front of it.
 
 ## Turn order
 
@@ -646,16 +668,24 @@ reader to work it out from what stopped happening.
 | `annihilation` | both sides are empty, which a simultaneous kill can produce |
 | `stalemate` | units are alive on both sides and nobody can act again |
 
-The third is the one that needs explaining, and it exists because **nothing on
-this board moves**. A unit occupies the slot it was placed in for the whole
-battle, so its reach is settled the moment it is enlisted — and the enemies worth
-reaching are not, because they die. Measured through `hex.Place`, the nearest
-enemy is one cell from the front column, two from the middle and three from the
-back, so a short-ranged unit standing behind the front stops being able to act at
-all the moment the enemies near it fall. Two of them, one on each side, is a
-battle that can never finish. It is not hypothetical: seed 18 once spent 3955 of
-its 4000 turns skipped, every one a unit with nothing usable, and came back as a
+The third is the one that needs explaining. ⚠️ **The reason it exists is no
+longer the reason it was built**, and the difference matters to anybody reading
+the code around it.
+
+It was built for a board where reach was distance. A unit occupies the slot it
+was placed in for the whole battle, so under that rule its reach was settled at
+enlistment while the enemies worth reaching were not, because they die: a
+short-ranged unit standing behind the front stopped being able to act at all the
+moment the enemies near it fell, and two of them, one on each side, was a battle
+that could never finish. It was not hypothetical — seed 18 once spent 3955 of its
+4000 turns skipped, every one a unit with nothing usable, and came back as a
 battle that never ended rather than as a result.
+
+**That freeze cannot happen now.** Reach is counted in occupied ranks, so a range
+of one always finds whoever is foremost and no survivor can be out of range of
+another. What still can happen is a freeze made of **kits** rather than of
+geometry — every living unit holding nothing it may legally aim, a healer with a
+full team, a summoner at its cap — and that is what `stalemate` is kept for.
 
 A stalemate is declared when, for every living unit, **nothing timed is on it**
 and **no skill it knows has a legal aim, cooldowns ignored**. Both halves are
@@ -674,13 +704,13 @@ resolved is worse than letting the turn limit catch a real runaway:
   draws on one machine has to draw on every other from the same seed, and a
   counter is one more thing two runs could disagree about.
 
-The common case is caught earlier and more cheaply. `battle.New` refuses a roster
-holding a unit that can aim at nobody from the slot it was given, and `hexforge
-check` **warns** — rather than fails — when a character's longest range cannot
-reach anybody from the column its archetype puts it in. A warning, because the
-squad in front of it is what does the reaching and that is a design an author may
-well mean. Neither is sufficient on its own, which is the point: reach shrinks as
-units die, so a roster that starts fine can still end deadlocked.
+⚠️ **`battle.New` used to refuse a roster holding a unit that could aim at
+nobody from the slot it was given, and that guard is gone** — not relaxed, but
+unreachable: there is no longer a placement it could fire on. `hexforge check`
+kept a warning at the same spot and it says something else now, that a character's
+whole kit stops at the enemy's first rank, which makes it a passenger until that
+rank dies. A warning rather than a failure, because that is a design an author may
+well mean.
 
 The turn limit stays what it always was, a backstop. It is no longer standing in
 for an outcome the engine could not express, so reaching it now means something
@@ -962,35 +992,57 @@ is what stopped `razor_leaf`'s piercing value from being judged by anything but
 its damage table — giving it 400 moved the ally win rate from 23 of 40 to 25,
 which is nothing.
 
-Now it measures. Over four thousand auto-battles the roster sits at **49.5 per
+Now it measures. Over four thousand auto-battles the roster sits at **47.3 per
 cent** to the ally, on a roster where the ally holds the only Venusaur and the
-enemy the only Blastoise. It has moved four times, and every move was a feature
-landing rather than a number being tuned: 48.5 before `blaze` was gated, 49.2
-after, 51.9 once `venom_blood` began answering whatever attacked it, and 49.5
-once a placement had to bring four skills out of nine. The reply moved it toward
-the ally because the ally's Venusaur is the unit most attacked on the board; the
-slots moved it back, because that same unit is the one with the deepest kit to
-lose. Taking `razor_leaf`'s pierce off now moves it to 46.0 — see *Piercing* for
-what that figure has done across the three games it has been measured in. The 40-seed sweep the test runs reads
-20–20, and it is far too coarse to tune against: it read 45 per cent on a draft
-whose true rate was 55.
+enemy the only Blastoise. It moved four times on features landing rather than on
+numbers being tuned — 48.5 before `blaze` was gated, 49.2 after, 51.9 once
+`venom_blood` began answering whatever attacked it, and 49.5 once a placement had
+to bring four skills out of nine — and then it moved for a reason of a different
+kind.
 
-Four properties earn their place, and each is a way the roster was wrong before:
+⚠️ **Reach became depth and the figure fell to 27.6 per cent, on a roster nobody
+had touched.** Ranks made a front line shield the two columns behind it, and both
+aces stood in *front* of their squads, placed for a board where the column a unit
+occupied decided what it could hit. Moving each ace to its own back column and
+changing nothing else — not a level, not a loadout, not a skill — reads **47.3
+per cent** over the same 4000 seeds. Every rate quoted above it was measured
+before ranks and none of them carries across.
+
+Taking `razor_leaf`'s pierce off moved the pre-ranks roster to 46.0 — see
+*Piercing* for what that figure has done across the games it has been measured in.
+The 40-seed sweep the test runs reads 24–16, and it is far too coarse to tune
+against: it read 45 per cent on a draft whose true rate was 55.
+
+Five properties earn their place, and each is a way the roster was wrong before:
 
 - **Every number weighs differently on the two sides.** Each species appears at a
   different level on each, so touching bulbasaur's curve moves an ally ace and an
   enemy support rather than two identical units. `TestTheShippedRosterIsNotAMirror`
   holds that, and it compares the *resolved* units — a name, a stat line — because
   two units agreeing on those are the same unit however they were authored.
-- **Every unit can reach every enemy.** `battle.New` only refuses a unit that can
-  reach nobody, which is the right rule for a game; the seed roster is held to
-  the stricter one, because a battle that cannot finish measures nothing. An
-  earlier draft stood its third unit on slot 1,2, which is **four** cells from
-  the enemy's own 1,2 and past every range in the cast — and five seeds in four
-  thousand ended with two survivors unable to touch each other. It was not even a
-  draw: one kept refreshing a regeneration, so something was always pending and
-  the board was never final. `TestEveryShippedUnitCanReachEveryEnemy` is that
-  lesson.
+- **Every unit reaches past the enemy's front rank.** Nothing refuses a unit on
+  reach any more — a range of one always finds whoever is foremost — so the
+  stricter rule the seed roster is held to had to be restated: every unit carries
+  at least one skill of depth two or more, because a squad whose back half is
+  decoration until the enemy's front line dies measures only its front line.
+  ⚠️ The lesson this bullet used to carry was about cells: an earlier draft stood
+  its third unit on slot 1,2, **four** cells from the enemy's own 1,2 and past
+  every range in the cast, and five seeds in four thousand ended with two
+  survivors unable to touch each other — not even as a draw, because one kept
+  refreshing a regeneration so something was always pending. Distance cannot
+  strand anybody now. `TestEveryShippedUnitCanReachEveryEnemy` kept the name and
+  asks the new question.
+- **The aces stand behind a screen, and the screen is adjacent.** Each ace holds
+  its side's back column at `0,1`; the two young units share the middle at `1,0`
+  and `1,1`; the front column is **empty on both sides**. Every part of that is
+  measured. Screening the aces is worth 27.6% → 47.3%. Splitting the pair to
+  `1,0` and `1,2` — the same three units, one row apart — reads **31.1%**,
+  because an area shape catching both of them is most of what the young units do.
+  The empty front column is what keeps the aces at depth **two** rather than
+  three: an empty rank costs no range, so the board is also the standing
+  demonstration of that rule. ⚠️ Placement is purely defensive now, so *ace at the
+  back* is the dominant shape and the roster gives it to **both** sides rather
+  than to one. `TestTheShippedFormationScreensItsAce` refuses a flattening.
 - **Every element appears on both sides**, so neither squad holds an answer the
   other cannot have. The matchups are not a closed triangle: water beats fire and
   fire beats grass, but **grass against water is neutral**, so grass has no
@@ -1012,6 +1064,15 @@ The two young enemies were **Charmeleon 28 and Ivysaur 16** for as long as
 deeper opponent* — the roster read **80.0% ally over 20,000 seeds**, and an
 instrument that lopsided cannot measure the next change. It is now **Charmeleon 30
 and Ivysaur 30**, which reads **49.1%**.
+
+⚠️ **Every figure in this section predates ranks and none of them was re-measured
+when reach changed.** They are kept because the *shape* of the lesson survives —
+the ace level is not a dial, the young units are — but the numbers belong to the
+board they were taken on. On today's screened board the whole dial is narrow:
+`dragon_rage` is learned at 20 and two earned traits is a contract, so neither
+young enemy can go below **20**, and sweeping the 20..30 grid on both spans
+roughly **40% to 82%** ally. 30/30 sits at the bottom of that range, which is why
+the blocking pass was answered with placement and the levels were left alone.
 
 Three things about that, because each of them is the sort of thing the next person
 re-levelling will want:
@@ -1199,14 +1260,16 @@ deliberate — first declared is first choice, and every other rule (longest ran
 highest power) would be the tool inventing an opinion about what a character is
 for.
 
-**Both stand in the front column.** Nothing on this board moves, so the slot
-decides what a kit can reach, and that is the only column that asks nothing of
-one: `hex.ReachNeeded` is 1 there, which is the shortest range a skill may
-declare, and a skill aimed at its own caster is aimed at a cell that is always
-occupied. So no legal kit can be unaimable from a duel slot, which is why a
-refused pairing is an error rather than a row of zeroes — and
-`TestTheDuelSlotAsksTheLeastOfAKit` is what keeps that true if the board ever
-changes shape.
+**Both stand in the front column**, though the column no longer decides
+anything. A duel puts one unit on each side, so there is exactly one occupied
+rank to reach and it sits at depth one from every slot on the board; every skill
+either declares a range of at least one or is aimed at its own caster, a cell
+that is always occupied. So no legal kit can be unaimable in a duel, which is why
+a refused pairing is an error rather than a row of zeroes — and
+`TestNoKitIsUnaimableInADuel` is what keeps that true. ⚠️ It used to be
+`TestTheDuelSlotAsksTheLeastOfAKit`, asserting that the front column asked the
+shortest range of a kit; under ranks no column asks more than another, so the
+claim had to move off the slot and onto the kits.
 
 What the report deliberately does not do is choose an early form. A stage curve
 only rises, so fielding one is a trade an author makes on purpose, and measuring

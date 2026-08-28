@@ -393,38 +393,6 @@ func Ranks(side Side) [][]Offset {
 	return out
 }
 
-// ReachNeeded is the shortest range that can touch anybody at all from a
-// formation column: the distance to the nearest opposing slot, taken from the
-// worst row of that column so the answer holds wherever in it a unit stands.
-//
-// Nothing on this board moves, so a unit's reach is settled the moment it is
-// placed, and this is the number that settles it. Today the answers are one from
-// the front column, two from the middle and three from the back — but they are
-// measured through Place rather than written down, because the mirroring is what
-// produces them and a constant would go quietly wrong the day the board changed
-// shape.
-//
-// A column outside the formation grid reports zero, which is no reach at all.
-func ReachNeeded(col int) int {
-	if col < 0 || col >= FormationCols {
-		return 0
-	}
-	needed := 0
-	for row := 0; row < Rows; row++ {
-		mine := Place(SideAlly, Offset{Col: col, Row: row})
-		nearest := 0
-		for _, theirs := range SideCells(SideEnemy) {
-			if distance := mine.DistanceTo(theirs); nearest == 0 || distance < nearest {
-				nearest = distance
-			}
-		}
-		if nearest > needed {
-			needed = nearest
-		}
-	}
-	return needed
-}
-
 // Render draws the battlefield as interlocking ASCII hexes, which is how the
 // terminal client shows a formation. label is called once per cell and may
 // return up to two characters; anything shorter is padded, longer is cut.

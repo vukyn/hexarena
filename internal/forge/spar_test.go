@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
-	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -236,37 +235,33 @@ func TestTheHeadlineRateLeavesTheControlOut(t *testing.T) {
 	t.Skip("no character in the book is lopsided enough for the control to move its headline")
 }
 
-// TestTheDuelSlotAsksTheLeastOfAKit is the assumption that lets a refused
-// pairing be an error rather than a row.
+// TestNoKitIsUnaimableInADuel is the assumption that lets a refused pairing be
+// an error rather than a row.
 //
-// A duel puts both sides in the front column, one cell apart, and every skill in
-// the book is either aimed at its own caster — a cell that is always occupied —
-// or declares a range of at least one. So no legal kit can be unaimable from
-// here, battle.New cannot refuse one pairing while accepting another, and what
-// is left it can refuse is a fault in the books that every row would share.
+// ⚠️ It used to be TestTheDuelSlotAsksTheLeastOfAKit, and it asked a question
+// the board no longer answers: which column demands the shortest range. Reach is
+// depth into the enemy's half now, so no column demands more than another and
+// the claim has to be made about the **kits** instead.
 //
-// The day somebody moves the slot back a column or writes a rule that makes a
-// range of one insufficient, this is what says so, and whoever does it decides
-// then whether a spar should carry a failed row again.
-func TestTheDuelSlotAsksTheLeastOfAKit(t *testing.T) {
-	if needed := hex.ReachNeeded(duelSlot.Col); needed != 1 {
-		t.Fatalf("the duel slot's column needs a reach of %d, and the shortest range a skill "+
-			"may declare is 1, so a melee kit can no longer be measured", needed)
-	}
-	for _, column := range []int{0, 1, 2} {
-		if hex.ReachNeeded(column) < hex.ReachNeeded(duelSlot.Col) {
-			t.Errorf("column %d asks less of a kit (%d) than the duel slot's column %d (%d)",
-				column, hex.ReachNeeded(column), duelSlot.Col, hex.ReachNeeded(duelSlot.Col))
-		}
-	}
+// A duel stands one unit on each side, so there is exactly one occupied rank to
+// reach and it is at depth one. Every skill in the book is either aimed at its
+// own caster — a cell that is always occupied — or declares a range of at least
+// one, so no legal kit can be unaimable here, battle.New cannot refuse one
+// pairing while accepting another, and what is left it can refuse is a fault in
+// the books that every row would share.
+//
+// The day somebody writes a rule that makes a range of one insufficient, this is
+// what says so, and whoever does it decides then whether a spar should carry a
+// failed row again.
+func TestNoKitIsUnaimableInADuel(t *testing.T) {
 	lib := sparLibrary(t)
 	for _, declared := range lib.Skills().Skills() {
 		if declared.Target == skill.Self {
 			continue
 		}
-		if declared.Range < hex.ReachNeeded(duelSlot.Col) {
-			t.Errorf("%s reaches %d from a slot that needs %d, so a character holding only it "+
-				"could not be measured", declared.ID, declared.Range, hex.ReachNeeded(duelSlot.Col))
+		if declared.Range < 1 {
+			t.Errorf("%s declares a range of %d, so a character holding only it could not "+
+				"be measured from any slot", declared.ID, declared.Range)
 		}
 	}
 }
