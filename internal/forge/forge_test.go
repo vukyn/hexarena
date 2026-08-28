@@ -1812,21 +1812,38 @@ func TestEveryShippedSkillTakesABalanceEdit(t *testing.T) {
 			t.Errorf("%s cannot be rebalanced: %v", current.ID, err)
 			continue
 		}
-		// An edit names one field and must carry every other one through
-		// untouched, and a restriction is the field where losing it is silent:
-		// the file still loads, every carrier still carries, and the skill has
-		// quietly become free to anybody. That is not hypothetical -- the draft
-		// held three allowlists and the fourth arrived with species, so every
-		// balance edit to a lineage skill dropped its lineage until this line
-		// was here to say so.
+		// An edit names one field and must carry **every** other one through
+		// untouched. The whole skill is compared rather than a chosen field, and
+		// that widening is the point of this block: it was written to watch one
+		// field, the restriction, after the draft held three allowlists and the
+		// fourth arrived with species — so every balance edit to a lineage skill
+		// dropped its lineage. Watching one field caught that one and then missed
+		// the next: `flavour` was wiped by the identical mechanism, silently, for
+		// as long as the clause existed.
+		//
+		// The mechanism is worth naming, because a third field will find it.
+		// SkillAnswers and resolveOnto are hand-maintained inverses with no
+		// compile-time link between them: resolveOnto assigns a field, so a field
+		// SkillAnswers forgets to read back is overwritten with a zero. Anything
+		// resolveOnto assigns is at risk; anything it leaves alone rides through
+		// on the base skill. Comparing the whole value is the only assertion that
+		// does not have to be extended each time somebody adds a field.
 		after, err := lib.Skills().Lookup(current.ID)
 		if err != nil {
 			t.Errorf("%s is gone after its own edit: %v", current.ID, err)
 			continue
 		}
-		if !reflect.DeepEqual(current.Restrict, after.Restrict) {
-			t.Errorf("%s was kept for %+v before the edit and %+v after",
-				current.ID, current.Restrict, after.Restrict)
+		// The one field the edit was allowed to change, put back before the
+		// comparison, so the comparison can be of everything else at once.
+		expected := current
+		expected.Power = after.Power
+		if !reflect.DeepEqual(expected, after) {
+			t.Errorf("%s changed something other than its power:\nbefore %+v\nafter  %+v",
+				current.ID, expected, after)
+		}
+		if after.Power != current.Power+1 {
+			t.Errorf("%s: the edit set power to %d, want %d",
+				current.ID, after.Power, current.Power+1)
 		}
 	}
 	if _, err := Load(dir); err != nil {
