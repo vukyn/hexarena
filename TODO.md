@@ -60,8 +60,11 @@ is only so the shape is readable.
 - **Measuring the opponent.** `forge.Bout` fights two ratings head to head over the
   same seeds from both ends of the board, on an **exactly even** control it refuses
   to print a figure without, against a frozen ruler (`FirstUsable`) that may never
-  be improved. `Suggest` beats it **77.9%** over 10,000 seeds, band ±0.8pp, and
-  finishes sooner (45 turns against the control's 48).
+  be improved. `Suggest` beats it **81.3%** over 10,000 seeds, band ±0.8pp, and
+  finishes sooner (45 turns against the control's 47). ⚠️ That figure is a reading
+  of a **board**, not of the rating alone: it was 77.9% before the first crit
+  chances landed, and the rating did not change. Re-take it after a data change
+  rather than quoting the last one.
 - **Balance.** Every enemy-aimed range re-read under the rank rule, and each ace
   moved to its own back column behind a screen — 27.6% ally → **47.3%**. Both were
   data answers, and the formation is guarded by a test rather than by whoever
@@ -88,13 +91,6 @@ is only so the shape is readable.
 - [ ] **Grow the cast.** Four ship across two origins, one per element (grass,
       fire, water, wind). This is content, and the constraints that bound it are
       written down. Read Squirtle first. → `CLAUDE.md` § Open work.
-- [ ] **A deeper opponent — what is left is the queue.** *Where* in the order an
-      extra turn falls is the one thing `Suggest` still cannot see, and it lands as
-      a **tie-break** rather than a term: a queue reading may be **compared**, never
-      added or multiplied, because a value that reaches an arithmetic expression is
-      tempo and tempo is priced from the speed stat. Everything else is priced —
-      tempo, all-sided skills, not wasting a scarce skill, and declining a losing
-      turn. Waiting is decided against; see below. → `CLAUDE.md` § Rating an action.
 - [ ] **`reckless` is the dragon build's 22.1%, and a detonate does not fix it.**
       The trait grants `unleashed` (+300‰ attack) **and** `bare` (−400‰ defence
       *and* −400‰ dodge), all permanent: two stats paid for one, into a matchup
@@ -144,6 +140,22 @@ is only so the shape is readable.
   copy of the resolving arithmetic — and either costs about ×36 a turn.
   → `CLAUDE.md` § Rating an action; `TestAPassBuysNoCooldownAnActDoesNot` and
   `TestNothingWaitsOnPurpose`.
+- **The queue as a third tie-break key.** Built, measured and **thrown away**.
+  `take` was given a key under `cooldown` — when value and cooldown are both
+  level, take the aim whose occupant acts soonest — and it moved **0 of 93,320
+  decisions** over 2,000 shipped battles. Against the rating without it: **500‰
+  with 10,000 wins and 10,000 losses**, which is not a narrow result but the
+  *control signature* — the two ratings played the identical battle every time,
+  and no golden moved. ⚠️ The premise was wrong, not the code: "one skill pointed
+  at several cells has the same cooldown on every call, so the winner is whichever
+  cell `hex.Cells` lists first" is true, but a tie needs the **values** level too,
+  and shipped units differ in health, defence and affinity, so two aims almost
+  never rate to the same integer. A census found **0 prompts** tied on both.
+  Do not rebuild it without first showing the tie exists on the board in hand.
+  The rule it was built under is worth keeping and is kept: **a queue reading may
+  be compared, never added or multiplied** — a value that reaches an arithmetic
+  expression is tempo, and tempo is priced from the speed stat.
+  → `CLAUDE.md` § Rating an action.
 - **`at_stage` on a learnset entry.** Unblocked and deliberately not built:
   `at_stage: "Ivysaur"` is exactly `stages: ["Ivysaur","Venusaur"]`, and two
   vocabularies for one idea is the cost. → `README.md`.
