@@ -873,6 +873,72 @@
           "dodge": 20
         }
       }
+    },
+    {
+      "id": "water_pulse",
+      "name": "thủy ba",
+      "flavour": "Dội một vòng sóng ép thẳng vào giữa, sức nén dội lại từ mọi phía",
+      "element": "water",
+      "range": 2,
+      "pattern": "single",
+      "power": 600,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 350,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "skull_bash",
+      "name": "húc đầu",
+      "flavour": "Thu cả người lại rồi lao thẳng vào, dồn hết trọng lượng vào một cú",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 850,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "scaling": {
+        "stat": "defense"
+      },
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "wide_guard",
+      "name": "che chắn",
+      "flavour": "Dựng một lớp chắn chìa ra trước mặt đồng đội",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "ally",
+      "applies": [
+        {
+          "status": "block",
+          "chance": 1000,
+          "stacks": 2
+        }
+      ]
     }
   ]
 }

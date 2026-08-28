@@ -1803,6 +1803,69 @@ so no figure measured before a feature can be carried across it without being
 taken again. It flipped back when four slots landed; see *Piercing*, which now
 carries all three measurements.
 
+### Two builds out of one learnset
+
+Built, and built entirely in the data: three skills, one trait, two statuses, and
+not a line of engine. Squirtle now carries ten skills and three traits, and a
+placement spends four slots and one, so the two ways to field it are two ways to
+spend them.
+
+| | thuần tank | semi tank |
+|---|---|---|
+| skills | `taunt` `withdraw` `wide_guard` `aqua_ring` | `skull_bash` `water_gun` `whirlpool` `withdraw` |
+| trait | `thorns` | `ballast` |
+| where its damage comes from | the enemy's own attacks | its own defence stat |
+| measured | **517 turns**, 5 damage a turn | **30 turns**, 100 damage a turn |
+
+⚠️ **The stat line cannot differ between them and that is the point.** Squirtle
+absorbs **11285 of the 11500** effective-health budget, so there is no room to
+make either build tougher than the other. A split that had to live in the
+numbers could not exist here; the slots are the whole of it.
+
+`skull_bash` is the **first shipped skill to scale off anything but attack**.
+`skill.Scaling` was carried, parsed, marshalled and described for a long time
+without one line of shipped data exercising it. Defence 640 against attack 460 is
+**1.39×** a point of power, so a defence-scaled skill needs about **0.72×** the
+power of an attack-scaled one to be worth the same — and the trait that raises
+defence raises its damage with it, which is what makes the semi-tank build one
+build rather than a tank holding a weapon.
+
+⚠️ **`ballast` is the attacking build's trait, not the tank's**, and that is
+measured rather than intended. Squirtle's survival is gated on how often it can
+cast `withdraw`, so a tenth off its speed is worth *more to it* than a quarter
+onto its defence: the tank build fielding `ballast` dies in nearly every battle
+the same build fielding `endurance` survives (1 of 30 against 29 of 30). The
+attacking build feels the same speed loss and pays it back through the defence
+its one defence-scaled skill reads.
+
+⚠️ **Both figures in that table are understatements**, for one reason:
+`battle.Suggest` attacks whenever it can and reaches for a skill of no power only
+when it cannot find anything to hit. The tank build's kit is exercised at all
+*only because it carries no weapon*, and the semi-tank build hardly ever stops to
+guard. A player using either deliberately gets more out of it than autopilot
+measures — and none of it can be measured by `hexforge spar`, which fields the
+first four skills a learnset declares.
+
+⚠️ **The tank build with `endurance` is unkillable in a duel** — 29 battles in 30
+run to the four-thousand-turn cap without it dying, and it deals nothing. That is
+what "thuần tank" means with one unit on each side; against a squad the incoming
+damage is five times as much and the sustain race is a different race.
+
+⚠️ **A test may not raise a stat.** `battle.New` checks a roster's stat line
+against the effective-health budget, and Squirtle is 215 short of it, so a test
+that hands it more defence fails before the battle starts. `skull_bash`'s
+scaling is proved by *halving attack* instead: the figure comes back exactly
+equal while `water_gun`, fought the same way over the same seeds, halves.
+A stat falling and damage falling with it would prove nothing on its own — a
+weaker unit dies sooner and swings fewer times.
+
+⚠️ **A trait's permanent statuses are outside that budget.** `CheckValues` takes
+a resolved stat line and knows nothing about passives, so `fortified` at +250 per
+mille of defence never meets it. `endurance` was already through the same gap.
+
+`wide_guard` is in `sharedPool`: standing in front of somebody is the same tactic
+`taunt` is, pointed the other way, and neither belongs to one fiction.
+
 ### Looking a status up
 
 Built. `Lang.DescribeStatus` sits beside `Describe` and `DescribePassive`, and it

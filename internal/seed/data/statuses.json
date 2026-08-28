@@ -205,6 +205,34 @@
           "amount": 150
         }
       ]
+    },
+    {
+      "id": "fortified",
+      "category": "buff",
+      "max_stacks": 1,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "defense",
+          "mode": "percent",
+          "amount": 250
+        }
+      ]
+    },
+    {
+      "id": "encumber",
+      "category": "stat_debuff",
+      "max_stacks": 1,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "speed",
+          "mode": "percent",
+          "amount": -100
+        }
+      ]
     }
   ]
 }

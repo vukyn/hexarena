@@ -478,8 +478,20 @@
           "at_level": 36
         },
         {
+          "id": "water_pulse",
+          "at_level": 32
+        },
+        {
           "id": "taunt",
           "at_level": 40
+        },
+        {
+          "id": "skull_bash",
+          "at_level": 44
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 44
         }
       ],
       "passives": [
@@ -490,6 +502,10 @@
         {
           "id": "thorns",
           "at_level": 32
+        },
+        {
+          "id": "ballast",
+          "at_level": 44
         }
       ]
     },

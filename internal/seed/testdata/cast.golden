@@ -52,7 +52,7 @@ pokemon.squirtle — Squirtle
   element  water
   species  turtle
   art      assets/squirtle.svg
-  kit      water_gun bubble bite@8 withdraw@12 whirlpool@16 brine@20 rapid_spin@24 aqua_ring@28 hydro_pump@36 taunt@40
+  kit      water_gun bubble bite@8 withdraw@12 whirlpool@16 brine@20 rapid_spin@24 aqua_ring@28 hydro_pump@36 water_pulse@32 taunt@40 skull_bash@44 wide_guard@44
   stage "Squirtle" owns levels 1 to 15, showing assets/squirtle.svg
     level 1  hp 950, atk 120, def 175, spd 24, acc 40, ddg 11
              absorbs 1505 of the 11500 budget, 9995 to spare

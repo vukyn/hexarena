@@ -113,6 +113,27 @@
           "stat": "defense"
         }
       }
+    },
+    {
+      "id": "ballast",
+      "name": "trì nặng",
+      "flavour": "Chọn đứng vững thay vì đi nhanh, và không đổi ý giữa chừng",
+      "grants": [
+        {
+          "status": "fortified",
+          "stacks": 1
+        },
+        {
+          "status": "encumber",
+          "stacks": 1
+        }
+      ],
+      "replies": {
+        "power": 50,
+        "scaling": {
+          "stat": "defense"
+        }
+      }
     }
   ]
 }

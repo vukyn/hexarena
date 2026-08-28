@@ -182,6 +182,20 @@ Ký giao ước bằng máu rồi gọi lên một con cóc khổng lồ, chậm
 Gọi ra một cóc.
 Bản thân · hồi 6 lượt.
 
+water_pulse
+Dội một vòng sóng ép thẳng vào giữa, sức nén dội lại từ mọi phía, 60% công.
+Gây choáng cho mục tiêu, 35% khả năng.
+Tầm 2 · 90% trúng · hồi 4 lượt.
+
+skull_bash
+Thu cả người lại rồi lao thẳng vào, dồn hết trọng lượng vào một cú, 85% thủ.
+Tầm 1 · 90% trúng · hồi 2 lượt.
+
+wide_guard
+Dựng một lớp chắn chìa ra trước mặt đồng đội.
+Cho mục tiêu đỡ đòn x2, 100% khả năng.
+Tầm 1 · 100% trúng · hồi 3 lượt.
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -223,6 +237,12 @@ Luôn mang trần trụi.
 Ai đấm vào nó thì tự chuốc lấy phần đau của mình.
 Ai đánh trúng thì bị phản lại 8% thủ của người bị đánh.
 
+[trait] ballast
+Chọn đứng vững thay vì đi nhanh, và không đổi ý giữa chừng.
+Luôn mang kiên cố.
+Luôn mang nặng nề.
+Ai đánh trúng thì bị phản lại 5% thủ của người bị đánh.
+
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
 Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -256,6 +276,10 @@ Giảm chỉ số · 2 lượt · tối đa 2 cộng dồn.
 [status] bare
 Giảm thủ 40%.
 Giảm né 40%.
+Giảm chỉ số · vĩnh viễn · 1 cộng dồn.
+
+[status] encumber
+Giảm tốc 10%.
 Giảm chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] stun
@@ -292,6 +316,10 @@ Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] kindled
 Tăng công 15%.
+Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
+
+[status] fortified
+Tăng thủ 25%.
 Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] block
@@ -524,6 +552,20 @@ summon_toad
 Calls up a creature.
 Itself · 6 turns to recharge.
 
+water_pulse
+Hits an enemy for 60% of attack.
+Inflicts stun, 35% of the time.
+Range 2 · 90% to hit · 4 turns to recharge.
+
+skull_bash
+Hits an enemy for 85% of defence.
+Range 1 · 90% to hit · 2 turns to recharge.
+
+wide_guard
+Aims at an ally.
+Gives its target block x2, 100% of the time.
+Range 1 · 100% to hit · 3 turns to recharge.
+
 [trait] endurance
 Always carries toughened.
 
@@ -555,6 +597,11 @@ Always carries bare.
 
 [trait] thorns
 Whatever damages it takes 8% of the struck unit's defence back.
+
+[trait] ballast
+Always carries fortified.
+Always carries encumber.
+Whatever damages it takes 5% of the struck unit's defence back.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.
@@ -591,6 +638,10 @@ Lowers defence by 40%.
 Lowers dodge by 40%.
 Lowers a stat · always in force · 1 stack.
 
+[status] encumber
+Lowers speed by 10%.
+Lowers a stat · always in force · 1 stack.
+
 [status] stun
 The holder loses its turn; cooldowns still tick, it just cannot act.
 Costs a turn · 1 turn · 1 stack.
@@ -625,6 +676,10 @@ Raises a stat · always in force · 1 stack.
 
 [status] kindled
 Raises attack by 15%.
+Raises a stat · always in force · 1 stack.
+
+[status] fortified
+Raises defence by 25%.
 Raises a stat · always in force · 1 stack.
 
 [status] block
