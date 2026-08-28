@@ -91,6 +91,67 @@ func TestKindsAndSidesAreWrittenByName(t *testing.T) {
 	}
 }
 
+// TestACellIsWrittenOnlyWhereThereIsOne is the fix for a log in which every
+// event claimed the ally back corner.
+//
+// A cell used to be a plain coordinate tagged `omitempty`, which does nothing to
+// a struct, so the twenty-odd kinds that place nobody all wrote `{"col":0,
+// "row":0}` — a real cell, and the wrong answer, on every line of the file. The
+// same held for a passed turn's aim. Both are asserted here in the only form
+// that catches it: the key is absent, not merely zero.
+func TestACellIsWrittenOnlyWhereThereIsOne(t *testing.T) {
+	silent, err := json.Marshal(battle.Event{Kind: battle.TurnBegan, Actor: "a", Turn: 3})
+	if err != nil {
+		t.Fatalf("marshal a turn: %v", err)
+	}
+	if strings.Contains(string(silent), "cell") {
+		t.Errorf("a turn beginning carries a cell: %s", silent)
+	}
+	placed, err := json.Marshal(battle.Event{
+		Kind: battle.Died, Actor: "a", Side: hex.SideAlly,
+		Cell: hex.At(hex.Offset{Col: hex.AllyBackCol, Row: 0}),
+	})
+	if err != nil {
+		t.Fatalf("marshal a death: %v", err)
+	}
+	if !strings.Contains(string(placed), `"cell":{"col":0,"row":0}`) {
+		t.Errorf("a death in the back corner lost its cell: %s", placed)
+	}
+	var back battle.Event
+	if err := json.Unmarshal(placed, &back); err != nil {
+		t.Fatalf("unmarshal a death: %v", err)
+	}
+	// == is what --verify compares events with, so the round trip has to land on
+	// the same value rather than merely an equivalent one.
+	if back.Cell != (hex.At(hex.Offset{Col: hex.AllyBackCol, Row: 0})) {
+		t.Errorf("the cell came back as %s", back.Cell)
+	}
+	var quiet battle.Event
+	if err := json.Unmarshal(silent, &quiet); err != nil {
+		t.Fatalf("unmarshal a turn: %v", err)
+	}
+	if offset, placed := quiet.Cell.Offset(); placed {
+		t.Errorf("an omitted cell came back as %s", offset)
+	}
+
+	passed, err := json.Marshal(battle.Decision{Unit: "a", Turn: 3, Passed: true, Reason: "held"})
+	if err != nil {
+		t.Fatalf("marshal a pass: %v", err)
+	}
+	if strings.Contains(string(passed), "aim") {
+		t.Errorf("a passed turn carries an aim: %s", passed)
+	}
+	taken, err := json.Marshal(battle.Decision{
+		Unit: "a", Turn: 3, Skill: "strike", Aim: hex.At(hex.Offset{Col: hex.AllyBackCol, Row: 0}),
+	})
+	if err != nil {
+		t.Fatalf("marshal a taken turn: %v", err)
+	}
+	if !strings.Contains(string(taken), `"aim":{"col":0,"row":0}`) {
+		t.Errorf("a turn aimed at the back corner lost its aim: %s", taken)
+	}
+}
+
 func TestParseLogRejects(t *testing.T) {
 	cases := []struct {
 		name, raw, wantErr string
@@ -103,6 +164,8 @@ func TestParseLogRejects(t *testing.T) {
 		  "choices":[{"unit":"a","turn":1,"skill":"strike","passed":true}]}`, "both passes and uses"},
 		{"a choice that does neither", `{"seed":1,"events":[{"kind":"ended"}],
 		  "choices":[{"unit":"a","turn":1}]}`, "neither passes nor names"},
+		{"a choice that acts but aims nowhere", `{"seed":1,"events":[{"kind":"ended"}],
+		  "choices":[{"unit":"a","turn":1,"skill":"strike"}]}`, "aims nowhere"},
 	}
 	for _, testCase := range cases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -188,7 +251,7 @@ func TestReplayRejectsAScriptThatDoesNotFit(t *testing.T) {
 	fight := duel(t, []string{"strike", "jab"}, []string{"jab"}, 200, 80)
 	fight.Begin()
 	_, _, err := fight.Replay(battle.Script{
-		{Unit: "nobody", Turn: 1, Skill: "strike", Aim: hex.Offset{Col: 3, Row: 1}},
+		{Unit: "nobody", Turn: 1, Skill: "strike", Aim: hex.At(hex.Offset{Col: 3, Row: 1})},
 	}, 500, nil)
 	if err == nil {
 		t.Fatal("a script naming a unit that is not acting was accepted")
@@ -200,9 +263,23 @@ func TestReplayRejectsAScriptThatDoesNotFit(t *testing.T) {
 	fresh := duel(t, []string{"strike", "jab"}, []string{"jab"}, 200, 80)
 	fresh.Begin()
 	if _, _, err := fresh.Replay(battle.Script{
-		{Unit: "a", Turn: 1, Skill: "nonesuch", Aim: hex.Offset{Col: 3, Row: 1}},
+		{Unit: "a", Turn: 1, Skill: "nonesuch", Aim: hex.At(hex.Offset{Col: 3, Row: 1})},
 	}, 500, nil); err == nil {
 		t.Fatal("a script naming a skill the unit does not know was accepted")
+	}
+
+	// A taken turn with no aim is the shape that only became representable once a
+	// cell could be absent. ParseLog is the gate a saved log comes through, but a
+	// script handed straight to Replay never passes it, and pointing the skill at
+	// the ally back corner would produce a battle nobody decided.
+	aimless := duel(t, []string{"strike", "jab"}, []string{"jab"}, 200, 80)
+	aimless.Begin()
+	_, _, err = aimless.Replay(battle.Script{{Unit: "a", Turn: 1, Skill: "strike"}}, 500, nil)
+	if err == nil {
+		t.Fatal("a script that acts without aiming was accepted")
+	}
+	if !strings.Contains(err.Error(), "aims nowhere") {
+		t.Errorf("error %q does not say the decision aims nowhere", err)
 	}
 }
 

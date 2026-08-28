@@ -193,9 +193,11 @@ func (s *session) suggest(prompt *battle.Prompt) battle.Decision {
 	choice, ok := s.fight.Suggest(prompt)
 	decision := battle.Decision{
 		Unit: prompt.Unit, Turn: prompt.Turn,
-		Skill: choice.Skill, Aim: choice.Aim, Passed: !ok,
+		Skill: choice.Skill, Passed: !ok,
 	}
-	if !ok {
+	if ok {
+		decision.Aim = hex.At(choice.Aim)
+	} else {
 		decision.Reason = battle.NoActionReason
 	}
 	return decision
@@ -206,8 +208,14 @@ func (s *session) apply(decision battle.Decision) error {
 		if err := s.fight.Pass(decision.PassReason()); err != nil {
 			return err
 		}
-	} else if err := s.fight.Act(decision.Skill, decision.Aim); err != nil {
-		return err
+	} else {
+		aim, aimed := decision.Aim.Offset()
+		if !aimed {
+			return fmt.Errorf("%q was taken with %q but aims nowhere", decision.Unit, decision.Skill)
+		}
+		if err := s.fight.Act(decision.Skill, aim); err != nil {
+			return err
+		}
 	}
 	s.record(decision)
 	return nil
@@ -454,7 +462,7 @@ func choose(current *session, prompt *battle.Prompt, input *bufio.Scanner) (outc
 			continue
 		}
 		if err := current.apply(battle.Decision{
-			Unit: prompt.Unit, Turn: prompt.Turn, Skill: option.Skill, Aim: aim,
+			Unit: prompt.Unit, Turn: prompt.Turn, Skill: option.Skill, Aim: hex.At(aim),
 		}); err != nil {
 			fmt.Printf("  %v\n", err)
 			continue

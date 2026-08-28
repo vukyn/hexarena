@@ -144,6 +144,69 @@ func (o Offset) Cube() Cube {
 	return Cube{X: x, Y: -x - z, Z: z}
 }
 
+// Cell is a place on the board that may be no place at all, which an Offset
+// cannot be.
+//
+// Offset's zero value is already spoken for: {0,0} is the ally back corner, a
+// real cell somebody stands in, so there is no coordinate left over to mean
+// "nowhere". That is what made a cell on a battle event dishonest. `omitempty`
+// does nothing to a struct field, so every event with no cell to report wrote
+// the back corner into the log regardless — and only a handful of the kinds ever
+// meant one, while `omitzero` on the offset would have gone wrong the other way
+// and dropped the corner from the events that did. Neither tag can tell the two
+// apart, because the coordinate carries no room to say. So the absence lives in
+// a second field instead, where it is a fact of its own rather than a
+// coordinate pressed into doubling as one, and the zero value means absent — an
+// omitted field therefore reads back as the Cell it was written from.
+//
+// It is a value and not a pointer because a log is verified by comparing whole
+// events with ==, and two pointers satisfy that by address: a re-run would
+// differ from the battle it had just reproduced exactly, and nothing would fail
+// to compile on the way there.
+type Cell struct {
+	offset Offset
+	filled bool
+}
+
+// At is the cell at a coordinate. The zero Cell, which this never returns, is
+// the one that is nowhere.
+func At(offset Offset) Cell { return Cell{offset: offset, filled: true} }
+
+// Offset reports the coordinate and whether there is one, in the comma-ok shape
+// a caller cannot read past without answering the second question.
+func (c Cell) Offset() (Offset, bool) { return c.offset, c.filled }
+
+func (c Cell) String() string {
+	if !c.filled {
+		return "none"
+	}
+	return c.offset.String()
+}
+
+// MarshalJSON writes the bare coordinate, so a cell reads on the wire exactly as
+// an offset always did, and null when there is no cell.
+func (c Cell) MarshalJSON() ([]byte, error) {
+	if !c.filled {
+		return []byte("null"), nil
+	}
+	return json.Marshal(c.offset)
+}
+
+// UnmarshalJSON reads a coordinate, taking null — and, by never being called at
+// all, an absent field — as no cell.
+func (c *Cell) UnmarshalJSON(raw []byte) error {
+	if string(raw) == "null" {
+		*c = Cell{}
+		return nil
+	}
+	var offset Offset
+	if err := json.Unmarshal(raw, &offset); err != nil {
+		return fmt.Errorf("decode cell: %w", err)
+	}
+	*c = At(offset)
+	return nil
+}
+
 // Cube is a cube hex coordinate; the three axes always sum to zero.
 type Cube struct {
 	X, Y, Z int

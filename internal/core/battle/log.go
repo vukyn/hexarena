@@ -47,12 +47,16 @@ type Log struct {
 // re-running the shipped roster against it and calling the mismatch corruption.
 func (l Log) Replayable() bool { return len(l.Roster) > 0 }
 
-// Decision is one action as it was taken. A passed turn carries no skill.
+// Decision is one action as it was taken. A passed turn carries no skill, and
+// so carries nowhere to point it either.
 type Decision struct {
-	Unit  string     `json:"unit"`
-	Turn  int        `json:"turn"`
-	Skill string     `json:"skill,omitempty"`
-	Aim   hex.Offset `json:"aim,omitempty"`
+	Unit  string `json:"unit"`
+	Turn  int    `json:"turn"`
+	Skill string `json:"skill,omitempty"`
+	// Aim is where the skill was pointed, and is absent on a turn that was given
+	// up rather than spent — a pass aiming at the ally back corner is a fact the
+	// log never observed. See hex.Cell.
+	Aim hex.Cell `json:"aim,omitzero"`
 	// Passed and Reason record a turn given up rather than spent. The reason is
 	// part of the decision rather than something the caller supplies, because
 	// two callers supplying different words for the same choice would make a
@@ -98,6 +102,13 @@ func ParseLog(raw []byte) (Log, error) {
 		}
 		if !decision.Passed && decision.Skill == "" {
 			return Log{}, fmt.Errorf("choice %d neither passes nor names a skill", i)
+		}
+		// A taken turn without an aim used to be unrepresentable: the coordinate
+		// was always there, and a missing one read as the ally back corner. Now
+		// that it can be absent, a replay would point the skill at that corner and
+		// call whatever came out a faithful re-run.
+		if _, aimed := decision.Aim.Offset(); !decision.Passed && !aimed {
+			return Log{}, fmt.Errorf("choice %d uses %q but aims nowhere", i, decision.Skill)
 		}
 	}
 	return log, nil
@@ -152,9 +163,11 @@ func (b *Battle) Replay(script Script, limit int, fallback func(*Prompt) (Choice
 			choice, ok := fallback(prompt)
 			decision = Decision{
 				Unit: prompt.Unit, Turn: prompt.Turn,
-				Skill: choice.Skill, Aim: choice.Aim, Passed: !ok,
+				Skill: choice.Skill, Passed: !ok,
 			}
-			if !ok {
+			if ok {
+				decision.Aim = hex.At(choice.Aim)
+			} else {
 				decision.Reason = NoActionReason
 			}
 		default:
@@ -166,8 +179,15 @@ func (b *Battle) Replay(script Script, limit int, fallback func(*Prompt) (Choice
 			if err := b.Pass(decision.PassReason()); err != nil {
 				return taken, nil, err
 			}
-		} else if err := b.Act(decision.Skill, decision.Aim); err != nil {
-			return taken, nil, fmt.Errorf("replaying %q for %q: %w", decision.Skill, decision.Unit, err)
+		} else {
+			aim, aimed := decision.Aim.Offset()
+			if !aimed {
+				return taken, nil, fmt.Errorf("replaying %q for %q: the decision aims nowhere",
+					decision.Skill, decision.Unit)
+			}
+			if err := b.Act(decision.Skill, aim); err != nil {
+				return taken, nil, fmt.Errorf("replaying %q for %q: %w", decision.Skill, decision.Unit, err)
+			}
 		}
 		taken = append(taken, decision)
 	}

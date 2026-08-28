@@ -86,7 +86,7 @@ func (b *Battle) summon(caster *Unit, known skill.Skill, turn atb.Turn) {
 		b.emit(Event{
 			Kind: Summoned, At: turn.At, Turn: turn.Number,
 			Actor: caster.ID, Target: unit.ID, Skill: known.ID,
-			Name: unit.Name, Cell: unit.Cell, Side: unit.Side,
+			Name: unit.Name, Cell: hex.At(unit.Cell), Side: unit.Side,
 			Amount: unit.HP,
 		})
 	}
@@ -259,7 +259,7 @@ func (b *Battle) dismiss(unit *Unit, reason string) {
 	unit.HP = 0
 	b.queue.Remove(unit.ID)
 	b.emit(Event{
-		Kind: Left, Actor: unit.ID, Cell: unit.Cell, Side: unit.Side, Note: reason,
+		Kind: Left, Actor: unit.ID, Cell: hex.At(unit.Cell), Side: unit.Side, Note: reason,
 	})
 	b.checkEnd()
 }

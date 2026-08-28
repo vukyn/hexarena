@@ -463,7 +463,7 @@ func (b *Battle) Begin() {
 	for _, unit := range b.units {
 		b.emit(Event{
 			Kind: Started, Actor: unit.ID, Name: unit.Name, Side: unit.Side,
-			Cell: unit.Cell, Amount: unit.HP, Note: unit.Affinity.String(),
+			Cell: hex.At(unit.Cell), Amount: unit.HP, Note: unit.Affinity.String(),
 		})
 		// Each unit's traits directly after the unit itself, because that is the
 		// order they read in and because a trait naming a unit the log has not
@@ -737,7 +737,7 @@ func (b *Battle) kill(unit *Unit) {
 	unit.Dead = true
 	unit.HP = 0
 	b.queue.Remove(unit.ID)
-	b.emit(Event{Kind: Died, Actor: unit.ID, Cell: unit.Cell, Side: unit.Side})
+	b.emit(Event{Kind: Died, Actor: unit.ID, Cell: hex.At(unit.Cell), Side: unit.Side})
 	// Before the end is checked, not after. A bound summon going with its
 	// summoner can be what empties a side, and checking first would declare a
 	// battle still running that the very next line ends — two answers to one
