@@ -608,11 +608,47 @@ func (p *pickState) idColumn() int {
 	return widest + 1
 }
 
+// detailColumn is the column the ids are padded to, and **nought when the list
+// has no detail column at all** — the spelling speciesRow and passiveRow already
+// use for a column that is dropped rather than drawn empty.
+//
+// Worked out once per draw over the rows being drawn, never per row. A collapse
+// decided row by row would take the padding off the rows whose cell happens to
+// be empty and leave it on the rest, which is a ragged table rather than no
+// table; the whole point of a column is that every row shares it.
+//
+// ⚠️ The condition is **"nothing in this list has a detail"**, which is the true
+// statement, and deliberately not "the language is English" or "the kind is
+// pickPassives". Those two are proxies: they hold on the shipped books today and
+// stop holding the day a Vietnamese list has an empty column — a trait book with
+// an unnamed trait — or an English one gains a detail. A proxy that stops
+// holding draws the wrong table and fails nothing.
+//
+// The scope is the **visible** rows rather than the window, because the filter
+// chooses which list is on screen (and the "showing" line says so) while the
+// scroll position is only where in that list a reader has got to: a
+// window-scoped reading would make the column appear and disappear as the
+// cursor walked. The width itself still comes from idColumn, which measures
+// every option, so filtering cannot shift the ids sideways either.
+//
+// Emptiness is measured with lipgloss.Width and not against "", because a detail
+// is styled before it is returned and an empty cell rendered through a style is
+// escape codes around nothing.
+func (p *pickState) detailColumn(m model, rows []pickOption) int {
+	for _, option := range rows {
+		if lipgloss.Width(p.detail(m, option.id)) > 0 {
+			return p.idColumn()
+		}
+	}
+	return 0
+}
+
 // detail is what a row says about its option, beyond the id.
 //
 // For a skill that is who may carry it, in the same words the listing and a
 // refusal use. For the three allowlists it is the id's Vietnamese name, which is
-// nothing at all in English — there, an id is shown as the data writes it.
+// nothing at all in English — there, an id is shown as the data writes it, and
+// detailColumn drops the whole column rather than drawing a row of blanks.
 func (p *pickState) detail(m model, id string) string {
 	if p.kind == pickStatuses {
 		// A status's facts, glossed name first: "trúng độc · dot · 3 lượt ·
@@ -740,7 +776,7 @@ func (p *pickState) view(m model) (string, string) {
 		out.WriteString("  " + m.text(i18n.PickerNothingInGroup) + "\n")
 	}
 
-	column := p.idColumn()
+	column := p.detailColumn(m, rows)
 	from, to := window(len(rows), p.cursor, p.room(m))
 	for index := from; index < to; index++ {
 		option := rows[index]
@@ -761,22 +797,39 @@ func (p *pickState) view(m model) (string, string) {
 			flag = "!"
 		}
 		state := fmt.Sprintf("%2s %s ", order, flag)
-		name := pad(option.id, column)
+		// A column of nought is a list with no detail column at all, so the id
+		// is not widened to one — the shape speciesRow gives a listing whose
+		// name column is dropped. The selection bar then covers the bare id,
+		// which is what the species and trait listings already draw when they
+		// drop theirs: padding exists to give the following cell a column to
+		// start at, and with no cell after it there is nothing left for the
+		// width to be for.
+		name := option.id
+		if column > 0 {
+			name = pad(option.id, column)
+		}
 		if index == p.cursor {
 			name = m.style.selected.Render(name)
 		} else if option.refusal != nil {
 			name = m.style.dim.Render(name)
 		}
-		// Every row says who its option is for, in the same words the listing
-		// and a refusal use, whether or not this character qualifies. The mark
-		// is what says "not you"; the words are what say why, and they are worth
-		// having on a row that is available too.
-		room := minWidth - 1 - lipgloss.Width(marker+state) - column - 1
-		detail := clip(p.detail(m, option.id), room)
-		if option.refusal != nil {
-			detail = m.style.dim.Render(detail)
+		row := marker + state + name
+		if column > 0 {
+			// Every row says who its option is for, in the same words the
+			// listing and a refusal use, whether or not this character
+			// qualifies. The mark is what says "not you"; the words are what say
+			// why, and they are worth having on a row that is available too.
+			//
+			// The room is measured from the column, so it is computed here
+			// rather than above: a list with no column has no width to subtract.
+			room := minWidth - 1 - lipgloss.Width(marker+state) - column - 1
+			detail := clip(p.detail(m, option.id), room)
+			if option.refusal != nil {
+				detail = m.style.dim.Render(detail)
+			}
+			row += " " + detail
 		}
-		out.WriteString(marker + state + name + " " + detail + "\n")
+		out.WriteString(row + "\n")
 	}
 
 	out.WriteString("\n")
