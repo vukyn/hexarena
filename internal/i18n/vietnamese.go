@@ -58,6 +58,7 @@ q hoặc ctrl+c để thoát`,
 	ArtMissing:     "THIẾU",
 	ArtSomeMissing: "THIẾU %d/%d",
 	ChoicePosition: "%d/%d",
+	ChoiceSlots:    "%d/%d ô",
 
 	FormHeading:  "nhân vật mới",
 	FormSubtitle: "mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tính ở cấp %d",

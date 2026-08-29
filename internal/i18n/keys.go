@@ -44,6 +44,10 @@ const (
 	ArtMissing
 	ArtSomeMissing
 	ChoicePosition
+	// ChoiceSlots is ChoicePosition's answer for a list that fills slots
+	// rather than a list being walked: the second figure is what binds, not
+	// how many rows there are to choose between.
+	ChoiceSlots
 
 	// The new-character form.
 	FormHeading

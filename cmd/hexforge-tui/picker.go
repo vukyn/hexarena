@@ -140,6 +140,20 @@ type pickState struct {
 	// chosen is the answer, in the order it was chosen, because for a kit that
 	// order *is* the kit.
 	chosen []string
+	// slots is how many the answer may hold, and **nought is uncapped**.
+	//
+	// Uncapped is what every picker but two is, so nought is the honest default
+	// rather than a flag beside a number: the five restriction allowlists take
+	// as many ids as an author cares to name, the status picker likewise, and
+	// the character form's kit picker is bounded by the write rather than by a
+	// count. The two the squad builder raises are the exception, because a
+	// placement spends exactly cast.SkillSlots and cast.TraitSlots.
+	//
+	// It is enforced in toggle rather than only in the apply callback, so an
+	// answer past the limit cannot be built at all — the refusal used to arrive
+	// after enter, by which time the author had picked six and had to reopen the
+	// list to give two back.
+	slots  int
 	cursor int
 	// typed is the one answer collected beside the list, and label names it.
 	// Both are absent for the pickers that choose ids and nothing else.
@@ -476,11 +490,24 @@ func (p *pickState) read(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) 
 // toggle takes the row under the cursor in or out.
 //
 // Taking one out always works, including one that has become unavailable since
-// it was chosen — that is the state an author most needs to be able to fix.
-// Taking one in is refused when the carrier may not have it, and nothing is said
-// about the refusal here because it is already on screen: the row carries its
-// mark and the line under the list carries the whole sentence, before space is
-// ever pressed. A message raised by the keypress would be the same words twice.
+// it was chosen and including one taken out of a list that is already over its
+// slots — that is the state an author most needs to be able to fix, which is why
+// it is the first branch and has to stay the first branch. A loadout hand-edited
+// past the limit in squads.json opens here, and the whole reason to open it is
+// to give a row back.
+//
+// Taking one in is refused when the carrier may not have it, and refused again
+// when the slots are full. Nothing is said about either refusal here because it
+// is already on screen: the row carries its mark, the line under the list
+// carries the whole sentence, and the counter beside the title says how much of
+// the loadout is spoken for — all before space is ever pressed. A message raised
+// by the keypress would be the same words twice.
+//
+// A full list **blocks** rather than swapping the oldest row out. With one trait
+// slot that swap is tempting and it would make space two verbs at once, worded
+// differently on the two pickers of the same screen depending on how many slots
+// each has. One rule instead: the list is full, space does nothing, take one out
+// first — which is what the trait hint already says.
 func (p *pickState) toggle() {
 	rows := p.visible()
 	if len(rows) == 0 {
@@ -492,6 +519,9 @@ func (p *pickState) toggle() {
 		return
 	}
 	if option.refusal != nil {
+		return
+	}
+	if p.slots > 0 && len(p.chosen) >= p.slots {
 		return
 	}
 	p.chosen = append(p.chosen, option.id)
@@ -660,13 +690,36 @@ func refusalUnderCursor(rows []pickOption, cursor int) error {
 	return rows[clamp(cursor, 0, len(rows)-1)].refusal
 }
 
+// counted is the figure beside the title, and which figure it is depends on
+// whether the answer has slots to fill.
+//
+// A picker with none says where in the list the answer has got to, which is what
+// this screen has always drawn. A picker with slots says how much of the loadout
+// is spoken for instead, because the length of the list answers nothing an author
+// choosing four of nine wants to know — four skills bind and nineteen rows do
+// not.
+//
+// The over-full reading is drawn in the refusing style, and it is not dead code
+// even though toggle can no longer build one: a loadout already past its slots in
+// squads.json opens here for editing, and that is exactly the state the colour is
+// for.
+func (p *pickState) counted(m model) string {
+	if p.slots <= 0 {
+		return m.style.dim.Render(m.text(i18n.ChoicePosition, len(p.chosen), len(p.options)))
+	}
+	style := m.style.dim
+	if len(p.chosen) > p.slots {
+		style = m.style.bad
+	}
+	return style.Render(m.text(i18n.ChoiceSlots, len(p.chosen), p.slots))
+}
+
 func (p *pickState) view(m model) (string, string) {
 	if p.reading {
 		return p.viewReading(m)
 	}
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(p.title)) + "  " +
-		m.style.dim.Render(m.text(i18n.ChoicePosition, len(p.chosen), len(p.options))) + "\n")
+	out.WriteString(m.style.heading.Render(m.text(p.title)) + "  " + p.counted(m) + "\n")
 	out.WriteString(m.style.dim.Render(m.text(p.hint)) + "\n")
 	// The filter in force, on its own line and only where there is one. It names
 	// both counts for the reason the browser's does: "showing fixture-anime" says
