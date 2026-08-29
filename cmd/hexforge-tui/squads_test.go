@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -479,4 +481,283 @@ func TestTheReadingStateIsNotCutAndCannotBeScrolledOffItsAnswer(t *testing.T) {
 			}
 		}
 	}
+}
+
+// markerAt is where a mark sits in a rendered screen, as a line and a column,
+// or (-1, -1) when it is not drawn.
+//
+// It reads the render rather than the state on purpose: everything below is
+// about the picture, and every one of these assertions was already true of
+// s.unit.Slot while the grid beside it stood still.
+func markerAt(body, mark string) (int, int) {
+	for index, line := range strings.Split(body, "\n") {
+		if at := strings.Index(line, mark); at >= 0 {
+			return index, at
+		}
+	}
+	return -1, -1
+}
+
+// aSquadMember is a squad with one member under edit, on the field named.
+func aSquadMember(t *testing.T, lang i18n.Lang, id string, field int) model {
+	t.Helper()
+	m, _, _ := start(t, lang)
+	m = menuTo(t, m, screenSquads)
+	m = typeText(t, m, "n")
+	m = typeText(t, m, id)
+	m = key(t, m, "enter")
+	for m.squad.field != field {
+		m = key(t, m, "down")
+	}
+	return m
+}
+
+// TestTheFormationFollowsTheArrowsWhileTheCellIsChosen is the defect this grid
+// was drawn to be free of.
+//
+// The slot row stepped s.unit.Slot and the grid under it was built from
+// s.editing.Units, which commit() writes and which nothing writes until the
+// member is left or a picker is opened. So the picture jumped to the new cell
+// only after the choosing was over, which is the one moment it says nothing.
+//
+// Asserted on the render and not on s.unit.Slot: the cell moving was already
+// true before the fix, and a test of it would have passed throughout.
+func TestTheFormationFollowsTheArrowsWhileTheCellIsChosen(t *testing.T) {
+	m := aSquadMember(t, i18n.En, "live", unitSlot)
+	mark := fmt.Sprintf("(%d)", m.squad.unitIndex+1)
+	opened := m.screenContent()
+	line, column := markerAt(opened, mark)
+	if line < 0 {
+		t.Fatalf("the member under edit is not marked on the grid:\n%s", opened)
+	}
+
+	was := m.squad.unit.Slot
+	m = key(t, m, "right")
+	if m.squad.unit.Slot == was {
+		t.Fatal("the chooser did not move, so there is nothing for the grid to follow")
+	}
+	stepped := m.screenContent()
+	movedLine, movedColumn := markerAt(stepped, mark)
+	if movedLine < 0 {
+		t.Fatalf("the member under edit vanished off the grid:\n%s", stepped)
+	}
+	if movedLine == line && movedColumn == column {
+		t.Errorf("the cell went %s -> %s and the mark stayed at line %d column %d:\n%s",
+			was, m.squad.unit.Slot, line, column, stepped)
+	}
+
+	// And it tracks rather than merely differing: stepping back puts the mark
+	// where it started, on the cell the arrows are on and not on some other one.
+	m = key(t, m, "left")
+	if m.squad.unit.Slot != was {
+		t.Fatalf("stepping back landed on %s rather than on %s", m.squad.unit.Slot, was)
+	}
+	backLine, backColumn := markerAt(m.screenContent(), mark)
+	if backLine != line || backColumn != column {
+		t.Errorf("back on %s the mark is at line %d column %d, want %d and %d:\n%s",
+			was, backLine, backColumn, line, column, m.screenContent())
+	}
+}
+
+// TestTheLiveFormationDrawsWithoutCommitting is the trap the live picture had to
+// be built around, kept as a test rather than as a comment.
+//
+// The obvious fix is commit() on every keypress, and commit() also sets unsaved
+// — the flag the whole edit loop hangs off, since leaving a squad that carries
+// it asks before discarding. A cursor that only passed over a field would then
+// leave a squad claiming changes nobody made. So the drawing reads the unit
+// under edit and writes nothing, and this is the two halves of that: a key that
+// changes nothing leaves the guard down, and a key that moves the cell leaves
+// the squad's own copy alone until the member is left.
+func TestTheLiveFormationDrawsWithoutCommitting(t *testing.T) {
+	m, _, _ := start(t, i18n.En)
+	m = menuTo(t, m, screenSquads)
+	m.squad = someSquad(t, m)
+	m = withASquadSaved(t, m)
+	m.squad = m.squad.open(m.squad.saved[0])
+	m = key(t, m, "enter")
+	if m.squad.mode != squadUnit {
+		t.Fatalf("enter on the first member opened %v", m.squad.mode)
+	}
+	if m.squad.unsaved {
+		t.Fatal("opening a member off a saved squad already claims changes")
+	}
+
+	// Walking the fields changes nothing about the unit, so nothing may reach
+	// the guard. This is what a commit() at the top of updateUnit would fail.
+	for range unitFieldCount + 1 {
+		m = key(t, m, "down")
+		_ = m.screenContent()
+		if m.squad.unsaved {
+			t.Fatalf("moving onto field %d raised the unsaved guard", m.squad.field)
+		}
+	}
+
+	for m.squad.field != unitSlot {
+		m = key(t, m, "down")
+	}
+	index := m.squad.unitIndex
+	before := m.squad.editing.Units[index].Slot
+	m = key(t, m, "right")
+	if m.squad.unit.Slot == before {
+		t.Fatal("the chooser did not move, so there is nothing to commit early")
+	}
+	chosen := m.squad.unit.Slot
+	// Drawn more than once, because s.editing.Units is a slice shared with every
+	// model copied off this one: a write into it from inside a drawing would
+	// reach all of them, value receiver or not.
+	for range 3 {
+		_ = m.screenContent()
+	}
+	if now := m.squad.editing.Units[index].Slot; now != before {
+		t.Errorf("the squad's own copy moved to %s while the cell was being chosen, want %s",
+			now, before)
+	}
+	// The picture is live all the same, which is what says the two are not the
+	// same reading: the mark is on the cell the arrows are on.
+	mark := fmt.Sprintf("(%d)", index+1)
+	if line, _ := markerAt(m.screenContent(), mark); line < 0 {
+		t.Fatalf("the member under edit is not marked on the grid:\n%s", m.screenContent())
+	}
+
+	// esc is what commits, and it still does.
+	m = key(t, m, "esc")
+	if now := m.squad.editing.Units[index].Slot; now != chosen {
+		t.Errorf("leaving the member wrote %s back, want %s", now, chosen)
+	}
+}
+
+// TestTheFormationMarksTheRankThatMeetsTheEnemyFirst is the other half of
+// "standing somewhere is a picture": a coordinate does not say which end of the
+// grid an attack arrives at, and reach is counted in ranks from that end.
+//
+// The front column is derived here from hex.Ranks and hex.Place rather than
+// taken from the screen's own helper, so the drawing and the reach rule are two
+// readings that have to agree.
+func TestTheFormationMarksTheRankThatMeetsTheEnemyFirst(t *testing.T) {
+	front := frontColumn(t)
+	back := -1
+	for col := range hex.FormationCols {
+		if col != front {
+			back = col
+		}
+	}
+	for _, lang := range i18n.Langs() {
+		m, _, _ := start(t, lang)
+		m = menuTo(t, m, screenSquads)
+		m.squad = someSquad(t, m)
+		s := m.squad
+		if len(s.editing.Units) == 0 {
+			t.Fatal("the fixture squad is empty, so nothing stands anywhere")
+		}
+		// One member in the front rank and one behind it, so the mark can be
+		// shown to be under the first and not under the second.
+		screened := s.editing.Units[0]
+		screened.ID, screened.Slot = "sau", hex.Offset{Col: back, Row: 0}
+		s.editing.Units = []placement.Placement{s.editing.Units[0], screened}
+		s.editing.Units[0].Slot = hex.Offset{Col: front, Row: 0}
+		m.squad = s.editUnit(0)
+		body := m.screenContent()
+
+		caret := strings.Repeat("^", formationCell)
+		caretLine, caretColumn := markerAt(body, caret)
+		if caretLine < 0 {
+			t.Fatalf("the %s grid marks no front rank:\n%s", lang, body)
+		}
+		if words := m.text(i18n.SquadFormationFront); !strings.Contains(
+			strings.Split(body, "\n")[caretLine], words) {
+			t.Errorf("the %s mark does not say %q:\n%s", lang, words, body)
+		}
+		if _, at := markerAt(body, "(1)"); at != caretColumn {
+			t.Errorf("the %s front-rank member is drawn at column %d and the mark at %d:\n%s",
+				lang, at, caretColumn, body)
+		}
+		if _, at := markerAt(body, "[2]"); at == caretColumn {
+			t.Errorf("the %s member behind the front rank is drawn under the mark:\n%s",
+				lang, body)
+		}
+	}
+}
+
+// TestTheSlotRowSaysWhichRankItStandsIn is the row the grid is beside: it keeps
+// the coordinate, because that is what squads.json holds and what an author
+// matches a file against, and puts the rank next to it, because that is the half
+// a coordinate cannot say.
+func TestTheSlotRowSaysWhichRankItStandsIn(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m := aSquadMember(t, lang, "rank", unitSlot)
+		body := m.screenContent()
+		if !strings.Contains(body, m.squad.unit.Slot.String()) {
+			t.Errorf("the %s slot row lost the cell %s:\n%s", lang, m.squad.unit.Slot, body)
+		}
+		want := m.rankLabel(m.squad.unit.Slot)
+		if want == "" {
+			t.Fatalf("the member stands at %s, which is on no rank", m.squad.unit.Slot)
+		}
+		if !strings.Contains(body, want) {
+			t.Errorf("the %s slot row does not say %q:\n%s", lang, want, body)
+		}
+		// And the reading follows the arrows too: walking off the front column
+		// has to stop saying front rank.
+		for range hex.FormationRows {
+			m = key(t, m, "right")
+		}
+		if m.rankLabel(m.squad.unit.Slot) == want {
+			t.Fatalf("the chooser is still in the %s after a whole column", want)
+		}
+		if body := m.screenContent(); !strings.Contains(body, m.rankLabel(m.squad.unit.Slot)) {
+			t.Errorf("the %s slot row still reads %q at %s:\n%s",
+				lang, want, m.squad.unit.Slot, body)
+		}
+	}
+}
+
+// TestARankIsTheSameDepthOnEitherSide is what lets rankOf ask the question of
+// one side and answer it for both, which a squad needs because a squad carries
+// no side — placement.Squad.Take fields the same cells as either half.
+//
+// It holds because hex.Place rotates an enemy formation 180 degrees rather than
+// translating it: the depth is preserved and only the column number is not.
+func TestARankIsTheSameDepthOnEitherSide(t *testing.T) {
+	depthOn := func(side hex.Side, slot hex.Offset) int {
+		placed := hex.Place(side, slot)
+		for depth, rank := range hex.Ranks(side) {
+			for _, cell := range rank {
+				if cell == placed {
+					return depth
+				}
+			}
+		}
+		return -1
+	}
+	for col := range hex.FormationCols {
+		for row := range hex.FormationRows {
+			slot := hex.Offset{Col: col, Row: row}
+			want := depthOn(hex.SideAlly, slot)
+			if want < 0 {
+				t.Fatalf("%s is on no ally rank", slot)
+			}
+			if got := depthOn(hex.SideEnemy, slot); got != want {
+				t.Errorf("%s is rank %d as an ally and rank %d as an enemy", slot, want, got)
+			}
+			if got := rankOf(slot); got != want {
+				t.Errorf("the builder reads %s as rank %d, want %d", slot, got, want)
+			}
+		}
+	}
+}
+
+// frontColumn is the authoring column hex.Ranks calls depth 0.
+func frontColumn(t *testing.T) int {
+	t.Helper()
+	for col := range hex.FormationCols {
+		placed := hex.Place(hex.SideAlly, hex.Offset{Col: col})
+		for _, cell := range hex.Ranks(hex.SideAlly)[0] {
+			if cell == placed {
+				return col
+			}
+		}
+	}
+	t.Fatal("no authoring column maps onto the rank that meets the enemy first")
+	return -1
 }
