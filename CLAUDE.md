@@ -1227,8 +1227,36 @@ the moment health reaches zero, so a signed total is the one shape that could
 revive a corpse. And a dead unit is not healable while health clamps at `MaxHP`,
 which is what keeps a battle able to end and stops a regeneration from being an
 uncapped shield. Every restore emits a `healed` event, because nothing else in
-the log explains health going up. Consequence: `Suggest` never picks one, and the
-joint health-and-defence budget is now an **understatement** rather than a bound.
+the log explains health going up. Consequence: the joint health-and-defence
+budget is an **understatement** rather than a bound.
+
+⚠️ **A `restores` payout has TWO callers and one of them was missing.**
+`Battle.restore` is the single expression; `resolveAgainst` calls it per unit a
+shape reached, and the `Target: Self` branch of `Act` calls it for the caster,
+because that branch **returns before the shape walk** — a self-aimed skill has no
+shape to walk. It lived inline in `resolveAgainst` until it was looked for, so
+every self-aimed restore paid **nothing**: `synthesis`, whose entire body is a 900
+restore on itself, and `withdraw`, which paid out its block and dropped its 500.
+Those are the only two shipped skills that declare `restores` at all, so the field
+did nothing anywhere in the game.
+⚠️ **The rating could see it and the engine could not**, which is the exact shape
+*Rating an action* forbids: `pricing.restored` prices a restore off
+`combat.Rules.Restore`, so `Suggest` **chose `synthesis`** on a hurt caster
+expecting up to nine hundred health and received none. "A price built from a
+second reading lets the opponent prefer a skill for something the skill does not
+do" — except here the second reading was the honest one and the resolving function
+was the copy that had gone missing.
+⚠️ **No golden moved, and that is the finding rather than a relief.** No roster
+unit brings either skill, which with `Act`'s early return is the whole of why a
+declared field did nothing this long with every test passing — the same pair of
+facts as the regeneration bug, and the same lesson: **a mechanism no shipped
+placement fields is a mechanism nothing measures.** The tests are therefore a
+fixture pair differing in their aim (`internal/core/battle`) and a walk over
+**every** shipped skill that declares a restore (`internal/seed`), rather than a
+test naming `synthesis`.
+⚠️ **A balance figure taken on `withdraw` predates this.** The tank build's
+survival reading — "gated on how often it can cast withdraw" — was measured with
+that skill's restore dead, so it is a reading of the block clause alone.
 
 **Where balance numbers live.** Tick power and modifier terms belong to the
 *status*, not to the skill that applies it, so two skills inflicting the same
@@ -2625,10 +2653,17 @@ is the constraint each piece has to respect.
       grass unit healing a fire ally throws nothing). Kept: the actor's scaling
       stat and the **freeze** — the promise `status.Regen` already made and
       nothing honoured.
-      ⚠️ **The old note misnamed the casualties.** `synthesis` was never affected
-      — it heals through `restores`, which always worked. The two dead skills were
-      **`aqua_ring` and `ingrain`**, and neither had a working half: power 0, no
-      `restores`, nothing but the regeneration, so casting either did *nothing*.
+      ⚠️ **The old note misnamed the casualties, and the correction was wrong
+      too.** The two skills fixed *here* were **`aqua_ring` and `ingrain`**, and
+      neither had a working half: power 0, no `restores`, nothing but the
+      regeneration, so casting either did *nothing*. What this note then claimed —
+      "`synthesis` was never affected, it heals through `restores`, which always
+      worked" — was **false**. A `restores` payout sat inside `resolveAgainst`,
+      which `Act` returns before for a `Target: Self` skill, so `synthesis` healed
+      nothing either, and `withdraw` paid out its block and dropped its five
+      hundred. **Both** halves of the shipped healing were inert at once, by two
+      different routes, and the note correcting one of them asserted the other was
+      fine. → *Healing is not damage with a sign*.
       ⚠️ **A second bug was hiding behind the first**: `tickStatuses` named the
       status that healed and then healed again from the total, so every tick would
       have logged **two** `Healed` events. Healing is now applied per entry and
