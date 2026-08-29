@@ -442,57 +442,357 @@ func (p playScreen) save(m model) playScreen {
 // The last few rather than all of it: what a player has to read is what happened
 // since they last chose, and a screen that grew a line per event would push the
 // board off the top by the third turn.
+//
+// ⚠️ **Rendered lines, not events**, and it used to be events. The two are not
+// the same number: tui.Line opens a turn with a blank row of its own, so one
+// event arrives as two lines, and eight events measured **eleven rows** in a
+// battle a few turns deep. A section whose stated budget does not hold is a
+// section spending rows the budget below has already promised to somebody else.
 const playLogLines = 8
+
+// playBodyRoom is how many rows the body may write before frame cuts it.
+//
+// frame gives the whole screen m.height - 2 rows, spends the first two on the
+// header and the blank under it, and puts the footer below whatever padding is
+// left — so the body's own purse is four rows short of the window. Reading it
+// off frame's arithmetic rather than writing the number down is the point: a
+// second copy of "how many rows are there" is how a screen comes to disagree
+// with the frame drawn around it.
+func playBodyRoom(height int) int { return height - 4 }
+
+// The battle screen budgets its own body, and the reason is that it cannot fit.
+//
+// Measured at the declared 80x24 floor, where the body's purse is twenty rows:
+// the heading is one, tui.Board is a fixed ten, tui.Roster is one plus a row a
+// unit, tui.Order is one, the log is up to playLogLines, and the option list is
+// one plus a row an option. A legal squad is up to hex.MaxTeamSize a side, so
+// **28 rows is the floor for a 5-a-side pairing** before a single blank or log
+// line — and a summon puts units on the board past the five the squad brought,
+// up to the nine formation slots a side, which is board + roster = 29 on its
+// own. There is no arrangement of these sections that fits twenty rows.
+//
+// So the deliverable was never "make it fit". frame cuts from the **bottom** and
+// the option list was the last thing the body wrote, so the one thing the player
+// has to see in order to act was the first thing thrown away. That is fixable at
+// any content height, and it is the actual defect.
+//
+// The heading and the turn in front are therefore **reserved**: never dropped,
+// never cut. A battle screen that cannot show the moves is not a battle screen.
+// Everything else takes what is left, in this order:
+//
+//  1. The save's own note. It is the answer to a keystroke pressed a moment ago
+//     and it names the file that was written, so it outranks the board — and it
+//     is **not** reserved, because two notes wrap to as many as four rows and
+//     reserving them could crowd out the option list.
+//  2. tui.Roster, clipped a row at a time. It carries the health and the effects
+//     a turn is decided on, and it is the one section that compresses by degrees
+//     rather than all at once.
+//  3. tui.Board, dropped **whole**, because ten rows of ASCII art have no half.
+//     What it says is recoverable: the aim list already prints the occupant
+//     beside every cell it offers (playScreen.occupant), so the question the
+//     board answers is answered again where the player is pointing.
+//  4. tui.Order, one row, ahead of the log.
+//  5. The log, the remainder, capped by **rendered lines** and keeping the tail.
+//
+// ⚠️ Nothing here may touch the battle. The plan is computed while drawing, and
+// this screen is the one holding a pointer the model does not copy.
+//
+// playSizes is what each section would spend if it were drawn whole. Every one
+// of them is measured off what is actually on the board rather than assumed,
+// which is what makes a summoned unit cost a row the way a placed one does.
+type playSizes struct {
+	// tail is the turn in front: the option list, or the ending once the battle
+	// is over. Reserved, so it is not a section the plan chooses about.
+	tail int
+	// notes is what a save left behind, already wrapped.
+	notes int
+	// board is tui.Board's rows, and units is tui.Roster's rows without its
+	// header — the header goes with the first unit or not at all, because a
+	// column heading over nothing is a row spent on nothing.
+	board int
+	units int
+	// log is how many rendered lines the tail of the log came to, at most
+	// playLogLines.
+	log int
+}
+
+// playPlan is how much of each section the body draws.
+type playPlan struct {
+	notes bool
+	// board is drawn whole or not at all; roster is a count of units.
+	board  bool
+	roster int
+	order  bool
+	// log is how many of the log's rendered lines survive, counted from its end.
+	log int
+	// notice is the one dim line naming what is not shown and why. It is a row
+	// like any other and is budgeted for before the sections are allotted.
+	notice bool
+}
+
+// playFit is the whole of the arithmetic above.
+//
+// Two passes rather than one. The first asks whether everything fits, because a
+// screen with nothing missing has nothing to say; only when something has to go
+// is a row spent saying so, and the second pass allots what is left of the
+// smaller purse. If that pass turns out to have nothing worth naming — a log
+// tail one line shorter is the tail it always is, not something hidden — the
+// first plan is kept and the log gets the row back.
+func playFit(room int, sizes playSizes) playPlan {
+	left := room - 1 - blockRows(sizes.tail)
+	plan, whole := playTake(left, sizes)
+	if whole {
+		return plan
+	}
+	squeezed, _ := playTake(left-1, sizes)
+	squeezed.notice = true
+	if len(playHidden(squeezed, sizes)) == 0 {
+		return plan
+	}
+	return squeezed
+}
+
+// playTake is the greedy walk down the priority list, and whole says whether
+// every section got all of what it wanted.
+func playTake(left int, sizes playSizes) (playPlan, bool) {
+	var plan playPlan
+	whole := true
+	if sizes.notes > 0 {
+		if cost := blockRows(sizes.notes); cost <= left {
+			plan.notes, left = true, left-cost
+		} else {
+			whole = false
+		}
+	}
+	// The roster and the board are one pane sharing one blank above them, the
+	// way the game client draws them, and the roster is allotted first so the
+	// roster pays for it: the blank and the column heading go with the first
+	// unit and with no unit at all, because a heading over nothing is a row
+	// spent on nothing.
+	if sizes.units > 0 {
+		if rows := left - 2; rows > 0 {
+			plan.roster = min(sizes.units, rows)
+			left -= 2 + plan.roster
+		}
+		if plan.roster < sizes.units {
+			whole = false
+		}
+	}
+	// The board goes whole or not at all — ten rows of drawing have no half —
+	// and it is never drawn over a roster that is not: the picture without the
+	// health is the wrong half of the pane to keep, and it is what the priority
+	// already says, since the board is dropped before the roster's last row.
+	if sizes.board > 0 {
+		if plan.roster > 0 && sizes.board <= left {
+			plan.board, left = true, left-sizes.board
+		} else {
+			whole = false
+		}
+	}
+	if cost := blockRows(1); cost <= left {
+		plan.order, left = true, left-cost
+	} else {
+		whole = false
+	}
+	if sizes.log > 0 {
+		if rows := left - 1; rows > 0 {
+			plan.log = min(sizes.log, rows)
+			left -= 1 + plan.log
+		}
+		if plan.log < sizes.log {
+			whole = false
+		}
+	}
+	return plan, whole
+}
+
+// blockRows is what a section of n rows costs: the rows, plus the blank row that
+// separates it from whatever is above. A section of nothing costs nothing.
+//
+// Named in full rather than `block` for the reason drawnRows is: another screen
+// in this package already uses that word for a local.
+func blockRows(rows int) int {
+	if rows <= 0 {
+		return 0
+	}
+	return rows + 1
+}
+
+// playHidden is what the notice names, in the order the screen would have drawn
+// the sections it is talking about.
+//
+// The keys rather than the sentence, because the line is composed in one place
+// and because the count is what decides whether there is a line at all. A log
+// that came back a row or two shorter is **not** in here: the log is a tail by
+// design, so a shorter tail is the section working rather than a section
+// missing, and naming it would put a notice on nearly every window.
+func playHidden(plan playPlan, sizes playSizes) []i18n.Key {
+	var hidden []i18n.Key
+	if sizes.board > 0 && !plan.board {
+		hidden = append(hidden, i18n.PlayHiddenBoard)
+	}
+	if sizes.units-plan.roster > 0 {
+		hidden = append(hidden, i18n.PlayHiddenUnits)
+	}
+	if !plan.order {
+		hidden = append(hidden, i18n.PlayHiddenOrder)
+	}
+	if sizes.log > 0 && plan.log == 0 {
+		hidden = append(hidden, i18n.PlayHiddenLog)
+	}
+	if sizes.notes > 0 && !plan.notes {
+		hidden = append(hidden, i18n.PlayHiddenNote)
+	}
+	return hidden
+}
+
+// hiddenSeparator is what the notice's list is joined with. Punctuation rather
+// than a wording: both languages point a list with a comma, and the two ASCII
+// cells are the same in either.
+const hiddenSeparator = ", "
+
+// notice is the one line saying what is not shown and why.
+func (p playScreen) notice(m model, plan playPlan, sizes playSizes) string {
+	hidden := playHidden(plan, sizes)
+	parts := make([]string, 0, len(hidden))
+	for _, key := range hidden {
+		// The unit count is the only entry carrying a number, and English needs
+		// the singular where Vietnamese does not — hence the second key rather
+		// than a plural rule.
+		if key != i18n.PlayHiddenUnits {
+			parts = append(parts, m.text(key))
+			continue
+		}
+		if left := sizes.units - plan.roster; left == 1 {
+			parts = append(parts, m.text(i18n.PlayHiddenUnitsOne))
+		} else {
+			parts = append(parts, m.text(i18n.PlayHiddenUnits, left))
+		}
+	}
+	return m.style.dim.Render(
+		m.text(i18n.PlayHidden, strings.Join(parts, hiddenSeparator)))
+}
 
 func (p playScreen) view(m model) (string, string) {
 	footer := m.text(i18n.PlayFooter, saveKeyLabel())
 	if p.aiming {
 		footer = m.text(i18n.PlayAimFooter)
 	}
-	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.PlayHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.PlaySeed, p.seed)) + "\n")
+	heading := m.style.heading.Render(m.text(i18n.PlayHeading)) + "  " +
+		m.style.dim.Render(m.text(i18n.PlaySeed, p.seed))
 	if p.err != nil {
-		out.WriteString("\n  " + m.style.bad.Render(m.lang.Error(p.err)) + "\n")
-		return out.String(), footer
+		return heading + "\n\n  " + m.style.bad.Render(m.lang.Error(p.err)), footer
 	}
 	if p.fight == nil {
-		out.WriteString("\n  " + m.text(i18n.SquadsEmpty) + "\n")
-		return out.String(), footer
+		return heading + "\n\n  " + m.text(i18n.SquadsEmpty), footer
 	}
-	out.WriteString("\n" + tui.Board(p.fight, p.tags) + "\n")
-	out.WriteString(tui.Roster(p.fight, p.tags) + "\n\n")
-	out.WriteString(m.style.dim.Render(tui.Order(p.fight.Queue(), p.tags, 6)) + "\n\n")
-	out.WriteString(p.recent(m))
-	if p.fight.Finished() {
-		out.WriteString("\n" + m.style.emphasis.Render(p.ending(m)) + "\n")
-		out.WriteString(p.wrote(m))
-		return strings.TrimRight(out.String(), "\n"), m.text(i18n.PlayOverFooter, saveKeyLabel())
+
+	// The turn in front, read before anything else is measured because it is what
+	// the rest of the screen is budgeted around. A finished battle first, because
+	// its ending is the answer to the question a prompt would have asked; then
+	// the prompt. With neither — between turns, where the engine's own units act
+	// — there is no question on the screen and nothing to reserve room for.
+	var tail []string
+	switch {
+	case p.fight.Finished():
+		tail = []string{m.style.emphasis.Render(p.ending(m))}
+		footer = m.text(i18n.PlayOverFooter, saveKeyLabel())
+	case p.pending != nil:
+		tail = drawnRows(p.choices(m))
 	}
-	if p.pending == nil {
-		return strings.TrimRight(out.String(), "\n"), footer
+	board := drawnRows(tui.Board(p.fight, p.tags))
+	roster := drawnRows(tui.Roster(p.fight, p.tags))
+	order := m.style.dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))
+	log := p.log(m, playLogLines)
+	notes := p.wrote(m)
+
+	sizes := playSizes{
+		tail:  len(tail),
+		notes: len(notes),
+		board: len(board),
+		// The header is not a unit, and tui.Roster always draws one.
+		units: max(len(roster)-1, 0),
+		log:   len(log),
 	}
-	out.WriteString("\n" + p.choices(m))
-	out.WriteString(p.wrote(m))
-	return strings.TrimRight(out.String(), "\n"), footer
+	plan := playFit(playBodyRoom(m.height), sizes)
+
+	body := []string{heading}
+	if plan.notice {
+		body = append(body, p.notice(m, plan, sizes))
+	}
+	if plan.board || plan.roster > 0 {
+		body = append(body, "")
+		if plan.board {
+			body = append(body, board...)
+		}
+		if plan.roster > 0 {
+			body = append(body, roster[:plan.roster+1]...)
+		}
+	}
+	if plan.order {
+		body = append(body, "", order)
+	}
+	if plan.log > 0 {
+		body = append(body, "")
+		body = append(body, log[len(log)-plan.log:]...)
+	}
+	if len(tail) > 0 {
+		body = append(body, "")
+		body = append(body, tail...)
+	}
+	if plan.notes {
+		body = append(body, "")
+		body = append(body, notes...)
+	}
+	return strings.Join(body, "\n"), footer
 }
 
-// recent is the tail of the log, which is what happened since the player last
-// chose.
-func (p playScreen) recent(m model) string {
-	from := len(p.events) - playLogLines
-	if from < 0 {
-		from = 0
+// drawnRows splits a drawing into the rows it occupies, dropping the empty one a
+// trailing newline leaves behind.
+//
+// That last empty string is the miscount (*pickState).room had to be corrected
+// for: frame splits the body on newlines, so a section ending in one is a
+// section a row longer than it looks.
+//
+// Named for what it returns rather than `rows`, which half the screens in this
+// package already use as a local: a package function shadowed in most of the
+// files that could call it is one nobody reaches for.
+func drawnRows(drawn string) []string {
+	trimmed := strings.TrimRight(drawn, "\n")
+	if trimmed == "" {
+		return nil
 	}
-	var out strings.Builder
-	for _, event := range p.events[from:] {
-		line := tui.Line(event, p.tags)
+	return strings.Split(trimmed, "\n")
+}
+
+// log is the last rows of the log, which is what happened since the player last
+// chose.
+//
+// Counted in **rendered lines** and not in events, because tui.Line opens a turn
+// with a blank row and one event therefore arrives as two lines. Each event is
+// rendered exactly as it was before there was a budget — the indent goes on the
+// front of whatever tui.Line returned, once, so a turn's blank row still reads
+// as a blank row — and the lines are then counted rather than the events.
+//
+// Walked from the end so that a battle a thousand events deep renders the
+// handful of them that are on screen. Nothing here reads the battle: the event
+// log is the only contract a reader of one has.
+func (p playScreen) log(m model, room int) []string {
+	if room <= 0 {
+		return nil
+	}
+	var lines []string
+	for index := len(p.events) - 1; index >= 0 && len(lines) < room; index-- {
+		line := tui.Line(p.events[index], p.tags)
 		if line == "" {
 			continue
 		}
-		out.WriteString("  " + m.style.dim.Render(line) + "\n")
+		lines = append(drawnRows("  "+m.style.dim.Render(line)), lines...)
 	}
-	return out.String()
+	if len(lines) > room {
+		lines = lines[len(lines)-room:]
+	}
+	return lines
 }
 
 // choices is the turn in front: whose it is, what they may do, and where it may
@@ -632,12 +932,14 @@ func (p playScreen) ending(m model) string {
 
 // wrote is the line a save leaves behind, in the shape every other write in this
 // client reports itself.
-func (p playScreen) wrote(m model) string {
+// It hands back the rows rather than a block, because the budget above counts
+// them: a section that reported itself as one string would have to be measured
+// twice, once to place it and once to draw it.
+func (p playScreen) wrote(m model) []string {
 	if len(p.notes) == 0 {
-		return ""
+		return nil
 	}
-	var out strings.Builder
-	out.WriteString("\n")
+	var out []string
 	for index, note := range m.lang.Notes(p.notes) {
 		style := m.style.dim
 		if index == 0 {
@@ -647,8 +949,8 @@ func (p playScreen) wrote(m model) string {
 		// reason the fight's caution is: measuring the real terminal would give
 		// one sentence two shapes and leave the width sweep nothing to hold.
 		for _, line := range wrapWords(note, minWidth-1) {
-			out.WriteString(style.Render(line) + "\n")
+			out = append(out, style.Render(line))
 		}
 	}
-	return out.String()
+	return out
 }

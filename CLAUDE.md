@@ -519,15 +519,11 @@ answers rather than screen logic:
     a column of things to guess between.
     ⚠️ **This costs zero rows, and that is the whole reason it is a line beside
     each option rather than a block under the list.** The screen's body is **28
-    lines** and `frame` gives it `m.height - 2` less the two the header takes, so
-    at the declared 80x24 minimum only twenty survive and the option list is
-    already cut with the `Truncated` marker: the list first appears at **h ≥ 30**
-    and the screen is un-truncated from **h ≥ 32**, or **38** once the log tail
-    fills to its eight lines. A pane under the list would be a pane nobody in the
-    smallest window ever sees. `TestTheBattleScreenIsNoTallerThanItAlreadyWas` is
-    a **tripwire, not a bound** — the screen does not fit its minimum, that is
-    filed in `TODO.md` rather than fixed, and the test only stops it getting
-    worse.
+    lines** at a 1v1 and `frame` gives it `m.height - 2` less the two the header
+    takes, so at the declared 80x24 minimum only twenty survive. A pane under the
+    list would be a pane nobody in the smallest window ever sees. What used to
+    follow from that — the option list cut with the `Truncated` marker — is fixed;
+    see *the budget* below.
     ⚠️ **An unavailable option keeps its `Reason` and drops its summary.** The row
     has one slot and the two answer different questions: why it cannot be cast is
     the live question the moment the cursor steps over it, and what it does is one
@@ -591,6 +587,84 @@ answers rather than screen logic:
     than with drawings of its own: what is played here has to look like what the
     game client plays, and a second drawing of a battle is a second thing that
     can disagree about what happened.
+  - **The budget: this screen cannot fit the window the tool declares, so it
+    decides for itself what to give up.** The fit was not a hard problem, it was
+    an impossible one, and the measurement is worth keeping rather than
+    re-taking. At 80x24 `playBodyRoom` leaves the body **twenty** rows:
+
+    | section | rows |
+    |---|---:|
+    | heading | 1 |
+    | `tui.Board` | **10**, fixed |
+    | `tui.Roster` | **1 + one a unit** |
+    | `tui.Order` | 1 |
+    | the log | 0..`playLogLines` |
+    | the option list | 1 + one an option |
+
+    | squad | roster | heading + board + roster + order + options | vs 20 |
+    |---|---:|---:|---:|
+    | 1v1 | 3 | **20** | exactly, with no blank and no log |
+    | 3v3 | 7 | **24** | over by 4 |
+    | 5v5 | 11 | **28** | over by 8 |
+
+    `hex.MaxTeamSize` is 5, so **28 rows is the floor for a legal squad** before a
+    single blank or log line, and a **summon** puts units on the board past the
+    five a squad brought — up to the nine formation slots a side, which is
+    `board + roster = 29` on its own. No arrangement of these sections fits.
+    ⚠️ **So the defect was never the height, it was where the cut landed.**
+    `frame` cuts from the **bottom** and the option list was the last thing the
+    body wrote, so the one thing a player has to see in order to act was the
+    first thing thrown away. `playFit` reserves the **heading and the turn in
+    front** — never dropped, never cut, because a battle screen that cannot show
+    the moves is not a battle screen — and hands what is left to the rest in a
+    stated order: the **save's own note** (the answer to a keystroke pressed a
+    moment ago, naming the file; *not* reserved, because two notes wrap to five
+    rows and reserving them could crowd out the list), then **`Roster`** clipped
+    a row at a time (health and effects are what a turn is decided on, and it is
+    the one section that compresses by degrees), then **`Board`** dropped whole
+    (ten rows of drawing have no half, and what it says is recoverable — the aim
+    list prints the occupant beside every cell), then **`Order`**, then the
+    **log**. Measured on the fixture with the log filled to its eight rows, and
+    the heights are the same in both languages because every one of these
+    sections is a *count* rather than a sentence: the whole screen survives from
+    **h ≥ 36** at a 1v1, **40** at a 3v3 and **44** at a 5v5; the log is gone at
+    **29 / 33 / 37**, the order line at **27 / 31 / 35**, the board at
+    **25 / 29 / 33**, and the roster is clipped only once the aim list is up as
+    well — from **30** at a 5v5, **24** at a 3v3, and never at a 1v1, whose whole
+    roster is three rows.
+    ⚠️ **What disappears is not monotone in the height, and that is the priority
+    working.** The board takes ten rows or none, so at the height where it still
+    just fits it takes the rows the order line and the log would have had, and one
+    row shorter it cannot fit at all and both come back. Only the *offering* order
+    is monotone.
+    ⚠️ **The screen says what it gave up**, in one dim line under the heading
+    (`i18n.PlayHidden` and the five names beside it) — a screen silently missing
+    its board reads as a broken screen. A **shorter log tail is not in it**: the
+    log is a tail by design, so two rows fewer is the section working, while no
+    rows at all is not.
+    ⚠️ **No per-screen floor was introduced, and the reason is that `minHeight`
+    already is one.** `screenContent` returns `m.tooSmall()` before any screen is
+    drawn below 80x24, so this screen is never asked for a shorter window than it
+    can degrade into: at 24 the body has twenty rows, the heading and a
+    four-option list reserve seven and the notice one, and the twelve left hold a
+    5-a-side roster whole. A second floor would be a second answer to a question
+    the first one has already refused — and it would have to be per-screen inside
+    `tooSmall`, which is asked in `key` as well as in `View`. The one branch this
+    puts out of reach is the save note being dropped, which needs h ≤ 15; it is
+    constructed deliberately in `TestTheSaveNoteOutranksTheBoard` and the comment
+    there carries the arithmetic.
+    ⚠️ **`playLogLines` caps rendered lines and used to cap events.** The two are
+    not the same number — `tui.Line` opens a turn with a blank row of its own, so
+    one event arrives as two rows and eight events measured **eleven** a few turns
+    in. The section with the loosest claim on the screen was the one whose stated
+    budget did not hold.
+    ⚠️ **`internal/tui` did not change and did not need a row-limited `Roster`.**
+    Clipping the roster's *rows* is this screen splitting a drawing it was given;
+    reformatting it would be the other thing. The old
+    `TestTheBattleScreenIsNoTallerThanItAlreadyWas` tripwire is gone, replaced by
+    the bound that is now true: the option list survives every window the tool
+    draws, the aim list with it, and `frame`'s `Truncated` marker never appears on
+    this screen at all.
   - **Undo is a shorter script replayed**, not an unwinding: the script is cut at
     the player's last decision and the battle rebuilt from the seed. The engine's
     turns are recorded too, because a half that was not written down would replay
