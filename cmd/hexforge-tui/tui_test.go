@@ -38,6 +38,16 @@ func scratchData(t *testing.T) string {
 	t.Helper()
 	target := t.TempDir()
 	copyTree(t, shippedDataDir, target)
+	// The fixture controls its own catalogue, so the scratch copy starts with
+	// none. squads.json is written by this client and ships with whatever the
+	// author last built — that is the design, not an accident — which means a
+	// fixture that copied it would be measuring somebody's saved sides: the
+	// listing's empty state would stop being reachable and every squad these
+	// tests build would land beside strangers. forge.Load reads a missing file as
+	// an empty catalogue, which is what it already promises.
+	if err := os.Remove(filepath.Join(target, "squads.json")); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("clear the squad catalogue: %v", err)
+	}
 	// The fixture is what the tests name. Before this they named the characters
 	// the repository shipped, so editing the real cast broke tests that had
 	// nothing to do with it.

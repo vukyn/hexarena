@@ -53,15 +53,19 @@ const (
 	// Appended for the reason screenPreview was: nothing serialises these, but the
 	// menu is built from the order they are declared in.
 	screenBuilds
-	// screenSquads is the first screen that writes something the game does not
-	// ship: every other file here is the game's data and this one is the
-	// author's own, a side built to be fought with. Appended for the reason
+	// screenSquads is the first screen that writes the author's own file rather
+	// than the game's: every other file here is data somebody wrote for the
+	// game, and squads.json is a side built to be fought with. It ships like the
+	// rest of them — a squad saved here reaches a battle at the next build — so
+	// what is different is who it is for, not whether it travels. Appended for the reason
 	// screenPreview was — nothing serialises these, but the menu is built from
 	// the order they are declared in.
 	screenSquads
-	// screenFight is raised from the squad catalogue rather than the menu, for
-	// the reason screenSpar is raised from the check: that is where a squad is
-	// under a cursor, and a measurement wants a subject before anything else.
+	// screenFight is on the menu and is also raised from the squad catalogue
+	// with f. It can be both because it carries both of its sides itself rather
+	// than reading one off the catalogue's cursor: the catalogue's f only seeds
+	// the home index, so arriving that way still fights the squad that was
+	// pointed at, and arriving from the menu has a subject without one.
 	screenFight
 	// screenPlay is raised from the fight, for the reason the fight is raised
 	// from the catalogue: that is where a pairing is already chosen, and a
@@ -232,6 +236,7 @@ var menuItems = []menuItem{
 	{i18n.MenuSpecies, i18n.MenuSpeciesDetail, screenSpecies},
 	{i18n.MenuBuilds, i18n.MenuBuildsDetail, screenBuilds},
 	{i18n.MenuSquads, i18n.MenuSquadsDetail, screenSquads},
+	{i18n.MenuFight, i18n.MenuFightDetail, screenFight},
 	{i18n.MenuCheck, i18n.MenuCheckDetail, screenCheck},
 }
 
@@ -388,6 +393,21 @@ func (m model) enter(target screen) model {
 	case screenSquads:
 		m.squad = m.squad.refresh(m.lib)
 	case screenFight:
+		// The fight draws both of its sides out of the catalogue's list, so it
+		// reads that list on the way in the way every other listing screen here
+		// reads its own. It is the same reading rather than a second copy — a
+		// second copy is a second thing to keep in step — which is why this
+		// refreshes another screen's state and not one of its own.
+		//
+		// ⚠️ Nothing today can make that list stale between the model being
+		// built and the fight being entered: newSquadScreen refreshes at
+		// construction, and the only two writes (save and delete) are the
+		// catalogue's own keys, which refresh after them. So no test
+		// discriminates this line, and a mutation deleting it passes the whole
+		// suite. It is here so the fight owns its subject rather than depending
+		// on somebody having visited the catalogue first, and it must not be
+		// read as a guard against a state that has been seen.
+		m.squad = m.squad.refresh(m.lib)
 		m.fight = m.fight.refresh()
 	case screenPlay:
 		// A battle is built on the way in rather than lazily in the view: the

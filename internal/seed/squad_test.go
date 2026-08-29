@@ -129,15 +129,21 @@ func TestASquadIsRefusedForWhatABattleWouldRefuse(t *testing.T) {
 	}
 }
 
-// TestTheShippedCatalogueIsEmptyAndParses is the file itself: it exists so there
-// is somewhere for a squad to go, and it has to be readable while it holds none.
-func TestTheShippedCatalogueIsEmptyAndParses(t *testing.T) {
-	squads, err := seed.Squads()
-	if err != nil {
+// TestTheShippedCatalogueParses is the file itself: it holds whatever sides the
+// author has built, none of them or several, and it has to read back either way.
+// That is the whole contract — how many are in it is not one.
+//
+// ⚠️ This test used to insist the file was empty, and that clause was wrong from
+// the day somebody built a squad. seed.Squads says the rule in its own words: the
+// game boots from the copy go:embed baked in, so a squad built in the authoring
+// tool reaches a battle at the next build, the same rule every other data file
+// lives under. A squad shipping is the design working, not an accident to catch —
+// and a test that fails when the tool is used is a test that gets deleted rather
+// than read. What is worth holding is that the file stays readable, because an
+// unreadable one takes the game down with it.
+func TestTheShippedCatalogueParses(t *testing.T) {
+	if _, err := seed.Squads(); err != nil {
 		t.Fatalf("read the shipped catalogue: %v", err)
-	}
-	if len(squads) != 0 {
-		t.Errorf("the shipped catalogue holds %d squads; it is meant to ship empty", len(squads))
 	}
 }
 

@@ -1438,11 +1438,13 @@ with nothing on screen looking wrong. That is what
 `TestARoundTripThroughAMemberLeavesTheGuardDown` and
 `TestEveryRealEditRaisesTheGuard` are the two halves on the screen.
 
-A squad is saved into `squads.json` beside the other data files, and it ships
-**empty**: the file exists so there is somewhere for one to go. It is validated
-by the same call a battle makes of it — `Squad.Take` — so no squad is written
-that could not be fielded, and the refusal is the loadout rule's own words rather
-than the screen's.
+A squad is saved into `squads.json` beside the other data files, and it **ships
+like they do**: the game boots from the `go:embed` copy, so a squad built in the
+tool reaches a battle at the next build, the same rule every other data file
+lives under. An empty file is only the state before anybody has built one. It
+is validated by the same call a battle makes of it — `Squad.Take` — so no squad
+is written that could not be fielded, and the refusal is the loadout rule's own
+words rather than the screen's.
 
 ⚠️ **A squad has no side.** It is fielded as either half of a battle, which is
 what lets one be measured against several opponents and against a copy of itself

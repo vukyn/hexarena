@@ -107,7 +107,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	traitless := m.enter(screenBuilds)
 	traitless.builds = withNoTraitTaken(t, traitless.builds)
 	// The squad builder in each of its three depths, plus the two pickers it
-	// raises. The catalogue ships empty, so the listing with a squad in it and
+	// raises. The fixture's catalogue starts empty, so the listing with a squad in it and
 	// the two views under it are drawn only by a squad built here — and every
 	// line of them is wording, so they are measured rather than left to whoever
 	// builds the first one.
@@ -316,7 +316,7 @@ func withNobodyClaiming(s speciesScreen) speciesScreen {
 // the trait, because a unit with no skills cannot act while a unit with no trait
 // is an ordinary one — and nothing shipped is one. That is exactly the case a
 // state built by hand is for: the alternative is wording no test ever renders.
-// someSquad is a squad built by hand, because the catalogue ships empty.
+// someSquad is a squad built by hand, because the fixture's catalogue starts empty.
 //
 // It is the widest state the builder draws: an id and a name typed, somebody in
 // the front rank, and a full kit — every one of which is a line the empty

@@ -600,7 +600,14 @@ const (
 	MenuSquadsDetail
 
 	// The squad fight: two sides measured against each other.
+	MenuFight
+	MenuFightDetail
 	FightHeading
+	// What the screen says when the catalogue is empty. It is its own wording
+	// rather than the catalogue's, because that one names a key this screen does
+	// not have: reaching the fight with nothing built is only possible from the
+	// menu, and the answer there is to go and build a side.
+	FightNoSquads
 	FightAgainst
 	FightControl
 	FightConditions

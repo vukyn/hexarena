@@ -232,8 +232,9 @@ func Load(dir string) (*Library, error) {
 	}
 
 	// Squads are optional on the same terms and for a stronger reason: the file
-	// ships empty, so a data directory that has never had one built in it is the
-	// ordinary case rather than an old copy.
+	// is written by the authoring tool the first time somebody saves a squad, so
+	// a data directory nobody has built one in has no file at all, and that is
+	// the ordinary case rather than an old copy.
 	raw, err = read(squadsFile)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
