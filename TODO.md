@@ -114,11 +114,35 @@ is only so the shape is readable.
       comparison, so **the theory this item was filed under is disproved and
       should not be re-raised**. The levers are all data — soften `bare`, drop its
       dodge clause, or raise `unleashed`.
-      ⚠️ **Whatever lands has to land with `vulnerability`, not before it.** A
-      negative `Resists` share is built and `reckless` is its natural first user;
-      adding it alone sinks the build further, so the two are one change.
+      ⚠️ **Two of the three levers have now been measured and both are dead ends;
+      only the forbidden one moves the number.** Dropping `bare`'s dodge clause is
+      worth **+2.8** (22.0% → 24.8%) and pairing it with a `vulnerability` — six
+      harmful statuses at −200‰ — is worth **−3.3** (→ 18.7%), *below* where the
+      trait started and far below the 38.9% floor. The two terms add rather than
+      compound, so the argument that dodge is superlinear against a
+      burn-and-detonate opponent is disproved. Decomposed, `bare`'s defence term
+      is **88%** of what the trait costs (−400 dodge only reads 43.4%, no `bare`
+      at all 46.3%) — so **softening the magnitude is the only lever left**, and it
+      is the one that was ruled out for having no natural stopping point. That
+      objection is answered: the stop rule's two re-taken referents, `blaze` at
+      38.9% and `blood_thirst` at 55.1%, **are** the stopping point, and the two
+      readings above bracket the sweep — `bare` at −400 defence alone reads 24.8%
+      and no `bare` at all reads 46.3%, so the value that lands sits between them.
+      Do not re-raise the dodge clause or `unleashed`.
+      → `README.md` § *What `bare`'s dodge clause was worth*.
+      ⚠️ **`vulnerability` still has no shipped user, and `reckless` is not it.**
+      The mechanism is proven end to end — parses, prices, steers, renders in both
+      languages — but a negative share on top of an unchanged defence term makes
+      the build strictly worse. Whatever lands still has to land with it; it just
+      cannot be the whole of what lands.
       ⚠️ `TestRecklessIsATradeAndNotAGift` asks whether *something* is given up
-      and cannot ask whether **too much** is, which is why nothing caught this.
+      and cannot ask whether **too much** is. Half of that gap is now closed:
+      `TestRecklessSpendsNoMoreThanItBuys` prices the trait in damage off the
+      event log (shipped data buys 30956 for 50084, ratio 1.62 against a bound of
+      2) and is what caught the candidate, going red where the win rate would not
+      have. The other half — a cast-wide rule that no trait may lower more
+      distinct stats than it raises — is **written and not shipped**, because it
+      goes red on the shipped data by design; it lands with the fix.
       → `dragon_test.go` § `TestTheDragonLineCanSpendWhatItApplies` for the table.
 - [ ] **The rest of the cast still crits at nothing.** Two skills carry a chance
       now, chosen by what `weigh` priced rather than by what the names suggest.

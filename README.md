@@ -2014,6 +2014,82 @@ therefore priced as giving up nothing at all, and a burst of any size would have
 passed. Both now price the two currencies separately and **refuse** a status they can
 price in neither, because nought and "gives up nothing" are the same number and only
 one of them is true.
+
+### What `bare`'s dodge clause was worth
+
+Almost nothing, and the finding is again that the item asking for it had named the
+wrong term. The table above ends by leaving the trait open and naming three levers:
+soften `bare`, drop its dodge clause, or raise `unleashed`. The middle one was the
+one with an argument behind it — `bare` charges two stats for `unleashed`'s one, so
+dropping the dodge term makes the trait one-for-one, and dodge gates whether an
+attack connects at all, which should make it compound against a burn-and-detonate
+opponent. It was measured, on the same instrument and the same 3000 battles both
+ways round, alongside giving `reckless` a **vulnerability** — a negative `Resists`
+share of −200‰ against each of the six harmful statuses that can actually be
+inflicted — so that the cost lost in one currency was paid back in another.
+
+| reading | `bare` | `reckless` resists | rate | Δ vs R0 |
+| --- | --- | --- | --- | --- |
+| **R0** shipped | −400 def, −400 ddg | none | 22.0% | — |
+| **R1** dodge clause dropped | −400 def | none | 24.8% | **+2.8** |
+| **R2** vulnerability alone | −400 def, −400 ddg | six at −200 | 16.1% | **−5.9** |
+| **R3** both — the candidate | −400 def | six at −200 | 18.7% | **−3.3** |
+| **A** ceiling: `blood_thirst` instead | — | — | 55.1% | +33.1 |
+| **B** floor: `blaze` instead | — | — | 38.9% | +16.9 |
+
+**R3 is below R0 and far below the floor, so the lever is falsified.** The stop rule
+the work was done under is that a candidate landing under B has not fixed anything,
+and this one moved the number backwards. The interaction reads clean —
+`R3−R0 = −3.3` against `(R1−R0)+(R2−R0) = −3.1` — so the two terms simply **add**,
+with no compounding in either direction. That is itself the answer to the argument
+for the lever: the dodge term was supposed to be superlinear against this opponent
+and it is linear.
+
+**Where `bare`'s cost actually lives**, decomposed the same way:
+
+| `bare` | rate | what the removed clause was worth |
+| --- | --- | --- |
+| −400 def, −400 ddg (shipped) | 22.0% | — |
+| −400 def only | 24.8% | the dodge clause: **+2.8** |
+| −400 ddg only | 43.4% | the defence clause: **+21.4** |
+| not granted at all | 46.3% | the whole status: **+24.3** |
+
+The two clauses add here too (2.8 + 21.4 = 24.2 against 24.3 measured). So the
+defence term is **88% of what `reckless` costs** and the dodge term is 12%, and the
+lever the item forbade — softening `bare`'s magnitude — is the only one of the three
+that can move the figure, while the lever it prescribed cannot. Dropping `bare`
+entirely lands at 46.3%, inside the (38.9%, 55.1%) band and squarely on the 45–50%
+the work was aiming at, but that is a trait with no cost at all and
+`TestRecklessIsATradeAndNotAGift` exists to refuse it. **No data change was made**;
+what the trait becomes is still open, now with the price of each of its terms
+written down.
+
+⚠️ **A vulnerability costs more than its arithmetic, because the opponent steers.**
+R2 is the reading to be careful with. `pricing.landed` calls `fight.resist` on the
+*target*, so the rating can see that a unit invites a status and will aim one at it
+on purpose — a vulnerability is not a passive multiplier applied to whatever would
+have happened anyway, it changes what the opponent chooses to do. −200‰ across six
+statuses cost 5.9 points where a share-times-uptime calculation predicts far less,
+and the gap is the opponent playing well rather than the harness misreporting.
+
+⚠️ **A win rate could not have caught the candidate, and a ledger did.**
+`TestRecklessSpendsNoMoreThanItBuys` prices the trait in damage off the event log
+rather than in wins: on shipped data `reckless` buys 30956 damage for 50084 taken, a
+ratio of 1.62 against a declared bound of 2. Under R3 the trait bought **−7898** —
+it dealt *less* damage than fielding no trait at all, while spending 61429 — so the
+test goes red on a candidate whose win rate, at 18.7% against a band of 15–85%, no
+existing assertion would have rejected. The ledger is new and shipped; the shape
+test that would have caught the two-stats-for-one is written and is **not** shipped,
+because it goes red on the shipped data by design and the data was not changed.
+
+⚠️ `vulnerability` therefore still has **no** shipped user. The mechanism was
+exercised end to end and works: the six negative shares parse, `battle.resist`
+carries them, the rating reads them, and `BlurbTraitVulnerable` renders correctly in
+both languages — "Tăng 20% khả năng dính bỏng" / "Takes 20% more of any burn aimed at
+it", the sign carried by the verb and the share printed as its size. What is missing
+is a trait the share is *right* for, and `reckless` is not it while its defence term
+is unchanged.
+
 ### Both halves of an all-sided skill
 
 Built. `skill.All` aims at either half of the board and a shape aimed that way

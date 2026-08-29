@@ -247,6 +247,127 @@ func TestRecklessIsATradeAndNotAGift(t *testing.T) {
 	}
 }
 
+// TestRecklessSpendsNoMoreThanItBuys is the half of the trait's price that a
+// shape test cannot see, and it is measured in damage rather than in wins.
+//
+// A win rate cannot price a stat. That is the swiftness finding restated: a rate
+// is non-monotone in a stat, so a band drawn over one is a band over the shape of
+// a matchup and not over the thing being changed. Damage off the event log is the
+// currency the trait is actually denominated in — `unleashed` buys damage dealt
+// and `bare` sells damage taken — so the log can be asked the question directly:
+// fight the same duel with the trait and without it, and compare the two sums.
+//
+// Fielding no trait at all is legal and shipped, which is what makes the
+// without-run available as a baseline; there is no need to invent a null trait.
+//
+// ⚠️ The RNG stream diverges the instant anything about the two runs differs, so
+// seed N with the trait is not seed N without it in any comparable sense. The
+// aggregate over every seed and both arrangements is the measurement; a per-seed
+// pairing would be reading noise.
+//
+// ⚠️ The factor of two is a **declared design constant**, not a measurement. It
+// is borrowed from this repo's detonate rule — a burst may beat leaving the
+// status alone, but not by more than a factor of two — and it is the only invented
+// number in this test. It says what "too much" means for a trait: paying twice
+// what you buy is a trade, paying three times is a tax.
+//
+// ⚠️ **The shipped trait passes this with room, and that is worth knowing rather
+// than reassuring.** It buys 30956 damage for 50084, a ratio of 1.62, so the bound
+// is not a tight fit and this test on its own would not have caught the trait
+// being a bad deal — the 22.0% duel figure is the thing that says so, and a rate
+// and a ledger are asking different questions. What the ledger *can* see is a
+// change making the trade worse: giving `reckless` a vulnerability to the six
+// inflictable harmful statuses drove `bought` **negative** (−7898 bought against
+// 61429 spent), which is this test going red on a candidate no win-rate band
+// would have rejected on its own. That is the job.
+func TestRecklessSpendsNoMoreThanItBuys(t *testing.T) {
+	withTrait := theDamageLedger(t, []string{"reckless"})
+	without := theDamageLedger(t, nil)
+
+	bought := withTrait.dealt - without.dealt
+	cost := withTrait.taken - without.taken
+	t.Logf("with reckless: dealt %d, taken %d; without: dealt %d, taken %d; bought %d, cost %d",
+		withTrait.dealt, withTrait.taken, without.dealt, without.taken, bought, cost)
+
+	if bought <= 0 {
+		t.Errorf("reckless buys %d damage, so the attack it grants is worth nothing "+
+			"and the whole trait is cost", bought)
+	}
+	if cost > 2*bought {
+		t.Errorf("reckless buys %d damage and costs %d taken, over twice what it buys: "+
+			"the trade has become a tax", bought, cost)
+	}
+}
+
+// ledger is what one side of the duel dealt and took over every battle fought.
+type ledger struct {
+	dealt, taken int64
+}
+
+// theDamageLedger fights the dragon build against the fire build over the whole
+// seed range, both arrangements, and totals what the dragon unit dealt and took.
+//
+// Both arrangements for the reason every other measurement here takes both: the
+// turn queue breaks a tie by enlistment and this is a mirror, so a one-way figure
+// would carry the first slot's advantage into the answer.
+//
+// Damage taken counts status ticks as well as strikes. A tick is the fire build's
+// main lever — `burn` is most of what `inferno` is worth — so a ledger that read
+// only strikes would be blind to the half of the price that arrives as a status,
+// which is exactly the half a dodge term or a resistance share moves.
+func theDamageLedger(t *testing.T, traits []string) ledger {
+	t.Helper()
+	books, err := seed.Books()
+	if err != nil {
+		t.Fatalf("load the shipped books: %v", err)
+	}
+	stats, affinity, _, _ := fielded(t, "pokemon.charmander")
+	total := ledger{}
+	for _, dragonIsFirst := range []bool{true, false} {
+		for which := 1; which <= buildSeeds; which++ {
+			dragon := battle.Roster{ID: "dragon", Side: hex.SideAlly, Slot: buildSlot,
+				Affinity: affinity, Stats: stats, Skills: dragonBuild, Passives: traits}
+			fire := battle.Roster{ID: "fire", Side: hex.SideEnemy, Slot: buildSlot,
+				Affinity: affinity, Stats: stats, Skills: fireBuild, Passives: []string{"blaze"}}
+			order := []battle.Roster{dragon, fire}
+			if !dragonIsFirst {
+				// Side and enlistment move together: the second-enlisted unit is
+				// the enemy one, so swapping the order without swapping the side
+				// would field two allies.
+				dragon.Side = hex.SideEnemy
+				fire.Side = hex.SideAlly
+				order = []battle.Roster{fire, dragon}
+			}
+			fight, err := battle.New(books, uint64(which), order)
+			if err != nil {
+				t.Fatalf("new battle: %v", err)
+			}
+			fight.Begin()
+			if _, err := fight.RunToEnd(4000); err != nil {
+				t.Fatalf("run: %v", err)
+			}
+			for _, event := range fight.Drain() {
+				switch event.Kind {
+				case battle.Damaged:
+					if event.Actor == "dragon" {
+						total.dealt += event.Amount
+					}
+					if event.Target == "dragon" {
+						total.taken += event.Amount
+					}
+				case battle.StatusTicked:
+					// A tick names its holder in Actor and has no target: the
+					// holder is who it is happening to.
+					if event.Actor == "dragon" {
+						total.taken += event.Amount
+					}
+				}
+			}
+		}
+	}
+	return total
+}
+
 // TestEveryDragonSkillIsNeutral is the mechanism the whole build rests on,
 // stated where a reader will find it.
 //
