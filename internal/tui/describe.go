@@ -36,6 +36,22 @@ func Detail(lang i18n.Lang, declared skill.Skill, shapes *pattern.Book) string {
 // DetailPassives is the traits a unit is carrying, as one block. A unit with
 // none says so rather than printing an empty frame, because a blank answer to a
 // question the player asked reads as the tool failing to answer it.
+//
+// The heading asks Lang for the name rather than reading passive.Passive.Name,
+// and that is the same reading Detail gives a skill twelve lines above: a data
+// name is authored once and in Vietnamese, so Lang.PassiveName answers nothing
+// in English and the row is the id, which is the data's own name for itself.
+// Reading the field raw put a Vietnamese word on an English screen — latent
+// while the only caller hands this i18n.Vi, and a leak the day cmd/hexarena
+// honours --lang, at which point trait headings would keep their names while the
+// skill headings beside them dropped theirs.
+//
+// The guard is the one all three blocks in this file use — non-empty, and not
+// the id said twice. PassiveName has no fallback to the compiled tables, so
+// only a name authored as its own id reaches the second half and nothing
+// refuses one; a heading reading "blood_thirst · blood_thirst" is the same
+// defect Detail's guard exists to prevent, and having the three agree by
+// inspection is what this whole change is about.
 func DetailPassives(lang i18n.Lang, name string, held []passive.Passive) string {
 	if len(held) == 0 {
 		return block(name, lang.DescribePassive(passive.Passive{}))
@@ -43,8 +59,8 @@ func DetailPassives(lang i18n.Lang, name string, held []passive.Passive) string 
 	parts := make([]string, 0, len(held))
 	for _, one := range held {
 		heading := one.ID
-		if one.Name != "" {
-			heading = fmt.Sprintf("%s · %s", one.ID, one.Name)
+		if authored := lang.PassiveName(one); authored != "" && authored != one.ID {
+			heading = fmt.Sprintf("%s · %s", one.ID, authored)
 		}
 		parts = append(parts, heading+"\n"+indent(lang.DescribePassive(one), "  "))
 	}

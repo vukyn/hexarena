@@ -63,6 +63,13 @@ is only so the shape is readable.
   rather than padding a row of blanks, and the picker asks whether the rows in
   front of it have anything in that column rather than which language or which
   kind it is drawing. → `cmd/hexforge-tui/picker.go` → `detailColumn`.
+  The same reading reaches the **game client's** blocks: `tui.Detail`,
+  `tui.DetailPassives` and `tui.DetailStatus` all word a heading through the
+  accessor, so the three agree by inspection. ⚠️ `DetailPassives` read its field
+  raw for as long as it existed, twelve lines under a caller that did not —
+  **latent**, because its one caller hardcodes `i18n.Vi`, and a leak the day
+  `cmd/hexarena` honours `--lang`. A rule with three call sites is only worth
+  the one that got it wrong quietly.
   ⚠️ **A screen the sweep never renders has no leak test, no width test and no
   translation test at all.** The species picker read `kind.Name` raw and drew
   `dragon rồng` in English for as long as it existed;
@@ -188,15 +195,6 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **`tui.DetailPassives` reads a trait's name raw, twelve lines under a
-      caller that does not.** `internal/tui/describe.go:46-47` prints `one.Name`
-      where `lang.PassiveName(one)` is the accessor, while line 30 of the same
-      file goes through `lang.SkillName`. **Latent rather than live**: the only
-      caller is `cmd/hexarena/main.go:391`, which hardcodes `i18n.Vi` — the
-      deliberate Vietnamese-block decision — so the raw read agrees with the
-      accessor for the one value `lang` is ever handed. The day `cmd/hexarena`
-      honours `--lang`, trait headings keep `blood_thirst · khát máu` while the
-      skill headings beside them drop theirs.
 
 ## Decided against — do not re-raise
 
