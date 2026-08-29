@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"runtime"
 	"strings"
 
 	"charm.land/bubbles/v2/textinput"
@@ -171,12 +172,33 @@ func newInputStyles() textinput.Styles {
 
 // plainTerminal reports whether colour would be noise rather than help.
 func plainTerminal() bool {
-	if os.Getenv("NO_COLOR") != "" {
+	return plainScreen(os.Getenv("NO_COLOR"), os.Getenv("TERM"), runtime.GOOS)
+}
+
+// plainScreen is that question with its three inputs handed in, so both answers
+// can be tested from either sort of machine. `runtime.GOOS` cannot be faked, and
+// the whole of what is written down below is a difference between two platforms.
+//
+// ⚠️ **An unset TERM is "dumb" only away from Windows.** TERM is terminfo's
+// convention and cmd.exe, PowerShell and Windows Terminal set none at all — so
+// reading its absence as a dumb terminal left every Windows terminal drawing
+// plain text, with no cursor in any text field, while macOS and Linux (where
+// TERM is always set) never reached the branch and nothing looked wrong. The
+// rendering library draws the same line for the same reason: `colorprofile`'s
+// own `isDumb` is `(!ok && runtime.GOOS != "windows") || term == dumbTerm`, and
+// it reports TrueColor for a Windows 10 build 14931 or later. So this is not a
+// guess about what those terminals can do — it is the same answer the thing that
+// writes the escape codes has already given, and the palette's rule is only
+// worth having if the two agree.
+func plainScreen(noColour, term, goos string) bool {
+	if noColour != "" {
 		return true
 	}
-	switch os.Getenv("TERM") {
-	case "", "dumb":
+	switch term {
+	case "dumb":
 		return true
+	case "":
+		return goos != "windows"
 	}
 	return false
 }

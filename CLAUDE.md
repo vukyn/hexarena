@@ -374,6 +374,22 @@ time — which is why they are written down:
   colours under `NO_COLOR`. `newInput` / `newInputStyles` in `style.go` restore
   the palette's rule; under v1 the library detected the missing terminal and did
   it for free, which is exactly why it is named now.
+  ⚠️ **And `plainTerminal` gets to decide it, so an unset `TERM` is "dumb" only
+  away from Windows.** `TERM` is terminfo's convention: cmd.exe, PowerShell and
+  Windows Terminal set none at all, so reading its absence as a dumb terminal
+  drew **every native Windows terminal in plain text**, with no cursor in any
+  text field — while macOS and Linux always set it and never reached the branch.
+  The rule is `colorprofile`'s own, copied rather than guessed at
+  (`isDumb := (!ok && runtime.GOOS != "windows") || term == dumbTerm`; it reports
+  TrueColor for a Windows 10 build 14931 or later, and for any `WT_SESSION`), so
+  the palette and the thing that writes the escape codes agree. `plainScreen`
+  takes its three inputs as parameters because `runtime.GOOS` cannot be faked and
+  both answers have to be assertable from either sort of machine
+  (`TestAnUnsetTermIsOnlyDumbAwayFromWindows`).
+  ⚠️ **Nothing in the suite could see it**, which is the part worth keeping: every
+  other test here sets `NO_COLOR` and returns at the line above, so the branch was
+  unreached on the machine it was written on and unreachable in CI. A rule that
+  differs by platform needs its inputs handed in, not read.
 - ⚠️ **A virtual cursor is drawn as reverse video**, which is an escape code, so
   `newInput` turns it off on a plain terminal. That is not a regression: v1's
   renderer stripped the attribute itself, so the plain path never had a cursor
