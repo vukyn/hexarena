@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/seed"
+	"github.com/vukyn/hexarena/internal/testfixture"
 )
 
 var update = flag.Bool("update", false, "rewrite the golden files instead of comparing against them")
@@ -53,7 +56,13 @@ func TestDescribeEveryShippedSkillGolden(t *testing.T) {
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
 		fmt.Fprintf(&b, "== %s ==\n\n", lang)
 		for _, declared := range skills.Skills() {
-			fmt.Fprintf(&b, "%s\n%s\n\n", declared.ID, lang.Describe(declared, shapes))
+			// The two readings of one skill, one under the other. The compact
+			// line is a fourth describer, so the golden is where the two are
+			// compared by eye: a balance change has to move both, and a diff
+			// where only one of them moved is the drift the containment test
+			// below cannot see (it holds the figures, not the wordings).
+			fmt.Fprintf(&b, "%s\n%s\n[one line] %s\n\n", declared.ID,
+				lang.Describe(declared, shapes), lang.SummariseSkill(declared, shapes))
 		}
 		for _, held := range passives.All() {
 			fmt.Fprintf(&b, "[trait] %s\n%s\n\n", held.ID, lang.DescribePassive(held))
@@ -255,6 +264,203 @@ func TestEverySkillDescriptionSaysWhatItDoes(t *testing.T) {
 func rangeWord(lang i18n.Lang) string {
 	word, _, _ := strings.Cut(lang.Say(i18n.BlurbCostRange, 0), " 0")
 	return word
+}
+
+// TestTheOneLineSummaryQuotesNoFigureTheDescriptionDoesNot is what a fourth
+// describer is on probation for.
+//
+// The standing rule of this package is that a second reading of one set of facts
+// drifts from the first, and Lang.SummariseSkill is a second reading of every
+// number Lang.Describe reads. Its doc comment says why it cannot be Describe with
+// the prose dropped — in Vietnamese the authored flavour and the damage figure
+// are fused into one sentence with no seam to cut — and this is the other half of
+// that bargain: the two are allowed to word a skill differently and are not
+// allowed to disagree about a figure.
+//
+// So it compares digit runs rather than words. Every run the compact line prints
+// has to appear in the sentences for the same skill, in the same language, over
+// every shipped skill. One way round only: Describe carries figures the compact
+// line leaves out on purpose (accuracy, pierce, a critical chance, the
+// per-strike share of a volley), and demanding those back would be demanding the
+// compact line be the long one.
+//
+// What it catches is the failure that matters: a power, a chance or a cooldown
+// read off a different field, or through a different rounding, than the sentence
+// beside it. A player comparing four rows and then pressing ? has to get the same
+// numbers twice.
+func TestTheOneLineSummaryQuotesNoFigureTheDescriptionDoesNot(t *testing.T) {
+	skills, err := seed.SkillBook()
+	if err != nil {
+		t.Fatalf("load the shipped skills: %v", err)
+	}
+	shapes, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load the shipped patterns: %v", err)
+	}
+	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
+		for _, declared := range skills.Skills() {
+			summary := lang.SummariseSkill(declared, shapes)
+			if strings.TrimSpace(summary) == "" {
+				t.Errorf("%s: %q has no one-line summary at all", lang, declared.ID)
+				continue
+			}
+			described := digitRuns(lang.Describe(declared, shapes))
+			for _, run := range digitRuns(summary) {
+				if !slices.Contains(described, run) {
+					t.Errorf("%s: %q summarises as %q, whose figure %q is nowhere in "+
+						"its description — the two readings disagree",
+						lang, declared.ID, summary, run)
+				}
+			}
+		}
+	}
+}
+
+// digitRuns is every unbroken run of digits in a string, in the order they are
+// printed.
+//
+// A run rather than a character, because 130 and 30 are different figures and a
+// per-character comparison would call the first one contained in the second. A
+// slice rather than a set, so a failure names the clauses in the order a reader
+// meets them: this package holds the same line about map iteration reaching an
+// output that internal/core does.
+func digitRuns(text string) []string {
+	var found []string
+	current := strings.Builder{}
+	flush := func() {
+		if current.Len() > 0 {
+			found = append(found, current.String())
+		}
+		current.Reset()
+	}
+	for _, letter := range text {
+		if letter >= '0' && letter <= '9' {
+			current.WriteRune(letter)
+			continue
+		}
+		flush()
+	}
+	flush()
+	return found
+}
+
+// TestAStripIsCalledHarmfulOnlyWhenEveryCategoryItNamesIs is the claim the second
+// strips wording exists to make, and the one thing a width measurement cannot
+// check: the tripwire executes the branch, it never reads what came out.
+//
+// The compact line counts a strip rather than enumerating it — three categories
+// cannot fit a row — so the only thing left to say about it is *which kind*. That
+// is read off status.Category.Harmful, the function that separates a cleanse from
+// a dispel, and it is a claim: "gỡ 3 hiệu ứng xấu" on a skill that strips a shield
+// is a description of a mechanic the skill does not have. Four of the seven
+// categories are harmful and three are not, so the wrong answer is reachable
+// rather than theoretical.
+//
+// ⚠️ **Both branches have to be reached or this proves nothing**, which is the
+// whole shape of the test rather than a nicety: a bare loop over whatever the book
+// holds would pass with a table covering one side, and a table silently covering
+// one side is exactly how purify shipped invisible. Today the shipped rapid_spin
+// and the fixture purify are all-harmful and the fixture unmake strips a buff and
+// a shield, so both are live — and the day somebody empties one, this says so
+// instead of going quiet.
+//
+// Over the books a loaded library holds rather than a named list, for the same
+// reason: unmake is a fixture skill, so a test reading only the shipped book would
+// have no benign case at all, and one naming ids by hand would not notice a shipped
+// dispel being authored.
+func TestAStripIsCalledHarmfulOnlyWhenEveryCategoryItNamesIs(t *testing.T) {
+	shapes, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load the shipped patterns: %v", err)
+	}
+	skills := everySkillDeclared(t, shapes)
+	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
+		claimed, counted := 0, 0
+		for _, declared := range skills {
+			if declared.Strips == nil {
+				continue
+			}
+			if len(declared.Strips.Categories) == 0 {
+				t.Errorf("%s: %q strips nothing at all, so it names no kind",
+					lang, declared.ID)
+				continue
+			}
+			harmful := true
+			for _, category := range declared.Strips.Categories {
+				if !category.Harmful() {
+					harmful = false
+				}
+			}
+			// Both clauses rendered with this skill's own count, asked of the
+			// catalog rather than written out here: a test holding its own copy of
+			// a sentence is the drift it exists to catch.
+			harmfulWording := lang.Say(i18n.SummaryStripsHarmful, declared.Strips.Stacks)
+			countWording := lang.Say(i18n.SummaryStrips, declared.Strips.Stacks)
+			if harmfulWording == countWording {
+				t.Fatalf("%s words both strip clauses %q, so they cannot be told apart",
+					lang, countWording)
+			}
+			summary := lang.SummariseSkill(declared, shapes)
+			// The harmful one is tested first because the counting one is a
+			// **prefix** of it in both languages — "gỡ 2 hiệu ứng" inside
+			// "gỡ 2 hiệu ứng xấu", "strips 2" inside "strips 2 harmful" — so
+			// asking about the count first would be true of every strip there is.
+			said := strings.Contains(summary, harmfulWording)
+			if said {
+				claimed++
+			} else {
+				counted++
+			}
+			if said != harmful {
+				t.Errorf("%s: %q strips %v and summarises as %q — it %s them harmful "+
+					"and %s of them is",
+					lang, declared.ID, declared.Strips.Categories, summary,
+					map[bool]string{true: "calls", false: "does not call"}[said],
+					map[bool]string{true: "every one", false: "not every one"}[harmful])
+			}
+			if !said && !strings.Contains(summary, countWording) {
+				t.Errorf("%s: %q summarises as %q, which is neither of the two strip "+
+					"clauses", lang, declared.ID, summary)
+			}
+		}
+		if claimed == 0 {
+			t.Errorf("%s: nothing in the books strips only harmful categories, so the "+
+				"claim %q was never made and this measured nothing",
+				lang, lang.Say(i18n.SummaryStripsHarmful, 1))
+		}
+		if counted == 0 {
+			t.Errorf("%s: everything in the books strips only harmful categories, so "+
+				"the plain count %q was never reached and a wrong claim would pass here",
+				lang, lang.Say(i18n.SummaryStrips, 1))
+		}
+		t.Logf("%s: %d skills call a strip harmful and %d only count it",
+			lang, claimed, counted)
+	}
+}
+
+// everySkillDeclared is the shipped book plus the fixture's, which is the set a
+// loaded library holds.
+//
+// The fixture is parsed exactly the way testfixture.Inject parses it — through
+// the skill book's own parser, against the shipped pattern and status books — so
+// this is the same set of skills, without a temporary directory and a third copy
+// of a data-copying helper to keep in step.
+func everySkillDeclared(t *testing.T, shapes *pattern.Book) []skill.Skill {
+	t.Helper()
+	shipped, err := seed.SkillBook()
+	if err != nil {
+		t.Fatalf("load the shipped skills: %v", err)
+	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	added, err := skill.ParseBook([]byte(`{"skills":`+testfixture.Skills+`}`),
+		skill.Deps{Patterns: shapes, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("parse the fixture skills: %v", err)
+	}
+	return append(shipped.Skills(), added.Skills()...)
 }
 
 // TestEveryStatusDescriptionSaysWhatItIs is the property the golden cannot hold:

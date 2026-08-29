@@ -143,14 +143,36 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	fight := withASquadSaved(t, building).enter(screenFight)
 	// And the same screen with nothing to fight, which is a different line.
 	noSquads := m.enter(screenFight)
-	// The battle, in each of the three states it draws: waiting on a skill,
-	// waiting on a cell, and over. The board and the roster in it are the game
-	// client's own drawing rather than this one's, and they are measured here
-	// because this is the screen that has to fit them beside a menu.
+	// The battle, in each of the four states it draws: waiting on a skill,
+	// waiting on a cell, describing the option in front, and over. The board and
+	// the roster in it are the game client's own drawing rather than this one's,
+	// and they are measured here because this is the screen that has to fit them
+	// beside a menu.
+	//
+	// ⚠️ **Each state enters the screen for itself, and that is not tidiness.**
+	// playScreen is the one screen holding something the model does not copy: the
+	// battle is a *battle.Battle, so `state := battle` shares the pointer and
+	// playing one of them out steps all of them. That is exactly what used to
+	// happen here — `finished` was a copy of `battle` driven to its end, so by the
+	// time anything drew `battle` its own p.fight.Finished() was true, play.view
+	// returned at the game-over branch, and PlayFooter, PlayAimFooter, the option
+	// rows and the whole aim block were drawn by **nothing in this suite**. Every
+	// width and translation test passed over a screen it never rendered.
+	//
+	// This is the second fixture in this repository whose early return made the
+	// interesting branch unreachable — plainTerminal was the first, where every
+	// test set NO_COLOR and returned above the branch. A fixture that reaches a
+	// screen's early exit measures the exit.
 	battle := fight.enter(screenPlay)
-	aiming := battle
+	aiming := fight.enter(screenPlay)
 	aiming.play.aiming = true
-	finished := battle
+	// The description of the option under the battle's cursor, which is a state of
+	// the blurb rather than a screen of its own — and its own battle for the
+	// reason above, even though nothing here steps it.
+	playBlurb := fight.enter(screenPlay)
+	playBlurb.blurb.from = screenPlay
+	playBlurb.screen = screenBlurb
+	finished := fight.enter(screenPlay)
 	for range 200 {
 		if finished.play.fight == nil || finished.play.fight.Finished() {
 			break
@@ -194,6 +216,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"nothing to fight": noSquads,
 		"a battle":         battle,
 		"aiming":           aiming,
+		"a battle blurb":   playBlurb,
 		"a battle over":    finished,
 		"traitless build":  traitless,
 	}

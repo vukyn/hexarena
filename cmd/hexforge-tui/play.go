@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"path/filepath"
 
@@ -308,6 +309,24 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 		p = p.move(-1)
 	case "down", "j":
 		p = p.move(1)
+	case "?":
+		// The full description of the option under the cursor, on the screen the
+		// rest of this tool already raises with this key. It is free here and it
+		// costs no turn: the blurb reads the option and nothing else, so raising
+		// it and leaving it cannot step the battle.
+		//
+		// Reached with a prompt open, which is what the guard above this switch
+		// buys, and it works while aiming too — the skill is chosen and the cell
+		// is not, so "what does this do" is still the live question. An empty
+		// option list is refused rather than indexed: a turn with nothing to take
+		// is a turn with nothing to describe.
+		if len(p.pending.Options) > 0 {
+			m.play = p
+			m.blurb.from = screenPlay
+			m.blurb.scroll = 0
+			m.screen = screenBlurb
+			return m, nil
+		}
 	case "enter", "space":
 		p = p.choose(m)
 	case "a":
@@ -486,11 +505,35 @@ func (p playScreen) choices(m model) string {
 	var out strings.Builder
 	out.WriteString(m.style.label.Render(m.text(i18n.PlayYourTurn,
 		p.tags[unit.ID], unit.Name, p.pending.Turn)) + "\n")
+	// The id column is measured over the options this turn offers rather than
+	// fixed, for the reason menuLabelWidth and every detail pane measure theirs.
+	// Over the options and not over the book: the widest id in the game is
+	// thirteen cells and this unit may be bringing four short ones, so a
+	// book-wide column would spend the summary's room on a skill nobody here can
+	// cast.
+	width := p.optionWidth()
+	// Clipped to the floor rather than to the window in hand, which is what the
+	// caution line and the trait sentences do and for the same reason: measuring
+	// the real terminal gives one line two shapes and leaves the width sweep
+	// nothing to hold. Below the floor no screen is drawn at all, so the floor is
+	// also the narrowest room this row ever really has.
+	clip := lipgloss.NewStyle().MaxWidth(max(minWidth-1-markerWidth-width-optionGap, 0))
 	for index, option := range p.pending.Options {
 		marker := "  "
-		line := option.Skill
+		// ⚠️ An unavailable option keeps its reason and **drops its summary**.
+		// The row has one slot and the two answer different questions: the reason
+		// is why this cannot be cast, which is the live question the moment a
+		// cursor steps over it, and what the skill does is a ? away. Do not
+		// "fix" this by drawing both — the second one would be the half that got
+		// clipped.
+		tail := p.summarise(m, option.Skill)
 		if !option.Available() {
-			line += "  " + option.Reason
+			tail = option.Reason
+		}
+		line := option.Skill
+		if tail != "" {
+			line += strings.Repeat(" ",
+				width-lipgloss.Width(option.Skill)+optionGap) + clip.Render(tail)
 		}
 		switch {
 		case !option.Available():
@@ -519,6 +562,44 @@ func (p playScreen) choices(m model) string {
 		out.WriteString(marker + line + "\n")
 	}
 	return out.String()
+}
+
+// The two fixed columns a row spends before its summary: the cursor marker, and
+// the gap between the id column and whatever follows it.
+const (
+	markerWidth = 2
+	optionGap   = 2
+)
+
+// optionWidth is the id column, measured over the turn's own options.
+func (p playScreen) optionWidth() int {
+	width := 0
+	for _, option := range p.pending.Options {
+		if drawn := lipgloss.Width(option.Skill); drawn > width {
+			width = drawn
+		}
+	}
+	return width
+}
+
+// summarise is what a skill does, in the one line that fits beside its id.
+//
+// The whole reason the list is worth reading: an id is a name, and nothing in
+// "venoshock" says it is the skill that doubles into a poison. It is
+// i18n.Lang.SummariseSkill rather than anything assembled here — this screen may
+// hold no wording of its own, and the compact line is tied to the full
+// description by a test in that package rather than by a screen's good
+// intentions.
+//
+// A skill the book cannot find summarises as nothing rather than as an error.
+// The options come out of the battle, which was built from the same library, so
+// a miss is not reachable; and a row is the wrong place to report that it was.
+func (p playScreen) summarise(m model, id string) string {
+	declared, err := m.lib.Skills().Lookup(id)
+	if err != nil {
+		return ""
+	}
+	return m.lang.SummariseSkill(declared, m.lib.Patterns())
 }
 
 // occupant is the tag and name standing on a cell, so an aim reads as somebody

@@ -125,6 +125,37 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
+- [ ] **The battle screen does not fit the window the tool declares.** Its body
+      is **28 lines** and `frame` gives the body `m.height - 2` less the two the
+      header takes, so at 80x24 only twenty survive and the whole option list is
+      cut with the `Truncated` marker. Measured in both languages: the list first
+      appears at **h ≥ 30**, the screen is un-truncated from **h ≥ 32**, and from
+      **h ≥ 38** once the log tail has filled to its eight lines.
+      ⚠️ `TestTheBattleScreenIsNoTallerThanItAlreadyWas` is a **tripwire and not a
+      bound** — it asserts today's number as a ceiling and says so, because a test
+      claiming the screen fits would ship red, which is the mistake the `reckless`
+      work already made once. What is open is which rows the screen gives up:
+      `playLogLines` is eight of them, and the board, the roster and the order
+      line are `internal/tui`'s drawing rather than this screen's, so trimming any
+      of them changes what a played battle looks like against what the game client
+      plays. That is a layout redesign and its own piece of work.
+      → `CLAUDE.md` § *Where a form beats a prompt* → the played battle.
+- [ ] **An English skill description prints the status-category enum spellings.**
+      `rapid_spin` reads `Strips 1 stack of stat_debuff and dot.` — two Go enum
+      names on a player-facing line, and the same on the fixture's `purify`.
+      Vietnamese is correct (`hiệu ứng giảm chỉ số`), because the names come from
+      the gloss table and that table is Vietnamese only, so English falls through
+      to the id. Pre-existing, and **not** the lookup it looks like: the complete
+      pair of wordings already exists in `Lang.StatusCategory`, but they are
+      *predicates* for the statuses reference's own column — `lowers a stat`,
+      `damages every turn` — so dropping them in gives "Strips 1 stack of lowers a
+      stat and damages every turn." What is needed is seven **noun-phrase** English
+      category wordings, which is a key family of its own. ⚠️ Unlike a status, a
+      category is a Go enum rather than a data id, so "a bare id is the English
+      name" does not excuse it — `StatusCategory`'s own doc comment says exactly
+      that, and `TestEveryStatusCategoryIsWorded` refuses an enum spelling there.
+      The battle screen's compact line is unaffected: it counts a strip rather
+      than enumerating it.
 - [ ] **An English trait row is a bare id with an empty column after it.** A
       trait's name is authored in `passives.json` in Vietnamese only, so the
       picker's detail cell comes back empty in English and the row draws its id

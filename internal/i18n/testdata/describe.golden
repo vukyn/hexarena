@@ -3,208 +3,251 @@
 vine_whip
 Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
 Tầm 1 · 95% trúng · hồi 1 lượt.
+[one line] 110% công · tầm 1 · hồi 1
 
 razor_leaf
 Bắn một loạt lá mỏng như dao cạo, cắt tiếng gió thành từng nhát, 2 nhát, mỗi nhát 60% công (tổng 120%), xuyên 40% giáp, 20% khả năng chí mạng.
 Tầm 2 · 3 ô · 88% trúng · hồi 2 lượt.
+[one line] 120% công · tầm 2 · 3 ô · hồi 2
 
 solar_beam
 Gom nắng vào một điểm rồi phóng ra thành cột sáng trắng xoá, 240% công.
 Tầm 3 · 85% trúng · hồi 4 lượt.
+[one line] 240% công · tầm 3 · hồi 4
 
 sleep_powder
 Rải một lớp phấn vàng mịn, hít phải là mí mắt trĩu xuống không cưỡng nổi.
 Gây choáng cho mục tiêu, 50% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 4 lượt.
+[one line] choáng 50% · tầm 2 · 2 ô · hồi 4
 
 poison_powder
 Rải một lớp phấn tím bay là là, chạm vào da là bắt đầu ngứa rồi rát.
 Gây trúng độc cho mục tiêu, 80% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
+[one line] trúng độc 80% · tầm 2 · 2 ô · hồi 3
 
 sludge_bomb
 Nhổ một cục bùn đặc quánh, vỡ ra là mùi tanh nồng bốc lên, 130% công.
 Gây trúng độc cho mục tiêu, 40% khả năng.
 Tầm 2 · 90% trúng · hồi 2 lượt.
+[one line] 130% công · trúng độc 40% · tầm 2 · hồi 2
 
 venoshock
 Dội một thứ dung dịch xanh lét, chạm vào đâu là khói bốc lên tới đó, 90% công.
 Mục tiêu đang dính trúng độc: 180% công.
 Tầm 1 · 90% trúng · hồi 2 lượt.
+[one line] 90% công · trúng độc→180% · tầm 1 · hồi 2
 
 leech_seed
 Ném một hạt nhỏ, chạm vào người là bám chặt lấy không gỡ ra được, 70% công.
 Hút lại 60% sát thương gây ra.
 Tầm 2 · 90% trúng · hồi 3 lượt.
+[one line] 70% công · hút 60% · tầm 2 · hồi 3
 
 synthesis
 Đứng yên phơi mình dưới nắng, để cái ấm ngấm dần vào cơ thể.
 Hồi máu bằng 90% công.
 Bản thân · hồi 4 lượt.
+[one line] hồi 90% công · bản thân · hồi 4
 
 ingrain
 Cắm rễ xuyên qua kẽ đá, dò tới tận mạch nước bên dưới.
 Nhận tái sinh x2.
 Bản thân · hồi 4 lượt.
+[one line] tự nhận tái sinh x2 · bản thân · hồi 4
 
 ember
 Bắn một cụm than còn đỏ rực, rơi xuống đâu là âm ỉ ở đó, 100% công.
 Gây bỏng cho mục tiêu, 30% khả năng.
 Tầm 1 · 95% trúng · hồi 1 lượt.
+[one line] 100% công · bỏng 30% · tầm 1 · hồi 1
 
 flamethrower
 Phun một cột lửa dài, không khí phía trước méo đi vì nóng, 160% công.
 Gây bỏng cho mục tiêu, 50% khả năng.
 Tầm 2 · 90% trúng · hồi 2 lượt.
+[one line] 160% công · bỏng 50% · tầm 2 · hồi 2
 
 fire_fang
 Ngoạm bằng hàm răng bọc lửa, khói bốc lên ngay từ chỗ vừa cắn, 2 nhát, mỗi nhát 65% công (tổng 130%), xuyên 35% giáp.
 Tầm 1 · 88% trúng · hồi 2 lượt.
+[one line] 130% công · tầm 1 · hồi 2
 
 fire_spin
 Tạo một cột lửa xoáy tít, hơi nóng cuốn lên thành vòng, 85% công.
 Gây bỏng cho mục tiêu, 70% khả năng.
 Tầm 2 · 3 ô · 86% trúng · hồi 3 lượt.
+[one line] 85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
 
 heat_wave
 Đẩy một luồng khí khô rát tràn qua, táp thẳng vào mặt, 110% công.
 Gây bỏng cho mục tiêu, 40% khả năng.
 Tầm 2 · 3 ô · 85% trúng · hồi 4 lượt.
+[one line] 110% công · bỏng 40% · tầm 2 · 3 ô · hồi 4
 
 inferno
 Dồn hết sức nóng vào một chỗ cho tới khi lửa chuyển sang màu trắng, 100% công.
 Mục tiêu đang dính bỏng: 350% công, và tiêu mất bỏng.
 Tầm 1 · 88% trúng · hồi 3 lượt.
+[one line] 100% công · bỏng→350% · tầm 1 · hồi 3
 
 dragon_rage
 Gầm một tiếng vang trời, luồng khí phả theo đập thẳng vào đối phương, 130% công.
 Tầm 2 · 92% trúng · hồi 3 lượt.
+[one line] 130% công · tầm 2 · hồi 3
 
 smokescreen
 Tạo một màn khói đen dày, quánh lại và rất lâu mới tan.
 Gây mù cho mục tiêu, 80% khả năng.
 Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
+[one line] mù 80% · tầm 2 · 2 ô · hồi 3
 
 dragon_dance
 Giậm chân theo nhịp cổ xưa của loài rồng, một điệu nhảy chỉ rồng mới nhớ.
 Nhận cuồng nộ và nhanh nhẹn.
 Bản thân · hồi 4 lượt.
+[one line] tự nhận cuồng nộ và nhanh nhẹn · bản thân · hồi 4
 
 water_gun
 Bắn một tia nước nén chặt, mảnh mà cực rát, 100% công.
 Tầm 1 · 95% trúng · hồi 1 lượt.
+[one line] 100% công · tầm 1 · hồi 1
 
 bubble
 Thổi ra một chùm bọt óng ánh, trông vô hại cho tới lúc vỡ, 70% công.
 Gây sa lầy cho mục tiêu, 70% khả năng.
 Tầm 2 · 3 ô · 90% trúng · hồi 2 lượt.
+[one line] 70% công · sa lầy 70% · tầm 2 · 3 ô · hồi 2
 
 whirlpool
 Khuấy nước thành một vòng xoáy sâu hoắm, đáy tối om, 80% công.
 Gây sa lầy cho mục tiêu, 60% khả năng.
 Tầm 2 · 3 ô · 85% trúng · hồi 3 lượt.
+[one line] 80% công · sa lầy 60% · tầm 2 · 3 ô · hồi 3
 
 bite
 Đớp một phát dứt khoát vào chỗ hở, hàm siết lại không buông, 120% công.
 Gây phá giáp cho mục tiêu, 50% khả năng.
 Tầm 1 · 90% trúng · hồi 2 lượt.
+[one line] 120% công · phá giáp 50% · tầm 1 · hồi 2
 
 brine
 Xối nước biển vào chỗ da đã rách, rách càng to thì càng buốt, 100% công.
 Mục tiêu còn <=50% máu: 200% công.
 Tầm 1 · 90% trúng · hồi 2 lượt.
+[one line] 100% công · <=50% máu→200% · tầm 1 · hồi 2
 
 hydro_pump
 Nén cả một tấn nước vào một điểm rồi bắn ra, tiếng rít nghe rợn người, 220% công.
 Tầm 3 · 80% trúng · hồi 4 lượt.
+[one line] 220% công · tầm 3 · hồi 4
 
 withdraw
 Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
 Hồi máu bằng 50% công.
 Nhận đỡ đòn x2.
 Bản thân · hồi 3 lượt.
+[one line] hồi 50% công · tự nhận đỡ đòn x2 · bản thân · hồi 3
 
 aqua_ring
 Tạo một vòng nước quanh bản thân, nước hỗ trợ hồi vết thương theo thời gian.
 Nhận tái sinh x2.
 Bản thân · hồi 4 lượt.
+[one line] tự nhận tái sinh x2 · bản thân · hồi 4
 
 rapid_spin
 Xoay tít người, hất văng mọi thứ đang bám trên mình.
 Gỡ 1 cộng dồn hiệu ứng giảm chỉ số và hiệu ứng gây hại theo lượt.
 Bản thân · hồi 3 lượt.
+[one line] gỡ 1 hiệu ứng xấu · bản thân · hồi 3
 
 rally
 Hô một tiếng vang dọc trận địa, khàn cả giọng mà vẫn hô.
 Cho mục tiêu cuồng nộ, 100% khả năng.
 Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
+[one line] cuồng nộ 100% · đồng đội · tầm 1 · 3 ô · hồi 4
 
 dragon_claw
 Vuốt rồng bổ thẳng xuống, xé toạc lớp giáp, 110% công.
 Gây phá giáp cho mục tiêu, 40% khả năng.
 Tầm 1 · 95% trúng · hồi 1 lượt.
+[one line] 110% công · phá giáp 40% · tầm 1 · hồi 1
 
 outrage
 Mất trí lao vào đánh túi bụi, đánh xong thì không còn đứng vững, 220% công.
 Nhận sa lầy.
 Bản thân còn <=40% máu: 340% công.
 Tầm 1 · 90% trúng · hồi 3 lượt.
+[one line] 220% công · tự nhận sa lầy · tự <=40% máu→340% · tầm 1 · hồi 3
 
 dragon_drive
 Lấy đà một nhịp rồi lao cả thân mình tới, dồn hết sức nặng vào một điểm, 90% công.
 Mục tiêu đang dính phá giáp: 230% công, và tiêu mất phá giáp.
 Tầm 1 · 90% trúng · hồi 3 lượt.
+[one line] 90% công · phá giáp→230% · tầm 1 · hồi 3
 
 taunt
 Gõ ầm ĩ và chửi đổng cho cả bên kia chỉ còn muốn nhắm vào mình.
 Nhận bị khiêu khích.
 Bản thân · hồi 3 lượt.
+[one line] tự nhận bị khiêu khích · bản thân · hồi 3
 
 kunai
 Rút một lưỡi ném đi, không hoa mỹ nhưng bao giờ cũng có sẵn, 70% công.
 Tầm 2 · 95% trúng · dùng mọi lượt.
+[one line] 70% công · tầm 2
 
 wind_shuriken
 Nén gió thành một vòng lưỡi mỏng rồi thả ra, gió tự lo phần còn lại, 2 nhát, mỗi nhát 62% công (tổng 124%), 20% khả năng chí mạng.
 Tầm 2 · 3 ô · 88% trúng · hồi 2 lượt.
+[one line] 124% công · tầm 2 · 3 ô · hồi 2
 
 rasengan
 Vo chakra thành một khối xoáy trong lòng bàn tay rồi ấn thẳng vào người đối diện, 220% công.
 Tầm 1 · 90% trúng · hồi 4 lượt.
+[one line] 220% công · tầm 1 · hồi 4
 
 substitution
 Đổi chỗ với một khúc gỗ trong chớp mắt, để lại một làn khói trắng.
 Nhận mờ ảo x2.
 Bản thân · hồi 4 lượt.
+[one line] tự nhận mờ ảo x2 · bản thân · hồi 4
 
 shadow_clone
 Kết ấn một cái, những cái bóng y hệt bước ra — yếu hơn bản thể gốc nhưng tấn công được.
 Gọi ra 2 phân thân, mỗi bên mang 40% chỉ số người gọi, trụ lại 4 lượt.
 Bản thân · hồi 5 lượt.
+[one line] 2 phân thân · bản thân · hồi 5
 
 comeback
 Ngã xuống thì chống tay đứng lên, càng bị dồn thì càng lì, 90% công.
 Càng mất máu càng nặng đòn: cạn máu là 171% công.
 Tầm 1 · 95% trúng · hồi 2 lượt.
+[one line] 90% công · cạn máu→171% · tầm 1 · hồi 2
 
 summon_toad
 Ký giao ước bằng máu rồi gọi lên một con cóc khổng lồ, chậm chạp nhưng lì đòn.
 Gọi ra một cóc.
 Bản thân · hồi 6 lượt.
+[one line] một cóc · bản thân · hồi 6
 
 water_pulse
 Dội một vòng sóng ép thẳng vào giữa, sức nén dội lại từ mọi phía, 60% công.
 Gây choáng cho mục tiêu, 35% khả năng.
 Tầm 2 · 90% trúng · hồi 4 lượt.
+[one line] 60% công · choáng 35% · tầm 2 · hồi 4
 
 skull_bash
 Thu cả người lại rồi lao thẳng vào, dồn hết trọng lượng vào một cú, 85% thủ.
 Tầm 1 · 90% trúng · hồi 2 lượt.
+[one line] 85% thủ · tầm 1 · hồi 2
 
 wide_guard
 Dựng một lớp chắn chìa ra trước mặt đồng đội.
 Cho mục tiêu đỡ đòn x2, 100% khả năng.
 Tầm 1 · 100% trúng · hồi 3 lượt.
+[one line] đỡ đòn x2 100% · đồng đội · tầm 1 · hồi 3
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -401,198 +444,241 @@ Bị light khắc: đòn hệ đó gây 67% sát thương lên mình.
 vine_whip
 Hits an enemy for 110% of attack.
 Range 1 · 95% to hit · 1 turn to recharge.
+[one line] 110% attack · range 1 · cd 1
 
 razor_leaf
 Hits an enemy for 2 strikes of 60% of attack each, 120% in all, through 40% of the armour, critical 20% of the time.
 Range 2 · 3 cells · 88% to hit · 2 turns to recharge.
+[one line] 120% attack · range 2 · 3 cells · cd 2
 
 solar_beam
 Hits an enemy for 240% of attack.
 Range 3 · 85% to hit · 4 turns to recharge.
+[one line] 240% attack · range 3 · cd 4
 
 sleep_powder
 Aims at an enemy.
 Inflicts stun, 50% of the time.
 Range 2 · 2 cells · 100% to hit · 4 turns to recharge.
+[one line] stun 50% · range 2 · 2 cells · cd 4
 
 poison_powder
 Aims at an enemy.
 Inflicts poison, 80% of the time.
 Range 2 · 2 cells · 100% to hit · 3 turns to recharge.
+[one line] poison 80% · range 2 · 2 cells · cd 3
 
 sludge_bomb
 Hits an enemy for 130% of attack.
 Inflicts poison, 40% of the time.
 Range 2 · 90% to hit · 2 turns to recharge.
+[one line] 130% attack · poison 40% · range 2 · cd 2
 
 venoshock
 Hits an enemy for 90% of attack.
 While the target is carrying poison: 180% of attack.
 Range 1 · 90% to hit · 2 turns to recharge.
+[one line] 90% attack · poison→180% · range 1 · cd 2
 
 leech_seed
 Hits an enemy for 70% of attack.
 Takes back 60% of the damage it deals.
 Range 2 · 90% to hit · 3 turns to recharge.
+[one line] 70% attack · drains 60% · range 2 · cd 3
 
 synthesis
 Heals for 90% of attack.
 Itself · 4 turns to recharge.
+[one line] heals 90% attack · itself · cd 4
 
 ingrain
 Puts regrowth x2 on itself.
 Itself · 4 turns to recharge.
+[one line] self regrowth x2 · itself · cd 4
 
 ember
 Hits an enemy for 100% of attack.
 Inflicts burn, 30% of the time.
 Range 1 · 95% to hit · 1 turn to recharge.
+[one line] 100% attack · burn 30% · range 1 · cd 1
 
 flamethrower
 Hits an enemy for 160% of attack.
 Inflicts burn, 50% of the time.
 Range 2 · 90% to hit · 2 turns to recharge.
+[one line] 160% attack · burn 50% · range 2 · cd 2
 
 fire_fang
 Hits an enemy for 2 strikes of 65% of attack each, 130% in all, through 35% of the armour.
 Range 1 · 88% to hit · 2 turns to recharge.
+[one line] 130% attack · range 1 · cd 2
 
 fire_spin
 Hits an enemy for 85% of attack.
 Inflicts burn, 70% of the time.
 Range 2 · 3 cells · 86% to hit · 3 turns to recharge.
+[one line] 85% attack · burn 70% · range 2 · 3 cells · cd 3
 
 heat_wave
 Hits an enemy for 110% of attack.
 Inflicts burn, 40% of the time.
 Range 2 · 3 cells · 85% to hit · 4 turns to recharge.
+[one line] 110% attack · burn 40% · range 2 · 3 cells · cd 4
 
 inferno
 Hits an enemy for 100% of attack.
 While the target is carrying burn: 350% of attack, and eats the burn.
 Range 1 · 88% to hit · 3 turns to recharge.
+[one line] 100% attack · burn→350% · range 1 · cd 3
 
 dragon_rage
 Hits an enemy for 130% of attack.
 Range 2 · 92% to hit · 3 turns to recharge.
+[one line] 130% attack · range 2 · cd 3
 
 smokescreen
 Aims at an enemy.
 Inflicts blind, 80% of the time.
 Range 2 · 2 cells · 100% to hit · 3 turns to recharge.
+[one line] blind 80% · range 2 · 2 cells · cd 3
 
 dragon_dance
 Puts fury and haste on itself.
 Itself · 4 turns to recharge.
+[one line] self fury and haste · itself · cd 4
 
 water_gun
 Hits an enemy for 100% of attack.
 Range 1 · 95% to hit · 1 turn to recharge.
+[one line] 100% attack · range 1 · cd 1
 
 bubble
 Hits an enemy for 70% of attack.
 Inflicts mire, 70% of the time.
 Range 2 · 3 cells · 90% to hit · 2 turns to recharge.
+[one line] 70% attack · mire 70% · range 2 · 3 cells · cd 2
 
 whirlpool
 Hits an enemy for 80% of attack.
 Inflicts mire, 60% of the time.
 Range 2 · 3 cells · 85% to hit · 3 turns to recharge.
+[one line] 80% attack · mire 60% · range 2 · 3 cells · cd 3
 
 bite
 Hits an enemy for 120% of attack.
 Inflicts expose, 50% of the time.
 Range 1 · 90% to hit · 2 turns to recharge.
+[one line] 120% attack · expose 50% · range 1 · cd 2
 
 brine
 Hits an enemy for 100% of attack.
 While the target is at or below 50% health: 200% of attack.
 Range 1 · 90% to hit · 2 turns to recharge.
+[one line] 100% attack · <=50% health→200% · range 1 · cd 2
 
 hydro_pump
 Hits an enemy for 220% of attack.
 Range 3 · 80% to hit · 4 turns to recharge.
+[one line] 220% attack · range 3 · cd 4
 
 withdraw
 Heals for 50% of attack.
 Puts block x2 on itself.
 Itself · 3 turns to recharge.
+[one line] heals 50% attack · self block x2 · itself · cd 3
 
 aqua_ring
 Puts regrowth x2 on itself.
 Itself · 4 turns to recharge.
+[one line] self regrowth x2 · itself · cd 4
 
 rapid_spin
 Strips 1 stack of stat_debuff and dot.
 Itself · 3 turns to recharge.
+[one line] strips 1 harmful · itself · cd 3
 
 rally
 Aims at an ally.
 Gives its target fury, 100% of the time.
 Range 1 · 3 cells · 100% to hit · 4 turns to recharge.
+[one line] fury 100% · an ally · range 1 · 3 cells · cd 4
 
 dragon_claw
 Hits an enemy for 110% of attack.
 Inflicts expose, 40% of the time.
 Range 1 · 95% to hit · 1 turn to recharge.
+[one line] 110% attack · expose 40% · range 1 · cd 1
 
 outrage
 Hits an enemy for 220% of attack.
 Puts mire on itself.
 While the caster is at or below 40% health: 340% of attack.
 Range 1 · 90% to hit · 3 turns to recharge.
+[one line] 220% attack · self mire · self <=40% health→340% · range 1 · cd 3
 
 dragon_drive
 Hits an enemy for 90% of attack.
 While the target is carrying expose: 230% of attack, and eats the expose.
 Range 1 · 90% to hit · 3 turns to recharge.
+[one line] 90% attack · expose→230% · range 1 · cd 3
 
 taunt
 Puts taunting on itself.
 Itself · 3 turns to recharge.
+[one line] self taunting · itself · cd 3
 
 kunai
 Hits an enemy for 70% of attack.
 Range 2 · 95% to hit · usable every turn.
+[one line] 70% attack · range 2
 
 wind_shuriken
 Hits an enemy for 2 strikes of 62% of attack each, 124% in all, critical 20% of the time.
 Range 2 · 3 cells · 88% to hit · 2 turns to recharge.
+[one line] 124% attack · range 2 · 3 cells · cd 2
 
 rasengan
 Hits an enemy for 220% of attack.
 Range 1 · 90% to hit · 4 turns to recharge.
+[one line] 220% attack · range 1 · cd 4
 
 substitution
 Puts veil x2 on itself.
 Itself · 4 turns to recharge.
+[one line] self veil x2 · itself · cd 4
 
 shadow_clone
 Calls up 2 copies, each with 40% of the caster's stats, for 4 turns.
 Itself · 5 turns to recharge.
+[one line] 2 copies · itself · cd 5
 
 comeback
 Hits an enemy for 90% of attack.
 The more hurt the caster, the harder it lands: 171% of attack at no health.
 Range 1 · 95% to hit · 2 turns to recharge.
+[one line] 90% attack · empty→171% · range 1 · cd 2
 
 summon_toad
 Calls up a creature.
 Itself · 6 turns to recharge.
+[one line] a creature · itself · cd 6
 
 water_pulse
 Hits an enemy for 60% of attack.
 Inflicts stun, 35% of the time.
 Range 2 · 90% to hit · 4 turns to recharge.
+[one line] 60% attack · stun 35% · range 2 · cd 4
 
 skull_bash
 Hits an enemy for 85% of defence.
 Range 1 · 90% to hit · 2 turns to recharge.
+[one line] 85% defence · range 1 · cd 2
 
 wide_guard
 Aims at an ally.
 Gives its target block x2, 100% of the time.
 Range 1 · 100% to hit · 3 turns to recharge.
+[one line] block x2 100% · an ally · range 1 · cd 3
 
 [trait] endurance
 Always carries toughened.
