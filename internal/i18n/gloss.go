@@ -105,20 +105,17 @@ var (
 		"encumber":  "nặng nề",
 	}
 
-	// The status categories in statuses.json. They are named by a cleanse rather
-	// than by a status — "strips a stat_debuff" — so they reach a reader who
-	// never sees the word anywhere else, which is exactly the case a gloss is
-	// for.
-	categoryGloss = map[string]string{
-		"dot":         "hiệu ứng gây hại theo lượt",
-		"stat_debuff": "hiệu ứng giảm chỉ số",
-		"control":     "hiệu ứng khống chế",
-		"buff":        "hiệu ứng tăng chỉ số",
-		"shield":      "hiệu ứng khiên chắn",
-		"regen":       "hiệu ứng hồi máu",
-		"taunt":       "hiệu ứng khiêu khích",
-	}
-
+	// The status categories were glossed here and are not any more. A gloss
+	// answers for a **data id**, and English deliberately has none — an id is
+	// shown exactly as the data writes it — but a status.Category is a Go enum,
+	// so the English half of a cleanse's sentence fell through to "stat_debuff"
+	// while Vietnamese read correctly. They are keys now, in both languages, at
+	// CategoryNounDot and its six neighbours; Lang.StatusCategoryNoun is the
+	// lookup. ⚠️ Removing the table also stopped it answering for the **skill**
+	// `taunt`, whose id collides with the category's: nothing showed it, because
+	// that skill carries an authored name and SkillName prefers one, but a
+	// caller glossing the bare id would have been given "hiệu ứng khiêu khích".
+	//
 	// The role presets in archetypes.json.
 	//
 	// Unlike the other authored tables this one may **not** miss for a shipped
@@ -180,7 +177,7 @@ var (
 // first, which is a wrong name rather than a missing one and therefore the
 // worse of the two failures.
 var glossaries = []map[string]string{
-	elementGloss, sideGloss, statusGloss, categoryGloss, archetypeGloss, skillGloss,
+	elementGloss, sideGloss, statusGloss, archetypeGloss, skillGloss,
 }
 
 // glossBracket is how a gloss sits beside the id it explains. It is punctuation

@@ -8,11 +8,13 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"unicode"
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/testfixture"
@@ -436,6 +438,116 @@ func TestAStripIsCalledHarmfulOnlyWhenEveryCategoryItNamesIs(t *testing.T) {
 		t.Logf("%s: %d skills call a strip harmful and %d only count it",
 			lang, claimed, counted)
 	}
+}
+
+// TestNoEnglishStripsClauseNamesACategoryEnum is the regression, and it is about
+// a **bare word** rather than a substring: "shielding" holds "shield" and is the
+// wording working, while "shield" alone is the Go enum on a player-facing line.
+//
+// `rapid_spin` is the shipped skill that reached it — it read "Strips 1 stack of
+// stat_debuff and dot." — because the clause used to word each category with
+// Gloss, which answers in Vietnamese only by design. It is named here rather
+// than left to the sweep so the regression is checked by name, and the sweep is
+// beside it so the next stripping skill authored is checked too.
+func TestNoEnglishStripsClauseNamesACategoryEnum(t *testing.T) {
+	shapes, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load the shipped patterns: %v", err)
+	}
+	shipped, err := seed.SkillBook()
+	if err != nil {
+		t.Fatalf("load the shipped skills: %v", err)
+	}
+	spelt := func(t *testing.T, declared skill.Skill) {
+		t.Helper()
+		if declared.Strips == nil {
+			t.Fatalf("%q strips nothing, so its description measures none of this",
+				declared.ID)
+		}
+		description := i18n.En.Describe(declared, shapes)
+		for category := status.Category(0); int(category) < status.CategoryCount; category++ {
+			name := category.String()
+			for _, word := range bareWords(description) {
+				if word == name {
+					t.Errorf("the English %q reads %q, which names the %q enum",
+						declared.ID, description, name)
+					break
+				}
+			}
+		}
+	}
+	named, err := shipped.Lookup("rapid_spin")
+	if err != nil {
+		t.Fatalf("look up rapid_spin: %v", err)
+	}
+	spelt(t, named)
+	swept := 0
+	for _, declared := range shipped.Skills() {
+		if declared.Strips == nil {
+			continue
+		}
+		spelt(t, declared)
+		swept++
+	}
+	if swept == 0 {
+		t.Fatal("nothing shipped strips anything, so the sweep measured nothing")
+	}
+}
+
+// TestTheStripsClauseReadsInBothOfItsFrames pins the English wording of a
+// category as a whole sentence, in the two frames the clause has.
+//
+// The literals are the point. A category noun has to survive "1 stack of" and "2
+// stacks of" alike — an article or a plural reads wrong in one of them — and a
+// table of seven words cannot say that about itself, so the two worst-reading
+// combinations are written out here rather than derived. A wording change that
+// breaks either frame fails on the sentence a player would have read.
+//
+// The two skills are built here rather than taken from the books because no
+// shipped skill strips more than one stack, so the second frame has no shipped
+// carrier at all.
+func TestTheStripsClauseReadsInBothOfItsFrames(t *testing.T) {
+	shapes, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load the shipped patterns: %v", err)
+	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	declared, err := skill.ParseBook([]byte(`{"skills":[
+      {"id":"one_stack","element":"neutral","range":0,"pattern":"single",
+       "power":0,"strikes":0,"accuracy":1000,"cooldown":3,"target":"self",
+       "strips":{"categories":["stat_debuff","dot"],"stacks":1}},
+      {"id":"two_stacks","element":"neutral","range":1,"pattern":"single",
+       "power":0,"strikes":0,"accuracy":1000,"cooldown":3,"target":"enemy",
+       "strips":{"categories":["shield","regen"],"stacks":2}}
+    ]}`), skill.Deps{Patterns: shapes, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("parse the two strips: %v", err)
+	}
+	for _, want := range []struct{ id, sentence string }{
+		{"one_stack", "Strips 1 stack of stat reduction and damage over time."},
+		{"two_stacks", "Strips 2 stacks of shielding and healing over time."},
+	} {
+		carried, err := declared.Lookup(want.id)
+		if err != nil {
+			t.Fatalf("look up %s: %v", want.id, err)
+		}
+		if got := i18n.En.Describe(carried, shapes); !strings.Contains(got, want.sentence) {
+			t.Errorf("the English %s reads %q, which does not hold %q",
+				want.id, got, want.sentence)
+		}
+	}
+}
+
+// bareWords splits prose into the words a reader sees, keeping the underscore
+// because an enum spelling holds one — splitting on it would look for
+// "stat_debuff" and never find it, while finding "stat" everywhere.
+func bareWords(text string) []string {
+	return strings.FieldsFunc(text, func(letter rune) bool {
+		return !unicode.IsLetter(letter) && !unicode.IsDigit(letter) && letter != '_'
+	})
 }
 
 // everySkillDeclared is the shipped book plus the fixture's, which is the set a

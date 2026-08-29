@@ -203,6 +203,17 @@ q hoặc ctrl+c để thoát`,
 	CategoryRegen:       "hồi máu mỗi lượt",
 	CategoryTaunt:       "ép chọn mục tiêu",
 
+	// The same seven as nouns. These are the wordings gloss.go's categoryGloss
+	// held until it was removed — moved rather than copied, so one language does
+	// not end up with two independent copies of the same seven strings.
+	CategoryNounDot:        "hiệu ứng gây hại theo lượt",
+	CategoryNounStatDebuff: "hiệu ứng giảm chỉ số",
+	CategoryNounControl:    "hiệu ứng khống chế",
+	CategoryNounBuff:       "hiệu ứng tăng chỉ số",
+	CategoryNounShield:     "hiệu ứng khiên chắn",
+	CategoryNounRegen:      "hiệu ứng hồi máu",
+	CategoryNounTaunt:      "hiệu ứng khiêu khích",
+
 	KitTakesAnyElement:    "bộ chiêu này toàn chiêu trung tính nên hệ nào cũng mang được",
 	KitNeeds:              "bộ chiêu này cần hệ %s",
 	PresetTakesAnyElement: "%s (hệ nào cũng được)",

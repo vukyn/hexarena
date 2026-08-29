@@ -357,6 +357,41 @@ func (l Lang) StatusCategory(name string) string {
 	return name
 }
 
+// StatusCategoryNoun names a kind of status, where StatusCategory says what it
+// does.
+//
+// Two methods rather than one with a flag, because they answer different
+// questions and each answer is only right in its own frame. The reference's
+// column wants a predicate ("lowers a stat") beside the id it explains; a
+// cleanse's sentence wants a name to put after "strips 1 stack of", and the
+// predicate there reads "strips 1 stack of lowers a stat". One function told
+// which of the two to give would be one function with two jobs.
+//
+// Held complete for the reason StatusCategory is — a category is a Go enum, not
+// a data id, so a gap is a bug rather than data nobody has reached — and
+// TestEveryStatusCategoryIsANoun says so, including that no wording is left at
+// its own enum spelling. That is the failure this replaced: the clause used to
+// word each category with Gloss, which answers in Vietnamese only by design, so
+// an English description read "Strips 1 stack of stat_debuff and dot."
+//
+// Keyed by the name status.Category already writes, like its neighbour, so
+// nothing here decides an order.
+func (l Lang) StatusCategoryNoun(name string) string {
+	worded := map[string]Key{
+		"dot":         CategoryNounDot,
+		"stat_debuff": CategoryNounStatDebuff,
+		"control":     CategoryNounControl,
+		"buff":        CategoryNounBuff,
+		"shield":      CategoryNounShield,
+		"regen":       CategoryNounRegen,
+		"taunt":       CategoryNounTaunt,
+	}
+	if key, known := worded[name]; known {
+		return l.Text(key)
+	}
+	return name
+}
+
 // Damage words what a skill is worth against the reference pair, which is the
 // figure an author needs before a power is written rather than after.
 func (l Lang) Damage(preview forge.SkillPreview) string {
