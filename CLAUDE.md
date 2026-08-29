@@ -1713,17 +1713,57 @@ is the constraint each piece has to respect.
       (−7898) where the 18.7% win rate sat comfortably inside every existing band.
       The other half — a cast-wide *no trait may lower more distinct stats than it
       raises* (`ballast` keeps it non-vacuous; necessary and **not** sufficient,
-      since it would pass a `bare` at −900) — is written and **not shipped**,
-      because it is red on the shipped data by design. It lands with the fix.
+      since it would pass a `bare` at −900) — is now **dropped rather than held**.
+      No fix landed for it to land with, and the sweep below is the reason it is
+      the wrong test: it counts stats and never magnitudes, so it would pass a
+      `bare` at −900 and refuse a `bare` at −25, and what turned out to be worth
+      holding is exactly the magnitude. The ledger already holds that, in the
+      currency the trait is denominated in.
+      ⚠️ **The third lever is dead too, and all three are now measured.** Softening
+      `bare`'s defence magnitude was swept on the same instrument — dodge left at
+      −400, `unleashed` untouched, 3000 battles a row, referents re-taken on the
+      same run and identical (**A `blood_thirst` 55.1%**, **B `blaze` 38.9%**,
+      **R0 22.0%**). The four amounts the item prescribed **all sit under the
+      floor**: −300 **24.4%** · −250 **24.7%** · −200 **27.8%** · −150 **37.0%**.
+      Swept finer: −125/−100/−95 **37.4%**, −90/−85/−80/−75 **39.9%**, −50
+      **41.2%**, −25 **42.9%**, and a term of 0 is refused by the parser.
+      ⚠️ **The dial is a quarter as long as it reads, because the stat saturates.**
+      `modifier.Set.Stat` saturates a change towards a floor rather than applying
+      it, so a −400‰ term on a base of 400 fights at **290**, not 240, and the whole
+      reachable range of the lever is **290..391**. The rate also moves in *steps*:
+      fourteen amounts give nine rates, with plateaus (−90..−75 are all exactly
+      1197/3000) and cliffs, because a two-point defence change is worth nothing
+      until it moves a strike across a kill threshold. **A dial like this cannot be
+      tuned to a target** — the nearest rung to the 45–50% wanted is 42.9%, at a
+      cost of nine points of a stat.
+      ⚠️ **Both gates flip at the same rung, which is why nothing shipped.** The
+      duel clears **B** between −95 (37.4%) and −90 (39.9%); the cast-wide pair
+      saturates squirtle at **100%** between −95 (99.0%/98.6%) and −90
+      (99.0%/**100.0%**). Same two points of defence, 366 → 368, both directions at
+      once — because both are one event, a strike crossing a kill threshold. So
+      **every amount that makes the dragon build a real matchup also makes
+      `reckless` the 100%-against-the-cast trait `blood_thirst` was refused for
+      being**, and there is no value that passes both. Reported and **not shipped**;
+      the data is unchanged and the floor in
+      `TestTheDragonBuildIsASidegradeAndNotAnUpgrade` therefore **stays at 150**,
+      since the duel still reads 22.1%. What the trait needs next is a *different
+      kind* of cost — one the duel prices and the cast-wide matchups do not — or the
+      acceptance that the 22% is a statement about `inferno` and belongs to the fire
+      line's detonate. All three of `reckless`'s own dials are spent.
       ⚠️ **A `weigh`-shaped instrument for a trait is the tool that is missing**,
       and it is its own piece of work. Everything above was measured by editing
       shipped JSON, running a duel, and putting it back: there is no way to sweep a
       trait's field the way `weigh` sweeps a skill's, so every reading costs a
       hand-managed data mutation and cannot be reproduced from the repo. A trait
       field table would have priced all four readings and both decompositions in one
-      pass. → `TODO.md` for the `weigh` field-coverage item this joins.
-      → `README.md` § *What the dragon line's detonate was worth* and § *What
-      `bare`'s dodge clause was worth*.
+      pass. The magnitude sweep found a third of it: patch the parsed
+      `statuses.json` **in memory** and rebuild the status, passive and skill books
+      around it, which is exact and reproducible and needs no file put back. What is
+      still missing is somewhere for the answer to live that is not a test log.
+      → `TODO.md` for the `weigh` field-coverage item this joins.
+      → `README.md` § *What the dragon line's detonate was worth*, § *What
+      `bare`'s dodge clause was worth* and § *What softening `bare`'s defence was
+      worth*.
 - [x] **A deeper opponent. Done** — see *Rating an action* above for the rules and
       *A deeper opponent* in `README.md` for what moved. Statuses, buffs, guards,
       heals, cleanses and kills are all priced in damage now, over capped horizons,

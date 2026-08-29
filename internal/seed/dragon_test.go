@@ -68,6 +68,16 @@ const buildSeeds = 300
 // `reckless`, worth about **+33 points** on its own. The decomposition is in
 // TestTheDragonLineCanSpendWhatItApplies, and what to do about the trait is still
 // open.
+//
+// ⚠️ **The floor stays at 150 because all three of the trait's dials have now been
+// measured and none of them is the fix.** Raising it to 300 was the plan and it was
+// held back for a data change that never landed: dropping `bare`'s dodge clause is
+// worth +2.8, a `vulnerability` is worth −3.3, and softening `bare`'s defence
+// magnitude clears the 38.9% floor only at the exact two-point rung where the same
+// trait saturates the rest of the cast at 100% — the two gates flip together. A
+// floor of 300 here would be a red test asserting a fix that does not exist, which
+// is a worse thing to have than a wide band with a reason written next to it. See
+// README.md § *What softening `bare`'s defence was worth*.
 func TestTheDragonBuildIsASidegradeAndNotAnUpgrade(t *testing.T) {
 	dragon, fire := 0, 0
 	for _, arrangement := range []struct {
