@@ -52,6 +52,14 @@ is only so the shape is readable.
   not a data id, so the rule that an English name is whatever the data writes
   does not reach it, and both families are held complete by a test that refuses
   an enum spelling. → `internal/i18n/forge.go`.
+  A **name** goes the other way: `PassiveName`, `SpeciesName` and `BuildName`
+  answer nothing in English on purpose, because the word beside the id is
+  authored once and in Vietnamese, so showing it would be a leak rather than a
+  translation — the English reader gets the id, which is the data's own name for
+  itself. A table whose only column was that name therefore **drops the column**
+  rather than padding a row of blanks, and the picker asks whether the rows in
+  front of it have anything in that column rather than which language or which
+  kind it is drawing. → `cmd/hexforge-tui/picker.go` → `detailColumn`.
 - **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
   kills, summons and **tempo** in damage over capped horizons — tempo off the
   speed stat, never off the queue. Both halves of an all-sided skill, a tie
@@ -168,13 +176,20 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **An English trait row is a bare id with an empty column after it.** A
-      trait's name is authored in `passives.json` in Vietnamese only, so the
-      picker's detail cell comes back empty in English and the row draws its id
-      and then padding. Pre-existing and wider than the picker — the trait
-      listing drops the column outright in English, which is the house rule a
-      table follows — so what is open is which of the two the picker should be,
-      and whether an English name belongs in the data at all.
+- [ ] **The species picker prints Vietnamese on an English screen.** Its detail
+      cell reads `kind.Name` straight off the book in both languages, so English
+      draws `dragon rồng`, `lizard thằn lằn`, `plant thực vật`. That bypasses
+      `Lang.SpeciesName`, which exists to return nothing in English and which the
+      species *listing* already uses over the same book. The branch's own comment
+      defends the raw read on the grounds that a compiled-table lookup would find
+      nothing — true, and beside the point: the alternative is `SpeciesName`, not
+      `Gloss`, and a bare id is the intended English outcome rather than a
+      failure. ⚠️ `TestTheScreensGlossEveryDataName` looks for exactly this and
+      cannot see it: it sweeps `everyScreen`, which registers no species picker.
+      So the fix is two things — the branch, and an entry that would have caught
+      it. `pickOrigins` reads raw the same way and is **not** the same defect:
+      the shipped titles are `Naruto` and `Pokémon`, proper nouns of the works,
+      and there is no `Lang.OriginTitle` being bypassed.
 
 ## Decided against — do not re-raise
 
