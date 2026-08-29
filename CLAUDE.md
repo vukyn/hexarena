@@ -1561,11 +1561,27 @@ cast.
   amplified too, 25 per mille becoming 30 in the record. Nothing was written to
   make that happen, which is the argument for `origin` and for one inflict path
   rather than two.
-- Still absent: **vulnerability**, the mirror where a target is *easier* to
-  affect. It is `Resists` with a negative share and reuses the whole composition,
-  but it needs one decision first — a negative `Refused` in the log, and the
-  early return in `resist` that treats "nothing refused" as "nothing to do" would
-  silently drop it.
+- **Vulnerability** — the mirror where a target is *easier* to affect — is built
+  and has **no shipped user**. It is `Resists` with a negative share and reuses
+  the whole composition; the decision it needed was made (`Refused` is signed, and
+  the early return in `resist` no longer treats "nothing refused" as "nothing to
+  do"). What is missing is a trait the share is right for.
+  - It was trialled on `reckless`, which is its natural first user, at −200‰
+    against each of the six harmful statuses that can actually be inflicted, and
+    **it made the build worse**: the dragon-vs-fire duel fell 22.0% → 16.1% on the
+    vulnerability alone. Not shipped. → `README.md` § *What `bare`'s dodge clause
+    was worth*.
+  - ⚠️ **A vulnerability costs more than its arithmetic, because the opponent
+    steers into it.** `pricing.landed` calls `fight.resist` on the *target*, so
+    the rating sees that a unit invites a status and aims one at it on purpose. A
+    negative share is not a multiplier applied to whatever would have happened
+    anyway — it changes what the opponent chooses to do, so a share-times-uptime
+    calculation under-prices it and a reading that looks too harsh is probably
+    right. Do not sanity-check one against paper and conclude the harness broke.
+  - The rendering half is proven: `BlurbTraitVulnerable` gets its own sentence
+    rather than the resistance one with a minus in it, and a −200‰ share prints as
+    `20%` in both languages — "Tăng 20% khả năng dính bỏng" / "Takes 20% more of
+    any burn aimed at it" — with the sign carried by the verb.
 
 ## Pricing a detonate, so the burst is paid for
 
@@ -1669,7 +1685,45 @@ is the constraint each piece has to respect.
       nothing else, and no skill applies it — but there is **no test holding its
       magnitude**, so whatever it becomes has to be measured and written down the
       same way. Decide what the trait is *for* first.
-      → `README.md` § *What the dragon line's detonate was worth*.
+      ⚠️ **Dropping `bare`'s dodge clause was tried and it is not the lever.** The
+      argument was good — the clause is what makes the trait two-stats-for-one, and
+      dodge gates whether an attack connects at all, so removing it should compound
+      against a burn-and-detonate opponent. Measured on the same instrument, same
+      3000 battles both ways round: **R0 shipped 22.0% · R1 dodge dropped 24.8%
+      (+2.8) · R2 vulnerability alone 16.1% (−5.9) · R3 both 18.7% (−3.3)**, against
+      referents re-taken on the same run of **A `blood_thirst` 55.1%** and **B
+      `blaze` 38.9%**. R3 is below where the trait started and far below B, so the
+      candidate was **not shipped**. The interaction is clean — `R3−R0 = −3.3`
+      against `(R1−R0)+(R2−R0) = −3.1` — so the two terms **add**, and the
+      superlinearity the lever was chosen for does not exist.
+      ⚠️ **`bare`'s cost is 88% defence and 12% dodge**, which is why. Decomposed:
+      dodge-only reads **43.4%**, no `bare` at all **46.3%**, and those add too
+      (2.8 + 21.4 = 24.2 against 24.3). So the *only* lever that can move the figure
+      is softening the defence magnitude — the one with no natural stopping point,
+      and the one this item has always been reluctant to pull. Dropping `bare`
+      outright lands at 46.3%, inside (B, A) and on the 45–50% target, but that is a
+      trait with no cost and `TestRecklessIsATradeAndNotAGift` refuses it.
+      ⚠️ **Half the missing guard now exists.**
+      `TestRecklessSpendsNoMoreThanItBuys` prices the trait in **damage off the
+      event log** rather than in wins — a win rate cannot price a stat, which is the
+      `swiftness` finding — and asserts the trait buys damage and spends no more
+      than twice what it buys (a declared design constant borrowed from the detonate
+      rule, the only invented number in it). Shipped data reads 30956 bought for
+      50084 spent, ratio 1.62. It is what caught R3: `bought` went **negative**
+      (−7898) where the 18.7% win rate sat comfortably inside every existing band.
+      The other half — a cast-wide *no trait may lower more distinct stats than it
+      raises* (`ballast` keeps it non-vacuous; necessary and **not** sufficient,
+      since it would pass a `bare` at −900) — is written and **not shipped**,
+      because it is red on the shipped data by design. It lands with the fix.
+      ⚠️ **A `weigh`-shaped instrument for a trait is the tool that is missing**,
+      and it is its own piece of work. Everything above was measured by editing
+      shipped JSON, running a duel, and putting it back: there is no way to sweep a
+      trait's field the way `weigh` sweeps a skill's, so every reading costs a
+      hand-managed data mutation and cannot be reproduced from the repo. A trait
+      field table would have priced all four readings and both decompositions in one
+      pass. → `TODO.md` for the `weigh` field-coverage item this joins.
+      → `README.md` § *What the dragon line's detonate was worth* and § *What
+      `bare`'s dodge clause was worth*.
 - [x] **A deeper opponent. Done** — see *Rating an action* above for the rules and
       *A deeper opponent* in `README.md` for what moved. Statuses, buffs, guards,
       heals, cleanses and kills are all priced in damage now, over capped horizons,
