@@ -1206,6 +1206,17 @@ func words(text string) []string {
 // because the point being asserted is that the screen asks for the gloss at all
 // — a hand-kept list would pass while the browser drew the bare id. The one
 // literal below is the format itself, which is the thing that has to be stable.
+//
+// ⚠️ **A stage name is deliberately not in this sweep, and must not be added.**
+// This asserts that an id arrives *with its gloss*; a stage name has none, by
+// decision — it is an identifier drawn exactly as the data writes it, in both
+// languages, and there is no Lang.StageName to ask. Adding one here would assert
+// the opposite of what was decided. What a stage name owes instead is that it can
+// *be* an identifier, and that is refused upstream at the parser by
+// progression.ValidateStageName, so a name this sweep could have caught never
+// reaches a screen at all. That is why one shipped stage name was a Vietnamese
+// phrase for as long as it was: the gap was never in this test's collection, it
+// was that nothing anywhere said what a stage name may look like.
 func TestTheScreensGlossEveryDataName(t *testing.T) {
 	m, lib, _ := start(t, i18n.Vi)
 	browse := m.enter(screenBrowse)

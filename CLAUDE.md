@@ -2099,13 +2099,35 @@ is the constraint each piece has to respect.
       is the *stronger* trait of the two at the cap, so swapping the ally's
       build to compensate pushes the figure further out, not back.
 - [x] **Naruto's three forms renamed to the three the story has.**
-      `Naruto@1 → Shippuden@16 → Tiên nhân@32`, against `naruto.svg`,
+      `Naruto@1 → Shippuden@16 → Sennin@32`, against `naruto.svg`,
       `naruto-shippuden.svg` and `naruto-sage-mode.svg`: before the two years of
       training, after them, and after learning the sage art.
       ⚠️ **The count was right and both names were one form ahead of their own
       picture** — the middle was called *Tiên nhân* while showing Shippuden art,
       the last *Vĩ thú hoá* while showing sage-mode art. The art was right the
       whole way down; the labels were off by one.
+      ⚠️ **The third form was authored `Tiên nhân` and is `Sennin` now, because a
+      stage name is a KEY and may not be a translation of one.** `Line.Resolve`
+      looks a stage up with `candidate.Name == stage`, `Stage.After` names a
+      predecessor by name, a placement writes `"stage": "Ivysaur"` and a learnset
+      gate lists stage names — four hand-typed spellings of one string — and
+      `Line.Validate` refuses two stages sharing a name, which is a uniqueness
+      constraint only a key has. *Tiên nhân* is the Vietnamese **translation** of
+      仙人, so the romaji was the name that was missing rather than a new
+      invention: it keeps the meaning, matches `Shippuden`'s convention exactly,
+      and is right in both languages. **A stage name is still drawn raw** at
+      `browse.go`, `preview.go`, `squads.go` and through `unit.Name` in
+      `play.go` — that is the house rule for an id and there is deliberately **no
+      `Lang.StageName`**; what was wrong was the data. `progression.ValidateStageName`
+      is the refusal, at the parser rather than over the shipped data so it binds
+      every line anybody writes and an authoring form can reject a name as it is
+      typed — the reason `cast.ValidateID` is exported. Printable ASCII, at least
+      one letter, no edge or doubled space: `Tiên` has two Unicode encodings that
+      draw identically and `==` calls them different names, so a non-ASCII key
+      silently misses. ⚠️ `TestTheScreensGlossEveryDataName` **still collects no
+      stage name and should not** — it asserts that an id is shown *with its
+      gloss*, and a stage name has none by decision; the parser is where the rule
+      belongs.
       The tailed-beast form was never a stage: **a stage is the same unit later,
       and that is a different unit**, so it becomes its own character later.
       ⚠️ **No stat moved, nothing rebalanced** — a stage name is printed, never

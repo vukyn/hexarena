@@ -34,7 +34,10 @@ is only so the shape is readable.
   trait, evolution stages as an allowlist, and late-game builds as data with a
   screen of their own. A line may fork — `Stage.After` names a predecessor, so it
   is a tree — and is read **by order or by name, never both**, with `Furthest`
-  refusing on a fork rather than picking an arm.
+  refusing on a fork rather than picking an arm. A stage **name** is an
+  identifier and `progression.ValidateStageName` refuses one that could not be:
+  it is the key an `after`, a placement and a learnset gate each spell by hand,
+  so it is drawn raw in both languages and may not be a word out of one.
 - **Authoring.** `hexforge` (CLI, for pipes) and `hexforge-tui` (full screen)
   over one `internal/forge`, so the two cannot disagree. Skill authoring and
   editing, art picker, kit and allowlist pickers, budget bounds, spar, `weigh`
@@ -185,19 +188,6 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **A stage name is drawn raw, and one of them is Vietnamese.** `stage.Name`
-      reaches the screen unglossed at `browse.go:272`, `preview.go:76`,
-      `squads.go:633` and through `unit.Name` at `play.go:807`/`912`, and
-      `naruto.naruto`'s third form is authored **`Tiên nhân`** — a Vietnamese
-      phrase printed unchanged on an English screen. It is **not** the species
-      defect's shape: there is no `Lang.StageName` being gone round, and
-      `CLAUDE.md` names those three forms deliberately. What is open is the design
-      call underneath — whether a stage name is a proper noun like `Bulbasaur`,
-      which is right in either language, or a translatable phrase, which needs an
-      accessor and a rule about which of the two a given line is.
-      ⚠️ `TestTheScreensGlossEveryDataName` cannot see it either: the sweep
-      collects archetype, element and skill glosses, trait names and species
-      names, and **no stage name**.
 - [ ] **`tui.DetailPassives` reads a trait's name raw, twelve lines under a
       caller that does not.** `internal/tui/describe.go:46-47` prints `one.Name`
       where `lang.PassiveName(one)` is the accessor, while line 30 of the same

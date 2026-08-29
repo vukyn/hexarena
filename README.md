@@ -2868,7 +2868,7 @@ carries all three measurements.
 ### Naruto's three forms are the three the story has
 
 ```
-Naruto@1  →  Shippuden@16  →  Tiên nhân@32
+Naruto@1  →  Shippuden@16  →  Sennin@32
 naruto.svg   naruto-shippuden.svg   naruto-sage-mode.svg
 ```
 
@@ -2890,7 +2890,71 @@ character.
 ⚠️ **No stat moved and nothing rebalanced.** The three stat lines are untouched,
 the level cap still resolves to the third, and Naruto still absorbs 7943 of the
 budget — so the sweep below, which was measured against this line, still stands.
-A stage's name is what a screen prints; it is not a number anything reads.
+A stage's name reaches no arithmetic: nothing weighs it, so no measurement can
+move with it. What it *is* read by is the section below.
+
+### A stage name is an identifier, and one of them was a translation
+
+The third form was authored **`Tiên nhân`** and is **`Sennin`** now. Not a
+cosmetic pass: a stage name is a **key**, and a key may not be written in one
+language.
+
+Four things in the code say it is a key rather than a caption:
+
+- `Line.Resolve` finds a stage by comparing `candidate.Name == stage`, so the
+  name is the lookup.
+- `Stage.After` names the stage a stage grows out of **by name** —
+  `"after": "Ivysaur"` — which is a second hand-typed spelling of the same
+  string.
+- A roster entry or a squad placement writes `"stage": "Ivysaur"`, and a
+  learnset entry gates itself on a list of stage names. Both are spelled by
+  hand, in files the evolution line never sees.
+- `Line.Validate` refuses two stages sharing a name — *"so naming one of them
+  chooses neither"*. That is a uniqueness constraint, and only a key has one.
+
+A string spelled by hand in four places and compared with `==` has to be
+typeable and has to have exactly one spelling, and both fail outside ASCII:
+**`Tiên` has two Unicode encodings that draw identically** — the composed `ê`,
+and an `e` followed by a combining circumflex — and `==` calls them different
+names, so the visibly-correct key silently misses. The other half is that a
+stage name reaches the screen **unglossed in both languages**, because there is
+nothing to translate it to, so a name authored in one language's own script is
+that language's word on the other language's screen.
+
+**So the raw draw stays and the data moved.** `stage.Name` still reaches the
+screen exactly as the file writes it, in both languages, and there is
+deliberately **no `Lang.StageName`** — an id is shown as the data writes it,
+which is the same rule a skill id and an element id live under. What was wrong
+was that one identifier had been authored as a Vietnamese phrase.
+
+*Tiên nhân* is the Vietnamese **translation** of 仙人 — *sennin*, the sage — so
+the romaji is the name that was missing rather than a new invention. It keeps
+the form's meaning, matches `Shippuden`'s convention exactly, and is right in
+either language.
+
+**`progression.ValidateStageName` is the rule**, and it is a refusal at the
+parser rather than a test over the shipped data. The two are different claims: a
+test binds `cast.json`, while the refusal binds every line anybody ever writes —
+including a character authored through `hexforge` into somebody's own data
+directory — and it is the same call an authoring form can make as the name is
+typed, which is why `cast.ValidateID` and `cast.ValidateImagePath` are exported
+too. The cost of choosing the parser is that it is a **new refusal on existing
+data**, so every shipped line has to still load; all twelve shipped stage names
+are ASCII and it does.
+
+What it asks: printable ASCII, at least one letter, no space at either end and
+none doubled. It is no tighter on purpose — `Mega Charizard X`, `Ho-Oh`,
+`Farfetch'd` and `Porygon2` are all plausible forms and none of them is a phrase
+in a language.
+
+⚠️ **`TestTheScreensGlossEveryDataName` still collects no stage name, and should
+not.** That sweep asserts an id is drawn *with its gloss*; a stage name has none
+by decision, so adding one there would assert the opposite of what was decided.
+The rule belongs upstream, at the parser, where a name that could not be an
+identifier never reaches a screen at all.
+
+Only one golden line moved — the stage's own row in `cast.golden` — and no stat
+beside it.
 
 ### A speed trait, and the house figure that does not transfer
 
@@ -4157,7 +4221,7 @@ change: the mechanism gets a real user without a balance diff to read at the sam
 time. `replay.golden` does not move.
 
 ```
-naruto.naruto   ok   Tiên nhân   7943 absorbs, 3557 budget left
+naruto.naruto   ok   Sennin      7943 absorbs, 3557 budget left
                      hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
 
 shadow_clone   Gọi ra 2 phân thân, trụ lại 4 lượt.       Calls up 2 copies, for 4 turns.
