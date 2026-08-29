@@ -69,6 +69,29 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// unfiltered picker does not draw.
 	filtered := addSkill.openAllowlist(skillFieldKeptForCharacters)
 	filtered.picker.nextFilter()
+	// The species picker, opened over the character form's species field the way
+	// every other picker here is opened over the form that raises it — a
+	// hand-built pickState would measure this test's idea of the screen rather
+	// than the one a keystroke reaches.
+	//
+	// ⚠️ It was missing, and the English sweep below is built to catch exactly
+	// what was wrong with it: the detail cell read the species book's own name
+	// raw, so an English row drew "dragon  rồng". Every line of every screen in
+	// this map is checked against every data name and nothing objected, because
+	// this screen was rendered by nothing in the suite.
+	speciesPick := form.openSpecies()
+	// And the origins allowlist, which is here for width and wording rather than
+	// for a defect: its branch reads work.Title raw and rightly so — a work's
+	// title is a proper noun and there is no Lang accessor being gone round — but
+	// its own title line, i18n.PickerOriginsTitle, was rendered by nothing in
+	// this suite, so neither language's spelling of it had ever been measured
+	// against the smallest window.
+	//
+	// The other two unregistered pickers buy nothing and are left out: the
+	// species and origins *allowlists* differ from the two above only in a hint
+	// line the character allowlist already draws, so every line of them is
+	// already measured somewhere in this map.
+	originsPick := addSkill.openAllowlist(skillFieldKeptForOrigins)
 	// The spar, which is the only screen that runs battles to draw itself. Its
 	// widest state is the one with a row per character, which is what entering it
 	// over a checked library gives.
@@ -213,6 +236,8 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"allowlist picker":         allowlist,
 		"status picker":            statuses,
 		"filtered picker":          filtered,
+		"species picker":           speciesPick,
+		"origins picker":           originsPick,
 		"skill blurb":              skillBlurb,
 		"trait blurb":              traitBlurb,
 		"check":                    m.enter(screenCheck),
