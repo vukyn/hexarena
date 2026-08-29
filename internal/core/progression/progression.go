@@ -17,6 +17,7 @@ package progression
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/combat"
 )
@@ -357,6 +358,75 @@ type Stage struct {
 	Stats Table  `json:"stats"`
 }
 
+// ValidateStageName checks the shape of a stage name.
+//
+// A stage name is an **identifier**, not display text, and this is the rule that
+// keeps it one. Four things in this repository say so:
+//
+//   - Line.Resolve looks a stage up by comparing candidate.Name == stage, so the
+//     name is the lookup key rather than a caption beside one.
+//   - Stage.After names a predecessor **by name** ("after": "Ivysaur"), which is
+//     a second hand-typed spelling of the same string.
+//   - A roster entry or a squad placement writes "stage": "Ivysaur", and a
+//     learnset entry gates itself on a list of stage names — both spelled by hand
+//     in files the line itself never sees.
+//   - Line.Validate refuses two stages sharing a name, "so naming one of them
+//     chooses neither". Only a key has a uniqueness constraint.
+//
+// A string spelled by hand in four places and compared with == has to be
+// typeable and has to have exactly one spelling, and both fail outside ASCII:
+// "Tiên" has two Unicode encodings that draw identically — the composed ê and an
+// e followed by a combining circumflex — and == calls them different names, so
+// the visibly-correct key silently misses. Printable ASCII is how that is
+// checked; it is the mechanical form of the rule rather than the rule itself.
+//
+// The other half is that a stage name reaches the screen **unglossed, in both
+// languages** — there is nothing to translate it to, so it is drawn exactly as
+// the data writes it. A name authored in one language's own script is therefore
+// that language's word on the other language's screen. Refusing anything outside
+// ASCII refuses that too. There is deliberately no Lang.StageName accessor: the
+// house rule is that an id is shown as the data writes it.
+//
+// The rule is no tighter than that on purpose. Spaces, digits, hyphens,
+// apostrophes and periods stay legal, because "Mega Charizard X", "Ho-Oh" and
+// "Porygon2" are all plausible forms and none of them is a phrase in a language.
+// What is refused is a name that is empty, carries a byte outside printable
+// ASCII, carries no letter at all, or has a space at either end or two in a row —
+// the last because a difference between two spellings of a key that nobody can
+// see is exactly the failure the ASCII rule exists to prevent.
+//
+// It is exported for the same reason cast.ValidateID and cast.ValidateImagePath
+// are: an authoring tool has to be able to reject an answer as it is typed,
+// rather than at the end of a wizard nobody wants to fill in twice.
+func ValidateStageName(name string) error {
+	if name == "" {
+		return fmt.Errorf("has no name")
+	}
+	letters := 0
+	for i := 0; i < len(name); i++ {
+		letter := name[i]
+		switch {
+		case letter >= 'a' && letter <= 'z', letter >= 'A' && letter <= 'Z':
+			letters++
+		case letter >= ' ' && letter <= '~':
+		default:
+			return fmt.Errorf(
+				"is called %q, which is not written in ASCII; a stage name is the key an after, a placement and a learnset gate each spell by hand, so it has to be typeable and to have one spelling",
+				name)
+		}
+	}
+	if letters == 0 {
+		return fmt.Errorf("is called %q, which has no letter in it", name)
+	}
+	if strings.TrimSpace(name) != name {
+		return fmt.Errorf("is called %q, which has a space at one end that no other spelling of the key will have", name)
+	}
+	if strings.Contains(name, "  ") {
+		return fmt.Errorf("is called %q, which has two spaces in a row — a difference between two spellings of the key that nobody can see", name)
+	}
+	return nil
+}
+
 // Line is a unit's full evolution line, ordered by MinLevel.
 type Line []Stage
 
@@ -373,8 +443,8 @@ func (l Line) Validate(limits Limits, rules combat.Rules) error {
 	}
 	seen := make(map[string]bool, len(l))
 	for i, stage := range l {
-		if stage.Name == "" {
-			return fmt.Errorf("stage %d has no name", i)
+		if err := ValidateStageName(stage.Name); err != nil {
+			return fmt.Errorf("stage %d %w", i, err)
 		}
 		if seen[stage.Name] {
 			return fmt.Errorf("two stages are called %q, so naming one of them chooses neither", stage.Name)
