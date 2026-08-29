@@ -60,6 +60,15 @@ is only so the shape is readable.
   rather than padding a row of blanks, and the picker asks whether the rows in
   front of it have anything in that column rather than which language or which
   kind it is drawing. → `cmd/hexforge-tui/picker.go` → `detailColumn`.
+  ⚠️ **A screen the sweep never renders has no leak test, no width test and no
+  translation test at all.** The species picker read `kind.Name` raw and drew
+  `dragon rồng` in English for as long as it existed;
+  `TestTheScreensGlossEveryDataName` is built to catch exactly that and was green,
+  because `everyScreen` registered no species picker — and the skill form's
+  species allowlist raises the same kind, so the branch had **two** unmeasured
+  entrances. Fixing a leak of this shape is therefore two things: the branch, and
+  the entry that would have caught it. The same probe registered the origins
+  picker, whose title line no other screen draws.
 - **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
   kills, summons and **tempo** in damage over capped horizons — tempo off the
   speed stat, never off the queue. Both halves of an all-sided skill, a tie
@@ -176,20 +185,28 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **The species picker prints Vietnamese on an English screen.** Its detail
-      cell reads `kind.Name` straight off the book in both languages, so English
-      draws `dragon rồng`, `lizard thằn lằn`, `plant thực vật`. That bypasses
-      `Lang.SpeciesName`, which exists to return nothing in English and which the
-      species *listing* already uses over the same book. The branch's own comment
-      defends the raw read on the grounds that a compiled-table lookup would find
-      nothing — true, and beside the point: the alternative is `SpeciesName`, not
-      `Gloss`, and a bare id is the intended English outcome rather than a
-      failure. ⚠️ `TestTheScreensGlossEveryDataName` looks for exactly this and
-      cannot see it: it sweeps `everyScreen`, which registers no species picker.
-      So the fix is two things — the branch, and an entry that would have caught
-      it. `pickOrigins` reads raw the same way and is **not** the same defect:
-      the shipped titles are `Naruto` and `Pokémon`, proper nouns of the works,
-      and there is no `Lang.OriginTitle` being bypassed.
+- [ ] **A stage name is drawn raw, and one of them is Vietnamese.** `stage.Name`
+      reaches the screen unglossed at `browse.go:272`, `preview.go:76`,
+      `squads.go:633` and through `unit.Name` at `play.go:807`/`912`, and
+      `naruto.naruto`'s third form is authored **`Tiên nhân`** — a Vietnamese
+      phrase printed unchanged on an English screen. It is **not** the species
+      defect's shape: there is no `Lang.StageName` being gone round, and
+      `CLAUDE.md` names those three forms deliberately. What is open is the design
+      call underneath — whether a stage name is a proper noun like `Bulbasaur`,
+      which is right in either language, or a translatable phrase, which needs an
+      accessor and a rule about which of the two a given line is.
+      ⚠️ `TestTheScreensGlossEveryDataName` cannot see it either: the sweep
+      collects archetype, element and skill glosses, trait names and species
+      names, and **no stage name**.
+- [ ] **`tui.DetailPassives` reads a trait's name raw, twelve lines under a
+      caller that does not.** `internal/tui/describe.go:46-47` prints `one.Name`
+      where `lang.PassiveName(one)` is the accessor, while line 30 of the same
+      file goes through `lang.SkillName`. **Latent rather than live**: the only
+      caller is `cmd/hexarena/main.go:391`, which hardcodes `i18n.Vi` — the
+      deliberate Vietnamese-block decision — so the raw read agrees with the
+      accessor for the one value `lang` is ever handed. The day `cmd/hexarena`
+      honours `--lang`, trait headings keep `blood_thirst · khát máu` while the
+      skill headings beside them drop theirs.
 
 ## Decided against — do not re-raise
 

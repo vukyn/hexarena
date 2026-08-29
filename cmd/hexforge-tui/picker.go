@@ -673,16 +673,29 @@ func (p *pickState) detail(m model, id string) string {
 		return ""
 	}
 	if p.kind == pickSpecies {
-		// The authored name, not a gloss: the species book carries the word
-		// itself, so a lookup in the compiled tables would find nothing and the
-		// row would be a bare id in either language.
+		// The authored name through Lang.SpeciesName, which is the same reading
+		// the species listing gives the same book — and not m.lang.Gloss, since
+		// the word lives on the declaration rather than in the compiled tables,
+		// so a lookup there would find nothing in either language.
+		//
+		// The accessor is what makes English right rather than what makes it
+		// bare: a data name is Vietnamese whoever asks, so SpeciesName returns
+		// nothing in English and the row is the id, which is the data's own name
+		// for itself. Reading kind.Name raw drew "dragon  rồng" on an English
+		// screen — a leak rather than a translation. Every shipped kind carries
+		// a name, so in English no row has a detail at all and detailColumn
+		// drops the column, exactly as the trait picker's does.
 		if kind, known := m.lib.Species().Get(id); known {
-			return m.style.dim.Render(kind.Name)
+			return m.style.dim.Render(m.lang.SpeciesName(kind))
 		}
 		return ""
 	}
 	if p.kind == pickOrigins {
-		// The authored title, for pickSpecies's reason.
+		// The authored title, raw, and that is not the species branch's mistake
+		// repeated: a work's title is a proper noun of the work — "Pokémon",
+		// "Naruto" — so it is the same word in either language, and there is no
+		// Lang accessor being gone round. An origin picker therefore keeps its
+		// column in English, where the species one drops its.
 		if work, known := m.lib.Origins().Get(id); known {
 			return m.style.dim.Render(work.Title)
 		}
