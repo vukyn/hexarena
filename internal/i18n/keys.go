@@ -224,6 +224,33 @@ const (
 	CategoryRegen
 	CategoryTaunt
 
+	// The same seven categories as **noun phrases**, for a sentence that names
+	// one rather than a column that explains one. The family above answers "what
+	// does this kind of status do" and is worded as a predicate — "lowers a
+	// stat" — which cannot be dropped into "strips 1 stack of ___"; these answer
+	// "what is the kind called". Two families rather than one with a flag,
+	// because they are two questions and a flag would be one function with two
+	// jobs. See Lang.StatusCategoryNoun.
+	//
+	// The English shape is an **uncountable noun phrase**: no article, no
+	// plural, lower case, so the same wording reads under "1 stack of" and "2
+	// stacks of" alike. All seven are held to it. The alternative considered was
+	// Vietnamese's own "hiệu ứng X" shape spelled out in English ("a
+	// stat-lowering effect"), which needs an article the frame has nowhere to
+	// put.
+	//
+	// These carry the Vietnamese wordings that used to live in gloss.go's
+	// categoryGloss, which is gone: a category is a Go enum rather than a data
+	// id, so Gloss's rule that English shows an id exactly as the data writes it
+	// was what printed "stat_debuff" on an English line.
+	CategoryNounDot
+	CategoryNounStatDebuff
+	CategoryNounControl
+	CategoryNounBuff
+	CategoryNounShield
+	CategoryNounRegen
+	CategoryNounTaunt
+
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement
 	KitNeeds

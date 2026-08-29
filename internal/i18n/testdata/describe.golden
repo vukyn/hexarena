@@ -593,7 +593,7 @@ Itself · 4 turns to recharge.
 [one line] self regrowth x2 · itself · cd 4
 
 rapid_spin
-Strips 1 stack of stat_debuff and dot.
+Strips 1 stack of stat reduction and damage over time.
 Itself · 3 turns to recharge.
 [one line] strips 1 harmful · itself · cd 3
 

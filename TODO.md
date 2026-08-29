@@ -45,6 +45,13 @@ is only so the shape is readable.
   chart drawn as closed ASCII loops in element colour.
 - **Vietnamese.** The TUI is Vietnamese-first with an English toggle; every
   description is derived from the data, and only the flavour clause is authored.
+  A status **category** is worded twice, because a sentence and a column want
+  different parts of speech: `StatusCategory` is the predicate the statuses
+  reference explains an id with, `StatusCategoryNoun` is the noun a strips clause
+  names. ⚠️ English cannot fall back on the id here — a category is a Go enum,
+  not a data id, so the rule that an English name is whatever the data writes
+  does not reach it, and both families are held complete by a test that refuses
+  an enum spelling. → `internal/i18n/forge.go`.
 - **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
   kills, summons and **tempo** in damage over capped horizons — tempo off the
   speed stat, never off the queue. Both halves of an all-sided skill, a tie
@@ -140,22 +147,12 @@ is only so the shape is readable.
       of them changes what a played battle looks like against what the game client
       plays. That is a layout redesign and its own piece of work.
       → `CLAUDE.md` § *Where a form beats a prompt* → the played battle.
-- [ ] **An English skill description prints the status-category enum spellings.**
-      `rapid_spin` reads `Strips 1 stack of stat_debuff and dot.` — two Go enum
-      names on a player-facing line, and the same on the fixture's `purify`.
-      Vietnamese is correct (`hiệu ứng giảm chỉ số`), because the names come from
-      the gloss table and that table is Vietnamese only, so English falls through
-      to the id. Pre-existing, and **not** the lookup it looks like: the complete
-      pair of wordings already exists in `Lang.StatusCategory`, but they are
-      *predicates* for the statuses reference's own column — `lowers a stat`,
-      `damages every turn` — so dropping them in gives "Strips 1 stack of lowers a
-      stat and damages every turn." What is needed is seven **noun-phrase** English
-      category wordings, which is a key family of its own. ⚠️ Unlike a status, a
-      category is a Go enum rather than a data id, so "a bare id is the English
-      name" does not excuse it — `StatusCategory`'s own doc comment says exactly
-      that, and `TestEveryStatusCategoryIsWorded` refuses an enum spelling there.
-      The battle screen's compact line is unaffected: it counts a strip rather
-      than enumerating it.
+- [ ] **A list of three or more reads `X and Y and Z`.** `l.join` puts the
+      language's conjunction between every pair and no comma anywhere, so
+      `purify` strips `damage over time and stat reduction and turn loss`. It is
+      `join`'s shape for **every** list in `describe.go`, not this clause's, so
+      what is open is one decision about all of them — and the two languages do
+      not necessarily want the same answer.
 - [ ] **An English trait row is a bare id with an empty column after it.** A
       trait's name is authored in `passives.json` in Vietnamese only, so the
       picker's detail cell comes back empty in English and the row draws its id
@@ -213,6 +210,12 @@ is only so the shape is readable.
   be compared, never added or multiplied** — a value that reaches an arithmetic
   expression is tempo, and tempo is priced from the speed stat.
   → `CLAUDE.md` § Rating an action.
+- **Wording the ids on `cmd/hexarena`'s menu line.** `tui.Extras` prints
+  `strips control/dot x1` beside `health <=50%` and `cd3`: it takes no
+  `i18n.Lang` at all, and every field on that line is an id or a raw number. So
+  the enum spellings there are **not** the defect the strips clause had — that
+  one was an i18n'd sentence falling through to an id. Translating this line
+  means translating the line, not patching a lookup.
 - **`at_stage` on a learnset entry.** Unblocked and deliberately not built:
   `at_stage: "Ivysaur"` is exactly `stages: ["Ivysaur","Venusaur"]`, and two
   vocabularies for one idea is the cost. → `README.md`.

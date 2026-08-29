@@ -207,8 +207,11 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 	}
 	if declared.Strips != nil {
 		names := make([]string, 0, len(declared.Strips.Categories))
+		// A category is worded, never glossed: Gloss answers for a data id and
+		// is empty outside Vietnamese on purpose, so an English sentence took
+		// the enum spelling.
 		for _, category := range declared.Strips.Categories {
-			names = append(names, l.glossed(category.String()))
+			names = append(names, l.StatusCategoryNoun(category.String()))
 		}
 		if declared.Strips.Stacks == 1 {
 			out = append(out, l.Say(BlurbStripsOne, l.join(names)))

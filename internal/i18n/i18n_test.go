@@ -616,3 +616,49 @@ func TestEveryStatusCategoryIsWorded(t *testing.T) {
 		}
 	}
 }
+
+// TestEveryStatusCategoryIsANoun is its twin for the other wording, and the
+// enum-spelling clause is the one that matters: the noun family exists because
+// the cleanse sentence used to word a category with Gloss, which is empty
+// outside Vietnamese by design, so an English description printed
+// "stat_debuff". A gap here is the same defect coming back through a category
+// added later.
+func TestEveryStatusCategoryIsANoun(t *testing.T) {
+	for _, lang := range []Lang{Vi, En} {
+		for category := status.Category(0); int(category) < status.CategoryCount; category++ {
+			name := category.String()
+			noun := lang.StatusCategoryNoun(name)
+			if noun == "" {
+				t.Errorf("%v has no noun for the %q category", lang, name)
+			}
+			if noun == name {
+				t.Errorf("%v left the %q category at its enum spelling", lang, name)
+			}
+			// The two families answer different questions, so a noun that came
+			// back as its own predicate is one of them wired to the other.
+			if noun == lang.StatusCategory(name) {
+				t.Errorf("%v words the %q category the same way twice: %q",
+					lang, name, noun)
+			}
+		}
+	}
+}
+
+// TestNoStatusCategoryNounIsAnyEnumSpelling is the clause above widened by one
+// step: a noun must not be *any* category's enum spelling, not merely its own.
+// "buff" wording itself is the obvious mistake; "buff" wording the shield is the
+// same mistake with a swapped row, and a per-category comparison cannot see it.
+func TestNoStatusCategoryNounIsAnyEnumSpelling(t *testing.T) {
+	spellings := make(map[string]bool, status.CategoryCount)
+	for category := status.Category(0); int(category) < status.CategoryCount; category++ {
+		spellings[category.String()] = true
+	}
+	for _, lang := range []Lang{Vi, En} {
+		for category := status.Category(0); int(category) < status.CategoryCount; category++ {
+			if noun := lang.StatusCategoryNoun(category.String()); spellings[noun] {
+				t.Errorf("%v words the %q category %q, which is an enum spelling",
+					lang, category, noun)
+			}
+		}
+	}
+}
