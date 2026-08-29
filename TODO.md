@@ -128,6 +128,19 @@ is only so the shape is readable.
   → `CLAUDE.md` § *Where a form beats a prompt* → the played battle, *the
   budget*.
 
+- **A list of three reads as a sentence.** `i18n.listed` is the one place that
+  knows the shape — conjunction before the final item, comma between the rest —
+  and `join` (prose) and `JoinIDs` (untranslated ids) both go through it while
+  keeping their own conjunction key. ⚠️ **Both languages wanted the same shape**,
+  which the item had left open: `a, b and c` and `a, b và c`, no serial comma in
+  either. ⚠️ **No golden moved, before or after.** Every list the shipped books
+  produce has one item or two, so the defect was reachable only through the
+  fixture's `purify` (three stripped categories, the same skill that exposed the
+  strips clause's width) — which makes
+  `TestAListOfThreeTakesCommasAndOneConjunction` the entire guard, and the
+  end-to-end one beside it fails if nothing in the books reads out a three at all.
+  → `CLAUDE.md` § *The event log is the contract* → the description rules.
+
 ## Not done
 
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
@@ -155,12 +168,6 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **A list of three or more reads `X and Y and Z`.** `l.join` puts the
-      language's conjunction between every pair and no comma anywhere, so
-      `purify` strips `damage over time and stat reduction and turn loss`. It is
-      `join`'s shape for **every** list in `describe.go`, not this clause's, so
-      what is open is one decision about all of them — and the two languages do
-      not necessarily want the same answer.
 - [ ] **An English trait row is a bare id with an empty column after it.** A
       trait's name is authored in `passives.json` in Vietnamese only, so the
       picker's detail cell comes back empty in English and the row draws its id

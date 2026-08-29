@@ -219,6 +219,7 @@ q hoặc ctrl+c để thoát`,
 	PresetTakesAnyElement: "%s (hệ nào cũng được)",
 	PresetNeeds:           "%s (cần %s)",
 	ElementJoiner:         " và ",
+	ListComma:             ", ",
 
 	BrowseHeading:          "danh sách nhân vật",
 	BrowseShowing:          "đang xem %s (%d trong %d nhân vật)",

@@ -257,6 +257,11 @@ const (
 	PresetTakesAnyElement
 	PresetNeeds
 	ElementJoiner
+	// ListComma separates every item of a list but the last two, which take the
+	// conjunction instead. One key pair rather than one per joiner: the comma is
+	// punctuation and identical in both languages, while the conjunction it hands
+	// over to belongs to whoever is doing the joining.
+	ListComma
 
 	// The cast browser.
 	BrowseHeading
