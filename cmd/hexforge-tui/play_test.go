@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -706,6 +707,14 @@ func TestTheQuestionMarkWorksWhileAimingAndNotWithoutAPrompt(t *testing.T) {
 // and 83 cells against the 79 there are. The sweep covers them now; this holds
 // the other half, which a width test cannot — that the key the whole feature
 // hangs on is still named after the next person trims a footer.
+// ⚠️ **The scroll keys are named here too, and the aim footer carries them
+// because the log is drawn while aiming.** Room had to be made rather than a key
+// given up, which is the choice this feature was asked for: the battle footer was
+// 77 cells (vi) and 78 (en) of the 79 there are, so the words after ↑/↓, enter and
+// ? are dropped — the three keys whose meaning the screen itself shows, which is
+// the same judgement BrowseFooter and this footer's own esc already took. The
+// widths below are logged rather than asserted against a number, because a
+// hand-count of a candidate came back four cells wrong twice in a row.
 func TestTheBattleFootersNameTheDescriptionKeyAndFit(t *testing.T) {
 	const drawable = minWidth - 1
 	for _, lang := range i18n.Langs() {
@@ -713,24 +722,48 @@ func TestTheBattleFootersNameTheDescriptionKeyAndFit(t *testing.T) {
 		footers := map[string]string{
 			"battle": m.text(i18n.PlayFooter, saveKeyLabel()),
 			"aim":    m.text(i18n.PlayAimFooter),
+			// The log is drawn on a finished battle as well, and reading back
+			// through it is most of what is left to do there.
+			"over": m.text(i18n.PlayOverFooter, saveKeyLabel()),
 		}
 		for name, footer := range footers {
 			if width := lipgloss.Width(footer); width > drawable {
 				t.Errorf("%s: the %s footer is %d cells over the %d it has: %q",
 					lang, name, width, drawable, footer)
 			}
-			if !strings.Contains(footer, describeKey) {
-				t.Errorf("%s: the %s footer does not name %q: %q",
-					lang, name, describeKey, footer)
+			for _, named := range []string{scrollBackKey, scrollOnKey} {
+				if !strings.Contains(footer, named) {
+					t.Errorf("%s: the %s footer does not name %q: %q",
+						lang, name, named, footer)
+				}
 			}
 			t.Logf("%s: the %s footer is %d cells", lang, name, lipgloss.Width(footer))
+		}
+		// The two footers a turn is taken from also name the key the description
+		// hangs on. The finished battle has no option under a cursor, so it has
+		// nothing to describe and does not offer it.
+		for _, name := range []string{"battle", "aim"} {
+			if !strings.Contains(footers[name], describeKey) {
+				t.Errorf("%s: the %s footer does not name %q: %q",
+					lang, name, describeKey, footers[name])
+			}
 		}
 	}
 }
 
-// describeKey is the keystroke that raises a description, named here so the test
-// above is about the footer and not about a letter.
-const describeKey = "?"
+// describeKey is the keystroke that raises a description, and the two scroll keys
+// are the pair that walks the log — named here so the test above is about the
+// footer and not about a letter.
+//
+// They are pgdn/pgup because ↑/↓ walk the options and may not be taken, and
+// because this pair already scrolls the trait description and the picker: a second
+// pair for one idea is the drift this repository keeps a list of. The footer spells
+// them the way PickerReadingFooter does.
+const (
+	describeKey   = "?"
+	scrollBackKey = "pgup"
+	scrollOnKey   = "pgdn"
+)
 
 // mustSkill is one skill out of the library in hand.
 func mustSkill(t *testing.T, m model, id string) skill.Skill {
@@ -957,7 +990,7 @@ func squadSlots(n int) []hex.Offset {
 // The screen cannot fit the window the tool declares, and nothing below pretends
 // it can. Measured at 80x24, where playBodyRoom leaves the body twenty rows: the
 // heading is one, tui.Board is a fixed ten, tui.Roster is one plus a row a unit,
-// tui.Order is one, the log is up to playLogLines and the option list is one plus
+// tui.Order is one, the log asks for playLogWanted and the option list is one plus
 // a row an option — so a 1v1 wants twenty of those rows before a single blank or
 // log line, a 3v3 twenty-four and a 5v5 **twenty-eight**. A legal squad is up to
 // hex.MaxTeamSize a side, so twenty-eight is the floor for one, and a summon puts
@@ -984,8 +1017,8 @@ func heightsFrom(low, high int) []int {
 	return out
 }
 
-// withAFullLog plays the engine's own turns until the log has filled to
-// playLogLines rows.
+// withAFullLog plays the engine's own turns until the history has grown past the
+// rows the log asks for.
 //
 // ⚠️ **Without it the log is never the section that goes.** The opening board's
 // log is one row a unit entering, so a 1v1 at the floor still holds all four of
@@ -995,17 +1028,45 @@ func heightsFrom(low, high int) []int {
 func withAFullLog(t *testing.T, m model) model {
 	t.Helper()
 	for range 20 {
-		if len(m.play.log(m, playLogLines)) >= playLogLines || m.play.fight.Finished() {
+		if len(m.play.logRows(m)) >= playLogWanted || m.play.fight.Finished() {
 			break
 		}
 		m = typeText(t, m, "a")
 	}
-	if rows := len(m.play.log(m, playLogLines)); rows < playLogLines {
-		t.Fatalf("the log filled to %d rows of %d, so a squeezed log was not measured",
-			rows, playLogLines)
+	if rows := len(m.play.logRows(m)); rows < playLogWanted {
+		t.Fatalf("the history came to %d rows of %d, so a squeezed log was not measured",
+			rows, playLogWanted)
 	}
 	if m.play.pending == nil {
 		t.Fatal("the battle stopped waiting on the player, so no option list is drawn")
+	}
+	return m
+}
+
+// withALongLog is withAFullLog played on far enough that the history runs past
+// the frame at **every** height the sweep draws, which is what a scroll has to be
+// measured against.
+//
+// ⚠️ **It has to be constructed and it is not the same fixture.** withAFullLog
+// stops at the eight rows the log asks for, and eight rows fit the frame in a tall
+// window — so on that fixture there is nothing above the frame, the keys correctly
+// do nothing and every assertion about scrolling passes without exercising it.
+// This fails rather than measuring nothing if the battle ends first.
+func withALongLog(t *testing.T, m model, rows int) model {
+	t.Helper()
+	for range playTurnLimit {
+		if len(m.play.logRows(m)) >= rows || m.play.fight.Finished() ||
+			m.play.err != nil {
+			break
+		}
+		m = typeText(t, m, "a")
+	}
+	if m.play.err != nil {
+		t.Fatalf("playing the battle out broke: %v", m.play.err)
+	}
+	if got := len(m.play.logRows(m)); got < rows {
+		t.Fatalf("the battle finished with a history of %d rows against the %d this "+
+			"needs, so nothing above the frame was constructed", got, rows)
 	}
 	return m
 }
@@ -1045,8 +1106,11 @@ func whatIsDrawn(m model) (drawn, string, string) {
 	found.order = present[m.style.dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))] > 0
 	// Counted as a multiset and not by lookup: the log's rows are not distinct —
 	// tui.Line opens a turn with a blank one — so asking whether each is on the
-	// screen counts every blank row once per blank row there is.
-	for _, row := range p.log(m, playLogLines) {
+	// screen counts every blank row once per blank row there is. Over the **whole
+	// history** rather than over the frame, because the frame is what is being
+	// measured: counting the rows the screen decided to draw would be the test
+	// asking the view what it had decided.
+	for _, row := range p.logRows(m) {
 		if present[row] > 0 {
 			present[row]--
 			found.log++
@@ -1326,8 +1390,8 @@ func TestTheRosterIsClippedARowAtATime(t *testing.T) {
 // TestTheLogIsCappedByRenderedLinesAndNotByEvents is the second defect the height
 // work turned up, held.
 //
-// playLogLines was a cap on **events** and is a cap on **rows**. The two are not
-// the same number: tui.Line opens a turn with a blank row of its own, so one event
+// The log's budget is spent in **rows** and not in events. The two are not the
+// same number: tui.Line opens a turn with a blank row of its own, so one event
 // arrives as two rows, and the section with the loosest claim on the screen was
 // the one whose stated budget did not hold.
 //
@@ -1347,10 +1411,10 @@ func TestTheLogIsCappedByRenderedLinesAndNotByEvents(t *testing.T) {
 		t.Fatal("no event in the log renders to more than one row, so the cap this test " +
 			"is about could not have been exceeded and nothing was measured")
 	}
-	// The old cap taken the old way: the last playLogLines events, rendered.
+	// The cap taken the wrong way: the last playLogWanted events, rendered.
 	events := m.play.events
-	if len(events) > playLogLines {
-		events = events[len(events)-playLogLines:]
+	if len(events) > playLogWanted {
+		events = events[len(events)-playLogWanted:]
 	}
 	byEvent := 0
 	for _, event := range events {
@@ -1358,26 +1422,27 @@ func TestTheLogIsCappedByRenderedLinesAndNotByEvents(t *testing.T) {
 			byEvent += len(strings.Split(line, "\n"))
 		}
 	}
-	if byEvent <= playLogLines {
-		t.Fatalf("the last %d events render to %d rows, so the old cap happened to hold "+
-			"here and this fixture measures nothing", playLogLines, byEvent)
+	if byEvent <= playLogWanted {
+		t.Fatalf("the last %d events render to %d rows, so counting events happened to hold "+
+			"here and this fixture measures nothing", playLogWanted, byEvent)
 	}
-	t.Logf("the last %d events render to %d rows", playLogLines, byEvent)
-	// And the cap that is one: never more rows than it was given, at every budget
-	// from nothing up to the whole of it.
-	for room := 0; room <= playLogLines; room++ {
-		if rows := len(m.play.log(m, room)); rows > room {
-			t.Errorf("a log budget of %d rows drew %d", room, rows)
-		}
-	}
-	// The tail rather than the head, which is what a player has to read: every
-	// budget that draws anything ends on the log's own last row.
-	whole := m.play.log(m, playLogLines)
+	t.Logf("the last %d events render to %d rows", playLogWanted, byEvent)
+	// And the bound that is one: the frame never draws more rows than it was
+	// given, at every budget from nothing up to the whole history.
+	whole := m.play.logRows(m)
 	if len(whole) == 0 {
 		t.Fatal("the log renders nothing")
 	}
-	for room := 1; room <= playLogLines; room++ {
-		rows := m.play.log(m, room)
+	for room := 0; room <= len(whole)+1; room++ {
+		if rows := len(m.play.logFrame(whole, room)); rows > room {
+			t.Errorf("a log budget of %d rows drew %d", room, rows)
+		}
+	}
+	// The tail rather than the head, which is what a player who has not scrolled
+	// has to read: every budget that draws anything ends on the history's own last
+	// row.
+	for room := 1; room <= playLogWanted; room++ {
+		rows := m.play.logFrame(whole, room)
 		if len(rows) == 0 {
 			continue
 		}
@@ -1386,6 +1451,448 @@ func TestTheLogIsCappedByRenderedLinesAndNotByEvents(t *testing.T) {
 				room, rows[len(rows)-1], whole[len(whole)-1])
 		}
 	}
+}
+
+// # The log as a frame over the whole history
+//
+// Two defects, and they were separate. The section's allotment was clamped to the
+// rows it asked for, so the body grew twenty rows to forty-two between an 80x24
+// window and an 80x80 one and the log stood still at eight — a tall terminal
+// bought the history nothing. And the rows past the frame were unreachable: the
+// history came to three hundred rows, eight were drawn, and there was no key.
+//
+// aLongLog is the fixture the whole block below rests on. ⚠️ It has to be
+// constructed: withAFullLog stops at the eight rows the section asks for, and eight
+// rows fit the frame in any tall window — so on that fixture nothing is above the
+// frame, every scroll key correctly does nothing, and every assertion here would
+// pass without exercising a single line of it.
+func aLongLog(t *testing.T, lang i18n.Lang, side int) model {
+	t.Helper()
+	base, _, _ := start(t, lang)
+	base = withALongLog(t, atABattleOf(t, base, side), longLogRows)
+	base.width, base.height = minWidth, longLogHeight
+	return base
+}
+
+// longLogRows is how long "longer than any window draws" is. The body of an 80x48
+// window is 44 rows, all of which the log could in principle be given, so this is
+// comfortably past the largest frame the sweep asks for.
+//
+// longLogHeight is the window the fixture stands in, and it is not the floor: at
+// 80x24 a three-a-side battle is given **no** log row at all — which is the budget
+// working, and a fixture standing there would be pressing scroll keys at a section
+// that is not on the screen.
+const (
+	longLogRows   = 120
+	longLogHeight = 40
+)
+
+// theLogFrame is the history, how many rows of it the window in hand leaves, and
+// where the frame starts — read the way the screen reads them, through the same
+// drawings and the same playFit, because a test with its own arithmetic for this
+// would agree with itself rather than with the screen.
+func theLogFrame(m model) (history []string, room, start int) {
+	drawn := m.play.drawings(m)
+	room = playFit(playBodyRoom(m.height), drawn.sizes()).log
+	return drawn.log, room, m.play.logStart(len(drawn.log), room)
+}
+
+// TestTheLogGrowsWithTheWindow is the first defect.
+//
+// The rows the log is drawn are what the budget leaves it, so a taller window
+// gives it more of them. Measured at the floor, in the middle and at a height
+// nobody's laptop is short of, in both languages and at every squad size — and the
+// two ends may not be equal, which is exactly what they were.
+func TestTheLogGrowsWithTheWindow(t *testing.T) {
+	heights := []int{minHeight, 40, 80}
+	for _, lang := range i18n.Langs() {
+		for _, side := range playSides {
+			base := aLongLog(t, lang, side)
+			rooms := make([]int, 0, len(heights))
+			for _, height := range heights {
+				m := base
+				m.width, m.height = minWidth, height
+				found, body, _ := whatIsDrawn(m)
+				_, room, _ := theLogFrame(m)
+				if found.log != room {
+					t.Errorf("%s %dv%d h=%d: the budget gave the log %d rows and %d are "+
+						"drawn:\n%s", lang, side, side, height, room, found.log, body)
+				}
+				rooms = append(rooms, room)
+			}
+			if rooms[0] >= rooms[len(rooms)-1] {
+				t.Errorf("%s %dv%d: the log is %d rows at h=%d and %d at h=%d — a taller "+
+					"window buys the history nothing, which is the defect",
+					lang, side, side, rooms[0], heights[0],
+					rooms[len(rooms)-1], heights[len(heights)-1])
+			}
+			t.Logf("%s %dv%d: %v rows at %v", lang, side, side, rooms, heights)
+		}
+	}
+}
+
+// TestEveryRowOfTheHistoryIsReachable is the second defect: two hundred and
+// ninety-two rows of three hundred could not be got at by any means.
+//
+// Scrolled to the top the battle's first event is on screen; scrolled back down
+// its newest is. Both ends are walked with a page count taken off the history
+// rather than a number written here, so the test cannot pass by not going far
+// enough.
+func TestEveryRowOfTheHistoryIsReachable(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		base := aLongLog(t, lang, 3)
+		history, room, _ := theLogFrame(base)
+		if room <= 0 || len(history) <= room {
+			t.Fatalf("%s: the frame holds %d rows of a %d-row history, so there is "+
+				"nothing above it and nothing to reach", lang, room, len(history))
+		}
+		pages := len(history)/room + 2
+		top := base
+		for range pages {
+			top = key(t, top, "pgup")
+		}
+		if _, _, start := theLogFrame(top); start != 0 {
+			t.Errorf("%s: scrolling to the top left the frame at row %d", lang, start)
+		}
+		body, _ := top.play.view(top)
+		if !strings.Contains(body, history[0]) {
+			t.Errorf("%s: the battle's first row %q is not on screen at the top:\n%s",
+				lang, history[0], body)
+		}
+		bottom := top
+		for range pages {
+			bottom = key(t, bottom, "pgdown")
+		}
+		body, _ = bottom.play.view(bottom)
+		if !strings.Contains(body, history[len(history)-1]) {
+			t.Errorf("%s: the newest row %q is not on screen at the bottom:\n%s",
+				lang, history[len(history)-1], body)
+		}
+		// And coming back down is a reader asking for the newest rows, which is
+		// the state rather than the number that happens to be the newest now.
+		if !bottom.play.logFollow {
+			t.Errorf("%s: scrolling back to the bottom left the log at an offset "+
+				"rather than following the tail", lang)
+		}
+	}
+}
+
+// TestFollowingTheTailIsNotAnOffset is the load-bearing claim, and the one a
+// stored-offset implementation fails while passing everything else here.
+//
+// ⚠️ **The tail moves.** A reader at the newest rows is in a *state*, and if that
+// state is stored as the offset which happened to be the newest, then the next
+// event to arrive leaves them one frame behind with nothing saying so.
+//
+// ⚠️ **The event is appended rather than fought for, and that is the point.**
+// Every turn this screen takes goes through record, which puts the reader back on
+// the tail — so a test that played a turn would be measuring that reset and would
+// pass against a stored offset. What has to be measured is an event arriving with
+// no decision behind it, which is what a skipped turn and an engine's own turn do
+// between the player's. The event is one the battle really emitted; a duplicate
+// row is a row like any other to a frame.
+func TestFollowingTheTailIsNotAnOffset(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		base := aLongLog(t, lang, 3)
+		if !base.play.logFollow {
+			t.Fatalf("%s: the battle opened without following its own tail", lang)
+		}
+		// At the tail, and with rows above the frame, or nothing below measures.
+		history, room, start := theLogFrame(base)
+		if room <= 0 || len(history) <= room {
+			t.Fatalf("%s: the whole history is on screen, so following it is not a "+
+				"question this fixture asks", lang)
+		}
+		if start != len(history)-room {
+			t.Fatalf("%s: following the tail starts the frame at row %d of %d",
+				lang, start, len(history))
+		}
+		grown := base
+		grown.play.events = append(grown.play.events, grown.play.events[len(grown.play.events)-1])
+		after, room, start := theLogFrame(grown)
+		if len(after) <= len(history) {
+			t.Fatalf("%s: the appended event added no row, so nothing arrived", lang)
+		}
+		if start != len(after)-room {
+			t.Errorf("%s: an event arrived and the frame stayed at row %d of %d — the "+
+				"reader is looking at a stored offset rather than at the tail",
+				lang, start, len(after))
+		}
+		body, _ := grown.play.view(grown)
+		if !strings.Contains(body, after[len(after)-1]) {
+			t.Errorf("%s: the newest row is not on screen after an event arrived:\n%s",
+				lang, body)
+		}
+	}
+}
+
+// TestActingReturnsTheLogToItsTail is the rule the blurb screen already follows:
+// anything that changes the answer resets the offset into it.
+//
+// A player who scrolled back to read what happened and then took a turn would
+// otherwise be looking at a frame from before their own decision, which is the one
+// moment the log is certainly stale. Every way of spending a turn is measured,
+// because they are four keys and one of them is the engine's.
+func TestActingReturnsTheLogToItsTail(t *testing.T) {
+	// The four ways a turn is spent: cast the option under the cursor, hand the
+	// turn to the engine, pass it, and take one back. enter is a named key and the
+	// other three are letters, which is how a terminal delivers them.
+	spend := []string{"enter", "a", "p", "u"}
+	for _, spent := range spend {
+		base := aLongLog(t, i18n.Vi, 3)
+		// Somebody's turn has to have been taken before undo has anything to take
+		// back, and withALongLog has played dozens.
+		scrolled := key(t, base, "pgup")
+		if scrolled.play.logFollow {
+			t.Fatalf("%q: pgup did not scroll back, so the reset is not being measured", spent)
+		}
+		acted := scrolled
+		if spent == "enter" {
+			acted = key(t, acted, spent)
+			// A skill with more than one cell asks where before it is cast, and
+			// opening that question is not spending the turn — so this presses on
+			// until the turn is actually taken.
+			if acted.play.aiming {
+				acted = key(t, acted, spent)
+			}
+		} else {
+			acted = typeText(t, acted, spent)
+		}
+		if acted.play.err != nil {
+			t.Fatalf("%q: taking the turn broke: %v", spent, acted.play.err)
+		}
+		if len(acted.play.script) == len(scrolled.play.script) {
+			t.Fatalf("%q spent no turn, so the reset it is about was not reached", spent)
+		}
+		if !acted.play.logFollow {
+			t.Errorf("%q left the log at offset %d rather than back on the tail",
+				spent, acted.play.logOffset)
+		}
+	}
+	// And another seed is another battle, so it is another history.
+	base := aLongLog(t, i18n.Vi, 3)
+	fresh := typeText(t, key(t, base, "pgup"), "n")
+	if !fresh.play.logFollow || fresh.play.logOffset != 0 {
+		t.Errorf("another seed kept the old battle's offset: following %v at %d",
+			fresh.play.logFollow, fresh.play.logOffset)
+	}
+}
+
+// TestTheLogFrameSurvivesAnUndo is the shortening nothing else here can produce.
+//
+// ⚠️ **Undo makes the history shorter.** It cuts the script at the player's last
+// decision and rebuilds the battle from the seed, so the events are rebuilt too and
+// an offset kept across it can point past the end. The offset is therefore clamped
+// wherever it is read and not only where it is written — and this constructs the
+// case by writing an offset from the longer history onto the rebuilt one, which is
+// the state a clamp only at the write would leave behind.
+func TestTheLogFrameSurvivesAnUndo(t *testing.T) {
+	base := aLongLog(t, i18n.Vi, 3)
+	before, _, _ := theLogFrame(base)
+	undone := typeText(t, base, "u")
+	if undone.play.err != nil {
+		t.Fatalf("undo broke: %v", undone.play.err)
+	}
+	after, room, _ := theLogFrame(undone)
+	if len(after) >= len(before) {
+		t.Fatalf("undo left a history of %d rows against %d, so a shortening was not "+
+			"measured", len(after), len(before))
+	}
+	// The offset the longer history could hold, carried onto the shorter one.
+	stale := undone
+	stale.play.logFollow, stale.play.logOffset = false, len(before)
+	history, room, start := theLogFrame(stale)
+	if start+room > len(history) {
+		t.Errorf("an offset of %d over a %d-row history frames rows %d..%d",
+			len(before), len(history), start, start+room)
+	}
+	body, _ := stale.play.view(stale)
+	if strings.Contains(body, stale.text(i18n.Truncated)) {
+		t.Errorf("the stale offset cut the screen:\n%s", body)
+	}
+	if rows := len(stale.play.logFrame(history, room)); rows != min(room, len(history)) {
+		t.Errorf("the frame drew %d rows of the %d it has", rows, room)
+	}
+}
+
+// TestTheLogScrollIsClampedAtBothEnds is the two edges and the case where the key
+// has nothing to do.
+//
+// ⚠️ The third of those is a branch the long fixture cannot reach and the short one
+// cannot miss, so both are here: a history that fits its frame has nothing above
+// it, and the key must do nothing rather than framing rows that are not there.
+func TestTheLogScrollIsClampedAtBothEnds(t *testing.T) {
+	base := aLongLog(t, i18n.Vi, 3)
+	history, room, _ := theLogFrame(base)
+	pages := len(history)/room + 2
+	top := base
+	for range pages {
+		top = key(t, top, "pgup")
+	}
+	if again := key(t, top, "pgup"); again.play.logOffset != top.play.logOffset {
+		t.Errorf("pgup at the top moved the frame from %d to %d",
+			top.play.logOffset, again.play.logOffset)
+	}
+	bottom := base
+	if again := key(t, bottom, "pgdown"); again.play.logOffset != bottom.play.logOffset ||
+		!again.play.logFollow {
+		t.Errorf("pgdown at the bottom moved the frame to %d (following %v)",
+			again.play.logOffset, again.play.logFollow)
+	}
+	// A history that fits: the keys are quiet rather than helpful.
+	short, _, _ := start(t, i18n.Vi)
+	short = withAFullLog(t, atABattleOf(t, short, 1))
+	short.width, short.height = minWidth, 80
+	rows, room, _ := theLogFrame(short)
+	if len(rows) > room {
+		t.Fatalf("the short fixture holds %d rows in a frame of %d, so it is not the "+
+			"case this is about", len(rows), room)
+	}
+	for _, pressed := range []string{"pgup", "pgdown"} {
+		quiet := key(t, short, pressed)
+		if !quiet.play.logFollow || quiet.play.logOffset != 0 {
+			t.Errorf("%s with the whole history on screen left the log at %d (following %v)",
+				pressed, quiet.play.logOffset, quiet.play.logFollow)
+		}
+	}
+}
+
+// TestTheLogScrollsWhileAiming is the state the keys are easiest to forget in and
+// the one a width sweep could not see for a whole release.
+//
+// The log is drawn while a cell is being chosen, so it is still the thing being
+// read — the same argument that put ? there.
+func TestTheLogScrollsWhileAiming(t *testing.T) {
+	base := aLongLog(t, i18n.Vi, 3)
+	base.play.aiming = true
+	_, _, start := theLogFrame(base)
+	scrolled := key(t, base, "pgup")
+	if !scrolled.play.aiming {
+		t.Fatal("pgup while aiming dropped the aim")
+	}
+	_, _, moved := theLogFrame(scrolled)
+	if moved >= start {
+		t.Errorf("pgup while aiming left the frame at row %d of %d", moved, start)
+	}
+}
+
+// TestThePositionOnTheHeadingNamesTheRowsOnScreen is the indicator.
+//
+// Three things. It is on the heading row rather than on a row of its own, because
+// this screen has no row to spare. It appears exactly when rows are hidden — not
+// only when somebody has scrolled back, since the other half of the defect was that
+// nothing said a history existed at all. And its numbers are checked against the
+// rows the body actually drew rather than against a second calculation: the run of
+// history rows it claims is on screen has to be on screen, contiguously.
+func TestThePositionOnTheHeadingNamesTheRowsOnScreen(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		for _, side := range playSides {
+			base := aLongLog(t, lang, side)
+			said, quiet := 0, 0
+			for _, height := range playHeights {
+				m := base
+				m.width, m.height = minWidth, height
+				history, room, _ := theLogFrame(m)
+				body, _ := m.play.view(m)
+				lines := strings.Split(body, "\n")
+				hidden := room > 0 && len(history) > room
+				position := m.text(i18n.PlayLogRange,
+					m.play.logStart(len(history), room)+1,
+					m.play.logStart(len(history), room)+room, len(history))
+				switch {
+				case hidden && !strings.Contains(lines[0], position):
+					t.Errorf("%s %dv%d h=%d: %d rows of %d are drawn and the heading is "+
+						"%q, want %q", lang, side, side, height, room, len(history),
+						lines[0], position)
+				case !hidden && strings.Contains(lines[0], onlyThePosition(m)):
+					t.Errorf("%s %dv%d h=%d: the whole log is on screen and the heading "+
+						"still says where the frame is: %q", lang, side, side, height, lines[0])
+				}
+				if !hidden {
+					quiet++
+					continue
+				}
+				said++
+				// The numbers, against the screen: the rows the heading names are the
+				// rows the body drew, in that order and next to each other.
+				first, last := numbersIn(t, lines[0], len(history))
+				if last-first+1 != room {
+					t.Errorf("%s %dv%d h=%d: the heading names rows %d..%d and the frame "+
+						"holds %d", lang, side, side, height, first, last, room)
+				}
+				if !holdsRun(lines, history[first-1:last]) {
+					t.Errorf("%s %dv%d h=%d: the heading names rows %d..%d and they are not "+
+						"the rows on screen:\n%s", lang, side, side, height, first, last, body)
+				}
+			}
+			if said == 0 {
+				t.Errorf("%s %dv%d: no height in the sweep hid a row, so the position is "+
+					"drawn by nothing", lang, side, side)
+			}
+			if quiet == 0 {
+				t.Errorf("%s %dv%d: every height in the sweep hid a row, so the case the "+
+					"position stays away from went unmeasured", lang, side, side)
+			}
+		}
+	}
+}
+
+// onlyThePosition is everything the position says before its first number, which
+// is what tells that clause apart from the rest of the heading row.
+func onlyThePosition(m model) string {
+	const mark = "\x00"
+	return strings.SplitN(m.text(i18n.PlayLogRange, mark, mark, mark), mark, 2)[0]
+}
+
+// numbersIn reads the first and last row the heading claims to be showing.
+//
+// The heading's figures are the seed and then the position's three, in both
+// languages, so the last three digit runs are the range and the total — read out of
+// the row rather than filled into the wording, which would be the test agreeing
+// with itself.
+func numbersIn(t *testing.T, heading string, total int) (first, last int) {
+	t.Helper()
+	figures := digitsIn(heading)
+	if len(figures) < 3 {
+		t.Fatalf("the heading %q names no range", heading)
+	}
+	said := figures[len(figures)-3:]
+	if said[2] != total {
+		t.Fatalf("the heading %q counts a history of %d rows, and it has %d",
+			heading, said[2], total)
+	}
+	return said[0], said[1]
+}
+
+// digitsIn is every run of digits in a line, in order, as numbers.
+func digitsIn(text string) []int {
+	var out []int
+	for at := 0; at < len(text); {
+		if text[at] < '0' || text[at] > '9' {
+			at++
+			continue
+		}
+		end := at
+		for end < len(text) && text[end] >= '0' && text[end] <= '9' {
+			end++
+		}
+		value, err := strconv.Atoi(text[at:end])
+		if err == nil {
+			out = append(out, value)
+		}
+		at = end
+	}
+	return out
+}
+
+// holdsRun says whether the lines hold the run next to each other and in order.
+func holdsRun(lines, run []string) bool {
+	for at := 0; at+len(run) <= len(lines); at++ {
+		if slices.Equal(lines[at:at+len(run)], run) {
+			return true
+		}
+	}
+	return false
 }
 
 // TestTheSaveNoteOutranksTheBoard is where a write's own answer sits in the
@@ -1456,10 +1963,12 @@ func TestTheSaveNoteOutranksTheBoard(t *testing.T) {
 // measured here — and every section it can name is named by some height in the
 // sweep, so none of those wordings is rendered by nothing.
 //
-// ⚠️ **A shorter log tail is not a missing section.** The log is a tail by design
-// and playLogLines is its own cap, so a tail that came back two rows shorter is
-// the section working; a tail with no rows at all is not, and that is the line the
-// notice is drawn on.
+// ⚠️ **A shorter log frame is not a missing section.** The log is a frame over a
+// history that is always longer than it, so a frame two rows shorter is the
+// section working; a frame with no rows at all is not, and that is the line the
+// notice is drawn on. Since the log now asks for the whole history, *some* of it
+// is hidden in nearly every window — which is what the position on the heading row
+// says, and it is a different statement from the notice's.
 func TestTheNoticeNamesWhatIsMissingAndNothingElse(t *testing.T) {
 	const drawable = minWidth - 1
 	nameable := []i18n.Key{i18n.PlayHiddenBoard, i18n.PlayHiddenOrder, i18n.PlayHiddenLog}
@@ -1473,7 +1982,7 @@ func TestTheNoticeNamesWhatIsMissingAndNothingElse(t *testing.T) {
 				m.width, m.height = minWidth, height
 				found, body, _ := whatIsDrawn(m)
 				units := len(m.play.fight.Units())
-				wanted := len(m.play.log(m, playLogLines))
+				wanted := len(m.play.logRows(m))
 				missing := !found.board || found.roster < units || !found.order ||
 					(wanted > 0 && found.log == 0)
 				switch {
@@ -1521,6 +2030,11 @@ func TestTheBudgetSpendsWhatItSaysItDoes(t *testing.T) {
 	squad := playSizes{tail: 5, board: 10, units: 10, log: 8}
 	saved := playSizes{tail: 5, notes: 4, board: 10, units: 10, log: 8}
 	aiming := playSizes{tail: 12, board: 10, units: 10, log: 8}
+	// The same board with a history longer than any window, which is what a
+	// battle a dozen turns in actually has. It is a separate fixture because the
+	// three above cannot reach the surplus: a history of eight rows is a history
+	// with nothing left over to hand the log.
+	history := playSizes{tail: 5, board: 10, units: 10, log: 300}
 	cases := []struct {
 		why   string
 		room  int
@@ -1558,6 +2072,27 @@ func TestTheBudgetSpendsWhatItSaysItDoes(t *testing.T) {
 		want:  playPlan{roster: 3, notice: true},
 		names: []i18n.Key{i18n.PlayHiddenBoard, i18n.PlayHiddenUnits,
 			i18n.PlayHiddenOrder, i18n.PlayHiddenLog},
+	}, {
+		why: "a long history takes every row nobody above it claimed, so a tall " +
+			"window buys the log something: sixteen rows over the eight it asked for",
+		room:  56,
+		sizes: history,
+		want:  playPlan{board: true, roster: 10, order: true, log: 24},
+	}, {
+		why: "and it takes them without anything above it losing a row: the same " +
+			"purse gives the roster, the board and the order line exactly what the " +
+			"eight-row history did",
+		room:  29,
+		sizes: history,
+		want:  playPlan{roster: 10, order: true, log: 6, notice: true},
+		names: []i18n.Key{i18n.PlayHiddenBoard},
+	}, {
+		why: "a purse with no room for the log's first row gives it none, however " +
+			"long the history is",
+		room:  32,
+		sizes: history,
+		want:  playPlan{board: true, roster: 10, order: true, notice: true},
+		names: []i18n.Key{i18n.PlayHiddenLog},
 	}, {
 		why: "a save's note outranks the board and everything under it, and is " +
 			"given up only where the roster has nothing left either",

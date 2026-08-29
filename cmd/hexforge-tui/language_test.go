@@ -218,6 +218,23 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	squeezed.width, squeezed.height = minWidth, minHeight
 	squeezedAim := squeezed
 	squeezedAim.play.aiming = true
+	// And the battle with its log scrolled back, which is a state of the screen
+	// rather than a screen of its own and is here for the reason every other state
+	// is: it is the only one that draws the log's position on the heading row, and
+	// that row is a wording like any other.
+	//
+	// ⚠️ It has to be **built**, twice over. A battle a few turns old has a history
+	// that fits its frame, so nothing is hidden and the position is correctly not
+	// drawn; and every model above stands in a window where the log has room, so
+	// none of them can reach it either. The history is played out and the frame
+	// scrolled back with the key a reader would press — its own battle, because
+	// playScreen holds a pointer the model does not copy.
+	scrolled := aLongLog(t, m.lang, 3)
+	scrolled = key(t, scrolled, "pgup")
+	if scrolled.play.logFollow {
+		t.Fatal("the scrolled battle did not scroll, so the log's position is drawn " +
+			"by nothing in the sweep")
+	}
 	screens := map[string]model{
 		"shape diagram":            shape,
 		"spar":                     spar,
@@ -259,6 +276,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"aiming":                   aiming,
 		"a squeezed battle":        squeezed,
 		"a squeezed battle aiming": squeezedAim,
+		"a scrolled battle log":    scrolled,
 		"a battle blurb":           playBlurb,
 		"a battle over":            finished,
 		"traitless build":          traitless,

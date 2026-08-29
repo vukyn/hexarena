@@ -511,7 +511,9 @@ answers rather than screen logic:
   with `p`: the same pairing, one battle, the opponent played by
   `battle.Suggest`. `↑/↓` a skill, `enter` takes it and asks *where* only when
   there is more than one cell, `?` describes the one under the cursor, `a` hands
-  the turn to the engine, `p` passes, `u` undoes, `n` is another seed.
+  the turn to the engine, `p` passes, `u` undoes, `n` is another seed, and
+  `pgdn/pgup` scroll the log — see *the budget* for why that pair and why
+  following the tail is a state rather than an offset.
   - **Every option carries a one-line summary beside its id**, from
     `i18n.Lang.SummariseSkill`, and `?` raises the full description of the one
     under the cursor. An id is a name rather than an answer — nothing in
@@ -598,7 +600,7 @@ answers rather than screen logic:
     | `tui.Board` | **10**, fixed |
     | `tui.Roster` | **1 + one a unit** |
     | `tui.Order` | 1 |
-    | the log | 0..`playLogLines` |
+    | the log | `playLogWanted`, then **every row nobody else claimed** |
     | the option list | 1 + one an option |
 
     | squad | roster | heading + board + roster + order + options | vs 20 |
@@ -639,9 +641,11 @@ answers rather than screen logic:
     is monotone.
     ⚠️ **The screen says what it gave up**, in one dim line under the heading
     (`i18n.PlayHidden` and the five names beside it) — a screen silently missing
-    its board reads as a broken screen. A **shorter log tail is not in it**: the
-    log is a tail by design, so two rows fewer is the section working, while no
-    rows at all is not.
+    its board reads as a broken screen. A **shorter log frame is not in it**: the
+    log is a frame over a history that is nearly always longer than it, so two rows
+    fewer is the section working, while no rows at all is not. *How much* of the
+    history is off screen is a different statement and it is the one on the heading
+    row.
     ⚠️ **No per-screen floor was introduced, and the reason is that `minHeight`
     already is one.** `screenContent` returns `m.tooSmall()` before any screen is
     drawn below 80x24, so this screen is never asked for a shorter window than it
@@ -653,11 +657,84 @@ answers rather than screen logic:
     puts out of reach is the save note being dropped, which needs h ≤ 15; it is
     constructed deliberately in `TestTheSaveNoteOutranksTheBoard` and the comment
     there carries the arithmetic.
-    ⚠️ **`playLogLines` caps rendered lines and used to cap events.** The two are
-    not the same number — `tui.Line` opens a turn with a blank row of its own, so
-    one event arrives as two rows and eight events measured **eleven** a few turns
-    in. The section with the loosest claim on the screen was the one whose stated
-    budget did not hold.
+    ⚠️ **`playLogWanted` is a floor of intent and used to be a ceiling** (and
+    before that it counted events, which is a third thing again — `tui.Line` opens
+    a turn with a blank row of its own, so one event arrives as two rows and eight
+    events measured **eleven** a few turns in). The ceiling was a defect on its
+    own: `playFit` hands the log the remainder of the budget and the remainder was
+    then clamped to eight, so between an 80x24 window and an 80x80 one the body
+    grew **20 → 42** rows and the log stood still. Measured on the fixture, 3 a
+    side, mid-battle: **8 rows at h=24, h=40 and h=80 alike**. A tall terminal
+    bought the history nothing.
+    The log now asks for `playLogWanted` **first** and then takes every row still
+    unspent, which is why the same fixture reads **0 / 6 / 46** rows at those three
+    heights (1v1: 5 / 12 / 52; 5v5: 1 / 8 / 48) — and why *nothing above it moved*:
+    ⚠️ **growing the log may only ever spend rows nobody else claimed**, because
+    #162's order is save note → roster → board → order line → log and the log is
+    last precisely for being history rather than state. The two-part answer is also
+    what keeps "everything fits" a question with an answer: a window that gives the
+    log its eight rows has nothing missing, and one that gives it forty is that
+    same window with room to spare. **Re-measured after the change and every drop
+    height is unchanged**: the whole screen survives from **36 / 40 / 44**, the log
+    is gone at **29 / 33 / 37**, the order line at **27 / 31 / 35**, the board at
+    **25 / 29 / 33**, the roster is clipped (aiming) from **30 / 24 / never**. A
+    single one of those moving would be a change to the priority rather than a side
+    effect, and `TestTheBattleScreenDropsInTheOrderItStates` is what says so.
+    ⚠️ **A floor in the *priority* is not available and was not built.** Eight
+    guaranteed rows would have to come off the roster, the board or the order line,
+    which is every one of those heights moving. The constant is what the section
+    *asks* for, never what it is owed.
+    ⚠️ **The log is a frame over the whole history now, and it scrolls in place.**
+    `p.events` always held every event (`collect` appends and never trims) and the
+    view threw the rest away: 283 rows rendered, eight drawn, **275 unreachable by
+    any means** — no key, and nothing on the screen saying a history existed.
+    `playScreen.logRows` renders all of it and `logFrame` is the window; `pgdn/pgup`
+    walk it, which is the pair that already scrolls the trait description and the
+    picker rather than a second vocabulary for one idea (`↑/↓` walk the options and
+    could not be taken). They work **while aiming** and **on a finished battle**,
+    which is why all three footers name them.
+    ⚠️ **Following the tail is a STATE, not an offset value, because the tail
+    moves.** This is the decision the whole feature hangs off. A reader is normally
+    at the newest rows; store that as the offset which happens to be newest and
+    every event arriving silently shifts what is under them. So `logOffset` counts
+    from the **start** of the history — which is what a `145–160 / 283` reading
+    means — and `logFollow` is carried **beside** it. Same rule the abandoned queue
+    tie-break paid for: `Queue.Pending` answers 0 for a unit it never heard of and 0
+    is *soonest*, so absence had to be declared rather than detected. A sentinel
+    offset would be that mistake again, and it would read as working, because the
+    sentinel is a legal offset on the turn it is written —
+    `TestFollowingTheTailIsNotAnOffset` is the only test that can tell the two
+    apart, and it appends an event **without a turn behind it** on purpose, since
+    every real turn resets the frame and would make the test pass for the wrong
+    reason. Scrolling back down to the bottom *asks to follow again* (and puts the
+    offset back to nought, which is also an ordinary offset — the top — so nought is
+    exactly as unusable as a sentinel).
+    ⚠️ **Acting resets it**, in `record`, which is the one place every turn goes
+    through: the player's, the engine's, the pass and the "let it pick". Somebody
+    who scrolled back and then acted would be reading a frame from before their own
+    decision. Undo and another seed reset it through `begin`.
+    ⚠️ **Undo makes the history shorter**, so the offset is clamped against the
+    current total **wherever it is read** and not only where it is written — `undo`
+    rebuilds the battle from a cut script, so `p.events` is rebuilt too and an
+    offset kept across it points past the end.
+    ⚠️ **The position goes on the heading row**, not on a row of its own:
+    `trận đấu  seed 1` is about seventeen cells of the seventy-nine, and a row of
+    its own would cost exactly what #162 spent a whole PR proving this screen has
+    not got. It is shown **whenever rows are hidden**, not only while scrolled back
+    — the discoverability half of the report is that nothing said a history existed,
+    and a reader who cannot see that there are 283 rows will not look for the key.
+    It says nothing when the log is not drawn at all, because the notice above
+    already names it as a section the window is too short for.
+    ⚠️ **The footer had to be trimmed to name the new key, and no key was given
+    up** — that is what was asked for. Measured, not counted (a hand-count of a
+    candidate came back four cells over twice): the battle footer was **77 (vi) /
+    78 (en)** of the 79 there are, and `pgdn/pgup` needs twelve. So the words after
+    `↑/↓`, `enter` and `?` are dropped — the three keys whose meaning the screen
+    itself shows, which is the same judgement `BrowseFooter` and this footer's own
+    `esc` already took — and the battle footer is **74 / 74**, the aim footer
+    **72 / 77** and the over footer **65 / 63**, with the word for scrolling kept on
+    the two that had room for it. `TestTheBattleFootersNameTheDescriptionKeyAndFit`
+    covers all three and logs each width.
     ⚠️ **`internal/tui` did not change and did not need a row-limited `Roster`.**
     Clipping the roster's *rows* is this screen splitting a drawing it was given;
     reformatting it would be the other thing. The old

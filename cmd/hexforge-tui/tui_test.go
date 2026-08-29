@@ -139,7 +139,11 @@ func key(t *testing.T, m model, name string) model {
 		"down": {Code: tea.KeyDown}, "up": {Code: tea.KeyUp},
 		"left": {Code: tea.KeyLeft}, "right": {Code: tea.KeyRight},
 		"enter": {Code: tea.KeyEnter}, "esc": {Code: tea.KeyEscape},
-		"tab":    {Code: tea.KeyTab},
+		"tab": {Code: tea.KeyTab},
+		// The pair that scrolls: the trait description, the picker's reading pane
+		// and the battle's log all walk with these.
+		"pgup":   {Code: tea.KeyPgUp},
+		"pgdown": {Code: tea.KeyPgDown},
 		"ctrl+s": {Code: 's', Mod: tea.ModCtrl},
 		"ctrl+x": {Code: 'x', Mod: tea.ModCtrl},
 		// Backspace, so a number field can be shortened rather than only typed
