@@ -54,6 +54,7 @@ q or ctrl+c to quit`,
 	ArtMissing:     "MISSING",
 	ArtSomeMissing: "MISSING %d/%d",
 	ChoicePosition: "%d of %d",
+	ChoiceSlots:    "%d of %d slots",
 
 	FormHeading:                "new character",
 	FormSubtitle:               "every check here is the write's own, at level %d",

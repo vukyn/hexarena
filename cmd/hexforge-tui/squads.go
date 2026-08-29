@@ -641,6 +641,13 @@ func (s squadScreen) form() string {
 // row may carry a refusal. Here the options are the learnset already, so a mark
 // for what cannot be taken names something no row can ever draw — and on the
 // trait list an order says nothing either, since there is one slot to fill.
+//
+// These two are also the only pickers that carry slots, and they carry the
+// constants the write reads rather than numbers of their own. The cap stops an
+// over-full answer being built; refuse below and the save still ask the rule
+// through cast.ChooseFrom, because the cap is a courtesy on top of the rule and
+// never a replacement for it — a loadout hand-edited into squads.json never came
+// through a keystroke at all.
 func (m model) openSquadSkills() model {
 	s := m.squad
 	character, known := s.character()
@@ -651,6 +658,7 @@ func (m model) openSquadSkills() model {
 		title:   i18n.SquadPickSkills,
 		hint:    i18n.SquadKitHint,
 		kind:    pickSkills,
+		slots:   cast.SkillSlots,
 		options: squadOptions(character.SkillsAt(s.unit.Level, s.form())),
 		chosen:  append([]string(nil), s.unit.Skills...),
 		apply: func(m model, answer pickAnswer) model {
@@ -674,6 +682,7 @@ func (m model) openSquadPassives() model {
 		title:   i18n.SquadPickPassives,
 		hint:    i18n.SquadTraitHint,
 		kind:    pickPassives,
+		slots:   cast.TraitSlots,
 		options: squadOptions(character.PassivesAt(s.unit.Level, s.form())),
 		chosen:  append([]string(nil), s.unit.Passives...),
 		apply: func(m model, answer pickAnswer) model {
