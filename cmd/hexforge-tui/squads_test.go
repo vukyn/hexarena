@@ -28,8 +28,8 @@ func TestTheMenuOpensTheSquadBuilder(t *testing.T) {
 		if m.screen != screenSquads {
 			t.Fatalf("the menu entry opened %v", m.screen)
 		}
-		// The catalogue ships empty, and an empty listing has to say so rather
-		// than draw a heading over nothing.
+		// The fixture's catalogue starts empty, and an empty listing has to say
+		// so rather than draw a heading over nothing.
 		if body := m.screenContent(); !strings.Contains(body, m.text(i18n.SquadsEmpty)) {
 			t.Errorf("the empty listing in %v does not say it is empty:\n%s", lang, body)
 		}

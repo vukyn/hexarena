@@ -138,8 +138,9 @@ func TestASquadSurvivesBeingWrittenBackOut(t *testing.T) {
 	if _, err := placement.Parse(twinned); err == nil {
 		t.Error("two squads of one id were read")
 	}
-	// An empty catalogue is a legal file rather than an absent one: the shipped
-	// squads.json holds none, and it still has to read back.
+	// An empty catalogue is a legal file rather than an absent one: a data
+	// directory nobody has built a squad in yet has one, and it still has to
+	// read back.
 	empty, err := placement.Marshal(nil)
 	if err != nil {
 		t.Fatalf("marshal nothing: %v", err)

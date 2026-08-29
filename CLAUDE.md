@@ -465,8 +465,13 @@ answers rather than screen logic:
   field's own help, while the two numbers being authored are the reason the row
   exists.
 - The **squad builder** (`cmd/hexforge-tui/squads.go`) is the one screen that
-  writes something the game does not ship: every other file here is the game's
-  data, and `squads.json` is the author's own — a side built to be fought with.
+  writes the author's own file rather than the game's: every other file here is
+  data somebody wrote for the game, and `squads.json` is a side built to be
+  fought with. It **ships like the rest of them** — the `go:embed` copy means a
+  squad saved here reaches a battle at the next build, so nothing treats a squad
+  in that file as a mistake. ⚠️ This used to read "writes something the game does
+  not ship", and `seed.Squads` had a test asserting the file held none; both were
+  written before anybody had built one, and the test failed the day somebody did.
   Three modes in one screen (`squadList`/`squadEdit`/`squadUnit`), because they
   are one decision at three depths and splitting them would put the half-built
   squad somewhere two screens could reach.

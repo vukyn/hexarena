@@ -146,11 +146,14 @@ func (s squadScreen) updateList(m model, message tea.KeyPressMsg) (tea.Model, te
 			s = s.open(s.saved[clamp(s.cursor, 0, len(s.saved)-1)])
 		}
 	case "f":
-		// The fight is raised from here because this is where a squad is under a
-		// cursor. It reads that cursor rather than being handed a copy: a second
-		// copy is a second thing to keep in step.
+		// The fight carries its own two sides, so this hands it one: the squad
+		// under the cursor becomes the home side, which is what f has always
+		// meant here. Seeding it is the whole of the difference — the fight
+		// reads its own field afterwards, so walking the catalogue behind it
+		// cannot change what is being measured.
 		if len(s.saved) > 0 {
 			m.squad = s
+			m.fight.home = clamp(s.cursor, 0, len(s.saved)-1)
 			return m.enter(screenFight), nil
 		}
 	case "d":

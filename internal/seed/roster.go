@@ -252,11 +252,11 @@ func SquadsFile() ([]byte, error) { return files.ReadFile("data/squads.json") }
 
 // Squads parses the embedded squad catalogue.
 //
-// It ships empty, and that is the honest state: a squad is something a person
-// builds, and the file exists so there is somewhere for one to go. The game
-// boots from the copy go:embed baked in, so a squad built in the authoring tool
-// reaches a battle at the next build — the same rule every other data file lives
-// under.
+// It holds whatever a person has built, and an empty file is the honest state
+// only until somebody builds one. The game boots from the copy go:embed baked in,
+// so a squad built in the authoring tool reaches a battle at the next build — the
+// same rule every other data file lives under, and the reason nothing here treats
+// a squad in the file as a mistake.
 func Squads() ([]placement.Squad, error) {
 	raw, err := SquadsFile()
 	if err != nil {

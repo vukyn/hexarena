@@ -14,16 +14,20 @@ import (
 
 // fightScreen is forge.FightSquads drawn.
 //
-// It is raised from the squad catalogue for the reason the spar is raised from
-// the check: that is where a squad is under a cursor, and a measurement wants a
-// subject before it wants anything else. The home squad is read off that cursor
-// and the opponent is chosen here, because which two are fought is this screen's
-// own question.
+// Which two squads are fought is this screen's own question, so it carries both
+// of them: home and away are its own indices, and neither is read off another
+// screen's cursor. That is what lets it be reached from the menu — a player who
+// has built a side and wants a battle should not have to find one behind the
+// catalogue.
+//
+// The catalogue's f still seeds home from whatever was under its cursor, so
+// arriving that way fights the squad that was pointed at, which is what that key
+// has always meant.
 type fightScreen struct {
-	// away is an index into the catalogue, not an id: the catalogue is what the
-	// chooser walks, and an id would need looking up on every keystroke to find
-	// out where in it the cursor is.
-	away int
+	// home and away are indices into the catalogue, not ids: the catalogue is
+	// what the choosers walk, and an id would need looking up on every keystroke
+	// to find out where in it a cursor is.
+	home, away int
 	// seeds is how many battles each half is fought over, so a run is twice
 	// this many.
 	seeds int
@@ -77,6 +81,14 @@ func (f fightScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 	case "esc", "f":
 		m.screen = screenSquads
 		return m, nil
+	case "up", "k":
+		if len(squads) > 0 {
+			f.home = (f.home - 1 + len(squads)) % len(squads)
+		}
+	case "down", "j":
+		if len(squads) > 0 {
+			f.home = (f.home + 1) % len(squads)
+		}
 	case "left", "h":
 		if len(squads) > 0 {
 			f.away = (f.away - 1 + len(squads)) % len(squads)
@@ -103,19 +115,19 @@ func (f fightScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 	return m, nil
 }
 
-// sides is the two squads being fought: the one the catalogue's cursor is on,
-// and the one this screen's chooser is on.
+// sides is the two squads being fought, both read off this screen's own
+// choosers.
 //
-// The home squad is read off the other screen's cursor rather than copied here
-// for the reason the spar reads the check's: a second copy is a second thing to
-// keep in step, and the day it drifts is the day two screens disagree about what
-// is being measured.
+// The catalogue is still where the list comes from — it is the one reading of
+// what is on disk, and a second copy of that would be a second thing to keep in
+// step — but which two of it are fought is settled here, so the screen is a
+// whole subject on its own and can be opened by anybody.
 func (f fightScreen) sides(m model) (home, away placement.Squad, ok bool) {
 	squads := m.squad.saved
 	if len(squads) == 0 {
 		return placement.Squad{}, placement.Squad{}, false
 	}
-	home = squads[clamp(m.squad.cursor, 0, len(squads)-1)]
+	home = squads[clamp(f.home, 0, len(squads)-1)]
 	away = squads[clamp(f.away, 0, len(squads)-1)]
 	return home, away, true
 }
@@ -147,7 +159,11 @@ func (f fightScreen) view(m model) (string, string) {
 	footer := m.text(i18n.FightFooter)
 	home, away, ok := f.sides(m)
 	if !ok {
-		return "  " + m.text(i18n.SquadsEmpty) + "\n", footer
+		// Reachable from the menu now, and it was not before: the catalogue's f
+		// did nothing on an empty list, so this was the one state nobody could
+		// get to. It says what has to happen next rather than borrowing the
+		// catalogue's line, which offers a key this screen does not have.
+		return "  " + m.text(i18n.FightNoSquads) + "\n", footer
 	}
 	var out strings.Builder
 	out.WriteString(m.style.heading.Render(m.text(i18n.FightHeading)) + "  " +
