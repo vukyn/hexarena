@@ -342,12 +342,68 @@ func (s squadScreen) freeID(character string, except int) string {
 // the order an attack arrives in.
 func formationSlots() []hex.Offset {
 	out := make([]hex.Offset, 0, hex.FormationCols*hex.FormationRows)
-	for col := hex.FormationCols - 1; col >= 0; col-- {
+	for _, col := range formationColumns() {
 		for row := 0; row < hex.FormationRows; row++ {
 			out = append(out, hex.Offset{Col: col, Row: row})
 		}
 	}
 	return out
+}
+
+// formationColumns is the authoring columns in the order a rank is met: the
+// entry at index 0 is the column that stands in front of the rest.
+//
+// It is read off hex.Ranks rather than counted down from FormationCols, for the
+// reason the shape chooser draws its cells from pattern.Targets: an authoring
+// column is not a depth. The ally half counts down from its own frontline and
+// the enemy half counts up, so a drawing that decided which end was the front by
+// looking at the column number would be right for whichever side whoever wrote
+// it had in mind — which is the mistake hex.Ranks exists to have made once.
+func formationColumns() []int {
+	out := make([]int, hex.FormationCols)
+	for col := range hex.FormationCols {
+		if depth := rankOf(hex.Offset{Col: col}); depth >= 0 {
+			out[depth] = col
+		}
+	}
+	return out
+}
+
+// rankOf is how deep into its own half a formation cell stands, counted from the
+// rank that meets the enemy first, or -1 for a cell that is on no formation.
+//
+// A squad carries no side, so the question is asked of one and the answer holds
+// for both: hex.Place maps an enemy formation through a 180 degree rotation, so
+// a cell authored at a given depth is at that depth whichever half it is fielded
+// as. TestARankIsTheSameDepthOnEitherSide is what says so.
+func rankOf(slot hex.Offset) int {
+	placed := hex.Place(hex.SideAlly, slot)
+	for depth, rank := range hex.Ranks(hex.SideAlly) {
+		for _, cell := range rank {
+			if cell == placed {
+				return depth
+			}
+		}
+	}
+	return -1
+}
+
+// rankNames is one wording per rank, front first. It is an array of exactly the
+// ranks there are, so a board given a fourth column is a compile error here
+// rather than a fourth rank quietly drawing no name.
+var rankNames = [hex.FormationCols]i18n.Key{
+	i18n.SquadRankFront, i18n.SquadRankMiddle, i18n.SquadRankBack,
+}
+
+// rankLabel is what to call the rank a cell stands in, and empty for a cell that
+// is on no formation — a slot a hand-edited file put off the grid draws its
+// coordinate alone rather than borrowing a rank it is not in.
+func (m model) rankLabel(slot hex.Offset) string {
+	depth := rankOf(slot)
+	if depth < 0 || depth >= len(rankNames) {
+		return ""
+	}
+	return m.text(rankNames[depth])
 }
 
 func (s squadScreen) editUnit(index int) squadScreen {
@@ -769,7 +825,7 @@ func (s squadScreen) viewUnit(m model) string {
 		{i18n.SquadFieldCharacter, s.chooserValue(m, s.unit.Character)},
 		{i18n.SquadFieldLevel, s.levelInput.View()},
 		{i18n.SquadFieldStage, s.chooserValue(m, s.stageLabel(m))},
-		{i18n.SquadFieldSlot, s.chooserValue(m, s.unit.Slot.String())},
+		{i18n.SquadFieldSlot, s.chooserValue(m, s.slotLabel(m))},
 		{i18n.SquadFieldSkills, s.listValue(m, s.unit.Skills, cast.SkillSlots)},
 		{i18n.SquadFieldPassives, s.listValue(m, s.unit.Passives, cast.TraitSlots)},
 	}
@@ -793,6 +849,22 @@ func (s squadScreen) chooserValue(m model, value string) string {
 	return fmt.Sprintf("< %s >", value)
 }
 
+// slotLabel is where the unit stands, said twice: as the cell the data writes
+// and as the rank a formation is imagined in.
+//
+// Both rather than the reading alone. The coordinate is what squads.json holds
+// and what a roster beside it is authored in, so an author matching the screen
+// against a file needs it — and the rank is the half that means something,
+// because reach is counted in ranks and a coordinate does not say which end of
+// the grid is met first.
+func (s squadScreen) slotLabel(m model) string {
+	rank := m.rankLabel(s.unit.Slot)
+	if rank == "" {
+		return s.unit.Slot.String()
+	}
+	return fmt.Sprintf("%s  %s", s.unit.Slot, rank)
+}
+
 func (s squadScreen) stageLabel(m model) string {
 	if s.unit.Stage == "" {
 		return m.text(i18n.SquadFurthest)
@@ -810,22 +882,37 @@ func (s squadScreen) listValue(m model, chosen []string, slots int) string {
 		m.style.dim.Render(m.text(i18n.ChoicePosition, len(chosen), slots)))
 }
 
+// The grid's own measurements. A cell is three characters wide because that is
+// what "[n]" is, and n is a member number of a squad that fields hex.MaxTeamSize
+// — one digit — so nothing widens it. The marker under the front column is built
+// from the same figure rather than written out, so the two cannot part company.
+const (
+	formationIndent = "    "
+	formationCell   = 3
+)
+
 // formation draws the squad's own 3x3, front column first, with the unit under
-// edit marked.
+// edit marked and the front rank called out under it.
+//
+// editing is the member the arrows are moving, or -1 where there is none. It is
+// what makes the picture live: see unitsDrawn.
 //
 // ASCII and nothing else: the box-drawing and arrow glyphs that would make it
 // prettier are East-Asian-Ambiguous, which lipgloss measures as one cell and
 // half the terminals draw as two — so the grid would overlap whatever is beside
-// it on exactly the machines the client is used on.
+// it on exactly the machines the client is used on. That is why the front rank
+// is marked with carets rather than with an arrow.
 func (s squadScreen) formation(m model, editing int) string {
 	var out strings.Builder
 	out.WriteString(m.style.dim.Render(m.text(i18n.SquadFormation)) + "\n")
+	units := s.unitsDrawn(editing)
+	columns := formationColumns()
 	for row := 0; row < hex.FormationRows; row++ {
-		line := "    "
-		for col := hex.FormationCols - 1; col >= 0; col-- {
+		line := formationIndent
+		for _, col := range columns {
 			slot := hex.Offset{Col: col, Row: row}
 			cell := " . "
-			for index, unit := range s.editing.Units {
+			for index, unit := range units {
 				if unit.Slot != slot {
 					continue
 				}
@@ -838,8 +925,41 @@ func (s squadScreen) formation(m model, editing int) string {
 		}
 		out.WriteString(line + "\n")
 	}
-	out.WriteString(m.style.dim.Render("    "+m.text(i18n.SquadFormationLegend)) + "\n")
+	// The marker sits under the first column drawn, which is the front rank by
+	// construction: formationColumns orders them by depth.
+	out.WriteString(m.style.dim.Render(formationIndent+strings.Repeat("^", formationCell)+
+		" "+m.text(i18n.SquadFormationFront)) + "\n")
+	out.WriteString(m.style.dim.Render(formationIndent+m.text(i18n.SquadFormationLegend)) + "\n")
 	return out.String()
+}
+
+// unitsDrawn is the squad as the formation should picture it: every committed
+// member, with the one under edit replaced by the copy the arrows are moving.
+//
+// This is the whole of what makes the grid live. ←/→ steps s.unit and commit()
+// is what writes that back, and commit() runs only when the member is left or a
+// picker is opened — so a drawing off the committed list alone stays on the old
+// cell for the entire time the cell is being chosen, which is exactly when the
+// picture is being looked at.
+//
+// It is not fixed by committing on every keypress: commit() also sets unsaved,
+// and the unsaved guard is what the squad's edit loop is built on, so a squad
+// would claim changes from a cursor that only passed through. Reading the unit
+// under edit costs nothing and writes nothing.
+//
+// editing is -1 from the squad view, where there is no member under edit and the
+// committed list is the whole truth. The substitution replaces rather than
+// appends, so the cell a member steps off empties in the same draw the cell it
+// steps onto fills — and the copy is into a new slice, because s.editing.Units
+// is shared with every model copied off this one and a write into it would reach
+// them all from inside a drawing.
+func (s squadScreen) unitsDrawn(editing int) []placement.Placement {
+	if editing < 0 || editing >= len(s.editing.Units) {
+		return s.editing.Units
+	}
+	out := append([]placement.Placement(nil), s.editing.Units...)
+	out[editing] = s.unit
+	return out
 }
 
 // report is the refusal or the confirmation under whichever view is in front.

@@ -87,6 +87,13 @@ is only so the shape is readable.
   reporting the first slot's advantage as the squad's — or played by hand against
   the engine, one battle at a time, with undo — and written out as a log the
   game client replays and verifies.
+  Standing somewhere is a **picture**: the 3x3 is drawn from the member under
+  edit, so the mark moves with `←/→` in the same draw rather than jumping once
+  the member is left; the front rank is marked on the grid itself, off
+  `hex.Ranks` rather than off a column number; and the slot row reads the cell
+  *and* the rank. ⚠️ The drawing commits nothing — `commit()` raises `unsaved`
+  and the discard guard hangs off it, so committing on a keypress would have a
+  squad claim changes a passing cursor made. → `README.md` § Building a squad.
 
 ## Not done
 
@@ -129,19 +136,6 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **Standing somewhere reads as a pair of numbers, and the picture beside
-      it does not move.** The slot row of a squad member draws
-      `hex.Offset.String()` — `"1,2"` — which is the cell as the data writes it
-      and not as a formation is imagined. There *is* a 3x3 grid under the fields,
-      but it is drawn from `s.editing.Units` while `←/→` steps `s.unit.Slot`, and
-      the two are only reconciled by `commit()`, which runs when the member is
-      left or a picker is opened. So the grid stays on the old cell for the whole
-      of the choosing, which is exactly the moment it is needed.
-      ⚠️ The fix is not "commit on every keypress" without a second look:
-      `commit()` also sets `unsaved`, and the unsaved-changes guard is what a
-      squad's edit loop is built on. What is wanted is the drawing reading the
-      unit under edit rather than only the committed copy — a cell that lights up
-      as the arrows move, and a front rank that says which side meets the enemy.
 - [ ] **An English trait row is a bare id with an empty column after it.** A
       trait's name is authored in `passives.json` in Vietnamese only, so the
       picker's detail cell comes back empty in English and the row draws its id

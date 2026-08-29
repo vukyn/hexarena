@@ -116,6 +116,14 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	building.squad = someSquad(t, building)
 	member := building
 	member.squad = member.squad.editUnit(0)
+	// And the same member standing in the rank whose name is longest. The
+	// fixture puts it in the front rank, so the other two ranks' words are drawn
+	// by nothing here — and a wording nothing renders is a wording no width test
+	// measures. The cell is written on the unit under edit rather than committed,
+	// which is also the state the live grid is for: the picture follows the
+	// arrows, so this is the widest slot row beside the moved mark.
+	deepest := member
+	deepest.squad = inTheWidestRank(deepest)
 	skillPick := member.openSquadSkills()
 	traitPick := member.openSquadPassives()
 	// And each picker with a description in front of its list, which is the
@@ -178,6 +186,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"squads":           squadEmpty,
 		"a squad":          building,
 		"a squad member":   member,
+		"a deep member":    deepest,
 		"a squad kit":      skillPick,
 		"a squad trait":    traitPick,
 		"reading a skill":  skillReading,
@@ -242,6 +251,24 @@ func reading(m model) model {
 	clone.reading = true
 	m.picker = &clone
 	return m
+}
+
+// inTheWidestRank is the member under edit moved into the rank whose wording
+// takes the most cells, which is the widest the slot row ever draws.
+//
+// The rank is looked up rather than named, for the reason widestElementRow and
+// widestTraitRow are: which of the three words is longest is a fact about a
+// language, so naming one would measure English and skip Vietnamese.
+func inTheWidestRank(m model) squadScreen {
+	s := m.squad
+	found, most := s.unit.Slot, 0
+	for _, slot := range formationSlots() {
+		if width := lipgloss.Width(m.rankLabel(slot)); width > most {
+			found, most = slot, width
+		}
+	}
+	s.unit.Slot = found
+	return s
 }
 
 // widestElementRow is the element whose chart entry takes the most cells, which

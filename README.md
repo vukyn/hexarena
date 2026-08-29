@@ -1386,11 +1386,37 @@ in a different file. Two things about it are worth stating:
   has never heard of into a refusal at save time. The form chooser offers *the
   furthest* and then every form by name, which is what a line that **forks** needs:
   there is no furthest on one, and the arms have to be nameable.
-- **The cell is part of the decision.** A front rank shields the columns behind
-  it, so where a squad stands is most of what it is — the shipped roster's own
-  formation is worth twenty points of win rate. The chooser steps *over* a cell
-  somebody else stands on rather than refusing it afterwards, and the 3x3 is drawn
-  beside the fields with the member being edited marked.
+- **The cell is part of the decision, so it is drawn rather than spelled.** A
+  front rank shields the columns behind it, so where a squad stands is most of
+  what it is — the shipped roster's own formation is worth twenty points of win
+  rate. The chooser steps *over* a cell somebody else stands on rather than
+  refusing it afterwards, and the 3x3 is drawn under the fields with the member
+  being edited marked `(n)` and everybody else `[n]`.
+  - **The grid moves with the arrows, in the same draw.** It is built from the
+    member **under edit** rather than from the squad's committed copy, so the
+    mark travels while the cell is being chosen — which is the only moment a
+    picture of a formation is any use. It is deliberately not fixed by
+    committing on every keypress: `commit()` also raises the unsaved flag, and
+    the guard that asks before discarding a squad hangs off it, so a cursor that
+    passed over a cell and came back would leave a squad claiming changes nobody
+    made. The drawing reads and writes nothing.
+    (`TestTheFormationFollowsTheArrowsWhileTheCellIsChosen` and
+    `TestTheLiveFormationDrawsWithoutCommitting`.)
+  - **The front rank is marked on the picture, not described beside it.** Carets
+    sit under the leftmost column with the words *this rank meets the enemy
+    first* after them, because that is the column reach is counted from and a
+    coordinate cannot say so. Which column that is comes from `hex.Ranks` and
+    `hex.Place` rather than from counting the column number down: the ally half
+    counts down from its own frontline and the enemy half counts up, so a
+    drawing that read the number would be right for one side and backwards for
+    the other. The mark is carets rather than an arrow for the reason the rest
+    of this grid is ASCII — an arrow glyph is East-Asian-Ambiguous.
+  - **The slot row says both**, `< 1,0  middle rank >`. The coordinate is what
+    `squads.json` holds and what an author matches a file against; the rank is
+    the half a coordinate cannot say. A squad carries no side and needs neither:
+    `hex.Place` rotates an enemy formation 180 degrees, so a cell is the same
+    depth whichever half it is fielded as
+    (`TestARankIsTheSameDepthOnEitherSide`).
 
 A squad is saved into `squads.json` beside the other data files, and it ships
 **empty**: the file exists so there is somewhere for one to go. It is validated

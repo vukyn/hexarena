@@ -563,6 +563,14 @@ const (
 	SquadFieldLevel
 	SquadFieldStage
 	SquadFieldSlot
+	// One wording per rank, read beside the cell on the slot row. A coordinate
+	// says where a unit is in the file and says nothing about what standing
+	// there is worth, and the thing that is worth something is the rank: reach
+	// is counted in ranks from the far side, so the front one is what an attack
+	// meets and everything behind it is screened.
+	SquadRankFront
+	SquadRankMiddle
+	SquadRankBack
 	SquadFieldSkills
 	SquadFieldPassives
 	SquadNothingChosen
@@ -576,6 +584,11 @@ const (
 	SquadKitHint
 	SquadTraitHint
 	SquadFormation
+	// The caption under the marker that sits beneath the front column. It is a
+	// line of its own rather than a clause on SquadFormation, because the fact
+	// is about one column and the marker is what ties it to that column — a
+	// caption saying "on the left" leaves the reader to count.
+	SquadFormationFront
 	SquadFormationLegend
 	SquadDiscard
 	SquadDiscardSaved
