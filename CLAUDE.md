@@ -828,6 +828,30 @@ how a number change reads to a player. ⚠️ English needs singular wordings wh
 Vietnamese does not (`BlurbCostCooldownOne`, `BlurbStripsOne`): two keys rather
 than a plural rule, because a rule would make Vietnamese pretend it has a
 distinction it does not.
+⚠️ **A list of three takes one conjunction and commas, and `listed` is the only
+place that knows it.** The conjunction alone was put between *every* pair, so
+three items read `a and b and c` — not a sentence in either language. The
+**two-item case is what hid it**: every list the shipped books produce has one
+item or two, so `describe.golden` held **zero** of them and both goldens still
+hold zero after the fix, which means no golden could ever have caught this and
+`TestAListOfThreeTakesCommasAndOneConjunction` is the whole guard. The only 3+ list
+anywhere is the fixture's `purify`, three stripped categories — the same skill that
+exposed the strips clause's width, and for the same reason: a fixture reaches what
+the shipped data cannot.
+**Both languages take the same shape and that was measured rather than assumed** —
+`a, b and c` and `a, b và c`: conjunction before the final item, comma between the
+rest, and no serial comma in either. So `ListComma` is **one key pair** and the
+conjunction stays the caller's, which is what lets `join` (prose, `BlurbAnd`) and
+`JoinIDs` (untranslated ids, `ElementJoiner`) keep saying which sort of list they
+are while agreeing about the grammar. Two joiners with identical *shape* declared
+twice is the drift this file keeps a list of; two joiners with their own
+*vocabulary* is the distinction `JoinIDs`' doc comment exists for.
+⚠️ **The caller owns the conjunction and `listed` owns the comma**, so joining
+items that may themselves hold a comma would build an ambiguous list. Every caller
+today joins short noun phrases. The two that join **clauses** pass a slice of at
+most two — `ReadsStatus` and `ReadsHealth` are the only conditions there are — so
+they never reach the comma at all; a third condition is the site to re-read, not
+this function.
 
 Event kinds, sides and outcomes serialise **by name**. Do not change that to a
 number: a saved log would silently reinterpret itself the next time a constant was

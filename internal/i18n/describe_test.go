@@ -798,3 +798,88 @@ func shareOf(permille int) string {
 	}
 	return fmt.Sprintf("%d%%", (permille+5)/10)
 }
+
+// TestAListOfThreeTakesCommasAndOneConjunction is the grammar of every list this
+// package reads out, asserted at each length rather than at the one the shipped
+// data happens to produce.
+//
+// The defect it closes put the conjunction between *every* pair, so three items
+// read "a and b and c". What hid it is that no list the shipped books produce has
+// a third item — both goldens hold zero of them — so the golden could not have
+// moved and this table is the only thing standing between the rule and a
+// regression to it.
+//
+// Both joiners are in it. They keep separate conjunction keys on purpose (one is
+// prose, one is punctuation between untranslated ids) and that is exactly why the
+// comma rule has to be asserted through both: identical wordings that are declared
+// twice are the drift this repository keeps a list of.
+func TestAListOfThreeTakesCommasAndOneConjunction(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		and, comma := lang.Text(i18n.BlurbAnd), lang.Text(i18n.ListComma)
+		ids := lang.Text(i18n.ElementJoiner)
+		for _, c := range []struct {
+			name  string
+			parts []string
+			gloss string
+			id    string
+		}{
+			{"nothing", nil, "", ""},
+			{"one item", []string{"a"}, "a", "a"},
+			{"two take the conjunction alone", []string{"a", "b"},
+				"a" + and + "b", "a" + ids + "b"},
+			{"three take one conjunction and one comma", []string{"a", "b", "c"},
+				"a" + comma + "b" + and + "c", "a" + comma + "b" + ids + "c"},
+			{"four take one conjunction and two commas", []string{"a", "b", "c", "d"},
+				"a" + comma + "b" + comma + "c" + and + "d",
+				"a" + comma + "b" + comma + "c" + ids + "d"},
+		} {
+			t.Run(lang.String()+"/"+c.name, func(t *testing.T) {
+				if got := lang.JoinIDs(c.parts); got != c.id {
+					t.Errorf("JoinIDs(%q) = %q, want %q", c.parts, got, c.id)
+				}
+			})
+		}
+		// The gloss joiner is unexported, so it is reached through the sentence
+		// that uses it rather than called directly — a strip names its categories
+		// through `join` and takes a count, which is the shortest route to it.
+		if strings.Count(lang.Text(i18n.BlurbStrips), "%") < 2 {
+			t.Fatalf("%v: BlurbStrips no longer takes a count and a list, so this "+
+				"test is no longer reaching the gloss joiner", lang)
+		}
+	}
+}
+
+// TestNoDescriptionReadsAConjunctionTwice is the same rule measured end to end,
+// over every skill the library holds rather than over a slice this test wrote.
+//
+// ⚠️ It fails when **nothing** in the books produces a list of three, because then
+// it is asserting the absence of a shape that could not have appeared and measures
+// nothing. Today the only such list is the fixture's `purify`, which strips three
+// categories — no shipped skill has one — so this guard is one authored cleanse
+// away from being the only reader of that branch, and it should say so rather than
+// pass in silence.
+func TestNoDescriptionReadsAConjunctionTwice(t *testing.T) {
+	shapes, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load the shipped patterns: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		and, comma := lang.Text(i18n.BlurbAnd), lang.Text(i18n.ListComma)
+		lists := 0
+		for _, declared := range everySkillDeclared(t, shapes) {
+			for _, line := range strings.Split(lang.Describe(declared, shapes), "\n") {
+				if strings.Count(line, and) > 1 {
+					t.Errorf("%v: %q reads the conjunction twice in one line:\n  %s",
+						lang, declared.ID, line)
+				}
+				if strings.Contains(line, comma) && strings.Contains(line, and) {
+					lists++
+				}
+			}
+		}
+		if lists == 0 {
+			t.Errorf("%v: nothing in the books reads out a list of three, so a "+
+				"conjunction between every pair would have passed here", lang)
+		}
+	}
+}

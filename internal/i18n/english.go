@@ -228,6 +228,7 @@ q or ctrl+c to quit`,
 	PresetTakesAnyElement: "%s (any element)",
 	PresetNeeds:           "%s (needs %s)",
 	ElementJoiner:         " and ",
+	ListComma:             ", ",
 
 	BrowseHeading:          "cast",
 	BrowseShowing:          "showing %s (%d of %d characters)",

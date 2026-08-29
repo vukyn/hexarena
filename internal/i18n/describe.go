@@ -938,7 +938,44 @@ func (l Lang) stacked(id string, stacks int) string {
 // join is a list read out with the language's own conjunction, which is the one
 // piece of grammar these sentences need and the one a format string cannot hold.
 func (l Lang) join(parts []string) string {
-	return strings.Join(parts, l.Text(BlurbAnd))
+	return l.listed(parts, BlurbAnd)
+}
+
+// listed is the shape every list in this package is read out in: the last two
+// items take the conjunction, everything before them takes a comma.
+//
+// It exists because the conjunction alone was put between *every* pair, so three
+// items read "a and b and c" — which is not a sentence in either language. The
+// two-item case is what hid it: every list the shipped data produces has one item
+// or two, so no golden here has ever held a third and the defect was reachable
+// only through the fixture's `purify` (three stripped categories) and through data
+// nobody has authored yet.
+//
+// **Both languages take the same shape, and that was measured rather than
+// assumed** — the open question this closes asked whether they would. English
+// writes "a, b and c" and Vietnamese "a, b và c": both put the conjunction before
+// the final item and a comma between the rest, and neither takes a serial comma
+// ahead of the conjunction. So the comma is one key pair and the conjunction stays
+// the caller's, which is what keeps a gloss list and an id list saying which they
+// are while agreeing about the grammar.
+//
+// ⚠️ The caller owns the conjunction and this owns the comma, so a caller joining
+// items that may **themselves contain a comma** would be building an ambiguous
+// list. Every caller today joins short noun phrases — glossed status names, status
+// categories, bare ids. The two that join *clauses* pass a slice of at most two
+// (`ReadsStatus` and `ReadsHealth` are the only conditions there is), so they never
+// reach the comma at all; if a third condition is ever added, that is the site to
+// look at rather than this function.
+func (l Lang) listed(parts []string, conjunction Key) string {
+	switch len(parts) {
+	case 0:
+		return ""
+	case 1:
+		return parts[0]
+	}
+	last := len(parts) - 1
+	return strings.Join(parts[:last], l.Text(ListComma)) +
+		l.Text(conjunction) + parts[last]
 }
 
 // describeStat is the stat a skill scales off. Nearly every skill scales off

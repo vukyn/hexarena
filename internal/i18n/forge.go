@@ -292,8 +292,14 @@ func (l Lang) JoinElements(names []string) string { return l.JoinIDs(names) }
 // JoinIDs is JoinElements for the other kinds of id a list can hold — an
 // archetype, a character — which read the same way and translate the same
 // amount, which is not at all.
+//
+// It goes through `listed` for the comma rule, so an id list and a gloss list
+// cannot disagree about the grammar of a list. It keeps its own conjunction key:
+// the two were byte-identical wordings and still are, but one is prose about
+// effects and the other is punctuation between things that are never translated,
+// and collapsing them would make a change to either land on both.
 func (l Lang) JoinIDs(ids []string) string {
-	return strings.Join(ids, l.Text(ElementJoiner))
+	return l.listed(ids, ElementJoiner)
 }
 
 // WhoMaySummary is who may carry a skill, in this language.
