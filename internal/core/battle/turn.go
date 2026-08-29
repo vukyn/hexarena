@@ -564,6 +564,10 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	b.summon(unit, known, turn)
 	if known.Target == skill.Self {
 		b.strip(unit, unit, known, turn)
+		// The restore the shape walk below would have paid out. A self-aimed
+		// skill reaches exactly one unit — the caster — and never a splashed
+		// one, so it is position nought.
+		b.restore(unit, unit, known, 0, turn)
 		b.retuneAll(turn)
 		b.settle()
 		return nil
@@ -747,6 +751,40 @@ func (b *Battle) applyToSelf(unit *Unit, known skill.Skill, turn atb.Turn) {
 	}
 }
 
+// restore is a skill's `restores` paid out to one unit it reached.
+//
+// It reads the caster's scaling stat and skips the defence curve entirely: see
+// combat.Rules.Restore. A splashed target gets the reduced share, the same as
+// damage, because a shape's edge is worth less wherever it lands — and a
+// self-aimed skill is never splashed, so it is always position nought.
+//
+// ⚠️ **This is a method because it has two callers, and the second one was
+// missing.** It used to sit inline in resolveAgainst, which Act returns before
+// for a Target: Self skill — so `synthesis`, whose whole body is a 900 restore
+// on itself, healed nothing, and `withdraw` paid out its block and dropped its
+// 500. Both are self-aimed, and both were the only shipped skills that declare
+// `restores` at all, so the field did nothing anywhere.
+//
+// ⚠️ **The rating could see it and the engine could not**, which is the shape
+// the file's own rule names: pricing.restored prices a restore off
+// combat.Rules.Restore, so Suggest chose synthesis on a hurt caster expecting
+// up to nine hundred health and got none. That is "a price built from a second
+// reading lets the opponent prefer a skill for something the skill does not
+// do", except the second reading was the honest one.
+func (b *Battle) restore(actor, target *Unit, known skill.Skill, position int, turn atb.Turn) {
+	if known.Restores <= 0 {
+		return
+	}
+	restore := known.Restores
+	if position > 0 {
+		restore = restore * b.books.Patterns.SplashPower / scale.Base
+	}
+	b.heal(target, b.books.Rules.Restore(
+		combat.PickScaling(known.Scaling.Source,
+			actor.Base[known.Scaling.Stat], b.Stats(actor)[known.Scaling.Stat]),
+		restore), turn, "")
+}
+
 func (b *Battle) strip(actor, target *Unit, known skill.Skill, turn atb.Turn) {
 	if known.Strips == nil {
 		return
@@ -902,20 +940,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			}
 		}
 	}
-	// Restoring reads the caster's scaling stat and skips the defence curve
-	// entirely: see combat.Rules.Restore. A splashed target gets the reduced
-	// share, the same as damage, because a shape's edge is worth less wherever
-	// it lands.
-	if known.Restores > 0 {
-		restore := known.Restores
-		if position > 0 {
-			restore = restore * b.books.Patterns.SplashPower / scale.Base
-		}
-		b.heal(target, b.books.Rules.Restore(
-			combat.PickScaling(known.Scaling.Source,
-				actor.Base[known.Scaling.Stat], actorStats[known.Scaling.Stat]),
-			restore), turn, "")
-	}
+	b.restore(actor, target, known, position, turn)
 	// A drain takes its share of what was *dealt*, so a strike that missed or
 	// was blocked returns nothing, and one that overkilled returns only the
 	// damage that landed.

@@ -81,6 +81,12 @@ func TestSkullBashScalesOffDefenceAndNotAttack(t *testing.T) {
 // tank build fielding ballast dies in nearly every battle the same build
 // fielding endurance survives. That is why ballast is the attacking build's
 // trait and not the tank's, and why the two builds below do not use it.
+// ⚠️ **That reading was taken on a withdraw that only blocked.** A self-aimed
+// skill's `restores` paid out nothing until the payout was given a second
+// caller, so withdraw's five hundred was dead the whole time it was measured —
+// the survival figure is a reading of the block clause alone, and the direction
+// of the trade is the part that carries forward rather than the size of it.
+// Re-take it before quoting the amount.
 func TestBallastIsATradeAndNotAGift(t *testing.T) {
 	traits, statuses := mustPassives(t), mustStatuses(t)
 	held, err := traits.Lookup("ballast")
