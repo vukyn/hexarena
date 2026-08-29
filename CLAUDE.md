@@ -510,8 +510,83 @@ answers rather than screen logic:
 - The **played battle** (`cmd/hexforge-tui/play.go`) is raised from the fight
   with `p`: the same pairing, one battle, the opponent played by
   `battle.Suggest`. `↑/↓` a skill, `enter` takes it and asks *where* only when
-  there is more than one cell, `a` hands the turn to the engine, `p` passes, `u`
-  undoes, `n` is another seed.
+  there is more than one cell, `?` describes the one under the cursor, `a` hands
+  the turn to the engine, `p` passes, `u` undoes, `n` is another seed.
+  - **Every option carries a one-line summary beside its id**, from
+    `i18n.Lang.SummariseSkill`, and `?` raises the full description of the one
+    under the cursor. An id is a name rather than an answer — nothing in
+    `venoshock` says it is the skill that doubles into a poison — so the list was
+    a column of things to guess between.
+    ⚠️ **This costs zero rows, and that is the whole reason it is a line beside
+    each option rather than a block under the list.** The screen's body is **28
+    lines** and `frame` gives it `m.height - 2` less the two the header takes, so
+    at the declared 80x24 minimum only twenty survive and the option list is
+    already cut with the `Truncated` marker: the list first appears at **h ≥ 30**
+    and the screen is un-truncated from **h ≥ 32**, or **38** once the log tail
+    fills to its eight lines. A pane under the list would be a pane nobody in the
+    smallest window ever sees. `TestTheBattleScreenIsNoTallerThanItAlreadyWas` is
+    a **tripwire, not a bound** — the screen does not fit its minimum, that is
+    filed in `TODO.md` rather than fixed, and the test only stops it getting
+    worse.
+    ⚠️ **An unavailable option keeps its `Reason` and drops its summary.** The row
+    has one slot and the two answer different questions: why it cannot be cast is
+    the live question the moment the cursor steps over it, and what it does is one
+    keystroke away. Do not "fix" this by drawing both — the second would be the
+    half that got clipped.
+    The id column is **measured over `p.pending.Options`**, not over the book, for
+    the reason `menuLabelWidth` and every detail pane measure theirs: the widest
+    shipped id is thirteen cells and this unit may be bringing four short ones.
+    The row **clips and never wraps** (`MaxWidth`, against `minWidth - 1` rather
+    than the window in hand, like the fight's caution and the trait sentences), so
+    the clause order matters — reach and cooldown are last because the end is what
+    goes.
+    ⚠️ **`SummariseSkill` is a fourth describer, and the reason is not brevity.**
+    A compact line cannot be `Describe` with the flavour dropped: in Vietnamese
+    `describeOpening` builds `BlurbFlavoured` out of the authored clause **and**
+    the damage figure together, so there is no seam to cut. English separates
+    cleanly, because English has no flavour and falls back to the derived opening
+    — and a rule that works in one language and not the other is not the rule. So
+    it is a distinct composition, held to the other reading by
+    `TestTheOneLineSummaryQuotesNoFigureTheDescriptionDoesNot`: every digit run
+    the compact line prints must appear in `Describe`'s output for the same skill
+    in the same language, over every shipped skill. One way only — the compact
+    line leaves out accuracy, pierce and a critical chance on purpose, and
+    **counts** a strip rather than enumerating it — `purify`'s three categories
+    are 79 cells in Vietnamese before the aim and the cooldown, so an enumeration
+    could only ever arrive trimmed, and the claim it makes is read off
+    `status.Category.Harmful` per skill rather than assumed (4 of the 7 categories
+    are harmful, so a cleanse may be called one and a dispel may not). The
+    wordings differ deliberately; the numbers may not. Both readings sit one under
+    the other in `describe.golden`, so a balance change has to move both.
+  - `?` raises **`screenBlurb`**, which is now branched on three ways — the skill
+    listing, the cast browser and this — through the **same** `skillLines` the
+    listing draws, so what a player reads while choosing is the paragraph an
+    author reads while tuning. ⚠️ **Nothing in that path touches the battle**: the
+    option is read, the skill is looked up in the library, and `esc` puts
+    `m.screen` back rather than going through `model.enter`, which would rebuild
+    the battle from its seed and throw the played half away. It works while
+    **aiming** too (the skill is chosen and the cell is not, so the question is
+    still open) and does nothing with no prompt or no options.
+  - ⚠️ **The width sweep could not see any of this, and the fixture is why.**
+    `everyScreen` built one battle and copied the model three times for its three
+    states — but `playScreen` holds a `*battle.Battle`, so playing the "over"
+    state out to its end **stepped the battle the other two pointed at**. By the
+    time anything drew them `p.fight.Finished()` was true, `view` returned at the
+    game-over branch, and `PlayFooter`, `PlayAimFooter`, the option rows and the
+    whole aim block were rendered by **nothing in the suite**. Both footers were
+    over the window the entire time — **82 cells (vi) and 83 (en)** against the 79
+    there are — and every width test passed. Each state enters the screen for
+    itself now, and both footers were retrimmed to name `?` and fit: **77 (vi) and
+    78 (en)**, with the word after `esc` dropped, which is what `BrowseFooter`
+    already does at the same squeeze. No key was given up.
+    `TestTheBattleFootersNameTheDescriptionKeyAndFit` holds the half a width sweep
+    cannot: that the key the feature hangs on is still named after the next trim.
+    This is the **second** fixture in this repository whose early return made the
+    interesting branch unreachable; the first was `plainTerminal`, where every
+    test set `NO_COLOR` and returned above the branch. That is the transferable
+    part: **a fixture that reaches a screen's early exit measures the exit**, and
+    a screen it never renders is a screen with no width and no translation test at
+    all.
   - It draws with `internal/tui` — `Board`, `Roster`, `Order`, `Line` — rather
     than with drawings of its own: what is played here has to look like what the
     game client plays, and a second drawing of a battle is a second thing that
@@ -661,10 +736,14 @@ translate the whole battle screen in one piece or not at all. It borrows
 `Lang.Gloss` rather than growing a second vocabulary (two names for one status is
 how they drift) — and in **English a bare id is the name**, so `poison` in an
 English sentence is the reading working, not a missing gloss. Two entrances:
-`?N` / `?TAG` at the battle prompt, and `?` on the hexforge-tui skill listing
-**or cast browser**, both of which raise `screenBlurb` — one screen branching on
-`blurb.from`, describing a skill from the listing and a character's traits from
-the browser. ⚠️ **The forge form is not the place for it** — 19
+`?N` / `?TAG` at the battle prompt, and `?` on the hexforge-tui skill listing,
+**cast browser or played battle**, all three of which raise `screenBlurb` — one
+screen branching on `blurb.from`, describing a skill from the listing, a
+character's traits from the browser and the option under the cursor from the
+battle. A **fourth** reading of a skill sits beside that one and is not it:
+`Lang.SummariseSkill` is the compact line the played battle draws on every
+option's own row, and *Where a form beats a prompt* says why it cannot be this
+one with the prose dropped. ⚠️ **The forge form is not the place for it** — 19
 fields already show 13 of themselves in an 80x24 window, so a three-line block
 under the form costs a quarter of the fields; a screen costs nothing until asked
 for. Statuses are the third description, and `Lang.DescribeStatus` is the same

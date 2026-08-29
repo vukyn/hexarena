@@ -243,26 +243,7 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 // whose strength is a choice the author made, and a description of it that
 // cannot say how strong describes a different mechanic.
 func (l Lang) describeSummon(declared *skill.Summon) string {
-	// The authored name is Vietnamese, like every other name in the data, so
-	// English says "copy" rather than printing it. That is the division Gloss
-	// makes — a data name is authored once and English shows what it can read —
-	// and a summon has no id for English to fall back on, so the word is the
-	// only thing left that is true in it.
-	one, many := BlurbSummonedCopy, BlurbSummonedCopies
-	if declared.Stats != nil {
-		one, many = BlurbSummonedCreature, BlurbSummonedCreatures
-	}
-	name := l.Text(one)
-	if declared.Count > 1 {
-		name = l.Text(many)
-	}
-	if l == Vi && declared.Name != "" {
-		name = declared.Name
-	}
-	subject := l.Say(BlurbSummonedOne, name)
-	if declared.Count > 1 {
-		subject = l.Say(BlurbSummonedMany, declared.Count, name)
-	}
+	subject := l.summonSubject(declared)
 	// Exactly one of the two shares is ever set, and a summon with a fixed stat
 	// line sets neither, so the sum is the share there is and nought is the
 	// answer that there is none. Which of the two it was still has to be said:
@@ -288,9 +269,40 @@ func (l Lang) describeSummon(declared *skill.Summon) string {
 	return l.Say(BlurbSummonsBriefly, subject, lasts)
 }
 
-// describeCondition is the amplifier, written as what the target must be rather
-// than as a bonus figure: a player picking a skill is asking when it is worth
-// using, and "+1000 power" answers a different question.
+// summonSubject is what a summoning skill puts on the board, counted and named:
+// "một phân thân", "2 copies", "một cóc".
+//
+// A function rather than the two copies it was about to become. The sentence
+// describeSummon writes and the clause SummariseSkill writes are two readings of
+// the same three decisions — copy or creature, one or several, authored name or
+// the fallback word — and a second copy of them is a second thing that can call a
+// toad a copy. That is not hypothetical: telling a creature from a copy by the
+// stat spelling was itself a fix for the fallback saying the one thing about the
+// shipped toad that is untrue.
+//
+// The authored name is Vietnamese, like every other name in the data, so English
+// says "copy" rather than printing it. That is the division Gloss makes — a data
+// name is authored once and English shows what it can read — and a summon has no
+// id for English to fall back on, so the word is the only thing left that is
+// true in it.
+func (l Lang) summonSubject(declared *skill.Summon) string {
+	one, many := BlurbSummonedCopy, BlurbSummonedCopies
+	if declared.Stats != nil {
+		one, many = BlurbSummonedCreature, BlurbSummonedCreatures
+	}
+	name := l.Text(one)
+	if declared.Count > 1 {
+		name = l.Text(many)
+	}
+	if l == Vi && declared.Name != "" {
+		name = declared.Name
+	}
+	if declared.Count > 1 {
+		return l.Say(BlurbSummonedMany, declared.Count, name)
+	}
+	return l.Say(BlurbSummonedOne, name)
+}
+
 // describeCondition is the amplifier read against the target, written as what
 // that target must be rather than as a bonus figure: a player picking a skill is
 // asking when it is worth using, and "+1000 power" answers a different question.
@@ -384,6 +396,209 @@ func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 		parts = append(parts, l.Text(BlurbCostEveryTurn))
 	}
 	return capitalise(strings.Join(parts, " · ") + ".")
+}
+
+// SummariseSkill is one skill in one line, for a list where four of them are
+// compared at once rather than read one at a time.
+//
+// The battle screen offers a turn's options as a column of ids, and an id is a
+// name rather than an answer: nothing in "venoshock" says it is the skill that
+// doubles into a poison. This is that answer, on the option's own row, so all
+// four can be weighed in one look and the screen spends no extra line on it.
+//
+// # Why a fourth describer, when a second reading of one set of facts drifts
+//
+// It is the rule of this house that two readings of the same numbers part
+// company, and that rule is why forge.Percent and i18n.share are documented
+// beside each other rather than merged. So the reason for a fourth has to be
+// stated, and it is not brevity.
+//
+// Describe cannot be reduced to this, because in Vietnamese its opening sentence
+// **fuses** the authored flavour with the damage figure: describeOpening builds
+// BlurbFlavoured out of Skill.Flavour and the share together, so "dội một thứ
+// dung dịch xanh lét, chạm vào đâu là khói bốc lên tới đó, 90% công" has no seam
+// to cut. The flavour is not a separable clause that could be dropped to leave a
+// compact line behind. English *would* separate cleanly, because English has no
+// flavour and falls back to the derived opening — and a rule that works in one
+// language and not the other is not the rule. Hence a distinct composition, in
+// both languages, rather than a filter over an existing one.
+//
+// What stops the two disagreeing is not shared prose but a shared arithmetic:
+// every figure here is read off the same field with the same helper Describe
+// reads it with, and TestTheOneLineSummaryQuotesNoFigureTheDescriptionDoesNot
+// walks every shipped skill in both languages and refuses a digit run this line
+// prints that Describe's does not. The wordings deliberately differ; the numbers
+// may not.
+//
+// # What it holds, and what it leaves to the question mark
+//
+// Derived only, nothing authored, and no figure that is not read off the skill.
+// In order, omitting whatever the skill does not have: the damage as a share of
+// its scaling stat, what it gives back (a restore, then a drain — the two of the
+// three healing mechanisms a skill can carry), what it calls up, the statuses it
+// puts on the other side and then on itself, each amplifier, its aim when that
+// is the interesting fact, and its reach and cooldown last.
+//
+// Left out on purpose, because the full description is one keystroke away and
+// this line has sixty-two cells at the floor: accuracy, piercing and a critical
+// chance. Those change what a cast is worth at the margin; the clauses above are
+// what a player is choosing between. The order is the order because the row
+// **clips** rather than wraps, so what falls off the end has to be the least of
+// it.
+//
+// ⚠️ A strip is **counted, never enumerated**, and that is the one clause where
+// the sixty-two cells bind rather than merely press. purify names three
+// categories; the enumerated clause is 79 cells in Vietnamese on its own, longer
+// than the whole line has before the aim and the cooldown are appended, so it
+// could only ever arrive trimmed. It also put the raw category enum spellings on
+// an English screen, because the names it enumerated come from a Vietnamese-only
+// gloss table. Describe keeps enumerating; its line has room.
+func (l Lang) SummariseSkill(declared skill.Skill, shapes *pattern.Book) string {
+	parts := make([]string, 0, 8)
+	if declared.Power > 0 {
+		// The total rather than the per-strike figure, because a row comparing
+		// four skills is comparing what each one lands. Describe prints both on a
+		// multi-strike skill and only this one on a single-strike, so the figure
+		// is in its output either way.
+		parts = append(parts, l.Say(SummaryDamage,
+			share(declared.TotalPower()), l.describeStat(declared.Scaling.Stat)))
+	}
+	if declared.Restores > 0 {
+		parts = append(parts, l.Say(SummaryRestores,
+			share(declared.Restores), l.describeStat(declared.Scaling.Stat)))
+	}
+	if declared.Drains > 0 {
+		parts = append(parts, l.Say(SummaryDrains, share(declared.Drains)))
+	}
+	if declared.Summons.Summons() {
+		// Counted and named through summonSubject, which is the sentence's own
+		// reading of the same three decisions rather than a second one of them.
+		parts = append(parts, l.summonSubject(declared.Summons))
+	}
+	// The verb is not turned on the side here, as describeExtras turns it: there
+	// is no verb. A clause of a name and a chance says which status and how often
+	// and nothing about whose it is, which is what leaves room for the four
+	// clauses beside it — and the two lists are told apart by SummarySelfApplies
+	// naming the caster, which is the one place the distinction is load-bearing.
+	for _, application := range declared.Applies {
+		parts = append(parts, l.Say(SummaryStatus,
+			l.stacked(application.Status, application.Stacks), share(application.Chance)))
+	}
+	if len(declared.SelfApplies) > 0 {
+		names := make([]string, 0, len(declared.SelfApplies))
+		for _, application := range declared.SelfApplies {
+			names = append(names, l.stacked(application.Status, application.Stacks))
+		}
+		parts = append(parts, l.Say(SummarySelfApplies, l.join(names)))
+	}
+	// A strip is here because rapid_spin has nothing else in it — no power, no
+	// application, no summon — so leaving it out made its whole row read
+	// "itself · cd 3", which is the mistake describeSummon's own comment records.
+	//
+	// ⚠️ It is a **count and never the list Describe prints**, and that is a
+	// measurement rather than a preference: purify strips three categories, and in
+	// Vietnamese the enumerated clause is 79 cells on its own — longer than the
+	// whole row has, before the aim and the cooldown are appended. A clause the
+	// frame trims is still a clause, but one that can only ever arrive trimmed is
+	// not a reading, and the enumeration also put the raw category **ids** on an
+	// English screen, since the gloss table those names come from is Vietnamese
+	// only. The full description keeps enumerating; that is its job.
+	if declared.Strips != nil {
+		parts = append(parts, l.Say(
+			l.summariseStrips(declared.Strips), declared.Strips.Stacks))
+	}
+	if clause := l.summariseCondition(declared, declared.Requires, SummaryAmplified); clause != "" {
+		parts = append(parts, clause)
+	}
+	if clause := l.summariseCondition(
+		declared, declared.SelfRequires, SummarySelfAmplified); clause != "" {
+		parts = append(parts, clause)
+	}
+	if declared.SelfGradient != nil {
+		// The bottom of the curve, and only the bottom, for the reason
+		// describeSelfGradient quotes it: there is no moment at which a gradient
+		// "holds", so the end of the slope is the only figure anybody can act on.
+		// The same expression, so the two cannot print different ends of it.
+		atEmpty := declared.Power * (scale.Base + declared.SelfGradient.AtEmpty) / scale.Base
+		parts = append(parts, l.Say(SummaryGradient, share(atEmpty*declared.StrikeCount())))
+	}
+	// The aim and the reach, in the one slot they share. A self-aimed skill has no
+	// range to state — the same branch describeCosts takes, and for the same
+	// reason: the aim is the one fact a reader cannot infer from the clauses above
+	// it. An enemy is the ordinary answer and is left unsaid; an ally or both
+	// sides is not, so those are named beside the range.
+	if declared.Target == skill.Self {
+		parts = append(parts, l.Text(BlurbCostSelf))
+	} else {
+		if declared.Target != skill.Enemy {
+			parts = append(parts, l.describeAim(declared))
+		}
+		parts = append(parts, l.Say(BlurbCostRange, declared.Range))
+	}
+	if covered := cellsCovered(declared, shapes); covered > 1 {
+		parts = append(parts, l.Say(BlurbCostCells, covered))
+	}
+	// A cooldown of nought is left unsaid rather than spelled "every turn". The
+	// sentence has room to say a skill costs nothing to hold; a clause of sixty-two
+	// cells does not, and "nothing said about a cooldown" is the honest reading of
+	// a skill that has none.
+	if declared.Cooldown > 0 {
+		parts = append(parts, l.Say(SummaryCooldown, declared.Cooldown))
+	}
+	// The same middle dot the cost line is joined with, so the two readings of one
+	// skill are punctuated alike.
+	return strings.Join(parts, " · ")
+}
+
+// summariseStrips is which of the two counting wordings a strip gets.
+//
+// The claim is read off the categories the skill names rather than assumed, for
+// the reason every figure in this file is read off its field. status.Category
+// separates harmful from benign — Harmful exists to tell a cleanse from a dispel
+// — so a skill naming nothing but harmful categories may be called a cleanse in
+// as many words, and a skill naming a buff, a shield or a regen among them may
+// not. An empty list cannot be authored (a strip with no category strips
+// nothing), and would take the count with no claim, which is the right answer for
+// it too.
+func (l Lang) summariseStrips(strips *skill.Cleanse) Key {
+	for _, category := range strips.Categories {
+		if !category.Harmful() {
+			return SummaryStrips
+		}
+	}
+	if len(strips.Categories) == 0 {
+		return SummaryStrips
+	}
+	return SummaryStripsHarmful
+}
+
+// summariseCondition is one amplifier as a clause: what has to be true, an
+// arrow, and the share the skill lands at when it is.
+//
+// The arrow is doing the work a whole sentence does in Describe. What it may not
+// do is say *whose* health or whose stacks are being counted — the clause inside
+// it is silent about that, exactly as BlurbWhenCarrying and BlurbWhenHurt are —
+// so the wording is a parameter and the caller passes the one that opens with the
+// right subject. That is the same division conditionSentence makes, and it is the
+// reason both callers exist: reading only Requires is a mistake this repository
+// has already shipped once, in forge.PreviewDamage.
+func (l Lang) summariseCondition(
+	declared skill.Skill, condition *skill.Condition, wording Key) string {
+	if condition == nil {
+		return ""
+	}
+	clauses := make([]string, 0, 2)
+	if condition.ReadsStatus() {
+		clauses = append(clauses, l.stacked(condition.Status, condition.MinStacks))
+	}
+	if condition.ReadsHealth() {
+		clauses = append(clauses, l.Say(SummaryHurt, share(condition.BelowHealth)))
+	}
+	// The same amplified figure conditionSentence prints, from the same
+	// expression: a compact line quoting a different total from the sentence it
+	// abbreviates would be the drift a fourth describer is on probation for.
+	return l.Say(wording, l.join(clauses),
+		share((declared.Power+condition.BonusPower)*declared.StrikeCount()))
 }
 
 // DescribeElement is where one element sits in the affinity chart: what it

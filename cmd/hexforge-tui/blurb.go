@@ -20,7 +20,7 @@ import (
 // 1000 to 700 could see the damage move and not that "doubles" had become
 // "amplifies a bit".
 //
-// # Two screens raise it, and it is still one screen
+// # Three screens raise it, and it is still one screen
 //
 // The skill listing raises it for the skill under its cursor. The cast browser
 // raises it for the traits the character under *its* cursor carries at the level
@@ -28,6 +28,19 @@ import (
 // virulence from 300 to 200 watched the table's "+30%" change and never read the
 // sentence, because DescribePassive had exactly one caller and it was the battle
 // prompt.
+//
+// The played battle raises it for the option under its cursor, which is the same
+// question a third time and the one place it is asked by a *player* rather than
+// by an author: the compact line beside each option is what four of them can be
+// compared on, and this is the long form of whichever one is in front. It shares
+// the listing's rendering exactly — skillLines — so a description read while
+// choosing and the same description read while authoring cannot differ.
+//
+// ⚠️ Nothing here touches the battle. playScreen is the one screen holding
+// something the model does not copy, so raising this and leaving it again must
+// step no turn: the option is read, the skill is looked up in the library, and
+// esc puts m.screen back rather than going through model.enter — which would
+// rebuild the battle from its seed and throw the played half away.
 //
 // A second screen would have been a second copy of the framing, the footer and
 // the esc, differing only in which describer it called. So this one branches on
@@ -81,6 +94,25 @@ func (b blurbScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 	// own cursor, which is the one thing this screen borrows — and on the
 	// browser it borrows the level as well, because a trait comes in at a level
 	// and walking it is how that is seen.
+	if b.from == screenPlay {
+		// The option behind moves from here too, the way the listing's cursor
+		// does, so four options can be read one after another without going back
+		// and forth. It goes through playScreen.move, which is the one place that
+		// knows an unavailable option is stepped over.
+		//
+		// While aiming they do nothing: the skill is settled and the cell is
+		// what is being chosen, so walking the options would change what is
+		// described out from under a decision already half taken.
+		if m.play.pending != nil && !m.play.aiming {
+			switch message.String() {
+			case "up", "k":
+				m.play = m.play.move(-1)
+			case "down", "j":
+				m.play = m.play.move(1)
+			}
+		}
+		return m, nil
+	}
 	if b.from == screenBrowse {
 		rows := len(m.browse.rows())
 		switch message.String() {
@@ -121,24 +153,61 @@ func (b blurbScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 }
 
 func (b blurbScreen) view(m model) (string, string) {
-	if b.from == screenBrowse {
+	switch b.from {
+	case screenBrowse:
 		return b.viewTraits(m)
+	case screenPlay:
+		return b.viewOption(m)
 	}
-	footer := m.text(i18n.BlurbFooter)
 	skills := m.skills.skills
 	if len(skills) == 0 {
-		return "  " + m.text(i18n.NoneCatalogued) + "\n", footer
+		return "  " + m.text(i18n.NoneCatalogued) + "\n", m.text(i18n.BlurbFooter)
 	}
-	declared := skills[clamp(m.skills.cursor, 0, len(skills)-1)]
+	at := clamp(m.skills.cursor, 0, len(skills)-1)
+	return viewSkill(m, skills[at], at+1, len(skills))
+}
 
+// viewOption is the skill under the battle's own cursor.
+//
+// It reads m.play rather than keeping a cursor, which is the rule this screen is
+// built on: a cursor of its own could point at a different option than the
+// battle behind it, and then the description and the list would disagree about
+// what is being chosen. The skill comes out of the library rather than out of the
+// battle, because a battle carries a unit's resolved kit and the sentences are
+// about the declared skill.
+//
+// Nothing pending and no options are both ordinary answers rather than errors: a
+// turn nobody is being asked about is a turn with nothing to describe, and the
+// key that raises this refuses the empty case anyway.
+func (b blurbScreen) viewOption(m model) (string, string) {
+	pending := m.play.pending
+	if pending == nil || len(pending.Options) == 0 {
+		return "  " + m.text(i18n.NoneCatalogued) + "\n", m.text(i18n.BlurbFooter)
+	}
+	at := clamp(m.play.option, 0, len(pending.Options)-1)
+	declared, err := m.lib.Skills().Lookup(pending.Options[at].Skill)
+	if err != nil {
+		return "  " + m.style.bad.Render(m.lang.Error(err)) + "\n", m.text(i18n.BlurbFooter)
+	}
+	return viewSkill(m, declared, at+1, len(pending.Options))
+}
+
+// viewSkill is one skill described under its name, with where it sits in the
+// list it came out of.
+//
+// Shared by the listing and the battle rather than written twice, for the reason
+// the whole screen is one screen: the two differ in which skill and which list,
+// and everything else about them — the heading, the position, the marked
+// sentences, the footer — is the same answer. A second copy would be a second
+// thing free to decide a status name is not worth marking.
+func viewSkill(m model, declared skill.Skill, at, of int) (string, string) {
 	var out strings.Builder
 	out.WriteString(m.style.heading.Render(m.lang.GlossedSkill(declared)) + "  " +
-		m.style.dim.Render(m.text(i18n.ChoicePosition,
-			clamp(m.skills.cursor, 0, len(skills)-1)+1, len(skills))) + "\n\n")
+		m.style.dim.Render(m.text(i18n.ChoicePosition, at, of)) + "\n\n")
 	for _, line := range skillLines(m, declared) {
 		out.WriteString(line + "\n")
 	}
-	return out.String(), footer
+	return out.String(), m.text(i18n.BlurbFooter)
 }
 
 // skillLines is what a skill does, one line per sentence and already marked.

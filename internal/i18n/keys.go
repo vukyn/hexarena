@@ -471,6 +471,48 @@ const (
 	BlurbTraitsFooter
 	BlurbMore
 
+	// The same skill in ONE line, for a list where four of them are compared at
+	// once rather than read one at a time — see Lang.SummariseSkill, which says
+	// why that is a fourth describer and not Describe with the prose dropped.
+	// Every one of these is a clause rather than a sentence: no capital, no full
+	// stop, joined with the same middle dot the cost line is joined with, and
+	// carrying only figures the skill itself declares.
+	SummaryDamage
+	SummaryRestores
+	SummaryDrains
+	SummaryStatus
+	SummarySelfApplies
+	// A strip is a **count**, never the list Describe prints. Enumerating the
+	// categories cannot fit and never could: purify names three, and in
+	// Vietnamese "gỡ 3 hiệu ứng gây hại theo lượt và hiệu ứng giảm chỉ số và hiệu
+	// ứng khống chế" is 79 cells before the aim and the cooldown are appended —
+	// longer on its own than the whole line has. The full description keeps the
+	// enumeration, which is its job and its line has room for it.
+	//
+	// Two wordings, chosen per skill from what that skill actually names, because
+	// the category universe is **not** all harmful: dot, stat_debuff, control and
+	// taunt are, and buff, shield and regen are not — status.Category.Harmful is
+	// the function that separates a cleanse from a dispel. So a skill stripping
+	// only harmful things may say so, and anything else gets the count and no
+	// claim about it. A benign strip has no word of its own because nothing is
+	// authored as one and the countng wording is *correct* for it; a third key
+	// belongs to whoever writes the first dispel.
+	SummaryStrips
+	SummaryStripsHarmful
+	// SummaryAmplified and SummarySelfAmplified are the two amplifiers, and they
+	// are two wordings for the reason BlurbAmplified and BlurbSelfAmplified are:
+	// the clause inside them says nothing about *whose* health or whose stacks
+	// are being counted, so only the opening can tell a condition read against
+	// the target from one read against the caster. Reading only the first is a
+	// mistake this repository has already paid for once — forge.PreviewDamage
+	// showed outrage and comeback, the two skills whose whole design is a
+	// caster-side term, at their plain power.
+	SummaryAmplified
+	SummarySelfAmplified
+	SummaryGradient
+	SummaryHurt
+	SummaryCooldown
+
 	// What a timed effect does, in sentences, for somebody who has just read its
 	// name in a log and has nowhere to look it up. Derived from the status book
 	// the same way the two above are derived from theirs — see
