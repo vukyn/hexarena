@@ -700,6 +700,17 @@ const (
 	// Playing a battle by hand against the opponent the engine plays.
 	PlayHeading
 	PlaySeed
+	// Where the log's frame sits in the whole history, drawn on the heading row
+	// rather than on a row of its own: this screen has no spare row — the budget
+	// below is a whole feature about that — and the heading is about seventeen
+	// cells of the seventy-nine there are.
+	//
+	// Shown whenever rows are hidden rather than only while the reader has
+	// scrolled back, because the other half of the defect it answers is that
+	// nothing on the screen said a history existed at all: a reader who cannot
+	// see that there are three hundred rows will not go looking for the key that
+	// reaches them.
+	PlayLogRange
 	PlayYourTurn
 	PlayAimAt
 	PlayWon

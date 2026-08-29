@@ -63,6 +63,31 @@ type playScreen struct {
 	aim    int
 	aiming bool
 
+	// logFollow and logOffset are where the log's frame sits, and they are two
+	// fields rather than one for the one reason that decides this whole feature.
+	//
+	// ⚠️ **Following the tail is a state, not an offset value, because the tail
+	// moves.** The reader is normally looking at the newest rows; an offset
+	// storing "the newest rows" would be a number that means something different
+	// every time an event arrives, so every turn taken would silently shift what
+	// is under the reader. So logOffset counts rows **from the start of the
+	// history** — which is exactly what the position on the heading row states —
+	// and following is carried **beside** it rather than encoded into it.
+	//
+	// This is the rule Suggest's abandoned queue tie-break paid for: Queue.Pending
+	// answers 0 for a unit it has never heard of and 0 is *soonest*, so absence
+	// had to be declared rather than detected. A sentinel offset meaning "the
+	// tail" would be that mistake again — and it would read as working, because
+	// the sentinel is a legal offset on the turn it is written.
+	//
+	// logOffset is meaningless while logFollow holds, and it is clamped against
+	// the history's current length wherever it is read rather than only where it
+	// is written: undo rebuilds the battle from a shortened script, so the
+	// history it rebuilds is shorter and an offset kept across it can point past
+	// the end.
+	logFollow bool
+	logOffset int
+
 	err error
 	// notes are what a write left behind, held as facts rather than as a
 	// sentence so ctrl+l redraws them in the other language.
@@ -75,7 +100,10 @@ type playScreen struct {
 const playTurnLimit = 4000
 
 func newPlayScreen() playScreen {
-	return playScreen{seed: 1, side: hex.SideAlly}
+	// Following, because the newest rows are what a battle nobody has scrolled is
+	// showing, and because the alternative would be an offset into a history that
+	// does not exist yet.
+	return playScreen{seed: 1, side: hex.SideAlly, logFollow: true}
 }
 
 // begin builds the battle from the pairing in front and runs it up to the
@@ -85,6 +113,7 @@ func (p playScreen) begin(m model) playScreen {
 	p.roster = nil
 	p.events, p.script, p.pending = nil, nil, nil
 	p.option, p.aim, p.aiming = 0, 0, false
+	p.logFollow, p.logOffset = true, 0
 	p.err, p.notes = nil, nil
 
 	home, away, ok := m.fight.sides(m)
@@ -229,6 +258,13 @@ func (p *playScreen) skip(prompt *battle.Prompt, reason string) error {
 
 func (p *playScreen) record(decision battle.Decision) error {
 	p.script = append(p.script, decision)
+	// A turn taken puts the reader back on the live tail, and this is the one
+	// place every turn goes through — the player's, the engine's, the one the
+	// "let it pick" key hands over and the pass. Somebody who scrolled back to
+	// read what happened and then acted would otherwise be reading a frame from
+	// before their own decision, which is the one moment the log is certainly
+	// stale. Undo and another seed reset it too, through begin.
+	p.logFollow, p.logOffset = true, 0
 	p.collect()
 	return nil
 }
@@ -299,6 +335,17 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 		if p.fight != nil {
 			p = p.undo(m)
 		}
+	// The log's own keys, and they are answered **here** rather than under the
+	// guard below: the log is drawn between turns and on a battle that has
+	// finished, which is exactly when reading back through it is the only thing
+	// left to do, and it is drawn while aiming as well — the same reason ? works
+	// there. ↑/↓ are the option list's and may not be taken, so this is the pair
+	// that already scrolls in this client (the trait description and the picker),
+	// rather than a second vocabulary for one idea.
+	case "pgup":
+		p = p.scrollLog(m, -1)
+	case "pgdown":
+		p = p.scrollLog(m, 1)
 	}
 	if p.pending == nil {
 		m.play = p
@@ -437,18 +484,37 @@ func (p playScreen) save(m model) playScreen {
 	return p
 }
 
-// playLogLines is how much of the log the screen keeps in front of the player.
+// playLogWanted is how many rendered rows the log asks the budget for.
 //
-// The last few rather than all of it: what a player has to read is what happened
-// since they last chose, and a screen that grew a line per event would push the
-// board off the top by the third turn.
+// It is what the player has to read: what happened since they last chose. A
+// screen that grew a line per event would push the board off the top by the
+// third turn, which is why the section asks for a few rows rather than for all
+// of them.
 //
-// ⚠️ **Rendered lines, not events**, and it used to be events. The two are not
+// ⚠️ **It is a floor of intent and no longer a ceiling**, and it was the ceiling
+// that was the defect. `playFit` clamped the log's allotment to this number, so
+// the body grew 20 → 42 rows between an 80x24 window and an 80x80 one and the log
+// stood still at eight — a tall terminal bought the history nothing. The log now
+// takes whatever rows nobody above it in the priority claimed, and this is only
+// what it asks for **first**, which is what still makes "everything fits" a
+// question with an answer: a window that gives the log its eight rows is a window
+// with nothing missing, and one that gives it forty is the same window with room
+// to spare.
+//
+// ⚠️ **It is not a floor in the priority**, and it cannot become one. The log is
+// last precisely because it is history rather than state, so a guaranteed eight
+// rows would have to be taken off the roster, the board or the order line — and
+// every drop height in CLAUDE.md would move. Growing the log may only ever spend
+// rows nobody else claimed.
+//
+// ⚠️ **Rendered rows, not events**, and it used to be events. The two are not
 // the same number: tui.Line opens a turn with a blank row of its own, so one
-// event arrives as two lines, and eight events measured **eleven rows** in a
-// battle a few turns deep. A section whose stated budget does not hold is a
-// section spending rows the budget below has already promised to somebody else.
-const playLogLines = 8
+// event arrives as two rows, and eight events measured **eleven rows** in a
+// battle a few turns deep.
+//
+// Renamed off playLogLines because the number no longer says how many lines the
+// screen keeps — it says how many it asks for.
+const playLogWanted = 8
 
 // playBodyRoom is how many rows the body may write before frame cuts it.
 //
@@ -464,7 +530,7 @@ func playBodyRoom(height int) int { return height - 4 }
 //
 // Measured at the declared 80x24 floor, where the body's purse is twenty rows:
 // the heading is one, tui.Board is a fixed ten, tui.Roster is one plus a row a
-// unit, tui.Order is one, the log is up to playLogLines, and the option list is
+// unit, tui.Order is one, the log asks for playLogWanted, and the option list is
 // one plus a row an option. A legal squad is up to hex.MaxTeamSize a side, so
 // **28 rows is the floor for a 5-a-side pairing** before a single blank or log
 // line — and a summon puts units on the board past the five the squad brought,
@@ -492,7 +558,15 @@ func playBodyRoom(height int) int { return height - 4 }
 //     beside every cell it offers (playScreen.occupant), so the question the
 //     board answers is answered again where the player is pointing.
 //  4. tui.Order, one row, ahead of the log.
-//  5. The log, the remainder, capped by **rendered lines** and keeping the tail.
+//  5. The log, which asks for playLogWanted rendered rows and then takes every
+//     row nobody above it claimed. It is last because it is history rather than
+//     state, and the two-part answer is what lets a tall window buy the history
+//     something without any of the four sections above losing a row.
+//
+// The log is also the one section a reader can move: it is a frame over the whole
+// history rather than a fixed tail, and pgdn/pgup walk it. Following the tail is a
+// state and not an offset — see the fields on playScreen for why that is the
+// decision the rest of it hangs off.
 //
 // ⚠️ Nothing here may touch the battle. The plan is computed while drawing, and
 // this screen is the one holding a pointer the model does not copy.
@@ -511,8 +585,10 @@ type playSizes struct {
 	// column heading over nothing is a row spent on nothing.
 	board int
 	units int
-	// log is how many rendered lines the tail of the log came to, at most
-	// playLogLines.
+	// log is how many rendered rows the **whole history** comes to, which is
+	// what the section would spend if it were drawn whole, the way every other
+	// field here is. It used to be the tail capped at eight, and a section
+	// reporting its cap as its size is a section that can never be given more.
 	log int
 }
 
@@ -594,13 +670,29 @@ func playTake(left int, sizes playSizes) (playPlan, bool) {
 	} else {
 		whole = false
 	}
+	// The log asks for playLogWanted rows and is answered in two parts, which is
+	// what lets it grow without moving anything above it. First its own ask, so
+	// that "everything fits" still means something: a window that gives it those
+	// rows has nothing missing. Then whatever nobody claimed, because a tall
+	// terminal ought to buy the history something and the log is the only section
+	// on this screen with more to show than it is ever given.
 	if sizes.log > 0 {
+		wanted := min(sizes.log, playLogWanted)
 		if rows := left - 1; rows > 0 {
-			plan.log = min(sizes.log, rows)
+			plan.log = min(wanted, rows)
 			left -= 1 + plan.log
 		}
-		if plan.log < sizes.log {
+		if plan.log < wanted {
 			whole = false
+		}
+		// The surplus, and only the surplus: the log is last in the priority, so
+		// every row still in hand here is a row nobody above it wanted. It cannot
+		// take more rows than the history has, or the frame would be padded with
+		// nothing.
+		if plan.log > 0 && left > 0 {
+			spare := min(left, sizes.log-plan.log)
+			plan.log += spare
+			left -= spare
 		}
 	}
 	return plan, whole
@@ -673,78 +765,185 @@ func (p playScreen) notice(m model, plan playPlan, sizes playSizes) string {
 		m.text(i18n.PlayHidden, strings.Join(parts, hiddenSeparator)))
 }
 
+// playDrawn is every section of this screen drawn whole, before the budget says
+// how much of each survives.
+//
+// It exists so that there is **one** reading of how many rows the log has and how
+// many of them the window leaves it: the view that draws the frame and the keys
+// that move it both ask this, and a key that scrolled by a different number of
+// rows than the screen shows would step over lines nobody ever saw.
+//
+// ⚠️ Nothing here touches the battle. It is read while drawing and it is read on
+// a keystroke, and this is the one screen holding a pointer the model does not
+// copy.
+type playDrawn struct {
+	// tail is the turn in front, and over says the battle has finished — which
+	// the footer needs and the sizes do not.
+	tail []string
+	over bool
+
+	board  []string
+	roster []string
+	order  string
+	// log is the **whole history**, rendered. The frame is a window into it.
+	log   []string
+	notes []string
+}
+
+// drawings measures every section against the board as it stands.
+func (p playScreen) drawings(m model) playDrawn {
+	var drawn playDrawn
+	// The turn in front, read before anything else because it is what the rest of
+	// the screen is budgeted around. A finished battle first, because its ending
+	// is the answer to the question a prompt would have asked; then the prompt.
+	// With neither — between turns, where the engine's own units act — there is no
+	// question on the screen and nothing to reserve room for.
+	switch {
+	case p.fight.Finished():
+		drawn.tail = []string{m.style.emphasis.Render(p.ending(m))}
+		drawn.over = true
+	case p.pending != nil:
+		drawn.tail = drawnRows(p.choices(m))
+	}
+	drawn.board = drawnRows(tui.Board(p.fight, p.tags))
+	drawn.roster = drawnRows(tui.Roster(p.fight, p.tags))
+	drawn.order = m.style.dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))
+	drawn.log = p.logRows(m)
+	drawn.notes = p.wrote(m)
+	return drawn
+}
+
+// sizes is what each section would spend if it were drawn whole.
+func (d playDrawn) sizes() playSizes {
+	return playSizes{
+		tail:  len(d.tail),
+		notes: len(d.notes),
+		board: len(d.board),
+		// The header is not a unit, and tui.Roster always draws one.
+		units: max(len(d.roster)-1, 0),
+		log:   len(d.log),
+	}
+}
+
 func (p playScreen) view(m model) (string, string) {
 	footer := m.text(i18n.PlayFooter, saveKeyLabel())
 	if p.aiming {
 		footer = m.text(i18n.PlayAimFooter)
 	}
-	heading := m.style.heading.Render(m.text(i18n.PlayHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.PlaySeed, p.seed))
 	if p.err != nil {
-		return heading + "\n\n  " + m.style.bad.Render(m.lang.Error(p.err)), footer
+		return p.heading(m, "") + "\n\n  " + m.style.bad.Render(m.lang.Error(p.err)), footer
 	}
 	if p.fight == nil {
-		return heading + "\n\n  " + m.text(i18n.SquadsEmpty), footer
+		return p.heading(m, "") + "\n\n  " + m.text(i18n.SquadsEmpty), footer
 	}
 
-	// The turn in front, read before anything else is measured because it is what
-	// the rest of the screen is budgeted around. A finished battle first, because
-	// its ending is the answer to the question a prompt would have asked; then
-	// the prompt. With neither — between turns, where the engine's own units act
-	// — there is no question on the screen and nothing to reserve room for.
-	var tail []string
-	switch {
-	case p.fight.Finished():
-		tail = []string{m.style.emphasis.Render(p.ending(m))}
+	drawn := p.drawings(m)
+	if drawn.over {
 		footer = m.text(i18n.PlayOverFooter, saveKeyLabel())
-	case p.pending != nil:
-		tail = drawnRows(p.choices(m))
 	}
-	board := drawnRows(tui.Board(p.fight, p.tags))
-	roster := drawnRows(tui.Roster(p.fight, p.tags))
-	order := m.style.dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))
-	log := p.log(m, playLogLines)
-	notes := p.wrote(m)
-
-	sizes := playSizes{
-		tail:  len(tail),
-		notes: len(notes),
-		board: len(board),
-		// The header is not a unit, and tui.Roster always draws one.
-		units: max(len(roster)-1, 0),
-		log:   len(log),
-	}
+	sizes := drawn.sizes()
 	plan := playFit(playBodyRoom(m.height), sizes)
+	log := p.logFrame(drawn.log, plan.log)
 
-	body := []string{heading}
+	body := []string{p.heading(m, p.logPosition(m, len(drawn.log), plan.log))}
 	if plan.notice {
 		body = append(body, p.notice(m, plan, sizes))
 	}
 	if plan.board || plan.roster > 0 {
 		body = append(body, "")
 		if plan.board {
-			body = append(body, board...)
+			body = append(body, drawn.board...)
 		}
 		if plan.roster > 0 {
-			body = append(body, roster[:plan.roster+1]...)
+			body = append(body, drawn.roster[:plan.roster+1]...)
 		}
 	}
 	if plan.order {
-		body = append(body, "", order)
+		body = append(body, "", drawn.order)
 	}
-	if plan.log > 0 {
+	if len(log) > 0 {
 		body = append(body, "")
-		body = append(body, log[len(log)-plan.log:]...)
+		body = append(body, log...)
 	}
-	if len(tail) > 0 {
+	if len(drawn.tail) > 0 {
 		body = append(body, "")
-		body = append(body, tail...)
+		body = append(body, drawn.tail...)
 	}
 	if plan.notes {
 		body = append(body, "")
-		body = append(body, notes...)
+		body = append(body, drawn.notes...)
 	}
 	return strings.Join(body, "\n"), footer
+}
+
+// heading is the screen's title row, and the log's position in the history when
+// there is one.
+//
+// ⚠️ **The position goes here rather than on a row of its own.** A row of its own
+// would cost what the budget below spent a whole feature proving this screen has
+// not got, and the title is about seventeen cells of the seventy-nine there are.
+func (p playScreen) heading(m model, position string) string {
+	row := m.style.heading.Render(m.text(i18n.PlayHeading)) + "  " +
+		m.style.dim.Render(m.text(i18n.PlaySeed, p.seed))
+	if position == "" {
+		return row
+	}
+	return row + "  " + m.style.dim.Render(position)
+}
+
+// logPosition is where the frame sits in the whole history, and nothing when the
+// whole of it is on screen.
+//
+// ⚠️ **Shown whenever rows are hidden, not only while scrolled back.** Half of
+// the defect this answers is that nothing on the screen said a history existed:
+// eight rows of three hundred were drawn and the other two hundred and ninety-two
+// were unreachable by any means. A reader who cannot see that there are three
+// hundred rows will not go looking for the key that reaches them.
+//
+// Nothing is said when the log is not drawn at all — the notice under the heading
+// already names it as a section the window is too short for, and a range for a
+// frame nobody can see would be a position in a thing that is not there.
+func (p playScreen) logPosition(m model, total, room int) string {
+	if room <= 0 || total <= room {
+		return ""
+	}
+	start := p.logStart(total, room)
+	return m.text(i18n.PlayLogRange, start+1, start+room, total)
+}
+
+// scrollLog moves the log's frame by whole pages, and does nothing at all when
+// the history already fits the frame.
+//
+// A page rather than a row, because the history runs to hundreds of rows and a
+// key that had to be pressed two hundred times to reach the opening board is a
+// key nobody presses twice.
+//
+// ⚠️ **Reaching the bottom asks to follow again**, and that is not the sentinel
+// the field comments refuse. A reader who scrolls down to the newest row is
+// saying they want the newest row, which is a state; storing the number that
+// happens to be the newest row today is the thing that goes wrong the moment the
+// next event arrives. So the offset goes back to nothing there — nought is also a
+// perfectly ordinary offset, meaning the top of the history, and the flag beside
+// it is what tells the two apart. That is the whole argument for two fields.
+func (p playScreen) scrollLog(m model, pages int) playScreen {
+	if p.fight == nil || p.err != nil {
+		return p
+	}
+	drawn := p.drawings(m)
+	room := playFit(playBodyRoom(m.height), drawn.sizes()).log
+	total := len(drawn.log)
+	if room <= 0 || total <= room {
+		// Nothing above the frame, so nothing to scroll to.
+		return p
+	}
+	tail := total - room
+	offset := clamp(p.logStart(total, room)+pages*room, 0, tail)
+	if offset == tail {
+		p.logFollow, p.logOffset = true, 0
+		return p
+	}
+	p.logFollow, p.logOffset = false, offset
+	return p
 }
 
 // drawnRows splits a drawing into the rows it occupies, dropping the empty one a
@@ -765,34 +964,63 @@ func drawnRows(drawn string) []string {
 	return strings.Split(trimmed, "\n")
 }
 
-// log is the last rows of the log, which is what happened since the player last
-// chose.
+// logRows is the whole history, rendered.
 //
-// Counted in **rendered lines** and not in events, because tui.Line opens a turn
-// with a blank row and one event therefore arrives as two lines. Each event is
+// ⚠️ **Every event, and it used to be the last few.** The old reading walked from
+// the end and stopped at the budget, which meant the rows past the frame were not
+// merely off screen — they did not exist, so no key could have reached them and
+// the frame had nothing to be a window into. p.events holds every event a battle
+// has emitted (collect appends and never trims), so the history was always there
+// and it was the view that threw it away.
+//
+// Counted in **rendered rows** and not in events, because tui.Line opens a turn
+// with a blank row and one event therefore arrives as two rows. Each event is
 // rendered exactly as it was before there was a budget — the indent goes on the
-// front of whatever tui.Line returned, once, so a turn's blank row still reads
-// as a blank row — and the lines are then counted rather than the events.
+// front of whatever tui.Line returned, once, so a turn's blank row still reads as
+// a blank row — and the rows are then counted rather than the events.
 //
-// Walked from the end so that a battle a thousand events deep renders the
-// handful of them that are on screen. Nothing here reads the battle: the event
-// log is the only contract a reader of one has.
-func (p playScreen) log(m model, room int) []string {
-	if room <= 0 {
-		return nil
-	}
+// Nothing here reads the battle: the event log is the only contract a reader of
+// one has.
+func (p playScreen) logRows(m model) []string {
 	var lines []string
-	for index := len(p.events) - 1; index >= 0 && len(lines) < room; index-- {
-		line := tui.Line(p.events[index], p.tags)
+	for _, event := range p.events {
+		line := tui.Line(event, p.tags)
 		if line == "" {
 			continue
 		}
-		lines = append(drawnRows("  "+m.style.dim.Render(line)), lines...)
-	}
-	if len(lines) > room {
-		lines = lines[len(lines)-room:]
+		lines = append(lines, drawnRows("  "+m.style.dim.Render(line))...)
 	}
 	return lines
+}
+
+// logStart is the first row of the history the frame shows.
+//
+// ⚠️ **Clamped against the total every time it is read**, not only where the
+// offset is written. Undo is a shorter script replayed, so the history is rebuilt
+// shorter than the one the offset was taken in, and an offset carried across it
+// points past the end.
+func (p playScreen) logStart(total, room int) int {
+	if room <= 0 {
+		return 0
+	}
+	tail := max(total-room, 0)
+	if p.logFollow {
+		return tail
+	}
+	return clamp(p.logOffset, 0, tail)
+}
+
+// logFrame is the rows of the history that are on screen: the tail while the
+// reader is following it, and whichever page they scrolled back to otherwise.
+func (p playScreen) logFrame(rows []string, room int) []string {
+	if room <= 0 {
+		return nil
+	}
+	if len(rows) <= room {
+		return rows
+	}
+	start := p.logStart(len(rows), room)
+	return rows[start : start+room]
 }
 
 // choices is the turn in front: whose it is, what they may do, and where it may
