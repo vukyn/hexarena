@@ -704,6 +704,24 @@ const (
 	PlayFooter
 	PlayAimFooter
 	PlayOverFooter
+	// What the battle screen gave up to fit the window, and why. The screen
+	// budgets its own body — the heading and the option list are reserved and
+	// everything else takes what is left — so a window shorter than the whole
+	// board, roster, order line and log is the ordinary case rather than the odd
+	// one, and a screen silently missing its board reads as a broken screen.
+	//
+	// One line rather than a marker per section: the rows are exactly what is
+	// scarce when this is drawn at all.
+	PlayHidden
+	PlayHiddenBoard
+	PlayHiddenOrder
+	PlayHiddenLog
+	PlayHiddenNote
+	// English needs the singular and Vietnamese does not, which is two keys
+	// rather than a plural rule — the same division BlurbCostCooldownOne and
+	// BlurbStripsOne are two keys for.
+	PlayHiddenUnits
+	PlayHiddenUnitsOne
 
 	keyCount
 )

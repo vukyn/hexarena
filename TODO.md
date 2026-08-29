@@ -105,6 +105,29 @@ is only so the shape is readable.
   raised by `commit()`, which runs on the way out of every member, so merely
   opening one claimed a change. → `README.md` § Building a squad.
 
+- **The battle screen budgets its own body**, because it never could fit the
+  window the tool declares. At 80x24 the body has **twenty** rows, and heading +
+  board (10) + roster (1 + one a unit) + order + option list (1 + one an option)
+  comes to 20 at a 1v1, 24 at a 3v3 and **28** at a 5v5 — `hex.MaxTeamSize` is 5,
+  so 28 is the floor for a legal squad before a single blank or log line, and a
+  summon puts units on the board past the five a squad brought (`board + roster =
+  29` on its own). So "which rows does it give up to fit 24" had no answer, and
+  **the defect was where the cut landed**: `frame` cuts from the bottom and the
+  option list was the last thing the body wrote, so the one thing a player has to
+  see in order to act was the first thing thrown away. `playFit` reserves the
+  heading and the turn in front and hands the rest what is left, in a stated
+  order — save note, roster (clipped a row at a time), board (dropped whole),
+  order line, log — with one dim line naming what is not shown. ⚠️ What
+  disappears is **not monotone** in the height: the board is ten rows or none, so
+  where it still just fits it takes the rows the order line would have had. Only
+  the *offering* order is monotone, which is what the test asserts. ⚠️ A second
+  defect found measuring it: `playLogLines` capped **events** and not lines, and
+  `tui.Line` opens a turn with a blank row of its own, so eight events measured
+  **eleven rows**. ⚠️ No per-screen floor was added — `minHeight` already is one,
+  and at 24 the budget still holds a 5-a-side roster whole under the option list.
+  → `CLAUDE.md` § *Where a form beats a prompt* → the played battle, *the
+  budget*.
+
 ## Not done
 
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
@@ -132,21 +155,6 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **The battle screen does not fit the window the tool declares.** Its body
-      is **28 lines** and `frame` gives the body `m.height - 2` less the two the
-      header takes, so at 80x24 only twenty survive and the whole option list is
-      cut with the `Truncated` marker. Measured in both languages: the list first
-      appears at **h ≥ 30**, the screen is un-truncated from **h ≥ 32**, and from
-      **h ≥ 38** once the log tail has filled to its eight lines.
-      ⚠️ `TestTheBattleScreenIsNoTallerThanItAlreadyWas` is a **tripwire and not a
-      bound** — it asserts today's number as a ceiling and says so, because a test
-      claiming the screen fits would ship red, which is the mistake the `reckless`
-      work already made once. What is open is which rows the screen gives up:
-      `playLogLines` is eight of them, and the board, the roster and the order
-      line are `internal/tui`'s drawing rather than this screen's, so trimming any
-      of them changes what a played battle looks like against what the game client
-      plays. That is a layout redesign and its own piece of work.
-      → `CLAUDE.md` § *Where a form beats a prompt* → the played battle.
 - [ ] **A list of three or more reads `X and Y and Z`.** `l.join` puts the
       language's conjunction between every pair and no comma anywhere, so
       `purify` strips `damage over time and stat reduction and turn loss`. It is

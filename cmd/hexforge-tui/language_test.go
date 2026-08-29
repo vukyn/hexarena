@@ -179,46 +179,64 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		}
 		finished = typeText(t, finished, "a")
 	}
+	// And the battle in the window it cannot fit, which is a state of the screen
+	// rather than a screen of its own and is here for the reason every other
+	// state is. Its body is budgeted against the room frame will give it, so at
+	// the declared floor the board, the order line and the log are dropped and
+	// one dim line says so — a wording like any other, and one no other state
+	// here can render, since every model above is measured in a window tall
+	// enough to hold the whole screen.
+	//
+	// Five a side, because that is the largest squad there is and the roster is
+	// what grows with it; aiming as well, because the cells are reserved with the
+	// options and are what push the roster into being clipped a row at a time,
+	// which is a different clause of the same line.
+	squeezed := atABattleOf(t, m, hex.MaxTeamSize)
+	squeezed.width, squeezed.height = minWidth, minHeight
+	squeezedAim := squeezed
+	squeezedAim.play.aiming = true
 	screens := map[string]model{
-		"shape diagram":    shape,
-		"spar":             spar,
-		"menu":             m.enter(screenMenu),
-		"browse":           m.enter(screenBrowse),
-		"form":             form,
-		"origins":          m.enter(screenOrigins),
-		"add a work":       adding,
-		"skills":           m.enter(screenSkills),
-		"statuses":         m.enter(screenStatuses),
-		"traits":           m.enter(screenPassives),
-		"add a skill":      addSkill,
-		"edit a skill":     editSkill,
-		"edited a skill":   editedSkill,
-		"kit picker":       kit,
-		"allowlist picker": allowlist,
-		"status picker":    statuses,
-		"filtered picker":  filtered,
-		"skill blurb":      skillBlurb,
-		"trait blurb":      traitBlurb,
-		"check":            m.enter(screenCheck),
-		"elements":         elements,
-		"chart":            graph,
-		"species":          species,
-		"unclaimed kind":   unclaimed,
-		"builds":           builds,
-		"squads":           squadEmpty,
-		"a squad":          building,
-		"a squad member":   member,
-		"a deep member":    deepest,
-		"a squad kit":      skillPick,
-		"a squad trait":    traitPick,
-		"reading a skill":  skillReading,
-		"a fight":          fight,
-		"nothing to fight": noSquads,
-		"a battle":         battle,
-		"aiming":           aiming,
-		"a battle blurb":   playBlurb,
-		"a battle over":    finished,
-		"traitless build":  traitless,
+		"shape diagram":            shape,
+		"spar":                     spar,
+		"menu":                     m.enter(screenMenu),
+		"browse":                   m.enter(screenBrowse),
+		"form":                     form,
+		"origins":                  m.enter(screenOrigins),
+		"add a work":               adding,
+		"skills":                   m.enter(screenSkills),
+		"statuses":                 m.enter(screenStatuses),
+		"traits":                   m.enter(screenPassives),
+		"add a skill":              addSkill,
+		"edit a skill":             editSkill,
+		"edited a skill":           editedSkill,
+		"kit picker":               kit,
+		"allowlist picker":         allowlist,
+		"status picker":            statuses,
+		"filtered picker":          filtered,
+		"skill blurb":              skillBlurb,
+		"trait blurb":              traitBlurb,
+		"check":                    m.enter(screenCheck),
+		"elements":                 elements,
+		"chart":                    graph,
+		"species":                  species,
+		"unclaimed kind":           unclaimed,
+		"builds":                   builds,
+		"squads":                   squadEmpty,
+		"a squad":                  building,
+		"a squad member":           member,
+		"a deep member":            deepest,
+		"a squad kit":              skillPick,
+		"a squad trait":            traitPick,
+		"reading a skill":          skillReading,
+		"a fight":                  fight,
+		"nothing to fight":         noSquads,
+		"a battle":                 battle,
+		"aiming":                   aiming,
+		"a squeezed battle":        squeezed,
+		"a squeezed battle aiming": squeezedAim,
+		"a battle blurb":           playBlurb,
+		"a battle over":            finished,
+		"traitless build":          traitless,
 	}
 	// The two states a trait picker only has once something in the book learns
 	// one. Skipped rather than faked when nothing does: a picker over invented
