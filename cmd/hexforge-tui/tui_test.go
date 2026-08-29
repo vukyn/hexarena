@@ -131,6 +131,10 @@ func key(t *testing.T, m model, name string) model {
 		"enter": {Code: tea.KeyEnter}, "esc": {Code: tea.KeyEscape},
 		"tab":    {Code: tea.KeyTab},
 		"ctrl+s": {Code: 's', Mod: tea.ModCtrl},
+		"ctrl+x": {Code: 'x', Mod: tea.ModCtrl},
+		// Backspace, so a number field can be shortened rather than only typed
+		// into: the level fields all arrive with a value already in them.
+		"backspace": {Code: tea.KeyBackspace},
 		// The Command key, which only a terminal speaking the Kitty keyboard
 		// protocol ever reports. The whole point of being on v2 is that this
 		// keystroke can exist at all.

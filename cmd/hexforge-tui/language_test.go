@@ -359,6 +359,12 @@ func withASquadSaved(t *testing.T, m model) model {
 	if err := m.lib.SaveSquad(m.squad.editing); err != nil {
 		t.Fatalf("save the fixture squad: %v", err)
 	}
+	// The squad in hand is now the squad on the file, so the baseline the
+	// discard guard compares against moves with it — which is what the save key
+	// does for a squad built through the keyboard. Without this the screen would
+	// hold a squad differing from nothing and still be asked about discarding
+	// it, and every fixture that backs out to the catalogue would stop there.
+	m.squad.baseline = m.squad.editing.Clone()
 	m.squad = m.squad.refresh(m.lib)
 	return m
 }

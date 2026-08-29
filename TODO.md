@@ -91,9 +91,12 @@ is only so the shape is readable.
   edit, so the mark moves with `←/→` in the same draw rather than jumping once
   the member is left; the front rank is marked on the grid itself, off
   `hex.Ranks` rather than off a column number; and the slot row reads the cell
-  *and* the rank. ⚠️ The drawing commits nothing — `commit()` raises `unsaved`
-  and the discard guard hangs off it, so committing on a keypress would have a
-  squad claim changes a passing cursor made. → `README.md` § Building a squad.
+  *and* the rank. ⚠️ The drawing commits nothing: `s.editing.Units` is shared
+  with every model copied off this one, so a write from inside a drawing would
+  reach all of them. The discard guard is a **comparison** against the squad as
+  it was last written (`placement.Squad.Equal`) and not a flag — the flag was
+  raised by `commit()`, which runs on the way out of every member, so merely
+  opening one claimed a change. → `README.md` § Building a squad.
 
 ## Not done
 

@@ -1396,10 +1396,10 @@ in a different file. Two things about it are worth stating:
     member **under edit** rather than from the squad's committed copy, so the
     mark travels while the cell is being chosen — which is the only moment a
     picture of a formation is any use. It is deliberately not fixed by
-    committing on every keypress: `commit()` also raises the unsaved flag, and
-    the guard that asks before discarding a squad hangs off it, so a cursor that
-    passed over a cell and came back would leave a squad claiming changes nobody
-    made. The drawing reads and writes nothing.
+    committing on every keypress: `s.editing.Units` is shared with every model
+    copied off this one, so a write from inside a drawing reaches all of them —
+    which is what a value receiver looks like it prevents and does not. The
+    drawing reads and writes nothing.
     (`TestTheFormationFollowsTheArrowsWhileTheCellIsChosen` and
     `TestTheLiveFormationDrawsWithoutCommitting`.)
   - **The front rank is marked on the picture, not described beside it.** Carets
@@ -1417,6 +1417,26 @@ in a different file. Two things about it are worth stating:
     `hex.Place` rotates an enemy formation 180 degrees, so a cell is the same
     depth whichever half it is fielded as
     (`TestARankIsTheSameDepthOnEitherSide`).
+
+**Leaving asks only when something changed, and it asks by comparing.** The
+screen carries the squad as it was last written down — what `enter` read off the
+file, what `ctrl+s` put back, or the empty squad `n` started from — and the guard
+is whether what is in hand differs from it, `placement.Squad.Equal` giving the
+answer. The comparison is order-sensitive on the kit and on the members, because
+a kit's order *is* the kit.
+
+⚠️ **It used to be a flag, and a flag cannot tell *changed* from *touched*.**
+`commit()` writes a member back on the way out of it whether or not a key moved
+anything, so merely opening a member and pressing `esc` claimed a change, and
+arrowing the cell chooser onto another cell and back raised the discard question
+over changes nobody had made — which is how a question stops being read. The
+comparison lives in `placement` beside `Clone` because both answer what a squad
+is made of, and a second copy of that field list would fail *silently*: a missed
+field compares equal, so the question is not asked and the edit is thrown away
+with nothing on screen looking wrong. That is what
+`TestSquadEqualityReadsEveryField` walks the structs by reflection for;
+`TestARoundTripThroughAMemberLeavesTheGuardDown` and
+`TestEveryRealEditRaisesTheGuard` are the two halves on the screen.
 
 A squad is saved into `squads.json` beside the other data files, and it ships
 **empty**: the file exists so there is somewhere for one to go. It is validated
