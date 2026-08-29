@@ -106,44 +106,6 @@ is only so the shape is readable.
 - [ ] **Grow the cast.** Four ship across two origins, one per element (grass,
       fire, water, wind). This is content, and the constraints that bound it are
       written down. Read Squirtle first. → `CLAUDE.md` § Open work.
-- [ ] **`reckless` is the dragon build's 22.1%, and a detonate does not fix it.**
-      The trait grants `unleashed` (+300‰ attack) **and** `bare` (−400‰ defence
-      *and* −400‰ dodge), all permanent: two stats paid for one, into a matchup
-      whose `inferno` amplifies ×3.5 off a status. Swapping it for `blood_thirst`
-      reads 55.1% and for `blaze` 38.9%; the missing detonate is worth −0.8 by
-      comparison, so **the theory this item was filed under is disproved and
-      should not be re-raised**. The levers are all data — soften `bare`, drop its
-      dodge clause, or raise `unleashed`.
-      ⚠️ **Two of the three levers have now been measured and both are dead ends;
-      only the forbidden one moves the number.** Dropping `bare`'s dodge clause is
-      worth **+2.8** (22.0% → 24.8%) and pairing it with a `vulnerability` — six
-      harmful statuses at −200‰ — is worth **−3.3** (→ 18.7%), *below* where the
-      trait started and far below the 38.9% floor. The two terms add rather than
-      compound, so the argument that dodge is superlinear against a
-      burn-and-detonate opponent is disproved. Decomposed, `bare`'s defence term
-      is **88%** of what the trait costs (−400 dodge only reads 43.4%, no `bare`
-      at all 46.3%) — so **softening the magnitude is the only lever left**, and it
-      is the one that was ruled out for having no natural stopping point. That
-      objection is answered: the stop rule's two re-taken referents, `blaze` at
-      38.9% and `blood_thirst` at 55.1%, **are** the stopping point, and the two
-      readings above bracket the sweep — `bare` at −400 defence alone reads 24.8%
-      and no `bare` at all reads 46.3%, so the value that lands sits between them.
-      Do not re-raise the dodge clause or `unleashed`.
-      → `README.md` § *What `bare`'s dodge clause was worth*.
-      ⚠️ **`vulnerability` still has no shipped user, and `reckless` is not it.**
-      The mechanism is proven end to end — parses, prices, steers, renders in both
-      languages — but a negative share on top of an unchanged defence term makes
-      the build strictly worse. Whatever lands still has to land with it; it just
-      cannot be the whole of what lands.
-      ⚠️ `TestRecklessIsATradeAndNotAGift` asks whether *something* is given up
-      and cannot ask whether **too much** is. Half of that gap is now closed:
-      `TestRecklessSpendsNoMoreThanItBuys` prices the trait in damage off the
-      event log (shipped data buys 30956 for 50084, ratio 1.62 against a bound of
-      2) and is what caught the candidate, going red where the win rate would not
-      have. The other half — a cast-wide rule that no trait may lower more
-      distinct stats than it raises — is **written and not shipped**, because it
-      goes red on the shipped data by design; it lands with the fix.
-      → `dragon_test.go` § `TestTheDragonLineCanSpendWhatItApplies` for the table.
 - [ ] **The rest of the cast still crits at nothing.** Two skills carry a chance
       now, chosen by what `weigh` priced rather than by what the names suggest.
       The other twenty-six damaging skills are open, and each is its own reading:
@@ -182,6 +144,28 @@ is only so the shape is readable.
   copy of the resolving arithmetic — and either costs about ×36 a turn.
   → `CLAUDE.md` § Rating an action; `TestAPassBuysNoCooldownAnActDoesNot` and
   `TestNothingWaitsOnPurpose`.
+- **Rebalancing `reckless`.** All three levers the item named are measured and
+  dead, and the trait is kept as it stands: an extreme trade that loses badly to
+  one matchup and wins nearly everything else — **22.1%** against the fire line
+  and **96.6% / 93.0%** against the rest of the cast — which is a legitimate
+  shape rather than a bug. Dropping `bare`'s dodge clause is worth **+2.8**;
+  pairing it with a `vulnerability` is worth **−3.3**, *below* where the trait
+  started; and softening the defence magnitude cannot land, because **the two
+  gates flip at the same two-point rung** — the duel clears the 38.9% floor
+  between −95 and −90 and the cast-wide pair saturates squirtle at 100% across
+  exactly that step. Every amount that makes the matchup real makes `reckless`
+  the 100%-against-the-cast trait `blood_thirst` was refused for being.
+  ⚠️ The dial is also a quarter as long as it reads, because a stat
+  **saturates**: a −400‰ term on a base of 400 fights at **290**, not 240, so the
+  whole reachable range of that lever is 290–391. Do not re-raise any of the
+  three. What is left, if anything, is a *different kind* of cost — one the duel
+  prices and the cast-wide matchups do not — or the possibility that the 22%
+  belongs to `inferno` and the fire line's detonate rather than to this trait,
+  which nobody has measured. ⚠️ `vulnerability` therefore **still has no shipped
+  user**; the mechanism is proven end to end but a negative share on top of an
+  unchanged defence term makes the build strictly worse.
+  → `README.md` § *What `bare`'s dodge clause was worth* and § *What softening
+  `bare`'s defence was worth*.
 - **The queue as a third tie-break key.** Built, measured and **thrown away**.
   `take` was given a key under `cooldown` — when value and cooldown are both
   level, take the aim whose occupant acts soonest — and it moved **0 of 93,320

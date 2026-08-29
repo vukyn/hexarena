@@ -2090,6 +2090,115 @@ it", the sign carried by the verb and the share printed as its size. What is mis
 is a trait the share is *right* for, and `reckless` is not it while its defence term
 is unchanged.
 
+### What softening `bare`'s defence was worth
+
+The last of the three levers, and it does not exist either — not because the dial
+does nothing, but because **the two gates it has to pass through change sign at the
+same rung of it**. Nothing was shipped.
+
+The lever was the one the decomposition above pointed at: the defence term is 88% of
+what `reckless` costs, so it is the only thing that can move the figure. It was swept
+on the same instrument as everything above — the build duel, both arrangements, 1500
+seeds each, 3000 battles a row — with the dodge clause left alone at −400 and
+`unleashed` untouched. The referents were **re-taken on the same run** and came back
+identical to the table above, which is the check that the instrument had not drifted.
+
+| `bare` defence | effective defence | rate | Δ vs R0 |
+| --- | --- | --- | --- |
+| **R0** −400 (shipped) | 290 | 22.0% | — |
+| −300 | 310 | 24.4% | +2.4 |
+| −250 | 322 | 24.7% | +2.7 |
+| −200 | 335 | 27.8% | +5.8 |
+| −175 | 342 | 27.9% | +5.9 |
+| −150 | 349 | 37.0% | +15.0 |
+| −125 | 357 | 37.4% | +15.4 |
+| −100 | 364 | 37.4% | +15.4 |
+| −95 | 366 | 37.4% | +15.4 |
+| **−90** | **368** | **39.9%** | **+17.9** |
+| −85 | 369 | 39.9% | +17.9 |
+| −80 | 371 | 39.9% | +17.9 |
+| −75 | 373 | 39.9% | +17.9 |
+| −50 | 382 | 41.2% | +19.2 |
+| −25 | 391 | 42.9% | +20.9 |
+| **A** ceiling: `blood_thirst` instead | — | 55.1% | +33.1 |
+| **B** floor: `blaze` instead | — | 38.9% | +16.9 |
+
+Two things in that table are worth more than the row that was going to be shipped.
+
+**The dial is far shorter than its numbers look, because the stat saturates.** A
+−400‰ term on a base of 400 reads as "take 160 off", and `modifier.Set.Stat`
+saturates the change towards a floor instead of applying it, so the unit actually
+fights at 290. The whole reachable range of this lever — everything from −400 to the
+smallest term the parser will accept — is **290 to 391**, about a quarter of the
+stat. A reader pricing `bare` off its own description reads forty per cent and the
+engine charges twenty-seven, and that gap is by design rather than a bug: it is the
+same saturation that keeps a stat bounded when several terms stack. It is also why
+the sweep the item predicted, from 24.8% up through 46.3% across −300..−150, is not
+what the dial does: **all four of the prescribed rows sit under the floor**, and the
+band is not reached until the term is down around a tenth of what ships.
+
+**And the rate moves in steps, not on a curve.** Fourteen distinct amounts produce
+nine distinct rates, with long plateaus (−150 through −95 are all 37.4% ± 0.4;
+−90 through −75 are all *exactly* 1197/3000) and cliffs between them. That is the
+damage formula rounding: a two-point change in defence is worth nothing at all until
+it moves a strike across a kill threshold, and then it is worth two and a half
+points of win rate at once. **A dial that behaves like this cannot be tuned to a
+target**, which is the practical answer to "aim for 45–50%": the nearest rung to it
+is 42.9%, and that is at a defence term of −25‰ — a cost of nine points of a stat,
+which is not a trade, it is a rounding error with a name.
+
+⚠️ **The two gates cross at the same rung, and that is the finding.** The duel is
+not the only thing a cheaper `bare` moves; the trait also has to not turn
+`reckless` into a strictly better `blood_thirst` against the rest of the cast, which
+is the objection that stopped the trait being swapped in the first place. Measured on
+the `theLength` fixture, 300 seeds against each of bulbasaur and squirtle:
+
+| `bare` defence | duel | bulbasaur | squirtle |
+| --- | --- | --- | --- |
+| −400 (shipped `reckless`) | 22.0% | 96.6% | 93.0% |
+| −150 | 37.0% | 98.6% | 98.6% |
+| −100 | 37.4% | 99.0% | 98.6% |
+| −95 | 37.4% | 99.0% | 98.6% |
+| **−90** | **39.9%** | **99.0%** | **100.0%** |
+| −75 | 39.9% | 99.0% | 100.0% |
+| −25 | 42.9% | 99.0% | 100.0% |
+| `blood_thirst` instead | 55.1% | 100.0% | 100.0% |
+
+The duel clears the floor **B** between −95 and −90. The cast-wide pair saturates
+squirtle at 100% between −95 and −90. It is the same step, two points of defence
+wide — 366 to 368 — and both gates flip across it, because both are the same event
+seen from two sides: a strike crossing a kill threshold wins the duel a little more
+often *and* finishes the cast a little faster. **There is no value of `bare`'s
+defence term that passes both.** Every amount that makes the dragon build a real
+matchup also makes `reckless` the 100%-against-the-cast trait that `blood_thirst`
+was refused for being.
+
+So the sweep is reported and the data is **unchanged**, which is the third lever
+falsified and the last one the item had. What `reckless` needs is not a smaller
+number in the term it already has — all three of its own dials have now been
+measured and none of them works — it is either a different kind of cost, one the
+duel prices and the cast-wide matchups do not, or the acceptance that the dragon
+build's 22% is a *statement about `inferno`* and belongs to the fire line's detonate
+rather than to this trait.
+
+⚠️ **Two tests were queued behind this change and neither of them lands.**
+`TestTheDragonBuildIsASidegradeAndNotAnUpgrade`'s floor was to be raised from 150 to
+300; the duel still reads 22.1%, so the floor **stays at 150** and raising it would
+only be a red test asserting a fix that does not exist. The cast-wide *no trait may
+lower more distinct stats than it raises* rule is **dropped** rather than held over
+again: it counts stats and never magnitudes, so it would pass a `bare` at −900 and
+refuse a `bare` at −25, and the whole of what this sweep found is that the magnitude
+is the thing worth holding. `TestRecklessSpendsNoMoreThanItBuys` already holds it, in
+the currency the trait is denominated in, and it still reads **1.62** against a bound
+of 2 on unchanged data — the same figure as before, because nothing changed.
+
+⚠️ **A note on how this was measured, because it matters for the next attempt.**
+Every row above came from patching the parsed `statuses.json` in memory and
+rebuilding the status, passive and skill books around it, rather than from editing
+the shipped file and putting it back. That is cheap, exact and reproducible, and it
+is roughly a third of the `weigh`-shaped trait instrument the open item asks for —
+what is still missing is somewhere for the result to live that is not a test log.
+
 ### Both halves of an all-sided skill
 
 Built. `skill.All` aims at either half of the board and a shape aimed that way
