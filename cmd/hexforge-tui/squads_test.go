@@ -13,6 +13,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
+	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -562,13 +563,13 @@ func TestTheFormationFollowsTheArrowsWhileTheCellIsChosen(t *testing.T) {
 // TestTheLiveFormationDrawsWithoutCommitting is the trap the live picture had to
 // be built around, kept as a test rather than as a comment.
 //
-// The obvious fix is commit() on every keypress, and commit() also sets unsaved
-// — the flag the whole edit loop hangs off, since leaving a squad that carries
-// it asks before discarding. A cursor that only passed over a field would then
-// leave a squad claiming changes nobody made. So the drawing reads the unit
-// under edit and writes nothing, and this is the two halves of that: a key that
-// changes nothing leaves the guard down, and a key that moves the cell leaves
-// the squad's own copy alone until the member is left.
+// The obvious fix is commit() on every keypress, and s.editing.Units is shared
+// with every model copied off this one — so a write from inside a drawing
+// reaches all of them, which is what a value receiver looks like it prevents and
+// does not. So the drawing reads the unit under edit and writes nothing, and
+// this is the two halves of that: a key that changes nothing leaves the guard
+// down, and a key that moves the cell leaves the squad's own copy alone until
+// the member is left.
 func TestTheLiveFormationDrawsWithoutCommitting(t *testing.T) {
 	m, _, _ := start(t, i18n.En)
 	m = menuTo(t, m, screenSquads)
@@ -579,17 +580,17 @@ func TestTheLiveFormationDrawsWithoutCommitting(t *testing.T) {
 	if m.squad.mode != squadUnit {
 		t.Fatalf("enter on the first member opened %v", m.squad.mode)
 	}
-	if m.squad.unsaved {
+	if m.squad.dirty() {
 		t.Fatal("opening a member off a saved squad already claims changes")
 	}
 
 	// Walking the fields changes nothing about the unit, so nothing may reach
-	// the guard. This is what a commit() at the top of updateUnit would fail.
+	// the guard.
 	for range unitFieldCount + 1 {
 		m = key(t, m, "down")
 		_ = m.screenContent()
-		if m.squad.unsaved {
-			t.Fatalf("moving onto field %d raised the unsaved guard", m.squad.field)
+		if m.squad.dirty() {
+			t.Fatalf("moving onto field %d raised the discard guard", m.squad.field)
 		}
 	}
 
@@ -760,4 +761,288 @@ func frontColumn(t *testing.T) int {
 	}
 	t.Fatal("no authoring column maps onto the rank that meets the enemy first")
 	return -1
+}
+
+// aSavedSquad is a squad written to the file and taken back up for editing,
+// which is the state the discard guard is about: there has to be something
+// written down for what is in hand to differ from.
+//
+// Its member is built around whichever character in the book learns a trait, so
+// the trait list has a row to toggle. Naming one would tie this to content the
+// author is free to change, which is what the injected fixture exists to avoid.
+func aSavedSquad(t *testing.T) model {
+	t.Helper()
+	m, _, _ := start(t, i18n.En)
+	m = menuTo(t, m, screenSquads)
+	s := m.squad.begin()
+	s.editing.ID, s.editing.Name = "do-luu", "đội lưu"
+	s.idInput.SetValue(s.editing.ID)
+	s.nameInput.SetValue(s.editing.Name)
+
+	character, learns := aCharacterWithATrait(s.characters)
+	if !learns {
+		t.Fatal("no character in the book learns a trait, so no member can bring one")
+	}
+	unit := placement.Placement{
+		ID:        "mot",
+		Character: character.ID,
+		Level:     progression.LevelCap,
+		Slot:      hex.Offset{Col: hex.FormationCols - 1, Row: 1},
+	}
+	kit := character.SkillsAt(unit.Level, progression.Furthest)
+	if len(kit) > cast.SkillSlots {
+		kit = kit[:cast.SkillSlots]
+	}
+	unit.Skills = kit
+	unit.Passives = character.PassivesAt(unit.Level, progression.Furthest)[:cast.TraitSlots]
+	s.editing.Units = []placement.Placement{unit}
+
+	m.squad = s
+	m = withASquadSaved(t, m)
+	m.squad = m.squad.open(m.squad.saved[0])
+	if m.squad.mode != squadEdit {
+		t.Fatalf("the fixture squad opened in %v", m.squad.mode)
+	}
+	return m
+}
+
+func aCharacterWithATrait(characters []cast.Character) (cast.Character, bool) {
+	for _, character := range characters {
+		if len(character.PassivesAt(progression.LevelCap, progression.Furthest)) > 0 {
+			return character, true
+		}
+	}
+	return cast.Character{}, false
+}
+
+// TestARoundTripThroughAMemberLeavesTheGuardDown is what the guard being a
+// comparison rather than a latch buys, and it is the defect PR #153 recorded and
+// deliberately left standing.
+//
+// commit() writes a member back on the way out of it whether or not a key moved
+// anything, so under a flag set from there, *opening* a member and pressing
+// escape claimed a change — and arrowing the cell chooser onto another cell and
+// back claimed one twice over. Both are round trips: what they put back is what
+// they took, so the squad on the file and the squad in hand are the same squad
+// and nobody may be asked about discarding it.
+func TestARoundTripThroughAMemberLeavesTheGuardDown(t *testing.T) {
+	m := aSavedSquad(t)
+	if m.squad.dirty() {
+		t.Fatal("a squad just read off the file already differs from it")
+	}
+
+	// One: open a member and leave it.
+	m = key(t, m, "enter")
+	if m.squad.mode != squadUnit {
+		t.Fatalf("enter on the first member opened %v", m.squad.mode)
+	}
+	m = key(t, m, "esc")
+	if m.squad.dirty() {
+		t.Error("opening a member and pressing escape changed the squad")
+	}
+
+	// Two: arrow the cell onto another and back.
+	m = key(t, m, "enter")
+	for m.squad.field != unitSlot {
+		m = key(t, m, "down")
+	}
+	was := m.squad.unit.Slot
+	m = key(t, m, "right")
+	if m.squad.unit.Slot == was {
+		t.Fatal("the chooser did not move, so there is no round trip to make")
+	}
+	m = key(t, m, "left")
+	if m.squad.unit.Slot != was {
+		t.Fatalf("stepping back landed on %s rather than on %s", m.squad.unit.Slot, was)
+	}
+	m = key(t, m, "esc")
+	if m.squad.dirty() {
+		t.Error("arrowing the cell onto another and back changed the squad")
+	}
+
+	// And the whole point of it: leaving asks nothing.
+	m = key(t, m, "esc")
+	if m.guard != nil {
+		t.Errorf("leaving raised %v over changes nobody made", m.guard.question)
+	}
+	if m.squad.mode != squadList {
+		t.Errorf("escape from an unchanged squad landed in %v", m.squad.mode)
+	}
+}
+
+// TestEveryRealEditRaisesTheGuard is the other side of it, and it is a table
+// rather than one case because catching every kind of edit was the latch's one
+// virtue: a comparison that missed a field would lose that edit in silence, with
+// no question asked and nothing on screen looking wrong.
+//
+// Every case leaves the model on the squad view, so the escape below is the one
+// the guard hangs off. The member cases go in and come back out, because that is
+// the route by which a member's own fields reach the squad.
+func TestEveryRealEditRaisesTheGuard(t *testing.T) {
+	intoTheMember := func(t *testing.T, m model, field int) model {
+		t.Helper()
+		m = key(t, m, "enter")
+		if m.squad.mode != squadUnit {
+			t.Fatalf("enter on the first member opened %v", m.squad.mode)
+		}
+		for m.squad.field != field {
+			m = key(t, m, "down")
+		}
+		return m
+	}
+	edits := []struct {
+		what string
+		make func(*testing.T, model) model
+	}{
+		{"the name", func(t *testing.T, m model) model {
+			return typeText(t, m, "x")
+		}},
+		{"another member", func(t *testing.T, m model) model {
+			m = key(t, m, "down")
+			m = key(t, m, "enter")
+			if len(m.squad.editing.Units) != 2 {
+				t.Fatalf("the squad holds %d members", len(m.squad.editing.Units))
+			}
+			return key(t, m, "esc")
+		}},
+		{"a member taken out", func(t *testing.T, m model) model {
+			m = key(t, m, "ctrl+x")
+			if len(m.squad.editing.Units) != 0 {
+				t.Fatalf("the squad still holds %d members", len(m.squad.editing.Units))
+			}
+			return m
+		}},
+		{"the character", func(t *testing.T, m model) model {
+			m = intoTheMember(t, m, unitCharacter)
+			was := m.squad.unit.Character
+			m = key(t, m, "right")
+			if m.squad.unit.Character == was {
+				t.Fatalf("the cast holds only %q, so it cannot be cycled", was)
+			}
+			return key(t, m, "esc")
+		}},
+		{"the level", func(t *testing.T, m model) model {
+			m = intoTheMember(t, m, unitLevel)
+			was := m.squad.unit.Level
+			m = key(t, m, "backspace")
+			if m.squad.unit.Level == was {
+				t.Fatalf("the level field still reads %d", was)
+			}
+			return key(t, m, "esc")
+		}},
+		{"the form", func(t *testing.T, m model) model {
+			m = intoTheMember(t, m, unitStage)
+			was := m.squad.unit.Stage
+			m = key(t, m, "right")
+			if m.squad.unit.Stage == was {
+				t.Fatalf("the form chooser stayed on %q", was)
+			}
+			return key(t, m, "esc")
+		}},
+		{"the cell", func(t *testing.T, m model) model {
+			m = intoTheMember(t, m, unitSlot)
+			was := m.squad.unit.Slot
+			m = key(t, m, "right")
+			if m.squad.unit.Slot == was {
+				t.Fatalf("the cell chooser stayed on %s", was)
+			}
+			return key(t, m, "esc")
+		}},
+		{"the kit", func(t *testing.T, m model) model {
+			m = intoTheMember(t, m, unitSkills)
+			return throughTheList(t, m)
+		}},
+		{"the trait", func(t *testing.T, m model) model {
+			m = intoTheMember(t, m, unitPassives)
+			return throughTheList(t, m)
+		}},
+	}
+	for _, edit := range edits {
+		t.Run(edit.what, func(t *testing.T) {
+			m := edit.make(t, aSavedSquad(t))
+			if m.squad.mode != squadEdit {
+				t.Fatalf("the edit left the screen in %v", m.squad.mode)
+			}
+			if !m.squad.dirty() {
+				t.Fatalf("changing %s left the squad reading as the one on the file", edit.what)
+			}
+			m = key(t, m, "esc")
+			if m.guard == nil {
+				t.Fatalf("leaving after changing %s discarded it without asking", edit.what)
+			}
+			if m.guard.question != i18n.SquadDiscard {
+				t.Errorf("the question asked was %v", m.guard.question)
+			}
+		})
+	}
+
+	// The id is the one field a saved squad does not offer — changing it would
+	// write a second squad rather than rename this one — so it is asked of a
+	// squad nobody has written yet, where typing one is the whole of the edit.
+	t.Run("the id", func(t *testing.T) {
+		m, _, _ := start(t, i18n.En)
+		m = menuTo(t, m, screenSquads)
+		m = typeText(t, m, "n")
+		if m.squad.dirty() {
+			t.Fatal("a squad nobody has typed into already claims changes")
+		}
+		m = typeText(t, m, "moi")
+		if !m.squad.dirty() {
+			t.Fatal("typing an id left the squad reading as an empty one")
+		}
+		if m = key(t, m, "esc"); m.guard == nil {
+			t.Fatal("leaving after typing an id discarded it without asking")
+		}
+	})
+}
+
+// throughTheList opens the list under the cursor, toggles the row under its own,
+// takes the answer and comes back out to the squad.
+func throughTheList(t *testing.T, m model) model {
+	t.Helper()
+	m = key(t, m, "enter")
+	if m.picker == nil {
+		t.Fatal("the field raised no picker")
+	}
+	if len(m.picker.options) == 0 {
+		t.Fatal("the list is empty, so there is no row to toggle")
+	}
+	m = key(t, m, "space")
+	m = key(t, m, "enter")
+	if m.picker != nil {
+		t.Fatal("the list is still open")
+	}
+	return key(t, m, "esc")
+}
+
+// TestSavingSettlesTheGuardAndReopeningStartsClean is the third state a
+// comparison has to get right: a write moves the thing being compared against,
+// so a squad just saved is a squad with nothing outstanding — and one taken back
+// up off the file starts from the file rather than from whatever the screen was
+// last holding.
+func TestSavingSettlesTheGuardAndReopeningStartsClean(t *testing.T) {
+	m := aSavedSquad(t)
+	m = typeText(t, m, "x")
+	if !m.squad.dirty() {
+		t.Fatal("typing into the name left the guard down")
+	}
+	m = key(t, m, "ctrl+s")
+	if m.squad.err != nil {
+		t.Fatalf("the save was refused: %v", m.squad.err)
+	}
+	if m.squad.dirty() {
+		t.Error("a squad just written still reads as changed")
+	}
+	m = key(t, m, "esc")
+	if m.guard != nil {
+		t.Error("leaving a squad just saved asked before discarding it")
+	}
+
+	m = key(t, m, "enter")
+	if m.squad.mode != squadEdit {
+		t.Fatalf("enter on the catalogue opened %v", m.squad.mode)
+	}
+	if m.squad.dirty() {
+		t.Error("a squad taken back up off the file already differs from it")
+	}
 }

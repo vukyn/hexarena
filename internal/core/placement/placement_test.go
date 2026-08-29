@@ -1,6 +1,7 @@
 package placement_test
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -158,5 +159,71 @@ func TestAClonedSquadSharesNothing(t *testing.T) {
 	copied.Units[0].ID = "renamed"
 	if original.Units[0].Skills[0] == "changed" || original.Units[0].ID == "renamed" {
 		t.Errorf("editing the copy reached the original: %+v", original.Units[0])
+	}
+}
+
+// TestSquadEqualityReadsEveryField is the guard on the field list, and it walks
+// the structs by reflection rather than naming them because the failure it is
+// about is silent: a comparison that forgets a field says the squad in hand is
+// the squad on disk, and the builder's guard then lets a real edit be thrown
+// away without asking. A field added to either struct is covered the day it is
+// added rather than the day somebody remembers this file.
+func TestSquadEqualityReadsEveryField(t *testing.T) {
+	for _, field := range reflect.VisibleFields(reflect.TypeOf(placement.Squad{})) {
+		changed := aSquad()
+		nudge(t, reflect.ValueOf(&changed).Elem().FieldByIndex(field.Index))
+		if aSquad().Equal(changed) {
+			t.Errorf("a squad whose %s differs compares equal", field.Name)
+		}
+	}
+	for _, field := range reflect.VisibleFields(reflect.TypeOf(placement.Placement{})) {
+		changed := aSquad()
+		nudge(t, reflect.ValueOf(&changed.Units[0]).Elem().FieldByIndex(field.Index))
+		if aSquad().Equal(changed) {
+			t.Errorf("a squad whose member's %s differs compares equal", field.Name)
+		}
+	}
+	// Order is part of the answer and no field walk can say so, because
+	// reordering changes no field. A kit's order is the kit, and a squad's order
+	// is what the turn queue breaks a tie by, so a comparison that sorted first
+	// would call two different squads one.
+	reordered := aSquad()
+	reordered.Units[0].Skills[0], reordered.Units[0].Skills[1] =
+		reordered.Units[0].Skills[1], reordered.Units[0].Skills[0]
+	if aSquad().Equal(reordered) {
+		t.Error("a member whose kit is in another order compares equal")
+	}
+
+	// And the fixture against a copy of itself, so the walk above is read as
+	// "every one of these changes was noticed" rather than as a comparison that
+	// answers false to everything.
+	if !aSquad().Equal(aSquad().Clone()) {
+		t.Error("a squad does not equal a clone of itself")
+	}
+}
+
+// nudge changes a value in place, whatever kind it is, so the walk above needs
+// no table of fields to keep in step with the structs it reads.
+//
+// A slice is shortened rather than appended to because that reaches the length
+// check as well as the contents, and an unknown kind is a failure rather than a
+// skip: a field this cannot change is a field the walk above silently stops
+// covering, which is the whole defect it exists to catch.
+func nudge(t *testing.T, value reflect.Value) {
+	t.Helper()
+	switch value.Kind() {
+	case reflect.String:
+		value.SetString(value.String() + "-changed")
+	case reflect.Int:
+		value.SetInt(value.Int() + 1)
+	case reflect.Slice:
+		if value.Len() == 0 {
+			t.Fatalf("the fixture's %s is empty, so shortening it changes nothing", value.Type())
+		}
+		value.Set(value.Slice(0, value.Len()-1))
+	case reflect.Struct:
+		nudge(t, value.Field(0))
+	default:
+		t.Fatalf("nothing here knows how to change a %s", value.Kind())
 	}
 }

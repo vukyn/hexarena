@@ -76,6 +76,46 @@ func (p Placement) Clone() Placement {
 	return out
 }
 
+// Equal reports whether two squads are the same squad: every field of the squad
+// and of every member, in the order the members are written down.
+//
+// Order is part of the answer rather than an artefact of how it is computed. A
+// kit's order is the kit, and a squad's order is what the turn queue breaks a
+// tie by, so two squads holding the same names in a different order are two
+// different squads and a comparison that sorted first would call them one.
+//
+// It lives beside Clone because both answer the same question — what a squad is
+// made of. A caller that wrote its own comparison would be a second declaration
+// of that list, and the copy is the one that goes stale the day a field is
+// added, silently: a missed field compares equal and the difference is thrown
+// away with nobody asked about it.
+func (s Squad) Equal(other Squad) bool {
+	if s.ID != other.ID || s.Name != other.Name || len(s.Units) != len(other.Units) {
+		return false
+	}
+	for i, unit := range s.Units {
+		if !unit.Equal(other.Units[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+// Equal reports whether two placements field the same unit the same way.
+//
+// A nil list and an empty one are one answer here, which is what slices.Equal
+// says: having chosen nothing and having chosen nothing yet are the same squad
+// on the field, and Take refuses both for the same reason.
+func (p Placement) Equal(other Placement) bool {
+	return p.ID == other.ID &&
+		p.Character == other.Character &&
+		p.Level == other.Level &&
+		p.Stage == other.Stage &&
+		p.Slot == other.Slot &&
+		slices.Equal(p.Skills, other.Skills) &&
+		slices.Equal(p.Passives, other.Passives)
+}
+
 type file struct {
 	Squads []Squad `json:"squads"`
 }

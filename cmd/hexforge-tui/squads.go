@@ -62,9 +62,21 @@ type squadScreen struct {
 	// into saved, because a squad being built has not been saved yet and an
 	// index would have nothing to point at.
 	editing placement.Squad
-	// unsaved is true while editing holds something the file does not, which is
-	// what the guard on leaving asks about.
-	unsaved bool
+	// baseline is the squad as it was last written down: what open() read off
+	// the file, what save() put back, or the empty squad begin() started from.
+	// The guard on leaving compares against it.
+	//
+	// It is a reading rather than a latched flag because a latch cannot tell a
+	// squad that changed from one that was merely touched. commit() writes a
+	// member back whether or not anything moved, and it runs on the way out of
+	// every member, so opening one and pressing escape used to be
+	// indistinguishable from editing it — the question was asked over changes
+	// nobody had made, which is how a question stops being read.
+	//
+	// It is a Clone, not the value editing was set from: editing is mutated in
+	// place, and a baseline sharing its slices would compare equal to itself
+	// for ever.
+	baseline placement.Squad
 	// units is the cursor over the squad's members, and it may sit one past the
 	// last, which is the row that adds another.
 	units int
@@ -167,7 +179,7 @@ func (s squadScreen) updateList(m model, message tea.KeyPressMsg) (tea.Model, te
 func (s squadScreen) begin() squadScreen {
 	s.mode = squadEdit
 	s.editing = placement.Squad{}
-	s.unsaved = false
+	s.baseline = s.editing.Clone()
 	s.units = 0
 	s.editingID = true
 	s.err, s.notes = nil, nil
@@ -182,7 +194,7 @@ func (s squadScreen) begin() squadScreen {
 func (s squadScreen) open(squad placement.Squad) squadScreen {
 	s.mode = squadEdit
 	s.editing = squad.Clone()
-	s.unsaved = false
+	s.baseline = s.editing.Clone()
 	s.units = 0
 	s.editingID = false
 	s.err, s.notes = nil, nil
@@ -191,6 +203,19 @@ func (s squadScreen) open(squad placement.Squad) squadScreen {
 	s.idInput.Blur()
 	s.nameInput.Focus()
 	return s
+}
+
+// dirty reports whether the squad in hand differs from the one last written
+// down, which is the whole of what the guard on leaving asks.
+//
+// It is a comparison rather than a flag, so a round trip that changes nothing —
+// opening a member and leaving it, stepping the cell chooser onto another cell
+// and back — leaves the question unasked. Everything under edit has reached
+// s.editing by the time this is read: the only route out of a member commits
+// first, and so does opening either of its lists, while the id and the name are
+// written on every keypress that reaches them.
+func (s squadScreen) dirty() bool {
+	return !s.editing.Equal(s.baseline)
 }
 
 func (s squadScreen) updateEdit(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
@@ -202,11 +227,14 @@ func (s squadScreen) updateEdit(m model, message tea.KeyPressMsg) (tea.Model, te
 	switch message.String() {
 	case "esc":
 		m.squad = s
-		if s.unsaved {
+		if s.dirty() {
 			return m.ask(i18n.SquadDiscard, func(m model) model {
 				squad := m.squad
 				squad.mode = squadList
-				squad.unsaved = false
+				// Discarding is what the question said, so what is in hand goes
+				// back to the squad last written rather than being left changed
+				// behind a mode that no longer reads it.
+				squad.editing = squad.baseline.Clone()
 				m.squad = squad.refresh(m.lib)
 				return m
 			}), nil
@@ -230,7 +258,6 @@ func (s squadScreen) updateEdit(m model, message tea.KeyPressMsg) (tea.Model, te
 		if s.units < len(s.editing.Units) {
 			s.editing.Units = append(s.editing.Units[:s.units], s.editing.Units[s.units+1:]...)
 			s.units = clamp(s.units, 0, len(s.editing.Units))
-			s.unsaved = true
 			s.err, s.notes = nil, nil
 		}
 	default:
@@ -240,7 +267,6 @@ func (s squadScreen) updateEdit(m model, message tea.KeyPressMsg) (tea.Model, te
 		}
 		updated, command := field.Update(message)
 		if updated.Value() != field.Value() {
-			s.unsaved = true
 			s.err, s.notes = nil, nil
 		}
 		*field = updated
@@ -291,7 +317,6 @@ func (s squadScreen) addUnit(m model) (tea.Model, tea.Cmd) {
 	}
 	unit.ID = s.freeID(character.ID, -1)
 	s.editing.Units = append(s.editing.Units, unit)
-	s.unsaved = true
 	s = s.editUnit(len(s.editing.Units) - 1)
 	m.squad = s
 	return m, nil
@@ -452,7 +477,6 @@ func (s squadScreen) updateUnit(m model, message tea.KeyPressMsg) (tea.Model, te
 			if level, err := strconv.Atoi(strings.TrimSpace(updated.Value())); err == nil {
 				s.unit.Level = level
 				s = s.settleStage()
-				s.unsaved = true
 			}
 			s.err = nil
 			m.squad = s
@@ -477,7 +501,6 @@ func (s squadScreen) moveField(by int) squadScreen {
 func (s squadScreen) commit() squadScreen {
 	if s.unitIndex >= 0 && s.unitIndex < len(s.editing.Units) {
 		s.editing.Units[s.unitIndex] = s.unit.Clone()
-		s.unsaved = true
 	}
 	return s
 }
@@ -533,7 +556,6 @@ func (s squadScreen) cycle(by int) squadScreen {
 	default:
 		return s
 	}
-	s.unsaved = true
 	s.err = nil
 	return s
 }
@@ -636,7 +658,6 @@ func (m model) openSquadSkills() model {
 			squad.unit.Skills = answer.Chosen
 			squad.err = squad.refuse(cast.SkillSlots, answer.Chosen, "skill",
 				character.SkillsAt(squad.unit.Level, squad.form()), cast.Required)
-			squad.unsaved = true
 			m.squad = squad.commit()
 			return m
 		},
@@ -660,7 +681,6 @@ func (m model) openSquadPassives() model {
 			squad.unit.Passives = answer.Chosen
 			squad.err = squad.refuse(cast.TraitSlots, answer.Chosen, "trait",
 				character.PassivesAt(squad.unit.Level, squad.form()), cast.Optional)
-			squad.unsaved = true
 			m.squad = squad.commit()
 			return m
 		},
@@ -702,7 +722,7 @@ func (s squadScreen) save(m model) squadScreen {
 		{Kind: forge.NoteWrote, ID: s.editing.ID, Path: m.lib.SquadsPath()},
 		{Kind: forge.NoteRebuild},
 	}
-	s.unsaved = false
+	s.baseline = s.editing.Clone()
 	return s.refresh(m.lib)
 }
 
@@ -942,10 +962,15 @@ func (s squadScreen) formation(m model, editing int) string {
 // cell for the entire time the cell is being chosen, which is exactly when the
 // picture is being looked at.
 //
-// It is not fixed by committing on every keypress: commit() also sets unsaved,
-// and the unsaved guard is what the squad's edit loop is built on, so a squad
-// would claim changes from a cursor that only passed through. Reading the unit
-// under edit costs nothing and writes nothing.
+// It is not fixed by committing on every keypress either. s.editing.Units is
+// shared with every model copied off this one, so a write from inside a drawing
+// reaches all of them — which is what a value receiver looks like it prevents
+// and does not. Reading the unit under edit costs nothing and writes nothing.
+//
+// The guard on leaving no longer rides on that: it compares the squad in hand
+// against the one last written (see dirty), so a cursor that passed over a cell
+// and came back leaves it down by arithmetic rather than by nobody having
+// called commit().
 //
 // editing is -1 from the squad view, where there is no member under edit and the
 // committed list is the whole truth. The substitution replaces rather than
