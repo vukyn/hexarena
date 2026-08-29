@@ -1,3 +1,52 @@
 {
-  "squads": []
+  "squads": [
+    {
+      "id": "b01",
+      "name": "test",
+      "units": [
+        {
+          "id": "bulbasaur",
+          "character": "pokemon.bulbasaur",
+          "level": 60,
+          "slot": {
+            "col": 2,
+            "row": 1
+          },
+          "skills": [
+            "poison_powder",
+            "synthesis",
+            "venoshock",
+            "sludge_bomb"
+          ],
+          "passives": [
+            "virulence"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b02",
+      "name": "test2",
+      "units": [
+        {
+          "id": "squirtle",
+          "character": "pokemon.squirtle",
+          "level": 60,
+          "slot": {
+            "col": 2,
+            "row": 1
+          },
+          "skills": [
+            "withdraw",
+            "rapid_spin",
+            "skull_bash",
+            "wide_guard"
+          ],
+          "passives": [
+            "ballast"
+          ]
+        }
+      ]
+    }
+  ]
 }
