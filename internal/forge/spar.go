@@ -457,9 +457,15 @@ func (t *Tally) count(result Result) {
 }
 
 // place is one duellist as the engine takes it.
+//
+// Stage rather than Name, the way a placement and a roster entry both resolve
+// it: what the engine is handed is the form's stat line, so the name beside it
+// in a log has to be the form's too. A Duellist keeps both because a spar's own
+// report has a column for each — that is the report's business, not the
+// battle's.
 func place(id string, who Duellist, side hex.Side) battle.Roster {
 	return battle.Roster{
-		ID: id, Name: who.Name, Side: side, Slot: duelSlot,
+		ID: id, Name: who.Stage, Side: side, Slot: duelSlot,
 		Affinity: who.Affinity, Stats: who.Stats,
 		Skills: who.Skills, Passives: who.Passives,
 	}

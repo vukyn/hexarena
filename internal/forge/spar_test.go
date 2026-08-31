@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -502,5 +503,42 @@ func TestCountingOneSkillAgreesWithCountingThemAll(t *testing.T) {
 	}
 	if everything.Strikes.Cast == 0 {
 		t.Error("nothing was cast at all, so this test compared two empty tallies")
+	}
+}
+
+// TestADuellistTakesTheFieldUnderItsFormsName is the spar's copy of the rule a
+// placement and a roster entry both obey: what the engine is handed is a form's
+// stat line, so the name the log prints beside those numbers has to be the
+// form's. A duel naming the character puts a first form's name on a last form's
+// health, which is the one pairing a reader cannot tell from the real thing.
+//
+// A Duellist carries both names because a spar's own report has a column for
+// each. That is the report's business; only one of the two may reach a battle.
+func TestADuellistTakesTheFieldUnderItsFormsName(t *testing.T) {
+	lib := sparLibrary(t)
+	evolved := 0
+	for _, character := range lib.Characters().All() {
+		who, err := lib.duellist(character, progression.LevelCap)
+		if err != nil {
+			t.Fatalf("resolve %s: %v", character.ID, err)
+		}
+		if who.Stage == "" {
+			t.Fatalf("%s resolves to no form, so a duel has no name to field it under", character.ID)
+		}
+		fielded := place("a", who, hex.SideAlly)
+		if fielded.Name != who.Stage {
+			t.Errorf("%s takes the field as %q, want the form it fields, %q",
+				character.ID, fielded.Name, who.Stage)
+		}
+		if who.Stage != who.Name {
+			evolved++
+		}
+	}
+	// Every character in the fixture whose last form is its own name proves
+	// nothing above: the two names it could have picked are one string. At least
+	// one has to differ, or this passes on the behaviour it exists to refuse.
+	if evolved == 0 {
+		t.Error("no character in the library reaches a form named differently from itself, " +
+			"so naming the form and naming the character cannot be told apart here")
 	}
 }

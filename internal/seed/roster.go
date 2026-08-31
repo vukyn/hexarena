@@ -178,7 +178,10 @@ func resolveRosterEntry(unit rosterEntry, characters *cast.Book) (battle.Roster,
 	if err != nil {
 		return battle.Roster{}, fmt.Errorf("unit %q: %w", unit.ID, err)
 	}
-	entry.Name = character.Name
+	// The form's name rather than the character's, for the reason Placement.resolve
+	// gives: the stat line that fights is the form's, so naming the character
+	// would put a first form's name beside a last form's numbers.
+	entry.Name = form.Name
 	entry.Affinity = character.Element
 	entry.Stats = stats
 	// The loadout: chosen from what the character has learned by this level, and
