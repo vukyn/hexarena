@@ -25,7 +25,8 @@ type Action struct {
 	Kind   Kind
 	Target Target
 
-	// Focus is an id the raised screen should land on, empty for none.
+	// Subject is what the raise is about, and the zero value is a raise about
+	// nothing.
 	//
 	// ⚠️ Applying it is the **client's** job, and that is the point rather than a
 	// division of labour. The traits listing used to reach into the statuses
@@ -34,11 +35,111 @@ type Action struct {
 	// package that knows nothing about which other screens exist. A raise names
 	// what it wants and asks nobody where it lives.
 	//
-	// ⚠️ An id the raised screen cannot find is a raise that does **not
-	// happen**: the reader stays where they are. A trait naming a status the
-	// book has lost is a trait already printing a bare id, and landing a cursor
-	// on whatever sorted next would answer a question nobody asked.
-	Focus string
+	// ⚠️ It replaced a bare `Focus string`, which was the same mechanism with one
+	// case in it, and the case was undeclared: a Focus at any target but the
+	// statuses reference made the client's applier answer "not found", and a
+	// declined raise is silent by design — so a raise carrying a subject to the
+	// wrong screen looked exactly like a reader who had not pressed the key. The
+	// kinds are counted now, for the reason TargetCount is counted.
+	Subject Subject
+}
+
+// Subject is what a raise is about: the thing the screen being raised is being
+// asked to land on, or to describe.
+//
+// ⚠️ **A tagged struct rather than an interface**, and the reason is Action
+// rather than taste. An Action is a comparable value a screen returns and a test
+// writes out as a literal; an interface field would make the zero Action hold a
+// nil the applier has to test for separately from "no subject", which is the
+// absence-encoded-into-a-value mistake this repository has paid for twice (a
+// queue reading of nought meaning soonest, a sentinel log offset meaning
+// following). A Kind at nought means nothing was asked for, exactly as NoTarget
+// does, and SubjectKindCount is what lets a client prove it handles the rest.
+//
+// **Every kind carries an ID and that is the whole idiom**: a raise names what it
+// wants by id and asks nobody where it lives, so the describer looks the id up in
+// the books it was handed. Handing the resolved value over instead would put the
+// lookup — and its refusal — on the raiser, which is the screen with nowhere to
+// draw one.
+type Subject struct {
+	Kind SubjectKind
+
+	// ID is a status id, a skill id or a character id, depending on Kind.
+	ID string
+
+	// Level is the level a character is being read at, and only a
+	// CharacterSubject spends it. A trait comes in at a level, so "what is this
+	// unit carrying" has no answer without one.
+	Level int
+
+	// At and Of are where the subject sat in the list it was chosen out of, At
+	// counting from one.
+	//
+	// ⚠️ **Of is nought when that list was empty**, which is how a raiser says
+	// there was nothing to describe without the describer reaching back into the
+	// screen behind it to count. A describer handed nought draws the same "none
+	// of these" line it used to draw after looking.
+	At, Of int
+}
+
+// SubjectKind is what sort of thing a Subject names.
+type SubjectKind uint8
+
+const (
+	// NoSubject is the zero value and is what a raise about nothing carries — the
+	// elements listing opening the chart is a whole screen rather than a thing on
+	// one, so it names none.
+	NoSubject SubjectKind = iota
+	// StatusSubject is a status the raised screen should put its cursor on.
+	//
+	// ⚠️ An id the raised screen cannot find is a raise that does **not happen**:
+	// the reader stays where they are. A trait naming a status the book has lost
+	// is a trait already printing a bare id, and landing a cursor on whatever
+	// sorted next would answer a question nobody asked.
+	StatusSubject
+	// SkillSubject is a skill to describe, and where it sat in the list it came
+	// out of.
+	//
+	// ⚠️ **One kind covers the authoring listing and the battle's option list**,
+	// which were measured as two and are one. Both hand over a skill id and a
+	// position, both are drawn by the same paragraph under the same heading with
+	// the same footer, and the only difference — which list the position counts —
+	// is already carried in At and Of. A second kind nothing could branch on
+	// would be two vocabularies for one idea.
+	SkillSubject
+	// CharacterSubject is a character read at a level.
+	//
+	// ⚠️ **Two describers answer it and that is why it is one kind.** The traits
+	// blurb says what the character carries at that level and the art preview
+	// draws the form it wears there; both are readings of the same subject, so
+	// naming them apart would be naming the *describer* rather than the thing,
+	// which is what Target already does.
+	CharacterSubject
+)
+
+// SubjectKindCount is how many SubjectKind values are declared, NoSubject
+// included.
+//
+// ⚠️ It exists for the reason TargetCount does: a client can prove its applier is
+// **total**. A kind nothing applies makes a raise hand the describer nothing and
+// draw an empty screen, and a test that walks the kinds somebody remembered to
+// list cannot see the one they forgot. Walk the count.
+const SubjectKindCount = int(CharacterSubject) + 1
+
+var subjectKindNames = [SubjectKindCount]string{
+	NoSubject:        "none",
+	StatusSubject:    "status",
+	SkillSubject:     "skill",
+	CharacterSubject: "character",
+}
+
+// String names a SubjectKind for a diagnostic, and nothing draws it — the same
+// shape, and the same reason, as Target.String below.
+func (k SubjectKind) String() string {
+	if int(k) >= SubjectKindCount {
+		return fmt.Sprintf("subject(%d)", uint8(k))
+	}
+	return subjectKindNames[k]
 }
 
 // Kind is what a screen wants done.
@@ -68,7 +169,8 @@ const (
 	// that returned the command itself would have taken that decision away from
 	// it.
 	Quit
-	// Raise opens another screen, named by Target and optionally landed on Focus.
+	// Raise opens another screen, named by Target and about whatever Subject
+	// names.
 	Raise
 )
 
@@ -86,9 +188,22 @@ const (
 	NoTarget Target = iota
 	// Chart is the affinity chart drawn as the rings it was declared in.
 	Chart
-	// Statuses is the reference for the timed effects, which is the one raise
-	// that carries a Focus.
+	// Statuses is the reference for the timed effects, raised on a
+	// StatusSubject so it lands on the one that was named.
 	Statuses
+	// Blurb is the description screen: what the thing under the cursor behind it
+	// does, in the sentences a player reads.
+	//
+	// ⚠️ **Nothing returns a Raise naming it yet**, and it is declared anyway.
+	// The three screens that raise it — the skill listing, the cast browser and
+	// the played battle — still write the client's own enum, because converting
+	// them is the step after this one; declaring the target now is what puts them
+	// under TestEveryRaiseTargetNamesAScreenInThisClient before they arrive,
+	// rather than after.
+	Blurb
+	// Preview is the art a character shows at the level it is being read at, and
+	// is declared ahead of its raiser for the reason Blurb is.
+	Preview
 )
 
 // TargetCount is how many Target values are declared, NoTarget included.
@@ -98,12 +213,14 @@ const (
 // out of everyScreen, which this repository has now recorded five times — and a
 // test that walks the values somebody remembered to list cannot see the one they
 // forgot. Walk the count.
-const TargetCount = int(Statuses) + 1
+const TargetCount = int(Preview) + 1
 
 var targetNames = [TargetCount]string{
 	NoTarget: "none",
 	Chart:    "chart",
 	Statuses: "statuses",
+	Blurb:    "blurb",
+	Preview:  "preview",
 }
 
 // String names a Target for a diagnostic, and nothing draws it.

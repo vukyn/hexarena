@@ -952,8 +952,13 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 
 	// The young form at level one, the grown one at its own threshold, and the
 	// picture on screen changes with it.
+	// The level is walked on the browser and handed over, which is what the
+	// preview reads: it keeps no level of its own, so a field written here without
+	// the push would draw the level p was pressed at. m.hand is the same helper
+	// the browser's own keys go through.
 	m.browse.level = 1
-	young, footer := m.preview.view(m)
+	m = m.hand(m.browse.subject())
+	young, footer := m.preview.View(m.ctx())
 	if !strings.Contains(young, character.Image) {
 		t.Errorf("the preview does not name the young form's art:\n%s", young)
 	}
@@ -961,7 +966,8 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 		t.Errorf("the footer does not offer the level keys: %q", footer)
 	}
 	m.browse.level = grown.MinLevel
-	old, _ := m.preview.view(m)
+	m = m.hand(m.browse.subject())
+	old, _ := m.preview.View(m.ctx())
 	if !strings.Contains(old, grown.Image) {
 		t.Errorf("at level %d the preview does not name %s:\n%s", grown.MinLevel, grown.Image, old)
 	}
@@ -979,7 +985,7 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 	}
 
 	// esc goes back, and p from inside is the same door.
-	back, _ := m.preview.update(m, tea.KeyPressMsg{Code: tea.KeyEscape})
+	back, _ := m.updatePreview(tea.KeyPressMsg{Code: tea.KeyEscape})
 	if back.(model).screen != screenBrowse {
 		t.Error("esc did not return to the browser")
 	}
@@ -998,10 +1004,13 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 	m, _, dir := start(t, i18n.Vi)
 	m = m.enter(screenBrowse)
+	// Handed the subject the way p hands it, because the preview describes what it
+	// was given rather than reading the browser.
+	m = m.hand(m.browse.subject())
 	character := m.browse.rows()[clamp(m.browse.cursor, 0, len(m.browse.rows())-1)]
 	art := filepath.Join(dir, character.Image)
 
-	first, _ := m.preview.view(m)
+	first, _ := m.preview.View(m.ctx())
 	if !strings.Contains(first, character.Image) {
 		t.Fatalf("the first look drew nothing:\n%s", first)
 	}
@@ -1018,7 +1027,7 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 	if _, err := os.ReadFile(art); err == nil {
 		t.Skip("this user can read a file with no permissions, so nothing here is measured")
 	}
-	again, _ := m.preview.view(m)
+	again, _ := m.preview.View(m.ctx())
 	if again != first {
 		t.Errorf("the second look at the same file and size went back to disk:\n%s", again)
 	}
@@ -1036,7 +1045,7 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 	// the day the floor moved to 120 and the twelve cells came off a window that
 	// was already at the floor.
 	m.width += 12
-	resized, _ := m.preview.view(m)
+	resized, _ := m.preview.View(m.ctx())
 	if resized == first {
 		t.Error("a resize returned the drawing made at the old size")
 	}
@@ -1054,7 +1063,7 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 	if err := os.WriteFile(art, shorter, 0o644); err != nil {
 		t.Fatalf("rewrite the art: %v", err)
 	}
-	changed, _ := m.preview.view(m)
+	changed, _ := m.preview.View(m.ctx())
 	if changed == first {
 		t.Error("the art was rewritten and the preview kept the old drawing")
 	}
@@ -1089,6 +1098,7 @@ func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
 		// that screen's last line instead of this one's.
 		m.width, m.height = minWidth, height
 		m = m.enter(screenBrowse)
+		m = m.hand(m.browse.subject())
 		m.screen = screenPreview
 
 		framed := m.screenContent()
@@ -1102,7 +1112,7 @@ func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
 			t.Errorf("at %d rows the last line is %q, want the footer", height, lines[len(lines)-1])
 		}
 
-		body, _ := m.preview.view(m)
+		body, _ := m.preview.View(m.ctx())
 		drawn := strings.Count(body, "\n")
 		if drawn <= previous {
 			t.Errorf("at %d rows the picture is %d lines, no more than the %d it had in a shorter window",

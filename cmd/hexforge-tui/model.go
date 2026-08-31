@@ -352,11 +352,11 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
-		return m.preview.update(m, message)
+		return m.updatePreview(message)
 	case screenSpar:
 		return m.spar.update(m, message)
 	case screenBlurb:
-		return m.blurb.update(m, message)
+		return m.updateBlurb(message)
 	case screenChart:
 		chart, action := m.chart.Update(m.ctx(), message)
 		m.chart = chart
@@ -380,6 +380,13 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 var raiseTargets = map[draw.Target]screen{
 	draw.Chart:    screenChart,
 	draw.Statuses: screenStatuses,
+	// The two describers. ⚠️ Nothing returns a Raise naming either yet — the
+	// three screens that raise them still write m.screen and push their subject
+	// through model.hand — and they are listed anyway, so the day those screens
+	// return actions the entry is already here rather than being the thing that
+	// was forgotten.
+	draw.Blurb:   screenBlurb,
+	draw.Preview: screenPreview,
 }
 
 // navigate applies what a screen asked for.
@@ -406,15 +413,21 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// raise opens the screen a target names, landing it on the id the raiser asked
-// for.
+// raise opens the screen a target names, about whatever the raiser named.
 //
-// ⚠️ It declines rather than half-arriving. A focus the raised screen cannot find
-// leaves the reader where they are — the trait naming a status the book has lost
-// is a trait already printing a bare id, and a cursor moved to whatever sorted
-// next would answer a question nobody asked. A target with no entry in
+// ⚠️ It declines rather than half-arriving. A subject the raised screen cannot
+// land on leaves the reader where they are — the trait naming a status the book
+// has lost is a trait already printing a bare id, and a cursor moved to whatever
+// sorted next would answer a question nobody asked. A target with no entry in
 // raiseTargets declines for the opposite reason: it is a bug rather than a state,
 // and the test above is what says so out loud.
+//
+// ⚠️ **The subject goes through the general applier**, which is the debt #203
+// left. What stood here was `if action.Focus != ""` over a focus helper that
+// answered only the statuses screen and returned not-found for every other
+// target — so a raise carrying a subject anywhere else declined the whole trip in
+// silence, and nothing counted the cases the way TargetCount counts these. The
+// applier is a map over screen.SubjectKindCount now, so it can be walked.
 //
 // Direct rather than through enter, which is what the two raises it replaces
 // did: neither screen refreshes on the way in, and routing them through enter
@@ -424,35 +437,14 @@ func (m model) raise(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 	if !known {
 		return m, nil
 	}
-	if action.Focus != "" {
-		focused, found := m.focus(target, action.Focus)
-		if !found {
-			return m, nil
-		}
-		m = focused
+	handed, landed := m.applySubject(action.Subject)
+	if !landed {
+		return m, nil
 	}
+	m = handed
 	m.raisedFrom = from
 	m.screen = target
 	return m, nil
-}
-
-// focus lands a screen's cursor on a named id and reports whether it found one.
-//
-// The statuses reference is the only screen that answers today, because it is
-// the only one anything raises with an id. A focus aimed anywhere else is not
-// silently dropped — it reports not found, and raise declines the whole trip,
-// so the mismatch shows as a reader who did not move rather than as a screen
-// that opened somewhere arbitrary.
-func (m model) focus(target screen, id string) (model, bool) {
-	if target != screenStatuses {
-		return m, false
-	}
-	statuses, found := m.statuses.Focus(id)
-	if !found {
-		return m, false
-	}
-	m.statuses = statuses
-	return m, true
 }
 
 // answerGuard resolves a pending confirmation. Anything that is not a yes is a
@@ -601,11 +593,11 @@ func (m model) screenContent() string {
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:
-		body, footer = m.preview.view(m)
+		body, footer = m.preview.View(m.ctx())
 	case screenSpar:
 		body, footer = m.spar.view(m)
 	case screenBlurb:
-		body, footer = m.blurb.view(m)
+		body, footer = m.blurb.View(m.ctx())
 	case screenChart:
 		body, footer = m.chart.View(m.ctx())
 	}

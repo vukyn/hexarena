@@ -687,7 +687,7 @@ func TestTheQuestionMarkDescribesTheOptionInFront(t *testing.T) {
 			t.Errorf("%s: the description does not name %q:\n%s", lang, option.Skill, body)
 		}
 		// The same sentences the listing draws, rather than a second rendering.
-		for _, line := range skillLines(raised, mustSkill(t, raised, option.Skill)) {
+		for _, line := range skillLines(raised.ctx(), mustSkill(t, raised, option.Skill)) {
 			if !strings.Contains(body, strings.TrimSpace(line)) {
 				t.Errorf("%s: the description is missing the listing's line %q:\n%s",
 					lang, line, body)

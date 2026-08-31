@@ -1210,9 +1210,14 @@ how they drift) — and in **English a bare id is the name**, so `poison` in an
 English sentence is the reading working, not a missing gloss. Two entrances:
 `?N` / `?TAG` at the battle prompt, and `?` on the hexforge-tui skill listing,
 **cast browser or played battle**, all three of which raise `screenBlurb` — one
-screen branching on `blurb.from`, describing a skill from the listing, a
-character's traits from the browser and the option under the cursor from the
-battle. A **fourth** reading of a skill sits beside that one and is not it:
+screen branching on the **kind of subject it was handed**, describing a skill from
+the listing, a character's traits from the browser and the option under the cursor
+from the battle. ⚠️ It used to branch on `blurb.from` and read those three screens'
+state directly; the raiser pushes a `screen.Subject` now and the describer reaches
+for nothing (`cmd/hexforge-tui/describe.go`). A listed skill and a battle option
+turned out to be **one** subject rather than two — same id, same position, same
+paragraph — so the kinds are three (`StatusSubject`, `SkillSubject`,
+`CharacterSubject`) and not the four the raise sites suggest. A **fourth** reading of a skill sits beside that one and is not it:
 `Lang.SummariseSkill` is the compact line the played battle draws on every
 option's own row, and *Where a form beats a prompt* says why it cannot be this
 one with the prose dropped. ⚠️ **The forge form is not the place for it** — 19
@@ -3208,10 +3213,15 @@ is the constraint each piece has to respect.
       walking**, and `hexforge passives` gained the `answers` and `drains` columns
       it never had — two of the six jobs the parser accepts had rendered **nowhere**
       in the tool, so `blood_thirst` printed a row blank after its name.
-      ⚠️ **One screen, not two.** `blurbScreen.from` is the single field it keeps
-      and it is **not a cursor** — it is which screen is behind, which `esc` had to
-      answer anyway and used to answer with a constant. A second screen would be a
-      second copy of the framing, the footer and the escape.
+      ⚠️ **One screen, not two.** `blurbScreen.from` is which screen is behind,
+      which `esc` had to answer anyway and used to answer with a constant, and it
+      is **not a cursor**. A second screen would be a second copy of the framing,
+      the footer and the escape.
+      ⚠️ **It used to be the single field the screen kept, and it no longer is** —
+      the subject it was handed sits beside it, because reading `m.browse`,
+      `m.skills` and `m.play` is what made this screen unmovable. `from` is now
+      read only by the **client** (`esc`, and which raiser an arrow key walks);
+      the describer branches on `subject.Kind`.
       ⚠️ **It scrolls, and `scroll` is still not the refused cursor.** A cursor
       could point at a different character than the browser behind it; an offset
       selects nothing and every key that changes *what* is described resets it.

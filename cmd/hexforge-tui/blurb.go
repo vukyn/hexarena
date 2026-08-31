@@ -3,8 +3,6 @@ package main
 import (
 	"strings"
 
-	tea "charm.land/bubbletea/v2"
-
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -39,31 +37,35 @@ import (
 //
 // ⚠️ Nothing here touches the battle. playScreen is the one screen holding
 // something the model does not copy, so raising this and leaving it again must
-// step no turn: the option is read, the skill is looked up in the library, and
-// esc puts m.screen back rather than going through model.enter — which would
-// rebuild the battle from its seed and throw the played half away.
+// step no turn: the option is named on the way in, the skill is looked up in the
+// library, and esc puts m.screen back rather than going through model.enter —
+// which would rebuild the battle from its seed and throw the played half away.
 //
 // A second screen would have been a second copy of the framing, the footer and
 // the esc, differing only in which describer it called. So this one branches on
-// `from` instead, which is the single field it keeps — and `from` is not a
-// cursor, it is which screen is behind, a question esc had to answer anyway and
-// used to answer with a constant because there was only ever one answer.
+// what it was handed instead.
 //
-// Like previewScreen it keeps **no cursor and no level**. Both are read off the
-// screen it was raised from, so the two cannot disagree about what is in front,
-// and walking either here walks it there. A description of a character the author
-// is not looking at is worse than none.
+// # It is handed its subject rather than reaching for one
 //
-// # Why a screen rather than a block under the form
+// ⚠️ **This used to read the three screens that raise it** — m.browse.level eight
+// times, m.skills.cursor five, m.browse.cursor five, and m.play four ways — which
+// is a screen that cannot move into internal/screen and cannot be drawn by a
+// client whose screens are different ones. The raiser pushes a draw.Subject now
+// and this describes it: the id of the skill or the character, where it sat in
+// the list it came out of, and the level a character is being read at.
 //
-// The form has nineteen fields and an 120-by-24 window shows
-// thirteen of them; the comments in skills.go record fighting for a single row
-// twice. A description is three lines and wraps to more, so putting it under the
-// form would cost a quarter of the fields for something read occasionally. A
-// screen costs nothing until it is asked for.
+// It still keeps **no cursor and no level of its own**, and the push is what
+// keeps that true rather than a second copy of it: every key that moves the
+// listing behind re-pushes, so the two cannot disagree about what is in front and
+// walking either here walks it there. A description of a character the author is
+// not looking at is worse than none.
 type blurbScreen struct {
 	// from is the screen that raised it, and where esc goes back to.
 	from screen
+	// subject is what is being described, handed over by whichever screen raised
+	// it. The zero value describes nothing, and draws the same line an empty
+	// listing does.
+	subject draw.Subject
 	// scroll is how far down the trait sentences have been walked, and it is
 	// **not** the cursor this screen refuses to keep.
 	//
@@ -82,157 +84,65 @@ type blurbScreen struct {
 	scroll int
 }
 
-func (b blurbScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	switch message.String() {
-	case "q":
-		return m, tea.Quit
-	case "esc", "?":
-		m.screen = b.from
-		return m, nil
+// View is the subject described, in whichever reading its kind asks for.
+func (b blurbScreen) View(c draw.Context) (string, string) {
+	switch b.subject.Kind {
+	case draw.CharacterSubject:
+		return b.viewTraits(c)
+	case draw.SkillSubject:
+		return b.viewSkill(c)
 	}
-	// The cursor moves from here too, so an author reading one description can
-	// read the next without going back and forth. It walks the raising screen's
-	// own cursor, which is the one thing this screen borrows — and on the
-	// browser it borrows the level as well, because a trait comes in at a level
-	// and walking it is how that is seen.
-	if b.from == screenPlay {
-		// The option behind moves from here too, the way the listing's cursor
-		// does, so four options can be read one after another without going back
-		// and forth. It goes through playScreen.move, which is the one place that
-		// knows an unavailable option is stepped over.
-		//
-		// While aiming they do nothing: the skill is settled and the cell is
-		// what is being chosen, so walking the options would change what is
-		// described out from under a decision already half taken.
-		if m.play.pending != nil && !m.play.aiming {
-			switch message.String() {
-			case "up", "k":
-				m.play = m.play.move(-1)
-			case "down", "j":
-				m.play = m.play.move(1)
-			}
-		}
-		return m, nil
-	}
-	if b.from == screenBrowse {
-		rows := len(m.browse.rows())
-		switch message.String() {
-		// [ and ] alias the page keys, here and at the other two sites that
-		// scroll, because a compact keyboard has neither PgUp nor PgDn and the
-		// trait sentences are exactly what a window this size cannot finish. It
-		// is safe to take a printable key here: this branch feeds no text field,
-		// which is what makes the alias free rather than a letter stolen from
-		// something being typed.
-		case "pgdown", "]":
-			b.scroll++
-			m.blurb = b
-			return m, nil
-		case "pgup", "[":
-			b.scroll = max(b.scroll-1, 0)
-			m.blurb = b
-			return m, nil
-		case "up", "k":
-			m.browse.cursor = clamp(m.browse.cursor-1, 0, rows-1)
-		case "down", "j":
-			m.browse.cursor = clamp(m.browse.cursor+1, 0, rows-1)
-		case "left", "h":
-			m.browse.level = clamp(m.browse.level-1, 1, progression.LevelCap)
-		case "right", "l":
-			m.browse.level = clamp(m.browse.level+1, 1, progression.LevelCap)
-		case "home":
-			m.browse.level = 1
-		case "end":
-			m.browse.level = progression.LevelCap
-		}
-		// Anything that changed which character or which level is in front
-		// changed the answer, so the offset into the old one means nothing.
-		b.scroll = 0
-		m.blurb = b
-		return m, nil
-	}
-	// Through the listing's own visible rows, not its book: the cursor counts what
-	// the filter left, so stepping it against the full book would walk past the
-	// end of the narrowed listing and describe a skill the screen behind is not
-	// pointing at. skillsScreen.rows is the one funnel — see it for why.
-	rows := len(m.skills.rows())
-	switch message.String() {
-	case "up", "k":
-		m.skills.cursor = clamp(m.skills.cursor-1, 0, rows-1)
-	case "down", "j":
-		m.skills.cursor = clamp(m.skills.cursor+1, 0, rows-1)
-	}
-	return m, nil
-}
-
-func (b blurbScreen) view(m model) (string, string) {
-	switch b.from {
-	case screenBrowse:
-		return b.viewTraits(m)
-	case screenPlay:
-		return b.viewOption(m)
-	}
-	// The rows the listing has left rather than the book, so the position beside
-	// the name — "3 / 5" — counts the same list the marker was moving through.
-	skills := m.skills.rows()
-	if len(skills) == 0 {
-		return "  " + m.text(i18n.NoneCatalogued) + "\n", m.text(i18n.BlurbFooter)
-	}
-	at := clamp(m.skills.cursor, 0, len(skills)-1)
-	return viewSkill(m, skills[at], at+1, len(skills))
-}
-
-// viewOption is the skill under the battle's own cursor.
-//
-// It reads m.play rather than keeping a cursor, which is the rule this screen is
-// built on: a cursor of its own could point at a different option than the
-// battle behind it, and then the description and the list would disagree about
-// what is being chosen. The skill comes out of the library rather than out of the
-// battle, because a battle carries a unit's resolved kit and the sentences are
-// about the declared skill.
-//
-// Nothing pending and no options are both ordinary answers rather than errors: a
-// turn nobody is being asked about is a turn with nothing to describe, and the
-// key that raises this refuses the empty case anyway.
-func (b blurbScreen) viewOption(m model) (string, string) {
-	pending := m.play.pending
-	if pending == nil || len(pending.Options) == 0 {
-		return "  " + m.text(i18n.NoneCatalogued) + "\n", m.text(i18n.BlurbFooter)
-	}
-	at := clamp(m.play.option, 0, len(pending.Options)-1)
-	declared, err := m.lib.Skills().Lookup(pending.Options[at].Skill)
-	if err != nil {
-		return "  " + m.style.Bad.Render(m.lang.Error(err)) + "\n", m.text(i18n.BlurbFooter)
-	}
-	return viewSkill(m, declared, at+1, len(pending.Options))
+	// NoSubject, and anything this describer has not been taught: there is
+	// nothing to describe, said the way an empty listing says it. Reachable only
+	// by drawing the screen without raising it, which the client's own applier
+	// makes impossible and a hand-built model does not.
+	return "  " + c.Text(i18n.NoneCatalogued) + "\n", c.Text(i18n.BlurbFooter)
 }
 
 // viewSkill is one skill described under its name, with where it sits in the
 // list it came out of.
 //
-// Shared by the listing and the battle rather than written twice, for the reason
-// the whole screen is one screen: the two differ in which skill and which list,
-// and everything else about them — the heading, the position, the marked
-// sentences, the footer — is the same answer. A second copy would be a second
-// thing free to decide a status name is not worth marking.
-func viewSkill(m model, declared skill.Skill, at, of int) (string, string) {
+// ⚠️ **One reading for the listing and for the battle's option list**, which used
+// to be two functions over two screens' state. The two differ in which skill and
+// which list; the heading, the position, the marked sentences and the footer are
+// the same answer, and a second copy is a second thing free to decide a status
+// name is not worth marking.
+//
+// The skill comes out of the library rather than out of the battle, because a
+// battle carries a unit's resolved kit and the sentences are about the declared
+// skill — and the id is what the raiser handed over, so the lookup is the same
+// one either way round.
+//
+// An empty list is an ordinary answer rather than an error: a turn nobody is
+// being asked about is a turn with nothing to describe, and both keys that raise
+// this refuse the empty case anyway.
+func (b blurbScreen) viewSkill(c draw.Context) (string, string) {
+	footer := c.Text(i18n.BlurbFooter)
+	if b.subject.Of == 0 {
+		return "  " + c.Text(i18n.NoneCatalogued) + "\n", footer
+	}
+	declared, err := c.Lib.Skills().Lookup(b.subject.ID)
+	if err != nil {
+		return "  " + c.Style.Bad.Render(c.Lang.Error(err)) + "\n", footer
+	}
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(m.lang.GlossedSkill(declared)) + "  " +
-		m.style.Dim.Render(m.text(i18n.ChoicePosition, at, of)) + "\n\n")
-	for _, line := range skillLines(m, declared) {
+	out.WriteString(c.Style.Heading.Render(c.Lang.GlossedSkill(declared)) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.ChoicePosition, b.subject.At, b.subject.Of)) + "\n\n")
+	for _, line := range skillLines(c, declared) {
 		out.WriteString(line + "\n")
 	}
-	return out.String(), m.text(i18n.BlurbFooter)
+	return out.String(), footer
 }
 
 // skillLines is what a skill does, one line per sentence and already marked.
 //
 // A function rather than the second copy it was about to become: the picker
-// reads the skill under its own cursor and this screen reads the one under the
-// listing's, which is the same paragraph asked for from two places. A second
+// reads the skill under its own cursor and this screen reads the one it was
+// handed, which is the same paragraph asked for from two places. A second
 // copy of the marking is a second thing that can decide a name is worth
 // pointing out — and the comment above this screen already refused to write a
 // second copy of a framing for the same reason.
-func skillLines(m model, declared skill.Skill) []string {
+func skillLines(c draw.Context, declared skill.Skill) []string {
 	// The status names these sentences will use, marked where they are printed,
 	// exactly as the trait listing marks its own -- the two screens are read one
 	// after the other, and a name that is bold on one and plain on the other reads
@@ -240,21 +150,21 @@ func skillLines(m model, declared skill.Skill) []string {
 	// in the glossary drops out here rather than marking a bare id.
 	names := make([]string, 0, 4)
 	for _, id := range i18n.StatusesInSkill(declared) {
-		if name := m.lang.Gloss(id); name != "" {
+		if name := c.Lang.Gloss(id); name != "" {
 			names = append(names, name)
 		}
 	}
 	out := make([]string, 0, 4)
-	for _, line := range strings.Split(m.lang.Describe(declared, m.lib.Patterns()), "\n") {
+	for _, line := range strings.Split(c.Lang.Describe(declared, c.Lib.Patterns()), "\n") {
 		out = append(out, "  "+marked(line, names, func(word string) string {
-			return m.style.Emphasis.Render(word)
+			return c.Style.Emphasis.Render(word)
 		}))
 	}
 	return out
 }
 
-// viewTraits is what the character under the browser's cursor carries, at the
-// level the browser is sitting on.
+// viewTraits is what the character the raiser named carries, at the level it
+// named.
 //
 // The level is read rather than assumed for the reason the detail pane behind it
 // reads it: a trait comes in at a level, so "what is this unit carrying" has no
@@ -264,37 +174,39 @@ func skillLines(m model, declared skill.Skill) []string {
 // The form is progression.Furthest, which is what the detail pane resolves with.
 // Two screens asking the same question have to ask it the same way, or walking
 // from one to the other changes the answer for a reason nothing on either says.
-func (b blurbScreen) viewTraits(m model) (string, string) {
-	footer := m.text(i18n.BlurbTraitsFooter)
-	rows := m.browse.rows()
-	if len(rows) == 0 {
-		return "  " + m.text(i18n.BrowseNothingHere) + "\n", footer
+func (b blurbScreen) viewTraits(c draw.Context) (string, string) {
+	footer := c.Text(i18n.BlurbTraitsFooter)
+	if b.subject.Of == 0 {
+		return "  " + c.Text(i18n.BrowseNothingHere) + "\n", footer
 	}
-	character := rows[clamp(m.browse.cursor, 0, len(rows)-1)]
-	held := m.lib.KitPassives(character.PassivesAt(m.browse.level, progression.Furthest))
+	character, known := c.Lib.Characters().Get(b.subject.ID)
+	if !known {
+		return "  " + c.Text(i18n.BrowseNothingHere) + "\n", footer
+	}
+	held := c.Lib.KitPassives(character.PassivesAt(b.subject.Level, progression.Furthest))
 
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(character.Name) + "  " +
-		m.style.Dim.Render(m.text(i18n.LabelAtLevel, m.browse.level)) + "\n\n")
+	out.WriteString(c.Style.Heading.Render(character.Name) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.LabelAtLevel, b.subject.Level)) + "\n\n")
 	if len(held) == 0 {
 		// A trait the character has not learned yet is the common case at a low
 		// level, so this is a normal answer rather than an empty screen: the same
 		// sentence DescribePassive gives for a trait that holds nothing, because
 		// "carries no traits" is the same fact from either end.
-		return out.String() + "  " + m.text(i18n.BlurbTraitNone), footer
+		return out.String() + "  " + c.Text(i18n.BlurbTraitNone), footer
 	}
 
-	body := traitLines(m, held)
-	room := traitRoom(m)
+	body := traitLines(c, held)
+	room := traitRoom(c)
 	// Clamped here rather than where it is incremented, because the key that
 	// moves it does not know how long the answer is: the answer is built from
-	// the browser's cursor and level, and both can have moved since.
+	// the subject the raiser last pushed, and that can have moved since.
 	scroll := clamp(b.scroll, 0, max(len(body)-room, 0))
 	for _, line := range body[scroll:min(scroll+room, len(body))] {
 		out.WriteString(line + "\n")
 	}
 	if len(body) > room {
-		out.WriteString(m.style.Dim.Render("  " + m.text(i18n.BlurbMore,
+		out.WriteString(c.Style.Dim.Render("  " + c.Text(i18n.BlurbMore,
 			min(scroll+room, len(body)), len(body))))
 	}
 	// No trailing newline. The frame splits this on newlines and pads what is
@@ -311,14 +223,14 @@ func (b blurbScreen) viewTraits(m model) (string, string) {
 // — "…3% khả nă" — which reads as the tool being broken rather than as a
 // terminal being narrow. Every other pane that carries a sentence wraps for the
 // same reason.
-func traitLines(m model, held []passive.Passive) []string {
+func traitLines(c draw.Context, held []passive.Passive) []string {
 	out := make([]string, 0, 6*len(held))
 	for index, one := range held {
 		if index > 0 {
 			out = append(out, "")
 		}
-		out = append(out, "  "+m.style.Label.Render(m.lang.GlossedPassive(one)))
-		out = append(out, traitSentences(m, one)...)
+		out = append(out, "  "+c.Style.Label.Render(c.Lang.GlossedPassive(one)))
+		out = append(out, traitSentences(c, one)...)
 	}
 	return out
 }
@@ -330,7 +242,7 @@ func traitLines(m model, held []passive.Passive) []string {
 // a trait under a cursor of its own and carries the name in its heading instead
 // of in the body: what the two share is the measure and the indent, and those
 // are exactly the parts a second copy would be free to disagree about.
-func traitSentences(m model, one passive.Passive) []string {
+func traitSentences(c draw.Context, one passive.Passive) []string {
 	// Wrapped to the floor rather than to the window, which is the opposite of
 	// what m.wrapped does and is right for a different reason. Those rows carry
 	// authored free text -- a biography, a kit of nine ids -- which has to go
@@ -340,7 +252,7 @@ func traitSentences(m model, one passive.Passive) []string {
 	// TestEveryWordingFitsTheMinimumWidth measures against the floor.
 	room := minWidth - 1 - traitIndent
 	out := make([]string, 0, 6)
-	for _, sentence := range strings.Split(m.lang.DescribePassive(one), "\n") {
+	for _, sentence := range strings.Split(c.Lang.DescribePassive(one), "\n") {
 		for _, line := range wrapWords(sentence, max(room, 8)) {
 			out = append(out, strings.Repeat(" ", traitIndent)+line)
 		}
@@ -373,8 +285,8 @@ func marked(sentence string, names []string, mark func(string) string) string {
 // it appears would make the answer one line taller the moment it fits, which is
 // the shape of loop that flickers between two layouts on a window exactly at the
 // boundary.
-func traitRoom(m model) int {
-	room := m.height - 4 - 3
+func traitRoom(c draw.Context) int {
+	room := c.Height - 4 - 3
 	if room < 3 {
 		return 3
 	}

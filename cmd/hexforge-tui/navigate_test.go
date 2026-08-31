@@ -55,7 +55,8 @@ func TestARaiseRemembersWhoAskedAndForgetsItOnTheWayBack(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 
 	raised, _ := m.navigate(screenPassives, draw.Action{
-		Kind: draw.Raise, Target: draw.Statuses, Focus: firstStatusID(t, m),
+		Kind: draw.Raise, Target: draw.Statuses,
+		Subject: draw.Subject{Kind: draw.StatusSubject, ID: firstStatusID(t, m)},
 	})
 	after, ok := raised.(model)
 	if !ok {
@@ -86,10 +87,64 @@ func TestARaiseRemembersWhoAskedAndForgetsItOnTheWayBack(t *testing.T) {
 	}
 }
 
+// TestEverySubjectKindIsAppliedByThisClient is the other half of a total raise,
+// and it is the one #203 could not write.
+//
+// A screen names what a raise is about with a draw.Subject and this client's
+// applier puts it where it belongs. A kind with no entry is a keystroke that
+// reads as broken in a quieter way than a missing target does: the screen opens,
+// draws nothing, and looks like a screen with nothing on it rather than like a
+// raise that went wrong.
+//
+// ⚠️ That is exactly what `Action.Focus` was — one undeclared case. It answered
+// only the statuses reference, every other target reported not-found, and a
+// declined raise is silent by design, so a subject aimed anywhere else was
+// indistinguishable from a key nobody pressed. Nothing counted the cases, so
+// nothing could walk them.
+//
+// ⚠️ It walks screen.SubjectKindCount rather than the map, because the failure
+// being guarded against is a kind somebody added over there and did not list
+// here. Ranging over subjects would ask the map whether it holds what it holds.
+func TestEverySubjectKindIsAppliedByThisClient(t *testing.T) {
+	for value := 1; value < draw.SubjectKindCount; value++ {
+		kind := draw.SubjectKind(value)
+		if _, known := subjects[kind]; !known {
+			t.Errorf("draw.SubjectKind %v (%d) is applied by nothing in this client, so a raise "+
+				"carrying it hands the describer nothing and draws an empty screen", kind, value)
+		}
+	}
+	// And nothing beyond them, which is the other half of total: an entry for a
+	// value the package does not declare is a subject this client would apply and
+	// no screen could ask for.
+	if got, want := len(subjects), draw.SubjectKindCount-1; got != want {
+		t.Errorf("subjects holds %d entries against the %d kinds declared besides NoSubject",
+			got, want)
+	}
+	// NoSubject is what every raise about nothing carries, so an applier for it
+	// would be one every Quit and every Back could reach.
+	if _, known := subjects[draw.NoSubject]; known {
+		t.Error("draw.NoSubject is applied by an entry, and it is what a raise about nothing carries")
+	}
+}
+
+// TestARaiseAboutNothingStillArrives is the case the loop above cannot state: a
+// Raise carrying no subject is ordinary rather than a subject nobody applied.
+//
+// The elements listing opening the chart is a whole screen rather than a thing on
+// one, so it names none — and if applySubject treated the zero kind as unknown,
+// that raise would decline and the g key would silently stop working.
+func TestARaiseAboutNothingStillArrives(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	after, _ := m.navigate(screenElements, draw.Action{Kind: draw.Raise, Target: draw.Chart})
+	if got := after.(model).screen; got != screenChart {
+		t.Errorf("a raise carrying no subject landed on screen %v, want the chart", got)
+	}
+}
+
 // TestARaiseNobodyCanLandDeclinesTheWholeTrip is the staying-put the traits
 // listing used to do for itself.
 //
-// A focus the raised screen cannot find must leave the reader where they are,
+// A subject the raised screen cannot find must leave the reader where they are,
 // rather than opening the reference on whatever its cursor happened to be on:
 // that would answer a question nobody asked, and it would read as the jump
 // working.
@@ -98,7 +153,8 @@ func TestARaiseNobodyCanLandDeclinesTheWholeTrip(t *testing.T) {
 	m.screen = screenPassives
 
 	after, _ := m.navigate(screenPassives, draw.Action{
-		Kind: draw.Raise, Target: draw.Statuses, Focus: "no_such_status",
+		Kind: draw.Raise, Target: draw.Statuses,
+		Subject: draw.Subject{Kind: draw.StatusSubject, ID: "no_such_status"},
 	})
 	stayed := after.(model)
 	if stayed.screen != screenPassives {

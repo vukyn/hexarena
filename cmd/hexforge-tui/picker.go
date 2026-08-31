@@ -942,7 +942,7 @@ func (p *pickState) viewReading(m model) (string, string) {
 	var out strings.Builder
 	out.WriteString(m.style.Heading.Render(name) + "  " +
 		m.style.Dim.Render(m.text(i18n.ChoicePosition, cursor+1, len(rows))) + "\n\n")
-	room := traitRoom(m)
+	room := traitRoom(m.ctx())
 	// Clamped here rather than where it is incremented, because the key that
 	// moves it does not know how long the answer is: the answer belongs to the
 	// row under the cursor, and that can have moved since.
@@ -972,11 +972,11 @@ func (p *pickState) described(m model, id string) (string, []string) {
 		if err != nil {
 			return id, []string{"  " + m.style.Bad.Render(m.lang.Error(err))}
 		}
-		return m.lang.GlossedPassive(held), traitSentences(m, held)
+		return m.lang.GlossedPassive(held), traitSentences(m.ctx(), held)
 	}
 	declared, err := m.lib.Skills().Lookup(id)
 	if err != nil {
 		return id, []string{"  " + m.style.Bad.Render(m.lang.Error(err))}
 	}
-	return m.lang.GlossedSkill(declared), skillLines(m, declared)
+	return m.lang.GlossedSkill(declared), skillLines(m.ctx(), declared)
 }

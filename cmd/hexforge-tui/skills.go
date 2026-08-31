@@ -14,6 +14,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // The fields of the new-skill form, in the order they are walked.
@@ -219,6 +220,21 @@ func (s skillsScreen) selected() (skill.Skill, bool) {
 		return skill.Skill{}, false
 	}
 	return rows[clamp(s.cursor, 0, len(rows)-1)], true
+}
+
+// subject is what the description screen raised from here is about: the skill
+// under the cursor, and where it sits in the rows the filter has left.
+//
+// Off rows() rather than off the book, for the reason selected is: the cursor
+// indexes the filtered view, so the position beside the name — "3 / 5" — has to
+// count the same list the marker was moving through.
+func (s skillsScreen) subject() draw.Subject {
+	rows := s.rows()
+	if len(rows) == 0 {
+		return draw.Subject{Kind: draw.SkillSubject}
+	}
+	at := clamp(s.cursor, 0, len(rows)-1)
+	return draw.Subject{Kind: draw.SkillSubject, ID: rows[at].ID, At: at + 1, Of: len(rows)}
 }
 
 func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
@@ -430,14 +446,15 @@ func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 			s.added, s.edited = nil, nil
 		}
 	case "?":
-		// The description screen keeps no cursor of its own and reads this one,
-		// so raising it needs nothing handed over — the same arrangement the art
-		// preview has with the browser. It reads the *visible* rows through the
-		// same accessor this key does, so the paragraph and the marker cannot
-		// come from two different skills.
+		// The description screen keeps no cursor of its own, so this one hands
+		// over the skill it is pointing at — the same arrangement the art
+		// preview has with the browser. The subject is built off the *visible*
+		// rows through the same accessor this key does, so the paragraph and the
+		// marker cannot come from two different skills.
 		if _, held := s.selected(); held {
 			m.skills = s
 			m.blurb.from = screenSkills
+			m = m.hand(s.subject())
 			m.screen = screenBlurb
 			return m, nil
 		}
