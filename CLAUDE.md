@@ -3508,6 +3508,18 @@ carried by a level 60 ace on one side and a level 30 unit on the other, so the
 shift is mostly whose hand it is in — and the strike share is the mechanism
 check, not a result.
 
+**The rest of the cast crits at nothing, and that is authoring rather than a
+backlog.** Twenty-six damaging skills carry no chance. They are added **one at a
+time, each off its own `weigh` reading**, by whoever is authoring — there is no
+sweep to run and no target number of skills to reach, so it was taken out of
+`TODO.md` rather than left standing as a task nobody was going to pick up whole.
+⚠️ What must not be lost with it is the rule above: **the price is a fact about
+the carrier's whole line, not about the skill's shape**, so a crit may not be
+authored from a theme. `bite` and `kunai` are as pointed a blow as `razor_leaf`
+is and priced +0.2% and **−1.7%** — a cheap skill given a crit gets cast *more*
+and crowds out a better one, which is the `outrage` lesson wearing a different
+hat.
+
 ## Fighting two ratings: `forge.Bout`, and the exact control it rests on
 
 A roster win rate cannot see a rating. Both sides use `Suggest`, so a change that
