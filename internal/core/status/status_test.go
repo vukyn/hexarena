@@ -164,21 +164,25 @@ func TestTickOrderIsStable(t *testing.T) {
 // TestRemoveTakesTheHeaviestStacksFirst is what makes a partial cleanse worth
 // casting. Taking the weakest would leave the player worse off than not
 // cleansing in the case they care about.
+//
+// The figures are the ticks the stacks still owed rather than one tick of them,
+// so a three-turn poison ticking for 300 is reported as the 900 it was going to
+// deal. TestRemoveReportsTheTicksLeftRatherThanOne holds the duration itself.
 func TestRemoveTakesTheHeaviestStacksFirst(t *testing.T) {
 	var set status.Set
 	set.Apply(poison(), 50)
 	set.Apply(poison(), 300)
 	set.Apply(poison(), 120)
 	removed, damage := set.Remove("poison", 1)
-	if removed != 1 || damage != 300 {
-		t.Errorf("removing one stack took %d stacks worth %d, want 1 worth 300", removed, damage)
+	if removed != 1 || damage != 900 {
+		t.Errorf("removing one stack took %d stacks worth %d, want 1 worth 900", removed, damage)
 	}
 	if got, want := set.TickAmount("poison"), int64(170); got != want {
 		t.Errorf("the remaining tick is %d, want %d", got, want)
 	}
 	removed, damage = set.Remove("poison", 5)
-	if removed != 2 || damage != 170 {
-		t.Errorf("removing the rest took %d stacks worth %d, want 2 worth 170", removed, damage)
+	if removed != 2 || damage != 510 {
+		t.Errorf("removing the rest took %d stacks worth %d, want 2 worth 510", removed, damage)
 	}
 	if set.Has("poison") {
 		t.Error("the poison is still listed after every stack went")
@@ -198,15 +202,53 @@ func TestConsumeIsWhatADetonateCallsFor(t *testing.T) {
 	set.Apply(poison(), 160)
 	set.Apply(poison(), 160)
 	set.Apply(poison(), 160)
+	// Three stacks of 160 with three turns each: 1440, not the 480 one tick of
+	// them comes to.
 	stacks, damage := set.Consume("poison")
-	if stacks != 3 || damage != 480 {
-		t.Errorf("consuming took %d stacks worth %d, want 3 worth 480", stacks, damage)
+	if stacks != 3 || damage != 1440 {
+		t.Errorf("consuming took %d stacks worth %d, want 3 worth 1440", stacks, damage)
 	}
 	if set.Has("poison") {
 		t.Error("the poison survived being consumed")
 	}
 	if stacks, damage := set.Consume("burn"); stacks != 0 || damage != 0 {
 		t.Errorf("consuming a status that is not there took %d worth %d", stacks, damage)
+	}
+}
+
+// TestRemoveReportsTheTicksLeftRatherThanOne is the whole of the change, and it
+// is a separate test because every other fixture here consumes a status the turn
+// it was applied — where a full duration is still on it and a mistake that
+// reported a single tick, or that charged every stack the full duration
+// regardless, produces figures a fresh set cannot tell apart.
+//
+// A status is worth less the longer it has been running, and a detonate is worth
+// *more* the less the status had left. Reading a stack that has already ticked
+// is the only way to see either.
+func TestRemoveReportsTheTicksLeftRatherThanOne(t *testing.T) {
+	kind := poison()
+	for spent := 0; spent < kind.Duration; spent++ {
+		var set status.Set
+		set.Apply(kind, 100)
+		for range spent {
+			set.Tick()
+		}
+		left := kind.Duration - spent
+		_, damage := set.Consume("poison")
+		if want := int64(100 * left); damage != want {
+			t.Errorf("a poison %d turns in was worth %d, want %d for the %d turns left",
+				spent, damage, want, left)
+		}
+	}
+	// A stack on its last turn is worth exactly the one tick it has still to
+	// take, which is the case the old figure happened to get right.
+	var last status.Set
+	last.Apply(kind, 100)
+	for range kind.Duration - 1 {
+		last.Tick()
+	}
+	if _, damage := last.Consume("poison"); damage != 100 {
+		t.Errorf("a poison on its last turn was worth %d, want its final tick of 100", damage)
 	}
 }
 

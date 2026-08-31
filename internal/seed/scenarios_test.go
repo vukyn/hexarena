@@ -1042,9 +1042,10 @@ func writeStatusScenario(b *strings.Builder, rules combat.Rules) {
 		for i := 0; i < stacks; i++ {
 			run.Apply(poison, tick)
 		}
-		_, lost := run.Consume("poison")
-		// A full duration of ticks is what the detonate throws away.
-		forgone := lost * int64(poison.Duration)
+		// Consume reports the ticks the stacks still owed, which is exactly what
+		// the detonate throws away — nothing here multiplies by the duration a
+		// second time.
+		_, forgone := run.Consume("poison")
 		power := forgone * int64(referenceDefense+rules.DefenseConstant) * combat.PermilleBase /
 			(attackerAttack * rules.DefenseConstant)
 		fmt.Fprintf(b, "%15d%23d%33d\n", stacks, forgone, power)
