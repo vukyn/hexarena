@@ -113,9 +113,9 @@ func TestARaiseNobodyCanLandDeclinesTheWholeTrip(t *testing.T) {
 // a fault rather than a fixture.
 func firstStatusID(t *testing.T, m model) string {
 	t.Helper()
-	for _, row := range m.statuses.rows {
-		if !row.heading {
-			return row.kind.ID
+	for _, row := range m.statuses.Rows {
+		if !row.Heading {
+			return row.Kind.ID
 		}
 	}
 	t.Fatal("the statuses reference holds no status, so a focus measures nothing")

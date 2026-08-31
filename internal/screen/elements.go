@@ -1,4 +1,4 @@
-package main
+package screen
 
 import (
 	"strings"
@@ -8,10 +8,9 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/i18n"
-	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
-// elementsScreen is the affinity chart: the eleven elements, and for the one
+// ElementsScreen is the affinity chart: the eleven elements, and for the one
 // under the cursor, what it beats, what beats it, and at what rate.
 //
 // It is the reference the tool was missing hardest. Every other listing prints
@@ -30,17 +29,19 @@ import (
 // the elements are a Go enum: the chart may say nothing about a member — neutral
 // is inert on purpose — but it cannot invent a twelfth one, and a listing built
 // from the edges would silently drop the element that has none.
-type elementsScreen struct {
-	cursor int
+type ElementsScreen struct {
+	Cursor int
 }
 
-func (s elementsScreen) update(_ draw.Context, message tea.KeyPressMsg) (elementsScreen, draw.Action) {
+// Update reads one keystroke: the cursor moves, the chart is raised, or the
+// reader leaves.
+func (s ElementsScreen) Update(_ Context, message tea.KeyPressMsg) (ElementsScreen, Action) {
 	members := element.All()
 	switch message.String() {
 	case "q":
-		return s, draw.Action{Kind: draw.Quit}
+		return s, Action{Kind: Quit}
 	case "esc":
-		return s, draw.Action{Kind: draw.Back}
+		return s, Action{Kind: Back}
 	case "g":
 		// The shape of the chart, which this listing answers one row at a time.
 		// A key rather than a menu entry: the question "so what beats what" is
@@ -49,13 +50,13 @@ func (s elementsScreen) update(_ draw.Context, message tea.KeyPressMsg) (element
 		//
 		// A Target rather than the client's own name for that screen, so this
 		// listing asks for the chart without knowing which view draws it.
-		return s, draw.Action{Kind: draw.Raise, Target: draw.Chart}
+		return s, Action{Kind: Raise, Target: Chart}
 	case "up", "k":
-		s.cursor = clamp(s.cursor-1, 0, len(members)-1)
+		s.Cursor = Clamp(s.Cursor-1, 0, len(members)-1)
 	case "down", "j":
-		s.cursor = clamp(s.cursor+1, 0, len(members)-1)
+		s.Cursor = Clamp(s.Cursor+1, 0, len(members)-1)
 	}
-	return s, draw.Action{}
+	return s, Action{}
 }
 
 // elementsRoom is how many rows the listing may draw: what the window has, less
@@ -65,24 +66,26 @@ func (s elementsScreen) update(_ draw.Context, message tea.KeyPressMsg) (element
 // weakness — rather than at the height of the one under the cursor. A room that
 // shrank on neutral, which describes itself in one line, would slide the whole
 // listing under the reader as they walked past it.
-func elementsRoom(m model) int {
+func elementsRoom(c Context) int {
 	const (
 		above = 2 // the heading and the blank line under it
 		below = 5 // a blank, the two-line description, a blank, the caveat
 	)
-	room := m.height - 4 - above - below
+	room := c.Height - 4 - above - below
 	if room < 3 {
 		return 3
 	}
 	return room
 }
 
-func (s elementsScreen) view(m model) (string, string) {
-	footer := m.text(i18n.ElementsFooter)
+// View draws the listing, the description of the element under the cursor, and
+// the footer.
+func (s ElementsScreen) View(c Context) (string, string) {
+	footer := c.Text(i18n.ElementsFooter)
 	members := element.All()
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(m.text(i18n.ElementsHeading)) + "  " +
-		m.style.Dim.Render(m.text(i18n.ElementsSubtitle)) + "\n\n")
+	out.WriteString(c.Style.Heading.Render(c.Text(i18n.ElementsHeading)) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.ElementsSubtitle)) + "\n\n")
 
 	// The name column is dropped whole where nothing is named, which is what
 	// English gets: an element's gloss is a compiled one and is empty in the
@@ -95,11 +98,11 @@ func (s elementsScreen) view(m model) (string, string) {
 		if width := lipgloss.Width(member.String()); width > column {
 			column = width
 		}
-		if width := lipgloss.Width(m.lang.Gloss(member.String())); width > glossColumn {
+		if width := lipgloss.Width(c.Lang.Gloss(member.String())); width > glossColumn {
 			glossColumn = width
 		}
 	}
-	from, to := window(len(members), clamp(s.cursor, 0, len(members)-1), elementsRoom(m))
+	from, to := Window(len(members), Clamp(s.Cursor, 0, len(members)-1), elementsRoom(c))
 	for index := from; index < to; index++ {
 		member := members[index]
 		// The id and its name, and no third column. A count of edges is the one
@@ -109,30 +112,30 @@ func (s elementsScreen) view(m model) (string, string) {
 		// draws it in: a reader who walks from one screen to the other is
 		// following the word, and a word that changes colour on the way is a
 		// second word. Decoration only — the id is right there in text.
-		id := m.style.Element(member).Render(member.String())
+		id := c.Style.Element(member).Render(member.String())
 		line := id
 		if glossColumn > 0 {
 			line = id + strings.Repeat(" ", column+1-lipgloss.Width(member.String())) +
-				" " + m.lang.Gloss(member.String())
+				" " + c.Lang.Gloss(member.String())
 		}
 		marker := "  "
-		if index == clamp(s.cursor, 0, len(members)-1) {
+		if index == Clamp(s.Cursor, 0, len(members)-1) {
 			marker = "> "
 			// The selection is bold and takes the row whole, colour and all: a
 			// cursor that recoloured the id would hide the one thing the colour
 			// is for.
-			line = m.style.Selected.Render(member.String())
+			line = c.Style.Selected.Render(member.String())
 			if glossColumn > 0 {
-				line = m.style.Selected.Render(
-					pad(member.String(), column+1) + " " + m.lang.Gloss(member.String()))
+				line = c.Style.Selected.Render(
+					Pad(member.String(), column+1) + " " + c.Lang.Gloss(member.String()))
 			}
 		}
 		out.WriteString(marker + line + "\n")
 	}
 
 	out.WriteString("\n")
-	selected := members[clamp(s.cursor, 0, len(members)-1)]
-	for _, line := range strings.Split(m.lang.DescribeElement(selected, m.lib.Chart()), "\n") {
+	selected := members[Clamp(s.Cursor, 0, len(members)-1)]
+	for _, line := range strings.Split(c.Lang.DescribeElement(selected, c.Lib.Chart()), "\n") {
 		out.WriteString("  " + line + "\n")
 	}
 	// Once, at the foot, for the reason the status caveat sits there: a dual
@@ -140,6 +143,6 @@ func (s elementsScreen) view(m model) (string, string) {
 	// of none of them individually.
 	// No newline after it — the frame pads the body out and cuts from the bottom,
 	// so a trailing one costs the caveat itself.
-	out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.BlurbElementCaveat)))
+	out.WriteString("\n  " + c.Style.Dim.Render(c.Text(i18n.BlurbElementCaveat)))
 	return out.String(), footer
 }

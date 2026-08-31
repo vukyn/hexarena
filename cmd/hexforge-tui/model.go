@@ -91,6 +91,26 @@ const (
 // unchanged.
 func detailLabelWidth(m model) int { return m.ctx().DetailLabelWidth() }
 
+// The six reference screens live in internal/screen now, because a second
+// full-screen client draws the same ones. They are named here under the
+// spellings this package already used, for the reason minWidth is: an alias is
+// one declaration rather than two, and the model's own fields and this client's
+// fixtures go on reading as they read.
+//
+// ⚠️ They are aliases and not wrappers. A wrapper would be a second place a
+// cursor could live, and the whole point of the move is that there is one.
+type (
+	chartScreen    = draw.ChartScreen
+	elementsScreen = draw.ElementsScreen
+	statusesScreen = draw.StatusesScreen
+	speciesScreen  = draw.SpeciesScreen
+	buildsScreen   = draw.BuildsScreen
+	passivesScreen = draw.PassivesScreen
+	// buildRow is one line of the build catalogue, named here because this
+	// client's own width fixture builds a catalogue state by hand.
+	buildRow = draw.BuildRow
+)
+
 // model is the whole program: a library, the language, the screen in front, and
 // the four screens' own state.
 //
@@ -182,10 +202,10 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		form:     newFormScreen(lib),
 		origins:  newOriginsScreen(lib),
 		skills:   newSkillsScreen(lib),
-		statuses: newStatusesScreen(lib),
-		passives: newPassivesScreen(lib),
-		species:  newSpeciesScreen(lib),
-		builds:   newBuildsScreen(lib),
+		statuses: draw.NewStatusesScreen(lib),
+		passives: draw.NewPassivesScreen(lib),
+		species:  draw.NewSpeciesScreen(lib),
+		builds:   draw.NewBuildsScreen(lib),
 		squad:    newSquadScreen(lib),
 		fight:    newFightScreen(),
 		play:     newPlayScreen(),
@@ -304,23 +324,23 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	// entries of an enum only this binary has. Every other branch still writes
 	// m.screen itself and will be converted as it moves.
 	case screenStatuses:
-		statuses, action := m.statuses.update(m.ctx(), message)
+		statuses, action := m.statuses.Update(m.ctx(), message)
 		m.statuses = statuses
 		return m.navigate(screenStatuses, action)
 	case screenPassives:
-		passives, action := m.passives.update(m.ctx(), message)
+		passives, action := m.passives.Update(m.ctx(), message)
 		m.passives = passives
 		return m.navigate(screenPassives, action)
 	case screenElements:
-		elements, action := m.elements.update(m.ctx(), message)
+		elements, action := m.elements.Update(m.ctx(), message)
 		m.elements = elements
 		return m.navigate(screenElements, action)
 	case screenSpecies:
-		species, action := m.species.update(m.ctx(), message)
+		species, action := m.species.Update(m.ctx(), message)
 		m.species = species
 		return m.navigate(screenSpecies, action)
 	case screenBuilds:
-		builds, action := m.builds.update(m.ctx(), message)
+		builds, action := m.builds.Update(m.ctx(), message)
 		m.builds = builds
 		return m.navigate(screenBuilds, action)
 	case screenSquads:
@@ -338,7 +358,7 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case screenBlurb:
 		return m.blurb.update(m, message)
 	case screenChart:
-		chart, action := m.chart.update(m.ctx(), message)
+		chart, action := m.chart.Update(m.ctx(), message)
 		m.chart = chart
 		return m.navigate(screenChart, action)
 	}
@@ -427,7 +447,7 @@ func (m model) focus(target screen, id string) (model, bool) {
 	if target != screenStatuses {
 		return m, false
 	}
-	statuses, found := m.statuses.focus(id)
+	statuses, found := m.statuses.Focus(id)
 	if !found {
 		return m, false
 	}
@@ -490,13 +510,13 @@ func (m model) enter(target screen) model {
 	case screenSkills:
 		m.skills = m.skills.refresh(m.lib)
 	case screenStatuses:
-		m.statuses = m.statuses.refresh(m.lib)
+		m.statuses = m.statuses.Refresh(m.lib)
 	case screenPassives:
-		m.passives = m.passives.refresh(m.lib)
+		m.passives = m.passives.Refresh(m.lib)
 	case screenSpecies:
-		m.species = m.species.refresh(m.lib)
+		m.species = m.species.Refresh(m.lib)
 	case screenBuilds:
-		m.builds = m.builds.refresh(m.lib)
+		m.builds = m.builds.Refresh(m.lib)
 	case screenSquads:
 		m.squad = m.squad.refresh(m.lib)
 	case screenFight:
@@ -563,15 +583,15 @@ func (m model) screenContent() string {
 	case screenSkills:
 		body, footer = m.skills.view(m)
 	case screenStatuses:
-		body, footer = m.statuses.view(m)
+		body, footer = m.statuses.View(m.ctx())
 	case screenPassives:
-		body, footer = m.passives.view(m)
+		body, footer = m.passives.View(m.ctx())
 	case screenElements:
-		body, footer = m.elements.view(m)
+		body, footer = m.elements.View(m.ctx())
 	case screenSpecies:
-		body, footer = m.species.view(m)
+		body, footer = m.species.View(m.ctx())
 	case screenBuilds:
-		body, footer = m.builds.view(m)
+		body, footer = m.builds.View(m.ctx())
 	case screenSquads:
 		body, footer = m.squad.view(m)
 	case screenFight:
@@ -587,7 +607,7 @@ func (m model) screenContent() string {
 	case screenBlurb:
 		body, footer = m.blurb.view(m)
 	case screenChart:
-		body, footer = m.chart.view(m)
+		body, footer = m.chart.View(m.ctx())
 	}
 	// The picker is drawn over whichever screen raised it, for the same reason
 	// it is a sub-screen at all: a list of nineteen does not fit beside a form.
@@ -785,6 +805,15 @@ func fieldValueRoom(width, labelWidth, spent int) int {
 
 // wrapWords breaks text on spaces, never mid-word, and never returns nothing.
 func wrapWords(text string, room int) []string { return draw.WrapWords(text, room) }
+
+// clamp keeps an index or a level inside its range, and returns the low bound
+// when the range is empty.
+func clamp(value, low, high int) int { return draw.Clamp(value, low, high) }
+
+// window is the slice of a list to draw, keeping the cursor inside it. It
+// scrolls by the least it can, so stepping back and forth across one boundary
+// does not make the whole list jump about.
+func window(total, cursor, room int) (from, to int) { return draw.Window(total, cursor, room) }
 
 // clip shortens a line to a number of cells and says that it did, keeping the
 // front, which is where the id, the label and the first half of a sentence are.

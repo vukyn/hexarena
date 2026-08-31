@@ -1,4 +1,4 @@
-package main
+package screen
 
 import (
 	"strings"
@@ -21,24 +21,24 @@ import (
 // asserting against what happens to be on screen would be asserting about the
 // window rather than about the grouping.
 func TestTheStatusListingGroupsEveryStatusUnderItsCategory(t *testing.T) {
-	m, lib, _ := start(t, i18n.Vi)
-	rows := m.enter(screenStatuses).statuses.rows
+	_, lib := start(t, i18n.Vi)
+	rows := NewStatusesScreen(lib).Rows
 
 	seen := make(map[string]bool)
 	heading := status.Category(0)
 	headed := false
 	for _, row := range rows {
-		if row.heading {
-			heading, headed = row.category, true
+		if row.Heading {
+			heading, headed = row.Category, true
 			continue
 		}
 		if !headed {
-			t.Fatalf("%q is listed before any category heading", row.kind.ID)
+			t.Fatalf("%q is listed before any category heading", row.Kind.ID)
 		}
-		if row.kind.Category != heading {
-			t.Errorf("%q is a %s and is filed under %s", row.kind.ID, row.kind.Category, heading)
+		if row.Kind.Category != heading {
+			t.Errorf("%q is a %s and is filed under %s", row.Kind.ID, row.Kind.Category, heading)
 		}
-		seen[row.kind.ID] = true
+		seen[row.Kind.ID] = true
 	}
 	for _, kind := range lib.Statuses().Kinds() {
 		if !seen[kind.ID] {
@@ -59,27 +59,27 @@ func TestTheStatusListingGroupsEveryStatusUnderItsCategory(t *testing.T) {
 // Walked to both ends and back, because the two ways to land on one are
 // different: stepping onto a boundary, and settling after a refresh.
 func TestTheStatusCursorNeverLandsOnAHeading(t *testing.T) {
-	m, _, _ := start(t, i18n.Vi)
-	m = m.enter(screenStatuses)
+	c, lib := start(t, i18n.Vi)
+	statuses := NewStatusesScreen(lib)
 	check := func(where string) {
 		t.Helper()
-		row := m.statuses.rows[m.statuses.cursor]
-		if row.heading {
-			t.Fatalf("%s: the cursor sits on the %s heading", where, row.category)
+		row := statuses.Rows[statuses.Cursor]
+		if row.Heading {
+			t.Fatalf("%s: the cursor sits on the %s heading", where, row.Category)
 		}
 	}
 	check("on entering")
-	for range len(m.statuses.rows) + 2 {
-		m = key(t, m, "down")
+	for range len(statuses.Rows) + 2 {
+		statuses, _ = statuses.Update(c, press(t, "down"))
 		check("walking down")
 	}
-	for range len(m.statuses.rows) + 2 {
-		m = key(t, m, "up")
+	for range len(statuses.Rows) + 2 {
+		statuses, _ = statuses.Update(c, press(t, "up"))
 		check("walking up")
 	}
 	// A refresh re-files every row, and the cursor it keeps is an index into the
 	// list it had before.
-	m.statuses = m.statuses.refresh(m.lib)
+	statuses = statuses.Refresh(lib)
 	check("after a refresh")
 }
 
@@ -91,17 +91,21 @@ func TestTheStatusCursorNeverLandsOnAHeading(t *testing.T) {
 // saying the figures above it are the book's rather than the log's. It is the
 // whole reason a reader is not surprised when a poison ticks for 650, and it
 // goes silently: nothing about a cut screen says which line went.
+//
+// ⚠️ Measured against bodyRoom, which mirrors the client's frame rather than
+// being it. The frame really wrapped round this listing at 120x24 is what the
+// client's screens.golden records.
 func TestTheStatusCaveatSurvivesTheSmallestWindow(t *testing.T) {
 	for _, lang := range i18n.Langs() {
-		m, _, _ := start(t, lang)
-		m.width, m.height = minWidth, minHeight
-		m = m.enter(screenStatuses)
-		drawn := m.screenContent()
-		if !strings.Contains(drawn, m.text(i18n.BlurbStatusCaveat)) {
-			t.Errorf("%s: the caveat is not on the smallest screen:\n%s", lang, drawn)
+		c, lib := start(t, lang)
+		c = atTheFloor(c)
+		body, _ := NewStatusesScreen(lib).View(c)
+		if !strings.Contains(body, c.Text(i18n.BlurbStatusCaveat)) {
+			t.Errorf("%s: the caveat is not on the smallest screen:\n%s", lang, body)
 		}
-		if strings.Contains(drawn, m.text(i18n.Truncated)) {
-			t.Errorf("%s: the listing is cut at the smallest size:\n%s", lang, drawn)
+		if rows := len(drawnLines(body)); rows > bodyRoom(c) {
+			t.Errorf("%s: the listing takes %d rows of the %d the smallest window gives it, so the frame cuts it:\n%s",
+				lang, rows, bodyRoom(c), body)
 		}
 	}
 }
@@ -110,17 +114,17 @@ func TestTheStatusCaveatSurvivesTheSmallestWindow(t *testing.T) {
 // for: the rows carry a name and the description carries everything else, so a
 // cursor that moved without the pane following would leave the two disagreeing.
 func TestTheStatusListingDescribesWhatIsUnderTheCursor(t *testing.T) {
-	m, _, _ := start(t, i18n.Vi)
-	m = m.enter(screenStatuses)
+	c, lib := start(t, i18n.Vi)
+	statuses := NewStatusesScreen(lib)
 	for step := range 6 {
-		selected := m.statuses.rows[m.statuses.cursor].kind
-		drawn := m.screenContent()
-		for _, line := range strings.Split(m.lang.DescribeStatus(selected), "\n") {
+		selected := statuses.Rows[statuses.Cursor].Kind
+		drawn, _ := statuses.View(c)
+		for _, line := range strings.Split(c.Lang.DescribeStatus(selected), "\n") {
 			if !strings.Contains(drawn, line) {
 				t.Fatalf("step %d: the cursor is on %q and the screen does not say %q:\n%s",
 					step, selected.ID, line, drawn)
 			}
 		}
-		m = key(t, m, "down")
+		statuses, _ = statuses.Update(c, press(t, "down"))
 	}
 }

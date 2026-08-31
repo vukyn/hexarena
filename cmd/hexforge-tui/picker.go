@@ -574,24 +574,9 @@ func (p *pickState) room(m model) int {
 	return room
 }
 
-// window is the slice of a list to draw, keeping the cursor inside it.
-//
-// It scrolls by the least it can: the window only moves when the cursor would
-// leave it, so stepping back and forth across one boundary does not make the
-// whole list jump about.
-func window(total, cursor, room int) (from, to int) {
-	if room >= total {
-		return 0, total
-	}
-	from = cursor - room/2
-	if from < 0 {
-		from = 0
-	}
-	if from+room > total {
-		from = total - room
-	}
-	return from, from + room
-}
+// window moved to model.go, beside clamp, for the reason clip did: every
+// listing in internal/screen scrolls by it too, so it is the package's paging
+// rule rather than this screen's helper.
 
 // clip moved to model.go, beside pad and labelAt: frame calls it on every line
 // of every screen now, so it is the package's cutting rule rather than this

@@ -2,11 +2,19 @@
 // clients needs, and none of what any one of them decides.
 //
 // Two clients draw the same reference screens — the authoring tool
-// (`cmd/hexforge-tui`) and the PvP game client — so the things a screen *reads*
-// live here while the things a screen *decides* stay with the screen. What that
-// line admits is narrow on purpose: the palette, the floor a window has to
-// clear, and the row-drawing helpers every pane is built out of. What it
-// excludes is every cursor, every mode, every footer and every keystroke.
+// (`cmd/hexforge-tui`) and the PvP game client — so what lives here is the
+// screens themselves plus everything they are drawn out of: the palette, the
+// floor a window has to clear, the row-drawing helpers every pane is built from,
+// and the six read-only references (the affinity chart and its rings, the
+// elements, statuses, species, builds and traits listings) with their cursors
+// and their keystrokes.
+//
+// What it still excludes is everything a *client* decides. A screen is handed a
+// Context, which holds nothing the client owns, and answers a keystroke with an
+// Action — what it wants — so it never names a view, a menu entry or a way back:
+// see action.go for why that vocabulary is four Kinds and no more. The frame
+// around a body, which screen it is showing and where Back goes are the client's,
+// and a screen here may not ask.
 //
 // It reads no environment and takes no decision from one. `Plain` answers
 // whether colour would be noise, and the **binary** is what hands it the three

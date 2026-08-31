@@ -9,6 +9,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // blurbScreen shows what the thing under the cursor behind it does, in the
@@ -347,10 +348,18 @@ func traitSentences(m model, one passive.Passive) []string {
 	return out
 }
 
-// traitIndent is how far the sentences sit under the trait they belong to. Four
-// rather than two, so a wrapped line is still visibly part of the trait above it
-// and not the start of the next one.
-const traitIndent = 4
+// traitIndent is how far the sentences sit under the trait they belong to,
+// declared in internal/screen because the traits listing moved there and indents
+// its sentences by the same amount. Named here as well for the reason minWidth
+// is: the rows that spend it read unchanged.
+const traitIndent = draw.TraitIndent
+
+// marked is one sentence with the status names in it picked out, word by word so
+// that a style cannot span a line the caller is about to wrap. The body is in
+// internal/screen, which is where the traits listing that shares it went.
+func marked(sentence string, names []string, mark func(string) string) string {
+	return draw.Marked(sentence, names, mark)
+}
 
 // traitRoom is how many lines of sentences fit: the window, less the two the
 // heading takes and the one the position line does.
