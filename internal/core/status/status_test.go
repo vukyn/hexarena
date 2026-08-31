@@ -420,23 +420,28 @@ func TestATauntIsSomethingItsHolderWantsGone(t *testing.T) {
 	}
 }
 
-// TestOnlyATickOutlastsAShield is the whole of OutlastsAShield asserted over
-// every category there is, rather than over the one it answers yes to.
+// TestOnlyContaminationOutlastsAShield is the whole of OutlastsAShield asserted
+// over every category there is, rather than over the ones it answers yes to.
 //
-// A one-case switch is exactly what a later reader completes into something
-// tidier, and the two candidates are both wrong in a way nothing else here would
-// notice. Harmful is the near miss: it covers Dot, StatDebuff, Control and Taunt,
-// so reusing it would let a stat debuff through a shield -- which was measured
-// and rejected, because with mire unstoppable a squirtle stops being able to
-// finish a duel against itself and TestABothWaysMirrorIsExactlyEven, a fairness
-// invariant, breaks. Reading the split off the enum's own order is the other:
-// Dot is at zero, so "the first category" happens to be the right answer today
-// and stops being one the moment anything is declared above it.
-func TestOnlyATickOutlastsAShield(t *testing.T) {
+// A short switch is exactly what a later reader completes into something tidier,
+// and the two candidates are both wrong in a way nothing else here would notice.
+// Harmful is the near miss: it covers Dot, StatDebuff, Control, Taunt, HealCut
+// and Charge, so reusing it would let a stat debuff through a shield -- which was
+// measured and rejected, because with mire unstoppable a squirtle stops being
+// able to finish a duel against itself and TestABothWaysMirrorIsExactlyEven, a
+// fairness invariant, breaks. Reading the split off the enum's own order is the
+// other: Dot is at zero and Charge at the end, so no arithmetic over the order
+// picks the pair out, and any that seems to is one declaration from ending.
+//
+// The pair is written out rather than derived. What they have in common is a
+// *sentence* — each is only ever something left on a target, so a blow that was
+// stopped still left it — and no predicate on the enum spells that, which is why
+// this is a table and not a rule.
+func TestOnlyContaminationOutlastsAShield(t *testing.T) {
+	through := map[status.Category]bool{status.Dot: true, status.Charge: true}
 	for _, category := range status.Categories() {
-		want := category == status.Dot
-		if got := category.OutlastsAShield(); got != want {
-			t.Errorf("%s outlasts a shield: %v, want %v", category, got, want)
+		if got := category.OutlastsAShield(); got != through[category] {
+			t.Errorf("%s outlasts a shield: %v, want %v", category, got, through[category])
 		}
 	}
 	// And the two splits are stated apart, because the whole risk is that one is

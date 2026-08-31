@@ -2451,6 +2451,11 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
   (`arc_power`), one stack **per strike**, along a chain of adjacent carriers. The
   old refusal "consumes for no bonus" is now "for neither a bonus nor a discharge",
   and a skill may take one payment, never both.
+- ⚠️ **`charge` outlasts a shield, and is the SECOND category ever to.** The
+  predicate's own comment warns against completing it, and that warning is about a
+  *stat* getting through (mire broke the mirror invariant); a counter carries no
+  stat. `TestOnlyContaminationOutlastsAShield` is a written-out table rather than a
+  rule, because what Dot and Charge share is a sentence and no predicate spells it.
 - ⚠️ **The arc is not the skill's damage and must not be routed through the skill's
   machinery.** Not aimed, not rolled against accuracy or dodge, **not blocked** —
   it is what was already sitting on the target. It is logged as `Damaged` with
@@ -2483,8 +2488,10 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
   damped power and not beat it twice over.
 - The playstyle is held by `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne`
   — the damage must arrive in **more, smaller** pieces *and* at a rate within
-  three fifths of the burst kit's. Shipped reading: 343‰ over 7693 blows of 150
-  against 366‰ over 3114 of 366.
+  three fifths of the burst kit's. Shipped reading: 373‰ over 11067 blows of 96
+  against 366‰ over 3114 of 366. Four skills charge (thunder_shock 1, thunderbolt
+  2 as riders on damage; charge_beam 2, magnetise 3 as turns spent) and two spend
+  — a conduit that bought every stack with a turn could never fire twice running.
 
 ## Open work
 
