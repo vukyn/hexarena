@@ -1309,6 +1309,56 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "rinse",
+      "name": "gột sạch",
+      "flavour": "Dội một vòng nước lên đồng đội, thứ gì bám trên người đều trôi theo",
+      "element": "water",
+      "range": 1,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "ally",
+      "strips": {
+        "categories": [
+          "dot",
+          "stat_debuff"
+        ],
+        "stacks": 2
+      },
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "chorus",
+      "name": "hợp xướng",
+      "flavour": "Cất tiếng gọi bầy, cả một vùng đáp lại rồi ai nấy đều nhanh hơn",
+      "element": "water",
+      "range": 1,
+      "pattern": "column",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "haste",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

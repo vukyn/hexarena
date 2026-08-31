@@ -32,11 +32,11 @@ func boutBoard(t *testing.T, lib *Library) []battle.Roster {
 		t.Fatalf("the fixture library holds %d character(s), and a bout needs two different ones",
 			len(characters))
 	}
-	first, err := lib.duellist(characters[0], progression.LevelCap)
+	first, err := lib.duellist(characters[0], progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("resolve %s: %v", characters[0].ID, err)
 	}
-	second, err := lib.duellist(characters[1], progression.LevelCap)
+	second, err := lib.duellist(characters[1], progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("resolve %s: %v", characters[1].ID, err)
 	}

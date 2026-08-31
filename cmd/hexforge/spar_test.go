@@ -21,7 +21,7 @@ func TestRenderSparNamesEverythingBehindTheFigures(t *testing.T) {
 		t.Fatalf("load: %v", err)
 	}
 	const seeds = 5
-	report, err := lib.Spar("fixture-anime.adept", progression.LevelCap, seeds)
+	report, err := lib.Spar("fixture-anime.adept", progression.LevelCap, seeds, progression.Furthest)
 	if err != nil {
 		t.Fatalf("spar: %v", err)
 	}

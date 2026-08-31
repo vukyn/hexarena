@@ -42,27 +42,29 @@ func sparLibrary(t *testing.T) *Library {
 func TestABothWaysMirrorIsExactlyEven(t *testing.T) {
 	lib := sparLibrary(t)
 	for _, character := range lib.Characters().All() {
-		report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds)
-		if err != nil {
-			t.Fatalf("spar %s: %v", character.ID, err)
-		}
-		mirror, found := mirrorRow(report)
-		if !found {
-			t.Fatalf("%s never met itself, so nothing controlled the measurement", character.ID)
-		}
-		if rate := mirror.Rate(); rate != scale.Base/2 {
-			t.Errorf("%s against itself comes to %d rather than an even %d: %+v",
-				character.ID, rate, scale.Base/2, mirror.Total())
-		}
-		// The stronger statement, and the one that says *why* it is even: the two
-		// halves are the same battle with the sides swapped, so every win from
-		// one slot is a loss from the other. A rate that came out even by two
-		// errors cancelling would pass the check above and fail this one.
-		if mirror.First.Wins != mirror.Second.Losses ||
-			mirror.First.Losses != mirror.Second.Wins ||
-			mirror.First.Draws != mirror.Second.Draws {
-			t.Errorf("%s's two halves are not each other's reflection: first %+v, second %+v",
-				character.ID, mirror.First, mirror.Second)
+		for _, arm := range grownArms(t, character) {
+			report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds, arm)
+			if err != nil {
+				t.Fatalf("spar %s as %s: %v", character.ID, arm, err)
+			}
+			mirror, found := mirrorRow(report)
+			if !found {
+				t.Fatalf("%s never met itself, so nothing controlled the measurement", character.ID)
+			}
+			if rate := mirror.Rate(); rate != scale.Base/2 {
+				t.Errorf("%s against itself comes to %d rather than an even %d: %+v",
+					character.ID, rate, scale.Base/2, mirror.Total())
+			}
+			// The stronger statement, and the one that says *why* it is even: the two
+			// halves are the same battle with the sides swapped, so every win from
+			// one slot is a loss from the other. A rate that came out even by two
+			// errors cancelling would pass the check above and fail this one.
+			if mirror.First.Wins != mirror.Second.Losses ||
+				mirror.First.Losses != mirror.Second.Wins ||
+				mirror.First.Draws != mirror.Second.Draws {
+				t.Errorf("%s's two halves are not each other's reflection: first %+v, second %+v",
+					character.ID, mirror.First, mirror.Second)
+			}
 		}
 	}
 }
@@ -79,12 +81,14 @@ func TestTheFirstSlotIsWorthSomethingToCancel(t *testing.T) {
 	lib := sparLibrary(t)
 	widest := 0
 	for _, character := range lib.Characters().All() {
-		report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds)
-		if err != nil {
-			t.Fatalf("spar %s: %v", character.ID, err)
-		}
-		if mirror, found := mirrorRow(report); found && abs(mirror.Edge()) > widest {
-			widest = abs(mirror.Edge())
+		for _, arm := range grownArms(t, character) {
+			report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds, arm)
+			if err != nil {
+				t.Fatalf("spar %s as %s: %v", character.ID, arm, err)
+			}
+			if mirror, found := mirrorRow(report); found && abs(mirror.Edge()) > widest {
+				widest = abs(mirror.Edge())
+			}
 		}
 	}
 	if widest == 0 {
@@ -106,18 +110,20 @@ func TestTwoCharactersAgreeAboutWhichOfThemIsBetter(t *testing.T) {
 	rates := map[string]map[string]int{}
 	rows := map[string]map[string]Matchup{}
 	for _, character := range lib.Characters().All() {
-		report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds)
-		if err != nil {
-			t.Fatalf("spar %s: %v", character.ID, err)
+		for _, arm := range grownArms(t, character) {
+			report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds, arm)
+			if err != nil {
+				t.Fatalf("spar %s as %s: %v", character.ID, arm, err)
+			}
+			against := map[string]int{}
+			halves := map[string]Matchup{}
+			for _, matchup := range report.Matchups {
+				against[matchup.Against.ID] = matchup.Rate()
+				halves[matchup.Against.ID] = matchup
+			}
+			rates[character.ID] = against
+			rows[character.ID] = halves
 		}
-		against := map[string]int{}
-		halves := map[string]Matchup{}
-		for _, matchup := range report.Matchups {
-			against[matchup.Against.ID] = matchup.Rate()
-			halves[matchup.Against.ID] = matchup
-		}
-		rates[character.ID] = against
-		rows[character.ID] = halves
 	}
 	for mine, against := range rates {
 		for theirs, rate := range against {
@@ -157,26 +163,28 @@ func TestTwoCharactersAgreeAboutWhichOfThemIsBetter(t *testing.T) {
 func TestASparFieldsTheKitItReports(t *testing.T) {
 	lib := sparLibrary(t)
 	for _, character := range lib.Characters().All() {
-		report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds)
-		if err != nil {
-			t.Fatalf("spar %s: %v", character.ID, err)
-		}
-		_, stage, err := character.Resolve(progression.LevelCap, progression.Furthest)
-		if err != nil {
-			t.Fatalf("resolve %s: %v", character.ID, err)
-		}
-		known := character.SkillsAt(progression.LevelCap, stage.Name)
-		wanted := known
-		if len(wanted) > cast.SkillSlots {
-			wanted = wanted[:cast.SkillSlots]
-		}
-		if !slices.Equal(report.Challenger.Skills, wanted) {
-			t.Errorf("%s fielded %v, and the first %d it declares are %v (of %v)",
-				character.ID, report.Challenger.Skills, cast.SkillSlots, wanted, known)
-		}
-		if report.Challenger.Stage != stage.Name {
-			t.Errorf("%s was fielded as %q rather than the furthest form %q",
-				character.ID, report.Challenger.Stage, stage.Name)
+		for _, arm := range grownArms(t, character) {
+			report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds, arm)
+			if err != nil {
+				t.Fatalf("spar %s as %s: %v", character.ID, arm, err)
+			}
+			_, stage, err := character.Resolve(progression.LevelCap, arm)
+			if err != nil {
+				t.Fatalf("resolve %s as %s: %v", character.ID, arm, err)
+			}
+			known := character.SkillsAt(progression.LevelCap, stage.Name)
+			wanted := known
+			if len(wanted) > cast.SkillSlots {
+				wanted = wanted[:cast.SkillSlots]
+			}
+			if !slices.Equal(report.Challenger.Skills, wanted) {
+				t.Errorf("%s fielded %v, and the first %d it declares are %v (of %v)",
+					character.ID, report.Challenger.Skills, cast.SkillSlots, wanted, known)
+			}
+			if report.Challenger.Stage != stage.Name {
+				t.Errorf("%s was fielded as %q rather than the furthest form %q",
+					character.ID, report.Challenger.Stage, stage.Name)
+			}
 		}
 	}
 }
@@ -187,11 +195,11 @@ func TestASparFieldsTheKitItReports(t *testing.T) {
 func TestASparIsRepeatable(t *testing.T) {
 	lib := sparLibrary(t)
 	id := lib.Characters().All()[0].ID
-	first, err := lib.Spar(id, progression.LevelCap, sparSeeds)
+	first, err := lib.Spar(id, progression.LevelCap, sparSeeds, progression.Furthest)
 	if err != nil {
 		t.Fatalf("spar %s: %v", id, err)
 	}
-	again, err := lib.Spar(id, progression.LevelCap, sparSeeds)
+	again, err := lib.Spar(id, progression.LevelCap, sparSeeds, progression.Furthest)
 	if err != nil {
 		t.Fatalf("spar %s a second time: %v", id, err)
 	}
@@ -214,24 +222,26 @@ func TestASparIsRepeatable(t *testing.T) {
 func TestTheHeadlineRateLeavesTheControlOut(t *testing.T) {
 	lib := sparLibrary(t)
 	for _, character := range lib.Characters().All() {
-		report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds)
-		if err != nil {
-			t.Fatalf("spar %s: %v", character.ID, err)
+		for _, arm := range grownArms(t, character) {
+			report, err := lib.Spar(character.ID, progression.LevelCap, sparSeeds, arm)
+			if err != nil {
+				t.Fatalf("spar %s as %s: %v", character.ID, arm, err)
+			}
+			everything := Tally{}
+			for _, matchup := range report.Matchups {
+				everything = everything.add(matchup.Total())
+			}
+			if report.Opponents() == 0 || report.Rate() == scale.Base/2 {
+				// A character that is even against the cast is even with the control
+				// folded in too, so it has nothing to say about which was counted.
+				continue
+			}
+			if report.Rate() == everything.Rate() {
+				t.Errorf("%s reports %d whether or not its own row is counted, so the control is in the headline",
+					character.ID, report.Rate())
+			}
+			return
 		}
-		everything := Tally{}
-		for _, matchup := range report.Matchups {
-			everything = everything.add(matchup.Total())
-		}
-		if report.Opponents() == 0 || report.Rate() == scale.Base/2 {
-			// A character that is even against the cast is even with the control
-			// folded in too, so it has nothing to say about which was counted.
-			continue
-		}
-		if report.Rate() == everything.Rate() {
-			t.Errorf("%s reports %d whether or not its own row is counted, so the control is in the headline",
-				character.ID, report.Rate())
-		}
-		return
 	}
 	t.Skip("no character in the book is lopsided enough for the control to move its headline")
 }
@@ -277,7 +287,7 @@ func TestNoKitIsUnaimableInADuel(t *testing.T) {
 // was fought and never won.
 func TestAnUnaimableKitIsRefusedRatherThanCounted(t *testing.T) {
 	lib := sparLibrary(t)
-	armed, err := lib.duellist(lib.Characters().All()[0], progression.LevelCap)
+	armed, err := lib.duellist(lib.Characters().All()[0], progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("field a character: %v", err)
 	}
@@ -382,7 +392,7 @@ func TestASparRefusesWhatItCannotMeasure(t *testing.T) {
 		{"past the cap", id, progression.LevelCap + 1, sparSeeds, "outside"},
 		{"nobody by that name", "nobody.at.all", progression.LevelCap, sparSeeds, "no character"},
 	} {
-		_, err := lib.Spar(test.id, test.level, test.seeds)
+		_, err := lib.Spar(test.id, test.level, test.seeds, progression.Furthest)
 		if err == nil {
 			t.Errorf("%s was accepted", test.name)
 			continue
@@ -425,11 +435,11 @@ func abs(value int) int {
 // the opponent's, stated without any reference to how the fold is written.
 func TestAMatchupCountsTheChallengersStrikesAndNotTheOpponents(t *testing.T) {
 	lib := sparLibrary(t)
-	adept, err := lib.duellist(mustCharacter(t, lib, "fixture-anime.adept"), progression.LevelCap)
+	adept, err := lib.duellist(mustCharacter(t, lib, "fixture-anime.adept"), progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("field the adept: %v", err)
 	}
-	sprout, err := lib.duellist(mustCharacter(t, lib, "fixture-game.sprout"), progression.LevelCap)
+	sprout, err := lib.duellist(mustCharacter(t, lib, "fixture-game.sprout"), progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("field the sprout: %v", err)
 	}
@@ -494,11 +504,11 @@ func TestAMatchupCountsTheChallengersStrikesAndNotTheOpponents(t *testing.T) {
 // break it in the other.
 func TestCountingOneSkillAgreesWithCountingThemAll(t *testing.T) {
 	lib := sparLibrary(t)
-	challenger, err := lib.duellist(mustCharacter(t, lib, "fixture-anime.adept"), progression.LevelCap)
+	challenger, err := lib.duellist(mustCharacter(t, lib, "fixture-anime.adept"), progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("field the challenger: %v", err)
 	}
-	opponent, err := lib.duellist(mustCharacter(t, lib, "fixture-game.sprout"), progression.LevelCap)
+	opponent, err := lib.duellist(mustCharacter(t, lib, "fixture-game.sprout"), progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("field the opponent: %v", err)
 	}
@@ -535,20 +545,23 @@ func TestADuellistTakesTheFieldUnderItsFormsName(t *testing.T) {
 	lib := sparLibrary(t)
 	evolved := 0
 	for _, character := range lib.Characters().All() {
-		who, err := lib.duellist(character, progression.LevelCap)
-		if err != nil {
-			t.Fatalf("resolve %s: %v", character.ID, err)
-		}
-		if who.Stage == "" {
-			t.Fatalf("%s resolves to no form, so a duel has no name to field it under", character.ID)
-		}
-		fielded := place("a", who, hex.SideAlly)
-		if fielded.Name != who.Stage {
-			t.Errorf("%s takes the field as %q, want the form it fields, %q",
-				character.ID, fielded.Name, who.Stage)
-		}
-		if who.Stage != who.Name {
-			evolved++
+		// Every arm, because a duel fields one and a forking line has two.
+		for _, arm := range grownArms(t, character) {
+			who, err := lib.duellist(character, progression.LevelCap, arm)
+			if err != nil {
+				t.Fatalf("resolve %s as %s: %v", character.ID, arm, err)
+			}
+			if who.Stage == "" {
+				t.Fatalf("%s resolves to no form, so a duel has no name to field it under", character.ID)
+			}
+			fielded := place("a", who, hex.SideAlly)
+			if fielded.Name != who.Stage {
+				t.Errorf("%s takes the field as %q, want the form it fields, %q",
+					character.ID, fielded.Name, who.Stage)
+			}
+			if who.Stage != who.Name {
+				evolved++
+			}
 		}
 	}
 	// Every character in the fixture whose last form is its own name proves
@@ -558,4 +571,22 @@ func TestADuellistTakesTheFieldUnderItsFormsName(t *testing.T) {
 		t.Error("no character in the library reaches a form named differently from itself, " +
 			"so naming the form and naming the character cannot be told apart here")
 	}
+}
+
+// grownArms is every form a character reaches at the cap, by name.
+//
+// A spar names the arm it fields, because a line that FORKS has two stat lines
+// and Spar refuses rather than picking between them. These walks used to pass
+// progression.Furthest, which was one answer only while nothing forked.
+func grownArms(t *testing.T, character cast.Character) []string {
+	t.Helper()
+	forms, err := character.FurthestAt(progression.LevelCap)
+	if err != nil {
+		t.Fatalf("the grown forms of %s: %v", character.ID, err)
+	}
+	out := make([]string, 0, len(forms))
+	for _, form := range forms {
+		out = append(out, form.Name)
+	}
+	return out
 }

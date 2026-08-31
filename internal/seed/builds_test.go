@@ -46,6 +46,7 @@ func TestTheShippedBuildsAreTheOnesTheTestsMeasure(t *testing.T) {
 		{"squirtle.ram", semiBuild, "ballast"},
 		{"poliwag.flurry", flurryBuild, "blood_thirst"},
 		{"poliwag.riptide", riptideBuild, "spiteful"},
+		{"poliwag.chorus", chorusBuild, "composure"},
 		{"machop.gamble", gambleBuild, "berserk"},
 		{"machop.sure", sureBuild, "unyielding"},
 		{"cleffa.mend", mendBuild, "composure"},

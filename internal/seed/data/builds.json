@@ -95,6 +95,7 @@
       "character": "pokemon.poliwag",
       "name": "liên hoàn",
       "intent": "Áp sát rồi nện liên tục, mỗi đòn lại rút về một chút sức cho mình",
+      "stage": "Poliwrath",
       "skills": [
         "pummel",
         "body_slam",
@@ -110,6 +111,7 @@
       "character": "pokemon.poliwag",
       "name": "nghịch lưu",
       "intent": "Đứng xa mà quăng nước, bùn dính tới đâu là bước chậm lại tới đó",
+      "stage": "Poliwrath",
       "skills": [
         "bubble",
         "bubble_beam",
@@ -118,6 +120,22 @@
       ],
       "passives": [
         "spiteful"
+      ]
+    },
+    {
+      "id": "poliwag.chorus",
+      "character": "pokemon.poliwag",
+      "name": "giữ nhịp",
+      "intent": "Đứng phía sau mà giữ cho cả hàng đi đều, ai dính gì thì gột đi cho sạch",
+      "stage": "Politoed",
+      "skills": [
+        "rinse",
+        "chorus",
+        "rally",
+        "hydro_pump"
+      ],
+      "passives": [
+        "composure"
       ]
     },
     {

@@ -195,6 +195,12 @@ type WeighRequest struct {
 	// Seeds is how many battles each half of each row is fought over, so a row
 	// costs twice this many.
 	Seeds int
+	// Stage is the form the carrier is weighed as, and is only ever needed on a
+	// line that forks — absent means the furthest the level reaches, which is
+	// what every weighing meant before any line had two arms. A forking carrier
+	// with none is refused naming both, because a price is a fact about one
+	// stat line and two arms are two of them.
+	Stage string
 }
 
 // Weighing is one row: what the field was set to, and what that was worth.
@@ -396,7 +402,7 @@ func (l *Library) Weigh(request WeighRequest) (WeighReport, error) {
 	if !known {
 		return WeighReport{}, fmt.Errorf("no character is called %q", request.Character)
 	}
-	carrier, err := l.duellist(character, request.Level)
+	carrier, err := l.duellist(character, request.Level, request.Stage)
 	if err != nil {
 		return WeighReport{}, err
 	}

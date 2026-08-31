@@ -140,10 +140,31 @@ func TestGivingUpAnEvolutionKeepsWhatTheGrownFormNeverGets(t *testing.T) {
 	var owner cast.Character
 	var kept cast.Unlock
 	for _, character := range characters.All() {
+		grown, err := character.FurthestAt(progression.LevelCap)
+		if err != nil {
+			t.Fatalf("the grown forms of %s: %v", character.ID, err)
+		}
 		for _, entry := range character.Skills {
-			if len(entry.Stages) > 0 && len(entry.Stages) < len(character.Stages) {
-				owner, kept = character, entry
+			if len(entry.Stages) == 0 || len(entry.Stages) >= len(character.Stages) {
+				continue
 			}
+			// ⚠️ A gate naming a form the cap still REACHES is a fork choice,
+			// not an evolution trade, and the two use the same allowlist. This
+			// scan wants the trade — a move an early form keeps and the grown
+			// one never gets — so a gate that names an arm is skipped rather
+			// than mistaken for one. Nothing could tell them apart until a line
+			// forked: Poliwag's own `chorus` is kept for Politoed, which is one
+			// of its two grown ends, and giving up nothing to have it.
+			reaches := false
+			for _, form := range grown {
+				if slices.Contains(entry.Stages, form.Name) {
+					reaches = true
+				}
+			}
+			if reaches {
+				continue
+			}
+			owner, kept = character, entry
 		}
 	}
 	if owner.ID == "" {

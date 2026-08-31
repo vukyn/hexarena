@@ -33,16 +33,37 @@ func TestTheSparFightsWhoeverTheCheckScreenHasUnderItsCursor(t *testing.T) {
 	if len(lib.Characters().All()) < 2 {
 		t.Fatal("one character in the book measures nothing here")
 	}
-	for row, character := range lib.Characters().All() {
+	// The CHECK SCREEN's rows, not the cast — the cursor indexes those, and the
+	// two stopped being the same list the day a line forked: Inspect reports one
+	// row an arm, so a forking character owns two of them and walking the cast
+	// put the cursor on the wrong character from the fork onwards.
+	rows := base.enter(screenCheck).check.report.Rows
+	if len(rows) < 2 {
+		t.Fatal("one row on the check screen measures nothing here")
+	}
+	arms := 0
+	for row, want := range rows {
 		m := atSpar(t, base, row)
 		m.spar.seeds = 5
 		report, failure, ok := m.spar.report(m)
 		if !ok || failure != nil {
-			t.Fatalf("row %d produced no report: %v", row, failure)
+			t.Fatalf("row %d (%s as %s) produced no report: %v", row, want.ID, want.Stage, failure)
 		}
-		if report.Challenger.ID != character.ID {
-			t.Errorf("the cursor is on %s and the spar fought %s", character.ID, report.Challenger.ID)
+		if report.Challenger.ID != want.ID {
+			t.Errorf("the cursor is on %s and the spar fought %s", want.ID, report.Challenger.ID)
 		}
+		// And the row's FORM is fought, which is the half a forking line adds:
+		// two rows share an id and differ only here.
+		if report.Challenger.Stage != want.Stage {
+			t.Errorf("the cursor is on %s as %s and the spar fought it as %s",
+				want.ID, want.Stage, report.Challenger.Stage)
+		}
+		if row > 0 && rows[row-1].ID == want.ID {
+			arms++
+		}
+	}
+	if arms == 0 {
+		t.Log("no character in the book forks, so the form half of this is not being exercised")
 	}
 }
 

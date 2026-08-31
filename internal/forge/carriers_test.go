@@ -32,12 +32,21 @@ func bringers(t *testing.T, lib *Library, skillID string, level int) []string {
 	t.Helper()
 	brought := []string(nil)
 	for _, character := range lib.Characters().All() {
-		fielded, err := lib.duellist(character, level)
+		// One reading an ARM, because the table is one row an arm: a forking
+		// line has two kits, and asking for "the" furthest form is the refusal
+		// StageAt raises rather than an answer.
+		arms, err := character.FurthestAt(level)
 		if err != nil {
-			t.Fatalf("field %s at level %d: %v", character.ID, level, err)
+			t.Fatalf("the grown forms of %s at level %d: %v", character.ID, level, err)
 		}
-		if slices.Contains(fielded.Skills, skillID) {
-			brought = append(brought, character.ID)
+		for _, arm := range arms {
+			fielded, err := lib.duellist(character, level, arm.Name)
+			if err != nil {
+				t.Fatalf("field %s as %s at level %d: %v", character.ID, arm.Name, level, err)
+			}
+			if slices.Contains(fielded.Skills, skillID) {
+				brought = append(brought, character.ID)
+			}
 		}
 	}
 	slices.Sort(brought)

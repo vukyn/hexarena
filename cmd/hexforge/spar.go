@@ -24,18 +24,20 @@ func runSpar(args []string) error {
 		"the level both sides are fielded at; the cap is what the stat budget is written for")
 	seeds := set.Int("seeds", defaultSparSeeds,
 		"how many battles each pairing is fought over from each slot")
+	stage := set.String("stage", "",
+		"which form the subject is fielded as; only a line that forks needs one")
 	operands, err := parseArgs(set, args)
 	if err != nil {
 		return err
 	}
 	if len(operands) != 1 {
-		return fmt.Errorf("usage: hexforge spar <id> [--level N] [--seeds N]")
+		return fmt.Errorf("usage: hexforge spar <id> [--level N] [--seeds N] [--stage NAME]")
 	}
 	lib, err := forge.Load(*dir)
 	if err != nil {
 		return err
 	}
-	report, err := lib.Spar(operands[0], *level, *seeds)
+	report, err := lib.Spar(operands[0], *level, *seeds, *stage)
 	if err != nil {
 		return err
 	}

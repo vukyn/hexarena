@@ -43,49 +43,51 @@ func TestNoShippedDebuffCanFreezeAUnit(t *testing.T) {
 	const piledOn = 50
 	tested := 0
 	for _, character := range cast.All() {
-		base, _, err := character.Resolve(progression.LevelCap, progression.Furthest)
-		if err != nil {
-			t.Fatalf("resolve %s: %v", character.ID, err)
-		}
-		crushed := status.Set{}
-		for _, kind := range books.Statuses.Kinds() {
-			if !kind.Category.Harmful() {
-				continue
+		for _, arm := range grownForms(t, character) {
+			base, _, err := character.Resolve(progression.LevelCap, arm)
+			if err != nil {
+				t.Fatalf("resolve %s as %s: %v", character.ID, arm, err)
 			}
-			for range piledOn {
-				if kind.Permanent {
-					crushed.Hold(kind, 1)
+			crushed := status.Set{}
+			for _, kind := range books.Statuses.Kinds() {
+				if !kind.Category.Harmful() {
 					continue
 				}
-				crushed.Apply(kind, 0)
-			}
-		}
-		// The saturating path is only half of it. A modifier set built from the
-		// book cannot express an arbitrary penalty, and the floor has to hold
-		// against one that could -- so the same stat lines go through a term far
-		// larger than anything authorable.
-		absurd := crushingSet(t)
-		for label, live := range map[string]progression.Values{
-			"every shipped debuff": crushed.Modifiers().Stats(base, books.Limits.Ceilings, books.Bounds),
-			"an unauthorable one":  absurd.Stats(base, books.Limits.Ceilings, books.Bounds),
-		} {
-			for _, kind := range progression.Kinds() {
-				if live[kind] >= 1 {
-					continue
+				for range piledOn {
+					if kind.Permanent {
+						crushed.Hold(kind, 1)
+						continue
+					}
+					crushed.Apply(kind, 0)
 				}
-				t.Errorf("%s under %s has %s of %d: no stat may reach nought, and speed at nought "+
-					"is a unit that never acts again", character.ID, label, kind, live[kind])
 			}
-			// The queue is where a nought would actually bite, so it is asked
-			// rather than reasoned about.
-			if wait := atb.Wait(live[progression.Speed]); wait <= 0 {
-				t.Errorf("%s under %s waits %d between turns", character.ID, label, wait)
+			// The saturating path is only half of it. A modifier set built from the
+			// book cannot express an arbitrary penalty, and the floor has to hold
+			// against one that could -- so the same stat lines go through a term far
+			// larger than anything authorable.
+			absurd := crushingSet(t)
+			for label, live := range map[string]progression.Values{
+				"every shipped debuff": crushed.Modifiers().Stats(base, books.Limits.Ceilings, books.Bounds),
+				"an unauthorable one":  absurd.Stats(base, books.Limits.Ceilings, books.Bounds),
+			} {
+				for _, kind := range progression.Kinds() {
+					if live[kind] >= 1 {
+						continue
+					}
+					t.Errorf("%s under %s has %s of %d: no stat may reach nought, and speed at nought "+
+						"is a unit that never acts again", character.ID, label, kind, live[kind])
+				}
+				// The queue is where a nought would actually bite, so it is asked
+				// rather than reasoned about.
+				if wait := atb.Wait(live[progression.Speed]); wait <= 0 {
+					t.Errorf("%s under %s waits %d between turns", character.ID, label, wait)
+				}
+				queue := atb.New()
+				if err := queue.Add(character.ID, live[progression.Speed]); err != nil {
+					t.Errorf("%s under %s cannot join the queue: %v", character.ID, label, err)
+				}
+				tested++
 			}
-			queue := atb.New()
-			if err := queue.Add(character.ID, live[progression.Speed]); err != nil {
-				t.Errorf("%s under %s cannot join the queue: %v", character.ID, label, err)
-			}
-			tested++
 		}
 	}
 	if tested == 0 {
@@ -112,16 +114,18 @@ func TestTheFloorIsNeverReached(t *testing.T) {
 	}
 	absurd := crushingSet(t)
 	for _, character := range cast.All() {
-		base, _, err := character.Resolve(progression.LevelCap, progression.Furthest)
-		if err != nil {
-			t.Fatalf("resolve %s: %v", character.ID, err)
-		}
-		live := absurd.Stats(base, books.Limits.Ceilings, books.Bounds)
-		for _, kind := range []progression.Kind{progression.Speed, progression.Defense} {
-			floor := base[kind] * int64(books.Bounds.FloorFraction) / modifier.PercentBase
-			if live[kind] <= floor {
-				t.Errorf("%s crushed to %s %d, at or past the floor of %d: the floor is approached, "+
-					"never reached", character.ID, kind, live[kind], floor)
+		for _, arm := range grownForms(t, character) {
+			base, _, err := character.Resolve(progression.LevelCap, arm)
+			if err != nil {
+				t.Fatalf("resolve %s as %s: %v", character.ID, arm, err)
+			}
+			live := absurd.Stats(base, books.Limits.Ceilings, books.Bounds)
+			for _, kind := range []progression.Kind{progression.Speed, progression.Defense} {
+				floor := base[kind] * int64(books.Bounds.FloorFraction) / modifier.PercentBase
+				if live[kind] <= floor {
+					t.Errorf("%s crushed to %s %d, at or past the floor of %d: the floor is approached, "+
+						"never reached", character.ID, kind, live[kind], floor)
+				}
 			}
 		}
 	}

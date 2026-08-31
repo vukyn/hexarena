@@ -708,6 +708,7 @@
         {
           "name": "Poliwhirl",
           "min_level": 16,
+          "after": "Poliwag",
           "image": "assets/poliwhirl.svg",
           "stats": {
             "hp": {
@@ -739,6 +740,7 @@
         {
           "name": "Poliwrath",
           "min_level": 32,
+          "after": "Poliwhirl",
           "image": "assets/poliwrath.svg",
           "stats": {
             "hp": {
@@ -764,6 +766,38 @@
             "dodge": {
               "base": 14,
               "max": 40
+            }
+          }
+        },
+        {
+          "name": "Politoed",
+          "min_level": 32,
+          "after": "Poliwhirl",
+          "image": "assets/politoed.svg",
+          "stats": {
+            "hp": {
+              "base": 1307,
+              "max": 3800
+            },
+            "attack": {
+              "base": 200,
+              "max": 580
+            },
+            "defense": {
+              "base": 200,
+              "max": 580
+            },
+            "speed": {
+              "base": 28,
+              "max": 80
+            },
+            "accuracy": {
+              "base": 52,
+              "max": 150
+            },
+            "dodge": {
+              "base": 15,
+              "max": 45
             }
           }
         }
@@ -801,7 +835,10 @@
         },
         {
           "id": "submission",
-          "at_level": 36
+          "at_level": 36,
+          "stages": [
+            "Poliwrath"
+          ]
         },
         {
           "id": "hydro_pump",
@@ -810,6 +847,20 @@
         {
           "id": "rally",
           "at_level": 44
+        },
+        {
+          "id": "rinse",
+          "at_level": 32,
+          "stages": [
+            "Politoed"
+          ]
+        },
+        {
+          "id": "chorus",
+          "at_level": 36,
+          "stages": [
+            "Politoed"
+          ]
         }
       ],
       "passives": [
@@ -828,6 +879,13 @@
         {
           "id": "spiteful",
           "at_level": 36
+        },
+        {
+          "id": "composure",
+          "at_level": 40,
+          "stages": [
+            "Politoed"
+          ]
         }
       ]
     },

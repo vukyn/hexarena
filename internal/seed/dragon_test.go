@@ -516,6 +516,13 @@ func theLength(t *testing.T, kit []string, trait, opponent string, seedValue uin
 // declares and the first trait. One helper for both halves, so the two builds
 // and the two opponents are all read the same way.
 func fielded(t *testing.T, id string) (progression.Values, element.Affinity, []string, []string) {
+	return fieldedAs(t, id, progression.Furthest)
+}
+
+// fieldedAs is fielded with the arm named, which a line that FORKS has to do:
+// progression.Furthest is two answers there and Resolve refuses rather than
+// picking. Every linear caller goes through fielded and is unchanged.
+func fieldedAs(t *testing.T, id, stage string) (progression.Values, element.Affinity, []string, []string) {
 	t.Helper()
 	book, err := seed.Cast()
 	if err != nil {
@@ -525,17 +532,36 @@ func fielded(t *testing.T, id string) (progression.Values, element.Affinity, []s
 	if !known {
 		t.Fatalf("no character %q", id)
 	}
-	stats, stage, err := character.Resolve(progression.LevelCap, progression.Furthest)
+	stats, form, err := character.Resolve(progression.LevelCap, stage)
 	if err != nil {
 		t.Fatalf("resolve %s: %v", id, err)
 	}
-	kit := character.SkillsAt(progression.LevelCap, stage.Name)
+	kit := character.SkillsAt(progression.LevelCap, form.Name)
 	if len(kit) > cast.SkillSlots {
 		kit = kit[:cast.SkillSlots]
 	}
-	traits := character.PassivesAt(progression.LevelCap, stage.Name)
+	traits := character.PassivesAt(progression.LevelCap, form.Name)
 	if len(traits) > cast.TraitSlots {
 		traits = traits[:cast.TraitSlots]
 	}
 	return stats, character.Element, kit, traits
+}
+
+// grownForms is every form a character reaches at the cap: one on a line that
+// runs straight and one an arm on a line that forks.
+//
+// Both walks here are about the stat line a unit actually fights on, and a
+// forking line has two of them — so asking Resolve for "the" furthest is a
+// refusal rather than a pick, which is what these did until 2026-08-31.
+func grownForms(t *testing.T, character cast.Character) []string {
+	t.Helper()
+	forms, err := character.FurthestAt(progression.LevelCap)
+	if err != nil {
+		t.Fatalf("the grown forms of %s: %v", character.ID, err)
+	}
+	out := make([]string, 0, len(forms))
+	for _, form := range forms {
+		out = append(out, form.Name)
+	}
+	return out
 }
