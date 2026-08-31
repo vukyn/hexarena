@@ -992,7 +992,7 @@
     },
     {
       "id": "bubble_beam",
-      "name": "tia bọt",
+      "name": "tia bong bóng",
       "flavour": "Bắn một tia bọt nước xối thẳng, đủ dày để cản bước kẻ trúng đòn",
       "element": "water",
       "range": 2,
@@ -1017,7 +1017,7 @@
     },
     {
       "id": "body_slam",
-      "name": "lao người",
+      "name": "Lấy Thịt Đè Người",
       "flavour": "Lấy đà rồi ném trọn sức nặng vào kẻ đứng trước mặt",
       "element": "neutral",
       "range": 1,
@@ -1042,7 +1042,7 @@
     },
     {
       "id": "pummel",
-      "name": "dồn đòn",
+      "name": "đánh dồn dập",
       "flavour": "Đòn nối đòn dồn xuống một chỗ, không chừa lấy một nhịp hở",
       "element": "neutral",
       "range": 1,
