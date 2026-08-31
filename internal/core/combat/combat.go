@@ -207,14 +207,16 @@ func (r Rules) damage(attack, defense int64, skillMultiplier, affinityMultiplier
 }
 
 // wide is an unsigned 128-bit intermediate together with whether it is still
-// exact. It exists for the damage numerator and for nothing else.
+// exact. It exists for the two products in this package that do not fit an
+// int64 — the damage numerator and Swung — and for nothing else.
 //
 // exact goes false the moment a product passes 128 bits and never goes back, so
 // one overflow anywhere in a chain is still an overflow when the chain ends.
-// Nothing the game can author comes near it — the shipped factors would need a
-// power past 1.9e26 — and it is carried anyway, because a silent wrap at 128
-// bits is the same defect as the one at 64, only rarer and therefore harder to
-// find the next time.
+// Nothing the game can author comes near it — the numerator's shipped factors
+// would need a power past 1.9e26, and Swung's single widening cannot lose
+// exactness at all, since widen returns the exact product of a pair — and it is
+// carried anyway, because a silent wrap at 128 bits is the same defect as the
+// one at 64, only rarer and therefore harder to find the next time.
 type wide struct {
 	high, low uint64
 	exact     bool
@@ -726,6 +728,56 @@ func Gradient(health, maximum int64, atEmpty int) int {
 // authoring preview measures an unwritten skill through it, so an author reading
 // a figure before a write and the engine landing the blow afterwards are reading
 // one arithmetic rather than two that agree today.
+//
+// ⚠️ **The product is built in 128 bits, for the reason the damage numerator is,
+// and it matters more here.** This figure *becomes* `skillMultiplier` in
+// Rules.damage, so it is upstream of the widening that protects that expression
+// and the widening there cannot reach it. Written in one `int` it passed
+// math.MaxInt64 at a power around 9.2e15 and wrapped, which handed damage a
+// negative multiplier — refused by that function's first line — so an enormous
+// power came back dealing MinimumDamage.
+//
+// ⚠️ **The widening is reused rather than a cheaper overflow check, and the
+// reason is that the divisor is one of the multiplicands' own scale.** A skill
+// with no bonus and no share is `power * 1000 / 1000`, which is `power` for
+// every power the type holds. A guard that saturated whenever the *product* left
+// an int64 would answer math.MaxInt64 to that — refusing a figure it was handed
+// and could have returned untouched, three orders of magnitude below where the
+// quotient stops fitting. Widening answers `power`, so the identity survives and
+// the only inputs that saturate are the ones whose answer genuinely does not fit.
+//
+// A quotient past the type saturates at math.MaxInt64, which is a bound on the
+// **type** and not on the design, exactly as it is in the numerator — and the two
+// compose: a saturated multiplier hands damage a factor that saturates its own
+// division in turn, so the blow lands at the widest figure an int64 holds against
+// a bar whose largest reachable value is eleven and a half thousand. It kills
+// whatever it touches, which is what a power that large asked for. What it must
+// not do is wrap, because a wrap is the one answer that comes back *smaller*.
+//
+// ⚠️ **The three clamps refuse a negative rather than preserving what one used
+// to produce, and that is the one input whose answer moves.** None is reachable:
+// power is Skill.Power plus a Condition's BonusPower and Validate refuses a
+// negative of either, the bonus is that same field read off the caster, and
+// Gradient cannot return a negative share — its full-health guard exists
+// precisely so a unit somehow past its own bar does not earn one. They are
+// written down anyway, because the arithmetic below is unsigned and a Skill built
+// by hand must not be able to reach it; and there is no answer to preserve, since
+// a negative power, a bonus that is a penalty and a wound that weakens are three
+// things no field expresses.
 func Swung(power, bonus, share int) int {
-	return (power + bonus) * (PermilleBase + share) / PermilleBase
+	if power < 0 {
+		power = 0
+	}
+	if bonus < 0 {
+		bonus = 0
+	}
+	if share < 0 {
+		share = 0
+	}
+	// Both sums are exact in 64 unsigned bits and neither needs a guard: two
+	// non-negative int64 values cannot reach 2^64 between them, so only the
+	// multiplication ever had room to wrap.
+	swung := uint64(power) + uint64(bonus)
+	multiplier := uint64(PermilleBase) + uint64(share)
+	return int(widen(swung, multiplier).over(PermilleBase))
 }

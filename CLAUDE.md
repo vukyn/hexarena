@@ -1588,6 +1588,34 @@ formula is strictly worse than the wrap it replaces, and `max_effective_hp` is
 saturation is a bound on the type and not an authored ceiling**: `Skill.Power` still
 has none, deliberately — see `TODO.md` § *Decided against*.
 
+⚠️ **`combat.Swung` is the same story and had to be widened too, because it sits
+*upstream* of that numerator.** It is the one expression that composes a caster's
+own terms — `(power + bonus) * (1000 + share) / 1000` — and its result **becomes**
+`skillMultiplier`, so the 128 bits below it could not protect it: written in one
+`int` it wrapped at a power around 9.2×10¹⁵ and handed `damage` a **negative**
+multiplier, which that function's first line refuses, so an enormous power came
+back dealing `MinimumDamage`. It reuses `wide` rather than getting arithmetic of
+its own, which is the point of the function existing at all — the battle and the
+authoring preview read *one* expression, so it may not fork into two. ⚠️ **A
+cheaper "does the product still fit an int64" check was refused, and the reason is
+that the divisor is one of the multiplicands' own scale**: a skill with no bonus
+and no share is `power * 1000 / 1000`, which is `power` for every power the type
+holds, and such a guard would answer `math.MaxInt64` to that — refusing a figure it
+was handed and could return untouched, three orders of magnitude below where the
+quotient stops fitting. Widening keeps that identity and saturates only where the
+answer genuinely does not fit; the two saturations then compose, since a pinned
+multiplier makes the damage below it pin as well. ⚠️ Its **three clamps at nought
+are a refusal, not a preservation** — the one input whose answer moved — and they
+exist because the arithmetic under them is unsigned: `power`, `bonus` and `share`
+are non-negative on every path (`Validate` refuses a negative of the first two,
+`Gradient` cannot return a negative third), and a negative power, a bonus that is a
+penalty and a wound that weakens are three things no field expresses. ⚠️ **Nothing
+outside `internal/core/combat` can see any of this**: the shipped book's largest
+landable multiplier is 3,500, twelve orders of magnitude below the wrap, so
+reverting the widening moves **no golden and fails no other package** — `swung_test.go`
+is the whole guard, and `narrowSwung` in it is the pre-fix expression kept verbatim
+and marked for deletion.
+
 **Healing is not damage with a sign.** Three mechanisms give health back — a
 skill's `restores`, a skill's `drains`, and a `regen` status — and each obeys the
 same four rules. `combat.Rules.Restore` deliberately does **not** divide by the
