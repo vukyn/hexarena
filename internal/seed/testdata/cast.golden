@@ -115,4 +115,27 @@ pokemon.poliwag — Poliwag
     level 60 hp 3700, atk 660, def 560, spd 90, acc 140, ddg 40
              absorbs 10632 of the 11500 budget, 868 to spare
 
-5 characters
+pokemon.machop — Machop
+  from     Pokémon (anime)
+  preset   slugger
+  element  ground
+  species  titan
+  art      assets/machop.svg
+  kit      rock_throw body_slam cross_chop@8 vital_throw@12 seismic_toss@16 inner_focus@20 submission@24 bite@28 taunt@32 skull_bash@36 rally@40 wide_guard@44
+  stage "Machop" owns levels 1 to 15, showing assets/machop.svg
+    level 1  hp 860, atk 196, def 120, spd 23, acc 55, ddg 8
+             absorbs 1204 of the 11500 budget, 10296 to spare
+    level 15 hp 1249, atk 284, def 174, spd 33, acc 79, ddg 11
+             absorbs 1976 of the 11500 budget, 9524 to spare
+  stage "Machoke" owns levels 16 to 31, showing assets/machoke.svg
+    level 16 hp 1481, atk 339, def 206, spd 38, acc 94, ddg 13
+             absorbs 2501 of the 11500 budget, 8999 to spare
+    level 31 hp 1965, atk 450, def 274, spd 50, acc 125, ddg 17
+             absorbs 3764 of the 11500 budget, 7736 to spare
+  stage "Machamp" owns levels 32 to 60, showing assets/machamp.svg
+    level 32 hp 2272, atk 523, def 316, spd 58, acc 144, ddg 19
+             absorbs 4665 of the 11500 budget, 6835 to spare
+    level 60 hp 3300, atk 760, def 460, spd 85, acc 210, ddg 28
+             absorbs 8375 of the 11500 budget, 3125 to spare
+
+6 characters

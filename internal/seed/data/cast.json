@@ -825,6 +825,174 @@
           "at_level": 44
         }
       ]
+    },
+    {
+      "id": "pokemon.machop",
+      "name": "Machop",
+      "origin": "pokemon",
+      "archetype": "slugger",
+      "image": "assets/machop.svg",
+      "element": "ground",
+      "species": [
+        "titan"
+      ],
+      "bio": "Cả ngày chỉ làm một việc: nhấc thứ nặng hơn mình lên rồi đặt xuống, rồi nhấc lại. Machop tin sức mạnh không phải thứ trời cho mà là thứ kiếm được từng chút một, nên nó không nghỉ.",
+      "stages": [
+        {
+          "name": "Machop",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 860,
+              "max": 2500
+            },
+            "attack": {
+              "base": 196,
+              "max": 570
+            },
+            "defense": {
+              "base": 120,
+              "max": 350
+            },
+            "speed": {
+              "base": 23,
+              "max": 66
+            },
+            "accuracy": {
+              "base": 55,
+              "max": 160
+            },
+            "dodge": {
+              "base": 8,
+              "max": 22
+            }
+          }
+        },
+        {
+          "name": "Machoke",
+          "min_level": 16,
+          "image": "assets/machoke.svg",
+          "stats": {
+            "hp": {
+              "base": 998,
+              "max": 2900
+            },
+            "attack": {
+              "base": 229,
+              "max": 665
+            },
+            "defense": {
+              "base": 139,
+              "max": 405
+            },
+            "speed": {
+              "base": 26,
+              "max": 75
+            },
+            "accuracy": {
+              "base": 64,
+              "max": 185
+            },
+            "dodge": {
+              "base": 9,
+              "max": 25
+            }
+          }
+        },
+        {
+          "name": "Machamp",
+          "min_level": 32,
+          "image": "assets/machamp.svg",
+          "stats": {
+            "hp": {
+              "base": 1135,
+              "max": 3300
+            },
+            "attack": {
+              "base": 261,
+              "max": 760
+            },
+            "defense": {
+              "base": 158,
+              "max": 460
+            },
+            "speed": {
+              "base": 29,
+              "max": 85
+            },
+            "accuracy": {
+              "base": 72,
+              "max": 210
+            },
+            "dodge": {
+              "base": 10,
+              "max": 28
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "rock_throw"
+        },
+        {
+          "id": "body_slam"
+        },
+        {
+          "id": "cross_chop",
+          "at_level": 8
+        },
+        {
+          "id": "vital_throw",
+          "at_level": 12
+        },
+        {
+          "id": "seismic_toss",
+          "at_level": 16
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 20
+        },
+        {
+          "id": "submission",
+          "at_level": 24
+        },
+        {
+          "id": "bite",
+          "at_level": 28
+        },
+        {
+          "id": "taunt",
+          "at_level": 32
+        },
+        {
+          "id": "skull_bash",
+          "at_level": 36
+        },
+        {
+          "id": "rally",
+          "at_level": 40
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 44
+        }
+      ],
+      "passives": [
+        {
+          "id": "blood_thirst",
+          "at_level": 16
+        },
+        {
+          "id": "endurance",
+          "at_level": 32
+        },
+        {
+          "id": "reckless",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }

@@ -653,11 +653,29 @@ func lineHolding(t *testing.T, body string, words ...string) string {
 	return ""
 }
 
+// namedCharacters is how many characters the probe's restriction lists.
+//
+// It is a fixed count rather than "the whole cast", and the two assertions it
+// sits between are why: the detail cell has to be **too long for the floor and
+// short enough for the wide window**, and a list that grows with the book only
+// ever satisfies the first. It named everybody until 2026-08-31, which held at
+// four characters and at five, and broke on the sixth — the wording ran past two
+// hundred columns, so the cell was still cut at a width that is supposed to hold
+// it whole and the case turned red for a reason that had nothing to do with the
+// rule under test.
+//
+// Five clears the floor with room to spare in both languages and leaves about as
+// much again before the wide window. A future id long enough to upset that fails
+// one of the two assertions by name rather than silently, which is the whole
+// reason both of them are asserted.
+const namedCharacters = 5
+
 // aSkillTheWholeCastIsNamedOn writes a skill into a scratch data directory whose
-// restriction names every character in the book, and hands back its id.
+// restriction names namedCharacters of the book's characters, and hands back its
+// id.
 //
 // The fixture authors the overflow instead of borrowing one. A restriction is
-// worded around the ids it lists, so a skill kept for the whole cast draws a
+// worded around the ids it lists, so a skill kept for a row of them draws a
 // detail cell no window at the floor can hold in either language — which is
 // what the detail column has to be measured on, since the widest one the shipped
 // books produce is over the floor by a single cell and only in Vietnamese.
@@ -672,12 +690,17 @@ func aSkillTheWholeCastIsNamedOn(t *testing.T, dir string) string {
 	if err != nil {
 		t.Fatalf("load %s: %v", dir, err)
 	}
-	everyone := make([]any, 0, len(lib.Characters().All()))
-	for _, character := range lib.Characters().All() {
-		everyone = append(everyone, character.ID)
+	cast := lib.Characters().All()
+	if len(cast) < namedCharacters {
+		t.Fatalf("the fixture cast holds %d characters and the probe names %d, so the restriction "+
+			"cannot be built to the width this measures", len(cast), namedCharacters)
+	}
+	named := make([]any, 0, namedCharacters)
+	for _, character := range cast[:namedCharacters] {
+		named = append(named, character.ID)
 	}
 	appendSkills(t, dir, []string{id}, func(built map[string]any, _ string) {
-		built["restrict"] = map[string]any{"characters": everyone}
+		built["restrict"] = map[string]any{"characters": named}
 	})
 	return id
 }
