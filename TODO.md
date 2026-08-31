@@ -179,15 +179,6 @@ is only so the shape is readable.
       `species.golden` and `origins.golden` — **not** `scenarios.golden` or
       `replay.golden`, which this line claimed until 2026-08-31. Read Squirtle
       first. → `CLAUDE.md` § Open work.
-- [ ] **The rest of the cast still crits at nothing.** Two skills carry a chance
-      now, chosen by what `weigh` priced rather than by what the names suggest.
-      The other twenty-six damaging skills are open, and each is its own reading:
-      the price is a fact about the **carrier's whole line**, not about the
-      skill's shape. ⚠️ Do not author one from a theme. `bite` and `kunai` are as
-      pointed a blow as `razor_leaf` is and priced +0.2% and **−1.7%**; a cheap
-      skill given a crit gets cast *more* and crowds out a better one, which is
-      the `outrage` lesson wearing a different hat. → `CLAUDE.md` § Pricing one
-      number.
 - [ ] **`weigh` prices neither a field that is two numbers nor a skill that
       deals none.** `self_gradient` is a bonus *and* a share, so sweeping it is a
       surface where the tool answers curves — it is out of the field table for
@@ -198,6 +189,43 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
+
+- [ ] **`screenPreview` is still outside `everyScreen`**
+      (`cmd/hexforge-tui/language_test.go`), so it has **no width test, no
+      translation test and no leak test at all**. ⚠️ This is the **fifth**
+      instance of a shape `CLAUDE.md` records having been made four times — after
+      `plainTerminal`, `playScreen`, the species picker and the skill filter's
+      states — and it is the one instance that has been *known* the whole time:
+      the `CLAUDE.md` line describing the trait blurb already admits it ("Both
+      blurb shapes are in it now; `screenPreview` still is not") and nobody filed
+      it. The screen draws art, so it is also the one screen where a width test
+      would be measuring a drawing rather than a sentence; decide what the entry
+      asserts before adding it, or it will pass on nothing.
+- [ ] **A saturating multiplier is re-narrowed one line downstream.** #185 let
+      `combat.Swung` hand back `math.MaxInt64`, and three sites take that value
+      into plain `int` arithmetic: `internal/core/battle/turn.go` multiplies the
+      power by the splash share (`power * SplashPower / scale.Base`), the same
+      file does it to a restore, and `internal/core/battle/ai.go` does it to the
+      rating's power. Same class as #180 and #185, and **strictly better than
+      before either of them** — the value arriving there used to be a wrapped
+      negative — so this is the tail of that work rather than a new defect.
+      ⚠️ Fixing it is not four more widenings: the question worth answering first
+      is whether a saturated multiplier should be *carried* at all, or refused
+      where it is produced.
+- [ ] **`combat.ExpectedStrike` weights in a narrow `int64` product**
+      (`internal/core/combat/combat.go`): `ordinary*(PermilleBase-chance) +
+      critical*chance`, with both `Strike` results now able to reach
+      `math.MaxInt64` after #180. Rating-only — it never reaches a golden — which
+      is exactly why nothing would report it.
+- [ ] **`m.wrapped` fills the window's final column.** `wrappedIn`
+      (`cmd/hexforge-tui/model.go`) computes `room = usableWidth() - 2 - width -
+      1`, so `labelAt` emits exactly `usableWidth()` cells — measured at 120 on
+      `browse`'s biography row: exactly 120. Every other row in this client
+      deliberately leaves the last column empty, because a line filling a
+      terminal's final cell wraps on some of them, and `fieldValueRoom`'s comment
+      records fixing this same off-by-one in four other places. ⚠️ It changes
+      what fits, so it would newly mark a line #186 does not cut today — which is
+      why #186 left it alone rather than folding it in.
 
 ## Decided against — do not re-raise
 
