@@ -85,4 +85,16 @@ mender, formation column 0
            absorbs 9523 of the 11500 budget, 1977 to spare
   kit      moonblast charm moonlight wish sing rally wide_guard solar_beam
 
-7 presets
+bombardier, formation column 2
+  the one that aims at a rank rather than at a unit: every blow lands on more than it was pointed at, thrown from the deepest row on the board — and it is built thin enough that whatever reaches that row ends it
+  demands  a character built from it must carry electric and metal
+  hp 1032->3000  attack 213->620  defense 117->340  speed 38->110  accuracy 62->180  dodge 21->62
+  level 1  hp 1032, atk 213, def 117, spd 38, acc 62, ddg 21
+           absorbs 1435 of the 11500 budget, 10065 to spare
+  level 30 hp 1999, atk 413, def 226, spd 73, acc 120, ddg 41
+           absorbs 3507 of the 11500 budget, 7993 to spare
+  level 60 hp 3000, atk 620, def 340, spd 110, acc 180, ddg 62
+           absorbs 6410 of the 11500 budget, 5090 to spare
+  kit      thunder_shock discharge thunderbolt flash_cannon mirror_shot thunder_wave metal_sound magnet_rise zap_cannon
+
+8 presets

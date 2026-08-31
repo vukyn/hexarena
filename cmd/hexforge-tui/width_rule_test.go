@@ -460,13 +460,7 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 	speciesIDs := someLongSpeciesIDs(t, dir)
 	base, lib, _ := startIn(t, lang, dir)
 
-	everyone := make([]string, 0, len(lib.Characters().All()))
-	for _, character := range lib.Characters().All() {
-		everyone = append(everyone, character.ID)
-	}
-	if len(everyone) < 2 {
-		t.Fatalf("the fixture cast holds %d characters, too few for an allowlist to overflow a row", len(everyone))
-	}
+	everyone := enoughOfTheCastToOverflowTheFloor(t, lib)
 
 	// 1. picker.go — the per-row detail column. The row is the probe skill,
 	//    whose restriction names the whole cast, and the cursor is put on it so
@@ -501,7 +495,9 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 	//    cannot be grown without authoring characters; the species book is
 	//    already grown to order by someLongSpeciesIDs, which sizes its ids off
 	//    minWidth. Same call site, same unbounded shape, a fixture that survives
-	//    the next floor. The form's own allowlist row below still reads the cast.
+	//    the next floor. The form's own allowlist row below still reads the cast,
+	//    but only as much of it as the floor cannot hold — see
+	//    enoughOfTheCastToOverflowTheFloor.
 	allowing := base.enter(screenSkills)
 	allowing.skills.adding = true
 	allowing.skills.keptWho = everyone
@@ -763,6 +759,37 @@ func longIDs(count int, stem string, suffix func(index int) string) []string {
 // reached yet. A species is an id and a word and nothing else, which is why this
 // writes the objects itself rather than copying a shape the way the skill
 // fixtures do.
+// enoughOfTheCastToOverflowTheFloor is as many character ids as it takes to be
+// too long for the floor, and no more.
+//
+// ⚠️ **A fixture may not be however big the shipped cast happens to be.** This
+// cell reads real character ids, because a character allowlist is a list of
+// them and a synthesised id would be measuring a row the picker cannot offer.
+// But taking the *whole* cast makes the fixture grow every time somebody ships
+// a character, and a value that grows without a ceiling eventually fails the
+// other half of the rule: the seventh character pushed this row past the wide
+// window, so the test went red over an authoring decision it has no opinion
+// about. Sized off minWidth instead, the row overflows the floor by
+// construction and stays well inside the window no matter how large the cast
+// gets — the same shape someLongSpeciesIDs uses, pointed at a book this test
+// cannot write to.
+func enoughOfTheCastToOverflowTheFloor(t *testing.T, lib *forge.Library) []string {
+	t.Helper()
+	ids := make([]string, 0, len(lib.Characters().All()))
+	for _, character := range lib.Characters().All() {
+		ids = append(ids, character.ID)
+		// One id past the floor: the first prefix the floor cannot hold. Stopping
+		// at the first one *over* rather than at the first one that fits is what
+		// makes the clipping assertion true by construction.
+		if lipgloss.Width(strings.Join(ids, " ")) > minWidth {
+			return ids
+		}
+	}
+	t.Fatalf("the whole fixture cast is %d cells of ids, which the floor's %d could hold, so an allowlist row of it overflows nothing",
+		lipgloss.Width(strings.Join(ids, " ")), minWidth)
+	return nil
+}
+
 func someLongSpeciesIDs(t *testing.T, dir string) []string {
 	t.Helper()
 	const count = 4

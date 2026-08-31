@@ -39,6 +39,11 @@
       "id": "fae",
       "name": "tiên",
       "note": "Thứ sống theo nhịp của trời chứ không theo nhịp của đất: đêm nay còn bé xíu, qua một đêm trăng nào đó bỗng đã khác hẳn"
+    },
+    {
+      "id": "construct",
+      "name": "cỗ máy",
+      "note": "Thứ được lắp ra chứ không phải sinh ra: không thở, không ăn, không lớn lên — chỉ chạy, cho tới lúc không chạy nữa"
     }
   ]
 }

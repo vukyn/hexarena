@@ -341,6 +341,60 @@ Cho mục tiêu nhanh nhẹn, 100% khả năng.
 Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 [one line] nhanh nhẹn 100% · đồng đội · tầm 1 · 3 ô · hồi 4
 
+thunder_shock
+Một luồng nhỏ chạy qua người kẻ đối diện, đủ để cả thân cứng lại trong chớp mắt, 70% công.
+Gây choáng cho mục tiêu, 12% khả năng.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+[one line] 70% công · choáng 12% · tầm 2 · hồi 1
+
+mirror_shot
+Hắt lại đúng thứ ánh sáng vừa rọi tới, kẻ đối diện chói mắt mà không kịp quay đi, 90% công.
+Gây mù cho mục tiêu, 50% khả năng.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+[one line] 90% công · mù 50% · tầm 2 · hồi 2
+
+thunderbolt
+Cả khoảng không sáng trắng lên một nhịp rồi tối lại, chỗ vừa sáng chẳng còn gì nguyên vẹn, 160% công, xuyên 30% giáp.
+Gây choáng cho mục tiêu, 20% khả năng.
+Tầm 2 · 88% trúng · hồi 3 lượt.
+[one line] 160% công · choáng 20% · tầm 2 · hồi 3
+
+flash_cannon
+Gom ánh kim lại trong lòng rồi bắn ra thành một tia trắng xoá, thứ gì hứng trọn cũng vỡ ra một mảng, 150% công.
+Gây phá giáp cho mục tiêu, 35% khả năng.
+Tầm 3 · 87% trúng · hồi 3 lượt.
+[one line] 150% công · phá giáp 35% · tầm 3 · hồi 3
+
+thunder_wave
+Một đợt sóng lan ngang, chạm tới đâu thì bên đó chậm hẳn lại như đang lội bùn.
+Gây sa lầy x2 cho mục tiêu, 100% khả năng.
+Gây choáng cho mục tiêu, 25% khả năng.
+Tầm 2 · 3 ô · 100% trúng · hồi 3 lượt.
+[one line] sa lầy x2 100% · choáng 25% · tầm 2 · 3 ô · hồi 3
+
+metal_sound
+Cọ kim loại vào kim loại, thứ tiếng rít ra khiến kẻ nghe quên mất phải giữ mình, 80% công.
+Gây phá giáp x2 cho mục tiêu, 100% khả năng.
+Tầm 2 · 2 ô · 90% trúng · hồi 3 lượt.
+[one line] 80% công · phá giáp x2 100% · tầm 2 · 2 ô · hồi 3
+
+discharge
+Xả hết những gì tích được ra chung quanh cùng một lúc, không nhắm ai và cũng chẳng chừa ai, 90% công.
+Tầm 1 · 3 ô · 90% trúng · hồi 3 lượt.
+[one line] 90% công · cả hai bên · tầm 1 · 3 ô · hồi 3
+
+magnet_rise
+Đẩy mặt đất ra xa rồi treo mình lơ lửng, đòn nào tới cũng phải với.
+Nhận mờ ảo x2.
+Bản thân · hồi 3 lượt.
+[one line] tự nhận mờ ảo x2 · bản thân · hồi 3
+
+zap_cannon
+Nén dòng lại thành một khối rồi bắn đi; khối ấy đi chậm và đi thẳng, ai né kịp thì né, 270% công.
+Gây choáng cho mục tiêu, 100% khả năng.
+Tầm 3 · 55% trúng · hồi 4 lượt.
+[one line] 270% công · choáng 100% · tầm 3 · hồi 4
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -900,6 +954,59 @@ Aims at an ally.
 Gives its target haste, 100% of the time.
 Range 1 · 3 cells · 100% to hit · 4 turns to recharge.
 [one line] haste 100% · an ally · range 1 · 3 cells · cd 4
+
+thunder_shock
+Hits an enemy for 70% of attack.
+Inflicts stun, 12% of the time.
+Range 2 · 95% to hit · 1 turn to recharge.
+[one line] 70% attack · stun 12% · range 2 · cd 1
+
+mirror_shot
+Hits an enemy for 90% of attack.
+Inflicts blind, 50% of the time.
+Range 2 · 90% to hit · 2 turns to recharge.
+[one line] 90% attack · blind 50% · range 2 · cd 2
+
+thunderbolt
+Hits an enemy for 160% of attack, through 30% of the armour.
+Inflicts stun, 20% of the time.
+Range 2 · 88% to hit · 3 turns to recharge.
+[one line] 160% attack · stun 20% · range 2 · cd 3
+
+flash_cannon
+Hits an enemy for 150% of attack.
+Inflicts expose, 35% of the time.
+Range 3 · 87% to hit · 3 turns to recharge.
+[one line] 150% attack · expose 35% · range 3 · cd 3
+
+thunder_wave
+Aims at an enemy.
+Inflicts mire x2, 100% of the time.
+Inflicts stun, 25% of the time.
+Range 2 · 3 cells · 100% to hit · 3 turns to recharge.
+[one line] mire x2 100% · stun 25% · range 2 · 3 cells · cd 3
+
+metal_sound
+Hits an enemy for 80% of attack.
+Inflicts expose x2, 100% of the time.
+Range 2 · 2 cells · 90% to hit · 3 turns to recharge.
+[one line] 80% attack · expose x2 100% · range 2 · 2 cells · cd 3
+
+discharge
+Hits both sides for 90% of attack.
+Range 1 · 3 cells · 90% to hit · 3 turns to recharge.
+[one line] 90% attack · both sides · range 1 · 3 cells · cd 3
+
+magnet_rise
+Puts veil x2 on itself.
+Itself · 3 turns to recharge.
+[one line] self veil x2 · itself · cd 3
+
+zap_cannon
+Hits an enemy for 270% of attack.
+Inflicts stun, 100% of the time.
+Range 3 · 55% to hit · 4 turns to recharge.
+[one line] 270% attack · stun 100% · range 3 · cd 4
 
 [trait] endurance
 Always carries toughened.

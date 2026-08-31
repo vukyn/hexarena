@@ -145,6 +145,7 @@ var (
 		"bruiser":    "kẻ áp sát",
 		"slugger":    "kẻ giáng đòn",
 		"mender":     "người chữa lành",
+		"bombardier": "kẻ oanh tạc",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its
