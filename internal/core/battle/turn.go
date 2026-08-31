@@ -1006,12 +1006,9 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		if known.Amplified(against) {
 			conduit = known.Requires.Arcs()
 			power = known.PowerAgainst(against)
-			if conduit {
-				power = known.Requires.DampedPower(power)
-			}
-			// Only when the power went UP. A conduit's figure moves the other way
-			// — that is what it pays with — and an "amplified, power x0.6" line
-			// would have a reader hunting for a bonus that is a penalty.
+			// Only when the power went up. A conduit moves it not at all — its own
+			// blow is a constant and the charge is added beside it — so the line
+			// would be reporting a change that did not happen.
 			if power > known.Power {
 				b.emit(Event{
 					Kind: Amplified, At: turn.At, Turn: turn.Number, Actor: actor.ID,

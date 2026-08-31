@@ -181,19 +181,20 @@ type Condition struct {
 	//
 	// ⚠️ **The aim gates the whole thing.** A chain from an uncharged unit is
 	// empty however much charge is standing beside it — nothing is consumed,
-	// nothing arcs, and the skill is simply its own damped self.
+	// nothing arcs, and the skill is simply its own blow.
 	Chains bool
-	// Damped is the share taken off the skill's own power while the condition
-	// holds, in parts per thousand.
-	//
-	// It is the other half of ArcPower and neither is honest without it: a skill
-	// that discharged a counter *and* hit for its full figure would be strictly
-	// better whenever the counter was there, which is the "only line worth
-	// playing" the detonate rule exists to refuse. What a conduit does is trade
-	// its own blow for the stored one.
-	Damped int
 	// ArcPower is what one consumed stack deals, as a share of the caster's
 	// scaling stat, exactly as a skill's own power is.
+	//
+	// ⚠️ **It is added to the skill's own blow and never traded against it.** An
+	// earlier design damped the blow to pay for the discharge, on the reasoning
+	// that a skill hitting for its full figure *and* firing the charge would be
+	// strictly better whenever the charge was there. That reasoning was wrong
+	// about where the payment comes from: a stack does not appear on a target by
+	// itself, and the turn that put it there is the price. A conduit is paid for
+	// in **tempo** — the charging turns and the cooldown it sits on — so its own
+	// figure is a constant, and a reader comparing two skills is comparing the
+	// numbers on them rather than the numbers minus a condition.
 	//
 	// ⚠️ **It is not the skill's damage and does not behave like it.** It is the
 	// charge going off, so it is not aimed, not rolled against accuracy or dodge,
@@ -210,20 +211,6 @@ func (c *Condition) Arcs() bool { return c != nil && c.ArcPower > 0 }
 
 // ChainsOn reports whether the consume travels to adjacent carriers.
 func (c *Condition) ChainsOn() bool { return c != nil && c.Chains }
-
-// DampedPower is the skill's own power while the condition holds. A condition
-// that damps nothing hands the power back unchanged, which is every condition
-// that pays in a flat bonus instead.
-func (c *Condition) DampedPower(power int) int {
-	if c == nil || c.Damped <= 0 {
-		return power
-	}
-	left := scale.Base - c.Damped
-	if left < 0 {
-		left = 0
-	}
-	return power * left / scale.Base
-}
 
 // Takes is how many stacks a consume removes from a target carrying the given
 // number, and nought when this condition consumes nothing.
@@ -819,7 +806,6 @@ type conditionFile struct {
 	Consume       bool   `json:"consume,omitempty"`
 	ConsumeStacks int    `json:"consume_stacks,omitempty"`
 	Chains        bool   `json:"chains,omitempty"`
-	Damped        int    `json:"damped,omitempty"`
 	ArcPower      int    `json:"arc_power,omitempty"`
 }
 
@@ -917,7 +903,7 @@ func (s Skill) file() skillFile {
 			BelowHealth: s.SelfRequires.BelowHealth,
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
 			ConsumeStacks: s.SelfRequires.ConsumeStacks, Chains: s.SelfRequires.Chains,
-			Damped: s.SelfRequires.Damped, ArcPower: s.SelfRequires.ArcPower,
+			ArcPower: s.SelfRequires.ArcPower,
 		}
 	}
 	if s.SelfGradient != nil {
@@ -929,7 +915,7 @@ func (s Skill) file() skillFile {
 			BelowHealth: s.Requires.BelowHealth,
 			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
 			ConsumeStacks: s.Requires.ConsumeStacks, Chains: s.Requires.Chains,
-			Damped: s.Requires.Damped, ArcPower: s.Requires.ArcPower,
+			ArcPower: s.Requires.ArcPower,
 		}
 	}
 	if s.Strips != nil {
@@ -1151,13 +1137,12 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	if err != nil {
 		return Skill{}, err
 	}
-	// The damped figure rather than the share, because rounding is what actually
-	// decides it: a skill of small power damped by a legal share can still land on
-	// nought, and turn.go never rolls a strike of no power — so it would never
-	// discharge either.
-	if requires.Arcs() && requires.DampedPower(declared.Power) <= 0 {
-		return Skill{}, fmt.Errorf("skill %q requires: damps %d power by %d, which leaves nothing to strike with and so nothing to discharge on",
-			declared.ID, declared.Power, requires.Damped)
+	// A conduit rides on its own strikes, and turn.go never rolls a strike of no
+	// power — so a skill that deals none would never reach the discharge it
+	// declares.
+	if requires.Arcs() && declared.Power <= 0 {
+		return Skill{}, fmt.Errorf("skill %q requires: arcs for %d but the skill deals no damage, so it never rolls a strike and never discharges",
+			declared.ID, requires.ArcPower)
 	}
 	selfRequires, err := resolveCondition(declared.ID, "self_requires", declared.SelfRequires, deps)
 	if err != nil {
@@ -1407,25 +1392,18 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 	if declared.ArcPower < 0 {
 		return fail("arcs for %d power, want zero or more", declared.ArcPower)
 	}
-	if declared.Damped < 0 || declared.Damped >= scale.Base {
-		// Not a share in range but a share the skill survives. turn.go never rolls
-		// a strike of no power, and a strike that is never rolled never discharges
-		// — so a conduit damped to nothing is a conduit that does nothing at all.
-		return fail("damps its own power by %d, want a share under %d in parts per thousand",
-			declared.Damped, scale.Base)
-	}
 	if declared.ConsumeStacks < 0 {
 		return fail("consumes %d stacks, want zero for all of them or a positive count", declared.ConsumeStacks)
 	}
 	if declared.ConsumeStacks > 0 && !declared.Consume {
 		return fail("names %d stacks to consume but does not consume", declared.ConsumeStacks)
 	}
-	if !declared.Consume && (declared.Chains || declared.ArcPower != 0 || declared.Damped != 0) {
-		// All three describe what spending the status does. Without the consume
-		// they would be a skill that arcs, chains and damps itself forever off a
-		// status it never spends, which is the free shape the old spread rule
-		// refused for the same reason.
-		return fail("chains, arcs or damps without consuming anything, so the discharge would be free every turn the condition held")
+	if !declared.Consume && (declared.Chains || declared.ArcPower != 0) {
+		// Both describe what spending the status does. Without the consume they
+		// would be a skill that arcs and chains for ever off a status it never
+		// spends, which is the free shape the old spread rule refused for the same
+		// reason.
+		return fail("chains or arcs without consuming anything, so the discharge would be free every turn the condition held")
 	}
 	if declared.Consume && declared.BonusPower == 0 && declared.ArcPower == 0 {
 		return fail("consumes %q for neither a bonus nor a discharge, which throws the status away for nothing", statusID)
@@ -1437,14 +1415,11 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return fail("is paid both %d bonus power and %d arc power for one stack, which is the same purchase made twice",
 			declared.BonusPower, declared.ArcPower)
 	}
-	if declared.Damped != 0 && declared.ArcPower == 0 {
-		return fail("damps its own power by %d and discharges nothing, so the condition is a penalty for meeting it", declared.Damped)
-	}
 	return &Condition{
 		Status: statusID, MinStacks: minStacks, BelowHealth: declared.BelowHealth,
 		BonusPower: declared.BonusPower, Consume: declared.Consume,
 		ConsumeStacks: declared.ConsumeStacks, Chains: declared.Chains,
-		Damped: declared.Damped, ArcPower: declared.ArcPower,
+		ArcPower: declared.ArcPower,
 	}, nil
 }
 
