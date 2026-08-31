@@ -1723,8 +1723,7 @@
         "min_stacks": 2,
         "consume": true,
         "consume_stacks": 0,
-        "damped": 500,
-        "arc_power": 400
+        "arc_power": 220
       }
     }
   ]

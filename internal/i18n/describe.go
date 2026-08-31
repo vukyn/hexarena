@@ -380,11 +380,11 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 		amplified := declared.Power + condition.BonusPower
 		sentence = l.Say(opening, l.join(clauses),
 			share(amplified*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat))
-	case condition.Arcs():
-		// A conduit's own figure goes DOWN, so the sentence opens with the trade
-		// rather than with a total. Quoting the damped figure as though it were an
-		// amplification would be the description saying the opposite of what
-		// happens, and quoting the undamped one would be quoting a number the
+	case condition.Arcs() && condition.Damped > 0:
+		// A damped conduit's own figure goes DOWN, so the sentence opens with the
+		// trade rather than with a total. Quoting the damped figure as though it
+		// were an amplification would be the description saying the opposite of
+		// what happens, and quoting the undamped one would be quoting a number the
 		// skill never lands for.
 		sentence = l.Say(dampedOpening(opening), l.join(clauses),
 			share(condition.DampedPower(declared.Power)*declared.StrikeCount()),

@@ -22,13 +22,25 @@ import (
 // share of its own blow it damps, so a stack is worth what that trade is worth
 // and not a coin more.
 //
-// Three clauses, and each is a way the trade could have been a free lunch:
+// **Every conduit gives something up, and there are two currencies.** A skill may
+// pay in its own **power** — `damped`, which is what `spark` and `electro_ball`
+// do — or in its own **tempo**, which is what a nuke does: it keeps its whole
+// blow and buys the discharge with the turns spent charging and the turns spent
+// waiting. What it may not do is pay in neither, because the counter is then a
+// bonus for having met a condition somebody else's turn arranged.
+//
+// A skill paying in power is held to three clauses, each a way the trade could
+// have been a free lunch:
 //
 //   - the arc must beat the damping, or nobody would ever charge;
 //   - and not beat it *twice over*, which is the ceiling the detonate rule draws
 //     from the other side — a stack may double what the turn was worth, no more;
 //   - and the skill must survive being damped, because a strike of no power is
 //     never rolled and a strike that is never rolled never discharges.
+//
+// A skill paying in tempo is held to the shape instead — it has to actually be a
+// nuke — and to a rate no better than the ones that pay in power, which is
+// TestANukePaysBetterPerStackAndWorsePerTurn's other half.
 //
 // ⚠️ **Both halves of the trade are read at the SMALLEST pile the skill will
 // fire on, and getting that wrong squeezed the nuke into a shape it could not
@@ -59,9 +71,16 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 		damped := current.Power - current.Requires.DampedPower(current.Power)
 		arc := current.Requires.ArcPower * current.Requires.MinStacks
 		switch {
+		case damped <= 0 && current.Requires.ConsumeStacks != 0:
+			// Paying in neither currency. A drip that kept its whole blow would be
+			// free profit on every strike the target happened to be carrying, with
+			// nothing given up and no waiting done for it.
+			t.Errorf("skill %q arcs for %d a stack, damps nothing and spends a stack a strike: it pays in neither its own power nor its own tempo, so the counter is a bonus rather than a bargain",
+				current.ID, current.Requires.ArcPower)
 		case damped <= 0:
-			t.Errorf("skill %q arcs for %d and damps nothing, so the discharge is free and the counter is a bonus rather than a bargain",
-				current.ID, arc)
+			// A nuke keeping its whole blow. The shape is the payment and the
+			// clauses that hold it are on the nuke branch below; nothing to check
+			// against the damping, because there is none.
 		case arc <= damped:
 			t.Errorf("skill %q gives up %d power to fire %d off its smallest pile, so meeting the condition is worse than missing it",
 				current.ID, damped, arc)
@@ -83,7 +102,7 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 		case 1:
 			// A drip. Nothing more to say about it here.
 		case 0:
-			// A nuke, and the two things that keep it from being simply better.
+			// A nuke, and the three things that keep it from being simply better.
 			if current.Requires.ChainsOn() {
 				t.Errorf("skill %q takes the whole pile of %q AND chains: one cast would empty the board's counters and be paid for every one of them",
 					current.ID, kind.ID)
@@ -93,6 +112,14 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 			if current.Requires.MinStacks < 2 {
 				t.Errorf("skill %q takes the whole pile of %q but fires on %d stack: a nuke that goes off on the first one is a drip with a longer cooldown",
 					current.ID, kind.ID, current.Requires.MinStacks)
+			}
+			// And a nuke keeping its whole blow is the one shape allowed to pay in
+			// tempo alone, so it is the one shape where the waiting has to be real.
+			// A long cooldown is checked against the drip's below; this is the
+			// other half — it may not fire the moment a second stack lands either.
+			if current.Requires.Damped == 0 && current.Cooldown < 3 {
+				t.Errorf("skill %q keeps its whole blow and takes the pile on a %d-turn cooldown: it pays in neither power nor tempo",
+					current.ID, current.Cooldown)
 			}
 		default:
 			t.Errorf("skill %q spends %d stacks of %q: a conduit spends one a strike and a nuke spends the pile, and there is no third thing for a count in between to be",
@@ -168,9 +195,18 @@ func TestANukePaysBetterPerStackAndWorsePerTurn(t *testing.T) {
 				t.Errorf("skill %q: %v", one, err)
 				continue
 			}
+			// ⚠️ **Which way the comparison runs depends on what the nuke gives
+			// up.** One that damps its blow has paid in power as well as in
+			// waiting, so it is owed the better rate. One that keeps its blow has
+			// paid in waiting alone — its compensation is already sitting in the
+			// full figure it still hits for — so it may not also out-rate the
+			// skills that gave power up.
 			switch {
-			case current.Requires.ArcPower <= floor:
-				t.Errorf("skill %q arcs %d a stack of %q against the %d a drip gets, and it also waits and hits one body: it is worse on every axis, so nobody brings it",
+			case current.Requires.Damped == 0 && current.Requires.ArcPower > floor:
+				t.Errorf("skill %q keeps its whole blow AND arcs %d a stack of %q against a drip's %d: it is paid twice for waiting once",
+					one, current.Requires.ArcPower, id, floor)
+			case current.Requires.Damped > 0 && current.Requires.ArcPower <= floor:
+				t.Errorf("skill %q arcs %d a stack of %q against the %d a drip gets, and it also damps, waits and hits one body: it is worse on every axis, so nobody brings it",
 					one, current.Requires.ArcPower, id, floor)
 			case current.Requires.ArcPower > floor*2:
 				t.Errorf("skill %q arcs %d a stack of %q against a drip's %d, over twice the rate: hoarding stops being a choice and becomes the answer",
@@ -186,8 +222,8 @@ func TestANukePaysBetterPerStackAndWorsePerTurn(t *testing.T) {
 						one, current.Cooldown, other.ID, other.Cooldown)
 				}
 			}
-			t.Logf("%s arcs %d a stack against the drip's %d, takes the pile, and waits %d turns",
-				one, current.Requires.ArcPower, floor, current.Cooldown)
+			t.Logf("%s arcs %d a stack against the drip's %d, damps %d, takes the pile, and waits %d turns",
+				one, current.Requires.ArcPower, floor, current.Requires.Damped, current.Cooldown)
 		}
 	}
 }
