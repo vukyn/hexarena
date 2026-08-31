@@ -198,15 +198,6 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **`combat.Swung` can overflow `int`.** It computes
-      `(power + bonus) * (PermilleBase + share) / PermilleBase` in `int`
-      arithmetic, so it passes `math.MaxInt64` at a power around 9.2×10¹⁵ — and
-      it is the value that **becomes** `skillMultiplier` in `Rules.damage`,
-      upstream of the 128-bit numerator #180 built. Twelve orders of magnitude
-      past anything reachable (the shipped book's largest power is 2,400 and the
-      largest multiplier it can land is 3,500), so it is not urgent — but it is
-      the same class of defect and the one remaining place a power is multiplied
-      in a narrow type. Found while fixing #180, named there and not touched.
 - [ ] **`frame` cuts every line silently.** `model.go`'s `MaxWidth(m.width)`
       truncates without a mark, so twenty-three of the twenty-four sites that
       render `m.lang.Error(...)` lose the tail of a sentence with nothing to say
@@ -225,6 +216,13 @@ is only so the shape is readable.
   expression held a power up to **5,126,231**; the new one holds
   **1,537,869,451,747,357,366**; the largest in the shipped book is **2,400**
   (`solar_beam`). The book therefore sits about 4×10¹⁴ below the guard.
+  `combat.Swung` was the one place left where a power was still multiplied in a
+  narrow type, and it is widened on the same terms — measured at the worst swing
+  the book declares (a bonus of 1,200 and a share of 900), the old expression
+  held a power up to **4,854,406,335,185,524** and the new one holds
+  **4,854,406,335,186,722,908**, against a largest landable multiplier of
+  **3,500** (`inferno`). So the arithmetic has stopped asking everywhere a power
+  is read, and not only in the damage formula.
   ⚠️ **So a ceiling now would be an implementation limit dressed as a design
   bound**, which is the distinction the settled stat-bounds policy turns on: a
   ceiling states what an **author** may write at the cap, and there is no design
