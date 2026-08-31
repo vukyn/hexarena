@@ -179,6 +179,36 @@ is only so the shape is readable.
       `species.golden` and `origins.golden` — **not** `scenarios.golden` or
       `replay.golden`, which this line claimed until 2026-08-31. Read Squirtle
       first. → `CLAUDE.md` § Open work.
+- [ ] **Thirty-one Pokemon are traced and waiting for a character.** The art
+      landed first because `cast.ParseBook` refuses a character that declares no
+      image, so the order is forced: trace, then author. Nothing references any
+      of these yet, which is why they moved no golden and why
+      `TestTheShippedArtIsCutOutRatherThanFramed` does **not** cover them — that
+      test walks the art shipped characters name, so the day one of these is
+      authored is the day its picture is first measured. The sources were checked
+      by hand instead: every one carries real `tRNS` transparency, 46–71% of the
+      canvas clear, the inked box well inside the frame — no baked chequer, so no
+      `--decheck` was needed.
+      By line, as they would be authored:
+      **pichu → pikachu → raichu** · **cleffa → clefairy → clefable** ·
+      **igglybuff → jigglypuff → wigglytuff** · **happiny → chansey → blissey** ·
+      **mareep → flaaffy → ampharos** · **dratini → dragonair → dragonite** ·
+      **gastly → haunter → gengar** · **magnemite → magneton → magnezone** ·
+      **onix → steelix** · **riolu → lucario** · **mew** and **mewtwo**, which
+      have no line at all.
+      ⚠️ **`politoed` is the odd one and the interesting one: it is a FORK.** The
+      poliwag line already ships as `poliwag → poliwhirl → poliwrath`, and
+      politoed grows out of poliwhirl as a second arm. The forking mechanism is
+      built and `CLAUDE.md` records that **nothing shipped forks yet,
+      deliberately** — so this is one `after` field away from being that
+      mechanism's first shipped user, and it should be authored knowingly rather
+      than as one more evolution. → `CLAUDE.md` § Open work, the forking entry.
+      ⚠️ Each of these needs more than a picture: an origin (`pokemon` exists), a
+      species claim if any skill it wants is a lineage skill, an archetype whose
+      kit its affinity can carry, and a stat table inside
+      `progression.Limits`' joint health-and-defence bound. **A new skill also has
+      to say which story it is out of.** Authoring one is the *Grow the cast* item
+      above, not a separate task — this entry is the queue, not the work.
 - [ ] **`weigh` prices neither a field that is two numbers nor a skill that
       deals none.** `self_gradient` is a bonus *and* a share, so sweeping it is a
       surface where the tool answers curves — it is out of the field table for
