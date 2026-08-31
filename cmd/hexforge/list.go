@@ -392,6 +392,54 @@ func demandColumn(archetype cast.Archetype) string {
 	return strings.Join(names, "+")
 }
 
+// runBuilds lists the late-game catalogue: which four skills and which trait a
+// character is *for*.
+//
+// It is the last of the books to get a listing, and until it had one the only
+// way to read the catalogue was to open builds.json — which is the one file here
+// whose whole purpose is to be read by somebody choosing between directions.
+func runBuilds(args []string) error {
+	lib, err := loadForListing("builds", args)
+	if err != nil {
+		return err
+	}
+	renderBuilds(os.Stdout, lib)
+	return nil
+}
+
+// renderBuilds draws the catalogue grouped the way it is declared: a character's
+// directions are adjacent in the file, and a listing that sorted would separate
+// the two things a reader is choosing between.
+//
+// The form is a column of its own rather than folded into the character, because
+// on a line that FORKS it is part of the loadout — `poliwag.chorus` is Politoed's
+// and the two beside it are Poliwrath's, and nothing else on the row says so.
+func renderBuilds(out io.Writer, lib *forge.Library) {
+	builds := lib.Builds()
+	if len(builds) == 0 {
+		fmt.Fprintln(out, "no builds authored yet; a character with fewer than two has none")
+		return
+	}
+	rendered := newTable("id", "name", "character", "form", "trait", "kit", "intent")
+	for _, build := range builds {
+		rendered.add(build.ID, build.Name, build.Character, build.Stage,
+			strings.Join(build.Passives, " "), strings.Join(build.Skills, " "), build.Intent)
+	}
+	rendered.render(out)
+
+	// How many characters have a choice, because that is what the catalogue is
+	// for: a character with one build has a kit rather than a decision, and one
+	// with none is the honest case.
+	chosen := 0
+	for _, character := range lib.Characters().All() {
+		if len(lib.BuildsOf(character.ID)) > 0 {
+			chosen++
+		}
+	}
+	fmt.Fprintf(out, "\n%d builds across %d of the %d characters authored\n",
+		len(builds), chosen, len(lib.Characters().All()))
+}
+
 func runCast(args []string) error {
 	lib, err := loadForListing("cast", args)
 	if err != nil {
