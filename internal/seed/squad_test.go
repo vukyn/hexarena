@@ -66,6 +66,47 @@ func TestASquadTakesTheFieldAsEitherSide(t *testing.T) {
 	}
 }
 
+// TestAPlacementIsNamedForTheFormItFields is the one thing on a resolved unit a
+// reader checks the numbers against.
+//
+// A level allows a form rather than dictating one, and the form's stat line is
+// what fights — so a placement named for the *character* puts "Bulbasaur" beside
+// Venusaur's health and speed, which is the single pairing nothing on screen can
+// tell from a real Bulbasaur. The character is still named by the id the squad
+// placed it with, so nothing that wants the line rather than the form loses it.
+func TestAPlacementIsNamedForTheFormItFields(t *testing.T) {
+	characters := castBook(t)
+	squad := aSquad(t)
+	placed := squad.Units[0]
+	character, known := characters.Get(placed.Character)
+	if !known {
+		t.Fatalf("the squad places the unknown character %q", placed.Character)
+	}
+	_, form, err := character.Resolve(placed.Level, placed.Stage)
+	if err != nil {
+		t.Fatalf("resolve %s at level %d: %v", placed.Character, placed.Level, err)
+	}
+	// Or the check below is two names that happen to be one string, and would
+	// pass on the behaviour it exists to refuse.
+	if form.Name == character.Name {
+		t.Fatalf("%s fields %q at level %d, which is its own name, so naming the form and naming "+
+			"the character cannot be told apart", placed.Character, form.Name, placed.Level)
+	}
+	taken, err := squad.Take(hex.SideAlly, characters)
+	if err != nil {
+		t.Fatalf("take the field: %v", err)
+	}
+	if taken[0].Name != form.Name {
+		t.Errorf("the fielded unit is named %q, want the form it fields, %q", taken[0].Name, form.Name)
+	}
+	// Spelled out as well as derived: the fixture is a level 60 bulbasaur, and a
+	// derivation that agreed with a re-authored cast about the wrong name would
+	// still agree with itself.
+	if taken[0].Name != "Venusaur" {
+		t.Errorf("a level %d bulbasaur takes the field as %q, want Venusaur", placed.Level, taken[0].Name)
+	}
+}
+
 // TestASquadIsRefusedForWhatABattleWouldRefuse is the division between the two
 // checks: shape is refused while the file is read, and a loadout when it is
 // asked to fight.

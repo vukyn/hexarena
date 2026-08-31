@@ -411,12 +411,23 @@ func TestParseRosterResolvesACharacterReference(t *testing.T) {
 	if len(roster) != 2 {
 		t.Fatalf("the roster resolved to %d units, want 2", len(roster))
 	}
-	wanted, _, err := adept.Resolve(progression.LevelCap, progression.Furthest)
+	wanted, fielded, err := adept.Resolve(progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("resolve %s: %v", adept.ID, err)
 	}
-	if roster[0].Name != adept.Name {
-		t.Errorf("the placement is named %q, want the character's %q", roster[0].Name, adept.Name)
+	// The form fielded, not the character. The stat line beside the name is the
+	// form's, so a placement named for the character reads as a first form with
+	// a last form's numbers.
+	if roster[0].Name != fielded.Name {
+		t.Errorf("the placement is named %q, want the fielded form's %q", roster[0].Name, fielded.Name)
+	}
+	// A line whose last form is named after the character proves nothing here:
+	// the two names it could have picked are the same string. Said out loud so a
+	// re-authored cast fails here rather than quietly turning the check above
+	// into a tautology.
+	if len(adept.Stages) > 1 && fielded.Name == adept.Name {
+		t.Errorf("%s reaches %q at the cap, which is its own name, so naming the form and naming "+
+			"the character cannot be told apart", adept.ID, fielded.Name)
 	}
 	if roster[0].Stats != wanted {
 		t.Errorf("the placement resolved to %s, the character resolves to %s", roster[0].Stats, wanted)
@@ -456,6 +467,16 @@ func TestParseRosterResolvesACharacterReference(t *testing.T) {
 		}
 		if placed[0].Stats != wantedLate {
 			t.Errorf("the placement resolved to %s, want %s", placed[0].Stats, wantedLate)
+		}
+		// And the name follows the form down the line rather than staying on the
+		// character: the same character placed at two levels is two names.
+		if placed[0].Name != stage.Name {
+			t.Errorf("the placement at level %d is named %q, want the form it fields, %q",
+				second.MinLevel, placed[0].Name, stage.Name)
+		}
+		if placed[0].Name == roster[0].Name {
+			t.Errorf("%s is named %q at level %d and at the cap, so the name is not reading the form",
+				adept.ID, placed[0].Name, second.MinLevel)
 		}
 	}
 	// A referenced roster has to build a real battle, not merely parse: the

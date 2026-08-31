@@ -249,8 +249,16 @@ func (p Placement) resolve(side hex.Side, characters *cast.Book) (battle.Roster,
 		return battle.Roster{}, err
 	}
 	return battle.Roster{
-		ID:       side.String() + "." + p.ID,
-		Name:     character.Name,
+		ID: side.String() + "." + p.ID,
+		// The form's name rather than the character's. What is on the board is
+		// the form: it is the form's stat line that fights and the form's
+		// learnset that was chosen from, so a placement named for the character
+		// puts "Charmander" beside Charizard's health and speed — the one pairing
+		// a reader has no way to tell from a real Charmander. The character is
+		// still named by the id it was placed with, and identified on the board
+		// by its tag, so nothing that needs the line rather than the form loses
+		// it here.
+		Name:     form.Name,
 		Side:     side,
 		Slot:     p.Slot,
 		Affinity: character.Element,
