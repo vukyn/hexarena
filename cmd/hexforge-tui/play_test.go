@@ -755,14 +755,23 @@ func TestTheBattleFootersNameTheDescriptionKeyAndFit(t *testing.T) {
 // are the pair that walks the log — named here so the test above is about the
 // footer and not about a letter.
 //
-// They are pgdn/pgup because ↑/↓ walk the options and may not be taken, and
-// because this pair already scrolls the trait description and the picker: a second
-// pair for one idea is the drift this repository keeps a list of. The footer spells
-// them the way PickerReadingFooter does.
+// They are [ and ] because ↑/↓ walk the options and may not be taken, and because
+// this pair scrolls the trait description and the picker too: a second pair for one
+// idea is the drift this repository keeps a list of. The footer spells them the way
+// PickerReadingFooter does.
+//
+// ⚠️ **They are what the footer NAMES, which is no longer all that scrolls.**
+// pgup/pgdown still walk every one of those frames and are not going away — the
+// brackets are aliases for them, asserted site by site in
+// TestABracketScrollsWhereverAPageKeyDoes. What changed is which pair is
+// advertised, and it is the brackets because a compact keyboard has no page keys
+// at all: the pair naming them was unreachable advice on such a board, and
+// advertising both does not fit (pgdn/pgup is nine cells against the brackets'
+// three, and the English aim footer would come to 86 of the 79 there are).
 const (
 	describeKey   = "?"
-	scrollBackKey = "pgup"
-	scrollOnKey   = "pgdn"
+	scrollBackKey = "["
+	scrollOnKey   = "]"
 )
 
 // mustSkill is one skill out of the library in hand.

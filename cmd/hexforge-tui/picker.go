@@ -472,9 +472,14 @@ func (p *pickState) read(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) 
 	switch message.String() {
 	case "?", "esc":
 		p.reading = false
-	case "pgdown":
+	// [ and ] alias the page keys, here and at the other two sites that scroll,
+	// for a keyboard that has no PgUp and no PgDn. Reading is entered before the
+	// typed field is ever reached — pickState.update returns into this function
+	// at its first line — and the field only ever accepts a digit anyway
+	// (numberKey), so neither bracket can be swallowed as text.
+	case "pgdown", "]":
 		p.scroll++
-	case "pgup":
+	case "pgup", "[":
 		p.scroll = max(p.scroll-1, 0)
 	case "up", "k":
 		p.cursor = clamp(p.cursor-1, 0, len(p.visible())-1)

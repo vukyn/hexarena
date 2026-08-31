@@ -512,8 +512,9 @@ answers rather than screen logic:
   `battle.Suggest`. `↑/↓` a skill, `enter` takes it and asks *where* only when
   there is more than one cell, `?` describes the one under the cursor, `a` hands
   the turn to the engine, `p` passes, `u` undoes, `n` is another seed, and
-  `pgdn/pgup` scroll the log — see *the budget* for why that pair and why
-  following the tail is a state rather than an offset.
+  `[/]` scroll the log (`pgup`/`pgdown` do the same and are what the brackets
+  alias) — see *the budget* for why that pair and why following the tail is a
+  state rather than an offset.
   - **Every option carries a one-line summary beside its id**, from
     `i18n.Lang.SummariseSkill`, and `?` raises the full description of the one
     under the cursor. An id is a name rather than an answer — nothing in
@@ -688,11 +689,12 @@ answers rather than screen logic:
     `p.events` always held every event (`collect` appends and never trims) and the
     view threw the rest away: 283 rows rendered, eight drawn, **275 unreachable by
     any means** — no key, and nothing on the screen saying a history existed.
-    `playScreen.logRows` renders all of it and `logFrame` is the window; `pgdn/pgup`
-    walk it, which is the pair that already scrolls the trait description and the
-    picker rather than a second vocabulary for one idea (`↑/↓` walk the options and
-    could not be taken). They work **while aiming** and **on a finished battle**,
-    which is why all three footers name them.
+    `playScreen.logRows` renders all of it and `logFrame` is the window; `pgup`
+    and `pgdown` walk it, which is the pair that already scrolls the trait
+    description and the picker rather than a second vocabulary for one idea (`↑/↓`
+    walk the options and could not be taken). They work **while aiming** and **on a
+    finished battle**, which is why all three footers name a scroll key at all — the
+    keys they name are now `[/]`, see below.
     ⚠️ **Following the tail is a STATE, not an offset value, because the tail
     moves.** This is the decision the whole feature hangs off. A reader is normally
     at the newest rows; store that as the offset which happens to be newest and
@@ -735,6 +737,35 @@ answers rather than screen logic:
     **72 / 77** and the over footer **65 / 63**, with the word for scrolling kept on
     the two that had room for it. `TestTheBattleFootersNameTheDescriptionKeyAndFit`
     covers all three and logs each width.
+    ⚠️ **The footers name `[/]` now, and the page keys still work — this is an
+    ALIAS advertised in place of what it aliases, not a rebinding.** `[` is back
+    and `]` is forward, at **all three** sites that scroll (this log, the trait
+    description, the picker's reading pane), because a site aliased alone is
+    exactly the second vocabulary the paragraph above refuses. The reason is a
+    keyboard rather than a preference: a compact board has no PgUp and no PgDn,
+    reaching them through a modifier or a layer, so a footer naming them was
+    unreachable advice and the whole log below the frame was as unreachable as it
+    was before #169. **Advertising both pairs does not fit** — `pgdn/pgup` is nine
+    cells against the brackets' three, and the English aim footer would come to
+    **86** of the 79 there are — which is why the wording is a replacement. The
+    five reworded keys all came in under budget, measured with `%s` substituted
+    (vi / en): battle **73 / 75**, aim **66 / 71**, over **59 / 57**,
+    `PickerReadingFooter` **58 / 57**, `BlurbMore` **25 / 28**. Four of them
+    dropped the full six cells; the battle footer spent five of them back on the
+    verb (`[/] cuộn` / `[/] scroll`), because a bare pair of brackets is the one
+    place the wording would have said less than what it replaced.
+    ⚠️ **A key alias is the shape that ships dead**, so it is pressed rather than
+    read: `TestABracketScrollsWhereverAPageKeyDoes` tables the three sites and both
+    directions and demands the bracket and the page key land in the same state
+    **after asserting the page key moved it** — two no-ops satisfy an equality.
+    And the fixture's own vacuity is the half an assertion cannot see: a `key`
+    helper sending `KeyPgUp` under the name `"["` passes that table completely,
+    which is why `TestABracketIsTheKeystrokeItLooksLike` reads `keyPresses`
+    itself. `[` is safe to take because it reaches no text field — the picker
+    enters its reading pane before the typed field and `numberKey` admits only
+    digits, the browse blurb has no input, and `isSaveKey` is asked ahead of the
+    battle screen's switch — while `form.go` and `origins.go`, which do have
+    fields, never handled a page key and are untouched.
     ⚠️ **`internal/tui` did not change and did not need a row-limited `Roster`.**
     Clipping the roster's *rows* is this screen splitting a drawing it was given;
     reformatting it would be the other thing. The old

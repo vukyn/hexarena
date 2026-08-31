@@ -342,9 +342,20 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 	// there. ↑/↓ are the option list's and may not be taken, so this is the pair
 	// that already scrolls in this client (the trait description and the picker),
 	// rather than a second vocabulary for one idea.
-	case "pgup":
+	//
+	// [ and ] are aliases for that pair and not a second vocabulary either: they
+	// are the same one idea reached by keys every keyboard has. A compact board
+	// has no PgUp and no PgDn — a laptop reaches them through a modifier and a
+	// sixty-percent board through a layer, and neither is discoverable from a
+	// footer naming them — so on such a keyboard the whole log below the frame
+	// was as unreachable as it was before it scrolled at all. The brackets are
+	// added at **every** site the pair works (here, the trait description and the
+	// picker's reading pane), because one site aliased is exactly the second
+	// vocabulary the paragraph above refuses. Back is [ and forward is ], which
+	// is the direction ↑/↓ reads in and the order the footers print them in.
+	case "pgup", "[":
 		p = p.scrollLog(m, -1)
-	case "pgdown":
+	case "pgdown", "]":
 		p = p.scrollLog(m, 1)
 	}
 	if p.pending == nil {
@@ -564,9 +575,10 @@ func playBodyRoom(height int) int { return height - 4 }
 //     something without any of the four sections above losing a row.
 //
 // The log is also the one section a reader can move: it is a frame over the whole
-// history rather than a fixed tail, and pgdn/pgup walk it. Following the tail is a
-// state and not an offset — see the fields on playScreen for why that is the
-// decision the rest of it hangs off.
+// history rather than a fixed tail, and pgup/pgdown walk it — as do [ and ], the
+// aliases the footer advertises, because a compact keyboard has neither page key.
+// Following the tail is a state and not an offset — see the fields on playScreen
+// for why that is the decision the rest of it hangs off.
 //
 // ⚠️ Nothing here may touch the battle. The plan is computed while drawing, and
 // this screen is the one holding a pointer the model does not copy.

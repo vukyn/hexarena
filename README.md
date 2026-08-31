@@ -1457,7 +1457,9 @@ Both lists a member picks from — the kit and the trait — answer **`?`** with
 the row under the cursor does, in the sentences a player reads rather than the
 figures an author types. `?` or `esc` puts the list back with everything that was
 chosen still chosen, `↑/↓` walks on to the next description so two can be
-compared, and `pgdn`/`pgup` scrolls one that runs past the window.
+compared, and `[`/`]` scrolls one that runs past the window — the brackets are
+aliases for `pgup`/`pgdown`, which still work and are what a keyboard without
+page keys cannot reach.
 
 ⚠️ **That last one is a guard rather than a live path, and it was measured.** The
 trait screen scrolls because it draws all five of a character's traits at once,
@@ -3346,7 +3348,7 @@ Bulbasaur  cấp 60
 
   endurance (bền bỉ)
     ...
-  … 17/23 dòng, pgdn/pgup để cuộn
+  … 17/23 dòng, [/] để cuộn
 ```
 
 **One screen, not a sixth listing.** `blurbScreen` branches on `from`, the single
