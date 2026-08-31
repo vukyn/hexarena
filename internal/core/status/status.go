@@ -173,6 +173,11 @@ type Stack struct {
 	Remaining int
 }
 
+// worth is everything this stack still owes: its frozen tick for each turn it
+// has left. It is what a removal reports and what Pending totals, said once so
+// the two cannot drift.
+func (s Stack) worth() int64 { return s.TickAmount * int64(s.Remaining) }
+
 type entry struct {
 	kind   Kind
 	stacks []Stack
@@ -467,12 +472,24 @@ func (s *Set) Release(id string) int {
 }
 
 // Remove takes up to count stacks off one status and reports what went, both as
-// a stack count and as the per-tick damage that stopped.
+// a stack count and as the damage those stacks still owed: each one's frozen
+// tick times the turns it had left, which is the same figure Pending prices a
+// whole set at.
+//
+// The turns left rather than one tick of them. A stack is not worth a tick, it
+// is worth every tick it was still going to take, and a detonate that reported
+// the smaller number said a burn with two turns on it cost half what it did —
+// which is exactly backwards for the decision the figure exists to inform,
+// because the longer a status has left the *less* a consume is worth taking.
 //
 // The heaviest stacks go first. A cleanse that removed the weakest would leave a
 // player worse off than not cleansing at all in the case they care about, and
 // picking by application order would make the outcome depend on bookkeeping
-// nobody can see.
+// nobody can see. Heaviest is measured by the same worth that is reported, so
+// the two cannot disagree: today every stack of one status carries the same
+// duration, because Apply refreshes all of them, so this orders exactly as the
+// tick alone did — and it keeps ordering by what a stack is worth if that ever
+// stops being true.
 func (s *Set) Remove(id string, count int) (removed int, damage int64) {
 	index := s.find(id)
 	if index < 0 || count <= 0 {
@@ -493,7 +510,7 @@ func (s *Set) Remove(id string, count int) (removed int, damage int64) {
 		order[i] = i
 	}
 	sort.SliceStable(order, func(a, b int) bool {
-		return target.stacks[order[a]].TickAmount > target.stacks[order[b]].TickAmount
+		return target.stacks[order[a]].worth() > target.stacks[order[b]].worth()
 	})
 	if count > len(order) {
 		count = len(order)
@@ -501,7 +518,7 @@ func (s *Set) Remove(id string, count int) (removed int, damage int64) {
 	doomed := make(map[int]bool, count)
 	for i := 0; i < count; i++ {
 		doomed[order[i]] = true
-		damage += target.stacks[order[i]].TickAmount
+		damage += target.stacks[order[i]].worth()
 	}
 	kept := make([]Stack, 0, len(target.stacks)-count)
 	for i, stack := range target.stacks {
@@ -517,9 +534,9 @@ func (s *Set) Remove(id string, count int) (removed int, damage int64) {
 	return removed, damage
 }
 
-// Consume removes every stack of a status and reports what it was worth. It is
-// what a skill that detonates a status calls, so the burst can be priced off
-// the damage it gave up.
+// Consume removes every stack of a status and reports what it was worth over
+// the turns it had left. It is what a skill that detonates a status calls, so
+// the burst can be priced off the damage it gave up.
 func (s *Set) Consume(id string) (stacks int, damage int64) {
 	return s.Remove(id, s.Stacks(id))
 }
@@ -653,7 +670,7 @@ func (s *Set) Pending() int64 {
 	total := int64(0)
 	for i := range s.entries {
 		for _, stack := range s.entries[i].stacks {
-			total += stack.TickAmount * int64(stack.Remaining)
+			total += stack.worth()
 		}
 	}
 	return total

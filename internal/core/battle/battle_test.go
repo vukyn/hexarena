@@ -722,6 +722,22 @@ func TestDetonateAmplifiesAndConsumes(t *testing.T) {
 			fight.Drain()
 		}
 	}
+	// What the burn still owed, read before the detonate takes it: the event has
+	// to report this rather than one tick of it, because a status with two turns
+	// left costs twice as much to spend as one on its last.
+	burning, _ := fight.Unit("f")
+	tick, left := burning.Statuses.TickAmount("burn"), burning.Statuses.Remaining("burn")
+	owed := tick * int64(left)
+	// Read off the set rather than from Pending: Pending and the consumption are
+	// the same expression, so comparing them would agree however wrong both were.
+	//
+	// More than one turn left, or this asserts nothing — a burn on its last turn
+	// owes exactly one tick, and that is the single case where reporting a tick
+	// and reporting the ticks left cannot be told apart.
+	if left < 2 {
+		t.Fatalf("the burn has %d turns left when the detonate lands, so this cannot tell a tick "+
+			"from what the status still owed", left)
+	}
 	if err := fight.Act("pop", hex.Offset{Col: 3, Row: 1}); err != nil {
 		t.Fatalf("pop: %v", err)
 	}
@@ -737,8 +753,9 @@ func TestDetonateAmplifiesAndConsumes(t *testing.T) {
 	if len(consumed) != 1 || consumed[0].Status != "burn" || consumed[0].Stacks < 1 {
 		t.Fatalf("the consumption was %+v", consumed)
 	}
-	if consumed[0].Amount <= 0 {
-		t.Errorf("the consumption reported %d damage given up, want the forgone ticks", consumed[0].Amount)
+	if consumed[0].Amount != owed {
+		t.Errorf("the consumption reported %d damage given up, want the %d of forgone ticks the burn still owed",
+			consumed[0].Amount, owed)
 	}
 	foe, _ := fight.Unit("f")
 	if foe.Statuses.Has("burn") {

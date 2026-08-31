@@ -19,6 +19,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -317,8 +318,8 @@ func Line(event battle.Event, tags, glosses map[string]string) string {
 		return head + fmt.Sprintf(" uses %s at %s%s", gloss(event.Skill), event.Cell,
 			gradientNote(event.Gradient))
 	case battle.Amplified:
-		return head + fmt.Sprintf("  %s amplified by %s x%d, power %d",
-			gloss(event.Skill), gloss(event.Status), event.Stacks, event.Power)
+		return head + fmt.Sprintf("  %s amplified by %s x%d, power x%s",
+			gloss(event.Skill), gloss(event.Status), event.Stacks, multiple(event.Power))
 	case battle.StatusConsumed:
 		return head + fmt.Sprintf("  consumes %s x%d off %s, giving up %d",
 			gloss(event.Status), event.Stacks, tag(event.Target), event.Amount)
@@ -427,6 +428,29 @@ func Line(event battle.Event, tags, glosses map[string]string) string {
 	default:
 		return head + " " + event.Kind.String()
 	}
+}
+
+// multiple spells a parts-per-thousand power as the multiplier it actually is,
+// because the raw figure is the only number on the line a reader has to divide
+// by a thousand before it means anything. A power of 3500 reads as x3.5 and a
+// power of 1000 as x1; trailing zeroes are trimmed so the common figures stay
+// short, and no number is rounded, because a thousandth is the smallest a power
+// can be and the log must stay reproducible against the rules.
+//
+// ASCII x rather than a multiplication sign: an ambiguous-width glyph is
+// measured as one cell and drawn as two in enough terminals to overlap the
+// column beside it.
+func multiple(permille int) string {
+	sign := ""
+	if permille < 0 {
+		sign, permille = "-", -permille
+	}
+	whole, fraction := permille/scale.Base, permille%scale.Base
+	if fraction == 0 {
+		return fmt.Sprintf("%s%d", sign, whole)
+	}
+	return fmt.Sprintf("%s%d.%s", sign, whole,
+		strings.TrimRight(fmt.Sprintf("%03d", fraction), "0"))
 }
 
 // affinityNote spells out an elemental multiplier, and says nothing when the
