@@ -1996,6 +1996,242 @@ Two things the axis is deliberately *not*:
   reached yet: `forge.Carrier` says so on the field, and a lineage skill picked
   before a species is settled is refused at the write instead of at the keystroke.
 
+## PvP over a LAN
+
+Two people on the same network fight each other: one of them hosts, both bring a
+squad they built and saved on their own machine, and the **server** resolves the
+battle. Nothing here is built yet. This section is the design record — what was
+decided, and what each decision was measured against — because four of the
+choices are expensive to reverse and one of them is a measurement the repository
+already had a tool for.
+
+The shape is deliberately small, because most of it already exists. A squad is
+already a wire format: `placement.Squad` is a *reference* — character, level,
+stage, four skills, one trait, a slot — and carries no stat line at all, so a
+client cannot send an inflated one. `Squad.Take` already resolves it through
+`cast.ChooseLoadout`, which is already the legality check: four skills out of the
+learnset, one trait out of the two the placement allows. `Advance` already hands
+back a `Prompt` naming a unit and the cells each of its skills may aim at, and
+`Act` already refuses anything that is not in it. `Pass` already takes a reason.
+And a finished match is already a `battle.Log`, which means every PvP battle is
+`--replay --verify`-able the day the server writes one out.
+
+### The client runs the engine too
+
+The server is the authority and the client is a **mirror**: it holds its own
+`*battle.Battle`, built from the same seed and the same two rosters, and steps it
+with the decisions the server sends.
+
+```
+server ──{seed, rosterA, rosterB}──▶ client        once, at the start
+server ──{decision, eventDigest}──▶ client         every turn
+client ──{act: skill, aim}────────▶ server         on its own turn only
+```
+
+`Replay` is what applies one: a script of a single decision with a **nil**
+fallback takes that decision, walks through whatever is forced after it, and
+hands back the prompt it stopped on. Which is precisely the client's loop — apply,
+drain the events it produced, draw them, and enable input when the prompt names a
+unit on this player's side.
+
+What this buys is that no new description of the battle exists. The alternative —
+a thin client that renders events the server sends — needs the board too: every
+unit's cell, health, statuses and cooldowns, and the queue. That is a second
+declaration of the battle's state, on the wire, kept in step by hand, in a
+repository where every description is derived from the data and the goldens are
+the design record. The mirror needs none of it: the client computes the state
+because it computes the battle.
+
+It buys a second thing that is worth more. The server sends a digest of the
+events its own battle produced, and the client compares it against the digest of
+the events its battle produced. So a divergence is **loud on the turn it
+happens**, with the two digests to compare, rather than a board that quietly
+drifts. Determinism stops being a property the repository asserts and becomes one
+it checks every turn of every match.
+
+Two prices, both paid knowingly:
+
+- **Fog of war is off the table for good.** The client holds both rosters and the
+  whole engine, so it can compute anything the server can. It cannot *do*
+  anything the server does not allow — every action is checked against the
+  server's own prompt — but it can see. This is a game between friends on a LAN,
+  and the trade is the right way round.
+- **The two data sets have to be identical**, which is what the handshake below
+  is for.
+
+### Three version numbers, because there are three questions
+
+A client and a server that disagree are three different failures and one number
+cannot report them:
+
+| Number | Answers | On a mismatch |
+| --- | --- | --- |
+| **Protocol** (int) | Can these two talk at all? | Refuse. The wire changes independently of the game |
+| **Build** (string) | What does the human need to update? | Printed, never acted on |
+| **Data digest** (hash) | Will these two simulate the *same battle*? | **Refuse at join** |
+
+The digest is the one that matters and the one a version string cannot stand in
+for. The game's data is embedded JSON — `internal/seed/seed.go` names fifteen
+files — and editing a power in `skills.json` changes every battle without moving
+a semver by one character. So the digest is over those fifteen files, read in the
+order the `go:embed` directive declares them, hashed as bytes. No parsing: a
+digest that depended on parsing would be a second reading of the data, and two
+readings is the thing this repository keeps refusing to have.
+
+Art is **not** in it. `assets/` cannot reach the simulation, so a client with a
+newer picture is not a client that fights a different battle.
+
+The mirror's per-turn digest catches a data mismatch too, eventually. The
+handshake catches it *before two people have spent ten minutes on a battle that
+was never the same battle twice.*
+
+### Nothing on the wire is prose
+
+The server sends an error **code**; the client words it. A server that sent
+sentences would be a server that decides what language its clients read in, and
+the client is Vietnamese-first with an English toggle. This is the same rule the
+rest of the client already lives under — a description is derived from the data,
+and the id is the only thing that travels.
+
+### The clock is not part of the battle
+
+A turn times out after ninety seconds and the server passes for the player. What
+enters the battle is the **decision** — `Pass` with a fixed reason — and never a
+timestamp, never a duration, never a reading of a clock. So the log stays exactly
+as verifiable as one from a battle nobody was waiting on, and `--verify` cannot
+tell a timed-out match from any other.
+
+Three details that follow from it:
+
+- A prompt that arrives `Skipped` starts no clock. The unit has already lost its
+  action, to control or to a timed effect, and nobody is being asked anything.
+- The reason is a **single constant**. `battle.Decision`'s own documentation says
+  why: "two callers supplying different words for the same choice would make a
+  replay diverge from the log it is replaying."
+- The remaining time travels as a duration, not a deadline. Two machines on a LAN
+  have no reason to agree about what time it is, and the client only needs to
+  count down; the server is the authority on whether the ninety seconds are up.
+
+A disconnected client is not a slow one. Ninety seconds a turn over a forty-turn
+battle is an hour of somebody sitting in front of a dead opponent, so the seat is
+held for a reconnect and **three consecutive timeouts forfeit the match**.
+
+A forfeit is a result of the **match** and not of the battle, so it lives in the
+server's record and adds nothing to `battle.Outcome`. That enum is a core type
+and a dropped socket is not one of the ways a battle can end.
+
+### Which side you get is worth up to sixty points
+
+This is the one design question that had a measurement waiting for it.
+
+The board is symmetric — `hex.Place` mirrors the enemy formation 180° — but the
+turn order is not. `atb.Queue.order` breaks a tie by the order units joined, and
+the ally side is enlisted first:
+
+```go
+if left.next != right.next { return left.next < right.next }
+if left.speed != right.speed { return left.speed > right.speed }
+return left.seq < right.seq          // seq is the order the unit joined
+```
+
+So two units scheduled at the same instant with the same speed resolve
+ally-first, always. `spar` has had a column measuring what that is worth since
+the day it was written — `Matchup.Edge` is `First.Rate() - Second.Rate()` — and
+every pairing is fought from both slots and added up for exactly this reason.
+Over 500 seeds from each slot, a character against an identical copy of itself:
+
+| Character | What the first slot is worth |
+| --- | --- |
+| `naruto.naruto` | **+62.0%** |
+| `pokemon.bulbasaur` | +24.8% |
+| `pokemon.poliwag` | +24.4% |
+| `pokemon.squirtle` | +20.0% |
+| `pokemon.charmander` | +19.6% |
+| `pokemon.machop` | +6.4% |
+| `pokemon.cleffa` | **−38.0%** |
+
+A hundred points of spread, and **the sign is not fixed**: moving first is a
+liability for Cleffa. So "the first slot wins" is not the finding; the finding is
+that the slot has a price, the price is large, and which way it points is a
+property of the kit.
+
+⚠️ These are **mirror** figures, which is the worst case rather than the typical
+one. The tie only fires when two units share an instant *and* a speed, and two
+identical squads share both for every pair of twins, so the ally side collects
+all of it. Two different squads almost never tie. But two friends copying each
+other's best squad is precisely the case that reads worst.
+
+So a match is **two battles on the same seed with the sides swapped** — which is
+what `forge.Bout` does when it fights from both ends of the board, and what makes
+a spar's mirror row read an exactly even 500‰ instead of reporting the first
+slot's advantage as the character's. The room therefore has to know about "several
+battles in one match" from its first line of code; that is the part that is
+painful to add later, not the second battle.
+
+A 1–1 needs a tie-break, and it will be common rather than exotic: when the slot
+dominates, both players win the battle they played from the ally side. The
+proposal is the **aggregate surviving-health share** — each player's remaining
+health as a share of what their squad started with, summed over both battles, in
+parts per thousand — because it is derived from a state both mirrors already
+hold, it is symmetric, and it does not favour a squad for having more health to
+begin with. Exactly level goes to a third battle on a fresh seed with the sides
+taken from it.
+
+### A room, and getting into one
+
+One server process, many rooms, `n` clients. Each room owns its battle **in one
+goroutine and shares it with nothing** — the registry of rooms takes a mutex, a
+battle never does.
+
+A room code carries its own address: base32 of a four-byte address and a two-byte
+port, ten characters, so pasting the code is enough to connect and nobody has to
+read an IP down a phone. A room password is a separate thing and it is **not
+security** — this is a plain WebSocket on a LAN, and the password keeps strangers
+in the house off the board rather than keeping an attacker out. It is compared in
+constant time and never logged, which is the least a password is owed regardless.
+
+### The invariant the server has to respect
+
+`Drain` empties the buffer. It is a single-consumer call, and a room has two
+players, possibly spectators, and a log to write. So the server drains **once**,
+into an append-only record, and every consumer holds a cursor into it. Which is
+also how a reconnecting client catches up, and how a spectator joins mid-battle:
+both are "everything after index *n*", and neither needs anything the cursor did
+not already need to exist.
+
+### Testing something that has no network in it
+
+The room is a **state machine over messages** with no I/O of its own: messages
+and prompts in, messages and decisions out. So two fake clients drive a whole
+match in-process, with no sockets, at the speed of the engine. The WebSocket is a
+shell around it, and one end-to-end test over a loopback listener is what proves
+the shell is wired up.
+
+Doing it the other way round — a server with the transport in the middle of the
+state machine — would make this the least-tested code in a repository whose whole
+method is measurement.
+
+### Not in the first version
+
+- **Fog of war.** It forces a per-side *filtered* event log, and `--verify` on a
+  filtered log fails by construction. The event log being the one contract is the
+  most expensive invariant here; it is not being spent on this.
+- **Draft and ban.** Both squads are revealed when the first battle starts.
+- **Spectators**, which the cursor above makes nearly free, and **mDNS room
+  browsing**, which would let a client list rooms with no code at all.
+- **A chess clock** — a total budget per player rather than a budget per turn.
+- **TLS.** On a LAN it costs more than it is worth, and saying the password is not
+  security is more honest than a self-signed certificate that implies it is.
+- **NAT traversal or a relay.** The premise is one network.
+
+### Decided against — do not re-raise
+
+- **Re-rolling the turn-order tie-break from the seed.** It would make a single
+  battle fair without a second one, and it would invalidate every balance figure
+  this repository has ever taken: the 47.3% screened board, `Suggest`'s 81.3%,
+  every 500‰ control that reads exactly even, and every golden. `internal/core`
+  is not changed for a networking feature.
+
 ## Roadmap
 
 ### Graphical client with ebiten

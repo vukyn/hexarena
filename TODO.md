@@ -170,6 +170,114 @@ is only so the shape is readable.
 
 ## Not done
 
+- [ ] **PvP over a LAN — 3v3 or 5v5, one server and n clients.** Squads built and
+      saved on the player's own machine, a room joined by a code and an optional
+      password, the battle resolved on the server. The design is settled and
+      written down: the client is a **mirror** that runs the engine off the
+      decisions the server sends, a match is **two battles on the same seed with
+      the sides swapped**, a room code carries its own address, and the reference
+      screens move out of the authoring tool into a package both binaries draw.
+      → `README.md` § PvP over a LAN, which holds the reasoning and the
+      measurements and is the place to argue with, not this list.
+
+      The items below are in dependency order, and the four in **Groundwork** are
+      the ones nothing else can start without.
+
+      **Groundwork**
+      - [ ] Factor the reference screens out of `cmd/hexforge-tui` into a package
+            both binaries draw, and stand up `cmd/hexarena` as a full-screen
+            client over it. ⚠️ **The biggest single item and the one that gates
+            everything**: 10k lines of tightly-coupled bubbletea under 13.7k
+            of tests, and the tests are the hard half — `everyScreen` is the
+            harness, and a screen that moves out without being re-registered
+            silently loses its width, translation and leak tests, which is a
+            shape this file already records five times.
+      - [ ] `internal/wire`: the protocol as one stdlib-only package. The
+            envelope, the three version numbers, and error **codes** rather than
+            prose. A golden per message, so a wire change shows up in a diff.
+      - [ ] The data digest — the fifteen embedded JSON files, in `go:embed`
+            order, hashed as bytes, no parsing. `assets/` excluded: art cannot
+            reach the simulation.
+      - [ ] Replace `Drain` at the server with an append-only record and a cursor
+            per consumer. ⚠️ `Drain` **empties the buffer** and a room has two
+            players, spectators and a log; the cursor is also what reconnect and
+            mid-battle spectating are made of.
+
+      **The room, with no network in it**
+      - [ ] The room as a state machine over messages with no I/O: two fake
+            clients drive a whole match in-process. ⚠️ Build it the other way
+            round and this becomes the least-tested code in the repository.
+      - [ ] Many rooms per process. A room owns its battle in **one goroutine**
+            and shares it with nothing; the registry takes a mutex, a battle
+            never does.
+      - [ ] Validate a squad at the gate: `Squad.Validate`, then `Take` (which is
+            already the loadout check), then the format's size, level 60, and a
+            stage that is a **leaf** of the line. ⚠️ Not `Furthest` — that refuses
+            on a fork, and `politoed` is queued above as the first fork.
+      - [ ] Decide whether one squad may field the same character twice.
+            `Squad.Validate` allows it today and checks only ids and slots.
+      - [ ] The clock: ninety seconds a prompt, a timeout passing with a single
+            constant reason. ⚠️ Never a timestamp into the battle. A `Skipped`
+            prompt starts no clock. Three consecutive timeouts forfeit.
+      - [ ] A forfeit, a disconnect and a refused join are results of the
+            **match**. ⚠️ Nothing is added to `battle.Outcome` — a dropped socket
+            is not a way a battle can end, and that enum is a core type.
+      - [ ] Two battles in one match, same seed, sides swapped — from the room's
+            first line, because *this* is the part that hurts to add later.
+      - [ ] The 1–1 tie-break, which will be common and not exotic. Proposed:
+            aggregate surviving-health share in permille over both battles, then
+            a third battle on a fresh seed.
+      - [ ] A turn cap per battle so a stalemate ends. `Outcome` already has the
+            draws.
+      - [ ] Write each finished match out as a `battle.Log`, which makes every
+            PvP match `--replay --verify`-able for nothing.
+
+      **The wire**
+      - [ ] WebSocket transport, the dependency confined to one boundary.
+      - [ ] Room code: base32 of a four-byte address and a two-byte port, ten
+            characters, with a round-trip test.
+      - [ ] Room password: constant-time comparison, never logged. Documented as
+            what it is — a gate against strangers on the network, **not**
+            security.
+      - [ ] A seat token and a rejoin, which the cursor makes cheap.
+      - [ ] One end-to-end test over a loopback listener, two real clients.
+
+      **The client**
+      - [ ] The mirror driver: `battle.New` off the seed and the two rosters,
+            then `Replay` one decision at a time with a nil fallback. Compare the
+            client's own event digest against the server's every turn, so a
+            divergence is loud on the turn it happens.
+      - [ ] Undo **off** in PvP. ⚠️ It works by replaying a truncated script, and
+            the opponent has already seen the events it would take back.
+      - [ ] A player squad file under `os.UserConfigDir()`, separate from
+            `internal/seed/data/squads.json` — that one is the game's own data,
+            edited by the authoring tool, and a player has no business in it.
+      - [ ] Lobby, room and waiting screens — **registered in `everyScreen` in
+            the same commit that adds them**, for the reason at the top of this
+            list.
+      - [ ] The countdown: a remaining duration on the wire rather than a
+            deadline, because two machines on a LAN have no reason to agree what
+            time it is. Both clocks drawn, so a player can see the other one
+            thinking.
+      - [ ] Re-take `playFit`'s budget. ⚠️ A 5v5 body already measures 28 rows
+            against the 24 the floor gives it, and PvP adds a clock row and a
+            waiting row on top.
+      - [ ] The wordings, in both books, Vietnamese composed: room, lobby,
+            waiting, timed out, opponent left, squad refused, version mismatch.
+            ⚠️ And gloss the new pass reason — `tui.Line` prints `event.Note`
+            **raw**, so today a timeout would read `loses the turn (timeout)` in
+            both languages.
+
+      **Later, deliberately**
+      - [ ] Spectators, which the cursor above makes nearly free.
+      - [ ] mDNS room browsing, so a client can list rooms with no code at all.
+      - [ ] A chess clock — a budget per player rather than per turn.
+      - [ ] Prove the mirror across architectures: the same seed and the same
+            digest on amd64 and arm64. Friends are not all on one machine, and
+            this is the assumption the whole design rests on.
+      - [ ] Read the balance again at 3v3. The screened formation was tuned at
+            five a side, and a shorter board leaves a summon more free slots.
+
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
@@ -258,6 +366,18 @@ is only so the shape is readable.
       why #186 left it alone rather than folding it in.
 
 ## Decided against — do not re-raise
+
+- **Re-rolling the turn-order tie-break from the seed.** Raised by PvP, where
+  which side you get is worth **−38% to +62%** in a mirror (`spar`'s first-move
+  column, 500 seeds a slot) because `atb.Queue.order` breaks a tie by the order
+  units joined and the ally side is enlisted first. A roll would make a single
+  battle fair without a second one — and it would invalidate every balance figure
+  ever taken here: the 47.3% screened board, `Suggest`'s 81.3%, every 500‰ control
+  that reads exactly even, and every golden. ⚠️ The sign is not even fixed —
+  moving first is a **liability** for Cleffa — so this is a real property of a kit
+  and not an artefact to be smoothed away. `internal/core` is not changed for a
+  networking feature; a match fights both ways round instead, which is what
+  `forge.Bout` and every spar already do. → `README.md` § PvP over a LAN.
 
 - **A ceiling on `Skill.Power`.** The arithmetic that looked like it demanded
   one is gone: `Rules.damage` builds its numerator in 128 bits now, so nothing
