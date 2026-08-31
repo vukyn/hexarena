@@ -494,6 +494,7 @@ const (
 	BlurbChains
 	BlurbConsumesEachStrike
 	BlurbConsumesPile
+	BlurbAtLeast
 	BlurbRepeats
 	BlurbCostRange
 	BlurbCostCells

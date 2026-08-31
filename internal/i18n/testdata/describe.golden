@@ -423,9 +423,9 @@ Tầm 1 · 93% trúng · hồi 2 lượt.
 
 overload
 Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng không còn gì đứng lại, 88% công.
-Mục tiêu đang dính nhiễm điện x2, mỗi cộng dồn nhiễm điện nổ ra gây 18% công, xuyên qua mọi lớp đỡ, tiêu sạch số cộng dồn nhiễm điện nó đang mang.
+Mục tiêu đang dính ít nhất 2 cộng dồn nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 18% công, xuyên qua mọi lớp đỡ, tiêu sạch số cộng dồn nhiễm điện nó đang mang.
 Tầm 2 · 88% trúng · hồi 4 lượt.
-[one line] 88% công · nhiễm điện x2→nổ · tầm 2 · hồi 4
+[one line] 88% công · nhiễm điện 2+→nổ · tầm 2 · hồi 4
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -1072,9 +1072,9 @@ Range 1 · 93% to hit · 2 turns to recharge.
 
 overload
 Hits an enemy for 88% of attack.
-While the target is carrying charge x2, every stack of charge that goes off deals 18% of attack through any guard, spending every stack of the charge it had.
+While the target is carrying at least 2 stacks of charge, every stack of charge that goes off deals 18% of attack through any guard, spending every stack of the charge it had.
 Range 2 · 88% to hit · 4 turns to recharge.
-[one line] 88% attack · charge x2→discharges · range 2 · cd 4
+[one line] 88% attack · charge 2+→discharges · range 2 · cd 4
 
 [trait] endurance
 Always carries toughened.

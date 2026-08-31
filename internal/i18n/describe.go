@@ -365,7 +365,7 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 	clauses := make([]string, 0, 2)
 	if condition.ReadsStatus() {
 		clauses = append(clauses, l.Say(BlurbWhenCarrying,
-			l.stacked(condition.Status, condition.MinStacks)))
+			l.carrying(condition.Status, condition.MinStacks)))
 	}
 	if condition.ReadsHealth() {
 		clauses = append(clauses, l.Say(BlurbWhenHurt, share(condition.BelowHealth)))
@@ -642,7 +642,11 @@ func (l Lang) summariseCondition(
 	}
 	clauses := make([]string, 0, 2)
 	if condition.ReadsStatus() {
-		clauses = append(clauses, l.stacked(condition.Status, condition.MinStacks))
+		// The compact line has no room for a clause, so the floor is a suffix —
+		// and "2+" rather than a comparison glyph, because the ones that read as a
+		// threshold are East Asian Ambiguous and are drawn two cells wide on some
+		// terminals while every width here is measured at one.
+		clauses = append(clauses, l.atLeast(condition.Status, condition.MinStacks))
 	}
 	if condition.ReadsHealth() {
 		clauses = append(clauses, l.Say(SummaryHurt, share(condition.BelowHealth)))
@@ -1015,6 +1019,32 @@ func (l Lang) stacked(id string, stacks int) string {
 		return name
 	}
 	return name + " x" + itoa(stacks)
+}
+
+// carrying is what a CONDITION asks of a target, which is not what stacked says.
+//
+// ⚠️ **The two counts read the same and mean opposite things.** An application's
+// count is exact — "puts charge x2 on" is two stacks and no more — while a
+// condition's is a floor: the skill wants *at least* that many and is happy with a
+// pile. Rendering both as "x2" was harmless for as long as every shipped condition
+// asked for one, which is a threshold that renders as nothing at all. `overload`
+// is the first to ask for two, and it is also the skill where the ambiguity bites
+// hardest: it reads "carrying charge x2" and then "spends every stack it had", so
+// a reader has no way to tell whether the two was the requirement or the payment.
+func (l Lang) carrying(id string, minimum int) string {
+	if minimum <= 1 {
+		return l.glossed(id)
+	}
+	return l.Say(BlurbAtLeast, minimum, l.glossed(id))
+}
+
+// atLeast is carrying's compact form, for the one-line summary.
+func (l Lang) atLeast(id string, minimum int) string {
+	name := l.glossed(id)
+	if minimum <= 1 {
+		return name
+	}
+	return name + " " + itoa(minimum) + "+"
 }
 
 // join is a list read out with the language's own conjunction, which is the one
