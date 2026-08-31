@@ -1,0 +1,724 @@
+===== vi | 120x24 | builds =====
+bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
+
+  pokemon.bulbasaur
+>   bulbasaur.poison    rải độc
+    bulbasaur.parasite  ký sinh
+  pokemon.charmander
+    charmander.scorch   thiêu đốt
+    charmander.dragon   long tộc
+  pokemon.squirtle
+    squirtle.fortress   cố thủ
+
+  bulbasaur.poison <rải độc>
+  ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
+  bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
+                   phấn độc · độc bùn · độc kích · phi diệp
+  nội tại          virulence
+                   độc lực
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | chart =====
+đồ thị tương khắc  mỗi vòng: hệ trước khắc hệ sau, hệ cuối khắc hệ đầu
+
+  organic
+    ,--> water --> fire --> grass --> ground --,
+    `------------------------------------------'
+  industrial
+    ,--> ice --> metal --> wind --> electric --,
+    `------------------------------------------'
+  cross
+    ,--> water --> metal --> grass --> wind --> fire --> ice --> ground --> electric --,
+    `----------------------------------------------------------------------------------'
+  đối lập
+    light <--> dark
+  trơ
+    neutral
+
+  khắc 150% · thường 100% · bị khắc 67%
+----- footer -----
+ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | elements =====
+hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
+
+> neutral   trung tính
+  water     nước
+  fire      lửa
+  grass     cỏ
+  ground    đất
+  ice       băng
+  metal     kim loại
+  wind      gió
+  electric  điện
+  light     ánh sáng
+  dark      bóng tối
+
+  Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
+
+  Đơn vị hai hệ hứng cả hai hệ số; một đòn luôn mang đúng một hệ.
+----- footer -----
+↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | species =====
+chủng loài  các loài đã khai báo, và ranh giới của từng loài
+
+  id         tên tiếng Việt
+> dragon     rồng
+  lizard     thằn lằn
+  plant      thực vật
+  turtle     rùa
+  human      con người
+  amphibian  lưỡng cư
+  titan      lực sĩ
+  fae        tiên
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | statuses =====
+hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
+
+  dot          sát thương mỗi lượt
+> poison       trúng độc
+  burn         bỏng
+  stat_debuff  giảm chỉ số
+  weaken       suy yếu
+  expose       phá giáp
+  blind        mù
+  mire         sa lầy
+  bare         trần trụi
+  encumber     nặng nề
+  control      khống chế, mất lượt
+  stun         choáng
+
+  Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
+  Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
+  Sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
+
+  Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | traitless build =====
+bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
+
+  pokemon.bulbasaur
+>   bulbasaur.poison    rải độc
+    bulbasaur.parasite  ký sinh
+  pokemon.charmander
+    charmander.scorch   thiêu đốt
+    charmander.dragon   long tộc
+  pokemon.squirtle
+    squirtle.fortress   cố thủ
+
+  bulbasaur.poison <rải độc>
+  ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
+  bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
+                   phấn độc · độc bùn · độc kích · phi diệp
+  nội tại          không lấy nội tại nào
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | traits =====
+nội tại  các nội tại đã khai báo, và ai mang
+
+  id            tên tiếng Việt ai mang
+> endurance     bền bỉ         pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.ma…
+  blaze         bùng lửa       pokemon.charmander@16
+  heatproof     chịu nhiệt     pokemon.charmander@16
+  virulence     độc lực        pokemon.bulbasaur@32
+  venom_blood   máu độc        pokemon.bulbasaur@24
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16
+  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44
+  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44
+  thorns        phản đòn       pokemon.squirtle@32
+  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+----- footer -----
+↑/↓ chọn · ? hiệu ứng · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | unclaimed kind =====
+chủng loài  các loài đã khai báo, và ranh giới của từng loài
+
+  id         tên tiếng Việt
+> dragon     rồng
+  lizard     thằn lằn
+  plant      thực vật
+  turtle     rùa
+  human      con người
+  amphibian  lưỡng cư
+  titan      lực sĩ
+  fae        tiên
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+
+  chưa nhân vật nào thuộc loài này
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | builds =====
+bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
+
+  pokemon.bulbasaur
+>   bulbasaur.poison    rải độc
+    bulbasaur.parasite  ký sinh
+  pokemon.charmander
+    charmander.scorch   thiêu đốt
+    charmander.dragon   long tộc
+  pokemon.squirtle
+    squirtle.fortress   cố thủ
+    squirtle.ram        giáp kích
+  naruto.naruto         chưa viết bản dựng nào cho nhân vật này
+  pokemon.poliwag
+    poliwag.flurry      liên hoàn
+    poliwag.riptide     nghịch lưu
+    poliwag.chorus      giữ nhịp
+  pokemon.machop
+    machop.gamble       đánh cược
+    machop.sure         chắc đòn
+  pokemon.cleffa
+    cleffa.mend         chở che
+    cleffa.hex          ru ngủ
+
+  bulbasaur.poison <rải độc>
+  ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
+  bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
+                   phấn độc · độc bùn · độc kích · phi diệp
+  nội tại          virulence
+                   độc lực
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | chart =====
+đồ thị tương khắc  mỗi vòng: hệ trước khắc hệ sau, hệ cuối khắc hệ đầu
+
+  organic
+    ,--> water --> fire --> grass --> ground --,
+    `------------------------------------------'
+  industrial
+    ,--> ice --> metal --> wind --> electric --,
+    `------------------------------------------'
+  cross
+    ,--> water --> metal --> grass --> wind --> fire --> ice --> ground --> electric --,
+    `----------------------------------------------------------------------------------'
+  đối lập
+    light <--> dark
+  trơ
+    neutral
+
+  khắc 150% · thường 100% · bị khắc 67%
+----- footer -----
+ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | elements =====
+hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
+
+> neutral   trung tính
+  water     nước
+  fire      lửa
+  grass     cỏ
+  ground    đất
+  ice       băng
+  metal     kim loại
+  wind      gió
+  electric  điện
+  light     ánh sáng
+  dark      bóng tối
+
+  Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
+
+  Đơn vị hai hệ hứng cả hai hệ số; một đòn luôn mang đúng một hệ.
+----- footer -----
+↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | species =====
+chủng loài  các loài đã khai báo, và ranh giới của từng loài
+
+  id         tên tiếng Việt
+> dragon     rồng
+  lizard     thằn lằn
+  plant      thực vật
+  turtle     rùa
+  human      con người
+  amphibian  lưỡng cư
+  titan      lực sĩ
+  fae        tiên
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | statuses =====
+hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
+
+  dot          sát thương mỗi lượt
+> poison       trúng độc
+  burn         bỏng
+  stat_debuff  giảm chỉ số
+  weaken       suy yếu
+  expose       phá giáp
+  blind        mù
+  mire         sa lầy
+  bare         trần trụi
+  encumber     nặng nề
+  control      khống chế, mất lượt
+  stun         choáng
+  buff         tăng chỉ số
+  fury         cuồng nộ
+  haste        nhanh nhẹn
+  focus        tập trung
+  toughened    kiên cường
+  veil         mờ ảo
+  unleashed    bộc phát
+  kindled      bùng cháy
+  fortified    kiên cố
+  quickened    gia tốc
+  evasive      khinh công
+  shield       khiên, chặn một nhát
+  block        đỡ đòn
+  regen        hồi máu mỗi lượt
+  regrowth     tái sinh
+  taunt        ép chọn mục tiêu
+  taunting     bị khiêu khích
+  heal_cut     giảm máu hồi vào
+  fester       lở loét
+
+  Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
+  Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
+  Sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
+
+  Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | traitless build =====
+bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
+
+  pokemon.bulbasaur
+>   bulbasaur.poison    rải độc
+    bulbasaur.parasite  ký sinh
+  pokemon.charmander
+    charmander.scorch   thiêu đốt
+    charmander.dragon   long tộc
+  pokemon.squirtle
+    squirtle.fortress   cố thủ
+    squirtle.ram        giáp kích
+  naruto.naruto         chưa viết bản dựng nào cho nhân vật này
+  pokemon.poliwag
+    poliwag.flurry      liên hoàn
+    poliwag.riptide     nghịch lưu
+    poliwag.chorus      giữ nhịp
+  pokemon.machop
+    machop.gamble       đánh cược
+    machop.sure         chắc đòn
+  pokemon.cleffa
+    cleffa.mend         chở che
+    cleffa.hex          ru ngủ
+
+  bulbasaur.poison <rải độc>
+  ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
+  bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
+                   phấn độc · độc bùn · độc kích · phi diệp
+  nội tại          không lấy nội tại nào
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | traits =====
+nội tại  các nội tại đã khai báo, và ai mang
+
+  id            tên tiếng Việt ai mang
+> endurance     bền bỉ         pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16
+  blaze         bùng lửa       pokemon.charmander@16
+  heatproof     chịu nhiệt     pokemon.charmander@16
+  virulence     độc lực        pokemon.bulbasaur@32
+  venom_blood   máu độc        pokemon.bulbasaur@24
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16
+  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44
+  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44
+  thorns        phản đòn       pokemon.squirtle@32
+  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32
+  ballast       trụ vững       pokemon.squirtle@44
+  composure     vững tâm       pokemon.poliwag@40[Politoed] pokemon.cleffa@24
+  elusive       huyền ảo       pokemon.cleffa@40
+  contagion     lây lan        pokemon.bulbasaur@28
+  spiteful      nham hiểm      pokemon.poliwag@36
+  berserk       cuồng chiến    pokemon.machop@40
+  unyielding    bất khuất      pokemon.machop@24
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+----- footer -----
+↑/↓ chọn · ? hiệu ứng · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | unclaimed kind =====
+chủng loài  các loài đã khai báo, và ranh giới của từng loài
+
+  id         tên tiếng Việt
+> dragon     rồng
+  lizard     thằn lằn
+  plant      thực vật
+  turtle     rùa
+  human      con người
+  amphibian  lưỡng cư
+  titan      lực sĩ
+  fae        tiên
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+
+  chưa nhân vật nào thuộc loài này
+----- footer -----
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== en | 120x24 | builds =====
+builds  the kit and the trait a character fields at level 60, furthest form
+
+  pokemon.bulbasaur
+>   bulbasaur.poison
+    bulbasaur.parasite
+  pokemon.charmander
+    charmander.scorch
+    charmander.dragon
+  pokemon.squirtle
+    squirtle.fortress
+
+  bulbasaur.poison
+  intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
+  kit           poison_powder sludge_bomb venoshock razor_leaf
+  traits        virulence
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | chart =====
+the affinity chart  each ring: a member beats the next, the last the first
+
+  organic
+    ,--> water --> fire --> grass --> ground --,
+    `------------------------------------------'
+  industrial
+    ,--> ice --> metal --> wind --> electric --,
+    `------------------------------------------'
+  cross
+    ,--> water --> metal --> grass --> wind --> fire --> ice --> ground --> electric --,
+    `----------------------------------------------------------------------------------'
+  both ways
+    light <--> dark
+  inert
+    neutral
+
+  strong 150% · even 100% · weak 67%
+----- footer -----
+ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | elements =====
+elements  the affinity chart: what beats what, and by how much
+
+> neutral
+  water
+  fire
+  grass
+  ground
+  ice
+  metal
+  wind
+  electric
+  light
+  dark
+
+  Inert: it beats nothing and nothing beats it; every trade is 100%.
+
+  A dual unit takes both multipliers; an attack carries exactly one element.
+----- footer -----
+↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | species =====
+species  the declared kinds, and where each line is drawn
+
+  id
+> dragon
+  lizard
+  plant
+  turtle
+  human
+  amphibian
+  titan
+  fae
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | statuses =====
+statuses  the buffs and debuffs a skill or a trait puts on a unit
+
+  dot          damages every turn
+> poison       
+  burn         
+  stat_debuff  lowers a stat
+  weaken       
+  expose       
+  blind        
+  mire         
+  bare         
+  encumber     
+  control      costs a turn
+  stun         
+
+  At the holder's turn, each stack costs 50% of the applier's stat.
+  Over its 3 turns, one stack is 150%, and 450% at its cap.
+  Damages every turn · 3 turns · up to 3 stacks.
+
+  Declared figures: a trait amplifying or resisting changes what lands.
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | traitless build =====
+builds  the kit and the trait a character fields at level 60, furthest form
+
+  pokemon.bulbasaur
+>   bulbasaur.poison
+    bulbasaur.parasite
+  pokemon.charmander
+    charmander.scorch
+    charmander.dragon
+  pokemon.squirtle
+    squirtle.fortress
+
+  bulbasaur.poison
+  intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
+  kit           poison_powder sludge_bomb venoshock razor_leaf
+  traits        takes no trait
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | traits =====
+traits  the declared traits, and who carries each
+
+  id            carried by
+> endurance     pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon…
+  blaze         pokemon.charmander@16
+  heatproof     pokemon.charmander@16
+  virulence     pokemon.bulbasaur@32
+  venom_blood   pokemon.bulbasaur@24
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16
+  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44
+  reckless      pokemon.charmander@44 pokemon.machop@44
+  thorns        pokemon.squirtle@32
+  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32
+
+  endurance
+    Always carries toughened.
+----- footer -----
+↑/↓ move · ? the status · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | unclaimed kind =====
+species  the declared kinds, and where each line is drawn
+
+  id
+> dragon
+  lizard
+  plant
+  turtle
+  human
+  amphibian
+  titan
+  fae
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+
+  no character is one
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | builds =====
+builds  the kit and the trait a character fields at level 60, furthest form
+
+  pokemon.bulbasaur
+>   bulbasaur.poison
+    bulbasaur.parasite
+  pokemon.charmander
+    charmander.scorch
+    charmander.dragon
+  pokemon.squirtle
+    squirtle.fortress
+    squirtle.ram
+  naruto.naruto         no build written for this one yet
+  pokemon.poliwag
+    poliwag.flurry
+    poliwag.riptide
+    poliwag.chorus
+  pokemon.machop
+    machop.gamble
+    machop.sure
+  pokemon.cleffa
+    cleffa.mend
+    cleffa.hex
+
+  bulbasaur.poison
+  intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
+  kit           poison_powder sludge_bomb venoshock razor_leaf
+  traits        virulence
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | chart =====
+the affinity chart  each ring: a member beats the next, the last the first
+
+  organic
+    ,--> water --> fire --> grass --> ground --,
+    `------------------------------------------'
+  industrial
+    ,--> ice --> metal --> wind --> electric --,
+    `------------------------------------------'
+  cross
+    ,--> water --> metal --> grass --> wind --> fire --> ice --> ground --> electric --,
+    `----------------------------------------------------------------------------------'
+  both ways
+    light <--> dark
+  inert
+    neutral
+
+  strong 150% · even 100% · weak 67%
+----- footer -----
+ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | elements =====
+elements  the affinity chart: what beats what, and by how much
+
+> neutral
+  water
+  fire
+  grass
+  ground
+  ice
+  metal
+  wind
+  electric
+  light
+  dark
+
+  Inert: it beats nothing and nothing beats it; every trade is 100%.
+
+  A dual unit takes both multipliers; an attack carries exactly one element.
+----- footer -----
+↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | species =====
+species  the declared kinds, and where each line is drawn
+
+  id
+> dragon
+  lizard
+  plant
+  turtle
+  human
+  amphibian
+  titan
+  fae
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | statuses =====
+statuses  the buffs and debuffs a skill or a trait puts on a unit
+
+  dot          damages every turn
+> poison       
+  burn         
+  stat_debuff  lowers a stat
+  weaken       
+  expose       
+  blind        
+  mire         
+  bare         
+  encumber     
+  control      costs a turn
+  stun         
+  buff         raises a stat
+  fury         
+  haste        
+  focus        
+  toughened    
+  veil         
+  unleashed    
+  kindled      
+  fortified    
+  quickened    
+  evasive      
+  shield       blocks one strike
+  block        
+  regen        restores every turn
+  regrowth     
+  taunt        costs a choice of target
+  taunting     
+  heal_cut     cuts healing received
+  fester       
+
+  At the holder's turn, each stack costs 50% of the applier's stat.
+  Over its 3 turns, one stack is 150%, and 450% at its cap.
+  Damages every turn · 3 turns · up to 3 stacks.
+
+  Declared figures: a trait amplifying or resisting changes what lands.
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | traitless build =====
+builds  the kit and the trait a character fields at level 60, furthest form
+
+  pokemon.bulbasaur
+>   bulbasaur.poison
+    bulbasaur.parasite
+  pokemon.charmander
+    charmander.scorch
+    charmander.dragon
+  pokemon.squirtle
+    squirtle.fortress
+    squirtle.ram
+  naruto.naruto         no build written for this one yet
+  pokemon.poliwag
+    poliwag.flurry
+    poliwag.riptide
+    poliwag.chorus
+  pokemon.machop
+    machop.gamble
+    machop.sure
+  pokemon.cleffa
+    cleffa.mend
+    cleffa.hex
+
+  bulbasaur.poison
+  intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
+  kit           poison_powder sludge_bomb venoshock razor_leaf
+  traits        takes no trait
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | traits =====
+traits  the declared traits, and who carries each
+
+  id            carried by
+> endurance     pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16
+  blaze         pokemon.charmander@16
+  heatproof     pokemon.charmander@16
+  virulence     pokemon.bulbasaur@32
+  venom_blood   pokemon.bulbasaur@24
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16
+  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44
+  reckless      pokemon.charmander@44 pokemon.machop@44
+  thorns        pokemon.squirtle@32
+  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32
+  ballast       pokemon.squirtle@44
+  composure     pokemon.poliwag@40[Politoed] pokemon.cleffa@24
+  elusive       pokemon.cleffa@40
+  contagion     pokemon.bulbasaur@28
+  spiteful      pokemon.poliwag@36
+  berserk       pokemon.machop@40
+  unyielding    pokemon.machop@24
+
+  endurance
+    Always carries toughened.
+----- footer -----
+↑/↓ move · ? the status · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | unclaimed kind =====
+species  the declared kinds, and where each line is drawn
+
+  id
+> dragon
+  lizard
+  plant
+  turtle
+  human
+  amphibian
+  titan
+  fae
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+
+  no character is one
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
