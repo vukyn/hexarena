@@ -9,6 +9,12 @@ import (
 	"github.com/vukyn/hexarena/internal/i18n"
 )
 
+// The three keystrokes that cross screens: ? on a trait raises the statuses
+// reference on the status that trait names, and esc comes back to the trait.
+// Those are this client's raise and its one-slot memory of where Back goes, so
+// they stay here — while Marked, which the traits listing draws its sentences
+// with, moved to internal/screen with the listing.
+
 // ask is the ? key, which the helper map has no name for because it is a
 // printable rune rather than a named key.
 func ask(t *testing.T, m model) model {
@@ -19,9 +25,9 @@ func ask(t *testing.T, m model) model {
 // onTrait puts the traits listing's cursor on a named trait.
 func onTrait(t *testing.T, m model, id string) model {
 	t.Helper()
-	for index, held := range m.passives.passives {
+	for index, held := range m.passives.Passives {
 		if held.ID == id {
-			m.passives.cursor = index
+			m.passives.Cursor = index
 			return m
 		}
 	}
@@ -44,18 +50,18 @@ func TestAskingAboutATraitOpensTheStatusItNames(t *testing.T) {
 	if m.screen != screenStatuses {
 		t.Fatalf("? on a trait left the reader on screen %v", m.screen)
 	}
-	row := m.statuses.rows[m.statuses.cursor]
-	if row.heading {
+	row := m.statuses.Rows[m.statuses.Cursor]
+	if row.Heading {
 		t.Fatal("the jump landed on a category heading, which describes nothing")
 	}
-	if row.kind.ID != "toughened" {
-		t.Errorf("? on endurance opened %q, want the toughened it grants", row.kind.ID)
+	if row.Kind.ID != "toughened" {
+		t.Errorf("? on endurance opened %q, want the toughened it grants", row.Kind.ID)
 	}
 	// And what it opened is a description rather than a row: the reference is
 	// worth the jump only if the sentence the trait would not say is now on
 	// screen.
 	drawn := m.screenContent()
-	opening := strings.SplitN(m.lang.DescribeStatus(row.kind), "\n", 2)[0]
+	opening := strings.SplitN(m.lang.DescribeStatus(row.Kind), "\n", 2)[0]
 	if !strings.Contains(drawn, firstWords(opening)) {
 		t.Errorf("the status screen does not describe toughened:\n%s", drawn)
 	}
@@ -70,16 +76,16 @@ func TestComingBackFromAStatusReturnsToTheTrait(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	m = m.enter(screenPassives)
 	m = onTrait(t, m, "virulence")
-	before := m.passives.cursor
+	before := m.passives.Cursor
 
 	m = ask(t, m)
 	m = key(t, m, "esc")
 	if m.screen != screenPassives {
 		t.Fatalf("esc after a jump from a trait landed on screen %v", m.screen)
 	}
-	if m.passives.cursor != before {
+	if m.passives.Cursor != before {
 		t.Errorf("the trait cursor moved from %d to %d across the jump",
-			before, m.passives.cursor)
+			before, m.passives.Cursor)
 	}
 	// And the way back is forgotten once used: esc from the statuses listing
 	// reached through the menu has to go to the menu, or the second visit
@@ -102,52 +108,11 @@ func TestAskingAboutATraitThatNamesNoStatusStaysPut(t *testing.T) {
 	m = m.enter(screenPassives)
 	for _, id := range []string{"blood_thirst", "last_gasp"} {
 		m = onTrait(t, m, id)
-		if named := i18n.StatusesNamed(m.passives.passives[m.passives.cursor]); len(named) != 0 {
+		if named := i18n.StatusesNamed(m.passives.Passives[m.passives.Cursor]); len(named) != 0 {
 			t.Fatalf("%s names %v, so this test measures nothing", id, named)
 		}
 		if after := ask(t, m); after.screen != screenPassives {
 			t.Errorf("? on %s, which names nothing, moved to screen %v", id, after.screen)
 		}
-	}
-}
-
-// TestATraitsStatusNamesAreMarkedWordByWord is the marking, and the word by word
-// part is the whole of it.
-//
-// The sentences are wrapped after they are marked, and the wrap splits on
-// spaces. A style spanning "kiên cường" survives that only until the two words
-// land on different lines, and then the first line opens a sequence the second
-// one closes — so every word is marked whole instead.
-func TestATraitsStatusNamesAreMarkedWordByWord(t *testing.T) {
-	got := marked("Luôn mang kiên cường.", []string{"kiên cường"},
-		func(word string) string { return "<" + word + ">" })
-	if want := "Luôn mang <kiên> <cường>."; got != want {
-		t.Errorf("marked %q, want %q", got, want)
-	}
-}
-
-// TestAMarkedNameNeverTakesAnotherNamesOpening is the trap a replacement per
-// name falls into whichever order the names are tried in.
-//
-// Longest first and "bỏng" matches inside the output "bỏng nặng" just produced;
-// shortest first and "bỏng nặng" never matches at all. Only one left-to-right
-// pass, taking the longest name that starts at each position, gets both right -
-// and the first version of this marked the first word twice.
-func TestAMarkedNameNeverTakesAnotherNamesOpening(t *testing.T) {
-	got := marked("bỏng nặng và bỏng.", []string{"bỏng", "bỏng nặng"},
-		func(word string) string { return "<" + word + ">" })
-	if want := "<bỏng> <nặng> và <bỏng>."; got != want {
-		t.Errorf("marked %q, want %q — one pass, longest match wins", got, want)
-	}
-}
-
-// TestNothingIsMarkedInASentenceThatNamesNothing keeps the marking from being a
-// search-and-replace over prose: only the names the trait actually declares are
-// looked for, so a flavour clause carrying a status name by coincidence is left
-// alone unless that trait names it.
-func TestNothingIsMarkedInASentenceThatNamesNothing(t *testing.T) {
-	sentence := "Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó."
-	if got := marked(sentence, nil, func(word string) string { return "<" + word + ">" }); got != sentence {
-		t.Errorf("marked %q with no names to mark", got)
 	}
 }

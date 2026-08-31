@@ -303,17 +303,6 @@ func budgetLine(m model, budget forge.Budget) string {
 	return m.style.Good.Render(m.lang.Budget(meter, budget))
 }
 
-// clamp keeps an index or a level inside its range, and returns the low bound
-// when the range is empty.
-func clamp(value, low, high int) int {
-	if high < low {
-		return low
-	}
-	if value < low {
-		return low
-	}
-	if value > high {
-		return high
-	}
-	return value
-}
+// clamp moved to model.go, beside pad and clip: the six reference screens took
+// it with them into internal/screen, and what is left here is the forwarder the
+// rest of this package still calls. Its comment there carries the argument.

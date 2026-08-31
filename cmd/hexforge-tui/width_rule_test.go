@@ -163,17 +163,17 @@ func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 		// any more than the caution can.
 		kinds := menuTo(t, base, screenSpecies)
 		longest := 0
-		for index, kind := range kinds.species.kinds {
-			if lipgloss.Width(kind.Note) > lipgloss.Width(kinds.species.kinds[longest].Note) {
+		for index, kind := range kinds.species.Kinds {
+			if lipgloss.Width(kind.Note) > lipgloss.Width(kinds.species.Kinds[longest].Note) {
 				longest = index
 			}
 		}
-		kinds.species.cursor = longest
-		opening := firstWords(kinds.species.kinds[longest].Note)
+		kinds.species.Cursor = longest
+		opening := firstWords(kinds.species.Kinds[longest].Note)
 		note := func(width int) []string {
 			m := kinds
 			m.width, m.height = width, 60
-			body, _ := m.species.view(m)
+			body, _ := m.species.View(m.ctx())
 			return theBlockOpening(t, body, opening)
 		}
 

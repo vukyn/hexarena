@@ -141,7 +141,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// The affinity chart, on the element whose description is longest: the rows
 	// are all one shape, so what varies is the pane below them.
 	elements := m.enter(screenElements)
-	elements.elements.cursor = widestElementRow(elements)
+	elements.elements.Cursor = widestElementRow(elements)
 	// The species reference twice. The shipped cast claims every kind, so the
 	// row with an empty members cell and the line that explains it are drawn
 	// only by a book that has one — and they are wording like any other, so they
@@ -454,14 +454,14 @@ func widestElementRow(m model) int {
 // is one of the models this helper hands back and a shared map would clear that
 // one's count too.
 func withNobodyClaiming(s speciesScreen) speciesScreen {
-	claimed := make(map[string]int, len(s.claimed))
-	for id, count := range s.claimed {
+	claimed := make(map[string]int, len(s.Claimed))
+	for id, count := range s.Claimed {
 		claimed[id] = count
 	}
-	if len(s.kinds) > 0 {
-		claimed[s.kinds[clamp(s.cursor, 0, len(s.kinds)-1)].ID] = 0
+	if len(s.Kinds) > 0 {
+		claimed[s.Kinds[clamp(s.Cursor, 0, len(s.Kinds)-1)].ID] = 0
 	}
-	s.claimed = claimed
+	s.Claimed = claimed
 	return s
 }
 
@@ -532,20 +532,20 @@ func withASquadSaved(t *testing.T, m model) model {
 
 func withNoTraitTaken(t *testing.T, b buildsScreen) buildsScreen {
 	t.Helper()
-	rows := append([]buildRow(nil), b.rows...)
+	rows := append([]buildRow(nil), b.Rows...)
 	found := false
 	for index, row := range rows {
-		if !row.build() {
+		if !row.Build() {
 			continue
 		}
-		rows[index].built.Passives = nil
-		b.cursor, found = index, true
+		rows[index].Built.Passives = nil
+		b.Cursor, found = index, true
 		break
 	}
 	if !found {
 		t.Fatal("the catalogue holds no build, so there is no trait to take off")
 	}
-	b.rows = rows
+	b.Rows = rows
 	return b
 }
 

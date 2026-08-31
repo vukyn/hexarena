@@ -1,4 +1,4 @@
-package main
+package screen
 
 import (
 	"strings"
@@ -7,10 +7,9 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/i18n"
-	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
-// chartScreen is the affinity chart drawn as the rings it was declared in.
+// ChartScreen is the affinity chart drawn as the rings it was declared in.
 //
 // The elements listing answers "what does fire lose to" one element at a time,
 // which is the question somebody has with a skill in front of them. This answers
@@ -28,12 +27,14 @@ import (
 //
 // No cursor. Nothing here is selected — the whole point is that it is read at
 // once, and a cursor would invite a keystroke that has nothing to do.
-type chartScreen struct{}
+type ChartScreen struct{}
 
-func (s chartScreen) update(_ draw.Context, message tea.KeyPressMsg) (chartScreen, draw.Action) {
+// Update reads one keystroke and says what the reader asked for. It quits, it
+// goes back, or it does nothing: the chart has no cursor to move.
+func (s ChartScreen) Update(_ Context, message tea.KeyPressMsg) (ChartScreen, Action) {
 	switch message.String() {
 	case "q":
-		return s, draw.Action{Kind: draw.Quit}
+		return s, Action{Kind: Quit}
 	case "esc":
 		// Back to whoever raised this, rather than to the menu: a reader who
 		// pressed one key to arrive expects one key to undo it.
@@ -44,9 +45,9 @@ func (s chartScreen) update(_ draw.Context, message tea.KeyPressMsg) (chartScree
 		// draws it, and the width fixture enters it without ever pressing a key
 		// in it). So Back lands in exactly the same place, and it does so
 		// without a screen here knowing that listing exists.
-		return s, draw.Action{Kind: draw.Back}
+		return s, Action{Kind: Back}
 	}
-	return s, draw.Action{}
+	return s, Action{}
 }
 
 // The pieces a ring is drawn out of.
@@ -73,34 +74,39 @@ const (
 	chainMark = " > "
 )
 
-func (s chartScreen) view(m model) (string, string) {
-	footer := m.text(i18n.ChartFooter)
-	chart := m.lib.Chart()
+// View draws the chart's body and its footer, in the language the Context is in.
+//
+// Every block is generated from the chart the library holds, so the picture
+// cannot disagree with the book — see chartBlocks for why that is the whole
+// licence for drawing a picture at all.
+func (s ChartScreen) View(c Context) (string, string) {
+	footer := c.Text(i18n.ChartFooter)
+	chart := c.Lib.Chart()
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(m.text(i18n.ChartHeading)) + "  " +
-		m.style.Dim.Render(m.text(i18n.ChartSubtitle)) + "\n\n")
+	out.WriteString(c.Style.Heading.Render(c.Text(i18n.ChartHeading)) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.ChartSubtitle)) + "\n\n")
 
-	blocks := chartBlocks(m, chart)
+	blocks := chartBlocks(c, chart)
 	if len(blocks) == 0 {
-		out.WriteString("  " + m.text(i18n.ChartEmpty) + "\n")
+		out.WriteString("  " + c.Text(i18n.ChartEmpty) + "\n")
 		return out.String(), footer
 	}
 	// Every element the chart names, so the colouring can pick them out of a line
-	// of the picture. Word by word inside marked, which is what keeps a style
+	// of the picture. Word by word inside Marked, which is what keeps a style
 	// inside one cell run rather than spanning the rules drawn beside it.
 	names := make([]string, 0, element.Count)
 	for _, member := range element.All() {
 		names = append(names, member.String())
 	}
 	for _, block := range blocks {
-		out.WriteString("  " + m.style.Label.Render(block.label) + "\n")
+		out.WriteString("  " + c.Style.Label.Render(block.label) + "\n")
 		for _, line := range block.lines {
-			out.WriteString("    " + marked(line, names, func(word string) string {
+			out.WriteString("    " + Marked(line, names, func(word string) string {
 				member, err := element.Parse(word)
 				if err != nil {
 					return word
 				}
-				return m.style.Element(member).Render(word)
+				return c.Style.Element(member).Render(word)
 			}) + "\n")
 		}
 	}
@@ -110,7 +116,7 @@ func (s chartScreen) view(m model) (string, string) {
 	// asking what an edge is *for*, and an edge with no price on it is a line
 	// between two words.
 	rates := chart.Multipliers()
-	out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.ChartRates,
+	out.WriteString("\n  " + c.Style.Dim.Render(c.Text(i18n.ChartRates,
 		i18n.Share(rates.Advantage), i18n.Share(rates.Neutral),
 		i18n.Share(rates.Disadvantage))))
 	return out.String(), footer
@@ -136,7 +142,7 @@ type chartBlock struct {
 // with nothing to catch it — the same trade the derived descriptions make. Add
 // an element and the ring redraws itself; what an author has to check is only
 // that it still *fits*, which TestEveryRingClosesAtTheFloor does for them.
-func chartBlocks(m model, chart *element.Chart) []chartBlock {
+func chartBlocks(c Context, chart *element.Chart) []chartBlock {
 	blocks := make([]chartBlock, 0, 6)
 	for _, cycle := range chart.Cycles() {
 		if len(cycle.Chain) == 0 {
@@ -149,13 +155,13 @@ func chartBlocks(m model, chart *element.Chart) []chartBlock {
 		// from the other, and a two-link loop would draw one of the arrows as
 		// though it were the way round the pair was declared.
 		blocks = append(blocks, chartBlock{
-			m.text(i18n.ChartMutual),
+			c.Text(i18n.ChartMutual),
 			[]string{pair[0].String() + mutualMark + pair[1].String()},
 		})
 	}
 	if inert := chart.Inert(); len(inert) > 0 {
 		blocks = append(blocks, chartBlock{
-			m.text(i18n.ChartInert),
+			c.Text(i18n.ChartInert),
 			[]string{strings.Join(elementIDs(inert), " ")},
 		})
 	}
@@ -179,7 +185,7 @@ func elementIDs(members []element.Element) []string {
 // gets the same drawing.
 func chartRoom() int {
 	const indent = 4
-	return minWidth - 1 - indent
+	return MinWidth - 1 - indent
 }
 
 // ringLines draws one ring as a closed loop.

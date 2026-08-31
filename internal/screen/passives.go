@@ -1,7 +1,6 @@
-package main
+package screen
 
 import (
-	"sort"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -10,10 +9,9 @@ import (
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
-	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
-// passivesScreen is the declared traits, with what each one does under the
+// PassivesScreen is the declared traits, with what each one does under the
 // cursor.
 //
 // It answers a different question from the one the cast browser's `?` answers,
@@ -35,34 +33,39 @@ import (
 // content: adding one changes what every character holding it does, and that
 // belongs in a diff rather than behind a form. Nothing in either front-end
 // authors a trait today.
-type passivesScreen struct {
-	passives []passive.Passive
+type PassivesScreen struct {
+	Passives []passive.Passive
 	// carriers is keyed by trait id and read by key only; nothing ranges over it
 	// into an ordered output, so it cannot reach a rendered line out of order.
-	carriers map[string]string
-	cursor   int
+	Carriers map[string]string
+	Cursor   int
 }
 
-func newPassivesScreen(lib *forge.Library) passivesScreen {
-	return passivesScreen{}.refresh(lib)
+// NewPassivesScreen is the listing filled from a library, ready to draw.
+func NewPassivesScreen(lib *forge.Library) PassivesScreen {
+	return PassivesScreen{}.Refresh(lib)
 }
 
-func (p passivesScreen) refresh(lib *forge.Library) passivesScreen {
-	p.passives = lib.Passives().All()
-	p.carriers = make(map[string]string, len(p.passives))
-	for _, held := range p.passives {
-		p.carriers[held.ID] = forge.TraitCarrierSummary(lib.TraitCarriers(held.ID))
+// Refresh re-reads the declared traits and who carries each, keeping the cursor
+// inside the book.
+func (p PassivesScreen) Refresh(lib *forge.Library) PassivesScreen {
+	p.Passives = lib.Passives().All()
+	p.Carriers = make(map[string]string, len(p.Passives))
+	for _, held := range p.Passives {
+		p.Carriers[held.ID] = forge.TraitCarrierSummary(lib.TraitCarriers(held.ID))
 	}
-	p.cursor = clamp(p.cursor, 0, len(p.passives)-1)
+	p.Cursor = Clamp(p.Cursor, 0, len(p.Passives)-1)
 	return p
 }
 
-func (p passivesScreen) update(_ draw.Context, message tea.KeyPressMsg) (passivesScreen, draw.Action) {
+// Update reads one keystroke: the cursor moves, the statuses reference is
+// raised on the status this trait names, or the reader leaves.
+func (p PassivesScreen) Update(_ Context, message tea.KeyPressMsg) (PassivesScreen, Action) {
 	switch message.String() {
 	case "q":
-		return p, draw.Action{Kind: draw.Quit}
+		return p, Action{Kind: Quit}
 	case "esc":
-		return p, draw.Action{Kind: draw.Back}
+		return p, Action{Kind: Back}
 	// The trait's own description is already on screen, so ? here reads as
 	// "explain the thing it just named" rather than as "explain this".
 	//
@@ -79,65 +82,17 @@ func (p passivesScreen) update(_ draw.Context, message tea.KeyPressMsg) (passive
 	// has. So the id rides on the raise and the **client** lands the cursor,
 	// including the staying-put when the book no longer holds that status.
 	case "?":
-		named := i18n.StatusesNamed(p.passives[clamp(p.cursor, 0, len(p.passives)-1)])
+		named := i18n.StatusesNamed(p.Passives[Clamp(p.Cursor, 0, len(p.Passives)-1)])
 		if len(named) == 0 {
-			return p, draw.Action{}
+			return p, Action{}
 		}
-		return p, draw.Action{Kind: draw.Raise, Target: draw.Statuses, Focus: named[0]}
+		return p, Action{Kind: Raise, Target: Statuses, Focus: named[0]}
 	case "up", "k":
-		p.cursor = clamp(p.cursor-1, 0, len(p.passives)-1)
+		p.Cursor = Clamp(p.Cursor-1, 0, len(p.Passives)-1)
 	case "down", "j":
-		p.cursor = clamp(p.cursor+1, 0, len(p.passives)-1)
+		p.Cursor = Clamp(p.Cursor+1, 0, len(p.Passives)-1)
 	}
-	return p, draw.Action{}
-}
-
-// marked is one sentence of a trait's description with the status names in it
-// picked out.
-//
-// Word by word rather than name by name, because the caller wraps what comes
-// back: a style spanning two words survives strings.Fields only until the wrap
-// puts the words on different lines, and then the first line carries an escape
-// sequence the second one closes. Marking each word whole keeps every word
-// self-contained however the line breaks.
-//
-// Longest first, so a name that begins another name cannot take its opening.
-// The marker is a parameter rather than a style read off the model, which is
-// what makes this testable: the tests run with NO_COLOR set, so every style is
-// the identity and a test asserting on the model's own would be asserting that
-// nothing happened.
-func marked(sentence string, names []string, mark func(string) string) string {
-	sorted := append([]string(nil), names...)
-	sort.SliceStable(sorted, func(i, j int) bool { return len(sorted[i]) > len(sorted[j]) })
-
-	// One left-to-right pass rather than a replacement per name. A pass per name
-	// re-marks its own output — "bỏng" matches inside what "bỏng nặng" just
-	// produced, however the names were ordered — and the ordering only decides
-	// which of the two wrong answers comes out. Scanning once and taking the
-	// longest name that starts here means every character of the sentence is
-	// looked at exactly once, so nothing marked can be marked again.
-	var out strings.Builder
-	for at := 0; at < len(sentence); {
-		hit := ""
-		for _, name := range sorted {
-			if name != "" && strings.HasPrefix(sentence[at:], name) {
-				hit = name
-				break
-			}
-		}
-		if hit == "" {
-			out.WriteByte(sentence[at])
-			at++
-			continue
-		}
-		words := strings.Fields(hit)
-		for index, word := range words {
-			words[index] = mark(word)
-		}
-		out.WriteString(strings.Join(words, " "))
-		at += len(hit)
-	}
-	return out.String()
+	return p, Action{}
 }
 
 // passivesRoom is how many rows the listing may draw: the window, less the two
@@ -148,33 +103,35 @@ func marked(sentence string, names []string, mark func(string) string) string {
 // than at the height of the one under the cursor. A room that shrank and grew
 // with the cursor would slide the listing up and down under it, and a reader
 // would lose their place walking between two traits rather than reading either.
-func passivesRoom(m model) int {
+func passivesRoom(c Context) int {
 	const (
 		above = 2 // the heading and the blank line under it
 		below = 8 // a blank, the trait's name, up to six lines, a blank
 	)
-	room := m.height - 4 - above - below
+	room := c.Height - 4 - above - below
 	if room < 3 {
 		return 3
 	}
 	return room
 }
 
-func (p passivesScreen) view(m model) (string, string) {
-	footer := m.text(i18n.PassivesFooter)
+// View draws the listing, the sentences describing the trait under the cursor
+// with the statuses they name marked, and the footer.
+func (p PassivesScreen) View(c Context) (string, string) {
+	footer := c.Text(i18n.PassivesFooter)
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(m.text(i18n.PassivesHeading)) + "  " +
-		m.style.Dim.Render(m.text(i18n.PassivesSubtitle)) + "\n\n")
-	if len(p.passives) == 0 {
-		return out.String() + "  " + m.text(i18n.PassivesEmpty), footer
+	out.WriteString(c.Style.Heading.Render(c.Text(i18n.PassivesHeading)) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.PassivesSubtitle)) + "\n\n")
+	if len(p.Passives) == 0 {
+		return out.String() + "  " + c.Text(i18n.PassivesEmpty), footer
 	}
 
 	column, glossColumn := 0, 0
-	for _, held := range p.passives {
+	for _, held := range p.Passives {
 		if width := lipgloss.Width(held.ID); width > column {
 			column = width
 		}
-		if width := lipgloss.Width(m.lang.PassiveName(held)); width > glossColumn {
+		if width := lipgloss.Width(c.Lang.PassiveName(held)); width > glossColumn {
 			glossColumn = width
 		}
 	}
@@ -182,66 +139,68 @@ func (p passivesScreen) view(m model) (string, string) {
 		// The header has to fit the column it names, the same rule the skill
 		// listing's gloss column follows — and in English nothing is glossed at
 		// all, which is what drops the column rather than drawing it empty.
-		if width := lipgloss.Width(m.text(i18n.ColumnGloss)); width > glossColumn {
+		if width := lipgloss.Width(c.Text(i18n.ColumnGloss)); width > glossColumn {
 			glossColumn = width
 		}
 	}
-	out.WriteString("  " + m.style.Dim.Render(passiveRow(column+1, glossColumn,
-		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss),
-		m.text(i18n.ColumnCarriedBy))) + "\n")
+	out.WriteString("  " + c.Style.Dim.Render(passiveRow(column+1, glossColumn,
+		c.Text(i18n.SkillFieldID), c.Text(i18n.ColumnGloss),
+		c.Text(i18n.ColumnCarriedBy))) + "\n")
 
-	from, to := window(len(p.passives), p.cursor, passivesRoom(m))
+	from, to := Window(len(p.Passives), p.Cursor, passivesRoom(c))
 	for index := from; index < to; index++ {
-		held := p.passives[index]
+		held := p.Passives[index]
 		row := passiveRow(column+1, glossColumn,
-			held.ID, m.lang.PassiveName(held), p.carriers[held.ID])
+			held.ID, c.Lang.PassiveName(held), p.Carriers[held.ID])
 		// The window, for the reason the skill listing's last column uses it:
 		// the carriers cell is data, and cutting it on a wide terminal hides
 		// which characters hold the trait.
-		row = clip(row, m.usableWidth()-3)
+		row = Clip(row, c.UsableWidth()-3)
 		marker := "  "
-		if index == p.cursor {
+		if index == p.Cursor {
 			marker = "> "
-			row = m.style.Selected.Render(row)
+			row = c.Style.Selected.Render(row)
 		}
 		out.WriteString(marker + row + "\n")
 	}
 
-	selected := p.passives[clamp(p.cursor, 0, len(p.passives)-1)]
+	selected := p.Passives[Clamp(p.Cursor, 0, len(p.Passives)-1)]
 	// The names this trait's sentences will use, marked where they are printed
 	// so that ? has something visible to be about. A miss in the glossary drops
 	// out here rather than marking a bare id: an id in the middle of Vietnamese
 	// prose is already the odd word on the line.
 	names := make([]string, 0, 4)
 	for _, id := range i18n.StatusesNamed(selected) {
-		if name := m.lang.Gloss(id); name != "" {
+		if name := c.Lang.Gloss(id); name != "" {
 			names = append(names, name)
 		}
 	}
-	out.WriteString("\n  " + m.style.Label.Render(m.lang.GlossedPassive(selected)) + "\n")
-	for _, sentence := range strings.Split(m.lang.DescribePassive(selected), "\n") {
-		sentence = marked(sentence, names, func(word string) string {
-			return m.style.Emphasis.Render(word)
+	out.WriteString("\n  " + c.Style.Label.Render(c.Lang.GlossedPassive(selected)) + "\n")
+	for _, sentence := range strings.Split(c.Lang.DescribePassive(selected), "\n") {
+		sentence = Marked(sentence, names, func(word string) string {
+			return c.Style.Emphasis.Render(word)
 		})
 		// Wrapped to the floor rather than to the window, for the reason the
-		// trait screen wraps: these are the program's own prose, and a sentence
-		// run across a two-hundred-column terminal is a line a reader loses their
-		// place in. See traitLines.
-		for _, line := range wrapWords(sentence, minWidth-1-traitIndent) {
-			out.WriteString(strings.Repeat(" ", traitIndent) + line + "\n")
+		// description screen wraps: these are the program's own prose, and a
+		// sentence run across a two-hundred-column terminal is a line a reader
+		// loses their place in. TraitIndent is shared with that screen for the
+		// same reason.
+		for _, line := range WrapWords(sentence, MinWidth-1-TraitIndent) {
+			out.WriteString(strings.Repeat(" ", TraitIndent) + line + "\n")
 		}
 	}
 	// A trait nobody learns cannot reach a battle, and the row above says so with
 	// an empty cell — which reads as a column that failed to fill rather than as
 	// a fact. This says it in words, and only for the trait being read.
-	if p.carriers[selected.ID] == "" {
-		out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.PassivesNobodyCarries)))
+	if p.Carriers[selected.ID] == "" {
+		out.WriteString("\n  " + c.Style.Dim.Render(c.Text(i18n.PassivesNobodyCarries)))
 	}
 	return strings.TrimRight(out.String(), "\n"), footer
 }
 
 // passiveRow lays out one row of the listing, and the header above it, from one
-// place so the two cannot drift apart — the same arrangement skillRow has, and
+// place so the two cannot drift apart — the same arrangement the client's own
+// skillRow has, and
 // for the same reason: a header out of line with its own rows is the one failure
 // a shared layout prevents.
 //
@@ -249,9 +208,9 @@ func (p passivesScreen) view(m model) (string, string) {
 // empty, which is what English gets: a trait's name is authored once and in
 // Vietnamese, so an English reader would see a column of blanks.
 func passiveRow(idColumn, glossColumn int, id, name, carriers string) string {
-	row := pad(id, idColumn)
+	row := Pad(id, idColumn)
 	if glossColumn > 0 {
-		row += " " + pad(name, glossColumn)
+		row += " " + Pad(name, glossColumn)
 	}
 	return row + " " + carriers
 }

@@ -413,7 +413,12 @@ unknown is an error), a `Key` enum and one array per language; it may import
 `internal/forge`, and **forge must never import it**.
 
 Three rules hold that shape, each with a test: no user-visible literal may live
-in `cmd/hexforge-tui` (`TestNoScreenHoldsItsOwnWording` greps its own AST), every
+in `cmd/hexforge-tui` **or in `internal/screen`** (`TestNoScreenHoldsItsOwnWording`
+greps its own AST — ⚠️ it reads `os.ReadDir(".")`, so it is **per package** and
+there are two copies of it, one in each; a package that grows a screen and no
+walker silently stops being held to the two-language rule, and the golden cannot
+stand in for it, because a literal moved out of a package renders identically),
+every
 key is worded in both languages and no key is orphaned, and every wording
 measures one cell per letter — write Vietnamese **composed**, or a combining mark
 measures zero and every fixed-width column on that screen drifts. What is
