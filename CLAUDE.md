@@ -49,7 +49,7 @@ go run ./cmd/hexforge-tui                        # the same authoring, full scre
 go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG=en does the same, ctrl+l toggles
 
 go test ./...
-go test ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/seed ./internal/tui -update   # accept new goldens
+go test ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui -update   # accept new goldens
 go test ./internal/core/battle -run TestControl                     # one test
 gofmt -l . && go vet ./...
 ```
@@ -61,10 +61,11 @@ binaries; `make forge ARGS="show some.id"` passes arguments through. `make check
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
 
-`-update` is only defined in the five packages that hold golden files
-(`cmd/hexforge-tui`, `internal/core/hex`, `internal/i18n`, `internal/seed`,
-`internal/tui`), so `go test ./... -update` fails on the rest. A new package with
-a golden has to be added to that command **and** to the `golden` target.
+`-update` is only defined in the six packages that hold golden files
+(`cmd/hexforge-tui`, `internal/core/hex`, `internal/i18n`, `internal/screen`,
+`internal/seed`, `internal/tui`), so `go test ./... -update` fails on the rest. A
+new package with a golden has to be added to that command **and** to the `golden`
+target.
 
 ## Rating an action: how Suggest prices what is not damage
 
@@ -2118,9 +2119,36 @@ regenerated on autopilot:
   prints one in the body too. See the doc comment on
   `TestEveryScreenDrawsWhatTheGoldenHolds` for both, and for what a golden
   written today does and does not prove about the step before it.
+- `internal/screen/testdata/screens.golden` is the **six moved listings, in the
+  package that owns them**: `chart`, `elements`, `species`, `statuses`, `traits`,
+  `builds` plus the two states nothing shipped can draw (`unclaimed kind`,
+  `traitless build`), in both languages at the 120x24 floor and at 160x60 —
+  **32 renders, 724 lines**, body and footer recorded apart because a screen here
+  answers with the two separately and every wording squeeze in this file is a
+  footer. ⚠️ **It exists because the layout of code in `internal/screen` was held
+  by a file in another package.** Measured after #205: widening the status
+  category column by one cell (`Pad(row.Category.String(), column+1)` →
+  `column+2`) left **every test in `internal/screen` green** and was caught by
+  `cmd/hexforge-tui/testdata/screens.golden` alone. Three more screens move next,
+  and once `cmd/hexarena` stands up a screen the authoring tool stops drawing
+  would lose its only layout net in silence.
+  ⚠️ **Neither golden is a subset of the other and neither may be dropped**, which
+  was measured both ways rather than assumed. A trailing newline left on
+  `SpeciesScreen.View`'s body reddens this one and is **absorbed by the frame's
+  blank padding** in the client's; the client's `frame` budgeting one row fewer
+  leaves this one green and takes the caveat line off the *statuses* screen in
+  that one. What the package golden cannot see is everything the client composes —
+  the header, the blank, the vertical cut and its `Truncated` marker, the
+  horizontal clip. `screen.Ellipsis` reddens **both**, because the traits listing
+  clips its own carrier row.
+  ⚠️ Unlike the client's it drops **nothing** and needs no relative directory
+  trick: no file in `internal/screen` calls `.Dir()` and `check` did not move, so
+  the books load straight from `../seed/data`. `noAbsolutePath` asserts that
+  anyway — a property that holds by construction is one a later change breaks
+  quietly.
 
 Run `make golden` (`go test ./cmd/hexforge-tui ./internal/core/hex
-./internal/i18n ./internal/seed ./internal/tui -update`) to accept a change and
+./internal/i18n ./internal/screen ./internal/seed ./internal/tui -update`) to accept a change and
 then **read the diff**. That diff is what the files are for: a balance change that
 moves numbers you did not expect is a finding, not noise.
 
