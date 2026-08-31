@@ -533,9 +533,10 @@ general, because a consume can now be paid **out of the skill's own pocket**:
 A skill declaring that is a **conduit**, and it behaves nothing like a detonate:
 
 - **`damped`** cuts the skill's own blow while the condition holds. `electro_ball`
-  hits for 140% ordinarily and 84% into a charged target. That is what pays for
-  everything below, and it is why a conduit is not simply better when the charge
-  is there.
+  hits for 132% ordinarily and 79% into a charged target. That is one of the two
+  ways a conduit pays for the discharge, and it is why a damped one is not simply
+  better when the charge is there. **A conduit may leave it out** — see the two
+  currencies below.
 - **`arc_power`** is what one consumed stack deals. It is **not the skill's damage
   and does not behave like it**: not aimed, not rolled against accuracy or dodge,
   and **not stopped by a shield**. A guard that swallows the blow does not stop
@@ -622,6 +623,22 @@ is the same ceiling the detonate rule stops at, read from the other side.
 The counter has one answer in the shipped book besides the shield: `rinse` strips
 it, which is what its own flavour already said — *anything on you washes off*.
 
+#### Two currencies: power, or tempo
+
+Every conduit gives something up. A skill may pay in its own **power** —
+`damped`, which is what `spark` and `electro_ball` do — or in its own **tempo**,
+which is what a nuke does: it keeps its whole blow and buys the discharge with the
+turns spent charging and the turns spent waiting. What it may not do is pay in
+neither, because the counter is then a bonus for meeting a condition somebody
+else's turn arranged.
+
+Which way the drip/nuke comparison runs falls out of that. A nuke that *damps* has
+paid in power as well as in waiting, so it is owed the better rate per stack. One
+that keeps its blow has paid in waiting alone — its compensation is already
+sitting in the full figure it still hits for — so it may not also out-rate the
+skills that gave power up. `overload` is the second kind: 220 a stack against the
+drip's 225, and a four-turn cooldown against a drip's two.
+
 #### Two shapes: the drip and the nuke
 
 `consume_stacks` has exactly two useful values and there is no third thing for a
@@ -633,11 +650,17 @@ by the count.
 ```
 overload, aimed at one target, nothing else charged:
 
-pile  2 -> skill 157 + arc  280 =  437
-pile  4 -> skill 157 + arc  560 =  717
-pile  6 -> skill 157 + arc  840 =  997
-pile 12 -> skill 157 + arc 1680 = 1837
+pile  0 -> skill 315 + arc    0 =  315
+pile  2 -> skill 315 + arc  154 =  469
+pile  4 -> skill 315 + arc  308 =  623
+pile  6 -> skill 315 + arc  462 =  777
+pile 12 -> skill 315 + arc  924 = 1239
 ```
+
+**Its own blow is a constant.** `overload` damps nothing, so the counter is
+addition rather than a trade — the first row is the skill with no charge in front
+of it at all, and it is still a usable attack. That is a deliberate difference
+from the drips beside it, and it is the second of the two ways a conduit can pay.
 
 ⚠️ **The rule relating the two was first written backwards, and the measurement
 is what said so.** A nuke takes more stacks at once, so it looked like the larger

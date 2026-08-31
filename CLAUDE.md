@@ -2536,6 +2536,13 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
   `ExpectedStrikes` is the mean and is what everything outside the roll reads;
   the description quotes floor/odds/cap instead, because the mean describes no
   cast anybody will have.
+- **A conduit pays in its own power (`damped`) OR in its own tempo, never in
+  neither.** `overload` damps nothing: its blow is a constant and the counter is
+  pure addition, bought with the charging turns and the waiting. An *undamped
+  drip* is the shape that is refused — free profit on every strike the target
+  happened to be carrying. Which way the drip/nuke rate comparison runs depends on
+  this: a damped nuke is owed the better rate, an undamped one may not out-rate the
+  skills that gave power up.
 - **`consume_stacks` has two useful values and no third.** 1 is a drip (`spark`,
   `electro_ball`); 0 is a **nuke** (`overload`) — it takes the whole pile and its
   arc multiplies by the count. A nuke may not `chain`, must need ≥ 2 stacks, and
@@ -2543,8 +2550,8 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
 - ⚠️⚠️ **The drip/nuke rule was written backwards first and the measurement caught
   it.** Held to a *poorer* rate per stack, the nuke dealt 472 at a pile of six on
   twice the cooldown — a skill nobody brings. A drip is paid in breadth and
-  immediacy; a nuke has neither, so it is owed a *better* rate per stack, capped at
-  twice. `TestANukePaysBetterPerStackAndWorsePerTurn`.
+  immediacy; a nuke has neither, so a *damped* one is owed a better rate per stack,
+  capped at twice. `TestANukePaysBetterPerStackAndWorsePerTurn`.
 - ⚠️ **A conduit's trade is read at `arc_power × min_stacks`, not at `arc_power`.**
   The damping is paid once a strike and the arc per stack; for a drip those
   coincide, which is why the one-against-one version looked right and squeezed the
