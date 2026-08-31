@@ -549,6 +549,31 @@ func covers(shape pattern.Pattern, known skill.Skill, aim hex.Offset) []hex.Offs
 	return shape.Targets(aim)
 }
 
+// shapeAt is the pattern one use of a skill actually covers, which is not always
+// the one the skill declares.
+//
+// A condition carrying `spreads` widens the shape when it holds against the unit
+// standing at the aim — the current jumps from whoever was carrying it — and
+// nothing widens it otherwise. It reports whether the widening happened, because
+// the two callers that need to say so out loud (the log line and the rating) must
+// not work it out a second time and risk disagreeing with the resolution.
+//
+// ⚠️ **Read once, from the aim, before the shape is walked.** A shape cannot be
+// chosen again halfway through covering itself, and asking the question of each
+// splashed cell would let a spread reach further than the cell that paid for it.
+// This is the same rule `covers` exists for, one step earlier: the two places
+// that walk a shape have to agree about which shape it is.
+func (b *Battle) shapeAt(known skill.Skill, aim hex.Offset) (pattern.Pattern, bool, error) {
+	if known.Requires.SpreadsOn() {
+		if carrier := b.occupant(aim); carrier != nil && known.Amplified(conditionTarget(known, carrier)) {
+			shape, err := b.books.Patterns.Lookup(known.Requires.Spreads)
+			return shape, err == nil, err
+		}
+	}
+	shape, err := b.books.Patterns.Lookup(known.Pattern)
+	return shape, false, err
+}
+
 // Act resolves the acting unit's chosen skill against a chosen cell.
 func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	if b.finished {
@@ -623,9 +648,20 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		b.settle()
 		return nil
 	}
-	shape, err := b.books.Patterns.Lookup(known.Pattern)
+	shape, spread, err := b.shapeAt(known, aim)
 	if err != nil {
 		return err
+	}
+	if spread {
+		// Before a single cell is resolved, because the line explains the shape
+		// the lines under it are drawn in. A reader who sees three units hit by a
+		// skill whose book entry says "single" has no way to account for it, and
+		// the log is the only contract a renderer has.
+		b.emit(Event{
+			Kind: Spread, At: turn.At, Turn: turn.Number, Actor: unit.ID,
+			Target: b.occupant(aim).ID, Skill: known.ID,
+			Status: known.Requires.Status, Cell: hex.At(aim),
+		})
 	}
 	var bitten []*Unit
 	for position, cell := range covers(shape, known, aim) {
@@ -866,17 +902,26 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		stacks := against.Stacks
 		if known.Amplified(against) {
 			power = known.PowerAgainst(against)
-			b.emit(Event{
-				Kind: Amplified, At: turn.At, Turn: turn.Number, Actor: actor.ID,
-				Target: target.ID, Skill: known.ID, Status: known.Requires.Status,
-				Stacks: stacks, Power: power,
-			})
+			// Only when the power actually moved. A condition paid for in shape
+			// rather than in power leaves this figure exactly where it was, and an
+			// "amplified, power x0.9" line would be the log reporting a change
+			// that did not happen — the Spread line above is what that condition
+			// has to say for itself.
+			if power != known.Power {
+				b.emit(Event{
+					Kind: Amplified, At: turn.At, Turn: turn.Number, Actor: actor.ID,
+					Target: target.ID, Skill: known.ID, Status: known.Requires.Status,
+					Stacks: stacks, Power: power,
+				})
+			}
 			if known.Requires.Consume {
-				consumed, forgone := target.Statuses.Consume(known.Requires.Status)
+				consumed, forgone := target.Statuses.Remove(
+					known.Requires.Status, known.Requires.Takes(stacks))
 				b.emit(Event{
 					Kind: StatusConsumed, At: turn.At, Turn: turn.Number, Actor: actor.ID,
 					Target: target.ID, Skill: known.ID, Status: known.Requires.Status,
 					Stacks: consumed, Amount: forgone,
+					Remaining: int64(target.Statuses.Stacks(known.Requires.Status)),
 				})
 			}
 		}

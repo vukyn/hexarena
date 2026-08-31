@@ -95,10 +95,29 @@ const (
 	// taking turns and its side may be empty without it — and only the reading
 	// differs, which is exactly what a kind is for.
 	Left
+	// Spread is a skill covering a wider shape than the one it declares, because
+	// the unit at the aim was carrying the status the skill spends.
+	//
+	// One per use, emitted before any cell resolves, and it names the carrier the
+	// shape was chosen from. It has to exist: a reader watching a skill whose book
+	// entry says "single" land on three units has nothing anywhere to account for
+	// it, and the log is the only contract a renderer has. It is the same gap
+	// Pierce and Refused were added to close, arriving as a kind rather than a
+	// field because the fact is about the *use* rather than about one strike.
+	//
+	// It is not an Amplified. That one says a figure went up, and a spread moves
+	// no figure at all — the power is what it always was and the shape is what
+	// changed, so a log spelling them the same would have a reader hunting for a
+	// bonus that is not there.
+	//
+	// Declared last, which is the rule for this enum: the kind serialises by name,
+	// so appending cannot reinterpret a saved log, while slotting one in beside
+	// Amplified would move KindCount and every table built from declaration order.
+	Spread
 )
 
 // KindCount is the number of event kinds.
-const KindCount = int(Left) + 1
+const KindCount = int(Spread) + 1
 
 var kindNames = [KindCount]string{
 	Started:         "started",
@@ -123,6 +142,7 @@ var kindNames = [KindCount]string{
 	Ended:           "ended",
 	Summoned:        "summoned",
 	Left:            "left",
+	Spread:          "spread",
 }
 
 func (k Kind) String() string {
@@ -215,8 +235,11 @@ type Event struct {
 	// would be the constant restated once per event, and a reader who wants it
 	// reads the rules.
 	Critical bool `json:"critical,omitempty"`
-	// Remaining is the target's health after the event, or charges left after a
-	// block.
+	// Remaining is the target's health after the event, or a stack count left
+	// behind: charges after a block, and stacks after a consume that took only
+	// some of them. The two spellings are one meaning — what is left of the thing
+	// the event just spent — and a consume that takes the whole pile leaves nought,
+	// which omitempty drops exactly as it always did.
 	Remaining int64 `json:"remaining,omitempty"`
 	// Cell and Side place a unit on the board. Most kinds place nobody, so the
 	// cell is optional rather than a coordinate every event has to supply: see

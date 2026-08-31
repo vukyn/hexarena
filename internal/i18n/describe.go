@@ -48,13 +48,13 @@ func (l Lang) Describe(declared skill.Skill, shapes *pattern.Book) string {
 		lines = append(lines, opening)
 	}
 	lines = append(lines, l.describeExtras(declared)...)
-	if condition := l.describeSelfCondition(declared); condition != "" {
+	if condition := l.describeSelfCondition(declared, shapes); condition != "" {
 		lines = append(lines, condition)
 	}
 	if gradient := l.describeSelfGradient(declared); gradient != "" {
 		lines = append(lines, gradient)
 	}
-	if condition := l.describeCondition(declared); condition != "" {
+	if condition := l.describeCondition(declared, shapes); condition != "" {
 		lines = append(lines, condition)
 	}
 	lines = append(lines, l.describeCosts(declared, shapes))
@@ -157,6 +157,22 @@ func cellsCovered(declared skill.Skill, shapes *pattern.Book) int {
 		return 1
 	}
 	shape, err := shapes.Lookup(declared.Pattern)
+	if err != nil {
+		return 1
+	}
+	return shape.MaxTargets()
+}
+
+// spreadCells is how many cells the widened shape covers, which is the figure a
+// reader needs to price the trade the clause is describing. It falls back to the
+// shape the skill already declares when the book is absent, exactly as
+// cellsCovered does, so a description written without one says something true
+// rather than nothing.
+func spreadCells(condition *skill.Condition, shapes *pattern.Book) int {
+	if shapes == nil {
+		return 1
+	}
+	shape, err := shapes.Lookup(condition.Spreads)
 	if err != nil {
 		return 1
 	}
@@ -309,8 +325,8 @@ func (l Lang) summonSubject(declared *skill.Summon) string {
 // describeCondition is the amplifier read against the target, written as what
 // that target must be rather than as a bonus figure: a player picking a skill is
 // asking when it is worth using, and "+1000 power" answers a different question.
-func (l Lang) describeCondition(declared skill.Skill) string {
-	return l.conditionSentence(declared, declared.Requires, BlurbAmplified)
+func (l Lang) describeCondition(declared skill.Skill, shapes *pattern.Book) string {
+	return l.conditionSentence(declared, declared.Requires, BlurbAmplified, shapes)
 }
 
 // describeSelfCondition is the same sentence about the caster.
@@ -318,8 +334,8 @@ func (l Lang) describeCondition(declared skill.Skill) string {
 // A separate sentence rather than a second clause on the first, because they are
 // two different bargains: one is about who is in front of you and the other is
 // about what you are spending, and a skill carrying both is offering both.
-func (l Lang) describeSelfCondition(declared skill.Skill) string {
-	return l.conditionSentence(declared, declared.SelfRequires, BlurbSelfAmplified)
+func (l Lang) describeSelfCondition(declared skill.Skill, shapes *pattern.Book) string {
+	return l.conditionSentence(declared, declared.SelfRequires, BlurbSelfAmplified, shapes)
 }
 
 // describeSelfGradient is the caster's health read as a slope rather than a
@@ -347,7 +363,8 @@ func (l Lang) describeSelfGradient(declared skill.Skill) string {
 // being counted -- "is carrying poison", "is at or below half health" -- so only
 // the opening changes between the two. That is what makes one function honest
 // here rather than a saving: the sentences really are the same sentence.
-func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition, opening Key) string {
+func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition,
+	opening Key, shapes *pattern.Book) string {
 	if condition == nil {
 		return ""
 	}
@@ -359,11 +376,34 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 	if condition.ReadsHealth() {
 		clauses = append(clauses, l.Say(BlurbWhenHurt, share(condition.BelowHealth)))
 	}
-	amplified := declared.Power + condition.BonusPower
-	sentence := l.Say(opening, l.join(clauses),
-		share(amplified*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat))
+	// A condition paid for in shape moves no figure, so the opening does not quote
+	// one. Restating the power the skill already opened with — "160% of attack" a
+	// second time, identical — reads as a bonus a reader then hunts for, which is
+	// the same trap the Amplified event arm was taken off.
+	sentence := l.Say(shapeOpening(opening), l.join(clauses))
+	if condition.BonusPower > 0 {
+		amplified := declared.Power + condition.BonusPower
+		sentence = l.Say(opening, l.join(clauses),
+			share(amplified*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat))
+	}
+	// The spread before the consume, because it is the reason for it. A reader
+	// told what was eaten and then, in a second clause, what that bought has to
+	// hold the first clause open; told what it buys and then what it costs, the
+	// sentence closes in the order the bargain is made.
+	if condition.SpreadsOn() {
+		sentence += l.Say(BlurbSpreads, spreadCells(condition, shapes))
+	}
 	if condition.Consume {
-		sentence += l.Say(BlurbConsumes, l.glossed(condition.Status))
+		// A partial consume names its count and a whole one does not. "Eats one
+		// stack of the charge" against a pile of nine and "eats the charge" are
+		// different bargains, and a description that spelled them the same would
+		// be describing the older one on both.
+		if condition.ConsumeStacks > 0 {
+			sentence += l.Say(BlurbConsumesStacks,
+				condition.ConsumeStacks, l.glossed(condition.Status))
+		} else {
+			sentence += l.Say(BlurbConsumes, l.glossed(condition.Status))
+		}
 	}
 	return sentence + "."
 }
@@ -600,8 +640,34 @@ func (l Lang) summariseCondition(
 	// The same amplified figure conditionSentence prints, from the same
 	// expression: a compact line quoting a different total from the sentence it
 	// abbreviates would be the drift a fourth describer is on probation for.
+	//
+	// And the same silence where there is no figure. "charge→160%" against a
+	// skill that already reads "160% attack" two columns to the left is the
+	// compact line promising a bonus the long one does not, which is worse than
+	// saying nothing: what a shape-paid condition buys is cells, and the summary
+	// has no room for a shape.
+	if condition.BonusPower == 0 {
+		return l.Say(shapeWording(wording), l.join(clauses))
+	}
 	return l.Say(wording, l.join(clauses),
 		share((declared.Power+condition.BonusPower)*declared.StrikeCount()))
+}
+
+// shapeOpening and shapeWording are the same two openings with the figure taken
+// out, paired here rather than at the call sites so a caller cannot pick the
+// self-facing wording for the target's condition by mistake.
+func shapeOpening(opening Key) Key {
+	if opening == BlurbSelfAmplified {
+		return BlurbSelfAmplifiedShape
+	}
+	return BlurbAmplifiedShape
+}
+
+func shapeWording(wording Key) Key {
+	if wording == SummarySelfAmplified {
+		return SummarySelfAmplifiedShape
+	}
+	return SummaryAmplifiedShape
 }
 
 // DescribeElement is where one element sits in the affinity chart: what it
@@ -1111,6 +1177,14 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 			out = append(out, l.Say(BlurbStatusStacked,
 				healCut(kind.HealShare*kind.MaxStacks)))
 		}
+	case status.Charge:
+		// The sentence a charge needs is the one no other category needs: what it
+		// does to its holder is nothing, and a reader who is not told that plainly
+		// will go looking for the effect. The rest — which skills spend it, and
+		// for what — belongs to those skills' own descriptions, which already say
+		// it: this one is a status, and a status that names its consumers would go
+		// stale the day somebody authors another.
+		out = append(out, l.Text(BlurbStatusStores))
 	}
 	for _, term := range kind.Modifiers {
 		// "Per stack" only where there can be a second one. A status capped at

@@ -1,6 +1,7 @@
 {
   "max_stacks": 5,
   "max_duration": 6,
+  "max_charge_stacks": 999,
   "kinds": [
     {
       "id": "poison",
@@ -268,6 +269,12 @@
           "amount": 150
         }
       ]
+    },
+    {
+      "id": "charge",
+      "category": "charge",
+      "max_stacks": 999,
+      "duration": 4
     }
   ]
 }

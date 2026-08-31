@@ -502,6 +502,97 @@ cut. Both errors run the direction every cap in that file errs in (a marginal ca
 not a kill), and every figure above is therefore a **floor** on what the status is
 worth. Correcting it is a measured change of its own.
 
+### Counting instead of doing: `charge`, and a second way to be paid for a consume
+
+Every category above answers *"what does holding this do to me"*. `charge` answers
+a different question — *"what may somebody now do to me that they could not
+before"* — and does nothing whatever to its holder. No stat, no tick, no turn. It
+is ammunition, put on by one skill and spent by another.
+
+**It is the one category the book's stack cap does not bound**, and that is the
+whole reason it is a category rather than a flag on an existing one. `max_stacks`
+bounds an *effect*: five stacks of a debuff at 300 per mille each is a figure the
+stat budget was reasoned against, so the cap and the budget are one argument. A
+counter multiplies nothing, so five would be a number with no argument behind it,
+borrowed from a category it has nothing in common with. `max_charge_stacks` is
+where the real ceiling is said out loud, it is 999, and a charge carrying a
+modifier or a tick is refused at parse — because that combination is the one the
+ceiling was granted on the understanding of.
+
+Spending it needed a second currency. A `requires` block could already consume a
+status, and the parser refused one that consumed *for no bonus power* — "throws
+the status away for nothing". That refusal was right about detonates and wrong in
+general, because a consume can now be paid in **shape**:
+
+```json
+"requires": { "status": "charge", "min_stacks": 1,
+              "consume": true, "consume_stacks": 1, "spreads": "column" }
+```
+
+`spreads` names the pattern the skill covers **when the condition holds against
+the unit standing at the aim** — the current jumps from whoever was carrying it.
+It is read once, from the aim, before the shape is walked: a shape cannot be
+chosen again halfway through covering itself, and asking the question of each
+splashed cell would let a spread reach further than the cell that paid for it. Its
+own event kind, `Spread`, because a reader watching a skill whose book entry says
+*single* land on three units has nothing anywhere else to account for it — and it
+is emphatically not an `Amplified`, which says a *figure* moved and this moves
+none.
+
+`consume_stacks` is the other half. A detonate takes the whole pile because the
+pile **is** the payment; a counter spent one at a time is a magazine, and a
+magazine emptied by its first shot is a magazine of one.
+
+**The two currencies meet at the same ceiling from opposite sides.** A detonate
+may not beat leaving the status alone by more than twice
+(`TestADetonateIsWorthLessThanItsBreakEven`). A splash lands at `splash_power` and
+`max_targets` caps any shape at three cells, so the widest spread that can be
+authored is a plain attack plus two half ones — twice a plain attack.
+`TestASpreadConsumerIsBoundedByTheShapeItBuys` holds that those two numbers still
+meet, and that no skill takes both payments at once.
+
+#### ⚠️ A pile is worth far less than a stack times its height
+
+This one was measured rather than reasoned, and both halves of the feature were
+false on the first run.
+
+`Suggest` had to learn to value a counter, because read the way every other arm of
+`inflictedOn` reads its category it is worth exactly nothing — and a rating that
+said so would never put one on, leaving the whole playstyle unreachable by the
+opponent. So a stack is priced at what somebody on the caster's side could *do*
+with it, and nought when nobody carries a consumer, which is the honest answer
+rather than a missing case.
+
+Priced **linearly** — one stack's worth times the height of the pile — a single
+cast of a three-stack charge over two cells read as three whole strikes of value,
+and the opponent spent its opening turn on a skill that dealt no damage. Against a
+striking squad that is simply losing: the kit measured **6 per mille against 366**
+for the burst kit beside it. A consumer cashes one stack a cast and a battle is
+about fifteen turns long, so the stacks near the top of a pile are speculative.
+Halving each against the one below it — a sum that can never pass twice the first
+stack, however high the pile — took the same kit from **6 to 110** with no number
+in the data moving.
+
+The rest came from the skills, which had been priced as though the shape were
+free. Both halves are now held by
+`TestAccumulatingIsAWayOfFightingRatherThanASlowerOne`, which asks the two things
+that have to be true at once — the damage arrives **differently**, and it arrives
+**well enough to be worth choosing**:
+
+| kit | rate | blows | each |
+|---|---|---|---|
+| accumulating (`charge_beam magnetise electro_ball spark`) | 293‰ | 6396 | 169 |
+| bursting (`zap_cannon thunderbolt flash_cannon discharge`) | 366‰ | 3114 | 366 |
+
+Twice the blows at less than half the size. The floor on the rate is three fifths
+rather than parity, because the figure moves with every character in the squad
+around it and a tighter band would be a reading rather than a claim.
+
+The counter has one answer in the shipped book: `rinse` strips it, which is what
+its own flavour already said — *anything on you washes off*. A shield is the
+other, and a quieter one: `charge` does **not** `OutlastsAShield`, so a blow that
+was eaten leaves no stack behind.
+
 ## Passives
 
 A skill is spent on a turn. A **passive** is not: it is in force from the moment

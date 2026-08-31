@@ -331,7 +331,7 @@ Tầm 2 · 2 ô · 100% trúng · hồi 4 lượt.
 
 rinse
 Dội một vòng nước lên đồng đội, thứ gì bám trên người đều trôi theo.
-Gỡ 2 cộng dồn hiệu ứng gây hại theo lượt và hiệu ứng giảm chỉ số.
+Gỡ 2 cộng dồn hiệu ứng gây hại theo lượt, hiệu ứng giảm chỉ số và điện tích.
 Tầm 1 · hồi 3 lượt.
 [one line] gỡ 2 hiệu ứng xấu · đồng đội · tầm 1 · hồi 3
 
@@ -394,6 +394,30 @@ Nén dòng lại thành một khối rồi bắn đi; khối ấy đi chậm và
 Gây choáng cho mục tiêu, 100% khả năng.
 Tầm 3 · 55% trúng · hồi 4 lượt.
 [one line] 270% công · choáng 100% · tầm 3 · hồi 4
+
+charge_beam
+Một tia mảnh rọi tới rồi ở lại, ngấm vào người kẻ đối diện và không chịu tan đi, 80% công.
+Gây nhiễm điện x2 cho mục tiêu, 100% khả năng.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+[one line] 80% công · nhiễm điện x2 100% · tầm 2 · hồi 1
+
+magnetise
+Kéo cả một dải không khí thành từ trường, ai đứng trong đó cũng dính theo, 50% công.
+Gây nhiễm điện x3 cho mục tiêu, 100% khả năng.
+Tầm 2 · 3 ô · 92% trúng · hồi 3 lượt.
+[one line] 50% công · nhiễm điện x3 100% · tầm 2 · 3 ô · hồi 3
+
+electro_ball
+Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chỗ nào sẵn dòng thì nó rẽ qua, 160% công.
+Mục tiêu đang dính nhiễm điện, lan ra 3 ô, và tiêu 1 cộng dồn nhiễm điện.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+[one line] 160% công · nhiễm điện→lan · tầm 2 · hồi 2
+
+spark
+Chớp liên tục vào một chỗ, mỗi lần chớp lại nảy sang chỗ đang sẵn dòng, 3 nhát, mỗi nhát 48% công (tổng 144%).
+Mục tiêu đang dính nhiễm điện, lan ra 2 ô, và tiêu 1 cộng dồn nhiễm điện.
+Tầm 1 · 93% trúng · hồi 2 lượt.
+[one line] 144% công · nhiễm điện→lan · tầm 1 · hồi 2
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -579,6 +603,10 @@ Mọi kẻ địch còn đánh được đều phải nhắm vào bên mang, b�
 Bên dính hồi máu bao nhiêu cũng bị cắt 40% mỗi cộng dồn, hồi từ đâu cũng vậy.
 Tối đa là 80%.
 Giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn.
+
+[status] charge
+Bản thân nó không làm gì bên đang mang. Nó nằm đó để một chiêu gọi tên nó tiêu đi.
+Tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn.
 
 [element] neutral
 Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
@@ -945,7 +973,7 @@ Range 2 · 2 cells · 100% to hit · 4 turns to recharge.
 
 rinse
 Aims at an ally.
-Strips 2 stacks of damage over time and stat reduction.
+Strips 2 stacks of damage over time, stat reduction and stored current.
 Range 1 · 3 turns to recharge.
 [one line] strips 2 harmful · an ally · range 1 · cd 3
 
@@ -1007,6 +1035,30 @@ Hits an enemy for 270% of attack.
 Inflicts stun, 100% of the time.
 Range 3 · 55% to hit · 4 turns to recharge.
 [one line] 270% attack · stun 100% · range 3 · cd 4
+
+charge_beam
+Hits an enemy for 80% of attack.
+Inflicts charge x2, 100% of the time.
+Range 2 · 95% to hit · 1 turn to recharge.
+[one line] 80% attack · charge x2 100% · range 2 · cd 1
+
+magnetise
+Hits an enemy for 50% of attack.
+Inflicts charge x3, 100% of the time.
+Range 2 · 3 cells · 92% to hit · 3 turns to recharge.
+[one line] 50% attack · charge x3 100% · range 2 · 3 cells · cd 3
+
+electro_ball
+Hits an enemy for 160% of attack.
+While the target is carrying charge, jumps to 3 cells, and eats 1 stack of the charge.
+Range 2 · 90% to hit · 2 turns to recharge.
+[one line] 160% attack · charge→spreads · range 2 · cd 2
+
+spark
+Hits an enemy for 3 strikes of 48% of attack each, 144% in all.
+While the target is carrying charge, jumps to 2 cells, and eats 1 stack of the charge.
+Range 1 · 93% to hit · 2 turns to recharge.
+[one line] 144% attack · charge→spreads · range 1 · cd 2
 
 [trait] endurance
 Always carries toughened.
@@ -1175,6 +1227,10 @@ Costs a choice of target · 2 turns · 1 stack.
 Every heal the holder receives is cut by 40% per stack, whatever gave it.
 At its cap that is 80%.
 Cuts healing received · 2 turns · up to 2 stacks.
+
+[status] charge
+Does nothing at all to whoever carries it. It is there to be spent by a skill that names it.
+Builds up to be spent · 4 turns · up to 999 stacks.
 
 [element] neutral
 Inert: it beats nothing and nothing beats it; every trade is 100%.

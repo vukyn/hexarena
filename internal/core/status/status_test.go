@@ -459,7 +459,7 @@ func TestCategoryNames(t *testing.T) {
 	// reference's print order among them — move when a category is slotted in
 	// rather than appended, which is the rule both HealCut and Taunt are declared
 	// under. A new category belongs on the END of this line.
-	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt", "heal_cut"}
+	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt", "heal_cut", "charge"}
 	categories := status.Categories()
 	if len(categories) != len(want) {
 		t.Fatalf("there are %d categories, want %d", len(categories), len(want))
@@ -503,7 +503,7 @@ func TestParseBookRejects(t *testing.T) {
 		{"no kinds", `{"max_stacks":5,"max_duration":6,"kinds":[]}`, "empty"},
 		{"a kind with no id", `{"max_stacks":5,"max_duration":6,"kinds":[{"category":"dot","max_stacks":1,"duration":1,"tick_power":500}]}`, "needs an id"},
 		{"an unknown category", `{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"curse","max_stacks":1,"duration":1}]}`, "unknown status category"},
-		{"stacks over the limit", `{"max_stacks":3,"max_duration":6,"kinds":[{"id":"x","category":"dot","max_stacks":4,"duration":1,"tick_power":500}]}`, "over the limit of 3"},
+		{"stacks over the limit", `{"max_stacks":3,"max_duration":6,"kinds":[{"id":"x","category":"dot","max_stacks":4,"duration":1,"tick_power":500}]}`, "over the max_stacks limit of 3"},
 		{"no stacks", `{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"dot","max_stacks":0,"duration":1,"tick_power":500}]}`, "at least 1"},
 		{"duration over the limit", `{"max_stacks":5,"max_duration":2,"kinds":[{"id":"x","category":"dot","max_stacks":1,"duration":3,"tick_power":500}]}`, "over the limit of 2"},
 		{"no duration", `{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"dot","max_stacks":1,"duration":0,"tick_power":500}]}`, "lasts 0 turns"},
