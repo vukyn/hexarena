@@ -190,8 +190,8 @@ func buildsRoom(m model) int {
 func (b buildsScreen) view(m model) (string, string) {
 	footer := m.text(i18n.BuildsFooter)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.BuildsHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.BuildsSubtitle, progression.LevelCap)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.BuildsHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.BuildsSubtitle, progression.LevelCap)) + "\n\n")
 	if len(b.rows) == 0 {
 		out.WriteString("  " + m.text(i18n.BuildsEmpty) + "\n")
 		return out.String(), footer
@@ -224,7 +224,7 @@ func (b buildsScreen) view(m model) (string, string) {
 			if row.empty {
 				line = pad(line, column+1) + " " + m.text(i18n.BuildsNoneForThisOne)
 			}
-			out.WriteString("  " + m.style.dim.Render(line) + "\n")
+			out.WriteString("  " + m.style.Dim.Render(line) + "\n")
 			continue
 		}
 		// The id and the name it is called by, and nothing else: everything a build
@@ -240,7 +240,7 @@ func (b buildsScreen) view(m model) (string, string) {
 		marker := "  "
 		if index == b.cursor {
 			marker = "> "
-			line = m.style.selected.Render(line)
+			line = m.style.Selected.Render(line)
 		}
 		out.WriteString(marker + line + "\n")
 	}
@@ -264,13 +264,13 @@ func (b buildsScreen) view(m model) (string, string) {
 func (b buildsScreen) pane(m model, built cast.Build) string {
 	var out strings.Builder
 	width := detailLabelWidth(m)
-	out.WriteString("  " + m.style.heading.Render(m.lang.GlossedBuild(built)) + "\n")
+	out.WriteString("  " + m.style.Heading.Render(m.lang.GlossedBuild(built)) + "\n")
 	if built.Intent != "" {
 		out.WriteString(m.wrapped(m.text(i18n.LabelIntent), width, built.Intent))
 	}
 	out.WriteString(m.wrapped(m.text(i18n.LabelKit), width, strings.Join(built.Skills, " ")))
 	if glossed := m.lang.GlossedKit(m.lib.KitSkills(built.Skills)); glossed != "" {
-		out.WriteString(m.wrappedIn("", width, m.style.dim, glossed))
+		out.WriteString(m.wrappedIn("", width, m.style.Dim, glossed))
 	}
 	// The trait row is drawn even when the build takes none, which is the one place
 	// this pane differs from the cast browser's. There a character simply has the
@@ -279,12 +279,12 @@ func (b buildsScreen) pane(m model, built cast.Build) string {
 	// which of the two it is looking at.
 	if len(built.Passives) == 0 {
 		out.WriteString(m.label(m.text(i18n.LabelTraits), "%s",
-			m.style.dim.Render(m.text(i18n.BuildsNoTrait))))
+			m.style.Dim.Render(m.text(i18n.BuildsNoTrait))))
 		return out.String()
 	}
 	out.WriteString(m.wrapped(m.text(i18n.LabelTraits), width, strings.Join(built.Passives, " ")))
 	if glossed := m.lang.GlossedPassives(m.lib.KitPassives(built.Passives)); glossed != "" {
-		out.WriteString(m.wrappedIn("", width, m.style.dim, glossed))
+		out.WriteString(m.wrappedIn("", width, m.style.Dim, glossed))
 	}
 	return out.String()
 }

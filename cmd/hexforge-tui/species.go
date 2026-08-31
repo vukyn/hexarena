@@ -153,8 +153,8 @@ func speciesRow(idColumn, nameColumn int, id, name string) string {
 func (s speciesScreen) view(m model) (string, string) {
 	footer := m.text(i18n.SpeciesFooter)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.SpeciesHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.SpeciesSubtitle)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.SpeciesHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.SpeciesSubtitle)) + "\n\n")
 	if len(s.kinds) == 0 {
 		out.WriteString("  " + m.text(i18n.SpeciesEmpty) + "\n")
 		return out.String(), footer
@@ -181,7 +181,7 @@ func (s speciesScreen) view(m model) (string, string) {
 			nameColumn = width
 		}
 	}
-	out.WriteString("  " + m.style.dim.Render(speciesRow(column+1, nameColumn,
+	out.WriteString("  " + m.style.Dim.Render(speciesRow(column+1, nameColumn,
 		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss))) + "\n")
 
 	from, to := window(len(s.kinds), s.cursor, speciesRoom(m, s))
@@ -196,7 +196,7 @@ func (s speciesScreen) view(m model) (string, string) {
 		marker := "  "
 		if index == s.cursor {
 			marker = "> "
-			row = m.style.selected.Render(row)
+			row = m.style.Selected.Render(row)
 		}
 		out.WriteString(marker + row + "\n")
 	}
@@ -219,7 +219,7 @@ func (s speciesScreen) view(m model) (string, string) {
 	// a line: a gate that cannot open, on a screen whose whole job is to say what
 	// the gates are.
 	if s.claimed[selected.ID] == 0 {
-		out.WriteString("\n  " + m.style.dim.Render(m.text(i18n.SpeciesNobodyIs)))
+		out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.SpeciesNobodyIs)))
 	}
 	return strings.TrimRight(out.String(), "\n"), footer
 }

@@ -1024,8 +1024,8 @@ func someStatusesAndTheirChances(t *testing.T, lib *forge.Library) (string, stri
 // whatever the test framework handed out — and a count over it would be a count
 // of the machine it ran on.
 func TestEveryFloorWrappedBlockTakesTheRowsItTakes(t *testing.T) {
-	// At minWidth = 120. See the constant's comment in model.go for where 120
-	// came from; these are what it costs vertically.
+	// At minWidth = 120. See the constant's comment in internal/screen for where
+	// 120 came from; these are what it costs vertically.
 	rows := map[i18n.Lang]struct {
 		caution, speciesNote, traitDescription, saveNote int
 	}{

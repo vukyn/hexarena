@@ -784,7 +784,7 @@ func (p playScreen) notice(m model, plan playPlan, sizes playSizes) string {
 			parts = append(parts, m.text(i18n.PlayHiddenUnits, left))
 		}
 	}
-	return m.style.dim.Render(
+	return m.style.Dim.Render(
 		m.text(i18n.PlayHidden, strings.Join(parts, hiddenSeparator)))
 }
 
@@ -823,14 +823,14 @@ func (p playScreen) drawings(m model) playDrawn {
 	// question on the screen and nothing to reserve room for.
 	switch {
 	case p.fight.Finished():
-		drawn.tail = []string{m.style.emphasis.Render(p.ending(m))}
+		drawn.tail = []string{m.style.Emphasis.Render(p.ending(m))}
 		drawn.over = true
 	case p.pending != nil:
 		drawn.tail = drawnRows(p.choices(m))
 	}
 	drawn.board = drawnRows(tui.Board(p.fight, p.tags))
 	drawn.roster = drawnRows(tui.Roster(p.fight, p.tags))
-	drawn.order = m.style.dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))
+	drawn.order = m.style.Dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))
 	drawn.log = p.logRows(m)
 	drawn.notes = p.wrote(m)
 	return drawn
@@ -854,7 +854,7 @@ func (p playScreen) view(m model) (string, string) {
 		footer = m.text(i18n.PlayAimFooter)
 	}
 	if p.err != nil {
-		return p.heading(m, "") + "\n\n  " + m.style.bad.Render(m.lang.Error(p.err)), footer
+		return p.heading(m, "") + "\n\n  " + m.style.Bad.Render(m.lang.Error(p.err)), footer
 	}
 	if p.fight == nil {
 		return p.heading(m, "") + "\n\n  " + m.text(i18n.SquadsEmpty), footer
@@ -906,12 +906,12 @@ func (p playScreen) view(m model) (string, string) {
 // would cost what the budget below spent a whole feature proving this screen has
 // not got, and the title is about seventeen cells of the seventy-nine there are.
 func (p playScreen) heading(m model, position string) string {
-	row := m.style.heading.Render(m.text(i18n.PlayHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.PlaySeed, p.seed))
+	row := m.style.Heading.Render(m.text(i18n.PlayHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.PlaySeed, p.seed))
 	if position == "" {
 		return row
 	}
-	return row + "  " + m.style.dim.Render(position)
+	return row + "  " + m.style.Dim.Render(position)
 }
 
 // logPosition is where the frame sits in the whole history, and nothing when the
@@ -1018,7 +1018,7 @@ func (p playScreen) logRows(m model) []string {
 		if line == "" {
 			continue
 		}
-		lines = append(lines, drawnRows("  "+m.style.dim.Render(line))...)
+		lines = append(lines, drawnRows("  "+m.style.Dim.Render(line))...)
 	}
 	return lines
 }
@@ -1061,7 +1061,7 @@ func (p playScreen) choices(m model) string {
 		return ""
 	}
 	var out strings.Builder
-	out.WriteString(m.style.label.Render(m.text(i18n.PlayYourTurn,
+	out.WriteString(m.style.Label.Render(m.text(i18n.PlayYourTurn,
 		p.tags[unit.ID], unit.Name, p.pending.Turn)) + "\n")
 	// The id column is measured over the options this turn offers rather than
 	// fixed, for the reason menuLabelWidth and every detail pane measure theirs.
@@ -1095,10 +1095,10 @@ func (p playScreen) choices(m model) string {
 		}
 		switch {
 		case !option.Available():
-			line = m.style.dim.Render(line)
+			line = m.style.Dim.Render(line)
 		case index == p.option && !p.aiming:
 			marker = "> "
-			line = m.style.selected.Render(line)
+			line = m.style.Selected.Render(line)
 		}
 		out.WriteString(marker + line + "\n")
 	}
@@ -1106,7 +1106,7 @@ func (p playScreen) choices(m model) string {
 		return out.String()
 	}
 	option := p.pending.Options[clamp(p.option, 0, len(p.pending.Options)-1)]
-	out.WriteString("\n" + m.style.label.Render(m.text(i18n.PlayAimAt, option.Skill)) + "\n")
+	out.WriteString("\n" + m.style.Label.Render(m.text(i18n.PlayAimAt, option.Skill)) + "\n")
 	for index, cell := range option.Aims {
 		marker := "  "
 		line := cell.String()
@@ -1115,7 +1115,7 @@ func (p playScreen) choices(m model) string {
 		}
 		if index == p.aim {
 			marker = "> "
-			line = m.style.selected.Render(line)
+			line = m.style.Selected.Render(line)
 		}
 		out.WriteString(marker + line + "\n")
 	}
@@ -1199,9 +1199,9 @@ func (p playScreen) wrote(m model) []string {
 	}
 	var out []string
 	for index, note := range m.lang.Notes(p.notes) {
-		style := m.style.dim
+		style := m.style.Dim
 		if index == 0 {
-			style = m.style.good
+			style = m.style.Good
 		}
 		// Wrapped against minWidth rather than the window in hand, for the
 		// reason the fight's caution is: measuring the real terminal would give

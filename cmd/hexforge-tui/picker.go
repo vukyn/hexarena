@@ -668,7 +668,7 @@ func (p *pickState) detail(m model, id string) string {
 			if name := m.lang.Gloss(id); name != "" {
 				facts = name + " · " + facts
 			}
-			return m.style.dim.Render(facts)
+			return m.style.Dim.Render(facts)
 		}
 		return ""
 	}
@@ -686,7 +686,7 @@ func (p *pickState) detail(m model, id string) string {
 		// a name, so in English no row has a detail at all and detailColumn
 		// drops the column, exactly as the trait picker's does.
 		if kind, known := m.lib.Species().Get(id); known {
-			return m.style.dim.Render(m.lang.SpeciesName(kind))
+			return m.style.Dim.Render(m.lang.SpeciesName(kind))
 		}
 		return ""
 	}
@@ -697,7 +697,7 @@ func (p *pickState) detail(m model, id string) string {
 		// Lang accessor being gone round. An origin picker therefore keeps its
 		// column in English, where the species one drops its.
 		if work, known := m.lib.Origins().Get(id); known {
-			return m.style.dim.Render(work.Title)
+			return m.style.Dim.Render(work.Title)
 		}
 		return ""
 	}
@@ -708,24 +708,24 @@ func (p *pickState) detail(m model, id string) string {
 			// names traits the passive book has already been parsed against.
 			// Written down rather than ignored, since the alternative is the
 			// blank cell this kind was added to stop being a red one.
-			return m.style.bad.Render(m.lang.Error(err))
+			return m.style.Bad.Render(m.lang.Error(err))
 		}
 		// The trait's own name, which is what the listing puts beside an id and
 		// what GlossedPassives gives a kit — authored in the passive book, in
 		// the one language the data is written in. So an English row is the
 		// bare id, exactly as the listing drops its gloss column there, and ?
 		// is what an English reader gets the sentences from.
-		return m.style.dim.Render(m.lang.PassiveName(held))
+		return m.style.Dim.Render(m.lang.PassiveName(held))
 	}
 	if p.kind != pickSkills {
-		return m.style.dim.Render(m.lang.Gloss(id))
+		return m.style.Dim.Render(m.lang.Gloss(id))
 	}
 	carried, err := m.lib.Skills().Lookup(id)
 	if err != nil {
 		// Unreachable through the library the options were built from, and
 		// written down rather than ignored: an id the book has lost is a bug
 		// worth seeing on the row it belongs to.
-		return m.style.bad.Render(m.lang.Error(err))
+		return m.style.Bad.Render(m.lang.Error(err))
 	}
 	return m.lang.WhoMaySummary(carried)
 }
@@ -754,11 +754,11 @@ func refusalUnderCursor(rows []pickOption, cursor int) error {
 // for.
 func (p *pickState) counted(m model) string {
 	if p.slots <= 0 {
-		return m.style.dim.Render(m.text(i18n.ChoicePosition, len(p.chosen), len(p.options)))
+		return m.style.Dim.Render(m.text(i18n.ChoicePosition, len(p.chosen), len(p.options)))
 	}
-	style := m.style.dim
+	style := m.style.Dim
 	if len(p.chosen) > p.slots {
-		style = m.style.bad
+		style = m.style.Bad
 	}
 	return style.Render(m.text(i18n.ChoiceSlots, len(p.chosen), p.slots))
 }
@@ -768,14 +768,14 @@ func (p *pickState) view(m model) (string, string) {
 		return p.viewReading(m)
 	}
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(p.title)) + "  " + p.counted(m) + "\n")
-	out.WriteString(m.style.dim.Render(m.text(p.hint)) + "\n")
+	out.WriteString(m.style.Heading.Render(m.text(p.title)) + "  " + p.counted(m) + "\n")
+	out.WriteString(m.style.Dim.Render(m.text(p.hint)) + "\n")
 	// The filter in force, on its own line and only where there is one. It names
 	// both counts for the reason the browser's does: "showing fixture-anime" says
 	// nothing about how much of the list is hidden.
 	rows := p.visible()
 	if len(p.groups) > 0 {
-		out.WriteString(m.style.dim.Render(m.text(i18n.PickerShowing,
+		out.WriteString(m.style.Dim.Render(m.text(i18n.PickerShowing,
 			p.groupName(m), len(rows), len(p.options))) + "\n")
 	}
 	out.WriteString("\n")
@@ -822,9 +822,9 @@ func (p *pickState) view(m model) (string, string) {
 			name = pad(option.id, column)
 		}
 		if index == p.cursor {
-			name = m.style.selected.Render(name)
+			name = m.style.Selected.Render(name)
 		} else if option.refusal != nil {
-			name = m.style.dim.Render(name)
+			name = m.style.Dim.Render(name)
 		}
 		row := marker + state + name
 		if column > 0 {
@@ -848,7 +848,7 @@ func (p *pickState) view(m model) (string, string) {
 			room := m.usableWidth() - 1 - lipgloss.Width(marker+state) - column - 1
 			detail := clip(p.detail(m, option.id), room)
 			if option.refusal != nil {
-				detail = m.style.dim.Render(detail)
+				detail = m.style.Dim.Render(detail)
 			}
 			row += " " + detail
 		}
@@ -856,7 +856,7 @@ func (p *pickState) view(m model) (string, string) {
 	}
 
 	out.WriteString("\n")
-	chosen := m.style.dim.Render(m.text(i18n.PickerNothingChosen))
+	chosen := m.style.Dim.Render(m.text(i18n.PickerNothingChosen))
 	if len(p.chosen) > 0 {
 		chosen = strings.Join(p.chosen, " ")
 	}
@@ -913,7 +913,7 @@ func (p *pickState) view(m model) (string, string) {
 	// keeps the honesty and drops the wrongness. frame's silent cut is every line
 	// of every screen and is somebody else's change.
 	if refusal := refusalUnderCursor(rows, p.cursor); refusal != nil {
-		out.WriteString(m.style.bad.Render("  "+clip(m.lang.Error(refusal), m.usableWidth()-3)) + "\n")
+		out.WriteString(m.style.Bad.Render("  "+clip(m.lang.Error(refusal), m.usableWidth()-3)) + "\n")
 	}
 	// The one answer typed beside the list, under it and named, with its reading
 	// beside it — the same reading the form gives the field this picker writes
@@ -928,9 +928,9 @@ func (p *pickState) view(m model) (string, string) {
 		}
 		reading := ""
 		if permille, err := strconv.Atoi(answer); err == nil {
-			reading = "  " + m.style.dim.Render(forge.Percent(permille))
+			reading = "  " + m.style.Dim.Render(forge.Percent(permille))
 		}
-		out.WriteString("\n  " + m.style.label.Render(m.text(p.label)) + "  " +
+		out.WriteString("\n  " + m.style.Label.Render(m.text(p.label)) + "  " +
 			p.typed.View() + reading)
 	}
 	return out.String(), m.text(p.footer)
@@ -955,8 +955,8 @@ func (p *pickState) viewReading(m model) (string, string) {
 	name, body := p.described(m, rows[cursor].id)
 
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(name) + "  " +
-		m.style.dim.Render(m.text(i18n.ChoicePosition, cursor+1, len(rows))) + "\n\n")
+	out.WriteString(m.style.Heading.Render(name) + "  " +
+		m.style.Dim.Render(m.text(i18n.ChoicePosition, cursor+1, len(rows))) + "\n\n")
 	room := traitRoom(m)
 	// Clamped here rather than where it is incremented, because the key that
 	// moves it does not know how long the answer is: the answer belongs to the
@@ -966,7 +966,7 @@ func (p *pickState) viewReading(m model) (string, string) {
 		out.WriteString(line + "\n")
 	}
 	if len(body) > room {
-		out.WriteString(m.style.dim.Render("  " + m.text(i18n.BlurbMore,
+		out.WriteString(m.style.Dim.Render("  " + m.text(i18n.BlurbMore,
 			min(scroll+room, len(body)), len(body))))
 	}
 	// No trailing newline, for the reason the trait blurb has none: frame splits
@@ -985,13 +985,13 @@ func (p *pickState) described(m model, id string) (string, []string) {
 	if p.kind == pickPassives {
 		held, err := m.lib.Passives().Lookup(id)
 		if err != nil {
-			return id, []string{"  " + m.style.bad.Render(m.lang.Error(err))}
+			return id, []string{"  " + m.style.Bad.Render(m.lang.Error(err))}
 		}
 		return m.lang.GlossedPassive(held), traitSentences(m, held)
 	}
 	declared, err := m.lib.Skills().Lookup(id)
 	if err != nil {
-		return id, []string{"  " + m.style.bad.Render(m.lang.Error(err))}
+		return id, []string{"  " + m.style.Bad.Render(m.lang.Error(err))}
 	}
 	return m.lang.GlossedSkill(declared), skillLines(m, declared)
 }

@@ -207,8 +207,8 @@ func (o originsScreen) view(m model) (string, string) {
 	}
 	footer := m.text(i18n.OriginsFooter)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.OriginsHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.OriginsSubtitle)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.OriginsHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.OriginsSubtitle)) + "\n\n")
 	if len(o.origins) == 0 {
 		out.WriteString("  " + m.text(i18n.OriginsEmpty) + "\n")
 		return out.String(), footer
@@ -231,7 +231,7 @@ func (o originsScreen) view(m model) (string, string) {
 			pad(m.text(i18n.OriginsCastCount, o.counts[origin.ID]), counted), origin.Title)
 		if i == o.cursor {
 			marker = "> "
-			row = m.style.selected.Render(row)
+			row = m.style.Selected.Render(row)
 		}
 		out.WriteString(marker + row + "\n")
 	}
@@ -239,10 +239,10 @@ func (o originsScreen) view(m model) (string, string) {
 		out.WriteString("\n" + m.label(m.text(i18n.LabelNote), "%s", selected.Note))
 	}
 	if o.added != nil {
-		out.WriteString("\n" + m.style.good.Render(m.text(i18n.OriginAdded,
+		out.WriteString("\n" + m.style.Good.Render(m.text(i18n.OriginAdded,
 			o.added.ID, o.added.Medium, m.lib.OriginsPath())) + "\n")
 	}
-	out.WriteString("\n" + m.style.dim.Render(m.text(i18n.OriginsTally,
+	out.WriteString("\n" + m.style.Dim.Render(m.text(i18n.OriginsTally,
 		len(o.origins), strings.Join(cast.MediumNames(), " "))))
 	return out.String(), footer
 }
@@ -277,8 +277,8 @@ func originFieldLabel(m model, field int) string {
 func (o originsScreen) viewForm(m model) (string, string) {
 	footer := m.text(i18n.OriginFormFooter, saveKeyLabel())
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.OriginFormHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.OriginFormSubtitle)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.OriginFormHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.OriginFormSubtitle)) + "\n\n")
 	width := 0
 	for field := range originFieldCount {
 		if measured := lipgloss.Width(originFieldLabel(m, field)); measured > width {
@@ -293,22 +293,22 @@ func (o originsScreen) viewForm(m model) (string, string) {
 		}
 		name := pad(originFieldLabel(m, field), width)
 		if field == o.field {
-			name = m.style.selected.Render(name)
+			name = m.style.Selected.Render(name)
 		} else {
-			name = m.style.label.Render(name)
+			name = m.style.Label.Render(name)
 		}
 		value := o.inputs[field].View()
 		if field == originFieldMedium {
 			mediums := cast.MediumNames()
 			value = fmt.Sprintf("< %s >  %s", mediums[o.mediumIndex],
-				m.style.dim.Render(m.text(i18n.ChoicePosition, o.mediumIndex+1, len(mediums))))
+				m.style.Dim.Render(m.text(i18n.ChoicePosition, o.mediumIndex+1, len(mediums))))
 		}
 		out.WriteString(marker + name + " " + value + "\n")
 	}
-	out.WriteString("\n" + m.style.dim.Render(m.text(i18n.OriginFormHint)) + "\n")
+	out.WriteString("\n" + m.style.Dim.Render(m.text(i18n.OriginFormHint)) + "\n")
 	if o.err != nil {
 		out.WriteString("\n" +
-			m.style.bad.Render(m.text(i18n.AddRefused, m.lang.Error(o.err))) + "\n")
+			m.style.Bad.Render(m.text(i18n.AddRefused, m.lang.Error(o.err))) + "\n")
 	}
 	return out.String(), footer
 }

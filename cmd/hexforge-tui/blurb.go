@@ -200,7 +200,7 @@ func (b blurbScreen) viewOption(m model) (string, string) {
 	at := clamp(m.play.option, 0, len(pending.Options)-1)
 	declared, err := m.lib.Skills().Lookup(pending.Options[at].Skill)
 	if err != nil {
-		return "  " + m.style.bad.Render(m.lang.Error(err)) + "\n", m.text(i18n.BlurbFooter)
+		return "  " + m.style.Bad.Render(m.lang.Error(err)) + "\n", m.text(i18n.BlurbFooter)
 	}
 	return viewSkill(m, declared, at+1, len(pending.Options))
 }
@@ -215,8 +215,8 @@ func (b blurbScreen) viewOption(m model) (string, string) {
 // thing free to decide a status name is not worth marking.
 func viewSkill(m model, declared skill.Skill, at, of int) (string, string) {
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.lang.GlossedSkill(declared)) + "  " +
-		m.style.dim.Render(m.text(i18n.ChoicePosition, at, of)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.lang.GlossedSkill(declared)) + "  " +
+		m.style.Dim.Render(m.text(i18n.ChoicePosition, at, of)) + "\n\n")
 	for _, line := range skillLines(m, declared) {
 		out.WriteString(line + "\n")
 	}
@@ -246,7 +246,7 @@ func skillLines(m model, declared skill.Skill) []string {
 	out := make([]string, 0, 4)
 	for _, line := range strings.Split(m.lang.Describe(declared, m.lib.Patterns()), "\n") {
 		out = append(out, "  "+marked(line, names, func(word string) string {
-			return m.style.emphasis.Render(word)
+			return m.style.Emphasis.Render(word)
 		}))
 	}
 	return out
@@ -273,8 +273,8 @@ func (b blurbScreen) viewTraits(m model) (string, string) {
 	held := m.lib.KitPassives(character.PassivesAt(m.browse.level, progression.Furthest))
 
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(character.Name) + "  " +
-		m.style.dim.Render(m.text(i18n.LabelAtLevel, m.browse.level)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(character.Name) + "  " +
+		m.style.Dim.Render(m.text(i18n.LabelAtLevel, m.browse.level)) + "\n\n")
 	if len(held) == 0 {
 		// A trait the character has not learned yet is the common case at a low
 		// level, so this is a normal answer rather than an empty screen: the same
@@ -293,7 +293,7 @@ func (b blurbScreen) viewTraits(m model) (string, string) {
 		out.WriteString(line + "\n")
 	}
 	if len(body) > room {
-		out.WriteString(m.style.dim.Render("  " + m.text(i18n.BlurbMore,
+		out.WriteString(m.style.Dim.Render("  " + m.text(i18n.BlurbMore,
 			min(scroll+room, len(body)), len(body))))
 	}
 	// No trailing newline. The frame splits this on newlines and pads what is
@@ -316,7 +316,7 @@ func traitLines(m model, held []passive.Passive) []string {
 		if index > 0 {
 			out = append(out, "")
 		}
-		out = append(out, "  "+m.style.label.Render(m.lang.GlossedPassive(one)))
+		out = append(out, "  "+m.style.Label.Render(m.lang.GlossedPassive(one)))
 		out = append(out, traitSentences(m, one)...)
 	}
 	return out

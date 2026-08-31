@@ -889,7 +889,7 @@ func (s skillsScreen) filterRow(m model, showing int) string {
 		return ""
 	}
 	if typed == "" {
-		return "  " + m.style.dim.Render(m.text(i18n.SkillsFilterPrompt)) + "\n"
+		return "  " + m.style.Dim.Render(m.text(i18n.SkillsFilterPrompt)) + "\n"
 	}
 	// The query is the one part of this row with no length of its own, so it is
 	// what gets clipped rather than the counts after it: how much of the book is
@@ -898,7 +898,7 @@ func (s skillsScreen) filterRow(m model, showing int) string {
 	// from being reachable at the floor; the clip is what says so if it stops.
 	spent := lipgloss.Width(m.text(i18n.SkillsFiltering, "", showing, len(s.skills)))
 	room := max(m.usableWidth()-3-spent, 1)
-	return "  " + m.style.dim.Render(m.text(i18n.SkillsFiltering,
+	return "  " + m.style.Dim.Render(m.text(i18n.SkillsFiltering,
 		clip(s.query, room), showing, len(s.skills))) + "\n"
 }
 
@@ -911,8 +911,8 @@ func (s skillsScreen) view(m model) (string, string) {
 		footer = m.text(i18n.SkillsFilterFooter)
 	}
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.SkillsHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.SkillsSubtitle)) + "\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.SkillsHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.SkillsSubtitle)) + "\n")
 
 	rows := s.rows()
 	out.WriteString(s.filterRow(m, len(rows)))
@@ -927,7 +927,7 @@ func (s skillsScreen) view(m model) (string, string) {
 	// The tally is the book's own count and stays that whatever is filtered: how
 	// many skills there are and how many anybody may carry are facts about the
 	// data, and the filter row above already says how much of it is on screen.
-	tally := m.style.dim.Render(m.text(i18n.SkillsTally, len(s.skills), anyone))
+	tally := m.style.Dim.Render(m.text(i18n.SkillsTally, len(s.skills), anyone))
 	if len(rows) == 0 {
 		// Said rather than drawn as an empty box, and the two reasons a listing
 		// can be empty are told apart: a book with nothing in it is a data
@@ -974,7 +974,7 @@ func (s skillsScreen) view(m model) (string, string) {
 	// that column called the same thing here, rather than the shorter word the
 	// form stopped using.
 	powerColumn := skillPowerColumn(m)
-	out.WriteString("  " + m.style.dim.Render(skillRow(column+1, glossColumn, powerColumn,
+	out.WriteString("  " + m.style.Dim.Render(skillRow(column+1, glossColumn, powerColumn,
 		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss), m.text(i18n.LabelElement),
 		m.text(i18n.SkillFieldPower), m.text(i18n.ColumnWhoMayCarry))) + "\n")
 	for index := from; index < to; index++ {
@@ -998,7 +998,7 @@ func (s skillsScreen) view(m model) (string, string) {
 		row += clip(m.lang.WhoMaySummary(current), m.usableWidth()-3-lipgloss.Width(row))
 		if index == s.cursor {
 			marker = "> "
-			row = m.style.selected.Render(row)
+			row = m.style.Selected.Render(row)
 		}
 		out.WriteString(marker + row + "\n")
 	}
@@ -1017,17 +1017,17 @@ func (s skillsScreen) view(m model) (string, string) {
 		}
 	}
 	if s.added != nil {
-		out.WriteString(m.style.good.Render(m.text(i18n.SkillAdded,
+		out.WriteString(m.style.Good.Render(m.text(i18n.SkillAdded,
 			s.added.ID, m.lib.SkillsPath())) + "\n")
 	}
 	if s.edited != nil {
-		out.WriteString(m.style.good.Render(m.text(i18n.SkillEdited,
+		out.WriteString(m.style.Good.Render(m.text(i18n.SkillEdited,
 			s.edited.After.ID, m.lib.SkillsPath())) + "\n")
 		// The before and after, and only when there is something to compare: an
 		// edit to a restriction or a targeting side moves no damage, and a line
 		// saying a number did not change has to be read to learn nothing.
 		if s.edited.MovesDamage() {
-			out.WriteString(m.style.dim.Render(m.lang.DamageMoved(*s.edited)) + "\n")
+			out.WriteString(m.style.Dim.Render(m.lang.DamageMoved(*s.edited)) + "\n")
 		}
 	}
 	out.WriteString(tally)
@@ -1148,8 +1148,8 @@ func (s skillsScreen) viewShape(m model) (string, string) {
 	shapes := m.lib.PatternNames()
 	name := at(shapes, s.shapeIndex)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.SkillShapeHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.ChoicePosition,
+	out.WriteString(m.style.Heading.Render(m.text(i18n.SkillShapeHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.ChoicePosition,
 			clamp(s.shapeIndex, 0, len(shapes)-1)+1, len(shapes))) + "\n")
 
 	// The draft rather than the shape alone: what a shape covers depends on the
@@ -1160,7 +1160,7 @@ func (s skillsScreen) viewShape(m model) (string, string) {
 		// Unreachable through the chooser, which offers the book's own names,
 		// and drawn rather than swallowed for the same reason the picker draws a
 		// lost id: a shape the book cannot resolve is worth seeing.
-		out.WriteString(m.style.bad.Render("  "+m.lang.Error(err)) + "\n")
+		out.WriteString(m.style.Bad.Render("  "+m.lang.Error(err)) + "\n")
 		return out.String(), footer
 	}
 	// How many cells it really catches, and — when the aim loses one — that it
@@ -1169,15 +1169,15 @@ func (s skillsScreen) viewShape(m model) (string, string) {
 	if !coverage.Whole() {
 		caught = m.text(i18n.SkillShapeShort, coverage.Covered(), coverage.Max)
 	}
-	out.WriteString("  " + m.style.selected.Render(name) + "  " +
-		m.style.dim.Render(caught) + "\n")
-	out.WriteString("  " + m.style.dim.Render(
+	out.WriteString("  " + m.style.Selected.Render(name) + "  " +
+		m.style.Dim.Render(caught) + "\n")
+	out.WriteString("  " + m.style.Dim.Render(
 		m.text(i18n.SkillShapeDrawnAt, coverage.Primary)) + "\n\n")
 
 	for _, line := range strings.Split(shapeBoard(coverage), "\n") {
 		out.WriteString("  " + line + "\n")
 	}
-	out.WriteString("\n  " + m.style.dim.Render(m.text(i18n.SkillShapeLegend,
+	out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.SkillShapeLegend,
 		shapeAimMark, shapeSplashMark, m.lib.SplashShare())))
 	return out.String(), footer
 }
@@ -1238,8 +1238,8 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 		heading = i18n.SkillFormEditHeading
 	}
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(heading)) + "  " +
-		m.style.dim.Render(m.text(i18n.SkillFormSubtitle)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(heading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.SkillFormSubtitle)) + "\n\n")
 
 	width := skillLabelWidth(m)
 	// The form scrolls now. It spent every row a 120x24 window has at fourteen
@@ -1251,7 +1251,7 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 	// field brings it into view instead of leaving the cursor off screen.
 	from, to := window(skillFieldCount, s.field, s.formRoom(m))
 	if from > 0 {
-		out.WriteString("  " + m.style.dim.Render(ellipsis) + "\n")
+		out.WriteString("  " + m.style.Dim.Render(ellipsis) + "\n")
 	}
 	for field := from; field < to; field++ {
 		marker := "  "
@@ -1260,15 +1260,15 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 		}
 		name := pad(skillFieldLabel(m, field), width)
 		if field == s.field {
-			name = m.style.selected.Render(name)
+			name = m.style.Selected.Render(name)
 		} else {
-			name = m.style.label.Render(name)
+			name = m.style.Label.Render(name)
 		}
 		out.WriteString(marker + name + " " + s.value(m, field, width) + "\n")
 	}
 
 	if to < skillFieldCount {
-		out.WriteString("  " + m.style.dim.Render(ellipsis) + "\n")
+		out.WriteString("  " + m.style.Dim.Render(ellipsis) + "\n")
 	}
 
 	out.WriteString("\n")
@@ -1285,10 +1285,10 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 	// spent all twenty before the name field arrived; dropping the newline is
 	// what paid for it, with nothing to see on screen either way. It is the same
 	// accounting skillsRoom records for the listing, which has never had one.
-	tail := []string{"  " + m.style.dim.Render(skillFieldHelp(m, s.field))}
+	tail := []string{"  " + m.style.Dim.Render(skillFieldHelp(m, s.field))}
 	if s.err != nil {
 		tail = append(tail,
-			m.style.bad.Render(m.text(i18n.WriteRefused, m.lang.Error(s.err))))
+			m.style.Bad.Render(m.text(i18n.WriteRefused, m.lang.Error(s.err))))
 	}
 	out.WriteString(strings.Join(tail, "\n"))
 	return out.String(), footer
@@ -1298,10 +1298,10 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 func (s skillsScreen) value(m model, field, labelWidth int) string {
 	choice := func(values []string, index int) string {
 		if len(values) == 0 {
-			return m.style.bad.Render(m.text(i18n.NoneCatalogued))
+			return m.style.Bad.Render(m.text(i18n.NoneCatalogued))
 		}
 		return fmt.Sprintf(choiceFormat, m.lang.Glossed(at(values, index)),
-			m.style.dim.Render(m.text(i18n.ChoicePosition,
+			m.style.Dim.Render(m.text(i18n.ChoicePosition,
 				clamp(index, 0, len(values)-1)+1, len(values))))
 	}
 	switch field {
@@ -1369,7 +1369,7 @@ func (s skillsScreen) chanceHint(m model, labelWidth int) string {
 	// cut short on a wide terminal hides one of the numbers being authored.
 	room := fieldValueRoom(m.usableWidth(), labelWidth,
 		lipgloss.Width(s.inputs[skillFieldInflicts].View()))
-	return "  " + m.style.dim.Render(clip(forge.ApplicationChances(applications), room))
+	return "  " + m.style.Dim.Render(clip(forge.ApplicationChances(applications), room))
 }
 
 // percentHint is the dim reading of a parts-per-thousand field, or nothing at
@@ -1382,7 +1382,7 @@ func (s skillsScreen) percentHint(m model, field int) string {
 		// not.
 		return ""
 	}
-	return "  " + m.style.dim.Render(forge.Percent(permille))
+	return "  " + m.style.Dim.Render(forge.Percent(permille))
 }
 
 // listValue draws one of the three allowlists: what is in it, or that anybody
@@ -1395,10 +1395,10 @@ func (s skillsScreen) listValue(m model, chosen []string, labelWidth int) string
 	room := fieldValueRoom(m.usableWidth(), labelWidth,
 		lipgloss.Width(m.text(i18n.KitChooseHint)))
 	if len(chosen) == 0 {
-		return m.style.dim.Render(m.text(i18n.WhoAnyone) + "  " + m.text(i18n.KitChooseHint))
+		return m.style.Dim.Render(m.text(i18n.WhoAnyone) + "  " + m.text(i18n.KitChooseHint))
 	}
 	return clip(strings.Join(chosen, " "), room) + "  " +
-		m.style.dim.Render(m.text(i18n.KitChooseHint))
+		m.style.Dim.Render(m.text(i18n.KitChooseHint))
 }
 
 // damageRow is the point of authoring a skill on a screen rather than in a file:
@@ -1407,7 +1407,7 @@ func (s skillsScreen) damageRow(m model, labelWidth int) string {
 	preview, err := m.lib.PreviewDraft(s.draft(m))
 	if err != nil {
 		return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s",
-			m.style.bad.Render(m.lang.Error(err)))
+			m.style.Bad.Render(m.lang.Error(err)))
 	}
 	return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s",
 		m.lang.Damage(preview))

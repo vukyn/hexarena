@@ -10,6 +10,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // browseScreen is the authored cast, filtered by origin, with one character
@@ -143,8 +144,8 @@ func (b browseScreen) view(m model) (string, string) {
 	rows := b.rows()
 	var out strings.Builder
 	fmt.Fprintf(&out, "%s  %s\n\n",
-		m.style.heading.Render(m.text(i18n.BrowseHeading)),
-		m.style.dim.Render(m.text(i18n.BrowseShowing,
+		m.style.Heading.Render(m.text(i18n.BrowseHeading)),
+		m.style.Dim.Render(m.text(i18n.BrowseShowing,
 			b.filterName(m), len(rows), len(b.characters))))
 	if len(rows) == 0 {
 		out.WriteString("  " + m.text(i18n.BrowseNothingHere) + "\n\n")
@@ -169,7 +170,7 @@ func (b browseScreen) view(m model) (string, string) {
 			m.lang.GlossedAffinity(character.Element)
 		if i == b.cursor {
 			marker = "> "
-			name = m.style.selected.Render(name)
+			name = m.style.Selected.Render(name)
 		}
 		out.WriteString(marker + name + "\n")
 	}
@@ -186,7 +187,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	if known {
 		from = fmt.Sprintf("%s (%s, %s)", origin.Title, origin.Medium, character.Origin)
 	}
-	out.WriteString(m.style.heading.Render(character.ID+" — "+character.Name) + "\n")
+	out.WriteString(m.style.Heading.Render(character.ID+" — "+character.Name) + "\n")
 	out.WriteString(m.label(m.text(i18n.LabelFrom), "%s", from))
 	// The preset and the element read as ids with their names on the row under
 	// them, which is the one convention this pane has rather than two.
@@ -202,11 +203,11 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// screen is exactly what it was.
 	out.WriteString(m.label(m.text(i18n.LabelPlaystyle), "%s", character.Archetype))
 	if name := m.lang.Gloss(character.Archetype); name != "" {
-		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, name))
+		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.Dim, name))
 	}
 	out.WriteString(m.label(m.text(i18n.LabelElement), "%s", character.Element))
 	if names := m.lang.AffinityNames(character.Element); names != "" {
-		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, names))
+		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.Dim, names))
 	}
 	// Wrapped, not clipped: nine ids are longer than any terminal, and half an
 	// id is worse than a second row.
@@ -217,7 +218,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// at all when there is nothing to say — in English, or for a kit of skills
 	// the table has no names for — rather than an empty row under a full one.
 	if glossed := m.lang.GlossedKit(m.lib.KitSkills(cast.LearnedIDs(character.Skills))); glossed != "" {
-		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
+		out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.Dim, glossed))
 	}
 	// Traits sit under the kit because they read as the other half of it: what
 	// the character uses, then what it simply has. Drawn only when there are
@@ -231,7 +232,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	atLevel := m.text(i18n.LabelAtLevel, b.level)
 	values, stage, err := character.Resolve(b.level, progression.Furthest)
 	if err != nil {
-		out.WriteString(m.label(atLevel, "%s", m.style.bad.Render(m.lang.Error(err))))
+		out.WriteString(m.label(atLevel, "%s", m.style.Bad.Render(m.lang.Error(err))))
 		return out.String()
 	}
 	// The art row keeps its place in the block that says what the character is,
@@ -249,7 +250,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 		out.WriteString(m.wrapped(m.text(i18n.FieldSpecies), detailLabelWidth(m),
 			strings.Join(character.Species, " ")))
 		if glossed := m.lang.GlossedSpecies(m.lib.KitSpecies(character.Species)); glossed != "" {
-			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
+			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.Dim, glossed))
 		}
 	}
 	// Traits sit with the art rather than with the kit, because both answer "at
@@ -262,7 +263,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 			forge.UnlockSummaryAt(character.Passives, b.level)))
 		if glossed := m.lang.GlossedPassives(
 			m.lib.KitPassives(character.PassivesAt(b.level, progression.Furthest))); glossed != "" {
-			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, glossed))
+			out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.Dim, glossed))
 		}
 	}
 	// Six stats and a stage name come to 88 cells at the floor, so this wraps
@@ -276,7 +277,7 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 	// no label of its own, which is the shape the kit's names above already use
 	// for a second reading of the row before it. Lang.BudgetPierced records why
 	// it cannot be a clause on the line itself.
-	out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.dim, m.lang.BudgetPierced(budget)))
+	out.WriteString(m.wrappedIn("", detailLabelWidth(m), m.style.Dim, m.lang.BudgetPierced(budget)))
 	return out.String()
 }
 
@@ -285,9 +286,9 @@ func (b browseScreen) detail(m model, character cast.Character) string {
 func (b browseScreen) artLine(m model, character cast.Character, stage progression.Stage) string {
 	art := character.StageArt(stage)
 	if m.lib.ImageExists(art) {
-		return m.style.good.Render(art + "  " + m.text(i18n.ArtPresent))
+		return m.style.Good.Render(art + "  " + m.text(i18n.ArtPresent))
 	}
-	return m.style.bad.Render(art + "  " + m.text(i18n.ArtMissing))
+	return m.style.Bad.Render(art + "  " + m.text(i18n.ArtMissing))
 }
 
 // budgetLine is the joint health-and-defence bound drawn as a meter and as
@@ -295,11 +296,11 @@ func (b browseScreen) artLine(m model, character cast.Character, stage progressi
 // over the bound is said in words in both languages, because it is the state
 // rather than the styling.
 func budgetLine(m model, budget forge.Budget) string {
-	meter := bar(budgetBarWidth, budget.Effective, budget.Max)
+	meter := draw.Bar(draw.BudgetBarWidth, budget.Effective, budget.Max)
 	if budget.Over() {
-		return m.style.bad.Render(m.lang.Budget(meter, budget))
+		return m.style.Bad.Render(m.lang.Budget(meter, budget))
 	}
-	return m.style.good.Render(m.lang.Budget(meter, budget))
+	return m.style.Good.Render(m.lang.Budget(meter, budget))
 }
 
 // clamp keeps an index or a level inside its range, and returns the low bound

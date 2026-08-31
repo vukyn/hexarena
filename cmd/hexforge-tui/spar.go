@@ -12,6 +12,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // sparScreen is forge.Spar drawn.
@@ -218,34 +219,34 @@ func (s sparScreen) view(m model) (string, string) {
 	}
 	report, failure, _ := s.report(m)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.SparHeading)) + "  " +
-		m.style.label.Render(character.ID+" — "+character.Name) + "\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.SparHeading)) + "  " +
+		m.style.Label.Render(character.ID+" — "+character.Name) + "\n")
 	if failure != nil {
-		out.WriteString("  " + m.style.bad.Render(m.lang.Error(failure)) + "\n")
+		out.WriteString("  " + m.style.Bad.Render(m.lang.Error(failure)) + "\n")
 		return out.String(), footer
 	}
 
 	challenger := report.Challenger
-	fmt.Fprintf(&out, "  %s\n", m.style.dim.Render(m.text(i18n.SparSubject,
+	fmt.Fprintf(&out, "  %s\n", m.style.Dim.Render(m.text(i18n.SparSubject,
 		challenger.Level, challenger.Stage)))
-	fmt.Fprintf(&out, "  %s\n\n", m.style.dim.Render(m.text(i18n.SparConditions,
+	fmt.Fprintf(&out, "  %s\n\n", m.style.Dim.Render(m.text(i18n.SparConditions,
 		len(report.Matchups), report.Seeds, sparBattles(report))))
 
 	// What was fielded, drawn before any figure it produced. A win rate for four
 	// skills the reader cannot see is a number they have to take on trust, and
 	// this screen is the one that has to be trusted least.
 	labels := detailLabelWidth(m)
-	fmt.Fprintf(&out, "  %s %s\n", m.style.label.Render(pad(m.text(i18n.LabelKit), labels)),
+	fmt.Fprintf(&out, "  %s %s\n", m.style.Label.Render(pad(m.text(i18n.LabelKit), labels)),
 		strings.Join(challenger.Skills, " "))
-	fmt.Fprintf(&out, "  %s %s\n\n", m.style.label.Render(pad(m.text(i18n.LabelTraits), labels)),
+	fmt.Fprintf(&out, "  %s %s\n\n", m.style.Label.Render(pad(m.text(i18n.LabelTraits), labels)),
 		strings.Join(challenger.Passives, " "))
 
 	if report.Opponents() == 0 {
-		out.WriteString("  " + m.style.dim.Render(m.text(i18n.SparAloneInTheCast)) + "\n\n")
+		out.WriteString("  " + m.style.Dim.Render(m.text(i18n.SparAloneInTheCast)) + "\n\n")
 	} else {
 		fmt.Fprintf(&out, "  %s %s %s\n\n",
-			m.style.label.Render(pad(m.text(i18n.SparOverall), labels)),
-			bar(statBarWidth, int64(report.Rate()), scale.Base),
+			m.style.Label.Render(pad(m.text(i18n.SparOverall), labels)),
+			draw.Bar(draw.StatBarWidth, int64(report.Rate()), scale.Base),
 			forge.PercentInColumn(report.Rate()))
 	}
 
@@ -264,7 +265,7 @@ func (s sparScreen) view(m model) (string, string) {
 		}
 		name := pad(sparRowName(m, matchup), names)
 		if i == s.cursor {
-			name = m.style.selected.Render(name)
+			name = m.style.Selected.Render(name)
 		}
 		total := matchup.Total()
 		endless += total.Endless
@@ -275,9 +276,9 @@ func (s sparScreen) view(m model) (string, string) {
 			signed(matchup.Edge()))
 	}
 	if endless > 0 {
-		out.WriteString("\n  " + m.style.bad.Render(m.text(i18n.SparEndless, endless)) + "\n")
+		out.WriteString("\n  " + m.style.Bad.Render(m.text(i18n.SparEndless, endless)) + "\n")
 	}
-	out.WriteString("\n" + m.style.dim.Render(
+	out.WriteString("\n" + m.style.Dim.Render(
 		m.text(i18n.SparNote, cast.SkillSlots, cast.TraitSlots)))
 	return out.String(), footer
 }

@@ -62,7 +62,7 @@ func inColour(t *testing.T, m model) model {
 	t.Setenv("NO_COLOR", "")
 	t.Setenv("TERM", "xterm-256color")
 	m.style = newPalette()
-	if !strings.Contains(m.style.title.Render("x"), "\x1b") {
+	if !strings.Contains(m.style.Title.Render("x"), "\x1b") {
 		t.Fatal("the palette still writes plain text, so nothing below measures a styled line")
 	}
 	return m
@@ -104,7 +104,7 @@ func TestACutLineSaysItWasCut(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		m, _, _ := startIn(t, lang, aLibraryFiledDeep(t, minWidth))
 		m.height = minHeight
-		whole := m.style.title.Render(programName) + m.style.dim.Render("  "+m.lib.Dir())
+		whole := m.style.Title.Render(programName) + m.style.Dim.Render("  "+m.lib.Dir())
 		if lipgloss.Width(whole) <= minWidth {
 			t.Fatalf("the header is %d cells against a floor of %d, so frame cuts nothing "+
 				"and this test measures nothing", lipgloss.Width(whole), minWidth)
@@ -132,7 +132,7 @@ func TestALineThatExactlyFillsTheWindowIsNotMarked(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		m, _, _ := startIn(t, lang, aLibraryFiledDeep(t, minWidth))
 		m.height = minHeight
-		whole := m.style.title.Render(programName) + m.style.dim.Render("  "+m.lib.Dir())
+		whole := m.style.Title.Render(programName) + m.style.Dim.Render("  "+m.lib.Dir())
 		exact := lipgloss.Width(whole)
 		if exact <= minWidth {
 			t.Fatalf("the header is %d cells against a floor of %d, so the window that "+

@@ -166,26 +166,26 @@ func (f fightScreen) view(m model) (string, string) {
 		return "  " + m.text(i18n.FightNoSquads) + "\n", footer
 	}
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.FightHeading)) + "  " +
-		m.style.label.Render(home.ID) + "  " +
-		m.style.dim.Render(m.text(i18n.FightAgainst)) + "  " +
+	out.WriteString(m.style.Heading.Render(m.text(i18n.FightHeading)) + "  " +
+		m.style.Label.Render(home.ID) + "  " +
+		m.style.Dim.Render(m.text(i18n.FightAgainst)) + "  " +
 		fmt.Sprintf("< %s >", away.ID) + "\n")
 	if home.ID == away.ID {
-		out.WriteString("  " + m.style.dim.Render(m.text(i18n.FightControl)) + "\n")
+		out.WriteString("  " + m.style.Dim.Render(m.text(i18n.FightControl)) + "\n")
 	}
 	out.WriteString("\n")
 
 	report, failure, _ := f.report(m)
 	if failure != nil {
-		out.WriteString("  " + m.style.bad.Render(m.lang.Error(failure)) + "\n")
+		out.WriteString("  " + m.style.Bad.Render(m.lang.Error(failure)) + "\n")
 		return out.String(), footer
 	}
 	total := report.Total()
 	width := fightLabelWidth(m)
-	out.WriteString("  " + m.style.dim.Render(m.text(i18n.FightConditions,
+	out.WriteString("  " + m.style.Dim.Render(m.text(i18n.FightConditions,
 		report.Seeds, total.Battles())) + "\n\n")
 	out.WriteString(m.labelAt(m.text(i18n.FightRate), width, "%s",
-		m.style.emphasis.Render(forge.Percent(report.Rate()))))
+		m.style.Emphasis.Render(forge.Percent(report.Rate()))))
 	out.WriteString(m.labelAt(m.text(i18n.FightRecord), width, "%s",
 		m.text(i18n.FightRecordLine, total.Wins, total.Losses, total.Draws)))
 	// The two halves apart, because the difference between them is what the side
@@ -198,7 +198,7 @@ func (f fightScreen) view(m model) (string, string) {
 		m.text(i18n.FightLengthLine, report.Turns)))
 	if total.Endless > 0 {
 		out.WriteString(m.labelAt(m.text(i18n.FightEndless), width, "%s",
-			m.style.bad.Render(m.text(i18n.FightEndlessLine, total.Endless))))
+			m.style.Bad.Render(m.text(i18n.FightEndlessLine, total.Endless))))
 	}
 	out.WriteString("\n" + f.caution(m))
 	return strings.TrimRight(out.String(), "\n"), footer
@@ -241,7 +241,7 @@ func (f fightScreen) caution(m model) string {
 	const marker = 2
 	var out strings.Builder
 	for _, line := range wrapWords(m.text(i18n.FightCaution), minWidth-1-marker) {
-		out.WriteString("  " + m.style.dim.Render(line) + "\n")
+		out.WriteString("  " + m.style.Dim.Render(line) + "\n")
 	}
 	return out.String()
 }
