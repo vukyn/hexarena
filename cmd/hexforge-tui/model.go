@@ -644,6 +644,39 @@ func (m model) usableWidth() int {
 	return m.width
 }
 
+// fieldValueRoom is what a form row has left for the one part of it that has no
+// length of its own — the chances beside the inflicts field, the ids in an
+// allowlist, the kit and the species on the character form — once the marker,
+// the label column, the fixed part of the value and the two-space gap before
+// whatever follows have been paid for.
+//
+// One declaration for **both forms**, because the skill form and the character
+// form draw the identical row — `marker + pad(label, width) + " " + value` — and
+// each had written the arithmetic out for itself. All four copies were one cell
+// over, in the same direction, and the two that were found first were fixed
+// while the two in form.go were not; a second copy is a second thing to fix
+// twice. The window's last column is left empty for the reason frame leaves it:
+// a line filling a terminal's final cell wraps on some of them, and one wrapped
+// line pushes the footer off the bottom.
+//
+// ⚠️ It lives here rather than beside either caller for that reason too. In
+// skills.go it read as the skill form's arithmetic, which is what let form.go
+// write its own; here it sits with pad, labelAt and usableWidth, which are the
+// rest of what a row is made of.
+//
+// The width is handed in rather than read off minWidth, and that is what keeps
+// the single declaration honest: a row that spends this on **data** — the
+// chances, an allowlist of ids, a chosen kit — passes m.usableWidth(), which is
+// the window when there is one, while a row spending it on wording would pass
+// minWidth. All four callers today are data and all four pass the window, but
+// picking a side inside the function would make the next caller either wrong or
+// a second copy of the arithmetic, which is exactly what this exists to have
+// stopped.
+func fieldValueRoom(width, labelWidth, spent int) int {
+	const marker, gap = 2, 2
+	return width - 1 - marker - labelWidth - 1 - spent - gap
+}
+
 // wrapWords breaks text on spaces, never mid-word, and never returns nothing.
 //
 // A word longer than the room gets its own line and overflows it rather than

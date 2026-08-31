@@ -195,6 +195,38 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
+- [ ] **A skill's power has no ceiling, and the damage formula overflows before
+      it reaches one.** `combat.Rules.damage` (`internal/core/combat/combat.go`)
+      multiplies five values — attack, the skill, the affinity, the crit and
+      `DefenseConstant` — into one `int64` *before* dividing, so the numerator
+      passes `math.MaxInt64` at a power around 2.3×10⁷. `skill.Validate`
+      (`internal/core/skill/skill.go`) checks only `Power >= 0`, so such a skill
+      **parses, saves and fights**. ⚠️ The danger is not the powers that collapse
+      to `MinimumDamage`, which are visible: measured per-strike previews run
+      `90,000,000 → 4,504,651` · `120,000,000 → 1` · `180,000,000 → 9,009,302`.
+      A wrapped numerator divided back down is a **large plausible number that
+      is wrong**, and it is not monotone in power, so no reading taken off one
+      figure detects it. Two halves to decide apart: whether the formula should
+      divide earlier (or widen), and what the authored ceiling is — the second
+      belongs beside the stat ceilings, which bound the authored line rather
+      than the fought one. Found while widening the damage row, not by play.
+- [ ] **`Lang.DamageWithin`'s drop is dead code on shipped data.** The short
+      line is reached only by eight- and nine-figure damage; the fixture added
+      in `width_rule_test.go` is the only thing in the suite that exercises it.
+      Either the reference pair always fits and the branch should go, or the
+      figures that reach it are the overflow above and the branch is a symptom.
+- [ ] **`damageRowRoom` is one cell over** (`cmd/hexforge-tui/skills.go`): it
+      spends `width - 2 - labelWidth - 1`, so the row may fill the window's last
+      cell, which wraps on some terminals. Wrong at the floor too, so it wants a
+      test that builds the figure reaching it rather than one that rides in on a
+      width change. Unreachable on shipped data — the widest reading is 59 cells
+      of the 61 there are.
+- [ ] **`frame` cuts every line silently.** `model.go`'s `MaxWidth(m.width)`
+      truncates without a mark, so twenty-three of the twenty-four sites that
+      render `m.lang.Error(...)` lose the tail of a sentence with nothing to say
+      they did. `clip` appends an ellipsis and the picker's refusal uses it,
+      which is why that one is honest. Not a width fix — it is every line of
+      every screen, and a data cell may not want the mark that a sentence does.
 
 ## Decided against — do not re-raise
 

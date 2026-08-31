@@ -506,7 +506,24 @@ answers rather than screen logic:
     the fixture pairing.
   - ⚠️ A squad rate is **not** the roster's win rate, and the screen says so in
     prose under the figure. That line is wrapped against **minWidth**, not the
-    window in hand, for the reason the art chooser measures its room that way.
+    window in hand, which is the prose half of the width rule:
+    **prose wraps at the floor, a data cell spends the window.** `minWidth` is
+    the width this program promises to draw in, not a ceiling on what it may
+    spend, so a gloss or a list of ids takes `m.usableWidth()` — cutting one on
+    a wide terminal throws away content for nothing. A *sentence* measured
+    against the real terminal would have two shapes instead of one, leave
+    `TestEveryWordingFitsTheMinimumWidth` nothing to hold, and run a paragraph
+    across a hundred columns for a reader to lose their place in.
+    `cmd/hexforge-tui/width_rule_test.go` holds **both** directions: widening
+    prose is as much a failure as clipping data.
+  - ⚠️ **That line used to cite the art chooser as its precedent, and no longer
+    can.** `artRoom` clips a filesystem **path**, which is data, and it takes
+    the window as of #173. The precedent for a sentence is this line and the
+    save note in `play.go`; what holds them at the floor is
+    `TestAWideWindowStillWrapsProseAtTheFloor`. The old argument — that
+    widening would leave the width sweep nothing to hold — was answering the
+    wrong half of a row: the sweep measures the **catalog's wording**, and the
+    catalog parts of the art row are exactly what `artRoom` *subtracts*.
 - The **played battle** (`cmd/hexforge-tui/play.go`) is raised from the fight
   with `p`: the same pairing, one battle, the opponent played by
   `battle.Suggest`. `↑/↓` a skill, `enter` takes it and asks *where* only when
