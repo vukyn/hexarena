@@ -408,16 +408,16 @@ Tầm 2 · 3 ô · 92% trúng · hồi 3 lượt.
 [one line] 50% công · nhiễm điện x3 100% · tầm 2 · 3 ô · hồi 3
 
 electro_ball
-Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chỗ nào sẵn dòng thì nó rẽ qua, 160% công.
-Mục tiêu đang dính nhiễm điện, lan ra 3 ô, và tiêu 1 cộng dồn nhiễm điện.
+Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chạm vào ai đang sẵn dòng là cả vùng sáng lên, 140% công.
+Mục tiêu đang dính nhiễm điện: đòn của chính nó giảm còn 84% công, mỗi cộng dồn nhiễm điện nổ ra gây 85% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
 Tầm 2 · 90% trúng · hồi 2 lượt.
-[one line] 160% công · nhiễm điện→lan · tầm 2 · hồi 2
+[one line] 140% công · nhiễm điện→lan · tầm 2 · hồi 2
 
 spark
-Chớp liên tục vào một chỗ, chỗ nào sẵn dòng thì mỗi nhát lại nặng thêm, 3 nhát, mỗi nhát 34% công (tổng 102%).
-Mục tiêu đang dính nhiễm điện: 204% công, và tiêu 1 cộng dồn nhiễm điện.
+Chớp một cái vào một chỗ, rồi có khi chớp thêm cái nữa, rồi lại cái nữa, 65% công, mỗi nhát xong có 50% khả năng đánh thêm nhát nữa, tối đa 10.
+Mục tiêu đang dính nhiễm điện: đòn của chính nó giảm còn 39% công, mỗi cộng dồn nhiễm điện nổ ra gây 43% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
 Tầm 1 · 93% trúng · hồi 2 lượt.
-[one line] 102% công · nhiễm điện→204% · tầm 1 · hồi 2
+[one line] 65% công · nhiễm điện→lan · tầm 1 · hồi 2
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -1049,16 +1049,16 @@ Range 2 · 3 cells · 92% to hit · 3 turns to recharge.
 [one line] 50% attack · charge x3 100% · range 2 · 3 cells · cd 3
 
 electro_ball
-Hits an enemy for 160% of attack.
-While the target is carrying charge, jumps to 3 cells, and eats 1 stack of the charge.
+Hits an enemy for 140% of attack.
+While the target is carrying charge: its own blow drops to 84% of attack, and every stack of charge that goes off deals 85% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
 Range 2 · 90% to hit · 2 turns to recharge.
-[one line] 160% attack · charge→spreads · range 2 · cd 2
+[one line] 140% attack · charge→spreads · range 2 · cd 2
 
 spark
-Hits an enemy for 3 strikes of 34% of attack each, 102% in all.
-While the target is carrying charge: 204% of attack, and eats 1 stack of the charge.
+Hits an enemy for 65% of attack, and after each strike a 50% chance of another, up to 10.
+While the target is carrying charge: its own blow drops to 39% of attack, and every stack of charge that goes off deals 43% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
 Range 1 · 93% to hit · 2 turns to recharge.
-[one line] 102% attack · charge→204% · range 1 · cd 2
+[one line] 65% attack · charge→spreads · range 1 · cd 2
 
 [trait] endurance
 Always carries toughened.

@@ -402,9 +402,9 @@ func TestNoGlossedLogRowOutgrowsTheWindow(t *testing.T) {
 		})
 	}
 	// spread: the row the arm above skips, and the other place two glossed ids
-	// share one clause. Every skill that can widen its shape draws one.
+	// share one clause. Every skill whose discharge can travel draws one.
 	for _, one := range books.Skills.Skills() {
-		if !one.Requires.SpreadsOn() {
+		if !one.Requires.ChainsOn() {
 			continue
 		}
 		measure(fmt.Sprintf("spread/%s/%s", one.ID, one.Requires.Status), battle.Event{

@@ -2494,47 +2494,45 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
 - **Never permanent.** `Set.Remove` refuses a permanent status (that is what keeps
   a trait from being dispelled) and a consume goes through `Remove`, so a
   permanent counter is one nothing could ever spend.
-- **`requires` gained `spreads` and `consume_stacks`.** `spreads` names the pattern
-  the skill covers when the condition holds; `consume_stacks` takes a counted
-  number instead of the pile. The old refusal "consumes for no bonus" is now
-  "consumes for neither a bonus nor a shape", and a skill may take **one**
-  payment, not both.
-- **A counter may be spent on a single target, and the ceiling is the same.**
-  `(max_targets-1) × splash_power` is exactly `scale.Base`, so the most a stack can
-  ever buy is **doubling** — which a spread gets from the pattern book and a
-  power-paid consume gets from `bonus_power <= power`.
-  `TestSpendingACounterCapsAtDoublingHoweverItIsPaid` holds both, and the floor
-  (`bonus*4 >= power`) refuses a stack thrown away for a rounding error. `spark`
-  is the single-target multi-strike consumer, `electro_ball` the spreading one.
+- **`requires` gained `chains`, `damped`, `arc_power` and `consume_stacks`.** A
+  condition carrying `arc_power` is a **conduit** and is a different animal from a
+  detonate: it damps its own blow (`damped`) and fires the stored charge instead
+  (`arc_power`), one stack **per strike**, along a chain of adjacent carriers. The
+  old refusal "consumes for no bonus" is now "for neither a bonus nor a discharge",
+  and a skill may take one payment, never both.
+- ⚠️ **The arc is not the skill's damage and must not be routed through the skill's
+  machinery.** Not aimed, not rolled against accuracy or dodge, **not blocked** —
+  it is what was already sitting on the target. It is logged as `Damaged` with
+  `Status` set, the way a reply is logged with `Passive` set, so a renderer that
+  switches on kind still draws the health it took.
+- ⚠️ **A miss delivers nothing, a block delivers everything.** `discharge` runs on
+  every strike outcome except `Missed` — the same sentence `OutlastsAShield` is
+  written on. Do not "tidy" that into one condition.
+- **The chain is `Battle.chainFrom`: BFS from the aim over `NeighborsOnBoard`,
+  through carriers only.** It is re-walked **every strike**, because it shrinks as
+  it burns; and it returns nothing at all when the *aimed* unit is clean, which is
+  the gate on the entire mechanism. Deterministic — the map is asked only for
+  membership, and no map iteration reaches the result.
+- ⚠️ **`hex` adjacency is not what a reader guesses.** `3,1`'s neighbours are
+  `4,2 4,1 3,0 2,1 2,2 3,2` — **`4,0` is two cells away**, so a chain reaches it
+  only through a charged `3,0`. Odd columns sit half a cell lower; check with
+  `Offset.NeighborsOnBoard` rather than by eye.
+- **A rolled strike count**: `repeat_chance` + `max_strikes` on the skill,
+  `Hit.RollStrikes` in combat. ⚠️ **Wire BOTH into `combat.Hit` when building it in
+  `resolveAgainst`** — the first cut set neither and every roll silently returned
+  the floor, which no test caught because the floor is a legal count.
+  `ExpectedStrikes` is the mean and is what everything outside the roll reads;
+  the description quotes floor/odds/cap instead, because the mean describes no
+  cast anybody will have.
 - ⚠️ **`TestADetonateIsWorthLessThanItsBreakEven` cannot price a counter and skips
-  one by category.** Its whole arithmetic is what leaving the status alone was
-  worth, and a counter does nothing to its holder — so `forgoneBy` returns
-  "cannot price" and the rule would bound a burst by nothing. The skip is on
-  `kind.Category == status.Charge`, **not** on `BonusPower == 0`: a counter paid
-  in power is still a counter.
-- ⚠️ **The spread is read once, from the unit at the aim, before the shape is
-  walked** — `Battle.shapeAt`, which all five callers that resolve or rate a
-  shape now go through. Asking per splashed cell would let a spread reach further
-  than the cell that paid for it, and a rating that walked a different shape from
-  the resolution would be a hint that lies.
-- **Its own event kind, `Spread`.** Not an `Amplified`: that arm says a figure
-  moved, and a shape-paid condition moves none — which is also why `Act` now
-  emits `Amplified` only when the power actually changed. `TestNoGlossedLogRow…`
-  had to learn the same thing: measuring an amplified row for `electro_ball`
-  against a counter capped at 999 puts the widest row in the book on an event no
-  battle can produce (82 cells of the 79 there are).
-- ⚠️⚠️ **A pile is worth far less than a stack times its height, and this was
-  measured.** Priced linearly, one three-stack charge over two cells read as three
-  whole strikes, so `Suggest` spent its opening turn dealing no damage — the kit
-  measured **6 per mille against 366**. Each stack is now worth half the one below
-  it, and the halving starts from the stacks already on the target: the sum can
-  never pass twice the first stack. That alone took the kit **6 → 110**, with no
-  data changed. See `pricing.charged` / `pricing.spendable`.
-- **A counter is worth nothing when nobody on the caster's side carries a
-  consumer**, and that is the answer rather than a missing case.
+  one by category.** Its arithmetic is what leaving the status alone was worth, and
+  a counter is worth neither ticks nor a defence term. The skip is on
+  `kind.Category == status.Charge`, **not** on the shape of the payment.
+  `TestAConduitPaysForWhatItDischarges` bounds it instead: the arc must beat the
+  damped power and not beat it twice over.
 - The playstyle is held by `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne`
   — the damage must arrive in **more, smaller** pieces *and* at a rate within
-  three fifths of the burst kit's. Shipped reading: 356‰ over 6455 blows of 184
+  three fifths of the burst kit's. Shipped reading: 343‰ over 7693 blows of 150
   against 366‰ over 3114 of 366.
 
 ## Open work

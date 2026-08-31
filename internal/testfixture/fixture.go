@@ -172,7 +172,9 @@ const Skills = `[
       "min_stacks": 1,
       "consume": true,
       "consume_stacks": 1,
-      "spreads": "column"
+      "chains": true,
+      "damped": 400,
+      "arc_power": 500
     }
   },
   {

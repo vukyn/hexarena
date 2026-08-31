@@ -489,7 +489,11 @@ const (
 	BlurbSelfAmplifiedShape
 	SummaryAmplifiedShape
 	SummarySelfAmplifiedShape
-	BlurbSpreads
+	BlurbArcs
+	BlurbChains
+	BlurbDamped
+	BlurbConsumesEachStrike
+	BlurbRepeats
 	BlurbCostRange
 	BlurbCostCells
 	BlurbCostSelf
