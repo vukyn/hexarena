@@ -60,6 +60,7 @@ var commands = map[string]func([]string) error{
 	"statuses":   runStatuses,
 	"skills":     runSkills,
 	"cast":       runCast,
+	"builds":     runBuilds,
 	"new":        runNew,
 	"show":       runShow,
 	"check":      runCheck,
@@ -99,6 +100,8 @@ hexforge authors the cast the battles are fought with.
                                       that would leave a character or a preset
                                       unable to carry the skill is refused
   hexforge cast                       the authored characters
+  hexforge builds                     the late-game catalogue: which four skills and
+                                      which trait a character is for
   hexforge new [id]                   create a character; flags prefill, the
                                       wizard asks only for what is still missing.
                                       --species names what it is, which is what a

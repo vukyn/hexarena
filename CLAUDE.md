@@ -40,6 +40,7 @@ go run ./cmd/hexforge skills                     # the declared skills and who m
 go run ./cmd/hexforge skills add oath --power 1200 --accuracy 900   # author a skill
 go run ./cmd/hexforge skills edit oath --power 1100                 # change one already in the book
 go run ./cmd/hexforge statuses                   # the timed effects, grouped, and what each does
+go run ./cmd/hexforge builds                     # the late-game catalogue: which four skills and which trait a character is for
 go run ./cmd/hexforge passives                   # the declared traits and what each holds
 go run ./cmd/hexforge check                      # parse the books from disk and verify the art exists
 go run ./cmd/hexforge spar some.id --seeds 200   # duel it against the whole cast, both ways, report the rates
