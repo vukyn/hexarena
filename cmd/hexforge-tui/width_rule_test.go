@@ -213,42 +213,44 @@ func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 // 120 turned the old wide-window test into, and the change of subject is the
 // finding rather than a rename.
 //
-// ⚠️ **The pair-drop is unreachable on every window this program draws, and that
-// is arithmetic rather than a fixture that got lazy.** Lang.DamageWithin drops
-// the reference pair when the composed line will not fit, and the line is four
-// numbers in fixed wording. Two of the four are the ceilings — 800 and 400,
-// three digits each and never anything else — so the only room to grow is the
-// per-strike figure and the total, and both are int64, which is nineteen decimal
-// digits at the very most. That ceiling is measured below rather than argued: it
-// comes to **89 cells in Vietnamese and 87 in English**, against a narrowest room
-// of **98 and 99** — the two forms'; the two listings' are 101 and 104. There is
-// no skill, authored or absurd, whose reading reaches the drop, and it is short
-// by nine cells in the tighter language and twelve in the looser one.
+// ⚠️ **The row has no short form any more, and this is the bound that made
+// removing it safe.** `Lang.DamageWithin` used to drop the reference pair when
+// the composed line would not fit, and `damageRowRoom` computed the room it
+// compared against. Both are gone: the line is four numbers in fixed wording,
+// two of them the ceilings — 800 and 400, three digits each and never anything
+// else — so the only room to grow is the per-strike figure and the total, and
+// both are int64, which is nineteen decimal digits at the very most. That
+// ceiling is measured below rather than argued: it comes to **89 cells in
+// Vietnamese and 87 in English**, against a narrowest room of **97 and 98** —
+// the two forms'; the two listings' are 100 and 103. There is no skill,
+// authored or absurd, whose reading could have reached the drop.
 //
 // It used to be reachable and the old test reached it: at a floor of 80 the room
-// was 61 cells and `aSkillWorthMoreThanTheRowCanHold` cleared it with a power of
-// 180,000,000 over 200 strikes. Forty more columns put it out of range for good.
+// was 61 cells and the fixture below cleared it with a power of 180,000,000 over
+// 200 strikes. Forty more columns put it out of range for good, and PR #177's
+// floor of 120 is what turned a runtime fallback into dead code.
 //
-// So the test asserts what is now true, in three parts, and each is a mutation
+// So the test asserts what is now true, in two parts, and each is a mutation
 // somebody could make:
 //
 //   - **The bound.** The widest line four figures can ever compose is smaller
-//     than the smallest room either site has. A mutation shrinking damageRowRoom
-//     — or a floor lowered back under about 100 — goes red here, and it goes red
-//     with the arithmetic printed rather than with a fixture failing to overflow.
-//   - **The row really draws the full reading at the floor**, at both sites, on
-//     the widest skill the fixture can author. The bound above is about the
-//     catalog line; this is about the row, and a room computed from the wrong
-//     width would pass the first and fail this.
-//   - **The drop still works when the room genuinely is too small.** The branch
-//     is now unreachable through the screens, so nothing else exercises it; a
-//     mutation deleting it would otherwise be invisible. It is asked of
-//     DamageWithin directly, which is the honest place for a branch no window
-//     reaches.
+//     than the smallest room either site has. A floor lowered back under about
+//     112 goes red here, and it goes red with the arithmetic printed rather than
+//     with a fixture failing to overflow.
+//   - **The row really draws the full reading**, at the floor and at a wide
+//     window, at both sites, on the widest skill the fixture can author.
+//
+// ⚠️ **Neither figure is written down**, which is what stops this going vacuous
+// now that nothing can fail it by overflowing. The ceiling comes out of
+// `Lang.Damage` itself at `math.MaxInt64`, so a longer sentence moves it; the
+// room is measured off the row the screen actually drew — the rendered line less
+// the reading inside it is the marker, the label column and the space after it —
+// so a wider label or a lower floor moves that. Nothing here counts cells by
+// hand.
 func TestTheDamageRowKeepsItsReferencePairAtEveryWindow(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		dir := scratchData(t)
-		heavy := aSkillWorthMoreThanTheRowCanHold(t, dir)
+		heavy := aSkillWorthMoreThanTheShippedBookCanReach(t, dir)
 		base, lib, _ := startIn(t, lang, dir)
 
 		declared, err := lib.Skills().Lookup(heavy)
@@ -277,18 +279,11 @@ func TestTheDamageRowKeepsItsReferencePairAtEveryWindow(t *testing.T) {
 		form := base.enter(screenSkills)
 		form.skills = form.skills.prefill(lib, declared)
 
-		atTheFloor := listing
-		atTheFloor.width, atTheFloor.height = minWidth, 60
-		formAtTheFloor := form
-		formAtTheFloor.width, formAtTheFloor.height = minWidth, 60
-
 		for _, site := range []struct {
 			name string
-			room int
 			at   func(width int) string
 		}{
 			{"the listing's damage row",
-				damageRowRoom(minWidth, detailLabelWidth(atTheFloor)),
 				func(width int) string {
 					m := listing
 					m.width, m.height = width, 60
@@ -296,50 +291,68 @@ func TestTheDamageRowKeepsItsReferencePairAtEveryWindow(t *testing.T) {
 					return body
 				}},
 			{"the form's damage row",
-				damageRowRoom(minWidth, skillLabelWidth(formAtTheFloor)),
 				func(width int) string {
 					m := form
 					m.width, m.height = width, 60
 					return m.skills.damageRow(m, skillLabelWidth(m))
 				}},
 		} {
-			if widest > site.room {
-				t.Errorf("%s/%s: the widest reading four figures can compose is %d cells "+
-					"against the %d this row has at the floor, so the reference pair can "+
-					"still be dropped on a window the tool draws — which is what this test "+
-					"stopped being about",
-					lang, site.name, widest, site.room)
-			}
-			t.Logf("%s/%s: widest possible reading %d cells, room at the floor %d",
-				lang, site.name, widest, site.room)
-
 			floor, wide := site.at(minWidth), site.at(wideWindow)
 			if !strings.Contains(floor, full) {
-				t.Errorf("%s/%s: the floor dropped the reference pair. It wanted\n%s\nand drew\n%s",
+				t.Errorf("%s/%s: the floor did not draw the whole reading. It wanted\n%s\nand drew\n%s",
 					lang, site.name, full, floor)
+				continue
 			}
 			if !strings.Contains(wide, full) {
-				t.Errorf("%s/%s: a %d-column window dropped the reference pair. It wanted\n%s\nand drew\n%s",
+				t.Errorf("%s/%s: a %d-column window did not draw the whole reading. It wanted\n%s\nand drew\n%s",
 					lang, site.name, wideWindow, full, wide)
 			}
-		}
 
-		// And the branch no window reaches is still there, asked of the one
-		// function that owns it. One cell short of the line is the narrowest
-		// room that has to drop, so this also says the comparison is not
-		// off by one.
-		short := lang.DamageWithin(preview, 1)
-		if short == full {
-			t.Fatalf("%s: the short reading is the full one, so nothing below is measured", lang)
-		}
-		if got := lang.DamageWithin(preview, lipgloss.Width(full)-1); got != short {
-			t.Errorf("%s: a room one cell under the line drew %q, want the short reading %q",
-				lang, got, short)
-		}
-		if got := lang.DamageWithin(preview, lipgloss.Width(full)); got != full {
-			t.Errorf("%s: a room exactly the width of the line dropped the pair: %q", lang, got)
+			room := theRoomTheRowLeavesItsReading(t, floor, full)
+			if widest > room {
+				t.Errorf("%s/%s: the widest reading four figures can compose is %d cells, "+
+					"and the row has %d of the %d-column floor — %d spent on the marker, "+
+					"the label column and the space after it, and one column left empty "+
+					"so a full line cannot wrap. Lang.DamageWithin and damageRowRoom "+
+					"were deleted on the strength of %d <= %d, which no longer holds — "+
+					"so this row needs a way to shorten itself again, or the floor has "+
+					"to go back up",
+					lang, site.name, widest, room, minWidth, minWidth-1-room, widest, room)
+			}
+			t.Logf("%s/%s: widest possible reading %d cells, room at the %d-column floor %d",
+				lang, site.name, widest, minWidth, room)
 		}
 	}
+}
+
+// theRoomTheRowLeavesItsReading measures what a damage row has left for its
+// value, off the row the screen actually drew.
+//
+// ⚠️ **Derived rather than written down, and that is the whole point of it.**
+// The room used to come out of damageRowRoom, which this change deleted, and
+// re-spelling `minWidth - 2 - labelWidth - 1` here would be that function living
+// on in a test — free to disagree with the row, and unable to notice a label
+// column that grew. So the overhead is read off the line instead: the rendered
+// row less the reading inside it is exactly the marker, the label column and the
+// space after it, whatever those come to today.
+//
+// The floor less one, because the window's last column is left empty — a line
+// filling it wraps on some terminals, which is the same allowance
+// TestEveryWordingFitsTheMinimumWidth makes. ⚠️ damageRowRoom did **not** make
+// it (it spent `width - 2 - labelWidth - 1`), which is the one-cell defect filed
+// at #175; deleting the function is what fixed it, and this is where that cell
+// is now accounted for.
+func theRoomTheRowLeavesItsReading(t *testing.T, screen, reading string) int {
+	t.Helper()
+	for _, line := range strings.Split(screen, "\n") {
+		if !strings.Contains(line, reading) {
+			continue
+		}
+		return minWidth - 1 - (lipgloss.Width(line) - lipgloss.Width(reading))
+	}
+	t.Fatalf("no line of the screen holds the reading %q, so its room cannot be measured:\n%s",
+		reading, screen)
+	return 0
 }
 
 // TestTheRefusalUnderTheCursorSpendsTheWindow is the picker's refusal sentence,
@@ -759,19 +772,21 @@ func someLongSpeciesIDs(t *testing.T, dir string) []string {
 	return ids
 }
 
-// aSkillWorthMoreThanTheRowCanHold writes a skill whose damage reading cannot
-// fit the row at the floor, and hands back its id.
+// aSkillWorthMoreThanTheShippedBookCanReach writes a skill whose damage reading
+// runs far past anything the balance data can produce, and hands back its id.
 //
-// A power rather than a longer name, because what has to overflow is the
-// *figures*: Lang.DamageWithin drops the reference pair on the width of the line
-// it composes, and the line is four numbers in a fixed sentence. The shipped book
-// tops out at 59 cells of the 61 there are, so no skill in it can reach the drop
-// and a power is the only dial that gets there.
+// A power rather than a longer name, because what has to grow is the *figures*:
+// the reading is four numbers in a fixed sentence, and two of them are the
+// ceilings the preview always draws against. The shipped book tops out at 59
+// cells, so no skill in it makes the row worth measuring at all.
 //
-// The size is checked rather than trusted: the caller asserts that the floor
-// really drew the short reading, so a power that stopped being enough fails
-// loudly instead of quietly measuring a row that never dropped anything.
-func aSkillWorthMoreThanTheRowCanHold(t *testing.T, dir string) string {
+// ⚠️ **It was named `aSkillWorthMoreThanTheRowCanHold` and that stopped being
+// true.** It was built to overflow `Lang.DamageWithin`'s room at a floor of 80,
+// where the row had 61 cells; at 120 the row has ninety-odd, the drop became
+// unreachable, and the fallback it exercised was deleted. What the fixture is
+// for now is the other half of the same test — that the row draws the whole
+// reading, on a skill whose reading is nothing like the shipped ones.
+func aSkillWorthMoreThanTheShippedBookCanReach(t *testing.T, dir string) string {
 	t.Helper()
 	const id = "heavy_probe"
 	// skill.resolve puts no ceiling on either field — it refuses a negative one
@@ -781,26 +796,25 @@ func aSkillWorthMoreThanTheRowCanHold(t *testing.T, dir string) string {
 	// growing the first (see the ceiling below).
 	//
 	// ⚠️ **It has to be this absurd, and that is a finding rather than a fixture
-	// detail.** The pair is dropped on the width of a line holding four numbers,
-	// so it only goes once the two being authored run to eight and nine figures.
-	// Ninety million power was tried first: it produced a seven-figure reading of
-	// 63 cells against the listing's 64 and kept its pair — one cell short of
-	// measuring anything. So the drop is unreachable on any balanced skill, and
-	// this fixture is the only thing in the suite that exercises it.
+	// detail.** The reading is four numbers in a fixed sentence, so it only grows
+	// past what a balanced skill produces once the two being authored run to eight
+	// and nine figures. Ninety million power was tried first and gave a
+	// seven-figure reading of 63 cells — nothing like the shipped 59, but nothing
+	// like a bound either. No skill anybody would author comes near this.
 	//
-	// ⚠️ **And the power cannot simply be raised, which is a defect one layer
-	// down and the reason these two numbers are what they are.**
-	// combat.Rules.damage builds
-	// `attack × power × affinity × crit × DefenseConstant` before it divides, so
-	// the product passes int64 in this range — and what comes back is **not
-	// monotone in the power**, which is what makes it a trap rather than a
-	// ceiling. Measured, per strike: 90,000,000 → 4,504,651 · 120,000,000 → **1**
-	// · 150,000,000 → **1** · 180,000,000 → 9,009,302 · 200,000,000 → **1**. The
-	// ones are MinimumDamage, which is what a wrapped numerator divides down to,
-	// so the form draws a plausible-looking row for a power it has silently lost.
-	// Out of scope here and reported rather than fixed; what it costs this fixture
-	// is that the power is a **measured** point rather than a round one, and the
-	// strikes carry the rest of the width.
+	// ⚠️ **These two numbers are a fossil of a defect that has since been fixed,
+	// and are kept only because nothing needs them changed.** combat.Rules.damage
+	// used to build `attack × power × affinity × crit × DefenseConstant` in an
+	// int64 before dividing, so the product wrapped in exactly this range and what
+	// came back was **not monotone in the power**: measured, per strike,
+	// 90,000,000 → 4,504,651 · 120,000,000 → **1** · 180,000,000 → 9,009,302, the
+	// ones being MinimumDamage off a wrapped numerator. So the power could not
+	// simply be raised, and 180,000,000 was picked as a **measured** point that
+	// came back large, with the strikes carrying the rest of the width. #180
+	// built that numerator in 128 bits and the function is monotone now, so the
+	// power is free to be a round number — left alone because this fixture's job
+	// is to be far past the shipped book, which it is either way, and rewriting a
+	// working fixture's constants is not a comment correction.
 	const (
 		power   = 180_000_000
 		strikes = 200

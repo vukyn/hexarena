@@ -479,11 +479,27 @@ answers rather than screen logic:
   the caster's health, composed through `combat.Swung` in the order the battle
   composes them. ⚠️ It read only `requires` until then, which showed `outrage` and
   `comeback` — the two skills whose whole design is a caster-side term — at their
-  plain power. The row drops its
-  reference pair rather than its figures when it will not fit
-  (`Lang.DamageWithin`): the pair is identical on every skill and named in the
-  field's own help, while the two numbers being authored are the reason the row
-  exists.
+  plain power. **The row always draws its whole reading — the two figures and the
+  reference pair they are measured against — and that is now a bound rather than
+  a hope.** It used to drop the pair when the line would not fit
+  (`Lang.DamageWithin`, with `damageRowRoom` computing the room), and PR #177's
+  floor of 120 made that branch unreachable at every window the program draws:
+  the line is four numbers in fixed wording, two of them the stat ceilings (three
+  digits, always) and two `int64` at nineteen digits, so its **arithmetic**
+  ceiling is 89 cells in Vietnamese and 87 in English against a narrowest room of
+  97 and 98. Both were deleted rather than kept as dead weight, because each way
+  the branch could have been reached again already has a stronger *build-time*
+  guard: a **wording** that grew is caught by
+  `TestEveryWordingFitsTheMinimumWidth`, which measures this row (it is program
+  wording around figures, so none of the free-text exemptions reach it); **figures**
+  that grew are capped by the type; and the **floor** going back down is caught by
+  `TestTheDamageRowKeepsItsReferencePairAtEveryWindow`, which derives both the
+  ceiling and the room rather than writing either down and names the arithmetic
+  when it fails. ⚠️ Deleting `damageRowRoom` is also what fixed its off-by-one:
+  it spent `width - 2 - labelWidth - 1`, so the row could fill the window's last
+  cell — the one column every other row leaves empty because a line filling it
+  wraps on some terminals. The surviving test measures the room off the rendered
+  row against `minWidth - 1`, which is where that cell is now accounted for.
 - The **squad builder** (`cmd/hexforge-tui/squads.go`) is the one screen that
   writes the author's own file rather than the game's: every other file here is
   data somebody wrote for the game, and `squads.json` is a side built to be

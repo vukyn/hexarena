@@ -129,7 +129,6 @@ const (
 	SkillFieldKeptForOrigins
 	LabelDamage
 	DamageLine
-	DamageLineShort
 	DamageAmplified
 	DamageMoved
 	SkillAdded

@@ -195,26 +195,15 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **`Lang.DamageWithin`'s drop is now unreachable at every window the
-      program draws, not merely on shipped data.** Raising the floor to 120 took
-      the narrowest room this row ever has to **98 cells (vi) / 99 (en)**, and
-      the reading's own arithmetic ceiling is **89 / 87** — four numbers in fixed
-      wording, two of them the stat ceilings (three digits, always) and two of
-      them `int64` at nineteen digits. Short by nine and twelve cells, so no
-      skill reaches it: `strikes` and `power` are unbounded, but the damage
-      product overflows `int64` (the item above) before the digits arrive.
-      `TestTheDamageRowKeepsItsReferencePairAtEveryWindow` asserts the bound.
-      Either the branch goes, or it is kept as the guard for a wording that
-      grows — decide which, and say so where it lives. ⚠️ It is **not** simply
-      dead weight: it is the only thing standing between a longer catalog line
-      and a row that runs off the edge, and the floor raise is exactly what made
-      catalog lines free to grow.
-- [ ] **`damageRowRoom` is one cell over** (`cmd/hexforge-tui/skills.go`): it
-      spends `width - 2 - labelWidth - 1`, so the row may fill the window's last
-      cell, which wraps on some terminals. Wrong at the floor too, so it wants a
-      test that builds the figure reaching it rather than one that rides in on a
-      width change. Unreachable on shipped data — the widest reading is 59 cells,
-      against the 61 there were at the old floor and the 98 there are now.
+- [ ] **`combat.Swung` can overflow `int`.** It computes
+      `(power + bonus) * (PermilleBase + share) / PermilleBase` in `int`
+      arithmetic, so it passes `math.MaxInt64` at a power around 9.2×10¹⁵ — and
+      it is the value that **becomes** `skillMultiplier` in `Rules.damage`,
+      upstream of the 128-bit numerator #180 built. Twelve orders of magnitude
+      past anything reachable (the shipped book's largest power is 2,400 and the
+      largest multiplier it can land is 3,500), so it is not urgent — but it is
+      the same class of defect and the one remaining place a power is multiplied
+      in a narrow type. Found while fixing #180, named there and not touched.
 - [ ] **`frame` cuts every line silently.** `model.go`'s `MaxWidth(m.width)`
       truncates without a mark, so twenty-three of the twenty-four sites that
       render `m.lang.Error(...)` lose the tail of a sentence with nothing to say
