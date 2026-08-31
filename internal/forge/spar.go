@@ -291,7 +291,7 @@ func (r SparReport) Opponents() int {
 // written is whether it belongs beside the ones already written, and the answer
 // to that is the whole cast rather than whichever member they thought to compare
 // it against.
-func (l *Library) Spar(id string, level, seeds int) (SparReport, error) {
+func (l *Library) Spar(id string, level, seeds int, want string) (SparReport, error) {
 	if seeds < 1 {
 		return SparReport{}, fmt.Errorf("a spar over %d battles measures nothing", seeds)
 	}
@@ -302,34 +302,49 @@ func (l *Library) Spar(id string, level, seeds int) (SparReport, error) {
 	if !known {
 		return SparReport{}, fmt.Errorf("no character is called %q", id)
 	}
-	challenger, err := l.duellist(character, level)
+	// A forking SUBJECT is refused rather than picked, in the words StageAt
+	// already uses: a spar reports what one character is worth and two arms are
+	// two answers. The caller's fix is to name one, which is what want is for.
+	challenger, err := l.duellist(character, level, want)
 	if err != nil {
 		return SparReport{}, err
 	}
 	report := SparReport{Challenger: challenger, Seeds: seeds}
 	books := l.Books()
 	for _, other := range l.characters.All() {
-		opponent, err := l.duellist(other, level)
+		// A forking OPPONENT is fielded once per arm rather than refused. Two
+		// arms are two different fights, and a table that dropped one would be a
+		// table missing an opponent — the same answer Inspect gives the budget,
+		// one row an arm.
+		arms, err := other.FurthestAt(level)
 		if err != nil {
 			return SparReport{}, fmt.Errorf("%s cannot be fielded at level %d: %w",
 				other.ID, level, err)
 		}
-		// Nothing is counted: a spar reports which character is better, and a
-		// strike tally would be four skills added together with no way to tell
-		// which of them moved.
-		fought, err := duel(books, challenger, opponent, seeds, other.ID == character.ID, "")
-		if err != nil {
-			return SparReport{}, fmt.Errorf("%s cannot be measured against %s: %w",
-				challenger.ID, opponent.ID, err)
+		for _, arm := range arms {
+			opponent, err := l.duellist(other, level, arm.Name)
+			if err != nil {
+				return SparReport{}, fmt.Errorf("%s cannot be fielded at level %d: %w",
+					other.ID, level, err)
+			}
+			// Nothing is counted: a spar reports which character is better, and a
+			// strike tally would be four skills added together with no way to tell
+			// which of them moved.
+			mirror := other.ID == character.ID && opponent.Stage == challenger.Stage
+			fought, err := duel(books, challenger, opponent, seeds, mirror, "")
+			if err != nil {
+				return SparReport{}, fmt.Errorf("%s cannot be measured against %s: %w",
+					challenger.ID, opponent.ID, err)
+			}
+			report.Matchups = append(report.Matchups, fought)
 		}
-		report.Matchups = append(report.Matchups, fought)
 	}
 	return report, nil
 }
 
 // duellist works out what a character brings to a spar.
-func (l *Library) duellist(character cast.Character, level int) (Duellist, error) {
-	stats, stage, err := character.Resolve(level, progression.Furthest)
+func (l *Library) duellist(character cast.Character, level int, want string) (Duellist, error) {
+	stats, stage, err := character.Resolve(level, want)
 	if err != nil {
 		return Duellist{}, err
 	}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/seed"
 )
 
@@ -16,6 +17,10 @@ import (
 var (
 	flurryBuild  = []string{"pummel", "body_slam", "submission", "water_gun"}
 	riptideBuild = []string{"bubble", "bubble_beam", "whirlpool", "hydro_pump"}
+	// The third Poliwag direction is fielded as the OTHER arm, which is what a
+	// fork buys: the two above are Poliwrath's and this one is Politoed's, and
+	// no stat line is shared between them.
+	chorusBuild = []string{"rinse", "chorus", "rally", "hydro_pump"}
 
 	gambleBuild = []string{"cross_chop", "submission", "seismic_toss", "inner_focus"}
 	sureBuild   = []string{"vital_throw", "body_slam", "rock_throw", "seismic_toss"}
@@ -53,8 +58,8 @@ type buildReading struct {
 // and the statuses — rather than by fighting the two against each other, for the
 // reason bulbasaurFight's comment gives: a mirror duel measures the twin.
 func TestTheTwoPoliwagBuildsAreDifferentUnits(t *testing.T) {
-	flurry := readBuild(t, "pokemon.poliwag", flurryBuild, "blood_thirst")
-	riptide := readBuild(t, "pokemon.poliwag", riptideBuild, "spiteful")
+	flurry := readBuild(t, "pokemon.poliwag", "Poliwrath", flurryBuild, "blood_thirst")
+	riptide := readBuild(t, "pokemon.poliwag", "Poliwrath", riptideBuild, "spiteful")
 
 	// The drain is the melee build, and nothing in the ranged one gives health
 	// back — so a figure above nought there means a skill or a trait moved
@@ -72,10 +77,21 @@ func TestTheTwoPoliwagBuildsAreDifferentUnits(t *testing.T) {
 		t.Errorf("the ranged build landed %d statuses and the melee build %d, "+
 			"so the one built to slow is not slowing more", riptide.inflicted, flurry.inflicted)
 	}
+	// The third direction is the other ARM, and it is not a damage kit at all:
+	// one of its four skills deals any, so it has to read well under both of the
+	// Poliwrath ones or the fork bought nothing.
+	chorus := readBuild(t, "pokemon.poliwag", "Politoed", chorusBuild, "composure")
+	if chorus.dealt >= flurry.dealt || chorus.dealt >= riptide.dealt {
+		t.Errorf("the chorus build dealt %d against the melee build's %d and the ranged build's %d, "+
+			"so the arm built to hold a line is trading blows with the ones built to land them",
+			chorus.dealt, flurry.dealt, riptide.dealt)
+	}
 	t.Logf("flurry %d turns dealing %d recovering %d, %d statuses; "+
-		"riptide %d turns dealing %d, %d statuses",
+		"riptide %d turns dealing %d, %d statuses; "+
+		"chorus %d turns dealing %d, %d statuses",
 		flurry.turns, flurry.dealt, flurry.healed, flurry.inflicted,
-		riptide.turns, riptide.dealt, riptide.inflicted)
+		riptide.turns, riptide.dealt, riptide.inflicted,
+		chorus.turns, chorus.dealt, chorus.inflicted)
 }
 
 // TestTheTwoMachopBuildsAreDifferentUnits.
@@ -86,8 +102,8 @@ func TestTheTwoPoliwagBuildsAreDifferentUnits(t *testing.T) {
 // that rarely do. So it is asserted on misses, which is the axis the two were
 // chosen along.
 func TestTheTwoMachopBuildsAreDifferentUnits(t *testing.T) {
-	gamble := readBuild(t, "pokemon.machop", gambleBuild, "berserk")
-	sure := readBuild(t, "pokemon.machop", sureBuild, "unyielding")
+	gamble := readBuild(t, "pokemon.machop", progression.Furthest, gambleBuild, "berserk")
+	sure := readBuild(t, "pokemon.machop", progression.Furthest, sureBuild, "unyielding")
 
 	if gamble.missed <= sure.missed {
 		t.Errorf("the gambling build missed %d times and the reliable one %d, so the kit "+
@@ -112,8 +128,8 @@ func TestTheTwoMachopBuildsAreDifferentUnits(t *testing.T) {
 // say about it is what it *spent its turns on*, which is exactly what separates
 // these two directions.
 func TestTheTwoCleffaBuildsAreDifferentUnits(t *testing.T) {
-	mend := readBuild(t, "pokemon.cleffa", mendBuild, "composure")
-	hexed := readBuild(t, "pokemon.cleffa", hexBuild, "elusive")
+	mend := readBuild(t, "pokemon.cleffa", progression.Furthest, mendBuild, "composure")
+	hexed := readBuild(t, "pokemon.cleffa", progression.Furthest, hexBuild, "elusive")
 
 	if mend.healed <= 0 {
 		t.Error("the mending build recovered nothing, and the health coming back is the build")
@@ -139,13 +155,13 @@ func TestTheTwoCleffaBuildsAreDifferentUnits(t *testing.T) {
 // Charizard for the reason bulbasaurRun and squirtleRun both give: two kits are
 // comparable only against something held still, and it is the heaviest attacker
 // in the cast, so a build that cannot answer it shows that quickly.
-func readBuild(t *testing.T, who string, kit []string, trait string) buildReading {
+func readBuild(t *testing.T, who, stage string, kit []string, trait string) buildReading {
 	t.Helper()
 	books, err := seed.Books()
 	if err != nil {
 		t.Fatalf("load the shipped books: %v", err)
 	}
-	stats, affinity, _, _ := fielded(t, who)
+	stats, affinity, _, _ := fieldedAs(t, who, stage)
 	theirStats, theirAffinity, theirKit, theirTraits := fielded(t, "pokemon.charmander")
 
 	var total buildReading

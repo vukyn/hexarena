@@ -60,6 +60,8 @@ charm           light     enemy    2  single            0     1      0  1000    
 moonlight       light     ally     1  single            0     1      0  1000    3     0     0        0
 wish            light     ally     1  single            0     1      0  1000    4     0     0        0
 sing            light     enemy    2  flank_up          0     1      0  1000    4     0     0        0
+rinse           water     ally     1  single            0     1      0  1000    3     0     0        0
+chorus          water     ally     1  column            0     1      0  1000    4     0     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -95,6 +97,7 @@ moonblast       weaken                 1      300        900              270
 charm           weaken                 2     1000       1000             1000
 wish            regrowth               1     1000       1000             1000
 sing            stun                   1      600       1000              600
+chorus          haste                  1     1000       1000             1000
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -148,6 +151,8 @@ charm           -          -                 -                   -         pokem
 moonlight       -          -                 -                   -         pokemon
 wish            -          -                 -                   -         pokemon
 sing            -          -                 -                   -         pokemon
+rinse           -          -                 -                   -         pokemon
+chorus          -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -171,6 +176,7 @@ dragon_drive    expose   defence        102              342           444     7
 == cleanses and dispels ==
 skill           categories                    stacks
 rapid_spin      stat_debuff, dot, heal_cut         1
+rinse           dot, stat_debuff                   2
 
 == timed effects ==
 status      category      stacks   turns   tick power   tick   over its life   heal cut   modifiers

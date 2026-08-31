@@ -38,6 +38,16 @@ type Build struct {
 	// prose about a build, and it must stay intent: the skills describe
 	// themselves, and a number here would be a promise this type cannot keep.
 	Intent string
+	// Stage is the form this direction is built for, and it is only ever needed
+	// on a line that **forks**: absent means the furthest the cap reaches, which
+	// is what every build meant before any line had two arms.
+	//
+	// It is the same word a placement and a roster entry already use, and
+	// deliberately so — "which form" is one question and a second vocabulary for
+	// it is how two files come to disagree. On a forking line the absent answer
+	// is a refusal rather than a pick, because a kit carried by one arm and not
+	// the other is a different build.
+	Stage string
 	// Skills and Passives are the loadout, and they *choose* rather than list —
 	// each entry has to be something the character has learned by the cap, as
 	// the form the cap reaches.
@@ -51,6 +61,7 @@ type buildFile struct {
 	Character string   `json:"character"`
 	Name      string   `json:"name"`
 	Intent    string   `json:"intent"`
+	Stage     string   `json:"stage,omitempty"`
 	Skills    []string `json:"skills"`
 	Passives  []string `json:"passives"`
 }
@@ -142,7 +153,7 @@ func resolveBuild(entry buildFile, characters *Book) (Build, error) {
 		}
 	}
 
-	_, stage, err := character.Resolve(progression.LevelCap, progression.Furthest)
+	_, stage, err := character.Resolve(progression.LevelCap, entry.Stage)
 	if err != nil {
 		return Build{}, fmt.Errorf("resolve %s for the build %q: %w", entry.Character, entry.ID, err)
 	}
@@ -156,8 +167,12 @@ func resolveBuild(entry buildFile, characters *Book) (Build, error) {
 		Character: entry.Character,
 		Name:      entry.Name,
 		Intent:    entry.Intent,
-		Skills:    skills,
-		Passives:  passives,
+		// The resolved form rather than what was written: on a line that does
+		// not fork the field is absent and this is the one stage there is, so a
+		// reader never has to know which sort of line it came off.
+		Stage:    stage.Name,
+		Skills:   skills,
+		Passives: passives,
 	}, nil
 }
 

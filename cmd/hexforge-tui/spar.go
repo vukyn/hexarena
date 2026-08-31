@@ -131,28 +131,35 @@ func (s sparScreen) rowCount(m model) int {
 // rather than the report carrying one: a CharacterReport is a finding about a
 // character and not the character, and the day it carries one is the day two
 // screens can disagree about what is in the file.
-func (s sparScreen) subject(m model) (cast.Character, bool) {
+// ⚠️ The row's FORM comes back with it, and that is what makes a forking line
+// sparrable from here at all. Inspect reports one row an arm, so the cursor is
+// already sitting on a chosen form — asking Spar for "the furthest" instead
+// would hand it two answers and get a refusal, on a screen with nowhere to
+// choose.
+func (s sparScreen) subject(m model) (cast.Character, string, bool) {
 	rows := m.check.report.Rows
 	if len(rows) == 0 {
-		return cast.Character{}, false
+		return cast.Character{}, "", false
 	}
-	return m.lib.Characters().Get(rows[clamp(m.check.cursor, 0, len(rows)-1)].ID)
+	row := rows[clamp(m.check.cursor, 0, len(rows)-1)]
+	character, known := m.lib.Characters().Get(row.ID)
+	return character, row.Stage, known
 }
 
 // report is the run for who is in front, fighting it if it has not been fought.
 func (s sparScreen) report(m model) (forge.SparReport, error, bool) {
-	character, ok := s.subject(m)
+	character, stage, ok := s.subject(m)
 	if !ok {
 		return forge.SparReport{}, nil, false
 	}
-	key := fmt.Sprintf("%s|%d|%d", character.ID, s.level, s.seeds)
+	key := fmt.Sprintf("%s|%s|%d|%d", character.ID, stage, s.level, s.seeds)
 	if done, cached := s.fought[key]; cached {
 		return done, nil, true
 	}
 	if failure, cached := s.failed[key]; cached {
 		return forge.SparReport{}, failure, true
 	}
-	done, err := m.lib.Spar(character.ID, s.level, s.seeds)
+	done, err := m.lib.Spar(character.ID, s.level, s.seeds, stage)
 	if err != nil {
 		s.failed[key] = err
 		return forge.SparReport{}, err, true
@@ -212,7 +219,7 @@ func signed(permille int) string {
 
 func (s sparScreen) view(m model) (string, string) {
 	footer := m.text(i18n.SparFooter)
-	character, ok := s.subject(m)
+	character, _, ok := s.subject(m)
 	if !ok {
 		return "  " + m.text(i18n.CheckNothingToCheck) + "\n", footer
 	}

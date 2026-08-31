@@ -99,7 +99,7 @@ pokemon.poliwag — Poliwag
   element  water
   species  amphibian
   art      assets/poliwag.svg
-  kit      water_gun bubble pummel@8 body_slam@12 bubble_beam@16 brine@20 whirlpool@24 taunt@32 submission@36 hydro_pump@40 rally@44
+  kit      water_gun bubble pummel@8 body_slam@12 bubble_beam@16 brine@20 whirlpool@24 taunt@32 submission@36[Poliwrath] hydro_pump@40 rally@44 rinse@32[Politoed] chorus@36[Politoed]
   stage "Poliwag" owns levels 1 to 15, showing assets/poliwag.svg
     level 1  hp 963, atk 168, def 145, spd 25, acc 38, ddg 11
              absorbs 1428 of the 11500 budget, 10072 to spare
@@ -110,11 +110,16 @@ pokemon.poliwag — Poliwag
              absorbs 3010 of the 11500 budget, 8490 to spare
     level 31 hp 2181, atk 386, def 331, spd 53, acc 84, ddg 24
              absorbs 4591 of the 11500 budget, 6909 to spare
-  stage "Poliwrath" owns levels 32 to 60, showing assets/poliwrath.svg
+  stage "Poliwrath" owns levels 32 to 31, showing assets/poliwrath.svg
     level 32 hp 2547, atk 454, def 385, spd 62, acc 96, ddg 27
              absorbs 5828 of the 11500 budget, 5672 to spare
-    level 60 hp 3700, atk 660, def 560, spd 90, acc 140, ddg 40
-             absorbs 10632 of the 11500 budget, 868 to spare
+    level 31 hp 2506, atk 447, def 379, spd 61, acc 94, ddg 27
+             absorbs 5682 of the 11500 budget, 5818 to spare
+  stage "Politoed" owns levels 32 to 60, showing assets/politoed.svg
+    level 32 hp 2616, atk 399, def 399, spd 55, acc 103, ddg 30
+             absorbs 6097 of the 11500 budget, 5403 to spare
+    level 60 hp 3800, atk 580, def 580, spd 80, acc 150, ddg 45
+             absorbs 11176 of the 11500 budget, 324 to spare
 
 pokemon.machop — Machop
   from     Pokémon (anime)

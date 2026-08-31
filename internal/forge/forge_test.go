@@ -84,15 +84,26 @@ func TestInspectPassesOnTheShippedData(t *testing.T) {
 	if len(report.Rows) == 0 {
 		t.Fatal("no characters were inspected, so nothing here is being exercised")
 	}
+	// Per CHARACTER, not per row. A forking line is reported one row an arm and
+	// the art is deliberately listed on the first of them only — "a second copy
+	// of the same list under the same id would read as a second set of files to
+	// go and check" — so a per-row assertion calls the second arm artless.
+	// Nothing could reach that until a line forked.
+	drawn := make(map[string]bool, len(report.Rows))
 	for _, row := range report.Rows {
-		if len(row.Art) == 0 {
-			t.Errorf("%s was inspected with no art at all", row.ID)
-		}
+		drawn[row.ID] = drawn[row.ID] || len(row.Art) > 0
 		for _, art := range row.Art {
 			if !art.Exists {
 				t.Errorf("%s names art that is not there: %s (stage %q)", row.ID, art.Image, art.Stage)
 			}
 		}
+	}
+	for id, has := range drawn {
+		if !has {
+			t.Errorf("%s was inspected with no art at all", id)
+		}
+	}
+	for _, row := range report.Rows {
 		if row.Failure != nil {
 			t.Errorf("%s does not resolve: %v", row.ID, row.Failure)
 		}
@@ -271,6 +282,13 @@ func TestInspectNoticesArtOnlyAGrownFormUses(t *testing.T) {
 	// And the character's own picture is still fine, which is the point: one
 	// row of the list is missing and the rest are not.
 	for _, row := range after.Rows {
+		// A second arm carries no art list — Inspect lists it once per character
+		// — so there is no first entry to read. Skipping is the same reading
+		// TestInspectPassesOnTheShippedData makes, and neither could be reached
+		// until a line forked.
+		if len(row.Art) == 0 {
+			continue
+		}
 		if row.Art[0].Stage != "" {
 			t.Errorf("%s lists %q first, want the character's own picture", row.ID, row.Art[0].Stage)
 		}

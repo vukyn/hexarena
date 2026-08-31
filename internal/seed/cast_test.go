@@ -146,23 +146,37 @@ func TestEveryShippedCharacterResolves(t *testing.T) {
 		t.Fatal("no characters are shipped, so nothing here is being exercised")
 	}
 	for _, character := range characters {
+		// Every ARM, not the one furthest form. A line that forks has two grown
+		// ends and the budget bites on each, so asking for "the" furthest is a
+		// refusal there rather than a pick — which is exactly what this used to
+		// do, and it could not be reached until a line forked.
 		for _, level := range []int{1, progression.LevelCap} {
-			values, stage, err := character.Resolve(level, progression.Furthest)
+			forms, err := character.FurthestAt(level)
 			if err != nil {
 				t.Errorf("%s at level %d: %v", character.ID, level, err)
 				continue
 			}
-			if stage.Name == "" {
-				t.Errorf("%s at level %d landed in an unnamed stage", character.ID, level)
-			}
-			if err := limits.CheckValues(values, rules); err != nil {
-				t.Errorf("%s at level %d: %v", character.ID, level, err)
+			for _, form := range forms {
+				values, stage, err := character.Resolve(level, form.Name)
+				if err != nil {
+					t.Errorf("%s at level %d as %s: %v", character.ID, level, form.Name, err)
+					continue
+				}
+				if stage.Name == "" {
+					t.Errorf("%s at level %d landed in an unnamed stage", character.ID, level)
+				}
+				if err := limits.CheckValues(values, rules); err != nil {
+					t.Errorf("%s at level %d as %s: %v", character.ID, level, stage.Name, err)
+				}
 			}
 		}
 		// Every stage boundary resolves to the stage that declares it, which is
-		// the property the whole staged design rests on.
+		// the property the whole staged design rests on. Asked BY NAME, because
+		// on a forking line the boundary is shared: Poliwrath and Politoed both
+		// begin at the same level, and "whichever is furthest there" is two
+		// answers.
 		for _, stage := range character.Stages {
-			_, reached, err := character.Resolve(stage.MinLevel, progression.Furthest)
+			_, reached, err := character.Resolve(stage.MinLevel, stage.Name)
 			if err != nil {
 				t.Errorf("%s at level %d: %v", character.ID, stage.MinLevel, err)
 				continue

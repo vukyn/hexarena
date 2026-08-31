@@ -6,6 +6,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/vukyn/hexarena/internal/core/cast"
+
 	"github.com/vukyn/hexarena/internal/core/progression"
 )
 
@@ -56,6 +58,10 @@ type CarriersRequest struct {
 	// over, so one carrier costs 2 × Seeds × len(values) and the table costs
 	// that again per carrier.
 	Seeds int
+	// Stage is the form every carrier is weighed as, for the reason
+	// WeighRequest carries one: a forking line has two stat lines and a price is
+	// a fact about one. A carrier it does not apply to is unaffected.
+	Stage string
 }
 
 // CarrierRow is one carrier's whole weighing, or the refusal that stands where
@@ -253,9 +259,24 @@ func (l *Library) WeighCarriers(request CarriersRequest) (CarriersReport, error)
 	// that ordered itself by whatever it was handed would be the same fault one
 	// layer up.
 	for _, character := range l.characters.All() {
+		// ⚠️ Membership is asked of every ARM before the weighing, because a
+		// forking line cannot be resolved without one and the refusal that comes
+		// back says nothing about whether the skill is even in the kit. Without
+		// this a character that brings nothing lands in the table as a refused
+		// row — which reads as "could not be priced" where the truth is "was
+		// never a carrier", and those are the two things this table keeps apart.
+		if skipped, brings := l.brings(character, request); !brings {
+			report.Skipped = append(report.Skipped, skipped)
+			continue
+		}
+		// One row a CHARACTER, and a forking line is a refused row rather than
+		// two priced ones. A price is a fact about one stat line, so a carrier
+		// with two of them has to be told apart by the caller — Stage on the
+		// request is how, and the refusal names both arms.
 		weighed, err := l.Weigh(WeighRequest{
 			Character: character.ID, Skill: request.Skill, Field: request.Field,
 			Values: request.Values, Level: request.Level, Seeds: request.Seeds,
+			Stage: request.Stage,
 		})
 		var absent *NotBroughtError
 		if errors.As(err, &absent) {
@@ -297,4 +318,33 @@ func (r *CarriersReport) order() {
 	slices.SortStableFunc(r.Skipped, func(a, b CarrierSkipped) int {
 		return strings.Compare(a.Carrier, b.Carrier)
 	})
+}
+
+// brings reports whether any form this character reaches at the request's level
+// carries the skill, and the skip to file when none does.
+//
+// It reads the kit off duellist, which is the same reading Weigh makes, so the
+// two cannot disagree about what "brings" means. A level or a line the arms
+// cannot be worked out from is treated as bringing it, so the weighing below
+// reports that fault in its own words rather than this having a second opinion.
+func (l *Library) brings(character cast.Character, request CarriersRequest) (CarrierSkipped, bool) {
+	arms, err := character.FurthestAt(request.Level)
+	if err != nil {
+		return CarrierSkipped{}, true
+	}
+	var last Duellist
+	for _, arm := range arms {
+		fielded, err := l.duellist(character, request.Level, arm.Name)
+		if err != nil {
+			return CarrierSkipped{}, true
+		}
+		if slices.Contains(fielded.Skills, request.Skill) {
+			return CarrierSkipped{}, true
+		}
+		last = fielded
+	}
+	return CarrierSkipped{Carrier: character.ID, Why: &NotBroughtError{
+		Carrier: character.ID, Skill: request.Skill, Level: last.Level,
+		Stage: last.Stage, Brings: last.Skills,
+	}}, false
 }

@@ -207,7 +207,7 @@ func TestMoreOfAGoodFieldReadsAboveTheControl(t *testing.T) {
 // what says so.
 func TestWeighingTheOpponentIsTheNegativeOfWeighingTheChallenger(t *testing.T) {
 	lib := sparLibrary(t)
-	carrier, err := lib.duellist(mustCharacter(t, lib, weighCarrier), progression.LevelCap)
+	carrier, err := lib.duellist(mustCharacter(t, lib, weighCarrier), progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("field %s: %v", weighCarrier, err)
 	}
@@ -302,7 +302,7 @@ func TestTheShippedBookIsUnchangedByAWeighing(t *testing.T) {
 // split — a price of nought printed against a skill that was never in the fight.
 func TestAWeighingRefusesASkillTheCarrierDoesNotBring(t *testing.T) {
 	lib := sparLibrary(t)
-	carrier, err := lib.duellist(mustCharacter(t, lib, weighCarrier), progression.LevelCap)
+	carrier, err := lib.duellist(mustCharacter(t, lib, weighCarrier), progression.LevelCap, progression.Furthest)
 	if err != nil {
 		t.Fatalf("field %s: %v", weighCarrier, err)
 	}

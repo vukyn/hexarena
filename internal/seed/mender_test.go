@@ -45,8 +45,15 @@ func aSquadOf(id string, third placement.Placement) placement.Squad {
 }
 
 func aThirdMember(character string, kit ...string) placement.Placement {
+	return aThirdMemberAs(character, progression.Furthest, kit...)
+}
+
+// aThirdMemberAs names the form, which a line that forks has to: Take resolves
+// through the same refusal Resolve does, so a placement leaving the arm open is
+// a squad that cannot be fielded at all.
+func aThirdMemberAs(character, stage string, kit ...string) placement.Placement {
 	return placement.Placement{
-		ID: "third", Character: character, Level: progression.LevelCap,
+		ID: "third", Character: character, Level: progression.LevelCap, Stage: stage,
 		Slot:     hex.Offset{Col: 0, Row: 1},
 		Skills:   kit,
 		Passives: []string{"endurance"},
@@ -92,7 +99,7 @@ func TestAMenderEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	}{
 		{"a slugger", aSquadOf("with-slugger", aThirdMember("pokemon.machop",
 			"rock_throw", "body_slam", "cross_chop", "vital_throw"))},
-		{"a bruiser", aSquadOf("with-bruiser", aThirdMember("pokemon.poliwag",
+		{"a bruiser", aSquadOf("with-bruiser", aThirdMemberAs("pokemon.poliwag", "Poliwrath",
 			"water_gun", "bubble", "pummel", "body_slam"))},
 	} {
 		t.Run(against.name, func(t *testing.T) {
