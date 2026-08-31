@@ -44,6 +44,12 @@ func TestTheShippedBuildsAreTheOnesTheTestsMeasure(t *testing.T) {
 		{"charmander.dragon", dragonBuild, "reckless"},
 		{"squirtle.fortress", tankBuild, "thorns"},
 		{"squirtle.ram", semiBuild, "ballast"},
+		{"poliwag.flurry", flurryBuild, "blood_thirst"},
+		{"poliwag.riptide", riptideBuild, "spiteful"},
+		{"machop.gamble", gambleBuild, "berserk"},
+		{"machop.sure", sureBuild, "unyielding"},
+		{"cleffa.mend", mendBuild, "composure"},
+		{"cleffa.hex", hexBuild, "elusive"},
 	} {
 		build, known := book.Get(want.id)
 		if !known {
