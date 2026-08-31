@@ -46,6 +46,37 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// of which is the damage before and after.
 	editedSkill := m.enter(screenSkills)
 	editedSkill.skills.edited = someSkillChange(t, m)
+	// The typed filter on the skill listing, in each of the three states it
+	// draws: the field just opened with nothing in it, a query that has found
+	// several rows, and a query that has found none. Three rather than one
+	// because they share no line — an empty field says what to type, a full one
+	// says how much of the book is left, and a query that found nothing says so
+	// where the rows would have been.
+	//
+	// ⚠️ Driven with the keys an author would press, not by writing the query
+	// onto the screen's own field. The query is what decides which rows there
+	// are, so a hand-set field would measure this test's idea of the filter
+	// rather than the one / opens — and this is the fixture that has twice
+	// measured a screen's early exit instead of the screen (playScreen's shared
+	// battle, and plainTerminal above it).
+	filterOpen := typeText(t, m.enter(screenSkills), "/")
+	if !filterOpen.skills.filtering {
+		t.Fatal("/ did not open the skill filter, so its three states are drawn by " +
+			"nothing in the sweep")
+	}
+	filterFound := typeText(t, filterOpen, someSkillQuery)
+	filterNothing := typeText(t, filterOpen, noSkillQuery)
+	// And the fixture's own discrimination, which no assertion downstream can
+	// see: a query that has quietly stopped matching turns the "found" state into
+	// a second copy of the "nothing" state, and both would still render.
+	if found, all := len(filterFound.skills.rows()), len(filterFound.skills.skills); found < 2 || found >= all {
+		t.Fatalf("the query %q finds %d of %d skills, so the filtered listing is not "+
+			"a narrowed one", someSkillQuery, found, all)
+	}
+	if found := len(filterNothing.skills.rows()); found != 0 {
+		t.Fatalf("the query %q finds %d skills, so the empty result is drawn by nothing",
+			noSkillQuery, found)
+	}
 	// The shape diagram, which is a state of the skill form rather than a screen
 	// of its own. The shape it draws is the widest the board ever is, because the
 	// board is a fixed size — what varies is the line under it, so this is here
@@ -249,6 +280,9 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"add a skill":              addSkill,
 		"edit a skill":             editSkill,
 		"edited a skill":           editedSkill,
+		"filtering skills":         filterOpen,
+		"filtered skills":          filterFound,
+		"skills filtered to none":  filterNothing,
 		"kit picker":               kit,
 		"allowlist picker":         allowlist,
 		"status picker":            statuses,

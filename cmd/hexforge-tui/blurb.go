@@ -149,11 +149,16 @@ func (b blurbScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 		m.blurb = b
 		return m, nil
 	}
+	// Through the listing's own visible rows, not its book: the cursor counts what
+	// the filter left, so stepping it against the full book would walk past the
+	// end of the narrowed listing and describe a skill the screen behind is not
+	// pointing at. skillsScreen.rows is the one funnel — see it for why.
+	rows := len(m.skills.rows())
 	switch message.String() {
 	case "up", "k":
-		m.skills.cursor = clamp(m.skills.cursor-1, 0, len(m.skills.skills)-1)
+		m.skills.cursor = clamp(m.skills.cursor-1, 0, rows-1)
 	case "down", "j":
-		m.skills.cursor = clamp(m.skills.cursor+1, 0, len(m.skills.skills)-1)
+		m.skills.cursor = clamp(m.skills.cursor+1, 0, rows-1)
 	}
 	return m, nil
 }
@@ -165,7 +170,9 @@ func (b blurbScreen) view(m model) (string, string) {
 	case screenPlay:
 		return b.viewOption(m)
 	}
-	skills := m.skills.skills
+	// The rows the listing has left rather than the book, so the position beside
+	// the name — "3 / 5" — counts the same list the marker was moving through.
+	skills := m.skills.rows()
 	if len(skills) == 0 {
 		return "  " + m.text(i18n.NoneCatalogued) + "\n", m.text(i18n.BlurbFooter)
 	}

@@ -1311,6 +1311,9 @@ every keystroke:
 - a **live carry check**, which says whether the affinity carries every skill in
   the kit and names the first one it cannot, as the element or the kit is being
   typed;
+- a **typed filter on the skill listing**, `/`, which narrows forty-three rows as
+  you type and matches a skill by its id *or* by its Vietnamese name with the
+  marks left off — `diep` finds `phi diệp`. See *Finding a skill by name* below;
 - an **art preview**, `p` from the browser, which draws the picture of the form
   the level resolved to — so walking the level is how a character's forms are
   compared, which is the whole reason a form may have art of its own;
@@ -1325,6 +1328,46 @@ Both answers come from `internal/forge` — the same functions the write goes
 through, so neither can be a second opinion.
 `TestTheFormProducesTheCharacterTheCommandLineProduces` asserts that the same
 answers typed into the form and passed as flags resolve to the same character.
+
+#### Finding a skill by name
+
+The skill listing shows every skill in the book, and the book is forty-three
+skills — a screen and a half at the declared 80x24 floor, walked one arrow key at
+a time. `/` opens a filter and typing narrows the rows on every keystroke; `enter`
+keeps the query and hands the keyboard back to the rows, so `↑/↓`, `a`, `e` and
+`?` work on what was found, and `esc` clears the query and closes the field in one
+key. A row under the heading says what is being filtered and how much of the book
+is left, and a query nothing answers to says so where the rows would have been.
+
+It is a **mode** rather than another letter because every letter this screen has
+is already a command, so while the field has the keyboard only `esc`, `enter`,
+`backspace` and the two arrow keys are keys. `j` and `k` are text there, which is
+why the arrows are what walks the narrowed rows.
+
+**A row matches on its id or on its Vietnamese name, ignoring case and ignoring
+diacritics.** That is the reason the feature exists rather than a nicety: an
+author at a terminal with no Vietnamese input method cannot type `phi diệp`, so a
+filter matching the letters as authored would leave the name column — the column
+this client added a whole feature to draw — unsearchable. `i18n.Fold` is the
+matching half: an explicit table of the sixty-seven accented Vietnamese letters
+under the seven ASCII bases they fold to, in both cases.
+
+⚠️ **It is a table and not a Unicode normalisation, and `golang.org/x/text` stays
+an indirect dependency.** NFD followed by dropping every combining mark needs a
+hand-written entry regardless, because **`đ` is not a `d` with a mark on it** — it
+is its own letter with its own codepoint. Once one entry is hand-written, the
+table is the smaller thing to read. And unlike every gloss table in that package,
+this one has to be **complete**: a gloss that misses prints an id, while a fold
+that misses makes a row unfindable with nothing on screen saying it was there. So
+its completeness is measured against the data — a test walks every shipped skill
+name, every status and trait name and both wording catalogs, and fails on a letter
+that folds to something that is not an ASCII letter.
+
+⚠️ **The match reads the skill's data rather than the language in front**, so the
+same query finds the same rows on an English screen even though that screen draws
+no name column. `ctrl+l` swaps languages from anywhere and keeps everything typed;
+a query that quietly found fewer rows after it would be the tool changing the
+answer behind the author.
 
 #### What a skill is worth before it is written
 
