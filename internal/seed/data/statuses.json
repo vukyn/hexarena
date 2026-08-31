@@ -254,6 +254,20 @@
       "max_stacks": 2,
       "duration": 2,
       "heal_share": -400
+    },
+    {
+      "id": "evasive",
+      "category": "buff",
+      "max_stacks": 1,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "dodge",
+          "mode": "percent",
+          "amount": 150
+        }
+      ]
     }
   ]
 }

@@ -196,6 +196,7 @@ fortified   buff                1       0            0      0               0   
 quickened   buff                1       0            0      0               0          0   speed +8.0%
 encumber    stat_debuff         1       0            0      0               0          0   speed -10.0%
 fester      heal_cut            2       2            0      0               0       -400   -
+evasive     buff                1       0            0      0               0          0   dodge +15.0%
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

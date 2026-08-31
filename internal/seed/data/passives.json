@@ -145,6 +145,95 @@
           "stat": "defense"
         }
       }
+    },
+    {
+      "id": "composure",
+      "name": "vững tâm",
+      "flavour": "Đứng giữa ồn ào mà đầu vẫn tỉnh, ai gào thét cỡ nào cũng chẳng lay được",
+      "grants": [],
+      "resists": [
+        {
+          "status": "stun",
+          "amount": 500
+        },
+        {
+          "status": "taunting",
+          "amount": 500
+        }
+      ]
+    },
+    {
+      "id": "elusive",
+      "name": "huyền ảo",
+      "flavour": "Chỗ vừa đứng đã trống, mà chỗ đòn rơi xuống thì lại chẳng có ai",
+      "grants": [
+        {
+          "status": "evasive",
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "contagion",
+      "name": "lây lan",
+      "flavour": "Chạm vào đâu là thứ gì đó ở lại đó, ngấm dần cho tới khi đòn đánh nhẹ bẫng đi",
+      "grants": [],
+      "applies": [
+        {
+          "status": "weaken",
+          "chance": 250,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "spiteful",
+      "name": "nham hiểm",
+      "flavour": "Không đánh mạnh, chỉ đánh đúng chỗ đau, mà chỗ đau thì nhớ rất lâu",
+      "grants": [],
+      "amplifies": [
+        {
+          "status": "stun",
+          "chance": 300
+        },
+        {
+          "status": "mire",
+          "chance": 300
+        }
+      ]
+    },
+    {
+      "id": "berserk",
+      "name": "cuồng chiến",
+      "flavour": "Càng đánh càng quên mất phải giữ mình, nên thứ gì bám vào cũng bám được lâu",
+      "grants": [
+        {
+          "status": "unleashed",
+          "stacks": 1
+        }
+      ],
+      "resists": [
+        {
+          "status": "stun",
+          "amount": -300
+        },
+        {
+          "status": "mire",
+          "amount": -300
+        }
+      ]
+    },
+    {
+      "id": "unyielding",
+      "name": "bất khuất",
+      "flavour": "Đã nhắm ai thì nhắm tới cùng, ai chen vào giữa cũng chỉ là chen vào giữa",
+      "grants": [],
+      "resists": [
+        {
+          "status": "taunting",
+          "amount": 1000
+        }
+      ]
     }
   ]
 }
