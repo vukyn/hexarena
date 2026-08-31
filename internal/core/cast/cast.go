@@ -55,6 +55,16 @@ type Character struct {
 	Image   string           `json:"image"`
 	Element element.Affinity `json:"element"`
 	Bio     string           `json:"bio,omitempty"`
+	// Hidden holds the character back from the lists an authoring tool offers to
+	// build a side out of. Absent means offered, which is the ordinary case, so
+	// the flag reaches the file only where it is set.
+	//
+	// It is an authoring convenience rather than a design statement: a hidden
+	// character still ships, still loads, still fights, and a squad or a roster
+	// naming one is as valid as any other. Nothing in this package or in the
+	// engine reads it — who an author is currently choosing between is not a
+	// fact a replay has any use for — and honouring it is one screen's job.
+	Hidden bool `json:"hidden,omitempty"`
 	// Species is what the character is, each by id in the species book. Absent
 	// is the ordinary case and it is a real answer rather than a gap: most
 	// characters need no lineage, and a skill that asks for one refuses a unit
@@ -245,12 +255,17 @@ type characterFile struct {
 	Image     string `json:"image"`
 	// Element is a pointer so an omitted field is an error rather than a
 	// silent neutral affinity.
-	Element  *element.Affinity `json:"element"`
-	Bio      string            `json:"bio"`
-	Species  []string          `json:"species"`
-	Stages   progression.Line  `json:"stages"`
-	Skills   []Unlock          `json:"skills"`
-	Passives []Unlock          `json:"passives"`
+	Element *element.Affinity `json:"element"`
+	Bio     string            `json:"bio"`
+	// Hidden is read here as well as written by Marshal, which is the whole of
+	// what makes it survive a rewrite: `hexforge new` reads the book and writes
+	// it back whole, so a field the reader does not know about is a field the
+	// next append silently deletes.
+	Hidden   bool             `json:"hidden"`
+	Species  []string         `json:"species"`
+	Stages   progression.Line `json:"stages"`
+	Skills   []Unlock         `json:"skills"`
+	Passives []Unlock         `json:"passives"`
 }
 
 type bookFile struct {
@@ -487,6 +502,7 @@ func resolveCharacter(declared characterFile, deps Deps) (Character, error) {
 		ID: declared.ID, Name: declared.Name,
 		Origin: declared.Origin, Archetype: declared.Archetype,
 		Image: declared.Image, Element: *declared.Element, Bio: declared.Bio,
+		Hidden:  declared.Hidden,
 		Species: species, Stages: declared.Stages, Skills: learnset,
 		Passives: passives,
 	}, nil

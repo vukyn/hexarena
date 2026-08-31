@@ -373,6 +373,17 @@ func idOptions(ids []string) []pickOption {
 // The order is the cast book's own, which is what the browser lists too, and the
 // group is the character's origin — the same axis the browser filters on, so an
 // author filtering here is filtering by the thing they already filter by there.
+//
+// ⚠️ **A held-back character is offered here, and that is not an oversight —
+// do not "finish the job" by filtering cast.Character.Hidden out of this list.**
+// The squad builder honours the flag because it is choosing *who fights*, and a
+// character held back is one an author has taken out of that choice. This list
+// answers a different question: which characters is this skill kept for, written
+// into `restrict.characters`. Hiding a row here would make an existing
+// restriction naming that character **unauthorable** — a skill whose allowlist
+// already names it could not be re-saved with the name it has, and there is no
+// second way in, because the field is a picker and nothing else writes it. The
+// two lists share a shape and share nothing else.
 func characterOptions(lib *forge.Library) []pickOption {
 	characters := lib.Characters().All()
 	out := make([]pickOption, 0, len(characters))

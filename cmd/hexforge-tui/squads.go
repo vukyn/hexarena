@@ -54,8 +54,16 @@ type squadScreen struct {
 	saved  []placement.Squad
 	cursor int
 
-	// characters is the cast to choose from, held rather than looked up per
-	// keystroke because cycling walks it.
+	// characters is the WHOLE cast, held rather than looked up per keystroke
+	// because cycling walks it.
+	//
+	// The whole cast rather than the offered part of it, because this slice
+	// answers two different questions and only one of them is about choosing.
+	// character() looks a member's character up here to read its forms, its
+	// learnset and its traits, and a squad on the file may name a character that
+	// has since been hidden — so a filtered slice would leave that member with no
+	// forms and an empty kit picker. What may be *chosen* is offeredCharacters,
+	// asked of this one at each of the two sites that choose.
 	characters []cast.Character
 
 	// editing is the squad in hand. It is a whole squad rather than an index
@@ -90,10 +98,22 @@ type squadScreen struct {
 	editingID bool
 
 	// unit is the member under edit, and index is where it sits in the squad.
-	unit       placement.Placement
-	unitIndex  int
-	field      int
-	levelInput textinput.Model
+	unit      placement.Placement
+	unitIndex int
+	// unitOpenedAs is the character this member named when it was opened, and it
+	// is what the character chooser keeps offering however held back that
+	// character is. See offeredCharacters.
+	//
+	// Read from here rather than from unit.Character — the obvious spelling —
+	// because the obvious spelling makes the list change shape while it is being
+	// walked: stepping off a held-back character drops it, so `right` then
+	// `left` lands one row short of where it started and the character is
+	// unreachable for the rest of the edit. A chooser is a fixed list the arrows
+	// walk, so what may be chosen has to be settled when the member is opened
+	// rather than recomputed from the answer in hand.
+	unitOpenedAs string
+	field        int
+	levelInput   textinput.Model
 
 	err   error
 	notes []forge.Note
@@ -119,6 +139,47 @@ func (s squadScreen) refresh(lib *forge.Library) squadScreen {
 	s.characters = lib.Characters().All()
 	s.cursor = clamp(s.cursor, 0, len(s.saved)-1)
 	return s
+}
+
+// offeredCharacters is who the builder proposes: every character not held back,
+// plus — always — the one named by `keep`.
+//
+// keep is squadScreen.unitOpenedAs, the character the member under edit named
+// when it was opened, and the empty string when there is none, which is what a
+// brand new member passes. It is deliberately not "whatever is chosen right
+// now" — see the field's own comment for why a list that moves while it is
+// walked is a chooser the arrows cannot bring back.
+//
+// ⚠️ **That second half is the whole reason this is a function and not an `if`
+// at the call site.** A squad on the file may name a character that has since
+// been hidden, and a chooser that simply dropped it would step off it the first
+// time an author touched the row: cycle() finds no match, falls back to index 0
+// and writes somebody else into a member nobody asked to change — a silent edit
+// to the author's own saved file, in the one screen here that writes it. Hidden
+// therefore means *not offered for a new choice*, never *taken away from a
+// choice already made*, and declaration order is preserved so keeping the one
+// named costs the list nothing but its own row.
+//
+// It filters at the call site rather than through a `cast.Book` accessor, and
+// that is a judgement rather than an accident. The rule this applies is not a
+// fact about the cast — "the one this member already holds" is a fact about the
+// squad being edited, which no book can know — so an accessor could answer only
+// the first half and this screen would still have to union the second back in.
+// That is a second vocabulary for "the cast" that no caller could use unaided,
+// while Book.All() stays the honest answer to "the cast" for the browser, the
+// builds screen, `hexforge list`, the spar, the roster and the restriction
+// picker, none of which are choosing a side to fight with. The day a second
+// screen wants the offered list, the argument reverses and the accessor is the
+// change to make.
+func offeredCharacters(all []cast.Character, keep string) []cast.Character {
+	out := make([]cast.Character, 0, len(all))
+	for _, character := range all {
+		if character.Hidden && character.ID != keep {
+			continue
+		}
+		out = append(out, character)
+	}
+	return out
 }
 
 func (s squadScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
@@ -304,15 +365,21 @@ func (s squadScreen) focus() squadScreen {
 	return s
 }
 
-// addUnit puts the first character of the cast in the first free slot, which is
-// a unit an author then edits rather than a blank one they have to fill from
-// nothing.
+// addUnit puts the first character the builder offers in the first free slot,
+// which is a unit an author then edits rather than a blank one they have to fill
+// from nothing.
+//
+// It asks for the offered list with nothing held, because a member being added
+// has chosen nobody yet: a hidden character is never what a new member starts
+// as. A cast that is hidden all the way down therefore adds nobody, the way an
+// empty one does.
 func (s squadScreen) addUnit(m model) (tea.Model, tea.Cmd) {
-	if len(s.editing.Units) >= hex.MaxTeamSize || len(s.characters) == 0 {
+	offered := offeredCharacters(s.characters, "")
+	if len(s.editing.Units) >= hex.MaxTeamSize || len(offered) == 0 {
 		m.squad = s
 		return m, nil
 	}
-	character := s.characters[0]
+	character := offered[0]
 	unit := placement.Placement{
 		Character: character.ID,
 		Level:     progression.LevelCap,
@@ -441,6 +508,7 @@ func (s squadScreen) editUnit(index int) squadScreen {
 	// member that was open rather than wherever it was before.
 	s.units = index
 	s.unit = s.editing.Units[index].Clone()
+	s.unitOpenedAs = s.unit.Character
 	s.field = unitCharacter
 	s.levelInput.SetValue(strconv.Itoa(s.unit.Level))
 	s.levelInput.Blur()
@@ -511,16 +579,21 @@ func (s squadScreen) commit() squadScreen {
 func (s squadScreen) cycle(by int) squadScreen {
 	switch s.field {
 	case unitCharacter:
-		if len(s.characters) == 0 {
+		// The character this member was opened with is on this list whether or
+		// not it is held back, so stepping off it is a decision an author took
+		// rather than one the filter took for them — and stepping back onto it
+		// works, because the list does not move while it is being walked.
+		offered := offeredCharacters(s.characters, s.unitOpenedAs)
+		if len(offered) == 0 {
 			return s
 		}
 		at := 0
-		for i, character := range s.characters {
+		for i, character := range offered {
 			if character.ID == s.unit.Character {
 				at = i
 			}
 		}
-		chosen := s.characters[(at+by+len(s.characters))%len(s.characters)]
+		chosen := offered[(at+by+len(offered))%len(offered)]
 		// A kit belongs to the character it was chosen from, so changing the
 		// character empties it rather than carrying names the new one has never
 		// heard of into a refusal at save time.
@@ -605,6 +678,17 @@ func (s squadScreen) settleStage() squadScreen {
 	}
 	s.unit.Stage = ""
 	return s
+}
+
+// holdsAHiddenCharacter is whether the member under edit names a character the
+// cast has held back.
+//
+// A member naming nobody the book knows is not this: that is a squad pointing at
+// a deleted character, which is a different fault with a different answer, and
+// saying "held back" about it would be a guess.
+func (s squadScreen) holdsAHiddenCharacter() bool {
+	character, known := s.character()
+	return known && character.Hidden
 }
 
 func (s squadScreen) character() (cast.Character, bool) {
@@ -869,6 +953,13 @@ func (s squadScreen) viewUnit(m model) string {
 			value = m.style.selected.Render(value)
 		}
 		out.WriteString(marker + m.labelAt(m.text(row.label), width-2, "%s", value))
+	}
+	// Drawn only while the member holds a character the cast has held back, which
+	// is the one case offeredCharacters keeps something on the list that nothing
+	// else offers. Without it the row is a character id like any other and the
+	// flag reads as not working.
+	if s.holdsAHiddenCharacter() {
+		out.WriteString("  " + m.style.dim.Render(m.text(i18n.SquadHeldBack)) + "\n")
 	}
 	out.WriteString("\n" + s.formation(m, s.unitIndex))
 	out.WriteString(s.report(m))

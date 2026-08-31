@@ -178,6 +178,24 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// arrows, so this is the widest slot row beside the moved mark.
 	deepest := member
 	deepest.squad = inTheWidestRank(deepest)
+	// And the same member holding a character the cast has taken out of the
+	// builder's list, which is the one state that draws the held-back line: the
+	// chooser goes on offering a character already chosen, so the screen has to
+	// say why one nothing else offers is on the list. Built by hand rather than
+	// left to the shipped data, for the reason the traitless build below is —
+	// nothing the fixture ships is held back, so the wording would be measured
+	// by nothing.
+	heldBack := member
+	heldBack.squad = withAHeldBackMember(t, heldBack.squad)
+	// ⚠️ A state registered here that does not actually draw the line it exists
+	// for is a state every sweep below measures nothing about, and it passes
+	// them all. This repository has shipped that fixture twice — plainTerminal's
+	// early return and the played battle's finished board — so the fixture says
+	// so itself rather than trusting that it reached the branch.
+	if !strings.Contains(heldBack.screenContent(), heldBack.text(i18n.SquadHeldBack)) {
+		t.Fatalf("the held-back member state draws no held-back line, so every sweep over it measures nothing:\n%s",
+			heldBack.screenContent())
+	}
 	skillPick := member.openSquadSkills()
 	traitPick := member.openSquadPassives()
 	// And each picker with a description in front of its list, which is the
@@ -301,6 +319,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"a squad":                  building,
 		"a squad member":           member,
 		"a deep member":            deepest,
+		"a held-back member":       heldBack,
 		"a squad kit":              skillPick,
 		"a squad trait":            traitPick,
 		"reading a skill":          skillReading,
@@ -323,6 +342,30 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		screens["reading a trait"] = traitReading
 	}
 	return screens
+}
+
+// withAHeldBackMember takes the character the member under edit already holds
+// out of the builder's list, without touching the member.
+//
+// It edits the screen's own copy of the cast rather than the library, which is
+// the same shape withNoTraitTaken uses and for the same reason: the state wanted
+// is one the shipped data does not have, and authoring it here keeps the fixture
+// from depending on which character cast.json happens to hide. The slice is
+// copied because everyScreen hands out models sharing this one's backing array.
+func withAHeldBackMember(t *testing.T, s squadScreen) squadScreen {
+	t.Helper()
+	characters := append([]cast.Character(nil), s.characters...)
+	held := false
+	for index := range characters {
+		if characters[index].ID == s.unit.Character {
+			characters[index].Hidden, held = true, true
+		}
+	}
+	if !held {
+		t.Fatalf("the fixture member names %q, which is not in the cast the screen holds", s.unit.Character)
+	}
+	s.characters = characters
+	return s
 }
 
 // aTraitHolder is the squad in hand with its member pointed at whichever

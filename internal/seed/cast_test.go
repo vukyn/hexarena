@@ -728,6 +728,18 @@ func castReport(characters *cast.Book, origins *cast.OriginBook, limits progress
 			title = fmt.Sprintf("%s (%s)", origin.Title, origin.Medium)
 		}
 		fmt.Fprintf(&b, "%s — %s\n", character.ID, character.Name)
+		// Printed only where it is set, and first, because it qualifies
+		// everything under it: a record that cannot show a character has been
+		// taken out of the authoring lists is a record that reads as though
+		// every character in it were on offer. The other way round from the
+		// species line below — an absent species is a real answer about the
+		// character and has to be worded, while an absent flag is the ordinary
+		// case and saying "offered" on every one of them is noise. What that
+		// buys is a diff: the day somebody hides a character, the design record
+		// moves by exactly one line.
+		if character.Hidden {
+			fmt.Fprintf(&b, "  hidden   held back from the lists an author builds a side out of\n")
+		}
 		fmt.Fprintf(&b, "  from     %s\n", title)
 		fmt.Fprintf(&b, "  preset   %s\n", character.Archetype)
 		fmt.Fprintf(&b, "  element  %s\n", character.Element)
