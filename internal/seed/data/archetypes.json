@@ -244,6 +244,57 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "slugger",
+      "role": "the one that swings for the whole battle at once: the heaviest blow in the cast behind the worst odds of landing it, and the accuracy to buy those odds back",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1135,
+          "max": 3300
+        },
+        "attack": {
+          "base": 261,
+          "max": 760
+        },
+        "defense": {
+          "base": 158,
+          "max": 460
+        },
+        "speed": {
+          "base": 29,
+          "max": 85
+        },
+        "accuracy": {
+          "base": 72,
+          "max": 210
+        },
+        "dodge": {
+          "base": 10,
+          "max": 28
+        }
+      },
+      "skills": [
+        "rock_throw",
+        "seismic_toss",
+        "cross_chop",
+        "vital_throw",
+        "inner_focus",
+        "body_slam",
+        "submission",
+        "skull_bash"
+      ],
+      "passives": [
+        {
+          "id": "blood_thirst",
+          "at_level": 16
+        },
+        {
+          "id": "endurance",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

@@ -61,4 +61,16 @@ bruiser, formation column 0
            absorbs 10632 of the 11500 budget, 868 to spare
   kit      water_gun bubble bubble_beam whirlpool body_slam brine pummel submission hydro_pump
 
-5 presets
+slugger, formation column 0
+  the one that swings for the whole battle at once: the heaviest blow in the cast behind the worst odds of landing it, and the accuracy to buy those odds back
+  demands  a character built from it must carry ground
+  hp 1135->3300  attack 261->760  defense 158->460  speed 29->85  accuracy 72->210  dodge 10->28
+  level 1  hp 1135, atk 261, def 158, spd 29, acc 72, ddg 10
+           absorbs 1732 of the 11500 budget, 9768 to spare
+  level 30 hp 2199, atk 506, def 306, spd 56, acc 139, ddg 18
+           absorbs 4442 of the 11500 budget, 7058 to spare
+  level 60 hp 3300, atk 760, def 460, spd 85, acc 210, ddg 28
+           absorbs 8375 of the 11500 budget, 3125 to spare
+  kit      rock_throw seismic_toss cross_chop vital_throw inner_focus body_slam submission skull_bash
+
+6 presets

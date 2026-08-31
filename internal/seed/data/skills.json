@@ -1082,6 +1082,103 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "rock_throw",
+      "name": "ném đá",
+      "flavour": "Nhấc tảng đá gần nhất lên rồi ném thẳng vào kẻ đứng xa",
+      "element": "ground",
+      "range": 2,
+      "pattern": "single",
+      "power": 1100,
+      "strikes": 1,
+      "accuracy": 880,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "seismic_toss",
+      "name": "quật đất",
+      "flavour": "Xốc đối thủ lên khỏi mặt đất rồi quật thẳng xuống nền",
+      "element": "ground",
+      "range": 1,
+      "pattern": "single",
+      "power": 2000,
+      "strikes": 1,
+      "accuracy": 850,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "cross_chop",
+      "name": "đòn chéo",
+      "flavour": "Vung hết đà theo một đường chéo, dồn cả người vào chỗ đòn rơi",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 2800,
+      "strikes": 1,
+      "accuracy": 620,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "vital_throw",
+      "name": "đòn vật",
+      "flavour": "Bắt lấy đối thủ, xoay nửa vòng, rồi quăng ngược trở lại theo đà vừa lao tới",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 1800,
+      "strikes": 1,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "inner_focus",
+      "name": "tụ khí",
+      "flavour": "Đứng yên một nhịp, thu hết tâm trí về một điểm trước mặt",
+      "element": "neutral",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "focus",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }
