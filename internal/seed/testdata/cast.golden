@@ -92,4 +92,27 @@ naruto.naruto — Naruto
     level 60 hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
              absorbs 7943 of the 11500 budget, 3557 to spare
 
-4 characters
+pokemon.poliwag — Poliwag
+  from     Pokémon (anime)
+  preset   bruiser
+  element  water
+  species  amphibian
+  art      assets/poliwag.svg
+  kit      water_gun bubble pummel@8 body_slam@12 bubble_beam@16 brine@20 whirlpool@24 bite@28 taunt@32 submission@36 hydro_pump@40 rally@44
+  stage "Poliwag" owns levels 1 to 15, showing assets/poliwag.svg
+    level 1  hp 963, atk 168, def 145, spd 25, acc 38, ddg 11
+             absorbs 1428 of the 11500 budget, 10072 to spare
+    level 15 hp 1398, atk 244, def 210, spd 36, acc 55, ddg 15
+             absorbs 2377 of the 11500 budget, 9123 to spare
+  stage "Poliwhirl" owns levels 16 to 31, showing assets/poliwhirl.svg
+    level 16 hp 1644, atk 291, def 249, spd 40, acc 63, ddg 18
+             absorbs 3010 of the 11500 budget, 8490 to spare
+    level 31 hp 2181, atk 386, def 331, spd 53, acc 84, ddg 24
+             absorbs 4591 of the 11500 budget, 6909 to spare
+  stage "Poliwrath" owns levels 32 to 60, showing assets/poliwrath.svg
+    level 32 hp 2547, atk 454, def 385, spd 62, acc 96, ddg 27
+             absorbs 5828 of the 11500 budget, 5672 to spare
+    level 60 hp 3700, atk 660, def 560, spd 90, acc 140, ddg 40
+             absorbs 10632 of the 11500 budget, 868 to spare
+
+5 characters

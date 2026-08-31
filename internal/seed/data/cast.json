@@ -657,6 +657,174 @@
         }
       ],
       "image": "assets/naruto.svg"
+    },
+    {
+      "id": "pokemon.poliwag",
+      "name": "Poliwag",
+      "origin": "pokemon",
+      "archetype": "bruiser",
+      "image": "assets/poliwag.svg",
+      "element": "water",
+      "species": [
+        "amphibian"
+      ],
+      "bio": "Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu nổi điều gì — kể cả lúc sợ. Da lúc nào cũng trơn nhẫy: ai chộp được cũng chỉ giữ nổi trong chớp mắt.",
+      "stages": [
+        {
+          "name": "Poliwag",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 963,
+              "max": 2800
+            },
+            "attack": {
+              "base": 168,
+              "max": 490
+            },
+            "defense": {
+              "base": 145,
+              "max": 420
+            },
+            "speed": {
+              "base": 25,
+              "max": 72
+            },
+            "accuracy": {
+              "base": 38,
+              "max": 112
+            },
+            "dodge": {
+              "base": 11,
+              "max": 32
+            }
+          }
+        },
+        {
+          "name": "Poliwhirl",
+          "min_level": 16,
+          "image": "assets/poliwhirl.svg",
+          "stats": {
+            "hp": {
+              "base": 1108,
+              "max": 3220
+            },
+            "attack": {
+              "base": 196,
+              "max": 570
+            },
+            "defense": {
+              "base": 168,
+              "max": 490
+            },
+            "speed": {
+              "base": 27,
+              "max": 80
+            },
+            "accuracy": {
+              "base": 43,
+              "max": 125
+            },
+            "dodge": {
+              "base": 12,
+              "max": 36
+            }
+          }
+        },
+        {
+          "name": "Poliwrath",
+          "min_level": 32,
+          "image": "assets/poliwrath.svg",
+          "stats": {
+            "hp": {
+              "base": 1272,
+              "max": 3700
+            },
+            "attack": {
+              "base": 227,
+              "max": 660
+            },
+            "defense": {
+              "base": 192,
+              "max": 560
+            },
+            "speed": {
+              "base": 31,
+              "max": 90
+            },
+            "accuracy": {
+              "base": 48,
+              "max": 140
+            },
+            "dodge": {
+              "base": 14,
+              "max": 40
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "water_gun"
+        },
+        {
+          "id": "bubble"
+        },
+        {
+          "id": "pummel",
+          "at_level": 8
+        },
+        {
+          "id": "body_slam",
+          "at_level": 12
+        },
+        {
+          "id": "bubble_beam",
+          "at_level": 16
+        },
+        {
+          "id": "brine",
+          "at_level": 20
+        },
+        {
+          "id": "whirlpool",
+          "at_level": 24
+        },
+        {
+          "id": "bite",
+          "at_level": 28
+        },
+        {
+          "id": "taunt",
+          "at_level": 32
+        },
+        {
+          "id": "submission",
+          "at_level": 36
+        },
+        {
+          "id": "hydro_pump",
+          "at_level": 40
+        },
+        {
+          "id": "rally",
+          "at_level": 44
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }

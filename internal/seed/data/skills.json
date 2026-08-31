@@ -989,6 +989,99 @@
           "stacks": 2
         }
       ]
+    },
+    {
+      "id": "bubble_beam",
+      "name": "tia bọt",
+      "flavour": "Bắn một tia bọt nước xối thẳng, đủ dày để cản bước kẻ trúng đòn",
+      "element": "water",
+      "range": 2,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "mire",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "body_slam",
+      "name": "lao người",
+      "flavour": "Lấy đà rồi ném trọn sức nặng vào kẻ đứng trước mặt",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 1200,
+      "strikes": 1,
+      "accuracy": 880,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 250,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "pummel",
+      "name": "dồn đòn",
+      "flavour": "Đòn nối đòn dồn xuống một chỗ, không chừa lấy một nhịp hở",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 480,
+      "strikes": 3,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "submission",
+      "name": "khoá siết",
+      "flavour": "Khoá chặt lấy đối thủ rồi siết tới lúc thế thủ vỡ ra",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 2000,
+      "strikes": 1,
+      "accuracy": 850,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "expose",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

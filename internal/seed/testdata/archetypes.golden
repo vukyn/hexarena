@@ -49,4 +49,16 @@ summoner, formation column 1
            absorbs 7256 of the 11500 budget, 4244 to spare
   kit      kunai wind_shuriken rasengan substitution shadow_clone summon_toad
 
-4 presets
+bruiser, formation column 0
+  the one that trades reach for repetition: stand in the front rank and land more blows than a guard has charges to spend, so a wall's turn buys less than it paid for
+  demands  a character built from it must carry water
+  hp 1272->3700  attack 227->660  defense 192->560  speed 31->90  accuracy 48->140  dodge 14->40
+  level 1  hp 1272, atk 227, def 192, spd 31, acc 48, ddg 14
+           absorbs 2088 of the 11500 budget, 9412 to spare
+  level 30 hp 2465, atk 439, def 372, spd 60, acc 93, ddg 26
+           absorbs 5526 of the 11500 budget, 5974 to spare
+  level 60 hp 3700, atk 660, def 560, spd 90, acc 140, ddg 40
+           absorbs 10632 of the 11500 budget, 868 to spare
+  kit      water_gun bubble bubble_beam whirlpool body_slam brine pummel submission hydro_pump
+
+5 presets

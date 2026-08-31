@@ -24,6 +24,11 @@
       "id": "human",
       "name": "con người",
       "note": "Không vảy, không mai, không cánh — cái gì cũng phải học mới có"
+    },
+    {
+      "id": "amphibian",
+      "name": "lưỡng cư",
+      "note": "Nở ra dưới nước, lớn lên mới tập đứng trên cạn, mà da thì vẫn phải ẩm mới sống nổi — nửa đời ở dưới, nửa đời ở trên"
     }
   ]
 }

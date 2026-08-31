@@ -134,6 +134,7 @@ var (
 		"scorcher":   "kẻ thiêu đốt",
 		"warden":     "người gác cổng",
 		"summoner":   "người triệu hồi",
+		"bruiser":    "kẻ áp sát",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its
