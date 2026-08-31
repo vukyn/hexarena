@@ -89,6 +89,96 @@
       "passives": [
         "ballast"
       ]
+    },
+    {
+      "id": "poliwag.flurry",
+      "character": "pokemon.poliwag",
+      "name": "liên hoàn",
+      "intent": "Áp sát rồi nện liên tục, mỗi đòn lại rút về một chút sức cho mình",
+      "skills": [
+        "pummel",
+        "body_slam",
+        "submission",
+        "water_gun"
+      ],
+      "passives": [
+        "blood_thirst"
+      ]
+    },
+    {
+      "id": "poliwag.riptide",
+      "character": "pokemon.poliwag",
+      "name": "nghịch lưu",
+      "intent": "Đứng xa mà quăng nước, bùn dính tới đâu là bước chậm lại tới đó",
+      "skills": [
+        "bubble",
+        "bubble_beam",
+        "whirlpool",
+        "hydro_pump"
+      ],
+      "passives": [
+        "spiteful"
+      ]
+    },
+    {
+      "id": "machop.gamble",
+      "character": "pokemon.machop",
+      "name": "đánh cược",
+      "intent": "Dồn tất vào một cú, trúng thì xong luôn mà trượt thì mất cả lượt",
+      "skills": [
+        "cross_chop",
+        "submission",
+        "seismic_toss",
+        "inner_focus"
+      ],
+      "passives": [
+        "berserk"
+      ]
+    },
+    {
+      "id": "machop.sure",
+      "character": "pokemon.machop",
+      "name": "chắc đòn",
+      "intent": "Không cần đòn to, chỉ cần đòn nào cũng tới được nơi cần tới",
+      "skills": [
+        "vital_throw",
+        "body_slam",
+        "rock_throw",
+        "seismic_toss"
+      ],
+      "passives": [
+        "unyielding"
+      ]
+    },
+    {
+      "id": "cleffa.mend",
+      "character": "pokemon.cleffa",
+      "name": "chở che",
+      "intent": "Giữ cho đồng đội đứng vững, còn phần mình thì không ai lay nổi",
+      "skills": [
+        "moonlight",
+        "wish",
+        "rally",
+        "moonblast"
+      ],
+      "passives": [
+        "composure"
+      ]
+    },
+    {
+      "id": "cleffa.hex",
+      "character": "pokemon.cleffa",
+      "name": "ru ngủ",
+      "intent": "Không đánh gục ai, chỉ làm cho bên kia không đánh được nữa",
+      "skills": [
+        "charm",
+        "sing",
+        "smokescreen",
+        "solar_beam"
+      ],
+      "passives": [
+        "elusive"
+      ]
     }
   ]
 }
