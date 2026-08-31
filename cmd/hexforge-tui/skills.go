@@ -1133,7 +1133,11 @@ func (s skillsScreen) chanceHint(m model, labelWidth int) string {
 	// wide in an 80-column window — inside frame's clip, so nothing was cut, and
 	// over the edge on the terminals that wrap a line filling the final cell.
 	// It only became visible when the label column grew.
-	room := skillValueRoom(labelWidth, lipgloss.Width(s.inputs[skillFieldInflicts].View()))
+	//
+	// Against the window and not the floor: a chance is data, and a list of them
+	// cut short on a wide terminal hides one of the numbers being authored.
+	room := skillValueRoom(m.usableWidth(), labelWidth,
+		lipgloss.Width(s.inputs[skillFieldInflicts].View()))
 	return "  " + m.style.dim.Render(clip(forge.ApplicationChances(applications), room))
 }
 
@@ -1159,15 +1163,29 @@ func (s skillsScreen) percentHint(m model, field int) string {
 // twice and both were one cell over. The window's last column is left empty for
 // the reason frame leaves it: a line filling a terminal's final cell wraps on
 // some of them, and one wrapped line pushes the footer off the bottom.
-func skillValueRoom(labelWidth, spent int) int {
+//
+// The width is handed in rather than read off minWidth, and that is the whole
+// of the change: a row that spends this on **data** — the chances, an allowlist
+// of ids — passes m.usableWidth(), which is the window when there is one, while
+// a row spending it on wording would pass minWidth. Both callers today are data
+// and both pass the window, but the parameter is what keeps the single
+// declaration honest if a third one is not: picking a side inside the function
+// would make the next caller either wrong or a second copy of the arithmetic,
+// which is exactly what this function exists to have stopped.
+func skillValueRoom(width, labelWidth, spent int) int {
 	const marker, gap = 2, 2
-	return minWidth - 1 - marker - labelWidth - 1 - spent - gap
+	return width - 1 - marker - labelWidth - 1 - spent - gap
 }
 
 // listValue draws one of the three allowlists: what is in it, or that anybody
 // may carry the skill, which is what an empty list means.
+//
+// The list is ids, so it takes the window: an allowlist clipped at the floor
+// stops naming the last character it is kept for, and which characters those
+// are is the whole content of the field.
 func (s skillsScreen) listValue(m model, chosen []string, labelWidth int) string {
-	room := skillValueRoom(labelWidth, lipgloss.Width(m.text(i18n.KitChooseHint)))
+	room := skillValueRoom(m.usableWidth(), labelWidth,
+		lipgloss.Width(m.text(i18n.KitChooseHint)))
 	if len(chosen) == 0 {
 		return m.style.dim.Render(m.text(i18n.WhoAnyone) + "  " + m.text(i18n.KitChooseHint))
 	}

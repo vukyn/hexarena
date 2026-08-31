@@ -663,6 +663,37 @@ func traitCarriers(lib *forge.Library) []string {
 	return out
 }
 
+// pickerDetails is the detail column of whichever picker a screen is holding
+// open, for every row in it.
+//
+// The third data column, exempt for the reason the other two are: the cell is a
+// gloss, a species name, a work's title or a restriction, it is clipped rather
+// than wrapped, and it spends the window rather than the floor, so measuring it
+// against the floor asks a question the row does not answer. What holds it at
+// the floor instead is clip itself — at eighty columns the cell is cut to fit by
+// construction, which is the promise minWidth makes.
+//
+// ⚠️ It calls the screen's own detail rather than rebuilding one. A second
+// reading would have to know the five kinds apart, and a data column enumerated
+// by a copy of the thing that draws it is a column that goes quietly wrong the
+// day a sixth kind is added — the same drift TestATraitNamesEveryStatusItsDescriptionNames
+// exists to catch elsewhere. It is also what makes the entry honest: the status
+// row is the one that overflowed when this column was widened, and it overflowed
+// because its cell composes catalog wording around the book's figures, which is
+// exactly whoMayCarry's shape.
+func pickerDetails(m model) []string {
+	if m.picker == nil {
+		return nil
+	}
+	out := make([]string, 0, len(m.picker.options))
+	for _, option := range m.picker.options {
+		if detail := m.picker.detail(m, option.id); detail != "" {
+			out = append(out, detail)
+		}
+	}
+	return out
+}
+
 // carriesFreeText reports whether a line is showing authored text, which is not
 // the program's to translate or to keep inside a column.
 func carriesFreeText(line string, free []string) bool {
@@ -884,8 +915,12 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 		free = append(free, traitCarriers(lib)...)
 		for name, m := range everyScreen(t, base) {
 			m.width, m.height = 200, 60
+			// The picker's detail column is per-screen, so it joins the two
+			// listing columns here rather than in free: which cells exist
+			// depends on which picker this screen has open.
+			exempt := append(append([]string{}, free...), pickerDetails(m)...)
 			for _, line := range strings.Split(m.screenContent(), "\n") {
-				if carriesFreeText(line, free) {
+				if carriesFreeText(line, exempt) {
 					continue
 				}
 				if width := lipgloss.Width(line); width > drawable {
@@ -920,6 +955,16 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 // Two shapes, because the shortening has two steps. A long folder loses the
 // folder. A file name too long on its own loses its own front, so that the name
 // and the extension are the part that survives.
+//
+// ⚠️ **Asked at the floor, explicitly, and that is the point of it.** artRoom
+// measures the window in hand — a path is data and data uses the window — so the
+// row this draws is as wide as the terminal it is drawn on, and a test that took
+// whatever width start happened to hand it would be measuring the fixture rather
+// than the promise. Eighty is the width the program promises to draw in, so
+// eighty is where "a path never runs past the edge" has to be true. The other
+// half — that a wide window is actually spent, rather than the path being cut to
+// seventy-nine beside a hundred empty columns — is
+// TestAWideWindowWidensTheDataCells in width_rule_test.go.
 func TestALongArtPathStaysInsideItsRow(t *testing.T) {
 	const drawable = minWidth - 1
 	folder := strings.Repeat("deep-folder-", 4) + "end"
@@ -936,6 +981,7 @@ func TestALongArtPathStaysInsideItsRow(t *testing.T) {
 			}
 		}
 		base, _, _ := startIn(t, lang, dir)
+		base.width, base.height = minWidth, minHeight
 
 		cases := []struct {
 			art   string
