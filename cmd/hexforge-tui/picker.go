@@ -840,7 +840,17 @@ func (p *pickState) view(m model) (string, string) {
 			//
 			// The room is measured from the column, so it is computed here
 			// rather than above: a list with no column has no width to subtract.
-			room := minWidth - 1 - lipgloss.Width(marker+state) - column - 1
+			//
+			// And it is measured against the window rather than against the
+			// floor, by the rule the skill listing's last column states:
+			// minWidth is the width this program promises to draw in, not a
+			// ceiling on what it may spend, and this cell is data — a gloss, a
+			// species name, an allowlist note. A restriction cut to "để dành
+			// cho loài dr…" is a row that stopped saying which species it is
+			// for, on a terminal with a hundred spare columns beside it. Prose
+			// still wraps at the floor; a table cell is read by scanning down
+			// it, so width is the one thing it can always use.
+			room := m.usableWidth() - 1 - lipgloss.Width(marker+state) - column - 1
 			detail := clip(p.detail(m, option.id), room)
 			if option.refusal != nil {
 				detail = m.style.dim.Render(detail)
@@ -855,7 +865,21 @@ func (p *pickState) view(m model) (string, string) {
 	if len(p.chosen) > 0 {
 		chosen = strings.Join(p.chosen, " ")
 	}
-	out.WriteString("  " + clip(chosen, minWidth-3) + "\n")
+	// The window, not the floor: what this clips is a list of ids the author has
+	// chosen, which is data, and the list has no length the program can promise.
+	// The kit is the bounded case and it fits — cast.SkillSlots is 4 and the
+	// widest shipped ids are 13 cells, so a full kit is 53 and the indent makes
+	// 55 of the 77 there are. An **allowlist** is the unbounded one: nothing caps
+	// it, so it is as long as the book behind it. The whole shipped cast is 4 ids
+	// and 69 cells, which is three characters short of the floor and one
+	// character away from being over it, and the status book is already 21 kinds.
+	// A cell that fits until the next id is authored is not a cell that fits.
+	//
+	// The line is one branch narrower than it looks: with nothing chosen it holds
+	// PickerNothingChosen, which is wording. That branch is short enough that the
+	// wider clip never reaches it, so it stays where it is rather than being
+	// split into a room of its own.
+	out.WriteString("  " + clip(chosen, m.usableWidth()-3) + "\n")
 	// The whole refusal for the row under the cursor, which is where there is
 	// room for a sentence. It is drawn before anything is pressed, so a space
 	// that cannot take the row in has already explained itself.

@@ -586,17 +586,33 @@ func (f formScreen) artLabel(m model) string {
 // is left once the marker, the label column, the chooser's own decoration and
 // the position counter have taken theirs, all of them as they are really drawn.
 //
-// What it measures against is the floor and not the window in hand, and that is
-// deliberate: minWidth is the width this program promises to draw in, while
-// measuring the real terminal would give the same row two lengths and leave
-// TestEveryWordingFitsTheMinimumWidth nothing to hold.
+// What it measures against is the window in hand and not the floor, which is
+// the rule the skill listing's last column states: minWidth is the width this
+// program promises to draw in, not a ceiling on what it may spend, and a path
+// is data. Prose wraps at the floor because a sentence measured against the
+// real terminal would have two shapes; a path has one shape and is read by
+// looking at it, so …/hero.svg on a terminal with a hundred spare columns is a
+// row that threw away which folder the art is filed under for no gain.
+//
+// ⚠️ This used to measure the floor on the argument that widening it would
+// leave TestEveryWordingFitsTheMinimumWidth nothing to hold, and that argument
+// was answering the wrong half of the row. The sweep measures the **catalog's
+// wording**, and every catalog part of this row — the label column, the
+// chooser's own decoration, the position counter — is what this function
+// *subtracts*, unchanged and still measured at the floor. The path is the part
+// it hands the remainder to, and a path out of an author's folder was never in
+// the sweep to hold: it is free text of no length the program can promise, the
+// class the sweep already excuses a biography and an origin's note under. What
+// actually holds the row at the floor is TestALongArtPathStaysInsideItsRow,
+// which builds a path long enough to overflow on purpose — so it is asked at
+// the floor, where the promise lives, and asked at a wide window too.
 func artRoom(m model, index, total int) int {
 	const marker = 2
 	decoration := lipgloss.Width(fmt.Sprintf(choiceFormat, "",
 		m.text(i18n.ChoicePosition, index+1, total)))
 	// The window's last column is left empty, as it is everywhere here: a line
 	// filling a terminal's final cell wraps on some of them.
-	return minWidth - 1 - marker - formLabelWidth(m) - 1 - decoration
+	return m.usableWidth() - 1 - marker - formLabelWidth(m) - 1 - decoration
 }
 
 // ellipsis marks a path that did not fit. One rune rather than three dots, so

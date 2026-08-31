@@ -223,11 +223,20 @@ func fightLabelWidth(m model) int {
 // caution is the one line on this screen that is prose: the sentence that stops
 // the figure above it being read as something it is not.
 //
-// It is wrapped against **minWidth** rather than against the window in hand, for
-// the reason the art chooser measures its own room that way: measuring the real
-// terminal would give the same sentence two shapes, and the width sweep would
-// have nothing to hold. A wide terminal gets the same two short lines a narrow
-// one does, which is what every other wording here promises.
+// It is wrapped against **minWidth** rather than against the window in hand,
+// which is the prose half of the rule the skill listing's last column states:
+// prose wraps at the floor, a data cell uses the window. Measuring the real
+// terminal would give the same sentence two shapes, and
+// TestEveryWordingFitsTheMinimumWidth — which renders at two hundred columns and
+// measures against seventy-nine — would have nothing to hold; a paragraph run
+// across a wide terminal is also a line a reader loses their place in. A wide
+// terminal gets the same two short lines a narrow one does, which is what every
+// other wording here promises.
+//
+// ⚠️ This used to cite the art chooser as the precedent. It is no longer one:
+// artRoom clips a **path**, which is data, and it takes the window now. The
+// precedent for a *sentence* is this comment and the save note in play.go, and
+// TestAWideWindowStillWrapsProseAtTheFloor is what holds both of them there.
 func (f fightScreen) caution(m model) string {
 	const marker = 2
 	var out strings.Builder
