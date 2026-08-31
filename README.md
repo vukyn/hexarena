@@ -569,6 +569,19 @@ The aim gates all of it. A conduit pointed at a clean target consumes nothing,
 arcs nothing and is simply its own **undamped** self — the third row above, and
 the reason `damped` is not a penalty for missing the condition.
 
+Nothing else bounds how far it goes. With the whole enemy squad charged, one cast
+reaches all five: the ceiling is how much charge you laid down and how they are
+standing, which is a bill the attacker already paid in turns.
+
+⚠️ **It stops at the midline**, and it is the one shape in the engine that had to
+be *told*. Every other is a pattern, and `pattern.Targets` already drops a splash
+cell landing on the far side — `Side.CrossesSides` is the single thing that lifts
+it, and only a skill declaring `all` has it. A chain reads the board rather than a
+pattern, so it obeyed none of that: aimed at an enemy standing next to a charged
+teammate, the current walked back across the line and took 272 of that teammate's
+health along with two of its stacks. Nothing arranges that on purpose — the
+*enemy's* chargers arrange it for free.
+
 #### A guard is worth exactly one thing against a conduit
 
 `charge` **does** `OutlastsAShield`, and it is the second category ever to — the

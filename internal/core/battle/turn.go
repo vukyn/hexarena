@@ -564,10 +564,20 @@ func covers(shape pattern.Pattern, known skill.Skill, aim hex.Offset) []hex.Offs
 // gate on the whole mechanism: a conduit aimed at a clean target consumes
 // nothing, arcs nothing and is simply its own damped self.
 //
+// ⚠️ **It stops at the midline unless the skill is aimed at both sides**, and
+// that is the same rule every shape on this board obeys: pattern.Targets drops a
+// splash cell landing on the far side, and Side.CrossesSides is the one thing
+// that lifts it. Without this a conduit aimed at the enemy arced into its own
+// squad the moment a teammate was standing next to the target and carrying —
+// which the enemy's own chargers arrange for free. Measured on a full board: the
+// current reached all five enemies **and an ally at 2,1**, for 272 damage and two
+// of its stacks. The chain is the one shape in the engine that reads the board
+// rather than a pattern, so it is the one shape that had to be told.
+//
 // Deterministic, which it has to be: the walk is over NeighborsOnBoard in its
 // fixed order and over b.units in enlistment order, and the map is asked only
 // whether a unit is already in the list — no map iteration reaches the result.
-func (b *Battle) chainFrom(known skill.Skill, aim hex.Offset) []*Unit {
+func (b *Battle) chainFrom(actor *Unit, known skill.Skill, aim hex.Offset) []*Unit {
 	if !known.Requires.ChainsOn() {
 		return nil
 	}
@@ -579,6 +589,9 @@ func (b *Battle) chainFrom(known skill.Skill, aim hex.Offset) []*Unit {
 	seen := map[string]bool{head.ID: true}
 	for i := 0; i < len(out); i++ {
 		for _, cell := range out[i].Cell.NeighborsOnBoard() {
+			if !known.Target.Reaches(actor.Side, cell.Side()) {
+				continue
+			}
 			next := b.occupant(cell)
 			if next == nil || seen[next.ID] {
 				continue
@@ -608,7 +621,7 @@ func (b *Battle) chainFrom(known skill.Skill, aim hex.Offset) []*Unit {
 // unit whose last stack has gone is no longer a body the current can step on, and
 // the run past it breaks the moment it does.
 func (b *Battle) discharge(actor *Unit, known skill.Skill, aim hex.Offset, turn atb.Turn) int64 {
-	chain := b.chainFrom(known, aim)
+	chain := b.chainFrom(actor, known, aim)
 	if len(chain) == 0 {
 		return 0
 	}
