@@ -1700,9 +1700,15 @@ and `hexforge skills edit` and the same form (opened with `e` on the listing)
 both change what is already in it. That is why it is committed in the form
 `Book.Marshal` writes, on the same terms
 as `cast.json` below, and why a save says **the golden files have moved** rather
-than only that it wrote — a power reaches `skills.golden`, `scenarios.golden` and
-`progression.golden`'s hits-to-kill ladder, so `make golden` and reading the diff
-is the next step and not an afterthought.
+than only that it wrote — a power reaches `skills.golden` and `describe.golden`,
+so `make golden` and reading the diff is the next step and not an afterthought.
+
+⚠️ It does **not** reach `scenarios.golden` or `progression.golden`, and this
+paragraph said it did until 2026-08-31. Each golden moves for what its generator
+is handed and nothing else: `scenarioReport` takes the rules, the chart, the
+modifier bounds, the ceilings and the pattern book, and reads the **status** book
+for its poison ladder — no skill book, no cast. `progressionReport` takes the
+limits and the rules alone. The four skills #182 added moved neither.
 
 Two things about that write are worth knowing before touching it:
 
@@ -3195,25 +3201,35 @@ is the constraint each piece has to respect.
       Its six skills are now `restrict.origins: [naruto]` — see **Origins**
       above; the `summoner` preset keeps them, which is why that ban does not
       exist.
-- [ ] **Grow the cast.** Four characters ship across two origins — Bulbasaur,
-      Charmander and Squirtle out of Pokémon, Naruto out of his own — one per
-      element (grass, fire, water, wind). This item said "three, one per element"
-      until 2026-08-28, which was written before Naruto landed in #98. The seed
-      roster is no longer a mirror — so the thing this item was blocking, a
-      measurable balance figure, exists. What is left is content, under three
-      constraints: an archetype's kit constrains a character's affinity
-      (`skill.CanCarry` enforces it while authoring, `Archetype.Demands` reports
-      it), `progression.Limits` bounds health and defence **together** because
-      those two multiply, and — softer than the other two — a skill kept for a
-      lineage asks the character to *be* one, so adding a dragon is two lines: the
-      kind in `species.json` and the claim on the character. **A new skill also
-      has to say which story it is out of** — `restrict.origins`, or a line in
-      `sharedPool` arguing it belongs to nobody; `TestEverySkillSaysWhichWorkItIsFrom`
-      refuses the omission. Every character added moves `scenarios.golden` and
-      `replay.golden`, which is the point rather than a cost: those diffs are how
-      the balance change gets read. Read squirtle first — water is the strongest
-      of the three elements and Blastoise still cannot carry an ace slot, because
-      its attack and speed curves are the lowest in the cast.
+- [ ] **Grow the cast.** Five characters ship across two origins — Bulbasaur,
+      Charmander, Squirtle and Poliwag out of Pokémon, Naruto out of his own —
+      covering four elements, water twice. This item said "three, one per element"
+      until 2026-08-28 and "four, one per element" until 2026-08-31; #98 landed
+      Naruto and #182 landed Poliwag, which is where one-per-element stopped being
+      true. The seed roster is no longer a mirror — so the thing this item was
+      blocking, a measurable balance figure, exists. What is left is content,
+      under three constraints: an archetype's kit constrains a character's
+      affinity (`skill.CanCarry` enforces it while authoring, `Archetype.Demands`
+      reports it), `progression.Limits` bounds health and defence **together**
+      because those two multiply, and — softer than the other two — a skill kept
+      for a lineage asks the character to *be* one, so adding a dragon is two
+      lines: the kind in `species.json` and the claim on the character. **A new
+      skill also has to say which story it is out of** — `restrict.origins`, or a
+      line in `sharedPool` arguing it belongs to nobody;
+      `TestEverySkillSaysWhichWorkItIsFrom` refuses the omission.
+
+      ⚠️ **A character moves `cast.golden`, `species.golden` and `origins.golden`
+      — not `scenarios.golden` and not `replay.golden`.** This item claimed the
+      opposite until 2026-08-31, and the two items above that say a cast-only
+      addition moves no golden were right all along: `replay.golden` renders the
+      **roster**, so a character reaches it by being placed in `roster.json` and
+      by nothing else. Add a preset and `archetypes.golden` moves too; add skills
+      and `skills.golden` and `describe.golden` move. #182 added a character, a
+      preset and four skills, and moved exactly those six.
+
+      Read squirtle first — water is the strongest of the elements and Blastoise
+      still cannot carry an ace slot, because its attack and speed curves are the
+      lowest in the cast.
 
 ## Pricing one number: `hexforge weigh`, and why a roster win rate could not
 
