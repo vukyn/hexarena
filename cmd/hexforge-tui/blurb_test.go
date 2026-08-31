@@ -28,7 +28,7 @@ func TestTheBlurbScreenDescribesTheSkillUnderTheCursor(t *testing.T) {
 	}
 
 	first := m.skills.skills[m.skills.cursor]
-	body, _ := m.blurb.view(m)
+	body, _ := m.blurb.View(m.ctx())
 	if want := i18n.Vi.Describe(first, lib.Patterns()); !strings.Contains(body, firstLine(want)) {
 		t.Errorf("the description screen does not carry the skill's own sentences:\n%s", body)
 	}
@@ -39,7 +39,7 @@ func TestTheBlurbScreenDescribesTheSkillUnderTheCursor(t *testing.T) {
 	if second.ID == first.ID {
 		t.Fatal("the cursor did not move, so the next assertion proves nothing")
 	}
-	body, _ = m.blurb.view(m)
+	body, _ = m.blurb.View(m.ctx())
 	if !strings.Contains(body, second.ID) {
 		t.Errorf("after moving, the screen still does not name %q:\n%s", second.ID, body)
 	}
@@ -94,7 +94,7 @@ func TestTheBrowserDescribesTheTraitsItIsShowing(t *testing.T) {
 	if m.blurb.from != screenBrowse {
 		t.Fatalf("the description screen thinks it was raised from screen %d", m.blurb.from)
 	}
-	body, _ := m.blurb.view(m)
+	body, _ := m.blurb.View(m.ctx())
 	held := lib.KitPassives(rows[found].PassivesAt(progression.LevelCap, progression.Furthest))
 	for _, one := range held {
 		if !strings.Contains(body, one.ID) {
@@ -138,11 +138,15 @@ func TestTheTraitScreenFollowsTheLevelRatherThanTheBook(t *testing.T) {
 	}
 	m.browse.cursor, m.browse.level = found, progression.LevelCap
 	m = send(t, m, tea.KeyPressMsg{Code: '?', Text: "?"})
-	atCap, _ := m.blurb.view(m)
+	atCap, _ := m.blurb.View(m.ctx())
 
-	m.browse.level = 1
-	m.blurb.scroll = 0
-	atOne, _ := m.blurb.view(m)
+	// Driven with the key rather than by writing the level onto the browser,
+	// because the describer is handed its subject now: home is what a reader
+	// presses, and it walks the browser behind and re-pushes in one step. Writing
+	// the field would leave the description reading the level it was raised at,
+	// which is a fixture measuring nothing rather than a screen misbehaving.
+	m = send(t, m, tea.KeyPressMsg{Code: tea.KeyHome})
+	atOne, _ := m.blurb.View(m.ctx())
 	if atCap == atOne {
 		t.Errorf("the screen reads the same at level 1 and at the cap:\n%s", atOne)
 	}

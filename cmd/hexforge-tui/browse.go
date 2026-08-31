@@ -107,9 +107,12 @@ func (b browseScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 		b.filter = (b.filter + 1) % (len(b.origins) + 1)
 		b.cursor = clamp(b.cursor, 0, len(b.rows())-1)
 	case "p":
-		// The preview keeps no cursor and no level of its own, so raising it
-		// needs nothing handed over: it reads both back off this screen.
+		// The preview keeps no cursor and no level of its own, so this screen
+		// hands both over: the character under the cursor, at the level being
+		// walked. ⚠️ It used to read them back off here instead, which is what
+		// made the preview a screen that could not move.
 		m.browse = b
+		m = m.hand(b.subject())
 		m.screen = screenPreview
 		return m, nil
 	case "?":
@@ -117,16 +120,41 @@ func (b browseScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 		// trait's id and its name and stops there, which is the whole of what
 		// this tool ever said about a trait — so an author moving virulence from
 		// 300 to 200 watched a figure change and never read the line a player
-		// gets. The screen borrows this cursor and this level rather than
-		// keeping either, so the traits it describes are the ones in force at
-		// the level being walked.
+		// gets. The describer is handed the same subject the preview takes, so
+		// the traits it names are the ones in force at the level being walked.
 		m.browse = b
 		m.blurb.from = screenBrowse
+		m = m.hand(b.subject())
 		m.screen = screenBlurb
 		return m, nil
 	}
 	m.browse = b
 	return m, nil
+}
+
+// subject is what the two describers raised from here are about: the character
+// under the cursor, read at the level being walked.
+//
+// Built here rather than in either describer because this screen is the one that
+// knows what its list holds — the filter decides which characters are in it, so
+// the position on the row is a fact about this screen and not about the cast.
+//
+// A filter that has left nothing gives a subject with Of at nought, which is how
+// a raiser says there is nothing to describe without the describer reaching back
+// to count. The level is carried either way: it is still the level being walked.
+func (b browseScreen) subject() draw.Subject {
+	rows := b.rows()
+	if len(rows) == 0 {
+		return draw.Subject{Kind: draw.CharacterSubject, Level: b.level}
+	}
+	at := clamp(b.cursor, 0, len(rows)-1)
+	return draw.Subject{
+		Kind:  draw.CharacterSubject,
+		ID:    rows[at].ID,
+		Level: b.level,
+		At:    at + 1,
+		Of:    len(rows),
+	}
 }
 
 // The two fixed columns of the listing. Both hold ids, which are the same in

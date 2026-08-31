@@ -6,7 +6,6 @@ import (
 	"image/color"
 	"strings"
 
-	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/progression"
@@ -14,16 +13,24 @@ import (
 	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
-// previewScreen draws the picture a character shows at the level the browser is
-// sitting on.
+// previewScreen draws the picture a character shows at the level it is being
+// read at.
 //
-// It keeps no cursor and no level of its own: both are read off the browser it
-// was raised from, so the two cannot disagree about which character is in front
-// and walking the level here walks it there. What it does own is the cache,
-// because rasterising the shipped art takes tens of milliseconds and bubbletea
-// redraws on every keystroke — without one, holding the arrow key down would
-// spend a second a second.
+// It keeps no cursor and no level of its own: the browser that raises it hands
+// both over as a draw.Subject and re-pushes on every key that moves either, so
+// the two cannot disagree about which character is in front and walking the level
+// here walks it there. ⚠️ It used to read m.browse.level and m.browse.cursor
+// directly, which is a screen that cannot move into internal/screen and cannot be
+// drawn by a client whose browser is a different one.
+//
+// What it does own is the cache, because rasterising the shipped art takes tens
+// of milliseconds and bubbletea redraws on every keystroke — without one, holding
+// the arrow key down would spend a second a second.
 type previewScreen struct {
+	// subject is the character and the level being looked at, pushed in by the
+	// browser. The zero value draws the same "nothing here" line an empty
+	// listing does.
+	subject draw.Subject
 	// rendered is keyed by the picture and the size it was drawn at, so a
 	// resized window redraws and an unchanged one does not. Written and read by
 	// key only; nothing ranges over it.
@@ -39,55 +46,38 @@ func newPreviewScreen() previewScreen {
 	return previewScreen{rendered: map[string]string{}}
 }
 
-func (p previewScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	switch message.String() {
-	case "q":
-		return m, tea.Quit
-	case "esc", "p":
-		m.screen = screenBrowse
-		return m, nil
-	case "left", "h":
-		m.browse.level = clamp(m.browse.level-1, 1, progression.LevelCap)
-	case "right", "l":
-		m.browse.level = clamp(m.browse.level+1, 1, progression.LevelCap)
-	case "home":
-		m.browse.level = 1
-	case "end":
-		m.browse.level = progression.LevelCap
+func (p previewScreen) View(c draw.Context) (string, string) {
+	footer := c.Text(i18n.PreviewFooter)
+	if p.subject.Of == 0 {
+		return "  " + c.Text(i18n.BrowseNothingHere) + "\n", footer
 	}
-	return m, nil
-}
-
-func (p previewScreen) view(m model) (string, string) {
-	footer := m.text(i18n.PreviewFooter)
-	rows := m.browse.rows()
-	if len(rows) == 0 {
-		return "  " + m.text(i18n.BrowseNothingHere) + "\n", footer
+	character, known := c.Lib.Characters().Get(p.subject.ID)
+	if !known {
+		return "  " + c.Text(i18n.BrowseNothingHere) + "\n", footer
 	}
-	character := rows[clamp(m.browse.cursor, 0, len(rows)-1)]
-	_, stage, err := character.Resolve(m.browse.level, progression.Furthest)
+	_, stage, err := character.Resolve(p.subject.Level, progression.Furthest)
 	if err != nil {
-		return "  " + m.style.Bad.Render(m.lang.Error(err)) + "\n", footer
+		return "  " + c.Style.Bad.Render(c.Lang.Error(err)) + "\n", footer
 	}
 	art := character.StageArt(stage)
 
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(character.ID+" — "+character.Name) + "\n")
-	out.WriteString("  " + m.style.Label.Render(m.text(i18n.PreviewTitle,
-		art, m.browse.level, stage.Name)) + "\n\n")
+	out.WriteString(c.Style.Heading.Render(character.ID+" — "+character.Name) + "\n")
+	out.WriteString("  " + c.Style.Label.Render(c.Text(i18n.PreviewTitle,
+		art, p.subject.Level, stage.Name)) + "\n\n")
 	// A file that is simply not there is said the way the browser and the check
 	// screen say it, rather than as a decode error carrying an absolute path: a
 	// missing picture is the ordinary case while art is still being drawn, and
 	// the raw error belongs to the case that is actually strange.
-	stamp, present := m.lib.ArtStamp(art)
+	stamp, present := c.Lib.ArtStamp(art)
 	if !present {
-		out.WriteString("  " + m.style.Bad.Render(m.text(i18n.ArtMissing)) + "\n")
+		out.WriteString("  " + c.Style.Bad.Render(c.Text(i18n.ArtMissing)) + "\n")
 		return out.String(), footer
 	}
-	picture, err := p.picture(m, art, stamp)
+	picture, err := p.picture(c, art, stamp)
 	if err != nil {
-		out.WriteString("  " + m.style.Bad.Render(
-			m.text(i18n.PreviewArtUnreadable, m.lang.Error(err))) + "\n")
+		out.WriteString("  " + c.Style.Bad.Render(
+			c.Text(i18n.PreviewArtUnreadable, c.Lang.Error(err))) + "\n")
 		return out.String(), footer
 	}
 	out.WriteString(picture)
@@ -118,9 +108,9 @@ const previewChrome = 8
 // The stamp is what the file was when the caller looked, so redrawing the art
 // outside the program invalidates the drawing rather than being ignored until a
 // restart.
-func (p previewScreen) picture(m model, art, stamp string) (string, error) {
-	cells := m.usableWidth() - 4
-	rows := m.height - previewChrome
+func (p previewScreen) picture(c draw.Context, art, stamp string) (string, error) {
+	cells := c.UsableWidth() - 4
+	rows := c.Height - previewChrome
 	if cells < 8 || rows < 4 {
 		return "", fmt.Errorf("%dx%d", cells, rows)
 	}
@@ -132,11 +122,11 @@ func (p previewScreen) picture(m model, art, stamp string) (string, error) {
 	if held, known := p.rendered[key]; known {
 		return held, nil
 	}
-	drawn, err := m.lib.ArtImage(art, cells, rows*2)
+	drawn, err := c.Lib.ArtImage(art, cells, rows*2)
 	if err != nil {
 		return "", err
 	}
-	rendered := cellRows(drawn, m.style)
+	rendered := cellRows(drawn, c.Style)
 	p.rendered[key] = rendered
 	return rendered, nil
 }

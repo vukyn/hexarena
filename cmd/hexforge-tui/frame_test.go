@@ -266,8 +266,9 @@ func TestNoDrawingIsEverWideEnoughToBeMarked(t *testing.T) {
 	// test.
 	preview, _, _ := start(t, i18n.Vi)
 	preview.width, preview.height = minWidth, 40
+	preview = preview.hand(preview.browse.subject())
 	preview.screen = screenPreview
-	body, _ := preview.preview.view(preview)
+	body, _ := preview.preview.View(preview.ctx())
 	painted, widest := 0, 0
 	for _, row := range strings.Split(body, "\n") {
 		if width := lipgloss.Width(row); width >= preview.width {

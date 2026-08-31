@@ -108,6 +108,7 @@ func scrollSites() []scrollSite {
 			raised.browse.cursor = widestTraitRow(raised)
 			raised.browse.level = progression.LevelCap
 			raised.blurb.from = screenBrowse
+			raised = raised.hand(raised.browse.subject())
 			raised.screen = screenBlurb
 			return raised
 		},

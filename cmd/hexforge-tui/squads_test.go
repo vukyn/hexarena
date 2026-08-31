@@ -326,7 +326,7 @@ func TestTheSquadTraitPickerReadsTheTraitBook(t *testing.T) {
 		if !strings.Contains(body, m.lang.GlossedPassive(held)) {
 			t.Errorf("the %s description does not name %s:\n%s", lang, held.ID, body)
 		}
-		for _, line := range traitSentences(m, held) {
+		for _, line := range traitSentences(m.ctx(), held) {
 			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
 				t.Errorf("the %s description of %s is missing %q:\n%s",
 					lang, held.ID, sentence, body)
@@ -365,7 +365,7 @@ func TestTheSquadPickerDescribesTheRowUnderItsCursor(t *testing.T) {
 		if !strings.Contains(body, m.lang.GlossedSkill(declared)) {
 			t.Errorf("the %s description does not name %s:\n%s", lang, declared.ID, body)
 		}
-		for _, line := range skillLines(m, declared) {
+		for _, line := range skillLines(m.ctx(), declared) {
 			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
 				t.Errorf("the %s description is missing %q:\n%s", lang, sentence, body)
 			}
@@ -475,7 +475,7 @@ func TestTheReadingStateIsNotCutAndCannotBeScrolledOffItsAnswer(t *testing.T) {
 			m = send(t, m, tea.KeyPressMsg{Code: tea.KeyPgDown})
 		}
 		body, _ := m.picker.view(m)
-		for _, line := range skillLines(m, declared) {
+		for _, line := range skillLines(m.ctx(), declared) {
 			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
 				t.Errorf("scrolling past the end of the %s description lost %q:\n%s",
 					lang, sentence, body)

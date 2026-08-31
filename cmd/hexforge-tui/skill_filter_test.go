@@ -175,7 +175,7 @@ func TestEveryKeyThatReadsARowReadsTheFilteredOne(t *testing.T) {
 	if described.screen != screenBlurb {
 		t.Fatalf("? left the screen at %v rather than raising the description", described.screen)
 	}
-	body, _ := described.blurb.view(described)
+	body, _ := described.blurb.View(described.ctx())
 	if named := described.lang.GlossedSkill(want); !strings.Contains(body, named) {
 		t.Errorf("the description does not name %q:\n%s", named, body)
 	}

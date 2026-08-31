@@ -132,11 +132,13 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// one measures nothing about the other.
 	skillBlurb := m.enter(screenSkills)
 	skillBlurb.blurb.from = screenSkills
+	skillBlurb = skillBlurb.hand(skillBlurb.skills.subject())
 	skillBlurb.screen = screenBlurb
 	traitBlurb := m.enter(screenBrowse)
 	traitBlurb.browse.cursor = widestTraitRow(traitBlurb)
 	traitBlurb.browse.level = progression.LevelCap
 	traitBlurb.blurb.from = screenBrowse
+	traitBlurb = traitBlurb.hand(traitBlurb.browse.subject())
 	traitBlurb.screen = screenBlurb
 	// The affinity chart, on the element whose description is longest: the rows
 	// are all one shape, so what varies is the pane below them.
@@ -243,6 +245,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// reason above, even though nothing here steps it.
 	playBlurb := fight.enter(screenPlay)
 	playBlurb.blurb.from = screenPlay
+	playBlurb = playBlurb.hand(playBlurb.play.subject())
 	playBlurb.screen = screenBlurb
 	finished := fight.enter(screenPlay)
 	for range 200 {

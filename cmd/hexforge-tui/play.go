@@ -12,6 +12,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 	"github.com/vukyn/hexarena/internal/tui"
 )
 
@@ -382,6 +383,7 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 			m.play = p
 			m.blurb.from = screenPlay
 			m.blurb.scroll = 0
+			m = m.hand(p.subject())
 			m.screen = screenBlurb
 			return m, nil
 		}
@@ -410,6 +412,34 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 }
 
 // move walks whichever of the two lists is in front.
+// subject is what the description screen raised from here is about: the option
+// under the cursor, named by its skill id and by where it sits in this unit's
+// offered list.
+//
+// ⚠️ **It names the skill and hands over nothing of the battle**, which is what
+// keeps the promise above the ? key: playScreen is the one screen holding
+// something the model does not copy, so a describer given a battle to read is a
+// redraw that could step a turn. The id is looked up in the library instead,
+// because a battle carries a unit's resolved kit and the sentences are about the
+// declared skill.
+//
+// Nothing pending and no options are both ordinary answers rather than errors — a
+// turn nobody is being asked about is a turn with nothing to describe — and they
+// come back as a subject with Of at nought, which is how the describer is told
+// so without looking.
+func (p playScreen) subject() draw.Subject {
+	if p.pending == nil || len(p.pending.Options) == 0 {
+		return draw.Subject{Kind: draw.SkillSubject}
+	}
+	at := clamp(p.option, 0, len(p.pending.Options)-1)
+	return draw.Subject{
+		Kind: draw.SkillSubject,
+		ID:   p.pending.Options[at].Skill,
+		At:   at + 1,
+		Of:   len(p.pending.Options),
+	}
+}
+
 func (p playScreen) move(by int) playScreen {
 	if p.aiming {
 		aims := p.pending.Options[p.option].Aims

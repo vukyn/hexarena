@@ -86,7 +86,8 @@ func (p PassivesScreen) Update(_ Context, message tea.KeyPressMsg) (PassivesScre
 		if len(named) == 0 {
 			return p, Action{}
 		}
-		return p, Action{Kind: Raise, Target: Statuses, Focus: named[0]}
+		return p, Action{Kind: Raise, Target: Statuses,
+			Subject: Subject{Kind: StatusSubject, ID: named[0]}}
 	case "up", "k":
 		p.Cursor = Clamp(p.Cursor-1, 0, len(p.Passives)-1)
 	case "down", "j":
