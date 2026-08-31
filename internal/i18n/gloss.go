@@ -92,6 +92,11 @@ var (
 		"focus":    "tập trung",
 		"veil":     "mờ ảo",
 		"block":    "đỡ đòn",
+		// A counter rather than an effect: it is a noun because it is a THING the
+		// holder is carrying, where every other harmful status here is a verb for
+		// something being done to them. Nothing is being done — that is the point of
+		// the category — and a verb would promise otherwise.
+		"charge": "nhiễm điện",
 		// The three that shipped without one. A regen, and the two permanent
 		// statuses a trait grants -- which are the ones a reader is least able
 		// to guess at, because nothing else on screen says what they do.

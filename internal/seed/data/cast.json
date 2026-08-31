@@ -1362,36 +1362,52 @@
           "at_level": 14
         },
         {
-          "id": "mirror_shot",
+          "id": "charge_beam",
           "at_level": 16
         },
         {
-          "id": "thunder_wave",
+          "id": "electro_ball",
           "at_level": 18
         },
         {
-          "id": "metal_sound",
+          "id": "magnetise",
           "at_level": 20
         },
         {
-          "id": "magnet_rise",
+          "id": "spark",
+          "at_level": 22
+        },
+        {
+          "id": "mirror_shot",
           "at_level": 24
         },
         {
-          "id": "zap_cannon",
+          "id": "thunder_wave",
+          "at_level": 26
+        },
+        {
+          "id": "metal_sound",
           "at_level": 28
         },
         {
-          "id": "smokescreen",
+          "id": "magnet_rise",
+          "at_level": 30
+        },
+        {
+          "id": "zap_cannon",
           "at_level": 32
         },
         {
-          "id": "inner_focus",
+          "id": "smokescreen",
           "at_level": 36
         },
         {
-          "id": "taunt",
+          "id": "inner_focus",
           "at_level": 40
+        },
+        {
+          "id": "taunt",
+          "at_level": 44
         }
       ],
       "passives": [

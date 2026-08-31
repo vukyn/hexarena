@@ -173,7 +173,7 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 // over everything its shape catches and weighted by the chance each strike
 // connects. It never rolls, so calling it costs nothing and changes nothing.
 func (b *Battle) expected(actor *Unit, declared skill.Skill, aim hex.Offset) int64 {
-	shape, err := b.books.Patterns.Lookup(declared.Pattern)
+	shape, _, err := b.shapeAt(declared, aim)
 	if err != nil {
 		return 0
 	}

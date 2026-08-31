@@ -322,7 +322,18 @@ func Line(event battle.Event, tags, glosses map[string]string) string {
 	case battle.Amplified:
 		return head + fmt.Sprintf("  %s amplified by %s x%d, power x%s",
 			gloss(event.Skill), gloss(event.Status), event.Stacks, multiple(event.Power))
+	case battle.Spread:
+		return head + fmt.Sprintf("  %s jumps off %s carrying %s",
+			gloss(event.Skill), tag(event.Target), gloss(event.Status))
 	case battle.StatusConsumed:
+		// The stacks left where a consume took only some. Nought is both "took
+		// the lot" and "there were none left", which are the same fact from the
+		// reader's side, so the clause is dropped rather than printing a zero
+		// that says nothing.
+		if event.Remaining > 0 {
+			return head + fmt.Sprintf("  consumes %s x%d off %s, giving up %d, %d left",
+				gloss(event.Status), event.Stacks, tag(event.Target), event.Amount, event.Remaining)
+		}
 		return head + fmt.Sprintf("  consumes %s x%d off %s, giving up %d",
 			gloss(event.Status), event.Stacks, tag(event.Target), event.Amount)
 	case battle.Missed:

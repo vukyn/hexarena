@@ -157,6 +157,54 @@ type Condition struct {
 	// Consume removes the status, which is what a detonate does: the burst is
 	// paid for by the ticks it throws away.
 	Consume bool
+	// ConsumeStacks is how many stacks a consume takes, and nought means all of
+	// them, which is what every consume did before the field existed.
+	//
+	// The distinction is the difference between a detonate and a discharge. A
+	// detonate spends a whole pile at once because the pile *is* the payment —
+	// the burst is worth the ticks thrown away, so leaving some behind would be
+	// leaving the payment behind. A counter spent one at a time is a magazine
+	// instead, and taking the whole magazine for one shot is what would make
+	// accumulating it pointless.
+	ConsumeStacks int
+	// Spreads is the pattern the skill covers when the condition holds, and
+	// empty means the skill keeps its own shape however the condition falls.
+	//
+	// It is the second way a consume can be paid for, and the reason the
+	// "consumes for no bonus" refusal is now two clauses rather than one. A
+	// detonate pays in power; this pays in *shape*, which is a currency the
+	// pattern book already bounds: splash lands at half and max_targets caps a
+	// shape at three cells, so the widest spread that can be authored is worth
+	// two plain attacks — the same ceiling the detonate rule draws from the
+	// other direction.
+	//
+	// ⚠️ **It is decided by the unit at the aim, once, before the shape is
+	// walked** — not per target. A shape cannot be chosen a second time halfway
+	// through covering itself, and "the current jumps from whoever was carrying
+	// it" is the only reading that survives being asked about the splashed cells
+	// as well.
+	Spreads string
+}
+
+// SpreadsOn reports whether the condition widens the skill's shape when it
+// holds. A condition that does not is read exactly as it always was.
+func (c *Condition) SpreadsOn() bool { return c != nil && c.Spreads != "" }
+
+// Takes is how many stacks a consume removes from a target carrying the given
+// number, and nought when this condition consumes nothing.
+//
+// The "all of them" default lives here rather than at the call site because two
+// callers ask — the battle that spends the stacks and the pricing that values
+// them — and a default written twice is a default that will disagree with itself.
+func (c *Condition) Takes(held int) int {
+	switch {
+	case c == nil || !c.Consume:
+		return 0
+	case c.ConsumeStacks <= 0 || c.ConsumeStacks > held:
+		return held
+	default:
+		return c.ConsumeStacks
+	}
 }
 
 // ReadsStatus reports whether the condition asks what the target is carrying.
@@ -685,11 +733,13 @@ type scalingFile struct {
 }
 
 type conditionFile struct {
-	Status      string `json:"status,omitempty"`
-	MinStacks   int    `json:"min_stacks,omitempty"`
-	BelowHealth int    `json:"below_health,omitempty"`
-	BonusPower  int    `json:"bonus_power"`
-	Consume     bool   `json:"consume,omitempty"`
+	Status        string `json:"status,omitempty"`
+	MinStacks     int    `json:"min_stacks,omitempty"`
+	BelowHealth   int    `json:"below_health,omitempty"`
+	BonusPower    int    `json:"bonus_power"`
+	Consume       bool   `json:"consume,omitempty"`
+	ConsumeStacks int    `json:"consume_stacks,omitempty"`
+	Spreads       string `json:"spreads,omitempty"`
 }
 
 // gradientFile is its own shape rather than a field on conditionFile, because a
@@ -784,6 +834,7 @@ func (s Skill) file() skillFile {
 			Status: s.SelfRequires.Status, MinStacks: s.SelfRequires.MinStacks,
 			BelowHealth: s.SelfRequires.BelowHealth,
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
+			ConsumeStacks: s.SelfRequires.ConsumeStacks, Spreads: s.SelfRequires.Spreads,
 		}
 	}
 	if s.SelfGradient != nil {
@@ -794,6 +845,7 @@ func (s Skill) file() skillFile {
 			Status: s.Requires.Status, MinStacks: s.Requires.MinStacks,
 			BelowHealth: s.Requires.BelowHealth,
 			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
+			ConsumeStacks: s.Requires.ConsumeStacks, Spreads: s.Requires.Spreads,
 		}
 	}
 	if s.Strips != nil {
@@ -1229,12 +1281,45 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 	if declared.Consume && !readsStatus {
 		return fail("consumes a status, but it names none")
 	}
-	if declared.Consume && declared.BonusPower == 0 {
-		return fail("consumes %q for no bonus, which throws the status away for nothing", statusID)
+	// A spread is the second currency a consume may be paid in, so the refusal
+	// below is now "paid in neither" rather than "not paid in power". Everything
+	// about the spread is checked first, so a half-written one is named as itself
+	// instead of arriving as the older, vaguer complaint.
+	spreads := ""
+	if declared.Spreads != "" {
+		// A caster's own condition may not widen the shape. The spread is decided
+		// by whoever is standing at the aim — that is what makes "the current
+		// jumps from the unit carrying it" a sentence — and a caster-side one
+		// would be a second, silent way to choose a shape that reads nothing about
+		// the board it is being drawn on.
+		if field != "requires" {
+			return fail("spreads, which only the target's condition may do: a shape is chosen from the unit at the aim")
+		}
+		shape, err := deps.Patterns.Lookup(declared.Spreads)
+		if err != nil {
+			return fail("spreads to %v", err)
+		}
+		if !declared.Consume {
+			// Otherwise the widest shape in the book is free and permanent: the
+			// condition holds, the skill covers three cells, and nothing is ever
+			// spent for it. The consume is the whole price.
+			return fail("spreads to %q without consuming anything, so the shape would be free every turn the condition held", shape.Name)
+		}
+		spreads = shape.Name
+	}
+	if declared.ConsumeStacks < 0 {
+		return fail("consumes %d stacks, want zero for all of them or a positive count", declared.ConsumeStacks)
+	}
+	if declared.ConsumeStacks > 0 && !declared.Consume {
+		return fail("names %d stacks to consume but does not consume", declared.ConsumeStacks)
+	}
+	if declared.Consume && declared.BonusPower == 0 && spreads == "" {
+		return fail("consumes %q for neither a bonus nor a shape, which throws the status away for nothing", statusID)
 	}
 	return &Condition{
 		Status: statusID, MinStacks: minStacks, BelowHealth: declared.BelowHealth,
 		BonusPower: declared.BonusPower, Consume: declared.Consume,
+		ConsumeStacks: declared.ConsumeStacks, Spreads: spreads,
 	}, nil
 }
 

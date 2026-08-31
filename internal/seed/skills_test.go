@@ -247,10 +247,26 @@ func forgoneBy(t *testing.T, kind status.Kind, stacks int, rules combat.Rules) (
 // TestADetonateIsWorthLessThanItsBreakEven is the pricing rule for a burst that
 // consumes a status: it may beat leaving the status alone, but not by so much
 // that applying it and immediately detonating it is the only line worth playing.
+//
+// ⚠️ **A detonate is one of two things a consume can be, and this prices only
+// the first.** A skill that spends a status for a *shape* rather than for power
+// leaves this whole arithmetic with nothing to weigh — its burst is its ordinary
+// power, so `burst <= alternative` fires on every one of them, and the figure
+// the rule is about was never on the skill. Those are bounded by
+// TestASpreadConsumerIsBoundedByTheShapeItBuys instead, and the two rules meet
+// at the same ceiling from opposite sides: a detonate may not beat the
+// alternative twice over, and the widest shape the pattern book can express is
+// worth twice a plain attack.
 func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
 	book, statuses, rules := mustSkills(t), mustStatuses(t), mustRules(t)
 	for _, current := range book.Skills() {
 		if current.Requires == nil || !current.Requires.Consume {
+			continue
+		}
+		if current.Requires.BonusPower == 0 {
+			// Paid for in shape. The parser already refuses a consume paid for in
+			// neither, so this is not a skill that slipped through — it is the
+			// other kind, and the test for it is named above.
 			continue
 		}
 		kind, err := statuses.Lookup(current.Requires.Status)

@@ -94,10 +94,38 @@ const (
 	// slotting one in moves CategoryCount and every table built from declaration
 	// order, the grouped reference's print order included.
 	HealCut
+	// Charge is a counter that does nothing at all on its own and exists to be
+	// spent by a skill that names it.
+	//
+	// Every other category answers "what does holding this do to me". This one
+	// answers "what may somebody now do to me that they could not before", and
+	// the two are different enough that folding it in would be wrong in both
+	// directions. A Buff carrying no modifier would describe itself as nothing —
+	// the trap Taunt and HealCut each paid for above — and a Shield is the
+	// nearest relative but the wrong one: a shield spends itself, automatically,
+	// against whatever arrives, while a charge sits there until somebody chooses
+	// to cash it. Nothing on the holder's side ever reads it.
+	//
+	// ⚠️ **It is the one category the book's stack cap does not bound**, and that
+	// is the whole reason it is a category rather than a flag. Every other cap
+	// bounds an *effect* — five stacks of a debuff at 300 per mille each is a
+	// number the stat budget was reasoned about. A charge multiplies nothing, so
+	// the figure that bounds it is the one on the skill that spends it, and
+	// max_charge_stacks in the book is where that is said out loud. A category
+	// carrying a modifier or a tick is refused at parse for exactly this reason.
+	//
+	// It is HARMFUL: it goes on an enemy, and what it buys is bought by whoever
+	// put it there, so a cleanse may take it off and a trait may refuse it. It
+	// does NOT outlast a shield — read OutlastsAShield's own comment before
+	// reaching for that, and note that a shield denying stacks is the answer this
+	// whole playstyle is meant to have.
+	//
+	// Declared last, which is now the rule rather than one entry's note.
+	Charge
 )
 
 // CategoryCount is the number of categories.
-const CategoryCount = int(HealCut) + 1
+const CategoryCount = int(Charge) + 1
 
 var categoryNames = [CategoryCount]string{
 	Dot:        "dot",
@@ -108,6 +136,7 @@ var categoryNames = [CategoryCount]string{
 	Regen:      "regen",
 	Taunt:      "taunt",
 	HealCut:    "heal_cut",
+	Charge:     "charge",
 }
 
 func (c Category) String() string {
@@ -124,7 +153,7 @@ func (c Category) Valid() bool { return int(c) < CategoryCount }
 // It is what separates a cleanse from a dispel.
 func (c Category) Harmful() bool {
 	switch c {
-	case Dot, StatDebuff, Control, Taunt, HealCut:
+	case Dot, StatDebuff, Control, Taunt, HealCut, Charge:
 		return true
 	default:
 		return false
@@ -775,14 +804,30 @@ type Book struct {
 	// be authored far outside the range the rest are balanced against.
 	MaxStacks   int
 	MaxDuration int
-	kinds       []Kind
-	byID        map[string]Kind
+	// MaxChargeStacks bounds a Charge instead of MaxStacks, and is a separate
+	// number because it is bounding a different thing.
+	//
+	// MaxStacks bounds an *effect*: five stacks of a debuff at 300 per mille each
+	// is a figure the stat budget was reasoned against, so the cap and the
+	// budget are one argument. A charge multiplies nothing and ticks for nothing
+	// — what a pile of it is worth is entirely a property of the skill that
+	// spends it — so bounding it at five would be a number with no argument
+	// behind it, borrowed from a category it has nothing in common with.
+	//
+	// It is still a bound rather than no bound: a battle is finite, the shape a
+	// consumer buys is capped by the pattern book's own max_targets, and a
+	// ceiling nobody reaches in practice is what says out loud that reaching it
+	// was never the plan.
+	MaxChargeStacks int
+	kinds           []Kind
+	byID            map[string]Kind
 }
 
 type bookFile struct {
-	MaxStacks   int `json:"max_stacks"`
-	MaxDuration int `json:"max_duration"`
-	Kinds       []struct {
+	MaxStacks       int `json:"max_stacks"`
+	MaxDuration     int `json:"max_duration"`
+	MaxChargeStacks int `json:"max_charge_stacks"`
+	Kinds           []struct {
 		ID        string              `json:"id"`
 		Category  string              `json:"category"`
 		MaxStacks int                 `json:"max_stacks"`
@@ -806,10 +851,22 @@ func ParseBook(raw []byte) (*Book, error) {
 	if file.MaxDuration < 1 {
 		return nil, fmt.Errorf("max_duration is %d, want at least 1", file.MaxDuration)
 	}
+	// A book that declares no charge cap keeps the ordinary one, so every book
+	// written before the category existed still parses and still means what it
+	// said. Raising it is an explicit decision, taken in the data.
+	chargeStacks := file.MaxChargeStacks
+	if chargeStacks == 0 {
+		chargeStacks = file.MaxStacks
+	}
+	if chargeStacks < file.MaxStacks {
+		return nil, fmt.Errorf("max_charge_stacks is %d, under the %d every other status may have",
+			chargeStacks, file.MaxStacks)
+	}
 	book := &Book{
-		MaxStacks:   file.MaxStacks,
-		MaxDuration: file.MaxDuration,
-		byID:        make(map[string]Kind, len(file.Kinds)),
+		MaxStacks:       file.MaxStacks,
+		MaxDuration:     file.MaxDuration,
+		MaxChargeStacks: chargeStacks,
+		byID:            make(map[string]Kind, len(file.Kinds)),
 	}
 	for _, declared := range file.Kinds {
 		if declared.ID == "" {
@@ -819,12 +876,19 @@ func ParseBook(raw []byte) (*Book, error) {
 		if err != nil {
 			return nil, fmt.Errorf("status %q: %w", declared.ID, err)
 		}
+		// A Charge is bounded by its own ceiling. Which bound applied is named in
+		// the refusal, because "over the limit of 5" against a book that also
+		// declares 999 is a message that sends the reader to the wrong number.
+		stackCap, capName := book.MaxStacks, "max_stacks"
+		if category == Charge {
+			stackCap, capName = book.MaxChargeStacks, "max_charge_stacks"
+		}
 		switch {
 		case declared.MaxStacks < 1:
 			return nil, fmt.Errorf("status %q allows %d stacks, want at least 1", declared.ID, declared.MaxStacks)
-		case declared.MaxStacks > book.MaxStacks:
-			return nil, fmt.Errorf("status %q allows %d stacks, over the limit of %d",
-				declared.ID, declared.MaxStacks, book.MaxStacks)
+		case declared.MaxStacks > stackCap:
+			return nil, fmt.Errorf("status %q allows %d stacks, over the %s limit of %d",
+				declared.ID, declared.MaxStacks, capName, stackCap)
 		case declared.Permanent && declared.Duration != 0:
 			return nil, fmt.Errorf("status %q is permanent and also lasts %d turns, which are two different answers",
 				declared.ID, declared.Duration)
@@ -868,6 +932,16 @@ func ParseBook(raw []byte) (*Book, error) {
 		case category != HealCut && declared.HealShare != 0:
 			return nil, fmt.Errorf("status %q is %s but declares heal_share %d, which only a %s uses",
 				declared.ID, category, declared.HealShare, HealCut)
+		}
+		// A Charge that carries a modifier is a Charge that is bounded by nothing
+		// and does something anyway, which is the one combination its own cap was
+		// written on the understanding of. Refused here rather than left to the
+		// author's discretion, because the ceiling is nine hundred and ninety
+		// nine: a single term of any size at that stack count is a number nothing
+		// in the stat budget answers.
+		if category == Charge && len(declared.Modifiers) > 0 {
+			return nil, fmt.Errorf("status %q is a %s carrying %d modifier(s): a counter that is spent may not also change a stat, because its cap of %d bounds an effect it was never meant to have",
+				declared.ID, category, len(declared.Modifiers), stackCap)
 		}
 		if _, clash := book.byID[declared.ID]; clash {
 			return nil, fmt.Errorf("status %q is declared twice", declared.ID)

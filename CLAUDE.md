@@ -2430,6 +2430,51 @@ playing, and the status is a cast animation.
   strictly-better skill this whole rule exists to refuse, and no golden would
   notice.
 
+## A consume can be paid in shape: `charge`, the counter category
+
+`charge` is a status category that does **nothing** to its holder — no stat, no
+tick, no turn. It is ammunition, and it is the ninth category, appended last for
+the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
+*Counting instead of doing*; what matters when editing:
+
+- **It is the one category `Book.MaxStacks` does not bound.** `max_charge_stacks`
+  (999) bounds it instead, and a charge carrying a modifier or a tick is refused
+  at parse — the ceiling was granted on the understanding that it multiplies
+  nothing. Do not "tidy" that into one cap; the two numbers bound different
+  things.
+- **Never permanent.** `Set.Remove` refuses a permanent status (that is what keeps
+  a trait from being dispelled) and a consume goes through `Remove`, so a
+  permanent counter is one nothing could ever spend.
+- **`requires` gained `spreads` and `consume_stacks`.** `spreads` names the pattern
+  the skill covers when the condition holds; `consume_stacks` takes a counted
+  number instead of the pile. The old refusal "consumes for no bonus" is now
+  "consumes for neither a bonus nor a shape", and a skill may take **one**
+  payment, not both.
+- ⚠️ **The spread is read once, from the unit at the aim, before the shape is
+  walked** — `Battle.shapeAt`, which all five callers that resolve or rate a
+  shape now go through. Asking per splashed cell would let a spread reach further
+  than the cell that paid for it, and a rating that walked a different shape from
+  the resolution would be a hint that lies.
+- **Its own event kind, `Spread`.** Not an `Amplified`: that arm says a figure
+  moved, and a shape-paid condition moves none — which is also why `Act` now
+  emits `Amplified` only when the power actually changed. `TestNoGlossedLogRow…`
+  had to learn the same thing: measuring an amplified row for `electro_ball`
+  against a counter capped at 999 puts the widest row in the book on an event no
+  battle can produce (82 cells of the 79 there are).
+- ⚠️⚠️ **A pile is worth far less than a stack times its height, and this was
+  measured.** Priced linearly, one three-stack charge over two cells read as three
+  whole strikes, so `Suggest` spent its opening turn dealing no damage — the kit
+  measured **6 per mille against 366**. Each stack is now worth half the one below
+  it, and the halving starts from the stacks already on the target: the sum can
+  never pass twice the first stack. That alone took the kit **6 → 110**, with no
+  data changed. See `pricing.charged` / `pricing.spendable`.
+- **A counter is worth nothing when nobody on the caster's side carries a
+  consumer**, and that is the answer rather than a missing case.
+- The playstyle is held by `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne`
+  — the damage must arrive in **more, smaller** pieces *and* at a rate within
+  three fifths of the burst kit's. Shipped reading: 293‰ over 6396 blows of 169
+  against 366‰ over 3114 of 366.
+
 ## Open work
 
 Detail and the open questions are in `README.md` under Roadmap. What matters here

@@ -380,6 +380,17 @@ func TestNoGlossedLogRowOutgrowsTheWindow(t *testing.T) {
 		if one.Requires == nil || one.Requires.Status == "" {
 			continue
 		}
+		if one.Requires.BonusPower == 0 {
+			// A condition paid for in shape rather than in power emits no
+			// amplified row at all — the arm exists to say a figure moved, and
+			// this one moves none, so Act skips it and the Spread row below is
+			// what that skill logs instead. Measuring it here would put the
+			// widest row in the book on an event no battle can produce, which is
+			// exactly the "reachable rather than worst-case" rule this test opens
+			// with. It is not hypothetical: `electro_ball` beside a counter
+			// capped at 999 measures 82 of the 79 there are.
+			continue
+		}
 		stacks := 1
 		if kind, err := books.Statuses.Lookup(one.Requires.Status); err == nil {
 			stacks = kind.MaxStacks
@@ -388,6 +399,18 @@ func TestNoGlossedLogRowOutgrowsTheWindow(t *testing.T) {
 			Kind: battle.Amplified, Actor: "a", Target: "f",
 			Skill: one.ID, Status: one.Requires.Status, Stacks: stacks,
 			Power: one.Power + one.Requires.BonusPower,
+		})
+	}
+	// spread: the row the arm above skips, and the other place two glossed ids
+	// share one clause. Every skill that can widen its shape draws one.
+	for _, one := range books.Skills.Skills() {
+		if !one.Requires.SpreadsOn() {
+			continue
+		}
+		measure(fmt.Sprintf("spread/%s/%s", one.ID, one.Requires.Status), battle.Event{
+			Kind: battle.Spread, Actor: "a", Target: "f",
+			Skill: one.ID, Status: one.Requires.Status,
+			Cell: hex.At(hex.Offset{Col: 3, Row: 1}),
 		})
 	}
 	// skill_used and summoned: every skill.
