@@ -170,12 +170,30 @@ is only so the shape is readable.
 
 ## Not done
 
+- [ ] ⚠️ **A one-way mirror rate stops being a measurement above one unit a
+      side, and nothing in the suite says so.** A mirror fought one way and its
+      reverse must sum to 1000‰. Measured, middle row, 1000 seeds each: one unit
+      a side **1000‰ exactly**, two units **1021‰**, three units **962‰**.
+      `TestABothWaysMirrorIsExactlyEven` holds the exact case and fights at
+      `duelSlot` with one unit, so it does not reach the others; `spar` is
+      therefore sound and `forge.FightSquads` has an unmeasured residual it sums
+      over rather than cancels.
+      ⚠️ Not the board: `Place` is a real isometry across the sides **and**
+      within one — 0 asymmetric pairs of 81 — so `TestPlaceMirrorsBothSides`,
+      which checks only the cross-side profile, was not hiding it. Not structural
+      either: the shipped two-unit squad *is* exactly complementary while a
+      synthetic two-unit mirror of the same characters on the same cells is not,
+      and they differ only in **kit**. So a skill resolves in an order that does
+      not mirror and it has not been found — which is what to look for first,
+      before any figure at 3v3 or 5v5 is quoted. → `README.md` § PvP over a LAN.
+
 - [ ] **PvP over a LAN — 3v3 or 5v5, one server and n clients.** Squads built and
       saved on the player's own machine, a room joined by a code and an optional
       password, the battle resolved on the server. The design is settled and
       written down: the client is a **mirror** that runs the engine off the
-      decisions the server sends, a match is **two battles on the same seed with
-      the sides swapped**, a room code carries its own address, and the reference
+      decisions the server sends, a match is a **series the room configures —
+      bo1 or bo3** — fought both ways round, a room code carries its own address,
+      and the reference
       screens move out of the authoring tool into a package both binaries draw.
       → `README.md` § PvP over a LAN, which holds the reasoning and the
       measurements and is the place to argue with, not this list.
@@ -222,11 +240,20 @@ is only so the shape is readable.
       - [ ] A forfeit, a disconnect and a refused join are results of the
             **match**. ⚠️ Nothing is added to `battle.Outcome` — a dropped socket
             is not a way a battle can end, and that enum is a core type.
-      - [ ] Two battles in one match, same seed, sides swapped — from the room's
-            first line, because *this* is the part that hurts to add later.
-      - [ ] The 1–1 tie-break, which will be common and not exotic. Proposed:
-            aggregate surviving-health share in permille over both battles, then
-            a third battle on a fresh seed.
+      - [ ] A **series**, not a bo2: `battles: N` plus a rule for what ends it,
+            from the room's first line, because *this* is the part that hurts to
+            add later. ⚠️ **bo1 is not a special case — it is N = 1.** The room
+            offers **bo1 and bo3**; bo2 is deliberately not offered, because only
+            an even series cancels the side and only an even series has to invent
+            a rule for a 1–1. The aggregate-health tie-break an earlier draft
+            proposed is **dropped**, so no invented metric ships anywhere here.
+      - [ ] One rule for bo1 *and* for the third battle of a bo3, which are the
+            same problem: the seed picks the side, and the lead of each contested
+            speed group alternates. ⚠️ Honestly uncancelled — say so rather than
+            dress a coin as fairness.
+      - [ ] The per-turn allowance belongs in the room's configuration beside the
+            format. Measured on the shipped 3v3: **34–55 decisions a battle**, so
+            ninety seconds each is 68 minutes a battle and 3.5 hours for a bo3.
       - [ ] A turn cap per battle so a stalemate ends. `Outcome` already has the
             draws.
       - [ ] Write each finished match out as a `battle.Log`, which makes every
@@ -385,17 +412,19 @@ is only so the shape is readable.
 
 ## Decided against — do not re-raise
 
-- **Re-rolling the turn-order tie-break from the seed.** Raised by PvP, where
-  which side you get is worth **−38% to +62%** in a mirror (`spar`'s first-move
-  column, 500 seeds a slot) because `atb.Queue.order` breaks a tie by the order
-  units joined and the ally side is enlisted first. A roll would make a single
-  battle fair without a second one — and it would invalidate every balance figure
-  ever taken here: the 47.3% screened board, `Suggest`'s 81.3%, every 500‰ control
-  that reads exactly even, and every golden. ⚠️ The sign is not even fixed —
-  moving first is a **liability** for Cleffa — so this is a real property of a kit
-  and not an artefact to be smoothed away. `internal/core` is not changed for a
-  networking feature; a match fights both ways round instead, which is what
-  `forge.Bout` and every spar already do. → `README.md` § PvP over a LAN.
+- **Re-rolling the turn-order tie-break from the seed.** Kept, and the reason
+  first written here was **wrong**: it claimed this needs `atb.Queue.order`
+  changed and would invalidate every balance figure. It does not. `seq` comes off
+  a counter in `atb.Queue.Add`, which `enlist` calls once per unit, which `New`
+  calls **in roster-slice order** — so the tie is the *caller's* to decide, with
+  no core change and no golden moved. `forge.FightSquads` writing
+  `append(ally, enemy...)` is the whole reason ally wins every tie today.
+  Measured on the two-unit mirror, 2000 seeds: 54.2% ally-first, 45.7%
+  enemy-first, **50.2%** with one coin for the side, **49.6%** alternating pair by
+  pair. The lever works and costs nothing. It is still not the answer, because
+  the entry below says evening the ties does not make a battle even — a match
+  fights both ways round, and the coin is worth having *on top of* that.
+  → `README.md` § PvP over a LAN.
 
 - **A ceiling on `Skill.Power`.** The arithmetic that looked like it demanded
   one is gone: `Rules.damage` builds its numerator in 128 bits now, so nothing

@@ -2161,21 +2161,68 @@ identical squads share both for every pair of twins, so the ally side collects
 all of it. Two different squads almost never tie. But two friends copying each
 other's best squad is precisely the case that reads worst.
 
-So a match is **two battles on the same seed with the sides swapped** — which is
-what `forge.Bout` does when it fights from both ends of the board, and what makes
-a spar's mirror row read an exactly even 500‰ instead of reporting the first
-slot's advantage as the character's. The room therefore has to know about "several
-battles in one match" from its first line of code; that is the part that is
-painful to add later, not the second battle.
+⚠️ They are also **duel** figures, and they do not transfer. The same reading on
+a two-unit mirror is **+8.5 points**, not sixty — a longer battle dilutes an
+opening the duel spends everything on. And above one unit a side a one-way rate
+is not a measurement at all (see the note under *Decided against*), so what the
+slot is worth at 3v3 or 5v5 is **unmeasured** rather than small: the figure to
+quote there does not exist yet.
 
-A 1–1 needs a tie-break, and it will be common rather than exotic: when the slot
-dominates, both players win the battle they played from the ally side. The
-proposal is the **aggregate surviving-health share** — each player's remaining
-health as a share of what their squad started with, summed over both battles, in
-parts per thousand — because it is derived from a state both mirrors already
-hold, it is symmetric, and it does not favour a squad for having more health to
-begin with. Exactly level goes to a third battle on a fresh seed with the sides
-taken from it.
+So a match fights **both ways round** — which is what `forge.Bout` does from both
+ends of the board, and what makes a spar's mirror row read an exactly even 500‰
+instead of reporting the first slot's advantage as the character's.
+
+### Only an even series cancels a side, and only an even series has to invent a rule
+
+Which is the whole trade, and it does not have a way out:
+
+| Series | Battles | Sides cancel | Has to invent a tie-break |
+| --- | --- | --- | --- |
+| **bo1** | 1 | no | no |
+| bo2 | 2 | **yes** | **yes** — 1–1 has no natural winner |
+| **bo3** | 3 | no (one battle over) | no |
+
+⚠️ And **bo3 is worse than it reads**: at 1–1 the third battle decides the match,
+so an odd series does not remove the side advantage — it *concentrates* it into
+the one battle that matters most. bo1 spends it on one battle out of one; bo3
+spends it on a battle already carrying a level score.
+
+A 1–1 is common rather than exotic, too: when the slot dominates, both players
+win the battle they played from the ally side.
+
+The room configures **bo1 or bo3**, and bo2 is deliberately not offered. An
+earlier draft of this section proposed breaking a 1–1 on the **aggregate
+surviving-health share**, and that is dropped: it is an unmeasured number, and an
+unmeasured number deciding a whole match is exactly the kind of claim this
+repository does not ship. A third battle needs no justification at all. Dropping
+it means **no invented metric ships anywhere in this design**.
+
+What is left is that bo1 and *the third battle of a bo3* are the same problem —
+one battle whose side cannot be cancelled by another — so they get the same
+treatment and there is one rule rather than two: the seed picks the side, and the
+lead of each contested speed group alternates (see the tie-break note under
+*Decided against*, which is what makes that free). It is honestly uncancelled, and
+saying so is better than a coin dressed as fairness.
+
+⚠️ Two different squads almost never tie at all, so most of what that rule
+addresses evaporates the moment the two players are not mirroring each other.
+What remains is the residual that the complementarity note describes, whose size
+at 3v3 or 5v5 is **unmeasured**.
+
+### A series, not a bo2
+
+The room therefore holds `battles: N` and a rule for what ends the series, and
+**bo1 is not a special case — it is N = 1**. Building it generically is nearly
+free; building "bo2" and generalising later is the part that hurts, which is why
+this is stated before the first line of the room exists.
+
+Length, measured on the shipped 3v3 with both sides played by the rating: a battle
+takes **34 to 55 decisions** over eight seeds, so seventeen to twenty-eight per
+player. At a realistic fifteen seconds a decision that is about eleven minutes a
+battle, and a bo3 about half an hour. ⚠️ At the full ninety-second allowance it is
+sixty-eight minutes a battle and **three and a half hours for a bo3** — which is
+an argument about the ninety seconds rather than about bo3, and a reason the
+allowance belongs in the room's configuration beside the format.
 
 ### A room, and getting into one
 
@@ -2226,11 +2273,58 @@ method is measurement.
 
 ### Decided against — do not re-raise
 
-- **Re-rolling the turn-order tie-break from the seed.** It would make a single
-  battle fair without a second one, and it would invalidate every balance figure
-  this repository has ever taken: the 47.3% screened board, `Suggest`'s 81.3%,
-  every 500‰ control that reads exactly even, and every golden. `internal/core`
-  is not changed for a networking feature.
+- **Re-rolling the turn-order tie-break from the seed** — kept, but for a
+  different reason than the one first written here, and the first reason was
+  **wrong**.
+
+  What was claimed: that evening the ties needs `atb.Queue.order` changed, and so
+  would invalidate every balance figure ever taken. It does not. `seq` is
+  assigned by `atb.Queue.Add` off a counter, `Add` is called once per unit by
+  `enlist`, and `enlist` is called by `New` **in the order of the roster slice it
+  was handed**. So which side wins a tie is decided by *the caller*, and a server
+  composing its own roster order changes it with no core change, no golden moved
+  — every shipped data file keeps the order it has — and no loss of
+  verifiability, because `Log.Roster` records the order the battle was fought in.
+  `forge.FightSquads` does `append(ally, enemy...)`, which is the whole reason
+  the ally side wins every tie today.
+
+  Measured on the two-unit mirror, 2000 seeds: ally enlisted first reads
+  **54.2%**, enemy first **45.7%**, one coin for the whole side **50.2%**, and
+  alternating the lead pair by pair **49.6%**. So the lever works, and it is
+  available for nothing.
+
+  It is still not the answer, because evening the ties does not make a battle
+  even. See the note below: at more than one unit a side a mirror is not
+  complementary, so there is a residual nobody has named and the ties are not
+  where all of it lives. A match fights both ways round, which cancels the
+  residual as well as the tie — including the part that has not been explained.
+  The coin is worth having **on top of** that, per battle, not instead of it.
+
+- ⚠️ **A one-way mirror rate is not a measurement above one unit a side, and
+  this was found by a control arm failing.** A mirror fought one way and its own
+  reverse must sum to 1000‰: they are the same battles with the sides
+  exchanged. Measured, middle row only, 1000 seeds each:
+
+  | A side | Ally enlisted first | Enemy first | Sum |
+  | --- | --- | --- | --- |
+  | 1 unit | 660‰ | 340‰ | **1000‰ — exact** |
+  | 2 units | 577‰ | 444‰ | 1021‰ |
+  | 3 units | 487‰ | 475‰ | 962‰ |
+
+  At one a side it is exact, which is what `TestABothWaysMirrorIsExactlyEven`
+  asserts — and that test fights at `duelSlot` with one unit, so it does not
+  reach this. Above one it breaks, so `1 - rate` is not the other side's rate and
+  a figure quoted from one slot means nothing.
+
+  ⚠️ The board is **not** the cause: `Place` is a real isometry both across the
+  sides and within one, measured at 0 asymmetric pairs of 81, so
+  `TestPlaceMirrorsBothSides` — which only checks the cross-side profile — was
+  not hiding anything. Nor is it structural: the shipped two-unit squad *is*
+  exactly complementary while a synthetic two-unit mirror of the same characters
+  on the same cells is not, and the two differ only in **kit**. So something a
+  skill does resolves in an order that does not mirror, and it has not been
+  found. `forge.FightSquads` sums both ways, which is right, but the
+  cancellation is only *proven* at one a side.
 
 ## Roadmap
 
