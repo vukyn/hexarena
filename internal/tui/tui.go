@@ -20,6 +20,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/i18n"
 )
 
 // Tags assigns each unit a two character label, stable in roster order, so the
@@ -247,7 +248,20 @@ func Aims(fight *battle.Battle, option battle.Option, tags map[string]string) st
 }
 
 // Line renders one event, using nothing but the event.
-func Line(event battle.Event, tags map[string]string) string {
+//
+// glosses is data id -> display name, for the skill, status and trait ids the
+// line prints — i18n.Lang.LogGlosses is what builds one. It is a caller-supplied
+// map for exactly the reason tags and Summary's names are: the event lines are
+// built from the event alone, so this package may not be handed books, a battle
+// or a language, and a name is a fact about the reader rather than about what
+// happened. **A nil or empty map reproduces the line byte for byte**, which is
+// both what English is (a data id is shown as the data writes it) and what a
+// replay drawn without books is, and it is the property the goldens hold.
+//
+// Every occurrence is glossed rather than the first mention: a log is read in
+// pieces, scrolled and frozen at a frame, so "the first mention" is a row a
+// reader may never have on screen.
+func Line(event battle.Event, tags, glosses map[string]string) string {
 	tag := func(id string) string {
 		if id == "" {
 			return ""
@@ -256,6 +270,15 @@ func Line(event battle.Event, tags map[string]string) string {
 			return label
 		}
 		return id
+	}
+	// gloss is the id with its name beside it, and the bare id when there is
+	// none. The bracket comes from i18n rather than being spelled here, so the log
+	// and every screen that names a data id agree on the punctuation.
+	gloss := func(id string) string {
+		if id == "" {
+			return ""
+		}
+		return i18n.GlossBracket(id, glosses[id])
 	}
 	head := fmt.Sprintf("  %-3s", tag(event.Actor))
 	switch event.Kind {
@@ -269,12 +292,12 @@ func Line(event battle.Event, tags map[string]string) string {
 	case battle.TurnBegan:
 		return fmt.Sprintf("\n  %-3s turn %d", tag(event.Actor), event.Turn)
 	case battle.StatusTicked:
-		return head + fmt.Sprintf(" takes %d from %s x%d", event.Amount, event.Status, event.Stacks)
+		return head + fmt.Sprintf(" takes %d from %s x%d", event.Amount, gloss(event.Status), event.Stacks)
 	case battle.Healed:
 		// A regeneration names itself; a drain or a restoring skill has no
 		// status to name and says only how much came back.
 		if event.Status != "" {
-			return head + fmt.Sprintf(" heals %d from %s x%d", event.Amount, event.Status, event.Stacks)
+			return head + fmt.Sprintf(" heals %d from %s x%d", event.Amount, gloss(event.Status), event.Stacks)
 		}
 		// A drain says the share it took, because the amount alone cannot be
 		// reproduced from the skill any more: a trait may drain as well, so the
@@ -285,20 +308,20 @@ func Line(event battle.Event, tags map[string]string) string {
 		}
 		return head + fmt.Sprintf(" heals %d, %d hp left", event.Amount, event.Remaining)
 	case battle.StatusExpired:
-		return head + fmt.Sprintf(" %s wears off", event.Status)
+		return head + fmt.Sprintf(" %s wears off", gloss(event.Status))
 	case battle.SpeedChanged:
 		return head + fmt.Sprintf(" speed %d to %d", event.Before, event.Amount)
 	case battle.TurnSkipped:
 		return head + fmt.Sprintf(" loses the turn (%s)", event.Note)
 	case battle.SkillUsed:
-		return head + fmt.Sprintf(" uses %s at %s%s", event.Skill, event.Cell,
+		return head + fmt.Sprintf(" uses %s at %s%s", gloss(event.Skill), event.Cell,
 			gradientNote(event.Gradient))
 	case battle.Amplified:
-		return head + fmt.Sprintf("  %s is amplified by %s x%d, power %d",
-			event.Skill, event.Status, event.Stacks, event.Power)
+		return head + fmt.Sprintf("  %s amplified by %s x%d, power %d",
+			gloss(event.Skill), gloss(event.Status), event.Stacks, event.Power)
 	case battle.StatusConsumed:
 		return head + fmt.Sprintf("  consumes %s x%d off %s, giving up %d",
-			event.Status, event.Stacks, tag(event.Target), event.Amount)
+			gloss(event.Status), event.Stacks, tag(event.Target), event.Amount)
 	case battle.Missed:
 		return head + fmt.Sprintf("  misses %s (%d%%)", tag(event.Target), event.Chance/10)
 	case battle.Blocked:
@@ -311,7 +334,7 @@ func Line(event battle.Event, tags map[string]string) string {
 		// be a rule nobody wrote down.
 		if event.Passive != "" {
 			return head + fmt.Sprintf("  answers %s with %s for %d%s, %d left",
-				tag(event.Target), event.Passive, event.Amount,
+				tag(event.Target), gloss(event.Passive), event.Amount,
 				affinityNote(event.Multiplier), event.Remaining)
 		}
 		return head + fmt.Sprintf("  hits %s for %d%s%s%s, %d left",
@@ -327,7 +350,7 @@ func Line(event battle.Event, tags map[string]string) string {
 		// unit it just hit, has nothing else in the log to account for it.
 		source := ""
 		if event.Passive != "" {
-			source = " (" + event.Passive + ")"
+			source = " (" + gloss(event.Passive) + ")"
 		}
 		// A vulnerability shows on the line where the status lands, because that
 		// is the case it exists to cause — the refusal arm below never runs for a
@@ -336,7 +359,7 @@ func Line(event battle.Event, tags map[string]string) string {
 			source += fmt.Sprintf(" (%d%% invited)", -event.Refused/10)
 		}
 		return head + fmt.Sprintf("  %s x%d on %s, now %d%s%s",
-			event.Status, event.Stacks, tag(event.Target), event.Remaining, note, source)
+			gloss(event.Status), event.Stacks, tag(event.Target), event.Remaining, note, source)
 	case battle.StatusResisted:
 		// Two different things end an application, and the kind is called
 		// status_resisted for both: the roll failed, or the target's traits
@@ -345,20 +368,20 @@ func Line(event battle.Event, tags map[string]string) string {
 		// luck from a property of the unit.
 		switch {
 		case event.Refused >= 1000:
-			return head + fmt.Sprintf("  %s is immune to %s", tag(event.Target), event.Status)
+			return head + fmt.Sprintf("  %s is immune to %s", tag(event.Target), gloss(event.Status))
 		case event.Refused > 0:
 			return head + fmt.Sprintf("  %s shrugs off %s (%d%% chance, %d%% refused)",
-				tag(event.Target), event.Status, event.Chance/10, event.Refused/10)
+				tag(event.Target), gloss(event.Status), event.Chance/10, event.Refused/10)
 		case event.Refused < 0:
 			// A vulnerability, which is a refusal of a negative share. Without
 			// this line the roll below prints a chance higher than the skill's
 			// own and nothing on screen says why — and explaining its own figures
 			// is the whole job of this renderer.
 			return head + fmt.Sprintf("  %s is wide open to %s (%d%% chance, %d%% invited)",
-				tag(event.Target), event.Status, event.Chance/10, -event.Refused/10)
+				tag(event.Target), gloss(event.Status), event.Chance/10, -event.Refused/10)
 		default:
 			return head + fmt.Sprintf("  %s resists %s (%d%%)",
-				tag(event.Target), event.Status, event.Chance/10)
+				tag(event.Target), gloss(event.Status), event.Chance/10)
 		}
 	case battle.StatusStripped:
 		return head + fmt.Sprintf("  strips %d off %s", event.Stacks, tag(event.Target))
@@ -367,12 +390,12 @@ func Line(event battle.Event, tags map[string]string) string {
 		// either half alone leaves the reader guessing: the trait's name says
 		// nothing about what it does, and the status appearing on its own has
 		// nothing to account for it.
-		return head + fmt.Sprintf("  holds %s: %s x%d", event.Passive, event.Status, event.Stacks)
+		return head + fmt.Sprintf("  holds %s: %s x%d", gloss(event.Passive), gloss(event.Status), event.Stacks)
 	case battle.PassiveReleased:
 		// The same line the other way round. A gated trait letting go takes a
 		// visible number down with it, so it reads beside the heal that caused
 		// it rather than being left to the reader to infer from the damage.
-		return head + fmt.Sprintf("  lets go of %s: %s x%d", event.Passive, event.Status, event.Stacks)
+		return head + fmt.Sprintf("  lets go of %s: %s x%d", gloss(event.Passive), gloss(event.Status), event.Stacks)
 	case battle.Died:
 		return head + fmt.Sprintf(" falls at %s", event.Cell)
 	case battle.Summoned:
@@ -381,7 +404,7 @@ func Line(event battle.Event, tags map[string]string) string {
 		// carries — a reader meeting a name for the first time needs the same
 		// facts whether the roster placed it or a skill did.
 		return head + fmt.Sprintf("  %s calls up %s at %s, %d hp",
-			event.Skill, event.Target, event.Cell, event.Amount)
+			gloss(event.Skill), event.Target, event.Cell, event.Amount)
 	case battle.Left:
 		// Not "falls". A copy running out of turns is not a unit being beaten,
 		// and the note says which of the two reasons it was.
@@ -462,14 +485,15 @@ func criticalNote(critical bool) string {
 	return " (critical)"
 }
 
-// Log renders a run of events.
-func Log(events []battle.Event, tags map[string]string) string {
+// Log renders a run of events. glosses is Line's, and a nil one renders exactly
+// what this function rendered before there was a third parameter.
+func Log(events []battle.Event, tags, glosses map[string]string) string {
 	if len(events) == 0 {
 		return ""
 	}
 	lines := make([]string, 0, len(events))
 	for _, event := range events {
-		lines = append(lines, Line(event, tags))
+		lines = append(lines, Line(event, tags, glosses))
 	}
 	return strings.Join(lines, "\n")
 }

@@ -337,7 +337,7 @@ func TestEveryEventKindRenders(t *testing.T) {
 			Multiplier: 1500, Power: 1800, Remaining: 2400,
 			Cell: hex.At(hex.Offset{Col: 3, Row: 1}), Side: hex.SideAlly, Note: "ally",
 		}
-		line := tui.Line(event, tags)
+		line := tui.Line(event, tags, nil)
 		if strings.TrimSpace(line) == "" {
 			t.Errorf("%s renders as nothing", battle.Kind(kind))
 		}
@@ -369,7 +369,7 @@ func TestLineSpellsOutTheAffinity(t *testing.T) {
 		line := tui.Line(battle.Event{
 			Kind: battle.Damaged, Actor: "a", Target: "f",
 			Amount: 500, Multiplier: testCase.multiplier, Remaining: 1000,
-		}, tags)
+		}, tags, nil)
 		if testCase.want == "" {
 			if strings.Contains(line, "(") {
 				t.Errorf("a neutral matchup rendered as %q", line)
@@ -399,7 +399,7 @@ func TestADamagedLineSaysWhatArmourItWentThrough(t *testing.T) {
 		line := tui.Line(battle.Event{
 			Kind: battle.Damaged, Actor: "a", Target: "f",
 			Amount: 500, Multiplier: 1000, Pierce: testCase.pierce, Remaining: 1000,
-		}, nil)
+		}, nil, nil)
 		if testCase.want == "" {
 			if strings.Contains(line, "armour") {
 				t.Errorf("a hit that pierced nothing rendered as %q", line)
@@ -426,7 +426,7 @@ func TestADamagedLineSaysWhenAStrikeLandedWell(t *testing.T) {
 		return tui.Line(battle.Event{
 			Kind: battle.Damaged, Actor: "a", Target: "f",
 			Amount: 500, Multiplier: 1000, Critical: critical, Remaining: 1000,
-		}, nil)
+		}, nil, nil)
 	}
 	if got := line(false); strings.Contains(got, "critical") {
 		t.Errorf("an ordinary strike rendered as %q", got)
@@ -445,21 +445,21 @@ func TestADamagedLineSaysWhenAStrikeLandedWell(t *testing.T) {
 	reply := tui.Line(battle.Event{
 		Kind: battle.Damaged, Actor: "f", Target: "a",
 		Amount: 200, Multiplier: 1000, Passive: "spiked", Critical: true, Remaining: 900,
-	}, nil)
+	}, nil, nil)
 	if strings.Contains(reply, "critical") {
 		t.Errorf("a reply rendered as %q; a reply is not a strike anybody rolled", reply)
 	}
 }
 
 func TestLineFallsBackToTheIdWhenUntagged(t *testing.T) {
-	line := tui.Line(battle.Event{Kind: battle.Damaged, Actor: "stranger", Target: "other"}, nil)
+	line := tui.Line(battle.Event{Kind: battle.Damaged, Actor: "stranger", Target: "other"}, nil, nil)
 	if !strings.Contains(line, "stranger") || !strings.Contains(line, "other") {
 		t.Errorf("an untagged unit rendered as %q", line)
 	}
 }
 
 func TestLogEmpty(t *testing.T) {
-	if got := tui.Log(nil, nil); got != "" {
+	if got := tui.Log(nil, nil, nil); got != "" {
 		t.Errorf("an empty log rendered as %q", got)
 	}
 }
@@ -473,7 +473,7 @@ func TestOpeningGolden(t *testing.T) {
 	b.WriteString("\n\n")
 	b.WriteString(tui.Order(fight.Queue(), tags, 8))
 	b.WriteString("\n\n")
-	b.WriteString(tui.Log(fight.Drain(), tags))
+	b.WriteString(tui.Log(fight.Drain(), tags, nil))
 	b.WriteString("\n")
 
 	prompt, err := fight.Advance()

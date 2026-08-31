@@ -818,9 +818,14 @@ answers rather than screen logic:
 - A skill's **Vietnamese name is data, not Go**: `skill.Skill.Name` is opaque
   display text and `internal/core` never learns what a language is. An authored
   name wins, the compiled table in `internal/i18n/gloss.go` answers when there is
-  none — which is still the case for all nineteen shipped skills — and the bare
-  id when there is neither. Any table showing it drops the column rather than
-  drawing it empty.
+  none, and the bare id when there is neither. Any table showing it drops the
+  column rather than drawing it empty.
+  ⚠️ **This used to read "which is still the case for all nineteen shipped
+  skills", and that has been false for a while.** Re-measured: **43** shipped
+  skills, **43** carrying an authored name, and `skillGloss`'s nineteen ids
+  intersect `skills.json` **not at all**. The table is now reached only by
+  `internal/testfixture`, which is exactly why a test built on a fixture skill
+  measures the wrong path — see § *The event log is the contract*.
 
 **`hexforge new` must work with nobody watching.** A preset-supplied value is
 not missing, so an unattended run takes every default and errors only on a field
@@ -859,6 +864,74 @@ from the first.
 Two tests hold the line: `TestEveryEventKindIsReachable` fails if a declared kind
 is never emitted by any real battle, and `TestEveryEventKindRenders` fails if a
 kind falls through the renderer's default case.
+
+**A name on a log line is a caller-supplied MAP, never a `Lang`.** `tui.Line` and
+`tui.Log` take `glosses map[string]string` — data id → Vietnamese name — beside
+`tags`, and put it in brackets after the id at **every** occurrence
+(`uses venoshock (độc kích) at 3,1`). The map is the shape it is because of the
+package doc above: an event line is built from the event alone, so this package may
+not be handed books, a battle or a language, and `tags` and `Summary`'s `names` are
+already the same shape. **A nil or empty map reproduces the line byte for byte** —
+that is what English is, what a replay drawn without books is, and the property
+`opening.golden` holds. The bracket has **one** definition, `i18n.GlossBracket`;
+do not re-spell `"%s (%s)"` in `tui`.
+⚠️ **`Lang.Gloss` cannot name a skill and that is the whole reason
+`Lang.LogGlosses` exists.** Measured over the shipped books: **43** skills, **0**
+of them in `skillGloss`, **43** carrying an authored `name`; **21** statuses, **21**
+in `statusGloss`, none with a name field; **11** traits, **0** in a table, **11**
+authored. `skillGloss`'s nineteen ids intersect `skills.json` **not at all** —
+they are the pre-`name` skills and only `internal/testfixture` still reaches them.
+So the three kinds go through three accessors (`SkillName` / `Gloss` /
+`PassiveName`), which is also what stops a name authored through hexforge drifting
+from the log. **Do not delete `skillGloss`** and **do not build the map off it**:
+a test using a fixture skill takes the id-table path and leaves the authored-name
+path all 43 shipped skills take completely unexercised, which is why
+`TestAShippedSkillIsGlossedFromItsAuthoredName` asserts both halves — the name is
+on the line, *and* `Gloss` does not know it.
+⚠️ **A colliding id is left out, never picked between.** The map is one namespace
+over three books that have none, so nothing can tell which kind an event meant.
+`TestNoIDIsGlossedTwice` cannot see this — it holds the compiled tables disjoint
+from *each other*, the same within-a-table blind spot the category gloss had, and
+`taunt` is a shipped skill id with `taunting` a shipped status id. `LogGlosses`
+therefore drops the name (a bare id is this package's declared normal, and a wrong
+name is worse than a missing one) and `LogGlossCollisions` is the loud half, over
+the shipped books, in `TestNoLogGlossCollidesAcrossKinds`. It is read off the
+**id** and not off which kinds offered a name, so a collision cannot go live the
+day somebody authors the second name.
+⚠️ **The coverage check is a table of ARMS, not of kinds.** `status_resisted` has
+four branches and `damaged` two, so a sweep over `battle.KindCount` renders one arm
+of each and reports full coverage. `sweepArms` in `internal/tui/gloss_test.go`
+tables **16 glossing arms across 12 kinds** with the exact count of ids each names,
+plus 13 arms that must stay bare; `glossingArms` is written down rather than counted
+off the table, so extending the table is not the same act as claiming the extension
+was measured. Adding a branch that prints `event.Skill`, `event.Status` or
+`event.Passive` means adding a row.
+⚠️ **One arm gave up a word to keep its row on the window, and the margin is now
+nought.** `amplified` is the only arm printing two glossed ids in one clause, so
+`dragon_drive (long xung) is amplified by expose (phá giáp) x2, power 2300` measured
+**82** of the 79 cells there are — a row that fit before glossing (59) and would not
+after, on a screen *the budget* measured as having no spare rows. The arm reads
+`%s amplified by %s x%d, power %d` now: three cells for the word `is`, in the one
+register that can spare it (this log is verb-terse everywhere else — `hits`,
+`misses`, `holds`, `lets go of`), which puts the widest reachable row at **79 of
+79**. That is the **only** line of English this change touched, and it is why the
+en output is otherwise byte-identical rather than entirely so.
+⚠️ **Nought margin is deliberate, not lucky, and `knownWide` is empty on purpose.**
+The bound is recomputed from the books every run, so the day a longer skill name is
+authored the test goes red rather than the log quietly wrapping — which is the whole
+value of it being measured rather than declared. `knownWide` stays as the shape for
+a breach somebody later decides to accept; an entry in it must carry its measured
+figure and its reason.
+`TestNoGlossedLogRowOutgrowsTheWindow` measures **reachable** combinations (a skill
+beside *its own* condition's status, a trait beside the statuses it actually names,
+a reply only from a trait that replies with damage) rather than the longest name of
+each kind in one event — that bound is 102 cells and describes no event any battle
+emits, and a bound nothing can reach is a bound nobody will fix.
+⚠️ **The `Started` line is out of scope and stays as it is.** It measures **86–87**
+cells against 79 on the client's own fixture cast and is already over today; it is
+exempt from `TestEveryWordingFitsTheMinimumWidth` because it names a unit, and a
+unit name is free text. Nothing on it is glossed — not the side, not the element
+note, not the unit name.
 
 **Every FIGURE in a skill description is derived; exactly one clause is authored**
 (`internal/i18n/describe.go`, in **both** languages). `Skill.Flavour` opens the

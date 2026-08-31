@@ -93,7 +93,12 @@ type session struct {
 	roster []battle.Roster
 	tags   map[string]string
 	names  map[string]string
-	script battle.Script
+	// glosses is the Vietnamese name beside each data id the log prints. It is
+	// built once from the books this battle was assembled with rather than per
+	// print: a name is a fact about the books, and the books do not change under a
+	// running session — a rewind rebuilds the battle from the same ones.
+	glosses map[string]string
+	script  battle.Script
 	// events is everything that has happened, kept so the log and the summary
 	// can be written from the whole battle rather than the last turn.
 	events []battle.Event
@@ -117,11 +122,12 @@ func newSession(cfg config) (*session, error) {
 	}
 	fight.Begin()
 	current := &session{
-		cfg:    cfg,
-		fight:  fight,
-		roster: roster,
-		tags:   tui.Tags(fight.Units()),
-		names:  tui.Names(fight.Units()),
+		cfg:     cfg,
+		fight:   fight,
+		roster:  roster,
+		tags:    tui.Tags(fight.Units()),
+		names:   tui.Names(fight.Units()),
+		glosses: logGlosses(books),
 	}
 	current.collect()
 	return current, nil
@@ -134,7 +140,32 @@ func (s *session) collect() {
 		return
 	}
 	s.events = append(s.events, drained...)
-	fmt.Println(tui.Log(drained, s.tags))
+	fmt.Println(tui.Log(drained, s.tags, s.glosses))
+}
+
+// logGlosses is the names this client puts beside the data ids its log prints.
+//
+// Vietnamese, like every other place this client asks i18n a question: it has no
+// --lang and the descriptions it prints at ?N / ?TAG are already Vietnamese on an
+// otherwise English screen, which is a cost this repository has stated rather than
+// an oversight. The three books come from the battle's own Books, so a name cannot
+// come from a book the battle was not fought with.
+//
+// ⚠️ Passives is the one book a battle may run without — battle.Books.validate
+// requires the other four and not this one, because only a roster entry naming a
+// trait wants it — and the nil check is **load-bearing rather than tidy**:
+// passive.Book.All builds its slice off b.passives, so it panics on a nil
+// receiver rather than answering with nothing. seed.Books always supplies one, so
+// nothing in the shipped game reaches the branch; this function takes any
+// battle.Books and the field is documented optional, which is the combination that
+// gets a guard deleted as unreachable. TestLogGlossesSurviveABattleWithNoTraitBook
+// is what says otherwise.
+func logGlosses(books battle.Books) map[string]string {
+	var held []passive.Passive
+	if books.Passives != nil {
+		held = books.Passives.All()
+	}
+	return i18n.Vi.LogGlosses(books.Skills.Skills(), books.Statuses.Kinds(), held)
 }
 
 // rewind rebuilds the battle from its seed and replays a shortened script. It is
@@ -514,8 +545,25 @@ func replay(cfg config) error {
 	// The tags come from the log's own opening records, so rendering a saved
 	// battle needs nothing but the file.
 	tags := tui.TagsFromLog(log.Events)
+	// The names beside the ids do come from the books, and that is not a hole in
+	// the log contract: a *name* is a fact about the reader's language, not about
+	// what happened — the same reading tui.Line's own doc gives it, and the same
+	// reason a Lang is not a parameter of the renderer. internal/seed is embedded
+	// JSON, so loading it for the render costs a parse and no file access, and
+	// nothing about the replay is weakened: the events, the tags and the summary
+	// are all still read out of the file, and a glossless render (a failed load
+	// below, or English) draws the bare ids the log holds.
+	//
+	// ⚠️ It is loaded HERE and not left to --verify at the foot of the function: a
+	// replay without --verify is the common case and it was the one drawing bare
+	// ids. A failed load is not fatal — this path's job is to render the file, so
+	// it renders it, glossless, rather than refusing over a name.
+	var glosses map[string]string
+	if books, err := seed.Books(); err == nil {
+		glosses = logGlosses(books)
+	}
 	fmt.Printf("replaying seed %d, %d events, %d choices\n\n", log.Seed, len(log.Events), len(log.Choices))
-	fmt.Println(tui.Log(log.Events, tags))
+	fmt.Println(tui.Log(log.Events, tags, glosses))
 	fmt.Println()
 	fmt.Println("== summary ==")
 	fmt.Println(tui.Summary(log.Events, tags, tui.NamesFromLog(log.Events)))

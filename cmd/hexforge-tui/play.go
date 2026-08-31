@@ -994,9 +994,16 @@ func drawnRows(drawn string) []string {
 // Nothing here reads the battle: the event log is the only contract a reader of
 // one has.
 func (p playScreen) logRows(m model) []string {
+	// ⚠️ Built **once**, here, and not once a row. This renders the whole history
+	// now rather than the last few rows, so a per-row build would walk the skill,
+	// status and passive books again for every event a battle has emitted. It is
+	// not on the screen beside p.tags either, for one reason: ctrl+l toggles the
+	// language and this is read every draw, while p.tags is written once a battle.
+	glosses := m.lang.LogGlosses(
+		m.lib.Skills().Skills(), m.lib.Statuses().Kinds(), m.lib.Passives().All())
 	var lines []string
 	for _, event := range p.events {
-		line := tui.Line(event, p.tags)
+		line := tui.Line(event, p.tags, glosses)
 		if line == "" {
 			continue
 		}
