@@ -12,7 +12,7 @@ import (
 
 // A gloss is the Vietnamese name of something a data file names: an element, an
 // archetype, a skill. It is shown beside the id rather than instead of it —
-// grass/electric (cỏ/điện) — so that a reader can check the translation against
+// grass/electric <cỏ/điện> — so that a reader can check the translation against
 // the thing it names, and still type, grep and edit the id the data holds.
 //
 // # Why this is not the catalog, and must not become it
@@ -183,13 +183,20 @@ var glossaries = []map[string]string{
 // glossBracket is how a gloss sits beside the id it explains. It is punctuation
 // rather than wording, which is why it is here and not a Key: there is no
 // language in which the brackets are words.
-const glossBracket = "%s (%s)"
+//
+// ⚠️ **Angle brackets, and round ones would nest.** A gloss is drawn in places
+// that already carry a parenthetical of their own — the battle log names the trait
+// a status came from as `(virulence)`, so a round gloss inside it read
+// `(virulence (độc lực))`, a bracket inside a bracket for the reader to unpick.
+// The gloss is also the *inner* thing wherever the two meet, so it is the one that
+// changes shape. Same two cells either way, so nothing measured moved.
+const glossBracket = "%s <%s>"
 
 // GlossBracket puts a name beside the id it explains, in the one shape this
-// package uses everywhere — skirmisher (du kích).
+// package uses everywhere — skirmisher <du kích>.
 //
 // It is exported because internal/tui draws data ids too, on the battle log, and
-// the format has to have exactly one definition: a second spelling of "%s (%s)"
+// the format has to have exactly one definition: a second spelling of "%s <%s>"
 // somewhere else is a second thing to change the day the brackets become
 // something else, and nothing would report the disagreement. The name is the
 // caller's to find (a log reads a map, a screen reads SkillName); the punctuation
@@ -346,10 +353,10 @@ func (l Lang) GlossedBuild(built cast.Build) string {
 }
 
 // GlossedAffinity is an affinity — one element or two — with one bracket for
-// the whole of it: grass/electric (cỏ/điện).
+// the whole of it: grass/electric <cỏ/điện>.
 //
 // One bracket rather than one per element, because the affinity is a single
-// fact. "grass (cỏ)/electric (điện)" reads as two things a unit has, which is
+// fact. "grass <cỏ>/electric <điện>" reads as two things a unit has, which is
 // the one thing about a dual affinity an author must not come away believing.
 //
 // A half with no name of its own keeps its id inside the bracket, so the two

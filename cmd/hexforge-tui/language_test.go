@@ -1320,7 +1320,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 		// to put a name on. Everything in the pane reads as an id with its name
 		// dimmed under it, and the pair below is what that looks like for a dual
 		// affinity: one row of ids, one row of names, positionally the same.
-		"grass/electric (cỏ/điện)",
+		"grass/electric <cỏ/điện>",
 		"grass/electric",
 		"cỏ/điện",
 		"skirmisher",

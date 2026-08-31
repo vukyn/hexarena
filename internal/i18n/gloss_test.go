@@ -161,7 +161,7 @@ func TestAnAffinityWithNoGlossRendersBare(t *testing.T) {
 	if err != nil {
 		t.Fatalf("the water/ice affinity: %v", err)
 	}
-	if got, want := Vi.GlossedAffinity(half), "water/ice (nước/ice)"; got != want {
+	if got, want := Vi.GlossedAffinity(half), "water/ice <nước/ice>"; got != want {
 		t.Errorf("a half-glossed dual affinity reads %q, want %q", got, want)
 	}
 }
@@ -188,14 +188,14 @@ func TestADualAffinityGlossesAsOnePair(t *testing.T) {
 	if err != nil {
 		t.Fatalf("the grass/electric affinity: %v", err)
 	}
-	if got, want := Vi.GlossedAffinity(pair), "grass/electric (cỏ/điện)"; got != want {
+	if got, want := Vi.GlossedAffinity(pair), "grass/electric <cỏ/điện>"; got != want {
 		t.Errorf("a dual affinity reads %q, want %q", got, want)
 	}
 	single, err := element.Single(element.Fire)
 	if err != nil {
 		t.Fatalf("the fire affinity: %v", err)
 	}
-	if got, want := Vi.GlossedAffinity(single), "fire (lửa)"; got != want {
+	if got, want := Vi.GlossedAffinity(single), "fire <lửa>"; got != want {
 		t.Errorf("a single affinity reads %q, want %q", got, want)
 	}
 	// The ids on the left are the affinity's own spelling, so the pair on the
@@ -353,7 +353,7 @@ func TestAnAuthoredNameBeatsTheCompiledTable(t *testing.T) {
 	if got, want := Vi.GlossedSkill(bare), "tidal_hymn"; got != want {
 		t.Errorf("a nameless skill renders as %q, want the bare id %q", got, want)
 	}
-	if got, want := Vi.GlossedSkill(fresh), "tidal_hymn (khúc thủy triều)"; got != want {
+	if got, want := Vi.GlossedSkill(fresh), "tidal_hymn <khúc thủy triều>"; got != want {
 		t.Errorf("a named skill renders as %q, want %q", got, want)
 	}
 	// A name of nothing but spaces is the absent answer rather than a name made

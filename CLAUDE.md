@@ -874,7 +874,16 @@ not be handed books, a battle or a language, and `tags` and `Summary`'s `names` 
 already the same shape. **A nil or empty map reproduces the line byte for byte** —
 that is what English is, what a replay drawn without books is, and the property
 `opening.golden` holds. The bracket has **one** definition, `i18n.GlossBracket`;
-do not re-spell `"%s (%s)"` in `tui`.
+do not re-spell `"%s <%s>"` in `tui`.
+⚠️ **The gloss is written `<>` because round brackets nested.** This log names the
+trait a status came from as a parenthetical of its own, so a round gloss inside it
+read `(virulence (độc lực))`. The gloss is the *inner* thing wherever the two meet,
+so the gloss is what changed shape — everywhere, since it has one definition, so
+every reference screen reads `razor_leaf <phi diệp>` too. `<x>` and `(x)` are both
+two cells, so **no width measurement moved**, the 79-of-79 `amplified` bound
+included. Five hardcoded literals in two test files spell the punctuation out and
+are the only things that had to move with it; **no golden holds a gloss**, which
+`git diff --stat -- '*.golden'` proves in one line.
 ⚠️ **`Lang.Gloss` cannot name a skill and that is the whole reason
 `Lang.LogGlosses` exists.** Measured over the shipped books: **43** skills, **0**
 of them in `skillGloss`, **43** carrying an authored `name`; **21** statuses, **21**

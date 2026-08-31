@@ -839,7 +839,7 @@ mạnh hơn 30%*, *Mọi đòn hút lại 25%* — and the reply says who is bei
 rather than leaving two pronouns in one sentence to disagree.
 
 ```
-  venom_blood (máu độc)
+  venom_blood <máu độc>
     Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
     Miễn nhiễm trúng độc.
     Ai đánh trúng thì bị phản lại 4% công của người bị đánh, và có 3% khả năng
@@ -3351,13 +3351,13 @@ character under the cursor carries **at the level it is sitting on**:
 ```
 Bulbasaur  cấp 60
 
-  venom_blood (máu độc)
+  venom_blood <máu độc>
     Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
     Miễn nhiễm trúng độc.
     Ai đánh trúng thì bị phản lại 4% công của người bị đánh, và có 3% khả năng
     dính trúng độc.
 
-  endurance (bền bỉ)
+  endurance <bền bỉ>
     ...
   … 17/23 dòng, [/] để cuộn
 ```
@@ -3415,7 +3415,7 @@ nội tại  các nội tại đã khai báo, và ai mang
   blaze         bùng lửa        pokemon.charmander@16
   ...
 
-  endurance (bền bỉ)
+  endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
     Luôn mang kiên cường.
 ```
