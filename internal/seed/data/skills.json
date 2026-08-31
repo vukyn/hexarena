@@ -1652,7 +1652,7 @@
       "element": "electric",
       "range": 2,
       "pattern": "single",
-      "power": 660,
+      "power": 640,
       "strikes": 2,
       "accuracy": 900,
       "cooldown": 2,
@@ -1668,8 +1668,7 @@
         "consume": true,
         "consume_stacks": 1,
         "chains": true,
-        "damped": 400,
-        "arc_power": 390
+        "arc_power": 285
       }
     },
     {
@@ -1679,7 +1678,7 @@
       "element": "electric",
       "range": 1,
       "pattern": "single",
-      "power": 355,
+      "power": 342,
       "strikes": 2,
       "accuracy": 930,
       "cooldown": 2,
@@ -1695,8 +1694,7 @@
         "consume": true,
         "consume_stacks": 1,
         "chains": true,
-        "damped": 400,
-        "arc_power": 225
+        "arc_power": 190
       },
       "repeat_chance": 500,
       "max_strikes": 10
@@ -1708,7 +1706,7 @@
       "element": "electric",
       "range": 2,
       "pattern": "single",
-      "power": 900,
+      "power": 880,
       "strikes": 1,
       "accuracy": 880,
       "cooldown": 4,
@@ -1723,7 +1721,7 @@
         "min_stacks": 2,
         "consume": true,
         "consume_stacks": 0,
-        "arc_power": 220
+        "arc_power": 180
       }
     }
   ]

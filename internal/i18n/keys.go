@@ -492,7 +492,6 @@ const (
 	SummarySelfAmplifiedShape
 	BlurbArcs
 	BlurbChains
-	BlurbDamped
 	BlurbConsumesEachStrike
 	BlurbConsumesPile
 	BlurbRepeats

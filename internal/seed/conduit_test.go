@@ -12,46 +12,24 @@ import (
 	"github.com/vukyn/hexarena/internal/seed"
 )
 
-// TestAConduitPaysForWhatItDischarges is the bound the detonate rule cannot
-// draw, for the statuses it cannot price.
+// TestAConduitAddsToItsOwnBlowRatherThanTradingIt is the shape of the whole
+// mechanism, and it is the second answer to a question this file got wrong twice.
 //
-// A counter does nothing to its holder, so "what consuming it gives up" — the
-// whole of TestADetonateIsWorthLessThanItsBreakEven's arithmetic — has no answer,
-// and the rule would be bounding a burst by nothing. What bounds a conduit
-// instead is that **it pays out of its own pocket**: the arc is funded by the
-// share of its own blow it damps, so a stack is worth what that trade is worth
-// and not a coin more.
+// ⚠️ **A conduit's own figure is a CONSTANT.** The first design damped it — the
+// skill hit for less into a charged target and the charge made up the difference
+// — on the reasoning that hitting for the full figure *and* firing the charge
+// would be strictly better whenever the charge was there. That reasoning was
+// wrong about where the payment comes from. A stack does not appear on a target
+// by itself: the turn that put it there is the price, and it was paid before this
+// skill was ever cast. So the charge is **addition**, and what a conduit is bought
+// with is **tempo** — the charging turns, and the cooldown it sits on.
 //
-// **Every conduit gives something up, and there are two currencies.** A skill may
-// pay in its own **power** — `damped`, which is what `spark` and `electro_ball`
-// do — or in its own **tempo**, which is what a nuke does: it keeps its whole
-// blow and buys the discharge with the turns spent charging and the turns spent
-// waiting. What it may not do is pay in neither, because the counter is then a
-// bonus for having met a condition somebody else's turn arranged.
-//
-// A skill paying in power is held to three clauses, each a way the trade could
-// have been a free lunch:
-//
-//   - the arc must beat the damping, or nobody would ever charge;
-//   - and not beat it *twice over*, which is the ceiling the detonate rule draws
-//     from the other side — a stack may double what the turn was worth, no more;
-//   - and the skill must survive being damped, because a strike of no power is
-//     never rolled and a strike that is never rolled never discharges.
-//
-// A skill paying in tempo is held to the shape instead — it has to actually be a
-// nuke — and to a rate no better than the ones that pay in power, which is
-// TestANukePaysBetterPerStackAndWorsePerTurn's other half.
-//
-// ⚠️ **Both halves of the trade are read at the SMALLEST pile the skill will
-// fire on, and getting that wrong squeezed the nuke into a shape it could not
-// occupy.** The damping is paid once a strike; the arc is paid per *stack*. For a
-// drip those are the same number because it takes one stack a strike — so the
-// rule was written comparing one against one and looked correct. A nuke fires on
-// two at the least, so comparing its per-stack figure against the whole damping
-// asked it to beat a full blow with half a payment, and every number that
-// satisfied it made the skill worthless. What the trade actually is: what the
-// skill gives up, against what the least pile it accepts hands back.
-func TestAConduitPaysForWhatItDischarges(t *testing.T) {
+// Which leaves one bound rather than a trade, and it is a bound the skill carries
+// on its own face: **a stack may top the blow up but never outweigh it.** An arc
+// worth more than the strike carrying it would make the skill a delivery
+// mechanism for somebody else's turn, and the figure printed on it would stop
+// describing what it does.
+func TestAConduitAddsToItsOwnBlowRatherThanTradingIt(t *testing.T) {
 	book, statuses := mustSkills(t), mustStatuses(t)
 	found := 0
 	for _, current := range book.Skills() {
@@ -68,30 +46,12 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 			t.Errorf("skill %q discharges %q, a %s rather than a counter: what a conduit spends has to be something a unit is carrying for that purpose",
 				current.ID, kind.ID, kind.Category)
 		}
-		damped := current.Power - current.Requires.DampedPower(current.Power)
-		arc := current.Requires.ArcPower * current.Requires.MinStacks
-		switch {
-		case damped <= 0 && current.Requires.ConsumeStacks != 0:
-			// Paying in neither currency. A drip that kept its whole blow would be
-			// free profit on every strike the target happened to be carrying, with
-			// nothing given up and no waiting done for it.
-			t.Errorf("skill %q arcs for %d a stack, damps nothing and spends a stack a strike: it pays in neither its own power nor its own tempo, so the counter is a bonus rather than a bargain",
-				current.ID, current.Requires.ArcPower)
-		case damped <= 0:
-			// A nuke keeping its whole blow. The shape is the payment and the
-			// clauses that hold it are on the nuke branch below; nothing to check
-			// against the damping, because there is none.
-		case arc <= damped:
-			t.Errorf("skill %q gives up %d power to fire %d off its smallest pile, so meeting the condition is worse than missing it",
-				current.ID, damped, arc)
-		case arc > damped*2:
-			t.Errorf("skill %q gives up %d power to fire %d off its smallest pile, over twice as good: "+
-				"the least pile it accepts may double what the turn was worth, which is where a detonate stops too",
-				current.ID, damped, arc)
-		}
-		if left := current.Requires.DampedPower(current.Power); left <= 0 {
-			t.Errorf("skill %q damps its %d power to %d, so it never rolls a strike and never discharges at all",
-				current.ID, current.Power, left)
+		// Per strike, because that is what the arc rides on: one blow carries one
+		// stack's worth, and a multi-strike skill divides its power across its
+		// strikes exactly as every other one here does.
+		if current.Requires.ArcPower >= current.Power {
+			t.Errorf("skill %q strikes for %d and arcs %d a stack: the charge outweighs the blow carrying it, so the figure on the skill stops describing what it does",
+				current.ID, current.Power, current.Requires.ArcPower)
 		}
 		// Two shapes and no third. A conduit takes ONE stack a strike, which is
 		// what makes a pile worth having; a NUKE takes the pile, which is what
@@ -102,7 +62,7 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 		case 1:
 			// A drip. Nothing more to say about it here.
 		case 0:
-			// A nuke, and the three things that keep it from being simply better.
+			// A nuke, and the two things that keep it from being simply better.
 			if current.Requires.ChainsOn() {
 				t.Errorf("skill %q takes the whole pile of %q AND chains: one cast would empty the board's counters and be paid for every one of them",
 					current.ID, kind.ID)
@@ -112,14 +72,6 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 			if current.Requires.MinStacks < 2 {
 				t.Errorf("skill %q takes the whole pile of %q but fires on %d stack: a nuke that goes off on the first one is a drip with a longer cooldown",
 					current.ID, kind.ID, current.Requires.MinStacks)
-			}
-			// And a nuke keeping its whole blow is the one shape allowed to pay in
-			// tempo alone, so it is the one shape where the waiting has to be real.
-			// A long cooldown is checked against the drip's below; this is the
-			// other half — it may not fire the moment a second stack lands either.
-			if current.Requires.Damped == 0 && current.Cooldown < 3 {
-				t.Errorf("skill %q keeps its whole blow and takes the pile on a %d-turn cooldown: it pays in neither power nor tempo",
-					current.ID, current.Cooldown)
 			}
 		default:
 			t.Errorf("skill %q spends %d stacks of %q: a conduit spends one a strike and a nuke spends the pile, and there is no third thing for a count in between to be",
@@ -136,29 +88,25 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 	t.Logf("%d conduits shipped", found)
 }
 
-// TestANukePaysBetterPerStackAndWorsePerTurn is the relationship between the two
-// shapes, and the reason both are worth authoring.
+// TestANukeGetsNoBetterRateThanADrip is the relationship between the two shapes,
+// and the reason both are worth authoring.
 //
-// ⚠️ **This was first written the other way round and the reasoning was wrong.**
-// A nuke takes more stacks at once, so it looked like the larger purchase and was
-// held to a *poorer* rate per stack. Measured, that made it a skill nobody would
-// ever bring: at a pile of six it dealt 472 in one turn on twice the cooldown,
-// against a drip landing about the same on the primary *and* on everything the
-// chain reached — after five turns of charging that the drip would have spent as
-// it went.
-//
-// What that missed is what each shape actually costs. A drip converts stacks the
-// moment it has them and does it across a whole chain, so it is paid in **breadth
-// and immediacy**. A nuke concentrates on one body and has to survive the wait,
-// so it is paid in neither. Time and breadth are real prices, and a better rate
-// per stack is what they are owed. The ceiling is that it may not be worth twice
-// the drip's rate — hoarding is then a choice rather than the answer.
+// ⚠️ **This has now been written both ways round and both were wrong, for the
+// same reason: the answer depends on what the skills give up, and that changed
+// under it.** While a conduit damped its own blow, a nuke damped *and* waited, so
+// it was owed the better rate per stack — held to a poorer one it dealt 472 at a
+// pile of six on twice the cooldown, which is a skill nobody brings. Now nothing
+// damps: every conduit keeps its whole figure and the only currency is tempo. A
+// nuke's compensation for waiting is that it collects the entire pile at once,
+// which is already the larger purchase — so it may not also be the better rate,
+// or waiting would simply beat not waiting and the drip would be the skill nobody
+// brings instead.
 //
 // The rule stays comparative, because nothing on a nuke's own declaration says how
 // big a pile it will find. What can be said is how the two exchange rates sit
-// against each other, and that is checkable across the shipped book without
-// inventing a number.
-func TestANukePaysBetterPerStackAndWorsePerTurn(t *testing.T) {
+// against each other and how the cooldowns do, and both are checkable across the
+// shipped book without inventing a number.
+func TestANukeGetsNoBetterRateThanADrip(t *testing.T) {
 	book, statuses := mustSkills(t), mustStatuses(t)
 	worstDrip := map[string]int{}
 	nukes := map[string][]string{}
@@ -185,7 +133,7 @@ func TestANukePaysBetterPerStackAndWorsePerTurn(t *testing.T) {
 	for id, ids := range nukes {
 		floor, known := worstDrip[id]
 		if !known {
-			t.Errorf("%q is taken by the pile and by nothing a stack at a time, so there is no drip for %v to be a worse deal than: the comparison this rule rests on does not exist",
+			t.Errorf("%q is taken by the pile and by nothing a stack at a time, so there is no drip for %v to be measured against: the comparison this rule rests on does not exist",
 				id, ids)
 			continue
 		}
@@ -195,35 +143,21 @@ func TestANukePaysBetterPerStackAndWorsePerTurn(t *testing.T) {
 				t.Errorf("skill %q: %v", one, err)
 				continue
 			}
-			// ⚠️ **Which way the comparison runs depends on what the nuke gives
-			// up.** One that damps its blow has paid in power as well as in
-			// waiting, so it is owed the better rate. One that keeps its blow has
-			// paid in waiting alone — its compensation is already sitting in the
-			// full figure it still hits for — so it may not also out-rate the
-			// skills that gave power up.
-			switch {
-			case current.Requires.Damped == 0 && current.Requires.ArcPower > floor:
-				t.Errorf("skill %q keeps its whole blow AND arcs %d a stack of %q against a drip's %d: it is paid twice for waiting once",
-					one, current.Requires.ArcPower, id, floor)
-			case current.Requires.Damped > 0 && current.Requires.ArcPower <= floor:
-				t.Errorf("skill %q arcs %d a stack of %q against the %d a drip gets, and it also damps, waits and hits one body: it is worse on every axis, so nobody brings it",
-					one, current.Requires.ArcPower, id, floor)
-			case current.Requires.ArcPower > floor*2:
-				t.Errorf("skill %q arcs %d a stack of %q against a drip's %d, over twice the rate: hoarding stops being a choice and becomes the answer",
+			if current.Requires.ArcPower > floor {
+				t.Errorf("skill %q arcs %d a stack of %q against a drip's %d, AND takes them all at once: waiting would simply beat not waiting",
 					one, current.Requires.ArcPower, id, floor)
 			}
-			// And the cooldown, which is the other half of "worse per turn". A nuke
-			// on a drip's cooldown would be a drip that also waits, which is the
-			// same skill with the waiting added for nothing.
+			// And the cooldown, which is the other half. A nuke on a drip's
+			// cooldown would be a drip that also gets to choose when.
 			for _, other := range book.Skills() {
 				if other.Requires.Arcs() && other.Requires.ConsumeStacks == 1 &&
 					other.Requires.Status == id && current.Cooldown <= other.Cooldown {
-					t.Errorf("skill %q takes the pile on a %d-turn cooldown against %q's %d: it gets the better rate AND the same tempo",
+					t.Errorf("skill %q takes the pile on a %d-turn cooldown against %q's %d: it collects more and waits no longer",
 						one, current.Cooldown, other.ID, other.Cooldown)
 				}
 			}
-			t.Logf("%s arcs %d a stack against the drip's %d, damps %d, takes the pile, and waits %d turns",
-				one, current.Requires.ArcPower, floor, current.Requires.Damped, current.Cooldown)
+			t.Logf("%s strikes %d, arcs %d a stack against the drip's %d, takes the pile, waits %d turns",
+				one, current.Power, current.Requires.ArcPower, floor, current.Cooldown)
 		}
 	}
 }

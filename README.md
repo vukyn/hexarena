@@ -527,26 +527,36 @@ general, because a consume can now be paid **out of the skill's own pocket**:
 ```json
 "requires": { "status": "charge", "min_stacks": 1,
               "consume": true, "consume_stacks": 1,
-              "chains": true, "damped": 400, "arc_power": 850 }
+              "chains": true, "arc_power": 285 }
 ```
 
 A skill declaring that is a **conduit**, and it behaves nothing like a detonate:
 
-- **`damped`** cuts the skill's own blow while the condition holds. `electro_ball`
-  hits for 132% ordinarily and 79% into a charged target. That is one of the two
-  ways a conduit pays for the discharge, and it is why a damped one is not simply
-  better when the charge is there. **A conduit may leave it out** — see the two
-  currencies below.
-- **`arc_power`** is what one consumed stack deals. It is **not the skill's damage
-  and does not behave like it**: not aimed, not rolled against accuracy or dodge,
-  and **not stopped by a shield**. A guard that swallows the blow does not stop
-  what was already sitting on the target — the one thing a conduit has over an
-  ordinary attack, and the reason the counter is worth laying down in front of a
-  wall.
+- **`arc_power`** is what one consumed stack deals, and it is **added to the
+  skill's own blow, never traded against it**. It is not the skill's damage and
+  does not behave like it: not aimed, not rolled against accuracy or dodge, and
+  **not stopped by a shield**. A guard that swallows the blow does not stop what
+  was already sitting on the target — the one thing a conduit has over an ordinary
+  attack, and the reason the counter is worth laying down in front of a wall.
 - **`consume_stacks` is per STRIKE.** One blow, one charge. A skill that lands
   three times spends three, from every unit the current reaches. **Nought means
   the whole pile**, which is the other shape a conduit can be — see below.
 - **`chains`** is where it goes.
+
+⚠️ **A conduit's own figure is a constant, and getting that wrong was the longest
+mistake in this feature.** The first design *damped* the blow — the skill hit for
+less into a charged target and the charge made the difference up — on the
+reasoning that hitting for the full figure **and** firing the charge would be
+strictly better whenever the charge was there. That reasoning is wrong about where
+the payment comes from. A stack does not appear on a target by itself; the turn
+that put it there is the price, and it was paid before the conduit was ever cast.
+So a conduit is bought with **tempo** — the charging turns and the cooldown it
+sits on — and its own number means what it says wherever it is read.
+
+Which leaves one bound rather than a trade, and the skill carries it on its own
+face: **a stack may top the blow up but never outweigh it.** An arc worth more
+than the strike carrying it would make the skill a delivery mechanism for somebody
+else's turn, and the figure printed on it would stop describing what it does.
 
 #### The chain steps on charged bodies and nothing else
 
@@ -563,13 +573,13 @@ Measured, with enemies at `3,0 3,1 3,2 4,0 4,1` and `electro_ball` aimed at `3,1
 |---|---|---|
 | `3,0 3,1 3,2` | 2 | all three ate a stack and took the arc; only `3,1` took the blow |
 | `3,1 3,2` | 1 | `3,0` untouched — the current never steps on an empty cell |
-| `3,0 3,2`, aim clean | 0 | nothing consumed anywhere, and the blow lands **undamped** |
+| `3,0 3,2`, aim clean | 0 | nothing consumed anywhere; the blow lands as it always does |
 | `3,1 4,0` | 0 | `4,0` untouched: it is **two cells** from `3,1`, not adjacent |
 | `3,1 3,0 4,0` | 2 | the current walked `3,1 → 3,0 → 4,0`, because `3,0` was there to step on |
 
-The aim gates all of it. A conduit pointed at a clean target consumes nothing,
-arcs nothing and is simply its own **undamped** self — the third row above, and
-the reason `damped` is not a penalty for missing the condition.
+The aim gates all of it. A conduit pointed at a clean target consumes nothing and
+arcs nothing — it is simply its own blow, which is the third row above and the
+reason a conduit is never a worse skill for having found nothing.
 
 Nothing else bounds how far it goes. With the whole enemy squad charged, one cast
 reaches all five: the ceiling is how much charge you laid down and how they are
@@ -623,22 +633,6 @@ is the same ceiling the detonate rule stops at, read from the other side.
 The counter has one answer in the shipped book besides the shield: `rinse` strips
 it, which is what its own flavour already said — *anything on you washes off*.
 
-#### Two currencies: power, or tempo
-
-Every conduit gives something up. A skill may pay in its own **power** —
-`damped`, which is what `spark` and `electro_ball` do — or in its own **tempo**,
-which is what a nuke does: it keeps its whole blow and buys the discharge with the
-turns spent charging and the turns spent waiting. What it may not do is pay in
-neither, because the counter is then a bonus for meeting a condition somebody
-else's turn arranged.
-
-Which way the drip/nuke comparison runs falls out of that. A nuke that *damps* has
-paid in power as well as in waiting, so it is owed the better rate per stack. One
-that keeps its blow has paid in waiting alone — its compensation is already
-sitting in the full figure it still hits for — so it may not also out-rate the
-skills that gave power up. `overload` is the second kind: 220 a stack against the
-drip's 225, and a four-turn cooldown against a drip's two.
-
 #### Two shapes: the drip and the nuke
 
 `consume_stacks` has exactly two useful values and there is no third thing for a
@@ -650,43 +644,32 @@ by the count.
 ```
 overload, aimed at one target, nothing else charged:
 
-pile  0 -> skill 315 + arc    0 =  315
-pile  2 -> skill 315 + arc  154 =  469
-pile  4 -> skill 315 + arc  308 =  623
-pile  6 -> skill 315 + arc  462 =  777
-pile 12 -> skill 315 + arc  924 = 1239
+pile  0 -> skill 308 + arc    0 =  308
+pile  4 -> skill 308 + arc  252 =  560
+pile  8 -> skill 308 + arc  504 =  812
+pile 12 -> skill 308 + arc  756 = 1064
 ```
 
-**Its own blow is a constant.** `overload` damps nothing, so the counter is
-addition rather than a trade — the first row is the skill with no charge in front
-of it at all, and it is still a usable attack. That is a deliberate difference
-from the drips beside it, and it is the second of the two ways a conduit can pay.
+The first row is the skill with no charge in front of it at all, and it is still a
+usable attack: the counter is addition, so a conduit is never a worse skill for
+having found nothing.
 
-⚠️ **The rule relating the two was first written backwards, and the measurement
-is what said so.** A nuke takes more stacks at once, so it looked like the larger
-purchase and was held to a *poorer* rate per stack — which made it a skill nobody
-would ever bring: at a pile of six it dealt 472 on twice the cooldown, against a
-drip landing about the same on the primary **and** on everything the chain
-reached, after five turns of charging the drip would have spent as it went.
+⚠️ **The rule relating the two has now been written both ways round and both were
+wrong**, for the same reason each time: the answer depends on what the skills give
+up, and that changed under it. While a conduit damped its blow, a nuke damped *and*
+waited, so it was owed the better rate — held to a poorer one it dealt 472 at a
+pile of six on twice the cooldown, which is a skill nobody brings. Now nothing
+damps: every conduit keeps its whole figure and the only currency is tempo, so a
+nuke's compensation for waiting is that it collects the entire pile at once. That
+is already the larger purchase, so it may not also be the better rate.
 
-What that missed is what each shape actually costs. A drip is paid in **breadth
-and immediacy**; a nuke concentrates on one body and has to survive the wait, so
-it is paid in neither. Time and breadth are real prices, and a better rate per
-stack is what they are owed. So `TestANukePaysBetterPerStackAndWorsePerTurn` holds
-the pair the other way up — better per stack, not more than twice as good, and
-never on a cooldown as short as the drip's — and a nuke may not `chain`, or one
-cast would empty the board's counters and be paid for every one of them.
+`TestANukeGetsNoBetterRateThanADrip` holds it: no better per stack, never on a
+cooldown as short as the drip's, and a nuke may not `chain` — one cast would empty
+the board's counters and be paid for every one of them.
 
 The pile is not unbounded in practice: `charge` lasts four of the holder's turns
 and every stack refreshes together, so what a nuke can find is what the charging
 turns bought inside that window. Hoarding is a *line*, not a resource.
-
-⚠️ The same mistake had a second half. Both sides of a conduit's trade are now
-read at the **smallest pile it will fire on** — `arc_power × min_stacks` against
-the damping — because the damping is paid once a strike and the arc is paid per
-stack. For a drip those are the same number, so the original rule looked correct;
-for a nuke it asked the skill to beat a full blow with half a payment, and every
-number that satisfied it made the skill worthless.
 
 #### A strike count that is rolled
 
@@ -733,7 +716,7 @@ that have to be true at once — the damage arrives **differently**, and it arri
 
 | kit | rate | blows | each |
 |---|---|---|---|
-| accumulating (`charge_beam magnetise electro_ball spark`) | 373‰ | 11067 | 96 |
+| accumulating (`charge_beam magnetise electro_ball spark`) | 363‰ | 11398 | 97 |
 | bursting (`zap_cannon thunderbolt flash_cannon discharge`) | 366‰ | 3114 | 366 |
 
 **Three and a half times the blows at a quarter the size**, and level on the

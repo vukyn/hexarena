@@ -923,11 +923,11 @@ func (p *pricing) spendable(actor *Unit, id string) int64 {
 			}
 			gain := int64(declared.Requires.BonusPower)
 			if declared.Requires.Arcs() {
-				// What one stack is worth net of what the skill gives up for it:
-				// the arc it fires, less the share of its own power it damps to
-				// fire it, over the strikes one cast is expected to land.
-				damped := int64(declared.Power - declared.Requires.DampedPower(declared.Power))
-				gain += int64(declared.Requires.ArcPower) - damped
+				// A conduit adds its arc to a blow it was going to land anyway, so
+				// what one stack is worth is the arc and nothing subtracted: the
+				// price was paid on the turn that laid the stack down, which is a
+				// turn this rating already charged for when it rated that skill.
+				gain += int64(declared.Requires.ArcPower)
 			}
 			if gain <= 0 {
 				continue
