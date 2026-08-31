@@ -2513,6 +2513,13 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
 - ⚠️ **A miss delivers nothing, a block delivers everything.** `discharge` runs on
   every strike outcome except `Missed` — the same sentence `OutlastsAShield` is
   written on. Do not "tidy" that into one condition.
+- ⚠️ **The chain stops at the midline**, and it is the one shape in the engine
+  that had to be told. Every other is a pattern, and `pattern.Targets` already
+  drops a splash cell on the far side — `Side.CrossesSides` is the only thing that
+  lifts it. A chain reads the board instead, so it obeyed none of that: aimed at an
+  enemy standing next to a charged teammate it walked straight back over the line,
+  for 272 damage and two of that teammate's stacks. The *enemy's* own chargers
+  arrange that for free. `TestTheChainStopsAtTheMidline`.
 - **The chain is `Battle.chainFrom`: BFS from the aim over `NeighborsOnBoard`,
   through carriers only.** It is re-walked **every strike**, because it shrinks as
   it burns; and it returns nothing at all when the *aimed* unit is clean, which is

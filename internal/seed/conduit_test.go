@@ -1,10 +1,15 @@
 package seed_test
 
 import (
+	"slices"
+	"sort"
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/status"
+	"github.com/vukyn/hexarena/internal/seed"
 )
 
 // TestAConduitPaysForWhatItDischarges is the bound the detonate rule cannot
@@ -162,5 +167,102 @@ func TestACounterCarriesNoEffectOfItsOwn(t *testing.T) {
 	}
 	if counted == 0 {
 		t.Skip("no counter is shipped, so there is nothing here to hold")
+	}
+}
+
+// TestTheChainStopsAtTheMidline is the rule the chain nearly broke, and the one
+// it is the only shape on this board that had to be told.
+//
+// Every other shape is a pattern, and pattern.Targets already drops a splash cell
+// landing on the far side — Side.CrossesSides is the single thing that lifts it,
+// and only a skill declaring `all` has it. A chain reads the board instead of a
+// pattern, so it obeyed none of that: aimed at an enemy standing next to a
+// charged teammate, the current walked straight back across the midline and took
+// two of that teammate's stacks along with 272 of its health. Nothing arranges
+// that on purpose; the *enemy's* own chargers arrange it for free.
+//
+// So the board here is the one that found it. `mate` stands at 2,1, which is a
+// hex neighbour of the enemy front cell 3,1, and everybody is charged by hand —
+// what is being measured is where the current may travel, not who can be
+// persuaded to charge whom.
+func TestTheChainStopsAtTheMidline(t *testing.T) {
+	books, err := seed.Books()
+	if err != nil {
+		t.Fatalf("load books: %v", err)
+	}
+	kind, err := books.Statuses.Lookup("charge")
+	if err != nil {
+		t.Fatalf("look up the counter: %v", err)
+	}
+	roster := []battle.Roster{
+		{ID: "mag", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 0},
+			Affinity: mustAffinity(t, "electric"), Stats: benchStats(3000, 700, 300, 200),
+			Skills: []string{"charge_beam", "electro_ball"}},
+		{ID: "mate", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 1),
+			Skills: []string{"body_slam"}},
+		{ID: "foe", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 1),
+			Skills: []string{"body_slam"}},
+	}
+	sort.Slice(roster, func(a, b int) bool { return roster[a].ID < roster[b].ID })
+	fight, err := battle.New(books, 3, roster)
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	mate, _ := fight.Unit("mate")
+	foe, _ := fight.Unit("foe")
+	// The fixture authors its own condition rather than hoping the board produces
+	// one: if these two ever stop being neighbours the test measures nothing, and
+	// this is what says so out loud.
+	if !slices.Contains(mate.Cell.NeighborsOnBoard(), foe.Cell) {
+		t.Fatalf("%v and %v are not neighbours, so no chain could have crossed anyway",
+			mate.Cell, foe.Cell)
+	}
+	if mate.Cell.Side() == foe.Cell.Side() {
+		t.Fatalf("both cells are on the %s side, so there is no midline between them", mate.Cell.Side())
+	}
+	for _, unit := range []*battle.Unit{mate, foe} {
+		for range 4 {
+			unit.Statuses.Apply(kind, 0)
+		}
+	}
+
+	before := mate.HP
+	held := mate.Statuses.Stacks(kind.ID)
+	for range 40 {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt.Unit != "mag" {
+			if !prompt.Skipped {
+				_ = fight.Pass("not the caster")
+			}
+			fight.Drain()
+			continue
+		}
+		if prompt.Skipped {
+			fight.Drain()
+			continue
+		}
+		if err := fight.Act("electro_ball", foe.Cell); err != nil {
+			t.Fatalf("electro_ball: %v", err)
+		}
+		break
+	}
+	// It reached the enemy, or the assertions below are about a cast that did
+	// nothing at all.
+	if foe.Statuses.Stacks(kind.ID) == held {
+		t.Fatalf("the conduit spent none of the enemy's %d stacks, so nothing here measured a discharge", held)
+	}
+	if mate.HP != before {
+		t.Errorf("the caster's own teammate lost %d health to a skill aimed at the enemy: the chain crossed the midline",
+			before-mate.HP)
+	}
+	if left := mate.Statuses.Stacks(kind.ID); left != held {
+		t.Errorf("the caster's own teammate went from %d stacks to %d: the chain spent a counter on its own side",
+			held, left)
 	}
 }
