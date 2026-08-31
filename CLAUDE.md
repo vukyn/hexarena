@@ -1494,6 +1494,25 @@ raw health runs 3128 (at the 800 defence ceiling) to 4800, a 1.53x edge fully
 pierced, against the 2.25x the worst elemental matchup already swings. If that
 ever proves too much, the knob to turn is `ceilings.defense`, not a new bound.
 
+**The damage numerator is 128 bits, and the division stays single.** `Rules.damage`
+multiplies five factors — attack, the skill, the affinity, the crit and
+`DefenseConstant` — and that product does not fit an `int64`. It used to be written
+as one `int64` expression and **wrapped silently**: at the attack ceiling against
+half the defence ceiling, a power of ninety million came to four and a half million
+— a large, plausible, wrong figure rather than a visibly broken one — and the
+wrapped expression is **not monotone in power**, so no reading taken off a single
+figure could catch it. ⚠️ **The obvious repair is refused**: dividing earlier
+truncates twice, and the whole package rests on truncating once — `floor(1000a/1000b)
+== floor(a/b)` is the identity the crit mechanic was built on and why adding crit
+moved no damage figure anywhere. So the intermediate widened (`wide`, off
+`math/bits`, carrying an `exact` flag because a silent wrap at 128 bits is the same
+defect only rarer) and the division did not move. `over` saturates at
+`math.MaxInt64` rather than letting `bits.Div64` panic — a panic in the damage
+formula is strictly worse than the wrap it replaces, and `max_effective_hp` is
+11,500, so a figure reaching that guard already kills whatever it touches. ⚠️ **That
+saturation is a bound on the type and not an authored ceiling**: `Skill.Power` still
+has none, deliberately — see `TODO.md` § *Decided against*.
+
 **Healing is not damage with a sign.** Three mechanisms give health back — a
 skill's `restores`, a skill's `drains`, and a `regen` status — and each obeys the
 same four rules. `combat.Rules.Restore` deliberately does **not** divide by the

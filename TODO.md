@@ -195,21 +195,6 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **A skill's power has no ceiling, and the damage formula overflows before
-      it reaches one.** `combat.Rules.damage` (`internal/core/combat/combat.go`)
-      multiplies five values — attack, the skill, the affinity, the crit and
-      `DefenseConstant` — into one `int64` *before* dividing, so the numerator
-      passes `math.MaxInt64` at a power around 2.3×10⁷. `skill.Validate`
-      (`internal/core/skill/skill.go`) checks only `Power >= 0`, so such a skill
-      **parses, saves and fights**. ⚠️ The danger is not the powers that collapse
-      to `MinimumDamage`, which are visible: measured per-strike previews run
-      `90,000,000 → 4,504,651` · `120,000,000 → 1` · `180,000,000 → 9,009,302`.
-      A wrapped numerator divided back down is a **large plausible number that
-      is wrong**, and it is not monotone in power, so no reading taken off one
-      figure detects it. Two halves to decide apart: whether the formula should
-      divide earlier (or widen), and what the authored ceiling is — the second
-      belongs beside the stat ceilings, which bound the authored line rather
-      than the fought one. Found while widening the damage row, not by play.
 - [ ] **`Lang.DamageWithin`'s drop is now unreachable at every window the
       program draws, not merely on shipped data.** Raising the floor to 120 took
       the narrowest room this row ever has to **98 cells (vi) / 99 (en)**, and
@@ -228,8 +213,8 @@ is only so the shape is readable.
       spends `width - 2 - labelWidth - 1`, so the row may fill the window's last
       cell, which wraps on some terminals. Wrong at the floor too, so it wants a
       test that builds the figure reaching it rather than one that rides in on a
-      width change. Unreachable on shipped data — the widest reading is 59 cells
-      of the 61 there are.
+      width change. Unreachable on shipped data — the widest reading is 59 cells,
+      against the 61 there were at the old floor and the 98 there are now.
 - [ ] **`frame` cuts every line silently.** `model.go`'s `MaxWidth(m.width)`
       truncates without a mark, so twenty-three of the twenty-four sites that
       render `m.lang.Error(...)` lose the tail of a sentence with nothing to say
@@ -238,6 +223,25 @@ is only so the shape is readable.
       every screen, and a data cell may not want the mark that a sentence does.
 
 ## Decided against — do not re-raise
+
+- **A ceiling on `Skill.Power`.** The arithmetic that looked like it demanded
+  one is gone: `Rules.damage` builds its numerator in 128 bits now, so nothing
+  wraps and nothing panics, and the guard that saturates at `math.MaxInt64` is a
+  bound on the **type** rather than on the design — `max_effective_hp` is 11,500,
+  so anything reaching it already kills whatever it touches. Measured at the worst
+  reachable factors (attack 2399, affinity 2000, crit 1250, K 300): the old
+  expression held a power up to **5,126,231**; the new one holds
+  **1,537,869,451,747,357,366**; the largest in the shipped book is **2,400**
+  (`solar_beam`). The book therefore sits about 4×10¹⁴ below the guard.
+  ⚠️ **So a ceiling now would be an implementation limit dressed as a design
+  bound**, which is the distinction the settled stat-bounds policy turns on: a
+  ceiling states what an **author** may write at the cap, and there is no design
+  argument for any particular number here — only an arithmetic one, and the
+  arithmetic stopped asking. It is deliberately *not* a typo guard either: that
+  is a different feature with a different justification, and it should be raised
+  as one if it is wanted, rather than smuggled in as overflow protection.
+  → `CLAUDE.md` § *Saturate continuous values, cap discrete ones*; the 128-bit
+  numerator and its guard in `internal/core/combat/combat.go`.
 
 - **Waiting — passing a turn because the next one is worth more.** It is
   **arithmetically empty in this engine**, not under-built: `spendCooldowns`
