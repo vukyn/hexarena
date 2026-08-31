@@ -123,6 +123,22 @@
       ]
     },
     {
+      "id": "poliwag.chorus",
+      "character": "pokemon.poliwag",
+      "name": "giữ nhịp",
+      "intent": "Đứng phía sau mà giữ cho cả hàng đi đều, ai dính gì thì gột đi cho sạch",
+      "stage": "Politoed",
+      "skills": [
+        "rinse",
+        "chorus",
+        "rally",
+        "hydro_pump"
+      ],
+      "passives": [
+        "composure"
+      ]
+    },
+    {
       "id": "machop.gamble",
       "character": "pokemon.machop",
       "name": "đánh cược",
@@ -180,22 +196,6 @@
       ],
       "passives": [
         "elusive"
-      ]
-    },
-    {
-      "id": "poliwag.chorus",
-      "character": "pokemon.poliwag",
-      "name": "giữ nhịp",
-      "intent": "Đứng phía sau mà giữ cho cả hàng đi đều, ai dính gì thì gột đi cho sạch",
-      "stage": "Politoed",
-      "skills": [
-        "rinse",
-        "chorus",
-        "rally",
-        "hydro_pump"
-      ],
-      "passives": [
-        "composure"
       ]
     }
   ]
