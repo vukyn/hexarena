@@ -883,8 +883,42 @@ func (p *pickState) view(m model) (string, string) {
 	// The whole refusal for the row under the cursor, which is where there is
 	// room for a sentence. It is drawn before anything is pressed, so a space
 	// that cannot take the row in has already explained itself.
+	//
+	// ⚠️ **This is prose, and it takes the window anyway. The data rule is not
+	// the argument — do not fold it into one.** A sentence still wraps at the
+	// floor everywhere it wraps; what is different here is that this one does not
+	// wrap at all, and the reason it is clipped rather than widened was never
+	// stated, so it read as a floor measurement somebody would either copy or
+	// "fix" for the wrong reason. The argument is:
+	//
+	//   - **frame already clips every line it draws, at m.width.** So a line
+	//     handed over whole is not a line that overflows a terminal; it is a line
+	//     the frame cuts at the window. Clipping at the floor buys nothing that
+	//     frame was not already going to do — it only does it seventy-nine cells
+	//     early.
+	//   - **Twenty-four sites render m.lang.Error, and this was the only one that
+	//     clipped at all** — the only one measuring the floor. Its twenty-three
+	//     siblings hand the sentence to frame. So on a two-hundred-column terminal
+	//     this refusal alone was cut at seventy-nine while every other refusal in
+	//     the program ran to the edge, which is a difference no reader could
+	//     explain and nothing here intended.
+	//
+	// **Wrapping is not the fix and must not be attempted.** clip shortens rather
+	// than wraps for the reason frame does, and here it is load-bearing rather
+	// than a preference: (*pickState).room counts this refusal as **one** of the
+	// seven rows this screen spends, so a second line would push the bottom of the
+	// list under frame's cut — the exact failure a scrolling list exists to
+	// prevent.
+	//
+	// **And clip stays rather than going away**, which is the half worth being
+	// deliberate about. Deleting it and letting frame do the cutting would make
+	// this row consistent with the other twenty-three, but frame's MaxWidth cuts
+	// **silently** while clip appends an ellipsis. Of the twenty-four this one was
+	// the most wrong about width and the most honest about truncation; the fix
+	// keeps the honesty and drops the wrongness. frame's silent cut is every line
+	// of every screen and is somebody else's change.
 	if refusal := refusalUnderCursor(rows, p.cursor); refusal != nil {
-		out.WriteString(m.style.bad.Render("  "+clip(m.lang.Error(refusal), minWidth-3)) + "\n")
+		out.WriteString(m.style.bad.Render("  "+clip(m.lang.Error(refusal), m.usableWidth()-3)) + "\n")
 	}
 	// The one answer typed beside the list, under it and named, with its reading
 	// beside it — the same reading the form gives the field this picker writes

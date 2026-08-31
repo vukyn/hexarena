@@ -1929,7 +1929,7 @@ func TestTheListingHeaderLinesUpWithItsRows(t *testing.T) {
 // against the widest content each row can hold rather than against the empty
 // form every other test happens to render.
 //
-// This is what caught skillValueRoom being a cell short. The two rows with a
+// This is what caught fieldValueRoom being a cell short. The two rows with a
 // part that has no length of its own — the chances beside the inflicts field and
 // the ids of an allowlist — computed what was left from the text field's
 // declared Width, and a bubbles text field draws a cell more than that for its

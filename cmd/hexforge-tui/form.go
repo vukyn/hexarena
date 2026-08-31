@@ -531,9 +531,24 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 // The ids and not their names, for the reason no id is translated anywhere here:
 // they are what cast.json holds and what --skills takes. Their Vietnamese names
 // are one keypress away, on the rows of the list itself.
+//
+// A list of ids is **data**, so it takes the window through fieldValueRoom, the
+// same call and the same classification the skill form's allowlist row takes:
+// minWidth is the width this program promises to draw in, not a ceiling on what
+// it may spend, and a kit cut to "razor_leaf poison_pow…" is a row that stopped
+// naming a skill the character brings, on a terminal with a hundred spare
+// columns beside it. The kit is the *bounded* case — cast.SkillSlots is 4 and
+// the widest shipped ids are 13 cells — but bounded is not the same as fitting:
+// four of those and the Vietnamese label column is already most of the floor,
+// and the bound moves the next time a slot is added.
+//
+// ⚠️ The arithmetic was written out here and again below, and both copies were
+// a cell over. That is exactly the shape fieldValueRoom exists to have stopped —
+// see its comment for the row it measures.
 func (f formScreen) kitValue(m model, labelWidth int) string {
 	hint := m.style.dim.Render(m.text(i18n.KitChooseHint))
-	room := minWidth - 3 - labelWidth - lipgloss.Width(m.text(i18n.KitChooseHint)) - 2
+	room := fieldValueRoom(m.usableWidth(), labelWidth,
+		lipgloss.Width(m.text(i18n.KitChooseHint)))
 	if len(f.kit) == 0 {
 		return m.style.bad.Render(m.text(i18n.PickerNothingChosen)) + "  " + hint
 	}
@@ -545,9 +560,17 @@ func (f formScreen) kitValue(m model, labelWidth int) string {
 // Empty reads as a word rather than as the kit's red "nothing chosen": a
 // character that is nothing in particular is finished, and marking it as a gap
 // would mark most of a cast as unfinished.
+//
+// The window and not the floor, for kitValue's reason and one of its own: a
+// species list has **no slot cap at all** — a character may be as many things at
+// once as species.json declares — so unlike the kit there is no number the
+// program could promise this row fits in. Which kinds a character is decides
+// which lineage skills it may carry, so a clipped last entry is the row's whole
+// content going missing.
 func (f formScreen) speciesValue(m model, labelWidth int) string {
 	hint := m.style.dim.Render(m.text(i18n.KitChooseHint))
-	room := minWidth - 3 - labelWidth - lipgloss.Width(m.text(i18n.KitChooseHint)) - 2
+	room := fieldValueRoom(m.usableWidth(), labelWidth,
+		lipgloss.Width(m.text(i18n.KitChooseHint)))
 	if len(f.species) == 0 {
 		return m.style.dim.Render(m.text(i18n.SpeciesNothingInParticular)) + "  " + hint
 	}
