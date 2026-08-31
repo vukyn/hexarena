@@ -2161,6 +2161,13 @@ identical squads share both for every pair of twins, so the ally side collects
 all of it. Two different squads almost never tie. But two friends copying each
 other's best squad is precisely the case that reads worst.
 
+⚠️ They are also **duel** figures, and they do not transfer. The same reading on
+a two-unit mirror is **+8.5 points**, not sixty — a longer battle dilutes an
+opening the duel spends everything on. And above one unit a side a one-way rate
+is not a measurement at all (see the note under *Decided against*), so what the
+slot is worth at 3v3 or 5v5 is **unmeasured** rather than small: the figure to
+quote there does not exist yet.
+
 So a match is **two battles on the same seed with the sides swapped** — which is
 what `forge.Bout` does when it fights from both ends of the board, and what makes
 a spar's mirror row read an exactly even 500‰ instead of reporting the first
@@ -2226,11 +2233,58 @@ method is measurement.
 
 ### Decided against — do not re-raise
 
-- **Re-rolling the turn-order tie-break from the seed.** It would make a single
-  battle fair without a second one, and it would invalidate every balance figure
-  this repository has ever taken: the 47.3% screened board, `Suggest`'s 81.3%,
-  every 500‰ control that reads exactly even, and every golden. `internal/core`
-  is not changed for a networking feature.
+- **Re-rolling the turn-order tie-break from the seed** — kept, but for a
+  different reason than the one first written here, and the first reason was
+  **wrong**.
+
+  What was claimed: that evening the ties needs `atb.Queue.order` changed, and so
+  would invalidate every balance figure ever taken. It does not. `seq` is
+  assigned by `atb.Queue.Add` off a counter, `Add` is called once per unit by
+  `enlist`, and `enlist` is called by `New` **in the order of the roster slice it
+  was handed**. So which side wins a tie is decided by *the caller*, and a server
+  composing its own roster order changes it with no core change, no golden moved
+  — every shipped data file keeps the order it has — and no loss of
+  verifiability, because `Log.Roster` records the order the battle was fought in.
+  `forge.FightSquads` does `append(ally, enemy...)`, which is the whole reason
+  the ally side wins every tie today.
+
+  Measured on the two-unit mirror, 2000 seeds: ally enlisted first reads
+  **54.2%**, enemy first **45.7%**, one coin for the whole side **50.2%**, and
+  alternating the lead pair by pair **49.6%**. So the lever works, and it is
+  available for nothing.
+
+  It is still not the answer, because evening the ties does not make a battle
+  even. See the note below: at more than one unit a side a mirror is not
+  complementary, so there is a residual nobody has named and the ties are not
+  where all of it lives. A match fights both ways round, which cancels the
+  residual as well as the tie — including the part that has not been explained.
+  The coin is worth having **on top of** that, per battle, not instead of it.
+
+- ⚠️ **A one-way mirror rate is not a measurement above one unit a side, and
+  this was found by a control arm failing.** A mirror fought one way and its own
+  reverse must sum to 1000‰: they are the same battles with the sides
+  exchanged. Measured, middle row only, 1000 seeds each:
+
+  | A side | Ally enlisted first | Enemy first | Sum |
+  | --- | --- | --- | --- |
+  | 1 unit | 660‰ | 340‰ | **1000‰ — exact** |
+  | 2 units | 577‰ | 444‰ | 1021‰ |
+  | 3 units | 487‰ | 475‰ | 962‰ |
+
+  At one a side it is exact, which is what `TestABothWaysMirrorIsExactlyEven`
+  asserts — and that test fights at `duelSlot` with one unit, so it does not
+  reach this. Above one it breaks, so `1 - rate` is not the other side's rate and
+  a figure quoted from one slot means nothing.
+
+  ⚠️ The board is **not** the cause: `Place` is a real isometry both across the
+  sides and within one, measured at 0 asymmetric pairs of 81, so
+  `TestPlaceMirrorsBothSides` — which only checks the cross-side profile — was
+  not hiding anything. Nor is it structural: the shipped two-unit squad *is*
+  exactly complementary while a synthetic two-unit mirror of the same characters
+  on the same cells is not, and the two differ only in **kit**. So something a
+  skill does resolves in an order that does not mirror, and it has not been
+  found. `forge.FightSquads` sums both ways, which is right, but the
+  cancellation is only *proven* at one a side.
 
 ## Roadmap
 

@@ -170,6 +170,23 @@ is only so the shape is readable.
 
 ## Not done
 
+- [ ] ⚠️ **A one-way mirror rate stops being a measurement above one unit a
+      side, and nothing in the suite says so.** A mirror fought one way and its
+      reverse must sum to 1000‰. Measured, middle row, 1000 seeds each: one unit
+      a side **1000‰ exactly**, two units **1021‰**, three units **962‰**.
+      `TestABothWaysMirrorIsExactlyEven` holds the exact case and fights at
+      `duelSlot` with one unit, so it does not reach the others; `spar` is
+      therefore sound and `forge.FightSquads` has an unmeasured residual it sums
+      over rather than cancels.
+      ⚠️ Not the board: `Place` is a real isometry across the sides **and**
+      within one — 0 asymmetric pairs of 81 — so `TestPlaceMirrorsBothSides`,
+      which checks only the cross-side profile, was not hiding it. Not structural
+      either: the shipped two-unit squad *is* exactly complementary while a
+      synthetic two-unit mirror of the same characters on the same cells is not,
+      and they differ only in **kit**. So a skill resolves in an order that does
+      not mirror and it has not been found — which is what to look for first,
+      before any figure at 3v3 or 5v5 is quoted. → `README.md` § PvP over a LAN.
+
 - [ ] **PvP over a LAN — 3v3 or 5v5, one server and n clients.** Squads built and
       saved on the player's own machine, a room joined by a code and an optional
       password, the battle resolved on the server. The design is settled and
@@ -385,17 +402,19 @@ is only so the shape is readable.
 
 ## Decided against — do not re-raise
 
-- **Re-rolling the turn-order tie-break from the seed.** Raised by PvP, where
-  which side you get is worth **−38% to +62%** in a mirror (`spar`'s first-move
-  column, 500 seeds a slot) because `atb.Queue.order` breaks a tie by the order
-  units joined and the ally side is enlisted first. A roll would make a single
-  battle fair without a second one — and it would invalidate every balance figure
-  ever taken here: the 47.3% screened board, `Suggest`'s 81.3%, every 500‰ control
-  that reads exactly even, and every golden. ⚠️ The sign is not even fixed —
-  moving first is a **liability** for Cleffa — so this is a real property of a kit
-  and not an artefact to be smoothed away. `internal/core` is not changed for a
-  networking feature; a match fights both ways round instead, which is what
-  `forge.Bout` and every spar already do. → `README.md` § PvP over a LAN.
+- **Re-rolling the turn-order tie-break from the seed.** Kept, and the reason
+  first written here was **wrong**: it claimed this needs `atb.Queue.order`
+  changed and would invalidate every balance figure. It does not. `seq` comes off
+  a counter in `atb.Queue.Add`, which `enlist` calls once per unit, which `New`
+  calls **in roster-slice order** — so the tie is the *caller's* to decide, with
+  no core change and no golden moved. `forge.FightSquads` writing
+  `append(ally, enemy...)` is the whole reason ally wins every tie today.
+  Measured on the two-unit mirror, 2000 seeds: 54.2% ally-first, 45.7%
+  enemy-first, **50.2%** with one coin for the side, **49.6%** alternating pair by
+  pair. The lever works and costs nothing. It is still not the answer, because
+  the entry below says evening the ties does not make a battle even — a match
+  fights both ways round, and the coin is worth having *on top of* that.
+  → `README.md` § PvP over a LAN.
 
 - **A ceiling on `Skill.Power`.** The arithmetic that looked like it demanded
   one is gone: `Rules.damage` builds its numerator in 128 bits now, so nothing
