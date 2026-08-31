@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
@@ -539,9 +540,12 @@ func (m model) screenContent() string {
 func (m model) viewTooSmall() string {
 	lines := strings.Split(
 		m.text(i18n.TerminalTooSmall, minWidth, minHeight, m.width, m.height), "\n")
-	clip := lipgloss.NewStyle().MaxWidth(m.width)
+	// Cut through clip for the reason frame does, and this is the one screen
+	// where a cut is close to certain: it is only ever drawn in a window already
+	// too narrow for anything else, so the sentence saying so is the sentence
+	// most likely to lose its tail.
 	for i, line := range lines {
-		lines[i] = clip.Render(line)
+		lines[i] = clip(line, m.width)
 	}
 	return strings.Join(lines, "\n")
 }
@@ -572,10 +576,36 @@ func (m model) frame(body, footer string) string {
 	// A biography or a filesystem path is free text of any length, and a
 	// wrapped line pushes everything below it down by one — which moves the
 	// footer off the bottom and makes the screen disagree with the line count
-	// above. MaxWidth cuts without cutting an escape sequence in half.
-	clip := lipgloss.NewStyle().MaxWidth(m.width)
+	// above.
+	//
+	// ⚠️ **And the cut says so**, which it did not. This used to be
+	// `lipgloss.MaxWidth`, which cuts safely and cuts **silently** — a sentence
+	// arrived a few cells short with nothing on the screen saying a tail had been
+	// taken off, which is worse than one that says so, because a reader cannot
+	// tell a truncated explanation from a complete one. It is the horizontal twin
+	// of the `Truncated` marker eleven lines above: the vertical cut has said so
+	// since it was written and the horizontal one had not.
+	//
+	// clip is escape-aware and marking at once, which neither tool this replaced
+	// managed alone — see its own comment. The mark is a cell of the window
+	// rather than a cell past it, so a marked line is exactly as wide as the
+	// unmarked cut would have been and the row arithmetic above is untouched.
+	//
+	// **Every line, and that is a measurement rather than a shrug.** At the 120
+	// floor, over every screen and state `everyScreen` registers in both
+	// languages, what still reaches this cut is the header naming the library
+	// directory, the check screen's summary line (which also names it), and the
+	// form's archetype row (a preset id and its whole kit) — 122, 128 and 131
+	// cells. At 160 and at 200, nothing. All of it is **text**: a path, a
+	// sentence, a list of ids. **No drawing can reach here** — `tui.Board` is
+	// nineteen cells wide against a floor of 120, and the preview's art is
+	// `usableWidth() - 2` by construction — which is why marking every line
+	// cannot paste an ellipsis onto the end of a picture.
+	// `TestNoDrawingIsEverWideEnoughToBeMarked` is what says so if a wider
+	// drawing is ever added, since an ellipsis on a sentence and an ellipsis on a
+	// hex board are not the same kind of help.
 	for i, line := range lines {
-		lines[i] = clip.Render(line)
+		lines[i] = clip(line, m.width)
 	}
 	return strings.Join(lines, "\n")
 }
@@ -732,6 +762,55 @@ func wrapWords(text string, room int) []string {
 		current = word
 	}
 	return append(lines, current)
+}
+
+// clip shortens a line to a number of cells and **says that it did**, keeping
+// the front, which is where the id, the label and the first half of a sentence
+// are.
+//
+// Shortened rather than wrapped, for the reason frame clips: a wrapped row
+// pushes every row under it down by one, which is how the footer leaves the
+// bottom of the screen.
+//
+// ⚠️ **Escape-aware and marking at once, which is a pair neither of the two
+// tools this replaced could manage.** `lipgloss`'s `MaxWidth` steps over an
+// escape sequence correctly and cuts **silently**. This function's own previous
+// body appended the mark but sliced `[]rune`, and on a styled line that peels
+// the terminating `\x1b[m` off the end one rune at a time — measured, not
+// argued: a bold red ten-cell line cut to nine came back
+// `"\x1b[1;31mabcdefgh…"`, the right width, the right letters, and **no reset**,
+// so the colour bled down the rest of the screen. Every caller then passed
+// unstyled text, so nothing showed it; frame's lines are styled, so making frame
+// call the old body would have shipped the bleed on the first cut header.
+// `ansi.Truncate` is measured in cells, steps over escape sequences rather than
+// through them, and re-closes whatever the cut left open.
+//
+// ⚠️ **The mark is only added when the line is genuinely longer than the room.**
+// A line that fills the room exactly comes back byte for byte unchanged — the
+// early return below is that promise written down, and it is the whole
+// off-by-one risk of marking at all: an ellipsis on a line that fitted claims a
+// tail that was never there and spends a cell of real content to claim it.
+// `ansi.Truncate` makes the same distinction on its own; the early return keeps
+// it from mattering which of the two is doing so, and keeps an uncut line
+// identical to what `MaxWidth` produced before this change.
+//
+// The mark itself is `ellipsis`, the one already declared for the art row — a
+// second declaration would be a second thing to keep in step, and the whole
+// client is measured in cells that are also characters.
+//
+// It lives here rather than beside its first caller for the reason
+// `fieldValueRoom` does. It began as the picker's private helper for one refusal
+// row and is now the one rule the whole client cuts by, so a second copy of
+// "shorten and mark" is exactly what having it beside pad and labelAt exists to
+// stop.
+func clip(text string, room int) string {
+	if room < 1 {
+		return ""
+	}
+	if lipgloss.Width(text) <= room {
+		return text
+	}
+	return ansi.Truncate(text, room, ellipsis)
 }
 
 // labelAt is label in a caller-chosen column.
