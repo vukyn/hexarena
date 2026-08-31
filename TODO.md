@@ -173,9 +173,12 @@ is only so the shape is readable.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
-- [ ] **Grow the cast.** Four ship across two origins, one per element (grass,
-      fire, water, wind). This is content, and the constraints that bound it are
-      written down. Read Squirtle first. → `CLAUDE.md` § Open work.
+- [ ] **Grow the cast.** Five ship across two origins, covering four elements
+      (grass, fire, water twice, wind). This is content, and the constraints that
+      bound it are written down. A character moves `cast.golden`,
+      `species.golden` and `origins.golden` — **not** `scenarios.golden` or
+      `replay.golden`, which this line claimed until 2026-08-31. Read Squirtle
+      first. → `CLAUDE.md` § Open work.
 - [ ] **The rest of the cast still crits at nothing.** Two skills carry a chance
       now, chosen by what `weigh` priced rather than by what the names suggest.
       The other twenty-six damaging skills are open, and each is its own reading:

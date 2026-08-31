@@ -4336,9 +4336,9 @@ rather than a Vietnamese word sitting in an English sentence.
 ### Growing the cast
 
 The tooling for this exists — see *Authoring a cast* above — and so does the
-thing it was blocking: three characters ship, one per element, and the seed
-roster is no longer a mirror, so balance is measurable. What remains is content
-rather than a design question, and two constraints shape it.
+thing it was blocking: five characters ship across four elements, water twice,
+and the seed roster is no longer a mirror, so balance is measurable. What remains
+is content rather than a design question, and two constraints shape it.
 
 - **An archetype's kit constrains a character's affinity.** `battle.New` refuses
   a unit carrying a skill of an element it does not share, so a preset's kit
@@ -4349,16 +4349,24 @@ rather than a design question, and two constraints shape it.
 - **The stat budget is the other one.** `progression.Limits` bounds each stat and,
   separately, bounds health and defence *together*, because those two multiply
   rather than add: a unit at both ceilings is not merely durable, it is durable
-  squared. The shipped presets spend between 4036 and 11397 of the 11500
+  squared. The shipped presets spend between 7242 and 11285 of the 11500
   effective-health budget, and `hexforge show` prints what is left.
 
-Every character added moves `scenarios.golden` and `replay.golden`. That is the
-point rather than a cost: those diffs are how a balance change gets read.
+A character moves `cast.golden`, `species.golden` and `origins.golden`. It does
+**not** move `scenarios.golden` or `replay.golden`, and this section said it did
+until 2026-08-31: `replay.golden` renders the **roster**, so a character reaches
+it by being placed in `roster.json` and by nothing else, and `scenarioReport` is
+handed the rules, the chart, the modifier bounds, the ceilings and the pattern
+book — no cast at all. Add a preset and `archetypes.golden` moves; add skills and
+`skills.golden` and `describe.golden` move. Those diffs are how a balance change
+gets read, so read whichever moved.
 
 Squirtle is worth reading before adding another. Water is the strongest of the
-three elements and Blastoise still loses the ace duel on stats, because its
-attack and speed curves are the lowest in the cast — an element advantage does
-not carry a passive stat line.
+elements and Blastoise still loses the ace duel on stats, because its attack and
+speed curves are the lowest in the cast — an element advantage does not carry a
+passive stat line. Poliwrath is the same reading from the other side: it shares
+Blastoise's element and beats it 42% of the time, because it spent the budget on
+health and attack where the wall spent it on defence.
 
 A third constraint arrived with species, and it is a *softer* one: a skill kept
 for a lineage asks the character to be one, so adding a dragon is adding two lines
