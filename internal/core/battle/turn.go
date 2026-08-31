@@ -172,15 +172,66 @@ func (b *Battle) heal(unit *Unit, amount int64, turn atb.Turn, from string) {
 	if amount <= 0 || unit.Dead || unit.HP >= unit.MaxHP() {
 		return
 	}
+	amount, reduced := healingFor(unit, amount)
+	// Nothing landed, which is not the same question as the guard above and is
+	// deliberately not a second floor: healingFor promises a non-negative amount,
+	// so this asks only whether the cut took all of it. Written == rather than <=
+	// for exactly that reason — two floors for one invariant is a guard a mutation
+	// can delete for free, which is what happened to the reply drain's damage > 0.
+	if amount == 0 {
+		return
+	}
 	if room := unit.MaxHP() - unit.HP; amount > room {
 		amount = room
 	}
 	unit.HP += amount
 	b.emit(Event{
 		Kind: Healed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
-		Status: from, Amount: amount, Remaining: unit.HP,
+		Status: from, Amount: amount, Remaining: unit.HP, Reduced: reduced,
 	})
 	b.reconsider(unit, turn)
+}
+
+// healingFor is what a unit actually receives out of an amount aimed at it: the
+// share its own statuses take off, and the share they took, for the event.
+//
+// # One definition, two callers, and they are all the callers there are
+//
+// heal and drain are the only two functions in this engine that raise a unit's
+// health — every restores, every regeneration tick and every drain, from a skill
+// or from a trait, comes through one of them — so a cut declared here reaches all
+// five healing sources with nothing to keep in step. drain is separate from heal
+// only because its event carries Drained; writing the arithmetic twice would be
+// two answers to one question, and the one that got edited would be the one the
+// tests happened to reach.
+//
+// # ⚠️ Reduce BEFORE the cap, never after
+//
+// Both callers cap the amount at the room left to full afterwards, and the order
+// is the whole mechanic. Capping first hands this function a number that is
+// already the room rather than the heal, so on a nearly-full unit the cut would
+// come off something that was going to be thrown away anyway and the debuff would
+// be invisible exactly where a sustain build lives. Reduce, then cap.
+//
+// # ⚠️ Floored at nought, because a heal may never become damage
+//
+// Set.HealShare accumulates per stack and does not bound itself, so authored data
+// can reach past total negation — a max_stacks of three at -400 a stack asks for
+// -1200, and nothing refuses it, because the bound is here. The multiplier
+// is floored at nought here rather than the share being clamped there, because
+// this is where the amount is and a negative amount handed back would be
+// subtracted by a caller that only knows how to add. The floor is what makes
+// "cut" the whole of what the category can do.
+func healingFor(unit *Unit, amount int64) (landed int64, reduced int) {
+	share := unit.Statuses.HealShare()
+	if share == 0 {
+		return amount, 0
+	}
+	landing := scale.Base + share
+	if landing < 0 {
+		landing = 0
+	}
+	return amount * int64(landing) / int64(scale.Base), scale.Base - landing
 }
 
 func (b *Battle) wound(unit *Unit, damage int64, turn atb.Turn) {
@@ -1034,13 +1085,23 @@ func (b *Battle) drain(actor *Unit, dealt int64, share int, turn atb.Turn) {
 	if amount <= 0 || actor.Dead || actor.HP >= actor.MaxHP() {
 		return
 	}
+	// The same cut heal takes, from the same definition and in the same place:
+	// before the amount is capped at the room left. A drain is healing however it
+	// was earned, so a festering attacker takes back less of what it dealt.
+	amount, reduced := healingFor(actor, amount)
+	// == rather than <= for the reason heal's own copy of this guard states: the
+	// floor lives in healingFor and a second one here would be a guard a mutation
+	// deletes for free.
+	if amount == 0 {
+		return
+	}
 	if room := actor.MaxHP() - actor.HP; amount > room {
 		amount = room
 	}
 	actor.HP += amount
 	b.emit(Event{
 		Kind: Healed, At: turn.At, Turn: turn.Number, Actor: actor.ID,
-		Amount: amount, Remaining: actor.HP, Drained: share,
+		Amount: amount, Remaining: actor.HP, Drained: share, Reduced: reduced,
 	})
 	b.reconsider(actor, turn)
 }

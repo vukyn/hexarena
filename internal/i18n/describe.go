@@ -1093,6 +1093,24 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		// its neighbour is: an authored shield status the engine cannot yet block
 		// is a data question, not a second sentence.
 		out = append(out, l.Text(BlurbStatusSeeps))
+	case status.HealCut:
+		// A case of its own, and that is the whole reason HealCut is a category
+		// rather than a stat_debuff carrying no term: this switch is what a status
+		// says about itself, StatDebuff has no arm in it at all, and a debuff whose
+		// terms are empty would describe itself as nothing.
+		//
+		// "Per stack" only where there can be a second one, exactly as the modifier
+		// loop below decides it, because telling a reader the rate of something
+		// that cannot happen twice reads as a promise that it can.
+		cut, cuts := healCut(kind.HealShare), BlurbStatusCutsHealingOnce
+		if kind.MaxStacks > 1 {
+			cuts = BlurbStatusCutsHealing
+		}
+		out = append(out, l.Say(cuts, cut))
+		if kind.MaxStacks > 1 {
+			out = append(out, l.Say(BlurbStatusStacked,
+				healCut(kind.HealShare*kind.MaxStacks)))
+		}
 	}
 	for _, term := range kind.Modifiers {
 		// "Per stack" only where there can be a second one. A status capped at
@@ -1170,6 +1188,26 @@ func (l Lang) lasts(kind status.Kind) string {
 // percentages, and that matters even though nothing shipped carries a flat one:
 // a flat +50 rendered through share() would print as "5%", which is a wrong
 // number rather than a missing one.
+// healCut words a heal-cut share, which is authored negative and read as a size.
+//
+// The direction is in the wording and the figure is absolute, which is the rule
+// statusAmount already follows for a modifier term: "cut by 40%" beside a "-40%"
+// would be the minus said twice.
+//
+// ⚠️ It is clamped at total negation, because the engine floors the healing at
+// nought and a description of an unreachable figure is a description that lies.
+// The shipped status caps at 80% and cannot reach this; authored data can, since
+// nothing stops a max_stacks of three at -400 a stack.
+func healCut(permille int) string {
+	if permille < 0 {
+		permille = -permille
+	}
+	if permille > scale.Base {
+		permille = scale.Base
+	}
+	return share(permille)
+}
+
 func statusAmount(term modifier.Modifier, stacks int) string {
 	size := term.Amount * int64(stacks)
 	if size < 0 {

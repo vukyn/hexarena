@@ -35,8 +35,8 @@ import (
 // them is in skills.json any more: all 43 shipped skills carry an authored name
 // and 0 of them are in that table, so a log glossed through Gloss would name no
 // skill at all. Traits are the same shape (11 shipped, 11 authored names, no
-// table). Statuses are the one kind the id tables cover completely — 21 shipped,
-// 21 glossed, none carrying a name field — which is why the three kinds are read
+// table). Statuses are the one kind the id tables cover completely — 22 shipped,
+// 22 glossed, none carrying a name field — which is why the three kinds are read
 // through three different accessors rather than one.
 func (l Lang) LogGlosses(carried []skill.Skill, kinds []status.Kind, held []passive.Passive) map[string]string {
 	if l != Vi {

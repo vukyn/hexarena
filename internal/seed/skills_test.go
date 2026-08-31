@@ -500,7 +500,12 @@ func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns
 	}
 
 	b.WriteString("\n== timed effects ==\n")
-	b.WriteString("status      category      stacks   turns   tick power   tick   over its life   modifiers\n")
+	// heal cut is a column of its own for the reason the "who may carry" table
+	// gained one when origins arrived: a figure the design record cannot show is a
+	// figure nobody tunes. A heal-cut status carries no tick and no modifier, so
+	// without it fester reads as a row of noughts — a status that does nothing.
+	// Nought for everything else, the same answer tick power gives a non-ticker.
+	b.WriteString("status      category      stacks   turns   tick power   tick   over its life   heal cut   modifiers\n")
 	for _, kind := range statuses.Kinds() {
 		tick, life := int64(0), int64(0)
 		if kind.TickPower > 0 {
@@ -523,9 +528,9 @@ func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns
 		if joined == "" {
 			joined = "-"
 		}
-		fmt.Fprintf(&b, "%-12s%-14s%7d%8d%13d%7d%16d   %s\n",
+		fmt.Fprintf(&b, "%-12s%-14s%7d%8d%13d%7d%16d%11d   %s\n",
 			kind.ID, kind.Category, kind.MaxStacks, kind.Duration,
-			kind.TickPower, tick, life, joined)
+			kind.TickPower, tick, life, kind.HealShare, joined)
 	}
 
 	b.WriteString("\n== area shapes a skill can choose ==\n")

@@ -53,8 +53,11 @@ func shieldedCast(t *testing.T, allySkill string, traits []string, shield bool) 
 		if prompt.Skipped {
 			continue
 		}
-		// Brace once and then jab: a second charge would eat a second strike, and
-		// every skill measured here strikes once.
+		// Brace once and then jab, so the shield holds exactly ONE charge. That is
+		// what makes a single-strike cast be eaten whole and a two-strike cast have
+		// one strike eaten and one land — see
+		// TestOneStrikeEatenAndOneThroughDeliversOnce, which is the only thing that
+		// reads the second of those. A second charge would eat both.
 		foeSkill, foeAim := "jab", ownCell
 		if shield && !raised {
 			foeSkill, foeAim, raised = "brace", acrossTheBoard, true
@@ -133,6 +136,12 @@ func TestAShieldStopsTheBlowAndTheWearButNotTheContamination(t *testing.T) {
 		{"a stat debuff does not", "sap", "weaken", "stat_debuff", false},
 		{"a control does not", "daze", "stun", "control", false},
 		{"a taunt does not", "provoke", "taunting", "taunt", false},
+		// A heal cut is not contamination: it takes a share off a number some
+		// later effect produces, so a strike that was stopped leaves nothing on
+		// the target for it to have been about. Behavioural rather than only the
+		// enum sweep in status_test.go, because the risk is that the reading and
+		// the mechanism part company.
+		{"a heal cut does not", "rot", "fester", "heal_cut", false},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			blocked := shieldedCast(t, test.skill, nil, true)
@@ -218,6 +227,66 @@ func TestATraitsRiderGoesThroughAShieldOnTheSameRuleAsASkillsOwn(t *testing.T) {
 			plain := shieldedCast(t, "strike", nil, false)
 			if got := appliedStatuses(plain); len(got) != 0 {
 				t.Fatalf("strike applied %v on its own, so nothing here reads the trait", got)
+			}
+		})
+	}
+}
+
+// TestOneStrikeEatenAndOneThroughDeliversOnce is the branch #181 left latent and
+// the shipped book has now made reachable.
+//
+// The rule is per STRIKE — `blocked` and `connected` are carried side by side and
+// the riders are filtered on the category of each — so a two-strike skill against
+// a single charge has one strike stopped and one landing. Every arm of that
+// mechanism existed and nothing exercised it: shieldedCast braces exactly once
+// because "every skill measured here strikes once", so no test in the repository
+// had a cast whose two halves took different paths. `fire_fang` is two strikes and
+// now carries a rider, so this is a shipped combination rather than a hypothetical.
+//
+// Both categories are tabled, because the interesting claim is that the two halves
+// agree on the ANSWER and not on the path: a `dot` outlasts the eaten strike and
+// then rides the one that landed, and a `heal_cut` is stopped with the first and
+// rides the second, so both come out applied ONCE. A rider counted per strike
+// rather than per landing strike would apply the dot twice, and a rider gated on
+// "the cast connected at all" would apply the heal cut on the blocked half too —
+// neither of which any single-strike fixture can tell apart from correct.
+func TestOneStrikeEatenAndOneThroughDeliversOnce(t *testing.T) {
+	for _, test := range []struct {
+		name, skill, status, category string
+	}{
+		{"a tick outlasts the eaten strike and rides the other", "gnaw", "poison", "dot"},
+		{"a heal cut is stopped with one strike and rides the other", "maul", "fester", "heal_cut"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			events := shieldedCast(t, test.skill, nil, true)
+			// One charge against two strikes: the first is eaten, the second is not.
+			// Asserted before anything else, because this is the whole fixture — a
+			// cast that was blocked whole or not at all measures the wrong branch.
+			if blocked := find(events, battle.Blocked); len(blocked) != 1 {
+				t.Fatalf("%d strikes were blocked, want exactly 1: %+v", len(blocked), events)
+			}
+			if struck := find(events, battle.Damaged); len(struck) != 1 {
+				t.Fatalf("%d strikes landed, want exactly 1: this is not the one-eaten-one-through branch", len(struck))
+			}
+			if got := appliedStatuses(events); len(got) != 1 || got[0] != test.status {
+				t.Errorf("a two-strike %s over one charge applied %v, want just %s once: a %s rides the landing strike and no more",
+					test.skill, got, test.status, test.category)
+			}
+			// A cancelled roll must not happen at all, so the blocked half of a
+			// heal cut leaves no resisted event behind either.
+			if refused := find(events, battle.StatusResisted); len(refused) != 0 {
+				t.Errorf("a two-strike %s rolled and lost somewhere: %+v", test.skill, refused)
+			}
+
+			// The control: with nothing in front of it both strikes land and the
+			// rider still applies once, so the count above is the rule rather than
+			// the shield.
+			landed := shieldedCast(t, test.skill, nil, false)
+			if struck := find(landed, battle.Damaged); len(struck) != 2 {
+				t.Fatalf("%d strikes landed unblocked, want 2: the fixture is not multi-strike", len(struck))
+			}
+			if got := appliedStatuses(landed); len(got) != 1 || got[0] != test.status {
+				t.Fatalf("an unblocked two-strike %s applied %v, want just %s", test.skill, got, test.status)
 			}
 		})
 	}

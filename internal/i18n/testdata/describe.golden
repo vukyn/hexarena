@@ -71,8 +71,9 @@ Tầm 2 · 90% trúng · hồi 2 lượt.
 
 fire_fang
 Ngoạm bằng hàm răng bọc lửa, khói bốc lên ngay từ chỗ vừa cắn, 2 nhát, mỗi nhát 65% công (tổng 130%), xuyên 35% giáp.
+Gây lở loét cho mục tiêu, 50% khả năng.
 Tầm 1 · 88% trúng · hồi 2 lượt.
-[one line] 130% công · tầm 1 · hồi 2
+[one line] 130% công · lở loét 50% · tầm 1 · hồi 2
 
 fire_spin
 Tạo một cột lửa xoáy tít, hơi nóng cuốn lên thành vòng, 85% công.
@@ -158,7 +159,7 @@ Bản thân · hồi 4 lượt.
 
 rapid_spin
 Xoay tít người, hất văng mọi thứ đang bám trên mình.
-Gỡ 1 cộng dồn hiệu ứng giảm chỉ số và hiệu ứng gây hại theo lượt.
+Gỡ 1 cộng dồn hiệu ứng giảm chỉ số, hiệu ứng gây hại theo lượt và hiệu ứng giảm máu hồi.
 Bản thân · hồi 3 lượt.
 [one line] gỡ 1 hiệu ứng xấu · bản thân · hồi 3
 
@@ -446,6 +447,11 @@ Hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 Mọi kẻ địch còn đánh được đều phải nhắm vào bên mang, bất kể tầm.
 Ép chọn mục tiêu · 2 lượt · 1 cộng dồn.
 
+[status] fester
+Bên dính hồi máu bao nhiêu cũng bị cắt 40% mỗi cộng dồn, hồi từ đâu cũng vậy.
+Tối đa là 80%.
+Giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn.
+
 [element] neutral
 Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
 
@@ -560,8 +566,9 @@ Range 2 · 90% to hit · 2 turns to recharge.
 
 fire_fang
 Hits an enemy for 2 strikes of 65% of attack each, 130% in all, through 35% of the armour.
+Inflicts fester, 50% of the time.
 Range 1 · 88% to hit · 2 turns to recharge.
-[one line] 130% attack · range 1 · cd 2
+[one line] 130% attack · fester 50% · range 1 · cd 2
 
 fire_spin
 Hits an enemy for 85% of attack.
@@ -643,7 +650,7 @@ Itself · 4 turns to recharge.
 [one line] self regrowth x2 · itself · cd 4
 
 rapid_spin
-Strips 1 stack of stat reduction and damage over time.
+Strips 1 stack of stat reduction, damage over time and healing reduction.
 Itself · 3 turns to recharge.
 [one line] strips 1 harmful · itself · cd 3
 
@@ -914,6 +921,11 @@ Restores every turn · 3 turns · up to 3 stacks.
 [status] taunting
 Every enemy that can attack at all must aim at the holder, at any range.
 Costs a choice of target · 2 turns · 1 stack.
+
+[status] fester
+Every heal the holder receives is cut by 40% per stack, whatever gave it.
+At its cap that is 80%.
+Cuts healing received · 2 turns · up to 2 stacks.
 
 [element] neutral
 Inert: it beats nothing and nothing beats it; every trade is 100%.

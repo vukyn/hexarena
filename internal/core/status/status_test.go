@@ -441,7 +441,9 @@ func TestOnlyATickOutlastsAShield(t *testing.T) {
 	}
 	// And the two splits are stated apart, because the whole risk is that one is
 	// mistaken for the other.
-	for _, category := range []status.Category{status.StatDebuff, status.Control, status.Taunt} {
+	for _, category := range []status.Category{
+		status.StatDebuff, status.Control, status.Taunt, status.HealCut,
+	} {
 		if !category.Harmful() {
 			t.Errorf("%s stopped being harmful, so this test no longer says the two splits differ", category)
 		}
@@ -452,7 +454,12 @@ func TestOnlyATickOutlastsAShield(t *testing.T) {
 }
 
 func TestCategoryNames(t *testing.T) {
-	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt"}
+	// Declaration order, and it is asserted as a LIST rather than as a set on
+	// purpose: CategoryCount and every table built from this order — the grouped
+	// reference's print order among them — move when a category is slotted in
+	// rather than appended, which is the rule both HealCut and Taunt are declared
+	// under. A new category belongs on the END of this line.
+	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt", "heal_cut"}
 	categories := status.Categories()
 	if len(categories) != len(want) {
 		t.Fatalf("there are %d categories, want %d", len(categories), len(want))
@@ -472,7 +479,9 @@ func TestCategoryNames(t *testing.T) {
 	if got := status.Category(99).String(); !strings.Contains(got, "99") {
 		t.Errorf("an undeclared category renders as %q", got)
 	}
-	for _, category := range []status.Category{status.Dot, status.StatDebuff, status.Control} {
+	for _, category := range []status.Category{
+		status.Dot, status.StatDebuff, status.Control, status.HealCut,
+	} {
 		if !category.Harmful() {
 			t.Errorf("%s should be harmful", category)
 		}
@@ -569,6 +578,103 @@ func TestTickPowerBelongsOnlyToADot(t *testing.T) {
 				t.Errorf("error %q does not mention %q", err, testCase.wantErr)
 			}
 		})
+	}
+}
+
+// TestHealShareBelongsOnlyToAHealCut is TestTickPowerBelongsOnlyToADot's twin,
+// and it exists for the same two reasons pointed opposite ways.
+//
+// A heal_cut is a category whose one job is a number, so one without it would
+// parse, apply, appear in the log and change nothing anybody can see — the same
+// dead-data shape a regeneration that froze nought had. And a heal_share on
+// anything else is a figure the engine never reads, since only HealCut
+// contributes to Set.HealShare.
+//
+// The bound is on both sides. A positive share would raise the healing its holder
+// receives, which the category's own name says it does not do — the wording on
+// screen is "cuts healing received", so accepting one ships a description that
+// lies — and one stack promising more than total negation is a promise the floor in
+// the engine refuses to keep.
+func TestHealShareBelongsOnlyToAHealCut(t *testing.T) {
+	cases := []struct {
+		name, raw, wantErr string
+	}{
+		{"a heal cut with no share",
+			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"heal_cut","max_stacks":1,"duration":1}]}`,
+			"no heal_share"},
+		{"a heal cut that raises healing",
+			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"heal_cut","max_stacks":1,"duration":1,"heal_share":400}]}`,
+			"it must lower the healing"},
+		{"a heal cut past total negation",
+			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"heal_cut","max_stacks":1,"duration":1,"heal_share":-1001}]}`,
+			"want between -1000 and -1"},
+		{"a buff with a heal share",
+			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"buff","max_stacks":1,"duration":1,"heal_share":-400}]}`,
+			"which only a heal_cut uses"},
+		{"a dot with a heal share",
+			`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"dot","max_stacks":1,"duration":1,"tick_power":500,"heal_share":-400}]}`,
+			"which only a heal_cut uses"},
+	}
+	for _, testCase := range cases {
+		t.Run(testCase.name, func(t *testing.T) {
+			_, err := status.ParseBook([]byte(testCase.raw))
+			if err == nil {
+				t.Fatalf("want an error mentioning %q, got none", testCase.wantErr)
+			}
+			if !strings.Contains(err.Error(), testCase.wantErr) {
+				t.Errorf("error %q does not mention %q", err, testCase.wantErr)
+			}
+		})
+	}
+	// The control: the shape all five refusals are a deviation from parses, so an
+	// error above is the rule rather than a typo in the fixture.
+	book, err := status.ParseBook([]byte(
+		`{"max_stacks":5,"max_duration":6,"kinds":[{"id":"x","category":"heal_cut","max_stacks":2,"duration":2,"heal_share":-400}]}`))
+	if err != nil {
+		t.Fatalf("a well-formed heal cut was refused: %v", err)
+	}
+	kind, err := book.Lookup("x")
+	if err != nil || kind.HealShare != -400 {
+		t.Errorf("the parsed heal cut carries %+v, %v — the share has to survive the parse", kind, err)
+	}
+}
+
+// TestHealShareAccumulatesPerStack is Modifiers' rule for the one field that is
+// not a modifier: a stack contributes its share once, so stacking is worth doing.
+//
+// It bounds nothing on purpose, which is the half worth asserting: the total is a
+// share of an amount rather than of a stat, so the floor lives where the amount is
+// and a second bound here would be a second answer. Three stacks of -600 therefore
+// come back as -1800 and the engine is what refuses to pay a negative heal.
+func TestHealShareAccumulatesPerStack(t *testing.T) {
+	festerKind := status.Kind{
+		ID: "fester", Category: status.HealCut, MaxStacks: 3, Duration: 3, HealShare: -600,
+	}
+	var set status.Set
+	if got := set.HealShare(); got != 0 {
+		t.Errorf("a clean unit cuts healing by %d, want nothing", got)
+	}
+	for stacks := 1; stacks <= 3; stacks++ {
+		set.Apply(festerKind, 0)
+		if got, want := set.HealShare(), -600*stacks; got != want {
+			t.Errorf("%d stacks summed to %d, want %d", stacks, got, want)
+		}
+	}
+	// Past the cap the total stands still, because Apply refuses the stack.
+	set.Apply(festerKind, 0)
+	if got := set.HealShare(); got != -1800 {
+		t.Errorf("a fourth stack over a cap of three summed to %d, want -1800", got)
+	}
+	// A status of another category contributes nothing, so the sum reads the
+	// category rather than every share it can see.
+	set.Apply(status.Kind{
+		ID: "weaken", Category: status.StatDebuff, MaxStacks: 1, Duration: 1,
+		Modifiers: []modifier.Modifier{
+			{Target: modifier.Attack, Mode: modifier.Percent, Amount: -300},
+		},
+	}, 0)
+	if got := set.HealShare(); got != -1800 {
+		t.Errorf("a stat debuff moved the heal share to %d", got)
 	}
 }
 

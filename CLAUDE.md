@@ -657,7 +657,7 @@ answers rather than screen logic:
     **counts** a strip rather than enumerating it — `purify`'s three categories
     are 79 cells in Vietnamese before the aim and the cooldown, so an enumeration
     could only ever arrive trimmed, and the claim it makes is read off
-    `status.Category.Harmful` per skill rather than assumed (4 of the 7 categories
+    `status.Category.Harmful` per skill rather than assumed (5 of the 8 categories
     are harmful, so a cleanse may be called one and a dispel may not). The
     wordings differ deliberately; the numbers may not. Both readings sit one under
     the other in `describe.golden`, so a balance change has to move both.
@@ -1043,7 +1043,7 @@ are the only things that had to move with it; **no golden holds a gloss**, which
 `git diff --stat -- '*.golden'` proves in one line.
 ⚠️ **`Lang.Gloss` cannot name a skill and that is the whole reason
 `Lang.LogGlosses` exists.** Measured over the shipped books: **43** skills, **0**
-of them in `skillGloss`, **43** carrying an authored `name`; **21** statuses, **21**
+of them in `skillGloss`, **43** carrying an authored `name`; **22** statuses, **22**
 in `statusGloss`, none with a name field; **11** traits, **0** in a table, **11**
 authored. `skillGloss`'s nineteen ids intersect `skills.json` **not at all** —
 they are the pre-`name` skills and only `internal/testfixture` still reaches them.
@@ -1460,18 +1460,35 @@ better when the limit was hit and the lowest any was driven to at any point was
 **29%**. That breaks `TestABothWaysMirrorIsExactlyEven`, a **fairness invariant** — a
 character duelling an identical copy of itself comes to exactly 500‰. So
 `OutlastsAShield` is one case on purpose. Do not "complete" it, and **do not fold
-it into `Harmful`**, which is `Dot|StatDebuff|Control|Taunt` and answers what a
-cleanse may strip; the near miss is the whole risk, which is why
-`TestOnlyATickOutlastsAShield` asserts the two splits **apart**.
+it into `Harmful`**, which is `Dot|StatDebuff|Control|Taunt|HealCut` and answers
+what a cleanse may strip; the near miss is the whole risk, which is why
+`TestOnlyATickOutlastsAShield` asserts the two splits **apart**. `HealCut` was
+refused entry on the **reading** rather than on a measurement: a cut is a share
+taken off a number some later effect produces, so a stopped strike leaves nothing
+on the target for it to be about.
 ⚠️ **The rule reaches 5 shipped skills and 0 shipped traits.** Ten of the 43
 shipped skills both damage and apply, and only the five carrying a `dot` are
 touched (`sludge_bomb`, `ember`, `flamethrower`, `fire_spin`, `heat_wave`); the
 `stat_debuff` four (`bubble`, `whirlpool`, `bite`, `dragon_claw`) and the one
-`control` (`water_pulse`) are unaffected. **No shipped trait declares `applies`
-at all** — the eleven use `grants`, `resists`, `amplifies`, `replies` and
-`drains` — so the trait half is a **latent** branch and
+`control` (`water_pulse`) are unaffected, and the one `heal_cut` (`fire_fang`) is
+not either — see *Healing is not damage with a sign* for why a cut is not
+contamination. **No shipped trait declares `applies` at all** — the eleven use
+`grants`, `resists`, `amplifies`, `replies` and `drains` — so the trait half is a
+**latent** branch and
 `TestATraitsRiderGoesThroughAShieldOnTheSameRuleAsASkillsOwn` is the only thing
 that exercises it.
+⚠️ **The "one strike eaten, one through" branch is no longer latent.** It was:
+`shieldedCast` braces exactly once and every skill it measured struck once, so no
+cast in the repository had two halves taking different paths, and the whole
+`connected || blocked` / `throughAShield := !connected` arrangement was exercised
+only at its two extremes. `fire_fang` is two strikes and now carries a rider, so
+the middle case is shipped data. `TestOneStrikeEatenAndOneThroughDeliversOnce`
+tables it over a `dot` and a `heal_cut` together, because the claim worth holding is
+that the two reach the same answer — applied **once** — by opposite routes: the tick
+outlasts the eaten strike and then rides the landing one, the cut is stopped with
+the first and rides the second. A rider counted per strike would apply the dot
+twice; a rider gated on "the cast connected at all" would apply the cut on the
+blocked half; no single-strike fixture can tell either from correct.
 ⚠️ **`price.go` did not change and does not have to.** `inflictedOn` prices a
 skill's own `Applies` off the *status's* chance and never weights it by whether
 the strike connects (only the reply half reads `combat.Hit`), so the rating
@@ -1687,6 +1704,51 @@ which is what keeps a battle able to end and stops a regeneration from being an
 uncapped shield. Every restore emits a `healed` event, because nothing else in
 the log explains health going up. Consequence: the joint health-and-defence
 budget is an **understatement** rather than a bound.
+
+**Healing can be CUT, and the cut has one definition because there are only two
+places health goes up.** `status.HealCut` is a category whose whole job is one
+number — `Kind.HealShare`, permille, negative, summed **per stack** by
+`Set.HealShare` the way `Set.Modifiers` sums its terms — and `battle.healingFor`
+is the single expression that applies it. `heal` and `drain` both call it; `drain`
+is separate from `heal` only because its event carries `Drained`, so writing the
+arithmetic twice would be two answers to one question. Five sources reach those
+two functions (a skill's `restores`, a skill's `drains`, a `regen` tick, a trait's
+`drains`, `comeback`'s `at_empty`) and
+`TestEveryHealingPathTakesTheHealCut` tables four of them against a written-down
+list, so a healing source added without a row is a red test.
+⚠️ **The cut comes off BEFORE the amount is capped at the room left to full.**
+Capping first hands the reduction a number that is already the room rather than the
+heal, so on a nearly-full unit the cut is taken out of health that was going to be
+thrown away — the debuff is invisible on exactly the unit a sustain build spends its
+turns being. `TestTheCutComesOffBeforeTheHealIsCappedAtTheRoom` builds the one unit
+where the two orders differ (room = half the payout) and names all three figures.
+⚠️ **Floored at nought, in `healingFor`, and it is ONE floor.** The callers' own
+post-reduction check is written `amount == 0` rather than `amount <= 0` on purpose:
+with `<= 0` there, **deleting the floor reddened nothing in the whole suite** —
+the caller's guard swallowed the negative and behaviour was identical. Two floors
+for one invariant is a guard a mutation deletes for free, which is the note beside
+the reply drain's `damage > 0` all over again.
+⚠️ **`Event.Reduced` carries the share, and it is not `Refused`.** Without it a
+reader sees `heals 244` where the book says 900 and every figure they could check
+against says the log is wrong. `Refused` is a share of a status application's
+*chance*, already signed with negative meaning invited; a second meaning on one
+field is the thing this file keeps a list of. All three arms of `tui.Line`'s
+`Healed` branch print it (`reducedNote`), because each builds its own sentence.
+⚠️ **`price.go` did not change, so a heal cut is priced at nothing.**
+`inflictedOn` has arms for `Dot`, `Control` and `StatDebuff` and falls through for
+the rest — *worth nothing means not rated* — exactly as a `taunt` does. So the
+opponent never aims one at a healer on purpose and never discounts a heal it is
+about to have cut; both errors run the direction every cap in that file errs in,
+and every figure quoted for the status is therefore a **floor** on what it is worth.
+⚠️ **A permanent heal cut is legal** (nothing refuses it the way a permanent `Dot`
+or `Regen` is refused) so a trait may grant one. Nothing shipped does.
+Shipped as `fester` — a verb, which is the rule for a debuff id — `max_stacks` 2,
+`duration` 2, **−400 a stack**, so two stacks cut 80% and **healing is never fully
+off**: the engine's standing preference is to saturate rather than hard-clamp, and
+full negation at the cap is a shutdown rather than a cost. `statuses.json` takes no
+comment, so that is the reason, here. Delivered by `fire_fang` at 500‰, one stack,
+and `rapid_spin` strips the category. → `README.md` § *Cutting the healing* for the
+measurements, the `rapid_spin` answer and the shipped-roster null.
 
 ⚠️ **A `restores` payout has TWO callers and one of them was missing.**
 `Battle.restore` is the single expression; `resolveAgainst` calls it per unit a

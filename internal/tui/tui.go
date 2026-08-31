@@ -298,16 +298,18 @@ func Line(event battle.Event, tags, glosses map[string]string) string {
 		// A regeneration names itself; a drain or a restoring skill has no
 		// status to name and says only how much came back.
 		if event.Status != "" {
-			return head + fmt.Sprintf(" heals %d from %s x%d", event.Amount, gloss(event.Status), event.Stacks)
+			return head + fmt.Sprintf(" heals %d from %s x%d%s", event.Amount,
+				gloss(event.Status), event.Stacks, reducedNote(event.Reduced))
 		}
 		// A drain says the share it took, because the amount alone cannot be
 		// reproduced from the skill any more: a trait may drain as well, so the
 		// number on screen is not the skill's own figure applied to the damage.
 		if event.Drained > 0 {
-			return head + fmt.Sprintf(" drains %d, %d%% of what it dealt, %d hp left",
-				event.Amount, event.Drained/10, event.Remaining)
+			return head + fmt.Sprintf(" drains %d, %d%% of what it dealt, %d hp left%s",
+				event.Amount, event.Drained/10, event.Remaining, reducedNote(event.Reduced))
 		}
-		return head + fmt.Sprintf(" heals %d, %d hp left", event.Amount, event.Remaining)
+		return head + fmt.Sprintf(" heals %d, %d hp left%s", event.Amount, event.Remaining,
+			reducedNote(event.Reduced))
 	case battle.StatusExpired:
 		return head + fmt.Sprintf(" %s wears off", gloss(event.Status))
 	case battle.SpeedChanged:
@@ -487,6 +489,22 @@ func gradientNote(gradient int) string {
 		return ""
 	}
 	return fmt.Sprintf(" (hurt, +%d%%)", gradient/10)
+}
+
+// reducedNote is what the healed unit's own statuses took off the number in
+// front of it, and says nothing at all when they took nothing.
+//
+// It is on the line for the reason pierceNote and gradientNote are, and it is the
+// least optional of the three: a heal of 244 off a skill the book prints as 900
+// leaves a reader with no figure on the screen or in the data that agrees with
+// it. The share rather than the amount lost, because the share is the property of
+// the statuses on the unit and the amount is a consequence of whatever was aimed
+// at it.
+func reducedNote(reduced int) string {
+	if reduced <= 0 {
+		return ""
+	}
+	return fmt.Sprintf(" (healing cut %d%%)", reduced/10)
 }
 
 func pierceNote(pierce int) string {

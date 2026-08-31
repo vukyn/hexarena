@@ -253,6 +253,28 @@ type Event struct {
 	// somebody reading leech_seed at 600 and a heal of 800 has nothing anywhere
 	// to explain the difference.
 	Drained int `json:"drained,omitempty"`
+	// Reduced is the share of the healing that was taken off before it landed, in
+	// parts per thousand, on Healed: what the receiving unit's own heal-cut
+	// statuses cost it.
+	//
+	// It is on the event for the reason Pierce, Refused and Drained are, and this
+	// one is the starkest of the four: without it a reader sees `heals 244` where
+	// the book says nine hundred, and every figure they could check it against —
+	// the skill's restores, the status's tick power, the drain share already on
+	// this event — says the log is wrong. A log its own reader cannot reproduce is
+	// the log lying.
+	//
+	// ⚠️ **A field of its own rather than a second meaning on Refused.** Refused
+	// is a share of a status application's *chance*, signed, where a negative
+	// means the target invited the status — two readings on one field is the
+	// mistake this file keeps a list of, and a heal cut netted into it would be a
+	// number about healing filed under a word about rolls.
+	//
+	// Positive means healing was lost. The share taken rather than the multiplier
+	// applied, so nought means nothing happened and omitempty drops it — which is
+	// why every log written before a heal-cut status existed is byte for byte what
+	// it was.
+	Reduced int `json:"reduced,omitempty"`
 	// AmplifiedChance and AmplifiedEffect are the shares the *actor's* traits
 	// added, in parts per thousand, on StatusApplied and StatusResisted: one to
 	// the chance the roll was made against, one to the tick frozen on the stack.

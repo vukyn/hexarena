@@ -62,7 +62,11 @@ func books(t *testing.T) battle.Books {
 	     "modifiers": [{"target": "defense", "mode": "percent", "amount": 200}]},
 	    {"id": "mending", "category": "regen", "max_stacks": 3, "duration": 3, "tick_power": 400},
 	    {"id": "crawl", "category": "stat_debuff", "max_stacks": 1, "duration": 3,
-	     "modifiers": [{"target": "speed", "mode": "percent", "amount": -400}]}
+	     "modifiers": [{"target": "speed", "mode": "percent", "amount": -400}]},
+	    {"id": "fester", "category": "heal_cut", "max_stacks": 2, "duration": 2,
+	     "heal_share": -400},
+	    {"id": "gangrene", "category": "heal_cut", "max_stacks": 3, "duration": 3,
+	     "heal_share": -600}
 	  ]
 	}`))
 	if err != nil {
@@ -146,6 +150,18 @@ func books(t *testing.T) battle.Books {
 	  {"id":"bloom","element":"grass","range":0,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
 	   "self_applies":[{"status":"mending","chance":1000,"stacks":2}]},
+	  {"id":"tonic","element":"neutral","range":0,"pattern":"single",
+	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
+	   "restores":900},
+	  {"id":"maul","element":"neutral","range":1,"pattern":"single",
+	   "power":100,"strikes":2,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "applies":[{"status":"fester","chance":1000}]},
+	  {"id":"gnaw","element":"neutral","range":1,"pattern":"single",
+	   "power":100,"strikes":2,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "applies":[{"status":"poison","chance":1000}]},
+	  {"id":"rot","element":"neutral","range":1,"pattern":"single",
+	   "power":10,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy",
+	   "applies":[{"status":"fester","chance":1000}]},
 	  {"id":"dew","element":"grass","range":0,"pattern":"single",
 	   "power":0,"strikes":0,"accuracy":1000,"cooldown":0,"target":"self",
 	   "self_applies":[{"status":"mending","chance":1000,"stacks":1}]},

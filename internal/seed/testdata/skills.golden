@@ -64,6 +64,7 @@ sludge_bomb     poison                 1      400        900              360
 ingrain         regrowth (self)        2     1000       1000                -
 ember           burn                   1      300        950              285
 flamethrower    burn                   1      500        900              450
+fire_fang       fester                 1      500        880              440
 fire_spin       burn                   1      700        860              602
 heat_wave       burn                   1      400        850              340
 smokescreen     blind                  1      800       1000              800
@@ -155,31 +156,32 @@ dragon_drive    expose   defence        102              342           444     7
 
 == cleanses and dispels ==
 skill           categories                    stacks
-rapid_spin      stat_debuff, dot                   1
+rapid_spin      stat_debuff, dot, heal_cut         1
 
 == timed effects ==
-status      category      stacks   turns   tick power   tick   over its life   modifiers
-poison      dot                 3       3          500    171            2052   -
-burn        dot                 2       2          800    274            1370   -
-weaken      stat_debuff         3       3            0      0               0   attack -30.0%
-expose      stat_debuff         2       2            0      0               0   defense -30.0%
-blind       stat_debuff         2       2            0      0               0   accuracy -40.0%
-mire        stat_debuff         2       2            0      0               0   speed -25.0%
-stun        control             1       1            0      0               0   -
-taunting    taunt               1       2            0      0               0   -
-fury        buff                3       3            0      0               0   attack +30.0%
-haste       buff                2       3            0      0               0   speed +30.0%
-focus       buff                2       3            0      0               0   accuracy +40.0%
-toughened   buff                1       0            0      0               0   defense +15.0%
-veil        buff                2       2            0      0               0   dodge +40.0%
-block       shield              3       2            0      0               0   -
-regrowth    regen               3       3          400    137            1644   -
-unleashed   buff                1       0            0      0               0   attack +30.0%
-bare        stat_debuff         1       0            0      0               0   defense -40.0%, dodge -40.0%
-kindled     buff                1       0            0      0               0   attack +15.0%
-fortified   buff                1       0            0      0               0   defense +25.0%
-quickened   buff                1       0            0      0               0   speed +8.0%
-encumber    stat_debuff         1       0            0      0               0   speed -10.0%
+status      category      stacks   turns   tick power   tick   over its life   heal cut   modifiers
+poison      dot                 3       3          500    171            2052          0   -
+burn        dot                 2       2          800    274            1370          0   -
+weaken      stat_debuff         3       3            0      0               0          0   attack -30.0%
+expose      stat_debuff         2       2            0      0               0          0   defense -30.0%
+blind       stat_debuff         2       2            0      0               0          0   accuracy -40.0%
+mire        stat_debuff         2       2            0      0               0          0   speed -25.0%
+stun        control             1       1            0      0               0          0   -
+taunting    taunt               1       2            0      0               0          0   -
+fury        buff                3       3            0      0               0          0   attack +30.0%
+haste       buff                2       3            0      0               0          0   speed +30.0%
+focus       buff                2       3            0      0               0          0   accuracy +40.0%
+toughened   buff                1       0            0      0               0          0   defense +15.0%
+veil        buff                2       2            0      0               0          0   dodge +40.0%
+block       shield              3       2            0      0               0          0   -
+regrowth    regen               3       3          400    137            1644          0   -
+unleashed   buff                1       0            0      0               0          0   attack +30.0%
+bare        stat_debuff         1       0            0      0               0          0   defense -40.0%, dodge -40.0%
+kindled     buff                1       0            0      0               0          0   attack +15.0%
+fortified   buff                1       0            0      0               0          0   defense +25.0%
+quickened   buff                1       0            0      0               0          0   speed +8.0%
+encumber    stat_debuff         1       0            0      0               0          0   speed -10.0%
+fester      heal_cut            2       2            0      0               0       -400   -
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim
