@@ -164,7 +164,7 @@
     },
     {
       "id": "elusive",
-      "name": "khó bắt",
+      "name": "huyền ảo",
       "flavour": "Chỗ vừa đứng đã trống, mà chỗ đòn rơi xuống thì lại chẳng có ai",
       "grants": [
         {
@@ -188,7 +188,7 @@
     },
     {
       "id": "spiteful",
-      "name": "hiểm",
+      "name": "hiểm ác",
       "flavour": "Không đánh mạnh, chỉ đánh đúng chỗ đau, mà chỗ đau thì nhớ rất lâu",
       "grants": [],
       "amplifies": [
@@ -225,7 +225,7 @@
     },
     {
       "id": "unyielding",
-      "name": "không nao",
+      "name": "bất khuất",
       "flavour": "Đã nhắm ai thì nhắm tới cùng, ai chen vào giữa cũng chỉ là chen vào giữa",
       "grants": [],
       "resists": [
