@@ -290,7 +290,14 @@
         "origins": [
           "pokemon"
         ]
-      }
+      },
+      "applies": [
+        {
+          "status": "fester",
+          "chance": 500,
+          "stacks": 1
+        }
+      ]
     },
     {
       "id": "fire_spin",
@@ -629,7 +636,8 @@
       "strips": {
         "categories": [
           "stat_debuff",
-          "dot"
+          "dot",
+          "heal_cut"
         ],
         "stacks": 1
       }

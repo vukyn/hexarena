@@ -34,6 +34,7 @@ import (
 	"sort"
 
 	"github.com/vukyn/hexarena/internal/core/modifier"
+	"github.com/vukyn/hexarena/internal/core/scale"
 )
 
 // Category groups statuses so a cleanse can name what it removes without
@@ -71,10 +72,32 @@ const (
 	// the declaration order, and slotting one in beside Control would move every
 	// table below it for no rule.
 	Taunt
+	// HealCut takes a share off the healing its holder *receives*, and is the
+	// answer to a unit that out-heals what can be put on it.
+	//
+	// Its own category rather than a StatDebuff carrying no modifier, and the
+	// reason is that the two descriptions would both be wrong. Lang's own
+	// describeStatusEffect is a switch on the category plus a loop over the
+	// modifier terms, and StatDebuff has no case at all — so a stat_debuff with
+	// no term would describe itself as *nothing*. Worse, the statuses reference
+	// prints a category as a predicate: stat_debuff reads "lowers a stat", which
+	// is a lie on screen for something that lowers no stat. That is the class of
+	// bug the taunt entry above paid for.
+	//
+	// It is HARMFUL — a heal-block is obviously something its holder wants gone,
+	// so a cleanse may strip it and a trait may resist it — and it does NOT
+	// outlast a shield: it is something done to a unit rather than something left
+	// on it, so read OutlastsAShield's own comment before reaching for it here.
+	//
+	// Declared last for the reason Taunt was, which is now the rule rather than
+	// one entry's note: appending cannot reinterpret a saved book or log, while
+	// slotting one in moves CategoryCount and every table built from declaration
+	// order, the grouped reference's print order included.
+	HealCut
 )
 
 // CategoryCount is the number of categories.
-const CategoryCount = int(Taunt) + 1
+const CategoryCount = int(HealCut) + 1
 
 var categoryNames = [CategoryCount]string{
 	Dot:        "dot",
@@ -84,6 +107,7 @@ var categoryNames = [CategoryCount]string{
 	Shield:     "shield",
 	Regen:      "regen",
 	Taunt:      "taunt",
+	HealCut:    "heal_cut",
 }
 
 func (c Category) String() string {
@@ -100,7 +124,7 @@ func (c Category) Valid() bool { return int(c) < CategoryCount }
 // It is what separates a cleanse from a dispel.
 func (c Category) Harmful() bool {
 	switch c {
-	case Dot, StatDebuff, Control, Taunt:
+	case Dot, StatDebuff, Control, Taunt, HealCut:
 		return true
 	default:
 		return false
@@ -122,8 +146,13 @@ func (c Category) Harmful() bool {
 // distinction is the whole justification for the rule and collapsing the two
 // deletes it.
 //
-// ⚠️ **It is one case on purpose, and letting StatDebuff through as well was
-// measured and rejected.** With mire unstoppable — 25% off speed a stack, two
+// ⚠️ **It is one case on purpose.** HealCut was refused entry on the reading
+// rather than on a measurement: cut healing is a share taken off a number some
+// *later* effect produces, so a strike that was stopped leaves nothing on the
+// target for it to have been about — the same sentence as a stat the blow never
+// bent. Letting StatDebuff through was measured and rejected outright.
+//
+// ⚠️ With mire unstoppable — 25% off speed a stack, two
 // stacks — pokemon.squirtle against itself stops resolving: 0 of 20 duels
 // finished inside spar's 4000-turn limit (Endless 40 of 40 across both
 // arrangements) against 20 of 20 finishing with a kill today, mire applications
@@ -183,6 +212,22 @@ type Kind struct {
 	// inflicted. What the skill contributes is the attack behind it, which is
 	// why two attackers stacking one poison produce stacks of different weight.
 	TickPower int
+	// HealShare is what one stack does to the healing its holder RECEIVES, in
+	// parts per thousand, and it is negative: -400 means a stack takes 40% off
+	// every heal aimed at the unit.
+	//
+	// Negative rather than a positive "reduction" figure so that the sign says
+	// which way the number points, the way every other share on this type and on
+	// modifier.Modifier does. It composes by addition per stack (Set.HealShare),
+	// and the engine floors the result at total negation, so no amount of
+	// stacking can turn a heal into damage.
+	//
+	// It belongs to the status rather than to the skill for the reason TickPower
+	// and Modifiers do: every skill inflicting one status should inflict the same
+	// thing. ParseBook requires it on a HealCut and refuses it on anything else,
+	// exactly as it does TickPower on the two ticking categories — a category
+	// whose one job is a number cannot ship without it.
+	HealShare int
 	// Modifiers are the stat terms one stack contributes while it lasts.
 	//
 	// They belong to the status rather than to the skill that applies it, so
@@ -392,6 +437,25 @@ func (s *Set) Modifiers() modifier.Set {
 		}
 	}
 	return out
+}
+
+// HealShare is what every active stack does to the healing this unit receives,
+// accumulated: parts per thousand, negative, and nought on a clean unit.
+//
+// Stacks contribute their share once each, mirroring Modifiers exactly — three
+// stacks of a heal-cut are three times the term — which is what makes stacking
+// it worth doing. Like Modifiers it accumulates and does not bound: the total is
+// a share of a healing amount rather than a stat, so the bound belongs where the
+// amount is (floored at total negation, so a heal can never become damage) and
+// not here, where a second bound would be a second answer.
+func (s *Set) HealShare() int {
+	total := 0
+	for i := range s.entries {
+		for range s.entries[i].stacks {
+			total += s.entries[i].kind.HealShare
+		}
+	}
+	return total
 }
 
 // TickAmount returns what the status currently deals per tick.
@@ -725,6 +789,7 @@ type bookFile struct {
 		Duration  int                 `json:"duration"`
 		Permanent bool                `json:"permanent,omitempty"`
 		TickPower int                 `json:"tick_power"`
+		HealShare int                 `json:"heal_share"`
 		Modifiers []modifier.Modifier `json:"modifiers"`
 	} `json:"kinds"`
 }
@@ -788,6 +853,22 @@ func ParseBook(raw []byte) (*Book, error) {
 			return nil, fmt.Errorf("status %q is %s but declares tick_power %d, which only a ticking status uses",
 				declared.ID, category, declared.TickPower)
 		}
+		// The heal-cut share is validated the way tick_power is, and for the same
+		// reason: HealCut's whole job is that one number, so a heal_cut without it
+		// would apply, show up in the log and change nothing anybody can see.
+		// Bounded on both sides — it must reduce, or the category name is a lie,
+		// and one stack may not promise more than total negation, which is a bound
+		// on the arithmetic rather than an authored ceiling.
+		switch {
+		case category == HealCut && declared.HealShare == 0:
+			return nil, fmt.Errorf("status %q cuts healing but has no heal_share", declared.ID)
+		case category == HealCut && (declared.HealShare > 0 || declared.HealShare < -scale.Base):
+			return nil, fmt.Errorf("status %q declares heal_share %d, want between %d and -1: it must lower the healing its holder receives",
+				declared.ID, declared.HealShare, -scale.Base)
+		case category != HealCut && declared.HealShare != 0:
+			return nil, fmt.Errorf("status %q is %s but declares heal_share %d, which only a %s uses",
+				declared.ID, category, declared.HealShare, HealCut)
+		}
 		if _, clash := book.byID[declared.ID]; clash {
 			return nil, fmt.Errorf("status %q is declared twice", declared.ID)
 		}
@@ -823,7 +904,8 @@ func ParseBook(raw []byte) (*Book, error) {
 			ID: declared.ID, Category: category,
 			MaxStacks: declared.MaxStacks, Duration: declared.Duration,
 			Permanent: declared.Permanent,
-			TickPower: declared.TickPower, Modifiers: declared.Modifiers,
+			TickPower: declared.TickPower, HealShare: declared.HealShare,
+			Modifiers: declared.Modifiers,
 		}
 		book.byID[kind.ID] = kind
 		book.kinds = append(book.kinds, kind)

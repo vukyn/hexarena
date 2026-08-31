@@ -247,6 +247,13 @@
           "amount": -100
         }
       ]
+    },
+    {
+      "id": "fester",
+      "category": "heal_cut",
+      "max_stacks": 2,
+      "duration": 2,
+      "heal_share": -400
     }
   ]
 }

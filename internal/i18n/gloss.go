@@ -103,6 +103,10 @@ var (
 		"quickened": "gia tốc",
 		"fortified": "kiên cố",
 		"encumber":  "nặng nề",
+		// A debuff, so a verb, like every other one here. It names the wound
+		// rather than the mechanism: what the holder has is a sore that will not
+		// close, and "less healing received" is the arithmetic under it.
+		"fester": "lở loét",
 	}
 
 	// The status categories were glossed here and are not any more. A gloss
@@ -110,7 +114,7 @@ var (
 	// shown exactly as the data writes it — but a status.Category is a Go enum,
 	// so the English half of a cleanse's sentence fell through to "stat_debuff"
 	// while Vietnamese read correctly. They are keys now, in both languages, at
-	// CategoryNounDot and its six neighbours; Lang.StatusCategoryNoun is the
+	// CategoryNounDot and its seven neighbours; Lang.StatusCategoryNoun is the
 	// lookup. ⚠️ Removing the table also stopped it answering for the **skill**
 	// `taunt`, whose id collides with the category's: nothing showed it, because
 	// that skill carries an authored name and SkillName prefers one, but a

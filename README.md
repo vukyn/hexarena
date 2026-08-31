@@ -347,6 +347,161 @@ maximises expected damage and a heal has none — the same gap recorded under *A
 deeper opponent*. And a unit that heals is durable beyond its stat line, so the
 joint health-and-defence budget becomes an understatement rather than a bound.
 
+### Cutting the healing: `fester`, and why a sustain build now has something to fear
+
+Five things in the game give health back — a skill's `restores`, a skill's
+`drains`, a `regen` status's tick, a trait's `drains`, and `comeback`'s
+`at_empty`, which is a restore — and nothing anywhere could reduce any of them.
+A build that out-healed what could be put on it simply won. `fester` is the
+answer: a **`heal_cut`** status that takes a share off every heal its holder
+**receives**, whatever gave it. Two stacks, two turns, **−400 per mille a stack**,
+so at its cap 80% of a heal is gone and 20% still lands.
+
+**One definition, and there are only two places it could go.** Five sources, but
+exactly two functions raise a unit's health — `Battle.heal`, which every
+`restores` and every regeneration tick comes through, and `Battle.drain`, which is
+separate only because its event carries `Drained`. `healingFor` is the single
+expression and both call it, so the cut reaches all five with nothing to keep in
+step.
+
+⚠️ **The reduction comes off BEFORE the amount is capped at the room left to
+full, and the other order makes the whole thing invisible.** Both callers cap the
+heal at `MaxHP - HP` afterwards. Cap first and the cut comes off a number that is
+already the room rather than the heal, so on a nearly-full unit it is taken out of
+health that was going to be discarded anyway — which is exactly the unit a sustain
+build spends its turns being. Three distinct figures separate the two orders on
+one nearly-full unit, and
+`TestTheCutComesOffBeforeTheHealIsCappedAtTheRoom` is the only test that can tell
+them apart.
+
+⚠️ **Floored at nought, and it is ONE floor.** `Set.HealShare` sums per stack and
+bounds nothing, so authored data reaches past total negation without trying —
+three stacks at −600 ask for −1800. The floor lives in `healingFor`, and the check
+in each caller is written `amount == 0` rather than `amount <= 0` on purpose: two
+floors for one invariant is a guard a mutation can delete for free, which is
+exactly what happened here. With `<= 0` in the callers, **deleting the floor
+reddened nothing at all** — the callers' own guard swallowed the negative and the
+observable behaviour was identical. That is the same shape as the `damage > 0`
+guard beside the reply drain, and it is written down for the same reason.
+
+**The log had to learn to say healing was cut.** A reader seeing `heals 244` off a
+skill the book prints as 900 has nothing on screen or in the data that agrees with
+it. `Event.Reduced` carries the share, on the `Healed`, and every one of the three
+lines that renders a heal names it:
+
+```
+A1  a1  heals 128 from regrowth <tái sinh> x2 (healing cut 80%)
+A1  a1  drains 244, 60% of what it dealt, 2144 hp left (healing cut 80%)
+```
+
+⚠️ **A field of its own, never a second meaning on `Refused`.** `Refused` is a
+share of a status application's *chance* and is already signed, with a negative
+meaning the target invited the status. Netting a heal cut into it would be a number
+about healing filed under a word about rolls.
+
+**Its own category, and that had consequences to cover.**
+`Lang.describeStatusEffect` is a switch on the category **plus** a loop over the
+modifier terms, and `StatDebuff` has no arm in the switch at all — so a
+`stat_debuff` carrying no modifier would describe itself as *nothing*. And the
+statuses reference prints a category as a **predicate**: `stat_debuff` reads
+*"lowers a stat"*, which is a lie on screen for a status that lowers no stat. That
+is the class of bug the taunt category paid for. So `heal_cut` is the eighth
+category, **appended last** (appending cannot reinterpret a saved book or log,
+while slotting one in moves `CategoryCount` and every table built from declaration
+order), it **is** `Harmful` — a cleanse may strip it and a trait may resist it —
+and it **does not** `OutlastsAShield`: cut healing is a share taken off a number
+some later effect produces, so a strike that was stopped left nothing on the
+target for it to be about. Both category families are worded in both languages
+(`CategoryHealCut` *cuts healing received* / *giảm máu hồi vào*,
+`CategoryNounHealCut` *healing reduction* / *hiệu ứng giảm máu hồi*): #161 exists
+because one of the two families was missing, and the English noun is held to the
+uncountable, article-free shape its seven neighbours have, so it reads under "1
+stack of" and "2 stacks of" alike.
+
+**Delivered by `fire_fang`**, at 500 per mille, one stack. Two reasons, and both
+are design lines rather than convenience. The fire kit already got `burn` through a
+shield, so making it the anti-sustain kit is a direction rather than a scatter. And
+`fire_fang` is **two strikes**, which makes the *one strike eaten, one through*
+branch of the shield rule reachable from shipped data for the first time — that
+branch was noted as latent because `shieldedCast` braces exactly once and "every
+skill measured here strikes once", so nothing in the repository had a cast whose two
+halves took different paths. It has a test now
+(`TestOneStrikeEatenAndOneThroughDeliversOnce`), tabled over both categories,
+because the interesting claim is that a `dot` and a `heal_cut` reach the same
+answer — applied **once** — by different routes.
+
+`brine` was the other candidate and was rejected: it is squirtle-only, and
+squirtle **is** the sustain build, so the anti-heal would only ever counter itself.
+
+#### What it is worth, with a control
+
+A sustain squad — a level 60 Squirtle screening a level 60 Bulbasaur with
+`wide_guard` / `withdraw` / `aqua_ring` — against a two-Charmander fire kit, both
+arrangements over the same seeds, 3000 seeds a row (6000 battles, band **±13‰**).
+The pairing was levelled to a live reading first: the fire side at level 44 reads
+494‰ against the sustain squad, where level 60 reads 19‰ and level 32 reads 1000‰,
+and a **saturated half has no room for the field to move** — the same refusal
+`weigh` applies to its own rows.
+
+| shielder's fourth slot | `fire_fang` rider | sustain | Δ |
+|---|---|---:|---:|
+| `skull_bash` (an attack, no cleanse) | off — **the control** | **500‰** | |
+| `skull_bash` | on | **468‰** | **−32‰** |
+| `rapid_spin` instead of `withdraw` | off | 401‰ | |
+| `rapid_spin` instead of `withdraw` | on | 366‰ | −35‰ |
+| `rapid_spin` instead of the attack | off | 3‰ (893 endless) | |
+| `rapid_spin` instead of the attack | on | 4‰ (942 endless) | |
+
+**The control moved, and it moved clear of the band.** −32‰ and −35‰ against ±13‰,
+same direction, same size on two different kits. The mechanism check is beside it:
+34,713 festers applied over 6000 battles, 23,789 heals cut, and the sustain squad's
+total healing fell **37,908,431 → 33,155,017**, a shade under 13%.
+
+#### `rapid_spin` is still not worth a slot, and the heal cut does not redeem it
+
+The question was real — a cleanse that answers a new status might finally pay for
+itself. It does not. Swapping `rapid_spin` in for `withdraw`, a utility-for-utility
+trade that keeps the weapon, the regeneration and the guard, costs **99‰ with the
+rider off and 102‰ with it on**: the gap the cleanse has to make up is unchanged
+(the 3‰ difference is inside the band). Swapping it in for the shielder's *only*
+attack is worse than that — 3‰, with 15% of battles hitting the 4000-turn limit,
+because the squad can no longer kill anything.
+
+⚠️ **And it is not that the cleanse is never cast.** It is cast 25,359 times over
+6000 battles and strips 14,770 stacks, which halves the heals that get cut
+(23,789 → 12,817). The cleanse works. It just costs more than it saves, which is
+the same answer as before the heal cut existed.
+
+#### The shipped roster cannot see any of this
+
+6260 festers landed over 20,000 shipped battles and **not one heal was cut**. Ally
+497‰ before, 499‰ after — inside the ±7‰ band — and neither `scenarios.golden` nor
+`replay.golden` moved, because both are drawn from the bench cast rather than from
+the roster.
+
+Censused over 2000 battles, the intersection is empty by construction: the only
+unit that ever heals is `foe.ivysaur` (965 heals, all of them `leech_seed`'s
+drain), and fester only ever lands on the **ally** side — `ally.wartortle` 587,
+`ally.venusaur` 20, `ally.charmander` 6 — because `foe.charmeleon` at 30 lands them
+on the ally screen while `ally.charmander` at level 8 never lands one at all. **0
+of 965 heals came from a unit that had ever held a fester.**
+
+That is the third time this repository has recorded the same finding: **a mechanism
+no shipped placement fields is a mechanism nothing measures.** The regeneration bug
+and the restore bug both came back with it. So the proof is a hand-played battle on
+the shipped books (`TestTheShippedHealCutCutsTheShippedRegeneration`, 640 → 128 with
+a control on the same seed) plus the squad measurement above, and **fielding a
+healer opposite a `fire_fang` carrier is a cast decision** rather than part of this.
+
+⚠️ **`price.go` did not change, so `Suggest` prices a heal cut at nothing.**
+`inflictedOn` has arms for `Dot`, `Control` and `StatDebuff` and falls through for
+everything else, which is *worth nothing means not rated* working — a `taunt` is in
+the same position. The consequence is a real under-price: the opponent never aims a
+`fester` at a healer on purpose, and it never discounts a heal it is about to have
+cut. Both errors run the direction every cap in that file errs in (a marginal cast,
+not a kill), and every figure above is therefore a **floor** on what the status is
+worth. Correcting it is a measured change of its own.
+
 ## Passives
 
 A skill is spent on a turn. A **passive** is not: it is in force from the moment

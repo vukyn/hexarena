@@ -354,7 +354,7 @@ func digitRuns(text string) []string {
 // cannot fit a row — so the only thing left to say about it is *which kind*. That
 // is read off status.Category.Harmful, the function that separates a cleanse from
 // a dispel, and it is a claim: "gỡ 3 hiệu ứng xấu" on a skill that strips a shield
-// is a description of a mechanic the skill does not have. Four of the seven
+// is a description of a mechanic the skill does not have. Five of the eight
 // categories are harmful and three are not, so the wrong answer is reachable
 // rather than theoretical.
 //
