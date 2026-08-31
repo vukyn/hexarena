@@ -582,25 +582,9 @@ func window(total, cursor, room int) (from, to int) {
 	return from, from + room
 }
 
-// clip shortens a line to a number of cells, keeping the front, which is where
-// the id and the element are.
-//
-// Shortened rather than wrapped, for the reason frame clips: a wrapped row
-// pushes every row under it down by one, which is how the footer leaves the
-// bottom of the screen.
-func clip(text string, room int) string {
-	if room < 1 {
-		return ""
-	}
-	if lipgloss.Width(text) <= room {
-		return text
-	}
-	letters := []rune(text)
-	for len(letters) > 0 && lipgloss.Width(string(letters)+ellipsis) > room {
-		letters = letters[:len(letters)-1]
-	}
-	return string(letters) + ellipsis
-}
+// clip moved to model.go, beside pad and labelAt: frame calls it on every line
+// of every screen now, so it is the package's cutting rule rather than this
+// screen's helper. Its comment there carries the argument.
 
 // idColumn is the column the ids sit in, measured from the ids being drawn.
 func (p *pickState) idColumn() int {

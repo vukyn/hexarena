@@ -436,6 +436,57 @@ draw this front-end at all; `hexforge` needs no room and does everything it does
 holds every line inside the floor, minus one column so a full-width line cannot
 wrap.
 
+**`frame` cuts every line to the window, and the cut says so.** It clips rather
+than wraps because a wrapped row pushes every row under it down by one, which is
+how the footer leaves the bottom of the screen — that part is settled and must
+not be reopened. What changed is that the cut **marks**: it used to be
+`lipgloss.MaxWidth`, which cuts safely and **silently**, so twenty-three of the
+twenty-four sites rendering `m.lang.Error(...)` lost the tail of a sentence with
+nothing saying they had, and a truncated explanation that does not say it is
+truncated is worse than one that does. It is the horizontal twin of `frame`'s own
+`Truncated` marker, which has said so since it was written.
+
+- **One cutting rule for the package: `clip`, in `model.go` beside `pad` and
+  `labelAt`.** It was the picker's private helper for one refusal row; `frame`
+  calls it on every line of every screen now, so it moved for the reason
+  `fieldValueRoom` lives there. `viewTooSmall` cuts through it too.
+- ⚠️ **It has to be escape-aware and marking at once, and neither of the two
+  tools it replaced could do both.** `MaxWidth` steps over an escape sequence and
+  cannot mark. `clip`'s old body appended the mark but sliced `[]rune`, which on
+  a styled line peels the terminating `\x1b[m` off the end one rune at a time —
+  measured, not argued: a bold red ten-cell line cut to nine came back
+  `"\x1b[1;31mabcdefgh…"`, right width, right letters, **no reset**, colour
+  bleeding down the rest of the screen. Every caller then passed unstyled text so
+  nothing showed it, and `frame`'s lines are styled, so wiring the old body into
+  `frame` would have shipped the bleed on the first cut header. It is
+  `ansi.Truncate` (`github.com/charmbracelet/x/ansi`, already a direct dependency)
+  now, which re-closes what the cut left open.
+- ⚠️ **The mark is added only when the line is genuinely longer than the room** —
+  a line that exactly fills the window comes back byte for byte unchanged. That is
+  the whole off-by-one risk of marking: an ellipsis on a line that fitted claims a
+  tail that was never there and spends a cell of content to claim it.
+  `TestALineThatExactlyFillsTheWindowIsNotMarked` crosses that boundary rather
+  than approaching it (the same header at `w` and at `w-1`) and is the **only**
+  test in the package that catches the mutation.
+- **A marked line is exactly as wide as the unmarked cut would have been**, so
+  `frame`'s row arithmetic is untouched — the mark is a cell *of* the window, not
+  one past it. Asserted against `MaxWidth` itself over every room from 1 up, so
+  what is held is that the widths did not move.
+- ⚠️ **What still reaches that cut is all text, and that was measured before
+  marking every line was chosen.** At the 120 floor, over every screen and state
+  `everyScreen` registers, in both languages: the header naming the library
+  directory (122 cells), the check screen's summary line, which also names it, and
+  the form's archetype row — a preset id and its whole kit — at **128 (vi) / 131
+  (en)**. At 160 and at 200, **nothing**. A path, a sentence, a list of ids.
+- ⚠️ **No drawing can reach it**, which is why a blanket mark is safe: `tui.Board`
+  is **19** cells wide against a floor of 120, `tui.Roster` likewise, and the
+  preview's art is `usableWidth() - 2` **by construction**. An ellipsis on the end
+  of a sentence says a tail was taken off; an ellipsis on the end of ten rows of
+  hex art says something nobody can act on. `frame` is handed a joined string and
+  cannot tell one from the other, so the claim is that the case never arises, and
+  `TestNoDrawingIsEverWideEnoughToBeMarked` is what says so the day a wider
+  drawing is added — widening the preview to the full window turns it red.
+
 ⚠️ **Every width figure quoted below against "79" or "of the 79 there are" was
 measured at the old floor and is kept as the reading it was**, not restated: they
 are records of why a wording was trimmed, and the trim is still in the catalog.

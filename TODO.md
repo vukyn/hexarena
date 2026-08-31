@@ -198,12 +198,6 @@ is only so the shape is readable.
       unweighable: a `cooldown` weighing on `poison_powder` refuses, because
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
-- [ ] **`frame` cuts every line silently.** `model.go`'s `MaxWidth(m.width)`
-      truncates without a mark, so twenty-three of the twenty-four sites that
-      render `m.lang.Error(...)` lose the tail of a sentence with nothing to say
-      they did. `clip` appends an ellipsis and the picker's refusal uses it,
-      which is why that one is honest. Not a width fix — it is every line of
-      every screen, and a data cell may not want the mark that a sentence does.
 
 ## Decided against — do not re-raise
 
