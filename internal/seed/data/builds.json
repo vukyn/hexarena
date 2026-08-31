@@ -93,7 +93,7 @@
     {
       "id": "poliwag.flurry",
       "character": "pokemon.poliwag",
-      "name": "dồn đòn",
+      "name": "liên hoàn",
       "intent": "Áp sát rồi nện liên tục, mỗi đòn lại rút về một chút sức cho mình",
       "skills": [
         "pummel",
@@ -108,7 +108,7 @@
     {
       "id": "poliwag.riptide",
       "character": "pokemon.poliwag",
-      "name": "vây nước",
+      "name": "nghịch lưu",
       "intent": "Đứng xa mà quăng nước, bùn dính tới đâu là bước chậm lại tới đó",
       "skills": [
         "bubble",
