@@ -116,11 +116,17 @@ func (b blurbScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 	if b.from == screenBrowse {
 		rows := len(m.browse.rows())
 		switch message.String() {
-		case "pgdown":
+		// [ and ] alias the page keys, here and at the other two sites that
+		// scroll, because a compact keyboard has neither PgUp nor PgDn and the
+		// trait sentences are exactly what a window this size cannot finish. It
+		// is safe to take a printable key here: this branch feeds no text field,
+		// which is what makes the alias free rather than a letter stolen from
+		// something being typed.
+		case "pgdown", "]":
 			b.scroll++
 			m.blurb = b
 			return m, nil
-		case "pgup":
+		case "pgup", "[":
 			b.scroll = max(b.scroll-1, 0)
 			m.blurb = b
 			return m, nil

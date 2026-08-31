@@ -135,34 +135,51 @@ func send(t *testing.T, m model, message tea.Msg) model {
 // say separately that ctrl+s is not the letter s.
 func key(t *testing.T, m model, name string) model {
 	t.Helper()
-	presses := map[string]tea.KeyPressMsg{
-		"down": {Code: tea.KeyDown}, "up": {Code: tea.KeyUp},
-		"left": {Code: tea.KeyLeft}, "right": {Code: tea.KeyRight},
-		"enter": {Code: tea.KeyEnter}, "esc": {Code: tea.KeyEscape},
-		"tab": {Code: tea.KeyTab},
-		// The pair that scrolls: the trait description, the picker's reading pane
-		// and the battle's log all walk with these.
-		"pgup":   {Code: tea.KeyPgUp},
-		"pgdown": {Code: tea.KeyPgDown},
-		"ctrl+s": {Code: 's', Mod: tea.ModCtrl},
-		"ctrl+x": {Code: 'x', Mod: tea.ModCtrl},
-		// Backspace, so a number field can be shortened rather than only typed
-		// into: the level fields all arrive with a value already in them.
-		"backspace": {Code: tea.KeyBackspace},
-		// The Command key, which only a terminal speaking the Kitty keyboard
-		// protocol ever reports. The whole point of being on v2 is that this
-		// keystroke can exist at all.
-		"super+s": {Code: 's', Mod: tea.ModSuper},
-		// Space is a named key here rather than a rune, because that is how a
-		// terminal delivers it: bubbletea turns a bare space into KeySpace,
-		// whose String is " ", which is what the screens match on.
-		"space": {Code: tea.KeySpace, Text: " "},
-	}
-	press, known := presses[name]
+	press, known := keyPresses[name]
 	if !known {
 		t.Fatalf("no key named %q in the test helper", name)
 	}
 	return send(t, m, press)
+}
+
+// keyPresses is what each name sends, hoisted out of key so a test can assert on
+// it rather than only press through it.
+//
+// ⚠️ That matters for exactly one entry pair. An alias test presses two keys and
+// demands they agree, so a helper that quietly sent the SAME key twice would pass
+// it while proving nothing — mapping "[" to a KeyPgUp is the vacuous version of
+// this whole table, and it is not detectable from the assertion. So the bracket
+// entries are read straight out of here by TestABracketIsTheKeystrokeItLooksLike,
+// which is what stops the helper and the claim drifting apart.
+var keyPresses = map[string]tea.KeyPressMsg{
+	"down": {Code: tea.KeyDown}, "up": {Code: tea.KeyUp},
+	"left": {Code: tea.KeyLeft}, "right": {Code: tea.KeyRight},
+	"enter": {Code: tea.KeyEnter}, "esc": {Code: tea.KeyEscape},
+	"tab": {Code: tea.KeyTab},
+	// The pair that scrolls: the trait description, the picker's reading pane
+	// and the battle's log all walk with these.
+	"pgup":   {Code: tea.KeyPgUp},
+	"pgdown": {Code: tea.KeyPgDown},
+	// The bracket aliases for that pair, for a keyboard with no page keys.
+	// Printable, so they carry Text as well as Code — which is what makes
+	// String() report the character rather than a name, the way a bare space
+	// does not (see TestABracketIsTheKeystrokeItLooksLike, which is the only
+	// thing standing between this helper and an alias that never fires).
+	"[":      {Code: '[', Text: "["},
+	"]":      {Code: ']', Text: "]"},
+	"ctrl+s": {Code: 's', Mod: tea.ModCtrl},
+	"ctrl+x": {Code: 'x', Mod: tea.ModCtrl},
+	// Backspace, so a number field can be shortened rather than only typed
+	// into: the level fields all arrive with a value already in them.
+	"backspace": {Code: tea.KeyBackspace},
+	// The Command key, which only a terminal speaking the Kitty keyboard
+	// protocol ever reports. The whole point of being on v2 is that this
+	// keystroke can exist at all.
+	"super+s": {Code: 's', Mod: tea.ModSuper},
+	// Space is a named key here rather than a rune, because that is how a
+	// terminal delivers it: bubbletea turns a bare space into KeySpace,
+	// whose String is " ", which is what the screens match on.
+	"space": {Code: tea.KeySpace, Text: " "},
 }
 
 // typeText sends one rune per message, which is what a keyboard does.
