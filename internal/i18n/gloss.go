@@ -140,6 +140,7 @@ var (
 		"summoner":   "người triệu hồi",
 		"bruiser":    "kẻ áp sát",
 		"slugger":    "kẻ giáng đòn",
+		"mender":     "người chữa lành",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its

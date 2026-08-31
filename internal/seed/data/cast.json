@@ -993,6 +993,174 @@
           "at_level": 44
         }
       ]
+    },
+    {
+      "id": "pokemon.cleffa",
+      "name": "Cleffa",
+      "origin": "pokemon",
+      "archetype": "mender",
+      "image": "assets/cleffa.svg",
+      "element": "light",
+      "species": [
+        "fae"
+      ],
+      "bio": "Rơi xuống cùng một đêm sao băng, và từ đó cứ tới đêm trăng tròn lại tụ về một chỗ mà nhảy múa. Cleffa hiếm khi ra tay trước — thứ nó giỏi là làm dịu đi, cho phe mình lẫn cho kẻ đứng đối diện.",
+      "stages": [
+        {
+          "name": "Cleffa",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 1032,
+              "max": 3000
+            },
+            "attack": {
+              "base": 103,
+              "max": 300
+            },
+            "defense": {
+              "base": 93,
+              "max": 270
+            },
+            "speed": {
+              "base": 29,
+              "max": 84
+            },
+            "accuracy": {
+              "base": 39,
+              "max": 112
+            },
+            "dodge": {
+              "base": 14,
+              "max": 40
+            }
+          }
+        },
+        {
+          "name": "Clefairy",
+          "min_level": 16,
+          "image": "assets/clefairy.svg",
+          "stats": {
+            "hp": {
+              "base": 1238,
+              "max": 3600
+            },
+            "attack": {
+              "base": 122,
+              "max": 355
+            },
+            "defense": {
+              "base": 112,
+              "max": 325
+            },
+            "speed": {
+              "base": 34,
+              "max": 100
+            },
+            "accuracy": {
+              "base": 46,
+              "max": 134
+            },
+            "dodge": {
+              "base": 17,
+              "max": 48
+            }
+          }
+        },
+        {
+          "name": "Clefable",
+          "min_level": 32,
+          "image": "assets/clefable.svg",
+          "stats": {
+            "hp": {
+              "base": 1445,
+              "max": 4200
+            },
+            "attack": {
+              "base": 145,
+              "max": 420
+            },
+            "defense": {
+              "base": 131,
+              "max": 380
+            },
+            "speed": {
+              "base": 40,
+              "max": 115
+            },
+            "accuracy": {
+              "base": 53,
+              "max": 155
+            },
+            "dodge": {
+              "base": 19,
+              "max": 55
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "moonblast"
+        },
+        {
+          "id": "charm"
+        },
+        {
+          "id": "moonlight",
+          "at_level": 8
+        },
+        {
+          "id": "solar_beam",
+          "at_level": 12
+        },
+        {
+          "id": "sing",
+          "at_level": 14
+        },
+        {
+          "id": "smokescreen",
+          "at_level": 16
+        },
+        {
+          "id": "wish",
+          "at_level": 20
+        },
+        {
+          "id": "rally",
+          "at_level": 24
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 28
+        },
+        {
+          "id": "taunt",
+          "at_level": 32
+        },
+        {
+          "id": "withdraw",
+          "at_level": 36
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 40
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        },
+        {
+          "id": "last_gasp",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }
