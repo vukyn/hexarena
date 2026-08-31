@@ -103,7 +103,7 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 	// it is the same function pointed at the caster.
 	total -= p.inflictedOn(actor, actor, from, declared.SelfApplies)
 
-	shape, _, err := p.fight.shapeAt(declared, aim)
+	shape, err := p.fight.books.Patterns.Lookup(declared.Pattern)
 	if err != nil {
 		return total
 	}
@@ -163,7 +163,7 @@ func (p *pricing) finished(actor *Unit, declared skill.Skill, aim hex.Offset) in
 	if declared.Power == 0 {
 		return 0
 	}
-	shape, _, err := p.fight.shapeAt(declared, aim)
+	shape, err := p.fight.books.Patterns.Lookup(declared.Pattern)
 	if err != nil {
 		return 0
 	}
@@ -218,7 +218,7 @@ func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset
 	if declared.Power == 0 {
 		return 0
 	}
-	shape, _, err := p.fight.shapeAt(declared, aim)
+	shape, err := p.fight.books.Patterns.Lookup(declared.Pattern)
 	if err != nil {
 		return 0
 	}
@@ -334,7 +334,7 @@ func (p *pricing) replied(actor *Unit, declared skill.Skill, aim hex.Offset) int
 	if declared.Power == 0 || declared.Target == skill.Self || p.fight.books.Passives == nil {
 		return 0
 	}
-	shape, _, err := p.fight.shapeAt(declared, aim)
+	shape, err := p.fight.books.Patterns.Lookup(declared.Pattern)
 	if err != nil {
 		return 0
 	}
@@ -893,16 +893,21 @@ func (p *pricing) charged(actor, target *Unit, kind status.Kind, stacks int) int
 // a turn the consumer's gain represents.
 //
 // The gain is the two things a consume can be paid in: the bonus power a
-// detonate adds, and the extra cells a spread reaches, each read straight off
-// the skill that would spend it. Turning that into a figure on the same scale as
-// every other term here is the share it is of the whole cast — gain over power
-// plus gain — times what that unit's turn is already worth. It is an estimate and
-// it is bounded by construction: a stack can never be worth a whole turn, however
-// large the bonus, which is the property that keeps a rating from preferring to
-// charge forever over ever cashing it in.
+// detonate adds, and the arc power a conduit discharges — each read straight off
+// the skill that would spend it, and each already the *net* figure, because a
+// conduit damps its own blow to pay for the discharge. Turning that into a figure
+// on the same scale as every other term here is the share it is of the whole
+// cast, times what that unit's turn is already worth. It is an estimate, and it
+// is bounded by construction: a stack can never be worth a whole turn however
+// large the payment, which is the property that keeps a rating from preferring to
+// charge for ever over ever cashing it in.
+//
+// ⚠️ **A conduit's gain is read per strike and multiplied by the expected count,
+// because that is what a stack actually buys.** One blow spends one charge, so a
+// skill that lands twice on average discharges twice — and reading the floor
+// would price a repeating conduit at half what it does.
 func (p *pricing) spendable(actor *Unit, id string) int64 {
 	best := int64(0)
-	splash := int64(p.fight.books.Patterns.SplashPower)
 	for _, mate := range p.fight.units {
 		if mate.Dead || mate.Side != actor.Side {
 			continue
@@ -917,8 +922,12 @@ func (p *pricing) spendable(actor *Unit, id string) int64 {
 				continue
 			}
 			gain := int64(declared.Requires.BonusPower)
-			if declared.Requires.SpreadsOn() {
-				gain += int64(declared.Power) * p.extraCells(declared) * splash / scale.Base
+			if declared.Requires.Arcs() {
+				// What one stack is worth net of what the skill gives up for it:
+				// the arc it fires, less the share of its own power it damps to
+				// fire it, over the strikes one cast is expected to land.
+				damped := int64(declared.Power - declared.Requires.DampedPower(declared.Power))
+				gain += int64(declared.Requires.ArcPower) - damped
 			}
 			if gain <= 0 {
 				continue
@@ -929,27 +938,6 @@ func (p *pricing) spendable(actor *Unit, id string) int64 {
 		}
 	}
 	return best
-}
-
-// extraCells is how many cells a spread reaches that the skill's own shape does
-// not, and nought when the widening is not a widening.
-//
-// A `spreads` naming a shape no larger than the declared one is legal and does
-// nothing — the pattern book has no opinion about which of its shapes is bigger —
-// so the subtraction is floored rather than trusted.
-func (p *pricing) extraCells(declared skill.Skill) int64 {
-	spread, err := p.fight.books.Patterns.Lookup(declared.Requires.Spreads)
-	if err != nil {
-		return 0
-	}
-	base, err := p.fight.books.Patterns.Lookup(declared.Pattern)
-	if err != nil {
-		return 0
-	}
-	if extra := spread.MaxTargets() - base.MaxTargets(); extra > 0 {
-		return int64(extra)
-	}
-	return 0
 }
 
 // standingLost is standing read as harm: what a debuff takes off its holder is

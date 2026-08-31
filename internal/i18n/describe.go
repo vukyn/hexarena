@@ -82,7 +82,16 @@ func (l Lang) describeOpening(declared skill.Skill) string {
 	}
 	stat := l.describeStat(declared.Scaling.Stat)
 	damage := l.Say(BlurbOnce, share(declared.Power), stat)
-	if declared.StrikeCount() > 1 {
+	switch {
+	case declared.Repeats():
+		// The floor, the odds and the ceiling, and deliberately not the mean. A
+		// reader deciding whether to bring this wants to know what it is *like* —
+		// one blow that sometimes keeps going — and "1.998 strikes" is a figure
+		// that describes no cast anybody will ever have. The mean is what the
+		// rating reads; this is what a person reads.
+		damage = l.Say(BlurbRepeats, share(declared.Power), stat,
+			share(declared.Repeat), declared.MaxStrikes)
+	case declared.StrikeCount() > 1:
 		damage = l.Say(BlurbStrikes, declared.StrikeCount(),
 			share(declared.Power), stat, share(declared.TotalPower()))
 	}
@@ -157,22 +166,6 @@ func cellsCovered(declared skill.Skill, shapes *pattern.Book) int {
 		return 1
 	}
 	shape, err := shapes.Lookup(declared.Pattern)
-	if err != nil {
-		return 1
-	}
-	return shape.MaxTargets()
-}
-
-// spreadCells is how many cells the widened shape covers, which is the figure a
-// reader needs to price the trade the clause is describing. It falls back to the
-// shape the skill already declares when the book is absent, exactly as
-// cellsCovered does, so a description written without one says something true
-// rather than nothing.
-func spreadCells(condition *skill.Condition, shapes *pattern.Book) int {
-	if shapes == nil {
-		return 1
-	}
-	shape, err := shapes.Lookup(condition.Spreads)
 	if err != nil {
 		return 1
 	}
@@ -381,27 +374,46 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 	// second time, identical — reads as a bonus a reader then hunts for, which is
 	// the same trap the Amplified event arm was taken off.
 	sentence := l.Say(shapeOpening(opening), l.join(clauses))
-	if condition.BonusPower > 0 {
+	switch {
+	case condition.BonusPower > 0:
 		amplified := declared.Power + condition.BonusPower
 		sentence = l.Say(opening, l.join(clauses),
 			share(amplified*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat))
+	case condition.Arcs():
+		// A conduit's own figure goes DOWN, so the sentence opens with the trade
+		// rather than with a total. Quoting the damped figure as though it were an
+		// amplification would be the description saying the opposite of what
+		// happens, and quoting the undamped one would be quoting a number the
+		// skill never lands for.
+		sentence = l.Say(dampedOpening(opening), l.join(clauses),
+			share(condition.DampedPower(declared.Power)*declared.StrikeCount()),
+			l.describeStat(declared.Scaling.Stat))
 	}
-	// The spread before the consume, because it is the reason for it. A reader
-	// told what was eaten and then, in a second clause, what that bought has to
-	// hold the first clause open; told what it buys and then what it costs, the
-	// sentence closes in the order the bargain is made.
-	if condition.SpreadsOn() {
-		sentence += l.Say(BlurbSpreads, spreadCells(condition, shapes))
+	// What the discharge does, then what it costs — the order the bargain is
+	// made in. A reader told what was eaten and only then what that bought has to
+	// hold the first clause open until the second arrives.
+	if condition.Arcs() {
+		sentence += l.Say(BlurbArcs, l.glossed(condition.Status), share(condition.ArcPower))
+		if condition.ChainsOn() {
+			sentence += l.Text(BlurbChains)
+		}
 	}
 	if condition.Consume {
 		// A partial consume names its count and a whole one does not. "Eats one
 		// stack of the charge" against a pile of nine and "eats the charge" are
 		// different bargains, and a description that spelled them the same would
 		// be describing the older one on both.
-		if condition.ConsumeStacks > 0 {
+		//
+		// A conduit says "a strike" as well, because that is the unit it spends
+		// in: one blow, one stack, so a skill that lands twice spends twice.
+		switch {
+		case condition.ConsumeStacks > 0 && condition.Arcs():
+			sentence += l.Say(BlurbConsumesEachStrike,
+				condition.ConsumeStacks, l.glossed(condition.Status))
+		case condition.ConsumeStacks > 0:
 			sentence += l.Say(BlurbConsumesStacks,
 				condition.ConsumeStacks, l.glossed(condition.Status))
-		} else {
+		default:
 			sentence += l.Say(BlurbConsumes, l.glossed(condition.Status))
 		}
 	}
@@ -661,6 +673,17 @@ func shapeOpening(opening Key) Key {
 		return BlurbSelfAmplifiedShape
 	}
 	return BlurbAmplifiedShape
+}
+
+// dampedOpening is the amplified opening with the figure read as a reduction.
+// Only the target's condition can arc, so there is no self-facing twin to pick
+// between — but the switch is written the same way as its neighbour so the two
+// cannot drift into disagreeing about which key belongs to which side.
+func dampedOpening(opening Key) Key {
+	if opening == BlurbSelfAmplified {
+		return BlurbSelfAmplifiedShape
+	}
+	return BlurbDamped
 }
 
 func shapeWording(wording Key) Key {

@@ -522,52 +522,98 @@ ceiling was granted on the understanding of.
 Spending it needed a second currency. A `requires` block could already consume a
 status, and the parser refused one that consumed *for no bonus power* — "throws
 the status away for nothing". That refusal was right about detonates and wrong in
-general, because a consume can now be paid in **shape**:
+general, because a consume can now be paid **out of the skill's own pocket**:
 
 ```json
 "requires": { "status": "charge", "min_stacks": 1,
-              "consume": true, "consume_stacks": 1, "spreads": "column" }
+              "consume": true, "consume_stacks": 1,
+              "chains": true, "damped": 400, "arc_power": 850 }
 ```
 
-`spreads` names the pattern the skill covers **when the condition holds against
-the unit standing at the aim** — the current jumps from whoever was carrying it.
-It is read once, from the aim, before the shape is walked: a shape cannot be
-chosen again halfway through covering itself, and asking the question of each
-splashed cell would let a spread reach further than the cell that paid for it. Its
-own event kind, `Spread`, because a reader watching a skill whose book entry says
-*single* land on three units has nothing anywhere else to account for it — and it
-is emphatically not an `Amplified`, which says a *figure* moved and this moves
-none.
+A skill declaring that is a **conduit**, and it behaves nothing like a detonate:
 
-`consume_stacks` is the other half. A detonate takes the whole pile because the
-pile **is** the payment; a counter spent one at a time is a magazine, and a
-magazine emptied by its first shot is a magazine of one.
+- **`damped`** cuts the skill's own blow while the condition holds. `electro_ball`
+  hits for 140% ordinarily and 84% into a charged target. That is what pays for
+  everything below, and it is why a conduit is not simply better when the charge
+  is there.
+- **`arc_power`** is what one consumed stack deals. It is **not the skill's damage
+  and does not behave like it**: not aimed, not rolled against accuracy or dodge,
+  and **not stopped by a shield**. A guard that swallows the blow does not stop
+  what was already sitting on the target — the one thing a conduit has over an
+  ordinary attack, and the reason the counter is worth laying down in front of a
+  wall.
+- **`consume_stacks` is per STRIKE.** One blow, one charge. A skill that lands
+  three times spends three, from every unit the current reaches.
+- **`chains`** is where it goes.
 
-**The ceiling is the same however the consume is paid, and it is derived rather
-than chosen.** A splash lands at `splash_power` and `max_targets` caps any shape
-at three cells, so the most a stack can ever buy is a plain attack plus two half
-ones — **doubling**. `TestSpendingACounterCapsAtDoublingHoweverItIsPaid` holds
-both ways to it:
+#### The chain steps on charged bodies and nothing else
 
-- **paid in shape** — the widened pattern is bounded by those two numbers already;
-- **paid in power** — the bonus may not exceed the base power, because a bonus
-  equal to the power *is* doubling, per strike and so in total.
+It replaced a fixed pattern, and the difference is the whole idea. A pattern is
+geometry: it covers the same three cells whoever is standing in them, so a charged
+unit one cell outside was never reached and an uncharged unit inside was hit
+anyway. A chain goes exactly where the charge is — from the unit at the aim, to
+every hex-adjacent unit also carrying, and on from those — and **a gap of one
+uncharged cell stops it dead**.
 
-That second one is what lets a counter be spent on a **single target**. A
-multi-strike skill spends the same stack for the same doubling and lands it all
-in one place instead of three — a choice between two shapes of the same money,
-rather than a stronger option and a weaker one. `spark` is that skill: three
-strikes of 34% that become 204% in all while the target is charged, at range 1,
-against `electro_ball`'s single blow that becomes three cells at range 2.
+Measured, with enemies at `3,0 3,1 3,2 4,0 4,1` and `electro_ball` aimed at `3,1`:
 
-⚠️ **A counter cannot be priced by the detonate rule at all**, and that is not a
-gap. `TestADetonateIsWorthLessThanItsBreakEven` rests entirely on what leaving the
-status alone would have been worth — remaining ticks, or the extra damage a debuff
-lets through — and a counter is worth *neither*, because it does nothing to its
-holder. "What consuming it gives up" is a question with no answer there, so the
-rule would be bounding a burst by nothing. The two tests meet anyway: a detonate
-may not beat its alternative twice over, and neither may a counter double itself
-more than once.
+| charged | hops | what happened |
+|---|---|---|
+| `3,0 3,1 3,2` | 2 | all three ate a stack and took the arc; only `3,1` took the blow |
+| `3,1 3,2` | 1 | `3,0` untouched — the current never steps on an empty cell |
+| `3,0 3,2`, aim clean | 0 | nothing consumed anywhere, and the blow lands **undamped** |
+| `3,1 4,0` | 0 | `4,0` untouched: it is **two cells** from `3,1`, not adjacent |
+| `3,1 3,0 4,0` | 2 | the current walked `3,1 → 3,0 → 4,0`, because `3,0` was there to step on |
+
+The aim gates all of it. A conduit pointed at a clean target consumes nothing,
+arcs nothing and is simply its own **undamped** self — the third row above, and
+the reason `damped` is not a penalty for missing the condition.
+
+#### The shield stops it going on, not going off
+
+`charge` does not `OutlastsAShield`, so a blow that was eaten leaves no stack
+behind: a guard denies the *charging*. Once a stack is on, a guard is no defence
+against it at all. Blocked, aimed at `3,1`, with `3,0` and `3,1` charged:
+
+```
+blocked=1   3,0[skill 0  arc 315  ate 1]   3,1[skill 0  arc 315  ate 1]
+```
+
+Zero skill damage, the full arc on both, both stacks spent, and the chain still
+hopped. A **miss** is a different question and delivers nothing — a blocked blow
+arrived and was stopped, a missed one never touched anybody, which is the sentence
+`OutlastsAShield` is already written on.
+
+#### What bounds a conduit
+
+`TestADetonateIsWorthLessThanItsBreakEven` cannot price one, and that is not a
+gap. Its whole arithmetic is what leaving the status alone would have been worth —
+remaining ticks, or the extra damage a debuff lets through — and a counter is
+worth *neither*, because it does nothing to its holder. "What consuming it gives
+up" is a question with no answer there, so the rule would be bounding a burst by
+nothing.
+
+`TestAConduitPaysForWhatItDischarges` bounds it by the trade instead: the arc must
+beat the power the skill damps to fire it, and not beat it **twice over** — which
+is the same ceiling the detonate rule stops at, read from the other side.
+
+The counter has one answer in the shipped book besides the shield: `rinse` strips
+it, which is what its own flavour already said — *anything on you washes off*.
+
+#### A strike count that is rolled
+
+`spark` lands once and then keeps going: `repeat_chance` 500, `max_strikes` 10 —
+one blow, then a coin for another, and again. It averages 1.994 strikes and
+occasionally does a great deal more, and since a conduit spends a stack per strike,
+a long roll empties the chain as fast as it burns through it.
+
+⚠️ **Neither end of that range is usable, which is the point of
+`ExpectedStrikes`.** The floor prices a repeating skill as though the tail never
+happened and a rating reading it never picks one; the ceiling prices every cast as
+the best cast anybody ever had and a rating reading that picks nothing else. The
+mean is what everything outside the roll reads — and the *description* quotes the
+floor, the odds and the cap instead, because "1.994 strikes" describes no cast
+anybody will ever have.
 
 #### ⚠️ A pile is worth far less than a stack times its height
 
@@ -599,17 +645,13 @@ that have to be true at once — the damage arrives **differently**, and it arri
 
 | kit | rate | blows | each |
 |---|---|---|---|
-| accumulating (`charge_beam magnetise electro_ball spark`) | 356‰ | 6455 | 184 |
+| accumulating (`charge_beam magnetise electro_ball spark`) | 343‰ | 7693 | 150 |
 | bursting (`zap_cannon thunderbolt flash_cannon discharge`) | 366‰ | 3114 | 366 |
 
-**Twice the blows at half the size**, at a rate that trades. The floor held is
-three fifths rather than parity, because the figure moves with every character in
-the squad around it and a tighter band would be a reading rather than a claim.
-
-The counter has one answer in the shipped book: `rinse` strips it, which is what
-its own flavour already said — *anything on you washes off*. A shield is the
-other, and a quieter one: `charge` does **not** `OutlastsAShield`, so a blow that
-was eaten leaves no stack behind.
+**Two and a half times the blows at two fifths the size**, at a rate that trades.
+The floor held is three fifths rather than parity, because the figure moves with
+every character in the squad around it and a tighter band would be a reading
+rather than a claim.
 
 ## Passives
 

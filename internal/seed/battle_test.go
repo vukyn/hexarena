@@ -542,19 +542,20 @@ func aHandPlayedSummon(t *testing.T) []battle.Event {
 // the wrong fixture. Widening the sweep until the two turns happened to fall in
 // that order would be a test passing for a reason nobody could name.
 //
-// The two victims stand one above the other, because a column that catches
-// nobody is a spread nobody can see: the shape widens either way, and this is
-// what makes it visible.
+// The two victims stand hex-adjacent in the enemy front rank, because a chain
+// with nobody to step to is a chain nobody can see: the current only travels
+// between carriers standing next to each other, so both have to be charged and
+// both have to be neighbours before there is anything to log.
 func aHandPlayedSpread(t *testing.T) []battle.Event {
 	t.Helper()
 	fight, err := battle.New(benchBooks(t), 7, []battle.Roster{
 		{ID: "dynamo", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: mustAffinity(t, "electric"), Stats: benchStats(3000, 700, 300, 200),
 			Skills: []string{"electrify", "arc"}},
-		{ID: "front", Side: hex.SideEnemy, Slot: hex.Offset{Col: 0, Row: 0},
+		{ID: "front", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 2},
 			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 10),
 			Skills: []string{"strike"}},
-		{ID: "behind", Side: hex.SideEnemy, Slot: hex.Offset{Col: 0, Row: 1},
+		{ID: "behind", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 10),
 			Skills: []string{"strike"}},
 	})
@@ -563,7 +564,12 @@ func aHandPlayedSpread(t *testing.T) []battle.Event {
 	}
 	fight.Begin()
 	var events []battle.Event
-	charged, spread := false, false
+	// Both of them, and in this order: the current only travels between carriers
+	// standing next to each other, so charging one and cashing it would log a
+	// discharge and never a chain. The first two turns lay the run down and the
+	// third walks it.
+	charge := []string{"front", "behind"}
+	charged, spread := 0, false
 	for turn := 0; turn < 200 && !spread; turn++ {
 		prompt, err := fight.Advance()
 		if err != nil {
@@ -574,10 +580,11 @@ func aHandPlayedSpread(t *testing.T) []battle.Event {
 		}
 		if !prompt.Skipped {
 			switch {
-			case prompt.Unit == "dynamo" && !charged:
-				if err := fight.Act("electrify", unitCell(t, fight, "front")); err != nil {
+			case prompt.Unit == "dynamo" && charged < len(charge):
+				if err := fight.Act("electrify", unitCell(t, fight, charge[charged])); err != nil {
 					t.Fatalf("electrify: %v", err)
 				}
+				charged++
 			case prompt.Unit == "dynamo":
 				if err := fight.Act("arc", unitCell(t, fight, "front")); err != nil {
 					t.Fatalf("arc: %v", err)
@@ -594,19 +601,14 @@ func aHandPlayedSpread(t *testing.T) []battle.Event {
 		}
 		for _, event := range fight.Drain() {
 			events = append(events, event)
-			switch event.Kind {
-			case battle.StatusApplied:
-				if event.Status == "charge" {
-					charged = true
-				}
-			case battle.Spread:
+			if event.Kind == battle.Spread {
 				spread = true
 			}
 		}
 	}
-	if !charged || !spread {
-		t.Fatalf("the hand-played spread logged charged=%v spread=%v; both were wanted",
-			charged, spread)
+	if charged < len(charge) || !spread {
+		t.Fatalf("the hand-played chain charged %d of %d and spread=%v; both were wanted",
+			charged, len(charge), spread)
 	}
 	return events
 }
