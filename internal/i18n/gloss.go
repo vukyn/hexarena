@@ -107,6 +107,10 @@ var (
 		// rather than the mechanism: what the holder has is a sore that will not
 		// close, and "less healing received" is the arithmetic under it.
 		"fester": "lở loét",
+		// A buff, so a noun. It is not haste ("nhanh nhẹn") and not veil
+		// ("mờ ảo"): those two are speed and a timed blur, and this is the
+		// standing quality of being hard to land a blow on.
+		"evasive": "khinh công",
 	}
 
 	// The status categories were glossed here and are not any more. A gloss

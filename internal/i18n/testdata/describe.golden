@@ -380,6 +380,34 @@ Luôn mang kiên cố.
 Luôn mang nặng nề.
 Ai đánh trúng thì bị phản lại 5% thủ của người bị đánh.
 
+[trait] composure
+Đứng giữa ồn ào mà đầu vẫn tỉnh, ai gào thét cỡ nào cũng chẳng lay được.
+Giảm 50% khả năng dính choáng.
+Giảm 50% khả năng dính bị khiêu khích.
+
+[trait] elusive
+Chỗ vừa đứng đã trống, mà chỗ đòn rơi xuống thì lại chẳng có ai.
+Luôn mang khinh công.
+
+[trait] contagion
+Chạm vào đâu là thứ gì đó ở lại đó, ngấm dần cho tới khi đòn đánh nhẹ bẫng đi.
+Đòn đánh gây thêm suy yếu, 25% khả năng.
+
+[trait] spiteful
+Không đánh mạnh, chỉ đánh đúng chỗ đau, mà chỗ đau thì nhớ rất lâu.
+Khả năng gây choáng tăng 30%.
+Khả năng gây sa lầy tăng 30%.
+
+[trait] berserk
+Càng đánh càng quên mất phải giữ mình, nên thứ gì bám vào cũng bám được lâu.
+Luôn mang bộc phát.
+Tăng 30% khả năng dính choáng.
+Tăng 30% khả năng dính sa lầy.
+
+[trait] unyielding
+Đã nhắm ai thì nhắm tới cùng, ai chen vào giữa cũng chỉ là chen vào giữa.
+Miễn nhiễm bị khiêu khích.
+
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
 Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -461,6 +489,10 @@ Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] quickened
 Tăng tốc 8%.
+Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
+
+[status] evasive
+Tăng né 15%.
 Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] block
@@ -885,6 +917,28 @@ Always carries fortified.
 Always carries encumber.
 Whatever damages it takes 5% of the struck unit's defence back.
 
+[trait] composure
+Refuses 50% of any stun aimed at it.
+Refuses 50% of any taunting aimed at it.
+
+[trait] elusive
+Always carries evasive.
+
+[trait] contagion
+Its attacks also inflict weaken, 25% of the time.
+
+[trait] spiteful
+The chance of inflicting stun is 30% higher.
+The chance of inflicting mire is 30% higher.
+
+[trait] berserk
+Always carries unleashed.
+Takes 30% more of any stun aimed at it.
+Takes 30% more of any mire aimed at it.
+
+[trait] unyielding
+Refuses taunting outright.
+
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.
 Over its 3 turns, one stack is 150%, and 450% at its cap.
@@ -966,6 +1020,10 @@ Raises a stat · always in force · 1 stack.
 
 [status] quickened
 Raises speed by 8%.
+Raises a stat · always in force · 1 stack.
+
+[status] evasive
+Raises dodge by 15%.
 Raises a stat · always in force · 1 stack.
 
 [status] block

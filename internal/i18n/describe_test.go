@@ -771,14 +771,29 @@ func TestATraitsSharesAreRoundedAndNotTruncated(t *testing.T) {
 		for _, lang := range i18n.Langs() {
 			description := lang.DescribePassive(held)
 			for _, permille := range shares {
-				rounded := fmt.Sprintf("%d%%", (permille+5)/10)
+				// The magnitude, because a share's SIGN is carried by the verb
+				// rather than by the figure: a resistance of -300 prints as
+				// "Tăng 30% khả năng dính choáng" / "Takes 30% more". Rounding
+				// the signed value gives -29% — Go truncates a negative
+				// quotient towards zero — which is a figure no description has
+				// ever printed.
+				//
+				// ⚠️ This went unnoticed until 2026-08-31 because vulnerability
+				// is the one half of `resists` with no shipped user, so `shares`
+				// had never held a negative. The first trait to declare one made
+				// every language fail here at once.
+				magnitude := permille
+				if magnitude < 0 {
+					magnitude = -magnitude
+				}
+				rounded := fmt.Sprintf("%d%%", (magnitude+5)/10)
 				if !strings.Contains(description, rounded) {
 					t.Errorf("%s: %q declares %d parts per thousand and its description never says %q:\n%s",
 						lang, held.ID, permille, rounded, description)
 				}
 				// And never the truncation this replaced, which is a different
 				// number whenever the tenth is five or more.
-				if truncated := fmt.Sprintf("%d%%", permille/10); truncated != rounded &&
+				if truncated := fmt.Sprintf("%d%%", magnitude/10); truncated != rounded &&
 					strings.Contains(description, truncated) {
 					t.Errorf("%s: %q declares %d parts per thousand and its description says %q, the truncation:\n%s",
 						lang, held.ID, permille, truncated, description)

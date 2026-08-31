@@ -165,6 +165,10 @@
         {
           "id": "last_gasp",
           "at_level": 40
+        },
+        {
+          "id": "contagion",
+          "at_level": 28
         }
       ]
     },
@@ -819,6 +823,10 @@
         {
           "id": "blood_thirst",
           "at_level": 44
+        },
+        {
+          "id": "spiteful",
+          "at_level": 36
         }
       ]
     },
@@ -983,6 +991,14 @@
         {
           "id": "reckless",
           "at_level": 44
+        },
+        {
+          "id": "unyielding",
+          "at_level": 24
+        },
+        {
+          "id": "berserk",
+          "at_level": 40
         }
       ]
     },
@@ -1151,6 +1167,14 @@
         {
           "id": "last_gasp",
           "at_level": 44
+        },
+        {
+          "id": "composure",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 40
         }
       ]
     }
