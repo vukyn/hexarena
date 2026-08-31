@@ -843,6 +843,59 @@ answers rather than screen logic:
   intersect `skills.json` **not at all**. The table is now reached only by
   `internal/testfixture`, which is exactly why a test built on a fixture skill
   measures the wrong path — see § *The event log is the contract*.
+- The skill listing **filters by name**, typed, live, on `/`
+  (`cmd/hexforge-tui/skills.go`). Forty-three skills is a screen and a half at
+  the declared floor, and the only way to a row was the arrow keys.
+  - **It is a mode, and that follows from the keyboard rather than from taste.**
+    Every letter this screen has is already a command — `q`, `a`, `e`, `k`, `j`,
+    `?` — so a field sharing the keyboard with them could take no query at all.
+    While the field has it, only `esc` (clear and close), `enter` (keep and hand
+    the rows back), `backspace` and the two **arrows** are keys; the vim pair is
+    text like every other letter, which is why the arrows are the arrows here.
+  - **A row matches on its id or on its Vietnamese name, case- and
+    diacritic-insensitively** — typing `diep` finds `phi diệp` — through
+    `i18n.Fold` / `i18n.Matches` / `i18n.MatchesSkill`. That is the point of the
+    feature rather than a refinement of it: on a terminal with no Vietnamese
+    input method the name half is otherwise unreachable, so the filter would be
+    an id filter with a misleading name.
+    ⚠️ **The fold is an explicit table and `golang.org/x/text` stays indirect.**
+    NFD-plus-strip-`Mn` needs a hand-written entry anyway, because **`đ` is not a
+    `d` with a mark on it**. And unlike every gloss table here, this one has to be
+    **complete**: a missing letter does not fall back to an id, it silently stops
+    matching. `TestEveryLetterAShippedNameUsesCanBeFolded` walks the shipped books
+    and both catalogs, so a name authored later in a letter the table lacks is a
+    red test rather than a row nobody can reach.
+    ⚠️ **The match reads the *data* and asks nothing about the language in
+    front**, even though the English listing draws no name column: `ctrl+l` works
+    from every screen and keeps everything typed, so a query that found different
+    rows after it would be the screen mutating behind the author. The stated cost
+    is that an English reader can be handed a row whose id does not hold what
+    they typed.
+  - ⚠️ **`s.cursor` indexes the FILTERED view**, so every read of it goes through
+    `skillsScreen.rows` / `selected` — the funnel `pickState.visible` already is.
+    `e`, `?`, the damage row under the listing and the description screen's own
+    `↑/↓` all used to index `s.skills` with it, and **the two lists are identical
+    while nothing is typed**, so a wrong read would have gone on passing the whole
+    suite while an author edited the wrong skill.
+    `TestEveryKeyThatReadsARowReadsTheFilteredOne` filters to a query whose first
+    match is the *seventeenth* skill declared and asserts the fixture is that
+    discriminating before it asserts anything else.
+  - `a` is deliberately **not** guarded on there being a row: it indexes nothing,
+    and a filter that found nothing is exactly when an author wants to write the
+    skill they were looking for. `e` and `?` decline.
+  - **The filter row costs a listing row, paid unconditionally**: `skillsRoom`
+    reserves **ten** now rather than nine. That is the same rule the other two
+    conditional lines there follow — reserve for the busiest state — and it buys
+    something visible: pressing `/` narrows the list without also shifting every
+    row under it up by one. The footer had to be trimmed to name the key and no
+    key was given up; the words after `↑/↓`, `esc` and `q` are dropped, which is
+    `BrowseFooter`'s own squeeze. Measured (vi / en): the listing footer **77 / 78
+    → 65 / 74**, and the filter footer **63 / 70**.
+  - The three states are registered in `everyScreen` (`filtering skills`,
+    `filtered skills`, `skills filtered to none`) and are **driven with the keys
+    an author would press**. A state added without an entry there has no width
+    test, no translation test and no leak test, which is a mistake this
+    repository has now made four times.
 
 **`hexforge new` must work with nobody watching.** A preset-supplied value is
 not missing, so an unattended run takes every default and errors only on a field

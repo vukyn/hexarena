@@ -77,6 +77,30 @@ type skillsScreen struct {
 	skills []skill.Skill
 	cursor int
 
+	// query is the typed filter, and filtering is whether the field under the
+	// heading has the keyboard.
+	//
+	// ⚠️ **The two are carried side by side rather than one derived from the
+	// other**, and that is the decision the whole mode rests on: enter closes
+	// the field and *keeps* the query, so a narrowed listing with the keyboard
+	// back on the rows is an ordinary state and the one the feature exists for.
+	// Reading focus off "the query is not empty" would make that state
+	// unreachable and would also make a filter impossible to open before
+	// anything has been typed into it — the same shape as playScreen carrying
+	// logFollow beside logOffset instead of encoding "follow" as a sentinel
+	// offset, and as a queue reading having to declare absence rather than
+	// detect it.
+	//
+	// query is a plain string and not a bubbles textinput, which every other
+	// typed field in this package is. The reason is the keys: the arrows belong
+	// to the *listing* while this field has focus — letters are text, so k and j
+	// cannot walk the rows and the arrows are all that is left — so a text field
+	// here would draw a caret that none of its own keys could move. What is
+	// left of a text field once its arrows are gone is a string with a
+	// backspace, which is what this is.
+	query     string
+	filtering bool
+
 	// adding is whether the form is in front of the listing to author a new
 	// skill, and editing is the id it is in front to change. They are two fields
 	// rather than one because one form serves both jobs and the difference
@@ -128,11 +152,73 @@ func newSkillsScreen(lib *forge.Library) skillsScreen {
 
 func (s skillsScreen) refresh(lib *forge.Library) skillsScreen {
 	s.skills = lib.Skills().Skills()
-	s.cursor = clamp(s.cursor, 0, len(s.skills)-1)
+	// Against the rows the filter leaves and not against the book, for the reason
+	// every other read of this cursor goes through rows(): a write can shorten
+	// what a standing query finds, and a cursor clamped against the book would
+	// point past the end of the listing that is actually drawn.
+	//
+	// The query itself survives a refresh. A save re-reads the book through here,
+	// and an author who narrowed the listing to find a skill, edited it and came
+	// back is looking at the same question — clearing the filter under them would
+	// make every write also a navigation.
+	s.cursor = clamp(s.cursor, 0, len(s.rows())-1)
 	if s.inputs == nil {
 		s = s.resetForm(lib)
 	}
 	return s
+}
+
+// filterLimit is how many letters the typed filter takes.
+//
+// A bound rather than a free-running field, and it is what keeps the filter row
+// inside the window by construction: the wording around the query is thirty-one
+// cells at its longest, so a query this long cannot reach the seventy-nine the
+// floor leaves. Nothing an author would type comes near it — the longest shipped
+// skill name is well under half of it — so the limit is a guard rather than a
+// constraint, and the row clips as well, because a guard nothing measures is a
+// guard that has already stopped working.
+const filterLimit = 32
+
+// rows is the skills the filter in force leaves on screen, and it is the ONE
+// place the listing's cursor may be indexed against.
+//
+// ⚠️ **Every read goes through here or through selected below.** The cursor
+// counts the *visible* rows, so a read that reached into s.skills with it would
+// silently act on a different skill than the one under the marker — and the two
+// agree exactly while nothing is typed, which is every existing test. That is
+// the same funnel pickState.visible is for, and the reason it is one function
+// rather than a filter written out at each site.
+//
+// Matching is i18n.MatchesSkill, which reads the skill's **id and its authored
+// Vietnamese name** and asks nothing about the language in front. See that
+// function for why: a query that found different rows after ctrl+l would be the
+// screen mutating behind the author.
+func (s skillsScreen) rows() []skill.Skill {
+	if strings.TrimSpace(s.query) == "" {
+		return s.skills
+	}
+	out := make([]skill.Skill, 0, len(s.skills))
+	for _, current := range s.skills {
+		if i18n.MatchesSkill(s.query, current) {
+			out = append(out, current)
+		}
+	}
+	return out
+}
+
+// selected is the skill under the cursor, and false when the filter has left
+// nothing to point at.
+//
+// The second return is what the three keys that read a row ask, rather than each
+// of them measuring the list itself: a query matching nothing is an ordinary
+// state that arrives one keystroke at a time, so e and ? have to decline rather
+// than index an empty slice.
+func (s skillsScreen) selected() (skill.Skill, bool) {
+	rows := s.rows()
+	if len(rows) == 0 {
+		return skill.Skill{}, false
+	}
+	return rows[clamp(s.cursor, 0, len(rows)-1)], true
 }
 
 func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
@@ -299,9 +385,21 @@ func skillListField(field int) bool {
 // rather than a form, so no field has the keyboard, and its only other letters
 // are q, k, j and a. It sits beside a for the reason those two belong together —
 // adding a skill and changing one are the same form reached two ways.
+//
+// The filter is a **mode** and not another letter, and that follows from the
+// line above rather than from taste: every letter this screen has is already a
+// command, so a field sharing the keyboard with them could take no query at all.
+// / is the key because it is the one this client had not spent anywhere, and
+// because it is what a reader of any other full-screen program will already try.
 func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	if s.formInFront() {
 		return s.updateForm(m, message)
+	}
+	// Answered ahead of the listing's own keys, and while it is open the listing
+	// has only the two arrows: q, a, e, k, j and ? are letters and belong in the
+	// query.
+	if s.filtering {
+		return s.updateFilter(m, message)
 	}
 	switch message.String() {
 	case "q":
@@ -309,30 +407,87 @@ func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 	case "esc":
 		m.screen = screenMenu
 		return m, nil
+	case "/":
+		// Whatever was typed before is still there: enter closes the field
+		// without throwing the query away, so reopening it has to pick that
+		// query back up or the two keys would disagree about what enter did.
+		s.filtering = true
 	case "up", "k":
-		s.cursor = clamp(s.cursor-1, 0, len(s.skills)-1)
+		s.cursor = clamp(s.cursor-1, 0, len(s.rows())-1)
 	case "down", "j":
-		s.cursor = clamp(s.cursor+1, 0, len(s.skills)-1)
+		s.cursor = clamp(s.cursor+1, 0, len(s.rows())-1)
 	case "a":
+		// Deliberately not guarded on there being a row: adding is the one key
+		// here that indexes nothing, and a filter that has found nothing is
+		// exactly the moment an author wants to write the skill they were
+		// looking for.
 		s = s.resetForm(m.lib)
 		s.adding = true
 		s.added, s.edited = nil, nil
 	case "e":
-		if len(s.skills) > 0 {
-			s = s.prefill(m.lib, s.skills[clamp(s.cursor, 0, len(s.skills)-1)])
+		if selected, held := s.selected(); held {
+			s = s.prefill(m.lib, selected)
 			s.added, s.edited = nil, nil
 		}
 	case "?":
 		// The description screen keeps no cursor of its own and reads this one,
 		// so raising it needs nothing handed over — the same arrangement the art
-		// preview has with the browser.
-		if len(s.skills) > 0 {
+		// preview has with the browser. It reads the *visible* rows through the
+		// same accessor this key does, so the paragraph and the marker cannot
+		// come from two different skills.
+		if _, held := s.selected(); held {
 			m.skills = s
 			m.blurb.from = screenSkills
 			m.screen = screenBlurb
 			return m, nil
 		}
 	}
+	m.skills = s
+	return m, nil
+}
+
+// updateFilter routes a keystroke while the filter field has the keyboard.
+//
+// Five keys and everything else is text. The arrows are the arrows themselves
+// rather than k and j, which is the whole reason this is a mode: a letter typed
+// here has to reach the query, so the vim pair cannot be borrowed and the arrows
+// are what is left to walk the narrowed rows with.
+func (s skillsScreen) updateFilter(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	switch message.String() {
+	case "esc":
+		// One key undoes the whole thing. Clearing and closing together is what
+		// makes escape safe to press: there is no state where the listing is
+		// still narrowed by a query the author has just dismissed, and no second
+		// keystroke to work out.
+		s.query, s.filtering = "", false
+	case "enter":
+		// The query stays and the keyboard goes back to the rows, which is what
+		// makes j, k, a, e and ? work on what was found.
+		s.filtering = false
+	case "backspace":
+		if letters := []rune(s.query); len(letters) > 0 {
+			s.query = string(letters[:len(letters)-1])
+		}
+	case "up":
+		s.cursor = clamp(s.cursor-1, 0, len(s.rows())-1)
+	case "down":
+		s.cursor = clamp(s.cursor+1, 0, len(s.rows())-1)
+	default:
+		// Text rather than the key's name, which is what lets a space through:
+		// a bare space stringifies as "space" and carries " " as its text, and
+		// a Vietnamese name is two words often as not, so a filter that could
+		// not take a space would stop at the first one. A chord carries no text
+		// at all, so ctrl+anything falls through here harmlessly — and ctrl+c
+		// and ctrl+l never reach this function, model.key answers both first.
+		if letters := []rune(s.query + message.Text); message.Text != "" &&
+			len(letters) <= filterLimit {
+			s.query = string(letters)
+		}
+	}
+	// Clamped wherever the query changed rather than only where the cursor moved:
+	// a keystroke that narrows the listing can leave the cursor past its end, and
+	// a query matching nothing has to leave it at nought rather than at minus one.
+	s.cursor = clamp(s.cursor, 0, len(s.rows())-1)
 	m.skills = s
 	return m, nil
 }
@@ -632,16 +787,22 @@ func (s skillsScreen) saveEdit(m model) skillsScreen {
 }
 
 // skillsRoom is how many rows the listing has, measured from the window in hand:
-// the body has m.height-4 lines and this screen spends nine of them on a
-// heading, a blank, a column header, a blank, the two damage rows, the two lines
-// a write leaves behind, and the tally.
+// the body has m.height-4 lines and this screen spends ten of them on a
+// heading, the filter row, a blank, a column header, a blank, the two damage
+// rows, the two lines a write leaves behind, and the tally.
 //
-// The nine are enumerated because two of them are the busiest state rather than
+// The ten are enumerated because three of them are the busiest state rather than
 // every state, and the reserve is for the busiest: the second damage row is only
-// drawn for a skill with a condition, and the second write line only after an
-// edit that moved the damage. A reserve that counted what is about to be drawn
-// would be a reserve that changes under the author, which is worse than one row
-// spent on a screen that does not need it.
+// drawn for a skill with a condition, the second write line only after an edit
+// that moved the damage, and the filter row only once there is a filter. A
+// reserve that counted what is about to be drawn would be a reserve that changes
+// under the author, which is worse than one row spent on a screen that does not
+// need it.
+//
+// ⚠️ **That is why opening the filter costs no listing row**, which is the point
+// of paying for it unconditionally: pressing / narrows the list without also
+// shifting every row under it up by one, so the row the cursor was on stays
+// where it was on screen.
 //
 // It stayed at nine when editing added the second write line, and the reason is
 // worth recording rather than leaving as a coincidence: the number was one too
@@ -651,9 +812,11 @@ func (s skillsScreen) saveEdit(m model) skillsScreen {
 // a reserve of nine, and the second write line is what that spare line has now
 // gone on. There is no spare left, which is what
 // TestTheSkillListingFitsTheSmallestWindowAfterAnEdit measures at the 80x24
-// floor. A tenth line on this screen needs a tenth here.
+// floor — and the filter row is why this is ten rather than nine, measured at
+// the same floor by TestTheSkillListingFitsTheSmallestWindowWhileFiltering. An
+// eleventh line on this screen needs an eleventh here.
 func skillsRoom(m model) int {
-	room := m.height - 4 - 9
+	room := m.height - 4 - 10
 	if room < 3 {
 		return 3
 	}
@@ -703,15 +866,89 @@ func skillPowerColumn(m model) int {
 	return figures
 }
 
+// filterRow is what has been typed into the filter, and what it has left.
+//
+// Drawn only when there is a filter to describe, while skillsRoom pays for it
+// whichever state the screen is in — see that comment for why the reserve is
+// unconditional and this is not.
+//
+// Two wordings rather than one with the query left blank. An empty field has to
+// say what to type into it, because a bare label reads as a broken row; a field
+// with a query in it has to say how much of the book is left, which is the
+// browser's own reading (i18n.BrowseShowing) asked the same way.
+//
+// ⚠️ **Nothing here says whether the field has the keyboard, and that is the
+// footer's job.** Marking focus on the row itself would have to be colour — the
+// palette's rule is that colour is decoration and never information — or a caret
+// character, and there is no caret to draw: the arrows belong to the listing, so
+// a caret would be one this field's own keys could not move. The footer is where
+// the keys are, and it is the line that changes.
+func (s skillsScreen) filterRow(m model, showing int) string {
+	typed := strings.TrimSpace(s.query)
+	if !s.filtering && typed == "" {
+		return ""
+	}
+	if typed == "" {
+		return "  " + m.style.dim.Render(m.text(i18n.SkillsFilterPrompt)) + "\n"
+	}
+	// The query is the one part of this row with no length of its own, so it is
+	// what gets clipped rather than the counts after it: how much of the book is
+	// left is the answer, and the author can already see what they typed. Against
+	// the window, because both halves are data. filterLimit is what keeps this
+	// from being reachable at the floor; the clip is what says so if it stops.
+	spent := lipgloss.Width(m.text(i18n.SkillsFiltering, "", showing, len(s.skills)))
+	room := max(m.usableWidth()-3-spent, 1)
+	return "  " + m.style.dim.Render(m.text(i18n.SkillsFiltering,
+		clip(s.query, room), showing, len(s.skills))) + "\n"
+}
+
 func (s skillsScreen) view(m model) (string, string) {
 	if s.formInFront() {
 		return s.viewForm(m)
 	}
 	footer := m.text(i18n.SkillsFooter)
+	if s.filtering {
+		footer = m.text(i18n.SkillsFilterFooter)
+	}
 	var out strings.Builder
 	out.WriteString(m.style.heading.Render(m.text(i18n.SkillsHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.SkillsSubtitle)) + "\n\n")
+		m.style.dim.Render(m.text(i18n.SkillsSubtitle)) + "\n")
 
+	rows := s.rows()
+	out.WriteString(s.filterRow(m, len(rows)))
+	out.WriteString("\n")
+
+	anyone := 0
+	for _, current := range s.skills {
+		if forge.AnyoneMayCarry(current) {
+			anyone++
+		}
+	}
+	// The tally is the book's own count and stays that whatever is filtered: how
+	// many skills there are and how many anybody may carry are facts about the
+	// data, and the filter row above already says how much of it is on screen.
+	tally := m.style.dim.Render(m.text(i18n.SkillsTally, len(s.skills), anyone))
+	if len(rows) == 0 {
+		// Said rather than drawn as an empty box, and the two reasons a listing
+		// can be empty are told apart: a book with nothing in it is a data
+		// directory to go and look at, and a query that found nothing is a
+		// keystroke to take back. The column header is not drawn either — a
+		// header over no rows names columns that are not there.
+		empty := i18n.SkillsFilterNothing
+		if len(s.skills) == 0 {
+			empty = i18n.NoneCatalogued
+		}
+		out.WriteString("  " + m.text(empty) + "\n\n")
+		out.WriteString(tally)
+		return out.String(), footer
+	}
+
+	// Measured over the whole book rather than over the visible rows, which is
+	// pickState.idColumn's own scope and here it earns it twice: the filter
+	// narrows on a keystroke, so columns measured from what is left would slide
+	// sideways under the author as they type. The last column is free text
+	// against the window, so what a wide id column costs is a few cells of a
+	// restriction summary that clips anyway.
 	column, glossColumn := 0, 0
 	for _, current := range s.skills {
 		if width := lipgloss.Width(current.ID); width > column {
@@ -729,13 +966,7 @@ func (s skillsScreen) view(m model) (string, string) {
 			glossColumn = width
 		}
 	}
-	from, to := window(len(s.skills), s.cursor, skillsRoom(m))
-	anyone := 0
-	for _, current := range s.skills {
-		if forge.AnyoneMayCarry(current) {
-			anyone++
-		}
-	}
+	from, to := window(len(rows), s.cursor, skillsRoom(m))
 	// The header names the one column nobody could guess. The other three are
 	// an id, an element and a power, each labelled with the word the form that
 	// authored it uses — which is the point of naming them from the same keys:
@@ -747,7 +978,7 @@ func (s skillsScreen) view(m model) (string, string) {
 		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss), m.text(i18n.LabelElement),
 		m.text(i18n.SkillFieldPower), m.text(i18n.ColumnWhoMayCarry))) + "\n")
 	for index := from; index < to; index++ {
-		current := s.skills[index]
+		current := rows[index]
 		marker := "  "
 		// The power and the strike count are the balance, so they are the two
 		// numbers on the row; everything else about a skill is a keypress away
@@ -775,8 +1006,8 @@ func (s skillsScreen) view(m model) (string, string) {
 	// What the skill under the cursor is worth, against the same reference the
 	// form previews an unwritten one against — so a power being authored can be
 	// compared with the powers already in the book without leaving the program.
-	if len(s.skills) > 0 {
-		selected := s.skills[clamp(s.cursor, 0, len(s.skills)-1)]
+	// Through the same accessor e and ? read, so the figure is the marked row's.
+	if selected, held := s.selected(); held {
 		preview := m.lib.PreviewDamage(selected)
 		out.WriteString(m.label(m.text(i18n.LabelDamage), "%s",
 			m.lang.DamageWithin(preview, damageRowRoom(m.usableWidth(), detailLabelWidth(m)))))
@@ -799,7 +1030,7 @@ func (s skillsScreen) view(m model) (string, string) {
 			out.WriteString(m.style.dim.Render(m.lang.DamageMoved(*s.edited)) + "\n")
 		}
 	}
-	out.WriteString(m.style.dim.Render(m.text(i18n.SkillsTally, len(s.skills), anyone)))
+	out.WriteString(tally)
 	return out.String(), footer
 }
 

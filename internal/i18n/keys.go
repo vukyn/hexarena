@@ -83,6 +83,19 @@ const (
 	SkillsSubtitle
 	SkillsFooter
 	SkillsTally
+	// The filter on the listing: the footer while the field has the keyboard,
+	// what it says with nothing typed yet, what it says with a query in it, and
+	// what a query that found nothing says in place of the rows.
+	//
+	// Four keys rather than one wording with a blank left empty, because the
+	// four are answers to different questions: an empty field needs to say what
+	// to type into it, a full one needs to say how much of the book is left, and
+	// "nothing matched" has to be said where the rows would have been or the
+	// screen is an empty box.
+	SkillsFilterFooter
+	SkillsFilterPrompt
+	SkillsFiltering
+	SkillsFilterNothing
 	ColumnWhoMayCarry
 	ColumnGloss
 	SkillFormHeading
