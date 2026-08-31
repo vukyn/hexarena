@@ -248,30 +248,31 @@ func forgoneBy(t *testing.T, kind status.Kind, stacks int, rules combat.Rules) (
 // consumes a status: it may beat leaving the status alone, but not by so much
 // that applying it and immediately detonating it is the only line worth playing.
 //
-// ⚠️ **A detonate is one of two things a consume can be, and this prices only
-// the first.** A skill that spends a status for a *shape* rather than for power
-// leaves this whole arithmetic with nothing to weigh — its burst is its ordinary
-// power, so `burst <= alternative` fires on every one of them, and the figure
-// the rule is about was never on the skill. Those are bounded by
-// TestASpreadConsumerIsBoundedByTheShapeItBuys instead, and the two rules meet
-// at the same ceiling from opposite sides: a detonate may not beat the
-// alternative twice over, and the widest shape the pattern book can express is
-// worth twice a plain attack.
+// ⚠️ **This prices one of the two things a consume can spend, and the split is
+// about the STATUS rather than about the payment.** Everything here rests on
+// what leaving the status alone would have been worth — its remaining ticks, or
+// the extra damage a debuff lets through — and a *counter* is worth neither. It
+// does nothing to its holder at all, so "what detonating gives up" is not a small
+// number here, it is a question with no answer, and the rule would be bounding a
+// burst by nothing. Counters are bounded by
+// TestSpendingACounterCapsAtDoublingHoweverItIsPaid instead, which derives its
+// ceiling from the pattern book — and the two meet: a detonate may not beat its
+// alternative twice over, and neither may a counter double itself more than once.
 func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
 	book, statuses, rules := mustSkills(t), mustStatuses(t), mustRules(t)
 	for _, current := range book.Skills() {
 		if current.Requires == nil || !current.Requires.Consume {
 			continue
 		}
-		if current.Requires.BonusPower == 0 {
-			// Paid for in shape. The parser already refuses a consume paid for in
-			// neither, so this is not a skill that slipped through — it is the
-			// other kind, and the test for it is named above.
-			continue
-		}
 		kind, err := statuses.Lookup(current.Requires.Status)
 		if err != nil {
 			t.Errorf("skill %q: %v", current.ID, err)
+			continue
+		}
+		if kind.Category == status.Charge {
+			// A counter, priced where counters are priced. Not a skill that
+			// slipped through: the parser refuses a consume paid for in neither
+			// power nor shape, so every one of these is paid for somehow.
 			continue
 		}
 		burst := rules.Damage(attackerAttack, referenceDefense,

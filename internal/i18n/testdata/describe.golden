@@ -414,10 +414,10 @@ Tầm 2 · 90% trúng · hồi 2 lượt.
 [one line] 160% công · nhiễm điện→lan · tầm 2 · hồi 2
 
 spark
-Chớp liên tục vào một chỗ, mỗi lần chớp lại nảy sang chỗ đang sẵn dòng, 3 nhát, mỗi nhát 48% công (tổng 144%).
-Mục tiêu đang dính nhiễm điện, lan ra 2 ô, và tiêu 1 cộng dồn nhiễm điện.
+Chớp liên tục vào một chỗ, chỗ nào sẵn dòng thì mỗi nhát lại nặng thêm, 3 nhát, mỗi nhát 34% công (tổng 102%).
+Mục tiêu đang dính nhiễm điện: 204% công, và tiêu 1 cộng dồn nhiễm điện.
 Tầm 1 · 93% trúng · hồi 2 lượt.
-[one line] 144% công · nhiễm điện→lan · tầm 1 · hồi 2
+[one line] 102% công · nhiễm điện→204% · tầm 1 · hồi 2
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -1055,10 +1055,10 @@ Range 2 · 90% to hit · 2 turns to recharge.
 [one line] 160% attack · charge→spreads · range 2 · cd 2
 
 spark
-Hits an enemy for 3 strikes of 48% of attack each, 144% in all.
-While the target is carrying charge, jumps to 2 cells, and eats 1 stack of the charge.
+Hits an enemy for 3 strikes of 34% of attack each, 102% in all.
+While the target is carrying charge: 204% of attack, and eats 1 stack of the charge.
 Range 1 · 93% to hit · 2 turns to recharge.
-[one line] 144% attack · charge→spreads · range 1 · cd 2
+[one line] 102% attack · charge→204% · range 1 · cd 2
 
 [trait] endurance
 Always carries toughened.
