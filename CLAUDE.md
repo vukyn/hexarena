@@ -2450,6 +2450,19 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
   number instead of the pile. The old refusal "consumes for no bonus" is now
   "consumes for neither a bonus nor a shape", and a skill may take **one**
   payment, not both.
+- **A counter may be spent on a single target, and the ceiling is the same.**
+  `(max_targets-1) × splash_power` is exactly `scale.Base`, so the most a stack can
+  ever buy is **doubling** — which a spread gets from the pattern book and a
+  power-paid consume gets from `bonus_power <= power`.
+  `TestSpendingACounterCapsAtDoublingHoweverItIsPaid` holds both, and the floor
+  (`bonus*4 >= power`) refuses a stack thrown away for a rounding error. `spark`
+  is the single-target multi-strike consumer, `electro_ball` the spreading one.
+- ⚠️ **`TestADetonateIsWorthLessThanItsBreakEven` cannot price a counter and skips
+  one by category.** Its whole arithmetic is what leaving the status alone was
+  worth, and a counter does nothing to its holder — so `forgoneBy` returns
+  "cannot price" and the rule would bound a burst by nothing. The skip is on
+  `kind.Category == status.Charge`, **not** on `BonusPower == 0`: a counter paid
+  in power is still a counter.
 - ⚠️ **The spread is read once, from the unit at the aim, before the shape is
   walked** — `Battle.shapeAt`, which all five callers that resolve or rate a
   shape now go through. Asking per splashed cell would let a spread reach further
@@ -2472,7 +2485,7 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
   consumer**, and that is the answer rather than a missing case.
 - The playstyle is held by `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne`
   — the damage must arrive in **more, smaller** pieces *and* at a rate within
-  three fifths of the burst kit's. Shipped reading: 293‰ over 6396 blows of 169
+  three fifths of the burst kit's. Shipped reading: 356‰ over 6455 blows of 184
   against 366‰ over 3114 of 366.
 
 ## Open work

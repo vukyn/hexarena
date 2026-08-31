@@ -543,13 +543,31 @@ none.
 pile **is** the payment; a counter spent one at a time is a magazine, and a
 magazine emptied by its first shot is a magazine of one.
 
-**The two currencies meet at the same ceiling from opposite sides.** A detonate
-may not beat leaving the status alone by more than twice
-(`TestADetonateIsWorthLessThanItsBreakEven`). A splash lands at `splash_power` and
-`max_targets` caps any shape at three cells, so the widest spread that can be
-authored is a plain attack plus two half ones — twice a plain attack.
-`TestASpreadConsumerIsBoundedByTheShapeItBuys` holds that those two numbers still
-meet, and that no skill takes both payments at once.
+**The ceiling is the same however the consume is paid, and it is derived rather
+than chosen.** A splash lands at `splash_power` and `max_targets` caps any shape
+at three cells, so the most a stack can ever buy is a plain attack plus two half
+ones — **doubling**. `TestSpendingACounterCapsAtDoublingHoweverItIsPaid` holds
+both ways to it:
+
+- **paid in shape** — the widened pattern is bounded by those two numbers already;
+- **paid in power** — the bonus may not exceed the base power, because a bonus
+  equal to the power *is* doubling, per strike and so in total.
+
+That second one is what lets a counter be spent on a **single target**. A
+multi-strike skill spends the same stack for the same doubling and lands it all
+in one place instead of three — a choice between two shapes of the same money,
+rather than a stronger option and a weaker one. `spark` is that skill: three
+strikes of 34% that become 204% in all while the target is charged, at range 1,
+against `electro_ball`'s single blow that becomes three cells at range 2.
+
+⚠️ **A counter cannot be priced by the detonate rule at all**, and that is not a
+gap. `TestADetonateIsWorthLessThanItsBreakEven` rests entirely on what leaving the
+status alone would have been worth — remaining ticks, or the extra damage a debuff
+lets through — and a counter is worth *neither*, because it does nothing to its
+holder. "What consuming it gives up" is a question with no answer there, so the
+rule would be bounding a burst by nothing. The two tests meet anyway: a detonate
+may not beat its alternative twice over, and neither may a counter double itself
+more than once.
 
 #### ⚠️ A pile is worth far less than a stack times its height
 
@@ -581,12 +599,12 @@ that have to be true at once — the damage arrives **differently**, and it arri
 
 | kit | rate | blows | each |
 |---|---|---|---|
-| accumulating (`charge_beam magnetise electro_ball spark`) | 293‰ | 6396 | 169 |
+| accumulating (`charge_beam magnetise electro_ball spark`) | 356‰ | 6455 | 184 |
 | bursting (`zap_cannon thunderbolt flash_cannon discharge`) | 366‰ | 3114 | 366 |
 
-Twice the blows at less than half the size. The floor on the rate is three fifths
-rather than parity, because the figure moves with every character in the squad
-around it and a tighter band would be a reading rather than a claim.
+**Twice the blows at half the size**, at a rate that trades. The floor held is
+three fifths rather than parity, because the figure moves with every character in
+the squad around it and a tighter band would be a reading rather than a claim.
 
 The counter has one answer in the shipped book: `rinse` strips it, which is what
 its own flavour already said — *anything on you washes off*. A shield is the

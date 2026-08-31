@@ -1663,11 +1663,11 @@
     {
       "id": "spark",
       "name": "tia chớp",
-      "flavour": "Chớp liên tục vào một chỗ, mỗi lần chớp lại nảy sang chỗ đang sẵn dòng",
+      "flavour": "Chớp liên tục vào một chỗ, chỗ nào sẵn dòng thì mỗi nhát lại nặng thêm",
       "element": "electric",
       "range": 1,
       "pattern": "single",
-      "power": 480,
+      "power": 340,
       "strikes": 3,
       "accuracy": 930,
       "cooldown": 2,
@@ -1680,9 +1680,9 @@
       "requires": {
         "status": "charge",
         "min_stacks": 1,
+        "bonus_power": 340,
         "consume": true,
-        "consume_stacks": 1,
-        "spreads": "flank_up"
+        "consume_stacks": 1
       }
     }
   ]

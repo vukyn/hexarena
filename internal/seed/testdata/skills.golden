@@ -74,7 +74,7 @@ zap_cannon      electric  enemy    3  single         2700     1   2700   550    
 charge_beam     electric  enemy    2  single          800     1    800   950    1     0     0      274
 magnetise       electric  enemy    2  column          500     1    500   920    3     0     0      171
 electro_ball    electric  enemy    2  single         1600     1   1600   900    2     0     0      548
-spark           electric  enemy    1  single          480     3   1440   930    2     0     0      492
+spark           electric  enemy    1  single          340     3   1020   930    2     0     0      348
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -199,7 +199,7 @@ brine           target   health <=500 per mille            -    1000        2000
 outrage         caster   health <=400 per mille            -    2200        3400      754        1165  1.54x
 dragon_drive    target   expose                            1     900        2300      308         788  2.55x (consumes)
 electro_ball    target   charge                            1    1600        1600      548         548  1.00x (consumes)
-spark           target   charge                            1     480         480      164         164  1.00x (consumes)
+spark           target   charge                            1     340         680      116         233  2.00x (consumes)
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar
@@ -212,7 +212,7 @@ skill           status   spends     forgone   a plain attack   alternative   bur
 inferno         burn     ticks          548              342           890    1200    1.34x
 dragon_drive    expose   defence        102              342           444     788    1.77x
 electro_ball    charge   unpriced         0              342           342     548    1.60x
-spark           charge   unpriced         0              342           342     164    0.47x
+spark           charge   unpriced         0              342           342     233    0.68x
 
 == cleanses and dispels ==
 skill           categories                    stacks

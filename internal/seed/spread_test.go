@@ -8,6 +8,83 @@ import (
 	"github.com/vukyn/hexarena/internal/seed"
 )
 
+// TestSpendingACounterCapsAtDoublingHoweverItIsPaid is the bound the detonate
+// rule cannot draw, for the statuses it cannot price.
+//
+// A counter does nothing to its holder, so "what consuming it gives up" — the
+// whole of TestADetonateIsWorthLessThanItsBreakEven's arithmetic — has no answer.
+// What it gives up is a *future* use of itself, and that use is bounded by the
+// pattern book: a splash lands at splash_power and max_targets caps a shape at
+// three cells, so the most a stack can ever buy is a plain attack plus two half
+// ones. **Doubling.**
+//
+// So both ways of spending one are held to the same ceiling, derived from the
+// same two numbers rather than chosen:
+//
+//   - paid in shape — the widened pattern may not be worth more than doubling,
+//     which max_targets and splash_power already guarantee;
+//   - paid in power — the bonus may not exceed the base power, because a bonus
+//     equal to the power *is* doubling, per strike and therefore in total.
+//
+// The second is what lets a counter be spent on a single target. A multi-strike
+// skill spends the same stack for the same doubling as a spread would and lands
+// it all in one place instead of three, which is a choice between two shapes of
+// the same money rather than a stronger option and a weaker one.
+func TestSpendingACounterCapsAtDoublingHoweverItIsPaid(t *testing.T) {
+	book, statuses := mustSkills(t), mustStatuses(t)
+	shapes, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load shapes: %v", err)
+	}
+	// Doubling, derived: what the widest shape is worth over a plain attack.
+	ceiling := (shapes.MaxTargets - 1) * shapes.SplashPower
+	if ceiling != scale.Base {
+		t.Errorf("the widest shape is worth %d per mille over a plain attack rather than %d: "+
+			"the two ways of spending a counter no longer buy the same thing, so one of them is the only one worth authoring",
+			ceiling, scale.Base)
+	}
+	found := 0
+	for _, current := range book.Skills() {
+		if current.Requires == nil || !current.Requires.Consume {
+			continue
+		}
+		kind, err := statuses.Lookup(current.Requires.Status)
+		if err != nil {
+			t.Errorf("skill %q: %v", current.ID, err)
+			continue
+		}
+		if kind.Category != status.Charge {
+			continue
+		}
+		found++
+		if current.Requires.SpreadsOn() {
+			// Held in full by the test below; here only the pairing, because a
+			// skill taking both payments is doubled twice for one stack.
+			if current.Requires.BonusPower != 0 {
+				t.Errorf("skill %q spends one stack of %q for both %d bonus power and a shape: that is the ceiling charged twice",
+					current.ID, kind.ID, current.Requires.BonusPower)
+			}
+			continue
+		}
+		if allowed := current.Power * ceiling / scale.Base; current.Requires.BonusPower > allowed {
+			t.Errorf("skill %q bursts to %d power off %d for one stack of %q, over the %d a stack may ever buy: "+
+				"a counter spent on one target may not be worth more than the same stack spent on a shape",
+				current.ID, current.Power+current.Requires.BonusPower, current.Power, kind.ID, allowed)
+		}
+		// And it has to be worth something. The parser refuses a consume paid in
+		// neither currency; this refuses one paid a rounding error, which passes
+		// that check and still leaves the stack thrown away for nothing.
+		if current.Requires.BonusPower*4 < current.Power {
+			t.Errorf("skill %q bursts to %d power off %d for a stack of %q, which is not worth the turn that put the stack on",
+				current.ID, current.Power+current.Requires.BonusPower, current.Power, kind.ID)
+		}
+	}
+	if found == 0 {
+		t.Skip("nothing spends a counter, so the ceiling above is the only thing this measured")
+	}
+	t.Logf("%d skills spend a counter; a stack buys at most %d per mille of the skill's own power", found, ceiling)
+}
+
 // TestASpreadConsumerIsBoundedByTheShapeItBuys is the other half of the detonate
 // rule, for the other thing a consume can be paid in.
 //
