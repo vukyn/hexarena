@@ -46,6 +46,10 @@ summon_toad     neutral   self     0  single            0     1      0  1000    
 water_pulse     water     enemy    2  single          600     1    600   900    4     0     0      205
 skull_bash      neutral   enemy    1  single          850     1    850   900    2     0     0      291
 wide_guard      neutral   ally     1  single            0     1      0  1000    3     0     0        0
+bubble_beam     water     enemy    2  single          900     1    900   900    2     0     0      308
+body_slam       neutral   enemy    1  single         1200     1   1200   880    2     0     0      411
+pummel          neutral   enemy    1  single          480     3   1440   900    2     0     0      492
+submission      neutral   enemy    1  single         2000     1   2000   850    3     0     0      685
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -72,6 +76,9 @@ taunt           taunting (self)        1     1000       1000                -
 substitution    veil (self)            2     1000       1000                -
 water_pulse     stun                   1      350        900              315
 wide_guard      block                  2     1000       1000             1000
+bubble_beam     mire                   1      400        900              360
+body_slam       stun                   1      250        880              220
+submission      expose                 1      400        850              340
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -111,6 +118,10 @@ comeback        -          -                 -                   -         narut
 summon_toad     -          -                 -                   -         naruto
 water_pulse     -          -                 -                   -         pokemon
 skull_bash      -          -                 -                   -         pokemon
+bubble_beam     -          -                 -                   -         pokemon
+body_slam       -          -                 -                   -         pokemon
+pummel          -          -                 -                   -         pokemon
+submission      -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain

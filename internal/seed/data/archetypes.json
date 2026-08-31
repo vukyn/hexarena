@@ -192,6 +192,58 @@
           "at_level": 16
         }
       ]
+    },
+    {
+      "id": "bruiser",
+      "role": "the one that trades reach for repetition: stand in the front rank and land more blows than a guard has charges to spend, so a wall's turn buys less than it paid for",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1272,
+          "max": 3700
+        },
+        "attack": {
+          "base": 227,
+          "max": 660
+        },
+        "defense": {
+          "base": 192,
+          "max": 560
+        },
+        "speed": {
+          "base": 31,
+          "max": 90
+        },
+        "accuracy": {
+          "base": 48,
+          "max": 140
+        },
+        "dodge": {
+          "base": 14,
+          "max": 40
+        }
+      },
+      "skills": [
+        "water_gun",
+        "bubble",
+        "bubble_beam",
+        "whirlpool",
+        "body_slam",
+        "brine",
+        "pummel",
+        "submission",
+        "hydro_pump"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

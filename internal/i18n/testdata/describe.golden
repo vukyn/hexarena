@@ -249,6 +249,29 @@ Cho mục tiêu đỡ đòn x2, 100% khả năng.
 Tầm 1 · 100% trúng · hồi 3 lượt.
 [one line] đỡ đòn x2 100% · đồng đội · tầm 1 · hồi 3
 
+bubble_beam
+Bắn một tia bọt nước xối thẳng, đủ dày để cản bước kẻ trúng đòn, 90% công.
+Gây sa lầy cho mục tiêu, 40% khả năng.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+[one line] 90% công · sa lầy 40% · tầm 2 · hồi 2
+
+body_slam
+Lấy đà rồi ném trọn sức nặng vào kẻ đứng trước mặt, 120% công.
+Gây choáng cho mục tiêu, 25% khả năng.
+Tầm 1 · 88% trúng · hồi 2 lượt.
+[one line] 120% công · choáng 25% · tầm 1 · hồi 2
+
+pummel
+Đòn nối đòn dồn xuống một chỗ, không chừa lấy một nhịp hở, 3 nhát, mỗi nhát 48% công (tổng 144%).
+Tầm 1 · 90% trúng · hồi 2 lượt.
+[one line] 144% công · tầm 1 · hồi 2
+
+submission
+Khoá chặt lấy đối thủ rồi siết tới lúc thế thủ vỡ ra, 200% công.
+Gây phá giáp cho mục tiêu, 40% khả năng.
+Tầm 1 · 85% trúng · hồi 3 lượt.
+[one line] 200% công · phá giáp 40% · tầm 1 · hồi 3
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -680,6 +703,29 @@ Aims at an ally.
 Gives its target block x2, 100% of the time.
 Range 1 · 100% to hit · 3 turns to recharge.
 [one line] block x2 100% · an ally · range 1 · cd 3
+
+bubble_beam
+Hits an enemy for 90% of attack.
+Inflicts mire, 40% of the time.
+Range 2 · 90% to hit · 2 turns to recharge.
+[one line] 90% attack · mire 40% · range 2 · cd 2
+
+body_slam
+Hits an enemy for 120% of attack.
+Inflicts stun, 25% of the time.
+Range 1 · 88% to hit · 2 turns to recharge.
+[one line] 120% attack · stun 25% · range 1 · cd 2
+
+pummel
+Hits an enemy for 3 strikes of 48% of attack each, 144% in all.
+Range 1 · 90% to hit · 2 turns to recharge.
+[one line] 144% attack · range 1 · cd 2
+
+submission
+Hits an enemy for 200% of attack.
+Inflicts expose, 40% of the time.
+Range 1 · 85% to hit · 3 turns to recharge.
+[one line] 200% attack · expose 40% · range 1 · cd 3
 
 [trait] endurance
 Always carries toughened.
