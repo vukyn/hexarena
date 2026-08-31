@@ -1085,6 +1085,14 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		out = append(out, l.Text(BlurbStatusTaunts))
 	case status.Shield:
 		out = append(out, l.Text(BlurbStatusShields))
+		// The rule is global — it belongs to no skill, so it cannot live in a
+		// skill's description, and every figure in one of those is derived
+		// anyway. It belongs to the shield CATEGORY, which is where the line
+		// above already lives, and the statuses reference is the one screen a
+		// player reads it on. Filed by category rather than by id for the reason
+		// its neighbour is: an authored shield status the engine cannot yet block
+		// is a data question, not a second sentence.
+		out = append(out, l.Text(BlurbStatusSeeps))
 	}
 	for _, term := range kind.Modifiers {
 		// "Per stack" only where there can be a second one. A status capped at

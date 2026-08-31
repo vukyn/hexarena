@@ -858,6 +858,10 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	}
 
 	connected := false
+	// Carried beside connected rather than folded into it: a blow that was eaten
+	// by a shield arrived, which a blow that missed did not, and the two deliver
+	// different things. See the rider block below.
+	blocked := false
 	if power > 0 {
 		charges := target.Statuses.Stacks(blockStatus)
 		attempts, left := b.books.Rules.Roll(hit, charges, b.source)
@@ -882,6 +886,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			case combat.Blocked:
 				event.Kind = Blocked
 				event.Remaining = int64(target.Statuses.Stacks(blockStatus))
+				blocked = true
 			default:
 				event.Kind = Damaged
 				event.Amount = attempt.Damage
@@ -921,21 +926,43 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		})
 	}
 
-	if connected {
+	// A blow the shield ate still arrived, so its riders are FILTERED rather than
+	// cancelled with it: a shield stops the blow and the wear, but not the
+	// contamination — status.Category.OutlastsAShield is the whole of that rule
+	// and carries the reading. A strike that MISSED reaches neither arm, because
+	// nothing touched the target at all; that is why blocked is carried beside
+	// connected instead of widening it.
+	//
+	// throughAShield only when nothing landed. A multi-strike skill with one
+	// strike eaten and one through has connected, and the blow it got through is
+	// what the riders ride on.
+	if connected || blocked {
+		throughAShield := !connected
 		for _, application := range known.Applies {
+			if throughAShield && !b.outlastsAShield(application) {
+				continue
+			}
 			b.inflict(actor, target, fromSkill(known), application, turn)
 		}
 		// The actor's traits contribute to the same list rather than to a second
 		// pass of their own, so a trait's rider goes through the same roll, the
 		// same resistance and the same event as a skill's own application. A
 		// separate path would be a second place for all three to be got wrong.
+		// The shield filter is the same call for the same reason: a trait's rider
+		// surviving a block on a different rule from a skill's own application
+		// would be a difference no reader could find on either.
 		//
 		// Only on a skill with power. resolveAgainst deliberately never asks
 		// which side a target is on, so "already dealing damage to it" is the
 		// available way to say the skill is hostile — and an ally-aimed damaging
-		// skill is already an attack on whoever it catches.
+		// skill is already an attack on whoever it catches. A block can only
+		// happen inside the power > 0 branch above, so the guard is already true
+		// on the blocked arm and is kept for the arm where it is not.
 		if power > 0 {
 			for _, application := range b.riders(actor) {
+				if throughAShield && !b.outlastsAShield(application) {
+					continue
+				}
 				b.inflict(actor, target, fromSkill(known), application, turn)
 			}
 		}
@@ -1230,6 +1257,28 @@ func (b *Battle) riders(actor *Unit) []skill.Application {
 		out = append(out, held.Applies...)
 	}
 	return out
+}
+
+// outlastsAShield reports whether an application would still land on a target
+// whose shield ate the strike carrying it.
+//
+// The rule itself is status.Category.OutlastsAShield; this is only the lookup in
+// front of it. An unknown status answers no, which is what inflict does with the
+// same lookup a line later — so a rider naming a status the book does not hold is
+// dropped in one place rather than reaching the roll through this one.
+//
+// ⚠️ That error branch is UNREACHABLE and is reported rather than tested: both
+// skill.ParseBook and passive.ParseBook check every status name against the
+// status book, so a parsed rider cannot name one the book lacks, and a mutation
+// returning true there survives the whole suite. It is kept because the
+// alternative — reading Category off a zero Kind — is Dot, so a missing status
+// would silently be the one thing that goes through a shield.
+func (b *Battle) outlastsAShield(application skill.Application) bool {
+	kind, err := b.books.Statuses.Lookup(application.Status)
+	if err != nil {
+		return false
+	}
+	return kind.Category.OutlastsAShield()
 }
 
 // inForce reports whether a trait's gated half applies to its holder right now.

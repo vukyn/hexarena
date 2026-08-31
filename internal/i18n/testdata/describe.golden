@@ -385,6 +385,7 @@ Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
 [status] block
 Mỗi cộng dồn triệt tiêu một nhát; đòn hai nhát tiêu hai cộng dồn.
+Chặn cú đánh, không chặn thứ dính lại: đòn bị chặn vẫn để lại hiệu ứng gây hại theo lượt.
 Khiên, chặn một nhát · 2 lượt · tối đa 3 cộng dồn.
 
 [status] regrowth
@@ -805,6 +806,7 @@ Raises a stat · always in force · 1 stack.
 
 [status] block
 Each stack swallows one strike whole; a two-strike skill spends two.
+It stops the blow, not what the blow leaves behind: a blocked strike still lands a damage-over-time.
 Blocks one strike · 2 turns · up to 3 stacks.
 
 [status] regrowth
