@@ -342,10 +342,11 @@ Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 [one line] nhanh nhẹn 100% · đồng đội · tầm 1 · 3 ô · hồi 4
 
 thunder_shock
-Một luồng nhỏ chạy qua người kẻ đối diện, đủ để cả thân cứng lại trong chớp mắt, 70% công.
+Một luồng nhỏ chạy qua người kẻ đối diện, chạy xong vẫn còn vướng lại ở đó, 70% công.
+Gây nhiễm điện cho mục tiêu, 100% khả năng.
 Gây choáng cho mục tiêu, 12% khả năng.
 Tầm 2 · 95% trúng · hồi 1 lượt.
-[one line] 70% công · choáng 12% · tầm 2 · hồi 1
+[one line] 70% công · nhiễm điện 100% · choáng 12% · tầm 2 · hồi 1
 
 mirror_shot
 Hắt lại đúng thứ ánh sáng vừa rọi tới, kẻ đối diện chói mắt mà không kịp quay đi, 90% công.
@@ -355,9 +356,10 @@ Tầm 2 · 90% trúng · hồi 2 lượt.
 
 thunderbolt
 Cả khoảng không sáng trắng lên một nhịp rồi tối lại, chỗ vừa sáng chẳng còn gì nguyên vẹn, 160% công, xuyên 30% giáp.
+Gây nhiễm điện x2 cho mục tiêu, 100% khả năng.
 Gây choáng cho mục tiêu, 20% khả năng.
 Tầm 2 · 88% trúng · hồi 3 lượt.
-[one line] 160% công · choáng 20% · tầm 2 · hồi 3
+[one line] 160% công · nhiễm điện x2 100% · choáng 20% · tầm 2 · hồi 3
 
 flash_cannon
 Gom ánh kim lại trong lòng rồi bắn ra thành một tia trắng xoá, thứ gì hứng trọn cũng vỡ ra một mảng, 150% công.
@@ -408,16 +410,16 @@ Tầm 2 · 3 ô · 92% trúng · hồi 3 lượt.
 [one line] 50% công · nhiễm điện x3 100% · tầm 2 · 3 ô · hồi 3
 
 electro_ball
-Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chạm vào ai đang sẵn dòng là cả vùng sáng lên, 140% công.
-Mục tiêu đang dính nhiễm điện: đòn của chính nó giảm còn 84% công, mỗi cộng dồn nhiễm điện nổ ra gây 85% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
+Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chạm vào ai đang sẵn dòng là cả vùng sáng lên, 2 nhát, mỗi nhát 66% công (tổng 132%).
+Mục tiêu đang dính nhiễm điện: đòn của chính nó giảm còn 79% công, mỗi cộng dồn nhiễm điện nổ ra gây 39% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
 Tầm 2 · 90% trúng · hồi 2 lượt.
-[one line] 140% công · nhiễm điện→lan · tầm 2 · hồi 2
+[one line] 132% công · nhiễm điện→lan · tầm 2 · hồi 2
 
 spark
-Chớp một cái vào một chỗ, rồi có khi chớp thêm cái nữa, rồi lại cái nữa, 65% công, mỗi nhát xong có 50% khả năng đánh thêm nhát nữa, tối đa 10.
-Mục tiêu đang dính nhiễm điện: đòn của chính nó giảm còn 39% công, mỗi cộng dồn nhiễm điện nổ ra gây 43% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
+Chớp một cái vào một chỗ, rồi có khi chớp thêm cái nữa, rồi lại cái nữa, 2 nhát, mỗi nhát 36% công (tổng 71%), đánh xong mỗi nhát còn 50% khả năng đánh thêm, tối đa 10.
+Mục tiêu đang dính nhiễm điện: đòn của chính nó giảm còn 43% công, mỗi cộng dồn nhiễm điện nổ ra gây 23% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
 Tầm 1 · 93% trúng · hồi 2 lượt.
-[one line] 65% công · nhiễm điện→lan · tầm 1 · hồi 2
+[one line] 71% công · nhiễm điện→lan · tầm 1 · hồi 2
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -985,9 +987,10 @@ Range 1 · 3 cells · 100% to hit · 4 turns to recharge.
 
 thunder_shock
 Hits an enemy for 70% of attack.
+Inflicts charge, 100% of the time.
 Inflicts stun, 12% of the time.
 Range 2 · 95% to hit · 1 turn to recharge.
-[one line] 70% attack · stun 12% · range 2 · cd 1
+[one line] 70% attack · charge 100% · stun 12% · range 2 · cd 1
 
 mirror_shot
 Hits an enemy for 90% of attack.
@@ -997,9 +1000,10 @@ Range 2 · 90% to hit · 2 turns to recharge.
 
 thunderbolt
 Hits an enemy for 160% of attack, through 30% of the armour.
+Inflicts charge x2, 100% of the time.
 Inflicts stun, 20% of the time.
 Range 2 · 88% to hit · 3 turns to recharge.
-[one line] 160% attack · stun 20% · range 2 · cd 3
+[one line] 160% attack · charge x2 100% · stun 20% · range 2 · cd 3
 
 flash_cannon
 Hits an enemy for 150% of attack.
@@ -1049,16 +1053,16 @@ Range 2 · 3 cells · 92% to hit · 3 turns to recharge.
 [one line] 50% attack · charge x3 100% · range 2 · 3 cells · cd 3
 
 electro_ball
-Hits an enemy for 140% of attack.
-While the target is carrying charge: its own blow drops to 84% of attack, and every stack of charge that goes off deals 85% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
+Hits an enemy for 2 strikes of 66% of attack each, 132% in all.
+While the target is carrying charge: its own blow drops to 79% of attack, and every stack of charge that goes off deals 39% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
 Range 2 · 90% to hit · 2 turns to recharge.
-[one line] 140% attack · charge→spreads · range 2 · cd 2
+[one line] 132% attack · charge→spreads · range 2 · cd 2
 
 spark
-Hits an enemy for 65% of attack, and after each strike a 50% chance of another, up to 10.
-While the target is carrying charge: its own blow drops to 39% of attack, and every stack of charge that goes off deals 43% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
+Hits an enemy for 2 strikes of 36% of attack each, 71% in all, and a 50% chance of another after each, up to 10.
+While the target is carrying charge: its own blow drops to 43% of attack, and every stack of charge that goes off deals 23% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
 Range 1 · 93% to hit · 2 turns to recharge.
-[one line] 65% attack · charge→spreads · range 1 · cd 2
+[one line] 71% attack · charge→spreads · range 1 · cd 2
 
 [trait] endurance
 Always carries toughened.

@@ -115,10 +115,9 @@ const (
 	// carrying a modifier or a tick is refused at parse for exactly this reason.
 	//
 	// It is HARMFUL: it goes on an enemy, and what it buys is bought by whoever
-	// put it there, so a cleanse may take it off and a trait may refuse it. It
-	// does NOT outlast a shield — read OutlastsAShield's own comment before
-	// reaching for that, and note that a shield denying stacks is the answer this
-	// whole playstyle is meant to have.
+	// put it there, so a cleanse may take it off and a trait may refuse it. And it
+	// DOES outlast a shield — a counter is nothing but something left on a target,
+	// which is the exact sentence that predicate is written on.
 	//
 	// Declared last, which is now the rule rather than one entry's note.
 	Charge
@@ -192,7 +191,22 @@ func (c Category) Harmful() bool {
 // comes to exactly 500‰ — rather than a balance number. So do not "complete"
 // this predicate by adding a second case, and do not fold it into Harmful,
 // which is Dot|StatDebuff|Control|Taunt and answers what a cleanse may strip.
-func (c Category) OutlastsAShield() bool { return c == Dot }
+//
+// ⚠️ **Charge is the second case, and it is the one the rule was already written
+// for.** A counter is *nothing but* something left on a target — it changes no
+// stat, takes no turn, and does nothing at all until somebody chooses to spend
+// it — so "the shield stops the blow and the wear, but not the contamination" is
+// a sentence about it more exactly than about the poison it was written for. It
+// is also the case the mire experiment above cannot be read as a warning against:
+// what broke there was a *stat* the wall could no longer be rid of, and a charge
+// carries no stat to break anything with.
+//
+// The half that stays: a shield still denies the charging when it eats the blow
+// **that is the charge**, because the charge going ON is a rider and the charge
+// going OFF is not. Read together, a guard is worth exactly one thing against a
+// conduit — it stops the skill's own damage — which is the trade the whole
+// playstyle rests on.
+func (c Category) OutlastsAShield() bool { return c == Dot || c == Charge }
 
 // ParseCategory resolves a category name as written in the data files.
 func ParseCategory(name string) (Category, error) {

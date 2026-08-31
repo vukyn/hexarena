@@ -569,14 +569,22 @@ The aim gates all of it. A conduit pointed at a clean target consumes nothing,
 arcs nothing and is simply its own **undamped** self — the third row above, and
 the reason `damped` is not a penalty for missing the condition.
 
-#### The shield stops it going on, not going off
+#### A guard is worth exactly one thing against a conduit
 
-`charge` does not `OutlastsAShield`, so a blow that was eaten leaves no stack
-behind: a guard denies the *charging*. Once a stack is on, a guard is no defence
-against it at all. Blocked, aimed at `3,1`, with `3,0` and `3,1` charged:
+`charge` **does** `OutlastsAShield`, and it is the second category ever to — the
+first being the poison that predicate was written for. The sentence there is *"a
+shield stops the blow and the wear, but not the contamination"*, and a counter is
+**nothing but** contamination: it changes no stat, takes no turn and does nothing
+whatever until somebody chooses to spend it. It is also the case the mire
+experiment recorded on that predicate cannot be read as a warning against — what
+broke there was a *stat* a wall could no longer be rid of, and a charge carries no
+stat to break anything with.
+
+So a guard stops the skill's own damage and nothing else. Blocked, aimed at `3,1`,
+with `3,0` and `3,1` charged:
 
 ```
-blocked=1   3,0[skill 0  arc 315  ate 1]   3,1[skill 0  arc 315  ate 1]
+blocked=1   3,0[skill 0  arc 144  ate 1]   3,1[skill 0  arc 144  ate 1]
 ```
 
 Zero skill damage, the full arc on both, both stacks spent, and the chain still
@@ -602,8 +610,8 @@ it, which is what its own flavour already said — *anything on you washes off*.
 
 #### A strike count that is rolled
 
-`spark` lands once and then keeps going: `repeat_chance` 500, `max_strikes` 10 —
-one blow, then a coin for another, and again. It averages 1.994 strikes and
+`spark` lands twice and then keeps going: `repeat_chance` 500, `max_strikes` 10 —
+two blows, then a coin for another, and again. It averages 2.993 strikes and
 occasionally does a great deal more, and since a conduit spends a stack per strike,
 a long roll empties the chain as fast as it burns through it.
 
@@ -645,13 +653,20 @@ that have to be true at once — the damage arrives **differently**, and it arri
 
 | kit | rate | blows | each |
 |---|---|---|---|
-| accumulating (`charge_beam magnetise electro_ball spark`) | 343‰ | 7693 | 150 |
+| accumulating (`charge_beam magnetise electro_ball spark`) | 373‰ | 11067 | 96 |
 | bursting (`zap_cannon thunderbolt flash_cannon discharge`) | 366‰ | 3114 | 366 |
 
-**Two and a half times the blows at two fifths the size**, at a rate that trades.
-The floor held is three fifths rather than parity, because the figure moves with
-every character in the squad around it and a tighter band would be a reading
-rather than a claim.
+**Three and a half times the blows at a quarter the size**, and level on the
+result. The floor held is three fifths rather than parity, because the figure
+moves with every character in the squad around it and a tighter band would be a
+reading rather than a claim.
+
+Four skills lay the counter down and two spend it, which is the ratio the loop
+needs: `thunder_shock` (1 stack) and `thunderbolt` (2) charge as a *rider* on
+damage they were already dealing, so an ordinary turn feeds the next one, while
+`charge_beam` (2) and `magnetise` (3, across a rank) are the turns spent on
+charging alone. A conduit that had to buy every stack with a turn of its own could
+never fire twice running, which is the whole of what "continuous" means here.
 
 ## Passives
 

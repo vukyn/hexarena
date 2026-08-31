@@ -89,7 +89,8 @@ func (l Lang) describeOpening(declared skill.Skill) string {
 		// one blow that sometimes keeps going — and "1.998 strikes" is a figure
 		// that describes no cast anybody will ever have. The mean is what the
 		// rating reads; this is what a person reads.
-		damage = l.Say(BlurbRepeats, share(declared.Power), stat,
+		damage = l.Say(BlurbRepeats, declared.StrikeCount(),
+			share(declared.Power), stat, share(declared.TotalPower()),
 			share(declared.Repeat), declared.MaxStrikes)
 	case declared.StrikeCount() > 1:
 		damage = l.Say(BlurbStrikes, declared.StrikeCount(),

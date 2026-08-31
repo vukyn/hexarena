@@ -73,8 +73,8 @@ magnet_rise     metal     self     0  single            0     1      0  1000    
 zap_cannon      electric  enemy    3  single         2700     1   2700   550    4     0     0      925
 charge_beam     electric  enemy    2  single          800     1    800   950    1     0     0      274
 magnetise       electric  enemy    2  column          500     1    500   920    3     0     0      171
-electro_ball    electric  enemy    2  single         1400     1   1400   900    2     0     0      480
-spark           electric  enemy    1  single          650     1    650   930    2     0     0      222
+electro_ball    electric  enemy    2  single          660     2   1320   900    2     0     0      452
+spark           electric  enemy    1  single          355     2    710   930    2     0     0      242
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -111,8 +111,10 @@ charm           weaken                 2     1000       1000             1000
 wish            regrowth               1     1000       1000             1000
 sing            stun                   1      600       1000              600
 chorus          haste                  1     1000       1000             1000
+thunder_shock   charge                 1     1000        950              950
 thunder_shock   stun                   1      120        950              114
 mirror_shot     blind                  1      500        900              450
+thunderbolt     charge                 2     1000        880              880
 thunderbolt     stun                   1      200        880              176
 flash_cannon    expose                 1      350        870              304
 thunder_wave    mire                   2     1000       1000             1000
@@ -198,8 +200,8 @@ inferno         target   burn                              1    1000        3500
 brine           target   health <=500 per mille            -    1000        2000      342         685  2.00x
 outrage         caster   health <=400 per mille            -    2200        3400      754        1165  1.54x
 dragon_drive    target   expose                            1     900        2300      308         788  2.55x (consumes)
-electro_ball    target   charge                            1    1400        1400      480         480  1.00x (consumes)
-spark           target   charge                            1     650         650      222         222  1.00x (consumes)
+electro_ball    target   charge                            1     660         660      226         226  1.00x (consumes)
+spark           target   charge                            1     355         355      121         121  1.00x (consumes)
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar
@@ -211,8 +213,8 @@ the ticks of a damage-over-time, or the extra damage a stat debuff was letting t
 skill           status   spends     forgone   a plain attack   alternative   burst    ratio
 inferno         burn     ticks          548              342           890    1200    1.34x
 dragon_drive    expose   defence        102              342           444     788    1.77x
-electro_ball    charge   unpriced         0              342           342     480    1.40x
-spark           charge   unpriced         0              342           342     222    0.64x
+electro_ball    charge   unpriced         0              342           342     226    0.66x
+spark           charge   unpriced         0              342           342     121    0.35x
 
 == cleanses and dispels ==
 skill           categories                    stacks

@@ -1364,7 +1364,7 @@
     {
       "id": "thunder_shock",
       "name": "chích điện",
-      "flavour": "Một luồng nhỏ chạy qua người kẻ đối diện, đủ để cả thân cứng lại trong chớp mắt",
+      "flavour": "Một luồng nhỏ chạy qua người kẻ đối diện, chạy xong vẫn còn vướng lại ở đó",
       "element": "electric",
       "range": 2,
       "pattern": "single",
@@ -1379,6 +1379,11 @@
         ]
       },
       "applies": [
+        {
+          "status": "charge",
+          "chance": 1000,
+          "stacks": 1
+        },
         {
           "status": "stun",
           "chance": 120,
@@ -1430,6 +1435,11 @@
         ]
       },
       "applies": [
+        {
+          "status": "charge",
+          "chance": 1000,
+          "stacks": 2
+        },
         {
           "status": "stun",
           "chance": 200,
@@ -1642,8 +1652,8 @@
       "element": "electric",
       "range": 2,
       "pattern": "single",
-      "power": 1400,
-      "strikes": 1,
+      "power": 660,
+      "strikes": 2,
       "accuracy": 900,
       "cooldown": 2,
       "target": "enemy",
@@ -1659,7 +1669,7 @@
         "consume_stacks": 1,
         "chains": true,
         "damped": 400,
-        "arc_power": 850
+        "arc_power": 390
       }
     },
     {
@@ -1669,8 +1679,8 @@
       "element": "electric",
       "range": 1,
       "pattern": "single",
-      "power": 650,
-      "strikes": 1,
+      "power": 355,
+      "strikes": 2,
       "accuracy": 930,
       "cooldown": 2,
       "target": "enemy",
@@ -1686,7 +1696,7 @@
         "consume_stacks": 1,
         "chains": true,
         "damped": 400,
-        "arc_power": 430
+        "arc_power": 225
       },
       "repeat_chance": 500,
       "max_strikes": 10
