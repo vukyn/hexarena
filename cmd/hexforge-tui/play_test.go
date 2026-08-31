@@ -1412,7 +1412,7 @@ func TestTheLogIsCappedByRenderedLinesAndNotByEvents(t *testing.T) {
 	m = withAFullLog(t, atABattleOf(t, m, 3))
 	widest := 0
 	for _, event := range m.play.events {
-		if line := tui.Line(event, m.play.tags); line != "" {
+		if line := tui.Line(event, m.play.tags, nil); line != "" {
 			widest = max(widest, len(strings.Split(line, "\n")))
 		}
 	}
@@ -1427,7 +1427,7 @@ func TestTheLogIsCappedByRenderedLinesAndNotByEvents(t *testing.T) {
 	}
 	byEvent := 0
 	for _, event := range events {
-		if line := tui.Line(event, m.play.tags); line != "" {
+		if line := tui.Line(event, m.play.tags, nil); line != "" {
 			byEvent += len(strings.Split(line, "\n"))
 		}
 	}

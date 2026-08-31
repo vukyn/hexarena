@@ -22,7 +22,7 @@ func TestARefusedApplicationSaysWhichKindOfRefusalItWas(t *testing.T) {
 			Kind: battle.StatusResisted, At: 5000, Turn: 3,
 			Actor: "a", Target: "f", Skill: "envenom", Status: "poison",
 			Chance: chance, Refused: refused,
-		}, tags)
+		}, tags, nil)
 	}
 
 	// Nothing refused: the roll simply failed, and the wording is what it always

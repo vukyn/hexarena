@@ -892,6 +892,17 @@ there.
 Kinds, sides and outcomes are written by name, not by number, so inserting a
 constant later cannot silently reinterpret every log already saved.
 
+**Reading it in Vietnamese: a skill, a status and a trait carry their name beside
+the id.** A log line said `uses creeping_rot at 3,1` and `poison x1 on E2`, which
+in Vietnamese says nothing at all — so the name goes in brackets after the id,
+`uses venoshock (độc kích) at 3,1`, which is the form every other screen here
+already uses for a data id. It is beside the id rather than instead of it, so the
+thing on screen is still the thing you would grep, type or edit in the JSON. At
+**every** occurrence and not on a first mention: the log is a frame over a history
+that scrolls, so a first mention is a row a reader may not have on screen.
+English is unchanged to the byte — there a data id is the name — and so is a
+replay printed without the books.
+
 A side is written only when there is one, which is why "no side" rather than
 "ally" is the zero value. With a real side at zero, every ally unit's opening
 event left the field out and a reader got the right answer only because ally

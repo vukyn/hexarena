@@ -185,6 +185,22 @@ var glossaries = []map[string]string{
 // language in which the brackets are words.
 const glossBracket = "%s (%s)"
 
+// GlossBracket puts a name beside the id it explains, in the one shape this
+// package uses everywhere — skirmisher (du kích).
+//
+// It is exported because internal/tui draws data ids too, on the battle log, and
+// the format has to have exactly one definition: a second spelling of "%s (%s)"
+// somewhere else is a second thing to change the day the brackets become
+// something else, and nothing would report the disagreement. The name is the
+// caller's to find (a log reads a map, a screen reads SkillName); the punctuation
+// is this package's.
+func GlossBracket(id, name string) string {
+	if name == "" || name == id {
+		return id
+	}
+	return fmt.Sprintf(glossBracket, id, name)
+}
+
 // affinityJoin is how the two halves of a dual affinity's gloss are separated.
 // It is element.Affinity.String's own separator, so that the ids and their
 // names read as the same pair; TestADualAffinityGlossesAsOnePair pins the two
