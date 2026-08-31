@@ -791,10 +791,6 @@
           "at_level": 24
         },
         {
-          "id": "bite",
-          "at_level": 28
-        },
-        {
           "id": "taunt",
           "at_level": 32
         },
@@ -957,10 +953,6 @@
         {
           "id": "submission",
           "at_level": 24
-        },
-        {
-          "id": "bite",
-          "at_level": 28
         },
         {
           "id": "taunt",
