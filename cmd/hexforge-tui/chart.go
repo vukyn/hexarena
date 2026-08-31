@@ -7,6 +7,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // chartScreen is the affinity chart drawn as the rings it was declared in.
@@ -29,17 +30,23 @@ import (
 // once, and a cursor would invite a keystroke that has nothing to do.
 type chartScreen struct{}
 
-func (s chartScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (s chartScreen) update(_ draw.Context, message tea.KeyPressMsg) (chartScreen, draw.Action) {
 	switch message.String() {
 	case "q":
-		return m, tea.Quit
+		return s, draw.Action{Kind: draw.Quit}
 	case "esc":
-		// Back to the listing rather than to the menu: this screen is only
-		// reachable from there, and a reader who pressed one key to arrive
-		// expects one key to undo it.
-		m.screen = screenElements
+		// Back to whoever raised this, rather than to the menu: a reader who
+		// pressed one key to arrive expects one key to undo it.
+		//
+		// It named the elements listing until this step, on the ground that
+		// nothing else raises this screen — still true (grep screenChart: the
+		// client declares it, the elements listing raises it, the dispatcher
+		// draws it, and the width fixture enters it without ever pressing a key
+		// in it). So Back lands in exactly the same place, and it does so
+		// without a screen here knowing that listing exists.
+		return s, draw.Action{Kind: draw.Back}
 	}
-	return m, nil
+	return s, draw.Action{}
 }
 
 // The pieces a ring is drawn out of.

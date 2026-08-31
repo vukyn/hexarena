@@ -9,6 +9,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // speciesScreen is what a character can *be*: the declared kinds, each under its
@@ -76,19 +77,18 @@ func (s speciesScreen) refresh(lib *forge.Library) speciesScreen {
 	return s
 }
 
-func (s speciesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (s speciesScreen) update(_ draw.Context, message tea.KeyPressMsg) (speciesScreen, draw.Action) {
 	switch message.String() {
 	case "q":
-		return m, tea.Quit
+		return s, draw.Action{Kind: draw.Quit}
 	case "esc":
-		m.screen = screenMenu
+		return s, draw.Action{Kind: draw.Back}
 	case "up", "k":
 		s.cursor = clamp(s.cursor-1, 0, len(s.kinds)-1)
 	case "down", "j":
 		s.cursor = clamp(s.cursor+1, 0, len(s.kinds)-1)
 	}
-	m.species = s
-	return m, nil
+	return s, draw.Action{}
 }
 
 // speciesRoom is how many rows the listing may draw: the window less the heading

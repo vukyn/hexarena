@@ -10,6 +10,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // passivesScreen is the declared traits, with what each one does under the
@@ -56,13 +57,12 @@ func (p passivesScreen) refresh(lib *forge.Library) passivesScreen {
 	return p
 }
 
-func (p passivesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (p passivesScreen) update(_ draw.Context, message tea.KeyPressMsg) (passivesScreen, draw.Action) {
 	switch message.String() {
 	case "q":
-		return m, tea.Quit
+		return p, draw.Action{Kind: draw.Quit}
 	case "esc":
-		m.screen = screenMenu
-		return m, nil
+		return p, draw.Action{Kind: draw.Back}
 	// The trait's own description is already on screen, so ? here reads as
 	// "explain the thing it just named" rather than as "explain this".
 	//
@@ -71,26 +71,25 @@ func (p passivesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea
 	// second cursor to keep in step with this one — the trade screenPreview and
 	// screenBlurb both refused. A trait naming two is the change to make when
 	// one exists.
+	//
+	// ⚠️ The status is named and not reached for. This used to call focus on the
+	// statuses screen's own state and write the cursor into it — the only
+	// cross-screen read of the six, and a read no screen in a shared package
+	// could keep, since it knows nothing about which other screens the client
+	// has. So the id rides on the raise and the **client** lands the cursor,
+	// including the staying-put when the book no longer holds that status.
 	case "?":
 		named := i18n.StatusesNamed(p.passives[clamp(p.cursor, 0, len(p.passives)-1)])
 		if len(named) == 0 {
-			return m, nil
+			return p, draw.Action{}
 		}
-		statuses, found := m.statuses.focus(named[0])
-		if !found {
-			return m, nil
-		}
-		statuses.from = screenPassives
-		m.statuses = statuses
-		m.screen = screenStatuses
-		return m, nil
+		return p, draw.Action{Kind: draw.Raise, Target: draw.Statuses, Focus: named[0]}
 	case "up", "k":
 		p.cursor = clamp(p.cursor-1, 0, len(p.passives)-1)
 	case "down", "j":
 		p.cursor = clamp(p.cursor+1, 0, len(p.passives)-1)
 	}
-	m.passives = p
-	return m, nil
+	return p, draw.Action{}
 }
 
 // marked is one sentence of a trait's description with the status names in it

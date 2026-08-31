@@ -111,6 +111,23 @@ type model struct {
 	screen        screen
 	menu          int
 
+	// raisedFrom is where a Back goes: the screen that raised whatever is in
+	// front, remembered by the client because a screen may not name one.
+	//
+	// One slot, and that is all the six screens converted to draw.Action need —
+	// they raise one deep and no further (the elements listing raises the chart,
+	// the traits listing raises the statuses reference, and neither of those two
+	// raises anything at all), so there is no stack to keep and nothing to pop.
+	//
+	// ⚠️ Two facts make this exactly what it replaces, a `from screen` field on
+	// the statuses screen. screenMenu is the **zero value** of screen, so an
+	// unwritten slot already means the menu, which is where esc went from all
+	// four of the screens that never raise; and it is cleared **as it is used**,
+	// in navigate, because the old field was cleared in the screen's own esc
+	// rather than by enter — a reader who came through the menu after coming
+	// through a trait must not inherit the trait.
+	raisedFrom screen
+
 	browse   browseScreen
 	form     formScreen
 	origins  originsScreen
@@ -280,16 +297,32 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.origins.update(m, message)
 	case screenSkills:
 		return m.skills.update(m, message)
+	// ⚠️ Two mechanisms sit side by side in this switch, and that is deliberate
+	// rather than half-finished. The six screens below are the ones being moved
+	// into internal/screen: their updates return a draw.Action — what they want —
+	// and this client decides what it means, which is what lets them stop naming
+	// entries of an enum only this binary has. Every other branch still writes
+	// m.screen itself and will be converted as it moves.
 	case screenStatuses:
-		return m.statuses.update(m, message)
+		statuses, action := m.statuses.update(m.ctx(), message)
+		m.statuses = statuses
+		return m.navigate(screenStatuses, action)
 	case screenPassives:
-		return m.passives.update(m, message)
+		passives, action := m.passives.update(m.ctx(), message)
+		m.passives = passives
+		return m.navigate(screenPassives, action)
 	case screenElements:
-		return m.elements.update(m, message)
+		elements, action := m.elements.update(m.ctx(), message)
+		m.elements = elements
+		return m.navigate(screenElements, action)
 	case screenSpecies:
-		return m.species.update(m, message)
+		species, action := m.species.update(m.ctx(), message)
+		m.species = species
+		return m.navigate(screenSpecies, action)
 	case screenBuilds:
-		return m.builds.update(m, message)
+		builds, action := m.builds.update(m.ctx(), message)
+		m.builds = builds
+		return m.navigate(screenBuilds, action)
 	case screenSquads:
 		return m.squad.update(m, message)
 	case screenFight:
@@ -305,9 +338,101 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case screenBlurb:
 		return m.blurb.update(m, message)
 	case screenChart:
-		return m.chart.update(m, message)
+		chart, action := m.chart.update(m.ctx(), message)
+		m.chart = chart
+		return m.navigate(screenChart, action)
 	}
 	return m, nil
+}
+
+// raiseTargets is what a draw.Target means to this client.
+//
+// A map keyed by target and read by key, never ranged over into anything that
+// reaches a screen — the same discipline internal/core holds about map order, one
+// layer up.
+//
+// ⚠️ It has to be **total**: a target with no entry here makes a raise silently
+// do nothing, which is the shape of defect this repository has recorded five
+// times as a screen slipping out of everyScreen.
+// TestEveryRaiseTargetNamesAScreenInThisClient walks screen.TargetCount rather
+// than this map, so a target added over there fails here instead of going
+// quiet.
+var raiseTargets = map[draw.Target]screen{
+	draw.Chart:    screenChart,
+	draw.Statuses: screenStatuses,
+}
+
+// navigate applies what a screen asked for.
+//
+// from is the screen that asked, which is the whole of what a Raise has to
+// record: Back is the answer to "how did I get here", and only the client can
+// know it.
+func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
+	switch action.Kind {
+	case draw.Quit:
+		// This client ends there. A game client with a battle half played is
+		// exactly why the screen handed back an action instead of the command.
+		return m, tea.Quit
+	case draw.Back:
+		m.screen = m.raisedFrom
+		// Forgotten as it is used: the next visit through the menu must not
+		// inherit this one's way back.
+		m.raisedFrom = screenMenu
+		return m, nil
+	case draw.Raise:
+		return m.raise(from, action)
+	}
+	// draw.Stay, which is every keystroke a screen handled without leaving.
+	return m, nil
+}
+
+// raise opens the screen a target names, landing it on the id the raiser asked
+// for.
+//
+// ⚠️ It declines rather than half-arriving. A focus the raised screen cannot find
+// leaves the reader where they are — the trait naming a status the book has lost
+// is a trait already printing a bare id, and a cursor moved to whatever sorted
+// next would answer a question nobody asked. A target with no entry in
+// raiseTargets declines for the opposite reason: it is a bug rather than a state,
+// and the test above is what says so out loud.
+//
+// Direct rather than through enter, which is what the two raises it replaces
+// did: neither screen refreshes on the way in, and routing them through enter
+// now would be a behaviour change wearing a tidy-up's clothes.
+func (m model) raise(from screen, action draw.Action) (tea.Model, tea.Cmd) {
+	target, known := raiseTargets[action.Target]
+	if !known {
+		return m, nil
+	}
+	if action.Focus != "" {
+		focused, found := m.focus(target, action.Focus)
+		if !found {
+			return m, nil
+		}
+		m = focused
+	}
+	m.raisedFrom = from
+	m.screen = target
+	return m, nil
+}
+
+// focus lands a screen's cursor on a named id and reports whether it found one.
+//
+// The statuses reference is the only screen that answers today, because it is
+// the only one anything raises with an id. A focus aimed anywhere else is not
+// silently dropped — it reports not found, and raise declines the whole trip,
+// so the mismatch shows as a reader who did not move rather than as a screen
+// that opened somewhere arbitrary.
+func (m model) focus(target screen, id string) (model, bool) {
+	if target != screenStatuses {
+		return m, false
+	}
+	statuses, found := m.statuses.focus(id)
+	if !found {
+		return m, false
+	}
+	m.statuses = statuses
+	return m, true
 }
 
 // answerGuard resolves a pending confirmation. Anything that is not a yes is a

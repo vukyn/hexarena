@@ -10,6 +10,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // buildIndent is how far a build sits inside its character's group.
@@ -150,20 +151,18 @@ func (b buildsScreen) selected() (buildRow, bool) {
 	return row, row.build()
 }
 
-func (b buildsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (b buildsScreen) update(_ draw.Context, message tea.KeyPressMsg) (buildsScreen, draw.Action) {
 	switch message.String() {
 	case "q":
-		return m, tea.Quit
+		return b, draw.Action{Kind: draw.Quit}
 	case "esc":
-		m.screen = screenMenu
-		return m, nil
+		return b, draw.Action{Kind: draw.Back}
 	case "up", "k":
 		b = b.move(-1)
 	case "down", "j":
 		b = b.move(1)
 	}
-	m.builds = b
-	return m, nil
+	return b, draw.Action{}
 }
 
 // buildsRoom is how many rows the listing may draw: what the window has, less the

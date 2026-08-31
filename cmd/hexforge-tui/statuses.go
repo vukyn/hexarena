@@ -9,6 +9,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // statusRow is one line of the listing: either a category heading or a status
@@ -43,12 +44,6 @@ type statusesScreen struct {
 	// selecting a heading, and a cursor that could land on one would make the
 	// description below blink out for a keystroke.
 	cursor int
-	// from is the screen esc goes back to, and it is a field rather than a
-	// constant because this listing is now reachable two ways: from the menu,
-	// where back is the menu, and from a trait that named a status, where back
-	// is the trait the reader was in the middle of. A reader sent here by one
-	// keystroke expects the next one to undo it.
-	from screen
 }
 
 func newStatusesScreen(lib *forge.Library) statusesScreen {
@@ -117,25 +112,25 @@ func (s statusesScreen) move(step int) statusesScreen {
 	return s
 }
 
-func (s statusesScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (s statusesScreen) update(_ draw.Context, message tea.KeyPressMsg) (statusesScreen, draw.Action) {
 	switch message.String() {
 	case "q":
-		return m, tea.Quit
+		return s, draw.Action{Kind: draw.Quit}
 	case "esc":
-		// The way back is forgotten as it is used, and the assignment below is
-		// what stores that — an early return here would leave the next visit
-		// inheriting this one's history.
-		m.screen = s.from
-		s.from = screenMenu
-		m.statuses = s
-		return m, nil
+		// Back, and where that is comes off the client's one-slot memory of who
+		// raised this screen. This listing is reachable two ways — from the menu,
+		// where back is the menu, and from a trait that named a status, where
+		// back is the trait the reader was in the middle of — and it used to
+		// carry that answer itself, in a `from screen` field it cleared here as
+		// it used it. The clearing moved with the memory; the semantics did not,
+		// because the slot defaults to the menu exactly as an unset field did.
+		return s, draw.Action{Kind: draw.Back}
 	case "up", "k":
 		s = s.move(-1)
 	case "down", "j":
 		s = s.move(1)
 	}
-	m.statuses = s
-	return m, nil
+	return s, draw.Action{}
 }
 
 // statusesRoom is how many rows the listing may draw: what the window has, less
