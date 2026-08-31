@@ -171,7 +171,7 @@ func containsPassive(held []passive.Passive, id string) bool {
 // TestTheTraitScreenScrollsRatherThanBeingCut is why this screen keeps an
 // offset at all.
 //
-// Five traits at the level cap wrap to more lines than an eighty-by-twenty-four
+// Five traits at the level cap wrap to more lines than a 120-by-24
 // window holds, and that window is the declared floor rather than an unusual
 // case. Letting the frame cut it would mean the one screen built for reading a
 // trait cannot finish reading one — so the last trait has to be reachable, and

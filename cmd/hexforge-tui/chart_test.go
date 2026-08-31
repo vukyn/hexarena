@@ -52,7 +52,7 @@ func TestTheDrawnLoopIsTheDeclaredRing(t *testing.T) {
 		if len(lines) > 2 {
 			split++
 		}
-		got := walkLoop(t, lines)
+		got := walkLoop(t, lines, anElementName)
 		want := elementIDs(cycle.Chain)
 		if len(got) != len(want) {
 			t.Errorf("%s: the drawing walks %v, want the ring %v", cycle.Name, got, want)
@@ -65,11 +65,58 @@ func TestTheDrawnLoopIsTheDeclaredRing(t *testing.T) {
 			}
 		}
 	}
-	// And at least one ring really is split over two legs, or the harder half of
-	// walkLoop — the reversed return leg — was never exercised.
-	if split == 0 {
-		t.Error("no shipped ring is drawn over two legs, so the return leg is untested")
+	// And the harder half of walkLoop — the reversed return leg — is walked too.
+	//
+	// ⚠️ **Constructed rather than counted off the shipped rings, and the floor is
+	// why.** This used to assert that at least one *shipped* ring came out over
+	// two legs, which was true at a 75-cell room and false at a 115-cell one: at a
+	// floor of 120 every ring in the book fits on one leg, so the return leg went
+	// from covered to untested with nothing about the drawing having changed. A
+	// ring built to split covers it at any floor, and the shipped walk above still
+	// says the drawing matches the book.
+	t.Logf("shipped rings drawn over two legs: %d of %d", split, len(cycles))
+	twoLegs := aRingSplitOverTwoLegs(t)
+	lines := ringLines(twoLegs, chartRoom())
+	got := walkLoop(t, lines, oneOf(twoLegs))
+	if len(got) != len(twoLegs) {
+		t.Fatalf("the two-leg drawing walks %v, want %v:\n%s",
+			got, twoLegs, strings.Join(lines, "\n"))
 	}
+	for index := range twoLegs {
+		if got[index] != twoLegs[index] {
+			t.Fatalf("the two-leg drawing walks %v, want %v:\n%s",
+				got, twoLegs, strings.Join(lines, "\n"))
+		}
+	}
+}
+
+// aRingSplitOverTwoLegs builds a ring that chartRoom draws as a box rather than
+// as a single line: wide enough to need the return leg, narrow enough not to fall
+// back to the chain.
+//
+// ⚠️ **The eleven declared elements cannot reach this at a floor of 120.** All of
+// them laid end to end come to about 105 cells against a room of 115, so a ring
+// of every element the book has still fits on one leg — which is why the members
+// here are invented and why namesIn takes its recogniser as a parameter. The
+// names are longer than any element's rather than longer than the room: what has
+// to split is the ring, and the smallest one that does is the case worth taking.
+//
+// It stops at the first size ringLines actually draws over three lines — a top
+// leg, the sides, and the reversed return — so the arithmetic deciding the split
+// is asked rather than reproduced here.
+func aRingSplitOverTwoLegs(t *testing.T) []string {
+	t.Helper()
+	for length := 4; length <= chartRoom(); length++ {
+		ring := make([]string, 0, 4)
+		for _, letter := range "abcd" {
+			ring = append(ring, strings.Repeat(string(letter), length))
+		}
+		if len(ringLines(ring, chartRoom())) == 3 {
+			return ring
+		}
+	}
+	t.Fatalf("no ring of four members is drawn over two legs at a room of %d", chartRoom())
+	return nil
 }
 
 // walkLoop reads a drawn ring back into the order a reader follows it in.
@@ -77,34 +124,58 @@ func TestTheDrawnLoopIsTheDeclaredRing(t *testing.T) {
 // The top leg reads left to right and the return leg right to left, which is the
 // way each one's arrows point. Anything that is not an element id — the rules,
 // the corners, the marks — is skipped, so the walk is the names alone.
-func walkLoop(t *testing.T, lines []string) []string {
+func walkLoop(t *testing.T, lines []string, known func(word string) bool) []string {
 	t.Helper()
 	if len(lines) == 0 {
 		t.Fatal("the ring drew nothing")
 	}
-	out := namesIn(lines[0])
+	out := namesIn(lines[0], known)
 	switch len(lines) {
 	case 2:
 		// One leg and the rule that closes it under.
 		return out
 	case 3:
 		// Two legs and the connector between their ends.
-		return append(out, reversed(namesIn(lines[2]))...)
+		return append(out, reversed(namesIn(lines[2], known))...)
 	}
 	t.Fatalf("a ring drew %d lines, want one leg or two", len(lines))
 	return nil
 }
 
-// namesIn is every element id on one line, in the order it is written.
-func namesIn(line string) []string {
+// namesIn is every member id on one line, in the order it is written.
+//
+// ⚠️ **What counts as a name is handed in, and that is not a generalisation for
+// its own sake.** It asked element.Parse, which is right for the shipped rings
+// and silently wrong for a constructed one: a ring of invented names walks back
+// as the *empty list*, and an assertion comparing two empty lists passes. The
+// two-leg case has to be constructed at a floor of 120 — no ring of the eleven
+// declared elements is wide enough to split a 115-cell room — so the recogniser
+// had to become a parameter for that case to be measurable at all.
+func namesIn(line string, known func(word string) bool) []string {
 	out := make([]string, 0, 8)
 	for _, word := range strings.Fields(line) {
 		word = strings.Trim(word, ",'`|<->-()")
-		if _, err := element.Parse(word); err == nil {
+		if known(word) {
 			out = append(out, word)
 		}
 	}
 	return out
+}
+
+// anElementName is the recogniser the shipped rings are walked with.
+func anElementName(word string) bool {
+	_, err := element.Parse(word)
+	return err == nil
+}
+
+// oneOf is the recogniser a constructed ring is walked with: its own members and
+// nothing else, so a corner or a rule cannot be read as a name.
+func oneOf(names []string) func(string) bool {
+	known := make(map[string]bool, len(names))
+	for _, name := range names {
+		known[name] = true
+	}
+	return func(word string) bool { return known[word] }
 }
 
 // TestEveryRingClosesAtTheFloor is the rule an author has to be held to when a
@@ -158,6 +229,27 @@ func TestEveryRingClosesAtTheFloor(t *testing.T) {
 	}
 }
 
+// aRingWiderThan builds a ring of eight members whose names are long enough that
+// the whole ring, laid end to end, passes the given width.
+//
+// ⚠️ **Sized off chartRoom rather than written down.** The members were eight
+// names of twenty characters, which beat two legs of a 75-cell room and fit
+// comfortably inside two legs of a 115-cell one — so the day the floor moved to
+// 120 this fixture stopped reaching the fallback and the test measured the
+// ordinary two-leg box instead. chartRoom is minWidth-derived, so deriving from
+// it is what makes the fixture survive the next floor as well as this one.
+func aRingWiderThan(width int) []string {
+	for length := 8; ; length += 8 {
+		ring := make([]string, 0, 8)
+		for _, letter := range "abcdefgh" {
+			ring = append(ring, strings.Repeat(string(letter), length))
+		}
+		if lipgloss.Width(strings.Join(ring, " --> ")) > width {
+			return ring
+		}
+	}
+}
+
 // TestARingTooWideFallsBackToAChain is the escape hatch, and it is here so that
 // the fallback is a decision rather than a surprise.
 //
@@ -166,10 +258,7 @@ func TestEveryRingClosesAtTheFloor(t *testing.T) {
 // meaning anything. What it must not do is draw a broken box: it drops to the
 // plain chain, which is honest about being a list, and still names every member.
 func TestARingTooWideFallsBackToAChain(t *testing.T) {
-	huge := make([]string, 0, 8)
-	for _, letter := range "abcdefgh" {
-		huge = append(huge, strings.Repeat(string(letter), 20))
-	}
+	huge := aRingWiderThan(2 * chartRoom())
 	lines := ringLines(huge, chartRoom())
 	if len(lines) != 1 {
 		t.Fatalf("a ring too wide for two legs drew %d lines, want the chain fallback:\n%s",

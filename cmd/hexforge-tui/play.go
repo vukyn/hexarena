@@ -504,7 +504,7 @@ func (p playScreen) save(m model) playScreen {
 //
 // ⚠️ **It is a floor of intent and no longer a ceiling**, and it was the ceiling
 // that was the defect. `playFit` clamped the log's allotment to this number, so
-// the body grew 20 → 42 rows between an 80x24 window and an 80x80 one and the log
+// the body grew 20 → 42 rows between a 120x24 window and an 80x80 one and the log
 // stood still at eight — a tall terminal bought the history nothing. The log now
 // takes whatever rows nobody above it in the priority claimed, and this is only
 // what it asks for **first**, which is what still makes "everything fits" a
@@ -539,7 +539,7 @@ func playBodyRoom(height int) int { return height - 4 }
 
 // The battle screen budgets its own body, and the reason is that it cannot fit.
 //
-// Measured at the declared 80x24 floor, where the body's purse is twenty rows:
+// Measured at the declared 120x24 floor, where the body's purse is twenty rows:
 // the heading is one, tui.Board is a fixed ten, tui.Roster is one plus a row a
 // unit, tui.Order is one, the log asks for playLogWanted, and the option list is
 // one plus a row an option. A legal squad is up to hex.MaxTeamSize a side, so
@@ -559,8 +559,9 @@ func playBodyRoom(height int) int { return height - 4 }
 //
 //  1. The save's own note. It is the answer to a keystroke pressed a moment ago
 //     and it names the file that was written, so it outranks the board — and it
-//     is **not** reserved, because two notes wrap to as many as four rows and
-//     reserving them could crowd out the option list.
+//     is **not** reserved, because a pair of notes runs to four or more rows and
+//     reserving them could crowd out the option list. See the note under this
+//     list for why that count is not written down as a constant.
 //  2. tui.Roster, clipped a row at a time. It carries the health and the effects
 //     a turn is decided on, and it is the one section that compresses by degrees
 //     rather than all at once.
@@ -573,6 +574,16 @@ func playBodyRoom(height int) int { return height - 4 }
 //     row nobody above it claimed. It is last because it is history rather than
 //     state, and the two-part answer is what lets a tall window buy the history
 //     something without any of the four sections above losing a row.
+//
+// ⚠️ **How many rows the save note takes is not a fixed number, and two comments
+// here used to say it was — disagreeing with each other.** This one read "four"
+// and play_test.go read "five" about the same pair. The second note is catalog
+// wording wrapped at minWidth, so it is two rows at a floor of 120 and was three
+// at the old 80; the *first* names the file it wrote and therefore carries a
+// path, which is free text as long as whoever chose the data directory made it.
+// The catalog half moves with the floor, the path half moves with the
+// filesystem, and only the catalog half is worth pinning —
+// TestEveryFloorWrappedBlockTakesTheRowsItTakes holds it at two.
 //
 // The log is also the one section a reader can move: it is a frame over the whole
 // history rather than a fixed tail, and pgup/pgdown walk it — as do [ and ], the

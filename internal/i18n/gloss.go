@@ -406,6 +406,15 @@ func (l Lang) AffinityNames(affinity element.Affinity) string {
 // was measured against the shipped presets, not judged by eye — so the names go
 // on their own line under the ids rather than inline beside them.
 //
+// ⚠️ **That measurement was taken at the old floor and has not been re-taken.**
+// The floor is 120 now, so five brackets may well fit inline and the row under
+// the ids may be a row this no longer has to spend. It is left alone rather than
+// changed on the arithmetic: the reason to draw the names apart was a width that
+// is gone, but whether they *read* better inline is a different question from
+// whether they fit, and the answer to it was never written down. Re-measure
+// against the shipped presets before moving them, the way this was measured
+// before it was written.
+//
 // Empty when nothing in the kit is glossed, and in English, so that a caller
 // draws no row at all instead of an empty one. A skill with no name keeps its
 // id in place, which is what holds the line in the same order as the one above

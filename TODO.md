@@ -133,7 +133,7 @@ is only so the shape is readable.
   opening one claimed a change. → `README.md` § Building a squad.
 
 - **The battle screen budgets its own body**, because it never could fit the
-  window the tool declares. At 80x24 the body has **twenty** rows, and heading +
+  window the tool declares. At 120x24 the body has **twenty** rows, and heading +
   board (10) + roster (1 + one a unit) + order + option list (1 + one an option)
   comes to 20 at a 1v1, 24 at a 3v3 and **28** at a 5v5 — `hex.MaxTeamSize` is 5,
   so 28 is the floor for a legal squad before a single blank or log line, and a
@@ -210,11 +210,20 @@ is only so the shape is readable.
       divide earlier (or widen), and what the authored ceiling is — the second
       belongs beside the stat ceilings, which bound the authored line rather
       than the fought one. Found while widening the damage row, not by play.
-- [ ] **`Lang.DamageWithin`'s drop is dead code on shipped data.** The short
-      line is reached only by eight- and nine-figure damage; the fixture added
-      in `width_rule_test.go` is the only thing in the suite that exercises it.
-      Either the reference pair always fits and the branch should go, or the
-      figures that reach it are the overflow above and the branch is a symptom.
+- [ ] **`Lang.DamageWithin`'s drop is now unreachable at every window the
+      program draws, not merely on shipped data.** Raising the floor to 120 took
+      the narrowest room this row ever has to **98 cells (vi) / 99 (en)**, and
+      the reading's own arithmetic ceiling is **89 / 87** — four numbers in fixed
+      wording, two of them the stat ceilings (three digits, always) and two of
+      them `int64` at nineteen digits. Short by nine and twelve cells, so no
+      skill reaches it: `strikes` and `power` are unbounded, but the damage
+      product overflows `int64` (the item above) before the digits arrive.
+      `TestTheDamageRowKeepsItsReferencePairAtEveryWindow` asserts the bound.
+      Either the branch goes, or it is kept as the guard for a wording that
+      grows — decide which, and say so where it lives. ⚠️ It is **not** simply
+      dead weight: it is the only thing standing between a longer catalog line
+      and a row that runs off the edge, and the floor raise is exactly what made
+      catalog lines free to grow.
 - [ ] **`damageRowRoom` is one cell over** (`cmd/hexforge-tui/skills.go`): it
       spends `width - 2 - labelWidth - 1`, so the row may fill the window's last
       cell, which wraps on some terminals. Wrong at the floor too, so it wants a

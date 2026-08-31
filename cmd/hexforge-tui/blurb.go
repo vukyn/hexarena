@@ -55,7 +55,7 @@ import (
 //
 // # Why a screen rather than a block under the form
 //
-// The form has nineteen fields and an eighty-by-twenty-four window shows
+// The form has nineteen fields and an 120-by-24 window shows
 // thirteen of them; the comments in skills.go record fighting for a single row
 // twice. A description is three lines and wraps to more, so putting it under the
 // form would cost a quarter of the fields for something read occasionally. A
@@ -74,8 +74,8 @@ type blurbScreen struct {
 	// *what* is being described resets it, so it cannot survive into a shorter
 	// answer and leave a reader looking at nothing.
 	//
-	// Five traits at the level cap wrap to more lines than an eighty-by-
-	// twenty-four window holds, which is the floor rather than an unusual case.
+	// Five traits at the level cap wrap to more lines than a 120-by-24 window
+	// holds, which is the floor rather than an unusual case.
 	// Letting the frame cut it would mean the one screen built for reading a
 	// trait cannot finish reading one.
 	scroll int

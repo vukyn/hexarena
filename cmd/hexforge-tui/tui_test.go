@@ -663,7 +663,7 @@ func TestATerminalTooSmallSaysSo(t *testing.T) {
 	drawn := m.screenContent()
 	// It is drawn in the language in front, and it names both sizes: the person
 	// who cannot read this screen is exactly the one who needs it.
-	for _, want := range []string{"quá nhỏ", "80x24", "40x10", "hexforge"} {
+	for _, want := range []string{"quá nhỏ", "120x24", "40x10", "hexforge"} {
 		if !strings.Contains(drawn, want) {
 			t.Errorf("the fallback does not mention %q:\n%s", want, drawn)
 		}
@@ -1028,7 +1028,14 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 
 	// A different size is a different key, so it is drawn again — from a file
 	// that is readable once more.
-	m.width -= 12
+	//
+	// ⚠️ **Wider, not narrower, and that is not a preference.** start hands back a
+	// window of exactly minWidth, and usableWidth stands the floor in for anything
+	// under it — so a narrower window is the *same* key, the drawing comes back
+	// byte for byte and this reads as a cache that ignored the resize. It did that
+	// the day the floor moved to 120 and the twelve cells came off a window that
+	// was already at the floor.
+	m.width += 12
 	resized, _ := m.preview.view(m)
 	if resized == first {
 		t.Error("a resize returned the drawing made at the old size")
@@ -1036,8 +1043,10 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 
 	// And redrawing the art outside the program invalidates what was cached,
 	// rather than being ignored until a restart. Written a byte shorter, so the
-	// stamp differs even where a filesystem's clock is coarse.
-	m.width += 12
+	// stamp differs even where a filesystem's clock is coarse. Back to the width
+	// the first drawing was taken at, so the only thing that has changed is the
+	// file.
+	m.width -= 12
 	shorter := make([]byte, info.Size()-1)
 	if _, err := rand.Read(shorter); err != nil {
 		t.Fatalf("make some bytes: %v", err)
@@ -1074,7 +1083,11 @@ func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
 	previous := 0
 	for _, height := range []int{minHeight, 27, 30, 33, 40, 44, 60} {
 		m := newModel(lib, i18n.Vi)
-		m.width, m.height = 92, height
+		// The floor rather than a width picked by hand: 92 was chosen while the
+		// floor was 80 and became a window m.tooSmall refuses, so every height
+		// below drew the too-small message and the footer assertion was reading
+		// that screen's last line instead of this one's.
+		m.width, m.height = minWidth, height
 		m = m.enter(screenBrowse)
 		m.screen = screenPreview
 
