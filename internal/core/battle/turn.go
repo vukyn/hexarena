@@ -578,14 +578,18 @@ func covers(shape pattern.Pattern, known skill.Skill, aim hex.Offset) []hex.Offs
 // fixed order and over b.units in enlistment order, and the map is asked only
 // whether a unit is already in the list — no map iteration reaches the result.
 func (b *Battle) chainFrom(actor *Unit, known skill.Skill, aim hex.Offset) []*Unit {
-	if !known.Requires.ChainsOn() {
-		return nil
-	}
 	head := b.occupant(aim)
 	if head == nil || !known.Amplified(conditionTarget(known, head)) {
 		return nil
 	}
 	out := []*Unit{head}
+	// A conduit that does not chain discharges into the unit it was aimed at and
+	// stops there — a chain of one. Returning nothing for it would be the same
+	// mistake as returning nothing for a clean target, and it would leave a
+	// nuke firing no charge at all.
+	if !known.Requires.ChainsOn() {
+		return out
+	}
 	seen := map[string]bool{head.ID: true}
 	for i := 0; i < len(out); i++ {
 		for _, cell := range out[i].Cell.NeighborsOnBoard() {

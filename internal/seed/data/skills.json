@@ -1700,6 +1700,32 @@
       },
       "repeat_chance": 500,
       "max_strikes": 10
+    },
+    {
+      "id": "overload",
+      "name": "quá tải",
+      "flavour": "Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng không còn gì đứng lại",
+      "element": "electric",
+      "range": 2,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 880,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "requires": {
+        "status": "charge",
+        "min_stacks": 2,
+        "consume": true,
+        "consume_stacks": 0,
+        "damped": 500,
+        "arc_power": 400
+      }
     }
   ]
 }

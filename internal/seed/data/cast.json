@@ -1378,6 +1378,10 @@
           "at_level": 22
         },
         {
+          "id": "overload",
+          "at_level": 23
+        },
+        {
           "id": "mirror_shot",
           "at_level": 24
         },

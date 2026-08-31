@@ -408,6 +408,12 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 		// A conduit says "a strike" as well, because that is the unit it spends
 		// in: one blow, one stack, so a skill that lands twice spends twice.
 		switch {
+		case condition.Arcs() && condition.ConsumeStacks == 0:
+			// A nuke, and it needs a clause of its own rather than the detonate's:
+			// "eats the charge" reads as one stack against a sentence that has just
+			// said what every stack does, and in English it puts a second "and" in
+			// a line that already has one.
+			sentence += l.Say(BlurbConsumesPile, l.glossed(condition.Status))
 		case condition.ConsumeStacks > 0 && condition.Arcs():
 			sentence += l.Say(BlurbConsumesEachStrike,
 				condition.ConsumeStacks, l.glossed(condition.Status))
@@ -660,7 +666,7 @@ func (l Lang) summariseCondition(
 	// saying nothing: what a shape-paid condition buys is cells, and the summary
 	// has no room for a shape.
 	if condition.BonusPower == 0 {
-		return l.Say(shapeWording(wording), l.join(clauses))
+		return l.Say(shapeWording(wording, condition), l.join(clauses))
 	}
 	return l.Say(wording, l.join(clauses),
 		share((declared.Power+condition.BonusPower)*declared.StrikeCount()))
@@ -687,9 +693,15 @@ func dampedOpening(opening Key) Key {
 	return BlurbDamped
 }
 
-func shapeWording(wording Key) Key {
+// shapeWording is the compact reading of a condition that moves no figure, and
+// it has to say WHICH of the two things it does instead — a chain travels and a
+// nuke does not, and one word is all the room there is to tell them apart.
+func shapeWording(wording Key, condition *skill.Condition) Key {
 	if wording == SummarySelfAmplified {
 		return SummarySelfAmplifiedShape
+	}
+	if condition.Arcs() && !condition.ChainsOn() {
+		return SummaryAmplifiedArc
 	}
 	return SummaryAmplifiedShape
 }
