@@ -107,6 +107,35 @@ func (c Category) Harmful() bool {
 	}
 }
 
+// OutlastsAShield reports whether a rider of this category still lands when the
+// strike carrying it was eaten by a shield.
+//
+// The reading is one sentence: **a shield stops the blow and the wear, but not
+// the contamination.** Fire still burns you through a shield and poison still
+// gets on you, because both are something left on the target rather than
+// something done to it. A stat the blow never bent and a turn it never took are
+// stopped with the strike — there is nothing left over for them to be about.
+//
+// ⚠️ A **missed** strike is a different question and this is not asked about
+// one. A block means the blow arrived and was stopped; a miss means nothing
+// touched the target, so a miss delivers nothing, this category included. That
+// distinction is the whole justification for the rule and collapsing the two
+// deletes it.
+//
+// ⚠️ **It is one case on purpose, and letting StatDebuff through as well was
+// measured and rejected.** With mire unstoppable — 25% off speed a stack, two
+// stacks — pokemon.squirtle against itself stops resolving: 0 of 20 duels
+// finished inside spar's 4000-turn limit (Endless 40 of 40 across both
+// arrangements) against 20 of 20 finishing with a kill today, mire applications
+// went 373 → 12875, and nothing was anywhere near dying — every unit sat at 45%
+// health or better when the limit was hit and the lowest any was driven to at any
+// point was 29%. That breaks TestABothWaysMirrorIsExactlyEven, which is a
+// **fairness invariant** — a character duelling an identical copy of itself
+// comes to exactly 500‰ — rather than a balance number. So do not "complete"
+// this predicate by adding a second case, and do not fold it into Harmful,
+// which is Dot|StatDebuff|Control|Taunt and answers what a cleanse may strip.
+func (c Category) OutlastsAShield() bool { return c == Dot }
+
 // ParseCategory resolves a category name as written in the data files.
 func ParseCategory(name string) (Category, error) {
 	for i, candidate := range categoryNames {

@@ -433,9 +433,26 @@ func TestAMatchupCountsTheChallengersStrikesAndNotTheOpponents(t *testing.T) {
 	if err != nil {
 		t.Fatalf("field the sprout: %v", err)
 	}
-	mine, theirs := adept.Skills[0], sprout.Skills[0]
+	// ⚠️ The pair is NAMED rather than taken as Skills[0], and that is a
+	// strengthening. A usable skill here has to satisfy three things — its owner
+	// brings it, the other does not, and **its owner actually casts it** — and an
+	// index into the kit can only promise the first two.
+	//
+	// Measured over sparSeeds duels each way: the sprout's first declared skill,
+	// bolt, was cast **2 times and landed 0**, because Suggest prefers the three
+	// heavier skills beside it (venom_fang 180, arc_bolt 120, creeping_rot 84).
+	// So the Cast == 0 check below had been one seed away from red the whole time,
+	// and a shield change that let a poison through moved that 2 to 0. venom_fang
+	// is the skill the sprout spends most of its turns on and strike is the
+	// adept's basic attack, so both arms are now firmly exercised rather than
+	// marginally — nothing was dropped to get there.
+	mine, theirs := "strike", "venom_fang"
+	if !slices.Contains(adept.Skills, mine) || !slices.Contains(sprout.Skills, theirs) {
+		t.Fatalf("the fixtures bring %v and %v, which no longer hold %s and %s",
+			adept.Skills, sprout.Skills, mine, theirs)
+	}
 	if mine == theirs {
-		t.Fatalf("both fixtures lead with %s, so nothing here can tell the two apart", mine)
+		t.Fatalf("both fixtures are counted on %s, so nothing here can tell the two apart", mine)
 	}
 	if slices.Contains(adept.Skills, theirs) || slices.Contains(sprout.Skills, mine) {
 		t.Fatalf("the two kits overlap on %s or %s, so a count cannot say whose it was", mine, theirs)

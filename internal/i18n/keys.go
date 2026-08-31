@@ -570,6 +570,7 @@ const (
 	BlurbStatusControls
 	BlurbStatusTaunts
 	BlurbStatusShields
+	BlurbStatusSeeps
 	BlurbStatusRaises
 	BlurbStatusLowers
 	BlurbStatusRaisesOnce

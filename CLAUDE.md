@@ -1364,6 +1364,65 @@ a skill aimed at an **ally** (`mend`), never a self-aimed one — `Act` returns
 before `resolveAgainst` for `Target: Self`, so a self-shield passes with the guard
 deleted, and that was the first version of the test.
 
+**A shield stops the blow and the wear, but not the contamination.** A strike a
+block charge ate used to deliver **nothing** — `connected` was set only in the
+`Damaged` arm and `if connected { … }` gated every rider, so a blocked strike
+applied no status and did not even roll for one. It now lands the riders whose
+category **outlasts a shield**, which is `status.Category.OutlastsAShield` and is
+`Dot` **and nothing else**: fire still burns you through a shield and poison
+still gets on you, while a stat the blow never bent and a turn it never took are
+stopped with the strike. The chance is unchanged — every rider still goes through
+`inflict` at its own declared chance, so the same amplifiers, the same
+resistances and the same `status_applied` / `status_resisted` events apply. The
+same filter is applied to `b.riders(actor)`, because a trait's rider surviving a
+block on a different rule from a skill's own application would be a difference no
+reader could find on either.
+⚠️ **A MISSED strike is unchanged and delivers nothing, a tick included**, which
+is the entire justification for the rule: a block means the blow arrived and was
+stopped, a miss means nothing touched the target. That is why `blocked` is carried
+**beside** `connected` rather than widening it, and why the decisive test has a
+missed arm of its own. `combat.Roll` checks accuracy before it offers a charge, so
+a miss never even spends one.
+⚠️ **Letting `stat_debuff` through as well was measured and REJECTED, and it is
+not a balance number.** With `mire` unstoppable — 25% off speed a stack, two
+stacks — `pokemon.squirtle` against itself **stops resolving**: 0 of 20 duels
+finished inside spar's 4000-turn limit (`Endless` 40 of 40 across the row's two
+arrangements) against 20 of 20 finishing with a kill, mire applications went
+373 → 12875, and nothing was close to dying — every unit sat at **45%** health or
+better when the limit was hit and the lowest any was driven to at any point was
+**29%**. That breaks `TestABothWaysMirrorIsExactlyEven`, a **fairness invariant** — a
+character duelling an identical copy of itself comes to exactly 500‰. So
+`OutlastsAShield` is one case on purpose. Do not "complete" it, and **do not fold
+it into `Harmful`**, which is `Dot|StatDebuff|Control|Taunt` and answers what a
+cleanse may strip; the near miss is the whole risk, which is why
+`TestOnlyATickOutlastsAShield` asserts the two splits **apart**.
+⚠️ **The rule reaches 5 shipped skills and 0 shipped traits.** Ten of the 43
+shipped skills both damage and apply, and only the five carrying a `dot` are
+touched (`sludge_bomb`, `ember`, `flamethrower`, `fire_spin`, `heat_wave`); the
+`stat_debuff` four (`bubble`, `whirlpool`, `bite`, `dragon_claw`) and the one
+`control` (`water_pulse`) are unaffected. **No shipped trait declares `applies`
+at all** — the eleven use `grants`, `resists`, `amplifies`, `replies` and
+`drains` — so the trait half is a **latent** branch and
+`TestATraitsRiderGoesThroughAShieldOnTheSameRuleAsASkillsOwn` is the only thing
+that exercises it.
+⚠️ **`price.go` did not change and does not have to.** `inflictedOn` prices a
+skill's own `Applies` off the *status's* chance and never weights it by whether
+the strike connects (only the reply half reads `combat.Hit`), so the rating
+already priced a rider as landing independently of the blow — this brings the
+engine closer to that for a dot and leaves it exactly as it was for the other
+categories. What is now slightly **over**-priced is the guard: `shielded` values a
+charge at the strike damage it eats, and a charge no longer stops the tick riding
+on that strike. It is a defensive option, so the cost is a marginal cast rather
+than a kill, and correcting it is a measured change of its own.
+⚠️ **The player is told, in the statuses reference and nowhere else.** The rule is
+global, so it may not live in a per-skill description — those are derived, and one
+clause per skill would be the rule declared 43 times. It is a property of the
+**shield category**, which is where `BlurbStatusShields` already lives, so
+`BlurbStatusSeeps` sits beside it in `describeStatusEffect` and
+reaches `?block` at the battle prompt, `hexforge statuses` and the tool's
+statuses screen, in both languages. `describe.golden` moved by exactly those two
+lines and no balance golden moved at all.
+
 **`passive.Condition` is not `skill.Condition`, deliberately.** A skill's
 condition asks what the *target* carries; a trait asks about its *holder*, and the
 question it wants is one no status answers. One term, `BelowHealth`, a **share**
@@ -1500,7 +1559,12 @@ same four rules. `combat.Rules.Restore` deliberately does **not** divide by the
 defence curve even though a damage-over-time tick does: defence turns away what
 is coming *at* a unit and has nothing to do with what is helping it, so do not
 add the division for symmetry. A drain reads `combat.DamageDealt`, not the damage
-rolled, so a missed or blocked strike drains nothing. `status.Set.Tick` returns
+rolled, so a missed or blocked strike drains nothing — ⚠️ **and a drain is
+deliberately not the rule a rider follows**: a drain is a share of damage, so no
+damage is no drain, while a blocked strike's `dot` rider still lands (see *A
+shield stops the blow and the wear, but not the contamination*). The two look like
+one sentence about blocked strikes and are two different questions.
+`status.Set.Tick` returns
 **two unsigned totals**, damage and healing, never one signed number — a
 negative down the damage path would subtract a negative, and `wound` calls `kill`
 the moment health reaches zero, so a signed total is the one shape that could

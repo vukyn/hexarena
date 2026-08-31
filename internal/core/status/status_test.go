@@ -420,6 +420,37 @@ func TestATauntIsSomethingItsHolderWantsGone(t *testing.T) {
 	}
 }
 
+// TestOnlyATickOutlastsAShield is the whole of OutlastsAShield asserted over
+// every category there is, rather than over the one it answers yes to.
+//
+// A one-case switch is exactly what a later reader completes into something
+// tidier, and the two candidates are both wrong in a way nothing else here would
+// notice. Harmful is the near miss: it covers Dot, StatDebuff, Control and Taunt,
+// so reusing it would let a stat debuff through a shield -- which was measured
+// and rejected, because with mire unstoppable a squirtle stops being able to
+// finish a duel against itself and TestABothWaysMirrorIsExactlyEven, a fairness
+// invariant, breaks. Reading the split off the enum's own order is the other:
+// Dot is at zero, so "the first category" happens to be the right answer today
+// and stops being one the moment anything is declared above it.
+func TestOnlyATickOutlastsAShield(t *testing.T) {
+	for _, category := range status.Categories() {
+		want := category == status.Dot
+		if got := category.OutlastsAShield(); got != want {
+			t.Errorf("%s outlasts a shield: %v, want %v", category, got, want)
+		}
+	}
+	// And the two splits are stated apart, because the whole risk is that one is
+	// mistaken for the other.
+	for _, category := range []status.Category{status.StatDebuff, status.Control, status.Taunt} {
+		if !category.Harmful() {
+			t.Errorf("%s stopped being harmful, so this test no longer says the two splits differ", category)
+		}
+		if category.OutlastsAShield() {
+			t.Errorf("%s reaches a target through a shield, which is Harmful's answer rather than this one", category)
+		}
+	}
+}
+
 func TestCategoryNames(t *testing.T) {
 	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt"}
 	categories := status.Categories()
