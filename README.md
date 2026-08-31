@@ -543,7 +543,8 @@ A skill declaring that is a **conduit**, and it behaves nothing like a detonate:
   ordinary attack, and the reason the counter is worth laying down in front of a
   wall.
 - **`consume_stacks` is per STRIKE.** One blow, one charge. A skill that lands
-  three times spends three, from every unit the current reaches.
+  three times spends three, from every unit the current reaches. **Nought means
+  the whole pile**, which is the other shape a conduit can be — see below.
 - **`chains`** is where it goes.
 
 #### The chain steps on charged bodies and nothing else
@@ -621,6 +622,49 @@ is the same ceiling the detonate rule stops at, read from the other side.
 The counter has one answer in the shipped book besides the shield: `rinse` strips
 it, which is what its own flavour already said — *anything on you washes off*.
 
+#### Two shapes: the drip and the nuke
+
+`consume_stacks` has exactly two useful values and there is no third thing for a
+count in between to be. **One** is a drip — `spark` and `electro_ball` — which
+converts stacks the moment it has them, across the whole chain. **Nought** is a
+nuke: `overload` takes everything the target was carrying and multiplies its arc
+by the count.
+
+```
+overload, aimed at one target, nothing else charged:
+
+pile  2 -> skill 157 + arc  280 =  437
+pile  4 -> skill 157 + arc  560 =  717
+pile  6 -> skill 157 + arc  840 =  997
+pile 12 -> skill 157 + arc 1680 = 1837
+```
+
+⚠️ **The rule relating the two was first written backwards, and the measurement
+is what said so.** A nuke takes more stacks at once, so it looked like the larger
+purchase and was held to a *poorer* rate per stack — which made it a skill nobody
+would ever bring: at a pile of six it dealt 472 on twice the cooldown, against a
+drip landing about the same on the primary **and** on everything the chain
+reached, after five turns of charging the drip would have spent as it went.
+
+What that missed is what each shape actually costs. A drip is paid in **breadth
+and immediacy**; a nuke concentrates on one body and has to survive the wait, so
+it is paid in neither. Time and breadth are real prices, and a better rate per
+stack is what they are owed. So `TestANukePaysBetterPerStackAndWorsePerTurn` holds
+the pair the other way up — better per stack, not more than twice as good, and
+never on a cooldown as short as the drip's — and a nuke may not `chain`, or one
+cast would empty the board's counters and be paid for every one of them.
+
+The pile is not unbounded in practice: `charge` lasts four of the holder's turns
+and every stack refreshes together, so what a nuke can find is what the charging
+turns bought inside that window. Hoarding is a *line*, not a resource.
+
+⚠️ The same mistake had a second half. Both sides of a conduit's trade are now
+read at the **smallest pile it will fire on** — `arc_power × min_stacks` against
+the damping — because the damping is paid once a strike and the arc is paid per
+stack. For a drip those are the same number, so the original rule looked correct;
+for a nuke it asked the skill to beat a full blow with half a payment, and every
+number that satisfied it made the skill worthless.
+
 #### A strike count that is rolled
 
 `spark` lands twice and then keeps going: `repeat_chance` 500, `max_strikes` 10 —
@@ -674,7 +718,7 @@ result. The floor held is three fifths rather than parity, because the figure
 moves with every character in the squad around it and a tighter band would be a
 reading rather than a claim.
 
-Four skills lay the counter down and two spend it, which is the ratio the loop
+Four skills lay the counter down and three spend it, which is the ratio the loop
 needs: `thunder_shock` (1 stack) and `thunderbolt` (2) charge as a *rider* on
 damage they were already dealing, so an ordinary turn feeds the next one, while
 `charge_beam` (2) and `magnetise` (3, across a rank) are the turns spent on

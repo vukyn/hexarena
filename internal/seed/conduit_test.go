@@ -29,6 +29,16 @@ import (
 //     from the other side — a stack may double what the turn was worth, no more;
 //   - and the skill must survive being damped, because a strike of no power is
 //     never rolled and a strike that is never rolled never discharges.
+//
+// ⚠️ **Both halves of the trade are read at the SMALLEST pile the skill will
+// fire on, and getting that wrong squeezed the nuke into a shape it could not
+// occupy.** The damping is paid once a strike; the arc is paid per *stack*. For a
+// drip those are the same number because it takes one stack a strike — so the
+// rule was written comparing one against one and looked correct. A nuke fires on
+// two at the least, so comparing its per-stack figure against the whole damping
+// asked it to beat a full blow with half a payment, and every number that
+// satisfied it made the skill worthless. What the trade actually is: what the
+// skill gives up, against what the least pile it accepts hands back.
 func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 	book, statuses := mustSkills(t), mustStatuses(t)
 	found := 0
@@ -47,28 +57,45 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 				current.ID, kind.ID, kind.Category)
 		}
 		damped := current.Power - current.Requires.DampedPower(current.Power)
-		arc := current.Requires.ArcPower
+		arc := current.Requires.ArcPower * current.Requires.MinStacks
 		switch {
 		case damped <= 0:
 			t.Errorf("skill %q arcs for %d and damps nothing, so the discharge is free and the counter is a bonus rather than a bargain",
 				current.ID, arc)
 		case arc <= damped:
-			t.Errorf("skill %q gives up %d power to arc for %d, so spending a stack is worse than never having one",
+			t.Errorf("skill %q gives up %d power to fire %d off its smallest pile, so meeting the condition is worse than missing it",
 				current.ID, damped, arc)
 		case arc > damped*2:
-			t.Errorf("skill %q gives up %d power to arc for %d, over twice as good: "+
-				"a stack may double what the turn was worth, which is where a detonate stops too",
+			t.Errorf("skill %q gives up %d power to fire %d off its smallest pile, over twice as good: "+
+				"the least pile it accepts may double what the turn was worth, which is where a detonate stops too",
 				current.ID, damped, arc)
 		}
 		if left := current.Requires.DampedPower(current.Power); left <= 0 {
 			t.Errorf("skill %q damps its %d power to %d, so it never rolls a strike and never discharges at all",
 				current.ID, current.Power, left)
 		}
-		// One stack per strike, always. Taking the pile is what a detonate does,
-		// and it is the one thing that would make accumulating pointless: a
-		// magazine emptied by its first shot is a magazine of one.
-		if current.Requires.ConsumeStacks != 1 {
-			t.Errorf("skill %q spends %d stacks of %q a strike; a conduit spends one, which is what makes a pile worth having",
+		// Two shapes and no third. A conduit takes ONE stack a strike, which is
+		// what makes a pile worth having; a NUKE takes the pile, which is what
+		// makes a pile worth waiting for. Any count in between is a magazine that
+		// empties in three shots — worse than either at both of their jobs, and a
+		// figure no reader could say the point of.
+		switch current.Requires.ConsumeStacks {
+		case 1:
+			// A drip. Nothing more to say about it here.
+		case 0:
+			// A nuke, and the two things that keep it from being simply better.
+			if current.Requires.ChainsOn() {
+				t.Errorf("skill %q takes the whole pile of %q AND chains: one cast would empty the board's counters and be paid for every one of them",
+					current.ID, kind.ID)
+			}
+			// It has to be worth *waiting* for, which means it may not fire on the
+			// first stack somebody happens to be carrying.
+			if current.Requires.MinStacks < 2 {
+				t.Errorf("skill %q takes the whole pile of %q but fires on %d stack: a nuke that goes off on the first one is a drip with a longer cooldown",
+					current.ID, kind.ID, current.Requires.MinStacks)
+			}
+		default:
+			t.Errorf("skill %q spends %d stacks of %q: a conduit spends one a strike and a nuke spends the pile, and there is no third thing for a count in between to be",
 				current.ID, current.Requires.ConsumeStacks, kind.ID)
 		}
 		if current.Requires.BonusPower != 0 {
@@ -80,6 +107,89 @@ func TestAConduitPaysForWhatItDischarges(t *testing.T) {
 		t.Skip("nothing discharges a counter, so there is nothing here to hold")
 	}
 	t.Logf("%d conduits shipped", found)
+}
+
+// TestANukePaysBetterPerStackAndWorsePerTurn is the relationship between the two
+// shapes, and the reason both are worth authoring.
+//
+// ⚠️ **This was first written the other way round and the reasoning was wrong.**
+// A nuke takes more stacks at once, so it looked like the larger purchase and was
+// held to a *poorer* rate per stack. Measured, that made it a skill nobody would
+// ever bring: at a pile of six it dealt 472 in one turn on twice the cooldown,
+// against a drip landing about the same on the primary *and* on everything the
+// chain reached — after five turns of charging that the drip would have spent as
+// it went.
+//
+// What that missed is what each shape actually costs. A drip converts stacks the
+// moment it has them and does it across a whole chain, so it is paid in **breadth
+// and immediacy**. A nuke concentrates on one body and has to survive the wait,
+// so it is paid in neither. Time and breadth are real prices, and a better rate
+// per stack is what they are owed. The ceiling is that it may not be worth twice
+// the drip's rate — hoarding is then a choice rather than the answer.
+//
+// The rule stays comparative, because nothing on a nuke's own declaration says how
+// big a pile it will find. What can be said is how the two exchange rates sit
+// against each other, and that is checkable across the shipped book without
+// inventing a number.
+func TestANukePaysBetterPerStackAndWorsePerTurn(t *testing.T) {
+	book, statuses := mustSkills(t), mustStatuses(t)
+	worstDrip := map[string]int{}
+	nukes := map[string][]string{}
+	for _, current := range book.Skills() {
+		if !current.Requires.Arcs() {
+			continue
+		}
+		kind, err := statuses.Lookup(current.Requires.Status)
+		if err != nil || kind.Category != status.Charge {
+			continue
+		}
+		switch current.Requires.ConsumeStacks {
+		case 1:
+			if held, seen := worstDrip[kind.ID]; !seen || current.Requires.ArcPower < held {
+				worstDrip[kind.ID] = current.Requires.ArcPower
+			}
+		case 0:
+			nukes[kind.ID] = append(nukes[kind.ID], current.ID)
+		}
+	}
+	if len(nukes) == 0 {
+		t.Skip("nothing takes a whole pile, so there is no rate to compare")
+	}
+	for id, ids := range nukes {
+		floor, known := worstDrip[id]
+		if !known {
+			t.Errorf("%q is taken by the pile and by nothing a stack at a time, so there is no drip for %v to be a worse deal than: the comparison this rule rests on does not exist",
+				id, ids)
+			continue
+		}
+		for _, one := range ids {
+			current, err := book.Lookup(one)
+			if err != nil {
+				t.Errorf("skill %q: %v", one, err)
+				continue
+			}
+			switch {
+			case current.Requires.ArcPower <= floor:
+				t.Errorf("skill %q arcs %d a stack of %q against the %d a drip gets, and it also waits and hits one body: it is worse on every axis, so nobody brings it",
+					one, current.Requires.ArcPower, id, floor)
+			case current.Requires.ArcPower > floor*2:
+				t.Errorf("skill %q arcs %d a stack of %q against a drip's %d, over twice the rate: hoarding stops being a choice and becomes the answer",
+					one, current.Requires.ArcPower, id, floor)
+			}
+			// And the cooldown, which is the other half of "worse per turn". A nuke
+			// on a drip's cooldown would be a drip that also waits, which is the
+			// same skill with the waiting added for nothing.
+			for _, other := range book.Skills() {
+				if other.Requires.Arcs() && other.Requires.ConsumeStacks == 1 &&
+					other.Requires.Status == id && current.Cooldown <= other.Cooldown {
+					t.Errorf("skill %q takes the pile on a %d-turn cooldown against %q's %d: it gets the better rate AND the same tempo",
+						one, current.Cooldown, other.ID, other.Cooldown)
+				}
+			}
+			t.Logf("%s arcs %d a stack against the drip's %d, takes the pile, and waits %d turns",
+				one, current.Requires.ArcPower, floor, current.Cooldown)
+		}
+	}
 }
 
 // TestARepeatingStrikeIsBoundedAtBothEnds holds the shape of the other new roll.

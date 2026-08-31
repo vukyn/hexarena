@@ -421,6 +421,12 @@ Mục tiêu đang dính nhiễm điện: đòn của chính nó giảm còn 43% 
 Tầm 1 · 93% trúng · hồi 2 lượt.
 [one line] 71% công · nhiễm điện→lan · tầm 1 · hồi 2
 
+overload
+Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng không còn gì đứng lại, 90% công.
+Mục tiêu đang dính nhiễm điện x2: đòn của chính nó giảm còn 45% công, mỗi cộng dồn nhiễm điện nổ ra gây 40% công, xuyên qua mọi lớp đỡ, tiêu sạch số cộng dồn nhiễm điện nó đang mang.
+Tầm 2 · 88% trúng · hồi 4 lượt.
+[one line] 90% công · nhiễm điện x2→nổ · tầm 2 · hồi 4
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1063,6 +1069,12 @@ Hits an enemy for 2 strikes of 36% of attack each, 71% in all, and a 50% chance 
 While the target is carrying charge: its own blow drops to 43% of attack, and every stack of charge that goes off deals 23% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
 Range 1 · 93% to hit · 2 turns to recharge.
 [one line] 71% attack · charge→spreads · range 1 · cd 2
+
+overload
+Hits an enemy for 90% of attack.
+While the target is carrying charge x2: its own blow drops to 45% of attack, and every stack of charge that goes off deals 40% of attack through any guard, spending every stack of the charge it had.
+Range 2 · 88% to hit · 4 turns to recharge.
+[one line] 90% attack · charge x2→discharges · range 2 · cd 4
 
 [trait] endurance
 Always carries toughened.

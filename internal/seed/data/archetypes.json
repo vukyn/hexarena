@@ -390,7 +390,8 @@
         "thunder_wave",
         "metal_sound",
         "magnet_rise",
-        "zap_cannon"
+        "zap_cannon",
+        "overload"
       ],
       "passives": [
         {

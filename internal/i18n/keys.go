@@ -488,11 +488,13 @@ const (
 	BlurbAmplifiedShape
 	BlurbSelfAmplifiedShape
 	SummaryAmplifiedShape
+	SummaryAmplifiedArc
 	SummarySelfAmplifiedShape
 	BlurbArcs
 	BlurbChains
 	BlurbDamped
 	BlurbConsumesEachStrike
+	BlurbConsumesPile
 	BlurbRepeats
 	BlurbCostRange
 	BlurbCostCells

@@ -75,6 +75,7 @@ charge_beam     electric  enemy    2  single          800     1    800   950    
 magnetise       electric  enemy    2  column          500     1    500   920    3     0     0      171
 electro_ball    electric  enemy    2  single          660     2   1320   900    2     0     0      452
 spark           electric  enemy    1  single          355     2    710   930    2     0     0      242
+overload        electric  enemy    2  single          900     1    900   880    4     0     0      308
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -192,6 +193,7 @@ charge_beam     -          -                 -                   -         pokem
 magnetise       -          -                 -                   -         pokemon
 electro_ball    -          -                 -                   -         pokemon
 spark           -          -                 -                   -         pokemon
+overload        -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -202,6 +204,7 @@ outrage         caster   health <=400 per mille            -    2200        3400
 dragon_drive    target   expose                            1     900        2300      308         788  2.55x (consumes)
 electro_ball    target   charge                            1     660         660      226         226  1.00x (consumes)
 spark           target   charge                            1     355         355      121         121  1.00x (consumes)
+overload        target   charge                            2     900         900      308         308  1.00x (consumes)
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar
@@ -215,6 +218,7 @@ inferno         burn     ticks          548              342           890    12
 dragon_drive    expose   defence        102              342           444     788    1.77x
 electro_ball    charge   unpriced         0              342           342     226    0.66x
 spark           charge   unpriced         0              342           342     121    0.35x
+overload        charge   unpriced         0              342           342     308    0.90x
 
 == cleanses and dispels ==
 skill           categories                    stacks
