@@ -191,8 +191,9 @@ is only so the shape is readable.
       saved on the player's own machine, a room joined by a code and an optional
       password, the battle resolved on the server. The design is settled and
       written down: the client is a **mirror** that runs the engine off the
-      decisions the server sends, a match is **two battles on the same seed with
-      the sides swapped**, a room code carries its own address, and the reference
+      decisions the server sends, a match is a **series the room configures —
+      bo1 or bo3** — fought both ways round, a room code carries its own address,
+      and the reference
       screens move out of the authoring tool into a package both binaries draw.
       → `README.md` § PvP over a LAN, which holds the reasoning and the
       measurements and is the place to argue with, not this list.
@@ -239,11 +240,20 @@ is only so the shape is readable.
       - [ ] A forfeit, a disconnect and a refused join are results of the
             **match**. ⚠️ Nothing is added to `battle.Outcome` — a dropped socket
             is not a way a battle can end, and that enum is a core type.
-      - [ ] Two battles in one match, same seed, sides swapped — from the room's
-            first line, because *this* is the part that hurts to add later.
-      - [ ] The 1–1 tie-break, which will be common and not exotic. Proposed:
-            aggregate surviving-health share in permille over both battles, then
-            a third battle on a fresh seed.
+      - [ ] A **series**, not a bo2: `battles: N` plus a rule for what ends it,
+            from the room's first line, because *this* is the part that hurts to
+            add later. ⚠️ **bo1 is not a special case — it is N = 1.** The room
+            offers **bo1 and bo3**; bo2 is deliberately not offered, because only
+            an even series cancels the side and only an even series has to invent
+            a rule for a 1–1. The aggregate-health tie-break an earlier draft
+            proposed is **dropped**, so no invented metric ships anywhere here.
+      - [ ] One rule for bo1 *and* for the third battle of a bo3, which are the
+            same problem: the seed picks the side, and the lead of each contested
+            speed group alternates. ⚠️ Honestly uncancelled — say so rather than
+            dress a coin as fairness.
+      - [ ] The per-turn allowance belongs in the room's configuration beside the
+            format. Measured on the shipped 3v3: **34–55 decisions a battle**, so
+            ninety seconds each is 68 minutes a battle and 3.5 hours for a bo3.
       - [ ] A turn cap per battle so a stalemate ends. `Outcome` already has the
             draws.
       - [ ] Write each finished match out as a `battle.Log`, which makes every

@@ -2168,21 +2168,61 @@ is not a measurement at all (see the note under *Decided against*), so what the
 slot is worth at 3v3 or 5v5 is **unmeasured** rather than small: the figure to
 quote there does not exist yet.
 
-So a match is **two battles on the same seed with the sides swapped** — which is
-what `forge.Bout` does when it fights from both ends of the board, and what makes
-a spar's mirror row read an exactly even 500‰ instead of reporting the first
-slot's advantage as the character's. The room therefore has to know about "several
-battles in one match" from its first line of code; that is the part that is
-painful to add later, not the second battle.
+So a match fights **both ways round** — which is what `forge.Bout` does from both
+ends of the board, and what makes a spar's mirror row read an exactly even 500‰
+instead of reporting the first slot's advantage as the character's.
 
-A 1–1 needs a tie-break, and it will be common rather than exotic: when the slot
-dominates, both players win the battle they played from the ally side. The
-proposal is the **aggregate surviving-health share** — each player's remaining
-health as a share of what their squad started with, summed over both battles, in
-parts per thousand — because it is derived from a state both mirrors already
-hold, it is symmetric, and it does not favour a squad for having more health to
-begin with. Exactly level goes to a third battle on a fresh seed with the sides
-taken from it.
+### Only an even series cancels a side, and only an even series has to invent a rule
+
+Which is the whole trade, and it does not have a way out:
+
+| Series | Battles | Sides cancel | Has to invent a tie-break |
+| --- | --- | --- | --- |
+| **bo1** | 1 | no | no |
+| bo2 | 2 | **yes** | **yes** — 1–1 has no natural winner |
+| **bo3** | 3 | no (one battle over) | no |
+
+⚠️ And **bo3 is worse than it reads**: at 1–1 the third battle decides the match,
+so an odd series does not remove the side advantage — it *concentrates* it into
+the one battle that matters most. bo1 spends it on one battle out of one; bo3
+spends it on a battle already carrying a level score.
+
+A 1–1 is common rather than exotic, too: when the slot dominates, both players
+win the battle they played from the ally side.
+
+The room configures **bo1 or bo3**, and bo2 is deliberately not offered. An
+earlier draft of this section proposed breaking a 1–1 on the **aggregate
+surviving-health share**, and that is dropped: it is an unmeasured number, and an
+unmeasured number deciding a whole match is exactly the kind of claim this
+repository does not ship. A third battle needs no justification at all. Dropping
+it means **no invented metric ships anywhere in this design**.
+
+What is left is that bo1 and *the third battle of a bo3* are the same problem —
+one battle whose side cannot be cancelled by another — so they get the same
+treatment and there is one rule rather than two: the seed picks the side, and the
+lead of each contested speed group alternates (see the tie-break note under
+*Decided against*, which is what makes that free). It is honestly uncancelled, and
+saying so is better than a coin dressed as fairness.
+
+⚠️ Two different squads almost never tie at all, so most of what that rule
+addresses evaporates the moment the two players are not mirroring each other.
+What remains is the residual that the complementarity note describes, whose size
+at 3v3 or 5v5 is **unmeasured**.
+
+### A series, not a bo2
+
+The room therefore holds `battles: N` and a rule for what ends the series, and
+**bo1 is not a special case — it is N = 1**. Building it generically is nearly
+free; building "bo2" and generalising later is the part that hurts, which is why
+this is stated before the first line of the room exists.
+
+Length, measured on the shipped 3v3 with both sides played by the rating: a battle
+takes **34 to 55 decisions** over eight seeds, so seventeen to twenty-eight per
+player. At a realistic fifteen seconds a decision that is about eleven minutes a
+battle, and a bo3 about half an hour. ⚠️ At the full ninety-second allowance it is
+sixty-eight minutes a battle and **three and a half hours for a bo3** — which is
+an argument about the ninety seconds rather than about bo3, and a reason the
+allowance belongs in the room's configuration beside the format.
 
 ### A room, and getting into one
 
