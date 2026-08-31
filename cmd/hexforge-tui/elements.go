@@ -8,6 +8,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // elementsScreen is the affinity chart: the eleven elements, and for the one
@@ -33,26 +34,28 @@ type elementsScreen struct {
 	cursor int
 }
 
-func (s elementsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (s elementsScreen) update(_ draw.Context, message tea.KeyPressMsg) (elementsScreen, draw.Action) {
 	members := element.All()
 	switch message.String() {
 	case "q":
-		return m, tea.Quit
+		return s, draw.Action{Kind: draw.Quit}
 	case "esc":
-		m.screen = screenMenu
+		return s, draw.Action{Kind: draw.Back}
 	case "g":
 		// The shape of the chart, which this listing answers one row at a time.
 		// A key rather than a menu entry: the question "so what beats what" is
 		// one a reader has while looking at a row, not one they leave the
 		// reference to go and ask.
-		m.screen = screenChart
+		//
+		// A Target rather than the client's own name for that screen, so this
+		// listing asks for the chart without knowing which view draws it.
+		return s, draw.Action{Kind: draw.Raise, Target: draw.Chart}
 	case "up", "k":
 		s.cursor = clamp(s.cursor-1, 0, len(members)-1)
 	case "down", "j":
 		s.cursor = clamp(s.cursor+1, 0, len(members)-1)
 	}
-	m.elements = s
-	return m, nil
+	return s, draw.Action{}
 }
 
 // elementsRoom is how many rows the listing may draw: what the window has, less
