@@ -146,6 +146,38 @@ const Skills = `[
     }
   },
   {
+    "id": "electrify",
+    "element": "neutral",
+    "range": 2,
+    "pattern": "single",
+    "power": 200,
+    "strikes": 1,
+    "accuracy": 1000,
+    "cooldown": 0,
+    "target": "enemy",
+    "applies": [{ "status": "charge", "chance": 1000, "stacks": 3 }]
+  },
+  {
+    "id": "arc",
+    "element": "neutral",
+    "range": 2,
+    "pattern": "single",
+    "power": 500,
+    "strikes": 1,
+    "accuracy": 1000,
+    "cooldown": 0,
+    "target": "enemy",
+    "requires": {
+      "status": "charge",
+      "min_stacks": 1,
+      "consume": true,
+      "consume_stacks": 1,
+      "chains": true,
+      "damped": 400,
+      "arc_power": 500
+    }
+  },
+  {
     "id": "desperate",
     "element": "neutral",
     "range": 1,

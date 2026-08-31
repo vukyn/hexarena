@@ -502,6 +502,235 @@ cut. Both errors run the direction every cap in that file errs in (a marginal ca
 not a kill), and every figure above is therefore a **floor** on what the status is
 worth. Correcting it is a measured change of its own.
 
+### Counting instead of doing: `charge`, and a second way to be paid for a consume
+
+Every category above answers *"what does holding this do to me"*. `charge` answers
+a different question — *"what may somebody now do to me that they could not
+before"* — and does nothing whatever to its holder. No stat, no tick, no turn. It
+is ammunition, put on by one skill and spent by another.
+
+**It is the one category the book's stack cap does not bound**, and that is the
+whole reason it is a category rather than a flag on an existing one. `max_stacks`
+bounds an *effect*: five stacks of a debuff at 300 per mille each is a figure the
+stat budget was reasoned against, so the cap and the budget are one argument. A
+counter multiplies nothing, so five would be a number with no argument behind it,
+borrowed from a category it has nothing in common with. `max_charge_stacks` is
+where the real ceiling is said out loud, it is 999, and a charge carrying a
+modifier or a tick is refused at parse — because that combination is the one the
+ceiling was granted on the understanding of.
+
+Spending it needed a second currency. A `requires` block could already consume a
+status, and the parser refused one that consumed *for no bonus power* — "throws
+the status away for nothing". That refusal was right about detonates and wrong in
+general, because a consume can now be paid **out of the skill's own pocket**:
+
+```json
+"requires": { "status": "charge", "min_stacks": 1,
+              "consume": true, "consume_stacks": 1,
+              "chains": true, "arc_power": 285 }
+```
+
+A skill declaring that is a **conduit**, and it behaves nothing like a detonate:
+
+- **`arc_power`** is what one consumed stack deals, and it is **added to the
+  skill's own blow, never traded against it**. It is not the skill's damage and
+  does not behave like it: not aimed, not rolled against accuracy or dodge, and
+  **not stopped by a shield**. A guard that swallows the blow does not stop what
+  was already sitting on the target — the one thing a conduit has over an ordinary
+  attack, and the reason the counter is worth laying down in front of a wall.
+- **`consume_stacks` is per STRIKE.** One blow, one charge. A skill that lands
+  three times spends three, from every unit the current reaches. **Nought means
+  the whole pile**, which is the other shape a conduit can be — see below.
+- **`chains`** is where it goes.
+
+⚠️ **A conduit's own figure is a constant, and getting that wrong was the longest
+mistake in this feature.** The first design *damped* the blow — the skill hit for
+less into a charged target and the charge made the difference up — on the
+reasoning that hitting for the full figure **and** firing the charge would be
+strictly better whenever the charge was there. That reasoning is wrong about where
+the payment comes from. A stack does not appear on a target by itself; the turn
+that put it there is the price, and it was paid before the conduit was ever cast.
+So a conduit is bought with **tempo** — the charging turns and the cooldown it
+sits on — and its own number means what it says wherever it is read.
+
+Which leaves one bound rather than a trade, and the skill carries it on its own
+face: **a stack may top the blow up but never outweigh it.** An arc worth more
+than the strike carrying it would make the skill a delivery mechanism for somebody
+else's turn, and the figure printed on it would stop describing what it does.
+
+#### The chain steps on charged bodies and nothing else
+
+It replaced a fixed pattern, and the difference is the whole idea. A pattern is
+geometry: it covers the same three cells whoever is standing in them, so a charged
+unit one cell outside was never reached and an uncharged unit inside was hit
+anyway. A chain goes exactly where the charge is — from the unit at the aim, to
+every hex-adjacent unit also carrying, and on from those — and **a gap of one
+uncharged cell stops it dead**.
+
+Measured, with enemies at `3,0 3,1 3,2 4,0 4,1` and `electro_ball` aimed at `3,1`:
+
+| charged | hops | what happened |
+|---|---|---|
+| `3,0 3,1 3,2` | 2 | all three ate a stack and took the arc; only `3,1` took the blow |
+| `3,1 3,2` | 1 | `3,0` untouched — the current never steps on an empty cell |
+| `3,0 3,2`, aim clean | 0 | nothing consumed anywhere; the blow lands as it always does |
+| `3,1 4,0` | 0 | `4,0` untouched: it is **two cells** from `3,1`, not adjacent |
+| `3,1 3,0 4,0` | 2 | the current walked `3,1 → 3,0 → 4,0`, because `3,0` was there to step on |
+
+The aim gates all of it. A conduit pointed at a clean target consumes nothing and
+arcs nothing — it is simply its own blow, which is the third row above and the
+reason a conduit is never a worse skill for having found nothing.
+
+Nothing else bounds how far it goes. With the whole enemy squad charged, one cast
+reaches all five: the ceiling is how much charge you laid down and how they are
+standing, which is a bill the attacker already paid in turns.
+
+⚠️ **It stops at the midline**, and it is the one shape in the engine that had to
+be *told*. Every other is a pattern, and `pattern.Targets` already drops a splash
+cell landing on the far side — `Side.CrossesSides` is the single thing that lifts
+it, and only a skill declaring `all` has it. A chain reads the board rather than a
+pattern, so it obeyed none of that: aimed at an enemy standing next to a charged
+teammate, the current walked back across the line and took 272 of that teammate's
+health along with two of its stacks. Nothing arranges that on purpose — the
+*enemy's* chargers arrange it for free.
+
+#### A guard is worth exactly one thing against a conduit
+
+`charge` **does** `OutlastsAShield`, and it is the second category ever to — the
+first being the poison that predicate was written for. The sentence there is *"a
+shield stops the blow and the wear, but not the contamination"*, and a counter is
+**nothing but** contamination: it changes no stat, takes no turn and does nothing
+whatever until somebody chooses to spend it. It is also the case the mire
+experiment recorded on that predicate cannot be read as a warning against — what
+broke there was a *stat* a wall could no longer be rid of, and a charge carries no
+stat to break anything with.
+
+So a guard stops the skill's own damage and nothing else. Blocked, aimed at `3,1`,
+with `3,0` and `3,1` charged:
+
+```
+blocked=1   3,0[skill 0  arc 144  ate 1]   3,1[skill 0  arc 144  ate 1]
+```
+
+Zero skill damage, the full arc on both, both stacks spent, and the chain still
+hopped. A **miss** is a different question and delivers nothing — a blocked blow
+arrived and was stopped, a missed one never touched anybody, which is the sentence
+`OutlastsAShield` is already written on.
+
+#### What bounds a conduit
+
+`TestADetonateIsWorthLessThanItsBreakEven` cannot price one, and that is not a
+gap. Its whole arithmetic is what leaving the status alone would have been worth —
+remaining ticks, or the extra damage a debuff lets through — and a counter is
+worth *neither*, because it does nothing to its holder. "What consuming it gives
+up" is a question with no answer there, so the rule would be bounding a burst by
+nothing.
+
+`TestAConduitPaysForWhatItDischarges` bounds it by the trade instead: the arc must
+beat the power the skill damps to fire it, and not beat it **twice over** — which
+is the same ceiling the detonate rule stops at, read from the other side.
+
+The counter has one answer in the shipped book besides the shield: `rinse` strips
+it, which is what its own flavour already said — *anything on you washes off*.
+
+#### Two shapes: the drip and the nuke
+
+`consume_stacks` has exactly two useful values and there is no third thing for a
+count in between to be. **One** is a drip — `spark` and `electro_ball` — which
+converts stacks the moment it has them, across the whole chain. **Nought** is a
+nuke: `overload` takes everything the target was carrying and multiplies its arc
+by the count.
+
+```
+overload, aimed at one target, nothing else charged:
+
+pile  0 -> skill 308 + arc    0 =  308
+pile  4 -> skill 308 + arc  252 =  560
+pile  8 -> skill 308 + arc  504 =  812
+pile 12 -> skill 308 + arc  756 = 1064
+```
+
+The first row is the skill with no charge in front of it at all, and it is still a
+usable attack: the counter is addition, so a conduit is never a worse skill for
+having found nothing.
+
+⚠️ **The rule relating the two has now been written both ways round and both were
+wrong**, for the same reason each time: the answer depends on what the skills give
+up, and that changed under it. While a conduit damped its blow, a nuke damped *and*
+waited, so it was owed the better rate — held to a poorer one it dealt 472 at a
+pile of six on twice the cooldown, which is a skill nobody brings. Now nothing
+damps: every conduit keeps its whole figure and the only currency is tempo, so a
+nuke's compensation for waiting is that it collects the entire pile at once. That
+is already the larger purchase, so it may not also be the better rate.
+
+`TestANukeGetsNoBetterRateThanADrip` holds it: no better per stack, never on a
+cooldown as short as the drip's, and a nuke may not `chain` — one cast would empty
+the board's counters and be paid for every one of them.
+
+The pile is not unbounded in practice: `charge` lasts four of the holder's turns
+and every stack refreshes together, so what a nuke can find is what the charging
+turns bought inside that window. Hoarding is a *line*, not a resource.
+
+#### A strike count that is rolled
+
+`spark` lands twice and then keeps going: `repeat_chance` 500, `max_strikes` 10 —
+two blows, then a coin for another, and again. It averages 2.993 strikes and
+occasionally does a great deal more, and since a conduit spends a stack per strike,
+a long roll empties the chain as fast as it burns through it.
+
+⚠️ **Neither end of that range is usable, which is the point of
+`ExpectedStrikes`.** The floor prices a repeating skill as though the tail never
+happened and a rating reading it never picks one; the ceiling prices every cast as
+the best cast anybody ever had and a rating reading that picks nothing else. The
+mean is what everything outside the roll reads — and the *description* quotes the
+floor, the odds and the cap instead, because "1.994 strikes" describes no cast
+anybody will ever have.
+
+#### ⚠️ A pile is worth far less than a stack times its height
+
+This one was measured rather than reasoned, and both halves of the feature were
+false on the first run.
+
+`Suggest` had to learn to value a counter, because read the way every other arm of
+`inflictedOn` reads its category it is worth exactly nothing — and a rating that
+said so would never put one on, leaving the whole playstyle unreachable by the
+opponent. So a stack is priced at what somebody on the caster's side could *do*
+with it, and nought when nobody carries a consumer, which is the honest answer
+rather than a missing case.
+
+Priced **linearly** — one stack's worth times the height of the pile — a single
+cast of a three-stack charge over two cells read as three whole strikes of value,
+and the opponent spent its opening turn on a skill that dealt no damage. Against a
+striking squad that is simply losing: the kit measured **6 per mille against 366**
+for the burst kit beside it. A consumer cashes one stack a cast and a battle is
+about fifteen turns long, so the stacks near the top of a pile are speculative.
+Halving each against the one below it — a sum that can never pass twice the first
+stack, however high the pile — took the same kit from **6 to 110** with no number
+in the data moving.
+
+The rest came from the skills, which had been priced as though the shape were
+free. Both halves are now held by
+`TestAccumulatingIsAWayOfFightingRatherThanASlowerOne`, which asks the two things
+that have to be true at once — the damage arrives **differently**, and it arrives
+**well enough to be worth choosing**:
+
+| kit | rate | blows | each |
+|---|---|---|---|
+| accumulating (`charge_beam magnetise electro_ball spark`) | 363‰ | 11398 | 97 |
+| bursting (`zap_cannon thunderbolt flash_cannon discharge`) | 366‰ | 3114 | 366 |
+
+**Three and a half times the blows at a quarter the size**, and level on the
+result. The floor held is three fifths rather than parity, because the figure
+moves with every character in the squad around it and a tighter band would be a
+reading rather than a claim.
+
+Four skills lay the counter down and three spend it, which is the ratio the loop
+needs: `thunder_shock` (1 stack) and `thunderbolt` (2) charge as a *rider* on
+damage they were already dealing, so an ordinary turn feeds the next one, while
+`charge_beam` (2) and `magnetise` (3, across a rank) are the turns spent on
+charging alone. A conduit that had to buy every stack with a turn of its own could
+never fire twice running, which is the whole of what "continuous" means here.
+
 ## Passives
 
 A skill is spent on a turn. A **passive** is not: it is in force from the moment

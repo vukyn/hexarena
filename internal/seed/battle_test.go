@@ -454,6 +454,7 @@ func TestEveryEventKindIsReachable(t *testing.T) {
 	}
 	record(aHandPlayedGateCrossing(t))
 	record(aHandPlayedSummon(t))
+	record(aHandPlayedSpread(t))
 	for kind := 0; kind < battle.KindCount; kind++ {
 		if !seen[battle.Kind(kind)] {
 			t.Errorf("no battle on the bench ever emitted %s", battle.Kind(kind))
@@ -527,6 +528,87 @@ func aHandPlayedSummon(t *testing.T) []battle.Event {
 	if !summoned || !left {
 		t.Fatalf("the hand-played summon logged summoned=%v left=%v; both were wanted",
 			summoned, left)
+	}
+	return events
+}
+
+// aHandPlayedSpread charges one of two enemies standing in the same column and
+// then cashes it, and returns what that logged.
+//
+// By hand for the reason the summon is: the sweep above is Suggest playing both
+// sides, and the shape a spread buys is only worth taking after somebody has
+// spent a turn putting the counter on — a rating that is offered a plain attack
+// and a charge on the same turn takes the attack, which is the right choice and
+// the wrong fixture. Widening the sweep until the two turns happened to fall in
+// that order would be a test passing for a reason nobody could name.
+//
+// The two victims stand hex-adjacent in the enemy front rank, because a chain
+// with nobody to step to is a chain nobody can see: the current only travels
+// between carriers standing next to each other, so both have to be charged and
+// both have to be neighbours before there is anything to log.
+func aHandPlayedSpread(t *testing.T) []battle.Event {
+	t.Helper()
+	fight, err := battle.New(benchBooks(t), 7, []battle.Roster{
+		{ID: "dynamo", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "electric"), Stats: benchStats(3000, 700, 300, 200),
+			Skills: []string{"electrify", "arc"}},
+		{ID: "front", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 2},
+			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 10),
+			Skills: []string{"strike"}},
+		{ID: "behind", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 10),
+			Skills: []string{"strike"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	var events []battle.Event
+	// Both of them, and in this order: the current only travels between carriers
+	// standing next to each other, so charging one and cashing it would log a
+	// discharge and never a chain. The first two turns lay the run down and the
+	// third walks it.
+	charge := []string{"front", "behind"}
+	charged, spread := 0, false
+	for turn := 0; turn < 200 && !spread; turn++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt == nil {
+			break
+		}
+		if !prompt.Skipped {
+			switch {
+			case prompt.Unit == "dynamo" && charged < len(charge):
+				if err := fight.Act("electrify", unitCell(t, fight, charge[charged])); err != nil {
+					t.Fatalf("electrify: %v", err)
+				}
+				charged++
+			case prompt.Unit == "dynamo":
+				if err := fight.Act("arc", unitCell(t, fight, "front")); err != nil {
+					t.Fatalf("arc: %v", err)
+				}
+			default:
+				if choice, ok := fight.Suggest(prompt); ok {
+					if err := fight.Act(choice.Skill, choice.Aim); err != nil {
+						t.Fatalf("act %s: %v", choice.Skill, err)
+					}
+				} else if err := fight.Pass("nothing to do"); err != nil {
+					t.Fatalf("pass: %v", err)
+				}
+			}
+		}
+		for _, event := range fight.Drain() {
+			events = append(events, event)
+			if event.Kind == battle.Spread {
+				spread = true
+			}
+		}
+	}
+	if charged < len(charge) || !spread {
+		t.Fatalf("the hand-played chain charged %d of %d and spread=%v; both were wanted",
+			charged, len(charge), spread)
 	}
 	return events
 }

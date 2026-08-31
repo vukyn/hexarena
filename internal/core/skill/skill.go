@@ -157,6 +157,81 @@ type Condition struct {
 	// Consume removes the status, which is what a detonate does: the burst is
 	// paid for by the ticks it throws away.
 	Consume bool
+	// ConsumeStacks is how many stacks a consume takes, and nought means all of
+	// them, which is what every consume did before the field existed.
+	//
+	// The distinction is the difference between a detonate and a discharge. A
+	// detonate spends a whole pile at once because the pile *is* the payment —
+	// the burst is worth the ticks thrown away, so leaving some behind would be
+	// leaving the payment behind. A counter spent one at a time is a magazine
+	// instead, and taking the whole magazine for one shot is what would make
+	// accumulating it pointless.
+	ConsumeStacks int
+	// Chains makes the consume travel: from the unit at the aim to every
+	// hex-adjacent unit carrying the same status, and on from those, for as far
+	// as an unbroken run of carriers reaches.
+	//
+	// It replaced a fixed pattern, and the difference is the whole idea. A
+	// pattern is geometry — it covers the same three cells whoever is standing
+	// in them — so a charged unit one cell outside it was never reached and an
+	// uncharged unit inside it was hit anyway. A chain is the opposite: it goes
+	// exactly where the charge is, and **it needs a charged body to step on**. A
+	// gap of one uncharged cell stops it dead, which is what makes laying the
+	// charge down a decision about *where* rather than only about how much.
+	//
+	// ⚠️ **The aim gates the whole thing.** A chain from an uncharged unit is
+	// empty however much charge is standing beside it — nothing is consumed,
+	// nothing arcs, and the skill is simply its own blow.
+	Chains bool
+	// ArcPower is what one consumed stack deals, as a share of the caster's
+	// scaling stat, exactly as a skill's own power is.
+	//
+	// ⚠️ **It is added to the skill's own blow and never traded against it.** An
+	// earlier design damped the blow to pay for the discharge, on the reasoning
+	// that a skill hitting for its full figure *and* firing the charge would be
+	// strictly better whenever the charge was there. That reasoning was wrong
+	// about where the payment comes from: a stack does not appear on a target by
+	// itself, and the turn that put it there is the price. A conduit is paid for
+	// in **tempo** — the charging turns and the cooldown it sits on — so its own
+	// figure is a constant, and a reader comparing two skills is comparing the
+	// numbers on them rather than the numbers minus a condition.
+	//
+	// ⚠️ **It is not the skill's damage and does not behave like it.** It is the
+	// charge going off, so it is not aimed, not rolled against accuracy or dodge,
+	// and **not stopped by a shield**: a guard that swallows the blow does not
+	// stop what was already sitting on the target. That is the one thing a
+	// conduit has over an ordinary attack, and it is the reason the counter is
+	// worth laying down in front of a wall.
+	ArcPower int
+}
+
+// Arcs reports whether the condition discharges the status it consumes into
+// damage of its own.
+func (c *Condition) Arcs() bool { return c != nil && c.ArcPower > 0 }
+
+// ChainsOn reports whether the consume travels to adjacent carriers.
+func (c *Condition) ChainsOn() bool { return c != nil && c.Chains }
+
+// Takes is how many stacks a consume removes from a target carrying the given
+// number, and nought when this condition consumes nothing.
+//
+// The "all of them" default lives here rather than at the call site because two
+// callers ask — the battle that spends the stacks and the pricing that values
+// them — and a default written twice is a default that will disagree with itself.
+//
+// ⚠️ **It is asked once per STRIKE, not once per cast.** One blow spends one
+// charge, so a skill that lands three times spends three — which is what makes a
+// repeating strike and a pile of counters the same bet twice over, and what keeps
+// a multi-strike conduit from being a single-strike one with better numbers.
+func (c *Condition) Takes(held int) int {
+	switch {
+	case c == nil || !c.Consume:
+		return 0
+	case c.ConsumeStacks <= 0 || c.ConsumeStacks > held:
+		return held
+	default:
+		return c.ConsumeStacks
+	}
 }
 
 // ReadsStatus reports whether the condition asks what the target is carrying.
@@ -475,9 +550,17 @@ type Skill struct {
 	Pattern string
 	// Power is the skill's strength per strike, in parts per thousand.
 	Power int
-	// Strikes is how many times it lands. A multi-strike skill is expected to
-	// divide its power rather than repeat it at full strength.
+	// Strikes is how many times it lands, at least. A multi-strike skill is
+	// expected to divide its power rather than repeat it at full strength.
 	Strikes int
+	// Repeat is the chance a strike is followed by another, in parts per
+	// thousand, rolled again after each; MaxStrikes is where it stops. Together
+	// they turn the count from a number into a distribution — mostly the floor,
+	// occasionally a great deal more — and ExpectedStrikes is the mean every
+	// caller outside the roll reads. Zero for every skill that shipped before
+	// they existed, which is why adding them moved no golden.
+	Repeat     int
+	MaxStrikes int
 	// Accuracy is its own chance to connect, before the caster's accuracy stat
 	// and the target's dodge. A full thousand cannot miss and cannot be dodged.
 	Accuracy int
@@ -569,6 +652,35 @@ func (s Skill) StrikeCount() int {
 	return s.Strikes
 }
 
+// Repeats reports whether the skill's strike count is rolled rather than fixed.
+func (s Skill) Repeats() bool { return s.Repeat > 0 && s.MaxStrikes > s.StrikeCount() }
+
+// ExpectedStrikes is how many times the skill lands on average, in parts per
+// thousand, and it is the figure every caller outside the roll should read.
+//
+// ⚠️ **Neither end of the range is usable and that is the point of the field.**
+// The floor prices a repeating skill as though the tail never happened, and a
+// rating reading it would never pick one; the ceiling prices every cast as the
+// best cast anybody ever had, and a rating reading that would pick nothing else.
+// A repeating strike is a *distribution*, so what it is worth is its mean.
+//
+// The arithmetic is combat.Hit.ExpectedStrikes and this is the same sum written
+// where a skill can be asked without building a hit — a description has no
+// caster and no target, and it still has to quote a figure.
+func (s Skill) ExpectedStrikes() int {
+	count := s.StrikeCount()
+	total := count * scale.Base
+	if !s.Repeats() {
+		return total
+	}
+	odds := scale.Base
+	for i := count; i < s.MaxStrikes; i++ {
+		odds = odds * s.Repeat / scale.Base
+		total += odds
+	}
+	return total
+}
+
 // PowerAgainst returns the power the skill lands with, given how many stacks of
 // its required status the target carries.
 func (s Skill) PowerAgainst(against Target) int {
@@ -638,13 +750,15 @@ type skillFile struct {
 	// Flavour sits beside the name for the same reason: both are the words a
 	// skill is read in, and both are omitted when absent so a book that declares
 	// neither round-trips to the bytes it was authored as.
-	Flavour  string `json:"flavour,omitempty"`
-	Element  string `json:"element"`
-	Range    int    `json:"range"`
-	Pattern  string `json:"pattern"`
-	Power    int    `json:"power"`
-	Strikes  int    `json:"strikes"`
-	Accuracy int    `json:"accuracy"`
+	Flavour    string `json:"flavour,omitempty"`
+	Element    string `json:"element"`
+	Range      int    `json:"range"`
+	Pattern    string `json:"pattern"`
+	Power      int    `json:"power"`
+	Strikes    int    `json:"strikes"`
+	Repeat     int    `json:"repeat_chance,omitempty"`
+	MaxStrikes int    `json:"max_strikes,omitempty"`
+	Accuracy   int    `json:"accuracy"`
 	// Pierce is written only when there is some, like the two healing figures
 	// below it: no shipped skill pierces, so the shipped book round-trips byte
 	// for byte and the tables measured from it did not move when it arrived.
@@ -685,11 +799,14 @@ type scalingFile struct {
 }
 
 type conditionFile struct {
-	Status      string `json:"status,omitempty"`
-	MinStacks   int    `json:"min_stacks,omitempty"`
-	BelowHealth int    `json:"below_health,omitempty"`
-	BonusPower  int    `json:"bonus_power"`
-	Consume     bool   `json:"consume,omitempty"`
+	Status        string `json:"status,omitempty"`
+	MinStacks     int    `json:"min_stacks,omitempty"`
+	BelowHealth   int    `json:"below_health,omitempty"`
+	BonusPower    int    `json:"bonus_power"`
+	Consume       bool   `json:"consume,omitempty"`
+	ConsumeStacks int    `json:"consume_stacks,omitempty"`
+	Chains        bool   `json:"chains,omitempty"`
+	ArcPower      int    `json:"arc_power,omitempty"`
 }
 
 // gradientFile is its own shape rather than a field on conditionFile, because a
@@ -760,8 +877,9 @@ func (s Skill) file() skillFile {
 	out := skillFile{
 		ID: s.ID, Name: s.Name, Flavour: s.Flavour,
 		Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
-		Power: s.Power, Strikes: s.Strikes, Accuracy: s.Accuracy,
-		Pierce: s.Pierce, Crit: s.Crit, Restores: s.Restores, Drains: s.Drains,
+		Power: s.Power, Strikes: s.Strikes, Repeat: s.Repeat, MaxStrikes: s.MaxStrikes,
+		Accuracy: s.Accuracy,
+		Pierce:   s.Pierce, Crit: s.Crit, Restores: s.Restores, Drains: s.Drains,
 		Cooldown: s.Cooldown, Target: s.Target.String(),
 		Applies: applicationFiles(s.Applies), SelfApplies: applicationFiles(s.SelfApplies),
 	}
@@ -784,6 +902,8 @@ func (s Skill) file() skillFile {
 			Status: s.SelfRequires.Status, MinStacks: s.SelfRequires.MinStacks,
 			BelowHealth: s.SelfRequires.BelowHealth,
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
+			ConsumeStacks: s.SelfRequires.ConsumeStacks, Chains: s.SelfRequires.Chains,
+			ArcPower: s.SelfRequires.ArcPower,
 		}
 	}
 	if s.SelfGradient != nil {
@@ -794,6 +914,8 @@ func (s Skill) file() skillFile {
 			Status: s.Requires.Status, MinStacks: s.Requires.MinStacks,
 			BelowHealth: s.Requires.BelowHealth,
 			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
+			ConsumeStacks: s.Requires.ConsumeStacks, Chains: s.Requires.Chains,
+			ArcPower: s.Requires.ArcPower,
 		}
 	}
 	if s.Strips != nil {
@@ -925,6 +1047,24 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return fail("drains from damage it never deals")
 	case declared.Strikes < 0:
 		return fail("has %d strikes, want zero or more", declared.Strikes)
+	case declared.Repeat < 0 || declared.Repeat > scale.Base:
+		return fail("repeats at %d, want a share in parts per thousand", declared.Repeat)
+	// A repeat with no ceiling is a skill that can take a whole battle in one
+	// turn, however rarely, and "however rarely" is not a bound.
+	case declared.Repeat > 0 && declared.MaxStrikes <= 0:
+		return fail("repeats at %d with no max_strikes, so its tail is unbounded", declared.Repeat)
+	case declared.MaxStrikes < 0:
+		return fail("caps at %d strikes, want zero or more", declared.MaxStrikes)
+	case declared.MaxStrikes > 0 && declared.Repeat == 0:
+		return fail("caps at %d strikes but never repeats, so the cap bounds nothing", declared.MaxStrikes)
+	case declared.Repeat > 0 && declared.Power == 0:
+		return fail("repeats strikes it never deals damage with")
+	// The floor has to be under the ceiling or the roll is a fixed count wearing
+	// a distribution's clothes, and every figure derived from it would be a mean
+	// of one outcome.
+	case declared.MaxStrikes > 0 && declared.MaxStrikes <= max(declared.Strikes, 1):
+		return fail("lands %d times and caps at %d, so it never repeats at all",
+			max(declared.Strikes, 1), declared.MaxStrikes)
 	case declared.Accuracy < 0 || declared.Accuracy > scale.Base:
 		return fail("has accuracy %d, want a share in parts per thousand", declared.Accuracy)
 	case declared.Power > 0 && declared.Accuracy == 0:
@@ -997,6 +1137,13 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	if err != nil {
 		return Skill{}, err
 	}
+	// A conduit rides on its own strikes, and turn.go never rolls a strike of no
+	// power — so a skill that deals none would never reach the discharge it
+	// declares.
+	if requires.Arcs() && declared.Power <= 0 {
+		return Skill{}, fmt.Errorf("skill %q requires: arcs for %d but the skill deals no damage, so it never rolls a strike and never discharges",
+			declared.ID, requires.ArcPower)
+	}
 	selfRequires, err := resolveCondition(declared.ID, "self_requires", declared.SelfRequires, deps)
 	if err != nil {
 		return Skill{}, err
@@ -1052,8 +1199,10 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	return Skill{
 		ID: declared.ID, Name: name, Flavour: flavour,
 		Element: affinity, Range: declared.Range, Pattern: shape.Name,
-		Power: declared.Power, Strikes: declared.Strikes, Accuracy: declared.Accuracy,
-		Pierce: declared.Pierce, Crit: declared.Crit,
+		Power: declared.Power, Strikes: declared.Strikes,
+		Repeat: declared.Repeat, MaxStrikes: declared.MaxStrikes,
+		Accuracy: declared.Accuracy,
+		Pierce:   declared.Pierce, Crit: declared.Crit,
 		Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
 		Requires: requires, SelfRequires: selfRequires, SelfGradient: selfGradient,
 		Strips: strips, Restrict: restrict,
@@ -1229,12 +1378,48 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 	if declared.Consume && !readsStatus {
 		return fail("consumes a status, but it names none")
 	}
-	if declared.Consume && declared.BonusPower == 0 {
-		return fail("consumes %q for no bonus, which throws the status away for nothing", statusID)
+	// A spread is the second currency a consume may be paid in, so the refusal
+	// below is now "paid in neither" rather than "not paid in power". Everything
+	// about the spread is checked first, so a half-written one is named as itself
+	// instead of arriving as the older, vaguer complaint.
+	// A caster's own condition may not chain or arc. Both are answers about the
+	// board in front of the caster — which bodies are carrying what, and where
+	// they are standing — and a caster-side one would be reading a board it is
+	// not pointed at.
+	if field != "requires" && (declared.Chains || declared.ArcPower != 0) {
+		return fail("chains or arcs, which only the target's condition may do: both are read off the unit at the aim")
+	}
+	if declared.ArcPower < 0 {
+		return fail("arcs for %d power, want zero or more", declared.ArcPower)
+	}
+	if declared.ConsumeStacks < 0 {
+		return fail("consumes %d stacks, want zero for all of them or a positive count", declared.ConsumeStacks)
+	}
+	if declared.ConsumeStacks > 0 && !declared.Consume {
+		return fail("names %d stacks to consume but does not consume", declared.ConsumeStacks)
+	}
+	if !declared.Consume && (declared.Chains || declared.ArcPower != 0) {
+		// Both describe what spending the status does. Without the consume they
+		// would be a skill that arcs and chains for ever off a status it never
+		// spends, which is the free shape the old spread rule refused for the same
+		// reason.
+		return fail("chains or arcs without consuming anything, so the discharge would be free every turn the condition held")
+	}
+	if declared.Consume && declared.BonusPower == 0 && declared.ArcPower == 0 {
+		return fail("consumes %q for neither a bonus nor a discharge, which throws the status away for nothing", statusID)
+	}
+	if declared.BonusPower != 0 && declared.ArcPower != 0 {
+		// Two payments for one stack. A detonate is paid in its own power and a
+		// conduit in the charge's; taking both is the ceiling charged twice, and
+		// nothing downstream could tell which half a figure came from.
+		return fail("is paid both %d bonus power and %d arc power for one stack, which is the same purchase made twice",
+			declared.BonusPower, declared.ArcPower)
 	}
 	return &Condition{
 		Status: statusID, MinStacks: minStacks, BelowHealth: declared.BelowHealth,
 		BonusPower: declared.BonusPower, Consume: declared.Consume,
+		ConsumeStacks: declared.ConsumeStacks, Chains: declared.Chains,
+		ArcPower: declared.ArcPower,
 	}, nil
 }
 

@@ -247,6 +247,17 @@ func forgoneBy(t *testing.T, kind status.Kind, stacks int, rules combat.Rules) (
 // TestADetonateIsWorthLessThanItsBreakEven is the pricing rule for a burst that
 // consumes a status: it may beat leaving the status alone, but not by so much
 // that applying it and immediately detonating it is the only line worth playing.
+//
+// ⚠️ **This prices one of the two things a consume can spend, and the split is
+// about the STATUS rather than about the payment.** Everything here rests on
+// what leaving the status alone would have been worth — its remaining ticks, or
+// the extra damage a debuff lets through — and a *counter* is worth neither. It
+// does nothing to its holder at all, so "what detonating gives up" is not a small
+// number here, it is a question with no answer, and the rule would be bounding a
+// burst by nothing. Counters are bounded by
+// TestSpendingACounterCapsAtDoublingHoweverItIsPaid instead, which derives its
+// ceiling from the pattern book — and the two meet: a detonate may not beat its
+// alternative twice over, and neither may a counter double itself more than once.
 func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
 	book, statuses, rules := mustSkills(t), mustStatuses(t), mustRules(t)
 	for _, current := range book.Skills() {
@@ -256,6 +267,12 @@ func TestADetonateIsWorthLessThanItsBreakEven(t *testing.T) {
 		kind, err := statuses.Lookup(current.Requires.Status)
 		if err != nil {
 			t.Errorf("skill %q: %v", current.ID, err)
+			continue
+		}
+		if kind.Category == status.Charge {
+			// A counter, priced where counters are priced. Not a skill that
+			// slipped through: the parser refuses a consume paid for in neither
+			// power nor shape, so every one of these is paid for somehow.
 			continue
 		}
 		burst := rules.Damage(attackerAttack, referenceDefense,

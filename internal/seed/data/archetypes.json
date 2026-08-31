@@ -382,11 +382,16 @@
         "discharge",
         "thunderbolt",
         "flash_cannon",
+        "charge_beam",
+        "electro_ball",
+        "magnetise",
+        "spark",
         "mirror_shot",
         "thunder_wave",
         "metal_sound",
         "magnet_rise",
-        "zap_cannon"
+        "zap_cannon",
+        "overload"
       ],
       "passives": [
         {

@@ -331,7 +331,7 @@ Tầm 2 · 2 ô · 100% trúng · hồi 4 lượt.
 
 rinse
 Dội một vòng nước lên đồng đội, thứ gì bám trên người đều trôi theo.
-Gỡ 2 cộng dồn hiệu ứng gây hại theo lượt và hiệu ứng giảm chỉ số.
+Gỡ 2 cộng dồn hiệu ứng gây hại theo lượt, hiệu ứng giảm chỉ số và điện tích.
 Tầm 1 · hồi 3 lượt.
 [one line] gỡ 2 hiệu ứng xấu · đồng đội · tầm 1 · hồi 3
 
@@ -342,10 +342,11 @@ Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 [one line] nhanh nhẹn 100% · đồng đội · tầm 1 · 3 ô · hồi 4
 
 thunder_shock
-Một luồng nhỏ chạy qua người kẻ đối diện, đủ để cả thân cứng lại trong chớp mắt, 70% công.
+Một luồng nhỏ chạy qua người kẻ đối diện, chạy xong vẫn còn vướng lại ở đó, 70% công.
+Gây nhiễm điện cho mục tiêu, 100% khả năng.
 Gây choáng cho mục tiêu, 12% khả năng.
 Tầm 2 · 95% trúng · hồi 1 lượt.
-[one line] 70% công · choáng 12% · tầm 2 · hồi 1
+[one line] 70% công · nhiễm điện 100% · choáng 12% · tầm 2 · hồi 1
 
 mirror_shot
 Hắt lại đúng thứ ánh sáng vừa rọi tới, kẻ đối diện chói mắt mà không kịp quay đi, 90% công.
@@ -355,9 +356,10 @@ Tầm 2 · 90% trúng · hồi 2 lượt.
 
 thunderbolt
 Cả khoảng không sáng trắng lên một nhịp rồi tối lại, chỗ vừa sáng chẳng còn gì nguyên vẹn, 160% công, xuyên 30% giáp.
+Gây nhiễm điện x2 cho mục tiêu, 100% khả năng.
 Gây choáng cho mục tiêu, 20% khả năng.
 Tầm 2 · 88% trúng · hồi 3 lượt.
-[one line] 160% công · choáng 20% · tầm 2 · hồi 3
+[one line] 160% công · nhiễm điện x2 100% · choáng 20% · tầm 2 · hồi 3
 
 flash_cannon
 Gom ánh kim lại trong lòng rồi bắn ra thành một tia trắng xoá, thứ gì hứng trọn cũng vỡ ra một mảng, 150% công.
@@ -394,6 +396,36 @@ Nén dòng lại thành một khối rồi bắn đi; khối ấy đi chậm và
 Gây choáng cho mục tiêu, 100% khả năng.
 Tầm 3 · 55% trúng · hồi 4 lượt.
 [one line] 270% công · choáng 100% · tầm 3 · hồi 4
+
+charge_beam
+Một tia mảnh rọi tới rồi ở lại, ngấm vào người kẻ đối diện và không chịu tan đi, 80% công.
+Gây nhiễm điện x2 cho mục tiêu, 100% khả năng.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+[one line] 80% công · nhiễm điện x2 100% · tầm 2 · hồi 1
+
+magnetise
+Kéo cả một dải không khí thành từ trường, ai đứng trong đó cũng dính theo, 50% công.
+Gây nhiễm điện x3 cho mục tiêu, 100% khả năng.
+Tầm 2 · 3 ô · 92% trúng · hồi 3 lượt.
+[one line] 50% công · nhiễm điện x3 100% · tầm 2 · 3 ô · hồi 3
+
+electro_ball
+Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chạm vào ai đang sẵn dòng là cả vùng sáng lên, 2 nhát, mỗi nhát 64% công (tổng 128%).
+Mục tiêu đang dính nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 29% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+[one line] 128% công · nhiễm điện→lan · tầm 2 · hồi 2
+
+spark
+Chớp một cái vào một chỗ, rồi có khi chớp thêm cái nữa, rồi lại cái nữa, 2 nhát, mỗi nhát 34% công (tổng 68%), đánh xong mỗi nhát còn 50% khả năng đánh thêm, tối đa 10.
+Mục tiêu đang dính nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 19% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
+Tầm 1 · 93% trúng · hồi 2 lượt.
+[one line] 68% công · nhiễm điện→lan · tầm 1 · hồi 2
+
+overload
+Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng không còn gì đứng lại, 88% công.
+Mục tiêu đang dính ít nhất 2 cộng dồn nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 18% công, xuyên qua mọi lớp đỡ, tiêu sạch số cộng dồn nhiễm điện nó đang mang.
+Tầm 2 · 88% trúng · hồi 4 lượt.
+[one line] 88% công · nhiễm điện 2+→nổ · tầm 2 · hồi 4
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -579,6 +611,10 @@ Mọi kẻ địch còn đánh được đều phải nhắm vào bên mang, b�
 Bên dính hồi máu bao nhiêu cũng bị cắt 40% mỗi cộng dồn, hồi từ đâu cũng vậy.
 Tối đa là 80%.
 Giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn.
+
+[status] charge
+Bản thân nó không làm gì bên đang mang. Nó nằm đó để một chiêu gọi tên nó tiêu đi.
+Tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn.
 
 [element] neutral
 Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
@@ -945,7 +981,7 @@ Range 2 · 2 cells · 100% to hit · 4 turns to recharge.
 
 rinse
 Aims at an ally.
-Strips 2 stacks of damage over time and stat reduction.
+Strips 2 stacks of damage over time, stat reduction and stored current.
 Range 1 · 3 turns to recharge.
 [one line] strips 2 harmful · an ally · range 1 · cd 3
 
@@ -957,9 +993,10 @@ Range 1 · 3 cells · 100% to hit · 4 turns to recharge.
 
 thunder_shock
 Hits an enemy for 70% of attack.
+Inflicts charge, 100% of the time.
 Inflicts stun, 12% of the time.
 Range 2 · 95% to hit · 1 turn to recharge.
-[one line] 70% attack · stun 12% · range 2 · cd 1
+[one line] 70% attack · charge 100% · stun 12% · range 2 · cd 1
 
 mirror_shot
 Hits an enemy for 90% of attack.
@@ -969,9 +1006,10 @@ Range 2 · 90% to hit · 2 turns to recharge.
 
 thunderbolt
 Hits an enemy for 160% of attack, through 30% of the armour.
+Inflicts charge x2, 100% of the time.
 Inflicts stun, 20% of the time.
 Range 2 · 88% to hit · 3 turns to recharge.
-[one line] 160% attack · stun 20% · range 2 · cd 3
+[one line] 160% attack · charge x2 100% · stun 20% · range 2 · cd 3
 
 flash_cannon
 Hits an enemy for 150% of attack.
@@ -1007,6 +1045,36 @@ Hits an enemy for 270% of attack.
 Inflicts stun, 100% of the time.
 Range 3 · 55% to hit · 4 turns to recharge.
 [one line] 270% attack · stun 100% · range 3 · cd 4
+
+charge_beam
+Hits an enemy for 80% of attack.
+Inflicts charge x2, 100% of the time.
+Range 2 · 95% to hit · 1 turn to recharge.
+[one line] 80% attack · charge x2 100% · range 2 · cd 1
+
+magnetise
+Hits an enemy for 50% of attack.
+Inflicts charge x3, 100% of the time.
+Range 2 · 3 cells · 92% to hit · 3 turns to recharge.
+[one line] 50% attack · charge x3 100% · range 2 · 3 cells · cd 3
+
+electro_ball
+Hits an enemy for 2 strikes of 64% of attack each, 128% in all.
+While the target is carrying charge, every stack of charge that goes off deals 29% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
+Range 2 · 90% to hit · 2 turns to recharge.
+[one line] 128% attack · charge→spreads · range 2 · cd 2
+
+spark
+Hits an enemy for 2 strikes of 34% of attack each, 68% in all, and a 50% chance of another after each, up to 10.
+While the target is carrying charge, every stack of charge that goes off deals 19% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
+Range 1 · 93% to hit · 2 turns to recharge.
+[one line] 68% attack · charge→spreads · range 1 · cd 2
+
+overload
+Hits an enemy for 88% of attack.
+While the target is carrying at least 2 stacks of charge, every stack of charge that goes off deals 18% of attack through any guard, spending every stack of the charge it had.
+Range 2 · 88% to hit · 4 turns to recharge.
+[one line] 88% attack · charge 2+→discharges · range 2 · cd 4
 
 [trait] endurance
 Always carries toughened.
@@ -1175,6 +1243,10 @@ Costs a choice of target · 2 turns · 1 stack.
 Every heal the holder receives is cut by 40% per stack, whatever gave it.
 At its cap that is 80%.
 Cuts healing received · 2 turns · up to 2 stacks.
+
+[status] charge
+Does nothing at all to whoever carries it. It is there to be spent by a skill that names it.
+Builds up to be spent · 4 turns · up to 999 stacks.
 
 [element] neutral
 Inert: it beats nothing and nothing beats it; every trade is 100%.

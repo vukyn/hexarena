@@ -549,6 +549,139 @@ func covers(shape pattern.Pattern, known skill.Skill, aim hex.Offset) []hex.Offs
 	return shape.Targets(aim)
 }
 
+// chainFrom is every unit the current reaches: the carrier the skill is aimed
+// at, then every hex-adjacent unit carrying the same status, and on from those,
+// for as far as an unbroken run of carriers goes.
+//
+// ⚠️ **It steps on charged bodies and nothing else.** A gap of one uncharged
+// cell stops it dead however much charge is standing behind that cell — which is
+// the whole difference between this and the fixed pattern it replaced. A pattern
+// is geometry and covers the same cells whoever is in them; a chain goes exactly
+// where the charge is, so laying the charge down becomes a decision about *where*
+// rather than only about how much.
+//
+// It returns nothing at all when the aimed unit is not carrying, which is the
+// gate on the whole mechanism: a conduit aimed at a clean target consumes
+// nothing, arcs nothing and is simply its own damped self.
+//
+// ⚠️ **It stops at the midline unless the skill is aimed at both sides**, and
+// that is the same rule every shape on this board obeys: pattern.Targets drops a
+// splash cell landing on the far side, and Side.CrossesSides is the one thing
+// that lifts it. Without this a conduit aimed at the enemy arced into its own
+// squad the moment a teammate was standing next to the target and carrying —
+// which the enemy's own chargers arrange for free. Measured on a full board: the
+// current reached all five enemies **and an ally at 2,1**, for 272 damage and two
+// of its stacks. The chain is the one shape in the engine that reads the board
+// rather than a pattern, so it is the one shape that had to be told.
+//
+// Deterministic, which it has to be: the walk is over NeighborsOnBoard in its
+// fixed order and over b.units in enlistment order, and the map is asked only
+// whether a unit is already in the list — no map iteration reaches the result.
+func (b *Battle) chainFrom(actor *Unit, known skill.Skill, aim hex.Offset) []*Unit {
+	head := b.occupant(aim)
+	if head == nil || !known.Amplified(conditionTarget(known, head)) {
+		return nil
+	}
+	out := []*Unit{head}
+	// A conduit that does not chain discharges into the unit it was aimed at and
+	// stops there — a chain of one. Returning nothing for it would be the same
+	// mistake as returning nothing for a clean target, and it would leave a
+	// nuke firing no charge at all.
+	if !known.Requires.ChainsOn() {
+		return out
+	}
+	seen := map[string]bool{head.ID: true}
+	for i := 0; i < len(out); i++ {
+		for _, cell := range out[i].Cell.NeighborsOnBoard() {
+			if !known.Target.Reaches(actor.Side, cell.Side()) {
+				continue
+			}
+			next := b.occupant(cell)
+			if next == nil || seen[next.ID] {
+				continue
+			}
+			if !known.Amplified(conditionTarget(known, next)) {
+				continue
+			}
+			seen[next.ID] = true
+			out = append(out, next)
+		}
+	}
+	return out
+}
+
+// discharge is one strike's worth of the stored charge going off, along the
+// whole chain at once.
+//
+// ⚠️ **Once per STRIKE, not once per cast**, which is what makes a repeating
+// strike and a pile of counters the same bet twice over. And the damage it deals
+// is not the skill's: it is not aimed, not rolled against accuracy or dodge, and
+// **not stopped by a shield** — a guard that swallows the blow does not stop what
+// was already sitting on the target. A *miss* is a different question and
+// delivers nothing here, exactly as it delivers no rider: a blocked blow arrived
+// and was stopped, a missed one never touched anybody.
+//
+// The chain is re-walked every strike rather than kept, because it shrinks: a
+// unit whose last stack has gone is no longer a body the current can step on, and
+// the run past it breaks the moment it does.
+func (b *Battle) discharge(actor *Unit, known skill.Skill, aim hex.Offset, turn atb.Turn) int64 {
+	chain := b.chainFrom(actor, known, aim)
+	if len(chain) == 0 {
+		return 0
+	}
+	from := fromSkill(known)
+	dealt := int64(0)
+	for at, unit := range chain {
+		held := unit.Statuses.Stacks(known.Requires.Status)
+		taken, _ := unit.Statuses.Remove(known.Requires.Status, known.Requires.Takes(held))
+		if taken == 0 {
+			continue
+		}
+		b.emit(Event{
+			Kind: StatusConsumed, At: turn.At, Turn: turn.Number, Actor: actor.ID,
+			Target: unit.ID, Skill: known.ID, Status: known.Requires.Status,
+			Stacks: taken, Remaining: int64(unit.Statuses.Stacks(known.Requires.Status)),
+		})
+		// Every unit past the first is one the skill was never aimed at, so the
+		// log has to say the current went there. A reader watching a single-target
+		// skill take health off somebody two cells away has nothing else to
+		// account for it.
+		if at > 0 {
+			b.emit(Event{
+				Kind: Spread, At: turn.At, Turn: turn.Number, Actor: actor.ID,
+				Target: unit.ID, Skill: known.ID, Status: known.Requires.Status,
+				Cell: hex.At(unit.Cell),
+			})
+		}
+		amount := b.books.Rules.Damage(
+			combat.PickScaling(known.Scaling.Source,
+				actor.Base[known.Scaling.Stat], b.Stats(actor)[known.Scaling.Stat]),
+			b.Stats(unit)[progression.Defense],
+			known.Requires.ArcPower*taken,
+			b.books.Chart.MultiplierAgainst(from.Element, unit.Affinity),
+		)
+		if amount <= 0 {
+			continue
+		}
+		before := unit.HP
+		b.wound(unit, amount, turn)
+		dealt += before - unit.HP
+		// Named by its status rather than by the skill, the way a reply is named
+		// by its trait: what took the health off is the charge, and a reader who
+		// could not tell the two apart would be hunting the skill's own figures
+		// for a number that was never there.
+		b.emit(Event{
+			Kind: Damaged, At: turn.At, Turn: turn.Number, Actor: actor.ID,
+			Target: unit.ID, Skill: known.ID, Status: known.Requires.Status,
+			Amount: amount, Stacks: taken, Remaining: unit.HP,
+		})
+		if b.finished {
+			return dealt
+		}
+	}
+	return dealt
+}
+
 // Act resolves the acting unit's chosen skill against a chosen cell.
 func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	if b.finished {
@@ -638,7 +771,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		// it still had cells to hit — and "what happens to the rest of the
 		// skill" is a question with no good answer, so the shape of this loop is
 		// what stops it being asked.
-		if dealt := b.resolveAgainst(unit, target, known, shape.Name, position, brought, turn); dealt > 0 {
+		if dealt := b.resolveAgainst(unit, target, known, shape.Name, position, aim, brought, turn); dealt > 0 {
 			bitten = append(bitten, target)
 		}
 		if b.finished {
@@ -857,26 +990,43 @@ func (b *Battle) strip(actor, target *Unit, known skill.Skill, turn atb.Turn) {
 // it, which is how an area skill trades focus for spread without being strictly
 // better than a single-target one.
 func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape string,
-	position int, brought swing, turn atb.Turn) (dealt int64) {
+	position int, aim hex.Offset, brought swing, turn atb.Turn) (dealt int64) {
 	b.strip(actor, target, known, turn)
 
 	power := known.Power
-	if known.Requires != nil {
+	// A conduit is a condition that discharges what it consumes. It behaves
+	// nothing like a detonate and the two are separated here, once, so that
+	// nothing below has to ask twice: a detonate spends the pile up front for a
+	// bigger blow, and a conduit damps its own blow and then fires the charge off
+	// strike by strike, along the chain, past any shield in the way.
+	conduit := false
+	if known.Requires != nil && position == 0 {
 		against := conditionTarget(known, target)
 		stacks := against.Stacks
 		if known.Amplified(against) {
+			conduit = known.Requires.Arcs()
 			power = known.PowerAgainst(against)
-			b.emit(Event{
-				Kind: Amplified, At: turn.At, Turn: turn.Number, Actor: actor.ID,
-				Target: target.ID, Skill: known.ID, Status: known.Requires.Status,
-				Stacks: stacks, Power: power,
-			})
-			if known.Requires.Consume {
-				consumed, forgone := target.Statuses.Consume(known.Requires.Status)
+			// Only when the power went up. A conduit moves it not at all — its own
+			// blow is a constant and the charge is added beside it — so the line
+			// would be reporting a change that did not happen.
+			if power > known.Power {
+				b.emit(Event{
+					Kind: Amplified, At: turn.At, Turn: turn.Number, Actor: actor.ID,
+					Target: target.ID, Skill: known.ID, Status: known.Requires.Status,
+					Stacks: stacks, Power: power,
+				})
+			}
+			// A detonate spends the pile here, once, before the strikes. A conduit
+			// spends nothing here at all: its consume is per strike and belongs
+			// with the discharge it pays for.
+			if known.Requires.Consume && !conduit {
+				consumed, forgone := target.Statuses.Remove(
+					known.Requires.Status, known.Requires.Takes(stacks))
 				b.emit(Event{
 					Kind: StatusConsumed, At: turn.At, Turn: turn.Number, Actor: actor.ID,
 					Target: target.ID, Skill: known.ID, Status: known.Requires.Status,
 					Stacks: consumed, Amount: forgone,
+					Remaining: int64(target.Statuses.Stacks(known.Requires.Status)),
 				})
 			}
 		}
@@ -899,6 +1049,8 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			actor.Base[known.Scaling.Stat], actorStats[known.Scaling.Stat]),
 		Multiplier:    power,
 		Strikes:       known.StrikeCount(),
+		Repeat:        known.Repeat,
+		MaxStrikes:    known.MaxStrikes,
 		Affinity:      multiplier,
 		Defense:       targetStats[progression.Defense],
 		Pierce:        known.Pierce,
@@ -951,6 +1103,19 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 				connected = true
 			}
 			b.emit(event)
+			// One strike, one charge, along the whole chain — and it happens on a
+			// BLOCKED strike as well as a landed one. A guard that swallows the
+			// blow does not stop what was already sitting on the target, which is
+			// the one thing a conduit has over an ordinary attack. A *miss* is a
+			// different question and delivers nothing, exactly as it delivers no
+			// rider: a blocked blow arrived and was stopped, a missed one never
+			// touched anybody.
+			if conduit && event.Kind != Missed {
+				dealt += b.discharge(actor, known, aim, turn)
+				if b.finished {
+					return dealt
+				}
+			}
 			// The gate is re-read here rather than once when the skill is
 			// finished, because this is where the health moved. A trait that
 			// came on after the first strike of three is in force for the other

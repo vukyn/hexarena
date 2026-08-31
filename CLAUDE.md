@@ -2479,6 +2479,98 @@ playing, and the status is a cast animation.
   strictly-better skill this whole rule exists to refuse, and no golden would
   notice.
 
+## A consume can be paid in shape: `charge`, the counter category
+
+`charge` is a status category that does **nothing** to its holder — no stat, no
+tick, no turn. It is ammunition, and it is the ninth category, appended last for
+the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
+*Counting instead of doing*; what matters when editing:
+
+- **It is the one category `Book.MaxStacks` does not bound.** `max_charge_stacks`
+  (999) bounds it instead, and a charge carrying a modifier or a tick is refused
+  at parse — the ceiling was granted on the understanding that it multiplies
+  nothing. Do not "tidy" that into one cap; the two numbers bound different
+  things.
+- **Never permanent.** `Set.Remove` refuses a permanent status (that is what keeps
+  a trait from being dispelled) and a consume goes through `Remove`, so a
+  permanent counter is one nothing could ever spend.
+- **`requires` gained `chains`, `damped`, `arc_power` and `consume_stacks`.** A
+  condition carrying `arc_power` is a **conduit** and is a different animal from a
+  detonate: it damps its own blow (`damped`) and fires the stored charge instead
+  (`arc_power`), one stack **per strike**, along a chain of adjacent carriers. The
+  old refusal "consumes for no bonus" is now "for neither a bonus nor a discharge",
+  and a skill may take one payment, never both.
+- ⚠️ **`charge` outlasts a shield, and is the SECOND category ever to.** The
+  predicate's own comment warns against completing it, and that warning is about a
+  *stat* getting through (mire broke the mirror invariant); a counter carries no
+  stat. `TestOnlyContaminationOutlastsAShield` is a written-out table rather than a
+  rule, because what Dot and Charge share is a sentence and no predicate spells it.
+- ⚠️ **The arc is not the skill's damage and must not be routed through the skill's
+  machinery.** Not aimed, not rolled against accuracy or dodge, **not blocked** —
+  it is what was already sitting on the target. It is logged as `Damaged` with
+  `Status` set, the way a reply is logged with `Passive` set, so a renderer that
+  switches on kind still draws the health it took.
+- ⚠️ **A miss delivers nothing, a block delivers everything.** `discharge` runs on
+  every strike outcome except `Missed` — the same sentence `OutlastsAShield` is
+  written on. Do not "tidy" that into one condition.
+- ⚠️ **The chain stops at the midline**, and it is the one shape in the engine
+  that had to be told. Every other is a pattern, and `pattern.Targets` already
+  drops a splash cell on the far side — `Side.CrossesSides` is the only thing that
+  lifts it. A chain reads the board instead, so it obeyed none of that: aimed at an
+  enemy standing next to a charged teammate it walked straight back over the line,
+  for 272 damage and two of that teammate's stacks. The *enemy's* own chargers
+  arrange that for free. `TestTheChainStopsAtTheMidline`.
+- **The chain is `Battle.chainFrom`: BFS from the aim over `NeighborsOnBoard`,
+  through carriers only.** It is re-walked **every strike**, because it shrinks as
+  it burns; and it returns nothing at all when the *aimed* unit is clean, which is
+  the gate on the entire mechanism. Deterministic — the map is asked only for
+  membership, and no map iteration reaches the result.
+- ⚠️ **`hex` adjacency is not what a reader guesses.** `3,1`'s neighbours are
+  `4,2 4,1 3,0 2,1 2,2 3,2` — **`4,0` is two cells away**, so a chain reaches it
+  only through a charged `3,0`. Odd columns sit half a cell lower; check with
+  `Offset.NeighborsOnBoard` rather than by eye.
+- **A rolled strike count**: `repeat_chance` + `max_strikes` on the skill,
+  `Hit.RollStrikes` in combat. ⚠️ **Wire BOTH into `combat.Hit` when building it in
+  `resolveAgainst`** — the first cut set neither and every roll silently returned
+  the floor, which no test caught because the floor is a legal count.
+  `ExpectedStrikes` is the mean and is what everything outside the roll reads;
+  the description quotes floor/odds/cap instead, because the mean describes no
+  cast anybody will have.
+- ⚠️⚠️ **A conduit's own figure is a CONSTANT — the arc is added, never traded
+  for.** There was a `damped` field that cut the blow to pay for the discharge; it
+  is gone, and the reasoning behind it was the mistake. A stack does not appear on
+  a target by itself: the turn that put it there is the price, paid before the
+  conduit was cast. A conduit is bought with **tempo** — charging turns and its own
+  cooldown. Do not reintroduce the trade; the user rejected it twice.
+- **One bound, carried on the skill's own face**: `arc_power < power`. A stack may
+  top the blow up, never outweigh it — otherwise the skill is a delivery mechanism
+  for somebody else's turn and its printed figure stops describing it.
+- **`consume_stacks` has two useful values and no third.** 1 is a drip (`spark`,
+  `electro_ball`); 0 is a **nuke** (`overload`) — it takes the whole pile and its
+  arc multiplies by the count. A nuke may not `chain`, must need ≥ 2 stacks, and
+  must sit on a longer cooldown than the drip.
+- ⚠️⚠️ **The drip/nuke rule has been written both ways round and both were wrong**,
+  because the answer depends on what the skills give up and that kept changing.
+  While conduits damped, a nuke damped *and* waited and was owed the better rate
+  (held to a poorer one it dealt 472 at a pile of six — a skill nobody brings). With
+  nothing damping, a nuke's compensation for waiting is that it takes the whole
+  pile, which is already the larger purchase — so **no better rate than the drip**,
+  and a longer cooldown. `TestANukeGetsNoBetterRateThanADrip`.
+- ⚠️ **`chainFrom` returns the head alone when `chains` is false.** Returning nil
+  there is the bug that leaves a non-chaining conduit firing no charge at all.
+- ⚠️ **`TestADetonateIsWorthLessThanItsBreakEven` cannot price a counter and skips
+  one by category.** Its arithmetic is what leaving the status alone was worth, and
+  a counter is worth neither ticks nor a defence term. The skip is on
+  `kind.Category == status.Charge`, **not** on the shape of the payment.
+  `TestAConduitPaysForWhatItDischarges` bounds it instead: the arc must beat the
+  damped power and not beat it twice over.
+- The playstyle is held by `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne`
+  — the damage must arrive in **more, smaller** pieces *and* at a rate within
+  three fifths of the burst kit's. Shipped reading: 363‰ over 11398 blows of 97
+  against 366‰ over 3114 of 366. Four skills charge (thunder_shock 1, thunderbolt
+  2 as riders on damage; charge_beam 2, magnetise 3 as turns spent) and two spend
+  — a conduit that bought every stack with a turn could never fire twice running.
+
 ## Open work
 
 Detail and the open questions are in `README.md` under Roadmap. What matters here

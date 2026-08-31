@@ -541,6 +541,69 @@ func TestTheStripsClauseReadsInBothOfItsFrames(t *testing.T) {
 	}
 }
 
+// TestAConditionsStackCountReadsAsAFloorRatherThanAnAmount is the ambiguity that
+// sat unexercised for as long as no shipped condition asked for more than one.
+//
+// The two counts in this package's sentences read the same and mean opposite
+// things. An APPLICATION's is exact — "puts charge x2 on" is two stacks and no
+// more — while a CONDITION's is a floor: the skill wants *at least* that many and
+// is happy with a pile. Rendering both as "x2" was harmless while every shipped
+// condition asked for one, because a threshold of one renders as nothing at all.
+//
+// `overload` is the first to ask for two, and it is the skill where the ambiguity
+// bites hardest: it would have read "carrying charge x2" and then "spends every
+// stack it had", leaving a reader no way to tell whether the two was the
+// requirement or the payment. One skill here declares both counts over the same
+// status at the same number, which is the only shape that can catch a renderer
+// spelling them alike.
+func TestAConditionsStackCountReadsAsAFloorRatherThanAnAmount(t *testing.T) {
+	shapes, err := seed.PatternBook()
+	if err != nil {
+		t.Fatalf("load the shipped patterns: %v", err)
+	}
+	statuses, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	declared, err := skill.ParseBook([]byte(`{"skills":[
+      {"id":"both_counts","element":"neutral","range":1,"pattern":"single",
+       "power":1000,"strikes":1,"accuracy":1000,"cooldown":3,"target":"enemy",
+       "applies":[{"status":"poison","chance":1000,"stacks":3}],
+       "requires":{"status":"poison","min_stacks":3,"bonus_power":500}}
+    ]}`), skill.Deps{Patterns: shapes, Statuses: statuses})
+	if err != nil {
+		t.Fatalf("parse the probe: %v", err)
+	}
+	carried, err := declared.Lookup("both_counts")
+	if err != nil {
+		t.Fatalf("look up the probe: %v", err)
+	}
+	for _, lang := range i18n.Langs() {
+		described := lang.Describe(carried, shapes)
+		applied, required := "", ""
+		for _, line := range strings.Split(described, "\n") {
+			switch {
+			case strings.Contains(line, lang.Say(i18n.BlurbAtLeast, 3, lang.Gloss("poison"))):
+				required = line
+			case strings.Contains(line, lang.Gloss("poison")+" x3"),
+				strings.Contains(line, "poison x3"):
+				applied = line
+			}
+		}
+		if applied == "" {
+			t.Errorf("%s: nothing in %q reads as three stacks being put on, so this measures no exact count at all",
+				lang, described)
+		}
+		if required == "" {
+			t.Errorf("%s: nothing in %q reads as three stacks being *required*, so the floor is still spelled like an amount:\n%s",
+				lang, described, described)
+		}
+		if applied != "" && applied == required {
+			t.Errorf("%s: the same line says what is put on and what is asked for:\n%s", lang, applied)
+		}
+	}
+}
+
 // bareWords splits prose into the words a reader sees, keeping the underscore
 // because an enum spelling holds one — splitting on it would look for
 // "stat_debuff" and never find it, while finding "stat" everywhere.

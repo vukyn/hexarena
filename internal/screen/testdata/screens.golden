@@ -70,6 +70,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   amphibian  lưỡng cư
   titan      lực sĩ
   fae        tiên
+  construct  cỗ máy
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -130,7 +131,7 @@ nội tại  các nội tại đã khai báo, và ai mang
   last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44
   reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44
   thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32
+  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -149,6 +150,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   amphibian  lưỡng cư
   titan      lực sĩ
   fae        tiên
+  construct  cỗ máy
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -179,6 +181,7 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.cleffa
     cleffa.mend         chở che
     cleffa.hex          ru ngủ
+  pokemon.magnemite     chưa viết bản dựng nào cho nhân vật này
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -240,6 +243,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   amphibian  lưỡng cư
   titan      lực sĩ
   fae        tiên
+  construct  cỗ máy
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -279,6 +283,8 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   taunting     bị khiêu khích
   heal_cut     giảm máu hồi vào
   fester       lở loét
+  charge       tích lại để tiêu
+  charge       nhiễm điện
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -310,6 +316,7 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.cleffa
     cleffa.mend         chở che
     cleffa.hex          ru ngủ
+  pokemon.magnemite     chưa viết bản dựng nào cho nhân vật này
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -322,7 +329,7 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
 nội tại  các nội tại đã khai báo, và ai mang
 
   id            tên tiếng Việt ai mang
-> endurance     bền bỉ         pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16
+> endurance     bền bỉ         pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16 pokemon.magnem…
   blaze         bùng lửa       pokemon.charmander@16
   heatproof     chịu nhiệt     pokemon.charmander@16
   virulence     độc lực        pokemon.bulbasaur@32
@@ -331,10 +338,10 @@ nội tại  các nội tại đã khai báo, và ai mang
   last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44
   reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44
   thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32
+  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16
   ballast       trụ vững       pokemon.squirtle@44
-  composure     vững tâm       pokemon.poliwag@40[Politoed] pokemon.cleffa@24
-  elusive       huyền ảo       pokemon.cleffa@40
+  composure     vững tâm       pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40
+  elusive       huyền ảo       pokemon.cleffa@40 pokemon.magnemite@32
   contagion     lây lan        pokemon.bulbasaur@28
   spiteful      nham hiểm      pokemon.poliwag@36
   berserk       cuồng chiến    pokemon.machop@40
@@ -357,6 +364,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   amphibian  lưỡng cư
   titan      lực sĩ
   fae        tiên
+  construct  cỗ máy
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -434,6 +442,7 @@ species  the declared kinds, and where each line is drawn
   amphibian
   titan
   fae
+  construct
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -493,7 +502,7 @@ traits  the declared traits, and who carries each
   last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44
   reckless      pokemon.charmander@44 pokemon.machop@44
   thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32
+  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16
 
   endurance
     Always carries toughened.
@@ -511,6 +520,7 @@ species  the declared kinds, and where each line is drawn
   amphibian
   titan
   fae
+  construct
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -541,6 +551,7 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.cleffa
     cleffa.mend
     cleffa.hex
+  pokemon.magnemite     no build written for this one yet
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -600,6 +611,7 @@ species  the declared kinds, and where each line is drawn
   amphibian
   titan
   fae
+  construct
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -639,6 +651,8 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   taunting     
   heal_cut     cuts healing received
   fester       
+  charge       builds up to be spent
+  charge       
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.
@@ -670,6 +684,7 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.cleffa
     cleffa.mend
     cleffa.hex
+  pokemon.magnemite     no build written for this one yet
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -681,7 +696,7 @@ builds  the kit and the trait a character fields at level 60, furthest form
 traits  the declared traits, and who carries each
 
   id            carried by
-> endurance     pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16
+> endurance     pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16 pokemon.magnemite@24
   blaze         pokemon.charmander@16
   heatproof     pokemon.charmander@16
   virulence     pokemon.bulbasaur@32
@@ -690,10 +705,10 @@ traits  the declared traits, and who carries each
   last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44
   reckless      pokemon.charmander@44 pokemon.machop@44
   thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32
+  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16
   ballast       pokemon.squirtle@44
-  composure     pokemon.poliwag@40[Politoed] pokemon.cleffa@24
-  elusive       pokemon.cleffa@40
+  composure     pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40
+  elusive       pokemon.cleffa@40 pokemon.magnemite@32
   contagion     pokemon.bulbasaur@28
   spiteful      pokemon.poliwag@36
   berserk       pokemon.machop@40
@@ -715,6 +730,7 @@ species  the declared kinds, and where each line is drawn
   amphibian
   titan
   fae
+  construct
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào

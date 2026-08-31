@@ -825,6 +825,8 @@ func (p *pricing) inflictedOn(actor, target *Unit, from origin,
 			value = p.strike(target) * turnsOf(kind, buffHorizon)
 		case status.StatDebuff:
 			value = p.standingLost(target, kind, application.Stacks)
+		case status.Charge:
+			value = p.charged(actor, target, kind, application.Stacks)
 		}
 		if value <= 0 {
 			continue
@@ -832,6 +834,110 @@ func (p *pricing) inflictedOn(actor, target *Unit, from origin,
 		total += value * chance / scale.Base
 	}
 	return total
+}
+
+// charged is what a counter is worth to whoever puts it on, which is not a
+// question about the counter at all.
+//
+// A charge changes nothing on its holder — no stat, no tick, no turn — so read
+// the way every other branch here reads its category, it is worth exactly
+// nothing, and a rating that said so would never spend a turn putting one on and
+// the whole playstyle would be unreachable by the opponent. What it is worth is
+// what somebody can *do* with it, so that is what is asked.
+//
+// ⚠️ **It is nought when nobody on the caster's side carries a skill that spends
+// it, and that is the honest answer rather than a missing case.** A charge on a
+// squad with no consumer is a turn thrown away, and a rating that valued it
+// anyway would have a unit carefully electrifying a board it has no way to cash.
+func (p *pricing) charged(actor, target *Unit, kind status.Kind, stacks int) int64 {
+	before := target.Statuses.Stacks(kind.ID)
+	after := target.Statuses.With(kind, 0, stacks)
+	gained := int64(after.Stacks(kind.ID) - before)
+	if gained <= 0 {
+		return 0
+	}
+	// ⚠️ **A pile is worth far less than a stack times its height, and pricing it
+	// that way is a measured mistake rather than a theoretical one.** A consumer
+	// cashes one stack per cast, so the second stack needs one more turn to go
+	// right than the first, the third needs two, and a battle is roughly fifteen
+	// turns long. Valued linearly, one cast of a three-stack charge over two cells
+	// read as three whole strikes of value, and a rating handed that figure spends
+	// its opening turn on a skill that deals no damage — which against a striking
+	// squad is simply losing. The kit measured 6 per mille against 113 for the same
+	// kit with that skill taken out.
+	//
+	// So each stack is worth half the one before it. The sum can never pass twice
+	// the first stack however high the pile goes, which is the shape of the real
+	// thing: the top of a pile is speculative, and no amount of charging is worth
+	// two turns of hitting somebody.
+	// The halving starts from what is already there, not from nothing: a second
+	// cast onto a target that is charged already is adding to the top of the pile,
+	// and it is the *height* that makes a stack speculative rather than the cast
+	// that put it there. Without this a charger is worth its full opening every
+	// turn, which is the same mistake one step further along.
+	worth, total := p.spendable(actor, kind.ID), int64(0)
+	for range before {
+		worth /= 2
+	}
+	for range gained {
+		if worth == 0 {
+			break
+		}
+		total += worth
+		worth /= 2
+	}
+	return total
+}
+
+// spendable is what one stack of a counter buys its side, priced as the share of
+// a turn the consumer's gain represents.
+//
+// The gain is the two things a consume can be paid in: the bonus power a
+// detonate adds, and the arc power a conduit discharges — each read straight off
+// the skill that would spend it, and each already the *net* figure, because a
+// conduit damps its own blow to pay for the discharge. Turning that into a figure
+// on the same scale as every other term here is the share it is of the whole
+// cast, times what that unit's turn is already worth. It is an estimate, and it
+// is bounded by construction: a stack can never be worth a whole turn however
+// large the payment, which is the property that keeps a rating from preferring to
+// charge for ever over ever cashing it in.
+//
+// ⚠️ **A conduit's gain is read per strike and multiplied by the expected count,
+// because that is what a stack actually buys.** One blow spends one charge, so a
+// skill that lands twice on average discharges twice — and reading the floor
+// would price a repeating conduit at half what it does.
+func (p *pricing) spendable(actor *Unit, id string) int64 {
+	best := int64(0)
+	for _, mate := range p.fight.units {
+		if mate.Dead || mate.Side != actor.Side {
+			continue
+		}
+		for _, held := range mate.Skills {
+			declared, err := p.fight.books.Skills.Lookup(held)
+			if err != nil || declared.Power == 0 {
+				continue
+			}
+			if declared.Requires == nil || !declared.Requires.Consume ||
+				declared.Requires.Status != id {
+				continue
+			}
+			gain := int64(declared.Requires.BonusPower)
+			if declared.Requires.Arcs() {
+				// A conduit adds its arc to a blow it was going to land anyway, so
+				// what one stack is worth is the arc and nothing subtracted: the
+				// price was paid on the turn that laid the stack down, which is a
+				// turn this rating already charged for when it rated that skill.
+				gain += int64(declared.Requires.ArcPower)
+			}
+			if gain <= 0 {
+				continue
+			}
+			if value := p.strike(mate) * gain / (int64(declared.Power) + gain); value > best {
+				best = value
+			}
+		}
+	}
+	return best
 }
 
 // standingLost is standing read as harm: what a debuff takes off its holder is

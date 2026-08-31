@@ -366,6 +366,27 @@ type Hit struct {
 	// ordinary one leaves the log unable to explain its own numbers, which is
 	// the same trap a silent passive would set.
 	Pierce int
+	// Repeat is the chance, in parts per thousand, that a strike is followed by
+	// another one, rolled again after each. Zero is a skill whose strike count is
+	// simply Strikes, which is every skill that shipped before this field.
+	//
+	// It is a different shape from Strikes and not a substitute for it. Strikes
+	// says "this always lands three times, each for a third"; Repeat says "this
+	// lands once and might keep going", which is a *distribution* rather than a
+	// number — mostly the floor, occasionally a great deal more. A rating cannot
+	// use the ceiling (it would price every cast as the best cast) and cannot use
+	// the floor (it would never see the tail), so ExpectedStrikes is the figure
+	// everything outside the roll reads.
+	//
+	// ⚠️ **The count is rolled once, before the strike loop.** Rolling inside it
+	// would interleave the count's draws with each strike's own, so a change to
+	// how a strike resolves would move a figure the count depends on — and the
+	// replay contract rests on the stream being read in a fixed order.
+	Repeat int
+	// MaxStrikes is where a repeating strike stops. It bounds the tail, and a
+	// repeating skill without one would be a skill that can, however rarely, take
+	// a whole battle in one turn.
+	MaxStrikes int
 	// Crit is the chance each strike lands critically, in parts per thousand,
 	// and it is the *skill's* own figure. No stat moves it: progression.Values
 	// is a fixed-size array behind a schema of six required pointers, and a
@@ -527,7 +548,7 @@ func (r Rules) Roll(h Hit, blocks int, source *rng.Source) (attempts []Attempt, 
 	// per-skill one would have made this a per-strike computation for nothing.
 	damage := r.Strike(h)
 	critical := r.CriticalStrike(h)
-	count := h.StrikeCount()
+	count := h.RollStrikes(source)
 	out := make([]Attempt, 0, count)
 	remaining := blocks
 	for i := 0; i < count; i++ {
@@ -582,6 +603,45 @@ func (h Hit) StrikeCount() int {
 		return 1
 	}
 	return h.Strikes
+}
+
+// RollStrikes is how many times this hit actually lands, which is StrikeCount
+// for an ordinary skill and a rolled count for a repeating one.
+//
+// ⚠️ **It draws nothing when the skill does not repeat**, which is what keeps
+// every log written before repeating strikes existed byte for byte what it was:
+// rng.Source.Chance returns without touching the stream at a chance of nought,
+// the same trick Pierce and Crit each used.
+func (h Hit) RollStrikes(source *rng.Source) int {
+	count := h.StrikeCount()
+	if h.Repeat <= 0 || h.MaxStrikes <= count {
+		return count
+	}
+	for count < h.MaxStrikes && source.Chance(h.Repeat) {
+		count++
+	}
+	return count
+}
+
+// ExpectedStrikes is how many strikes a repeating skill lands on average, in
+// parts per thousand, and it is what every caller outside the roll should read.
+//
+// A geometric tail cut at MaxStrikes: the floor always lands, and each strike
+// after it lands with probability p^k. Summed rather than approximated by the
+// closed form, because the closed form needs the cut and the sum is six lines of
+// integer arithmetic that cannot drift from the loop it describes.
+func (h Hit) ExpectedStrikes() int {
+	count := h.StrikeCount()
+	total := count * PermilleBase
+	if h.Repeat <= 0 || h.MaxStrikes <= count {
+		return total
+	}
+	odds := PermilleBase
+	for i := count; i < h.MaxStrikes; i++ {
+		odds = odds * h.Repeat / PermilleBase
+		total += odds
+	}
+	return total
 }
 
 // Strike returns the damage of a single strike, against whatever defence the

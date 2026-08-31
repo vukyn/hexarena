@@ -71,6 +71,11 @@ metal_sound     metal     enemy    2  flank_up        800     1    800   900    
 discharge       electric  all      1  column          900     1    900   900    3     0     0      308
 magnet_rise     metal     self     0  single            0     1      0  1000    3     0     0        0
 zap_cannon      electric  enemy    3  single         2700     1   2700   550    4     0     0      925
+charge_beam     electric  enemy    2  single          800     1    800   950    1     0     0      274
+magnetise       electric  enemy    2  column          500     1    500   920    3     0     0      171
+electro_ball    electric  enemy    2  single          640     2   1280   900    2     0     0      438
+spark           electric  enemy    1  single          342     2    684   930    2     0     0      234
+overload        electric  enemy    2  single          880     1    880   880    4     0     0      301
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -107,8 +112,10 @@ charm           weaken                 2     1000       1000             1000
 wish            regrowth               1     1000       1000             1000
 sing            stun                   1      600       1000              600
 chorus          haste                  1     1000       1000             1000
+thunder_shock   charge                 1     1000        950              950
 thunder_shock   stun                   1      120        950              114
 mirror_shot     blind                  1      500        900              450
+thunderbolt     charge                 2     1000        880              880
 thunderbolt     stun                   1      200        880              176
 flash_cannon    expose                 1      350        870              304
 thunder_wave    mire                   2     1000       1000             1000
@@ -116,6 +123,8 @@ thunder_wave    stun                   1      250       1000              250
 metal_sound     expose                 2     1000        900              900
 magnet_rise     veil (self)            2     1000       1000                -
 zap_cannon      stun                   1     1000        550              550
+charge_beam     charge                 2     1000        950              950
+magnetise       charge                 3     1000        920              920
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -180,6 +189,11 @@ metal_sound     -          -                 -                   -         pokem
 discharge       -          -                 -                   -         pokemon
 magnet_rise     -          -                 -                   -         pokemon
 zap_cannon      -          -                 -                   -         pokemon
+charge_beam     -          -                 -                   -         pokemon
+magnetise       -          -                 -                   -         pokemon
+electro_ball    -          -                 -                   -         pokemon
+spark           -          -                 -                   -         pokemon
+overload        -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -188,6 +202,9 @@ inferno         target   burn                              1    1000        3500
 brine           target   health <=500 per mille            -    1000        2000      342         685  2.00x
 outrage         caster   health <=400 per mille            -    2200        3400      754        1165  1.54x
 dragon_drive    target   expose                            1     900        2300      308         788  2.55x (consumes)
+electro_ball    target   charge                            1     640         640      219         219  1.00x (consumes)
+spark           target   charge                            1     342         342      117         117  1.00x (consumes)
+overload        target   charge                            2     880         880      301         301  1.00x (consumes)
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar
@@ -199,11 +216,14 @@ the ticks of a damage-over-time, or the extra damage a stat debuff was letting t
 skill           status   spends     forgone   a plain attack   alternative   burst    ratio
 inferno         burn     ticks          548              342           890    1200    1.34x
 dragon_drive    expose   defence        102              342           444     788    1.77x
+electro_ball    charge   unpriced         0              342           342     219    0.64x
+spark           charge   unpriced         0              342           342     117    0.34x
+overload        charge   unpriced         0              342           342     301    0.88x
 
 == cleanses and dispels ==
 skill           categories                    stacks
 rapid_spin      stat_debuff, dot, heal_cut         1
-rinse           dot, stat_debuff                   2
+rinse           dot, stat_debuff, charge           2
 
 == timed effects ==
 status      category      stacks   turns   tick power   tick   over its life   heal cut   modifiers
@@ -230,6 +250,7 @@ quickened   buff                1       0            0      0               0   
 encumber    stat_debuff         1       0            0      0               0          0   speed -10.0%
 fester      heal_cut            2       2            0      0               0       -400   -
 evasive     buff                1       0            0      0               0          0   dodge +15.0%
+charge      charge            999       4            0      0               0          0   -
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

@@ -236,8 +236,9 @@ const (
 	CategoryRegen
 	CategoryTaunt
 	CategoryHealCut
+	CategoryCharge
 
-	// The same eight categories as **noun phrases**, for a sentence that names
+	// The same nine categories as **noun phrases**, for a sentence that names
 	// one rather than a column that explains one. The family above answers "what
 	// does this kind of status do" and is worded as a predicate — "lowers a
 	// stat" — which cannot be dropped into "strips 1 stack of ___"; these answer
@@ -247,7 +248,7 @@ const (
 	//
 	// The English shape is an **uncountable noun phrase**: no article, no
 	// plural, lower case, so the same wording reads under "1 stack of" and "2
-	// stacks of" alike. All eight are held to it. The alternative considered was
+	// stacks of" alike. Every one of them is held to it. The alternative considered was
 	// Vietnamese's own "hiệu ứng X" shape spelled out in English ("a
 	// stat-lowering effect"), which needs an article the frame has nowhere to
 	// put.
@@ -264,6 +265,7 @@ const (
 	CategoryNounRegen
 	CategoryNounTaunt
 	CategoryNounHealCut
+	CategoryNounCharge
 
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement
@@ -482,6 +484,18 @@ const (
 	BlurbSelfAmplified
 	BlurbSelfGradient
 	BlurbConsumes
+	BlurbConsumesStacks
+	BlurbAmplifiedShape
+	BlurbSelfAmplifiedShape
+	SummaryAmplifiedShape
+	SummaryAmplifiedArc
+	SummarySelfAmplifiedShape
+	BlurbArcs
+	BlurbChains
+	BlurbConsumesEachStrike
+	BlurbConsumesPile
+	BlurbAtLeast
+	BlurbRepeats
 	BlurbCostRange
 	BlurbCostCells
 	BlurbCostSelf
@@ -571,6 +585,7 @@ const (
 	BlurbStatusControls
 	BlurbStatusTaunts
 	BlurbStatusShields
+	BlurbStatusStores
 	BlurbStatusSeeps
 	BlurbStatusCutsHealing
 	BlurbStatusCutsHealingOnce
