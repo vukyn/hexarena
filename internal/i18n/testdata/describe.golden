@@ -298,6 +298,36 @@ Nhận tập trung.
 Bản thân · hồi 3 lượt.
 [one line] tự nhận tập trung · bản thân · hồi 3
 
+moonblast
+Gom ánh trăng lại thành một luồng rồi đẩy thẳng về phía trước, 140% công.
+Gây suy yếu cho mục tiêu, 30% khả năng.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+[one line] 140% công · suy yếu 30% · tầm 2 · hồi 2
+
+charm
+Nghiêng đầu nhìn một cái, kẻ đối diện bỗng thấy chẳng còn muốn ra tay.
+Gây suy yếu x2 cho mục tiêu, 100% khả năng.
+Tầm 2 · 100% trúng · hồi 3 lượt.
+[one line] suy yếu x2 100% · tầm 2 · hồi 3
+
+moonlight
+Rót thứ ánh sáng lạnh mà lành xuống, vết thương khép lại theo.
+Hồi máu bằng 40% thủ.
+Tầm 1 · hồi 3 lượt.
+[one line] hồi 40% thủ · đồng đội · tầm 1 · hồi 3
+
+wish
+Ngửa mặt lên trời khấn một câu, rồi chờ trời nghe thấy.
+Cho mục tiêu tái sinh, 100% khả năng.
+Tầm 1 · 100% trúng · hồi 4 lượt.
+[one line] tái sinh 100% · đồng đội · tầm 1 · hồi 4
+
+sing
+Cất một khúc ru khe khẽ, ai nghe được thì gục xuống ngay tại chỗ.
+Gây choáng cho mục tiêu, 60% khả năng.
+Tầm 2 · 2 ô · 100% trúng · hồi 4 lượt.
+[one line] choáng 60% · tầm 2 · 2 ô · hồi 4
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -777,6 +807,36 @@ inner_focus
 Puts focus on itself.
 Itself · 3 turns to recharge.
 [one line] self focus · itself · cd 3
+
+moonblast
+Hits an enemy for 140% of attack.
+Inflicts weaken, 30% of the time.
+Range 2 · 90% to hit · 2 turns to recharge.
+[one line] 140% attack · weaken 30% · range 2 · cd 2
+
+charm
+Aims at an enemy.
+Inflicts weaken x2, 100% of the time.
+Range 2 · 100% to hit · 3 turns to recharge.
+[one line] weaken x2 100% · range 2 · cd 3
+
+moonlight
+Aims at an ally.
+Heals for 40% of defence.
+Range 1 · 3 turns to recharge.
+[one line] heals 40% defence · an ally · range 1 · cd 3
+
+wish
+Aims at an ally.
+Gives its target regrowth, 100% of the time.
+Range 1 · 100% to hit · 4 turns to recharge.
+[one line] regrowth 100% · an ally · range 1 · cd 4
+
+sing
+Aims at an enemy.
+Inflicts stun, 60% of the time.
+Range 2 · 2 cells · 100% to hit · 4 turns to recharge.
+[one line] stun 60% · range 2 · 2 cells · cd 4
 
 [trait] endurance
 Always carries toughened.

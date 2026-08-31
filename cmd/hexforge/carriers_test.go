@@ -266,6 +266,17 @@ func TestWeighAcrossCarriersRefusesAnArgumentListItCannotAnswer(t *testing.T) {
 		what  = "strike"
 		seeds = "2"
 	)
+	// A skill written after the cast was read is one no character can have
+	// named. This case used `solar_beam` until 2026-08-31, on the reading that
+	// the shipped book held one light skill and no light character to carry it —
+	// which stopped being true the moment Cleffa was authored, and turned a
+	// refusal test red for a reason that has nothing to do with refusals.
+	const unbrought = "unbrought"
+	if err := runSkills([]string{"add", unbrought, "--data", dir,
+		"--power", "1000", "--accuracy", "900", "--cooldown", "2",
+		"--flavour", "Không ai học, nên chẳng ai vung ra bao giờ", "--yes"}); err != nil {
+		t.Fatalf("author a skill nobody brings: %v", err)
+	}
 	for _, test := range []struct {
 		name string
 		args []string
@@ -282,7 +293,7 @@ func TestWeighAcrossCarriersRefusesAnArgumentListItCannotAnswer(t *testing.T) {
 			"--field", "power", "--seeds", seeds}},
 		{"no skill by that name", []string{"--data", dir, "--carriers", "all", "nothing_at_all",
 			"--field", "power", "--values", "1100", "--seeds", seeds}},
-		{"a skill nobody brings", []string{"--data", dir, "--carriers", "all", "solar_beam",
+		{"a skill nobody brings", []string{"--data", dir, "--carriers", "all", unbrought,
 			"--field", "power", "--values", "1100", "--seeds", seeds}},
 		{"a value the parser refuses", []string{"--data", dir, "--carriers", "all", what,
 			"--field", "accuracy", "--values", "5000", "--seeds", seeds}},

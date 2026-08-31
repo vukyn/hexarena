@@ -55,6 +55,11 @@ seismic_toss    ground    enemy    1  single         2000     1   2000   850    
 cross_chop      neutral   enemy    1  single         2800     1   2800   620    3     0     0      960
 vital_throw     neutral   enemy    1  single         1800     1   1800  1000    3     0     0      617
 inner_focus     neutral   self     0  single            0     1      0  1000    3     0     0        0
+moonblast       light     enemy    2  single         1400     1   1400   900    2     0     0      480
+charm           light     enemy    2  single            0     1      0  1000    3     0     0        0
+moonlight       light     ally     1  single            0     1      0  1000    3     0     0        0
+wish            light     ally     1  single            0     1      0  1000    4     0     0        0
+sing            light     enemy    2  flank_up          0     1      0  1000    4     0     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -85,6 +90,10 @@ bubble_beam     mire                   1      400        900              360
 body_slam       stun                   1      250        880              220
 submission      expose                 1      400        850              340
 inner_focus     focus (self)           1     1000       1000                -
+moonblast       weaken                 1      300        900              270
+charm           weaken                 2     1000       1000             1000
+wish            regrowth               1     1000       1000             1000
+sing            stun                   1      600       1000              600
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -133,6 +142,11 @@ seismic_toss    -          -                 -                   -         pokem
 cross_chop      -          -                 -                   -         pokemon
 vital_throw     -          -                 -                   -         pokemon
 inner_focus     -          -                 -                   -         pokemon
+moonblast       -          -                 -                   -         pokemon
+charm           -          -                 -                   -         pokemon
+moonlight       -          -                 -                   -         pokemon
+wish            -          -                 -                   -         pokemon
+sing            -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain

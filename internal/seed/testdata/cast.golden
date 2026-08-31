@@ -138,4 +138,27 @@ pokemon.machop — Machop
     level 60 hp 3300, atk 760, def 460, spd 85, acc 210, ddg 28
              absorbs 8375 of the 11500 budget, 3125 to spare
 
-6 characters
+pokemon.cleffa — Cleffa
+  from     Pokémon (anime)
+  preset   mender
+  element  light
+  species  fae
+  art      assets/cleffa.svg
+  kit      moonblast charm moonlight@8 solar_beam@12 sing@14 smokescreen@16 wish@20 rally@24 wide_guard@28 taunt@32 withdraw@36 rapid_spin@40
+  stage "Cleffa" owns levels 1 to 15, showing assets/cleffa.svg
+    level 1  hp 1032, atk 103, def 93, spd 29, acc 39, ddg 14
+             absorbs 1352 of the 11500 budget, 10148 to spare
+    level 15 hp 1498, atk 149, def 135, spd 42, acc 56, ddg 20
+             absorbs 2174 of the 11500 budget, 9326 to spare
+  stage "Clefairy" owns levels 16 to 31, showing assets/clefairy.svg
+    level 16 hp 1838, atk 181, def 166, spd 50, acc 68, ddg 24
+             absorbs 2858 of the 11500 budget, 8642 to spare
+    level 31 hp 2439, atk 240, def 220, spd 67, acc 90, ddg 32
+             absorbs 4234 of the 11500 budget, 7266 to spare
+  stage "Clefable" owns levels 32 to 60, showing assets/clefable.svg
+    level 32 hp 2892, atk 289, def 261, spd 79, acc 106, ddg 37
+             absorbs 5415 of the 11500 budget, 6085 to spare
+    level 60 hp 4200, atk 420, def 380, spd 115, acc 155, ddg 55
+             absorbs 9523 of the 11500 budget, 1977 to spare
+
+7 characters

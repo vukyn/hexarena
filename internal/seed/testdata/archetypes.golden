@@ -73,4 +73,16 @@ slugger, formation column 0
            absorbs 8375 of the 11500 budget, 3125 to spare
   kit      rock_throw seismic_toss cross_chop vital_throw inner_focus body_slam submission skull_bash
 
-6 presets
+mender, formation column 0
+  the one that fights by keeping its own side standing and taking the edge off the other's: the lightest damage in the cast, and a mend priced off its guard rather than off its arm
+  demands  a character built from it must carry light
+  hp 1445->4200  attack 145->420  defense 131->380  speed 40->115  accuracy 53->155  dodge 19->55
+  level 1  hp 1445, atk 145, def 131, spd 40, acc 53, ddg 19
+           absorbs 2076 of the 11500 budget, 9424 to spare
+  level 30 hp 2799, atk 280, def 253, spd 76, acc 103, ddg 36
+           absorbs 5164 of the 11500 budget, 6336 to spare
+  level 60 hp 4200, atk 420, def 380, spd 115, acc 155, ddg 55
+           absorbs 9523 of the 11500 budget, 1977 to spare
+  kit      moonblast charm moonlight wish sing rally wide_guard solar_beam
+
+7 presets

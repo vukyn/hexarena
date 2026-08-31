@@ -394,8 +394,42 @@ func TestTheTableCountsWhatItCostBeforeItIsFought(t *testing.T) {
 // discovered refuses one row. A sweep nobody carries is in the first group —
 // a table with no rows in it and a table where the field is worth nothing are the
 // same empty page.
+// aSkillNobodyBrings writes a skill into the scratch library and hands back its
+// id, having first checked that nobody in the cast fields it.
+//
+// It authors the condition rather than borrowing it. This case named
+// `solar_beam` until 2026-08-31, on the reading that the shipped book held one
+// light skill and no light character — which stopped being true the moment
+// Cleffa was authored, and turned a refusal test green-to-red for a reason that
+// has nothing to do with refusals. A skill written here after the cast was read
+// is one no character can have named.
+func aSkillNobodyBrings(t *testing.T, lib *Library) string {
+	t.Helper()
+	const id = "unbrought"
+	built, err := SkillDraft{
+		ID: id, Element: "neutral", Target: "enemy", Range: "1", Pattern: "single",
+		Power: "1000", Strikes: "1", Accuracy: "900", Cooldown: "2",
+	}.Resolve(lib)
+	if err != nil {
+		t.Fatalf("resolve %s: %v", id, err)
+	}
+	if err := lib.SaveSkill(built); err != nil {
+		t.Fatalf("save %s: %v", id, err)
+	}
+	for _, character := range lib.Characters().All() {
+		for _, learned := range character.Skills {
+			if learned.ID == id {
+				t.Fatalf("%s already brings %s, so this fixture no longer holds a skill nobody brings",
+					character.ID, id)
+			}
+		}
+	}
+	return id
+}
+
 func TestASweepRefusesWhatItCannotAnswerAtAll(t *testing.T) {
 	lib := sparLibrary(t)
+	unbrought := aSkillNobodyBrings(t, lib)
 	for _, test := range []struct {
 		name    string
 		request CarriersRequest
@@ -409,7 +443,7 @@ func TestASweepRefusesWhatItCannotAnswerAtAll(t *testing.T) {
 			Level: 0, Seeds: weighSeeds}, "outside"},
 		{"no skill by that name", CarriersRequest{Skill: "nothing_at_all", Field: WeighPower, Values: []int{1100},
 			Level: progression.LevelCap, Seeds: weighSeeds}, "nothing_at_all"},
-		{"a skill nobody brings", CarriersRequest{Skill: "solar_beam", Field: WeighPower, Values: []int{1100},
+		{"a skill nobody brings", CarriersRequest{Skill: unbrought, Field: WeighPower, Values: []int{1100},
 			Level: progression.LevelCap, Seeds: weighSeeds}, "no character brings"},
 	} {
 		_, err := lib.WeighCarriers(test.request)

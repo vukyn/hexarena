@@ -34,6 +34,11 @@
       "id": "titan",
       "name": "lực sĩ",
       "note": "Thân hình không nói lên được sức: thứ nhấc nổi tảng đá lớn hơn chính mình, và nhấc suốt ngày chỉ để khoẻ thêm"
+    },
+    {
+      "id": "fae",
+      "name": "tiên",
+      "note": "Thứ sống theo nhịp của trời chứ không theo nhịp của đất: đêm nay còn bé xíu, qua một đêm trăng nào đó bỗng đã khác hẳn"
     }
   ]
 }

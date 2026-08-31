@@ -295,6 +295,57 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "mender",
+      "role": "the one that fights by keeping its own side standing and taking the edge off the other's: the lightest damage in the cast, and a mend priced off its guard rather than off its arm",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1445,
+          "max": 4200
+        },
+        "attack": {
+          "base": 145,
+          "max": 420
+        },
+        "defense": {
+          "base": 131,
+          "max": 380
+        },
+        "speed": {
+          "base": 40,
+          "max": 115
+        },
+        "accuracy": {
+          "base": 53,
+          "max": 155
+        },
+        "dodge": {
+          "base": 19,
+          "max": 55
+        }
+      },
+      "skills": [
+        "moonblast",
+        "charm",
+        "moonlight",
+        "wish",
+        "sing",
+        "rally",
+        "wide_guard",
+        "solar_beam"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }
