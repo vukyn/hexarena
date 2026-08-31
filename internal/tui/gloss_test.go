@@ -463,3 +463,66 @@ func TestNoGlossedLogRowOutgrowsTheWindow(t *testing.T) {
 		}
 	}
 }
+
+// TestNoGlossNestsInsideABracketOfItsOwnKind is why the gloss is written with
+// angle brackets rather than round ones.
+//
+// A gloss is drawn in places that already carry a parenthetical of their own —
+// `status_applied` names the trait a status came from as `(virulence)` — so a
+// round gloss inside it read `(virulence (độc lực))`, a bracket inside a bracket
+// for the reader to unpick. The gloss is the **inner** thing wherever the two
+// meet, so the gloss is what changes shape, and it changed everywhere because
+// i18n.GlossBracket is its one definition.
+//
+// ⚠️ It counts depth rather than looking for "((", which the nesting it exists to
+// catch does not contain: the two brackets sat five words apart.
+//
+// ⚠️ The second half is the guard against a vacuous pass. A sweep that finds no
+// nesting because no arm puts a gloss inside a parenthetical any more is a sweep
+// measuring nothing, and it would go quiet the moment somebody reworded the arm
+// this test was written for — so it fails unless some arm still does.
+func TestNoGlossNestsInsideABracketOfItsOwnKind(t *testing.T) {
+	glosses := sweepGlosses(t)
+	tags := map[string]string{"a": "A1", "f": "E1"}
+	pairs := []struct{ open, close rune }{{'(', ')'}, {'<', '>'}, {'[', ']'}}
+	glossInsideAParenthetical := ""
+	for _, arm := range sweepArms() {
+		line := tui.Line(arm.event, tags, glosses)
+		for _, pair := range pairs {
+			depth, deepest := 0, 0
+			for _, letter := range line {
+				switch letter {
+				case pair.open:
+					depth++
+					deepest = max(deepest, depth)
+				case pair.close:
+					depth--
+				}
+			}
+			if deepest > 1 {
+				t.Errorf("%s nests %c%c %d deep, so a reader has to unpick which "+
+					"bracket closes what:\n%s", arm.name, pair.open, pair.close, deepest, line)
+			}
+		}
+		// The case the test exists for: a gloss opening while a round bracket is
+		// still open. That is the shape that used to nest.
+		round := 0
+		for _, letter := range line {
+			switch letter {
+			case '(':
+				round++
+			case ')':
+				round--
+			case '<':
+				if round > 0 {
+					glossInsideAParenthetical = arm.name
+				}
+			}
+		}
+	}
+	if glossInsideAParenthetical == "" {
+		t.Error("no arm draws a gloss inside a parenthetical any more, so this sweep " +
+			"proves nothing: find the arm that replaced status_applied/trait and say " +
+			"so here, or take the test off with the reason")
+	}
+}
