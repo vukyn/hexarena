@@ -1010,7 +1010,7 @@ func (s skillsScreen) view(m model) (string, string) {
 	if selected, held := s.selected(); held {
 		preview := m.lib.PreviewDamage(selected)
 		out.WriteString(m.label(m.text(i18n.LabelDamage), "%s",
-			m.lang.DamageWithin(preview, damageRowRoom(m.usableWidth(), detailLabelWidth(m)))))
+			m.lang.Damage(preview)))
 		if preview.Amplified > 0 {
 			out.WriteString(m.continued("%s",
 				m.text(i18n.DamageAmplified, preview.Amplified)))
@@ -1401,59 +1401,6 @@ func (s skillsScreen) listValue(m model, chosen []string, labelWidth int) string
 		m.style.dim.Render(m.text(i18n.KitChooseHint))
 }
 
-// damageRowRoom is what the damage reading has to fit in before Lang.DamageWithin
-// gives up its reference pair: the row less the marker, the label column and the
-// space after it, on a row whose value is the last thing written.
-//
-// **The window and not the floor, and this one is a classification rather than a
-// clip.** What the room decides here is not how much of a value survives — it is
-// which of two whole catalog lines is drawn. Over the room, DamageWithin returns
-// the short reading and the pair the figures are measured against ("đánh vào 800
-// công và 400 phòng") is **silently omitted**: nothing is cut, so there is no
-// ellipsis, and the row reads as a complete sentence that has quietly stopped
-// saying what its numbers are relative to. Measured at the floor, a
-// two-hundred-column terminal was making a drop it had a hundred and twenty
-// spare columns not to make.
-//
-// **It is data, and the mixed content is why that needed arguing.** The line is
-// figures wrapped in catalog wording, which is the shape the prose half of the
-// rule usually names — but neither of the prose half's two reasons reaches it:
-//
-//   - The sweep's subject is the **wording**, and the wording is unaffected.
-//     DamageLine and DamageLineShort are fixed strings and both are inside the
-//     floor for every figure the shipped books can produce (widest 59 cells in
-//     Vietnamese, 57 in English, against a floor room of 61 and 64), so
-//     TestEveryWordingFitsTheMinimumWidth measures exactly what it measured
-//     before. All the room changes is which of the two is chosen, on figures
-//     large enough that neither fits — and an author typing a power is who
-//     reaches those.
-//   - "A paragraph across a wide terminal is a line a reader loses their place
-//     in" is about a wrapped block. This is one labelled value on one row, read
-//     by looking at it, which is the table cell the data half is about. The
-//     reference pair itself is two more figures.
-//
-// So the pair comes back on a wide terminal, and
-// TestTheDamageRowKeepsItsReferencePairOnAWideWindow is what says so.
-//
-// ⚠️ **One declaration because there are two callers** — the listing's reading of
-// the skill under the cursor and the form's preview of an unwritten one — and
-// they had the arithmetic written out twice. That is the same shape
-// fieldValueRoom exists to have stopped, found again one file over.
-//
-// ⚠️ **This is a cell over, and it is NOT fixed here — reported instead.** The
-// row comes to `2 + labelWidth + 1 + value`, so a value of exactly this room
-// fills the window's final cell, which is the one column every other row in this
-// program leaves empty because a line filling it wraps on some terminals. The
-// correct room is one less. It is left alone because it is a different defect
-// from the one this function was written for: it is wrong **at the floor** too,
-// where the promise lives, so it deserves a test that builds the figure that
-// reaches it rather than riding in on a classification change. No shipped skill
-// gets near it — the widest reading is 59 of the 61 there are.
-func damageRowRoom(width, labelWidth int) int {
-	const marker = 2
-	return width - marker - labelWidth - 1
-}
-
 // damageRow is the point of authoring a skill on a screen rather than in a file:
 // what the power being typed is actually worth, before it is written.
 func (s skillsScreen) damageRow(m model, labelWidth int) string {
@@ -1463,5 +1410,5 @@ func (s skillsScreen) damageRow(m model, labelWidth int) string {
 			m.style.bad.Render(m.lang.Error(err)))
 	}
 	return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s",
-		m.lang.DamageWithin(preview, damageRowRoom(m.usableWidth(), labelWidth)))
+		m.lang.Damage(preview))
 }
