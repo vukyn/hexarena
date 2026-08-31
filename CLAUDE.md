@@ -568,6 +568,50 @@ answers rather than screen logic:
     offers *furthest* plus every form by name, which is what a **forking** line
     needs; the slot chooser **steps over** an occupied cell rather than letting
     the save refuse it later.
+  - **A character can be held back: `cast.Character.Hidden`, and the squad
+    builder is the ONLY thing that reads it.** `"hidden": true` in `cast.json`,
+    absent meaning offered, so the flag is written only where it is set. It is an
+    authoring convenience an author flips back, not a design statement — a hidden
+    character still ships, still loads, still fights, and a squad or a roster
+    naming one is as valid as any other. Naruto is the one shipped example.
+    - **It round-trips or it is deleted.** `hexforge new` rewrites the whole file
+      on every append, so the field is on the parse shape (`characterFile`) as
+      well as on `Character`, exactly as `Skill.MarshalJSON` builds the parse
+      shape rather than carrying tags of its own.
+      `TestWrittenCastIsStableAndReloads` authors a held-back character and is
+      what catches the omission.
+    - ⚠️ **`squadScreen.characters` stays the WHOLE cast** and the filter is
+      `offeredCharacters`, asked at the two sites that *choose* — `addUnit` and
+      `cycle`. Filtering the held slice instead looks equivalent and is not:
+      `character()` looks a member's character up in it to read the forms, the
+      learnset and the traits, so a squad on the file naming a since-hidden
+      character would lose its forms and its kit picker would refuse to open,
+      with the row still printing the id.
+    - ⚠️ **The one already chosen stays offered**, keyed on
+      `squadScreen.unitOpenedAs` — what the member named when it was **opened**,
+      not what is chosen right now. Hidden means *not offered for a new choice*,
+      never *taken away from a choice already made*: a chooser that dropped the
+      row would step off it on the first arrow press and write somebody else into
+      a member nobody asked to change, in the author's own saved file. Keying it
+      on the live answer is the near miss — the list then changes shape while it
+      is being walked, so `right` then `left` lands one row short and the
+      character is unreachable for the rest of the edit. That was found by the
+      round-trip assertion and by nothing else.
+    - The screen says why a character nothing else offers is on the list
+      (`i18n.SquadHeldBack`), and the state is registered in `everyScreen` as
+      `a held-back member` — which **asserts it draws that line**, because a
+      registered state that renders nothing passes every sweep.
+    - ⚠️ **`pickCharacters` is deliberately NOT filtered** (see the comment on
+      `characterOptions`). It answers *which characters is this skill kept for*,
+      and hiding a row there would make an existing `restrict.characters` naming
+      that character unauthorable — the field is a picker and nothing else writes
+      it. `TestASkillRestrictionMayStillNameAHeldBackCharacter` is what stops the
+      job being "finished". The cast browser, the builds screen, `hexforge list`,
+      the spar and the roster are unfiltered for the same reason: none of them is
+      choosing a side to fight with.
+    - `cast.golden` prints one line for a held-back character and nothing for the
+      rest — the record has to be able to show that a character was taken out of
+      the authoring lists, and "offered" on every other row is noise.
   - ⚠️ **A squad carries no side.** `placement.Squad.Take(side, cast)` fields it
     as either half and **prefixes the unit ids with the side**, so a squad fought
     against a copy of itself has two halves a log can tell apart.
@@ -1913,14 +1957,24 @@ reads and **writes** them:
   (`progression.Line`) plus an origin, an archetype it was tuned from, an
   affinity, a kit and a path to its art. `hexforge new` appends to it.
 
-`cast.json` and `origins.json` are committed **in exactly the form
-`Book.Marshal` writes** — two-space indented, sorted by id. That is deliberate:
-the tool rewrites the whole file on every addition, so if the committed form
-drifted from the written one, the next `hexforge new` would produce a diff of the
-entire file instead of one block. `TestWrittenCastIsStableAndReloads` fails if it
-drifts. Marshal is also the one place in `cast` that *imposes* an order rather
-than preserving the authored one; everything else keeps declaration order,
-because a map range would randomise it.
+`cast.json` and `origins.json` are **meant** to be committed in exactly the form
+`Book.Marshal` writes — two-space indented, sorted by id. The reason is that the
+tool rewrites the whole file on every addition, so a committed form that has
+drifted from the written one makes the next `hexforge new` produce a diff of the
+entire file instead of one block. Marshal is also the one place in `cast` that
+*imposes* an order rather than preserving the authored one; everything else keeps
+declaration order, because a map range would randomise it.
+
+⚠️ **Neither file is actually in that form today, and the test that was supposed
+to say so cannot see it.** Measured 2026-08-31: `cast.json`'s characters are in
+declaration order, not sorted — `naruto.naruto` sits fourth where Marshal would
+put it first — and `origins.json` reads `pokemon` then `naruto`. So the next real
+`hexforge new` **will** reshuffle both files, which is precisely the churn this
+paragraph exists to prevent. `TestWrittenCastIsStableAndReloads` passes anyway
+because it reads the file out of the **scratch** directory, which
+`testfixture.Inject` has already rewritten through `SaveCharacter`/`Marshal` — so
+it compares Marshal's output against Marshal's own output and would pass on any
+committed file whatsoever. → `TODO.md`.
 
 **`roster.json` is an instrument, not a scenario, and it has four contracts.**
 It is 3v3 by character reference — ally Venusaur 60 / Wartortle 16 / Charmander 8

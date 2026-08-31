@@ -282,3 +282,56 @@ func TestAnOverFullLoadoutOpensAndCanBeFixed(t *testing.T) {
 			len(m.picker.chosen), over-1)
 	}
 }
+
+// TestASkillRestrictionMayStillNameAHeldBackCharacter is the boundary of the
+// hidden flag, driven through the keys an author would press.
+//
+// ⚠️ The squad builder honours `cast.Character.Hidden` because it is choosing
+// **who fights**, and a character held back has been taken out of that choice.
+// This picker answers a different question — which characters is this skill
+// kept for, written into `restrict.characters` — and filtering it would make an
+// existing restriction naming a held-back character **unauthorable**: the field
+// is a picker and nothing else writes it, so a skill whose allowlist already
+// names that character could not be saved with the name it has.
+//
+// The two lists share a shape and share nothing else, which is why this is a
+// test rather than a comment: a mutation that filters characterOptions the way
+// squads.go filters its chooser has to go red here.
+func TestASkillRestrictionMayStillNameAHeldBackCharacter(t *testing.T) {
+	m, lib, _ := start(t, i18n.Vi)
+	// Authored here rather than borrowed from the shipped cast, on the same
+	// terms as the builder's own fixtures: the day nobody is held back, a test
+	// resting on the data would pass while measuring nothing.
+	held := saveAHeldBackCharacter(t, lib, "fixture-film.recluse", "Recluse")
+
+	m = m.enter(screenSkills)
+	m = typeText(t, m, "a")
+	m = skillFormTo(t, m, skillFieldKeptForCharacters)
+	m = key(t, m, "space")
+	if m.picker == nil {
+		t.Fatal("space on the character allowlist did not open the list")
+	}
+
+	rows := make([]string, 0, len(m.picker.options))
+	for _, option := range m.picker.options {
+		rows = append(rows, option.id)
+	}
+	if !slices.Contains(rows, held.ID) {
+		t.Fatalf("the allowlist does not offer %q, so a skill kept for it could not be authored; it offers %v",
+			held.ID, rows)
+	}
+	// Every character, held back or not — the list is the cast, not the part of
+	// it somebody is currently building sides out of.
+	if got, want := len(m.picker.options), len(lib.CharacterIDs()); got != want {
+		t.Errorf("the allowlist offers %d characters, want the whole cast of %d", got, want)
+	}
+
+	// And it can actually be chosen, which is the half a membership check does
+	// not cover: a row drawn but refused would be the same defect one screen on.
+	m = pickTo(t, m, held.ID)
+	m = key(t, m, "space")
+	m = key(t, m, "enter")
+	if got := m.skills.keptWho; !slices.Contains(got, held.ID) {
+		t.Errorf("choosing %q wrote %v into the allowlist", held.ID, got)
+	}
+}

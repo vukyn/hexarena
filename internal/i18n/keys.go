@@ -655,6 +655,12 @@ const (
 	SquadUnitHeading
 	SquadUnitFooter
 	SquadFieldCharacter
+	// The line under the member's fields when the character it already holds has
+	// been held back in cast.json. The chooser goes on offering that one — a
+	// squad on the file may not be edited into naming somebody else behind its
+	// author's back — so the screen has to say why a character nothing else
+	// offers is on the list, or the row reads as the flag not working.
+	SquadHeldBack
 	SquadFieldLevel
 	SquadFieldStage
 	SquadFieldSlot

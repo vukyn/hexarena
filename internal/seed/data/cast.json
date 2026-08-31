@@ -524,6 +524,7 @@
       "archetype": "summoner",
       "element": "wind",
       "bio": "Ồn ào, lì lợm, và chưa bao giờ chịu đứng một mình lâu — thiếu người thì tự nhân mình ra cho đủ. Đã ký giao ước với loài cóc bằng máu, nên khi cần một cái bóng lớn hơn thì cứ gọi, và cóc thì bao giờ cũng cằn nhằn trước khi chịu đánh.",
+      "hidden": true,
       "species": [
         "human"
       ],

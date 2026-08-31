@@ -365,6 +365,24 @@ is only so the shape is readable.
       what fits, so it would newly mark a line #186 does not cut today — which is
       why #186 left it alone rather than folding it in.
 
+- [ ] **The committed cast is not in the form the tool writes, and the test that
+      was supposed to catch that is vacuous.** `CLAUDE.md` says `cast.json` and
+      `origins.json` are committed exactly as `Book.Marshal` writes them — sorted
+      by id — so that `hexforge new`, which rewrites the whole file, produces a
+      one-block diff instead of a whole-file one. Measured 2026-08-31: **neither
+      is.** `cast.json` is in declaration order (`naruto.naruto` fourth where
+      Marshal puts it first) and `origins.json` reads `pokemon` then `naruto`, so
+      the next real `hexforge new` reshuffles both.
+      ⚠️ **`TestWrittenCastIsStableAndReloads` cannot fail on this**, which is
+      why it went unnoticed: it reads the file out of the **scratch** directory,
+      and `scratchData` → `testfixture.Inject` has already rewritten that copy
+      through `SaveCharacter`/`Marshal`. It compares Marshal's output against
+      Marshal's own output and would pass whatever is committed. Two halves to do
+      apart: **reformat the two files** (a large diff that says nothing, so it
+      wants a commit of its own and no other change riding along), and **point
+      the test at the committed file** so the property is held rather than
+      asserted. Doing the reformat without the test fix buys one tidy day.
+
 ## Decided against — do not re-raise
 
 - **Re-rolling the turn-order tie-break from the seed.** Raised by PvP, where

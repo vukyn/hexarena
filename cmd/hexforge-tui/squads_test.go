@@ -1046,3 +1046,282 @@ func TestSavingSettlesTheGuardAndReopeningStartsClean(t *testing.T) {
 		t.Error("a squad taken back up off the file already differs from it")
 	}
 }
+
+// TestTheBuilderOffersAShownCharacterAndNotAHeldBackOne is the rule on its own,
+// over a cast written here.
+//
+// Authored rather than read off the shipped book, and that is the point of the
+// fixture: a test that passed because the shipped data happens to hide exactly
+// one character is a test that breaks the day the data changes, and what it
+// would be measuring is cast.json rather than the rule. The one place the
+// shipped data is the subject is the golden report.
+func TestTheBuilderOffersAShownCharacterAndNotAHeldBackOne(t *testing.T) {
+	// The held-back one is declared FIRST on purpose. It is what makes the
+	// "not offered" case discriminating at both call sites at once: a new
+	// member takes the first character offered, so a filter that did nothing
+	// would start every new member on the character an author has taken out of
+	// the choice, and that is a different mistake from cycling onto one.
+	all := []cast.Character{
+		{ID: "book.held", Hidden: true},
+		{ID: "book.shown"},
+		{ID: "book.other"},
+	}
+
+	if got, want := offeredIDs(offeredCharacters(all, "")), []string{"book.shown", "book.other"}; !slices.Equal(got, want) {
+		t.Errorf("with nobody held the builder offers %v, want %v", got, want)
+	}
+
+	// A member opened on the held-back one is offered it, **in the place it was
+	// declared** rather than appended at the end: the chooser walks this list
+	// with the arrow keys, so moving a row would mean the key that steps away
+	// from a character no longer steps back onto it.
+	if got, want := offeredIDs(offeredCharacters(all, "book.held")), []string{"book.held", "book.shown", "book.other"}; !slices.Equal(got, want) {
+		t.Errorf("a member opened on the held-back one is offered %v, want %v", got, want)
+	}
+
+	// And a member opened on a shown character brings nobody else back — the
+	// exemption is for the one character named and for no other.
+	if got, want := offeredIDs(offeredCharacters(all, "book.shown")), []string{"book.shown", "book.other"}; !slices.Equal(got, want) {
+		t.Errorf("a member opened on a shown character is offered %v, want %v", got, want)
+	}
+}
+
+func offeredIDs(characters []cast.Character) []string {
+	out := make([]string, 0, len(characters))
+	for _, character := range characters {
+		out = append(out, character.ID)
+	}
+	return out
+}
+
+// TestANewMemberNeverStartsOnAHeldBackCharacter drives the other call site
+// through the key an author presses, on a cast whose first character is held
+// back.
+//
+// The cast is written onto the screen rather than into the library because the
+// order is the whole fixture: a book grown through SaveCharacter appends, so the
+// character this needs at the front of the list could only get there by being
+// the one the fixture already ships — which is the coupling the fixture exists
+// to avoid.
+func TestANewMemberNeverStartsOnAHeldBackCharacter(t *testing.T) {
+	m, _, _ := start(t, i18n.En)
+	m = menuTo(t, m, screenSquads)
+	shipped := m.squad.characters
+	if len(shipped) == 0 {
+		t.Fatal("the fixture cast is empty, so no member can be added at all")
+	}
+	held := shipped[0]
+	held.ID, held.Hidden = "fixture-anime.recluse", true
+	shown := shipped[0]
+	m.squad.characters = append([]cast.Character{held}, shown)
+
+	m = typeText(t, m, "n")
+	m = typeText(t, m, "moi")
+	m = key(t, m, "enter")
+	if m.squad.mode != squadUnit {
+		t.Fatalf("adding a member did not open it, mode is %v", m.squad.mode)
+	}
+	if m.squad.unit.Character == held.ID {
+		t.Errorf("a new member started on %q, which the cast holds back", held.ID)
+	}
+	if m.squad.unit.Character != shown.ID {
+		t.Errorf("a new member started on %q, want the first character still offered, %q",
+			m.squad.unit.Character, shown.ID)
+	}
+}
+
+// TestASquadAlreadyNamingAHeldBackCharacterKeepsIt is the case that would have
+// shipped broken, driven through the keys an author would press.
+//
+// Hiding a character is an authoring convenience the user expects to flip back,
+// so it may take a character out of the choices offered and may never reach into
+// a squad already on the file and change one. A chooser that simply dropped the
+// hidden rows does both: the member's character resolves to nobody, so its forms
+// and its learnset go empty and the kit picker will not open at all, and the
+// arrow keys write somebody else into a member nobody asked to change — in the
+// author's own saved file, from the one screen here that writes it.
+func TestASquadAlreadyNamingAHeldBackCharacterKeepsIt(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		m, lib, _ := start(t, lang)
+		held := saveAHeldBackCharacter(t, lib, "fixture-film.recluse", "Recluse")
+		// A second one nobody names, so the walk below has something to refuse
+		// that is not the exemption. Authored rather than left to whichever
+		// character cast.json happens to hold back: leaning on the shipped data
+		// would make this test fail the day somebody is un-hidden, which is a
+		// data decision and no business of the builder's.
+		unnamed := saveAHeldBackCharacter(t, lib, "fixture-film.hermit", "Hermit")
+		saveASquadNaming(t, lib, "do-an", held)
+
+		// It still loads, which is half the claim: a squad naming a held-back
+		// character is as valid as any other and the catalogue lists it.
+		m = menuTo(t, m, screenSquads)
+		if len(m.squad.saved) != 1 {
+			t.Fatalf("%v: the catalogue holds %d squads, want the one just written", lang, len(m.squad.saved))
+		}
+		m = key(t, m, "enter")
+		if m.squad.mode != squadEdit {
+			t.Fatalf("%v: enter on the catalogue opened %v", lang, m.squad.mode)
+		}
+		m = key(t, m, "enter")
+		if m.squad.mode != squadUnit {
+			t.Fatalf("%v: enter on the member opened %v", lang, m.squad.mode)
+		}
+		if m.squad.field != unitCharacter {
+			t.Fatalf("%v: the member opened on field %d, want the character row", lang, m.squad.field)
+		}
+
+		// The character resolves, so everything read against it is still there.
+		// This is what a filtered lookup slice takes away, and it takes it away
+		// silently — the row still prints the id.
+		character, known := m.squad.character()
+		if !known {
+			t.Fatalf("%v: the member's own character is not in the cast the screen holds", lang)
+		}
+		if !character.Hidden {
+			t.Fatalf("%v: the fixture character is not held back, so this measures nothing", lang)
+		}
+		if len(m.squad.stageChoices()) == 0 {
+			t.Errorf("%v: the member offers no form at all", lang)
+		}
+		if len(character.SkillsAt(m.squad.unit.Level, m.squad.form())) == 0 {
+			t.Errorf("%v: the member knows nothing, so its kit picker would open empty", lang)
+		}
+
+		// The screen says why a character nothing else offers is on the list.
+		if body := m.screenContent(); !strings.Contains(body, m.text(i18n.SquadHeldBack)) {
+			t.Errorf("%v: the member holds a held-back character and the screen does not say so:\n%s", lang, body)
+		}
+
+		// Leaving the member without touching anything leaves the squad the squad
+		// that was written down, which is what "not edited behind the author's
+		// back" comes to on the file. Asked before a key is pressed at the
+		// chooser, because changing the character empties the kit by design and
+		// a squad edited on purpose is meant to read as changed.
+		m = key(t, m, "esc")
+		if m.squad.mode != squadEdit {
+			t.Fatalf("%v: esc out of the member landed in %v", lang, m.squad.mode)
+		}
+		if m.squad.dirty() {
+			t.Errorf("%v: opening a member holding a held-back character changed the squad", lang)
+		}
+		if got := m.squad.editing.Units[0].Character; got != held.ID {
+			t.Errorf("%v: the member now names %q, want the %q it was saved with", lang, got, held.ID)
+		}
+
+		// ⚠️ The round trip is the assertion, not the single press. Stepping the
+		// chooser is an author asking for a change, so one press moving the
+		// character is correct either way — what a dropped row costs is the way
+		// BACK, because a character off the list is one the arrows can never
+		// return to.
+		m = key(t, m, "enter")
+		if m.squad.mode != squadUnit || m.squad.field != unitCharacter {
+			t.Fatalf("%v: reopening the member landed in %v on field %d", lang, m.squad.mode, m.squad.field)
+		}
+		was := m.squad.unit.Character
+		m = key(t, m, "right")
+		if m.squad.unit.Character == was {
+			t.Fatalf("%v: the chooser did not move at all, so the round trip below measures nothing", lang)
+		}
+		// Stepped onto a character that is not held back, so the note goes: it
+		// reads the answer in hand rather than the exemption behind the list.
+		if body := m.screenContent(); strings.Contains(body, m.text(i18n.SquadHeldBack)) {
+			t.Errorf("%v: the member now names %q, which is offered like any other, and the screen still calls it held back",
+				lang, m.squad.unit.Character)
+		}
+		m = key(t, m, "left")
+		if m.squad.unit.Character != was {
+			t.Errorf("%v: stepping the character chooser away and back landed on %q, want %q — the held-back character is off the list",
+				lang, m.squad.unit.Character, was)
+		}
+
+		// Walked the whole way round, the chooser offers the character it was
+		// opened on and no OTHER held-back one. The round trip above cannot say
+		// that — it presses one key and comes back — so a chooser that had
+		// dropped the filter entirely would satisfy it while offering every
+		// character the cast holds back.
+		//
+		// Anti-vacuity first: the character the walk has to refuse is one this
+		// test wrote, so the claim does not rest on the shipped cast holding
+		// anybody back.
+		var otherHeldBack []string
+		for _, candidate := range m.squad.characters {
+			if candidate.Hidden && candidate.ID != was {
+				otherHeldBack = append(otherHeldBack, candidate.ID)
+			}
+		}
+		if !slices.Contains(otherHeldBack, unnamed.ID) {
+			t.Fatalf("%v: the second held-back character %q is not in the cast the screen holds; it holds back %v",
+				lang, unnamed.ID, otherHeldBack)
+		}
+		visited := map[string]bool{}
+		for range len(m.squad.characters) + 1 {
+			m = key(t, m, "right")
+			visited[m.squad.unit.Character] = true
+			if m.squad.unit.Character == was {
+				break
+			}
+		}
+		if m.squad.unit.Character != was {
+			t.Fatalf("%v: walking the chooser right round ended on %q rather than back at %q",
+				lang, m.squad.unit.Character, was)
+		}
+		for _, id := range otherHeldBack {
+			if visited[id] {
+				t.Errorf("%v: the chooser offered %q, which the cast holds back and no member had chosen", lang, id)
+			}
+		}
+
+		// And the member the round trip put back is the member that goes back
+		// into the squad, rather than only into the copy under edit.
+		m = key(t, m, "esc")
+		if got := m.squad.editing.Units[0].Character; got != held.ID {
+			t.Errorf("%v: the member now names %q, want the %q it was saved with", lang, got, held.ID)
+		}
+	}
+}
+
+// saveAHeldBackCharacter writes a character into the library and holds it back,
+// which is the state a squad builder test needs and no Draft field can ask for:
+// `hidden` is hand-written into cast.json rather than filled in by a form.
+func saveAHeldBackCharacter(t *testing.T, lib *forge.Library, id, name string) cast.Character {
+	t.Helper()
+	character, err := forge.Draft{
+		ID: id, Name: name, Origin: "fixture-film",
+		Archetype: "duelist", Image: "assets/fixture/adept.svg", Element: "wind/ground",
+	}.Resolve(lib)
+	if err != nil {
+		t.Fatalf("resolve the held-back character: %v", err)
+	}
+	character.Hidden = true
+	if err := lib.SaveCharacter(character); err != nil {
+		t.Fatalf("save the held-back character: %v", err)
+	}
+	return character
+}
+
+// saveASquadNaming writes a one-member squad around a character, through the
+// library rather than onto the screen: the claim being set up is that a squad
+// **on the file** naming a held-back character is valid, and a squad built in
+// memory would not have been asked.
+func saveASquadNaming(t *testing.T, lib *forge.Library, id string, character cast.Character) {
+	t.Helper()
+	unit := placement.Placement{
+		ID:        "mot",
+		Character: character.ID,
+		Level:     progression.LevelCap,
+		Slot:      hex.Offset{Col: hex.FormationCols - 1, Row: 1},
+	}
+	kit := character.SkillsAt(unit.Level, progression.Furthest)
+	if len(kit) == 0 {
+		t.Fatal("the fixture character knows nothing, so no squad can field it")
+	}
+	if len(kit) > cast.SkillSlots {
+		kit = kit[:cast.SkillSlots]
+	}
+	unit.Skills = kit
+	if err := lib.SaveSquad(placement.Squad{
+		ID: id, Name: id, Units: []placement.Placement{unit},
+	}); err != nil {
+		t.Fatalf("a squad naming a held-back character was refused: %v", err)
+	}
+}

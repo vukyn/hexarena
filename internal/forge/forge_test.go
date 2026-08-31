@@ -311,6 +311,16 @@ func TestWrittenCastIsStableAndReloads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("resolve a draft: %v", err)
 	}
+	// Held back, which is the one field on a character that no form and no flag
+	// fills in — it is hand-written into cast.json — and therefore the one most
+	// exposed to the failure this whole test is about. `hexforge new` reads the
+	// book and writes the whole of it back, so a field the writer or the reader
+	// does not know about is a field the next append silently deletes, and the
+	// character it deletes it from is not the one being added. Set on the
+	// character rather than asserted about the shipped cast so the case is
+	// authored here: a test resting on the shipped data happening to hide
+	// somebody is a test that breaks the day nobody is hidden.
+	character.Hidden = true
 	if err := lib.SaveCharacter(character); err != nil {
 		t.Fatalf("save: %v", err)
 	}
@@ -322,6 +332,12 @@ func TestWrittenCastIsStableAndReloads(t *testing.T) {
 	returned, known := reloaded.Characters().Get(character.ID)
 	if !known {
 		t.Fatal("the written character is not in the reloaded book")
+	}
+	// Named apart from the DeepEqual below it, which would also catch this and
+	// would report it as "the character changed" — a reader chasing that would
+	// have to diff two printed structs to find out which field went missing.
+	if !returned.Hidden {
+		t.Error("the character was saved held back and came back offered, so the flag does not survive Book.Marshal")
 	}
 	if !reflect.DeepEqual(returned, character) {
 		t.Errorf("the trip through the file changed the character:\n%+v\n%+v", returned, character)
