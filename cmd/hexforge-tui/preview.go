@@ -11,6 +11,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // previewScreen draws the picture a character shows at the level the browser is
@@ -66,13 +67,13 @@ func (p previewScreen) view(m model) (string, string) {
 	character := rows[clamp(m.browse.cursor, 0, len(rows)-1)]
 	_, stage, err := character.Resolve(m.browse.level, progression.Furthest)
 	if err != nil {
-		return "  " + m.style.bad.Render(m.lang.Error(err)) + "\n", footer
+		return "  " + m.style.Bad.Render(m.lang.Error(err)) + "\n", footer
 	}
 	art := character.StageArt(stage)
 
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(character.ID+" — "+character.Name) + "\n")
-	out.WriteString("  " + m.style.label.Render(m.text(i18n.PreviewTitle,
+	out.WriteString(m.style.Heading.Render(character.ID+" — "+character.Name) + "\n")
+	out.WriteString("  " + m.style.Label.Render(m.text(i18n.PreviewTitle,
 		art, m.browse.level, stage.Name)) + "\n\n")
 	// A file that is simply not there is said the way the browser and the check
 	// screen say it, rather than as a decode error carrying an absolute path: a
@@ -80,12 +81,12 @@ func (p previewScreen) view(m model) (string, string) {
 	// the raw error belongs to the case that is actually strange.
 	stamp, present := m.lib.ArtStamp(art)
 	if !present {
-		out.WriteString("  " + m.style.bad.Render(m.text(i18n.ArtMissing)) + "\n")
+		out.WriteString("  " + m.style.Bad.Render(m.text(i18n.ArtMissing)) + "\n")
 		return out.String(), footer
 	}
 	picture, err := p.picture(m, art, stamp)
 	if err != nil {
-		out.WriteString("  " + m.style.bad.Render(
+		out.WriteString("  " + m.style.Bad.Render(
 			m.text(i18n.PreviewArtUnreadable, m.lang.Error(err))) + "\n")
 		return out.String(), footer
 	}
@@ -148,7 +149,7 @@ func (p previewScreen) picture(m model, art, stamp string) (string, error) {
 // one character says the shape and nothing else, while a ramp of weights keeps
 // the shading that tells a leaf from a shadow. The palette's rule still holds —
 // everything a reader has to *decide* from is words elsewhere on the screen.
-func cellRows(drawn *image.RGBA, style palette) string {
+func cellRows(drawn *image.RGBA, style draw.Palette) string {
 	bounds := drawn.Bounds()
 	plain := plainTerminal()
 	var out strings.Builder
@@ -221,7 +222,7 @@ func (i inkColour) luminance() int {
 // A cell with nothing in either half is a plain space rather than a styled one,
 // so a transparent margin shows the terminal's own background instead of a
 // rectangle of whatever this program guessed it to be.
-func blockCell(top, bottom inkColour, style palette) string {
+func blockCell(top, bottom inkColour, style draw.Palette) string {
 	switch {
 	case !top.painted && !bottom.painted:
 		return " "

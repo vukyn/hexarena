@@ -161,8 +161,8 @@ func statusesRoom(m model) int {
 func (s statusesScreen) view(m model) (string, string) {
 	footer := m.text(i18n.StatusesFooter)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.StatusesHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.StatusesSubtitle)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.StatusesHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.StatusesSubtitle)) + "\n\n")
 	if len(s.rows) == 0 {
 		out.WriteString("  " + m.text(i18n.StatusesEmpty) + "\n")
 		return out.String(), footer
@@ -186,7 +186,7 @@ func (s statusesScreen) view(m model) (string, string) {
 	for index := from; index < to; index++ {
 		row := s.rows[index]
 		if row.heading {
-			out.WriteString("  " + m.style.dim.Render(
+			out.WriteString("  " + m.style.Dim.Render(
 				pad(row.category.String(), column+1)+" "+
 					m.lang.StatusCategory(row.category.String())) + "\n")
 			continue
@@ -199,7 +199,7 @@ func (s statusesScreen) view(m model) (string, string) {
 		marker := "  "
 		if index == s.cursor {
 			marker = "> "
-			line = m.style.selected.Render(line)
+			line = m.style.Selected.Render(line)
 		}
 		out.WriteString(marker + line + "\n")
 	}
@@ -215,6 +215,6 @@ func (s statusesScreen) view(m model) (string, string) {
 	// No newline after it: the frame pads the body out to the window, and a
 	// trailing one is a twenty-first line in a twenty-line body — which costs
 	// the caveat itself, since the frame cuts from the bottom.
-	out.WriteString("\n  " + m.style.dim.Render(m.text(i18n.BlurbStatusCaveat)))
+	out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.BlurbStatusCaveat)))
 	return out.String(), footer
 }

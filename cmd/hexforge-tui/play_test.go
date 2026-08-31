@@ -1175,7 +1175,7 @@ func whatIsDrawn(m model) (drawn, string, string) {
 			found.roster++
 		}
 	}
-	found.order = present[m.style.dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))] > 0
+	found.order = present[m.style.Dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))] > 0
 	// Counted as a multiset and not by lookup: the log's rows are not distinct —
 	// tui.Line opens a turn with a blank one — so asking whether each is on the
 	// screen counts every blank row once per blank row there is. Over the **whole

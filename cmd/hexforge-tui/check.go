@@ -8,6 +8,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // checkScreen is forge.Inspect drawn.
@@ -72,12 +73,12 @@ func (c checkScreen) view(m model) (string, string) {
 	// The headline states the verdict in words. A check whose result is only a
 	// colour is a check somebody will read wrong at the moment it matters — and
 	// that holds in both languages, so neither verdict is a bare mark.
-	verdict := m.style.good.Render(m.text(i18n.CheckPassed))
+	verdict := m.style.Good.Render(m.text(i18n.CheckPassed))
 	if !c.report.OK() {
-		verdict = m.style.bad.Render(m.text(i18n.CheckFailed, len(c.report.Problems)))
+		verdict = m.style.Bad.Render(m.text(i18n.CheckFailed, len(c.report.Problems)))
 	}
-	fmt.Fprintf(&out, "%s  %s\n", m.style.heading.Render(m.text(i18n.CheckHeading)), verdict)
-	fmt.Fprintf(&out, "%s\n\n", m.style.dim.Render(m.text(i18n.CheckCounts,
+	fmt.Fprintf(&out, "%s  %s\n", m.style.Heading.Render(m.text(i18n.CheckHeading)), verdict)
+	fmt.Fprintf(&out, "%s\n\n", m.style.Dim.Render(m.text(i18n.CheckCounts,
 		c.report.Dir, c.report.Origins, c.report.Archetypes, len(c.report.Rows))))
 
 	if len(c.report.Rows) == 0 {
@@ -96,28 +97,28 @@ func (c checkScreen) view(m model) (string, string) {
 		// The plain words while there is one picture, and the count once a
 		// character has several: "thiếu" on a three-stage character leaves the
 		// reader asking how many, and the answer is cheap.
-		art := m.style.good.Render(pad(m.text(i18n.ArtPresent), checkArtWidth))
+		art := m.style.Good.Render(pad(m.text(i18n.ArtPresent), checkArtWidth))
 		if missing := row.ArtMissing(); missing > 0 {
 			said := m.text(i18n.ArtMissing)
 			if len(row.Art) > 1 {
 				said = m.text(i18n.ArtSomeMissing, missing, len(row.Art))
 			}
-			art = m.style.bad.Render(pad(said, checkArtWidth))
+			art = m.style.Bad.Render(pad(said, checkArtWidth))
 		}
 		detail := ""
 		if row.Failure != nil {
-			detail = m.style.bad.Render(m.text(i18n.CheckDoesNotResolve, m.lang.Error(row.Failure)))
+			detail = m.style.Bad.Render(m.text(i18n.CheckDoesNotResolve, m.lang.Error(row.Failure)))
 		} else {
 			detail = fmt.Sprintf("%s %d/%d",
-				bar(statBarWidth, row.Budget.Effective, row.Budget.Max),
+				draw.Bar(draw.StatBarWidth, row.Budget.Effective, row.Budget.Max),
 				row.Budget.Effective, row.Budget.Max)
 			if row.Budget.Over() {
-				detail = m.style.bad.Render(detail + "  " + m.text(i18n.CheckOverBudget))
+				detail = m.style.Bad.Render(detail + "  " + m.text(i18n.CheckOverBudget))
 			}
 		}
 		name := pad(row.ID, checkIDWidth)
 		if i == c.cursor {
-			name = m.style.selected.Render(name)
+			name = m.style.Selected.Render(name)
 		}
 		fmt.Fprintf(&out, "%s%s %s %s\n", marker, name, art, detail)
 	}
@@ -126,7 +127,7 @@ func (c checkScreen) view(m model) (string, string) {
 		out.WriteString("\n")
 		for _, problem := range c.report.Problems {
 			out.WriteString("  " +
-				m.style.bad.Render(m.text(i18n.CheckProblem, m.lang.Problem(problem))) + "\n")
+				m.style.Bad.Render(m.text(i18n.CheckProblem, m.lang.Problem(problem))) + "\n")
 		}
 	}
 	// Drawn dim rather than bad, and drawn whether or not the check passed: a
@@ -136,9 +137,9 @@ func (c checkScreen) view(m model) (string, string) {
 		out.WriteString("\n")
 		for _, warning := range c.report.Warnings {
 			out.WriteString("  " +
-				m.style.dim.Render(m.text(i18n.CheckWarning, m.lang.Warning(warning))) + "\n")
+				m.style.Dim.Render(m.text(i18n.CheckWarning, m.lang.Warning(warning))) + "\n")
 		}
 	}
-	out.WriteString("\n" + m.style.dim.Render(m.text(i18n.CheckNote)))
+	out.WriteString("\n" + m.style.Dim.Render(m.text(i18n.CheckNote)))
 	return out.String(), footer
 }

@@ -164,8 +164,8 @@ func passivesRoom(m model) int {
 func (p passivesScreen) view(m model) (string, string) {
 	footer := m.text(i18n.PassivesFooter)
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.PassivesHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.PassivesSubtitle)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.PassivesHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.PassivesSubtitle)) + "\n\n")
 	if len(p.passives) == 0 {
 		return out.String() + "  " + m.text(i18n.PassivesEmpty), footer
 	}
@@ -187,7 +187,7 @@ func (p passivesScreen) view(m model) (string, string) {
 			glossColumn = width
 		}
 	}
-	out.WriteString("  " + m.style.dim.Render(passiveRow(column+1, glossColumn,
+	out.WriteString("  " + m.style.Dim.Render(passiveRow(column+1, glossColumn,
 		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss),
 		m.text(i18n.ColumnCarriedBy))) + "\n")
 
@@ -203,7 +203,7 @@ func (p passivesScreen) view(m model) (string, string) {
 		marker := "  "
 		if index == p.cursor {
 			marker = "> "
-			row = m.style.selected.Render(row)
+			row = m.style.Selected.Render(row)
 		}
 		out.WriteString(marker + row + "\n")
 	}
@@ -219,10 +219,10 @@ func (p passivesScreen) view(m model) (string, string) {
 			names = append(names, name)
 		}
 	}
-	out.WriteString("\n  " + m.style.label.Render(m.lang.GlossedPassive(selected)) + "\n")
+	out.WriteString("\n  " + m.style.Label.Render(m.lang.GlossedPassive(selected)) + "\n")
 	for _, sentence := range strings.Split(m.lang.DescribePassive(selected), "\n") {
 		sentence = marked(sentence, names, func(word string) string {
-			return m.style.emphasis.Render(word)
+			return m.style.Emphasis.Render(word)
 		})
 		// Wrapped to the floor rather than to the window, for the reason the
 		// trait screen wraps: these are the program's own prose, and a sentence
@@ -236,7 +236,7 @@ func (p passivesScreen) view(m model) (string, string) {
 	// an empty cell — which reads as a column that failed to fill rather than as
 	// a fact. This says it in words, and only for the trait being read.
 	if p.carriers[selected.ID] == "" {
-		out.WriteString("\n  " + m.style.dim.Render(m.text(i18n.PassivesNobodyCarries)))
+		out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.PassivesNobodyCarries)))
 	}
 	return strings.TrimRight(out.String(), "\n"), footer
 }

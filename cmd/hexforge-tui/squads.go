@@ -834,10 +834,10 @@ func (s squadScreen) view(m model) (string, string) {
 
 func (s squadScreen) viewList(m model) string {
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.SquadsHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.SquadsSubtitle, len(s.saved), hex.MaxTeamSize)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.SquadsHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.SquadsSubtitle, len(s.saved), hex.MaxTeamSize)) + "\n\n")
 	if len(s.saved) == 0 {
-		out.WriteString(m.style.dim.Render(m.text(i18n.SquadsEmpty)) + "\n")
+		out.WriteString(m.style.Dim.Render(m.text(i18n.SquadsEmpty)) + "\n")
 		return strings.TrimRight(out.String(), "\n")
 	}
 	// The id column is measured over what is drawn, header included, because a
@@ -848,7 +848,7 @@ func (s squadScreen) viewList(m model) string {
 			width = drawn
 		}
 	}
-	out.WriteString("  " + m.style.dim.Render(pad(m.text(i18n.SquadColumnID), width)+" "+
+	out.WriteString("  " + m.style.Dim.Render(pad(m.text(i18n.SquadColumnID), width)+" "+
 		m.text(i18n.SquadColumnMembers)) + "\n")
 	from, to := window(len(s.saved), s.cursor, squadRoom(m))
 	for index := from; index < to; index++ {
@@ -861,12 +861,12 @@ func (s squadScreen) viewList(m model) string {
 		}
 		if index == s.cursor {
 			marker = "> "
-			line = m.style.selected.Render(line)
+			line = m.style.Selected.Render(line)
 		}
 		out.WriteString(marker + clip(line, m.usableWidth()-2) + "\n")
 	}
 	if s.err != nil {
-		out.WriteString("\n" + m.style.bad.Render(m.lang.Error(s.err)) + "\n")
+		out.WriteString("\n" + m.style.Bad.Render(m.lang.Error(s.err)) + "\n")
 	}
 	return strings.TrimRight(out.String(), "\n")
 }
@@ -885,7 +885,7 @@ func squadRoom(m model) int {
 
 func (s squadScreen) viewEdit(m model) string {
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.SquadHeading)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.SquadHeading)) + "\n\n")
 	width := squadLabelWidth(m)
 	id := s.idInput.View()
 	if !s.fresh() {
@@ -899,7 +899,7 @@ func (s squadScreen) viewEdit(m model) string {
 		line := s.unitLine(m, index, unit)
 		if index == s.units {
 			marker = "> "
-			line = m.style.selected.Render(line)
+			line = m.style.Selected.Render(line)
 		}
 		out.WriteString(marker + clip(line, m.usableWidth()-2) + "\n")
 	}
@@ -908,9 +908,9 @@ func (s squadScreen) viewEdit(m model) string {
 		add = m.text(i18n.SquadFull, hex.MaxTeamSize)
 	}
 	if s.units >= len(s.editing.Units) {
-		out.WriteString("> " + m.style.selected.Render(add) + "\n")
+		out.WriteString("> " + m.style.Selected.Render(add) + "\n")
 	} else {
-		out.WriteString("  " + m.style.dim.Render(add) + "\n")
+		out.WriteString("  " + m.style.Dim.Render(add) + "\n")
 	}
 	out.WriteString("\n" + s.formation(m, -1))
 	out.WriteString(s.report(m))
@@ -932,7 +932,7 @@ func (s squadScreen) unitLine(m model, index int, unit placement.Placement) stri
 
 func (s squadScreen) viewUnit(m model) string {
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.SquadUnitHeading, s.unit.ID)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.SquadUnitHeading, s.unit.ID)) + "\n\n")
 	width := squadLabelWidth(m)
 	rows := []struct {
 		label i18n.Key
@@ -950,7 +950,7 @@ func (s squadScreen) viewUnit(m model) string {
 		value := row.value
 		if field == s.field {
 			marker = "> "
-			value = m.style.selected.Render(value)
+			value = m.style.Selected.Render(value)
 		}
 		out.WriteString(marker + m.labelAt(m.text(row.label), width-2, "%s", value))
 	}
@@ -959,7 +959,7 @@ func (s squadScreen) viewUnit(m model) string {
 	// else offers. Without it the row is a character id like any other and the
 	// flag reads as not working.
 	if s.holdsAHiddenCharacter() {
-		out.WriteString("  " + m.style.dim.Render(m.text(i18n.SquadHeldBack)) + "\n")
+		out.WriteString("  " + m.style.Dim.Render(m.text(i18n.SquadHeldBack)) + "\n")
 	}
 	out.WriteString("\n" + s.formation(m, s.unitIndex))
 	out.WriteString(s.report(m))
@@ -999,10 +999,10 @@ func (s squadScreen) stageLabel(m model) string {
 // says so before the save does.
 func (s squadScreen) listValue(m model, chosen []string, slots int) string {
 	if len(chosen) == 0 {
-		return m.style.dim.Render(m.text(i18n.SquadNothingChosen, slots))
+		return m.style.Dim.Render(m.text(i18n.SquadNothingChosen, slots))
 	}
 	return fmt.Sprintf("%s %s", strings.Join(chosen, " "),
-		m.style.dim.Render(m.text(i18n.ChoicePosition, len(chosen), slots)))
+		m.style.Dim.Render(m.text(i18n.ChoicePosition, len(chosen), slots)))
 }
 
 // The grid's own measurements. A cell is three characters wide because that is
@@ -1027,7 +1027,7 @@ const (
 // is marked with carets rather than with an arrow.
 func (s squadScreen) formation(m model, editing int) string {
 	var out strings.Builder
-	out.WriteString(m.style.dim.Render(m.text(i18n.SquadFormation)) + "\n")
+	out.WriteString(m.style.Dim.Render(m.text(i18n.SquadFormation)) + "\n")
 	units := s.unitsDrawn(editing)
 	columns := formationColumns()
 	for row := 0; row < hex.FormationRows; row++ {
@@ -1050,9 +1050,9 @@ func (s squadScreen) formation(m model, editing int) string {
 	}
 	// The marker sits under the first column drawn, which is the front rank by
 	// construction: formationColumns orders them by depth.
-	out.WriteString(m.style.dim.Render(formationIndent+strings.Repeat("^", formationCell)+
+	out.WriteString(m.style.Dim.Render(formationIndent+strings.Repeat("^", formationCell)+
 		" "+m.text(i18n.SquadFormationFront)) + "\n")
-	out.WriteString(m.style.dim.Render(formationIndent+m.text(i18n.SquadFormationLegend)) + "\n")
+	out.WriteString(m.style.Dim.Render(formationIndent+m.text(i18n.SquadFormationLegend)) + "\n")
 	return out.String()
 }
 
@@ -1093,7 +1093,7 @@ func (s squadScreen) unitsDrawn(editing int) []placement.Placement {
 // report is the refusal or the confirmation under whichever view is in front.
 func (s squadScreen) report(m model) string {
 	if s.err != nil {
-		return "\n" + m.style.bad.Render(m.text(i18n.WriteRefused, m.lang.Error(s.err))) + "\n"
+		return "\n" + m.style.Bad.Render(m.text(i18n.WriteRefused, m.lang.Error(s.err))) + "\n"
 	}
 	if len(s.notes) == 0 {
 		return ""
@@ -1101,9 +1101,9 @@ func (s squadScreen) report(m model) string {
 	var out strings.Builder
 	out.WriteString("\n")
 	for index, line := range m.lang.Notes(s.notes) {
-		style := m.style.dim
+		style := m.style.Dim
 		if index == 0 {
-			style = m.style.good
+			style = m.style.Good
 		}
 		out.WriteString(style.Render(line) + "\n")
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // The fields of the new-character form, in the order they are walked.
@@ -472,8 +473,8 @@ func formLabelWidth(m model) int {
 func (f formScreen) view(m model) (string, string) {
 	footer := m.text(i18n.FormFooter, saveKeyLabel())
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.FormHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.FormSubtitle, progression.LevelCap)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.FormHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.FormSubtitle, progression.LevelCap)) + "\n\n")
 
 	width := formLabelWidth(m)
 	for field := range fieldCount {
@@ -492,9 +493,9 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 	}
 	name := pad(fieldLabel(m, field), labelWidth)
 	if field == f.cursor {
-		name = m.style.selected.Render(name)
+		name = m.style.Selected.Render(name)
 	} else {
-		name = m.style.label.Render(name)
+		name = m.style.Label.Render(name)
 	}
 
 	var value string
@@ -521,7 +522,7 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 		// is a line nobody can act on. It sits under the row in the same column
 		// as the values, which is what m.labelAt with no name draws.
 		drawn += m.labelAt("", labelWidth, "%s",
-			m.style.dim.Render(m.text(i18n.NoArtToChoose, m.lib.AssetsPath())))
+			m.style.Dim.Render(m.text(i18n.NoArtToChoose, m.lib.AssetsPath())))
 	}
 	return drawn
 }
@@ -546,11 +547,11 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 // a cell over. That is exactly the shape fieldValueRoom exists to have stopped —
 // see its comment for the row it measures.
 func (f formScreen) kitValue(m model, labelWidth int) string {
-	hint := m.style.dim.Render(m.text(i18n.KitChooseHint))
+	hint := m.style.Dim.Render(m.text(i18n.KitChooseHint))
 	room := fieldValueRoom(m.usableWidth(), labelWidth,
 		lipgloss.Width(m.text(i18n.KitChooseHint)))
 	if len(f.kit) == 0 {
-		return m.style.bad.Render(m.text(i18n.PickerNothingChosen)) + "  " + hint
+		return m.style.Bad.Render(m.text(i18n.PickerNothingChosen)) + "  " + hint
 	}
 	return clip(strings.Join(f.kit, " "), room) + "  " + hint
 }
@@ -568,11 +569,11 @@ func (f formScreen) kitValue(m model, labelWidth int) string {
 // which lineage skills it may carry, so a clipped last entry is the row's whole
 // content going missing.
 func (f formScreen) speciesValue(m model, labelWidth int) string {
-	hint := m.style.dim.Render(m.text(i18n.KitChooseHint))
+	hint := m.style.Dim.Render(m.text(i18n.KitChooseHint))
 	room := fieldValueRoom(m.usableWidth(), labelWidth,
 		lipgloss.Width(m.text(i18n.KitChooseHint)))
 	if len(f.species) == 0 {
-		return m.style.dim.Render(m.text(i18n.SpeciesNothingInParticular)) + "  " + hint
+		return m.style.Dim.Render(m.text(i18n.SpeciesNothingInParticular)) + "  " + hint
 	}
 	return clip(strings.Join(f.species, " "), room) + "  " + hint
 }
@@ -589,10 +590,10 @@ const choiceFormat = "< %s >  %s"
 // is visible without pressing anything.
 func (f formScreen) choice(m model, index, total int, label string) string {
 	if total == 0 {
-		return m.style.bad.Render(m.text(i18n.NoneCatalogued))
+		return m.style.Bad.Render(m.text(i18n.NoneCatalogued))
 	}
 	return fmt.Sprintf(choiceFormat, label,
-		m.style.dim.Render(m.text(i18n.ChoicePosition, index+1, total)))
+		m.style.Dim.Render(m.text(i18n.ChoicePosition, index+1, total)))
 }
 
 // artLabel is the chosen art path, shortened to what its row has room for.
@@ -641,7 +642,10 @@ func artRoom(m model, index, total int) int {
 // ellipsis marks a path that did not fit. One rune rather than three dots, so
 // that its cell count is its character count, which is the unit every column in
 // this client is measured in.
-const ellipsis = "…"
+//
+// Declared in internal/screen, which is where clip's mark comes from: two
+// spellings of "it did not fit" is two things to keep in step.
+const ellipsis = draw.Ellipsis
 
 // elidePath shortens a path to a number of cells, keeping the end.
 //
@@ -697,19 +701,19 @@ func (f formScreen) statRow(m model, kind progression.Kind) string {
 	input := f.inputs[fieldStatBase+int(kind)]
 	ceiling := m.lib.Limits().Ceilings[kind]
 	curve, err := forge.ParseCurve(input.Value())
-	meter := m.style.dim.Render(strings.Repeat("-", statBarWidth+2))
+	meter := m.style.Dim.Render(strings.Repeat("-", draw.StatBarWidth+2))
 	trailing := ""
 	if err != nil {
 		// The refusal is forge.ParseCurve's, worded by the catalog. This screen
 		// does not decide what is wrong with a curve, only where to put it.
-		return fmt.Sprintf("%s %s %s", input.View(), meter, m.style.bad.Render(m.lang.Error(err)))
+		return fmt.Sprintf("%s %s %s", input.View(), meter, m.style.Bad.Render(m.lang.Error(err)))
 	}
-	meter = bar(statBarWidth, curve.Max, ceiling)
+	meter = draw.Bar(draw.StatBarWidth, curve.Max, ceiling)
 	trailing = m.text(i18n.CurveAgainstCeiling, curve.Base, curve.Max, ceiling)
 	if curve.Max > ceiling {
-		trailing = m.style.bad.Render(trailing + "  " + m.text(i18n.OverTheCeiling))
+		trailing = m.style.Bad.Render(trailing + "  " + m.text(i18n.OverTheCeiling))
 	} else {
-		trailing = m.style.dim.Render(trailing)
+		trailing = m.style.Dim.Render(trailing)
 	}
 	return fmt.Sprintf("%s %s %s", input.View(), meter, trailing)
 }
@@ -724,12 +728,12 @@ func (f formScreen) liveChecks(m model, labelWidth int) string {
 
 	table, err := draft.Table(m.lib)
 	if err != nil {
-		out.WriteString(m.labelAt(m.text(i18n.LabelBudget), labelWidth, "%s", m.style.bad.Render(m.lang.Error(err))))
+		out.WriteString(m.labelAt(m.text(i18n.LabelBudget), labelWidth, "%s", m.style.Bad.Render(m.lang.Error(err))))
 	} else {
 		values := table.At(progression.LevelCap)
 		budget := m.lib.Budget(values)
 		out.WriteString(m.labelAt(m.text(i18n.LabelBudget), labelWidth, "%s", budgetLine(m, budget)))
-		out.WriteString(m.labelAt("", labelWidth, "%s", m.style.dim.Render(m.lang.BudgetPierced(budget))))
+		out.WriteString(m.labelAt("", labelWidth, "%s", m.style.Dim.Render(m.lang.BudgetPierced(budget))))
 	}
 
 	out.WriteString(m.labelAt(m.text(i18n.LabelCarries), labelWidth, "%s", f.carryLine(m, draft)))
@@ -737,15 +741,15 @@ func (f formScreen) liveChecks(m model, labelWidth int) string {
 	switch {
 	case f.err != nil:
 		out.WriteString("\n" +
-			m.style.bad.Render(m.text(i18n.WriteRefused, m.lang.Error(f.err))) + "\n")
+			m.style.Bad.Render(m.text(i18n.WriteRefused, m.lang.Error(f.err))) + "\n")
 	case len(f.notes) > 0:
 		out.WriteString("\n")
 		for i, note := range m.lang.Notes(f.notes) {
 			if i == 0 {
-				out.WriteString(m.style.good.Render(note) + "\n")
+				out.WriteString(m.style.Good.Render(note) + "\n")
 				continue
 			}
-			out.WriteString(m.style.dim.Render(note) + "\n")
+			out.WriteString(m.style.Dim.Render(note) + "\n")
 		}
 	}
 	return out.String()
@@ -763,13 +767,13 @@ func (f formScreen) carryLine(m model, draft forge.Draft) string {
 	names := draft.KitNames(m.lib)
 	kit, err := m.lib.LookupKit(names)
 	if err != nil {
-		return m.style.bad.Render(m.lang.Error(err))
+		return m.style.Bad.Render(m.lang.Error(err))
 	}
 	if strings.TrimSpace(draft.Element) == "" {
-		return m.style.dim.Render(m.text(i18n.CarryNoElementYet, m.lang.KitSummary(kit)))
+		return m.style.Dim.Render(m.text(i18n.CarryNoElementYet, m.lang.KitSummary(kit)))
 	}
 	if err := m.lib.ValidateElement(draft.Element, kit); err != nil {
-		return m.style.bad.Render(m.text(i18n.CarryRefused, m.lang.Error(err)))
+		return m.style.Bad.Render(m.text(i18n.CarryRefused, m.lang.Error(err)))
 	}
-	return m.style.good.Render(m.text(i18n.CarryAccepted, draft.Element))
+	return m.style.Good.Render(m.text(i18n.CarryAccepted, draft.Element))
 }

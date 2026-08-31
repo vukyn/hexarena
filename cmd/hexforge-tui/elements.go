@@ -78,8 +78,8 @@ func (s elementsScreen) view(m model) (string, string) {
 	footer := m.text(i18n.ElementsFooter)
 	members := element.All()
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.ElementsHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.ElementsSubtitle)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.ElementsHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.ElementsSubtitle)) + "\n\n")
 
 	// The name column is dropped whole where nothing is named, which is what
 	// English gets: an element's gloss is a compiled one and is empty in the
@@ -106,7 +106,7 @@ func (s elementsScreen) view(m model) (string, string) {
 		// draws it in: a reader who walks from one screen to the other is
 		// following the word, and a word that changes colour on the way is a
 		// second word. Decoration only — the id is right there in text.
-		id := m.style.element(member).Render(member.String())
+		id := m.style.Element(member).Render(member.String())
 		line := id
 		if glossColumn > 0 {
 			line = id + strings.Repeat(" ", column+1-lipgloss.Width(member.String())) +
@@ -118,9 +118,9 @@ func (s elementsScreen) view(m model) (string, string) {
 			// The selection is bold and takes the row whole, colour and all: a
 			// cursor that recoloured the id would hide the one thing the colour
 			// is for.
-			line = m.style.selected.Render(member.String())
+			line = m.style.Selected.Render(member.String())
 			if glossColumn > 0 {
-				line = m.style.selected.Render(
+				line = m.style.Selected.Render(
 					pad(member.String(), column+1) + " " + m.lang.Gloss(member.String()))
 			}
 		}
@@ -137,6 +137,6 @@ func (s elementsScreen) view(m model) (string, string) {
 	// of none of them individually.
 	// No newline after it — the frame pads the body out and cuts from the bottom,
 	// so a trailing one costs the caveat itself.
-	out.WriteString("\n  " + m.style.dim.Render(m.text(i18n.BlurbElementCaveat)))
+	out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.BlurbElementCaveat)))
 	return out.String(), footer
 }

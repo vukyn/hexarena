@@ -70,8 +70,8 @@ func (s chartScreen) view(m model) (string, string) {
 	footer := m.text(i18n.ChartFooter)
 	chart := m.lib.Chart()
 	var out strings.Builder
-	out.WriteString(m.style.heading.Render(m.text(i18n.ChartHeading)) + "  " +
-		m.style.dim.Render(m.text(i18n.ChartSubtitle)) + "\n\n")
+	out.WriteString(m.style.Heading.Render(m.text(i18n.ChartHeading)) + "  " +
+		m.style.Dim.Render(m.text(i18n.ChartSubtitle)) + "\n\n")
 
 	blocks := chartBlocks(m, chart)
 	if len(blocks) == 0 {
@@ -86,14 +86,14 @@ func (s chartScreen) view(m model) (string, string) {
 		names = append(names, member.String())
 	}
 	for _, block := range blocks {
-		out.WriteString("  " + m.style.label.Render(block.label) + "\n")
+		out.WriteString("  " + m.style.Label.Render(block.label) + "\n")
 		for _, line := range block.lines {
 			out.WriteString("    " + marked(line, names, func(word string) string {
 				member, err := element.Parse(word)
 				if err != nil {
 					return word
 				}
-				return m.style.element(member).Render(word)
+				return m.style.Element(member).Render(word)
 			}) + "\n")
 		}
 	}
@@ -103,7 +103,7 @@ func (s chartScreen) view(m model) (string, string) {
 	// asking what an edge is *for*, and an edge with no price on it is a line
 	// between two words.
 	rates := chart.Multipliers()
-	out.WriteString("\n  " + m.style.dim.Render(m.text(i18n.ChartRates,
+	out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.ChartRates,
 		i18n.Share(rates.Advantage), i18n.Share(rates.Neutral),
 		i18n.Share(rates.Disadvantage))))
 	return out.String(), footer

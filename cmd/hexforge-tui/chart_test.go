@@ -371,19 +371,3 @@ func TestTheChartReadsWithoutColour(t *testing.T) {
 		t.Errorf("the chart writes escape codes under NO_COLOR:\n%q", body)
 	}
 }
-
-// TestEveryElementHasAStyle is the completeness the array buys.
-//
-// The colours are indexed by the enum, so a twelfth element added tomorrow gets a
-// zero value rather than a missing key — which draws plain and looks deliberate.
-// Only neutral is meant to be undecorated.
-func TestEveryElementHasAStyle(t *testing.T) {
-	for _, member := range element.All() {
-		if member == element.Neutral {
-			continue
-		}
-		if elementColours[member] == "" {
-			t.Errorf("%v has no colour, so it draws like the inert element", member)
-		}
-	}
-}
