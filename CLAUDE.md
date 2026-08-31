@@ -49,7 +49,7 @@ go run ./cmd/hexforge-tui                        # the same authoring, full scre
 go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG=en does the same, ctrl+l toggles
 
 go test ./...
-go test ./internal/core/hex ./internal/i18n ./internal/seed ./internal/tui -update   # accept new goldens
+go test ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/seed ./internal/tui -update   # accept new goldens
 go test ./internal/core/battle -run TestControl                     # one test
 gofmt -l . && go vet ./...
 ```
@@ -61,10 +61,10 @@ binaries; `make forge ARGS="show some.id"` passes arguments through. `make check
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
 
-`-update` is only defined in the four packages that hold golden files
-(`internal/core/hex`, `internal/i18n`, `internal/seed`, `internal/tui`), so
-`go test ./... -update` fails on the rest. A new package with a golden has to be
-added to that command **and** to the `golden` target.
+`-update` is only defined in the five packages that hold golden files
+(`cmd/hexforge-tui`, `internal/core/hex`, `internal/i18n`, `internal/seed`,
+`internal/tui`), so `go test ./... -update` fails on the rest. A new package with
+a golden has to be added to that command **and** to the `golden` target.
 
 ## Rating an action: how Suggest prices what is not damage
 
@@ -2102,10 +2102,21 @@ regenerated on autopilot:
   which works are catalogued and who was borrowed from each, every preset's curve
   with what it spends of the effective-health budget, and every character
   resolved at each of its stage boundaries and at the cap.
+- `cmd/hexforge-tui/testdata/screens.golden` is the **rendered client**: every
+  entry `everyScreen` registers, in both languages, at the 120x24 floor and at
+  160x60 — 200 renders, 8200 lines. It is the only golden in a `cmd` package, and
+  it exists because the screens had *property* tests (width, translation, no
+  leaked wording) and no byte-level one, so a misplaced space or a moved clip
+  point passed everything. ⚠️ **The header line is deliberately not recorded** —
+  it names the data directory, so it names the machine; the fixture also hands
+  `forge.Load` a **relative** directory, because the check screen's count line
+  prints one in the body too. See the doc comment on
+  `TestEveryScreenDrawsWhatTheGoldenHolds` for both, and for what a golden
+  written today does and does not prove about the step before it.
 
-Run `make golden` (`go test ./internal/core/hex ./internal/i18n ./internal/seed
-./internal/tui -update`) to accept a change and then
-**read the diff**. That diff is what the files are for: a balance change that
+Run `make golden` (`go test ./cmd/hexforge-tui ./internal/core/hex
+./internal/i18n ./internal/seed ./internal/tui -update`) to accept a change and
+then **read the diff**. That diff is what the files are for: a balance change that
 moves numbers you did not expect is a finding, not noise.
 
 Several tests deliberately hardcode design figures rather than reading them from
