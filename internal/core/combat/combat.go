@@ -14,11 +14,20 @@
 // Both multipliers are integers in parts per thousand and the whole expression
 // resolves with a single integer division at the end, so truncation happens
 // once and the result is identical on every platform.
+//
+// The numerator that division reads is built in 128 bits. Five factors
+// multiplied together pass what an int64 holds long before any one of them is
+// an unreasonable number to author, and the obvious repair — dividing earlier —
+// is refused precisely because it would truncate twice. Widening the
+// intermediate is what lets the division stay single; below the point where the
+// narrower arithmetic overflowed, the answer is bit for bit the one it gave.
 package combat
 
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+	"math/bits"
 
 	"github.com/vukyn/hexarena/internal/core/rng"
 	"github.com/vukyn/hexarena/internal/core/scale"
@@ -148,20 +157,129 @@ func (r Rules) Damage(attack, defense int64, skillMultiplier, affinityMultiplier
 // ordinary hit passes PermilleBase and multiplies and divides by the same
 // thousand: floor(1000a/1000b) == floor(a/b), exactly. That identity is why
 // adding the mechanic moved no damage figure anywhere.
+//
+// ⚠️ **The numerator is a product of five and does not fit an int64.** It used
+// to be written as one int64 expression and wrapped silently: measured at the
+// attack ceiling against half the defence ceiling, a power of ninety million
+// came to four and a half million — a large, plausible, wrong figure, not a
+// visibly broken one — while a power of a hundred and twenty million came to
+// MinimumDamage off a wrapped numerator. Nothing refuses such a power, because
+// skill.Validate bounds power below and not above, so a skill like that parses,
+// saves and fights. And the wrapped expression is *not monotone in power*, so
+// no reading taken off a single figure could have caught it.
+//
+// The repair may not be to divide earlier. Two truncations break the identity
+// above and move every damage figure in the game, which is the one thing the
+// single division exists to prevent. So the intermediate got wider instead —
+// see wide — and the division stayed single.
+//
+// Every factor is positive by the time the product is built, which is what
+// makes the unsigned arithmetic safe to read: the early return refuses a
+// non-positive attack or multiplier and a negative defence is clamped.
+// DefenseConstant joins that guard as the fifth factor. It is the only one that
+// comes from data rather than from a caller, Validate already refuses a
+// non-positive one, and so this is unreachable through every loading path; it
+// is written down so the conversion below cannot be handed a negative by a
+// Rules built by hand.
 func (r Rules) damage(attack, defense int64, skillMultiplier, affinityMultiplier, critMultiplier int) int64 {
-	if attack <= 0 || skillMultiplier <= 0 || affinityMultiplier <= 0 || critMultiplier <= 0 {
+	if attack <= 0 || skillMultiplier <= 0 || affinityMultiplier <= 0 || critMultiplier <= 0 ||
+		r.DefenseConstant <= 0 {
 		return 0
 	}
 	if defense < 0 {
 		defense = 0
 	}
-	numerator := attack * int64(skillMultiplier) * int64(affinityMultiplier) * int64(critMultiplier) * r.DefenseConstant
+	numerator := widen(uint64(attack), uint64(skillMultiplier)).
+		times(uint64(affinityMultiplier)).
+		times(uint64(critMultiplier)).
+		times(uint64(r.DefenseConstant))
+	// The denominator stays a plain int64, and it has room to. It is a thousand
+	// cubed times K plus defence, so it overflows only past a K plus defence of
+	// 9,223,372,037; defence saturates at three times its progression ceiling of
+	// 800, which puts the largest reachable value of that sum at 2,699 with the
+	// shipped constant of 300. Three million times the room it needs.
 	denominator := int64(PermilleBase) * int64(PermilleBase) * int64(PermilleBase) * (r.DefenseConstant + defense)
-	damage := numerator / denominator
+	damage := numerator.over(uint64(denominator))
 	if damage < r.MinimumDamage {
 		return r.MinimumDamage
 	}
 	return damage
+}
+
+// wide is an unsigned 128-bit intermediate together with whether it is still
+// exact. It exists for the damage numerator and for nothing else.
+//
+// exact goes false the moment a product passes 128 bits and never goes back, so
+// one overflow anywhere in a chain is still an overflow when the chain ends.
+// Nothing the game can author comes near it — the shipped factors would need a
+// power past 1.9e26 — and it is carried anyway, because a silent wrap at 128
+// bits is the same defect as the one at 64, only rarer and therefore harder to
+// find the next time.
+type wide struct {
+	high, low uint64
+	exact     bool
+}
+
+// widen returns the exact 128-bit product of two 64-bit values.
+func widen(a, b uint64) wide {
+	high, low := bits.Mul64(a, b)
+	return wide{high: high, low: low, exact: true}
+}
+
+// times multiplies by a further 64-bit factor.
+//
+// bits.Mul64 widens a *pair*, and the numerator is a product of five, so the
+// chain needs this 128x64 step to continue past the first multiplication. The
+// low word carries the whole result and the high word's product must land
+// entirely in the upper half; anything above that, or a carry out of it, is the
+// value no longer fitting.
+func (w wide) times(factor uint64) wide {
+	upperHigh, upperLow := bits.Mul64(w.high, factor)
+	high, low := bits.Mul64(w.low, factor)
+	high, carry := bits.Add64(high, upperLow, 0)
+	return wide{high: high, low: low, exact: w.exact && upperHigh == 0 && carry == 0}
+}
+
+// over divides by a 64-bit denominator, saturating rather than panicking on a
+// quotient that will not fit.
+//
+// ⚠️ **The guard is not optional.** bits.Div64 panics on both of the two things
+// that can go wrong here — a divisor of nought, and a quotient that would pass
+// 64 bits — and a panic inside the damage formula is strictly worse than the
+// wrap it replaces: it takes the battle down rather than printing a wrong
+// number.
+//
+// One comparison answers both, and that is arithmetic rather than luck.
+// Div64's precondition is that the high word is below the divisor, and a high
+// word is unsigned, so it is never below nought: a divisor of nought fails
+// `high >= divisor` for every value there is. A separate `denominator == 0`
+// clause was written first and a mutation deleting it survived the whole suite,
+// which is what said so. Do not put it back.
+//
+// The second check is a different question rather than a repeat. A high word
+// below the divisor puts the quotient inside 64 bits, but not necessarily
+// inside a *signed* one.
+//
+// What a quotient past the type should produce is math.MaxInt64, and the
+// argument is that this is a bound on the *type* and not on the design. The
+// largest effective health the progression limits allow is eleven and a half
+// thousand, so every input that reaches here already kills everything it can
+// touch and pinning it changes no figure any battle could show; damage larger
+// than any health is not a wrong answer, where a panic is. It is also the only
+// choice that keeps damage non-decreasing in power, which is the property the
+// wrap actually broke.
+//
+// It is deliberately *not* a ceiling on what may be authored. An implementation
+// limit must not set a design bound — that number is the game's to choose.
+func (w wide) over(denominator uint64) int64 {
+	if !w.exact || w.high >= denominator {
+		return math.MaxInt64
+	}
+	quotient, _ := bits.Div64(w.high, w.low, denominator)
+	if quotient > math.MaxInt64 {
+		return math.MaxInt64
+	}
+	return int64(quotient)
 }
 
 // Restore returns how much health a multiplier of a stat gives back.
