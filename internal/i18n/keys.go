@@ -172,7 +172,7 @@ const (
 	// The shape diagram, opened from the shape chooser.
 	//
 	// A sub-screen rather than a pane on the form, and the reason is measured:
-	// the form spends nineteen of the twenty body lines an 80x24 window has, and
+	// the form spends nineteen of the twenty body lines a 120x24 window has, and
 	// the board is eight lines on its own. See skillFieldShape's help line,
 	// which is where an author is told the key.
 	SkillShapeHeading

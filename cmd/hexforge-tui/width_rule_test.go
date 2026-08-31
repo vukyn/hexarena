@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -130,7 +131,7 @@ func TestTheFloorDrawsWhatTheFloorAlwaysDrew(t *testing.T) {
 //
 // The sites here carry the program's own sentences, so they wrap at the floor
 // whatever the window is: the same two short lines on a hundred-column terminal
-// as on an eighty-column one. Widening them would read as consistency and would
+// as on a two-hundred-column one. Widening them would read as consistency and would
 // take TestEveryWordingFitsTheMinimumWidth's subject away — it renders at two
 // hundred and measures against seventy-nine, which only says anything while the
 // wording is wrapped to the floor before it gets there.
@@ -138,17 +139,42 @@ func TestTheFloorDrawsWhatTheFloorAlwaysDrew(t *testing.T) {
 // The line count is the assertion rather than a width, because a width is what
 // a widened version would still satisfy: prose wrapped to the window is inside
 // the window by construction. What changes is how many lines it takes.
+//
+// ⚠️ **The fight's caution left this table when the floor moved to 120, and that
+// is a reported loss of coverage rather than a tidy-up.** Its sentence took two
+// lines at a 77-cell room and takes **one** at a 117-cell one, so floor-wrapped
+// and window-wrapped now produce the identical single line and no assertion here
+// can tell them apart — the anti-vacuity guard below said exactly that, by name.
+// It is still wrapped at the floor in fight.go and it is still right to be; what
+// is gone is anything that would notice if it stopped. The width sweep cannot
+// cover it either: the sentence measures under 119 cells, so a window-wrapped
+// version would pass that too. It comes back the day the wording grows.
+//
+// The species note replaces it — authored prose, wrapped at the floor by
+// species.go for the same stated reason, and two lines at 117 on the longest
+// kinds in the book.
 func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		base, _, _ := start(t, lang)
 
-		// The fight's caution: the sentence under the win rate that stops the
-		// figure being read as the roster's.
-		fight := menuTo(t, base, screenFight)
-		caution := func(width int) []string {
-			m := fight
+		// A species note: the authored sentence under the kind listing. The
+		// cursor is put on the kind with the longest note, which is the only one
+		// that wraps at all — a one-line note could not tell the two rules apart
+		// any more than the caution can.
+		kinds := menuTo(t, base, screenSpecies)
+		longest := 0
+		for index, kind := range kinds.species.kinds {
+			if lipgloss.Width(kind.Note) > lipgloss.Width(kinds.species.kinds[longest].Note) {
+				longest = index
+			}
+		}
+		kinds.species.cursor = longest
+		opening := firstWords(kinds.species.kinds[longest].Note)
+		note := func(width int) []string {
+			m := kinds
 			m.width, m.height = width, 60
-			return strings.Split(strings.TrimRight(m.fight.caution(m), "\n"), "\n")
+			body, _ := m.species.view(m)
+			return theBlockOpening(t, body, opening)
 		}
 
 		// A save's own note, which is the other sentence wrapped this way.
@@ -156,7 +182,7 @@ func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 		if played.play.err != nil {
 			t.Fatalf("%s: the save failed, so no note was measured: %v", lang, played.play.err)
 		}
-		note := func(width int) []string {
+		wrote := func(width int) []string {
 			m := played
 			m.width, m.height = width, 60
 			return m.play.wrote(m)
@@ -166,8 +192,8 @@ func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 			name string
 			at   func(width int) []string
 		}{
-			{"the fight's caution", caution},
-			{"a save's note", note},
+			{"the species note", note},
+			{"a save's note", wrote},
 		} {
 			floor, wide := prose.at(minWidth), prose.at(wideWindow)
 			if len(floor) < 2 {
@@ -183,33 +209,43 @@ func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 	}
 }
 
-// TestTheDamageRowKeepsItsReferencePairOnAWideWindow is the data half again, at
-// the one site where the floor was not clipping a value but **dropping** half of
-// one.
+// TestTheDamageRowKeepsItsReferencePairAtEveryWindow is what the floor moving to
+// 120 turned the old wide-window test into, and the change of subject is the
+// finding rather than a rename.
 //
-// It is a test of its own rather than a widenedCells row because what the room
-// decides here is a different act. Every cell in that table is cut and marks
-// itself cut with an ellipsis; this row is never cut — over the room,
-// Lang.DamageWithin returns the *short* reading and the reference pair the two
-// figures are measured against is gone, leaving a whole sentence that has quietly
-// stopped saying what it is relative to. So the assertion cannot be "the floor
-// holds an ellipsis"; it is which of the two catalog lines came back.
+// ⚠️ **The pair-drop is unreachable on every window this program draws, and that
+// is arithmetic rather than a fixture that got lazy.** Lang.DamageWithin drops
+// the reference pair when the composed line will not fit, and the line is four
+// numbers in fixed wording. Two of the four are the ceilings — 800 and 400,
+// three digits each and never anything else — so the only room to grow is the
+// per-strike figure and the total, and both are int64, which is nineteen decimal
+// digits at the very most. That ceiling is measured below rather than argued: it
+// comes to **89 cells in Vietnamese and 87 in English**, against a narrowest room
+// of **98 and 99** — the two forms'; the two listings' are 101 and 104. There is
+// no skill, authored or absurd, whose reading reaches the drop, and it is short
+// by nine cells in the tighter language and twelve in the looser one.
 //
-// ⚠️ **The fixture authors a skill worth more than the row can hold, because the
-// shipped book cannot reach this at all.** The widest reading the shipped skills
-// produce is 59 cells in Vietnamese and 57 in English against a floor room of 61
-// and 64, so every shipped row keeps its pair at every width and a test resting
-// on one would be measuring nothing in either direction. An author typing a power
-// is who reaches the drop, which is why the fixture types one.
+// It used to be reachable and the old test reached it: at a floor of 80 the room
+// was 61 cells and `aSkillWorthMoreThanTheRowCanHold` cleared it with a power of
+// 180,000,000 over 200 strikes. Forty more columns put it out of range for good.
 //
-// Both sites are covered — the listing's reading of the skill under the cursor
-// and the form's preview of an unwritten one — because they are two call sites
-// and reverting either alone has to go red.
+// So the test asserts what is now true, in three parts, and each is a mutation
+// somebody could make:
 //
-// Both directions, as the file demands: the floor must still drop the pair (a
-// mutation that always returns the full line goes red on the floor case) and the
-// window must keep it (a mutation back to minWidth goes red on the wide case).
-func TestTheDamageRowKeepsItsReferencePairOnAWideWindow(t *testing.T) {
+//   - **The bound.** The widest line four figures can ever compose is smaller
+//     than the smallest room either site has. A mutation shrinking damageRowRoom
+//     — or a floor lowered back under about 100 — goes red here, and it goes red
+//     with the arithmetic printed rather than with a fixture failing to overflow.
+//   - **The row really draws the full reading at the floor**, at both sites, on
+//     the widest skill the fixture can author. The bound above is about the
+//     catalog line; this is about the row, and a room computed from the wrong
+//     width would pass the first and fail this.
+//   - **The drop still works when the room genuinely is too small.** The branch
+//     is now unreachable through the screens, so nothing else exercises it; a
+//     mutation deleting it would otherwise be invisible. It is asked of
+//     DamageWithin directly, which is the honest place for a branch no window
+//     reaches.
+func TestTheDamageRowKeepsItsReferencePairAtEveryWindow(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		dir := scratchData(t)
 		heavy := aSkillWorthMoreThanTheRowCanHold(t, dir)
@@ -220,18 +256,16 @@ func TestTheDamageRowKeepsItsReferencePairOnAWideWindow(t *testing.T) {
 			t.Fatalf("%s: the book does not hold the fixture skill %q: %v", lang, heavy, err)
 		}
 		preview := lib.PreviewDamage(declared)
-		// Both readings off the same calls the screen makes. A room of one cell
-		// cannot hold the full line, so it is how the short one is asked for
-		// without spelling either of them out here.
-		//
-		// There is no anti-vacuity assertion on these two: a one-cell room drops
-		// the pair whatever the figures are, so comparing them here would pass on
-		// a fixture that overflows nothing. The real check is per site below —
-		// the floor has to *draw* the short one — because the two sites measure
-		// against different label columns and one can overflow while the other
-		// does not.
 		full := lang.Damage(preview)
-		short := lang.DamageWithin(preview, 1)
+
+		// The widest reading there can be: both authored figures at the largest
+		// value their type holds, the two ceilings as the row always draws them.
+		// Taken from Lang.Damage rather than counted, so the wording is the
+		// wording and a longer sentence moves the bound with it.
+		widest := lipgloss.Width(lang.Damage(forge.SkillPreview{
+			PerStrike: math.MaxInt64, Total: math.MaxInt64,
+			Attack: preview.Attack, Defense: preview.Defense,
+		}))
 
 		listing := base.enter(screenSkills)
 		listing.skills.cursor = slices.IndexFunc(listing.skills.skills,
@@ -243,36 +277,67 @@ func TestTheDamageRowKeepsItsReferencePairOnAWideWindow(t *testing.T) {
 		form := base.enter(screenSkills)
 		form.skills = form.skills.prefill(lib, declared)
 
+		atTheFloor := listing
+		atTheFloor.width, atTheFloor.height = minWidth, 60
+		formAtTheFloor := form
+		formAtTheFloor.width, formAtTheFloor.height = minWidth, 60
+
 		for _, site := range []struct {
 			name string
+			room int
 			at   func(width int) string
 		}{
-			{"the listing's damage row", func(width int) string {
-				m := listing
-				m.width, m.height = width, 60
-				body, _ := m.skills.view(m)
-				return body
-			}},
-			{"the form's damage row", func(width int) string {
-				m := form
-				m.width, m.height = width, 60
-				return m.skills.damageRow(m, skillLabelWidth(m))
-			}},
+			{"the listing's damage row",
+				damageRowRoom(minWidth, detailLabelWidth(atTheFloor)),
+				func(width int) string {
+					m := listing
+					m.width, m.height = width, 60
+					body, _ := m.skills.view(m)
+					return body
+				}},
+			{"the form's damage row",
+				damageRowRoom(minWidth, skillLabelWidth(formAtTheFloor)),
+				func(width int) string {
+					m := form
+					m.width, m.height = width, 60
+					return m.skills.damageRow(m, skillLabelWidth(m))
+				}},
 		} {
-			floor, wide := site.at(minWidth), site.at(wideWindow)
-			if !strings.Contains(floor, short) {
-				t.Errorf("%s/%s: the floor does not draw the short reading %q at all, so nothing here is the row under test:\n%s",
-					lang, site.name, short, floor)
-				continue
+			if widest > site.room {
+				t.Errorf("%s/%s: the widest reading four figures can compose is %d cells "+
+					"against the %d this row has at the floor, so the reference pair can "+
+					"still be dropped on a window the tool draws — which is what this test "+
+					"stopped being about",
+					lang, site.name, widest, site.room)
 			}
-			if strings.Contains(floor, full) {
-				t.Errorf("%s/%s: the floor kept the reference pair, so this fixture no longer overflows and the case measures nothing:\n%s",
-					lang, site.name, floor)
+			t.Logf("%s/%s: widest possible reading %d cells, room at the floor %d",
+				lang, site.name, widest, site.room)
+
+			floor, wide := site.at(minWidth), site.at(wideWindow)
+			if !strings.Contains(floor, full) {
+				t.Errorf("%s/%s: the floor dropped the reference pair. It wanted\n%s\nand drew\n%s",
+					lang, site.name, full, floor)
 			}
 			if !strings.Contains(wide, full) {
-				t.Errorf("%s/%s: a %d-column window still dropped the reference pair — the row is measuring the floor rather than the window. It wanted\n%s\nand drew\n%s",
+				t.Errorf("%s/%s: a %d-column window dropped the reference pair. It wanted\n%s\nand drew\n%s",
 					lang, site.name, wideWindow, full, wide)
 			}
+		}
+
+		// And the branch no window reaches is still there, asked of the one
+		// function that owns it. One cell short of the line is the narrowest
+		// room that has to drop, so this also says the comparison is not
+		// off by one.
+		short := lang.DamageWithin(preview, 1)
+		if short == full {
+			t.Fatalf("%s: the short reading is the full one, so nothing below is measured", lang)
+		}
+		if got := lang.DamageWithin(preview, lipgloss.Width(full)-1); got != short {
+			t.Errorf("%s: a room one cell under the line drew %q, want the short reading %q",
+				lang, got, short)
+		}
+		if got := lang.DamageWithin(preview, lipgloss.Width(full)); got != full {
+			t.Errorf("%s: a room exactly the width of the line dropped the pair: %q", lang, got)
 		}
 	}
 }
@@ -414,22 +479,32 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 	}
 
 	// 2. picker.go — the chosen line, which is a list of ids and has no slot cap
-	//    on an allowlist: the whole cast may be on it.
+	//    on an allowlist: as many as the book declares may be on it.
+	//
+	//    ⚠️ **The species allowlist rather than the character one, and the floor
+	//    is why.** It read the whole cast, which is six ids of 106 cells — over a
+	//    floor of 80 and inside one of 120, so the cell stopped overflowing the
+	//    day the floor moved and measured nothing. The cast is a *fixture* and
+	//    cannot be grown without authoring characters; the species book is
+	//    already grown to order by someLongSpeciesIDs, which sizes its ids off
+	//    minWidth. Same call site, same unbounded shape, a fixture that survives
+	//    the next floor. The form's own allowlist row below still reads the cast.
 	allowing := base.enter(screenSkills)
 	allowing.skills.adding = true
 	allowing.skills.keptWho = everyone
-	allowlist := allowing.openAllowlist(skillFieldKeptForCharacters)
+	allowing.skills.keptKinds = speciesIDs
+	allowlist := allowing.openAllowlist(skillFieldKeptForSpecies)
 	chosen := dataCell{
 		name:  "the picker's chosen line",
-		whole: strings.Join(everyone, " "),
+		whole: strings.Join(speciesIDs, " "),
 		at: func(width int) string {
 			m := allowlist
 			m.width, m.height = width, 60
 			body, _ := m.picker.view(m)
 			// The line holding two ids at once. A list row holds one, so this
 			// cannot pick a row up by mistake — and looking for the first id
-			// alone would find the row for that character instead.
-			return lineHolding(t, body, everyone[0], everyone[1])
+			// alone would find the row for that species instead.
+			return lineHolding(t, body, speciesIDs[0], speciesIDs[1])
 		},
 	}
 
@@ -515,6 +590,32 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 	return []dataCell{detail, chosen, list, inflicts, image, kitRow, speciesRow}
 }
 
+// theBlockOpening is the run of lines a wrapped paragraph occupies: the line
+// that opens with the given words and every non-blank line under it.
+//
+// The run rather than a count taken from wrapWords, because the count is the
+// thing under test — asking wrapWords again would be the arithmetic written out a
+// second time and would agree with a wrong answer as readily as with a right one.
+func theBlockOpening(t *testing.T, body, opening string) []string {
+	t.Helper()
+	lines := strings.Split(body, "\n")
+	for index, line := range lines {
+		if !strings.Contains(line, opening) {
+			continue
+		}
+		block := []string{line}
+		for _, next := range lines[index+1:] {
+			if strings.TrimSpace(next) == "" {
+				break
+			}
+			block = append(block, next)
+		}
+		return block
+	}
+	t.Fatalf("no line of the screen opens with %q:\n%s", opening, body)
+	return nil
+}
+
 // lineHolding is the one line of a screen that says all of the given words.
 //
 // It reports rather than stops. A missing line is a broken fixture and worth
@@ -544,7 +645,7 @@ func lineHolding(t *testing.T, body string, words ...string) string {
 //
 // The fixture authors the overflow instead of borrowing one. A restriction is
 // worded around the ids it lists, so a skill kept for the whole cast draws a
-// detail cell no eighty-column window can hold in either language — which is
+// detail cell no window at the floor can hold in either language — which is
 // what the detail column has to be measured on, since the widest one the shipped
 // books produce is over the floor by a single cell and only in Vietnamese.
 //
@@ -579,17 +680,42 @@ func aSkillTheWholeCastIsNamedOn(t *testing.T, dir string) string {
 // somebody renames a skill, and a test that then passes while measuring nothing.
 // The ids here are sized off minWidth so the join clears the whole floor, never
 // mind the row's share of it.
+// ⚠️ **The repeat count is computed from minWidth rather than written down.** It
+// was a literal 5 and that cleared a floor of 80 by 27 cells and a floor of 120
+// by none at all — so the day the floor moved the fixture stopped overflowing and
+// the guard below fired, which is the guard working and is also a fixture that
+// has to be re-tuned by hand every time. It is derived now, so the overflow is a
+// property of the fixture rather than of the floor it was written under.
 func aKitOfLongSkillIDs(t *testing.T, dir string) []string {
 	t.Helper()
-	ids := make([]string, 0, cast.SkillSlots)
-	for index := range cast.SkillSlots {
-		ids = append(ids, fmt.Sprintf("%s%d", strings.Repeat("long_", 5), index))
-	}
+	ids := longIDs(cast.SkillSlots, "long_", func(index int) string {
+		return fmt.Sprintf("%d", index)
+	})
 	if width := lipgloss.Width(strings.Join(ids, " ")); width <= minWidth {
 		t.Fatalf("the fixture kit is %d cells, which the floor's %d could hold", width, minWidth)
 	}
 	appendSkills(t, dir, ids, nil)
 	return ids
+}
+
+// longIDs builds count ids out of a repeated stem, repeated as often as it takes
+// for the space-joined list to clear the floor whole.
+//
+// Whole rather than the row's share of it: what each caller needs is a value no
+// window at the floor could hold however the row is laid out, and the row's own
+// arithmetic is the thing under test rather than something a fixture should
+// reproduce. One helper for both lists so the two cannot drift into clearing
+// different bars.
+func longIDs(count int, stem string, suffix func(index int) string) []string {
+	for repeat := 4; ; repeat++ {
+		ids := make([]string, 0, count)
+		for index := range count {
+			ids = append(ids, strings.Repeat(stem, repeat)+suffix(index))
+		}
+		if lipgloss.Width(strings.Join(ids, " ")) > minWidth {
+			return ids
+		}
+	}
 }
 
 // someLongSpeciesIDs writes species whose ids overflow the species row, and
@@ -620,10 +746,8 @@ func someLongSpeciesIDs(t *testing.T, dir string) []string {
 	// Hyphens rather than the underscores the skill fixtures use: a species id is
 	// held to lowercase letters, digits and hyphens, and a skill id is not. The
 	// two spellings are the parsers disagreeing, not this fixture being tidy.
-	ids := make([]string, 0, count)
-	for index := range count {
-		id := fmt.Sprintf("%s%d", strings.Repeat("long-", 5), index)
-		ids = append(ids, id)
+	ids := longIDs(count, "long-", func(index int) string { return fmt.Sprintf("%d", index) })
+	for _, id := range ids {
 		declared = append(declared, map[string]any{"id": id, "name": id})
 	}
 	if width := lipgloss.Width(strings.Join(ids, " ")); width <= minWidth {
@@ -713,7 +837,14 @@ func aRefusalTooLongForTheFloor(t *testing.T, dir string) string {
 	if len(works) < 2 {
 		t.Fatalf("the book catalogues %d works, so no skill can be kept for one the form is not on", len(works))
 	}
-	id := strings.Repeat("long_", 6) + "skill"
+	// ⚠️ **This id is squeezed from both ends, which is why it is half the floor
+	// rather than all of it.** The sentence quoting it has to be too long for the
+	// floor *and* short enough that a two-hundred-column window holds it whole —
+	// the test asserts both — so an id sized to clear the floor on its own
+	// overshoots and the wide case starts failing instead of the floor case. Half
+	// the floor plus the forty-odd cells of fixed wording lands between the two,
+	// and the band is wide because wideWindow is 200 against a floor of 120.
+	id := strings.Repeat("long_", max(minWidth/10, 6)) + "skill"
 	appendSkills(t, dir, []string{id}, func(built map[string]any, _ string) {
 		built["restrict"] = map[string]any{"origins": []any{works[1].ID}}
 	})
@@ -777,10 +908,13 @@ func writeBook(t *testing.T, path string, book map[string]any) {
 }
 
 // someDeeplyFiledArt puts a piece of art under a folder deep enough that its
-// path cannot fit an eighty-column row, and hands back the path.
+// path cannot fit a row at the floor, and hands back the path.
 func someDeeplyFiledArt(t *testing.T, dir string) string {
 	t.Helper()
-	folder := strings.Repeat("deep-folder-", 4) + "end"
+	// Repeated until the folder alone clears the floor — a literal four cleared
+	// 80 and not 120, so the row held the path whole and the cell measured
+	// nothing. See aPathPartLongerThanTheFloor.
+	folder := aPathPartLongerThanTheFloor("deep-folder-", "end")
 	if err := os.MkdirAll(filepath.Join(dir, "assets", folder), 0o755); err != nil {
 		t.Fatalf("create the folder: %v", err)
 	}
@@ -797,21 +931,132 @@ func someDeeplyFiledArt(t *testing.T, dir string) string {
 // The reading comes from forge.ApplicationChances, the call the row itself
 // makes. Spelling out "30% · 30% · …" here would be the same string written
 // twice and would go on passing after the separator changed.
+// ⚠️ **How many statuses is grown until the reading is long enough, never
+// written down.** It was a constant eight, which overflowed a floor of 80 and sat
+// 44 cells inside one of 120 — so the day the floor moved the cell stopped
+// overflowing and measured nothing.
+//
+// The bar is **half the floor** rather than the whole of it, and that is the one
+// number here worth arguing about: this reading does not get the row to itself —
+// it is drawn after the typed list, which takes the rest — so a fixture sized to
+// clear the whole floor overshoots and the row drops the chances entirely instead
+// of cutting them. Half is the share that lands between, and the cell's own three
+// assertions are what actually hold it: too short and the floor holds the value
+// whole, too long and the wide window still cuts it.
 func someStatusesAndTheirChances(t *testing.T, lib *forge.Library) (string, string) {
 	t.Helper()
-	const enoughToOverflow = 8
 	book := lib.StatusBook()
-	if len(book) < enoughToOverflow {
-		t.Fatalf("the status book holds %d kinds, too few for a chance reading to overflow a row", len(book))
-	}
-	entries := make([]string, 0, enoughToOverflow)
-	for _, kind := range book[:enoughToOverflow] {
+	entries := make([]string, 0, len(book))
+	for _, kind := range book {
 		entries = append(entries, kind.ID+":300")
+		typed := strings.Join(entries, ", ")
+		applications, err := lib.ParseApplications(typed)
+		if err != nil {
+			t.Fatalf("the fixture list %q does not parse: %v", typed, err)
+		}
+		chances := forge.ApplicationChances(applications)
+		if lipgloss.Width(chances) > minWidth/2 {
+			return typed, chances
+		}
 	}
-	typed := strings.Join(entries, ", ")
-	applications, err := lib.ParseApplications(typed)
-	if err != nil {
-		t.Fatalf("the fixture list %q does not parse: %v", typed, err)
+	t.Fatalf("the whole status book of %d kinds reads shorter than the %d cells a chance "+
+		"reading has to clear at a floor of %d", len(book), minWidth/2, minWidth)
+	return "", ""
+}
+
+// TestEveryFloorWrappedBlockTakesTheRowsItTakes writes down how many lines each
+// floor-wrapped block occupies, so that moving the floor cannot change a row
+// count in silence.
+//
+// ⚠️ **This is the vertical half of the width rule and it had nothing holding it.**
+// Prose wraps at minWidth, so the floor decides how many *rows* a paragraph
+// spends — and screens budget rows around those paragraphs. When the floor moved
+// 80 → 120 the fight's caution went from two lines to one and the save's second
+// note from three to two, and the only thing that noticed was a comment in
+// play_test.go claiming five rows for a pair of notes that had become four. A
+// width sweep cannot see this: every one of those lines is comfortably inside the
+// window at either count.
+//
+// The numbers are hardcoded on purpose, which is the same decision the goldens
+// under testdata are: they are the design record rather than a fixture to be
+// regenerated. A change here is a change to how much of a screen a sentence eats,
+// and it should be read rather than accepted.
+//
+// The save note is measured on its **second** note alone. The first names the
+// file it wrote, so it carries a temp directory path — free text, as long as
+// whatever the test framework handed out — and a count over it would be a count
+// of the machine it ran on.
+func TestEveryFloorWrappedBlockTakesTheRowsItTakes(t *testing.T) {
+	// At minWidth = 120. See the constant's comment in model.go for where 120
+	// came from; these are what it costs vertically.
+	rows := map[i18n.Lang]struct {
+		caution, speciesNote, traitDescription, saveNote int
+	}{
+		i18n.Vi: {caution: 1, speciesNote: 2, traitDescription: 4, saveNote: 2},
+		i18n.En: {caution: 1, speciesNote: 2, traitDescription: 3, saveNote: 2},
 	}
-	return typed, forge.ApplicationChances(applications)
+	for _, lang := range i18n.Langs() {
+		want, ok := rows[lang]
+		if !ok {
+			t.Fatalf("%s has no row counts written down, so a whole language is unmeasured", lang)
+		}
+		base, lib, _ := start(t, lang)
+		base.width, base.height = minWidth, 60
+
+		// fight.go — the caution under the win rate. Measured through the screen
+		// rather than through wrapWords, so it is the row count the screen really
+		// spends and not a second reading of the same expression.
+		fight := menuTo(t, base, screenFight)
+		fight.width, fight.height = minWidth, 60
+		caution := strings.Split(strings.TrimRight(fight.fight.caution(fight), "\n"), "\n")
+		if got := len(caution); got != want.caution {
+			t.Errorf("%s: the fight's caution takes %d lines at the floor, want %d",
+				lang, got, want.caution)
+		}
+
+		// species.go — the longest authored note, which is what speciesRoom
+		// reserves for through longestNote.
+		longest := 0
+		for _, kind := range lib.Species().All() {
+			if lines := len(wrapWords(kind.Note, minWidth-3)); lines > longest {
+				longest = lines
+			}
+		}
+		if longest != want.speciesNote {
+			t.Errorf("%s: the longest species note takes %d lines at the floor, want %d",
+				lang, longest, want.speciesNote)
+		}
+
+		// passives.go — the longest trait description, which is what
+		// passivesRoom reserves six lines for.
+		worst := 0
+		for _, one := range lib.Passives().All() {
+			lines := 0
+			for _, sentence := range strings.Split(base.lang.DescribePassive(one), "\n") {
+				lines += len(wrapWords(sentence, minWidth-1-traitIndent))
+			}
+			if lines > worst {
+				worst = lines
+			}
+		}
+		if worst != want.traitDescription {
+			t.Errorf("%s: the longest trait description takes %d lines at the floor, want %d",
+				lang, worst, want.traitDescription)
+		}
+
+		// play.go — the save note that is catalog wording rather than a path.
+		played := key(t, atABattleOf(t, base, 3), "ctrl+s")
+		if played.play.err != nil {
+			t.Fatalf("%s: the save failed, so no note was measured: %v", lang, played.play.err)
+		}
+		notes := played.lang.Notes(played.play.notes)
+		if len(notes) < 2 {
+			t.Fatalf("%s: a save left %d notes, so the one without a path in it is not there",
+				lang, len(notes))
+		}
+		if got := len(wrapWords(notes[1], minWidth-1)); got != want.saveNote {
+			t.Errorf("%s: the save's second note takes %d lines at the floor, want %d:\n%s",
+				lang, got, want.saveNote, notes[1])
+		}
+	}
 }

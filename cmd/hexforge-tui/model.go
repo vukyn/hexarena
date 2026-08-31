@@ -80,14 +80,49 @@ const (
 // left unable to tell whether the character they are looking at is the one they
 // typed.
 //
-// The width was 72 while this client was English only. Vietnamese runs a fifth
-// to a third longer for the same sentence, and the busiest footers — six chords
-// on the form, the level and filter keys on the browser — landed just past it
-// once the language chord was added, so the floor moved to the other number a
-// terminal has always had. TestEveryWordingFitsTheMinimumWidth measures the
-// catalog against this constant in both languages, so it cannot rot quietly.
+// The width was 72 while this client was English only, and moved to 80 when
+// Vietnamese arrived: it runs a fifth to a third longer for the same sentence,
+// and the busiest footers — six chords on the form, the level and filter keys on
+// the browser — landed just past 72 once the language chord was added. That is
+// where 80 came from, and it is not where 120 comes from, so the argument is
+// rewritten rather than extended: 80 was the other number a terminal has always
+// had, and 120 is a number the measurement asked for.
+//
+// **The measurement.** Every screen in everyScreen rendered at 200x60 in both
+// languages, and the widest line the width sweep actually constrains — free text
+// and data columns are exempt, being the two things that have no length the
+// program can promise. Of the 92 screen/language pairs, **34 sit at 76–79 cells**
+// of the 79 the old floor left, 29 more at 70–75, 17 at 60–69 and 12 below 60. A
+// third of the client is pressed flat against the ceiling, and several of those
+// lines landing on 78 and 79 *exactly* is the fingerprint of wording trimmed to
+// fit rather than wording that happened to end there.
+//
+// **What is pinned is almost entirely footers** — rows of key chords, e.g.
+// `space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng
+// Việt` at exactly 79 — plus the menu's detail column and the skill form's damage
+// reading. ⚠️ **A footer cannot be given room any other way.** It is catalog
+// wording, so the prose/data split does not reach it: measuring one against the
+// window instead of the floor would cut it again on an 80-column terminal, which
+// is the failure this sweep exists to prevent. The floor is therefore the only
+// lever for this class, which is why widening the data cells bought it nothing —
+// measured across #173 and #175, **35 pairs were packed against the ceiling
+// before those two changes and 34 after**.
+//
+// ⚠️ **The cost, stated rather than buried: a terminal narrower than 120 no
+// longer draws this program at all.** That is a real loss, accepted because the
+// alternative was trimming the wording a third time. It is also the smaller half
+// of the tool: `hexforge` needs no room and does everything this front-end does,
+// which is what viewTooSmall already points at.
+//
+// TestEveryWordingFitsTheMinimumWidth measures the catalog against this constant
+// in both languages, so it cannot rot quietly. ⚠️ Raising the floor **loosens**
+// that sweep, and deliberately: the promise changed, so every existing line
+// passing trivially is the new promise being kept rather than a test going
+// vacuous. What it does not loosen is the vertical budgets — prose wraps at this
+// number, so a screen reserving rows for a wrapped block has to **measure** the
+// wrap rather than count it, which is what speciesRoom and passivesRoom do.
 const (
-	minWidth  = 80
+	minWidth  = 120
 	minHeight = 24
 )
 
@@ -589,7 +624,7 @@ func (m model) label(name, format string, args ...any) string {
 // own, and its value under the same column as that row's.
 //
 // The kit's Vietnamese names are what this exists for. Five skills glossed
-// inline would be five brackets on one row, which does not fit in 80 columns,
+// inline would be five brackets on one row, which does not fit the floor,
 // so they go underneath in the same order instead — and they only line up with
 // the ids above them if they are placed by the same measurement.
 func (m model) continued(format string, args ...any) string {

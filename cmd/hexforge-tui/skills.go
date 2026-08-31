@@ -811,7 +811,7 @@ func (s skillsScreen) saveEdit(m model) skillsScreen {
 // newline — the tally is written without one. So the real spend was eight against
 // a reserve of nine, and the second write line is what that spare line has now
 // gone on. There is no spare left, which is what
-// TestTheSkillListingFitsTheSmallestWindowAfterAnEdit measures at the 80x24
+// TestTheSkillListingFitsTheSmallestWindowAfterAnEdit measures at the 120x24
 // floor — and the filter row is why this is ten rather than nine, measured at
 // the same floor by TestTheSkillListingFitsTheSmallestWindowWhileFiltering. An
 // eleventh line on this screen needs an eleventh here.
@@ -1136,7 +1136,7 @@ const (
 // marked, drawn from forge.ShapeCoverage.
 //
 // It is a sub-screen rather than a pane beside the form, and that was measured
-// rather than judged: the form spends nineteen of the twenty body lines an 80x24
+// rather than judged: the form spends nineteen of the twenty body lines a 120x24
 // window has — twenty with a refusal under it — and hex.Render is eight lines
 // before a heading, a legend or the blanks around it. There was no room, and
 // hiding half a board is worse than opening one.
@@ -1242,7 +1242,7 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 		m.style.dim.Render(m.text(i18n.SkillFormSubtitle)) + "\n\n")
 
 	width := skillLabelWidth(m)
-	// The form scrolls now. It spent every row an 80x24 window has at fourteen
+	// The form scrolls now. It spent every row a 120x24 window has at fourteen
 	// fields, and healing brought three more, so the choice was between a
 	// sub-screen for the rest and a window over all of them — and a form split
 	// in two makes an author hunt for a field rather than scroll to it.
@@ -1281,7 +1281,7 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 	//
 	// The last line carries no newline of its own, and that is a line rather than
 	// a tidy: frame splits the body on newlines, so a trailing one leaves an
-	// empty string that costs a row of the twenty an 80x24 window has. This form
+	// empty string that costs a row of the twenty a 120x24 window has. This form
 	// spent all twenty before the name field arrived; dropping the newline is
 	// what paid for it, with nothing to see on screen either way. It is the same
 	// accounting skillsRoom records for the listing, which has never had one.

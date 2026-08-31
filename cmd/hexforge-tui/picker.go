@@ -28,7 +28,7 @@ import (
 //
 // So the list takes the whole screen while it is open, and scrolls: the body
 // gets m.height-4, this screen spends five of those on its heading, hint and
-// summary, and the rest is rows. That is thirteen rows in an 80x24 terminal
+// summary, and the rest is rows. That is thirteen rows in a 120x24 terminal
 // against nineteen skills, so it scrolls there and shows everything in anything
 // taller. A scrolling list rather than paging, because the position counter and
 // the cursor together already say where you are, and a page boundary is one more
@@ -188,7 +188,7 @@ type pickState struct {
 	//
 	// ⚠️ **Measured: no shipped description reaches it.** blurbScreen scrolls
 	// because it draws all five of a character's traits at once, which is some
-	// thirty lines against the seventeen an eighty-by-twenty-four window leaves;
+	// thirty lines against the seventeen an 120-by-24 window leaves;
 	// one row is at most three, in either language, across every shipped skill
 	// and trait. So this is the guard and not a live path — kept because a trait
 	// is allowed six sentences and the room falls to three in a small window, and
@@ -945,7 +945,7 @@ func (p *pickState) view(m model) (string, string) {
 // rather than beside it.
 //
 // Over it for the reason the list itself covers the form that raised it: the
-// sentences run to more lines than an eighty-by-twenty-four window has beside
+// sentences run to more lines than an 120-by-24 window has beside
 // thirteen rows, and a trait's already wrap past that on their own. It scrolls
 // for the same reason blurbScreen does, and shares that screen's room: the two
 // spend their lines identically — a heading, a blank, the sentences, and the

@@ -998,11 +998,30 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 // eighty is where "a path never runs past the edge" has to be true. The other
 // half — that a wide window is actually spent, rather than the path being cut to
 // seventy-nine beside a hundred empty columns — is
+// aPathPartLongerThanTheFloor repeats a stem until the segment it builds is
+// wider than the whole floor, so a path holding it cannot fit the art row at any
+// window the tool draws at.
+//
+// The whole floor rather than the row's share of it: the row's arithmetic —
+// marker, label column, the brackets — is what the test is measuring, and a
+// fixture reproducing it would be that arithmetic written out a second time.
+func aPathPartLongerThanTheFloor(stem, tail string) string {
+	for repeat := 3; ; repeat++ {
+		if built := strings.Repeat(stem, repeat) + tail; lipgloss.Width(built) > minWidth {
+			return built
+		}
+	}
+}
+
 // TestAWideWindowWidensTheDataCells in width_rule_test.go.
 func TestALongArtPathStaysInsideItsRow(t *testing.T) {
 	const drawable = minWidth - 1
-	folder := strings.Repeat("deep-folder-", 4) + "end"
-	longName := strings.Repeat("very-long-name-", 4) + "end.svg"
+	// ⚠️ Both are repeated until the path alone clears the whole floor, rather
+	// than a literal four each. Four cleared a floor of 80 and not one of 120, so
+	// the row held the whole path, nothing was shortened, and the two assertions
+	// below were about a value the screen was never going to cut.
+	folder := aPathPartLongerThanTheFloor("deep-folder-", "end")
+	longName := aPathPartLongerThanTheFloor("very-long-name-", "end.svg")
 	for _, lang := range i18n.Langs() {
 		dir := scratchData(t)
 		if err := os.MkdirAll(filepath.Join(dir, "assets", folder), 0o755); err != nil {
@@ -1858,7 +1877,7 @@ func TestEveryFieldOfTheSkillFormHasHelp(t *testing.T) {
 // The busiest state, because that is the only one that measures anything: every
 // field prefilled from a skill already in the book, and a refused write under
 // them, which is the extra line an error costs. The form spent nineteen of the
-// twenty body lines an 80x24 window has before the help line existed and it
+// twenty body lines a 120x24 window has before the help line existed and it
 // still spends nineteen, because the help replaced the footnote rather than
 // joining it — there is no spare line here, which is why the shape diagram is a
 // sub-screen and not a pane.
@@ -2094,7 +2113,7 @@ func TestTheSquadPickersSayWhatTheirOwnListsAre(t *testing.T) {
 }
 
 // TestTheFormScrollsToTheFieldTheCursorIsOn covers the window rather than the
-// fields: the form outgrew an 80x24 window when healing added three answers, so
+// fields: the form outgrew a 120x24 window when healing added three answers, so
 // what has to hold is that tabbing to the last one brings it into view.
 func TestTheFormScrollsToTheFieldTheCursorIsOn(t *testing.T) {
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
@@ -2136,7 +2155,12 @@ func TestTheFormScrollsToTheFieldTheCursorIsOn(t *testing.T) {
 // a row that ends there.
 func TestNoDetailRowIsCutOff(t *testing.T) {
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
-		for _, width := range []int{minWidth, 100, 140} {
+		// ⚠️ Every width here has to be one the tool actually draws at. The list
+		// read {minWidth, 100, 140} while the floor was 80; at a floor of 120 the
+		// hundred is *under* it, so usableWidth stood the floor in for it and the
+		// rows were correctly 120 cells wide in a window m.tooSmall refuses to
+		// draw at all. The failure was the fixture naming a window, not the row.
+		for _, width := range []int{minWidth, minWidth + 20, minWidth + 60} {
 			m, lib, _ := start(t, lang)
 			m = send(t, m, tea.WindowSizeMsg{Width: width, Height: 40})
 			browse := m.enter(screenBrowse)

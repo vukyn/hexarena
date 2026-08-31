@@ -421,10 +421,30 @@ deliberately *not* translated: ids of every kind, the six stat labels
 keys — see `forge.ShortStat`), and diagnostics from `internal/core`, which get a
 lead-in in the reader's language in front of the parser's own English.
 
-The minimum window is **80x24**, up from 72: Vietnamese runs 20–30% longer and
-the busiest footers no longer fit, which was measured rather than guessed
-(`TestEveryWordingFitsTheMinimumWidth` renders every screen in both languages and
-holds every line inside it, minus one column so a full-width line cannot wrap).
+The minimum window is **120x24**. It was 72 while the client was English only and
+80 once Vietnamese arrived — that runs 20–30% longer for the same sentence and the
+busiest footers landed just past 72 — and it is 120 because a third of the client
+had been trimmed flat against the old ceiling. Measured over every screen in both
+languages at 200x60, on the widest line the sweep constrains: **34 of the 92
+screen/language pairs sat at 76–79 cells** of the 79 there were, 29 more at 70–75.
+What is pinned is almost entirely **footers**, which are catalog wording and
+therefore cannot be given room any other way — the floor is the only lever for
+that class, which is why widening the data cells in #173 and #175 moved the count
+by one (35 → 34). The stated cost is that a terminal narrower than 120 does not
+draw this front-end at all; `hexforge` needs no room and does everything it does.
+`TestEveryWordingFitsTheMinimumWidth` renders every screen in both languages and
+holds every line inside the floor, minus one column so a full-width line cannot
+wrap.
+
+⚠️ **Every width figure quoted below against "79" or "of the 79 there are" was
+measured at the old floor and is kept as the reading it was**, not restated: they
+are records of why a wording was trimmed, and the trim is still in the catalog.
+The live budget is 119. Raising the floor also **loosens** that sweep — every
+existing line now passes trivially — which is the promise changing rather than a
+test going vacuous; what it does not loosen is the vertical side, because prose
+wraps at the floor and screens budget rows around the wrap.
+`TestEveryFloorWrappedBlockTakesTheRowsItTakes` pins those row counts so the next
+floor move cannot change one in silence.
 
 `TestTheFormProducesTheCharacterTheCommandLineProduces` is what holds this: the
 same answers as flags and as keystrokes must resolve to the same
@@ -443,7 +463,7 @@ answers rather than screen logic:
   as a skill that does not exist. The availability of a row is
   `forge.CheckSkill`'s answer, the same value the write refuses on, so the mark
   and the refusal cannot disagree. Nineteen rows do not fit beside a form (the
-  form is nineteen body lines of the twenty it has in an 80x24 window), so the
+  form is nineteen body lines of the twenty it has in a 120x24 window), so the
   list is a **sub-screen that scrolls**, and `(*pickState).room` counts what the screen
   spends — including the empty string a trailing newline leaves when `frame`
   splits the body, which was miscounted first time and truncated the list.
@@ -540,7 +560,7 @@ answers rather than screen logic:
     ⚠️ **This costs zero rows, and that is the whole reason it is a line beside
     each option rather than a block under the list.** The screen's body is **28
     lines** at a 1v1 and `frame` gives it `m.height - 2` less the two the header
-    takes, so at the declared 80x24 minimum only twenty survive. A pane under the
+    takes, so at the declared 120x24 minimum only twenty survive. A pane under the
     list would be a pane nobody in the smallest window ever sees. What used to
     follow from that — the option list cut with the `Truncated` marker — is fixed;
     see *the budget* below.
@@ -610,7 +630,7 @@ answers rather than screen logic:
   - **The budget: this screen cannot fit the window the tool declares, so it
     decides for itself what to give up.** The fit was not a hard problem, it was
     an impossible one, and the measurement is worth keeping rather than
-    re-taking. At 80x24 `playBodyRoom` leaves the body **twenty** rows:
+    re-taking. At 120x24 `playBodyRoom` leaves the body **twenty** rows:
 
     | section | rows |
     |---|---:|
@@ -638,8 +658,8 @@ answers rather than screen logic:
     front** — never dropped, never cut, because a battle screen that cannot show
     the moves is not a battle screen — and hands what is left to the rest in a
     stated order: the **save's own note** (the answer to a keystroke pressed a
-    moment ago, naming the file; *not* reserved, because two notes wrap to five
-    rows and reserving them could crowd out the list), then **`Roster`** clipped
+    moment ago, naming the file; *not* reserved, because a pair of notes runs to
+    four rows or more and reserving them could crowd out the list), then **`Roster`** clipped
     a row at a time (health and effects are what a turn is decided on, and it is
     the one section that compresses by degrees), then **`Board`** dropped whole
     (ten rows of drawing have no half, and what it says is recoverable — the aim
@@ -666,7 +686,7 @@ answers rather than screen logic:
     row.
     ⚠️ **No per-screen floor was introduced, and the reason is that `minHeight`
     already is one.** `screenContent` returns `m.tooSmall()` before any screen is
-    drawn below 80x24, so this screen is never asked for a shorter window than it
+    drawn below 120x24, so this screen is never asked for a shorter window than it
     can degrade into: at 24 the body has twenty rows, the heading and a
     four-option list reserve seven and the notice one, and the twelve left hold a
     5-a-side roster whole. A second floor would be a second answer to a question
@@ -680,7 +700,7 @@ answers rather than screen logic:
     a turn with a blank row of its own, so one event arrives as two rows and eight
     events measured **eleven** a few turns in). The ceiling was a defect on its
     own: `playFit` hands the log the remainder of the budget and the remainder was
-    then clamped to eight, so between an 80x24 window and an 80x80 one the body
+    then clamped to eight, so between a window 24 rows tall and one 80 rows tall the body
     grew **20 → 42** rows and the log stood still. Measured on the fixture, 3 a
     side, mid-battle: **8 rows at h=24, h=40 and h=80 alike**. A tall terminal
     bought the history nothing.
@@ -1078,7 +1098,7 @@ battle. A **fourth** reading of a skill sits beside that one and is not it:
 `Lang.SummariseSkill` is the compact line the played battle draws on every
 option's own row, and *Where a form beats a prompt* says why it cannot be this
 one with the prose dropped. ⚠️ **The forge form is not the place for it** — 19
-fields already show 13 of themselves in an 80x24 window, so a three-line block
+fields already show 13 of themselves in a 120x24 window, so a three-line block
 under the form costs a quarter of the fields; a screen costs nothing until asked
 for. Statuses are the third description, and `Lang.DescribeStatus` is the same
 shape from the same house — see *Looking a status up* under Open work.
@@ -2834,7 +2854,7 @@ is the constraint each piece has to respect.
       ⚠️ The caveat ("these are the book's figures, an amplifier or a resistance
       changes what lands") is printed **once** per reference and is the **last**
       line, and `frame` cuts from the bottom —
-      `TestTheStatusCaveatSurvivesTheSmallestWindow` measures it at 80x24 in both
+      `TestTheStatusCaveatSurvivesTheSmallestWindow` measures it at 120x24 in both
       languages.
       ⚠️ Adding a screen to `hexforge-tui` means adding it to `everyScreen` in
       `language_test.go`, or every width and translation test silently skips it.
@@ -2850,12 +2870,13 @@ is the constraint each piece has to respect.
       ⚠️ **It scrolls, and `scroll` is still not the refused cursor.** A cursor
       could point at a different character than the browser behind it; an offset
       selects nothing and every key that changes *what* is described resets it.
-      Five traits at the cap wrap past 80x24 — the declared floor, not an odd case
+      Five traits at the cap wrap past 120x24 — the declared floor, not an odd case
       — so the frame would eat the last one.
       ⚠️ **Wrap to `minWidth`, NOT to `m.usableWidth()`** — the opposite of
       `m.wrapped`, which carries authored free text and takes whatever width there
       is. These are the program's own prose: `TestEveryWordingFitsTheMinimumWidth`
-      renders at width 200 and measures against 79, and free text is excused while
+      renders at width 200 and measures against the floor less one (79 when that
+      line was written, 119 now), and free text is excused while
       a derived sentence is not. Unwrapped, the reply line was cut mid-word at the
       floor ("…3% khả nă").
       ⚠️ **The `answers` column is ONE cell** — `DescribePassive` writes one

@@ -282,7 +282,7 @@ func TestEveryOptionIsSummarised(t *testing.T) {
 //
 // Three things, and the row count is the one that matters most. The screen is
 // already eight rows past the window it declares, so a pane under the list would
-// have been a pane nobody in an 80x24 terminal ever sees — which is why the answer
+// have been a pane nobody in a 120x24 terminal ever sees — which is why the answer
 // is a line beside each option.
 //
 // The other two are what clipping actually promises. The slot holds a **prefix**
@@ -455,28 +455,91 @@ func TestAClippedRowKeepsTheLongestPrefixItHasRoomFor(t *testing.T) {
 		t.Run(lang.String(), func(t *testing.T) {
 			// theClippedRow skips by way of runtime.Goexit, so this line is
 			// reached only by a language that had a clip to measure.
-			theClippedRow(t, lang, drawable)
+			theClippedRow(t, lang, drawable, aShippedBook, maySkip)
 			measured++
 		})
 	}
-	if measured == 0 {
-		t.Error("no language holds a summary long enough to be clipped, so the clip " +
-			"itself is drawn by nothing here — the row still clips, and nothing measures it")
+	// ⚠️ **Reported rather than failed, because the clip is measured below
+	// whatever the book says.** This was an error, and it fired the day the floor
+	// moved to 120: the row went from 62 cells to 102 and neither language holds a
+	// summary that long, so both skipped and the clip was drawn by nothing. The
+	// error was right about the consequence and there is nothing a wording change
+	// could do about the cause, so the coverage moved into a constructed case and
+	// this line went back to being what it always described — a reading of how
+	// close the book is to the row.
+	t.Logf("languages whose own book reaches the clip: %d of %d", measured, len(i18n.Langs()))
+
+	// And the constructed case, which clips at any floor.
+	for _, lang := range i18n.Langs() {
+		t.Run("a long id/"+lang.String(), func(t *testing.T) {
+			theClippedRow(t, lang, drawable, aBookWithALongID, mustClip)
+		})
 	}
 }
 
-func theClippedRow(t *testing.T, lang i18n.Lang, drawable int) {
+// The two ways this test gets a library, and whether a book that does not clip is
+// an honest answer or a broken fixture.
+const (
+	maySkip  = true
+	mustClip = false
+)
+
+// aShippedBook is the library as it ships, which is the reading worth taking:
+// how near the widest summary the book actually holds comes to the row.
+func aShippedBook(t *testing.T, lang i18n.Lang) model {
 	t.Helper()
 	m, _, _ := start(t, lang)
+	return m
+}
+
+// aBookWithALongID is the same library plus one skill whose id is long enough
+// that the row it shares is narrower than the widest summary in the book.
+//
+// ⚠️ **The id is the dial rather than the summary, and it is the documented
+// one**: widestIDInTheBook is what the row's room is measured from, and its own
+// comment says a longer id in the book moves the room rather than the budget.
+// Authoring a wordier *skill* would instead be authoring a summary the guard
+// above — TestNoSummaryIsWiderThanARowCanHold — exists to refuse, so the two
+// tests would be pulling in opposite directions.
+//
+// The length is derived from the widest summary the book holds, so the room
+// lands under it by a stated margin rather than by a number that happens to work
+// at this floor.
+func aBookWithALongID(t *testing.T, lang i18n.Lang) model {
+	t.Helper()
+	const clearlyInside = 10
+	plain, _, _ := start(t, lang)
+	widest := lipgloss.Width(
+		plain.lang.SummariseSkill(theWidestSummary(plain), plain.lib.Patterns()))
+
+	dir := scratchData(t)
+	length := minWidth - 1 - markerWidth - optionGap - (widest - clearlyInside)
+	if length < 1 {
+		t.Fatalf("%s: the widest summary is %d cells, so no id shrinks the row under it",
+			lang, widest)
+	}
+	appendSkills(t, dir, []string{strings.Repeat("i", length)}, nil)
+	m, _, _ := startIn(t, lang, dir)
+	return m
+}
+
+func theClippedRow(t *testing.T, lang i18n.Lang, drawable int,
+	book func(*testing.T, i18n.Lang) model, mayNotClip bool) {
+	t.Helper()
+	m := book(t, lang)
 	m = atTheBattle(t, m)
 	wordiest, longest := theWidestSummary(m), theWidestID(m)
 	room := drawable - markerWidth - lipgloss.Width(longest.ID) - optionGap
 	summary := m.lang.SummariseSkill(wordiest, m.lib.Patterns())
 	if lipgloss.Width(summary) <= room {
+		if !mayNotClip {
+			t.Fatalf("%s: the constructed book does not clip either — the widest summary "+
+				"is %q at %d cells and the row has %d, so the fixture is not building the "+
+				"case it is named after", lang, wordiest.ID, lipgloss.Width(summary), room)
+		}
 		// Honest rather than contrived: no skill in the book is long enough to be
 		// cut at the widest id column in this language, so there is no clip to
-		// measure. Vietnamese is here today — outrage comes to exactly the 62
-		// cells the row has.
+		// measure.
 		t.Skipf("%s: the widest summary is %q at %d cells and the row has %d, "+
 			"so nothing in the book clips", lang, wordiest.ID,
 			lipgloss.Width(summary), room)
@@ -997,7 +1060,7 @@ func squadSlots(n int) []hex.Offset {
 // # The battle screen's height, and where the cut lands
 //
 // The screen cannot fit the window the tool declares, and nothing below pretends
-// it can. Measured at 80x24, where playBodyRoom leaves the body twenty rows: the
+// it can. Measured at 120x24, where playBodyRoom leaves the body twenty rows: the
 // heading is one, tui.Board is a fixed ten, tui.Roster is one plus a row a unit,
 // tui.Order is one, the log asks for playLogWanted and the option list is one plus
 // a row an option — so a 1v1 wants twenty of those rows before a single blank or
@@ -1465,7 +1528,7 @@ func TestTheLogIsCappedByRenderedLinesAndNotByEvents(t *testing.T) {
 // # The log as a frame over the whole history
 //
 // Two defects, and they were separate. The section's allotment was clamped to the
-// rows it asked for, so the body grew twenty rows to forty-two between an 80x24
+// rows it asked for, so the body grew twenty rows to forty-two between a 120x24
 // window and an 80x80 one and the log stood still at eight — a tall terminal
 // bought the history nothing. And the rows past the frame were unreachable: the
 // history came to three hundred rows, eight were drawn, and there was no key.
@@ -1488,7 +1551,7 @@ func aLongLog(t *testing.T, lang i18n.Lang, side int) model {
 // comfortably past the largest frame the sweep asks for.
 //
 // longLogHeight is the window the fixture stands in, and it is not the floor: at
-// 80x24 a three-a-side battle is given **no** log row at all — which is the budget
+// 120x24 a three-a-side battle is given **no** log row at all — which is the budget
 // working, and a fixture standing there would be pressing scroll keys at a section
 // that is not on the screen.
 const (
@@ -1909,16 +1972,25 @@ func holdsRun(lines, run []string) bool {
 //
 // A save's notes are the answer to a keystroke pressed a moment ago and they name
 // the file that was written, so they take rows before the board does. They are
-// **not** reserved: two notes wrap to as many as five rows, and reserving them
+// **not** reserved: a pair of notes runs to four rows or more, and reserving them
 // could crowd out the option list, which may never be cut.
+//
+// ⚠️ **"Five rows" is what this said, and it was a number with a floor baked into
+// it.** The second note is catalog wording wrapped at minWidth — three rows at a
+// floor of 80 and two at 120 — so the pair came to five and now comes to four,
+// with nothing here having changed. The first note carries the path it wrote to,
+// which is free text and as long as the data directory is, so the total was never
+// a constant in the first place. The catalog half is pinned by
+// TestEveryFloorWrappedBlockTakesTheRowsItTakes; this comment stops quoting a
+// total.
 //
 // ⚠️ **The branch that drops them is unreachable at any window the tool draws, so
 // it is built at one the tool refuses.** At the floor the body has twenty rows,
 // the heading and the option list reserve seven and the notice one, so twelve are
-// left against the five the notes want — and even the aim list, the tallest tail a
-// squad can field, leaves enough. A shorter window is what takes them, and
-// m.tooSmall draws a message instead of this screen there, so the case is
-// constructed rather than left to be rendered by nothing.
+// left against the four or five the notes want — and even the aim list, the
+// tallest tail a squad can field, leaves enough. A shorter window is what takes
+// them, and m.tooSmall draws a message instead of this screen there, so the case
+// is constructed rather than left to be rendered by nothing.
 func TestTheSaveNoteOutranksTheBoard(t *testing.T) {
 	const drawable = minWidth - 1
 	for _, lang := range i18n.Langs() {

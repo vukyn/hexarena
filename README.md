@@ -1332,7 +1332,7 @@ answers typed into the form and passed as flags resolve to the same character.
 #### Finding a skill by name
 
 The skill listing shows every skill in the book, and the book is forty-three
-skills — a screen and a half at the declared 80x24 floor, walked one arrow key at
+skills — a screen and a half at the declared 120x24 floor, walked one arrow key at
 a time. `/` opens a filter and typing narrows the rows on every keystroke; `enter`
 keeps the query and hands the keyboard back to the rows, so `↑/↓`, `a`, `e` and
 `?` work on what was found, and `esc` clears the query and closes the field in one
@@ -1517,7 +1517,7 @@ page keys cannot reach.
 
 ⚠️ **That last one is a guard rather than a live path, and it was measured.** The
 trait screen scrolls because it draws all five of a character's traits at once,
-which is some thirty lines against the seventeen an 80x24 window leaves; one row
+which is some thirty lines against the seventeen a 120x24 window leaves; one row
 of a picker is at most **three** lines, in either language, across every shipped
 skill and trait. It is kept because a trait is allowed six sentences and the room
 falls to three in a small window — and what the offset being clamped where the
