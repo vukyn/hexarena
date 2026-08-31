@@ -3451,12 +3451,21 @@ is the constraint each piece has to respect.
       Its six skills are now `restrict.origins: [naruto]` — see **Origins**
       above; the `summoner` preset keeps them, which is why that ban does not
       exist.
-- [ ] **Grow the cast.** Five characters ship across two origins — Bulbasaur,
-      Charmander, Squirtle and Poliwag out of Pokémon, Naruto out of his own —
-      covering four elements, water twice. This item said "three, one per element"
-      until 2026-08-28 and "four, one per element" until 2026-08-31; #98 landed
-      Naruto and #182 landed Poliwag, which is where one-per-element stopped being
-      true. The seed roster is no longer a mirror — so the thing this item was
+- [ ] **Grow the cast.** Eight characters ship across two origins — Bulbasaur,
+      Charmander, Squirtle, Poliwag, Machop, Cleffa and Magnemite out of Pokémon,
+      Naruto out of his own — covering eight elements, water twice. This item said
+      "three, one per element" until 2026-08-28, "four, one per element" until
+      2026-08-31 and "five" until Magnemite; #98 landed Naruto and #182 landed
+      Poliwag, which is where one-per-element stopped being true.
+      ⚠️ **Magnemite is the first character to declare two elements**
+      (`"element": ["electric", "metal"]`), and the field has accepted an array
+      since the chart was written — `element.Dual`, `ValidateAffinity` and
+      `MultiplierAgainst` were all shipped with no user. What the pairing turned
+      out to be worth is written down in `internal/seed/dual_test.go`: a pair
+      whose halves are unrelated mostly *cancels* — electric/metal is countered by
+      four elements as two singles and by **one** as a pair — so the defensive half
+      of a dual is close to nothing, and what is bought is the second skill book.
+      The seed roster is no longer a mirror — so the thing this item was
       blocking, a measurable balance figure, exists. What is left is content,
       under three constraints: an archetype's kit constrains a character's
       affinity (`skill.CanCarry` enforces it while authoring, `Archetype.Demands`

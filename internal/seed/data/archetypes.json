@@ -346,6 +346,58 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "bombardier",
+      "role": "the one that aims at a rank rather than at a unit: every blow lands on more than it was pointed at, thrown from the deepest row on the board — and it is built thin enough that whatever reaches that row ends it",
+      "column": 2,
+      "stats": {
+        "hp": {
+          "base": 1032,
+          "max": 3000
+        },
+        "attack": {
+          "base": 213,
+          "max": 620
+        },
+        "defense": {
+          "base": 117,
+          "max": 340
+        },
+        "speed": {
+          "base": 38,
+          "max": 110
+        },
+        "accuracy": {
+          "base": 62,
+          "max": 180
+        },
+        "dodge": {
+          "base": 21,
+          "max": 62
+        }
+      },
+      "skills": [
+        "thunder_shock",
+        "discharge",
+        "thunderbolt",
+        "flash_cannon",
+        "mirror_shot",
+        "thunder_wave",
+        "metal_sound",
+        "magnet_rise",
+        "zap_cannon"
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "elusive",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

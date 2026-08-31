@@ -308,9 +308,11 @@ is only so the shape is readable.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
-- [ ] **Grow the cast.** Five ship across two origins, covering four elements
-      (grass, fire, water twice, wind). This is content, and the constraints that
-      bound it are written down. A character moves `cast.golden`,
+- [ ] **Grow the cast.** Eight ship across two origins, covering eight elements
+      (grass, fire, water twice, wind, ground, light, and electric/metal on one
+      character — Magnemite is the first dual affinity shipped). This is content,
+      and the constraints that bound it are written down. A character moves
+      `cast.golden`,
       `species.golden` and `origins.golden` — **not** `scenarios.golden` or
       `replay.golden`, which this line claimed until 2026-08-31. Read Squirtle
       first. → `CLAUDE.md` § Open work.

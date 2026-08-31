@@ -1236,6 +1236,182 @@
           "at_level": 40
         }
       ]
+    },
+    {
+      "id": "pokemon.magnemite",
+      "name": "Magnemite",
+      "origin": "pokemon",
+      "archetype": "bombardier",
+      "image": "assets/magnemite.svg",
+      "element": [
+        "electric",
+        "metal"
+      ],
+      "species": [
+        "construct"
+      ],
+      "bio": "Không ai biết nó tới từ đâu, chỉ biết chỗ nào có dòng chạy qua là chỗ đó nó bám vào. Magnemite không thở, không ăn, không ngủ — thứ duy nhất nó cần là thứ nó hút được từ chung quanh.",
+      "stages": [
+        {
+          "name": "Magnemite",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 737,
+              "max": 2142
+            },
+            "attack": {
+              "base": 152,
+              "max": 443
+            },
+            "defense": {
+              "base": 84,
+              "max": 243
+            },
+            "speed": {
+              "base": 27,
+              "max": 79
+            },
+            "accuracy": {
+              "base": 44,
+              "max": 129
+            },
+            "dodge": {
+              "base": 15,
+              "max": 44
+            }
+          }
+        },
+        {
+          "name": "Magneton",
+          "min_level": 16,
+          "image": "assets/magneton.svg",
+          "stats": {
+            "hp": {
+              "base": 884,
+              "max": 2571
+            },
+            "attack": {
+              "base": 183,
+              "max": 531
+            },
+            "defense": {
+              "base": 100,
+              "max": 291
+            },
+            "speed": {
+              "base": 32,
+              "max": 94
+            },
+            "accuracy": {
+              "base": 53,
+              "max": 154
+            },
+            "dodge": {
+              "base": 18,
+              "max": 53
+            }
+          }
+        },
+        {
+          "name": "Magnezone",
+          "min_level": 32,
+          "image": "assets/magnezone.svg",
+          "stats": {
+            "hp": {
+              "base": 1032,
+              "max": 3000
+            },
+            "attack": {
+              "base": 213,
+              "max": 620
+            },
+            "defense": {
+              "base": 117,
+              "max": 340
+            },
+            "speed": {
+              "base": 38,
+              "max": 110
+            },
+            "accuracy": {
+              "base": 62,
+              "max": 180
+            },
+            "dodge": {
+              "base": 21,
+              "max": 62
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "thunder_shock"
+        },
+        {
+          "id": "discharge",
+          "at_level": 8
+        },
+        {
+          "id": "thunderbolt",
+          "at_level": 12
+        },
+        {
+          "id": "flash_cannon",
+          "at_level": 14
+        },
+        {
+          "id": "mirror_shot",
+          "at_level": 16
+        },
+        {
+          "id": "thunder_wave",
+          "at_level": 18
+        },
+        {
+          "id": "metal_sound",
+          "at_level": 20
+        },
+        {
+          "id": "magnet_rise",
+          "at_level": 24
+        },
+        {
+          "id": "zap_cannon",
+          "at_level": 28
+        },
+        {
+          "id": "smokescreen",
+          "at_level": 32
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 36
+        },
+        {
+          "id": "taunt",
+          "at_level": 40
+        }
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "endurance",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 32
+        },
+        {
+          "id": "composure",
+          "at_level": 40
+        }
+      ]
     }
   ]
 }

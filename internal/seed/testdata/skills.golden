@@ -62,6 +62,15 @@ wish            light     ally     1  single            0     1      0  1000    
 sing            light     enemy    2  flank_up          0     1      0  1000    4     0     0        0
 rinse           water     ally     1  single            0     1      0  1000    3     0     0        0
 chorus          water     ally     1  column            0     1      0  1000    4     0     0        0
+thunder_shock   electric  enemy    2  single          700     1    700   950    1     0     0      240
+mirror_shot     metal     enemy    2  single          900     1    900   900    2     0     0      308
+thunderbolt     electric  enemy    2  single         1600     1   1600   880    3   300     0      662
+flash_cannon    metal     enemy    3  single         1500     1   1500   870    3     0     0      514
+thunder_wave    electric  enemy    2  column            0     1      0  1000    3     0     0        0
+metal_sound     metal     enemy    2  flank_up        800     1    800   900    3     0     0      274
+discharge       electric  all      1  column          900     1    900   900    3     0     0      308
+magnet_rise     metal     self     0  single            0     1      0  1000    3     0     0        0
+zap_cannon      electric  enemy    3  single         2700     1   2700   550    4     0     0      925
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -98,6 +107,15 @@ charm           weaken                 2     1000       1000             1000
 wish            regrowth               1     1000       1000             1000
 sing            stun                   1      600       1000              600
 chorus          haste                  1     1000       1000             1000
+thunder_shock   stun                   1      120        950              114
+mirror_shot     blind                  1      500        900              450
+thunderbolt     stun                   1      200        880              176
+flash_cannon    expose                 1      350        870              304
+thunder_wave    mire                   2     1000       1000             1000
+thunder_wave    stun                   1      250       1000              250
+metal_sound     expose                 2     1000        900              900
+magnet_rise     veil (self)            2     1000       1000                -
+zap_cannon      stun                   1     1000        550              550
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -153,6 +171,15 @@ wish            -          -                 -                   -         pokem
 sing            -          -                 -                   -         pokemon
 rinse           -          -                 -                   -         pokemon
 chorus          -          -                 -                   -         pokemon
+thunder_shock   -          -                 -                   -         pokemon
+mirror_shot     -          -                 -                   -         pokemon
+thunderbolt     -          -                 -                   -         pokemon
+flash_cannon    -          -                 -                   -         pokemon
+thunder_wave    -          -                 -                   -         pokemon
+metal_sound     -          -                 -                   -         pokemon
+discharge       -          -                 -                   -         pokemon
+magnet_rise     -          -                 -                   -         pokemon
+zap_cannon      -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain

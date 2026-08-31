@@ -1359,6 +1359,230 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "thunder_shock",
+      "name": "chích điện",
+      "flavour": "Một luồng nhỏ chạy qua người kẻ đối diện, đủ để cả thân cứng lại trong chớp mắt",
+      "element": "electric",
+      "range": 2,
+      "pattern": "single",
+      "power": 700,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 120,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "mirror_shot",
+      "name": "chiếu ngược",
+      "flavour": "Hắt lại đúng thứ ánh sáng vừa rọi tới, kẻ đối diện chói mắt mà không kịp quay đi",
+      "element": "metal",
+      "range": 2,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "blind",
+          "chance": 500,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "thunderbolt",
+      "name": "sấm sét",
+      "flavour": "Cả khoảng không sáng trắng lên một nhịp rồi tối lại, chỗ vừa sáng chẳng còn gì nguyên vẹn",
+      "element": "electric",
+      "range": 2,
+      "pattern": "single",
+      "power": 1600,
+      "strikes": 1,
+      "accuracy": 880,
+      "pierce": 300,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 200,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "flash_cannon",
+      "name": "pháo kim",
+      "flavour": "Gom ánh kim lại trong lòng rồi bắn ra thành một tia trắng xoá, thứ gì hứng trọn cũng vỡ ra một mảng",
+      "element": "metal",
+      "range": 3,
+      "pattern": "single",
+      "power": 1500,
+      "strikes": 1,
+      "accuracy": 870,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "expose",
+          "chance": 350,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "thunder_wave",
+      "name": "sóng điện",
+      "flavour": "Một đợt sóng lan ngang, chạm tới đâu thì bên đó chậm hẳn lại như đang lội bùn",
+      "element": "electric",
+      "range": 2,
+      "pattern": "column",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "mire",
+          "chance": 1000,
+          "stacks": 2
+        },
+        {
+          "status": "stun",
+          "chance": 250,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "metal_sound",
+      "name": "âm kim",
+      "flavour": "Cọ kim loại vào kim loại, thứ tiếng rít ra khiến kẻ nghe quên mất phải giữ mình",
+      "element": "metal",
+      "range": 2,
+      "pattern": "flank_up",
+      "power": 800,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "expose",
+          "chance": 1000,
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "discharge",
+      "name": "phóng điện",
+      "flavour": "Xả hết những gì tích được ra chung quanh cùng một lúc, không nhắm ai và cũng chẳng chừa ai",
+      "element": "electric",
+      "range": 1,
+      "pattern": "column",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "all",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "magnet_rise",
+      "name": "nâng từ",
+      "flavour": "Đẩy mặt đất ra xa rồi treo mình lơ lửng, đòn nào tới cũng phải với",
+      "element": "metal",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "veil",
+          "chance": 1000,
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "zap_cannon",
+      "name": "pháo điện",
+      "flavour": "Nén dòng lại thành một khối rồi bắn đi; khối ấy đi chậm và đi thẳng, ai né kịp thì né",
+      "element": "electric",
+      "range": 3,
+      "pattern": "single",
+      "power": 2700,
+      "strikes": 1,
+      "accuracy": 550,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }
