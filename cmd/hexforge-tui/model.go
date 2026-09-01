@@ -119,6 +119,12 @@ type (
 	// previewScreen is the art preview, which moved with the describers. It
 	// carries nothing this client owns, so it is an alias like the six above.
 	previewScreen = draw.PreviewScreen
+	// skillsScreen is the skill book and the form over it. ⚠️ A **plain alias**
+	// like the browser: everything it holds is its own — the listing's cursor,
+	// the typed filter, the form's fields and its six destinations — and it
+	// names no view of this client's, because esc, `?`, the discard question and
+	// the six pickers all say what they want in a draw.Action now.
+	skillsScreen = draw.SkillsScreen
 )
 
 // blurbScreen is the description screen plus the one fact about it that only
@@ -296,6 +302,12 @@ const (
 
 func newModel(lib *forge.Library, lang i18n.Lang) model {
 	style := newPalette()
+	// The skill form dresses its own text fields, and internal/screen may not
+	// read the terminal — so that screen is built from a Context rather than
+	// from a library alone, which is where the answer already lives
+	// (draw.Palette.Plain). The window is not filled in because nothing a
+	// constructor does measures one.
+	ctx := draw.Context{Lib: lib, Lang: lang, Style: style}
 	return model{
 		lib:      lib,
 		lang:     lang,
@@ -303,7 +315,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		browse:   draw.NewBrowseScreen(lib),
 		form:     newFormScreen(lib),
 		origins:  newOriginsScreen(lib),
-		skills:   newSkillsScreen(lib),
+		skills:   draw.NewSkillsScreen(ctx),
 		statuses: draw.NewStatusesScreen(lib),
 		passives: draw.NewPassivesScreen(lib),
 		species:  draw.NewSpeciesScreen(lib),
@@ -420,7 +432,9 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case screenOrigins:
 		return m.origins.update(m, message)
 	case screenSkills:
-		return m.skills.update(m, message)
+		skills, action, command := m.skills.Update(m.ctx(), message)
+		m.skills = skills
+		return m.navigateWith(screenSkills, action, command)
 	// ⚠️ Two mechanisms sit side by side in this switch, and that is deliberate
 	// rather than half-finished. The screens that have moved into internal/screen
 	// — the cast browser above and the six below — return a draw.Action, what
@@ -512,9 +526,43 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		return m, nil
 	case draw.Raise:
 		return m.raise(from, action)
+	case draw.Ask:
+		// The asking screen is the one that asked, which is what `from` already
+		// is — so nothing has to be read off m.screen — and the subject is this
+		// client's own zero, because no moved screen asks about anything yet.
+		// See draw.Action.Question for the field the squad builder will need.
+		return m.ask(action.Question, from, guardSubject{}), nil
+	case draw.Pick:
+		// The screen built the list; the client owns it while it is up. Raise
+		// settles the defaults a literal did not fill in, exactly as it does for
+		// the four raise sites still in this package.
+		return m.pick(action.Picker), nil
 	}
 	// draw.Stay, which is every keystroke a screen handled without leaving.
 	return m, nil
+}
+
+// navigateWith is navigate for a screen that hands back a command of its own as
+// well as an action.
+//
+// ⚠️ **Only a screen with a text field on it needs this, and it is why
+// draw.SkillsScreen.Update has three returns rather than two.** A bubbles
+// textinput answers an Update with a command — the cursor's blink — and dropping
+// it leaves the field with no cursor, which is the same fact draw.PickResult
+// carries a Cmd for. It is not on draw.Action, deliberately: an Action is a
+// comparable value a screen returns and a test writes out as a literal, and a
+// func field would take that away from every screen to serve one.
+//
+// The two commands cannot both be filled — a Quit is the listing's own q, which
+// no field is focused for, and a field's blink comes back with the zero action —
+// and where they somehow are, the navigation wins, because a program asked to
+// end outranks a cursor.
+func (m model) navigateWith(from screen, action draw.Action, command tea.Cmd) (tea.Model, tea.Cmd) {
+	next, navigated := m.navigate(from, action)
+	if navigated != nil {
+		return next, navigated
+	}
+	return next, command
 }
 
 // raise opens the screen a target names, about whatever the raiser named.
@@ -663,7 +711,7 @@ func (m model) answerGuard(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 // where it came from.
 type pickLanding struct {
 	on   screen
-	land func(model, pickDest, pickAnswer) (model, draw.Action)
+	land func(model, any, pickAnswer) (model, draw.Action)
 }
 
 // pickedInto is where each finished pick goes.
@@ -684,17 +732,25 @@ type pickLanding struct {
 // key is the destination because a *destination* is what may go unhandled;
 // keying it by screen would make the five allowlists one entry and put the
 // question of which field back inside the screen, where nothing counts it.
-var pickedInto = map[pickDest]pickLanding{
-	pickIntoKit:          {on: screenNew, land: landOnForm},
-	pickIntoSpecies:      {on: screenNew, land: landOnForm},
-	pickIntoKeptElements: {on: screenSkills, land: landOnSkills},
-	pickIntoKeptRoles:    {on: screenSkills, land: landOnSkills},
-	pickIntoKeptWorlds:   {on: screenSkills, land: landOnSkills},
-	pickIntoKeptKinds:    {on: screenSkills, land: landOnSkills},
-	pickIntoKeptWho:      {on: screenSkills, land: landOnSkills},
-	pickIntoInflicts:     {on: screenSkills, land: landOnSkills},
-	pickIntoSquadKit:     {on: screenSquads, land: landOnSquads},
-	pickIntoSquadTrait:   {on: screenSquads, land: landOnSquads},
+//
+// ⚠️ **The key is an `any` because there are two vocabularies now, and this is
+// the one place entitled to know both.** Six of the ten destinations followed
+// the skill form into internal/screen and are draw.SkillsPick values; the four
+// that name a screen still in this package are pickDest values. PickState
+// carries either as the `any` it always was, so the map that turns one back into
+// a landing takes the same type. TestEveryPickDestinationLandsSomewhere walks
+// **both** counts, which is what stops either enum growing an entry in silence.
+var pickedInto = map[any]pickLanding{
+	pickIntoKit:             {on: screenNew, land: landOnForm},
+	pickIntoSpecies:         {on: screenNew, land: landOnForm},
+	draw.SkillsPickElements: {on: screenSkills, land: landOnSkills},
+	draw.SkillsPickRoles:    {on: screenSkills, land: landOnSkills},
+	draw.SkillsPickWorlds:   {on: screenSkills, land: landOnSkills},
+	draw.SkillsPickKinds:    {on: screenSkills, land: landOnSkills},
+	draw.SkillsPickWho:      {on: screenSkills, land: landOnSkills},
+	draw.SkillsPickInflicts: {on: screenSkills, land: landOnSkills},
+	pickIntoSquadKit:        {on: screenSquads, land: landOnSquads},
+	pickIntoSquadTrait:      {on: screenSquads, land: landOnSquads},
 }
 
 // landOnForm, landOnSkills and landOnSquads are the three adapters between the
@@ -705,19 +761,19 @@ var pickedInto = map[pickDest]pickLanding{
 // action — and they are written out rather than generated because a screen's
 // field is named on the model and Go has nowhere else to say which one. Exactly
 // the shape confirmForm and its three siblings already have.
-func landOnForm(m model, into pickDest, answer pickAnswer) (model, draw.Action) {
+func landOnForm(m model, into any, answer pickAnswer) (model, draw.Action) {
 	form, action := m.form.Picked(m.ctx(), into, answer)
 	m.form = form
 	return m, action
 }
 
-func landOnSkills(m model, into pickDest, answer pickAnswer) (model, draw.Action) {
+func landOnSkills(m model, into any, answer pickAnswer) (model, draw.Action) {
 	skills, action := m.skills.Picked(m.ctx(), into, answer)
 	m.skills = skills
 	return m, action
 }
 
-func landOnSquads(m model, into pickDest, answer pickAnswer) (model, draw.Action) {
+func landOnSquads(m model, into any, answer pickAnswer) (model, draw.Action) {
 	squad, action := m.squad.Picked(m.ctx(), into, answer)
 	m.squad = squad
 	return m, action
@@ -753,21 +809,20 @@ func (m model) answerPicker(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 // and the pair is (screen, action) anyway because that is the shape Update and
 // Confirmed have.
 //
-// ⚠️ **The destination arrives as an `any` and is asserted here, which is the
-// one place entitled to.** draw.PickState carries it and never looks at it — a
-// destination names a field of one of *this* client's screens, so it is this
-// client's word — and a value that is not a pickDest is a picker raised by
-// somebody else, which lands nowhere for the same reason pickNowhere does.
+// ⚠️ **The destination arrives as an `any` and is read here, which is the one
+// place entitled to.** draw.PickState carries it and never looks at it — a
+// destination names a field of one screen, and only the client in front knows
+// which of its screens that is — so the lookup is a map read rather than a type
+// assertion now: there are two destination vocabularies (this client's pickDest
+// and the skill form's own draw.SkillsPick, which followed that screen), and a
+// value in neither is a picker raised by somebody else, which lands nowhere for
+// the same reason pickNowhere does.
 func (m model) answerPick(carried any, answer pickAnswer) (tea.Model, tea.Cmd) {
-	into, named := carried.(pickDest)
-	if !named {
-		return m, nil
-	}
-	landing, known := pickedInto[into]
+	landing, known := pickedInto[carried]
 	if !known {
 		return m, nil
 	}
-	picked, action := landing.land(m, into, answer)
+	picked, action := landing.land(m, carried, answer)
 	return picked.navigate(landing.on, action)
 }
 
@@ -811,7 +866,7 @@ func (m model) enter(target screen) model {
 	case screenOrigins:
 		m.origins = m.origins.refresh(m.lib)
 	case screenSkills:
-		m.skills = m.skills.refresh(m.lib)
+		m.skills = m.skills.Refresh(m.ctx())
 	case screenStatuses:
 		m.statuses = m.statuses.Refresh(m.lib)
 	case screenPassives:
@@ -884,7 +939,7 @@ func (m model) screenContent() string {
 	case screenOrigins:
 		body, footer = m.origins.view(m)
 	case screenSkills:
-		body, footer = m.skills.view(m)
+		body, footer = m.skills.View(m.ctx())
 	case screenStatuses:
 		body, footer = m.statuses.View(m.ctx())
 	case screenPassives:
@@ -1049,12 +1104,6 @@ func (m model) label(name, format string, args ...any) string {
 	return m.ctx().Label(name, format, args...)
 }
 
-// continued draws a row that carries on from the one above it: no name of its
-// own, and its value under the same column as that row's.
-func (m model) continued(format string, args ...any) string {
-	return m.ctx().Continued(format, args...)
-}
-
 // wrapped is label for a value with no bound on its length: it fills the row and
 // carries on underneath, aligned with where the value started.
 //
@@ -1069,36 +1118,16 @@ func (m model) wrapped(name string, width int, value string) string {
 func (m model) usableWidth() int { return m.ctx().UsableWidth() }
 
 // fieldValueRoom is what a form row has left for the one part of it that has no
-// length of its own — the chances beside the inflicts field, the ids in an
-// allowlist, the kit and the species on the character form — once the marker,
-// the label column, the fixed part of the value and the two-space gap before
-// whatever follows have been paid for.
+// length of its own — the ids in an allowlist, the kit and the species on the
+// character form — once the marker, the label column, the fixed part of the
+// value and the two-space gap before whatever follows have been paid for.
 //
-// One declaration for **both forms**, because the skill form and the character
-// form draw the identical row — `marker + pad(label, width) + " " + value` — and
-// each had written the arithmetic out for itself. All four copies were one cell
-// over, in the same direction, and the two that were found first were fixed
-// while the two in form.go were not; a second copy is a second thing to fix
-// twice. The window's last column is left empty for the reason frame leaves it:
-// a line filling a terminal's final cell wraps on some of them, and one wrapped
-// line pushes the footer off the bottom.
-//
-// ⚠️ It lives here rather than beside either caller for that reason too. In
-// skills.go it read as the skill form's arithmetic, which is what let form.go
-// write its own; here it sits with pad, labelAt and usableWidth, which are the
-// rest of what a row is made of.
-//
-// The width is handed in rather than read off minWidth, and that is what keeps
-// the single declaration honest: a row that spends this on **data** — the
-// chances, an allowlist of ids, a chosen kit — passes m.usableWidth(), which is
-// the window when there is one, while a row spending it on wording would pass
-// minWidth. All four callers today are data and all four pass the window, but
-// picking a side inside the function would make the next caller either wrong or
-// a second copy of the arithmetic, which is exactly what this exists to have
-// stopped.
+// One declaration for **both forms**, in internal/screen beside Pad, LabelAt and
+// UsableWidth, which is the rest of what a row is made of. It moved there when
+// the skill form did: the character form has not, and a copy on each side of the
+// package boundary is the second copy this function exists to have stopped.
 func fieldValueRoom(width, labelWidth, spent int) int {
-	const marker, gap = 2, 2
-	return width - 1 - marker - labelWidth - 1 - spent - gap
+	return draw.FieldValueRoom(width, labelWidth, spent)
 }
 
 // wrapWords breaks text on spaces, never mid-word, and never returns nothing.

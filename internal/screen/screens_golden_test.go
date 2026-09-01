@@ -207,6 +207,7 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		t.Fatalf("the traitless-build state draws no row saying so, so the golden records "+
 			"an ordinary build catalogue twice:\n%s", drawn)
 	}
+	listing := NewSkillsScreen(c)
 	return map[string]drawable{
 		// The cast browser as a raise leaves it: the first row, at the level
 		// cap, with no origin filter. That is the state the client's own sweep
@@ -228,7 +229,181 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"traitless build":  traitless,
 		"traits":           NewPassivesScreen(lib),
 		"unclaimed kind":   unclaimed,
+		// The skill listing and the seven states of it the client's own sweep
+		// registers, under the same names, for the reason every other entry
+		// here carries the client's name: a reader holding both diffs is
+		// looking at the same words.
+		"skills":                  listing,
+		"add a skill":             addingASkill(t, c, listing),
+		"edit a skill":            editingASkill(t, c, listing),
+		"edited a skill":          anEditedSkill(t, c, lib, listing),
+		"filtering skills":        theFilterOpen(t, c, listing),
+		"filtered skills":         theFilterFinding(t, c, listing),
+		"skills filtered to none": theFilterFindingNothing(t, c, listing),
+		"shape diagram":           theShapeDiagram(t, c, lib, listing),
 	}
+}
+
+// # The skill listing's seven states, and what each is here for
+//
+// The listing is the ninth screen in this package and the busiest: it is a
+// listing, a form over that listing, a diagram over that form, and a typed
+// filter that is a mode of its own. The states below are the paths through View
+// that share no line with each other, which is the same rule the picker's five
+// were chosen under.
+//
+// ⚠️ **The three filter states are driven with the keys an author would press**,
+// exactly as the client's fixture drives them, because the query is what decides
+// which rows there are — a hand-set field would record this test's idea of the
+// filter rather than the one `/` opens. The client's fixture has twice measured a
+// screen's early exit instead of the screen; a driven state cannot do that.
+//
+// ⚠️ Each asserts it drew the line it exists for. A registered state that renders
+// nothing passes every sweep over it, and two of these (an empty result, a
+// reported edit) draw a *different* line rather than no line, so the failure is
+// silent in both directions.
+
+// addingASkill is the form over an empty draft: every field at its default,
+// which is the state `a` reaches.
+func addingASkill(t *testing.T, c Context, listing SkillsScreen) SkillsScreen {
+	t.Helper()
+	form := pressOn(t, c, listing, "a")
+	if !form.Adding || form.Editing != "" {
+		t.Fatalf("a did not open the new-skill form (adding %v, editing %q)",
+			form.Adding, form.Editing)
+	}
+	if drawn, _ := form.View(c); !strings.Contains(drawn, c.Text(i18n.SkillFormHeading)) {
+		t.Fatalf("the new-skill form draws no heading of its own:\n%s", drawn)
+	}
+	return form
+}
+
+// editingASkill is the same form over a skill that already exists, which is the
+// widest it ever draws: every field prefilled from the book rather than empty.
+func editingASkill(t *testing.T, c Context, listing SkillsScreen) SkillsScreen {
+	t.Helper()
+	if len(listing.Skills) == 0 {
+		t.Fatal("the shipped book holds no skills to edit")
+	}
+	form := listing.Prefill(c, listing.Skills[0])
+	if form.Editing != listing.Skills[0].ID {
+		t.Fatalf("the form opened over %q, want %q", form.Editing, listing.Skills[0].ID)
+	}
+	if drawn, _ := form.View(c); !strings.Contains(drawn, c.Text(i18n.SkillFormEditHeading)) {
+		t.Fatalf("the edit form draws the new-skill heading:\n%s", drawn)
+	}
+	return form
+}
+
+// anEditedSkill is the listing as an edit leaves it: two lines rather than one,
+// the second of which is the damage before and after.
+//
+// The change is built by hand rather than written, because nothing in this
+// package writes: the books are loaded straight out of internal/seed/data and a
+// golden that edited them would edit the repository. What it needs is a
+// forge.SkillChange, which is four values and no file.
+func anEditedSkill(t *testing.T, c Context, lib *forge.Library, listing SkillsScreen) SkillsScreen {
+	t.Helper()
+	if len(listing.Skills) == 0 {
+		t.Fatal("the shipped book holds no skills to edit")
+	}
+	before := listing.Skills[0]
+	after := before
+	after.Power = before.Power*2 + 1000
+	reported := listing
+	reported.Edited = &forge.SkillChange{
+		Before: before, After: after,
+		BeforeDamage: lib.PreviewDamage(before),
+		AfterDamage:  lib.PreviewDamage(after),
+	}
+	if !reported.Edited.MovesDamage() {
+		t.Fatal("the fixture edit moves no damage, so the second line is drawn by nothing")
+	}
+	drawn, _ := reported.View(c)
+	if want := c.Text(i18n.SkillEdited, after.ID, lib.SkillsPath()); !strings.Contains(drawn, want) {
+		t.Fatalf("the listing does not report the edit %q:\n%s", want, drawn)
+	}
+	return reported
+}
+
+// theFilterOpen is the field just opened with nothing in it, which says what to
+// type rather than how much of the book is left.
+func theFilterOpen(t *testing.T, c Context, listing SkillsScreen) SkillsScreen {
+	t.Helper()
+	opened := pressOn(t, c, listing, "/")
+	if !opened.Filtering {
+		t.Fatal("/ did not open the filter, so its three states are drawn by nothing here")
+	}
+	if drawn, _ := opened.View(c); !strings.Contains(drawn, c.Text(i18n.SkillsFilterPrompt)) {
+		t.Fatalf("the opened filter says nothing about what to type:\n%s", drawn)
+	}
+	return opened
+}
+
+// theFilterFinding is a query that has found several rows: the row above says
+// how much of the book is left, and the listing under it is narrowed.
+//
+// ⚠️ The fixture's own discrimination is asserted, which no assertion downstream
+// can see: a query that has quietly stopped matching turns this into a second
+// copy of the state below, and both would still render.
+func theFilterFinding(t *testing.T, c Context, listing SkillsScreen) SkillsScreen {
+	t.Helper()
+	found := typeInto(t, c, theFilterOpen(t, c, listing), someSkillQuery)
+	rows, all := len(found.Rows()), len(found.Skills)
+	if rows < 2 || rows >= all {
+		t.Fatalf("the query %q finds %d of %d skills, so the filtered listing is not "+
+			"a narrowed one", someSkillQuery, rows, all)
+	}
+	return found
+}
+
+// theFilterFindingNothing is a query nothing answers to, which says so where the
+// rows would have been and draws no column header over them.
+func theFilterFindingNothing(t *testing.T, c Context, listing SkillsScreen) SkillsScreen {
+	t.Helper()
+	nothing := typeInto(t, c, theFilterOpen(t, c, listing), noSkillQuery)
+	if found := len(nothing.Rows()); found != 0 {
+		t.Fatalf("the query %q finds %d skills, so the empty result is drawn by nothing",
+			noSkillQuery, found)
+	}
+	if drawn, _ := nothing.View(c); !strings.Contains(drawn, c.Text(i18n.SkillsFilterNothing)) {
+		t.Fatalf("the empty listing does not say the filter found nothing:\n%s", drawn)
+	}
+	return nothing
+}
+
+// theShapeDiagram is the board with a shape's coverage marked on it, which is a
+// state of the form rather than a screen of its own.
+//
+// The shape is the one that catches the most cells, for the reason kitPicker
+// takes the most-refused carrier: a golden of a layout is for the case that
+// spends the most of it, and a single-cell shape draws a board with one mark.
+func theShapeDiagram(t *testing.T, c Context, lib *forge.Library, listing SkillsScreen) SkillsScreen {
+	t.Helper()
+	shapes := lib.PatternNames()
+	if len(shapes) == 0 {
+		t.Fatal("the shipped book declares no shapes")
+	}
+	widest, most := shapes[0], -1
+	for _, name := range shapes {
+		coverage, err := lib.ShapeCoverage(name, defaultSkillTarget)
+		if err != nil {
+			t.Fatalf("coverage of %s: %v", name, err)
+		}
+		if coverage.Covered() > most {
+			widest, most = name, coverage.Covered()
+		}
+	}
+	diagram := addingASkill(t, c, listing)
+	diagram.Field = SkillFieldShape
+	diagram.ShapeIndex = IndexOf(shapes, widest)
+	diagram.ShapeDrawn = true
+	drawn, _ := diagram.View(c)
+	if !strings.Contains(drawn, shapeSplashMark) {
+		t.Fatalf("the diagram for %s marks no splash cell, so it records a board with "+
+			"one mark on it:\n%s", widest, drawn)
+	}
+	return diagram
 }
 
 // # The five picker states, and why they are built here rather than raised

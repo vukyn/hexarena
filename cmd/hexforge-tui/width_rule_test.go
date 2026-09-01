@@ -16,6 +16,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // The width rule, both halves of it, measured rather than commented.
@@ -270,14 +271,14 @@ func TestTheDamageRowKeepsItsReferencePairAtEveryWindow(t *testing.T) {
 		}))
 
 		listing := base.enter(screenSkills)
-		listing.skills.cursor = slices.IndexFunc(listing.skills.skills,
+		listing.skills.Cursor = slices.IndexFunc(listing.skills.Skills,
 			func(candidate skill.Skill) bool { return candidate.ID == heavy })
-		if listing.skills.cursor < 0 {
+		if listing.skills.Cursor < 0 {
 			t.Fatalf("%s: the listing does not show %q", lang, heavy)
 		}
 
 		form := base.enter(screenSkills)
-		form.skills = form.skills.prefill(lib, declared)
+		form.skills = form.skills.Prefill(base.ctx(), declared)
 
 		for _, site := range []struct {
 			name string
@@ -287,14 +288,14 @@ func TestTheDamageRowKeepsItsReferencePairAtEveryWindow(t *testing.T) {
 				func(width int) string {
 					m := listing
 					m.width, m.height = width, 60
-					body, _ := m.skills.view(m)
+					body, _ := m.skills.View(m.ctx())
 					return body
 				}},
 			{"the form's damage row",
 				func(width int) string {
 					m := form
 					m.width, m.height = width, 60
-					return m.skills.damageRow(m, skillLabelWidth(m))
+					return m.skills.DamageRow(m.ctx(), draw.SkillLabelWidth(m.ctx()))
 				}},
 		} {
 			floor, wide := site.at(minWidth), site.at(wideWindow)
@@ -499,10 +500,10 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 	//    but only as much of it as the floor cannot hold — see
 	//    enoughOfTheCastToOverflowTheFloor.
 	allowing := base.enter(screenSkills)
-	allowing.skills.adding = true
-	allowing.skills.keptWho = everyone
-	allowing.skills.keptKinds = speciesIDs
-	allowlist := allowing.openAllowlist(skillFieldKeptForSpecies)
+	allowing.skills.Adding = true
+	allowing.skills.KeptWho = everyone
+	allowing.skills.KeptKinds = speciesIDs
+	allowlist := allowing.pick(allowing.skills.OpenAllowlist(allowing.ctx(), draw.SkillFieldKeptForSpecies))
 	chosen := dataCell{
 		name:  "the picker's chosen line",
 		whole: strings.Join(speciesIDs, " "),
@@ -525,7 +526,7 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 		at: func(width int) string {
 			m := allowing
 			m.width, m.height = width, 60
-			return m.skills.value(m, skillFieldKeptForCharacters, skillLabelWidth(m))
+			return m.skills.FieldValue(m.ctx(), draw.SkillFieldKeptForCharacters, draw.SkillLabelWidth(m.ctx()))
 		},
 	}
 
@@ -533,16 +534,16 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 	//     one declaration. A skill may apply any number of statuses and the
 	//     reading grows a figure per status, so it is the same unbounded shape.
 	applying := base.enter(screenSkills)
-	applying.skills.adding = true
+	applying.skills.Adding = true
 	typed, chances := someStatusesAndTheirChances(t, lib)
-	applying.skills.inputs[skillFieldInflicts].SetValue(typed)
+	applying.skills.Inputs[draw.SkillFieldInflicts].SetValue(typed)
 	inflicts := dataCell{
 		name:  "the form's chance reading",
 		whole: chances,
 		at: func(width int) string {
 			m := applying
 			m.width, m.height = width, 60
-			return m.skills.value(m, skillFieldInflicts, skillLabelWidth(m))
+			return m.skills.FieldValue(m.ctx(), draw.SkillFieldInflicts, draw.SkillLabelWidth(m.ctx()))
 		},
 	}
 

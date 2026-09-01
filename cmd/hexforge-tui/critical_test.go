@@ -5,6 +5,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // TestTheSkillFormReadsACriticalChanceBackOut is the half of the field that no
@@ -32,28 +33,28 @@ func TestTheSkillFormReadsACriticalChanceBackOut(t *testing.T) {
 	}
 
 	form := m.enter(screenSkills)
-	form.skills = form.skills.prefill(form.lib, current)
-	if got := form.skills.inputs[skillFieldCrit].Value(); got != "" {
+	form.skills = form.skills.Prefill(form.ctx(), current)
+	if got := form.skills.Inputs[draw.SkillFieldCrit].Value(); got != "" {
 		t.Errorf("a skill that cannot crit prefilled the field with %q, want an empty answer:"+
 			" accepting the form as it stands would add a crit key to the file", got)
 	}
-	if drafted := form.skills.draft(form); drafted != forge.SkillAnswers(current) {
+	if drafted := form.skills.Draft(form.ctx()); drafted != forge.SkillAnswers(current) {
 		t.Errorf("the form opened with\n%+v\nwant\n%+v", drafted, forge.SkillAnswers(current))
 	}
 
 	critting := current
 	critting.Crit = 200
-	form.skills = form.skills.prefill(form.lib, critting)
-	if got := form.skills.inputs[skillFieldCrit].Value(); got != "200" {
+	form.skills = form.skills.Prefill(form.ctx(), critting)
+	if got := form.skills.Inputs[draw.SkillFieldCrit].Value(); got != "200" {
 		t.Errorf("a skill that crits prefilled the field with %q, want %q", got, "200")
 	}
-	if drafted := form.skills.draft(form); drafted.Crit != "200" {
+	if drafted := form.skills.Draft(form.ctx()); drafted.Crit != "200" {
 		t.Errorf("the draft the form would write carries a critical chance of %q, want %q",
 			drafted.Crit, "200")
 	}
 	// And the whole answer set round-trips, which is the assertion that survives
 	// the next field somebody adds.
-	if drafted := form.skills.draft(form); drafted != forge.SkillAnswers(critting) {
+	if drafted := form.skills.Draft(form.ctx()); drafted != forge.SkillAnswers(critting) {
 		t.Errorf("the form opened with\n%+v\nwant\n%+v", drafted, forge.SkillAnswers(critting))
 	}
 }
@@ -66,21 +67,21 @@ func TestTheCriticalFieldIsLabelledAndHelpedInBothLanguages(t *testing.T) {
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
 		m, _, _ := start(t, lang)
 		form := m.enter(screenSkills)
-		if got, want := skillFieldLabel(form, skillFieldCrit), lang.Text(i18n.SkillFieldCrit); got != want {
+		if got, want := draw.SkillFieldLabel(form.ctx(), draw.SkillFieldCrit), lang.Text(i18n.SkillFieldCrit); got != want {
 			t.Errorf("%s labels the critical field %q, want %q", lang, got, want)
 		}
-		if got, want := skillFieldHelp(form, skillFieldCrit), lang.Text(i18n.SkillHelpCrit); got != want {
+		if got, want := draw.SkillFieldHelp(form.ctx(), draw.SkillFieldCrit), lang.Text(i18n.SkillHelpCrit); got != want {
 			t.Errorf("%s helps the critical field with %q, want %q", lang, got, want)
 		}
 	}
 	// Beside pierce and before the allowlists, so the form reads in the order the
 	// file is written in.
-	if skillFieldCrit != skillFieldPierce+1 {
+	if draw.SkillFieldCrit != draw.SkillFieldPierce+1 {
 		t.Errorf("the critical field is at %d and pierce at %d, want them adjacent",
-			skillFieldCrit, skillFieldPierce)
+			draw.SkillFieldCrit, draw.SkillFieldPierce)
 	}
-	if skillFieldCrit >= skillFieldCount {
+	if draw.SkillFieldCrit >= draw.SkillFieldCount {
 		t.Errorf("the critical field is at %d, past the %d fields the form counts",
-			skillFieldCrit, skillFieldCount)
+			draw.SkillFieldCrit, draw.SkillFieldCount)
 	}
 }

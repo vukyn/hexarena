@@ -22,9 +22,14 @@ import (
 //
 // Two forwarders are here rather than deleted, on the rule this package already
 // follows for pad, clip, clamp and window: numberKey below and numberField in
-// style.go are still spent by the squad builder and the skill form, neither of
-// which has moved. Anything the move left with no caller went, and traitRoom is
-// the one that did.
+// style.go are still spent by the squad builder, which has not moved. Anything
+// the move left with no caller went, and traitRoom is the one that did.
+//
+// ⚠️ **Six of the ten destinations have since left too.** The skill form moved
+// into internal/screen in the step after this one, and the five allowlists and
+// the inflicts field went with it as draw.SkillsPick — a destination names a
+// field of one screen, and that screen is no longer a client's. What is left
+// below is the character form's two and the squad builder's two.
 
 // The picker's own vocabulary, named here under the spellings this package
 // already used, for the reason the six reference screens are aliased in
@@ -74,21 +79,21 @@ func (m model) pick(state *pickState) model {
 // there is still exactly one body.
 func numberKey(message tea.KeyPressMsg) bool { return draw.NumberKey(message) }
 
-// pickDest is where a finished pick lands: one named field of one screen.
+// pickDest is where a finished pick lands: one named field of one of *this
+// client's* screens.
 //
-// A closed enum rather than a screen alone, because three screens raise ten
-// pickers between them and the screen cannot say which of its own fields was
-// being filled — the skill form alone has five allowlists that differ in nothing
-// but that. It is the same division guardSubject makes for the squad builder's
-// two questions, taken one step finer because the count here is ten rather than
-// two.
+// A closed enum rather than a screen alone, because a screen cannot say which of
+// its own fields was being filled — the character form's kit and species are one
+// keystroke apart and differ in nothing else. It is the same division
+// guardSubject makes for the squad builder's two questions, taken one step finer.
 //
-// ⚠️ **A destination is *where*, never *how*.** Nine of the ten assign the answer
-// to a list field; pickIntoInflicts composes it into a text field through
-// forge.AddApplications. Both are destinations, and what the receiving screen
-// does when the answer arrives is that screen's business — the alternative was
-// bending nine into a shape the tenth could share, which would have been a
-// vocabulary invented for one case.
+// ⚠️ **It used to name ten and names four.** The other six were the skill form's
+// five allowlists and its inflicts field, and they went with that screen into
+// internal/screen as draw.SkillsPick — the reason PickState.Into is an `any` is
+// that a destination names a field of a client's screen, and the skill form
+// stopped being one. What is left names the character form's two and the squad
+// builder's two, which have not moved. This client is the one thing that knows
+// both vocabularies, which is what a client is for; see pickedInto.
 type pickDest uint8
 
 const (
@@ -105,15 +110,6 @@ const (
 	// The character form's two, from form.go.
 	pickIntoKit
 	pickIntoSpecies
-	// The skill form's five allowlists and its inflicts field, from skills.go.
-	// Each is named after the field it fills, so a destination pointed at the
-	// wrong one reads wrong at the raise site as well as at the landing.
-	pickIntoKeptElements
-	pickIntoKeptRoles
-	pickIntoKeptWorlds
-	pickIntoKeptKinds
-	pickIntoKeptWho
-	pickIntoInflicts
 	// The squad builder's two halves of a loadout, from squads.go.
 	pickIntoSquadKit
 	pickIntoSquadTrait

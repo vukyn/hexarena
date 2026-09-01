@@ -803,7 +803,10 @@ func (m model) openSquadPassives() model {
 // it is up, so the member under edit cannot have changed character between the
 // question and the answer — and the screen already knows how to find its own,
 // because every other row on it is read the same way.
-func (s squadScreen) Picked(_ draw.Context, into pickDest, answer pickAnswer) (squadScreen, draw.Action) {
+//
+// ⚠️ **The destination arrives as an `any`** — see formScreen.Picked for why
+// there are two destination vocabularies to tell apart now.
+func (s squadScreen) Picked(_ draw.Context, into any, answer pickAnswer) (squadScreen, draw.Action) {
 	character, known := s.character()
 	if !known {
 		// The raise declines on the same reading, so this is unreachable from a

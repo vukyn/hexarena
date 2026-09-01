@@ -26,8 +26,10 @@ func newInput() textinput.Model { return draw.NewInput(plainTerminal()) }
 // beside the status picker's list, and the squad builder's level.
 //
 // It sits beside newInput for the same reason, which is the only reason: it
-// reads the machine. The field itself is draw.NumberField's, and both screens
-// that still raise one live in this package.
+// reads the machine. The field itself is draw.NumberField's, and the one screen
+// that still raises one from this package is the squad builder — the skill
+// form's chance field went with that screen into internal/screen, where the
+// answer is already on the palette it is handed.
 func numberField(placeholder string) *textinput.Model {
 	return draw.NumberField(plainTerminal(), placeholder)
 }

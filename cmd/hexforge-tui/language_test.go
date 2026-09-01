@@ -23,6 +23,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // Everything about the two languages, asserted against the real model: the
@@ -37,15 +38,15 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	adding.origins.adding = true
 	form := m.enter(screenNew)
 	addSkill := m.enter(screenSkills)
-	addSkill.skills.adding = true
+	addSkill.skills.Adding = true
 	// The same form over a skill that already exists, which is the widest it ever
 	// draws: every field is prefilled from the book rather than empty.
 	editSkill := m.enter(screenSkills)
-	editSkill.skills = editSkill.skills.prefill(m.lib, editSkill.skills.skills[0])
+	editSkill.skills = editSkill.skills.Prefill(m.ctx(), editSkill.skills.Skills[0])
 	// And the listing as an edit leaves it: two lines rather than one, the second
 	// of which is the damage before and after.
 	editedSkill := m.enter(screenSkills)
-	editedSkill.skills.edited = someSkillChange(t, m)
+	editedSkill.skills.Edited = someSkillChange(t, m)
 	// The typed filter on the skill listing, in each of the three states it
 	// draws: the field just opened with nothing in it, a query that has found
 	// several rows, and a query that has found none. Three rather than one
@@ -60,7 +61,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// measured a screen's early exit instead of the screen (playScreen's shared
 	// battle, and plainTerminal above it).
 	filterOpen := typeText(t, m.enter(screenSkills), "/")
-	if !filterOpen.skills.filtering {
+	if !filterOpen.skills.Filtering {
 		t.Fatal("/ did not open the skill filter, so its three states are drawn by " +
 			"nothing in the sweep")
 	}
@@ -69,11 +70,11 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// And the fixture's own discrimination, which no assertion downstream can
 	// see: a query that has quietly stopped matching turns the "found" state into
 	// a second copy of the "nothing" state, and both would still render.
-	if found, all := len(filterFound.skills.rows()), len(filterFound.skills.skills); found < 2 || found >= all {
+	if found, all := len(filterFound.skills.Rows()), len(filterFound.skills.Skills); found < 2 || found >= all {
 		t.Fatalf("the query %q finds %d of %d skills, so the filtered listing is not "+
 			"a narrowed one", someSkillQuery, found, all)
 	}
-	if found := len(filterNothing.skills.rows()); found != 0 {
+	if found := len(filterNothing.skills.Rows()); found != 0 {
 		t.Fatalf("the query %q finds %d skills, so the empty result is drawn by nothing",
 			noSkillQuery, found)
 	}
@@ -82,23 +83,23 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// board is a fixed size — what varies is the line under it, so this is here
 	// for the same reason every other state is: to be measured in both languages.
 	shape := m.enter(screenSkills)
-	shape.skills.adding = true
-	shape.skills.field = skillFieldShape
-	shape.skills.shapeIndex = indexOf(m.lib.PatternNames(), "pierce")
-	shape.skills.shapeDrawn = true
+	shape.skills.Adding = true
+	shape.skills.Field = draw.SkillFieldShape
+	shape.skills.ShapeIndex = draw.IndexOf(m.lib.PatternNames(), "pierce")
+	shape.skills.ShapeDrawn = true
 	// The two pickers, opened over the form that raises each. The kit's rows
 	// carry a refusal each and an allowlist's do not, so both shapes of row are
 	// measured.
 	kit := form.openKit()
-	allowlist := addSkill.openAllowlist(skillFieldKeptForCharacters)
+	allowlist := addSkill.pick(addSkill.skills.OpenAllowlist(addSkill.ctx(), draw.SkillFieldKeptForCharacters))
 	// The status picker is the fifth, and the only one that collects a number as
 	// well as a set, so its extra row is measured with the rest.
-	statuses := addSkill.openStatuses()
+	statuses := addSkill.pick(addSkill.skills.OpenStatuses(addSkill.ctx()))
 	statuses.picker.Chosen = []string{"poison"}
 	statuses.picker.Typed.SetValue("300")
 	// And the character allowlist with its filter narrowed, which is a line the
 	// unfiltered picker does not draw.
-	filtered := addSkill.openAllowlist(skillFieldKeptForCharacters)
+	filtered := addSkill.pick(addSkill.skills.OpenAllowlist(addSkill.ctx(), draw.SkillFieldKeptForCharacters))
 	filtered.picker.NextFilter()
 	// The species picker, opened over the character form's species field the way
 	// every other picker here is opened over the form that raises it — a
@@ -122,7 +123,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// species and origins *allowlists* differ from the two above only in a hint
 	// line the character allowlist already draws, so every line of them is
 	// already measured somewhere in this map.
-	originsPick := addSkill.openAllowlist(skillFieldKeptForOrigins)
+	originsPick := addSkill.pick(addSkill.skills.OpenAllowlist(addSkill.ctx(), draw.SkillFieldKeptForOrigins))
 	// The spar, which is the only screen that runs battles to draw itself. Its
 	// widest state is the one with a row per character, which is what entering it
 	// over a checked library gives.
@@ -132,7 +133,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// one measures nothing about the other.
 	skillBlurb := m.enter(screenSkills)
 	skillBlurb.blurb.from = screenSkills
-	skillBlurb = skillBlurb.hand(skillBlurb.skills.subject())
+	skillBlurb = skillBlurb.hand(skillBlurb.skills.Subject())
 	skillBlurb.screen = screenBlurb
 	traitBlurb := m.enter(screenBrowse)
 	traitBlurb.browse.Cursor = widestTraitRow(traitBlurb)
@@ -1701,10 +1702,10 @@ func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
 // not the length of the book.
 func wholeSkillList(m model) string {
 	entered := m.enter(screenSkills)
-	top, _ := entered.skills.view(entered)
+	top, _ := entered.skills.View(entered.ctx())
 	tail := entered.skills
-	tail.cursor = len(tail.skills) - 1
-	bottom, _ := tail.view(entered)
+	tail.Cursor = len(tail.Skills) - 1
+	bottom, _ := tail.View(entered.ctx())
 	return top + "\n" + bottom
 }
 
@@ -1734,75 +1735,6 @@ func TestTheSkillListNamesSkillsInVietnamese(t *testing.T) {
 	// space-run heuristic here flags correct output.
 }
 
-// TestSkillRowDropsTheGlossColumnWhenItIsEmpty pins the rule itself, so it
-// cannot be lost when the caller that measures the width changes.
-func TestSkillRowDropsTheGlossColumnWhenItIsEmpty(t *testing.T) {
-	with := skillRow(8, 6, 8, "strike", "đòn", "neutral", "1000x1", "anyone")
-	without := skillRow(8, 0, 8, "strike", "đòn", "neutral", "1000x1", "anyone")
-	if strings.Contains(without, "đòn") {
-		t.Errorf("a zero gloss column still drew the gloss: %q", without)
-	}
-	if !strings.Contains(with, "đòn") {
-		t.Errorf("a sized gloss column dropped the gloss: %q", with)
-	}
-	if lipgloss.Width(without) >= lipgloss.Width(with) {
-		t.Errorf("dropping the column did not narrow the row: %d vs %d",
-			lipgloss.Width(without), lipgloss.Width(with))
-	}
-}
-
-// TestTheAccuracyRowReadsAsAPercentage covers the reason the row exists: 850 is
-// what the engine divides by, and nobody reads it as a chance. The parts per
-// thousand stay on screen — the number written to the file has to be the number
-// shown — with the percentage beside them.
-func TestTheAccuracyRowReadsAsAPercentage(t *testing.T) {
-	m, _, _ := start(t, i18n.Vi)
-	screen := m.enter(screenSkills)
-	screen.skills.adding = true
-	screen.skills.inputs[skillFieldAccuracy].SetValue("850")
-	if got := screen.skills.value(screen, skillFieldAccuracy, 16); !strings.Contains(got, "850") ||
-		!strings.Contains(got, "85%") {
-		t.Errorf("the accuracy row shows %q, want both 850 and 85%%", got)
-	}
-
-	// Power reads the same way, and a zero one says nothing a "0%" could add:
-	// four shipped skills declare no power at all.
-	screen.skills.inputs[skillFieldPower].SetValue("2200")
-	if got := screen.skills.value(screen, skillFieldPower, 16); !strings.Contains(got, "220%") {
-		t.Errorf("the power row shows %q, want 220%%", got)
-	}
-	screen.skills.inputs[skillFieldPower].SetValue("0")
-	if got := screen.skills.percentHint(screen, skillFieldPower); got != "" {
-		t.Errorf("a zero power produced the hint %q, want none", got)
-	}
-
-	// The chances in the inflicts field are parts per thousand too, but the
-	// field holds the syntax ParseApplications reads, so the reading goes
-	// beside it rather than into it.
-	screen.skills.inputs[skillFieldInflicts].SetValue("weaken:800,blind:400")
-	if got := screen.skills.value(screen, skillFieldInflicts, 16); !strings.Contains(got, "80%") ||
-		!strings.Contains(got, "40%") {
-		t.Errorf("the inflicts row shows %q, want both 80%% and 40%%", got)
-	}
-	// A list being typed is unparseable most of the time; that is not an error
-	// to announce.
-	for _, partial := range []string{"weaken", "weaken:", "weaken:8x"} {
-		screen.skills.inputs[skillFieldInflicts].SetValue(partial)
-		if got := screen.skills.chanceHint(screen, 16); got != "" {
-			t.Errorf("a value of %q produced the chance hint %q, want none", partial, got)
-		}
-	}
-
-	// A half-typed number is the normal state of a text field, not an error to
-	// announce, so the hint says nothing at all rather than guessing.
-	for _, partial := range []string{"", "-", "8x"} {
-		screen.skills.inputs[skillFieldAccuracy].SetValue(partial)
-		if got := screen.skills.percentHint(screen, skillFieldAccuracy); got != "" {
-			t.Errorf("a value of %q produced the hint %q, want none", partial, got)
-		}
-	}
-}
-
 // TestEveryFieldOfTheSkillFormHasHelp is the reason the static footnote went:
 // fourteen fields and one sentence about two of them explained nothing about
 // the twelve nobody could guess.
@@ -1816,12 +1748,12 @@ func TestEveryFieldOfTheSkillFormHasHelp(t *testing.T) {
 		base, _, _ := start(t, lang)
 		base.width, base.height = minWidth, minHeight
 		m := base.enter(screenSkills)
-		m.skills.adding = true
+		m.skills.Adding = true
 
-		seen := make(map[string]int, skillFieldCount)
-		for field := range skillFieldCount {
+		seen := make(map[string]int, draw.SkillFieldCount)
+		for field := range draw.SkillFieldCount {
 			m = skillFormTo(t, m, field)
-			help := skillFieldHelp(m, field)
+			help := draw.SkillFieldHelp(m.ctx(), field)
 			if strings.TrimSpace(help) == "" {
 				t.Errorf("field %d has no help line in %s", field, lang)
 				continue
@@ -1837,21 +1769,21 @@ func TestEveryFieldOfTheSkillFormHasHelp(t *testing.T) {
 					before, field, lang, help)
 			}
 			seen[help] = field
-			body, _ := m.skills.view(m)
+			body, _ := m.skills.View(m.ctx())
 			if !strings.Contains(body, help) {
 				t.Errorf("the %s form does not draw the help for field %d:\n%s",
 					lang, field, body)
 			}
 			// A help line that says nothing but the label again is the footnote
 			// back: it has to be longer than the name of the field it explains.
-			if label := skillFieldLabel(m, field); lipgloss.Width(help) <= lipgloss.Width(label) {
+			if label := draw.SkillFieldLabel(m.ctx(), field); lipgloss.Width(help) <= lipgloss.Width(label) {
 				t.Errorf("the %s help for %q is no longer than its own label: %q",
 					lang, label, help)
 			}
 		}
-		if len(seen) != skillFieldCount {
+		if len(seen) != draw.SkillFieldCount {
 			t.Errorf("%s drew %d distinct help lines over %d fields",
-				lang, len(seen), skillFieldCount)
+				lang, len(seen), draw.SkillFieldCount)
 		}
 	}
 }
@@ -1871,8 +1803,8 @@ func TestTheSkillFormFitsTheSmallestWindow(t *testing.T) {
 		m, _, _ := start(t, lang)
 		m.width, m.height = minWidth, minHeight
 		m = m.enter(screenSkills)
-		m.skills = m.skills.prefill(m.lib, m.skills.skills[0])
-		m.skills.err = &forge.MissingSkillIDError{}
+		m.skills = m.skills.Prefill(m.ctx(), m.skills.Skills[0])
+		m.skills.Err = &forge.MissingSkillIDError{}
 		drawn := m.screenContent()
 		if strings.Contains(drawn, i18n.Vi.Text(i18n.Truncated)) ||
 			strings.Contains(drawn, i18n.En.Text(i18n.Truncated)) {
@@ -1881,7 +1813,7 @@ func TestTheSkillFormFitsTheSmallestWindow(t *testing.T) {
 		}
 		// And the count itself, so that a line added to this screen fails here
 		// with the arithmetic rather than only through the truncation marker.
-		body, _ := m.skills.view(m)
+		body, _ := m.skills.View(m.ctx())
 		if lines, room := len(strings.Split(body, "\n")), minHeight-4; lines > room {
 			t.Errorf("the %s skill form draws %d body lines against the %d it has",
 				lang, lines, room)
@@ -1905,7 +1837,7 @@ func TestTheListingHeaderLinesUpWithItsRows(t *testing.T) {
 		m, _, _ := start(t, lang)
 		m.width, m.height = minWidth, minHeight
 		m = m.enter(screenSkills)
-		body, _ := m.skills.view(m)
+		body, _ := m.skills.View(m.ctx())
 		lines := strings.Split(body, "\n")
 
 		// The comparable row is an unrestricted one, because its last cell is
@@ -1915,7 +1847,7 @@ func TestTheListingHeaderLinesUpWithItsRows(t *testing.T) {
 		// until every skill in the book was given the work it comes out of — so
 		// the cursor walks the listing until a screen has both.
 		header, row := "", ""
-		for step := 0; step <= len(m.skills.skills); step++ {
+		for step := 0; step <= len(m.skills.Skills); step++ {
 			for _, line := range lines {
 				switch {
 				case strings.Contains(line, lang.Text(i18n.ColumnWhoMayCarry)):
@@ -1931,7 +1863,7 @@ func TestTheListingHeaderLinesUpWithItsRows(t *testing.T) {
 				break
 			}
 			m = key(t, m, "down")
-			body, _ = m.skills.view(m)
+			body, _ = m.skills.View(m.ctx())
 			lines = strings.Split(body, "\n")
 		}
 		if header == "" || row == "" {
@@ -1980,10 +1912,10 @@ func TestEveryFormRowFitsTheWindowAtItsBusiest(t *testing.T) {
 		m, _, _ := start(t, lang)
 		m.width, m.height = minWidth, minHeight
 		m = m.enter(screenSkills)
-		m.skills.adding = true
+		m.skills.Adding = true
 		// The busiest each row can be: a full-width id, three statuses read out
 		// beside the field, and three long ids in every allowlist.
-		m.skills.inputs[skillFieldID].SetValue(strings.Repeat("a", 40))
+		m.skills.Inputs[draw.SkillFieldID].SetValue(strings.Repeat("a", 40))
 		// A power high enough that the damage row under the fields carries
 		// four-digit figures, which is the case that row is measured on: it is
 		// the widest fixed row on this screen and it grows with the number of
@@ -1994,17 +1926,17 @@ func TestEveryFormRowFitsTheWindowAtItsBusiest(t *testing.T) {
 		// It has a real ceiling above this: five-digit damage, which needs a
 		// power around 15000, runs the row two cells over and is clipped by
 		// frame. Nothing shipped is within a factor of six of that.
-		m.skills.inputs[skillFieldPower].SetValue("3000")
-		m.skills.inputs[skillFieldAccuracy].SetValue("1000")
-		m.skills.inputs[skillFieldInflicts].SetValue("poison:300,burn:500,weaken:1000")
+		m.skills.Inputs[draw.SkillFieldPower].SetValue("3000")
+		m.skills.Inputs[draw.SkillFieldAccuracy].SetValue("1000")
+		m.skills.Inputs[draw.SkillFieldInflicts].SetValue("poison:300,burn:500,weaken:1000")
 		long := []string{"example-hero", "example-sprout", "example-adept"}
-		m.skills.keptElements, m.skills.keptRoles, m.skills.keptWho = long, long, long
+		m.skills.KeptElements, m.skills.KeptRoles, m.skills.KeptWho = long, long, long
 
-		width := skillLabelWidth(m)
-		for field := range skillFieldCount {
-			m.skills.field = field
-			row := "  " + pad(skillFieldLabel(m, field), width) + " " +
-				m.skills.value(m, field, width)
+		width := draw.SkillLabelWidth(m.ctx())
+		for field := range draw.SkillFieldCount {
+			m.skills.Field = field
+			row := "  " + pad(draw.SkillFieldLabel(m.ctx(), field), width) + " " +
+				m.skills.FieldValue(m.ctx(), field, width)
 			if measured := lipgloss.Width(row); measured > drawable {
 				t.Errorf("the %s row for field %d is %d cells wide, over the %d it has:\n%s",
 					lang, field, measured, drawable, row)
@@ -2012,7 +1944,7 @@ func TestEveryFormRowFitsTheWindowAtItsBusiest(t *testing.T) {
 		}
 		// And the whole screen in that state, since the rows are not the only
 		// lines on it.
-		body, _ := m.skills.view(m)
+		body, _ := m.skills.View(m.ctx())
 		for _, line := range strings.Split(body, "\n") {
 			if measured := lipgloss.Width(line); measured > drawable {
 				t.Errorf("the %s form draws %d cells, over the %d it has:\n%s",
@@ -2030,9 +1962,10 @@ func TestAnAllowlistPickerSaysWhatAnEmptyListMeans(t *testing.T) {
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
 		m, _, _ := start(t, lang)
 		for _, field := range []int{
-			skillFieldKeptForElements, skillFieldKeptForRoles, skillFieldKeptForCharacters,
+			draw.SkillFieldKeptForElements, draw.SkillFieldKeptForRoles, draw.SkillFieldKeptForCharacters,
 		} {
-			opened := m.enter(screenSkills).openAllowlist(field)
+			listing := m.enter(screenSkills)
+			opened := listing.pick(listing.skills.OpenAllowlist(listing.ctx(), field))
 			body, _ := opened.picker.View(opened.ctx())
 			if want := lang.Text(i18n.PickerAllowlistHint); !strings.Contains(body, want) {
 				t.Errorf("%v field %d is missing the allowlist hint %q", lang, field, want)
@@ -2104,15 +2037,15 @@ func TestTheFormScrollsToTheFieldTheCursorIsOn(t *testing.T) {
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
 		m, _, _ := start(t, lang)
 		form := m.enter(screenSkills)
-		form.skills.adding = true
+		form.skills.Adding = true
 		// Every field, not a chosen three. The help line under the form is the
 		// *focused* field's, so a wording is only measured on the state that
 		// focuses it — a field left out of this loop is a wording nothing in the
 		// suite has ever drawn at the minimum width.
-		for field := 0; field < skillFieldCount; field++ {
-			form.skills.field = field
-			body, _ := form.skills.view(form)
-			label := skillFieldLabel(form, field)
+		for field := 0; field < draw.SkillFieldCount; field++ {
+			form.skills.Field = field
+			body, _ := form.skills.View(form.ctx())
+			label := draw.SkillFieldLabel(form.ctx(), field)
 			if !strings.Contains(body, label) {
 				t.Errorf("%v: the cursor is on %q and the form does not draw it:\n%s",
 					lang, label, body)

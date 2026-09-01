@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // The behaviour half of the picker's destinations, and the half a totality walk
@@ -35,11 +36,11 @@ func TestEachAllowlistPickLandsInItsOwnField(t *testing.T) {
 		field int
 		read  func(skillsScreen) []string
 	}{
-		{"elements", skillFieldKeptForElements, func(s skillsScreen) []string { return s.keptElements }},
-		{"roles", skillFieldKeptForRoles, func(s skillsScreen) []string { return s.keptRoles }},
-		{"characters", skillFieldKeptForCharacters, func(s skillsScreen) []string { return s.keptWho }},
-		{"species", skillFieldKeptForSpecies, func(s skillsScreen) []string { return s.keptKinds }},
-		{"origins", skillFieldKeptForOrigins, func(s skillsScreen) []string { return s.keptWorlds }},
+		{"elements", draw.SkillFieldKeptForElements, func(s skillsScreen) []string { return s.KeptElements }},
+		{"roles", draw.SkillFieldKeptForRoles, func(s skillsScreen) []string { return s.KeptRoles }},
+		{"characters", draw.SkillFieldKeptForCharacters, func(s skillsScreen) []string { return s.KeptWho }},
+		{"species", draw.SkillFieldKeptForSpecies, func(s skillsScreen) []string { return s.KeptKinds }},
+		{"origins", draw.SkillFieldKeptForOrigins, func(s skillsScreen) []string { return s.KeptWorlds }},
 	}
 	for _, list := range lists {
 		t.Run(list.name, func(t *testing.T) {
@@ -86,7 +87,7 @@ func TestEachAllowlistPickLandsInItsOwnField(t *testing.T) {
 						list.name, got, other.name)
 				}
 			}
-			if !m.skills.touched {
+			if !m.skills.Touched {
 				t.Errorf("choosing on the %s allowlist left the form clean, so escaping it "+
 					"would throw the answer away without asking", list.name)
 			}
@@ -110,8 +111,8 @@ func TestTheStatusPickMarksTheFormAndNotOnlyTheField(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	m = m.enter(screenSkills)
 	m = typeText(t, m, "a")
-	m = skillFormTo(t, m, skillFieldInflicts)
-	if m.skills.touched {
+	m = skillFormTo(t, m, draw.SkillFieldInflicts)
+	if m.skills.Touched {
 		t.Fatal("the fresh skill form is already dirty, so a pick that dirties it says nothing")
 	}
 	m = key(t, m, "space")
@@ -122,10 +123,10 @@ func TestTheStatusPickMarksTheFormAndNotOnlyTheField(t *testing.T) {
 	m = pickTo(t, m, want)
 	m = key(t, m, "space")
 	m = key(t, m, "enter")
-	if got := m.skills.inputs[skillFieldInflicts].Value(); !strings.Contains(got, want) {
+	if got := m.skills.Inputs[draw.SkillFieldInflicts].Value(); !strings.Contains(got, want) {
 		t.Errorf("choosing %q left the inflicts field %q", want, got)
 	}
-	if !m.skills.touched {
+	if !m.skills.Touched {
 		t.Error("choosing a status left the form clean, so escaping it would throw the " +
 			"entry away without asking")
 	}
@@ -240,7 +241,7 @@ func TestASkillRestrictionMayStillNameAHeldBackCharacter(t *testing.T) {
 
 	m = m.enter(screenSkills)
 	m = typeText(t, m, "a")
-	m = skillFormTo(t, m, skillFieldKeptForCharacters)
+	m = skillFormTo(t, m, draw.SkillFieldKeptForCharacters)
 	m = key(t, m, "space")
 	if m.picker == nil {
 		t.Fatal("space on the character allowlist did not open the list")
@@ -265,7 +266,7 @@ func TestASkillRestrictionMayStillNameAHeldBackCharacter(t *testing.T) {
 	m = pickTo(t, m, held.ID)
 	m = key(t, m, "space")
 	m = key(t, m, "enter")
-	if got := m.skills.keptWho; !slices.Contains(got, held.ID) {
+	if got := m.skills.KeptWho; !slices.Contains(got, held.ID) {
 		t.Errorf("choosing %q wrote %v into the allowlist", held.ID, got)
 	}
 }
