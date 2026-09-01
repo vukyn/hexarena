@@ -15,6 +15,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // The squad builder is three views of one thing, and they are one screen rather
@@ -221,22 +222,53 @@ func (s squadScreen) updateList(m model, message tea.KeyPressMsg) (tea.Model, te
 		if len(s.saved) > 0 {
 			id := s.saved[clamp(s.cursor, 0, len(s.saved)-1)].ID
 			m.squad = s
-			return m.ask(i18n.SquadDiscardSaved, func(m model) model {
-				squad := m.squad
-				if err := m.lib.DeleteSquad(id); err != nil {
-					squad.err = err
-				} else {
-					squad.err = nil
-					squad.notes = nil
-					squad = squad.refresh(m.lib)
-				}
-				m.squad = squad
-				return m
-			}), nil
+			return m.ask(i18n.SquadDiscardSaved, screenSquads,
+				guardSubject{Kind: guardsASavedSquad, ID: id}), nil
 		}
 	}
 	m.squad = s
 	return m, nil
+}
+
+// Confirmed answers whichever of the builder's two questions was asked, told
+// apart by what the question was about rather than by what mode the screen is
+// in.
+//
+// ⚠️ **This is the one screen with two confirms**, and it is why a pending
+// question carries a subject at all. The mode would answer it — the guard
+// freezes every other key, so the screen cannot have changed depth between the
+// question and the answer — and that is state being read to recover something
+// the question could simply have said. The delete also needs a value the screen
+// does not hold: the id under the catalogue's cursor when `d` was pressed.
+//
+// Both stay on this screen, so both hand back the zero action.
+func (s squadScreen) Confirmed(c draw.Context, about guardSubject) (squadScreen, draw.Action) {
+	switch about.Kind {
+	case guardsASavedSquad:
+		// The refusal is kept on the screen rather than thrown, because a file
+		// that would not go is something the reader has to be told about where
+		// they asked — and a failed delete leaves the catalogue exactly as it
+		// was, so nothing is refreshed.
+		if err := c.Lib.DeleteSquad(about.ID); err != nil {
+			s.err = err
+			return s, draw.Action{}
+		}
+		s.err = nil
+		s.notes = nil
+		return s.refresh(c.Lib), draw.Action{}
+	case guardsTheSquadInHand:
+		s.mode = squadList
+		// Discarding is what the question said, so what is in hand goes back to
+		// the squad last written rather than being left changed behind a mode
+		// that no longer reads it.
+		s.editing = s.baseline.Clone()
+		return s.refresh(c.Lib), draw.Action{}
+	}
+	// guardsNothing, which the builder never asks. Named by falling through
+	// rather than by a default that does something: a question this screen did
+	// not ask has no answer here, and guessing at one would be the delete taking
+	// whatever id happened to be around.
+	return s, draw.Action{}
 }
 
 // begin starts a squad nobody has written yet.
@@ -292,16 +324,8 @@ func (s squadScreen) updateEdit(m model, message tea.KeyPressMsg) (tea.Model, te
 	case "esc":
 		m.squad = s
 		if s.dirty() {
-			return m.ask(i18n.SquadDiscard, func(m model) model {
-				squad := m.squad
-				squad.mode = squadList
-				// Discarding is what the question said, so what is in hand goes
-				// back to the squad last written rather than being left changed
-				// behind a mode that no longer reads it.
-				squad.editing = squad.baseline.Clone()
-				m.squad = squad.refresh(m.lib)
-				return m
-			}), nil
+			return m.ask(i18n.SquadDiscard, screenSquads,
+				guardSubject{Kind: guardsTheSquadInHand}), nil
 		}
 		s.mode = squadList
 		m.squad = s.refresh(m.lib)

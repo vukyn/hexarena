@@ -509,6 +509,20 @@ func (s skillsScreen) updateFilter(m model, message tea.KeyPressMsg) (tea.Model,
 	return m, nil
 }
 
+// Confirmed throws the half-written skill away and closes the form.
+//
+// ⚠️ **Two questions reach it and there is one answer**, which is why it does not
+// read the question: SkillFormDiscard and SkillFormEditDiscard differ only in
+// what they say is being lost — a skill nobody has written yet, or a set of
+// changes to one already in the book — and resetForm is what both of them meant.
+// A wording is not an identity, so a screen branching on which one was asked
+// would be a screen with two answers where the book has one.
+func (s skillsScreen) Confirmed(c draw.Context, _ guardSubject) (skillsScreen, draw.Action) {
+	s = s.resetForm(c.Lib)
+	s.adding = false
+	return s, draw.Action{}
+}
+
 func (s skillsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	// The diagram is answered first, before Escape can be read as leaving the
 	// form and before Enter can be read as moving to the next field: while it is
@@ -548,11 +562,7 @@ func (s skillsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, t
 		if s.editing != "" {
 			question = i18n.SkillFormEditDiscard
 		}
-		return m.ask(question, func(m model) model {
-			m.skills = m.skills.resetForm(m.lib)
-			m.skills.adding = false
-			return m
-		}), nil
+		return m.ask(question, screenSkills, guardSubject{}), nil
 	case "up", "shift+tab":
 		s = s.moveTo(s.field - 1)
 		m.skills = s

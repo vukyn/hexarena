@@ -12,6 +12,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // The fields of the add-a-work form.
@@ -108,6 +109,17 @@ func (o originsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.
 	return m, nil
 }
 
+// Confirmed throws the half-typed work away and closes the form, which is the
+// whole of what the question above offered.
+//
+// It stays on this screen — the listing behind the form is where the reader was
+// — so the action is the zero one, draw.Stay.
+func (o originsScreen) Confirmed(_ draw.Context, _ guardSubject) (originsScreen, draw.Action) {
+	o = o.resetForm()
+	o.adding = false
+	return o, draw.Action{}
+}
+
 func (o originsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	// Before the switch, because saving answers to more than one keystroke and
 	// isSaveKey is the single declaration of which.
@@ -123,11 +135,7 @@ func (o originsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, 
 			m.origins = o
 			return m, nil
 		}
-		return m.ask(i18n.OriginFormDiscard, func(m model) model {
-			m.origins = m.origins.resetForm()
-			m.origins.adding = false
-			return m
-		}), nil
+		return m.ask(i18n.OriginFormDiscard, screenOrigins, guardSubject{}), nil
 	case "up", "shift+tab":
 		o = o.moveTo(o.field - 1)
 		m.origins = o

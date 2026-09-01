@@ -360,11 +360,20 @@ func (f formScreen) leave(m model) model {
 		m.screen = screenMenu
 		return m
 	}
-	return m.ask(i18n.FormDiscard, func(m model) model {
-		m.form = newFormScreen(m.lib)
-		m.screen = screenMenu
-		return m
-	})
+	return m.ask(i18n.FormDiscard, screenNew, guardSubject{})
+}
+
+// Confirmed is what happens when the discard question above is answered yes: the
+// draft goes, and the reader goes back where they came from.
+//
+// ⚠️ **It is the one confirm of the five that navigates**, which is why the pair
+// is (screen, action) rather than a screen alone. It used to write
+// `m.screen = screenMenu` from inside this file — a form naming one of the
+// client's own views — and a draw.Back says the same thing without naming
+// anything: this form is only ever entered from the menu, so one step back is
+// the menu.
+func (f formScreen) Confirmed(c draw.Context, _ guardSubject) (formScreen, draw.Action) {
+	return newFormScreen(c.Lib), draw.Action{Kind: draw.Back}
 }
 
 // moveTo changes the focused field, wrapping at both ends so the form is a ring
