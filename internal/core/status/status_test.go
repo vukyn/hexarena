@@ -464,7 +464,7 @@ func TestCategoryNames(t *testing.T) {
 	// reference's print order among them — move when a category is slotted in
 	// rather than appended, which is the rule both HealCut and Taunt are declared
 	// under. A new category belongs on the END of this line.
-	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt", "heal_cut", "charge"}
+	want := []string{"dot", "stat_debuff", "control", "buff", "shield", "regen", "taunt", "heal_cut", "charge", "absorb"}
 	categories := status.Categories()
 	if len(categories) != len(want) {
 		t.Fatalf("there are %d categories, want %d", len(categories), len(want))

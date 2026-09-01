@@ -91,6 +91,8 @@ shadow_claw     dark      enemy    1  single         1300     1   1300   900    
 spite           dark      enemy    2  single          700     1    700   900    3     0     0      240
 night_shade     dark      enemy    2  column          800     1    800   900    3     0     0      274
 curse           dark      enemy    2  single            0     1      0  1000    4     0     0        0
+light_screen    light     ally     1  single            0     1      0  1000    4     0     0        0
+shadow_punch    dark      enemy    1  single          900     1    900   900    4  1000     0      720
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -151,6 +153,7 @@ dark_pulse      blind                  1      450        900              405
 nasty_plot      fury (self)            2     1000       1000                -
 night_shade     blind                  1      450        900              405
 curse           fester                 2      800       1000              800
+light_screen    aegis                  1     1000       1000             1000
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -235,6 +238,8 @@ shadow_claw     -          -                 -                   -         pokem
 spite           -          -                 -                   -         pokemon
 night_shade     -          -                 -                   -         pokemon
 curse           -          -                 -                   -         pokemon
+light_screen    -          -                 -                   -         pokemon
+shadow_punch    -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -294,6 +299,7 @@ encumber    stat_debuff         1       0            0      0               0   
 fester      heal_cut            2       2            0      0               0       -400   -
 evasive     buff                1       0            0      0               0          0   dodge +15.0%
 charge      charge            999       4            0      0               0          0   -
+aegis       absorb              2       3            0      0               0          0   -
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

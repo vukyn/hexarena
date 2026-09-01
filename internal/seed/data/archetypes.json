@@ -334,7 +334,8 @@
         "sing",
         "rally",
         "wide_guard",
-        "solar_beam"
+        "solar_beam",
+        "light_screen"
       ],
       "passives": [
         {
@@ -561,7 +562,8 @@
         "venoshock",
         "smokescreen",
         "bite",
-        "taunt"
+        "taunt",
+        "shadow_punch"
       ],
       "passives": [
         {

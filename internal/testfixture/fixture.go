@@ -146,6 +146,31 @@ const Skills = `[
     }
   },
   {
+    "id": "ward",
+    "element": "neutral",
+    "range": 0,
+    "pattern": "single",
+    "power": 0,
+    "strikes": 0,
+    "accuracy": 1000,
+    "cooldown": 0,
+    "target": "self",
+    "self_applies": [{ "status": "aegis", "chance": 1000, "stacks": 1 }]
+  },
+  {
+    "id": "unstoppable",
+    "element": "neutral",
+    "range": 1,
+    "pattern": "single",
+    "power": 1000,
+    "strikes": 1,
+    "accuracy": 1000,
+    "pierce": 1000,
+    "unblockable": true,
+    "cooldown": 0,
+    "target": "enemy"
+  },
+  {
     "id": "electrify",
     "element": "neutral",
     "range": 2,

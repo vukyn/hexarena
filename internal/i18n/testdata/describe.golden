@@ -514,6 +514,17 @@ Gây lở loét x2 cho mục tiêu, 80% khả năng.
 Tầm 2 · 100% trúng · hồi 4 lượt.
 [one line] lở loét x2 80% · tầm 2 · hồi 4
 
+light_screen
+Dựng một vách sáng mỏng trước mặt đồng đội, thứ gì tới cũng chậm lại một nhịp.
+Cho mục tiêu lá chắn, 100% khả năng.
+Tầm 1 · 100% trúng · hồi 4 lượt.
+[one line] lá chắn 100% · đồng đội · tầm 1 · hồi 4
+
+shadow_punch
+Nắm tay đi qua chỗ đáng lẽ phải chặn nó lại, rồi mới dừng ở bên trong, 90% công, xuyên 100% giápKhiên hay lá chắn đều không cản được..
+Tầm 1 · 90% trúng · hồi 4 lượt.
+[one line] 90% công · tầm 1 · hồi 4
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -702,6 +713,12 @@ Giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn.
 [status] charge
 Bản thân nó không làm gì bên đang mang. Nó nằm đó để một chiêu gọi tên nó tiêu đi.
 Tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn.
+
+[status] aegis
+Giữ sẵn một lượng sát thương bên mang không phải chịu, đòn nào tới cũng bào mòn chỗ đó.
+Mỗi cộng dồn giữ được 180% công của bên tạo ra nó.
+Nó ăn sát thương chứ không ăn nhát đánh, nên nhiều đòn nhỏ bào mòn hệt như một đòn lớn, và phần dư của cú đánh nó đỡ không nổi sẽ đi xuyên qua.
+Lá chắn, thấm sát thương cho tới khi cạn · 3 lượt · tối đa 2 cộng dồn.
 
 [element] neutral
 Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
@@ -1247,6 +1264,17 @@ Inflicts fester x2, 80% of the time.
 Range 2 · 100% to hit · 4 turns to recharge.
 [one line] fester x2 80% · range 2 · cd 4
 
+light_screen
+Aims at an ally.
+Gives its target aegis, 100% of the time.
+Range 1 · 100% to hit · 4 turns to recharge.
+[one line] aegis 100% · an ally · range 1 · cd 4
+
+shadow_punch
+Hits an enemy for 90% of attack, through 100% of the armourNeither a shield nor a barrier stops it..
+Range 1 · 90% to hit · 4 turns to recharge.
+[one line] 90% attack · range 1 · cd 4
+
 [trait] endurance
 Always carries toughened.
 
@@ -1418,6 +1446,12 @@ Cuts healing received · 2 turns · up to 2 stacks.
 [status] charge
 Does nothing at all to whoever carries it. It is there to be spent by a skill that names it.
 Builds up to be spent · 4 turns · up to 999 stacks.
+
+[status] aegis
+Holds a pool of damage its holder does not take, and every blow that arrives spends it down.
+The pool is 180% of the caster's attack a stack.
+It eats damage rather than strikes, so many small blows drain it exactly as one large one does, and whatever is left of a blow it cannot cover goes through.
+Soaks up damage until it is used up · 3 turns · up to 2 stacks.
 
 [element] neutral
 Inert: it beats nothing and nothing beats it; every trade is 100%.

@@ -546,7 +546,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
@@ -599,7 +599,7 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 ===== vi | 120x24 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 113 chiêu)
+  đang lọc long (5 trong 117 chiêu)
 
   id             tên tiếng Việt       hệ        hệ số sát thương ai học được
 > dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
@@ -609,7 +609,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 
@@ -637,7 +637,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 
@@ -667,7 +667,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 ↑/↓ ô · ←/→ chọn · ctrl+s ghi · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 120x24 | kit picker =====
 
-bộ chiêu  7/113
+bộ chiêu  7/117
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >  1 ! vine_whip      hệ grass, vũ trụ pokemon
@@ -851,7 +851,7 @@ chiêu trúng những ô nào  7/9
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 120x24 | skill blurb =====
 
-vine_whip <roi dây leo>  1/113
+vine_whip <roi dây leo>  1/117
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -889,7 +889,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 
@@ -898,11 +898,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 120x24 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 113 chiêu)
+  đang lọc zzzz (0 trong 117 chiêu)
 
   không có chiêu nào khớp.
 
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 
@@ -1012,7 +1012,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/24
+chiêu này gây hiệu ứng gì  1/25
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -2560,7 +2560,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
@@ -2685,7 +2685,7 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 ===== vi | 160x60 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 113 chiêu)
+  đang lọc long (5 trong 117 chiêu)
 
   id             tên tiếng Việt       hệ        hệ số sát thương ai học được
 > dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
@@ -2695,7 +2695,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 
@@ -2795,7 +2795,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel         đánh dồn dập         neutral   480x3            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 
@@ -2861,7 +2861,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 ↑/↓ ô · ←/→ chọn · ctrl+s ghi · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 160x60 | kit picker =====
 
-bộ chiêu  7/113
+bộ chiêu  7/117
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >  1 ! vine_whip      hệ grass, vũ trụ pokemon
@@ -3333,7 +3333,7 @@ chiêu trúng những ô nào  7/9
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 160x60 | skill blurb =====
 
-vine_whip <roi dây leo>  1/113
+vine_whip <roi dây leo>  1/117
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -3443,7 +3443,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel         đánh dồn dập         neutral   480x3            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 
@@ -3452,11 +3452,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 160x60 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 113 chiêu)
+  đang lọc zzzz (0 trong 117 chiêu)
 
   không có chiêu nào khớp.
 
-113 chiêu · 20 chiêu ai cũng học được
+117 chiêu · 22 chiêu ai cũng học được
 
 
 
@@ -3746,7 +3746,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/24
+chiêu này gây hiệu ứng gì  1/25
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -3773,11 +3773,11 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        fester     lở loét · giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn
        evasive    khinh công · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
        charge     nhiễm điện · tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn
+       aegis      lá chắn · lá chắn, thấm sát thương cho tới khi cạn · 3 lượt · tối đa 2 cộng dồn
 
   poison
 
   cơ hội trúng  300      30%
-
 
 
 
@@ -3840,14 +3840,14 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   fester       lở loét
   charge       tích lại để tiêu
   charge       nhiễm điện
+  absorb       lá chắn, thấm sát thương cho tới khi cạn
+  aegis        lá chắn
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
   Sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
-
-
 
 
 
@@ -4646,7 +4646,7 @@ skills  what each one does, and who may carry it
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
@@ -4699,7 +4699,7 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 ===== en | 120x24 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering long (5 of 113 skills)
+  filtering long (5 of 117 skills)
 
   id             element   damage multiplier who may carry it
 > dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
@@ -4709,7 +4709,7 @@ skills  what each one does, and who may carry it
   dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 
@@ -4737,7 +4737,7 @@ skills  what each one does, and who may carry it
   ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 
@@ -4767,7 +4767,7 @@ new character  every check here is the write's own, at level 60
 ↑/↓ field · ←/→ pick · ctrl+s save · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 120x24 | kit picker =====
 
-kit  7 of 113
+kit  7 of 117
 space chooses · the number is the order · ! is one this character cannot take
 
 >  1 ! vine_whip      grass units, out of pokemon
@@ -4951,7 +4951,7 @@ which cells the skill catches  7 of 9
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 120x24 | skill blurb =====
 
-vine_whip  1 of 113
+vine_whip  1 of 117
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -4989,7 +4989,7 @@ skills  what each one does, and who may carry it
   ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 
@@ -4998,11 +4998,11 @@ skills  what each one does, and who may carry it
 ===== en | 120x24 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 113 skills)
+  filtering zzzz (0 of 117 skills)
 
   nothing matches that.
 
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 
@@ -5112,7 +5112,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
 
-the statuses this skill inflicts  1 of 24
+the statuses this skill inflicts  1 of 25
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -6660,7 +6660,7 @@ skills  what each one does, and who may carry it
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
@@ -6785,7 +6785,7 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 ===== en | 160x60 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering long (5 of 113 skills)
+  filtering long (5 of 117 skills)
 
   id             element   damage multiplier who may carry it
 > dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
@@ -6795,7 +6795,7 @@ skills  what each one does, and who may carry it
   dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 
@@ -6895,7 +6895,7 @@ skills  what each one does, and who may carry it
   pummel         neutral   480x3             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 
@@ -6961,7 +6961,7 @@ new character  every check here is the write's own, at level 60
 ↑/↓ field · ←/→ pick · ctrl+s save · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 160x60 | kit picker =====
 
-kit  7 of 113
+kit  7 of 117
 space chooses · the number is the order · ! is one this character cannot take
 
 >  1 ! vine_whip      grass units, out of pokemon
@@ -7433,7 +7433,7 @@ which cells the skill catches  7 of 9
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 160x60 | skill blurb =====
 
-vine_whip  1 of 113
+vine_whip  1 of 117
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -7543,7 +7543,7 @@ skills  what each one does, and who may carry it
   pummel         neutral   480x3             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 
@@ -7552,11 +7552,11 @@ skills  what each one does, and who may carry it
 ===== en | 160x60 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 113 skills)
+  filtering zzzz (0 of 117 skills)
 
   nothing matches that.
 
-113 skills · 20 anyone may carry
+117 skills · 22 anyone may carry
 
 
 
@@ -7846,7 +7846,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
 
-the statuses this skill inflicts  1 of 24
+the statuses this skill inflicts  1 of 25
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -7873,11 +7873,11 @@ space chooses a status · type the chance in parts per thousand
        fester     cuts healing received · 2 turns · up to 2 stacks
        evasive    raises a stat · 0 turns · up to 1 stacks
        charge     builds up to be spent · 4 turns · up to 999 stacks
+       aegis      soaks up damage until it is used up · 3 turns · up to 2 stacks
 
   poison
 
   chance  300      30%
-
 
 
 
@@ -7940,14 +7940,14 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   fester       
   charge       builds up to be spent
   charge       
+  absorb       soaks up damage until it is used up
+  aegis        
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.
   Damages every turn · 3 turns · up to 3 stacks.
 
   Declared figures: a trait amplifying or resisting changes what lands.
-
-
 
 
 

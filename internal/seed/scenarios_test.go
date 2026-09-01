@@ -314,6 +314,7 @@ func scenarioReport(rules combat.Rules, chart *element.Chart, bounds modifier.Bo
 	writeAccuracyScenario(&b, rules, ceilings)
 	writeDodgeScenario(&b, rules, ceilings)
 	writeBlockScenario(&b, rules)
+	writeBarrierScenario(&b, rules)
 	writeMultiStrikeScenario(&b, rules)
 	writeAreaScenario(&b, rules, book)
 	writeStatusScenario(&b, rules)
@@ -728,6 +729,51 @@ func writeDodgeScenario(b *strings.Builder, rules combat.Rules, ceilings progres
 		fmt.Fprintf(b, "  a 1000 skill against %6d dodge lands %d per mille of the time\n",
 			dodge, rules.Chance(combat.Hit{SkillAccuracy: combat.PermilleBase, DodgeStat: dodge}))
 	}
+	b.WriteString("\n")
+}
+
+// writeBarrierScenario is the block section's twin, and it is here rather than
+// folded into it because the point is the CONTRAST: the same two attackers, the
+// same totals, and two guards that answer them in opposite ways.
+func writeBarrierScenario(b *strings.Builder, rules combat.Rules) {
+	b.WriteString("== absorbing barriers ==\n")
+	b.WriteString("a barrier holds a pool of damage rather than a count of strikes, so it is spent\n")
+	b.WriteString("against what arrives rather than against how it arrives\n")
+	source := rng.New(0xBA88)
+	heavy := combat.Hit{
+		Scaling: attackerAttack, Multiplier: singleTargetPower, Strikes: 1,
+		Affinity: neutralAffinity, Defense: referenceDefense, SkillAccuracy: combat.PermilleBase,
+	}
+	split := combat.Hit{
+		Scaling: attackerAttack, Multiplier: singleTargetPower / 3, Strikes: 3,
+		Affinity: neutralAffinity, Defense: referenceDefense, SkillAccuracy: combat.PermilleBase,
+	}
+	fmt.Fprintf(b, "\none %d blow against three of %d, the same total either way\n",
+		rules.Strike(heavy), rules.Strike(split))
+	b.WriteString("pool     one heavy blow gets through   three light ones do   left in the pool\n")
+	for _, pool := range []int64{0, 100, 300, 600, 900, 1800} {
+		one, _ := rules.Roll(heavy, 0, source)
+		leftHeavy := combat.Absorb(one, pool)
+		three, _ := rules.Roll(split, 0, source)
+		combat.Absorb(three, pool)
+		fmt.Fprintf(b, "%4d%30d%22d%19d\n",
+			pool, combat.DamageDealt(one), combat.DamageDealt(three), leftHeavy)
+	}
+	b.WriteString("the two columns stay exactly two apart at every pool, and then meet at nothing:\n")
+	b.WriteString("those two are the truncation a split volley loses before any guard sees it, so the\n")
+	b.WriteString("barrier changes nothing at all about how the damage arrived. a wall of charges in\n")
+	b.WriteString("the section above turns the same pair into 0 and 100\n")
+
+	b.WriteString("\nand it spills rather than cancelling, which a charge can never do\n")
+	b.WriteString("pool   blow   soaked   through\n")
+	for _, pool := range []int64{0, 1, 200, 400, 800} {
+		attempts, _ := rules.Roll(heavy, 0, source)
+		combat.Absorb(attempts, pool)
+		fmt.Fprintf(b, "%4d%7d%9d%10d\n", pool, rules.Strike(heavy),
+			combat.AbsorbedBy(attempts), combat.DamageDealt(attempts))
+	}
+	b.WriteString("a barrier with a single point left still lets all but one point through, where a\n")
+	b.WriteString("charge with one left erases the blow entirely\n")
 	b.WriteString("\n")
 }
 

@@ -150,7 +150,7 @@ pokemon.cleffa — Cleffa
   element  light
   species  fae
   art      assets/cleffa.svg
-  kit      moonblast charm moonlight@8 solar_beam@12 sing@14 smokescreen@16 wish@20 rally@24 wide_guard@28 taunt@32 withdraw@36 rapid_spin@40
+  kit      moonblast charm moonlight@8 solar_beam@12 sing@14 smokescreen@16 wish@20 rally@24 wide_guard@28 taunt@32 withdraw@36 rapid_spin@40 light_screen@34
   stage "Cleffa" owns levels 1 to 15, showing assets/cleffa.svg
     level 1  hp 1032, atk 103, def 93, spd 29, acc 39, ddg 14
              absorbs 1352 of the 11500 budget, 10148 to spare
@@ -222,7 +222,7 @@ pokemon.gastly — Gastly
   element  dark
   species  shade
   art      assets/gastly.svg
-  kit      shadow_claw shadow_ball@8 night_shade@12 spite@14 curse@16 bite@18 smokescreen@20 poison_powder@22 sludge_bomb@24 venoshock@26 dark_pulse@28 nasty_plot@30 taunt@32 body_slam@36 skull_bash@40
+  kit      shadow_claw shadow_ball@8 night_shade@12 spite@14 curse@16 bite@18 smokescreen@20 poison_powder@22 sludge_bomb@24 venoshock@26 dark_pulse@28 nasty_plot@30 taunt@32 body_slam@36 skull_bash@40 shadow_punch@38
   stage "Gastly" owns levels 1 to 15, showing assets/gastly.svg
     level 1  hp 688, atk 141, def 68, spd 30, acc 41, ddg 18
              absorbs 844 of the 11500 budget, 10656 to spare

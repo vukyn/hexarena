@@ -455,6 +455,7 @@ func TestEveryEventKindIsReachable(t *testing.T) {
 	record(aHandPlayedGateCrossing(t))
 	record(aHandPlayedSummon(t))
 	record(aHandPlayedSpread(t))
+	record(aHandPlayedBarrier(t))
 	for kind := 0; kind < battle.KindCount; kind++ {
 		if !seen[battle.Kind(kind)] {
 			t.Errorf("no battle on the bench ever emitted %s", battle.Kind(kind))
@@ -528,6 +529,77 @@ func aHandPlayedSummon(t *testing.T) []battle.Event {
 	if !summoned || !left {
 		t.Fatalf("the hand-played summon logged summoned=%v left=%v; both were wanted",
 			summoned, left)
+	}
+	return events
+}
+
+// aHandPlayedBarrier puts an absorbing guard up and then hits it, and returns
+// what that logged.
+//
+// By hand for the reason the summon is: Suggest takes the option worth the most
+// damage, and the two turns this needs are worth nothing and everything in the
+// wrong order — a barrier is only worth putting up before the blow, and a rating
+// asked on turn one has no blow to price it against. Nothing on the bench happens
+// to do it, so the kind was unreachable and a renderer had a case nobody could
+// test.
+//
+// The guard goes on the unit that is about to be hit rather than on the one
+// swinging, which is the only arrangement that produces the event at all.
+func aHandPlayedBarrier(t *testing.T) []battle.Event {
+	t.Helper()
+	fight, err := battle.New(benchBooks(t), 11, []battle.Roster{
+		// The guarded unit is the SLOW one, and that is the scenario rather than a
+		// detail. A barrier lasts three of its HOLDER's turns, so a fast holder
+		// spends the whole of it waiting: warding at speed 200 against a speed-10
+		// attacker put the guard up and let it run out twenty turns before the
+		// first blow arrived, and the log came back empty.
+		{ID: "guarded", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "neutral"), Stats: benchStats(4800, 300, 300, 100),
+			Skills: []string{"ward", "strike"}},
+		{ID: "hitter", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "neutral"), Stats: benchStats(4800, 300, 300, 120),
+			Skills: []string{"strike"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	var events []battle.Event
+	warded, soaked := false, false
+	for turn := 0; turn < 200 && !soaked; turn++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt == nil {
+			break
+		}
+		if !prompt.Skipped {
+			switch {
+			case prompt.Unit == "guarded" && !warded:
+				if err := fight.Act("ward", unitCell(t, fight, "guarded")); err != nil {
+					t.Fatalf("ward: %v", err)
+				}
+				warded = true
+			case prompt.Unit == "guarded":
+				if err := fight.Pass("waiting to be hit"); err != nil {
+					t.Fatalf("pass: %v", err)
+				}
+			default:
+				if err := fight.Act("strike", unitCell(t, fight, "guarded")); err != nil {
+					t.Fatalf("strike: %v", err)
+				}
+			}
+		}
+		for _, event := range fight.Drain() {
+			events = append(events, event)
+			if event.Kind == battle.Absorbed {
+				soaked = true
+			}
+		}
+	}
+	if !soaked {
+		t.Fatal("the barrier never ate anything, so this scenario measures nothing")
 	}
 	return events
 }

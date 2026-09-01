@@ -1066,10 +1066,30 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	// different things. See the rider block below.
 	blocked := false
 	if power > 0 {
+		// An unblockable skill is spelled here as "there is nothing to spend",
+		// which is why combat.Roll needs no flag: a guard it cannot be stopped by
+		// is a guard that is not offered to it. The pool below is skipped the same
+		// way, and both are skipped rather than emptied — what the target is
+		// carrying is untouched, so the barrier is still there for the next
+		// attacker.
 		charges := target.Statuses.Stacks(blockStatus)
+		if known.Unblockable {
+			charges = 0
+		}
 		attempts, left := b.books.Rules.Roll(hit, charges, b.source)
 		if spent := charges - left; spent > 0 {
 			target.Statuses.Remove(blockStatus, spent)
+		}
+		// What the guard had before any of it was spent, kept so each strike's
+		// line can report the pool as it stood at that moment. Reading the set
+		// again inside the loop would report the figure after the *whole* volley,
+		// so every strike of a multi-strike skill would claim the same remainder
+		// — which is the log telling a reader the barrier fell all at once.
+		guard := int64(0)
+		if !known.Unblockable {
+			if guard = target.Statuses.PoolIn(absorbCategory); guard > 0 {
+				target.Statuses.SpendPool(absorbCategory, guard-combat.Absorb(attempts, guard))
+			}
 		}
 		chance := b.books.Rules.Chance(hit)
 		// Damage is taken off as each strike resolves rather than totalled and
@@ -1091,6 +1111,20 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 				event.Remaining = int64(target.Statuses.Stacks(blockStatus))
 				blocked = true
 			default:
+				// The guard's line comes first and on its own, because the two
+				// facts are separate: this much went into the barrier, and then
+				// this much reached health. A reader given only the second would
+				// see a strike land for less than the skill can do and go looking
+				// for a reduction that is not there.
+				if attempt.Absorbed > 0 {
+					guard -= attempt.Absorbed
+					b.emit(Event{
+						Kind: Absorbed, At: turn.At, Turn: turn.Number,
+						Actor: actor.ID, Target: target.ID, Skill: known.ID,
+						Strike: strike + 1, Amount: attempt.Absorbed,
+						Remaining: guard,
+					})
+				}
 				event.Kind = Damaged
 				event.Amount = attempt.Damage
 				event.Critical = attempt.Critical
@@ -1440,6 +1474,18 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 		// "ticks harder" would be a description that lies — which is the one
 		// thing every derived description in this engine exists to prevent.
 		tick = b.books.Rules.Restore(from.stat(b, actor), kind.TickPower)
+	case status.Absorb:
+		// The same expression a regeneration's is built from, and for the same
+		// three reasons: a guard put up by a heavy hitter is a heavier guard, no
+		// defence curve turns it down, and no elemental multiplier reads a chart
+		// about a blow nobody threw. What differs is only where Apply files the
+		// figure -- see status.Set.Apply -- because a pool is spent rather than
+		// paid out per turn.
+		//
+		// Not amplified, exactly as a regeneration is not, and the same sentence
+		// applies: a trait describing itself in the words of harm cannot be
+		// allowed to silently make a shield bigger.
+		tick = b.books.Rules.Restore(from.stat(b, actor), kind.PoolPower)
 	}
 	applied := 0
 	wasted := 0

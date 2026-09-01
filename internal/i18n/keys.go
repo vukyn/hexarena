@@ -237,6 +237,7 @@ const (
 	CategoryTaunt
 	CategoryHealCut
 	CategoryCharge
+	CategoryAbsorb
 
 	// The same nine categories as **noun phrases**, for a sentence that names
 	// one rather than a column that explains one. The family above answers "what
@@ -266,6 +267,7 @@ const (
 	CategoryNounTaunt
 	CategoryNounHealCut
 	CategoryNounCharge
+	CategoryNounAbsorb
 
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement
@@ -587,6 +589,10 @@ const (
 	BlurbStatusShields
 	BlurbStatusStores
 	BlurbStatusSeeps
+	BlurbStatusAbsorbs
+	BlurbStatusAbsorbsPool
+	BlurbStatusSpills
+	BlurbSkillUnstoppable
 	BlurbStatusCutsHealing
 	BlurbStatusCutsHealingOnce
 	BlurbStatusRaises

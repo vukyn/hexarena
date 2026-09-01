@@ -121,10 +121,42 @@ const (
 	//
 	// Declared last, which is now the rule rather than one entry's note.
 	Charge
+	// Absorb is a pool of damage its holder does not take, and it is the second
+	// shape a guard comes in rather than a smoother Shield.
+	//
+	// ⚠️ **The difference from Shield is the whole reason it exists.** A block
+	// charge cancels a *strike*, whole, however big it was — which is what makes
+	// a wall the answer to one heavy blow and multi-strike the answer to a wall,
+	// and that trade is `warden`'s identity. A pool eats *damage*, so it is
+	// indifferent to how the damage arrives: many small blows drain it exactly as
+	// one big one does, and a blow larger than what is left spills the remainder
+	// through. The two are opposite shapes, not two sizes of one, and a game with
+	// only one of them has only one kind of wall.
+	//
+	// Two consequences follow and both are load-bearing:
+	//
+	//   - **A strike a pool ate still connected.** The blow arrived and was paid
+	//     for; only its damage went somewhere else. So the riders it carries land,
+	//     its drains drain what actually reached health, and Count(attempts,
+	//     Struck) counts it — none of which is true of a blocked strike, which
+	//     never happened at all. That is the complement of OutlastsAShield rather
+	//     than a case of it.
+	//   - **It is the one category whose per-stack amount MOVES.** Every other
+	//     frozen figure in this package is snapshotted at application and read for
+	//     the rest of the stack's life; a pool is spent. It therefore lives in its
+	//     own field rather than in TickAmount — see Stack.Pool — because the two
+	//     are read by different machinery and folding them together would have
+	//     Tick charging a holder for its own shield.
+	//
+	// It is NOT harmful: it is something its holder wants, so a cleanse aimed at
+	// debuffs may not take it and a dispel aimed at an enemy may.
+	//
+	// Declared last, which is the rule.
+	Absorb
 )
 
 // CategoryCount is the number of categories.
-const CategoryCount = int(Charge) + 1
+const CategoryCount = int(Absorb) + 1
 
 var categoryNames = [CategoryCount]string{
 	Dot:        "dot",
@@ -136,6 +168,7 @@ var categoryNames = [CategoryCount]string{
 	Taunt:      "taunt",
 	HealCut:    "heal_cut",
 	Charge:     "charge",
+	Absorb:     "absorb",
 }
 
 func (c Category) String() string {
@@ -271,6 +304,17 @@ type Kind struct {
 	// exactly as it does TickPower on the two ticking categories — a category
 	// whose one job is a number cannot ship without it.
 	HealShare int
+	// PoolPower is how big an Absorb's pool is, in parts per thousand of the
+	// caster's scaling stat — the same shape TickPower has for a regeneration,
+	// and it goes through the same rules expression, so a barrier put up by a
+	// heavy hitter really is a heavier barrier.
+	//
+	// Its own field rather than TickPower, for the reason Stack.Pool is its own
+	// field: the validation two hundred lines below refuses a tick_power on
+	// anything that does not tick, and an absorb does not tick. Sharing the name
+	// would mean relaxing that check for one category and losing the guarantee
+	// for every other.
+	PoolPower int
 	// Modifiers are the stat terms one stack contributes while it lasts.
 	//
 	// They belong to the status rather than to the skill that applies it, so
@@ -286,6 +330,20 @@ type Stack struct {
 	// TickAmount is what this stack ticks for, snapshotted when it
 	// was applied. It is zero for a status that does not deal damage.
 	TickAmount int64
+	// Pool is what an Absorb stack still has left to eat, and it is the only
+	// figure in this package that goes *down* over a stack's life.
+	//
+	// ⚠️ It is not TickAmount under another name, and the two may not be folded
+	// together. TickAmount is frozen at application and multiplied by the turns
+	// a stack has left — that is what Tick charges for and what Pending totals —
+	// while a pool is spent against arriving damage and is worth exactly itself
+	// however many turns are left. Sharing one field would have a barrier tick
+	// its holder for its own strength, and Pending price a guard as though every
+	// point of it were owed once per turn.
+	//
+	// It is zero for every category but Absorb, which is why nothing else in
+	// this file has to mention it.
+	Pool int64
 	// Remaining is how many of the holder's turns are left.
 	Remaining int
 }
@@ -330,11 +388,19 @@ func (s *Set) Apply(kind Kind, tickAmount int64) (added, wasted bool) {
 	if tickAmount < 0 {
 		tickAmount = 0
 	}
+	// One argument, two destinations, decided by the category rather than by the
+	// caller. Whoever applies a status computes one amount — the caster's stat
+	// through the rules — and what that amount *means* is a property of the kind,
+	// so asking the call site to know would be the same fact written twice.
+	fresh := Stack{TickAmount: tickAmount, Remaining: kind.Duration}
+	if kind.Category == Absorb {
+		fresh = Stack{Pool: tickAmount, Remaining: kind.Duration}
+	}
 	index := s.find(kind.ID)
 	if index < 0 {
 		s.entries = append(s.entries, entry{
 			kind:   kind,
-			stacks: []Stack{{TickAmount: tickAmount, Remaining: kind.Duration}},
+			stacks: []Stack{fresh},
 		})
 		return true, false
 	}
@@ -348,7 +414,7 @@ func (s *Set) Apply(kind Kind, tickAmount int64) (added, wasted bool) {
 	if len(target.stacks) >= kind.MaxStacks {
 		return false, true
 	}
-	target.stacks = append(target.stacks, Stack{TickAmount: tickAmount, Remaining: kind.Duration})
+	target.stacks = append(target.stacks, fresh)
 	return true, false
 }
 
@@ -539,6 +605,74 @@ func (s *Set) Active() []string {
 	return out
 }
 
+// PoolIn returns what an absorbing guard still has left across every stack of
+// every kind in a category.
+//
+// A total rather than a per-kind figure, because damage does not choose which
+// barrier it runs into: two kinds of absorb on one unit are one pool as far as an
+// arriving blow is concerned, and SpendPool drains them in the order they were
+// applied.
+func (s *Set) PoolIn(category Category) int64 {
+	total := int64(0)
+	for i := range s.entries {
+		if s.entries[i].kind.Category != category {
+			continue
+		}
+		for _, stack := range s.entries[i].stacks {
+			total += stack.Pool
+		}
+	}
+	return total
+}
+
+// SpendPool takes damage out of an absorbing guard and returns what it actually
+// ate, which is the amount or the whole pool, whichever is smaller.
+//
+// ⚠️ **Oldest stack first, and the order is the replay contract rather than a
+// preference.** Entries sit in a slice in order of first application and stacks
+// within an entry in the order they were added, so draining walks them the same
+// way on every machine — the same reason a tick resolves in application order. A
+// map here, or a "drain the smallest first" rule, would be a battle that stops
+// reproducing from its seed.
+//
+// A stack drained to nothing is dropped immediately rather than left at zero: a
+// spent barrier is not a barrier, and leaving it would have Stacks() report a
+// guard that stops nothing.
+func (s *Set) SpendPool(category Category, amount int64) (spent int64) {
+	if amount <= 0 {
+		return 0
+	}
+	kept := s.entries[:0]
+	for i := range s.entries {
+		current := s.entries[i]
+		if current.kind.Category != category || amount == spent {
+			kept = append(kept, current)
+			continue
+		}
+		alive := current.stacks[:0]
+		for _, stack := range current.stacks {
+			if left := amount - spent; left > 0 && stack.Pool > 0 {
+				eaten := stack.Pool
+				if eaten > left {
+					eaten = left
+				}
+				stack.Pool -= eaten
+				spent += eaten
+			}
+			if stack.Pool > 0 {
+				alive = append(alive, stack)
+			}
+		}
+		current.stacks = alive
+		if len(current.stacks) == 0 {
+			continue
+		}
+		kept = append(kept, current)
+	}
+	s.entries = kept
+	return spent
+}
+
 // CountIn returns how many stacks the unit carries across a category.
 func (s *Set) CountIn(category Category) int {
 	total := 0
@@ -720,6 +854,12 @@ type Snapshot struct {
 	Category   Category
 	Stacks     int
 	TickAmount int64
+	// Pool is what an Absorb still has left across its stacks, and nought for
+	// every other category. A renderer drawing a guard needs the figure rather
+	// than the stack count: two stacks of a barrier that has eaten most of itself
+	// stop far less than two fresh ones, and a screen showing only "x2" would be
+	// telling a player something untrue at exactly the moment it matters.
+	Pool int64
 	// Remaining is the longest turn count left across the stacks, and it is
 	// meaningless when Permanent is set: a permanent status carries no duration,
 	// so a renderer reading Remaining alone would draw "0 turns left" beside
@@ -733,16 +873,17 @@ func (s *Set) Snapshot() []Snapshot {
 	out := make([]Snapshot, 0, len(s.entries))
 	for i := range s.entries {
 		current := s.entries[i]
-		total, longest := int64(0), 0
+		total, pool, longest := int64(0), int64(0), 0
 		for _, stack := range current.stacks {
 			total += stack.TickAmount
+			pool += stack.Pool
 			if stack.Remaining > longest {
 				longest = stack.Remaining
 			}
 		}
 		out = append(out, Snapshot{
 			ID: current.kind.ID, Category: current.kind.Category,
-			Stacks: len(current.stacks), TickAmount: total, Remaining: longest,
+			Stacks: len(current.stacks), TickAmount: total, Pool: pool, Remaining: longest,
 			Permanent: current.kind.Permanent,
 		})
 	}
@@ -849,6 +990,7 @@ type bookFile struct {
 		Permanent bool                `json:"permanent,omitempty"`
 		TickPower int                 `json:"tick_power"`
 		HealShare int                 `json:"heal_share"`
+		PoolPower int                 `json:"pool_power"`
 		Modifiers []modifier.Modifier `json:"modifiers"`
 	} `json:"kinds"`
 }
@@ -953,6 +1095,25 @@ func ParseBook(raw []byte) (*Book, error) {
 		// author's discretion, because the ceiling is nine hundred and ninety
 		// nine: a single term of any size at that stack count is a number nothing
 		// in the stat budget answers.
+		// A pool needs a size for the same reason a tick needs a power: without
+		// one the status applies, shows in the log and stops nothing. And nothing
+		// but an absorb may carry one, which is the half that keeps the field from
+		// quietly becoming a second tick_power.
+		switch {
+		case category == Absorb && declared.PoolPower < 1:
+			return nil, fmt.Errorf("status %q absorbs but has no pool_power", declared.ID)
+		case category != Absorb && declared.PoolPower != 0:
+			return nil, fmt.Errorf("status %q is %s but declares pool_power %d, which only an %s uses",
+				declared.ID, category, declared.PoolPower, Absorb)
+		}
+		// A permanent absorb is a pool that never runs out of turns, so once it is
+		// spent it sits at nought for the rest of the battle and once refreshed it
+		// is a wall with no clock. Refused with the ticking pair above rather than
+		// beside them, because the reason is the clock rather than the arithmetic.
+		if declared.Permanent && category == Absorb {
+			return nil, fmt.Errorf("status %q is a permanent %s, which is a guard with no clock",
+				declared.ID, category)
+		}
 		if category == Charge && len(declared.Modifiers) > 0 {
 			return nil, fmt.Errorf("status %q is a %s carrying %d modifier(s): a counter that is spent may not also change a stat, because its cap of %d bounds an effect it was never meant to have",
 				declared.ID, category, len(declared.Modifiers), stackCap)
@@ -993,6 +1154,7 @@ func ParseBook(raw []byte) (*Book, error) {
 			MaxStacks: declared.MaxStacks, Duration: declared.Duration,
 			Permanent: declared.Permanent,
 			TickPower: declared.TickPower, HealShare: declared.HealShare,
+			PoolPower: declared.PoolPower,
 			Modifiers: declared.Modifiers,
 		}
 		book.byID[kind.ID] = kind

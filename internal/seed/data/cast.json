@@ -1212,6 +1212,10 @@
         {
           "id": "rapid_spin",
           "at_level": 40
+        },
+        {
+          "id": "light_screen",
+          "at_level": 34
         }
       ],
       "passives": [
@@ -1903,6 +1907,10 @@
         {
           "id": "skull_bash",
           "at_level": 40
+        },
+        {
+          "id": "shadow_punch",
+          "at_level": 38
         }
       ],
       "passives": [

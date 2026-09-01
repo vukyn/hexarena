@@ -2612,6 +2612,108 @@ and never give them back. That is a whole design decision about whether a trait 
 be removed, not a side effect to ship inside a character, so `spite` names `shield`
 and `regen` and nothing else. Do not widen it without deciding that question first.
 
+## Two shapes of guard: `absorb` beside `shield`, and the blow that ignores both
+
+Shipped. `status.Absorb` is the tenth category and the second shape a guard comes
+in. It is **not** a smoother `Shield`, and the difference is the whole reason it
+exists:
+
+| | `shield` (`block`) | `absorb` (`aegis`) |
+|---|---|---|
+| what a stack is | a **charge**, counted | a **pool**, in health |
+| what it stops | one **strike**, whole | that much **damage** |
+| against one heavy blow | cancels it entirely | eats what it can, the rest spills |
+| against a split volley | one charge a strike | the same total, same drain |
+
+So a wall of charges is the answer to a single heavy blow and multi-strike is the
+answer to the wall — which is `warden`'s identity and `bruiser`'s counter to it —
+while a pool is **indifferent to how the damage arrives**. Measured on equal
+totals: against two charges a `heavy` dealt **0** and a three-strike `triple`
+dealt **100**; against a barrier both dealt **100**.
+`TestABarrierEatsDamageWhereAShieldEatsStrikes` holds exactly that, as the two
+guards against each other rather than either against nothing.
+
+Three things follow and each is a test:
+
+- **A strike a pool ate still CONNECTED.** It arrived and was paid for; only its
+  damage went elsewhere. So the riders it carries land, its drains drain what
+  actually reached health, and `Count(attempts, Struck)` counts it — none of which
+  is true of a blocked strike, which never happened. That is the complement of
+  `OutlastsAShield`, not a case of it.
+- **A pool spills.** A blow bigger than what is left is not cancelled; the
+  remainder goes through, which a charge can never do.
+- **An unblockable blow leaves the guard standing.** It goes *past* a barrier
+  rather than through it, so the next attacker meets a full one. Spending what it
+  ignores would make one skill quietly the strongest strip in the game.
+
+### Where each piece lives, and why the split is not arbitrary
+
+- ⚠️ **`Stack.Pool` is its own field, not `TickAmount`.** It is the only per-stack
+  figure in the package that goes **down**. `TickAmount` is frozen and multiplied
+  by the turns left — that is what `Tick` charges for and `Pending` totals — so
+  sharing one field would have a barrier tick its holder for its own strength and
+  `Pending` price a guard as though every point were owed once a turn. The same
+  argument gives `Kind.PoolPower` its own field: the parser refuses a `tick_power`
+  on anything that does not tick, and relaxing that for one category would lose
+  the guarantee for every other.
+- ⚠️ **`combat.Absorb` is a pass over the outcomes, not a branch inside `Roll`.**
+  A charge is spent *during* the roll because it decides whether a strike happens;
+  a pool is spent *after*, because it only reduces what landed and the critical
+  has to be rolled before there is a figure to eat. Two mechanics, two moments.
+  The pass touches no randomness and walks the attempts in the order `Roll`
+  produced them, so `combat` stays a pure function of its arguments and a battle
+  with a barrier on the board still replays from its seed. It also meant `Roll`'s
+  signature never moved — one production caller and eighteen test callers left
+  alone.
+- **`Set.SpendPool` drains oldest stack first**, and the order is the replay
+  contract rather than a preference — entries sit in a slice in application order
+  for the same reason a tick resolves in one.
+- **`skill.Unblockable` is a switch where `Pierce` is a ratio**, and that is not
+  an inconsistency: defence is continuous, so a ratio walks an armoured unit's
+  edge instead of jumping to the end of it, while a guard is **discrete**. "Half a
+  block charge" is not a quantity this engine has. It is spelled in `battle` as
+  *there is nothing to spend* — the charges are set to nought and the pool pass is
+  skipped — so `combat.Roll` needs no flag at all.
+
+### ⚠️ The pricing bug this shipped with, and the test that caught it
+
+`guarded` first computed the pool and **multiplied it by the stack count**. That
+rated putting a barrier on a unit that already had one, every turn, forever — the
+same defect the "two units buffing each other" term exists to stop. The fix is the
+one `shielded` and `standing` already use: build the hypothetical through
+`Set.With`, so the cap, the refresh and the wasted stack are the ones `Apply`
+resolves, and read the *difference*.
+
+It was caught because the test asked the rating twice — once with nothing up and
+once **at the cap** — and only the second row failed. A pricing test with one row
+is a pricing test that cannot see a missing clamp.
+
+And the reason the test exists at all is the previous PR: `dispelled` sat in the
+rating for a long time pricing a shield at nothing, so an opponent handed a dispel
+declined it. **A guard nobody rates is data.**
+
+### What shipped on top of it
+
+`aegis` (lá chắn), pool 1800 per mille of the caster's attack a stack, 2 stacks, 3
+turns. `light_screen` puts it on an **ally** — Cleffa's, because a barrier a
+mender hands somebody else is the half `withdraw` cannot do. `shadow_punch` is
+Gengar's and is the counter to every form of mitigation at once: `pierce: 1000`,
+which `Pierced` resolves to exactly nought defence, plus `unblockable`.
+
+⚠️ **`pierce: 1000` is the switch `Pierced`'s own comment argues against**, and
+shipping one is a deliberate exception rather than an oversight. The argument
+stands — a switch makes an armoured unit worthless against one skill and
+unaffected by the next — so the skill that takes it is paid for elsewhere: 900
+power on a four-turn cooldown, which is a third of what `cross_chop` does per
+turn. It is the answer to armour that costs you, not a default.
+
+⚠️ **Neither new skill is in a build**, deliberately. A build is a measured claim
+about four skills and a trait; these two are new tools in a learnset, and whether
+either earns a slot is a separate question with its own measurement. Measured
+firing in real battles first, though — 60 squad battles put 354 barriers up and
+soaked 128,329 damage across 446 strikes — because a skill nothing casts is the
+failure mode this section already has one example of.
+
 ## Pricing a summon, so the opponent casts one
 
 Shipped. `battle.Suggest` rates a summoning skill in the one unit it counts in —

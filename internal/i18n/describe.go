@@ -108,6 +108,14 @@ func (l Lang) describeOpening(declared skill.Skill) string {
 	if declared.Pierce > 0 {
 		sentence += l.Say(BlurbPierces, share(declared.Pierce))
 	}
+	// Beside the pierce clause, because the two say the same kind of thing —
+	// what this blow does not have to get through — and a reader weighing one
+	// skill against another is weighing exactly those two lines. Unlike the
+	// pierce it carries no figure, because there is none: a guard is discrete
+	// and this is the whole of it.
+	if declared.Unblockable {
+		sentence += l.Text(BlurbSkillUnstoppable)
+	}
 	// The chance and nothing else. What a critical strike is worth is a
 	// game-wide constant living on combat.Rules, and naming it here would need
 	// this package to import that one — which would put the rules book behind
@@ -1223,6 +1231,15 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 			out = append(out, l.Say(BlurbStatusStacked,
 				healCut(kind.HealShare*kind.MaxStacks)))
 		}
+	case status.Absorb:
+		// Three sentences where a shield needs two, and the third is the one that
+		// stops a reader importing what they already know about a shield. A pool
+		// and a charge count are the two opposite answers to the same question,
+		// and the difference — damage against strikes — is exactly what a player
+		// has to know before choosing between them.
+		out = append(out, l.Text(BlurbStatusAbsorbs))
+		out = append(out, l.Say(BlurbStatusAbsorbsPool, share(kind.PoolPower)))
+		out = append(out, l.Text(BlurbStatusSpills))
 	case status.Charge:
 		// The sentence a charge needs is the one no other category needs: what it
 		// does to its holder is nothing, and a reader who is not told that plainly

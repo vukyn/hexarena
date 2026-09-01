@@ -240,6 +240,14 @@ industrial  ice > metal > wind > electric > (ice)
 cross       water > metal > grass > wind > fire > ice > ground > electric > (water)
 ```
 
+A guard comes in two shapes and they are not two sizes of one. A **block charge**
+cancels a strike whole, however big it was — so a wall of charges is the answer to
+one heavy blow, and arriving in three small pieces is the answer to the wall. A
+**barrier** holds a pool of damage instead, so it does not care how the damage
+arrives: three light blows drain it exactly as one heavy one does, and whatever a
+blow it cannot cover has left over goes through. Choosing between them is choosing
+which kind of attacker you expect.
+
 Light and dark are a mutual pair, strong against each other and neutral against
 everything else. Neutral is inert in both directions.
 
