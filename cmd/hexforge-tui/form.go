@@ -317,10 +317,10 @@ func (f formScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 // refuses it, which is the whole point of the answer coming from internal/forge.
 func (m model) openKit() model {
 	return m.pick(&pickState{
-		title: i18n.PickerKitTitle, kind: pickSkills,
-		options: kitOptions(m.lib, m.form.draft().Carrier()),
-		chosen:  m.form.kit,
-		into:    pickIntoKit,
+		Title: i18n.PickerKitTitle, Kind: pickSkills,
+		Options: draw.KitOptions(m.lib, m.form.draft().Carrier()),
+		Chosen:  m.form.kit,
+		Into:    pickIntoKit,
 	})
 }
 
@@ -332,10 +332,10 @@ func (m model) openKit() model {
 // already carries this answer.
 func (m model) openSpecies() model {
 	return m.pick(&pickState{
-		title: i18n.PickerSpeciesTitle, kind: pickSpecies,
-		options: idOptions(m.lib.Species().IDs()),
-		chosen:  m.form.species,
-		into:    pickIntoSpecies,
+		Title: i18n.PickerSpeciesTitle, Kind: pickSpecies,
+		Options: draw.IDOptions(m.lib.Species().IDs()),
+		Chosen:  m.form.species,
+		Into:    pickIntoSpecies,
 	})
 }
 

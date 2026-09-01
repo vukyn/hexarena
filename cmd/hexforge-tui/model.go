@@ -200,10 +200,18 @@ type model struct {
 	blurb   blurbScreen
 
 	// picker holds the multi-select while it is open, over whichever screen
-	// raised it. It lives here rather than on a screen because two screens raise
-	// one — the kit on the new-character form, the three allowlists on the new
-	// skill form — and a picker owned by a screen would be two pickers to keep
-	// in step.
+	// raised it. It lives here rather than on a screen because three screens
+	// raise ten between them — the kit and the species on the new-character
+	// form, five allowlists and the inflicts field on the skill form, both
+	// halves of a loadout on the squad builder — and a picker owned by a screen
+	// would be ten pickers to keep in step.
+	//
+	// ⚠️ **A pointer, and the pointer is the presence flag.** model.key and
+	// model.view both branch on it not being nil, and esc and enter close the
+	// list by writing nil, which is what draw.PickState.Update hands back. A
+	// value here would need absence carried beside it — the rule logFollow and
+	// atb.Queue.Pending are both written under — and (*draw.PickState).Toggle
+	// and NextFilter mutate in place, so a value would change that too.
 	picker *pickState
 
 	// guard holds the unsaved-changes question while it is being asked. A form
@@ -392,7 +400,7 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.answerGuard(message)
 	}
 	if m.picker != nil {
-		return m.picker.update(m, message)
+		return m.answerPicker(message)
 	}
 	if m.tooSmall() {
 		if message.String() == "q" {
@@ -715,6 +723,27 @@ func landOnSquads(m model, into pickDest, answer pickAnswer) (model, draw.Action
 	return m, action
 }
 
+// answerPicker hands one keystroke to the picker in front and does whatever it
+// asks for.
+//
+// Three answers, and the pair the picker hands back says which: the list is
+// still up, or it came down with nothing, or it came down with an answer for a
+// destination. The picker is written back **before** the answer is landed, for
+// the reason the guard's is: a landing that ran while the list it is closing was
+// still in front would be a screen drawn over by a picker that is finished with.
+//
+// The command is the picker's own — the chance field's cursor — and is the one
+// thing a screen in internal/screen hands back that is not data. See
+// draw.PickResult.
+func (m model) answerPicker(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	picker, result := m.picker.Update(m.ctx(), message)
+	m.picker = picker
+	if !result.Answered {
+		return m, result.Cmd
+	}
+	return m.answerPick(result.Into, result.Answer)
+}
+
 // answerPick hands a closed picker's answer to the screen the destination names.
 //
 // Both halves are applied the way every converted keystroke already is: the
@@ -722,8 +751,18 @@ func landOnSquads(m model, into pickDest, answer pickAnswer) (model, draw.Action
 // the ten leaves today — a pick fills in a field and the reader is put back in
 // front of the form they were filling — so all ten hand back the zero action,
 // and the pair is (screen, action) anyway because that is the shape Update and
-// Confirmed have and 5d must not have to convert it twice.
-func (m model) answerPick(into pickDest, answer pickAnswer) (tea.Model, tea.Cmd) {
+// Confirmed have.
+//
+// ⚠️ **The destination arrives as an `any` and is asserted here, which is the
+// one place entitled to.** draw.PickState carries it and never looks at it — a
+// destination names a field of one of *this* client's screens, so it is this
+// client's word — and a value that is not a pickDest is a picker raised by
+// somebody else, which lands nowhere for the same reason pickNowhere does.
+func (m model) answerPick(carried any, answer pickAnswer) (tea.Model, tea.Cmd) {
+	into, named := carried.(pickDest)
+	if !named {
+		return m, nil
+	}
 	landing, known := pickedInto[into]
 	if !known {
 		return m, nil
@@ -876,7 +915,7 @@ func (m model) screenContent() string {
 	// The picker is drawn over whichever screen raised it, for the same reason
 	// it is a sub-screen at all: a list of nineteen does not fit beside a form.
 	if m.picker != nil {
-		body, footer = m.picker.view(m)
+		body, footer = m.picker.View(m.ctx())
 	}
 	if m.guard != nil {
 		footer = m.text(i18n.ConfirmFooter, m.text(m.guard.question))
@@ -1106,10 +1145,6 @@ func skillLines(c draw.Context, declared skill.Skill) []string {
 func traitSentences(c draw.Context, one passive.Passive) []string {
 	return draw.TraitSentences(c, one)
 }
-
-// traitRoom is how many lines of sentences fit: the window, less the two the
-// heading takes and the one the position line does.
-func traitRoom(c draw.Context) int { return draw.TraitRoom(c) }
 
 // traitIndent is how far the sentences sit under the trait they belong to,
 // declared in internal/screen because both screens that spend it went there.

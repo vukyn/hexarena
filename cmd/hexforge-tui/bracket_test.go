@@ -124,7 +124,7 @@ func scrollSites() []scrollSite {
 			member.squad = member.squad.editUnit(0)
 			return reading(member.openSquadSkills())
 		},
-		state: func(m model) string { return fmt.Sprintf("scroll %d", m.picker.scroll) },
+		state: func(m model) string { return fmt.Sprintf("scroll %d", m.picker.Scroll) },
 	}}
 }
 

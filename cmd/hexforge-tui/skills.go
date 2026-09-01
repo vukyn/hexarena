@@ -627,31 +627,31 @@ func (m model) openAllowlist(field int) model {
 	switch field {
 	case skillFieldKeptForElements:
 		return m.pick(&pickState{
-			title: i18n.PickerElementsTitle, kind: pickElements,
-			hint:    i18n.PickerAllowlistHint,
-			options: idOptions(forge.ElementNames()), chosen: m.skills.keptElements,
-			into: pickIntoKeptElements,
+			Title: i18n.PickerElementsTitle, Kind: pickElements,
+			Hint:    i18n.PickerAllowlistHint,
+			Options: draw.IDOptions(forge.ElementNames()), Chosen: m.skills.keptElements,
+			Into: pickIntoKeptElements,
 		})
 	case skillFieldKeptForRoles:
 		return m.pick(&pickState{
-			title: i18n.PickerRolesTitle, kind: pickArchetypes,
-			hint:    i18n.PickerAllowlistHint,
-			options: idOptions(m.lib.Archetypes().IDs()), chosen: m.skills.keptRoles,
-			into: pickIntoKeptRoles,
+			Title: i18n.PickerRolesTitle, Kind: pickArchetypes,
+			Hint:    i18n.PickerAllowlistHint,
+			Options: draw.IDOptions(m.lib.Archetypes().IDs()), Chosen: m.skills.keptRoles,
+			Into: pickIntoKeptRoles,
 		})
 	case skillFieldKeptForOrigins:
 		return m.pick(&pickState{
-			title: i18n.PickerOriginsTitle, kind: pickOrigins,
-			hint:    i18n.PickerAllowlistHint,
-			options: idOptions(m.lib.Origins().IDs()), chosen: m.skills.keptWorlds,
-			into: pickIntoKeptWorlds,
+			Title: i18n.PickerOriginsTitle, Kind: pickOrigins,
+			Hint:    i18n.PickerAllowlistHint,
+			Options: draw.IDOptions(m.lib.Origins().IDs()), Chosen: m.skills.keptWorlds,
+			Into: pickIntoKeptWorlds,
 		})
 	case skillFieldKeptForSpecies:
 		return m.pick(&pickState{
-			title: i18n.PickerSpeciesTitle, kind: pickSpecies,
-			hint:    i18n.PickerAllowlistHint,
-			options: idOptions(m.lib.Species().IDs()), chosen: m.skills.keptKinds,
-			into: pickIntoKeptKinds,
+			Title: i18n.PickerSpeciesTitle, Kind: pickSpecies,
+			Hint:    i18n.PickerAllowlistHint,
+			Options: draw.IDOptions(m.lib.Species().IDs()), Chosen: m.skills.keptKinds,
+			Into: pickIntoKeptKinds,
 		})
 	default:
 		// The one list with a filter, because it is the one that grows: the
@@ -660,12 +660,12 @@ func (m model) openAllowlist(field int) model {
 		// cast browser's own key, so filtering a list of characters is one
 		// interaction wherever it happens.
 		return m.pick(&pickState{
-			title: i18n.PickerCharactersTitle, kind: pickCharacters,
-			hint:    i18n.PickerAllowlistHint,
-			footer:  i18n.PickerFilterFooter,
-			options: characterOptions(m.lib), groups: m.lib.OriginIDs(),
-			chosen: m.skills.keptWho,
-			into:   pickIntoKeptWho,
+			Title: i18n.PickerCharactersTitle, Kind: pickCharacters,
+			Hint:    i18n.PickerAllowlistHint,
+			Footer:  i18n.PickerFilterFooter,
+			Options: draw.CharacterOptions(m.lib), Groups: m.lib.OriginIDs(),
+			Chosen: m.skills.keptWho,
+			Into:   pickIntoKeptWho,
 		})
 	}
 }
@@ -685,12 +685,12 @@ func (m model) openAllowlist(field int) model {
 // to untick them to avoid writing each one twice.
 func (m model) openStatuses() model {
 	return m.pick(&pickState{
-		title: i18n.PickerStatusesTitle, kind: pickStatuses,
-		hint: i18n.PickerStatusHint, footer: i18n.PickerStatusFooter,
-		options: statusOptions(m.lib),
-		typed:   numberField(forge.DefaultApplicationChance),
-		label:   i18n.PickerChance,
-		into:    pickIntoInflicts,
+		Title: i18n.PickerStatusesTitle, Kind: pickStatuses,
+		Hint: i18n.PickerStatusHint, Footer: i18n.PickerStatusFooter,
+		Options: draw.StatusOptions(m.lib),
+		Typed:   numberField(forge.DefaultApplicationChance),
+		Label:   i18n.PickerChance,
+		Into:    pickIntoInflicts,
 	})
 }
 

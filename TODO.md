@@ -62,7 +62,7 @@ is only so the shape is readable.
   itself. A table whose only column was that name therefore **drops the column**
   rather than padding a row of blanks, and the picker asks whether the rows in
   front of it have anything in that column rather than which language or which
-  kind it is drawing. → `cmd/hexforge-tui/picker.go` → `detailColumn`.
+  kind it is drawing. → `internal/screen/picker.go` → `detailColumn`.
   The same reading reaches the **game client's** blocks: `tui.Detail`,
   `tui.DetailPassives` and `tui.DetailStatus` all word a heading through the
   accessor, so the three agree by inspection. ⚠️ `DetailPassives` read its field

@@ -515,14 +515,14 @@ one.
 full-screen client does that the command line cannot, and both are `internal/forge`
 answers rather than screen logic:
 
-- The kit is a **multi-select over the skill book** (`cmd/hexforge-tui/picker.go`),
+- The kit is a **multi-select over the skill book** (`internal/screen/picker.go`),
   not a typed list. Every skill is listed, including the ones this character may
   not take, each marked and captioned with who it *is* for — a hidden skill reads
   as a skill that does not exist. The availability of a row is
   `forge.CheckSkill`'s answer, the same value the write refuses on, so the mark
   and the refusal cannot disagree. Nineteen rows do not fit beside a form (the
   form is nineteen body lines of the twenty it has in a 120x24 window), so the
-  list is a **sub-screen that scrolls**, and `(*pickState).room` counts what the screen
+  list is a **sub-screen that scrolls**, and `(*draw.PickState).Room` counts what the screen
   spends — including the empty string a trailing newline leaves when `frame`
   splits the body, which was miscounted first time and truncated the list.
 - The new-skill form shows **expected damage as the power is typed**, from
@@ -1010,7 +1010,7 @@ answers rather than screen logic:
     is that an English reader can be handed a row whose id does not hold what
     they typed.
   - ⚠️ **`s.cursor` indexes the FILTERED view**, so every read of it goes through
-    `skillsScreen.rows` / `selected` — the funnel `pickState.visible` already is.
+    `skillsScreen.rows` / `selected` — the funnel `draw.PickState.Visible` already is.
     `e`, `?`, the damage row under the listing and the description screen's own
     `↑/↓` all used to index `s.skills` with it, and **the two lists are identical
     while nothing is typed**, so a wrong read would have gone on passing the whole
@@ -2162,17 +2162,29 @@ regenerated on autopilot:
   package that owns them**: the six listings — `chart`, `elements`, `species`,
   `statuses`, `traits`, `builds` — plus the two states nothing shipped can draw
   (`unclaimed kind`, `traitless build`) and the **description screen in both of
-  its readings** (`skill blurb`, `trait blurb`), in both languages at the 120x24
-  floor and at 160x60 — **40 renders, 880 lines**, body and footer recorded apart
+  its readings** (`skill blurb`, `trait blurb`) and the **five states of the
+  picker** (`kit picker`, `allowlist picker`, `filtered picker`, `status picker`,
+  `reading a skill`), in both languages at the 120x24
+  floor and at 160x60 — **64 renders, 1573 lines**, body and footer recorded apart
   because a screen here answers with the two separately and every wording squeeze
   in this file is a footer. ⚠️ **It exists because the layout of code in
   `internal/screen` was held by a file in another package.** Measured after #205:
   widening the status category column by one cell
   (`Pad(row.Category.String(), column+1)` → `column+2`) left **every test in
   `internal/screen` green** and was caught by
-  `cmd/hexforge-tui/testdata/screens.golden` alone. Three screens still to move,
-  and once `cmd/hexarena` stands up a screen the authoring tool stops drawing
-  would lose its only layout net in silence.
+  `cmd/hexforge-tui/testdata/screens.golden` alone. Two screens still to move —
+  the skill listing and the squad builder — and once `cmd/hexarena` stands up a
+  screen the authoring tool stops drawing would lose its only layout net in
+  silence.
+  ⚠️ **The picker is handed its list, so it has no one shape and its entries are
+  a decision rather than a screen each.** The five are the paths through `View`
+  that share no line with one another: rows carrying a refusal and a detail
+  column, rows with a filter line over them, that filter narrowed, a field and
+  its percentage under the list, and the reading pane, which replaces the list
+  outright. They are **hand-built** where the client's five of the same name are
+  raised through a form — the three screens that raise a picker are all still in
+  `cmd/hexforge-tui` — so the two records are the drawing and the raising of it,
+  which is this pair of goldens' whole arrangement.
   ⚠️ **The blurb gets two entries for three subject kinds, and the art preview
   gets none.** A listed skill and a battle option are one `SubjectKind` — same id,
   same paragraph, same footer, only `At`/`Of` differ — so a third entry would

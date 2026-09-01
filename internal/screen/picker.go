@@ -1,4 +1,4 @@
-package main
+package screen
 
 import (
 	"fmt"
@@ -14,20 +14,26 @@ import (
 	"github.com/vukyn/hexarena/internal/i18n"
 )
 
-// The multi-select, held by the model rather than by a screen, and drawn over
-// whichever screen raised it — the same shape the unsaved-changes guard has.
+// The multi-select: a list of ids, several of which may be chosen, drawn over
+// whichever screen raised it.
+//
+// It is the eighth screen in this package and the first with no listing of its
+// own — it is **handed** its rows, which is what lets five different questions
+// share one set of keys — so a client keeps it beside its screens rather than on
+// one, and hands it every keystroke while it is up. Where the answer goes is the
+// client's word and never read here; see PickState.Into.
 //
 // # Why a sub-screen and not a pane on the form
 //
 // Measured, not judged. The new-character form draws fifteen rows plus a
 // heading, a blank and two live-check rows: nineteen lines of a body that has
-// m.height-4 to work in, so twenty in the minimum window. There is no room
+// c.Height-4 to work in, so twenty in the minimum window. There is no room
 // beside it for a list of nineteen skills, and the alternative — hiding the
 // skills that do not fit — is the one thing a picker must not do, because a
 // hidden skill reads as a skill that does not exist.
 //
 // So the list takes the whole screen while it is open, and scrolls: the body
-// gets m.height-4, this screen spends five of those on its heading, hint and
+// gets c.Height-4, this screen spends five of those on its heading, hint and
 // summary, and the rest is rows. That is thirteen rows in a 120x24 terminal
 // against nineteen skills, so it scrolls there and shows everything in anything
 // taller. A scrolling list rather than paging, because the position counter and
@@ -40,7 +46,7 @@ import (
 // chosen from the element, archetype and cast books; and what a skill inflicts is
 // chosen from the status book. All five are "pick several from a list, keep the
 // order", and one implementation is one set of keys to learn. What differs is
-// only how a row's detail reads, which is what pickKind selects, and the detail
+// only how a row's detail reads, which is what PickKind selects, and the detail
 // is worded at draw time rather than stored — a stored sentence would still be in
 // the old language after ctrl+l.
 //
@@ -65,64 +71,64 @@ import (
 // two trips, or one trip and an edit — the field is still a text field and
 // forge.ParseApplications is still the only parser.
 
-// pickKind is what a picker is choosing.
-type pickKind int
+// PickKind is what a picker is choosing.
+type PickKind int
 
 const (
-	// pickSkills is the kit, whose rows say who may carry each skill.
-	pickSkills pickKind = iota
-	// pickElements, pickArchetypes, pickCharacters, pickSpecies and pickOrigins
+	// PickSkills is the kit, whose rows say who may carry each skill.
+	PickSkills PickKind = iota
+	// PickElements, PickArchetypes, PickCharacters, PickSpecies and PickOrigins
 	// are a restriction's five allowlists, whose rows are ids and their
 	// Vietnamese names.
-	pickElements
-	pickArchetypes
-	pickCharacters
-	// pickSpecies is one of the two whose name comes out of a data file rather
+	PickElements
+	PickArchetypes
+	PickCharacters
+	// PickSpecies is one of the two whose name comes out of a data file rather
 	// than a compiled gloss, because a species is authored with its name beside
 	// it -- the same arrangement a passive has.
-	pickSpecies
-	// pickOrigins is the second of those, and for the same reason: an origin is
+	PickSpecies
+	// PickOrigins is the second of those, and for the same reason: an origin is
 	// authored with its title beside it in origins.json.
-	pickOrigins
-	// pickStatuses is what a skill inflicts, whose rows carry each status's own
+	PickOrigins
+	// PickStatuses is what a skill inflicts, whose rows carry each status's own
 	// facts — how long it lasts, how far it stacks, whether it ticks — because
 	// choosing between "mire" and "expose" on the ids alone is not choosing.
-	pickStatuses
-	// pickPassives is the trait a placement keeps, and it exists because the
-	// squad builder was raising its trait picker as pickSkills: the rows were
+	PickStatuses
+	// PickPassives is the trait a placement keeps, and it exists because the
+	// squad builder was raising its trait picker as PickSkills: the rows were
 	// trait ids and the detail looked each one up in the skill book, so every
 	// row on that screen drew "unknown skill" in red where its detail belonged.
 	// A kind of its own rather than a lookup that tries both books, for the
 	// reason every other kind here is one — what a row *is* decides how it
 	// reads, and a detail guessing at that is a detail that can guess wrong.
-	pickPassives
+	PickPassives
 )
 
-// pickOption is one row: an id, and why the carrier may not take it.
+// PickOption is one row: an id, and why the carrier may not take it.
 //
 // The refusal is an error value rather than a sentence, and it is the same value
 // forge.CheckSkill hands the write. A picker that decided availability for
 // itself would be a second copy of the rule, and the copy would be the one an
 // author trusted.
-type pickOption struct {
-	id      string
-	refusal error
-	// group is what a filter narrows the list by, empty for a picker with none.
+type PickOption struct {
+	ID      string
+	Refusal error
+	// Group is what a filter narrows the list by, empty for a picker with none.
 	//
 	// One string per row rather than a predicate per filter, because the only
 	// thing a filter has to do here is answer "is this row in the group in
 	// front" — and a row carrying its own group means the filtering is the same
 	// code whatever the group turns out to be.
-	group string
+	Group string
 }
 
-// pickAnswer is what a picker hands back: what was chosen, and the one thing
+// PickAnswer is what a picker hands back: what was chosen, and the one thing
 // that was typed beside the list.
 //
 // A struct rather than two parameters so that the pickers with nothing to
 // type are not written as though they had ignored something — and so that a
 // sixth picker needing a second answer does not change four call sites.
-type pickAnswer struct {
+type PickAnswer struct {
 	// Chosen is in the order it was picked, because for a kit that order *is*
 	// the kit.
 	Chosen []string
@@ -130,17 +136,17 @@ type pickAnswer struct {
 	Typed string
 }
 
-// pickState is a picker while it is open.
-type pickState struct {
-	title   i18n.Key
-	hint    i18n.Key
-	footer  i18n.Key
-	kind    pickKind
-	options []pickOption
-	// chosen is the answer, in the order it was chosen, because for a kit that
+// PickState is a picker while it is open.
+type PickState struct {
+	Title   i18n.Key
+	Hint    i18n.Key
+	Footer  i18n.Key
+	Kind    PickKind
+	Options []PickOption
+	// Chosen is the answer, in the order it was chosen, because for a kit that
 	// order *is* the kit.
-	chosen []string
-	// slots is how many the answer may hold, and **nought is uncapped**.
+	Chosen []string
+	// Slots is how many the answer may hold, and **nought is uncapped**.
 	//
 	// Uncapped is what every picker but two is, so nought is the honest default
 	// rather than a flag beside a number: the five restriction allowlists take
@@ -149,17 +155,17 @@ type pickState struct {
 	// count. The two the squad builder raises are the exception, because a
 	// placement spends exactly cast.SkillSlots and cast.TraitSlots.
 	//
-	// It is enforced in toggle rather than only in the apply callback, so an
+	// It is enforced in Toggle rather than only where the answer lands, so an
 	// answer past the limit cannot be built at all — the refusal used to arrive
 	// after enter, by which time the author had picked six and had to reopen the
 	// list to give two back.
-	slots  int
-	cursor int
-	// typed is the one answer collected beside the list, and label names it.
+	Slots  int
+	Cursor int
+	// Typed is the one answer collected beside the list, and Label names it.
 	// Both are absent for the pickers that choose ids and nothing else.
-	typed *textinput.Model
-	label i18n.Key
-	// groups are the values f narrows the list by, and filter indexes them from
+	Typed *textinput.Model
+	Label i18n.Key
+	// Groups are the values f narrows the list by, and Filter indexes them from
 	// one — zero is the filter that hides nothing, exactly as the cast browser's
 	// own filter is numbered, and for the same reason: its name is a translated
 	// word while every entry in the list is an id that reads the same in either
@@ -167,26 +173,26 @@ type pickState struct {
 	//
 	// Empty for a picker with nothing to narrow. The list a filter is worth
 	// having on is the one that grows with the cast, which is the characters.
-	groups []string
-	filter int
-	// reading is whether the description of the row under the cursor is in
-	// front of the list, and scroll is how far down that description has been
+	Groups []string
+	Filter int
+	// Reading is whether the description of the row under the cursor is in
+	// front of the list, and Scroll is how far down that description has been
 	// walked.
 	//
 	// A state of the picker rather than a screen, and that is forced rather than
 	// preferred: the picker is drawn over whichever screen raised it and takes
 	// keys before any screen does, so a description reached by switching screens
 	// would be a screen the picker went on swallowing the keys of. It is the
-	// same reading blurbScreen gives, from the one place a kit is actually
+	// same reading BlurbScreen gives, from the one place a kit is actually
 	// chosen — an author picking four of nine wants to know what the fifth does
 	// *there*, not on the listing two screens away.
 	//
-	// scroll is not a second cursor, for the reason blurbScreen's is not: it
+	// Scroll is not a second cursor, for the reason BlurbScreen's is not: it
 	// selects nothing, it is which lines of one answer are visible, and every
 	// key that changes *which* row is described resets it so it cannot survive
 	// into a shorter answer and leave a reader looking at nothing.
 	//
-	// ⚠️ **Measured: no shipped description reaches it.** blurbScreen scrolls
+	// ⚠️ **Measured: no shipped description reaches it.** BlurbScreen scrolls
 	// because it draws all five of a character's traits at once, which is some
 	// thirty lines against the seventeen an 120-by-24 window leaves;
 	// one row is at most three, in either language, across every shipped skill
@@ -196,72 +202,35 @@ type pickState struct {
 	// description unable to finish reading one the day somebody writes a long
 	// one. What that costs is two cases; what the answer being clamped where it
 	// is *read* buys is that an offset past a short answer still draws it.
-	reading bool
-	scroll  int
-	// into is where the answer lands when the list is closed with enter.
+	Reading bool
+	Scroll  int
+	// Into is where the answer lands when the list is closed with enter, and
+	// **this package never looks at it**: it is stored, carried through the
+	// keystroke that closes the list, and handed straight back on the result.
 	//
-	// ⚠️ **It used to be an `apply func(model, pickAnswer) model`**, and that
-	// closure is the last thing keeping the skill listing and the squad builder
-	// in this binary: a callback naming `model` names this client, so a screen
-	// holding one is a screen written for the client it was written in. Measured
-	// before it was replaced — there are **ten** of them, in three files, and
-	// every one writes the answer into one named field of its own screen and
-	// then sets a flag or two beside it. That is a destination, and a
-	// destination is data.
-	into pickDest
+	// ⚠️ **It is deliberately opaque, and that is what let the picker move.** A
+	// destination names one field of one *client's* screen — the kit on that
+	// client's character form, the fifth allowlist on its skill form — so it is
+	// that client's vocabulary and cannot be declared here. Carrying it as `any`
+	// is the same arrangement the unsaved-changes guard already has, where the
+	// question records the client's own screen enum and nothing in the question
+	// reads it. The client is the only thing that knows what a value here means,
+	// and the only thing entitled to interpret one.
+	//
+	// ⚠️ **It used to be an `apply func(model, PickAnswer) model`**, and that
+	// closure is what kept this screen in one binary: a callback naming `model`
+	// names one client, so a screen holding one is a screen written for the
+	// client it was written in. Measured before it was replaced — there were
+	// **ten** of them, in three files, and every one wrote the answer into one
+	// named field of its own screen and then set a flag or two beside it. That
+	// is a destination, and a destination is data.
+	//
+	// A nil Into is a picker whose answer goes nowhere, which is what a state
+	// built by hand carries: enter closes the list and writes nothing.
+	Into any
 }
 
-// pickDest is where a finished pick lands: one named field of one screen.
-//
-// A closed enum rather than a screen alone, because three screens raise ten
-// pickers between them and the screen cannot say which of its own fields was
-// being filled — the skill form alone has five allowlists that differ in nothing
-// but that. It is the same division guardSubject makes for the squad builder's
-// two questions, taken one step finer because the count here is ten rather than
-// two.
-//
-// ⚠️ **A destination is *where*, never *how*.** Nine of the ten assign the answer
-// to a list field; pickIntoInflicts composes it into a text field through
-// forge.AddApplications. Both are destinations, and what the receiving screen
-// does when the answer arrives is that screen's business — the alternative was
-// bending nine into a shape the tenth could share, which would have been a
-// vocabulary invented for one case.
-type pickDest uint8
-
-const (
-	// pickNowhere is the zero value: a picker whose answer goes nowhere. It is
-	// what a pickState built by hand carries, and no raise in this client uses
-	// it — enter on such a picker closes the list and writes nothing, which is
-	// exactly what the nil callback this replaced did.
-	//
-	// ⚠️ It is deliberately outside the dispatch, and
-	// TestEveryPickDestinationLandsSomewhere asserts that as well: it is the one
-	// destination for which swallowing an answer is the definition rather than
-	// the defect.
-	pickNowhere pickDest = iota
-	// The character form's two, from form.go.
-	pickIntoKit
-	pickIntoSpecies
-	// The skill form's five allowlists and its inflicts field, from skills.go.
-	// Each is named after the field it fills, so a destination pointed at the
-	// wrong one reads wrong at the raise site as well as at the landing.
-	pickIntoKeptElements
-	pickIntoKeptRoles
-	pickIntoKeptWorlds
-	pickIntoKeptKinds
-	pickIntoKeptWho
-	pickIntoInflicts
-	// The squad builder's two halves of a loadout, from squads.go.
-	pickIntoSquadKit
-	pickIntoSquadTrait
-	// pickDestCount is the count the dispatch is held total against, in the
-	// shape screen.SubjectKindCount and screen.TargetCount already have: a
-	// destination added above it enters the walk without anybody remembering to
-	// list it, which a hand-written list of ten would not give.
-	pickDestCount
-)
-
-// describes reports whether the row under the cursor has a description behind
+// Describes reports whether the row under the cursor has a description behind
 // it, which is what decides whether ? is offered at all.
 //
 // Two of the eight kinds, and the division is which books hold a describer a
@@ -273,80 +242,90 @@ const (
 // facts a description would derive, its picker spends the keys under the list on
 // a chance field, and Lang.DescribeStatus has a reference screen of its own that
 // reaches every status rather than only the ones a skill happens to inflict.
-func (p *pickState) describes() bool {
-	return p.kind == pickSkills || p.kind == pickPassives
+func (p *PickState) Describes() bool {
+	return p.Kind == PickSkills || p.Kind == PickPassives
 }
 
-// visible is the rows the filter in force leaves on screen.
+// Visible is the rows the filter in force leaves on screen.
 //
 // Everything chosen stays chosen, whether or not the filter shows it: the
 // summary under the list is the whole answer and it is drawn from chosen rather
 // than from this, so narrowing the list is a way to find a row and never a way
 // to lose one.
-func (p *pickState) visible() []pickOption {
-	wanted := p.group()
+func (p *PickState) Visible() []PickOption {
+	wanted := p.Group()
 	if wanted == "" {
-		return p.options
+		return p.Options
 	}
-	out := make([]pickOption, 0, len(p.options))
-	for _, option := range p.options {
-		if option.group == wanted {
+	out := make([]PickOption, 0, len(p.Options))
+	for _, option := range p.Options {
+		if option.Group == wanted {
 			out = append(out, option)
 		}
 	}
 	return out
 }
 
-// group is the value in force, or empty when every row is shown.
-func (p *pickState) group() string {
-	if p.filter <= 0 || p.filter > len(p.groups) {
+// Group is the value in force, or empty when every row is shown.
+func (p *PickState) Group() string {
+	if p.Filter <= 0 || p.Filter > len(p.Groups) {
 		return ""
 	}
-	return p.groups[p.filter-1]
+	return p.Groups[p.Filter-1]
 }
 
 // groupName is what the filter is called on screen: the group's own id, or the
 // translated word for everything.
-func (p *pickState) groupName(m model) string {
-	if group := p.group(); group != "" {
+func (p *PickState) groupName(c Context) string {
+	if group := p.Group(); group != "" {
 		return group
 	}
-	return m.text(i18n.BrowseAllOrigins)
+	return c.Text(i18n.BrowseAllOrigins)
 }
 
-// nextFilter steps the filter on, wrapping through "everything".
+// NextFilter steps the filter on, wrapping through "everything".
 //
 // The key and the cycle are the cast browser's, deliberately: an author who has
 // filtered the cast once should not have a second interaction to learn for the
 // same job on a list of the same things.
-func (p *pickState) nextFilter() {
-	p.filter = (p.filter + 1) % (len(p.groups) + 1)
-	p.cursor = clamp(p.cursor, 0, len(p.visible())-1)
+func (p *PickState) NextFilter() {
+	p.Filter = (p.Filter + 1) % (len(p.Groups) + 1)
+	p.Cursor = Clamp(p.Cursor, 0, len(p.Visible())-1)
 }
 
-// pick raises a picker. Nothing is applied until it is closed with enter.
-func (m model) pick(state *pickState) model {
-	state.cursor = clamp(state.cursor, 0, len(state.options)-1)
-	if state.hint == 0 {
-		state.hint = i18n.PickerHint
+// Raise settles the defaults a raiser did not fill in and hands the picker back
+// ready to be put in front. Nothing is applied until it is closed with enter.
+//
+// It returns the same pointer it was given rather than a value, because the
+// pointer **is** the presence flag: a client stores it, branches on it not being
+// nil to decide whether a picker is up, and closes the list by writing nil. Ten
+// raise sites build a literal and hand it here, so the three answers below are
+// settled once rather than at each of them.
+func (p *PickState) Raise() *PickState {
+	p.Cursor = Clamp(p.Cursor, 0, len(p.Options)-1)
+	if p.Hint == 0 {
+		p.Hint = i18n.PickerHint
 	}
-	if state.footer == 0 {
+	if p.Footer == 0 {
 		// The footer that names ? is the default only where ? does something.
 		// A key announced on a screen that ignores it is worse than one nobody
 		// was told about, and the two footers are one line each rather than one
 		// line assembled from parts, because the line has to be measured whole:
 		// the English one is 79 cells of the 79 the minimum window leaves.
-		state.footer = i18n.PickerFooter
-		if state.describes() {
-			state.footer = i18n.PickerDescribeFooter
+		p.Footer = i18n.PickerFooter
+		if p.Describes() {
+			p.Footer = i18n.PickerDescribeFooter
 		}
 	}
-	m.picker = state
-	return m
+	return p
 }
 
-// numberField is the chance field the status picker carries: a text field that
+// NumberField is the chance field the status picker carries: a text field that
 // takes digits and nothing else.
+//
+// It takes the terminal's answer as a parameter for the reason NewInput does:
+// this package reads no environment, so the binary asks and hands the answer
+// down.
 //
 // Narrow on purpose. A picker's other keys are space, the arrows, k, j, enter
 // and escape, so letters have to stay out of the field or moving the cursor
@@ -360,8 +339,8 @@ func (m model) pick(state *pickState) model {
 // typing works immediately and pressing enter without typing still writes it —
 // forge.AddApplications reads a blank chance as the default, so the two front-ends
 // cannot disagree about what nothing means.
-func numberField(placeholder string) *textinput.Model {
-	input := newInput()
+func NumberField(plain bool, placeholder string) *textinput.Model {
+	input := NewInput(plain)
 	input.Prompt = ""
 	input.CharLimit = 4
 	input.SetWidth(6)
@@ -370,7 +349,7 @@ func numberField(placeholder string) *textinput.Model {
 	return &input
 }
 
-// numberKey reports whether a keystroke belongs in a number field: a digit, or
+// NumberKey reports whether a keystroke belongs in a number field: a digit, or
 // one of the keys that edit or move within one.
 //
 // The filter is here rather than on the field's own Validate, and that is not a
@@ -384,7 +363,7 @@ func numberField(placeholder string) *textinput.Model {
 // printable one carries the characters it produced in Text. Text is empty
 // whenever a modifier is held, which is what keeps ctrl+1 out of the field
 // without a second check for it.
-func numberKey(message tea.KeyPressMsg) bool {
+func NumberKey(message tea.KeyPressMsg) bool {
 	switch message.Code {
 	case tea.KeyBackspace, tea.KeyDelete, tea.KeyLeft, tea.KeyRight,
 		tea.KeyHome, tea.KeyEnd:
@@ -401,32 +380,32 @@ func numberKey(message tea.KeyPressMsg) bool {
 	return true
 }
 
-// kitOptions is the skill book as rows, each carrying whether this character may
+// KitOptions is the skill book as rows, each carrying whether this character may
 // take it and why not.
 //
 // Every skill is listed, including the ones this character cannot take. That is
 // the point: a kit is chosen against a book an author is still learning, and a
 // row saying "kept for the bulwark role" teaches something a missing row does
 // not.
-func kitOptions(lib *forge.Library, who forge.Carrier) []pickOption {
+func KitOptions(lib *forge.Library, who forge.Carrier) []PickOption {
 	skills := lib.Skills().Skills()
-	out := make([]pickOption, 0, len(skills))
+	out := make([]PickOption, 0, len(skills))
 	for _, carried := range skills {
-		out = append(out, pickOption{id: carried.ID, refusal: forge.CheckSkill(who, carried)})
+		out = append(out, PickOption{ID: carried.ID, Refusal: forge.CheckSkill(who, carried)})
 	}
 	return out
 }
 
-// idOptions is a plain list of ids, for the three allowlists.
-func idOptions(ids []string) []pickOption {
-	out := make([]pickOption, 0, len(ids))
+// IDOptions is a plain list of ids, for the three allowlists.
+func IDOptions(ids []string) []PickOption {
+	out := make([]PickOption, 0, len(ids))
 	for _, id := range ids {
-		out = append(out, pickOption{id: id})
+		out = append(out, PickOption{ID: id})
 	}
 	return out
 }
 
-// characterOptions is the authored cast as rows, each carrying the work it was
+// CharacterOptions is the authored cast as rows, each carrying the work it was
 // borrowed from so the list can be narrowed by it.
 //
 // The order is the cast book's own, which is what the browser lists too, and the
@@ -443,33 +422,83 @@ func idOptions(ids []string) []pickOption {
 // already names it could not be re-saved with the name it has, and there is no
 // second way in, because the field is a picker and nothing else writes it. The
 // two lists share a shape and share nothing else.
-func characterOptions(lib *forge.Library) []pickOption {
+func CharacterOptions(lib *forge.Library) []PickOption {
 	characters := lib.Characters().All()
-	out := make([]pickOption, 0, len(characters))
+	out := make([]PickOption, 0, len(characters))
 	for _, character := range characters {
-		out = append(out, pickOption{id: character.ID, group: character.Origin})
+		out = append(out, PickOption{ID: character.ID, Group: character.Origin})
 	}
 	return out
 }
 
-// statusOptions is the status book as rows.
+// StatusOptions is the status book as rows.
 //
 // Every status is offered and none can be refused: a skill may inflict anything
 // the book declares, so there is no carrier to check against and no row that
 // carries a mark. What each row carries instead is the status's own facts, which
 // is the thing an id does not say.
-func statusOptions(lib *forge.Library) []pickOption {
+func StatusOptions(lib *forge.Library) []PickOption {
 	book := lib.StatusBook()
-	out := make([]pickOption, 0, len(book))
+	out := make([]PickOption, 0, len(book))
 	for _, kind := range book {
-		out = append(out, pickOption{id: kind.ID})
+		out = append(out, PickOption{ID: kind.ID})
 	}
 	return out
 }
 
-func (p *pickState) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	if p.reading {
-		return p.read(m, message)
+// PickResult is what a keystroke did to a picker, beside the picker itself.
+//
+// ⚠️ **The pair is not (itself, Action), which every other screen here answers
+// with, and the reason is that an Action cannot carry an answer.** A closed
+// picker hands back a set of ids and one typed string; Action holds a Kind, a
+// Target and a Subject, and a Subject is one id — so a kit of four would have to
+// be encoded into a field built to name one thing, which is the shape this
+// repository has twice paid for. The two are not even the same question: an
+// Action says *what a screen wants a client to do next*, and none of the ten
+// destinations wants anything done — a pick fills in a field and leaves the
+// reader in front of the form they were filling. So there is no Action here at
+// all, and there is a result type instead.
+//
+// The **picker** is the other half of the pair and is returned rather than
+// carried in here, because the pointer is the presence flag: nil is the list
+// coming down, which is what esc and enter both do.
+type PickResult struct {
+	// Answered reports the list came down on enter rather than on esc, which is
+	// the difference between a finished pick and an abandoned one.
+	//
+	// ⚠️ It is carried **beside** Into rather than read off it. A picker with no
+	// destination is legal — a state built by hand carries none — so a nil Into
+	// means "this answer lands nowhere", which is a different sentence from
+	// "there was no answer", and the two would be one field otherwise. Absence
+	// declared, never detected: the rule the log's follow flag and the queue's
+	// pending reading are both written under.
+	Answered bool
+	// Into is the destination the picker was raised with, handed straight back
+	// and never looked at. See PickState.Into.
+	Into any
+	// Answer is what was chosen and what was typed, and is only filled in when
+	// Answered.
+	Answer PickAnswer
+	// Cmd is whatever the field under the list asked for — a cursor blink, on
+	// the one picker in five that has a field at all.
+	//
+	// ⚠️ **A tea.Cmd here is the one thing no other screen in this package
+	// returns**, and it is unavoidable rather than a widening of the vocabulary:
+	// bubbles' textinput answers an Update with a command, and dropping it would
+	// leave the chance field with no cursor. Everything else a keystroke wants is
+	// still said in data.
+	Cmd tea.Cmd
+}
+
+// Update reads one keystroke and hands back the picker and what the client owes
+// it.
+//
+// Three outcomes, and the pair says which without a fourth field: the picker
+// comes back with the list still up, or nil with nothing answered, which is esc,
+// or nil with an answer and the destination it belongs to, which is enter.
+func (p *PickState) Update(_ Context, message tea.KeyPressMsg) (*PickState, PickResult) {
+	if p.Reading {
+		return p.read(message)
 	}
 	switch message.String() {
 	case "?":
@@ -477,43 +506,39 @@ func (p *pickState) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 		// which is what it did before and what f does on a picker with no
 		// groups — and the one thing that could still have wanted it, the
 		// chance field, refuses it already, because ? is not a digit.
-		if p.describes() {
-			p.reading, p.scroll = true, 0
+		if p.Describes() {
+			p.Reading, p.Scroll = true, 0
 		}
 	case "esc":
-		m.picker = nil
-		return m, nil
+		return nil, PickResult{}
 	case "enter":
-		answer := pickAnswer{Chosen: append([]string(nil), p.chosen...)}
-		if p.typed != nil {
-			answer.Typed = p.typed.Value()
+		answer := PickAnswer{Chosen: append([]string(nil), p.Chosen...)}
+		if p.Typed != nil {
+			answer.Typed = p.Typed.Value()
 		}
-		// The question comes down first and what the landing needs travels as an
-		// argument, which is answerGuard's ordering for the same reason: a
-		// landing that read m.picker would have to run while the picker it is
-		// closing is still open.
+		// The list comes down and what the landing needs travels back with it,
+		// which is the guard's ordering for the same reason: a landing that read
+		// the client's own picker field would have to run while the picker it is
+		// closing is still in front.
 		//
-		// ⚠️ This used to read `apply := p.apply` before clearing m.picker and
-		// call it after. Nothing is lost with it — p is a local pointer and
-		// clearing the model's own field never reached it — and the ordering
-		// stops being something a reader has to hold, because a destination
-		// cannot be un-set by anything the client does next.
-		into := p.into
-		m.picker = nil
-		return m.answerPick(into, answer)
+		// ⚠️ This used to read `apply := p.apply` before clearing the client's
+		// field and call it after. Nothing was lost with that ordering — the
+		// receiver is a local pointer and clearing a field on the model never
+		// reached it — and it stops being something a reader has to hold, because
+		// a destination cannot be un-set by anything the client does next.
+		return nil, PickResult{Answered: true, Into: p.Into, Answer: answer}
 	case "up", "k":
-		p.cursor = clamp(p.cursor-1, 0, len(p.visible())-1)
+		p.Cursor = Clamp(p.Cursor-1, 0, len(p.Visible())-1)
 	case "down", "j":
-		p.cursor = clamp(p.cursor+1, 0, len(p.visible())-1)
+		p.Cursor = Clamp(p.Cursor+1, 0, len(p.Visible())-1)
 	case "space":
-		p.toggle()
+		p.Toggle()
 	case "f":
 		// Only where there is something to narrow. On a picker with no groups f
 		// is a letter nothing is listening for, which is what it was before.
-		if len(p.groups) > 0 {
-			p.nextFilter()
-			m.picker = p
-			return m, nil
+		if len(p.Groups) > 0 {
+			p.NextFilter()
+			return p, PickResult{}
 		}
 		fallthrough
 	default:
@@ -521,20 +546,18 @@ func (p *pickState) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 		// in it. It is checked last so that a picker's own keys cannot be
 		// swallowed by a text field, and only digits get through, so k and j stay
 		// movement rather than becoming text.
-		if p.typed != nil && numberKey(message) {
-			updated, command := p.typed.Update(message)
-			*p.typed = updated
-			m.picker = p
-			return m, command
+		if p.Typed != nil && NumberKey(message) {
+			updated, command := p.Typed.Update(message)
+			*p.Typed = updated
+			return p, PickResult{Cmd: command}
 		}
 	}
-	m.picker = p
-	return m, nil
+	return p, PickResult{}
 }
 
 // read is the picker with a description in front of the list.
 //
-// The keys are blurbScreen's, deliberately: an author who has read a skill from
+// The keys are BlurbScreen's, deliberately: an author who has read a skill from
 // the listing should not have a second interaction to learn for the same job
 // here. ? or esc closes it, and closes only it — the list comes back with
 // everything that was chosen still chosen, because a description is a question
@@ -542,34 +565,37 @@ func (p *pickState) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 //
 // Walking the cursor from here is why one description can be read after the
 // next without going back and forth, and it walks the picker's own cursor
-// rather than a cursor of this state's — the same borrowing blurbScreen does,
+// rather than a cursor of this state's — the same borrowing BlurbScreen does,
 // and for the same reason: two cursors are two things that can point at
 // different rows.
-func (p *pickState) read(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+//
+// It takes no Context because none of these keys draws anything, and it cannot
+// close the list: only the outer switch does that, so this arm always comes back
+// with the picker still up.
+func (p *PickState) read(message tea.KeyPressMsg) (*PickState, PickResult) {
 	switch message.String() {
 	case "?", "esc":
-		p.reading = false
+		p.Reading = false
 	// [ and ] alias the page keys, here and at the other two sites that scroll,
 	// for a keyboard that has no PgUp and no PgDn. Reading is entered before the
-	// typed field is ever reached — pickState.update returns into this function
+	// typed field is ever reached — PickState.Update returns into this function
 	// at its first line — and the field only ever accepts a digit anyway
-	// (numberKey), so neither bracket can be swallowed as text.
+	// (NumberKey), so neither bracket can be swallowed as text.
 	case "pgdown", "]":
-		p.scroll++
+		p.Scroll++
 	case "pgup", "[":
-		p.scroll = max(p.scroll-1, 0)
+		p.Scroll = max(p.Scroll-1, 0)
 	case "up", "k":
-		p.cursor = clamp(p.cursor-1, 0, len(p.visible())-1)
-		p.scroll = 0
+		p.Cursor = Clamp(p.Cursor-1, 0, len(p.Visible())-1)
+		p.Scroll = 0
 	case "down", "j":
-		p.cursor = clamp(p.cursor+1, 0, len(p.visible())-1)
-		p.scroll = 0
+		p.Cursor = Clamp(p.Cursor+1, 0, len(p.Visible())-1)
+		p.Scroll = 0
 	}
-	m.picker = p
-	return m, nil
+	return p, PickResult{}
 }
 
-// toggle takes the row under the cursor in or out.
+// Toggle takes the row under the cursor in or out.
 //
 // Taking one out always works, including one that has become unavailable since
 // it was chosen and including one taken out of a list that is already over its
@@ -590,29 +616,29 @@ func (p *pickState) read(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) 
 // differently on the two pickers of the same screen depending on how many slots
 // each has. One rule instead: the list is full, space does nothing, take one out
 // first — which is what the trait hint already says.
-func (p *pickState) toggle() {
-	rows := p.visible()
+func (p *PickState) Toggle() {
+	rows := p.Visible()
 	if len(rows) == 0 {
 		return
 	}
-	option := rows[clamp(p.cursor, 0, len(rows)-1)]
-	if at := slices.Index(p.chosen, option.id); at >= 0 {
-		p.chosen = append(p.chosen[:at:at], p.chosen[at+1:]...)
+	option := rows[Clamp(p.Cursor, 0, len(rows)-1)]
+	if at := slices.Index(p.Chosen, option.ID); at >= 0 {
+		p.Chosen = append(p.Chosen[:at:at], p.Chosen[at+1:]...)
 		return
 	}
-	if option.refusal != nil {
+	if option.Refusal != nil {
 		return
 	}
-	if p.slots > 0 && len(p.chosen) >= p.slots {
+	if p.Slots > 0 && len(p.Chosen) >= p.Slots {
 		return
 	}
-	p.chosen = append(p.chosen, option.id)
+	p.Chosen = append(p.Chosen, option.ID)
 }
 
-// room is how many rows the list has, measured from the window in hand.
+// Room is how many rows the list has, measured from the window in hand.
 //
 // The count was wrong the first time it was written and the screen said so: the
-// body has m.height-4 lines to draw in, and this screen spends **seven** of
+// body has c.Height-4 lines to draw in, and this screen spends **seven** of
 // them — its heading, its hint, a blank, the rows, a blank, the summary, the
 // refusal for the row under the cursor, and the empty string that the trailing
 // newline leaves behind when frame splits the body. Miss one and frame truncates
@@ -625,34 +651,32 @@ func (p *pickState) toggle() {
 // blank above it — and it is counted here rather than subtracted at the call
 // site, so the one place that knows what this screen draws is the one place that
 // counts it.
-func (p *pickState) room(m model) int {
+func (p *PickState) Room(c Context) int {
 	spent := 7
-	if p.typed != nil {
+	if p.Typed != nil {
 		spent += 2
 	}
-	if len(p.groups) > 0 {
+	if len(p.Groups) > 0 {
 		spent++
 	}
-	room := m.height - 4 - spent
+	room := c.Height - 4 - spent
 	if room < 3 {
 		return 3
 	}
 	return room
 }
 
-// window moved to model.go, beside clamp, for the reason clip did: every
-// listing in internal/screen scrolls by it too, so it is the package's paging
-// rule rather than this screen's helper.
+// Window and Clip were this screen's private helpers once, and both are the
+// package's own rules now — Window in listing.go beside Clamp, because every
+// listing here scrolls by it, and Clip in screen.go beside Pad, because a
+// client's frame cuts every line of every screen through it. Their comments
+// there carry the arguments.
 
-// clip moved to model.go, beside pad and labelAt: frame calls it on every line
-// of every screen now, so it is the package's cutting rule rather than this
-// screen's helper. Its comment there carries the argument.
-
-// idColumn is the column the ids sit in, measured from the ids being drawn.
-func (p *pickState) idColumn() int {
+// IDColumn is the column the ids sit in, measured from the ids being drawn.
+func (p *PickState) IDColumn() int {
 	widest := 0
-	for _, option := range p.options {
-		if width := lipgloss.Width(option.id); width > widest {
+	for _, option := range p.Options {
+		if width := lipgloss.Width(option.ID); width > widest {
 			widest = width
 		}
 	}
@@ -670,7 +694,7 @@ func (p *pickState) idColumn() int {
 //
 // ⚠️ The condition is **"nothing in this list has a detail"**, which is the true
 // statement, and deliberately not "the language is English" or "the kind is
-// pickPassives". Those two are proxies: they hold on the shipped books today and
+// PickPassives". Those two are proxies: they hold on the shipped books today and
 // stop holding the day a Vietnamese list has an empty column — a trait book with
 // an unnamed trait — or an English one gains a detail. A proxy that stops
 // holding draws the wrong table and fails nothing.
@@ -679,34 +703,40 @@ func (p *pickState) idColumn() int {
 // chooses which list is on screen (and the "showing" line says so) while the
 // scroll position is only where in that list a reader has got to: a
 // window-scoped reading would make the column appear and disappear as the
-// cursor walked. The width itself still comes from idColumn, which measures
+// cursor walked. The width itself still comes from IDColumn, which measures
 // every option, so filtering cannot shift the ids sideways either.
 //
 // Emptiness is measured with lipgloss.Width and not against "", because a detail
 // is styled before it is returned and an empty cell rendered through a style is
 // escape codes around nothing.
-func (p *pickState) detailColumn(m model, rows []pickOption) int {
+func (p *PickState) detailColumn(c Context, rows []PickOption) int {
 	for _, option := range rows {
-		if lipgloss.Width(p.detail(m, option.id)) > 0 {
-			return p.idColumn()
+		if lipgloss.Width(p.Detail(c, option.ID)) > 0 {
+			return p.IDColumn()
 		}
 	}
 	return 0
 }
 
-// detail is what a row says about its option, beyond the id.
+// Detail is what a row says about its option, beyond the id.
 //
 // For a skill that is who may carry it, in the same words the listing and a
 // refusal use. For the three allowlists it is the id's Vietnamese name, which is
 // nothing at all in English — there, an id is shown as the data writes it, and
 // detailColumn drops the whole column rather than drawing a row of blanks.
-func (p *pickState) detail(m model, id string) string {
-	if p.kind == pickStatuses {
+//
+// ⚠️ It is exported for the client's width sweep, which enumerates this column
+// over every row of whichever picker a screen is holding open. That sweep calls
+// this rather than rebuilding one, deliberately: a second reading would have to
+// know the eight kinds apart, and a data column enumerated by a copy of the
+// thing that draws it goes quietly wrong the day a ninth is added.
+func (p *PickState) Detail(c Context, id string) string {
+	if p.Kind == PickStatuses {
 		// A status's facts, glossed name first: "trúng độc · dot · 3 lượt ·
 		// tối đa 3 lớp". The category and the numbers are what tell a poison
 		// from a burn, and the ticking note is the one fact that changes what a
 		// skill applying it is worth.
-		for _, kind := range m.lib.StatusBook() {
+		for _, kind := range c.Lib.StatusBook() {
 			if kind.ID != id {
 				continue
 			}
@@ -714,18 +744,18 @@ func (p *pickState) detail(m model, id string) string {
 			// "dot" is the category's own id and "damages every turn" is what it
 			// means, so printing both prints it twice — and the row is long
 			// enough that the second copy is what gets clipped.
-			sort := m.lang.StatusCategory(kind.Category)
-			facts := m.text(i18n.StatusDetail, sort, kind.Duration, kind.MaxStacks)
-			if name := m.lang.Gloss(id); name != "" {
+			sort := c.Lang.StatusCategory(kind.Category)
+			facts := c.Text(i18n.StatusDetail, sort, kind.Duration, kind.MaxStacks)
+			if name := c.Lang.Gloss(id); name != "" {
 				facts = name + " · " + facts
 			}
-			return m.style.Dim.Render(facts)
+			return c.Style.Dim.Render(facts)
 		}
 		return ""
 	}
-	if p.kind == pickSpecies {
+	if p.Kind == PickSpecies {
 		// The authored name through Lang.SpeciesName, which is the same reading
-		// the species listing gives the same book — and not m.lang.Gloss, since
+		// the species listing gives the same book — and not c.Lang.Gloss, since
 		// the word lives on the declaration rather than in the compiled tables,
 		// so a lookup there would find nothing in either language.
 		//
@@ -736,58 +766,58 @@ func (p *pickState) detail(m model, id string) string {
 		// screen — a leak rather than a translation. Every shipped kind carries
 		// a name, so in English no row has a detail at all and detailColumn
 		// drops the column, exactly as the trait picker's does.
-		if kind, known := m.lib.Species().Get(id); known {
-			return m.style.Dim.Render(m.lang.SpeciesName(kind))
+		if kind, known := c.Lib.Species().Get(id); known {
+			return c.Style.Dim.Render(c.Lang.SpeciesName(kind))
 		}
 		return ""
 	}
-	if p.kind == pickOrigins {
+	if p.Kind == PickOrigins {
 		// The authored title, raw, and that is not the species branch's mistake
 		// repeated: a work's title is a proper noun of the work — "Pokémon",
 		// "Naruto" — so it is the same word in either language, and there is no
 		// Lang accessor being gone round. An origin picker therefore keeps its
 		// column in English, where the species one drops its.
-		if work, known := m.lib.Origins().Get(id); known {
-			return m.style.Dim.Render(work.Title)
+		if work, known := c.Lib.Origins().Get(id); known {
+			return c.Style.Dim.Render(work.Title)
 		}
 		return ""
 	}
-	if p.kind == pickPassives {
-		held, err := m.lib.Passives().Lookup(id)
+	if p.Kind == PickPassives {
+		held, err := c.Lib.Passives().Lookup(id)
 		if err != nil {
 			// Unreachable for the reason the skill branch below is: a learnset
 			// names traits the passive book has already been parsed against.
 			// Written down rather than ignored, since the alternative is the
 			// blank cell this kind was added to stop being a red one.
-			return m.style.Bad.Render(m.lang.Error(err))
+			return c.Style.Bad.Render(c.Lang.Error(err))
 		}
 		// The trait's own name, which is what the listing puts beside an id and
 		// what GlossedPassives gives a kit — authored in the passive book, in
 		// the one language the data is written in. So an English row is the
 		// bare id, exactly as the listing drops its gloss column there, and ?
 		// is what an English reader gets the sentences from.
-		return m.style.Dim.Render(m.lang.PassiveName(held))
+		return c.Style.Dim.Render(c.Lang.PassiveName(held))
 	}
-	if p.kind != pickSkills {
-		return m.style.Dim.Render(m.lang.Gloss(id))
+	if p.Kind != PickSkills {
+		return c.Style.Dim.Render(c.Lang.Gloss(id))
 	}
-	carried, err := m.lib.Skills().Lookup(id)
+	carried, err := c.Lib.Skills().Lookup(id)
 	if err != nil {
 		// Unreachable through the library the options were built from, and
 		// written down rather than ignored: an id the book has lost is a bug
 		// worth seeing on the row it belongs to.
-		return m.style.Bad.Render(m.lang.Error(err))
+		return c.Style.Bad.Render(c.Lang.Error(err))
 	}
-	return m.lang.WhoMaySummary(carried)
+	return c.Lang.WhoMaySummary(carried)
 }
 
 // refusalUnderCursor is the refusal on the row the cursor is on, or nothing when
 // the filter has left no rows at all.
-func refusalUnderCursor(rows []pickOption, cursor int) error {
+func refusalUnderCursor(rows []PickOption, cursor int) error {
 	if len(rows) == 0 {
 		return nil
 	}
-	return rows[clamp(cursor, 0, len(rows)-1)].refusal
+	return rows[Clamp(cursor, 0, len(rows)-1)].Refusal
 }
 
 // counted is the figure beside the title, and which figure it is depends on
@@ -803,53 +833,53 @@ func refusalUnderCursor(rows []pickOption, cursor int) error {
 // even though toggle can no longer build one: a loadout already past its slots in
 // squads.json opens here for editing, and that is exactly the state the colour is
 // for.
-func (p *pickState) counted(m model) string {
-	if p.slots <= 0 {
-		return m.style.Dim.Render(m.text(i18n.ChoicePosition, len(p.chosen), len(p.options)))
+func (p *PickState) counted(c Context) string {
+	if p.Slots <= 0 {
+		return c.Style.Dim.Render(c.Text(i18n.ChoicePosition, len(p.Chosen), len(p.Options)))
 	}
-	style := m.style.Dim
-	if len(p.chosen) > p.slots {
-		style = m.style.Bad
+	style := c.Style.Dim
+	if len(p.Chosen) > p.Slots {
+		style = c.Style.Bad
 	}
-	return style.Render(m.text(i18n.ChoiceSlots, len(p.chosen), p.slots))
+	return style.Render(c.Text(i18n.ChoiceSlots, len(p.Chosen), p.Slots))
 }
 
-func (p *pickState) view(m model) (string, string) {
-	if p.reading {
-		return p.viewReading(m)
+func (p *PickState) View(c Context) (string, string) {
+	if p.Reading {
+		return p.viewReading(c)
 	}
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(m.text(p.title)) + "  " + p.counted(m) + "\n")
-	out.WriteString(m.style.Dim.Render(m.text(p.hint)) + "\n")
+	out.WriteString(c.Style.Heading.Render(c.Text(p.Title)) + "  " + p.counted(c) + "\n")
+	out.WriteString(c.Style.Dim.Render(c.Text(p.Hint)) + "\n")
 	// The filter in force, on its own line and only where there is one. It names
 	// both counts for the reason the browser's does: "showing fixture-anime" says
 	// nothing about how much of the list is hidden.
-	rows := p.visible()
-	if len(p.groups) > 0 {
-		out.WriteString(m.style.Dim.Render(m.text(i18n.PickerShowing,
-			p.groupName(m), len(rows), len(p.options))) + "\n")
+	rows := p.Visible()
+	if len(p.Groups) > 0 {
+		out.WriteString(c.Style.Dim.Render(c.Text(i18n.PickerShowing,
+			p.groupName(c), len(rows), len(p.Options))) + "\n")
 	}
 	out.WriteString("\n")
-	if len(p.options) == 0 {
-		out.WriteString("  " + m.text(i18n.PickerNothingToPick) + "\n")
-		return out.String(), m.text(p.footer)
+	if len(p.Options) == 0 {
+		out.WriteString("  " + c.Text(i18n.PickerNothingToPick) + "\n")
+		return out.String(), c.Text(p.Footer)
 	}
 	if len(rows) == 0 {
 		// A filter that hides everything is a state an author has to be able to
 		// see and step out of, not an empty screen.
-		out.WriteString("  " + m.text(i18n.PickerNothingInGroup) + "\n")
+		out.WriteString("  " + c.Text(i18n.PickerNothingInGroup) + "\n")
 	}
 
-	column := p.detailColumn(m, rows)
-	from, to := window(len(rows), p.cursor, p.room(m))
+	column := p.detailColumn(c, rows)
+	from, to := Window(len(rows), p.Cursor, p.Room(c))
 	for index := from; index < to; index++ {
 		option := rows[index]
 		marker := "  "
-		if index == p.cursor {
+		if index == p.Cursor {
 			marker = "> "
 		}
 		order := ""
-		if at := slices.Index(p.chosen, option.id); at >= 0 {
+		if at := slices.Index(p.Chosen, option.ID); at >= 0 {
 			order = strconv.Itoa(at + 1)
 		}
 		// The state is characters and not colour: a chosen row carries its
@@ -857,7 +887,7 @@ func (p *pickState) view(m model) (string, string) {
 		// screen reads on a monochrome terminal and through a recording that
 		// lost its escape codes.
 		flag := " "
-		if option.refusal != nil {
+		if option.Refusal != nil {
 			flag = "!"
 		}
 		state := fmt.Sprintf("%2s %s ", order, flag)
@@ -868,14 +898,14 @@ func (p *pickState) view(m model) (string, string) {
 		// drop theirs: padding exists to give the following cell a column to
 		// start at, and with no cell after it there is nothing left for the
 		// width to be for.
-		name := option.id
+		name := option.ID
 		if column > 0 {
-			name = pad(option.id, column)
+			name = Pad(option.ID, column)
 		}
-		if index == p.cursor {
-			name = m.style.Selected.Render(name)
-		} else if option.refusal != nil {
-			name = m.style.Dim.Render(name)
+		if index == p.Cursor {
+			name = c.Style.Selected.Render(name)
+		} else if option.Refusal != nil {
+			name = c.Style.Dim.Render(name)
 		}
 		row := marker + state + name
 		if column > 0 {
@@ -889,17 +919,17 @@ func (p *pickState) view(m model) (string, string) {
 			//
 			// And it is measured against the window rather than against the
 			// floor, by the rule the skill listing's last column states:
-			// minWidth is the width this program promises to draw in, not a
+			// MinWidth is the width this program promises to draw in, not a
 			// ceiling on what it may spend, and this cell is data — a gloss, a
 			// species name, an allowlist note. A restriction cut to "để dành
 			// cho loài dr…" is a row that stopped saying which species it is
 			// for, on a terminal with a hundred spare columns beside it. Prose
 			// still wraps at the floor; a table cell is read by scanning down
 			// it, so width is the one thing it can always use.
-			room := m.usableWidth() - 1 - lipgloss.Width(marker+state) - column - 1
-			detail := clip(p.detail(m, option.id), room)
-			if option.refusal != nil {
-				detail = m.style.Dim.Render(detail)
+			room := c.UsableWidth() - 1 - lipgloss.Width(marker+state) - column - 1
+			detail := Clip(p.Detail(c, option.ID), room)
+			if option.Refusal != nil {
+				detail = c.Style.Dim.Render(detail)
 			}
 			row += " " + detail
 		}
@@ -907,9 +937,9 @@ func (p *pickState) view(m model) (string, string) {
 	}
 
 	out.WriteString("\n")
-	chosen := m.style.Dim.Render(m.text(i18n.PickerNothingChosen))
-	if len(p.chosen) > 0 {
-		chosen = strings.Join(p.chosen, " ")
+	chosen := c.Style.Dim.Render(c.Text(i18n.PickerNothingChosen))
+	if len(p.Chosen) > 0 {
+		chosen = strings.Join(p.Chosen, " ")
 	}
 	// The window, not the floor: what this clips is a list of ids the author has
 	// chosen, which is data, and the list has no length the program can promise.
@@ -923,9 +953,9 @@ func (p *pickState) view(m model) (string, string) {
 	//
 	// The line is one branch narrower than it looks: with nothing chosen it holds
 	// PickerNothingChosen, which is wording. That branch is short enough that the
-	// wider clip never reaches it, so it stays where it is rather than being
+	// wider cut never reaches it, so it stays where it is rather than being
 	// split into a room of its own.
-	out.WriteString("  " + clip(chosen, m.usableWidth()-3) + "\n")
+	out.WriteString("  " + Clip(chosen, c.UsableWidth()-3) + "\n")
 	// The whole refusal for the row under the cursor, which is where there is
 	// room for a sentence. It is drawn before anything is pressed, so a space
 	// that cannot take the row in has already explained itself.
@@ -937,54 +967,54 @@ func (p *pickState) view(m model) (string, string) {
 	// stated, so it read as a floor measurement somebody would either copy or
 	// "fix" for the wrong reason. The argument is:
 	//
-	//   - **frame already clips every line it draws, at m.width.** So a line
+	//   - **a client's frame already clips every line it draws, at the window.**
+	//     So a line
 	//     handed over whole is not a line that overflows a terminal; it is a line
 	//     the frame cuts at the window. Clipping at the floor buys nothing that
 	//     frame was not already going to do — it only does it seventy-nine cells
 	//     early.
-	//   - **Twenty-four sites render m.lang.Error, and this was the only one that
+	//   - **Twenty-four sites render c.Lang.Error, and this was the only one that
 	//     clipped at all** — the only one measuring the floor. Its twenty-three
 	//     siblings hand the sentence to frame. So on a two-hundred-column terminal
 	//     this refusal alone was cut at seventy-nine while every other refusal in
 	//     the program ran to the edge, which is a difference no reader could
 	//     explain and nothing here intended.
 	//
-	// **Wrapping is not the fix and must not be attempted.** clip shortens rather
-	// than wraps for the reason frame does, and here it is load-bearing rather
-	// than a preference: (*pickState).room counts this refusal as **one** of the
+	// **Wrapping is not the fix and must not be attempted.** Clip shortens rather
+	// than wraps for the reason a frame does, and here it is load-bearing rather
+	// than a preference: (*PickState).Room counts this refusal as **one** of the
 	// seven rows this screen spends, so a second line would push the bottom of the
 	// list under frame's cut — the exact failure a scrolling list exists to
 	// prevent.
 	//
-	// **And clip stays rather than going away**, which is the half worth being
-	// deliberate about. Deleting it and letting frame do the cutting would make
-	// this row consistent with the other twenty-three, but frame's MaxWidth cuts
-	// **silently** while clip appends an ellipsis. Of the twenty-four this one was
+	// **And the cut stays rather than going away**, which is the half worth being
+	// deliberate about. Deleting it and letting the frame do the cutting would
+	// make this row consistent with the other twenty-three, but a frame's cut is
+	// **silent** while Clip appends an ellipsis. Of the twenty-four this one was
 	// the most wrong about width and the most honest about truncation; the fix
-	// keeps the honesty and drops the wrongness. frame's silent cut is every line
-	// of every screen and is somebody else's change.
-	if refusal := refusalUnderCursor(rows, p.cursor); refusal != nil {
-		out.WriteString(m.style.Bad.Render("  "+clip(m.lang.Error(refusal), m.usableWidth()-3)) + "\n")
+	// keeps the honesty and drops the wrongness.
+	if refusal := refusalUnderCursor(rows, p.Cursor); refusal != nil {
+		out.WriteString(c.Style.Bad.Render("  "+Clip(c.Lang.Error(refusal), c.UsableWidth()-3)) + "\n")
 	}
 	// The one answer typed beside the list, under it and named, with its reading
 	// beside it — the same reading the form gives the field this picker writes
 	// into, because 300 is not a chance anybody reads as one.
-	if p.typed != nil {
+	if p.Typed != nil {
 		// The reading is of what the field will contribute, which is the default
 		// while nothing has been typed — the same value enter would write, so the
 		// percentage cannot describe a chance the write does not use.
-		answer := strings.TrimSpace(p.typed.Value())
+		answer := strings.TrimSpace(p.Typed.Value())
 		if answer == "" {
-			answer = p.typed.Placeholder
+			answer = p.Typed.Placeholder
 		}
 		reading := ""
 		if permille, err := strconv.Atoi(answer); err == nil {
-			reading = "  " + m.style.Dim.Render(forge.Percent(permille))
+			reading = "  " + c.Style.Dim.Render(forge.Percent(permille))
 		}
-		out.WriteString("\n  " + m.style.Label.Render(m.text(p.label)) + "  " +
-			p.typed.View() + reading)
+		out.WriteString("\n  " + c.Style.Label.Render(c.Text(p.Label)) + "  " +
+			p.Typed.View() + reading)
 	}
-	return out.String(), m.text(p.footer)
+	return out.String(), c.Text(p.Footer)
 }
 
 // viewReading is the description of the row under the cursor, over the list
@@ -993,31 +1023,31 @@ func (p *pickState) view(m model) (string, string) {
 // Over it for the reason the list itself covers the form that raised it: the
 // sentences run to more lines than an 120-by-24 window has beside
 // thirteen rows, and a trait's already wrap past that on their own. It scrolls
-// for the same reason blurbScreen does, and shares that screen's room: the two
+// for the same reason BlurbScreen does, and shares that screen's room: the two
 // spend their lines identically — a heading, a blank, the sentences, and the
 // line saying how much is left.
-func (p *pickState) viewReading(m model) (string, string) {
-	footer := m.text(i18n.PickerReadingFooter)
-	rows := p.visible()
+func (p *PickState) viewReading(c Context) (string, string) {
+	footer := c.Text(i18n.PickerReadingFooter)
+	rows := p.Visible()
 	if len(rows) == 0 {
-		return "  " + m.text(i18n.PickerNothingToPick) + "\n", footer
+		return "  " + c.Text(i18n.PickerNothingToPick) + "\n", footer
 	}
-	cursor := clamp(p.cursor, 0, len(rows)-1)
-	name, body := p.described(m, rows[cursor].id)
+	cursor := Clamp(p.Cursor, 0, len(rows)-1)
+	name, body := p.described(c, rows[cursor].ID)
 
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(name) + "  " +
-		m.style.Dim.Render(m.text(i18n.ChoicePosition, cursor+1, len(rows))) + "\n\n")
-	room := traitRoom(m.ctx())
+	out.WriteString(c.Style.Heading.Render(name) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.ChoicePosition, cursor+1, len(rows))) + "\n\n")
+	room := TraitRoom(c)
 	// Clamped here rather than where it is incremented, because the key that
 	// moves it does not know how long the answer is: the answer belongs to the
 	// row under the cursor, and that can have moved since.
-	scroll := clamp(p.scroll, 0, max(len(body)-room, 0))
+	scroll := Clamp(p.Scroll, 0, max(len(body)-room, 0))
 	for _, line := range body[scroll:min(scroll+room, len(body))] {
 		out.WriteString(line + "\n")
 	}
 	if len(body) > room {
-		out.WriteString(m.style.Dim.Render("  " + m.text(i18n.BlurbMore,
+		out.WriteString(c.Style.Dim.Render("  " + c.Text(i18n.BlurbMore,
 			min(scroll+room, len(body)), len(body))))
 	}
 	// No trailing newline, for the reason the trait blurb has none: frame splits
@@ -1032,17 +1062,17 @@ func (p *pickState) viewReading(m model) (string, string) {
 // One method for both halves rather than a title function beside a body
 // function, because the two are one lookup: asking the book twice is asking it
 // to answer differently once.
-func (p *pickState) described(m model, id string) (string, []string) {
-	if p.kind == pickPassives {
-		held, err := m.lib.Passives().Lookup(id)
+func (p *PickState) described(c Context, id string) (string, []string) {
+	if p.Kind == PickPassives {
+		held, err := c.Lib.Passives().Lookup(id)
 		if err != nil {
-			return id, []string{"  " + m.style.Bad.Render(m.lang.Error(err))}
+			return id, []string{"  " + c.Style.Bad.Render(c.Lang.Error(err))}
 		}
-		return m.lang.GlossedPassive(held), traitSentences(m.ctx(), held)
+		return c.Lang.GlossedPassive(held), TraitSentences(c, held)
 	}
-	declared, err := m.lib.Skills().Lookup(id)
+	declared, err := c.Lib.Skills().Lookup(id)
 	if err != nil {
-		return id, []string{"  " + m.style.Bad.Render(m.lang.Error(err))}
+		return id, []string{"  " + c.Style.Bad.Render(c.Lang.Error(err))}
 	}
-	return m.lang.GlossedSkill(declared), skillLines(m.ctx(), declared)
+	return c.Lang.GlossedSkill(declared), SkillLines(c, declared)
 }

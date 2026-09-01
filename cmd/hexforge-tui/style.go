@@ -22,6 +22,16 @@ func newPalette() draw.Palette { return draw.NewPalette(plainTerminal()) }
 // newInput is a text field dressed the way this program draws them.
 func newInput() textinput.Model { return draw.NewInput(plainTerminal()) }
 
+// numberField is a text field that takes digits and nothing else: the chance
+// beside the status picker's list, and the squad builder's level.
+//
+// It sits beside newInput for the same reason, which is the only reason: it
+// reads the machine. The field itself is draw.NumberField's, and both screens
+// that still raise one live in this package.
+func numberField(placeholder string) *textinput.Model {
+	return draw.NumberField(plainTerminal(), placeholder)
+}
+
 // plainTerminal reports whether colour would be noise rather than help.
 //
 // The three inputs are read here and the rule is draw.Plain's, which takes them

@@ -19,6 +19,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 	"github.com/vukyn/hexarena/internal/testfixture"
 )
 
@@ -1239,14 +1240,14 @@ func pickTo(t *testing.T, m model, id string) model {
 	if m.picker == nil {
 		t.Fatal("no picker is open")
 	}
-	for range len(m.picker.options) {
+	for range len(m.picker.Options) {
 		m = key(t, m, "up")
 	}
 	// The visible rows rather than every row: a picker may be filtered, and the
 	// cursor indexes what is on screen.
-	for range len(m.picker.options) {
-		rows := m.picker.visible()
-		if len(rows) > 0 && rows[clamp(m.picker.cursor, 0, len(rows)-1)].id == id {
+	for range len(m.picker.Options) {
+		rows := m.picker.Visible()
+		if len(rows) > 0 && rows[clamp(m.picker.Cursor, 0, len(rows)-1)].ID == id {
 			return m
 		}
 		m = key(t, m, "down")
@@ -1259,8 +1260,8 @@ func pickTo(t *testing.T, m model, id string) model {
 // scratch starts from.
 func clearKit(t *testing.T, m model) model {
 	t.Helper()
-	for len(m.picker.chosen) > 0 {
-		m = pickTo(t, m, m.picker.chosen[0])
+	for len(m.picker.Chosen) > 0 {
+		m = pickTo(t, m, m.picker.Chosen[0])
 		m = key(t, m, "space")
 	}
 	return m
@@ -1282,7 +1283,7 @@ func TestTheKitIsChosenFromTheBookAndKeepsItsOrder(t *testing.T) {
 	if m.picker == nil {
 		t.Fatal("space on the kit row did not open the list")
 	}
-	if got, want := len(m.picker.options), len(lib.Skills().Skills()); got != want {
+	if got, want := len(m.picker.Options), len(lib.Skills().Skills()); got != want {
 		t.Errorf("the list offers %d skills of %d; every one has to be offered, "+
 			"because a hidden skill reads as a skill that does not exist", got, want)
 	}
@@ -1341,16 +1342,16 @@ func TestTheKitListSaysWhatThisCharacterCannotTakeAndWhy(t *testing.T) {
 	}
 	// Marked, and refused: the row cannot be taken in, and nothing about the
 	// answer changes when it is tried.
-	before := strings.Join(m.picker.chosen, ",")
+	before := strings.Join(m.picker.Chosen, ",")
 	m = key(t, m, "space")
-	if got := strings.Join(m.picker.chosen, ","); got != before {
+	if got := strings.Join(m.picker.Chosen, ","); got != before {
 		t.Errorf("an unavailable skill was chosen: %q became %q", before, got)
 	}
 	// A skill the character may take is still choosable, so the mark is about
 	// the skill and not about the list being read-only.
 	m = pickTo(t, m, "ember_lance")
 	m = key(t, m, "space")
-	if !slices.Contains(m.picker.chosen, "ember_lance") {
+	if !slices.Contains(m.picker.Chosen, "ember_lance") {
 		t.Error("a fire character could not choose a fire skill")
 	}
 }
@@ -1378,11 +1379,11 @@ func TestEitherOrderWorksBetweenTheKitAndTheElement(t *testing.T) {
 	m = m.enter(screenNew)
 	m = formCursorTo(t, m, fieldKit)
 	m = key(t, m, "space")
-	for _, option := range m.picker.options {
+	for _, option := range m.picker.Options {
 		var byWork *forge.OriginRestrictedError
-		if option.refusal != nil && !errors.As(option.refusal, &byWork) {
+		if option.Refusal != nil && !errors.As(option.Refusal, &byWork) {
 			t.Errorf("%q is unavailable before an element was answered: %v",
-				option.id, option.refusal)
+				option.ID, option.Refusal)
 		}
 	}
 	m = clearKit(t, m)
@@ -1414,12 +1415,12 @@ func TestEitherOrderWorksBetweenTheKitAndTheElement(t *testing.T) {
 	if forge.CheckSkill(m.form.draft().Carrier(), wind) == nil {
 		t.Fatal("a fire character is allowed a wind skill")
 	}
-	if m.picker.options[m.picker.cursor].refusal == nil {
+	if m.picker.Options[m.picker.Cursor].Refusal == nil {
 		t.Error("the list does not mark a skill the settled element cannot take")
 	}
 	// And taking it back out always works, which is how the conflict is fixed.
 	m = key(t, m, "space")
-	if slices.Contains(m.picker.chosen, "gale_slash") {
+	if slices.Contains(m.picker.Chosen, "gale_slash") {
 		t.Error("an unavailable skill could not be taken back out")
 	}
 }
@@ -1548,8 +1549,8 @@ func TestTheSkillFormProducesTheSkillTheCommandLineProduces(t *testing.T) {
 	}
 	// And the skill is now offered to a kit, which is why authoring one from
 	// this program is worth having at all.
-	kit := kitOptions(reloaded, forge.Carrier{})
-	if !slices.ContainsFunc(kit, func(option pickOption) bool { return option.id == "oath" }) {
+	kit := draw.KitOptions(reloaded, forge.Carrier{})
+	if !slices.ContainsFunc(kit, func(option pickOption) bool { return option.ID == "oath" }) {
 		t.Error("the written skill is not offered to a kit")
 	}
 }
@@ -2026,9 +2027,9 @@ func TestTheStatusFieldIsPickedRatherThanRemembered(t *testing.T) {
 		t.Fatal("space on the inflicts field did not open the status list")
 	}
 	// Every declared status is offered, in the book's own order.
-	offered := make([]string, 0, len(m.picker.options))
-	for _, option := range m.picker.options {
-		offered = append(offered, option.id)
+	offered := make([]string, 0, len(m.picker.Options))
+	for _, option := range m.picker.Options {
+		offered = append(offered, option.ID)
 	}
 	if !slices.Equal(offered, lib.StatusIDs()) {
 		t.Errorf("the picker offers %v, want the status book's %v", offered, lib.StatusIDs())
@@ -2109,14 +2110,14 @@ func TestTheChanceFieldTakesDigitsAndDefaultsToCertain(t *testing.T) {
 	// Nothing typed: the default is written, and it is on screen as the
 	// placeholder before enter is pressed.
 	m = key(t, m, "space")
-	if got := m.picker.typed.Value(); got != "" {
+	if got := m.picker.Typed.Value(); got != "" {
 		t.Errorf("the chance field opens holding %q, want it empty so typing works", got)
 	}
-	if got := m.picker.typed.Placeholder; got != forge.DefaultApplicationChance {
+	if got := m.picker.Typed.Placeholder; got != forge.DefaultApplicationChance {
 		t.Errorf("the chance field shows %q as its default, want %q",
 			got, forge.DefaultApplicationChance)
 	}
-	body, _ := m.picker.view(m)
+	body, _ := m.picker.View(m.ctx())
 	if !strings.Contains(body, forge.DefaultApplicationChance) {
 		t.Errorf("the default chance is not on screen:\n%s", body)
 	}
@@ -2132,17 +2133,17 @@ func TestTheChanceFieldTakesDigitsAndDefaultsToCertain(t *testing.T) {
 	// k and j are how a picker's cursor moves, so they must not become text.
 	m.skills.inputs[skillFieldInflicts].SetValue("")
 	m = key(t, m, "space")
-	before := m.picker.cursor
+	before := m.picker.Cursor
 	m = typeText(t, m, "j")
-	if m.picker.cursor == before {
+	if m.picker.Cursor == before {
 		t.Error("j did not move the picker's cursor, so it was typed into the field")
 	}
 	m = typeText(t, m, "abc")
-	if got := m.picker.typed.Value(); got != "" {
+	if got := m.picker.Typed.Value(); got != "" {
 		t.Errorf("the chance field took %q, want digits only", got)
 	}
 	m = typeText(t, m, "7")
-	if got := m.picker.typed.Value(); got != "7" {
+	if got := m.picker.Typed.Value(); got != "7" {
 		t.Errorf("the chance field holds %q after a digit, want %q", got, "7")
 	}
 
@@ -2219,7 +2220,7 @@ func TestTheStatusPickerFitsTheSmallestWindow(t *testing.T) {
 			t.Errorf("the %s status picker is truncated at %dx%d:\n%s",
 				lang, minWidth, minHeight, drawn)
 		}
-		body, footer := m.picker.view(m)
+		body, footer := m.picker.View(m.ctx())
 		for _, line := range append(strings.Split(body, "\n"), footer) {
 			if width := lipgloss.Width(line); width > drawable {
 				t.Errorf("the %s status picker draws %d cells, over the %d it has:\n%s",
@@ -2254,17 +2255,17 @@ func TestAPickerWithNoDescriberIgnoresTheQuestionMark(t *testing.T) {
 	m.skills.adding = true
 	m.skills.field = skillFieldInflicts
 	m = m.openStatuses()
-	if m.picker.describes() {
+	if m.picker.Describes() {
 		t.Fatal("the status picker offers a description it has no describer for")
 	}
 	m = typeText(t, m, "?")
 	if m.picker == nil {
 		t.Fatal("? closed the picker")
 	}
-	if m.picker.reading {
+	if m.picker.Reading {
 		t.Error("? opened a description on a picker with none")
 	}
-	if typed := m.picker.typed.Value(); typed != "" {
+	if typed := m.picker.Typed.Value(); typed != "" {
 		t.Errorf("? reached the chance field, which now holds %q", typed)
 	}
 }
@@ -2282,51 +2283,51 @@ func TestTheCharacterAllowlistNarrowsByOrigin(t *testing.T) {
 	if m.picker == nil {
 		t.Fatal("space on the character allowlist did not open the list")
 	}
-	if got, want := len(m.picker.visible()), len(lib.CharacterIDs()); got != want {
+	if got, want := len(m.picker.Visible()), len(lib.CharacterIDs()); got != want {
 		t.Fatalf("the picker opens showing %d of %d characters, want all of them", got, want)
 	}
-	if !slices.Equal(m.picker.groups, lib.OriginIDs()) {
+	if !slices.Equal(m.picker.Groups, lib.OriginIDs()) {
 		t.Errorf("the filter cycles %v, want the catalogued works %v",
-			m.picker.groups, lib.OriginIDs())
+			m.picker.Groups, lib.OriginIDs())
 	}
 
 	// Choose somebody before filtering, so the filter can be shown not to lose
 	// an answer.
-	first := m.picker.visible()[0].id
+	first := m.picker.Visible()[0].ID
 	m = key(t, m, "space")
 
 	// f narrows to one work, and the rows really are that work's.
-	seen := make(map[string]int, len(m.picker.groups))
-	for range len(m.picker.groups) {
+	seen := make(map[string]int, len(m.picker.Groups))
+	for range len(m.picker.Groups) {
 		m = typeText(t, m, "f")
-		group := m.picker.group()
+		group := m.picker.Group()
 		if group == "" {
 			t.Fatalf("stepping the filter landed back on everything too early")
 		}
-		for _, row := range m.picker.visible() {
-			character, known := lib.Characters().Get(row.id)
+		for _, row := range m.picker.Visible() {
+			character, known := lib.Characters().Get(row.ID)
 			if !known {
-				t.Fatalf("the picker offers %q, which the cast book does not hold", row.id)
+				t.Fatalf("the picker offers %q, which the cast book does not hold", row.ID)
 			}
 			if character.Origin != group {
 				t.Errorf("filtering by %q left %q, which is from %q",
-					group, row.id, character.Origin)
+					group, row.ID, character.Origin)
 			}
 		}
-		seen[group] = len(m.picker.visible())
+		seen[group] = len(m.picker.Visible())
 		// Whatever was chosen stays chosen, whether the filter shows it or not:
 		// narrowing is a way to find a row, never a way to lose one.
-		if !slices.Contains(m.picker.chosen, first) {
+		if !slices.Contains(m.picker.Chosen, first) {
 			t.Errorf("filtering by %q dropped %q from the answer: %v",
-				group, first, m.picker.chosen)
+				group, first, m.picker.Chosen)
 		}
 	}
 	// One more step wraps back to everything, exactly as the browser's does.
 	m = typeText(t, m, "f")
-	if got := m.picker.group(); got != "" {
+	if got := m.picker.Group(); got != "" {
 		t.Errorf("the filter wrapped to %q, want everything", got)
 	}
-	if got, want := len(m.picker.visible()), len(lib.CharacterIDs()); got != want {
+	if got, want := len(m.picker.Visible()), len(lib.CharacterIDs()); got != want {
 		t.Errorf("wrapping around shows %d of %d characters", got, want)
 	}
 	// The filtered counts add up to the whole list, so nothing was hidden from
@@ -2360,15 +2361,15 @@ func TestOnlyTheCharacterListHasAFilter(t *testing.T) {
 		if m.picker == nil {
 			t.Fatalf("space on field %d did not open a list", field)
 		}
-		if len(m.picker.groups) != 0 {
-			t.Errorf("field %d's picker carries a filter: %v", field, m.picker.groups)
+		if len(m.picker.Groups) != 0 {
+			t.Errorf("field %d's picker carries a filter: %v", field, m.picker.Groups)
 		}
-		before := len(m.picker.visible())
+		before := len(m.picker.Visible())
 		m = typeText(t, m, "f")
-		if got := len(m.picker.visible()); got != before {
+		if got := len(m.picker.Visible()); got != before {
 			t.Errorf("f narrowed field %d's list from %d to %d", field, before, got)
 		}
-		if got := m.picker.footer; got != i18n.PickerFooter {
+		if got := m.picker.Footer; got != i18n.PickerFooter {
 			t.Errorf("field %d's picker offers a filter key in its footer", field)
 		}
 		m = key(t, m, "esc")
@@ -2376,8 +2377,8 @@ func TestOnlyTheCharacterListHasAFilter(t *testing.T) {
 	// The kit picker on the other form is the fourth without one, and the status
 	// picker the fifth.
 	kit := m.enter(screenNew).openKit()
-	if len(kit.picker.groups) != 0 {
-		t.Errorf("the kit picker carries a filter: %v", kit.picker.groups)
+	if len(kit.picker.Groups) != 0 {
+		t.Errorf("the kit picker carries a filter: %v", kit.picker.Groups)
 	}
 }
 
@@ -2410,19 +2411,19 @@ func TestAWorkWithNoCastSaysSo(t *testing.T) {
 		if empty == "" {
 			t.Skip("every catalogued work has a character, so this state is unreachable")
 		}
-		for m.picker.group() != empty {
+		for m.picker.Group() != empty {
 			m = typeText(t, m, "f")
 		}
-		body, _ := m.picker.view(m)
+		body, _ := m.picker.View(m.ctx())
 		if !strings.Contains(body, lang.Text(i18n.PickerNothingInGroup)) {
 			t.Errorf("the %s picker says nothing about an empty work:\n%s", lang, body)
 		}
 		// Space on nothing does nothing rather than reaching past the end of the
 		// list.
-		before := append([]string(nil), m.picker.chosen...)
+		before := append([]string(nil), m.picker.Chosen...)
 		m = key(t, m, "space")
-		if !slices.Equal(m.picker.chosen, before) {
-			t.Errorf("space on an empty list chose %v", m.picker.chosen)
+		if !slices.Equal(m.picker.Chosen, before) {
+			t.Errorf("space on an empty list chose %v", m.picker.Chosen)
 		}
 		if strings.Contains(m.screenContent(), lang.Text(i18n.Truncated)) {
 			t.Errorf("the %s filtered picker is truncated at %dx%d:\n%s",
