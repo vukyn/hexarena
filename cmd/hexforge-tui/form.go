@@ -347,7 +347,14 @@ func (m model) openSpecies() model {
 // is safe because the switch returns before it for a destination this form does
 // not own — a fallthrough that touched `touched` on somebody else's pick would
 // be this screen reacting to a list it never raised.
-func (f formScreen) Picked(_ draw.Context, into pickDest, answer pickAnswer) (formScreen, draw.Action) {
+//
+// ⚠️ **The destination arrives as an `any`**, which is what draw.PickState has
+// always carried it as. It became visible here when the skill form moved and
+// took its six destinations with it: there are two vocabularies now, this
+// client's pickDest and that screen's own draw.SkillsPick, so a parameter typed
+// as either would refuse the other at the door rather than declining it in the
+// arm below.
+func (f formScreen) Picked(_ draw.Context, into any, answer pickAnswer) (formScreen, draw.Action) {
 	switch into {
 	case pickIntoKit:
 		f.kit = answer.Chosen
@@ -606,10 +613,11 @@ func (f formScreen) speciesValue(m model, labelWidth int) string {
 // choiceFormat is how a chooser draws: the value between arrows, then where it
 // sits in the list.
 //
-// It is a constant because the art chooser measures its own room from it. A
-// second copy of the decoration would drift from the one being drawn, and the
-// measurement would then be of a row nobody sees.
-const choiceFormat = "< %s >  %s"
+// Declared in internal/screen, which is where clip's mark and the row helpers
+// come from: the skill form went there and draws the same chooser, so two
+// spellings of one row is two things to keep in step. Named here as well for the
+// reason minWidth is — the rows that measure against it read unchanged.
+const choiceFormat = draw.ChoiceFormat
 
 // choice renders a picked value with its position, so "there are more of these"
 // is visible without pressing anything.

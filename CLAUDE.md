@@ -335,9 +335,12 @@ The migration was made for one reason: **a terminal cannot deliver the Command
 key over the classic escape sequences.** There is no encoding for it, and v1's
 `tea.Key` carried only `Alt`, so ⌘S did not exist as far as a program was
 concerned. The Kitty keyboard protocol does carry it, v2 parses that protocol,
-and a Command key now arrives as `tea.ModSuper`. `cmd/hexforge-tui/savekey.go` is
-the single declaration of which keystrokes save; all three forms ask `isSaveKey`
-rather than matching a string of their own.
+and a Command key now arrives as `tea.ModSuper`. `internal/screen/savekey.go` is
+the single declaration of which keystrokes save; all three forms ask `IsSaveKey`
+rather than matching a string of their own. It moved there with the skill form —
+`cmd/hexforge-tui/savekey.go` is two one-line forwarders now, because the
+character form and the origins form have not moved and a copy on each side of the
+package boundary would be the fourth spelling this exists to stop.
 
 ⚠️ **That does not make ⌘S universally available and nothing in this repo can.**
 The terminal has to speak the protocol (kitty, Ghostty, WezTerm, foot, iTerm2
@@ -982,7 +985,7 @@ answers rather than screen logic:
   `internal/testfixture`, which is exactly why a test built on a fixture skill
   measures the wrong path — see § *The event log is the contract*.
 - The skill listing **filters by name**, typed, live, on `/`
-  (`cmd/hexforge-tui/skills.go`). Forty-three skills is a screen and a half at
+  (`internal/screen/skills.go`). Forty-three skills is a screen and a half at
   the declared floor, and the only way to a row was the arrow keys.
   - **It is a mode, and that follows from the keyboard rather than from taste.**
     Every letter this screen has is already a command — `q`, `a`, `e`, `k`, `j`,
@@ -1010,7 +1013,7 @@ answers rather than screen logic:
     is that an English reader can be handed a row whose id does not hold what
     they typed.
   - ⚠️ **`s.cursor` indexes the FILTERED view**, so every read of it goes through
-    `skillsScreen.rows` / `selected` — the funnel `draw.PickState.Visible` already is.
+    `draw.SkillsScreen.Rows` / `Selected` — the funnel `draw.PickState.Visible` already is.
     `e`, `?`, the damage row under the listing and the description screen's own
     `↑/↓` all used to index `s.skills` with it, and **the two lists are identical
     while nothing is typed**, so a wrong read would have gone on passing the whole
@@ -2161,30 +2164,40 @@ regenerated on autopilot:
 - `internal/screen/testdata/screens.golden` is the **moved screens, in the
   package that owns them**: the six listings — `chart`, `elements`, `species`,
   `statuses`, `traits`, `builds` — plus the two states nothing shipped can draw
-  (`unclaimed kind`, `traitless build`) and the **description screen in both of
-  its readings** (`skill blurb`, `trait blurb`) and the **five states of the
+  (`unclaimed kind`, `traitless build`), the **description screen in both of
+  its readings** (`skill blurb`, `trait blurb`), the **five states of the
   picker** (`kit picker`, `allowlist picker`, `filtered picker`, `status picker`,
-  `reading a skill`), in both languages at the 120x24
-  floor and at 160x60 — **64 renders, 1573 lines**, body and footer recorded apart
+  `reading a skill`) and the **skill listing with the seven states of it** the
+  client's own sweep registers (`skills`, `add a skill`, `edit a skill`,
+  `edited a skill`, `filtering skills`, `filtered skills`,
+  `skills filtered to none`, `shape diagram`), in both languages at the 120x24
+  floor and at 160x60 — **96 renders, 2401 lines**, body and footer recorded apart
   because a screen here answers with the two separately and every wording squeeze
   in this file is a footer. ⚠️ **It exists because the layout of code in
   `internal/screen` was held by a file in another package.** Measured after #205:
   widening the status category column by one cell
   (`Pad(row.Category.String(), column+1)` → `column+2`) left **every test in
   `internal/screen` green** and was caught by
-  `cmd/hexforge-tui/testdata/screens.golden` alone. Two screens still to move —
-  the skill listing and the squad builder — and once `cmd/hexarena` stands up a
+  `cmd/hexforge-tui/testdata/screens.golden` alone. One screen still to move —
+  the squad builder — and once `cmd/hexarena` stands up a
   screen the authoring tool stops drawing would lose its only layout net in
   silence.
+  ⚠️ **The skill listing's entries are driven with keys where the client's are**,
+  and each hand-built state asserts it drew the line it exists for. The three
+  filter states are what the query decides, so a field set by hand would record a
+  test's idea of the filter; the reported edit is built as a `forge.SkillChange`
+  value rather than written, because nothing in this package touches the data
+  directory.
   ⚠️ **The picker is handed its list, so it has no one shape and its entries are
   a decision rather than a screen each.** The five are the paths through `View`
   that share no line with one another: rows carrying a refusal and a detail
   column, rows with a filter line over them, that filter narrowed, a field and
   its percentage under the list, and the reading pane, which replaces the list
   outright. They are **hand-built** where the client's five of the same name are
-  raised through a form — the three screens that raise a picker are all still in
-  `cmd/hexforge-tui` — so the two records are the drawing and the raising of it,
-  which is this pair of goldens' whole arrangement.
+  raised through a form — two of the three screens that raise a picker are in
+  `cmd/hexforge-tui` still, and the skill form's five are raised here now — so the
+  two records are the drawing and the raising of it, which is this pair of
+  goldens' whole arrangement.
   ⚠️ **The blurb gets two entries for three subject kinds, and the art preview
   gets none.** A listed skill and a battle option are one `SubjectKind` — same id,
   same paragraph, same footer, only `At`/`Of` differ — so a third entry would
@@ -3729,7 +3742,7 @@ is the constraint each piece has to respect.
       `kunai` wins ~75% at *every* power from 500 to 1100, because a 700-power
       cooldown-0 skill makes the fourth slot nearly free.
       ⚠️ **The "blocks the form does not ask about" list was wrong in all three
-      places it was written down** (`cmd/hexforge-tui/skills.go`,
+      places it was written down** (`internal/screen/skills.go`,
       `internal/forge/skills.go`, `TestTheShippedSkillBookSurvivesBeingWritten`):
       each named `self_applies`, which the form *does* ask, and none named
       `self_requires` or `summons`, which it does not. Corrected, with

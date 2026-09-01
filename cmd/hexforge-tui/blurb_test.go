@@ -18,16 +18,16 @@ import (
 func TestTheBlurbScreenDescribesTheSkillUnderTheCursor(t *testing.T) {
 	m, lib, _ := start(t, i18n.Vi)
 	m = m.enter(screenSkills)
-	if len(m.skills.skills) < 2 {
+	if len(m.skills.Skills) < 2 {
 		t.Fatalf("the fixture holds %d skills, and this needs two to move between",
-			len(m.skills.skills))
+			len(m.skills.Skills))
 	}
 	m = send(t, m, tea.KeyPressMsg{Code: '?', Text: "?"})
 	if m.screen != screenBlurb {
 		t.Fatalf("? from the listing landed on screen %d, want the description", m.screen)
 	}
 
-	first := m.skills.skills[m.skills.cursor]
+	first := m.skills.Skills[m.skills.Cursor]
 	body, _ := m.blurb.View(m.ctx())
 	if want := i18n.Vi.Describe(first, lib.Patterns()); !strings.Contains(body, firstLine(want)) {
 		t.Errorf("the description screen does not carry the skill's own sentences:\n%s", body)
@@ -35,7 +35,7 @@ func TestTheBlurbScreenDescribesTheSkillUnderTheCursor(t *testing.T) {
 
 	// Moving here moves the listing's cursor, which is the one thing borrowed.
 	m = send(t, m, tea.KeyPressMsg{Code: tea.KeyDown})
-	second := m.skills.skills[m.skills.cursor]
+	second := m.skills.Skills[m.skills.Cursor]
 	if second.ID == first.ID {
 		t.Fatal("the cursor did not move, so the next assertion proves nothing")
 	}
@@ -49,9 +49,9 @@ func TestTheBlurbScreenDescribesTheSkillUnderTheCursor(t *testing.T) {
 	if back.screen != screenSkills {
 		t.Errorf("esc landed on screen %d, want the listing", back.screen)
 	}
-	if back.skills.cursor != m.skills.cursor {
+	if back.skills.Cursor != m.skills.Cursor {
 		t.Errorf("going back moved the listing's cursor to %d, want %d",
-			back.skills.cursor, m.skills.cursor)
+			back.skills.Cursor, m.skills.Cursor)
 	}
 }
 

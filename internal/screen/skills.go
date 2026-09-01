@@ -1,4 +1,4 @@
-package main
+package screen
 
 import (
 	"fmt"
@@ -14,10 +14,14 @@ import (
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
-	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // The fields of the new-skill form, in the order they are walked.
+//
+// Exported because both a raise site and a client's own fixtures name one: the
+// picker a list field opens carries the field it fills, and cmd/hexforge-tui
+// builds the form's states by hand for its width sweep. A fixture cannot follow
+// a screen across a package boundary.
 //
 // Nine core fields, the display name, the statuses it inflicts (both sides), and
 // the three allowlists. What is deliberately absent is requires, self_requires,
@@ -36,33 +40,33 @@ import (
 // it is called by are one thought, which is also why the name is a field on
 // skill.Skill and not a translations file beside the book.
 const (
-	skillFieldID = iota
-	skillFieldName
-	skillFieldFlavour
-	skillFieldElement
-	skillFieldTarget
-	skillFieldRange
-	skillFieldShape
-	skillFieldPower
-	skillFieldStrikes
-	skillFieldAccuracy
-	skillFieldCooldown
-	skillFieldInflicts
-	skillFieldOnItself
-	skillFieldPierce
+	SkillFieldID = iota
+	SkillFieldName
+	SkillFieldFlavour
+	SkillFieldElement
+	SkillFieldTarget
+	SkillFieldRange
+	SkillFieldShape
+	SkillFieldPower
+	SkillFieldStrikes
+	SkillFieldAccuracy
+	SkillFieldCooldown
+	SkillFieldInflicts
+	SkillFieldOnItself
+	SkillFieldPierce
 	// Beside pierce, so the form reads in the order the file is written in.
-	skillFieldCrit
-	skillFieldRestores
-	skillFieldDrains
-	skillFieldKeptForElements
-	skillFieldKeptForRoles
-	skillFieldKeptForCharacters
-	skillFieldKeptForSpecies
-	skillFieldKeptForOrigins
-	skillFieldCount
+	SkillFieldCrit
+	SkillFieldRestores
+	SkillFieldDrains
+	SkillFieldKeptForElements
+	SkillFieldKeptForRoles
+	SkillFieldKeptForCharacters
+	SkillFieldKeptForSpecies
+	SkillFieldKeptForOrigins
+	SkillFieldCount
 )
 
-// skillsScreen is the skill book, and the form that adds to it and changes it.
+// SkillsScreen is the skill book, and the form that adds to it and changes it.
 //
 // It is the other half of the new-character form in the same way the origins
 // screen is: a kit can only name a skill the book holds, so an author who finds
@@ -74,11 +78,11 @@ const (
 // table is measured from, and the write goes through forge.SkillDraft.Resolve,
 // which appends to the book and therefore applies exactly the checks a load
 // applies.
-type skillsScreen struct {
-	skills []skill.Skill
-	cursor int
+type SkillsScreen struct {
+	Skills []skill.Skill
+	Cursor int
 
-	// query is the typed filter, and filtering is whether the field under the
+	// Query is the typed filter, and Filtering is whether the field under the
 	// heading has the keyboard.
 	//
 	// ⚠️ **The two are carried side by side rather than one derived from the
@@ -92,69 +96,99 @@ type skillsScreen struct {
 	// offset, and as a queue reading having to declare absence rather than
 	// detect it.
 	//
-	// query is a plain string and not a bubbles textinput, which every other
-	// typed field in this package is. The reason is the keys: the arrows belong
+	// Query is a plain string and not a bubbles textinput, which every other
+	// typed field on this screen is. The reason is the keys: the arrows belong
 	// to the *listing* while this field has focus — letters are text, so k and j
 	// cannot walk the rows and the arrows are all that is left — so a text field
 	// here would draw a caret that none of its own keys could move. What is
 	// left of a text field once its arrows are gone is a string with a
 	// backspace, which is what this is.
-	query     string
-	filtering bool
+	Query     string
+	Filtering bool
 
-	// adding is whether the form is in front of the listing to author a new
-	// skill, and editing is the id it is in front to change. They are two fields
+	// Adding is whether the form is in front of the listing to author a new
+	// skill, and Editing is the id it is in front to change. They are two fields
 	// rather than one because one form serves both jobs and the difference
 	// decides three things: the heading, what Escape is asking to throw away, and
-	// whether the write appends or replaces. formInFront is the two together, and
+	// whether the write appends or replaces. FormInFront is the two together, and
 	// they are never both set.
-	adding  bool
-	editing string
-	inputs  []textinput.Model
-	field   int
-	// The three choosers and the three allowlists, held as their answers rather
+	Adding  bool
+	Editing string
+
+	// Inputs is every typed field of the form, indexed by the SkillField
+	// constants above.
+	//
+	// ⚠️ **A slice, so two copies of this screen SHARE it, and that is the one
+	// place "a screen is a value" is not true here.** Every other field is
+	// copied when the screen is; these text fields are not — writing through
+	// `a.Inputs[i]` is visible through `b.Inputs[i]` for any copy `b` taken
+	// before the write. It was measured rather than reasoned about, in #216:
+	// dropping the client's write-back of the screen after a status pick left
+	// the inflicts entry filled in anyway, because the landing wrote through
+	// storage the copies share, while every flag beside it was lost.
+	//
+	// It is moved here **as it is** and deliberately unchanged. The behaviour is
+	// relied on today and changing it is a measurement of its own, not a side
+	// effect of a move — so TestTheSkillFormsFieldsAreSharedBetweenCopies pins
+	// it in both directions, and whoever changes it later has to mean it.
+	Inputs []textinput.Model
+	Field  int
+
+	// The three choosers and the five allowlists, held as their answers rather
 	// than as text fields: an element, a side and a shape are all ids out of a
 	// book, so typing one is only a way to get it wrong.
-	elementIndex int
-	targetIndex  int
-	shapeIndex   int
-	keptElements []string
-	keptRoles    []string
-	keptWho      []string
-	keptKinds    []string
-	keptWorlds   []string
-	touched      bool
-	// shapeDrawn is whether the shape diagram is over the form.
+	ElementIndex int
+	TargetIndex  int
+	ShapeIndex   int
+	KeptElements []string
+	KeptRoles    []string
+	KeptWho      []string
+	KeptKinds    []string
+	KeptWorlds   []string
+	Touched      bool
+
+	// ShapeDrawn is whether the shape diagram is over the form.
 	//
 	// A flag rather than a state of its own, because the diagram has no answer
 	// to hold: it draws the shape the chooser is already on and the arrow keys
-	// on it are the chooser's own, so there is one shapeIndex and the drawing
+	// on it are the chooser's own, so there is one ShapeIndex and the drawing
 	// cannot disagree with the field behind it. That is the difference from the
 	// picker, which collects an answer and hands it back on enter.
-	shapeDrawn bool
+	ShapeDrawn bool
 
-	err error
-	// added is the last skill written, kept as what it was rather than as the
+	Err error
+	// Added is the last skill written, kept as what it was rather than as the
 	// line announcing it, so a language switch redraws the announcement.
-	added *skill.Skill
-	// edited is the last change written, kept whole rather than as its id: the
+	Added *skill.Skill
+	// Edited is the last change written, kept whole rather than as its id: the
 	// damage before and after is what an author needs from an edit, and it is
 	// carried so a language switch redraws that too.
-	edited *forge.SkillChange
+	Edited *forge.SkillChange
 }
 
-// formInFront reports whether the form is over the listing, either to author a
+// FormInFront reports whether the form is over the listing, either to author a
 // skill or to change one.
-func (s skillsScreen) formInFront() bool { return s.adding || s.editing != "" }
+func (s SkillsScreen) FormInFront() bool { return s.Adding || s.Editing != "" }
 
-func newSkillsScreen(lib *forge.Library) skillsScreen {
-	return skillsScreen{}.refresh(lib).resetForm(lib)
+// NewSkillsScreen is the listing filled from a library, with an empty form
+// behind it.
+//
+// ⚠️ **It takes a Context rather than a library**, which is the one signature
+// this move had to change, and the reason is that the form dresses text fields:
+// NewInput wants to know whether colour would be noise, this package may not
+// read an environment, and Palette already carries the answer the binary was
+// handed. Same arrangement the preview's cache key has.
+func NewSkillsScreen(c Context) SkillsScreen {
+	return SkillsScreen{}.Refresh(c).ResetForm(c)
 }
 
-func (s skillsScreen) refresh(lib *forge.Library) skillsScreen {
-	s.skills = lib.Skills().Skills()
+// Refresh re-reads the book, keeping the query and clamping the cursor —
+// entering the screen after a write should show the changed row rather than a
+// stale list.
+func (s SkillsScreen) Refresh(c Context) SkillsScreen {
+	s.Skills = c.Lib.Skills().Skills()
 	// Against the rows the filter leaves and not against the book, for the reason
-	// every other read of this cursor goes through rows(): a write can shorten
+	// every other read of this cursor goes through Rows(): a write can shorten
 	// what a standing query finds, and a cursor clamped against the book would
 	// point past the end of the listing that is actually drawn.
 	//
@@ -162,14 +196,14 @@ func (s skillsScreen) refresh(lib *forge.Library) skillsScreen {
 	// and an author who narrowed the listing to find a skill, edited it and came
 	// back is looking at the same question — clearing the filter under them would
 	// make every write also a navigation.
-	s.cursor = clamp(s.cursor, 0, len(s.rows())-1)
-	if s.inputs == nil {
-		s = s.resetForm(lib)
+	s.Cursor = Clamp(s.Cursor, 0, len(s.Rows())-1)
+	if s.Inputs == nil {
+		s = s.ResetForm(c)
 	}
 	return s
 }
 
-// filterLimit is how many letters the typed filter takes.
+// FilterLimit is how many letters the typed filter takes.
 //
 // A bound rather than a free-running field, and it is what keeps the filter row
 // inside the window by construction: the wording around the query is thirty-one
@@ -178,141 +212,143 @@ func (s skillsScreen) refresh(lib *forge.Library) skillsScreen {
 // skill name is well under half of it — so the limit is a guard rather than a
 // constraint, and the row clips as well, because a guard nothing measures is a
 // guard that has already stopped working.
-const filterLimit = 32
+const FilterLimit = 32
 
-// rows is the skills the filter in force leaves on screen, and it is the ONE
+// Rows is the skills the filter in force leaves on screen, and it is the ONE
 // place the listing's cursor may be indexed against.
 //
-// ⚠️ **Every read goes through here or through selected below.** The cursor
-// counts the *visible* rows, so a read that reached into s.skills with it would
+// ⚠️ **Every read goes through here or through Selected below.** The cursor
+// counts the *visible* rows, so a read that reached into s.Skills with it would
 // silently act on a different skill than the one under the marker — and the two
 // agree exactly while nothing is typed, which is every existing test. That is
-// the same funnel pickState.visible is for, and the reason it is one function
+// the same funnel PickState.Visible is for, and the reason it is one function
 // rather than a filter written out at each site.
 //
 // Matching is i18n.MatchesSkill, which reads the skill's **id and its authored
 // Vietnamese name** and asks nothing about the language in front. See that
 // function for why: a query that found different rows after ctrl+l would be the
 // screen mutating behind the author.
-func (s skillsScreen) rows() []skill.Skill {
-	if strings.TrimSpace(s.query) == "" {
-		return s.skills
+func (s SkillsScreen) Rows() []skill.Skill {
+	if strings.TrimSpace(s.Query) == "" {
+		return s.Skills
 	}
-	out := make([]skill.Skill, 0, len(s.skills))
-	for _, current := range s.skills {
-		if i18n.MatchesSkill(s.query, current) {
+	out := make([]skill.Skill, 0, len(s.Skills))
+	for _, current := range s.Skills {
+		if i18n.MatchesSkill(s.Query, current) {
 			out = append(out, current)
 		}
 	}
 	return out
 }
 
-// selected is the skill under the cursor, and false when the filter has left
+// Selected is the skill under the cursor, and false when the filter has left
 // nothing to point at.
 //
 // The second return is what the three keys that read a row ask, rather than each
 // of them measuring the list itself: a query matching nothing is an ordinary
 // state that arrives one keystroke at a time, so e and ? have to decline rather
 // than index an empty slice.
-func (s skillsScreen) selected() (skill.Skill, bool) {
-	rows := s.rows()
+func (s SkillsScreen) Selected() (skill.Skill, bool) {
+	rows := s.Rows()
 	if len(rows) == 0 {
 		return skill.Skill{}, false
 	}
-	return rows[clamp(s.cursor, 0, len(rows)-1)], true
+	return rows[Clamp(s.Cursor, 0, len(rows)-1)], true
 }
 
-// subject is what the description screen raised from here is about: the skill
+// Subject is what the description screen raised from here is about: the skill
 // under the cursor, and where it sits in the rows the filter has left.
 //
-// Off rows() rather than off the book, for the reason selected is: the cursor
+// Off Rows() rather than off the book, for the reason Selected is: the cursor
 // indexes the filtered view, so the position beside the name — "3 / 5" — has to
 // count the same list the marker was moving through.
-func (s skillsScreen) subject() draw.Subject {
-	rows := s.rows()
+func (s SkillsScreen) Subject() Subject {
+	rows := s.Rows()
 	if len(rows) == 0 {
-		return draw.Subject{Kind: draw.SkillSubject}
+		return Subject{Kind: SkillSubject}
 	}
-	at := clamp(s.cursor, 0, len(rows)-1)
-	return draw.Subject{Kind: draw.SkillSubject, ID: rows[at].ID, At: at + 1, Of: len(rows)}
+	at := Clamp(s.Cursor, 0, len(rows)-1)
+	return Subject{Kind: SkillSubject, ID: rows[at].ID, At: at + 1, Of: len(rows)}
 }
 
-func (s skillsScreen) resetForm(lib *forge.Library) skillsScreen {
-	s.inputs = make([]textinput.Model, skillFieldCount)
-	for i := range s.inputs {
-		input := newInput()
+// ResetForm empties the form and puts every chooser back on its default, which
+// is what both opening a new one and discarding a half-written one come to.
+func (s SkillsScreen) ResetForm(c Context) SkillsScreen {
+	s.Inputs = make([]textinput.Model, SkillFieldCount)
+	for i := range s.Inputs {
+		input := NewInput(c.Style.Plain)
 		input.Prompt = ""
 		input.CharLimit = 200
 		input.SetWidth(24)
-		s.inputs[i] = input
+		s.Inputs[i] = input
 	}
-	s.inputs[skillFieldID].SetWidth(32)
-	s.inputs[skillFieldName].SetWidth(32)
-	s.inputs[skillFieldFlavour].SetWidth(48)
-	s.inputs[skillFieldInflicts].SetWidth(40)
-	s.inputs[skillFieldOnItself].SetWidth(40)
+	s.Inputs[SkillFieldID].SetWidth(32)
+	s.Inputs[SkillFieldName].SetWidth(32)
+	s.Inputs[SkillFieldFlavour].SetWidth(48)
+	s.Inputs[SkillFieldInflicts].SetWidth(40)
+	s.Inputs[SkillFieldOnItself].SetWidth(40)
 	// The defaults are the shape of an ordinary single-target attack, and the
 	// element among them is the one worth spelling out: neutral is the common
 	// pool, so a skill authored without an opinion about its element is one
 	// every character can take. Power and accuracy have none, because both are
 	// balance and a default would write a number nobody chose.
-	s.inputs[skillFieldRange].SetValue(defaultSkillRange)
-	s.inputs[skillFieldStrikes].SetValue(defaultSkillStrikes)
-	s.inputs[skillFieldCooldown].SetValue(defaultSkillCooldown)
-	s.elementIndex = indexOf(forge.ElementNames(), defaultSkillElement)
-	s.targetIndex = indexOf(forge.TargetNames(), defaultSkillTarget)
-	s.shapeIndex = indexOf(lib.PatternNames(), defaultSkillPattern)
-	s.keptElements, s.keptRoles, s.keptWho = nil, nil, nil
-	s.keptKinds, s.keptWorlds = nil, nil
-	s.field = skillFieldID
-	s.touched = false
-	s.shapeDrawn = false
-	s.err = nil
-	s.editing = ""
-	s.inputs[s.field].Focus()
+	s.Inputs[SkillFieldRange].SetValue(defaultSkillRange)
+	s.Inputs[SkillFieldStrikes].SetValue(defaultSkillStrikes)
+	s.Inputs[SkillFieldCooldown].SetValue(defaultSkillCooldown)
+	s.ElementIndex = IndexOf(forge.ElementNames(), defaultSkillElement)
+	s.TargetIndex = IndexOf(forge.TargetNames(), defaultSkillTarget)
+	s.ShapeIndex = IndexOf(c.Lib.PatternNames(), defaultSkillPattern)
+	s.KeptElements, s.KeptRoles, s.KeptWho = nil, nil, nil
+	s.KeptKinds, s.KeptWorlds = nil, nil
+	s.Field = SkillFieldID
+	s.Touched = false
+	s.ShapeDrawn = false
+	s.Err = nil
+	s.Editing = ""
+	s.Inputs[s.Field].Focus()
 	return s
 }
 
-// prefill is resetForm over a skill that already exists, which is what makes one
+// Prefill is ResetForm over a skill that already exists, which is what makes one
 // form serve both jobs.
 //
 // Every value comes from forge.SkillAnswers rather than being formatted here, so
 // that accepting the form as it stands reproduces the skill exactly. A screen
 // that wrote its own "1200" or turned an absent restriction into an empty list
 // would turn opening the form into a change.
-func (s skillsScreen) prefill(lib *forge.Library, current skill.Skill) skillsScreen {
-	s = s.resetForm(lib)
+func (s SkillsScreen) Prefill(c Context, current skill.Skill) SkillsScreen {
+	s = s.ResetForm(c)
 	answers := forge.SkillAnswers(current)
 	for _, filled := range []struct {
 		field int
 		value string
 	}{
-		{skillFieldID, answers.ID},
-		{skillFieldName, answers.Name},
-		{skillFieldFlavour, answers.Flavour},
-		{skillFieldRange, answers.Range},
-		{skillFieldPower, answers.Power},
-		{skillFieldStrikes, answers.Strikes},
-		{skillFieldAccuracy, answers.Accuracy},
-		{skillFieldCooldown, answers.Cooldown},
-		{skillFieldInflicts, answers.Applies},
-		{skillFieldOnItself, answers.SelfApplies},
-		{skillFieldPierce, answers.Pierce},
-		{skillFieldCrit, answers.Crit},
-		{skillFieldRestores, answers.Restores},
-		{skillFieldDrains, answers.Drains},
+		{SkillFieldID, answers.ID},
+		{SkillFieldName, answers.Name},
+		{SkillFieldFlavour, answers.Flavour},
+		{SkillFieldRange, answers.Range},
+		{SkillFieldPower, answers.Power},
+		{SkillFieldStrikes, answers.Strikes},
+		{SkillFieldAccuracy, answers.Accuracy},
+		{SkillFieldCooldown, answers.Cooldown},
+		{SkillFieldInflicts, answers.Applies},
+		{SkillFieldOnItself, answers.SelfApplies},
+		{SkillFieldPierce, answers.Pierce},
+		{SkillFieldCrit, answers.Crit},
+		{SkillFieldRestores, answers.Restores},
+		{SkillFieldDrains, answers.Drains},
 	} {
-		s.inputs[filled.field].SetValue(filled.value)
+		s.Inputs[filled.field].SetValue(filled.value)
 	}
-	s.elementIndex = indexOf(forge.ElementNames(), answers.Element)
-	s.targetIndex = indexOf(forge.TargetNames(), answers.Target)
-	s.shapeIndex = indexOf(lib.PatternNames(), answers.Pattern)
-	s.keptElements = forge.SplitList(answers.RestrictElements)
-	s.keptRoles = forge.SplitList(answers.RestrictArchetypes)
-	s.keptWho = forge.SplitList(answers.RestrictCharacters)
-	s.keptKinds = forge.SplitList(answers.RestrictSpecies)
-	s.keptWorlds = forge.SplitList(answers.RestrictOrigins)
-	s.editing = current.ID
+	s.ElementIndex = IndexOf(forge.ElementNames(), answers.Element)
+	s.TargetIndex = IndexOf(forge.TargetNames(), answers.Target)
+	s.ShapeIndex = IndexOf(c.Lib.PatternNames(), answers.Pattern)
+	s.KeptElements = forge.SplitList(answers.RestrictElements)
+	s.KeptRoles = forge.SplitList(answers.RestrictArchetypes)
+	s.KeptWho = forge.SplitList(answers.RestrictCharacters)
+	s.KeptKinds = forge.SplitList(answers.RestrictSpecies)
+	s.KeptWorlds = forge.SplitList(answers.RestrictOrigins)
+	s.Editing = current.ID
 	return s
 }
 
@@ -328,7 +364,13 @@ const (
 	defaultSkillCooldown = "0"
 )
 
-func indexOf(values []string, want string) int {
+// IndexOf is where a value sits in a chooser's list, and nought when it is not
+// in one at all.
+//
+// Exported because a client's own fixtures set a chooser by name — a shape, an
+// element — and an index written out by hand would be a second reading of the
+// book's order.
+func IndexOf(values []string, want string) int {
 	for i, value := range values {
 		if value == want {
 			return i
@@ -337,32 +379,36 @@ func indexOf(values []string, want string) int {
 	return 0
 }
 
-// draft is the answers as internal/forge wants them, which is the only thing
+// Draft is the answers as internal/forge wants them, which is the only thing
 // this screen hands outwards.
-func (s skillsScreen) draft(m model) forge.SkillDraft {
+//
+// Exported because a client test compares what the form resolves to against what
+// the command line's flags resolve to — the two front-ends must be incapable of
+// disagreeing, and that comparison needs the draft.
+func (s SkillsScreen) Draft(c Context) forge.SkillDraft {
 	return forge.SkillDraft{
-		ID:                 strings.TrimSpace(s.inputs[skillFieldID].Value()),
-		Name:               s.inputs[skillFieldName].Value(),
-		Flavour:            s.inputs[skillFieldFlavour].Value(),
-		Element:            at(forge.ElementNames(), s.elementIndex),
-		Target:             at(forge.TargetNames(), s.targetIndex),
-		Range:              s.inputs[skillFieldRange].Value(),
-		Pattern:            at(m.lib.PatternNames(), s.shapeIndex),
-		Power:              s.inputs[skillFieldPower].Value(),
-		Strikes:            s.inputs[skillFieldStrikes].Value(),
-		Accuracy:           s.inputs[skillFieldAccuracy].Value(),
-		Cooldown:           s.inputs[skillFieldCooldown].Value(),
-		Applies:            s.inputs[skillFieldInflicts].Value(),
-		SelfApplies:        s.inputs[skillFieldOnItself].Value(),
-		Pierce:             s.inputs[skillFieldPierce].Value(),
-		Crit:               s.inputs[skillFieldCrit].Value(),
-		Restores:           s.inputs[skillFieldRestores].Value(),
-		Drains:             s.inputs[skillFieldDrains].Value(),
-		RestrictElements:   strings.Join(s.keptElements, ","),
-		RestrictArchetypes: strings.Join(s.keptRoles, ","),
-		RestrictCharacters: strings.Join(s.keptWho, ","),
-		RestrictSpecies:    strings.Join(s.keptKinds, ","),
-		RestrictOrigins:    strings.Join(s.keptWorlds, ","),
+		ID:                 strings.TrimSpace(s.Inputs[SkillFieldID].Value()),
+		Name:               s.Inputs[SkillFieldName].Value(),
+		Flavour:            s.Inputs[SkillFieldFlavour].Value(),
+		Element:            at(forge.ElementNames(), s.ElementIndex),
+		Target:             at(forge.TargetNames(), s.TargetIndex),
+		Range:              s.Inputs[SkillFieldRange].Value(),
+		Pattern:            at(c.Lib.PatternNames(), s.ShapeIndex),
+		Power:              s.Inputs[SkillFieldPower].Value(),
+		Strikes:            s.Inputs[SkillFieldStrikes].Value(),
+		Accuracy:           s.Inputs[SkillFieldAccuracy].Value(),
+		Cooldown:           s.Inputs[SkillFieldCooldown].Value(),
+		Applies:            s.Inputs[SkillFieldInflicts].Value(),
+		SelfApplies:        s.Inputs[SkillFieldOnItself].Value(),
+		Pierce:             s.Inputs[SkillFieldPierce].Value(),
+		Crit:               s.Inputs[SkillFieldCrit].Value(),
+		Restores:           s.Inputs[SkillFieldRestores].Value(),
+		Drains:             s.Inputs[SkillFieldDrains].Value(),
+		RestrictElements:   strings.Join(s.KeptElements, ","),
+		RestrictArchetypes: strings.Join(s.KeptRoles, ","),
+		RestrictCharacters: strings.Join(s.KeptWho, ","),
+		RestrictSpecies:    strings.Join(s.KeptKinds, ","),
+		RestrictOrigins:    strings.Join(s.KeptWorlds, ","),
 	}
 }
 
@@ -370,13 +416,13 @@ func at(values []string, index int) string {
 	if len(values) == 0 {
 		return ""
 	}
-	return values[clamp(index, 0, len(values)-1)]
+	return values[Clamp(index, 0, len(values)-1)]
 }
 
 // chooserField reports whether a field is stepped through rather than typed.
 func skillChooserField(field int) bool {
 	switch field {
-	case skillFieldElement, skillFieldTarget, skillFieldShape:
+	case SkillFieldElement, SkillFieldTarget, SkillFieldShape:
 		return true
 	default:
 		return false
@@ -386,16 +432,27 @@ func skillChooserField(field int) bool {
 // listField reports whether a field is a list chosen on the sub-screen.
 func skillListField(field int) bool {
 	switch field {
-	case skillFieldKeptForElements, skillFieldKeptForRoles,
-		skillFieldKeptForCharacters, skillFieldKeptForSpecies,
-		skillFieldKeptForOrigins:
+	case SkillFieldKeptForElements, SkillFieldKeptForRoles,
+		SkillFieldKeptForCharacters, SkillFieldKeptForSpecies,
+		SkillFieldKeptForOrigins:
 		return true
 	default:
 		return false
 	}
 }
 
-// update routes a keystroke on the listing.
+// Update routes a keystroke on the listing, the form over it, or the diagram
+// over that, and says what the client owes it.
+//
+// ⚠️ **Three returns rather than two, and the third is a tea.Cmd.** Every other
+// screen here answers (itself, Action); this one has text fields, and a bubbles
+// textinput answers an Update with a command — the cursor's blink — which has to
+// come out or the field loses its cursor. That is the same fact PickResult.Cmd
+// carries. It is not a field on Action, deliberately: an Action is a comparable
+// value a screen returns and a test writes out as a literal, and a func field
+// would take that away from every screen to serve one. A result type of exactly
+// {Action, Cmd} would be a tuple with a name; PickResult earned its type by
+// carrying four things.
 //
 // e is the edit key. It does not collide with anything: this screen is a list
 // rather than a form, so no field has the keyboard, and its only other letters
@@ -405,45 +462,44 @@ func skillListField(field int) bool {
 // The filter is a **mode** and not another letter, and that follows from the
 // line above rather than from taste: every letter this screen has is already a
 // command, so a field sharing the keyboard with them could take no query at all.
-// / is the key because it is the one this client had not spent anywhere, and
+// / is the key because it is the one neither client had spent anywhere, and
 // because it is what a reader of any other full-screen program will already try.
-func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	if s.formInFront() {
-		return s.updateForm(m, message)
+func (s SkillsScreen) Update(c Context, message tea.KeyPressMsg) (SkillsScreen, Action, tea.Cmd) {
+	if s.FormInFront() {
+		return s.updateForm(c, message)
 	}
 	// Answered ahead of the listing's own keys, and while it is open the listing
 	// has only the two arrows: q, a, e, k, j and ? are letters and belong in the
 	// query.
-	if s.filtering {
-		return s.updateFilter(m, message)
+	if s.Filtering {
+		return s.updateFilter(c, message), Action{}, nil
 	}
 	switch message.String() {
 	case "q":
-		return m, tea.Quit
+		return s, Action{Kind: Quit}, nil
 	case "esc":
-		m.screen = screenMenu
-		return m, nil
+		return s, Action{Kind: Back}, nil
 	case "/":
 		// Whatever was typed before is still there: enter closes the field
 		// without throwing the query away, so reopening it has to pick that
 		// query back up or the two keys would disagree about what enter did.
-		s.filtering = true
+		s.Filtering = true
 	case "up", "k":
-		s.cursor = clamp(s.cursor-1, 0, len(s.rows())-1)
+		s.Cursor = Clamp(s.Cursor-1, 0, len(s.Rows())-1)
 	case "down", "j":
-		s.cursor = clamp(s.cursor+1, 0, len(s.rows())-1)
+		s.Cursor = Clamp(s.Cursor+1, 0, len(s.Rows())-1)
 	case "a":
 		// Deliberately not guarded on there being a row: adding is the one key
 		// here that indexes nothing, and a filter that has found nothing is
 		// exactly the moment an author wants to write the skill they were
 		// looking for.
-		s = s.resetForm(m.lib)
-		s.adding = true
-		s.added, s.edited = nil, nil
+		s = s.ResetForm(c)
+		s.Adding = true
+		s.Added, s.Edited = nil, nil
 	case "e":
-		if selected, held := s.selected(); held {
-			s = s.prefill(m.lib, selected)
-			s.added, s.edited = nil, nil
+		if selected, held := s.Selected(); held {
+			s = s.Prefill(c, selected)
+			s.Added, s.Edited = nil, nil
 		}
 	case "?":
 		// The description screen keeps no cursor of its own, so this one hands
@@ -451,16 +507,11 @@ func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 		// preview has with the browser. The subject is built off the *visible*
 		// rows through the same accessor this key does, so the paragraph and the
 		// marker cannot come from two different skills.
-		if _, held := s.selected(); held {
-			m.skills = s
-			m.blurb.from = screenSkills
-			m = m.hand(s.subject())
-			m.screen = screenBlurb
-			return m, nil
+		if _, held := s.Selected(); held {
+			return s, Action{Kind: Raise, Target: Blurb, Subject: s.Subject()}, nil
 		}
 	}
-	m.skills = s
-	return m, nil
+	return s, Action{}, nil
 }
 
 // updateFilter routes a keystroke while the filter field has the keyboard.
@@ -469,44 +520,44 @@ func (s skillsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.C
 // rather than k and j, which is the whole reason this is a mode: a letter typed
 // here has to reach the query, so the vim pair cannot be borrowed and the arrows
 // are what is left to walk the narrowed rows with.
-func (s skillsScreen) updateFilter(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (s SkillsScreen) updateFilter(_ Context, message tea.KeyPressMsg) SkillsScreen {
 	switch message.String() {
 	case "esc":
 		// One key undoes the whole thing. Clearing and closing together is what
 		// makes escape safe to press: there is no state where the listing is
 		// still narrowed by a query the author has just dismissed, and no second
 		// keystroke to work out.
-		s.query, s.filtering = "", false
+		s.Query, s.Filtering = "", false
 	case "enter":
 		// The query stays and the keyboard goes back to the rows, which is what
 		// makes j, k, a, e and ? work on what was found.
-		s.filtering = false
+		s.Filtering = false
 	case "backspace":
-		if letters := []rune(s.query); len(letters) > 0 {
-			s.query = string(letters[:len(letters)-1])
+		if letters := []rune(s.Query); len(letters) > 0 {
+			s.Query = string(letters[:len(letters)-1])
 		}
 	case "up":
-		s.cursor = clamp(s.cursor-1, 0, len(s.rows())-1)
+		s.Cursor = Clamp(s.Cursor-1, 0, len(s.Rows())-1)
 	case "down":
-		s.cursor = clamp(s.cursor+1, 0, len(s.rows())-1)
+		s.Cursor = Clamp(s.Cursor+1, 0, len(s.Rows())-1)
 	default:
 		// Text rather than the key's name, which is what lets a space through:
 		// a bare space stringifies as "space" and carries " " as its text, and
 		// a Vietnamese name is two words often as not, so a filter that could
 		// not take a space would stop at the first one. A chord carries no text
 		// at all, so ctrl+anything falls through here harmlessly — and ctrl+c
-		// and ctrl+l never reach this function, model.key answers both first.
-		if letters := []rune(s.query + message.Text); message.Text != "" &&
-			len(letters) <= filterLimit {
-			s.query = string(letters)
+		// and ctrl+l never reach this function: a client answers both before any
+		// screen is asked.
+		if letters := []rune(s.Query + message.Text); message.Text != "" &&
+			len(letters) <= FilterLimit {
+			s.Query = string(letters)
 		}
 	}
 	// Clamped wherever the query changed rather than only where the cursor moved:
 	// a keystroke that narrows the listing can leave the cursor past its end, and
 	// a query matching nothing has to leave it at nought rather than at minus one.
-	s.cursor = clamp(s.cursor, 0, len(s.rows())-1)
-	m.skills = s
-	return m, nil
+	s.Cursor = Clamp(s.Cursor, 0, len(s.Rows())-1)
+	return s
 }
 
 // Confirmed throws the half-written skill away and closes the form.
@@ -514,163 +565,166 @@ func (s skillsScreen) updateFilter(m model, message tea.KeyPressMsg) (tea.Model,
 // ⚠️ **Two questions reach it and there is one answer**, which is why it does not
 // read the question: SkillFormDiscard and SkillFormEditDiscard differ only in
 // what they say is being lost — a skill nobody has written yet, or a set of
-// changes to one already in the book — and resetForm is what both of them meant.
+// changes to one already in the book — and ResetForm is what both of them meant.
 // A wording is not an identity, so a screen branching on which one was asked
 // would be a screen with two answers where the book has one.
-func (s skillsScreen) Confirmed(c draw.Context, _ guardSubject) (skillsScreen, draw.Action) {
-	s = s.resetForm(c.Lib)
-	s.adding = false
-	return s, draw.Action{}
+//
+// ⚠️ **What the question was about arrives as an `any` and is ignored**, which
+// is honest rather than lazy: a guard's subject is a client's own vocabulary —
+// the squad builder's two questions are told apart by a squad id — and this
+// screen's one question is about the screen itself. The parameter is here so the
+// shape matches the other four Confirmed methods, which a client dispatch is
+// held total over.
+func (s SkillsScreen) Confirmed(c Context, _ any) (SkillsScreen, Action) {
+	s = s.ResetForm(c)
+	s.Adding = false
+	return s, Action{}
 }
 
-func (s skillsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+func (s SkillsScreen) updateForm(c Context, message tea.KeyPressMsg) (SkillsScreen, Action, tea.Cmd) {
 	// The diagram is answered first, before Escape can be read as leaving the
 	// form and before Enter can be read as moving to the next field: while it is
 	// over the form, both of those close it and nothing else on the form is
 	// reachable.
-	if s.shapeDrawn {
+	if s.ShapeDrawn {
 		switch message.String() {
 		case "esc", "enter", "space":
-			s.shapeDrawn = false
+			s.ShapeDrawn = false
 		case "left":
-			s = s.cycle(m, -1)
+			s = s.cycle(c, -1)
 		case "right":
-			s = s.cycle(m, 1)
+			s = s.cycle(c, 1)
 		}
-		m.skills = s
-		return m, nil
+		return s, Action{}, nil
 	}
 	// After the diagram and before the switch: saving answers to more than one
-	// keystroke, and isSaveKey is the single declaration of which. It comes
+	// keystroke, and IsSaveKey is the single declaration of which. It comes
 	// second because the diagram takes every key while it is open.
-	if isSaveKey(message) {
-		s = s.save(m)
-		m.skills = s
-		return m, nil
+	if IsSaveKey(message) {
+		return s.save(c), Action{}, nil
 	}
 	switch message.String() {
 	case "esc":
-		if !s.touched {
-			s.adding, s.editing = false, ""
-			m.skills = s
-			return m, nil
+		if !s.Touched {
+			s.Adding, s.Editing = false, ""
+			return s, Action{}, nil
 		}
 		// The question names what is being thrown away, which is a different
 		// thing in each case: a skill nobody has written yet, or a set of changes
 		// to one that is already in the book.
 		question := i18n.SkillFormDiscard
-		if s.editing != "" {
+		if s.Editing != "" {
 			question = i18n.SkillFormEditDiscard
 		}
-		return m.ask(question, screenSkills, guardSubject{}), nil
+		return s, Action{Kind: Ask, Question: question}, nil
 	case "up", "shift+tab":
-		s = s.moveTo(s.field - 1)
-		m.skills = s
-		return m, nil
+		return s.moveTo(s.Field - 1), Action{}, nil
 	case "down", "tab", "enter":
-		s = s.moveTo(s.field + 1)
-		m.skills = s
-		return m, nil
+		return s.moveTo(s.Field + 1), Action{}, nil
 	}
-	if skillChooserField(s.field) {
+	if skillChooserField(s.Field) {
 		switch message.String() {
 		case "left":
-			s = s.cycle(m, -1)
+			s = s.cycle(c, -1)
 		case "right":
-			s = s.cycle(m, 1)
+			s = s.cycle(c, 1)
 		case "space":
 			// Space is the same key the three allowlists open their picker with,
 			// and it is free on a chooser: a chooser is stepped with the arrows.
 			// Only the shape has anything to open.
-			if s.field == skillFieldShape {
-				s.shapeDrawn = true
+			if s.Field == SkillFieldShape {
+				s.ShapeDrawn = true
 			}
 		}
-		m.skills = s
-		return m, nil
+		return s, Action{}, nil
 	}
 	// The inflicts field is the one text field with a list behind it. Space
 	// opens it rather than typing a space, and that costs nothing: the syntax
 	// ParseApplications reads has no spaces in it, and every other way of
 	// filling this field still works, because the field is the record.
-	if (s.field == skillFieldInflicts || s.field == skillFieldOnItself) && message.String() == "space" {
-		m.skills = s
-		return m.openStatuses(), nil
+	if (s.Field == SkillFieldInflicts || s.Field == SkillFieldOnItself) && message.String() == "space" {
+		return s, Action{Kind: Pick, Picker: s.OpenStatuses(c)}, nil
 	}
-	if skillListField(s.field) {
+	if skillListField(s.Field) {
 		if message.String() == "space" || message.String() == "right" {
-			m.skills = s
-			return m.openAllowlist(s.field), nil
+			return s, Action{Kind: Pick, Picker: s.OpenAllowlist(c, s.Field)}, nil
 		}
-		m.skills = s
-		return m, nil
+		return s, Action{}, nil
 	}
-	updated, command := s.inputs[s.field].Update(message)
-	if updated.Value() != s.inputs[s.field].Value() {
-		s.touched = true
-		s.err = nil
-		s.added, s.edited = nil, nil
+	updated, command := s.Inputs[s.Field].Update(message)
+	if updated.Value() != s.Inputs[s.Field].Value() {
+		s.Touched = true
+		s.Err = nil
+		s.Added, s.Edited = nil, nil
 	}
-	s.inputs[s.field] = updated
-	m.skills = s
-	return m, command
+	s.Inputs[s.Field] = updated
+	return s, Action{}, command
 }
 
-// openAllowlist raises the picker for one of the four lists.
+// OpenAllowlist builds the picker for one of the five lists.
 //
 // The list is offered rather than typed for the reason the origin and the
 // archetype are on the other form: every entry is an id out of a book, so a
 // picker cannot produce a name that does not exist — and an allowlist naming
 // somebody who does not exist is the same mistake as an empty one, satisfied by
 // nobody.
-func (m model) openAllowlist(field int) model {
+//
+// It **builds** the state and does not put it in front, which is the whole of
+// what moving this screen changed here: a picker's lifetime is the client's,
+// because the client is the only thing with a field to keep one in. The state
+// travels back as Action.Pick's payload and the client raises it.
+//
+// Exported because this client's own width fixture registers three of these
+// pickers as screens of their own and has to reach them the way a keystroke
+// does; a fixture cannot follow a screen across a package boundary.
+func (s SkillsScreen) OpenAllowlist(c Context, field int) *PickState {
 	switch field {
-	case skillFieldKeptForElements:
-		return m.pick(&pickState{
-			Title: i18n.PickerElementsTitle, Kind: pickElements,
+	case SkillFieldKeptForElements:
+		return &PickState{
+			Title: i18n.PickerElementsTitle, Kind: PickElements,
 			Hint:    i18n.PickerAllowlistHint,
-			Options: draw.IDOptions(forge.ElementNames()), Chosen: m.skills.keptElements,
-			Into: pickIntoKeptElements,
-		})
-	case skillFieldKeptForRoles:
-		return m.pick(&pickState{
-			Title: i18n.PickerRolesTitle, Kind: pickArchetypes,
+			Options: IDOptions(forge.ElementNames()), Chosen: s.KeptElements,
+			Into: SkillsPickElements,
+		}
+	case SkillFieldKeptForRoles:
+		return &PickState{
+			Title: i18n.PickerRolesTitle, Kind: PickArchetypes,
 			Hint:    i18n.PickerAllowlistHint,
-			Options: draw.IDOptions(m.lib.Archetypes().IDs()), Chosen: m.skills.keptRoles,
-			Into: pickIntoKeptRoles,
-		})
-	case skillFieldKeptForOrigins:
-		return m.pick(&pickState{
-			Title: i18n.PickerOriginsTitle, Kind: pickOrigins,
+			Options: IDOptions(c.Lib.Archetypes().IDs()), Chosen: s.KeptRoles,
+			Into: SkillsPickRoles,
+		}
+	case SkillFieldKeptForOrigins:
+		return &PickState{
+			Title: i18n.PickerOriginsTitle, Kind: PickOrigins,
 			Hint:    i18n.PickerAllowlistHint,
-			Options: draw.IDOptions(m.lib.Origins().IDs()), Chosen: m.skills.keptWorlds,
-			Into: pickIntoKeptWorlds,
-		})
-	case skillFieldKeptForSpecies:
-		return m.pick(&pickState{
-			Title: i18n.PickerSpeciesTitle, Kind: pickSpecies,
+			Options: IDOptions(c.Lib.Origins().IDs()), Chosen: s.KeptWorlds,
+			Into: SkillsPickWorlds,
+		}
+	case SkillFieldKeptForSpecies:
+		return &PickState{
+			Title: i18n.PickerSpeciesTitle, Kind: PickSpecies,
 			Hint:    i18n.PickerAllowlistHint,
-			Options: draw.IDOptions(m.lib.Species().IDs()), Chosen: m.skills.keptKinds,
-			Into: pickIntoKeptKinds,
-		})
+			Options: IDOptions(c.Lib.Species().IDs()), Chosen: s.KeptKinds,
+			Into: SkillsPickKinds,
+		}
 	default:
 		// The one list with a filter, because it is the one that grows: the
 		// elements are eleven and fixed and the role presets are five, while the
 		// cast is whatever has been authored. It narrows by origin and takes the
 		// cast browser's own key, so filtering a list of characters is one
 		// interaction wherever it happens.
-		return m.pick(&pickState{
-			Title: i18n.PickerCharactersTitle, Kind: pickCharacters,
+		return &PickState{
+			Title: i18n.PickerCharactersTitle, Kind: PickCharacters,
 			Hint:    i18n.PickerAllowlistHint,
 			Footer:  i18n.PickerFilterFooter,
-			Options: draw.CharacterOptions(m.lib), Groups: m.lib.OriginIDs(),
-			Chosen: m.skills.keptWho,
-			Into:   pickIntoKeptWho,
-		})
+			Options: CharacterOptions(c.Lib), Groups: c.Lib.OriginIDs(),
+			Chosen: s.KeptWho,
+			Into:   SkillsPickWho,
+		}
 	}
 }
 
-// openStatuses raises the picker over the status book and writes what comes back
+// OpenStatuses builds the picker over the status book, whose answer is written
 // into the inflicts field.
 //
 // The shortest path from "I want a poison" to a valid entry: pick the status out
@@ -683,16 +737,61 @@ func (m model) openAllowlist(field int) model {
 // Nothing is preselected. The field may already hold entries and the picker
 // appends to them, so starting with those rows ticked would mean the author had
 // to untick them to avoid writing each one twice.
-func (m model) openStatuses() model {
-	return m.pick(&pickState{
-		Title: i18n.PickerStatusesTitle, Kind: pickStatuses,
+//
+// ⚠️ **The destination is the inflicts field whichever of the two status fields
+// raised it**, which is what the field write below already did and is preserved
+// unchanged: space on "on itself" opens this list and its answer lands in
+// "inflicts". Moving the screen is not the change that gets to decide whether
+// that is right.
+func (s SkillsScreen) OpenStatuses(c Context) *PickState {
+	return &PickState{
+		Title: i18n.PickerStatusesTitle, Kind: PickStatuses,
 		Hint: i18n.PickerStatusHint, Footer: i18n.PickerStatusFooter,
-		Options: draw.StatusOptions(m.lib),
-		Typed:   numberField(forge.DefaultApplicationChance),
+		Options: StatusOptions(c.Lib),
+		Typed:   NumberField(c.Style.Plain, forge.DefaultApplicationChance),
 		Label:   i18n.PickerChance,
-		Into:    pickIntoInflicts,
-	})
+		Into:    SkillsPickInflicts,
+	}
 }
+
+// SkillsPick is where one of this form's six lists lands: one named field of
+// this screen.
+//
+// ⚠️ **It is declared here and not in a client, and that is the move rather than
+// a widening.** PickState.Into is an `any` because a destination used to name a
+// field of a *client's* screen — so cmd/hexforge-tui declared all ten of them.
+// Six of the ten named fields of this form, and this form is no longer a
+// client's, so its destinations came with it. The four that still name a
+// client's screens — the character form's two and the squad builder's two —
+// stayed where they are, and the client is the one thing that knows both
+// vocabularies, which is what a client is for.
+//
+// ⚠️ **A destination is *where*, never *how*.** Five of the six assign the
+// answer to a list field; SkillsPickInflicts composes it into a text field
+// through forge.AddApplications. Both are destinations, and what the receiving
+// field does when the answer arrives is that field's business.
+type SkillsPick uint8
+
+const (
+	// SkillsPickNothing is the zero value: a destination that names no field.
+	// No raise here uses it, and Picked declines it, which is what a picker
+	// carrying no destination at all already gets.
+	SkillsPickNothing SkillsPick = iota
+	// The five allowlists and the inflicts field, each named after the field it
+	// fills, so a destination pointed at the wrong one reads wrong at the raise
+	// site as well as at the landing.
+	SkillsPickElements
+	SkillsPickRoles
+	SkillsPickWorlds
+	SkillsPickKinds
+	SkillsPickWho
+	SkillsPickInflicts
+	// SkillsPickCount is the count a dispatch is held total against, in the
+	// shape SubjectKindCount, TargetCount and KindCount already have: a
+	// destination added above it enters the walk without anybody remembering to
+	// list it, which a hand-written list of six would not give.
+	SkillsPickCount
+)
 
 // Picked is what the six lists this form raises write back.
 //
@@ -703,27 +802,32 @@ func (m model) openStatuses() model {
 // holds entries, so its answer is composed into what is there through
 // forge.AddApplications — the same call the typed syntax goes through, which is
 // why it is a branch here rather than a second kind of picker.
-func (s skillsScreen) Picked(c draw.Context, into pickDest, answer pickAnswer) (skillsScreen, draw.Action) {
+//
+// The destination arrives as an `any` because that is what PickState carries it
+// as; a value that is not one of this screen's own is a picker somebody else
+// raised, and it lands nowhere for the same reason SkillsPickNothing does.
+func (s SkillsScreen) Picked(c Context, into any, answer PickAnswer) (SkillsScreen, Action) {
 	switch into {
-	case pickIntoKeptElements:
-		s.keptElements = answer.Chosen
-	case pickIntoKeptRoles:
-		s.keptRoles = answer.Chosen
-	case pickIntoKeptWorlds:
-		s.keptWorlds = answer.Chosen
-	case pickIntoKeptKinds:
-		s.keptKinds = answer.Chosen
-	case pickIntoKeptWho:
-		s.keptWho = answer.Chosen
-	case pickIntoInflicts:
-		return s.inflict(c, answer), draw.Action{}
+	case SkillsPickElements:
+		s.KeptElements = answer.Chosen
+	case SkillsPickRoles:
+		s.KeptRoles = answer.Chosen
+	case SkillsPickWorlds:
+		s.KeptWorlds = answer.Chosen
+	case SkillsPickKinds:
+		s.KeptKinds = answer.Chosen
+	case SkillsPickWho:
+		s.KeptWho = answer.Chosen
+	case SkillsPickInflicts:
+		return s.inflict(c, answer), Action{}
 	default:
-		// A destination this form does not own; see formScreen.Picked.
-		return s, draw.Action{}
+		// A destination this form does not own — the picker carries an `any`, so a
+		// value out of another screen's vocabulary can arrive here.
+		return s, Action{}
 	}
-	s.touched = true
+	s.Touched = true
 	// No list leaves the form, so no list carries an action.
-	return s, draw.Action{}
+	return s, Action{}
 }
 
 // inflict writes what the status picker chose into the inflicts field.
@@ -732,56 +836,56 @@ func (s skillsScreen) Picked(c draw.Context, into pickDest, answer pickAnswer) (
 // one landing that reads a book, can refuse, and clears more than the dirty
 // flag — an arm of that size in a switch of one-liners reads as though the
 // others had been abbreviated.
-func (s skillsScreen) inflict(c draw.Context, answer pickAnswer) skillsScreen {
+func (s SkillsScreen) inflict(c Context, answer PickAnswer) SkillsScreen {
 	if len(answer.Chosen) == 0 {
 		return s
 	}
-	field := &s.inputs[skillFieldInflicts]
+	field := &s.Inputs[SkillFieldInflicts]
 	written, err := c.Lib.AddApplications(field.Value(), answer.Chosen, answer.Typed)
 	if err != nil {
 		// A refusal from here can only be a chance that is not a number, which
 		// the field refuses a keystroke at a time — so this is unreachable and
 		// reported rather than swallowed, on the form's own error line.
-		s.err = err
+		s.Err = err
 		return s
 	}
 	field.SetValue(written)
 	// The cursor goes to the end, because what was just written is at the end
 	// and the author's next move is usually to adjust it.
 	field.CursorEnd()
-	s.touched = true
-	s.err = nil
-	s.added, s.edited = nil, nil
+	s.Touched = true
+	s.Err = nil
+	s.Added, s.Edited = nil, nil
 	return s
 }
 
-func (s skillsScreen) moveTo(target int) skillsScreen {
-	s.inputs[s.field].Blur()
-	s.field = (target + skillFieldCount) % skillFieldCount
-	if !skillChooserField(s.field) && !skillListField(s.field) {
-		s.inputs[s.field].Focus()
+func (s SkillsScreen) moveTo(target int) SkillsScreen {
+	s.Inputs[s.Field].Blur()
+	s.Field = (target + SkillFieldCount) % SkillFieldCount
+	if !skillChooserField(s.Field) && !skillListField(s.Field) {
+		s.Inputs[s.Field].Focus()
 	}
 	return s
 }
 
-func (s skillsScreen) cycle(m model, by int) skillsScreen {
+func (s SkillsScreen) cycle(c Context, by int) SkillsScreen {
 	step := func(index int, total int) int {
 		if total == 0 {
 			return 0
 		}
 		return (index + by + total) % total
 	}
-	switch s.field {
-	case skillFieldElement:
-		s.elementIndex = step(s.elementIndex, len(forge.ElementNames()))
-	case skillFieldTarget:
-		s.targetIndex = step(s.targetIndex, len(forge.TargetNames()))
-	case skillFieldShape:
-		s.shapeIndex = step(s.shapeIndex, len(m.lib.PatternNames()))
+	switch s.Field {
+	case SkillFieldElement:
+		s.ElementIndex = step(s.ElementIndex, len(forge.ElementNames()))
+	case SkillFieldTarget:
+		s.TargetIndex = step(s.TargetIndex, len(forge.TargetNames()))
+	case SkillFieldShape:
+		s.ShapeIndex = step(s.ShapeIndex, len(c.Lib.PatternNames()))
 	}
-	s.touched = true
-	s.err = nil
-	s.added = nil
+	s.Touched = true
+	s.Err = nil
+	s.Added = nil
 	return s
 }
 
@@ -793,47 +897,47 @@ func (s skillsScreen) cycle(m model, by int) skillsScreen {
 // temp-file-then-rename that keeps a crash from truncating skills.json, and the
 // second of those refuses an edit no character or preset could survive. Nothing
 // on this screen decides which of those is true.
-func (s skillsScreen) save(m model) skillsScreen {
-	if s.editing != "" {
-		return s.saveEdit(m)
+func (s SkillsScreen) save(c Context) SkillsScreen {
+	if s.Editing != "" {
+		return s.saveEdit(c)
 	}
-	built, err := s.draft(m).Resolve(m.lib)
+	built, err := s.Draft(c).Resolve(c.Lib)
 	if err != nil {
-		s.err = err
+		s.Err = err
 		return s
 	}
-	if err := m.lib.SaveSkill(built); err != nil {
-		s.err = err
+	if err := c.Lib.SaveSkill(built); err != nil {
+		s.Err = err
 		return s
 	}
-	s = s.refresh(m.lib).resetForm(m.lib)
-	s.adding = false
-	s.added = &built
+	s = s.Refresh(c).ResetForm(c)
+	s.Adding = false
+	s.Added = &built
 	return s
 }
 
-func (s skillsScreen) saveEdit(m model) skillsScreen {
-	built, err := s.draft(m).ResolveEdit(m.lib, s.editing)
+func (s SkillsScreen) saveEdit(c Context) SkillsScreen {
+	built, err := s.Draft(c).ResolveEdit(c.Lib, s.Editing)
 	if err != nil {
-		s.err = err
+		s.Err = err
 		return s
 	}
-	change, err := m.lib.EditSkill(built)
+	change, err := c.Lib.EditSkill(built)
 	if err != nil {
-		s.err = err
+		s.Err = err
 		return s
 	}
-	// resetForm clears editing, which is what closes the form: the listing behind
+	// ResetForm clears Editing, which is what closes the form: the listing behind
 	// it is refreshed from the library the write went through, so the changed row
 	// is the changed row.
-	s = s.refresh(m.lib).resetForm(m.lib)
-	s.adding = false
-	s.edited = &change
+	s = s.Refresh(c).ResetForm(c)
+	s.Adding = false
+	s.Edited = &change
 	return s
 }
 
 // skillsRoom is how many rows the listing has, measured from the window in hand:
-// the body has m.height-4 lines and this screen spends ten of them on a
+// the body has c.Height-4 lines and this screen spends ten of them on a
 // heading, the filter row, a blank, a column header, a blank, the two damage
 // rows, the two lines a write leaves behind, and the tally.
 //
@@ -861,8 +965,8 @@ func (s skillsScreen) saveEdit(m model) skillsScreen {
 // floor — and the filter row is why this is ten rather than nine, measured at
 // the same floor by TestTheSkillListingFitsTheSmallestWindowWhileFiltering. An
 // eleventh line on this screen needs an eleventh here.
-func skillsRoom(m model) int {
-	room := m.height - 4 - 10
+func skillsRoom(c Context) int {
+	room := c.Height - 4 - 10
 	if room < 3 {
 		return 3
 	}
@@ -881,16 +985,16 @@ func skillsRoom(m model) int {
 // powerColumn is a parameter for the same reason glossColumn is, and it stopped
 // being a constant when the power column's header stopped being the word
 // "power": the header is the label the form authored the number with, so a
-// column of 8 held "1000x1" but cut "damage multiplier" — or, since pad only
+// column of 8 held "1000x1" but cut "damage multiplier" — or, since Pad only
 // widens, let the header run 9 cells past the column and push the last column's
 // header right of the rows it names. One header out of line with its own rows is
 // the one failure this function exists to prevent.
 func skillRow(idColumn, glossColumn, powerColumn int, id, gloss, member, power, who string) string {
-	name := pad(id, idColumn)
+	name := Pad(id, idColumn)
 	if glossColumn > 0 {
-		name += " " + pad(gloss, glossColumn)
+		name += " " + Pad(gloss, glossColumn)
 	}
-	return fmt.Sprintf("%s %s %s%s", name, pad(member, 9), pad(power, powerColumn), who)
+	return fmt.Sprintf("%s %s %s%s", name, Pad(member, 9), Pad(power, powerColumn), who)
 }
 
 // skillPowerColumn is the width the power column takes: enough for the figures
@@ -904,9 +1008,9 @@ func skillRow(idColumn, glossColumn, powerColumn int, id, gloss, member, power, 
 // last column before free text, so without a gap a header exactly as wide as its
 // column runs straight into the next one. "hệ số sát thương" is 16 cells, which
 // is what made that visible.
-func skillPowerColumn(m model) int {
+func skillPowerColumn(c Context) int {
 	const figures = 8
-	if width := lipgloss.Width(m.text(i18n.SkillFieldPower)) + 1; width > figures {
+	if width := lipgloss.Width(c.Text(i18n.SkillFieldPower)) + 1; width > figures {
 		return width
 	}
 	return figures
@@ -929,43 +1033,45 @@ func skillPowerColumn(m model) int {
 // character, and there is no caret to draw: the arrows belong to the listing, so
 // a caret would be one this field's own keys could not move. The footer is where
 // the keys are, and it is the line that changes.
-func (s skillsScreen) filterRow(m model, showing int) string {
-	typed := strings.TrimSpace(s.query)
-	if !s.filtering && typed == "" {
+func (s SkillsScreen) filterRow(c Context, showing int) string {
+	typed := strings.TrimSpace(s.Query)
+	if !s.Filtering && typed == "" {
 		return ""
 	}
 	if typed == "" {
-		return "  " + m.style.Dim.Render(m.text(i18n.SkillsFilterPrompt)) + "\n"
+		return "  " + c.Style.Dim.Render(c.Text(i18n.SkillsFilterPrompt)) + "\n"
 	}
 	// The query is the one part of this row with no length of its own, so it is
 	// what gets clipped rather than the counts after it: how much of the book is
 	// left is the answer, and the author can already see what they typed. Against
-	// the window, because both halves are data. filterLimit is what keeps this
+	// the window, because both halves are data. FilterLimit is what keeps this
 	// from being reachable at the floor; the clip is what says so if it stops.
-	spent := lipgloss.Width(m.text(i18n.SkillsFiltering, "", showing, len(s.skills)))
-	room := max(m.usableWidth()-3-spent, 1)
-	return "  " + m.style.Dim.Render(m.text(i18n.SkillsFiltering,
-		clip(s.query, room), showing, len(s.skills))) + "\n"
+	spent := lipgloss.Width(c.Text(i18n.SkillsFiltering, "", showing, len(s.Skills)))
+	room := max(c.UsableWidth()-3-spent, 1)
+	return "  " + c.Style.Dim.Render(c.Text(i18n.SkillsFiltering,
+		Clip(s.Query, room), showing, len(s.Skills))) + "\n"
 }
 
-func (s skillsScreen) view(m model) (string, string) {
-	if s.formInFront() {
-		return s.viewForm(m)
+// View draws the listing, the form over it, or the diagram over that — a body
+// and the footer that names the keys it answers to.
+func (s SkillsScreen) View(c Context) (string, string) {
+	if s.FormInFront() {
+		return s.viewForm(c)
 	}
-	footer := m.text(i18n.SkillsFooter)
-	if s.filtering {
-		footer = m.text(i18n.SkillsFilterFooter)
+	footer := c.Text(i18n.SkillsFooter)
+	if s.Filtering {
+		footer = c.Text(i18n.SkillsFilterFooter)
 	}
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(m.text(i18n.SkillsHeading)) + "  " +
-		m.style.Dim.Render(m.text(i18n.SkillsSubtitle)) + "\n")
+	out.WriteString(c.Style.Heading.Render(c.Text(i18n.SkillsHeading)) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.SkillsSubtitle)) + "\n")
 
-	rows := s.rows()
-	out.WriteString(s.filterRow(m, len(rows)))
+	rows := s.Rows()
+	out.WriteString(s.filterRow(c, len(rows)))
 	out.WriteString("\n")
 
 	anyone := 0
-	for _, current := range s.skills {
+	for _, current := range s.Skills {
 		if forge.AnyoneMayCarry(current) {
 			anyone++
 		}
@@ -973,7 +1079,7 @@ func (s skillsScreen) view(m model) (string, string) {
 	// The tally is the book's own count and stays that whatever is filtered: how
 	// many skills there are and how many anybody may carry are facts about the
 	// data, and the filter row above already says how much of it is on screen.
-	tally := m.style.Dim.Render(m.text(i18n.SkillsTally, len(s.skills), anyone))
+	tally := c.Style.Dim.Render(c.Text(i18n.SkillsTally, len(s.Skills), anyone))
 	if len(rows) == 0 {
 		// Said rather than drawn as an empty box, and the two reasons a listing
 		// can be empty are told apart: a book with nothing in it is a data
@@ -981,26 +1087,26 @@ func (s skillsScreen) view(m model) (string, string) {
 		// keystroke to take back. The column header is not drawn either — a
 		// header over no rows names columns that are not there.
 		empty := i18n.SkillsFilterNothing
-		if len(s.skills) == 0 {
+		if len(s.Skills) == 0 {
 			empty = i18n.NoneCatalogued
 		}
-		out.WriteString("  " + m.text(empty) + "\n\n")
+		out.WriteString("  " + c.Text(empty) + "\n\n")
 		out.WriteString(tally)
 		return out.String(), footer
 	}
 
 	// Measured over the whole book rather than over the visible rows, which is
-	// pickState.idColumn's own scope and here it earns it twice: the filter
+	// PickState.IDColumn's own scope and here it earns it twice: the filter
 	// narrows on a keystroke, so columns measured from what is left would slide
 	// sideways under the author as they type. The last column is free text
 	// against the window, so what a wide id column costs is a few cells of a
 	// restriction summary that clips anyway.
 	column, glossColumn := 0, 0
-	for _, current := range s.skills {
+	for _, current := range s.Skills {
 		if width := lipgloss.Width(current.ID); width > column {
 			column = width
 		}
-		if width := lipgloss.Width(m.lang.SkillName(current)); width > glossColumn {
+		if width := lipgloss.Width(c.Lang.SkillName(current)); width > glossColumn {
 			glossColumn = width
 		}
 	}
@@ -1008,21 +1114,21 @@ func (s skillsScreen) view(m model) (string, string) {
 		// The header has to fit the column it names, and a newly authored skill
 		// has no gloss, so this width is the widest of the two rather than of
 		// the glosses alone.
-		if width := lipgloss.Width(m.text(i18n.ColumnGloss)); width > glossColumn {
+		if width := lipgloss.Width(c.Text(i18n.ColumnGloss)); width > glossColumn {
 			glossColumn = width
 		}
 	}
-	from, to := window(len(rows), s.cursor, skillsRoom(m))
+	from, to := Window(len(rows), s.Cursor, skillsRoom(c))
 	// The header names the one column nobody could guess. The other three are
 	// an id, an element and a power, each labelled with the word the form that
 	// authored it uses — which is the point of naming them from the same keys:
 	// an author who has just typed a damage multiplier on the form should find
 	// that column called the same thing here, rather than the shorter word the
 	// form stopped using.
-	powerColumn := skillPowerColumn(m)
-	out.WriteString("  " + m.style.Dim.Render(skillRow(column+1, glossColumn, powerColumn,
-		m.text(i18n.SkillFieldID), m.text(i18n.ColumnGloss), m.text(i18n.LabelElement),
-		m.text(i18n.SkillFieldPower), m.text(i18n.ColumnWhoMayCarry))) + "\n")
+	powerColumn := skillPowerColumn(c)
+	out.WriteString("  " + c.Style.Dim.Render(skillRow(column+1, glossColumn, powerColumn,
+		c.Text(i18n.SkillFieldID), c.Text(i18n.ColumnGloss), c.Text(i18n.LabelElement),
+		c.Text(i18n.SkillFieldPower), c.Text(i18n.ColumnWhoMayCarry))) + "\n")
 	for index := from; index < to; index++ {
 		current := rows[index]
 		marker := "  "
@@ -1030,10 +1136,10 @@ func (s skillsScreen) view(m model) (string, string) {
 		// numbers on the row; everything else about a skill is a keypress away
 		// on the form that authored it.
 		row := skillRow(column+1, glossColumn, powerColumn,
-			current.ID, m.lang.SkillName(current),
+			current.ID, c.Lang.SkillName(current),
 			current.Element.String(),
 			strconv.Itoa(current.Power)+"x"+strconv.Itoa(current.StrikeCount()), "")
-		// Measured against the window rather than against the floor. minWidth is
+		// Measured against the window rather than against the floor. MinWidth is
 		// the width this program promises to draw in, not a ceiling on what it
 		// may spend, and this last column is data: a restriction cut to "để dành
 		// cho loài dr…" is a row that stopped saying which species it is for,
@@ -1041,10 +1147,10 @@ func (s skillsScreen) view(m model) (string, string) {
 		// wraps at the floor — a paragraph run across a wide terminal is a line
 		// a reader loses their place in — but a table cell is read by scanning
 		// down it, so width is the one thing it can always use.
-		row += clip(m.lang.WhoMaySummary(current), m.usableWidth()-3-lipgloss.Width(row))
-		if index == s.cursor {
+		row += Clip(c.Lang.WhoMaySummary(current), c.UsableWidth()-3-lipgloss.Width(row))
+		if index == s.Cursor {
 			marker = "> "
-			row = m.style.Selected.Render(row)
+			row = c.Style.Selected.Render(row)
 		}
 		out.WriteString(marker + row + "\n")
 	}
@@ -1053,70 +1159,74 @@ func (s skillsScreen) view(m model) (string, string) {
 	// form previews an unwritten one against — so a power being authored can be
 	// compared with the powers already in the book without leaving the program.
 	// Through the same accessor e and ? read, so the figure is the marked row's.
-	if selected, held := s.selected(); held {
-		preview := m.lib.PreviewDamage(selected)
-		out.WriteString(m.label(m.text(i18n.LabelDamage), "%s",
-			m.lang.Damage(preview)))
+	if selected, held := s.Selected(); held {
+		preview := c.Lib.PreviewDamage(selected)
+		out.WriteString(c.Label(c.Text(i18n.LabelDamage), "%s",
+			c.Lang.Damage(preview)))
 		if preview.Amplified > 0 {
-			out.WriteString(m.continued("%s",
-				m.text(i18n.DamageAmplified, preview.Amplified)))
+			out.WriteString(c.Continued("%s",
+				c.Text(i18n.DamageAmplified, preview.Amplified)))
 		}
 	}
-	if s.added != nil {
-		out.WriteString(m.style.Good.Render(m.text(i18n.SkillAdded,
-			s.added.ID, m.lib.SkillsPath())) + "\n")
+	if s.Added != nil {
+		out.WriteString(c.Style.Good.Render(c.Text(i18n.SkillAdded,
+			s.Added.ID, c.Lib.SkillsPath())) + "\n")
 	}
-	if s.edited != nil {
-		out.WriteString(m.style.Good.Render(m.text(i18n.SkillEdited,
-			s.edited.After.ID, m.lib.SkillsPath())) + "\n")
+	if s.Edited != nil {
+		out.WriteString(c.Style.Good.Render(c.Text(i18n.SkillEdited,
+			s.Edited.After.ID, c.Lib.SkillsPath())) + "\n")
 		// The before and after, and only when there is something to compare: an
 		// edit to a restriction or a targeting side moves no damage, and a line
 		// saying a number did not change has to be read to learn nothing.
-		if s.edited.MovesDamage() {
-			out.WriteString(m.style.Dim.Render(m.lang.DamageMoved(*s.edited)) + "\n")
+		if s.Edited.MovesDamage() {
+			out.WriteString(c.Style.Dim.Render(c.Lang.DamageMoved(*s.Edited)) + "\n")
 		}
 	}
 	out.WriteString(tally)
 	return out.String(), footer
 }
 
-// skillFieldLabel is what each row of the form is called.
-func skillFieldLabel(m model, field int) string {
-	keys := [skillFieldCount]i18n.Key{
-		skillFieldID: i18n.SkillFieldID,
+// SkillFieldLabel is what each row of the form is called.
+//
+// Exported with SkillFieldHelp and SkillLabelWidth for the reason the field
+// constants are: a client's width sweep measures every row of this form in both
+// languages, and a fixture cannot follow a screen across a package boundary.
+func SkillFieldLabel(c Context, field int) string {
+	keys := [SkillFieldCount]i18n.Key{
+		SkillFieldID: i18n.SkillFieldID,
 		// The same key the listing's own column uses, because they are the same
 		// thing: an author who has just typed a name here should find the column
 		// that shows it called what they typed it into.
-		skillFieldName:              i18n.ColumnGloss,
-		skillFieldFlavour:           i18n.LabelFlavour,
-		skillFieldElement:           i18n.SkillFieldElement,
-		skillFieldTarget:            i18n.SkillFieldTarget,
-		skillFieldRange:             i18n.SkillFieldRange,
-		skillFieldShape:             i18n.SkillFieldShape,
-		skillFieldPower:             i18n.SkillFieldPower,
-		skillFieldStrikes:           i18n.SkillFieldStrikes,
-		skillFieldAccuracy:          i18n.SkillFieldAccuracy,
-		skillFieldCooldown:          i18n.SkillFieldCooldown,
-		skillFieldInflicts:          i18n.SkillFieldInflicts,
-		skillFieldOnItself:          i18n.SkillFieldOnItself,
-		skillFieldPierce:            i18n.SkillFieldPierce,
-		skillFieldCrit:              i18n.SkillFieldCrit,
-		skillFieldRestores:          i18n.SkillFieldRestores,
-		skillFieldDrains:            i18n.SkillFieldDrains,
-		skillFieldKeptForElements:   i18n.SkillFieldKeptForElements,
-		skillFieldKeptForRoles:      i18n.SkillFieldKeptForRoles,
-		skillFieldKeptForCharacters: i18n.SkillFieldKeptForCharacters,
-		skillFieldKeptForSpecies:    i18n.SkillFieldKeptForSpecies,
-		skillFieldKeptForOrigins:    i18n.SkillFieldKeptForOrigins,
+		SkillFieldName:              i18n.ColumnGloss,
+		SkillFieldFlavour:           i18n.LabelFlavour,
+		SkillFieldElement:           i18n.SkillFieldElement,
+		SkillFieldTarget:            i18n.SkillFieldTarget,
+		SkillFieldRange:             i18n.SkillFieldRange,
+		SkillFieldShape:             i18n.SkillFieldShape,
+		SkillFieldPower:             i18n.SkillFieldPower,
+		SkillFieldStrikes:           i18n.SkillFieldStrikes,
+		SkillFieldAccuracy:          i18n.SkillFieldAccuracy,
+		SkillFieldCooldown:          i18n.SkillFieldCooldown,
+		SkillFieldInflicts:          i18n.SkillFieldInflicts,
+		SkillFieldOnItself:          i18n.SkillFieldOnItself,
+		SkillFieldPierce:            i18n.SkillFieldPierce,
+		SkillFieldCrit:              i18n.SkillFieldCrit,
+		SkillFieldRestores:          i18n.SkillFieldRestores,
+		SkillFieldDrains:            i18n.SkillFieldDrains,
+		SkillFieldKeptForElements:   i18n.SkillFieldKeptForElements,
+		SkillFieldKeptForRoles:      i18n.SkillFieldKeptForRoles,
+		SkillFieldKeptForCharacters: i18n.SkillFieldKeptForCharacters,
+		SkillFieldKeptForSpecies:    i18n.SkillFieldKeptForSpecies,
+		SkillFieldKeptForOrigins:    i18n.SkillFieldKeptForOrigins,
 	}
-	return m.text(keys[field])
+	return c.Text(keys[field])
 }
 
-// skillFieldHelp is the line describing the field the cursor is on: what it
+// SkillFieldHelp is the line describing the field the cursor is on: what it
 // means, and an answer that would be valid.
 //
 // One entry per field, and the array is indexed by the field constant for the
-// same reason skillFieldLabel's is — a field added without a help line is a
+// same reason SkillFieldLabel's is — a field added without a help line is a
 // blank line rather than a build failure, so TestEveryFieldOfTheSkillFormHasHelp
 // walks every field and reads the screen.
 //
@@ -1124,41 +1234,41 @@ func skillFieldLabel(m model, field int) string {
 // of two fields out of fourteen and drawn whichever field had the cursor, which
 // is why it explained nothing about the fields nobody could guess: what a shape
 // covers, what syntax the statuses take, what an empty allowlist means.
-func skillFieldHelp(m model, field int) string {
-	keys := [skillFieldCount]i18n.Key{
-		skillFieldID:                i18n.SkillHelpID,
-		skillFieldName:              i18n.SkillHelpName,
-		skillFieldFlavour:           i18n.SkillHelpFlavour,
-		skillFieldElement:           i18n.SkillHelpElement,
-		skillFieldTarget:            i18n.SkillHelpTarget,
-		skillFieldRange:             i18n.SkillHelpRange,
-		skillFieldShape:             i18n.SkillHelpShape,
-		skillFieldPower:             i18n.SkillHelpPower,
-		skillFieldStrikes:           i18n.SkillHelpStrikes,
-		skillFieldAccuracy:          i18n.SkillHelpAccuracy,
-		skillFieldCooldown:          i18n.SkillHelpCooldown,
-		skillFieldInflicts:          i18n.SkillHelpInflicts,
-		skillFieldOnItself:          i18n.SkillHelpOnItself,
-		skillFieldPierce:            i18n.SkillHelpPierce,
-		skillFieldCrit:              i18n.SkillHelpCrit,
-		skillFieldRestores:          i18n.SkillHelpRestores,
-		skillFieldDrains:            i18n.SkillHelpDrains,
-		skillFieldKeptForElements:   i18n.SkillHelpKeptForElements,
-		skillFieldKeptForRoles:      i18n.SkillHelpKeptForRoles,
-		skillFieldKeptForCharacters: i18n.SkillHelpKeptForCharacters,
-		skillFieldKeptForSpecies:    i18n.SkillHelpKeptForSpecies,
-		skillFieldKeptForOrigins:    i18n.SkillHelpKeptForOrigins,
+func SkillFieldHelp(c Context, field int) string {
+	keys := [SkillFieldCount]i18n.Key{
+		SkillFieldID:                i18n.SkillHelpID,
+		SkillFieldName:              i18n.SkillHelpName,
+		SkillFieldFlavour:           i18n.SkillHelpFlavour,
+		SkillFieldElement:           i18n.SkillHelpElement,
+		SkillFieldTarget:            i18n.SkillHelpTarget,
+		SkillFieldRange:             i18n.SkillHelpRange,
+		SkillFieldShape:             i18n.SkillHelpShape,
+		SkillFieldPower:             i18n.SkillHelpPower,
+		SkillFieldStrikes:           i18n.SkillHelpStrikes,
+		SkillFieldAccuracy:          i18n.SkillHelpAccuracy,
+		SkillFieldCooldown:          i18n.SkillHelpCooldown,
+		SkillFieldInflicts:          i18n.SkillHelpInflicts,
+		SkillFieldOnItself:          i18n.SkillHelpOnItself,
+		SkillFieldPierce:            i18n.SkillHelpPierce,
+		SkillFieldCrit:              i18n.SkillHelpCrit,
+		SkillFieldRestores:          i18n.SkillHelpRestores,
+		SkillFieldDrains:            i18n.SkillHelpDrains,
+		SkillFieldKeptForElements:   i18n.SkillHelpKeptForElements,
+		SkillFieldKeptForRoles:      i18n.SkillHelpKeptForRoles,
+		SkillFieldKeptForCharacters: i18n.SkillHelpKeptForCharacters,
+		SkillFieldKeptForSpecies:    i18n.SkillHelpKeptForSpecies,
+		SkillFieldKeptForOrigins:    i18n.SkillHelpKeptForOrigins,
 	}
-	return m.text(keys[clamp(field, 0, skillFieldCount-1)])
+	return c.Text(keys[Clamp(field, 0, SkillFieldCount-1)])
 }
 
-// skillLabelWidth is the column the field names sit in, measured from the labels
+// SkillLabelWidth is the column the field names sit in, measured from the labels
 // themselves rather than declared: the longest is "cooldown" in one language and
 // "để dành cho mẫu" in the other.
-func skillLabelWidth(m model) int {
+func SkillLabelWidth(c Context) int {
 	widest := 0
-	for field := range skillFieldCount {
-		if width := lipgloss.Width(skillFieldLabel(m, field)); width > widest {
+	for field := range SkillFieldCount {
+		if width := lipgloss.Width(SkillFieldLabel(c, field)); width > widest {
 			widest = width
 		}
 	}
@@ -1189,42 +1299,42 @@ const (
 //
 // The arrows here are the chooser's own, so the drawing follows the field rather
 // than holding a copy of it, and nothing needs applying when it closes.
-func (s skillsScreen) viewShape(m model) (string, string) {
-	footer := m.text(i18n.SkillShapeFooter)
-	shapes := m.lib.PatternNames()
-	name := at(shapes, s.shapeIndex)
+func (s SkillsScreen) viewShape(c Context) (string, string) {
+	footer := c.Text(i18n.SkillShapeFooter)
+	shapes := c.Lib.PatternNames()
+	name := at(shapes, s.ShapeIndex)
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(m.text(i18n.SkillShapeHeading)) + "  " +
-		m.style.Dim.Render(m.text(i18n.ChoicePosition,
-			clamp(s.shapeIndex, 0, len(shapes)-1)+1, len(shapes))) + "\n")
+	out.WriteString(c.Style.Heading.Render(c.Text(i18n.SkillShapeHeading)) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.ChoicePosition,
+			Clamp(s.ShapeIndex, 0, len(shapes)-1)+1, len(shapes))) + "\n")
 
 	// The draft rather than the shape alone: what a shape covers depends on the
 	// side the skill aims at, and that is the field above this one.
-	draft := s.draft(m)
-	coverage, err := m.lib.ShapeCoverage(draft.Pattern, draft.Target)
+	draft := s.Draft(c)
+	coverage, err := c.Lib.ShapeCoverage(draft.Pattern, draft.Target)
 	if err != nil {
 		// Unreachable through the chooser, which offers the book's own names,
 		// and drawn rather than swallowed for the same reason the picker draws a
 		// lost id: a shape the book cannot resolve is worth seeing.
-		out.WriteString(m.style.Bad.Render("  "+m.lang.Error(err)) + "\n")
+		out.WriteString(c.Style.Bad.Render("  "+c.Lang.Error(err)) + "\n")
 		return out.String(), footer
 	}
 	// How many cells it really catches, and — when the aim loses one — that it
 	// did, so a shape drawing short reads as this aim rather than as this shape.
-	caught := m.text(i18n.SkillShapeCoverage, coverage.Covered())
+	caught := c.Text(i18n.SkillShapeCoverage, coverage.Covered())
 	if !coverage.Whole() {
-		caught = m.text(i18n.SkillShapeShort, coverage.Covered(), coverage.Max)
+		caught = c.Text(i18n.SkillShapeShort, coverage.Covered(), coverage.Max)
 	}
-	out.WriteString("  " + m.style.Selected.Render(name) + "  " +
-		m.style.Dim.Render(caught) + "\n")
-	out.WriteString("  " + m.style.Dim.Render(
-		m.text(i18n.SkillShapeDrawnAt, coverage.Primary)) + "\n\n")
+	out.WriteString("  " + c.Style.Selected.Render(name) + "  " +
+		c.Style.Dim.Render(caught) + "\n")
+	out.WriteString("  " + c.Style.Dim.Render(
+		c.Text(i18n.SkillShapeDrawnAt, coverage.Primary)) + "\n\n")
 
 	for _, line := range strings.Split(shapeBoard(coverage), "\n") {
 		out.WriteString("  " + line + "\n")
 	}
-	out.WriteString("\n  " + m.style.Dim.Render(m.text(i18n.SkillShapeLegend,
-		shapeAimMark, shapeSplashMark, m.lib.SplashShare())))
+	out.WriteString("\n  " + c.Style.Dim.Render(c.Text(i18n.SkillShapeLegend,
+		shapeAimMark, shapeSplashMark, c.Lib.SplashShare())))
 	return out.String(), footer
 }
 
@@ -1247,21 +1357,21 @@ func shapeBoard(coverage forge.ShapeCoverage) string {
 
 // formRoom is how many field rows the window has.
 //
-// The body gets m.height-4. This form spends the rest on a heading, a blank, a
-// blank, the damage row and the help line — five — plus a row for each ellipsis
+// The body gets c.Height-4. This form spends the rest on a heading, a blank, a
+// blank, the damage row and the help line — five — plus a row for each Ellipsis
 // the window draws and one for a refusal when there is one. Counting them here
 // rather than guessing is what the listing had to learn twice: a reserve one out
 // truncates the screen's own summary and looks like a layout bug rather than an
 // arithmetic one.
-func (s skillsScreen) formRoom(m model) int {
+func (s SkillsScreen) formRoom(c Context) int {
 	spent := 5
-	if s.err != nil {
+	if s.Err != nil {
 		spent++
 	}
 	// Room for both ellipses whenever the window cannot hold everything, so the
 	// count does not change as the cursor moves and shift every row under it.
-	room := m.height - 4 - spent
-	if room < skillFieldCount {
+	room := c.Height - 4 - spent
+	if room < SkillFieldCount {
 		room -= 2
 	}
 	if room < 1 {
@@ -1270,24 +1380,24 @@ func (s skillsScreen) formRoom(m model) int {
 	return room
 }
 
-func (s skillsScreen) viewForm(m model) (string, string) {
-	if s.shapeDrawn {
-		return s.viewShape(m)
+func (s SkillsScreen) viewForm(c Context) (string, string) {
+	if s.ShapeDrawn {
+		return s.viewShape(c)
 	}
-	footer := m.text(i18n.SkillFormFooter, saveKeyLabel())
+	footer := c.Text(i18n.SkillFormFooter, SaveKeyLabel())
 	// The heading is the whole of what tells an author which of the two jobs this
 	// form is doing, so it is not shared: every field is prefilled on an edit, and
 	// a prefilled form under "new skill" reads as a form that has remembered the
 	// last thing typed into it.
 	heading := i18n.SkillFormHeading
-	if s.editing != "" {
+	if s.Editing != "" {
 		heading = i18n.SkillFormEditHeading
 	}
 	var out strings.Builder
-	out.WriteString(m.style.Heading.Render(m.text(heading)) + "  " +
-		m.style.Dim.Render(m.text(i18n.SkillFormSubtitle)) + "\n\n")
+	out.WriteString(c.Style.Heading.Render(c.Text(heading)) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.SkillFormSubtitle)) + "\n\n")
 
-	width := skillLabelWidth(m)
+	width := SkillLabelWidth(c)
 	// The form scrolls now. It spent every row a 120x24 window has at fourteen
 	// fields, and healing brought three more, so the choice was between a
 	// sub-screen for the rest and a window over all of them — and a form split
@@ -1295,30 +1405,30 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 	//
 	// The window follows the cursor rather than the top, so tabbing to the last
 	// field brings it into view instead of leaving the cursor off screen.
-	from, to := window(skillFieldCount, s.field, s.formRoom(m))
+	from, to := Window(SkillFieldCount, s.Field, s.formRoom(c))
 	if from > 0 {
-		out.WriteString("  " + m.style.Dim.Render(ellipsis) + "\n")
+		out.WriteString("  " + c.Style.Dim.Render(Ellipsis) + "\n")
 	}
 	for field := from; field < to; field++ {
 		marker := "  "
-		if field == s.field {
+		if field == s.Field {
 			marker = "> "
 		}
-		name := pad(skillFieldLabel(m, field), width)
-		if field == s.field {
-			name = m.style.Selected.Render(name)
+		name := Pad(SkillFieldLabel(c, field), width)
+		if field == s.Field {
+			name = c.Style.Selected.Render(name)
 		} else {
-			name = m.style.Label.Render(name)
+			name = c.Style.Label.Render(name)
 		}
-		out.WriteString(marker + name + " " + s.value(m, field, width) + "\n")
+		out.WriteString(marker + name + " " + s.FieldValue(c, field, width) + "\n")
 	}
 
-	if to < skillFieldCount {
-		out.WriteString("  " + m.style.Dim.Render(ellipsis) + "\n")
+	if to < SkillFieldCount {
+		out.WriteString("  " + c.Style.Dim.Render(Ellipsis) + "\n")
 	}
 
 	out.WriteString("\n")
-	out.WriteString(s.damageRow(m, width))
+	out.WriteString(s.DamageRow(c, width))
 	// The help for the field the cursor is on, at the body's own indent rather
 	// than in the value column. The label column is measured per language and
 	// takes a third of the row in Vietnamese; a sentence that has to say what a
@@ -1331,69 +1441,73 @@ func (s skillsScreen) viewForm(m model) (string, string) {
 	// spent all twenty before the name field arrived; dropping the newline is
 	// what paid for it, with nothing to see on screen either way. It is the same
 	// accounting skillsRoom records for the listing, which has never had one.
-	tail := []string{"  " + m.style.Dim.Render(skillFieldHelp(m, s.field))}
-	if s.err != nil {
+	tail := []string{"  " + c.Style.Dim.Render(SkillFieldHelp(c, s.Field))}
+	if s.Err != nil {
 		tail = append(tail,
-			m.style.Bad.Render(m.text(i18n.WriteRefused, m.lang.Error(s.err))))
+			c.Style.Bad.Render(c.Text(i18n.WriteRefused, c.Lang.Error(s.Err))))
 	}
 	out.WriteString(strings.Join(tail, "\n"))
 	return out.String(), footer
 }
 
-// value is what one row shows: a chooser, a chosen list, or what was typed.
-func (s skillsScreen) value(m model, field, labelWidth int) string {
+// FieldValue is what one row shows: a chooser, a chosen list, or what was typed.
+//
+// Exported for the reason DamageRow is — the client's width sweep reads two of
+// these rows, the allowlist and the chance reading, as the two callers of
+// FieldValueRoom that live on this screen.
+func (s SkillsScreen) FieldValue(c Context, field, labelWidth int) string {
 	choice := func(values []string, index int) string {
 		if len(values) == 0 {
-			return m.style.Bad.Render(m.text(i18n.NoneCatalogued))
+			return c.Style.Bad.Render(c.Text(i18n.NoneCatalogued))
 		}
-		return fmt.Sprintf(choiceFormat, m.lang.Glossed(at(values, index)),
-			m.style.Dim.Render(m.text(i18n.ChoicePosition,
-				clamp(index, 0, len(values)-1)+1, len(values))))
+		return fmt.Sprintf(ChoiceFormat, c.Lang.Glossed(at(values, index)),
+			c.Style.Dim.Render(c.Text(i18n.ChoicePosition,
+				Clamp(index, 0, len(values)-1)+1, len(values))))
 	}
 	switch field {
-	case skillFieldElement:
-		return choice(forge.ElementNames(), s.elementIndex)
-	case skillFieldTarget:
-		return choice(forge.TargetNames(), s.targetIndex)
-	case skillFieldShape:
-		return choice(m.lib.PatternNames(), s.shapeIndex)
-	case skillFieldKeptForElements:
-		return s.listValue(m, s.keptElements, labelWidth)
-	case skillFieldKeptForRoles:
-		return s.listValue(m, s.keptRoles, labelWidth)
-	case skillFieldKeptForCharacters:
-		return s.listValue(m, s.keptWho, labelWidth)
-	case skillFieldKeptForSpecies:
-		return s.listValue(m, s.keptKinds, labelWidth)
-	case skillFieldKeptForOrigins:
-		return s.listValue(m, s.keptWorlds, labelWidth)
-	case skillFieldAccuracy, skillFieldPower, skillFieldPierce, skillFieldCrit,
-		skillFieldRestores, skillFieldDrains:
+	case SkillFieldElement:
+		return choice(forge.ElementNames(), s.ElementIndex)
+	case SkillFieldTarget:
+		return choice(forge.TargetNames(), s.TargetIndex)
+	case SkillFieldShape:
+		return choice(c.Lib.PatternNames(), s.ShapeIndex)
+	case SkillFieldKeptForElements:
+		return s.listValue(c, s.KeptElements, labelWidth)
+	case SkillFieldKeptForRoles:
+		return s.listValue(c, s.KeptRoles, labelWidth)
+	case SkillFieldKeptForCharacters:
+		return s.listValue(c, s.KeptWho, labelWidth)
+	case SkillFieldKeptForSpecies:
+		return s.listValue(c, s.KeptKinds, labelWidth)
+	case SkillFieldKeptForOrigins:
+		return s.listValue(c, s.KeptWorlds, labelWidth)
+	case SkillFieldAccuracy, SkillFieldPower, SkillFieldPierce, SkillFieldCrit,
+		SkillFieldRestores, SkillFieldDrains:
 		// Every one of these is authored in parts per thousand because that is
 		// what the engine multiplies and divides by, but nobody reads 850 as a
 		// chance or 2200 as "twice over". The percentage sits beside the field rather than
 		// replacing it: the number written to the file is still the number on
 		// screen.
-		return s.inputs[field].View() + s.percentHint(m, field)
-	case skillFieldInflicts:
+		return s.Inputs[field].View() + s.percentHint(c, field)
+	case SkillFieldInflicts:
 		// The chances in this field are parts per thousand too, but the field
 		// holds a whole list in the syntax ParseApplications reads, so the
 		// reading goes beside it rather than into it.
-		return s.inputs[field].View() + s.chanceHint(m, labelWidth)
+		return s.Inputs[field].View() + s.chanceHint(c, labelWidth)
 	default:
-		return s.inputs[field].View()
+		return s.Inputs[field].View()
 	}
 }
 
 // chanceHint reads out the chances in the inflicts field. A list being typed is
 // unparseable most of the time, and that is not an error to announce, so it says
 // nothing until the whole list parses.
-func (s skillsScreen) chanceHint(m model, labelWidth int) string {
-	typed := strings.TrimSpace(s.inputs[skillFieldInflicts].Value())
+func (s SkillsScreen) chanceHint(c Context, labelWidth int) string {
+	typed := strings.TrimSpace(s.Inputs[SkillFieldInflicts].Value())
 	if typed == "" {
 		return ""
 	}
-	applications, err := m.lib.ParseApplications(typed)
+	applications, err := c.Lib.ParseApplications(typed)
 	if err != nil || len(applications) == 0 {
 		return ""
 	}
@@ -1413,22 +1527,22 @@ func (s skillsScreen) chanceHint(m model, labelWidth int) string {
 	//
 	// Against the window and not the floor: a chance is data, and a list of them
 	// cut short on a wide terminal hides one of the numbers being authored.
-	room := fieldValueRoom(m.usableWidth(), labelWidth,
-		lipgloss.Width(s.inputs[skillFieldInflicts].View()))
-	return "  " + m.style.Dim.Render(clip(forge.ApplicationChances(applications), room))
+	room := FieldValueRoom(c.UsableWidth(), labelWidth,
+		lipgloss.Width(s.Inputs[SkillFieldInflicts].View()))
+	return "  " + c.Style.Dim.Render(Clip(forge.ApplicationChances(applications), room))
 }
 
 // percentHint is the dim reading of a parts-per-thousand field, or nothing at
 // all while the field does not hold one. A half-typed number is the normal
 // state of a text field, so it is not an error to say nothing about.
-func (s skillsScreen) percentHint(m model, field int) string {
-	permille, err := strconv.Atoi(strings.TrimSpace(s.inputs[field].Value()))
+func (s SkillsScreen) percentHint(c Context, field int) string {
+	permille, err := strconv.Atoi(strings.TrimSpace(s.Inputs[field].Value()))
 	if err != nil || permille == 0 {
 		// A support skill declares no power, and "0%" says nothing the zero did
 		// not.
 		return ""
 	}
-	return "  " + m.style.Dim.Render(forge.Percent(permille))
+	return "  " + c.Style.Dim.Render(forge.Percent(permille))
 }
 
 // listValue draws one of the three allowlists: what is in it, or that anybody
@@ -1437,24 +1551,28 @@ func (s skillsScreen) percentHint(m model, field int) string {
 // The list is ids, so it takes the window: an allowlist clipped at the floor
 // stops naming the last character it is kept for, and which characters those
 // are is the whole content of the field.
-func (s skillsScreen) listValue(m model, chosen []string, labelWidth int) string {
-	room := fieldValueRoom(m.usableWidth(), labelWidth,
-		lipgloss.Width(m.text(i18n.KitChooseHint)))
+func (s SkillsScreen) listValue(c Context, chosen []string, labelWidth int) string {
+	room := FieldValueRoom(c.UsableWidth(), labelWidth,
+		lipgloss.Width(c.Text(i18n.KitChooseHint)))
 	if len(chosen) == 0 {
-		return m.style.Dim.Render(m.text(i18n.WhoAnyone) + "  " + m.text(i18n.KitChooseHint))
+		return c.Style.Dim.Render(c.Text(i18n.WhoAnyone) + "  " + c.Text(i18n.KitChooseHint))
 	}
-	return clip(strings.Join(chosen, " "), room) + "  " +
-		m.style.Dim.Render(m.text(i18n.KitChooseHint))
+	return Clip(strings.Join(chosen, " "), room) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.KitChooseHint))
 }
 
-// damageRow is the point of authoring a skill on a screen rather than in a file:
+// DamageRow is the point of authoring a skill on a screen rather than in a file:
 // what the power being typed is actually worth, before it is written.
-func (s skillsScreen) damageRow(m model, labelWidth int) string {
-	preview, err := m.lib.PreviewDraft(s.draft(m))
+//
+// Exported for the reason SkillLabelWidth and FieldValue are: the client's width
+// sweep measures this row at two windows in both languages, and a fixture cannot
+// follow a screen across a package boundary.
+func (s SkillsScreen) DamageRow(c Context, labelWidth int) string {
+	preview, err := c.Lib.PreviewDraft(s.Draft(c))
 	if err != nil {
-		return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s",
-			m.style.Bad.Render(m.lang.Error(err)))
+		return c.LabelAt(c.Text(i18n.LabelDamage), labelWidth, "%s",
+			c.Style.Bad.Render(c.Lang.Error(err)))
 	}
-	return m.labelAt(m.text(i18n.LabelDamage), labelWidth, "%s",
-		m.lang.Damage(preview))
+	return c.LabelAt(c.Text(i18n.LabelDamage), labelWidth, "%s",
+		c.Lang.Damage(preview))
 }

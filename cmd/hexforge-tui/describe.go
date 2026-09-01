@@ -13,7 +13,7 @@ import (
 // of the step it arrived in.
 //
 // ⚠️ **They used to reach backwards.** blurb.go read m.browse.level eight times,
-// m.skills.cursor five, m.browse.cursor five and m.play four ways; preview.go
+// m.skills.Cursor five, m.browse.cursor five and m.play four ways; preview.go
 // read m.browse three ways. A screen that pulls from three other screens cannot
 // move into internal/screen and cannot be drawn by a client whose screens are
 // different ones — so the direction is inverted: the raiser builds a
@@ -200,15 +200,15 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	// Through the listing's own visible rows, not its book: the cursor counts what
 	// the filter left, so stepping it against the full book would walk past the
 	// end of the narrowed listing and describe a skill the screen behind is not
-	// pointing at. skillsScreen.rows is the one funnel — see it for why.
-	rows := len(m.skills.rows())
+	// pointing at. draw.SkillsScreen.Rows is the one funnel — see it for why.
+	rows := len(m.skills.Rows())
 	switch message.String() {
 	case "up", "k":
-		m.skills.cursor = clamp(m.skills.cursor-1, 0, rows-1)
+		m.skills.Cursor = clamp(m.skills.Cursor-1, 0, rows-1)
 	case "down", "j":
-		m.skills.cursor = clamp(m.skills.cursor+1, 0, rows-1)
+		m.skills.Cursor = clamp(m.skills.Cursor+1, 0, rows-1)
 	}
-	m.blurb.Subject = m.skills.subject()
+	m.blurb.Subject = m.skills.Subject()
 	return m, nil
 }
 

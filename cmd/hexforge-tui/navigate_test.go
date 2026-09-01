@@ -172,18 +172,26 @@ func TestEveryScreenThatAsksAnswersItsOwnQuestion(t *testing.T) {
 // screen grows one guard and it is noticed, while the skill form alone raises
 // six pickers that differ in nothing but which field they fill.
 //
-// ⚠️ It walks pickDestCount rather than the map, for the reason the three walks
-// above walk theirs — and here the count is doing more than a list would.
-// Adding a destination is adding a constant, and a constant added above
-// pickDestCount enters this walk without anybody remembering to enrol it, which
-// is a failure guardAskers' hand-written list can still have.
+// ⚠️ **There are two destination vocabularies now and both are walked.** Six of
+// the ten followed the skill form into internal/screen and are draw.SkillsPick;
+// the four naming a screen still in this package are pickDest. The map is keyed
+// by `any` because PickState carries either, so a walk over one count alone
+// would leave the other free to grow an entry in silence.
+//
+// ⚠️ It walks the counts rather than the map, for the reason the three walks
+// above walk theirs — and here a count is doing more than a list would. Adding a
+// destination is adding a constant, and a constant added above the count enters
+// this walk without anybody remembering to enrol it, which is a failure
+// guardAskers' hand-written list can still have.
 //
 // ⚠️ **And it proves presence, not effect.** An entry that exists and writes the
 // wrong field passes this completely, which is the #207 shape and the one #214
 // measured on the guard. What holds the other half is one behaviour test per
 // destination, driven through the real keys: TestEachAllowlistPickLandsInItsOwnField
 // and TestTheCharacterFormsTwoPicksLandInTheirOwnFields in picked_test.go for
-// seven of the ten, and the four named in their doc comment for the rest.
+// seven of the ten, screen.TestEverySkillsPickDestinationWritesItsOwnField for
+// the six on that side of the boundary, and the four named in their doc comment
+// for the rest.
 func TestEveryPickDestinationLandsSomewhere(t *testing.T) {
 	for value := 1; value < int(pickDestCount); value++ {
 		into := pickDest(value)
@@ -192,16 +200,138 @@ func TestEveryPickDestinationLandsSomewhere(t *testing.T) {
 				"enter on it takes the list down and writes nothing", value)
 		}
 	}
-	// And nothing beyond them, which is the other half of total: an entry for a
-	// value the enum does not declare is a landing no picker could reach.
-	if got, want := len(pickedInto), int(pickDestCount)-1; got != want {
-		t.Errorf("pickedInto holds %d entries against the %d destinations declared besides pickNowhere",
-			got, want)
+	for value := 1; value < int(draw.SkillsPickCount); value++ {
+		into := draw.SkillsPick(value)
+		if _, known := pickedInto[into]; !known {
+			t.Errorf("draw.SkillsPick %d lands nowhere in this client, so a picker closed "+
+				"with enter on it takes the list down and writes nothing", value)
+		}
 	}
-	// pickNowhere is the zero value, which a pickState built by hand carries, so
-	// a landing for it would be one every un-destined picker fell into.
+	// And nothing beyond them, which is the other half of total: an entry for a
+	// value neither enum declares is a landing no picker could reach.
+	if got, want := len(pickedInto), int(pickDestCount)-1+int(draw.SkillsPickCount)-1; got != want {
+		t.Errorf("pickedInto holds %d entries against the %d destinations the two enums "+
+			"declare besides their zeros", got, want)
+	}
+	// The two zero values are what a picker with no destination carries, so a
+	// landing for either would be one every un-destined picker fell into.
 	if _, known := pickedInto[pickNowhere]; known {
 		t.Error("pickNowhere lands somewhere, and it is what a picker with no destination carries")
+	}
+	if _, known := pickedInto[draw.SkillsPickNothing]; known {
+		t.Error("draw.SkillsPickNothing lands somewhere, and it names no field")
+	}
+}
+
+// TestEveryActionKindIsAppliedByThisClient is the fifth totality walk, and it
+// arrived with the two kinds that made it necessary.
+//
+// draw.Action.Kind carried four meanings for six screens and now carries six:
+// Ask and Pick came with the skill form, which is the first moved screen with
+// something to lose and the first with lists to fill in. A client that silently
+// ignored one would swallow a keystroke — the question never appears, or the
+// list never opens — which is the shape TODO.md records five times and #207,
+// #214, #216 and #218 each measured again.
+//
+// ⚠️ **It is a behaviour table rather than a lookup**, because navigate is a
+// switch and there is no map to ask. Each arm drives navigate with an action of
+// its kind and reads what the client did about it, and the table is held total
+// against draw.KindCount so a seventh kind cannot arrive unhandled.
+//
+// ⚠️ **Stay is excluded and declared**, exactly as pickNowhere and NoTarget are:
+// it is the zero value and doing nothing is its definition rather than its
+// defect.
+//
+// ⚠️ **And a count proves a kind is handled, never that it is handled right.**
+// Every arm here is also pressed as a real key somewhere: chart_test.go and
+// browse_test.go for Back and Raise, screen.TestALetterIsTextWhileTheSkillFilterHasTheKeyboard
+// for Quit, guard_test.go's TestDiscardingAHalfWrittenSkillEmptiesTheFormAndStays
+// for Ask, and picked_test.go for Pick.
+func TestEveryActionKindIsAppliedByThisClient(t *testing.T) {
+	base, _, _ := start(t, i18n.Vi)
+	arms := map[draw.Kind]func(t *testing.T){
+		draw.Back: func(t *testing.T) {
+			m := base
+			m.raisedFrom = screenPassives
+			m.screen = screenStatuses
+			after, _ := m.navigate(screenStatuses, draw.Action{Kind: draw.Back})
+			if got := after.(model).screen; got != screenPassives {
+				t.Errorf("a Back landed on screen %v, want the screen that raised it", got)
+			}
+		},
+		draw.Quit: func(t *testing.T) {
+			_, command := base.navigate(screenSkills, draw.Action{Kind: draw.Quit})
+			if !quits(command) {
+				t.Error("a Quit did not end the program")
+			}
+		},
+		draw.Raise: func(t *testing.T) {
+			after, _ := base.navigate(screenElements,
+				draw.Action{Kind: draw.Raise, Target: draw.Chart})
+			if got := after.(model).screen; got != screenChart {
+				t.Errorf("a Raise of the chart landed on screen %v", got)
+			}
+		},
+		draw.Ask: func(t *testing.T) {
+			after, _ := base.navigate(screenSkills,
+				draw.Action{Kind: draw.Ask, Question: i18n.SkillFormDiscard})
+			asked := after.(model)
+			if asked.guard == nil {
+				t.Fatal("an Ask raised no question")
+			}
+			if asked.guard.question != i18n.SkillFormDiscard {
+				t.Errorf("the pending question is key %d, want the one the action carried",
+					asked.guard.question)
+			}
+			if asked.guard.asked != screenSkills {
+				t.Errorf("the question was filed under screen %v, want the screen that asked",
+					asked.guard.asked)
+			}
+			if asked.screen != base.screen {
+				t.Errorf("an Ask moved to screen %v; a question is drawn over what is in front",
+					asked.screen)
+			}
+		},
+		draw.Pick: func(t *testing.T) {
+			listing := base.enter(screenSkills)
+			wanted := listing.skills.OpenAllowlist(listing.ctx(), draw.SkillFieldKeptForSpecies)
+			after, _ := listing.navigate(screenSkills, draw.Action{Kind: draw.Pick, Picker: wanted})
+			opened := after.(model)
+			if opened.picker == nil {
+				t.Fatal("a Pick put no list in front")
+			}
+			if opened.picker != wanted {
+				t.Error("the list in front is not the one the screen built, so its rows and " +
+					"its destination are somebody else's")
+			}
+			if opened.picker.Into != draw.SkillsPickKinds {
+				t.Errorf("the raised list lands at %v", opened.picker.Into)
+			}
+		},
+	}
+	// Stay is the zero and is deliberately outside the table; every other kind
+	// has to be in it, and the count is what says so rather than this list.
+	if got, want := len(arms), draw.KindCount-1; got != want {
+		t.Fatalf("this table covers %d kinds against the %d declared besides Stay — a kind "+
+			"nothing here drives is a kind this client may be swallowing", got, want)
+	}
+	for value := 1; value < draw.KindCount; value++ {
+		kind := draw.Kind(value)
+		arm, covered := arms[kind]
+		if !covered {
+			t.Errorf("draw.Kind %v (%d) is driven by nothing here", kind, value)
+			continue
+		}
+		t.Run(kind.String(), arm)
+	}
+	// And Stay really is a no-op, which is what makes leaving it out honest
+	// rather than an omission.
+	still, command := base.navigate(screenSkills, draw.Action{})
+	if got := still.(model); got.screen != base.screen || got.guard != nil || got.picker != nil {
+		t.Error("a Stay changed something")
+	}
+	if command != nil {
+		t.Error("a Stay asked for a command")
 	}
 }
 

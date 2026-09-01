@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // The behaviour half of the guard, which is the half a totality walk cannot see.
@@ -74,14 +75,14 @@ func TestDiscardingAHalfWrittenSkillEmptiesTheFormAndStays(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	m = menuTo(t, m, screenSkills)
 	m = typeText(t, m, "e")
-	if !m.skills.formInFront() {
+	if !m.skills.FormInFront() {
 		t.Fatal("e did not open the skill form over the row under the cursor")
 	}
-	if m.skills.editing == "" {
+	if m.skills.Editing == "" {
 		t.Fatal("the form opened over no skill, so the edit wording is not the one asked")
 	}
 	m = typeText(t, m, "x")
-	if !m.skills.touched {
+	if !m.skills.Touched {
 		t.Fatal("typing left the skill form reading as untouched, so escape asks nothing")
 	}
 
@@ -97,13 +98,13 @@ func TestDiscardingAHalfWrittenSkillEmptiesTheFormAndStays(t *testing.T) {
 	if m.guard != nil {
 		t.Error("the question is still pending after a yes")
 	}
-	if m.skills.formInFront() {
-		t.Errorf("confirming the discard left the form open over %q", m.skills.editing)
+	if m.skills.FormInFront() {
+		t.Errorf("confirming the discard left the form open over %q", m.skills.Editing)
 	}
-	if m.skills.touched {
+	if m.skills.Touched {
 		t.Error("the form that came back still claims changes")
 	}
-	if got := m.skills.inputs[skillFieldID].Value(); got != "" {
+	if got := m.skills.Inputs[draw.SkillFieldID].Value(); got != "" {
 		t.Errorf("the id field still reads %q, want the prefilled edit thrown away", got)
 	}
 	if m.screen != screenSkills {

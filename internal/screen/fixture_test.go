@@ -170,6 +170,21 @@ func press(t *testing.T, name string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeySpace, Text: " "}
 	case "?":
 		return tea.KeyPressMsg{Code: '?', Text: "?"}
+	case "right":
+		return tea.KeyPressMsg{Code: tea.KeyRight}
+	case "backspace":
+		return tea.KeyPressMsg{Code: tea.KeyBackspace}
+	case "tab":
+		return tea.KeyPressMsg{Code: tea.KeyTab}
+	}
+	// ⚠️ A single printable character is a **rune with its Text set**, and both
+	// halves matter: String() reports the letter off Code, and the skill filter
+	// reads Text, because that is the field that tells a typed letter from a
+	// chord. A key built with one and not the other passes a test that only
+	// switches on String() and types nothing.
+	letters := []rune(name)
+	if len(letters) == 1 {
+		return tea.KeyPressMsg{Code: letters[0], Text: name}
 	}
 	t.Fatalf("no key named %q in the test helper", name)
 	return tea.KeyPressMsg{}

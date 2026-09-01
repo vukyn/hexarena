@@ -4,11 +4,11 @@ import (
 	"strings"
 	"testing"
 
-	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // TestTheCommandKeySavesWhereverControlSDoes is the whole reason this program is
@@ -84,21 +84,21 @@ func TestTheCommandKeySavesWhereverControlSDoes(t *testing.T) {
 		before := len(lib.Skills().Skills())
 		m = m.enter(screenSkills)
 		m = typeText(t, m, "a")
-		if !m.skills.adding {
+		if !m.skills.Adding {
 			t.Fatal("a did not open the skill form")
 		}
 		m = typeText(t, m, "commanded_strike")
 		// A skill with no power and nothing else would be a wasted turn, and the
 		// book refuses one — so this fills in enough to be a legal skill. What
 		// is being measured is the keystroke, not the refusal.
-		m = skillFormTo(t, m, skillFieldPower)
+		m = skillFormTo(t, m, draw.SkillFieldPower)
 		m = typeText(t, m, "1200")
-		m = skillFormTo(t, m, skillFieldAccuracy)
+		m = skillFormTo(t, m, draw.SkillFieldAccuracy)
 		m = typeText(t, m, "900")
 		m = key(t, m, "super+s")
 
-		if m.skills.err != nil {
-			t.Fatalf("the Command key refused the skill: %v", m.skills.err)
+		if m.skills.Err != nil {
+			t.Fatalf("the Command key refused the skill: %v", m.skills.Err)
 		}
 		reloaded, err := forge.Load(dir)
 		if err != nil {
@@ -111,72 +111,6 @@ func TestTheCommandKeySavesWhereverControlSDoes(t *testing.T) {
 			t.Errorf("the book holds %d skills, want %d", got, before+1)
 		}
 	})
-}
-
-// TestOnlyTheTwoSaveKeysSave guards the other side of isSaveKey: a keystroke
-// that merely looks like one must not write the author's work.
-//
-// The bare letter is the case worth naming. A save key is the letter plus a
-// modifier, and bubbletea v2 leaves Text empty whenever a modifier is held — so
-// "s" typed into a field carries Text and no Mod, and must reach the field
-// rather than the book.
-func TestOnlyTheTwoSaveKeysSave(t *testing.T) {
-	saves := []tea.KeyPressMsg{
-		{Code: 's', Mod: tea.ModCtrl},
-		{Code: 's', Mod: tea.ModSuper},
-	}
-	for _, press := range saves {
-		if !isSaveKey(press) {
-			t.Errorf("%q does not save", press.String())
-		}
-	}
-	others := []tea.KeyPressMsg{
-		{Code: 's', Text: "s"},
-		{Code: 's', Mod: tea.ModAlt},
-		{Code: 'd', Mod: tea.ModCtrl},
-		{Code: tea.KeyEnter},
-		{Code: tea.KeyEscape},
-	}
-	for _, press := range others {
-		if isSaveKey(press) {
-			t.Errorf("%q saves, and should not", press.String())
-		}
-	}
-}
-
-// TestTheSaveLabelAlwaysOffersTheKeyThatAlwaysWorks is the honesty check on the
-// footer.
-//
-// ⌘S depends on the terminal speaking the Kitty keyboard protocol and on it not
-// claiming the chord for its own Save dialog first — Terminal.app does exactly
-// that. So whatever platform the footer is drawn on, it has to keep naming a
-// control-S, because that is the keystroke this program can actually promise.
-func TestTheSaveLabelAlwaysOffersTheKeyThatAlwaysWorks(t *testing.T) {
-	label := saveKeyLabel()
-	if !strings.Contains(label, "^S") && !strings.Contains(label, saveKeyControl) {
-		t.Errorf("the save label %q names no control-S, which is the key that always works", label)
-	}
-}
-
-// TestTheSaveLabelIsDrawableEverywhere is the rendering half of it, and the
-// reason the footer stopped naming ⌘S.
-//
-// ⌘ is East-Asian-Ambiguous width — measured as one cell, drawn as two by a good
-// many terminals, which lands the glyph on top of the character after it. On
-// those terminals "⌘S" is two overlapping characters rather than a key, and
-// nothing inside the program can find out which sort of terminal is in front. So
-// the label stays inside the characters every terminal draws at the width they
-// were measured at.
-//
-// The assertion is on every letter rather than on ⌘ alone, because the next
-// tempting symbol has exactly the same problem: ⌃, ⇧ and ⌥ are ambiguous too.
-func TestTheSaveLabelIsDrawableEverywhere(t *testing.T) {
-	for _, letter := range saveKeyLabel() {
-		if letter > 127 {
-			t.Errorf("the save label %q carries %q, whose drawn width the program cannot know",
-				saveKeyLabel(), letter)
-		}
-	}
 }
 
 // TestEverySaveFooterFitsTheSmallestWindow is the budget the save label is
@@ -221,7 +155,7 @@ func TestEveryFormFooterNamesTheSaveKey(t *testing.T) {
 
 		m = base.enter(screenSkills)
 		m = typeText(t, m, "a")
-		_, footers["the skill form"] = m.skills.view(m)
+		_, footers["the skill form"] = m.skills.View(m.ctx())
 
 		for name, footer := range footers {
 			if !strings.Contains(footer, saveKeyLabel()) {
