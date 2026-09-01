@@ -1,3 +1,40 @@
+===== vi | 120x24 | browse =====
+danh sách nhân vật  đang xem tất cả nguồn (10 trong 10 nhân vật)
+
+> pokemon.bulbasaur        pokemon        grass <cỏ>
+  pokemon.charmander       pokemon        fire <lửa>
+  pokemon.squirtle         pokemon        water <nước>
+  naruto.naruto            naruto         wind <gió>
+  pokemon.poliwag          pokemon        water <nước>
+  pokemon.machop           pokemon        ground <đất>
+  pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
+  pokemon.mew              pokemon        neutral <trung tính>
+  pokemon.mewtwo           pokemon        dark <bóng tối>
+
+pokemon.bulbasaur — Bulbasaur
+  nguồn tham khảo  Pokémon (anime, pokemon)
+  lối chơi         blighter
+                   kẻ gieo độc
+  hệ               grass
+                   cỏ
+  bộ chiêu         vine_whip razor_leaf poison_powder sleep_powder[Bulbasaur,Ivysaur] leech_seed synthesis venoshock
+                   sludge_bomb ingrain
+                   roi dây leo · phi diệp · phấn độc · phấn ngủ · hạt ký sinh · quang hợp · độc kích · độc bùn · cắm rễ
+  giai đoạn        Bulbasaur@1 → Ivysaur@16 → Venusaur@32
+  tiểu sử          Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ
+                   nhiều, đi chậm, hiếm khi tỏ ra vội — cái gì cần thời gian thì cứ để thời gian làm.
+  ảnh              assets/venusaur.svg  có
+  loài             plant
+                   thực vật
+  nội tại          venom_blood endurance blood_thirst virulence last_gasp contagion
+                   máu độc · bền bỉ · khát máu · độc lực · hấp hối · lây lan
+  cấp 60           hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50 giai đoạn Venusaur
+  máu quy đổi      [=====================---] 10410/11500, còn dư 1090
+                   xuyên hết giáp thì chỉ đỡ được 3800
+
+----- footer -----
+↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | builds =====
 bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
 
@@ -193,6 +230,42 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | browse =====
+danh sách nhân vật  đang xem tất cả nguồn (10 trong 10 nhân vật)
+
+> pokemon.bulbasaur        pokemon        grass <cỏ>
+  pokemon.charmander       pokemon        fire <lửa>
+  pokemon.squirtle         pokemon        water <nước>
+  naruto.naruto            naruto         wind <gió>
+  pokemon.poliwag          pokemon        water <nước>
+  pokemon.machop           pokemon        ground <đất>
+  pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
+  pokemon.mew              pokemon        neutral <trung tính>
+  pokemon.mewtwo           pokemon        dark <bóng tối>
+
+pokemon.bulbasaur — Bulbasaur
+  nguồn tham khảo  Pokémon (anime, pokemon)
+  lối chơi         blighter
+                   kẻ gieo độc
+  hệ               grass
+                   cỏ
+  bộ chiêu         vine_whip razor_leaf poison_powder sleep_powder[Bulbasaur,Ivysaur] leech_seed synthesis venoshock sludge_bomb ingrain
+                   roi dây leo · phi diệp · phấn độc · phấn ngủ · hạt ký sinh · quang hợp · độc kích · độc bùn · cắm rễ
+  giai đoạn        Bulbasaur@1 → Ivysaur@16 → Venusaur@32
+  tiểu sử          Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ nhiều, đi chậm, hiếm khi tỏ ra vội — cái
+                   gì cần thời gian thì cứ để thời gian làm.
+  ảnh              assets/venusaur.svg  có
+  loài             plant
+                   thực vật
+  nội tại          venom_blood endurance blood_thirst virulence last_gasp contagion
+                   máu độc · bền bỉ · khát máu · độc lực · hấp hối · lây lan
+  cấp 60           hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50 giai đoạn Venusaur
+  máu quy đổi      [=====================---] 10410/11500, còn dư 1090
+                   xuyên hết giáp thì chỉ đỡ được 3800
+
+----- footer -----
+↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 160x60 | builds =====
 bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
 
@@ -473,6 +546,38 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== en | 120x24 | browse =====
+cast  showing all origins (10 of 10 characters)
+
+> pokemon.bulbasaur        pokemon        grass
+  pokemon.charmander       pokemon        fire
+  pokemon.squirtle         pokemon        water
+  naruto.naruto            naruto         wind
+  pokemon.poliwag          pokemon        water
+  pokemon.machop           pokemon        ground
+  pokemon.cleffa           pokemon        light
+  pokemon.magnemite        pokemon        electric/metal
+  pokemon.mew              pokemon        neutral
+  pokemon.mewtwo           pokemon        dark
+
+pokemon.bulbasaur — Bulbasaur
+  from          Pokémon (anime, pokemon)
+  playstyle     blighter
+  element       grass
+  kit           vine_whip razor_leaf poison_powder sleep_powder[Bulbasaur,Ivysaur] leech_seed synthesis venoshock
+                sludge_bomb ingrain
+  stages        Bulbasaur@1 → Ivysaur@16 → Venusaur@32
+  biography     Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ
+                nhiều, đi chậm, hiếm khi tỏ ra vội — cái gì cần thời gian thì cứ để thời gian làm.
+  art           assets/venusaur.svg  present
+  species       plant
+  traits        venom_blood endurance blood_thirst virulence last_gasp contagion
+  level 60      hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50 stage Venusaur
+  effective hp  [=====================---] 10410 of 11500, 1090 to spare
+                3800 against damage that pierces its armour outright
+
+----- footer -----
+↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | builds =====
 builds  the kit and the trait a character fields at level 60, furthest form
 
@@ -663,6 +768,37 @@ species  the declared kinds, and where each line is drawn
   no character is one
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | browse =====
+cast  showing all origins (10 of 10 characters)
+
+> pokemon.bulbasaur        pokemon        grass
+  pokemon.charmander       pokemon        fire
+  pokemon.squirtle         pokemon        water
+  naruto.naruto            naruto         wind
+  pokemon.poliwag          pokemon        water
+  pokemon.machop           pokemon        ground
+  pokemon.cleffa           pokemon        light
+  pokemon.magnemite        pokemon        electric/metal
+  pokemon.mew              pokemon        neutral
+  pokemon.mewtwo           pokemon        dark
+
+pokemon.bulbasaur — Bulbasaur
+  from          Pokémon (anime, pokemon)
+  playstyle     blighter
+  element       grass
+  kit           vine_whip razor_leaf poison_powder sleep_powder[Bulbasaur,Ivysaur] leech_seed synthesis venoshock sludge_bomb ingrain
+  stages        Bulbasaur@1 → Ivysaur@16 → Venusaur@32
+  biography     Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ nhiều, đi chậm, hiếm khi tỏ ra vội — cái gì
+                cần thời gian thì cứ để thời gian làm.
+  art           assets/venusaur.svg  present
+  species       plant
+  traits        venom_blood endurance blood_thirst virulence last_gasp contagion
+  level 60      hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50 stage Venusaur
+  effective hp  [=====================---] 10410 of 11500, 1090 to spare
+                3800 against damage that pierces its armour outright
+
+----- footer -----
+↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 160x60 | builds =====
 builds  the kit and the trait a character fields at level 60, furthest form
 

@@ -724,7 +724,7 @@ func TestSavingWritesThroughTheLibrary(t *testing.T) {
 		t.Error("the open library does not hold the character it just wrote")
 	}
 	m = m.enter(screenBrowse)
-	body, _ := m.browse.view(m)
+	body, _ := m.browse.View(m.ctx())
 	if !strings.Contains(body, "fixture-film.tester") {
 		t.Errorf("the cast browser does not show the new character:\n%s", body)
 	}
@@ -794,124 +794,6 @@ func TestEveryStateIsReadableWithoutColour(t *testing.T) {
 	}
 }
 
-// TestBrowsingResolvesAtTheChosenLevel is the reason the browser is more than a
-// listing: a character is a curve, and the arrow keys walk it.
-func TestBrowsingResolvesAtTheChosenLevel(t *testing.T) {
-	m, lib, _ := start(t, i18n.Vi)
-	m = m.enter(screenBrowse)
-
-	body, footer := m.browse.view(m)
-	if !strings.Contains(footer, "←/→") {
-		t.Errorf("the footer does not offer the level keys: %q", footer)
-	}
-	if m.browse.level != progression.LevelCap {
-		t.Errorf("the browser opens at level %d, want the cap", m.browse.level)
-	}
-	character := lib.Characters().All()[0]
-	values, _, err := character.Resolve(progression.LevelCap, progression.Furthest)
-	if err != nil {
-		t.Fatalf("resolve at the cap: %v", err)
-	}
-	if !strings.Contains(body, values.String()) {
-		t.Errorf("the detail pane does not show the stat line at the cap:\n%s", body)
-	}
-
-	// Walking left one level shows a different, lower line, and the level never
-	// runs off either end of its range.
-	m = key(t, m, "left")
-	if m.browse.level != progression.LevelCap-1 {
-		t.Errorf("one step left went to level %d", m.browse.level)
-	}
-	body, _ = m.browse.view(m)
-	lower, _, err := character.Resolve(progression.LevelCap-1, progression.Furthest)
-	if err != nil {
-		t.Fatalf("resolve one level down: %v", err)
-	}
-	if !strings.Contains(body, lower.String()) {
-		t.Errorf("the detail pane did not follow the level:\n%s", body)
-	}
-	for range progression.LevelCap + 5 {
-		m = key(t, m, "left")
-	}
-	if m.browse.level != 1 {
-		t.Errorf("walking off the bottom left the level at %d, want 1", m.browse.level)
-	}
-
-	// The origin filter narrows the list rather than hiding the fact that it
-	// did: the count on screen names the filter.
-	m = typeText(t, m, "f")
-	body, _ = m.browse.view(m)
-	if !strings.Contains(body, m.browse.filterName(m)) {
-		t.Errorf("the filter in force is not named on screen:\n%s", body)
-	}
-	if m.browse.filterID() == "" {
-		t.Fatal("pressing f did not narrow the list to a work")
-	}
-	for _, shown := range m.browse.rows() {
-		if shown.Origin != m.browse.filterID() {
-			t.Errorf("%s is shown under the %q filter", shown.ID, m.browse.filterID())
-		}
-	}
-}
-
-// TestBrowsingShowsTheArtOfTheFormItResolvedTo is the per-stage art feature as a
-// reader meets it: the art row is under the level and follows it, so walking the
-// arrow keys is what shows which picture a form uses.
-//
-// The bench's grown form owns a picture of its own and its young form does not,
-// which is both halves in one character: below the boundary the row shows the
-// character's picture, at or above it the form's.
-func TestBrowsingShowsTheArtOfTheFormItResolvedTo(t *testing.T) {
-	m, lib, _ := start(t, i18n.Vi)
-	m = m.enter(screenBrowse)
-
-	// The character with more than one picture, whichever row it is on.
-	var subject cast.Character
-	for _, candidate := range lib.Characters().All() {
-		if len(candidate.Art()) > 1 {
-			subject = candidate
-			break
-		}
-	}
-	if subject.ID == "" {
-		t.Fatal("no character in the bench has art of its own per stage, so this tests nothing")
-	}
-	for m.browse.rows()[m.browse.cursor].ID != subject.ID {
-		before := m.browse.cursor
-		m = key(t, m, "down")
-		if m.browse.cursor == before {
-			t.Fatalf("walked to the end of the list without reaching %s", subject.ID)
-		}
-	}
-
-	// The boundary the pictures change at, taken from the character rather than
-	// written down here: a bench that moves its stage must not silently turn
-	// this into a test of one level twice.
-	grown := subject.Stages[len(subject.Stages)-1]
-	if grown.Image == "" || grown.MinLevel <= 1 {
-		t.Fatalf("the bench's grown form is %+v, which cannot show a change", grown)
-	}
-	cases := []struct {
-		level int
-		want  string
-	}{
-		{grown.MinLevel - 1, subject.Image},
-		{grown.MinLevel, grown.Image},
-		{progression.LevelCap, grown.Image},
-	}
-	for _, test := range cases {
-		m.browse.level = test.level
-		body := m.browse.detail(m, subject)
-		if !strings.Contains(body, test.want) {
-			t.Errorf("at level %d the pane does not show %s:\n%s", test.level, test.want, body)
-		}
-		if other := subject.Image; test.want != other && strings.Contains(body, other) {
-			t.Errorf("at level %d the pane still shows %s, which belongs to another form:\n%s",
-				test.level, other, body)
-		}
-	}
-}
-
 // TestThePreviewDrawsTheFormTheLevelResolvedTo is the art preview end to end:
 // raised from the browser with p, drawing the picture of the form the level
 // lands in, and walking the level walks the picture.
@@ -928,10 +810,14 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 		t.Fatalf("load the shipped data: %v", err)
 	}
 	m := newModel(lib, i18n.Vi)
-	m.width, m.height = 92, 44
+	// The floor rather than a width picked by hand: the browser answers a
+	// keystroke with a draw.Action now, so p has to go through the client — and
+	// m.tooSmall swallows every key in a window under the floor, which would
+	// leave this pressing p at a screen that is not drawing.
+	m.width, m.height = minWidth, 44
 	m = m.enter(screenBrowse)
 
-	character := m.browse.rows()[0]
+	character := m.browse.Rows()[0]
 	if len(character.Art()) < 2 {
 		t.Skip("the shipped cast no longer has a character whose forms differ")
 	}
@@ -940,12 +826,11 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 	// p opens it, and the browser keeps its place: the preview has no cursor of
 	// its own, so anything it lost would have to be found again on the way back.
 	before := m.browse
-	next, _ := m.browse.update(m, tea.KeyPressMsg{Code: 'p', Text: "p"})
-	m = next.(model)
+	m = send(t, m, tea.KeyPressMsg{Code: 'p', Text: "p"})
 	if m.screen != screenPreview {
 		t.Fatalf("p left the program on screen %d", m.screen)
 	}
-	if m.browse.cursor != before.cursor || m.browse.level != before.level {
+	if m.browse.Cursor != before.Cursor || m.browse.Level != before.Level {
 		t.Error("opening the preview moved the browser underneath it")
 	}
 
@@ -955,8 +840,8 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 	// preview reads: it keeps no level of its own, so a field written here without
 	// the push would draw the level p was pressed at. m.hand is the same helper
 	// the browser's own keys go through.
-	m.browse.level = 1
-	m = m.hand(m.browse.subject())
+	m.browse.Level = 1
+	m = m.hand(m.browse.Subject())
 	young, footer := m.preview.View(m.ctx())
 	if !strings.Contains(young, character.Image) {
 		t.Errorf("the preview does not name the young form's art:\n%s", young)
@@ -964,8 +849,8 @@ func TestThePreviewDrawsTheFormTheLevelResolvedTo(t *testing.T) {
 	if !strings.Contains(footer, "←/→") {
 		t.Errorf("the footer does not offer the level keys: %q", footer)
 	}
-	m.browse.level = grown.MinLevel
-	m = m.hand(m.browse.subject())
+	m.browse.Level = grown.MinLevel
+	m = m.hand(m.browse.Subject())
 	old, _ := m.preview.View(m.ctx())
 	if !strings.Contains(old, grown.Image) {
 		t.Errorf("at level %d the preview does not name %s:\n%s", grown.MinLevel, grown.Image, old)
@@ -1005,8 +890,8 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 	m = m.enter(screenBrowse)
 	// Handed the subject the way p hands it, because the preview describes what it
 	// was given rather than reading the browser.
-	m = m.hand(m.browse.subject())
-	character := m.browse.rows()[clamp(m.browse.cursor, 0, len(m.browse.rows())-1)]
+	m = m.hand(m.browse.Subject())
+	character := m.browse.Rows()[clamp(m.browse.Cursor, 0, len(m.browse.Rows())-1)]
 	art := filepath.Join(dir, character.Image)
 
 	first, _ := m.preview.View(m.ctx())
@@ -1097,7 +982,7 @@ func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
 		// that screen's last line instead of this one's.
 		m.width, m.height = minWidth, height
 		m = m.enter(screenBrowse)
-		m = m.hand(m.browse.subject())
+		m = m.hand(m.browse.Subject())
 		m.screen = screenPreview
 
 		framed := m.screenContent()

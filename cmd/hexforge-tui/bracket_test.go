@@ -105,10 +105,10 @@ func scrollSites() []scrollSite {
 			raised := base.enter(screenBrowse)
 			// The character with the most traits at the cap, because the frame is
 			// only worth walking on a description that runs past the window.
-			raised.browse.cursor = widestTraitRow(raised)
-			raised.browse.level = progression.LevelCap
+			raised.browse.Cursor = widestTraitRow(raised)
+			raised.browse.Level = progression.LevelCap
 			raised.blurb.from = screenBrowse
-			raised = raised.hand(raised.browse.subject())
+			raised = raised.hand(raised.browse.Subject())
 			raised.screen = screenBlurb
 			return raised
 		},
