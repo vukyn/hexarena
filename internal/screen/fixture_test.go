@@ -132,14 +132,25 @@ func drawnLines(body string) []string { return strings.Split(body, "\n") }
 // press is a named key as a terminal delivers it.
 //
 // Only the keys a screen here answers **by itself**, which is why the list is
-// short: q, esc, g, ? and p all ask for something a *client* has to carry out —
-// a quit, a way back, a raise — so where they land is asserted in
-// cmd/hexforge-tui, driven through the real model. An entry here for a key
-// nothing presses is the shape that ships dead.
+// short: q, g and p all ask for something a *client* has to carry out — a quit,
+// a way back, a raise — so where they land is asserted in cmd/hexforge-tui,
+// driven through the real model. An entry here for a key nothing presses is the
+// shape that ships dead.
 //
 // The two arrows walk a cursor; left walks the cast browser's level, and f
 // cycles its origin filter. f is printable, so it carries Text as well as Code —
 // that is what makes String() report the letter rather than a key name.
+//
+// ⚠️ The picker is why esc, enter, space and ? are here too, and why they are
+// not the exception to the paragraph above: it answers all four **itself** — esc
+// and enter take the list down, space toggles a row, ? turns the reading pane on
+// — and what a client does with the answer is a separate keystroke's worth of
+// work in that package.
+//
+// ⚠️ Space is a named key rather than a rune, because that is how a terminal
+// delivers it: bubbletea v2 turns a bare space into KeySpace, whose String is
+// "space" rather than " ". Every `case " "` written the other way compiled fine
+// and matched nothing.
 func press(t *testing.T, name string) tea.KeyPressMsg {
 	t.Helper()
 	switch name {
@@ -151,6 +162,14 @@ func press(t *testing.T, name string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyLeft}
 	case "f":
 		return tea.KeyPressMsg{Code: 'f', Text: "f"}
+	case "esc":
+		return tea.KeyPressMsg{Code: tea.KeyEscape}
+	case "enter":
+		return tea.KeyPressMsg{Code: tea.KeyEnter}
+	case "space":
+		return tea.KeyPressMsg{Code: tea.KeySpace, Text: " "}
+	case "?":
+		return tea.KeyPressMsg{Code: '?', Text: "?"}
 	}
 	t.Fatalf("no key named %q in the test helper", name)
 	return tea.KeyPressMsg{}

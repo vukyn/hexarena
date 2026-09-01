@@ -386,17 +386,17 @@ func TestTheRefusalUnderTheCursorSpendsTheWindow(t *testing.T) {
 		base, _, _ := startIn(t, lang, dir)
 
 		kit := base.enter(screenNew).openKit()
-		at := slices.IndexFunc(kit.picker.options, func(option pickOption) bool {
-			return option.id == refused
+		at := slices.IndexFunc(kit.picker.Options, func(option pickOption) bool {
+			return option.ID == refused
 		})
 		if at < 0 {
 			t.Fatalf("%s: the kit picker does not list %q", lang, refused)
 		}
-		kit.picker.cursor = at
-		if kit.picker.options[at].refusal == nil {
+		kit.picker.Cursor = at
+		if kit.picker.Options[at].Refusal == nil {
 			t.Fatalf("%s: %q is carryable, so there is no refusal on screen to measure", lang, refused)
 		}
-		sentence := kit.lang.Error(kit.picker.options[at].refusal)
+		sentence := kit.lang.Error(kit.picker.Options[at].Refusal)
 		if width := lipgloss.Width(sentence); width <= minWidth-3 {
 			t.Fatalf("%s: the refusal is %d cells, which the floor's %d could hold whole — the fixture no longer overflows",
 				lang, width, minWidth-3)
@@ -405,7 +405,7 @@ func TestTheRefusalUnderTheCursorSpendsTheWindow(t *testing.T) {
 		body := func(width int) string {
 			m := kit
 			m.width, m.height = width, 60
-			drawn, _ := m.picker.view(m)
+			drawn, _ := m.picker.View(m.ctx())
 			return drawn
 		}
 		// The refusal is found by its own opening rather than by the skill id,
@@ -467,20 +467,20 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 	//    the list's window contains it: a picker draws a frame around its cursor
 	//    and a row nobody is looking at is a row nobody measures.
 	kit := base.enter(screenNew).openKit()
-	at := slices.IndexFunc(kit.picker.options, func(option pickOption) bool {
-		return option.id == probe
+	at := slices.IndexFunc(kit.picker.Options, func(option pickOption) bool {
+		return option.ID == probe
 	})
 	if at < 0 {
 		t.Fatalf("the kit picker does not list %q, so the detail column has nothing long in it", probe)
 	}
-	kit.picker.cursor = at
+	kit.picker.Cursor = at
 	detail := dataCell{
 		name:  "the picker's detail column",
-		whole: kit.picker.detail(kit, probe),
+		whole: kit.picker.Detail(kit.ctx(), probe),
 		at: func(width int) string {
 			m := kit
 			m.width, m.height = width, 60
-			body, _ := m.picker.view(m)
+			body, _ := m.picker.View(m.ctx())
 			return lineHolding(t, body, probe)
 		},
 	}
@@ -509,7 +509,7 @@ func widenedCells(t *testing.T, lang i18n.Lang) []dataCell {
 		at: func(width int) string {
 			m := allowlist
 			m.width, m.height = width, 60
-			body, _ := m.picker.view(m)
+			body, _ := m.picker.View(m.ctx())
 			// The line holding two ids at once. A list row holds one, so this
 			// cannot pick a row up by mistake — and looking for the first id
 			// alone would find the row for that species instead.

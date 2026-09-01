@@ -766,13 +766,13 @@ func (m model) openSquadSkills() model {
 		return m
 	}
 	return m.pick(&pickState{
-		title:   i18n.SquadPickSkills,
-		hint:    i18n.SquadKitHint,
-		kind:    pickSkills,
-		slots:   cast.SkillSlots,
-		options: squadOptions(character.SkillsAt(s.unit.Level, s.form())),
-		chosen:  append([]string(nil), s.unit.Skills...),
-		into:    pickIntoSquadKit,
+		Title:   i18n.SquadPickSkills,
+		Hint:    i18n.SquadKitHint,
+		Kind:    pickSkills,
+		Slots:   cast.SkillSlots,
+		Options: squadOptions(character.SkillsAt(s.unit.Level, s.form())),
+		Chosen:  append([]string(nil), s.unit.Skills...),
+		Into:    pickIntoSquadKit,
 	})
 }
 
@@ -783,13 +783,13 @@ func (m model) openSquadPassives() model {
 		return m
 	}
 	return m.pick(&pickState{
-		title:   i18n.SquadPickPassives,
-		hint:    i18n.SquadTraitHint,
-		kind:    pickPassives,
-		slots:   cast.TraitSlots,
-		options: squadOptions(character.PassivesAt(s.unit.Level, s.form())),
-		chosen:  append([]string(nil), s.unit.Passives...),
-		into:    pickIntoSquadTrait,
+		Title:   i18n.SquadPickPassives,
+		Hint:    i18n.SquadTraitHint,
+		Kind:    pickPassives,
+		Slots:   cast.TraitSlots,
+		Options: squadOptions(character.PassivesAt(s.unit.Level, s.form())),
+		Chosen:  append([]string(nil), s.unit.Passives...),
+		Into:    pickIntoSquadTrait,
 	})
 }
 
@@ -843,7 +843,7 @@ func (s squadScreen) refuse(slots int, chosen []string, kind string,
 func squadOptions(ids []string) []pickOption {
 	out := make([]pickOption, 0, len(ids))
 	for _, id := range ids {
-		out = append(out, pickOption{id: id})
+		out = append(out, pickOption{ID: id})
 	}
 	return out
 }

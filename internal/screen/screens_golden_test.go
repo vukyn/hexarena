@@ -33,17 +33,19 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 // That is real coverage sitting in another package, and it gets worse rather
 // than better: two more screens move next, and after `cmd/hexarena` stands up,
 // a screen the authoring tool stops drawing loses its only layout net **in
-// silence**. So this file is that net, here, while the package holds seven
-// screens rather than nine.
+// silence**. So this file is that net, here, while the package holds eight
+// screens rather than ten.
 //
 // ## What is recorded
 //
-// The nine things the client's golden covers for these seven screens — the seven
-// screens plus the two states nothing shipped can draw (a species kind nobody
-// claims, a build that spends no trait slot) — in **both** languages at **two**
-// sizes: the MinWidth x MinHeight floor, where the Room helpers bite, and 160x60,
-// where nothing is squeezed. The entry names are the client's own, so a reader
-// holding both diffs is looking at the same words.
+// Sixteen entries over those eight screens — the six listings, the description
+// screen in both of its readings, the two states nothing shipped can draw (a
+// species kind nobody claims, a build that spends no trait slot) and the five
+// states of the picker, which is handed its list and so has no one shape — in
+// **both** languages at **two** sizes: the MinWidth x MinHeight floor, where the
+// Room helpers bite, and 160x60, where nothing is squeezed. The entry names are
+// the client's own, so a reader holding both diffs is looking at the same
+// words.
 //
 // Each render carries a banner naming it, so a diff says which screen moved
 // rather than which line number did. The names are **sorted** before they are
@@ -169,7 +171,7 @@ type drawable interface {
 	View(Context) (string, string)
 }
 
-// everyMovedScreen is the eleven entries, named as cmd/hexforge-tui's
+// everyMovedScreen is the sixteen entries, named as cmd/hexforge-tui's
 // `everyScreen` names them.
 //
 // ⚠️ **Every hand-built state asserts that it drew the line it exists for.**
@@ -210,18 +212,199 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		// cap, with no origin filter. That is the state the client's own sweep
 		// registers under this name, and a cursor moved here would be this
 		// record answering a different question from that one.
-		"browse":          NewBrowseScreen(lib),
-		"builds":          builds,
-		"chart":           ChartScreen{},
-		"elements":        ElementsScreen{},
-		"skill blurb":     skillBlurb(t, c, lib),
-		"species":         species,
-		"statuses":        NewStatusesScreen(lib),
-		"trait blurb":     traitBlurb(t, c, lib),
-		"traitless build": traitless,
-		"traits":          NewPassivesScreen(lib),
-		"unclaimed kind":  unclaimed,
+		"allowlist picker": allowlistPicker(t, c, lib),
+		"browse":           NewBrowseScreen(lib),
+		"builds":           builds,
+		"chart":            ChartScreen{},
+		"elements":         ElementsScreen{},
+		"filtered picker":  filteredPicker(t, c, lib),
+		"kit picker":       kitPicker(t, c, lib),
+		"reading a skill":  readingPicker(t, c, lib),
+		"skill blurb":      skillBlurb(t, c, lib),
+		"species":          species,
+		"status picker":    statusPicker(t, c, lib),
+		"statuses":         NewStatusesScreen(lib),
+		"trait blurb":      traitBlurb(t, c, lib),
+		"traitless build":  traitless,
+		"traits":           NewPassivesScreen(lib),
+		"unclaimed kind":   unclaimed,
 	}
+}
+
+// # The five picker states, and why they are built here rather than raised
+//
+// The multi-select is the eighth screen in this package and the first with no
+// listing of its own: it is handed a list, so a picker is a *state* rather than
+// a screen with one shape, and which state is recorded is a decision.
+//
+// ⚠️ **They are hand-built and the client's are raised, and the names are the
+// same on purpose.** The three screens that raise a picker — the character form,
+// the skill form, the squad builder — are all still in cmd/hexforge-tui, so a
+// state reached through one of them would be a state this package cannot make.
+// What is recorded here is therefore the *drawing* under a list that says what
+// this entry is for, and the client's golden of the same name is the same screen
+// as its own raiser leaves it. Two records of one screen, which is the whole
+// arrangement of this file.
+//
+// The five are the paths through View that share no line with each other: rows
+// carrying a refusal and a detail column (the kit), rows with a filter line over
+// them (the allowlist), that filter narrowed (the filtered one), a field and its
+// percentage under the list (the statuses), and the reading pane, which replaces
+// the list outright.
+//
+// ⚠️ Each asserts it drew the line it exists for, as every hand-built state in
+// this file does. A picker built with the wrong options still renders a
+// perfectly good screen — an empty list, an unmarked column, a filter that hides
+// nothing — and every sweep over it would pass.
+
+// kitPicker is the character form's kit picker over the shipped book, for the
+// carrier that refuses the most of it.
+//
+// The most refused rather than the first character, for the reason skillBlurb
+// takes the widest reading: what a golden of a layout is for is the case that
+// spends the most of it, and here that is a list drawing both sorts of row. A
+// carrier answering nothing restricts nothing, so the empty one draws a list
+// with no marks on it at all.
+func kitPicker(t *testing.T, c Context, lib *forge.Library) *PickState {
+	t.Helper()
+	characters := lib.Characters().All()
+	if len(characters) == 0 {
+		t.Fatal("the shipped book holds no characters to build a carrier from")
+	}
+	found, most := forge.Carrier{}, -1
+	for _, character := range characters {
+		who := forge.Carrier{
+			ID: character.ID, Archetype: character.Archetype,
+			Affinity: character.Element, HasAffinity: true,
+			Species: character.Species, Origin: character.Origin,
+		}
+		refused := 0
+		for _, option := range KitOptions(lib, who) {
+			if option.Refusal != nil {
+				refused++
+			}
+		}
+		if refused > most {
+			found, most = who, refused
+		}
+	}
+	picker := (&PickState{
+		Title: i18n.PickerKitTitle, Kind: PickSkills, Options: KitOptions(lib, found),
+	}).Raise()
+	offered := len(picker.Options) - most
+	if most == 0 || offered == 0 {
+		t.Fatalf("the kit picker refuses %d of %d rows, so it records a list with "+
+			"only one sort of row on it", most, len(picker.Options))
+	}
+	if drawn, _ := picker.View(c); !strings.Contains(drawn, "!") {
+		t.Fatalf("no row of the kit picker carries the unavailable mark:\n%s", drawn)
+	}
+	return picker
+}
+
+// allowlistPicker is a restriction's character list: no slots, no refusals, and
+// the one picker with a filter over it.
+func allowlistPicker(t *testing.T, c Context, lib *forge.Library) *PickState {
+	t.Helper()
+	picker := (&PickState{
+		Title: i18n.PickerCharactersTitle, Hint: i18n.PickerAllowlistHint,
+		Footer: i18n.PickerFilterFooter, Kind: PickCharacters,
+		Options: CharacterOptions(lib), Groups: lib.OriginIDs(),
+	}).Raise()
+	if len(picker.Groups) == 0 {
+		t.Fatal("the allowlist picker carries no works, so it draws no filter line")
+	}
+	drawn, _ := picker.View(c)
+	showing := c.Text(i18n.PickerShowing, picker.groupName(c), len(picker.Visible()),
+		len(picker.Options))
+	if !strings.Contains(drawn, showing) {
+		t.Fatalf("the allowlist picker draws no filter line %q:\n%s", showing, drawn)
+	}
+	return picker
+}
+
+// filteredPicker is that same list narrowed to one work, which is a line the
+// unfiltered one does not draw and a row count the unfiltered one does not have.
+//
+// It is a second picker rather than the one above with the filter stepped on,
+// because NextFilter mutates in place: sharing one would put the entry beside
+// this into a state it is not here to measure.
+func filteredPicker(t *testing.T, c Context, lib *forge.Library) *PickState {
+	t.Helper()
+	picker := allowlistPicker(t, c, lib)
+	picker.NextFilter()
+	group := picker.Group()
+	if group == "" {
+		t.Fatal("stepping the filter left it on everything, so this records the " +
+			"unfiltered list twice")
+	}
+	if len(picker.Visible()) == len(picker.Options) {
+		t.Fatalf("the %q filter hides nothing of the %d rows", group, len(picker.Options))
+	}
+	if drawn, _ := picker.View(c); !strings.Contains(drawn, group) {
+		t.Fatalf("the filtered picker does not name %q:\n%s", group, drawn)
+	}
+	return picker
+}
+
+// statusPicker is what a skill inflicts: the one picker of the five carrying a
+// field, and the only entry here whose body has a row under the list.
+//
+// One status is chosen so the answer line under the list is the ids rather than
+// the nothing-chosen wording, and the field is left empty so the placeholder and
+// its percentage reading are what is recorded — which is the state a raise
+// leaves it in, and the one the reading has to be right for.
+func statusPicker(t *testing.T, c Context, lib *forge.Library) *PickState {
+	t.Helper()
+	statuses := StatusOptions(lib)
+	if len(statuses) == 0 {
+		t.Fatal("the shipped book declares no statuses")
+	}
+	picker := (&PickState{
+		Title: i18n.PickerStatusesTitle, Hint: i18n.PickerStatusHint,
+		Footer: i18n.PickerStatusFooter, Kind: PickStatuses,
+		Options: statuses, Chosen: []string{statuses[0].ID},
+		Typed: NumberField(c.Style.Plain, forge.DefaultApplicationChance),
+		Label: i18n.PickerChance,
+	}).Raise()
+	drawn, _ := picker.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.PickerChance)) {
+		t.Fatalf("the status picker does not name its chance field:\n%s", drawn)
+	}
+	if !strings.Contains(drawn, statuses[0].ID) {
+		t.Fatalf("the status picker does not draw %q as chosen:\n%s", statuses[0].ID, drawn)
+	}
+	return picker
+}
+
+// readingPicker is the kit picker with the description of the row under the
+// cursor in front of the list, which is the picker's other state and shares no
+// line with the list.
+//
+// It is the kit rather than the traits because the shipped skill book is the
+// list this pane is most often reached from, and the row is walked to the
+// longest reading for the reason skillBlurb is: this is the entry that records
+// the line saying there is more to read.
+func readingPicker(t *testing.T, c Context, lib *forge.Library) *PickState {
+	t.Helper()
+	picker := kitPicker(t, c, lib)
+	longest, most := 0, 0
+	for index, option := range picker.Visible() {
+		declared, err := lib.Skills().Lookup(option.ID)
+		if err != nil {
+			continue
+		}
+		if lines := len(SkillLines(c, declared)); lines > most {
+			longest, most = index, lines
+		}
+	}
+	picker.Cursor, picker.Reading = longest, true
+	id := picker.Visible()[longest].ID
+	if drawn, _ := picker.View(c); !strings.Contains(drawn, id) {
+		t.Fatalf("the reading pane does not name %q, so it records the "+
+			"nothing-to-pick arm:\n%s", id, drawn)
+	}
+	return picker
 }
 
 // skillBlurb is the description screen over the shipped skill whose reading

@@ -94,12 +94,12 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// The status picker is the fifth, and the only one that collects a number as
 	// well as a set, so its extra row is measured with the rest.
 	statuses := addSkill.openStatuses()
-	statuses.picker.chosen = []string{"poison"}
-	statuses.picker.typed.SetValue("300")
+	statuses.picker.Chosen = []string{"poison"}
+	statuses.picker.Typed.SetValue("300")
 	// And the character allowlist with its filter narrowed, which is a line the
 	// unfiltered picker does not draw.
 	filtered := addSkill.openAllowlist(skillFieldKeptForCharacters)
-	filtered.picker.nextFilter()
+	filtered.picker.NextFilter()
 	// The species picker, opened over the character form's species field the way
 	// every other picker here is opened over the form that raises it — a
 	// hand-built pickState would measure this test's idea of the screen rather
@@ -412,7 +412,7 @@ func aTraitHolder(m model) (model, bool) {
 // to measure.
 func reading(m model) model {
 	clone := *m.picker
-	clone.reading = true
+	clone.Reading = true
 	m.picker = &clone
 	return m
 }
@@ -765,9 +765,9 @@ func pickerDetails(m model) []string {
 	if m.picker == nil {
 		return nil
 	}
-	out := make([]string, 0, len(m.picker.options))
-	for _, option := range m.picker.options {
-		if detail := m.picker.detail(m, option.id); detail != "" {
+	out := make([]string, 0, len(m.picker.Options))
+	for _, option := range m.picker.Options {
+		if detail := m.picker.Detail(m.ctx(), option.ID); detail != "" {
 			out = append(out, detail)
 		}
 	}
@@ -2033,7 +2033,7 @@ func TestAnAllowlistPickerSaysWhatAnEmptyListMeans(t *testing.T) {
 			skillFieldKeptForElements, skillFieldKeptForRoles, skillFieldKeptForCharacters,
 		} {
 			opened := m.enter(screenSkills).openAllowlist(field)
-			body, _ := opened.picker.view(opened)
+			body, _ := opened.picker.View(opened.ctx())
 			if want := lang.Text(i18n.PickerAllowlistHint); !strings.Contains(body, want) {
 				t.Errorf("%v field %d is missing the allowlist hint %q", lang, field, want)
 			}
@@ -2076,10 +2076,10 @@ func TestTheSquadPickersSayWhatTheirOwnListsAre(t *testing.T) {
 			{"kit", member.openSquadSkills(), i18n.SquadKitHint},
 			{"trait", holder.openSquadPassives(), i18n.SquadTraitHint},
 		} {
-			if list.opened.picker == nil || len(list.opened.picker.options) == 0 {
+			if list.opened.picker == nil || len(list.opened.picker.Options) == 0 {
 				t.Fatalf("the %s %s field raised no picker with rows in it", lang, list.what)
 			}
-			body, _ := list.opened.picker.view(list.opened)
+			body, _ := list.opened.picker.View(list.opened.ctx())
 			if want := lang.Text(list.hint); !strings.Contains(body, want) {
 				t.Errorf("the %s %s picker is missing its own hint %q:\n%s",
 					lang, list.what, want, body)
@@ -2087,10 +2087,10 @@ func TestTheSquadPickersSayWhatTheirOwnListsAre(t *testing.T) {
 			if unwanted := lang.Text(i18n.PickerHint); strings.Contains(body, unwanted) {
 				t.Errorf("the %s %s picker still borrows the form's kit hint", lang, list.what)
 			}
-			for _, option := range list.opened.picker.options {
-				if option.refusal != nil {
+			for _, option := range list.opened.picker.Options {
+				if option.Refusal != nil {
 					t.Errorf("the %s %s picker refuses %s, so the mark its hint no longer names is reachable",
-						lang, list.what, option.id)
+						lang, list.what, option.ID)
 				}
 			}
 		}

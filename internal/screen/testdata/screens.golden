@@ -1,3 +1,24 @@
+===== vi | 120x24 | allowlist picker =====
+nhân vật nào được học chiêu này  0/11
+space để chọn · để trống thì ai cũng học được chiêu này
+đang xem tất cả nguồn (11 trong 11)
+
+>      pokemon.bulbasaur
+       pokemon.charmander
+       pokemon.squirtle
+       naruto.naruto
+       pokemon.poliwag
+       pokemon.machop
+       pokemon.cleffa
+       pokemon.magnemite
+       pokemon.mew
+       pokemon.mewtwo
+       pokemon.gastly
+
+  chưa chọn gì
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | browse =====
 danh sách nhân vật  đang xem tất cả nguồn (11 trong 11 nhân vật)
 
@@ -96,6 +117,58 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
   Đơn vị hai hệ hứng cả hai hệ số; một đòn luôn mang đúng một hệ.
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | filtered picker =====
+nhân vật nào được học chiêu này  0/11
+space để chọn · để trống thì ai cũng học được chiêu này
+đang xem pokemon (10 trong 11)
+
+>      pokemon.bulbasaur
+       pokemon.charmander
+       pokemon.squirtle
+       pokemon.poliwag
+       pokemon.machop
+       pokemon.cleffa
+       pokemon.magnemite
+       pokemon.mew
+       pokemon.mewtwo
+       pokemon.gastly
+
+  chưa chọn gì
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
+===== vi | 120x24 | kit picker =====
+bộ chiêu  0/90
+space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
+
+>    ! vine_whip      hệ grass, vũ trụ pokemon
+     ! razor_leaf     hệ grass, vũ trụ pokemon
+     ! solar_beam     hệ light, vũ trụ pokemon
+     ! sleep_powder   hệ grass, vũ trụ pokemon
+     ! poison_powder  vũ trụ pokemon
+     ! sludge_bomb    vũ trụ pokemon
+     ! venoshock      vũ trụ pokemon
+     ! leech_seed     hệ grass, vũ trụ pokemon
+     ! synthesis      hệ grass, chủng loài plant, vũ trụ pokemon
+     ! ingrain        hệ grass, chủng loài plant, vũ trụ pokemon
+     ! ember          hệ fire, vũ trụ pokemon
+     ! flamethrower   hệ fire, vũ trụ pokemon
+     ! fire_fang      hệ fire, vũ trụ pokemon
+
+  chưa chọn gì
+  hệ wind không mang được chiêu "vine_whip" (hệ grass)
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
+===== vi | 120x24 | reading a skill =====
+withdraw <thủ thế>  26/90
+
+  Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
+  Hồi máu bằng 50% công.
+  Nhận đỡ đòn x2.
+  Bản thân · hồi 3 lượt.
+----- footer -----
+↑/↓ chọn · [/] cuộn · ? hoặc esc quay lại · ctrl+l English
 ===== vi | 120x24 | skill blurb =====
 withdraw <thủ thế>  26/90
 
@@ -126,6 +199,27 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   rồng chút nào
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | status picker =====
+chiêu này gây hiệu ứng gì  1/25
+space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
+
+>  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
+       burn       bỏng · sát thương mỗi lượt · 2 lượt · tối đa 2 cộng dồn
+       weaken     suy yếu · giảm chỉ số · 3 lượt · tối đa 3 cộng dồn
+       expose     phá giáp · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       blind      mù · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       mire       sa lầy · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       stun       choáng · khống chế, mất lượt · 1 lượt · tối đa 1 cộng dồn
+       taunting   bị khiêu khích · ép chọn mục tiêu · 2 lượt · tối đa 1 cộng dồn
+       fury       cuồng nộ · tăng chỉ số · 3 lượt · tối đa 3 cộng dồn
+       haste      nhanh nhẹn · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
+       focus      tập trung · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
+
+  poison
+
+  cơ hội trúng  1000     100%
+----- footer -----
+space chọn · ↑/↓ di chuyển · gõ số · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | statuses =====
 hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
 
@@ -233,6 +327,27 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | allowlist picker =====
+nhân vật nào được học chiêu này  0/11
+space để chọn · để trống thì ai cũng học được chiêu này
+đang xem tất cả nguồn (11 trong 11)
+
+>      pokemon.bulbasaur
+       pokemon.charmander
+       pokemon.squirtle
+       naruto.naruto
+       pokemon.poliwag
+       pokemon.machop
+       pokemon.cleffa
+       pokemon.magnemite
+       pokemon.mew
+       pokemon.mewtwo
+       pokemon.gastly
+
+  chưa chọn gì
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | browse =====
 danh sách nhân vật  đang xem tất cả nguồn (11 trong 11 nhân vật)
 
@@ -356,6 +471,94 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
   Đơn vị hai hệ hứng cả hai hệ số; một đòn luôn mang đúng một hệ.
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | filtered picker =====
+nhân vật nào được học chiêu này  0/11
+space để chọn · để trống thì ai cũng học được chiêu này
+đang xem pokemon (10 trong 11)
+
+>      pokemon.bulbasaur
+       pokemon.charmander
+       pokemon.squirtle
+       pokemon.poliwag
+       pokemon.machop
+       pokemon.cleffa
+       pokemon.magnemite
+       pokemon.mew
+       pokemon.mewtwo
+       pokemon.gastly
+
+  chưa chọn gì
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
+===== vi | 160x60 | kit picker =====
+bộ chiêu  0/90
+space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
+
+>    ! vine_whip      hệ grass, vũ trụ pokemon
+     ! razor_leaf     hệ grass, vũ trụ pokemon
+     ! solar_beam     hệ light, vũ trụ pokemon
+     ! sleep_powder   hệ grass, vũ trụ pokemon
+     ! poison_powder  vũ trụ pokemon
+     ! sludge_bomb    vũ trụ pokemon
+     ! venoshock      vũ trụ pokemon
+     ! leech_seed     hệ grass, vũ trụ pokemon
+     ! synthesis      hệ grass, chủng loài plant, vũ trụ pokemon
+     ! ingrain        hệ grass, chủng loài plant, vũ trụ pokemon
+     ! ember          hệ fire, vũ trụ pokemon
+     ! flamethrower   hệ fire, vũ trụ pokemon
+     ! fire_fang      hệ fire, vũ trụ pokemon
+     ! fire_spin      hệ fire, vũ trụ pokemon
+     ! heat_wave      hệ fire, vũ trụ pokemon
+     ! inferno        hệ fire, vũ trụ pokemon
+     ! dragon_rage    chủng loài dragon, vũ trụ pokemon
+       smokescreen    ai cũng được
+     ! dragon_dance   chủng loài dragon, vũ trụ pokemon
+     ! water_gun      hệ water, vũ trụ pokemon
+     ! bubble         hệ water, vũ trụ pokemon
+     ! whirlpool      hệ water, vũ trụ pokemon
+       bite           ai cũng được
+     ! brine          hệ water, vũ trụ pokemon
+     ! hydro_pump     hệ water, vũ trụ pokemon
+       withdraw       ai cũng được
+     ! aqua_ring      hệ water, vũ trụ pokemon
+       rapid_spin     ai cũng được
+       rally          ai cũng được
+     ! dragon_claw    chủng loài dragon, vũ trụ pokemon
+     ! outrage        chủng loài dragon, vũ trụ pokemon
+     ! dragon_drive   chủng loài dragon, vũ trụ pokemon
+       taunt          ai cũng được
+       kunai          vũ trụ naruto
+       wind_shuriken  hệ wind, vũ trụ naruto
+       rasengan       hệ wind, vũ trụ naruto
+       substitution   vũ trụ naruto
+       shadow_clone   vũ trụ naruto
+       comeback       vũ trụ naruto
+       summon_toad    vũ trụ naruto
+     ! water_pulse    hệ water, vũ trụ pokemon
+     ! skull_bash     vũ trụ pokemon
+       wide_guard     ai cũng được
+     ! bubble_beam    hệ water, vũ trụ pokemon
+     ! body_slam      vũ trụ pokemon
+     ! pummel         vũ trụ pokemon
+     ! submission     vũ trụ pokemon
+     ! rock_throw     hệ ground, vũ trụ pokemon
+     ! seismic_toss   hệ ground, vũ trụ pokemon
+
+  chưa chọn gì
+  hệ wind không mang được chiêu "vine_whip" (hệ grass)
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
+===== vi | 160x60 | reading a skill =====
+withdraw <thủ thế>  26/90
+
+  Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
+  Hồi máu bằng 50% công.
+  Nhận đỡ đòn x2.
+  Bản thân · hồi 3 lượt.
+----- footer -----
+↑/↓ chọn · [/] cuộn · ? hoặc esc quay lại · ctrl+l English
 ===== vi | 160x60 | skill blurb =====
 withdraw <thủ thế>  26/90
 
@@ -386,6 +589,41 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   rồng chút nào
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | status picker =====
+chiêu này gây hiệu ứng gì  1/25
+space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
+
+>  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
+       burn       bỏng · sát thương mỗi lượt · 2 lượt · tối đa 2 cộng dồn
+       weaken     suy yếu · giảm chỉ số · 3 lượt · tối đa 3 cộng dồn
+       expose     phá giáp · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       blind      mù · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       mire       sa lầy · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
+       stun       choáng · khống chế, mất lượt · 1 lượt · tối đa 1 cộng dồn
+       taunting   bị khiêu khích · ép chọn mục tiêu · 2 lượt · tối đa 1 cộng dồn
+       fury       cuồng nộ · tăng chỉ số · 3 lượt · tối đa 3 cộng dồn
+       haste      nhanh nhẹn · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
+       focus      tập trung · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
+       toughened  kiên cường · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
+       veil       mờ ảo · tăng chỉ số · 2 lượt · tối đa 2 cộng dồn
+       block      đỡ đòn · khiên, chặn một nhát · 2 lượt · tối đa 3 cộng dồn
+       regrowth   tái sinh · hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn
+       unleashed  bộc phát · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
+       bare       trần trụi · giảm chỉ số · 0 lượt · tối đa 1 cộng dồn
+       kindled    bùng cháy · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
+       fortified  kiên cố · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
+       quickened  gia tốc · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
+       encumber   nặng nề · giảm chỉ số · 0 lượt · tối đa 1 cộng dồn
+       fester     lở loét · giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn
+       evasive    khinh công · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
+       charge     nhiễm điện · tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn
+       aegis      lá chắn · lá chắn, thấm sát thương cho tới khi cạn · 3 lượt · tối đa 2 cộng dồn
+
+  poison
+
+  cơ hội trúng  1000     100%
+----- footer -----
+space chọn · ↑/↓ di chuyển · gõ số · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | statuses =====
 hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
 
@@ -560,6 +798,27 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== en | 120x24 | allowlist picker =====
+characters allowed to carry it  0 of 11
+space chooses · leaving it empty lets anyone carry the skill
+showing all origins (11 of 11)
+
+>      pokemon.bulbasaur
+       pokemon.charmander
+       pokemon.squirtle
+       naruto.naruto
+       pokemon.poliwag
+       pokemon.machop
+       pokemon.cleffa
+       pokemon.magnemite
+       pokemon.mew
+       pokemon.mewtwo
+       pokemon.gastly
+
+  nothing chosen yet
+
+----- footer -----
+space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | browse =====
 cast  showing all origins (11 of 11 characters)
 
@@ -651,6 +910,58 @@ elements  the affinity chart: what beats what, and by how much
   A dual unit takes both multipliers; an attack carries exactly one element.
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | filtered picker =====
+characters allowed to carry it  0 of 11
+space chooses · leaving it empty lets anyone carry the skill
+showing pokemon (10 of 11)
+
+>      pokemon.bulbasaur
+       pokemon.charmander
+       pokemon.squirtle
+       pokemon.poliwag
+       pokemon.machop
+       pokemon.cleffa
+       pokemon.magnemite
+       pokemon.mew
+       pokemon.mewtwo
+       pokemon.gastly
+
+  nothing chosen yet
+
+----- footer -----
+space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | kit picker =====
+kit  0 of 90
+space chooses · the number is the order · ! is one this character cannot take
+
+>    ! vine_whip      grass units, out of pokemon
+     ! razor_leaf     grass units, out of pokemon
+     ! solar_beam     light units, out of pokemon
+     ! sleep_powder   grass units, out of pokemon
+     ! poison_powder  out of pokemon
+     ! sludge_bomb    out of pokemon
+     ! venoshock      out of pokemon
+     ! leech_seed     grass units, out of pokemon
+     ! synthesis      grass units, kept for a plant, out of pokemon
+     ! ingrain        grass units, kept for a plant, out of pokemon
+     ! ember          fire units, out of pokemon
+     ! flamethrower   fire units, out of pokemon
+     ! fire_fang      fire units, out of pokemon
+
+  nothing chosen yet
+  wind cannot carry the skill "vine_whip", which is grass
+
+----- footer -----
+space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | reading a skill =====
+outrage  31 of 90
+
+  Hits an enemy for 220% of attack.
+  Puts mire on itself.
+  While the caster is at or below 40% health: 340% of attack.
+  Range 1 · 90% to hit · 3 turns to recharge.
+----- footer -----
+↑/↓ move · [/] scroll · ? or esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | skill blurb =====
 withdraw  26 of 90
 
@@ -680,6 +991,27 @@ species  the declared kinds, and where each line is drawn
   rồng chút nào
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | status picker =====
+the statuses this skill inflicts  1 of 25
+space chooses a status · type the chance in parts per thousand
+
+>  1   poison     damages every turn · 3 turns · up to 3 stacks
+       burn       damages every turn · 2 turns · up to 2 stacks
+       weaken     lowers a stat · 3 turns · up to 3 stacks
+       expose     lowers a stat · 2 turns · up to 2 stacks
+       blind      lowers a stat · 2 turns · up to 2 stacks
+       mire       lowers a stat · 2 turns · up to 2 stacks
+       stun       costs a turn · 1 turns · up to 1 stacks
+       taunting   costs a choice of target · 2 turns · up to 1 stacks
+       fury       raises a stat · 3 turns · up to 3 stacks
+       haste      raises a stat · 3 turns · up to 2 stacks
+       focus      raises a stat · 3 turns · up to 2 stacks
+
+  poison
+
+  chance  1000     100%
+----- footer -----
+space pick · ↑/↓ move · 0-9 chance · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | statuses =====
 statuses  the buffs and debuffs a skill or a trait puts on a unit
 
@@ -785,6 +1117,27 @@ species  the declared kinds, and where each line is drawn
   no character is one
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | allowlist picker =====
+characters allowed to carry it  0 of 11
+space chooses · leaving it empty lets anyone carry the skill
+showing all origins (11 of 11)
+
+>      pokemon.bulbasaur
+       pokemon.charmander
+       pokemon.squirtle
+       naruto.naruto
+       pokemon.poliwag
+       pokemon.machop
+       pokemon.cleffa
+       pokemon.magnemite
+       pokemon.mew
+       pokemon.mewtwo
+       pokemon.gastly
+
+  nothing chosen yet
+
+----- footer -----
+space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | browse =====
 cast  showing all origins (11 of 11 characters)
 
@@ -901,6 +1254,94 @@ elements  the affinity chart: what beats what, and by how much
   A dual unit takes both multipliers; an attack carries exactly one element.
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | filtered picker =====
+characters allowed to carry it  0 of 11
+space chooses · leaving it empty lets anyone carry the skill
+showing pokemon (10 of 11)
+
+>      pokemon.bulbasaur
+       pokemon.charmander
+       pokemon.squirtle
+       pokemon.poliwag
+       pokemon.machop
+       pokemon.cleffa
+       pokemon.magnemite
+       pokemon.mew
+       pokemon.mewtwo
+       pokemon.gastly
+
+  nothing chosen yet
+
+----- footer -----
+space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | kit picker =====
+kit  0 of 90
+space chooses · the number is the order · ! is one this character cannot take
+
+>    ! vine_whip      grass units, out of pokemon
+     ! razor_leaf     grass units, out of pokemon
+     ! solar_beam     light units, out of pokemon
+     ! sleep_powder   grass units, out of pokemon
+     ! poison_powder  out of pokemon
+     ! sludge_bomb    out of pokemon
+     ! venoshock      out of pokemon
+     ! leech_seed     grass units, out of pokemon
+     ! synthesis      grass units, kept for a plant, out of pokemon
+     ! ingrain        grass units, kept for a plant, out of pokemon
+     ! ember          fire units, out of pokemon
+     ! flamethrower   fire units, out of pokemon
+     ! fire_fang      fire units, out of pokemon
+     ! fire_spin      fire units, out of pokemon
+     ! heat_wave      fire units, out of pokemon
+     ! inferno        fire units, out of pokemon
+     ! dragon_rage    kept for a dragon, out of pokemon
+       smokescreen    anyone
+     ! dragon_dance   kept for a dragon, out of pokemon
+     ! water_gun      water units, out of pokemon
+     ! bubble         water units, out of pokemon
+     ! whirlpool      water units, out of pokemon
+       bite           anyone
+     ! brine          water units, out of pokemon
+     ! hydro_pump     water units, out of pokemon
+       withdraw       anyone
+     ! aqua_ring      water units, out of pokemon
+       rapid_spin     anyone
+       rally          anyone
+     ! dragon_claw    kept for a dragon, out of pokemon
+     ! outrage        kept for a dragon, out of pokemon
+     ! dragon_drive   kept for a dragon, out of pokemon
+       taunt          anyone
+       kunai          out of naruto
+       wind_shuriken  wind units, out of naruto
+       rasengan       wind units, out of naruto
+       substitution   out of naruto
+       shadow_clone   out of naruto
+       comeback       out of naruto
+       summon_toad    out of naruto
+     ! water_pulse    water units, out of pokemon
+     ! skull_bash     out of pokemon
+       wide_guard     anyone
+     ! bubble_beam    water units, out of pokemon
+     ! body_slam      out of pokemon
+     ! pummel         out of pokemon
+     ! submission     out of pokemon
+     ! rock_throw     ground units, out of pokemon
+     ! seismic_toss   ground units, out of pokemon
+
+  nothing chosen yet
+  wind cannot carry the skill "vine_whip", which is grass
+
+----- footer -----
+space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | reading a skill =====
+outrage  31 of 90
+
+  Hits an enemy for 220% of attack.
+  Puts mire on itself.
+  While the caster is at or below 40% health: 340% of attack.
+  Range 1 · 90% to hit · 3 turns to recharge.
+----- footer -----
+↑/↓ move · [/] scroll · ? or esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | skill blurb =====
 withdraw  26 of 90
 
@@ -930,6 +1371,41 @@ species  the declared kinds, and where each line is drawn
   rồng chút nào
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | status picker =====
+the statuses this skill inflicts  1 of 25
+space chooses a status · type the chance in parts per thousand
+
+>  1   poison     damages every turn · 3 turns · up to 3 stacks
+       burn       damages every turn · 2 turns · up to 2 stacks
+       weaken     lowers a stat · 3 turns · up to 3 stacks
+       expose     lowers a stat · 2 turns · up to 2 stacks
+       blind      lowers a stat · 2 turns · up to 2 stacks
+       mire       lowers a stat · 2 turns · up to 2 stacks
+       stun       costs a turn · 1 turns · up to 1 stacks
+       taunting   costs a choice of target · 2 turns · up to 1 stacks
+       fury       raises a stat · 3 turns · up to 3 stacks
+       haste      raises a stat · 3 turns · up to 2 stacks
+       focus      raises a stat · 3 turns · up to 2 stacks
+       toughened  raises a stat · 0 turns · up to 1 stacks
+       veil       raises a stat · 2 turns · up to 2 stacks
+       block      blocks one strike · 2 turns · up to 3 stacks
+       regrowth   restores every turn · 3 turns · up to 3 stacks
+       unleashed  raises a stat · 0 turns · up to 1 stacks
+       bare       lowers a stat · 0 turns · up to 1 stacks
+       kindled    raises a stat · 0 turns · up to 1 stacks
+       fortified  raises a stat · 0 turns · up to 1 stacks
+       quickened  raises a stat · 0 turns · up to 1 stacks
+       encumber   lowers a stat · 0 turns · up to 1 stacks
+       fester     cuts healing received · 2 turns · up to 2 stacks
+       evasive    raises a stat · 0 turns · up to 1 stacks
+       charge     builds up to be spent · 4 turns · up to 999 stacks
+       aegis      soaks up damage until it is used up · 3 turns · up to 2 stacks
+
+  poison
+
+  chance  1000     100%
+----- footer -----
+space pick · ↑/↓ move · 0-9 chance · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | statuses =====
 statuses  the buffs and debuffs a skill or a trait puts on a unit
 
