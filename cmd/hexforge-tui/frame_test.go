@@ -267,7 +267,7 @@ func TestNoDrawingIsEverWideEnoughToBeMarked(t *testing.T) {
 	// test.
 	preview, _, _ := start(t, i18n.Vi)
 	preview.width, preview.height = minWidth, 40
-	preview = preview.hand(preview.browse.subject())
+	preview = preview.hand(preview.browse.Subject())
 	preview.screen = screenPreview
 	body, _ := preview.preview.View(preview.ctx())
 	painted, widest := 0, 0

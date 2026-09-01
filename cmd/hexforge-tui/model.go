@@ -102,6 +102,11 @@ func detailLabelWidth(m model) int { return m.ctx().DetailLabelWidth() }
 // ⚠️ They are aliases and not wrappers. A wrapper would be a second place a
 // cursor could live, and the whole point of the move is that there is one.
 type (
+	// browseScreen is the cast listing. ⚠️ A **plain alias**, confirmed rather
+	// than assumed: it holds a filter, a cursor and a level and not one field of
+	// this client's own — no `from`, nothing of the `screen` enum — so the embed
+	// blurbScreen needs would be a struct wrapping nothing.
+	browseScreen   = draw.BrowseScreen
 	chartScreen    = draw.ChartScreen
 	elementsScreen = draw.ElementsScreen
 	statusesScreen = draw.StatusesScreen
@@ -223,7 +228,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		lib:      lib,
 		lang:     lang,
 		style:    style,
-		browse:   newBrowseScreen(lib),
+		browse:   draw.NewBrowseScreen(lib),
 		form:     newFormScreen(lib),
 		origins:  newOriginsScreen(lib),
 		skills:   newSkillsScreen(lib),
@@ -335,7 +340,9 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case screenMenu:
 		return m.updateMenu(message)
 	case screenBrowse:
-		return m.browse.update(m, message)
+		browse, action := m.browse.Update(m.ctx(), message)
+		m.browse = browse
+		return m.navigate(screenBrowse, action)
 	case screenNew:
 		return m.form.update(m, message)
 	case screenOrigins:
@@ -343,11 +350,11 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case screenSkills:
 		return m.skills.update(m, message)
 	// ⚠️ Two mechanisms sit side by side in this switch, and that is deliberate
-	// rather than half-finished. The six screens below are the ones being moved
-	// into internal/screen: their updates return a draw.Action — what they want —
-	// and this client decides what it means, which is what lets them stop naming
-	// entries of an enum only this binary has. Every other branch still writes
-	// m.screen itself and will be converted as it moves.
+	// rather than half-finished. The screens that have moved into internal/screen
+	// — the cast browser above and the six below — return a draw.Action, what
+	// they want, and this client decides what it means, which is what lets them
+	// stop naming entries of an enum only this binary has. Every other branch
+	// still writes m.screen itself and will be converted as it moves.
 	case screenStatuses:
 		statuses, action := m.statuses.Update(m.ctx(), message)
 		m.statuses = statuses
@@ -467,6 +474,16 @@ func (m model) raise(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	m = handed
+	// ⚠️ The description screen keeps its own way back beside raisedFrom, and
+	// that is not a duplicate. `blurbScreen.from` is read by updateBlurb for two
+	// things raisedFrom cannot answer — esc, and which raiser an arrow key walks
+	// — and its other two raisers, the skill listing and the played battle, still
+	// write m.screen themselves and never reach here. So the one raiser that does
+	// has to fill it in, or a description raised from the browser would escape to
+	// wherever the last one did.
+	if target == screenBlurb {
+		m.blurb.from = from
+	}
 	m.raisedFrom = from
 	m.screen = target
 	return m, nil
@@ -519,7 +536,7 @@ func (m model) enter(target screen) model {
 	m.screen = target
 	switch target {
 	case screenBrowse:
-		m.browse = m.browse.refresh(m.lib)
+		m.browse = m.browse.Refresh(m.lib)
 	case screenCheck:
 		m.check = m.check.refresh(m.lib)
 	case screenOrigins:
@@ -592,7 +609,7 @@ func (m model) screenContent() string {
 	case screenMenu:
 		body, footer = m.viewMenu(), m.text(i18n.MenuFooter)
 	case screenBrowse:
-		body, footer = m.browse.view(m)
+		body, footer = m.browse.View(m.ctx())
 	case screenNew:
 		body, footer = m.form.view(m)
 	case screenOrigins:
@@ -778,11 +795,6 @@ func (m model) wrapped(name string, width int, value string) string {
 	return m.ctx().Wrapped(name, width, value)
 }
 
-// wrappedIn is wrapped with a style, applied one line at a time.
-func (m model) wrappedIn(name string, width int, style lipgloss.Style, value string) string {
-	return m.ctx().WrappedIn(name, width, style, value)
-}
-
 // usableWidth is what a row may spend: the window when there is one, and the
 // floor before the first size message arrives.
 func (m model) usableWidth() int { return m.ctx().UsableWidth() }
@@ -845,6 +857,14 @@ func clip(text string, room int) string { return draw.Clip(text, room) }
 // One-line forwarders rather than call sites rewritten, which is the house
 // pattern pad, clip, clamp and window already follow: the rows that spend them
 // read unchanged, and there is still exactly one body.
+
+// budgetLine is the joint health-and-defence bound drawn as a meter and as
+// numbers. It moved with the cast browser, which is the pane it was written for,
+// and is forwarded here because the new-character form draws the same row and
+// has not moved.
+func budgetLine(m model, budget forge.Budget) string {
+	return draw.BudgetLine(m.ctx(), budget)
+}
 
 // skillLines is what a skill does, one line per sentence and already marked.
 func skillLines(c draw.Context, declared skill.Skill) []string {

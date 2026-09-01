@@ -73,7 +73,7 @@ func TestTheBrowserDescribesTheTraitsItIsShowing(t *testing.T) {
 	m = m.enter(screenBrowse)
 	// The first character carrying a trait at the cap, since a fixture may lead
 	// with one that has none.
-	rows := m.browse.rows()
+	rows := m.browse.Rows()
 	found := -1
 	for index, character := range rows {
 		if len(lib.KitPassives(character.PassivesAt(progression.LevelCap, progression.Furthest))) > 0 {
@@ -84,8 +84,8 @@ func TestTheBrowserDescribesTheTraitsItIsShowing(t *testing.T) {
 	if found < 0 {
 		t.Skip("no character in the fixture carries a trait, so there is nothing to describe")
 	}
-	m.browse.cursor = found
-	m.browse.level = progression.LevelCap
+	m.browse.Cursor = found
+	m.browse.Level = progression.LevelCap
 
 	m = send(t, m, tea.KeyPressMsg{Code: '?', Text: "?"})
 	if m.screen != screenBlurb {
@@ -123,7 +123,7 @@ func TestTheBrowserDescribesTheTraitsItIsShowing(t *testing.T) {
 func TestTheTraitScreenFollowsTheLevelRatherThanTheBook(t *testing.T) {
 	m, lib, _ := start(t, i18n.Vi)
 	m = m.enter(screenBrowse)
-	rows := m.browse.rows()
+	rows := m.browse.Rows()
 	found := -1
 	for index, character := range rows {
 		early := len(lib.KitPassives(character.PassivesAt(1, progression.Furthest)))
@@ -136,7 +136,7 @@ func TestTheTraitScreenFollowsTheLevelRatherThanTheBook(t *testing.T) {
 	if found < 0 {
 		t.Skip("no character in the fixture learns a trait after level one")
 	}
-	m.browse.cursor, m.browse.level = found, progression.LevelCap
+	m.browse.Cursor, m.browse.Level = found, progression.LevelCap
 	m = send(t, m, tea.KeyPressMsg{Code: '?', Text: "?"})
 	atCap, _ := m.blurb.View(m.ctx())
 
@@ -185,7 +185,7 @@ func TestTheTraitScreenScrollsRatherThanBeingCut(t *testing.T) {
 		m, lib, _ := start(t, lang)
 		m.width, m.height = minWidth, minHeight
 		m = m.enter(screenBrowse)
-		rows := m.browse.rows()
+		rows := m.browse.Rows()
 		found, most := -1, 0
 		for index, character := range rows {
 			if held := len(lib.KitPassives(
@@ -196,7 +196,7 @@ func TestTheTraitScreenScrollsRatherThanBeingCut(t *testing.T) {
 		if most < 2 {
 			t.Skip("no character in the fixture carries two traits, so nothing here overflows")
 		}
-		m.browse.cursor, m.browse.level = found, progression.LevelCap
+		m.browse.Cursor, m.browse.Level = found, progression.LevelCap
 		m = send(t, m, tea.KeyPressMsg{Code: '?', Text: "?"})
 		if drawn := m.screenContent(); strings.Contains(drawn, m.text(i18n.Truncated)) {
 			t.Errorf("%s: the trait screen is cut by the frame instead of scrolling:\n%s", lang, drawn)

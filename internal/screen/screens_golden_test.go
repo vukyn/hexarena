@@ -31,14 +31,14 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 //	                    drawn  "  dot           sát thương mỗi lượt"
 //
 // That is real coverage sitting in another package, and it gets worse rather
-// than better: three more screens move next, and after `cmd/hexarena` stands up,
+// than better: two more screens move next, and after `cmd/hexarena` stands up,
 // a screen the authoring tool stops drawing loses its only layout net **in
-// silence**. So this file is that net, here, while the package holds six screens
-// rather than nine.
+// silence**. So this file is that net, here, while the package holds seven
+// screens rather than nine.
 //
 // ## What is recorded
 //
-// The eight things the client's golden covers for these six screens — the six
+// The nine things the client's golden covers for these seven screens — the seven
 // screens plus the two states nothing shipped can draw (a species kind nobody
 // claims, a build that spends no trait slot) — in **both** languages at **two**
 // sizes: the MinWidth x MinHeight floor, where the Room helpers bite, and 160x60,
@@ -63,7 +63,13 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 // data directory as a body line. **Neither applies here.** Measured: no file in
 // this package calls `.Dir()`, and `check` did not move — so the books are
 // loaded **straight** from `shippedDataDir`, with no temp copy anywhere near the
-// bytes. These six screens are read-only and nothing here writes.
+// bytes. These seven screens are read-only and nothing here writes.
+//
+// ⚠️ The cast browser's art row is the one line that names a **file**, and it
+// names a relative one: `cast.Character.StageArt` is a path out of the data
+// files, and whether it is on disk is a yes or a no rather than a directory. So
+// the golden records `assets/…` and never where this checkout happens to sit —
+// which is exactly the claim `noAbsolutePath` below is here to keep true.
 //
 // ⚠️ **`noAbsolutePath` asserts that anyway.** A property that holds by
 // construction today is one a later change breaks quietly, and the cost of
@@ -163,7 +169,7 @@ type drawable interface {
 	View(Context) (string, string)
 }
 
-// everyMovedScreen is the ten entries, named as cmd/hexforge-tui's
+// everyMovedScreen is the eleven entries, named as cmd/hexforge-tui's
 // `everyScreen` names them.
 //
 // ⚠️ **Every hand-built state asserts that it drew the line it exists for.**
@@ -200,6 +206,11 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 			"an ordinary build catalogue twice:\n%s", drawn)
 	}
 	return map[string]drawable{
+		// The cast browser as a raise leaves it: the first row, at the level
+		// cap, with no origin filter. That is the state the client's own sweep
+		// registers under this name, and a cursor moved here would be this
+		// record answering a different question from that one.
+		"browse":          NewBrowseScreen(lib),
 		"builds":          builds,
 		"chart":           ChartScreen{},
 		"elements":        ElementsScreen{},

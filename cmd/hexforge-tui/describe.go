@@ -133,6 +133,12 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "esc", "?":
 		m.screen = b.from
+		// ⚠️ And the raise is forgotten as it is used, exactly as navigate does
+		// with its own Back. This describer answers esc itself rather than
+		// through navigate, so nothing else clears the slot — and the browser's
+		// esc is a draw.Back now, so a record left behind would send the browser
+		// back to the browser.
+		m.raisedFrom = screenMenu
 		return m, nil
 	}
 	if b.from == screenPlay {
@@ -156,7 +162,7 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	if b.from == screenBrowse {
-		rows := len(m.browse.rows())
+		rows := len(m.browse.Rows())
 		switch message.String() {
 		// [ and ] alias the page keys, here and at the other two sites that
 		// scroll, because a compact keyboard has neither PgUp nor PgDn and the
@@ -173,23 +179,23 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.blurb = b
 			return m, nil
 		case "up", "k":
-			m.browse.cursor = clamp(m.browse.cursor-1, 0, rows-1)
+			m.browse.Cursor = clamp(m.browse.Cursor-1, 0, rows-1)
 		case "down", "j":
-			m.browse.cursor = clamp(m.browse.cursor+1, 0, rows-1)
+			m.browse.Cursor = clamp(m.browse.Cursor+1, 0, rows-1)
 		case "left", "h":
-			m.browse.level = clamp(m.browse.level-1, 1, progression.LevelCap)
+			m.browse.Level = clamp(m.browse.Level-1, 1, progression.LevelCap)
 		case "right", "l":
-			m.browse.level = clamp(m.browse.level+1, 1, progression.LevelCap)
+			m.browse.Level = clamp(m.browse.Level+1, 1, progression.LevelCap)
 		case "home":
-			m.browse.level = 1
+			m.browse.Level = 1
 		case "end":
-			m.browse.level = progression.LevelCap
+			m.browse.Level = progression.LevelCap
 		}
 		// Anything that changed which character or which level is in front
 		// changed the answer, so the offset into the old one means nothing.
 		b.Scroll = 0
 		m.blurb = b
-		return m.hand(m.browse.subject()), nil
+		return m.hand(m.browse.Subject()), nil
 	}
 	// Through the listing's own visible rows, not its book: the cursor counts what
 	// the filter left, so stepping it against the full book would walk past the
@@ -214,15 +220,17 @@ func (m model) updatePreview(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "esc", "p":
 		m.screen = screenBrowse
+		// Forgotten as it is used, for the reason updateBlurb's esc forgets it.
+		m.raisedFrom = screenMenu
 		return m, nil
 	case "left", "h":
-		m.browse.level = clamp(m.browse.level-1, 1, progression.LevelCap)
+		m.browse.Level = clamp(m.browse.Level-1, 1, progression.LevelCap)
 	case "right", "l":
-		m.browse.level = clamp(m.browse.level+1, 1, progression.LevelCap)
+		m.browse.Level = clamp(m.browse.Level+1, 1, progression.LevelCap)
 	case "home":
-		m.browse.level = 1
+		m.browse.Level = 1
 	case "end":
-		m.browse.level = progression.LevelCap
+		m.browse.Level = progression.LevelCap
 	}
-	return m.hand(m.browse.subject()), nil
+	return m.hand(m.browse.Subject()), nil
 }

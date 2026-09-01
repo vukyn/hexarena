@@ -135,10 +135,10 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	skillBlurb = skillBlurb.hand(skillBlurb.skills.subject())
 	skillBlurb.screen = screenBlurb
 	traitBlurb := m.enter(screenBrowse)
-	traitBlurb.browse.cursor = widestTraitRow(traitBlurb)
-	traitBlurb.browse.level = progression.LevelCap
+	traitBlurb.browse.Cursor = widestTraitRow(traitBlurb)
+	traitBlurb.browse.Level = progression.LevelCap
 	traitBlurb.blurb.from = screenBrowse
-	traitBlurb = traitBlurb.hand(traitBlurb.browse.subject())
+	traitBlurb = traitBlurb.hand(traitBlurb.browse.Subject())
 	traitBlurb.screen = screenBlurb
 	// The affinity chart, on the element whose description is longest: the rows
 	// are all one shape, so what varies is the pane below them.
@@ -557,7 +557,7 @@ func withNoTraitTaken(t *testing.T, b buildsScreen) buildsScreen {
 // row a shorter fixture would not have.
 func widestTraitRow(m model) int {
 	found, most := 0, 0
-	for index, character := range m.browse.rows() {
+	for index, character := range m.browse.Rows() {
 		held := len(m.lib.KitPassives(
 			character.PassivesAt(progression.LevelCap, progression.Furthest)))
 		if held > most {
@@ -1165,7 +1165,7 @@ func TestTheDetailPanesMeasureTheirLabelColumn(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		m, _, _ := start(t, lang)
 		browse := m.enter(screenBrowse)
-		body, _ := browse.browse.view(browse)
+		body, _ := browse.browse.View(browse.ctx())
 		rows := detailRows(t, body)
 		if len(rows) < 6 {
 			t.Fatalf("the %s detail pane drew %d rows:\n%s", lang, len(rows), body)
@@ -1383,9 +1383,9 @@ func words(text string) []string {
 func TestTheScreensGlossEveryDataName(t *testing.T) {
 	m, lib, _ := start(t, i18n.Vi)
 	browse := m.enter(screenBrowse)
-	for index, character := range browse.browse.rows() {
-		browse.browse.cursor = index
-		body, _ := browse.browse.view(browse)
+	for index, character := range browse.browse.Rows() {
+		browse.browse.Cursor = index
+		body, _ := browse.browse.View(browse.ctx())
 
 		// Asserted against the row that is supposed to carry each gloss, not
 		// against the screen: the element is glossed twice — in the list and in
@@ -1458,8 +1458,8 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 	// The shipped cast holds the pair this was asked for, in the format it was
 	// asked for. Everything above would pass if the format changed; this would
 	// not.
-	browse.browse.cursor = 1
-	sprout, _ := browse.browse.view(browse)
+	browse.browse.Cursor = 1
+	sprout, _ := browse.browse.View(browse.ctx())
 	for _, want := range []string{
 		// The list still brackets, because a table column has no row underneath
 		// to put a name on. Everything in the pane reads as an id with its name
@@ -1531,7 +1531,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 		}
 	}
 	englishBrowse := english.enter(screenBrowse)
-	body, _ := englishBrowse.browse.view(englishBrowse)
+	body, _ := englishBrowse.browse.View(englishBrowse.ctx())
 	for _, want := range []string{"playstyle     sentinel", "element       water/ice"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("the English browser does not draw %q:\n%s", want, body)
@@ -1544,7 +1544,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 	// something to leak prove anything — which is what the count below insists
 	// on.
 	asked := 0
-	for index, character := range englishBrowse.browse.rows() {
+	for index, character := range englishBrowse.browse.Rows() {
 		leaks := make([]string, 0, 4)
 		for _, held := range lib.KitPassives(character.PassivesAt(1, progression.Furthest)) {
 			leaks = append(leaks, held.Name)
@@ -1556,8 +1556,8 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 			continue
 		}
 		asked++
-		englishBrowse.browse.cursor = index
-		drawn, _ := englishBrowse.browse.view(englishBrowse)
+		englishBrowse.browse.Cursor = index
+		drawn, _ := englishBrowse.browse.View(englishBrowse.ctx())
 		for _, unwanted := range leaks {
 			if unwanted != "" && strings.Contains(drawn, unwanted) {
 				t.Errorf("the English browser holds the data name %q for %s:\n%s",
@@ -1624,67 +1624,6 @@ func listRow(t *testing.T, body, id string) string {
 	}
 	t.Fatalf("no list row for %s in:\n%s", id, body)
 	return ""
-}
-
-// TestEveryGlossFitsItsRow is the width measurement for the rows a gloss
-// lengthened, taken over every character and every preset rather than over the
-// one character the browser happens to open on.
-//
-// The kit is the row that decides this. Five skills is the longest kit the
-// presets ship — the duelist's — and five Vietnamese names of two or three
-// words each is what pushed the gloss onto its own line instead of into five
-// brackets beside the ids.
-func TestEveryGlossFitsItsRow(t *testing.T) {
-	const drawable = minWidth - 1
-	for _, lang := range i18n.Langs() {
-		m, lib, _ := start(t, lang)
-		width := detailLabelWidth(m)
-		// A detail row is two spaces of indent, the label column, and a space.
-		indent := 2 + width + 1
-
-		kits := make(map[string][]string)
-		for _, character := range lib.Characters().All() {
-			kits[character.ID] = cast.LearnedIDs(character.Skills)
-		}
-		for _, preset := range lib.Archetypes().All() {
-			kits[preset.ID] = preset.Skills
-		}
-		for id, skills := range kits {
-			glossed := lang.GlossedKit(lib.KitSkills(skills))
-			if glossed == "" {
-				continue
-			}
-			// Measured as it is *drawn*, not as it is built. A kit has no fixed
-			// size, so the raw reading grows without bound -- six Vietnamese
-			// names come to 84 cells -- and the row clips it. Holding the raw
-			// string to the width would make every sixth skill an obstacle to
-			// authoring rather than a layout bug.
-			if drawn := indent + lipgloss.Width(clip(glossed, drawable-indent)); drawn > drawable {
-				t.Errorf("%s's kit gloss in %s draws %d cells, over the %d there are: %q",
-					id, lang, drawn, drawable, glossed)
-			}
-		}
-
-		for _, character := range lib.Characters().All() {
-			for _, row := range []string{
-				lang.Glossed(character.Archetype),
-				lang.GlossedAffinity(character.Element),
-			} {
-				if drawn := indent + lipgloss.Width(row); drawn > drawable {
-					t.Errorf("%s draws %q at %d cells in %s, over the %d there are",
-						character.ID, row, drawn, lang, drawable)
-				}
-			}
-			// The list row is the tighter of the two: two fixed columns come
-			// before the element, and the gloss has what is left.
-			list := 2 + browseIDWidth + 1 + browseOriginWidth + 1 +
-				lipgloss.Width(lang.GlossedAffinity(character.Element))
-			if list > drawable {
-				t.Errorf("%s's list row in %s draws %d cells, over the %d there are",
-					character.ID, lang, list, drawable)
-			}
-		}
-	}
 }
 
 // saysWord reports whether a screen says a word, rather than merely holding its
@@ -2211,8 +2150,8 @@ func TestNoDetailRowIsCutOff(t *testing.T) {
 			m = send(t, m, tea.WindowSizeMsg{Width: width, Height: 40})
 			browse := m.enter(screenBrowse)
 			for index := range lib.Characters().All() {
-				browse.browse.cursor = index
-				body, _ := browse.browse.view(browse)
+				browse.browse.Cursor = index
+				body, _ := browse.browse.View(browse.ctx())
 				for _, line := range strings.Split(body, "\n") {
 					if drawn := lipgloss.Width(line); drawn > width {
 						t.Errorf("%v at %d cells draws a %d-cell row: %q",
@@ -2273,7 +2212,7 @@ func TestAStyledWrappedRowDoesNotEatTheRowBelow(t *testing.T) {
 	m, lib, _ := start(t, i18n.Vi)
 	m = send(t, m, tea.WindowSizeMsg{Width: 100, Height: 40})
 	browse := m.enter(screenBrowse)
-	body, _ := browse.browse.view(browse)
+	body, _ := browse.browse.View(browse.ctx())
 	rows := strings.Split(body, "\n")
 
 	// The kit's reading is the styled wrapped row; the art row is what used to

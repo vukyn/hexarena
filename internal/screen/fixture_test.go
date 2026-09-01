@@ -131,11 +131,15 @@ func drawnLines(body string) []string { return strings.Split(body, "\n") }
 
 // press is a named key as a terminal delivers it.
 //
-// The two arrows and nothing else, because they are the two keys the tests here
-// press: q, esc, g and ? all ask for something a *client* has to carry out — a
-// quit, a way back, a raise — so where they land is asserted in
+// Only the keys a screen here answers **by itself**, which is why the list is
+// short: q, esc, g, ? and p all ask for something a *client* has to carry out —
+// a quit, a way back, a raise — so where they land is asserted in
 // cmd/hexforge-tui, driven through the real model. An entry here for a key
 // nothing presses is the shape that ships dead.
+//
+// The two arrows walk a cursor; left walks the cast browser's level, and f
+// cycles its origin filter. f is printable, so it carries Text as well as Code —
+// that is what makes String() report the letter rather than a key name.
 func press(t *testing.T, name string) tea.KeyPressMsg {
 	t.Helper()
 	switch name {
@@ -143,6 +147,10 @@ func press(t *testing.T, name string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyUp}
 	case "down":
 		return tea.KeyPressMsg{Code: tea.KeyDown}
+	case "left":
+		return tea.KeyPressMsg{Code: tea.KeyLeft}
+	case "f":
+		return tea.KeyPressMsg{Code: 'f', Text: "f"}
 	}
 	t.Fatalf("no key named %q in the test helper", name)
 	return tea.KeyPressMsg{}
