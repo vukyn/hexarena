@@ -201,7 +201,7 @@
     {
       "id": "magnemite.trickle",
       "character": "pokemon.magnemite",
-      "name": "rỉ rả",
+      "name": "nhỏ giọt",
       "intent": "Rải điện lên khắp rồi rút ra từng chút một, đòn nào cũng nhỏ mà không lúc nào ngơi",
       "skills": [
         "charge_beam",
