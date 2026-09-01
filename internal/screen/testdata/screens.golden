@@ -138,7 +138,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
 ----- footer -----
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | kit picker =====
-bộ chiêu  0/90
+bộ chiêu  0/91
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >    ! vine_whip      hệ grass, vũ trụ pokemon
@@ -161,7 +161,7 @@ space để chọn · số là thứ tự trong bộ · dấu ! là chiêu khôn
 ----- footer -----
 space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | reading a skill =====
-withdraw <thủ thế>  26/90
+withdraw <thủ thế>  26/91
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -170,7 +170,7 @@ withdraw <thủ thế>  26/90
 ----- footer -----
 ↑/↓ chọn · [/] cuộn · ? hoặc esc quay lại · ctrl+l English
 ===== vi | 120x24 | skill blurb =====
-withdraw <thủ thế>  26/90
+withdraw <thủ thế>  26/91
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -200,7 +200,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | status picker =====
-chiêu này gây hiệu ứng gì  1/25
+chiêu này gây hiệu ứng gì  1/26
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -492,7 +492,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
 ----- footer -----
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | kit picker =====
-bộ chiêu  0/90
+bộ chiêu  0/91
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >    ! vine_whip      hệ grass, vũ trụ pokemon
@@ -551,7 +551,7 @@ space để chọn · số là thứ tự trong bộ · dấu ! là chiêu khôn
 ----- footer -----
 space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | reading a skill =====
-withdraw <thủ thế>  26/90
+withdraw <thủ thế>  26/91
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -560,7 +560,7 @@ withdraw <thủ thế>  26/90
 ----- footer -----
 ↑/↓ chọn · [/] cuộn · ? hoặc esc quay lại · ctrl+l English
 ===== vi | 160x60 | skill blurb =====
-withdraw <thủ thế>  26/90
+withdraw <thủ thế>  26/91
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -590,7 +590,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | status picker =====
-chiêu này gây hiệu ứng gì  1/25
+chiêu này gây hiệu ứng gì  1/26
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -618,6 +618,7 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        evasive    khinh công · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
        charge     nhiễm điện · tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn
        aegis      lá chắn · lá chắn, thấm sát thương cho tới khi cạn · 3 lượt · tối đa 2 cộng dồn
+       bastion    thành trì · lá chắn, thấm sát thương cho tới khi cạn · 0 lượt · tối đa 1 cộng dồn
 
   poison
 
@@ -662,6 +663,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   charge       nhiễm điện
   absorb       lá chắn, thấm sát thương cho tới khi cạn
   aegis        lá chắn
+  bastion      thành trì
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -770,6 +772,9 @@ nội tại  các nội tại đã khai báo, và ai mang
   spiteful      nham hiểm      pokemon.poliwag@36 pokemon.gastly@32
   berserk       cuồng chiến    pokemon.machop@40 pokemon.mewtwo@32
   unyielding    bất khuất      pokemon.machop@24
+  carapace      vỏ cứng        pokemon.squirtle@48
+  projection    hộ thể         pokemon.charmander@48
+  rending       xé giáp        pokemon.machop@48
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -931,7 +936,7 @@ showing pokemon (10 of 11)
 ----- footer -----
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | kit picker =====
-kit  0 of 90
+kit  0 of 91
 space chooses · the number is the order · ! is one this character cannot take
 
 >    ! vine_whip      grass units, out of pokemon
@@ -954,7 +959,7 @@ space chooses · the number is the order · ! is one this character cannot take
 ----- footer -----
 space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | reading a skill =====
-outrage  31 of 90
+outrage  31 of 91
 
   Hits an enemy for 220% of attack.
   Puts mire on itself.
@@ -963,7 +968,7 @@ outrage  31 of 90
 ----- footer -----
 ↑/↓ move · [/] scroll · ? or esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | skill blurb =====
-withdraw  26 of 90
+withdraw  26 of 91
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -992,7 +997,7 @@ species  the declared kinds, and where each line is drawn
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | status picker =====
-the statuses this skill inflicts  1 of 25
+the statuses this skill inflicts  1 of 26
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -1275,7 +1280,7 @@ showing pokemon (10 of 11)
 ----- footer -----
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | kit picker =====
-kit  0 of 90
+kit  0 of 91
 space chooses · the number is the order · ! is one this character cannot take
 
 >    ! vine_whip      grass units, out of pokemon
@@ -1334,7 +1339,7 @@ space chooses · the number is the order · ! is one this character cannot take
 ----- footer -----
 space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | reading a skill =====
-outrage  31 of 90
+outrage  31 of 91
 
   Hits an enemy for 220% of attack.
   Puts mire on itself.
@@ -1343,7 +1348,7 @@ outrage  31 of 90
 ----- footer -----
 ↑/↓ move · [/] scroll · ? or esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | skill blurb =====
-withdraw  26 of 90
+withdraw  26 of 91
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -1372,7 +1377,7 @@ species  the declared kinds, and where each line is drawn
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | status picker =====
-the statuses this skill inflicts  1 of 25
+the statuses this skill inflicts  1 of 26
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -1400,6 +1405,7 @@ space chooses a status · type the chance in parts per thousand
        evasive    raises a stat · 0 turns · up to 1 stacks
        charge     builds up to be spent · 4 turns · up to 999 stacks
        aegis      soaks up damage until it is used up · 3 turns · up to 2 stacks
+       bastion    soaks up damage until it is used up · 0 turns · up to 1 stacks
 
   poison
 
@@ -1444,6 +1450,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   charge       
   absorb       soaks up damage until it is used up
   aegis        
+  bastion      
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.
@@ -1544,6 +1551,9 @@ traits  the declared traits, and who carries each
   spiteful      pokemon.poliwag@36 pokemon.gastly@32
   berserk       pokemon.machop@40 pokemon.mewtwo@32
   unyielding    pokemon.machop@24
+  carapace      pokemon.squirtle@48
+  projection    pokemon.charmander@48
+  rending       pokemon.machop@48
 
   endurance
     Always carries toughened.

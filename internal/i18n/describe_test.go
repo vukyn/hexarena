@@ -139,6 +139,9 @@ func TestEveryTraitDescriptionSaysEveryThingItDoes(t *testing.T) {
 			if held.Drains > 0 {
 				want++
 			}
+			if held.Converts > 0 {
+				want++
+			}
 			// An amplification is one entry and up to two lines, because the two
 			// shares promise different things and a trait may carry either alone
 			// — so the count is of shares rather than of entries.

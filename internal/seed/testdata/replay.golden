@@ -133,6 +133,7 @@ event counts
   left                 0
   spread               0
   absorbed             0
+  paid                 0
 
 final board
   ally.venusaur     ally   alive     44 / 3800   hp   grass

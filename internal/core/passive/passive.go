@@ -25,6 +25,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
@@ -39,6 +40,31 @@ import (
 type Grant struct {
 	Status string
 	Stacks int
+	// Power is how big the granted status is, in parts per thousand of the stat
+	// Scaling names, and it is read only by a grant whose status carries a
+	// quantity — which today is an absorbing guard and nothing else.
+	//
+	// # Why a grant needed a number at all
+	//
+	// Every grant before this one was a *switch*: `toughened` is a status whose
+	// modifiers say what it does, so granting it needs nothing but its name.
+	// A barrier is not a switch — it is a pool, and how deep the pool is is the
+	// whole of what the trait says. Set.Hold applied a nought amount for exactly
+	// this reason ("a permanent status can be neither a damage-over-time nor a
+	// regeneration, so there is nothing here to snapshot"), and a barrier granted
+	// that way would have been a guard that stops nothing at all.
+	//
+	// ⚠️ It is read against the holder's **base** line rather than its buffed
+	// one, and that is a determinism rule rather than a preference. Grants go on
+	// at enlistment, one trait after another, so a grant reading buffed stats
+	// would depend on which traits happened to be applied first — a unit with
+	// `endurance` and a defence-scaled barrier would get a bigger barrier in one
+	// declaration order than another, and nothing on either trait would say so.
+	Power int
+	// Scaling is which of the holder's stats Power is a share of. Absent is
+	// refused where Power is required, because the zero value is health and a
+	// guard scaled off health is a different design question.
+	Scaling progression.Kind
 }
 
 // Passive is one declared trait.
@@ -139,6 +165,29 @@ type Passive struct {
 	// harder when badly hurt" is writable here and "hits harder when badly hurt"
 	// is not.
 	Drains int
+	// Converts is the share of every blow its holder throws that meets no defence
+	// at all, in parts per thousand.
+	//
+	// # Why it is here rather than on a skill
+	//
+	// skill.Pierce already lets a *skill* ignore armour, and this is the other
+	// half of the same sentence: piercing belongs to razor_leaf because that is
+	// what razor_leaf is, so every carrier gets the same ratio. Converting
+	// belongs to whoever is swinging — "part of everything I throw goes straight
+	// through" is a fact about a unit and applies to its whole kit — and there
+	// was no way to write it. It is Drains' neighbour for exactly that reason:
+	// that field exists because a skill's drain belongs to the skill and a
+	// trait's belongs to the unit.
+	//
+	// ⚠️ **It is not a bigger pierce.** Piercing lowers the divisor, so a heavy
+	// enough armour still eats most of what is left; converting splits the blow
+	// and the converted share is divided by nothing, so it arrives whole however
+	// deep the armour is. One is the answer to armour in general and this is the
+	// answer to a wall — which is what makes it the damage dealer's tool against
+	// a tank rather than a second helping of the same thing.
+	//
+	// Read fresh on every strike like Drains, so a gate on it works as written.
+	Converts int
 	// Amplifies is what the holder is better at inflicting, which is the one
 	// field here that reads the *other* unit's side of an application: every
 	// other job a trait has is about its holder, and this one is about what its
@@ -356,8 +405,10 @@ type Book struct {
 }
 
 type grantFile struct {
-	Status string `json:"status"`
-	Stacks int    `json:"stacks"`
+	Status  string `json:"status"`
+	Stacks  int    `json:"stacks"`
+	Power   int    `json:"power,omitempty"`
+	Scaling string `json:"scaling,omitempty"`
 }
 
 // passiveFile is the shape a passive is written in, and therefore the shape it
@@ -377,6 +428,7 @@ type passiveFile struct {
 	While     *conditionFile      `json:"while,omitempty"`
 	Resists   []resistanceFile    `json:"resists,omitempty"`
 	Drains    int                 `json:"drains,omitempty"`
+	Converts  int                 `json:"converts,omitempty"`
 	Amplifies []amplificationFile `json:"amplifies,omitempty"`
 }
 
@@ -451,8 +503,8 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 	}
 	if len(declared.Grants) == 0 && len(declared.Resists) == 0 &&
 		len(declared.Applies) == 0 && declared.Replies == nil &&
-		declared.Drains == 0 && len(declared.Amplifies) == 0 {
-		return fail("grants nothing, resists nothing, adds nothing, answers nothing, drains nothing and amplifies nothing, so holding it would change nothing")
+		declared.Drains == 0 && declared.Converts == 0 && len(declared.Amplifies) == 0 {
+		return fail("grants nothing, resists nothing, adds nothing, answers nothing, drains nothing, converts nothing and amplifies nothing, so holding it would change nothing")
 	}
 	// The one authored clause, and the one rule that makes it safe. A figure in
 	// it is refused rather than trusted, because every number in a description is
@@ -486,7 +538,50 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 		if slices.ContainsFunc(grants, func(seen Grant) bool { return seen.Status == kind.ID }) {
 			return fail("grants %q twice; say the stack count instead", kind.ID)
 		}
-		grants = append(grants, Grant{Status: kind.ID, Stacks: stacks})
+		// A quantity is required exactly where the status is one, and refused
+		// everywhere else. A barrier without a depth stops nothing and would
+		// still parse; a power on a switch would be a figure nothing reads, which
+		// is the shape every unread field in this repository has been refused in.
+		carries := kind.Category == status.Absorb
+		switch {
+		case carries && grant.Power < 1:
+			return fail("grants %q without a power: a guard that holds a pool needs a depth, or it stops nothing",
+				kind.ID)
+		case !carries && grant.Power != 0:
+			return fail("grants %q with a power of %d, which only a guard holding a pool reads",
+				kind.ID, grant.Power)
+		}
+		scaling := progression.Kind(0)
+		if carries {
+			// ⚠️ A gated trait may not grant one, and this is the rule that
+			// permanent-absorb was let through for. hold and release run the
+			// grant again every time the gate reopens, so a barrier behind
+			// `below_health` would come back full each time its holder crossed
+			// the line — a wall with no cost, refilled by being hit. An ungated
+			// grant runs once at enlistment, which is exactly "puts a barrier up
+			// when the battle starts".
+			if declared.While != nil {
+				return fail("grants %q behind a gate: a pool is refilled every time a gate reopens, so a guard may only be granted by a trait that is always in force",
+					kind.ID)
+			}
+			// Through skill.ParseScaling rather than a second reading of the
+			// same question, which is the sentence that function is exported
+			// under — and it brings the health refusal with it, so a barrier
+			// cannot be scaled off the bar it is protecting.
+			//
+			// The base line rather than the current one, for the reason on
+			// Grant.Power: grants go on one after another at enlistment, so
+			// reading a buffed stat would make the answer depend on which trait
+			// was applied first.
+			parsed, err := skill.ParseScaling(grant.Scaling, "base")
+			if err != nil {
+				return fail("grants %q, which %w", kind.ID, err)
+			}
+			scaling = parsed.Stat
+		}
+		grants = append(grants, Grant{
+			Status: kind.ID, Stacks: stacks, Power: grant.Power, Scaling: scaling,
+		})
 	}
 
 	resists := make([]Resistance, 0, len(declared.Resists))
@@ -632,12 +727,20 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 	if declared.Drains < 0 || declared.Drains > scale.Base {
 		return fail("drains %d, want a share in parts per thousand", declared.Drains)
 	}
+	// Bounded on both sides for the reason the drain above is. Under nought is a
+	// trait that makes its holder's blows *worse* through a field named for the
+	// opposite; over the base is more than the whole blow converted, which is not
+	// a stronger trait but a meaningless one — a thousand already means every
+	// point of it meets no defence.
+	if declared.Converts < 0 || declared.Converts > scale.Base {
+		return fail("converts %d, want a share in parts per thousand", declared.Converts)
+	}
 
 	return Passive{
 		ID: declared.ID, Name: strings.TrimSpace(declared.Name), Flavour: flavour,
 		Grants: grants, Applies: applies, Replies: replies,
 		While: while, Resists: resists, Drains: declared.Drains,
-		Amplifies: amplifies,
+		Converts: declared.Converts, Amplifies: amplifies,
 	}, nil
 }
 
@@ -759,7 +862,15 @@ func (b *Book) Marshal() ([]byte, error) {
 	for _, current := range b.passives {
 		grants := make([]grantFile, 0, len(current.Grants))
 		for _, grant := range current.Grants {
-			grants = append(grants, grantFile{Status: grant.Status, Stacks: grant.Stacks})
+			// The depth and the stat it is a share of, or a written book loses a
+			// barrier's size and reloads as a guard that stops nothing. Both are
+			// omitempty, so every grant that carries no quantity round-trips to
+			// the bytes it was authored as.
+			written := grantFile{Status: grant.Status, Stacks: grant.Stacks, Power: grant.Power}
+			if grant.Power > 0 {
+				written.Scaling = grant.Scaling.String()
+			}
+			grants = append(grants, written)
 		}
 		// Written only when there are any, so a trait that resists nothing
 		// round-trips to the bytes it was authored as — the same reason the name
@@ -804,7 +915,7 @@ func (b *Book) Marshal() ([]byte, error) {
 		file.Passives = append(file.Passives, passiveFile{
 			ID: current.ID, Name: current.Name, Flavour: current.Flavour, Grants: grants,
 			Applies: applies, Replies: replies, While: while, Resists: resists,
-			Drains: current.Drains, Amplifies: amplifies,
+			Drains: current.Drains, Converts: current.Converts, Amplifies: amplifies,
 		})
 	}
 	out, err := json.MarshalIndent(file, "", "  ")

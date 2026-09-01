@@ -555,7 +555,7 @@ func aHandPlayedBarrier(t *testing.T) []battle.Event {
 		// first blow arrived, and the log came back empty.
 		{ID: "guarded", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: mustAffinity(t, "neutral"), Stats: benchStats(4800, 300, 300, 100),
-			Skills: []string{"ward", "strike"}},
+			Skills: []string{"ward", "bloodprice"}},
 		{ID: "hitter", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: mustAffinity(t, "neutral"), Stats: benchStats(4800, 300, 300, 120),
 			Skills: []string{"strike"}},
@@ -565,8 +565,8 @@ func aHandPlayedBarrier(t *testing.T) []battle.Event {
 	}
 	fight.Begin()
 	var events []battle.Event
-	warded, soaked := false, false
-	for turn := 0; turn < 200 && !soaked; turn++ {
+	warded, soaked, paid := false, false, false
+	for turn := 0; turn < 200 && !(soaked && paid); turn++ {
 		prompt, err := fight.Advance()
 		if err != nil {
 			t.Fatalf("advance: %v", err)
@@ -582,8 +582,12 @@ func aHandPlayedBarrier(t *testing.T) []battle.Event {
 				}
 				warded = true
 			case prompt.Unit == "guarded":
-				if err := fight.Pass("waiting to be hit"); err != nil {
-					t.Fatalf("pass: %v", err)
+				// Paid for on the same board rather than on a second one: a cost
+				// is charged before anything is rolled, so any turn this unit
+				// spends attacking pays one and the scenario needs no more setup
+				// than picking the skill that charges.
+				if err := fight.Act("bloodprice", unitCell(t, fight, "hitter")); err != nil {
+					t.Fatalf("bloodprice: %v", err)
 				}
 			default:
 				if err := fight.Act("strike", unitCell(t, fight, "guarded")); err != nil {
@@ -593,13 +597,17 @@ func aHandPlayedBarrier(t *testing.T) []battle.Event {
 		}
 		for _, event := range fight.Drain() {
 			events = append(events, event)
-			if event.Kind == battle.Absorbed {
+			switch event.Kind {
+			case battle.Absorbed:
 				soaked = true
+			case battle.Paid:
+				paid = true
 			}
 		}
 	}
-	if !soaked {
-		t.Fatal("the barrier never ate anything, so this scenario measures nothing")
+	if !soaked || !paid {
+		t.Fatalf("the barrier ate something: %v; a price was paid: %v — this scenario measures what it says only when both are true",
+			soaked, paid)
 	}
 	return events
 }

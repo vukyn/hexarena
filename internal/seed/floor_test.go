@@ -55,7 +55,7 @@ func TestNoShippedDebuffCanFreezeAUnit(t *testing.T) {
 				}
 				for range piledOn {
 					if kind.Permanent {
-						crushed.Hold(kind, 1)
+						crushed.Hold(kind, 0, 1)
 						continue
 					}
 					crushed.Apply(kind, 0)

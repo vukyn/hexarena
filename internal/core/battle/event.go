@@ -135,10 +135,22 @@ const (
 	// Declared last, which is the rule for this enum: the kind serialises by
 	// name, so appending cannot reinterpret a saved log.
 	Absorbed
+	// Paid is a caster spending its own health to use a skill, and it carries
+	// what it cost and what the caster has left.
+	//
+	// Its own kind rather than a Damaged from the caster onto itself, and the
+	// two are different facts: Damaged is a blow that landed, so every on-hit
+	// tally in the engine counts one — drains, riders, the blow counts a build
+	// reading reads — and a cost is none of those things. A cost is also paid
+	// before anything is rolled, so a Damaged there would report a strike
+	// landing on a turn that may end in nothing but misses.
+	//
+	// Declared last, which is the rule for this enum.
+	Paid
 )
 
 // KindCount is the number of event kinds.
-const KindCount = int(Absorbed) + 1
+const KindCount = int(Paid) + 1
 
 var kindNames = [KindCount]string{
 	Started:         "started",
@@ -165,6 +177,7 @@ var kindNames = [KindCount]string{
 	Left:            "left",
 	Spread:          "spread",
 	Absorbed:        "absorbed",
+	Paid:            "paid",
 }
 
 func (k Kind) String() string {

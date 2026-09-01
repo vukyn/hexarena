@@ -389,9 +389,29 @@ func (b *Battle) hold(unit *Unit, held passive.Passive) error {
 		if err != nil {
 			return fmt.Errorf("unit %q: passive %q: %w", unit.ID, held.ID, err)
 		}
-		unit.Statuses.Hold(kind, grant.Stacks)
+		unit.Statuses.Hold(kind, b.granted(unit, grant), grant.Stacks)
 	}
 	return nil
+}
+
+// granted is how big a trait's grant is, and nought for every grant that carries
+// no quantity — which is all of them but a guard holding a pool.
+//
+// It reads the holder's **base** line rather than its buffed one. Grants go on
+// one trait after another at enlistment, so a buffed reading would make the
+// answer depend on which trait was applied first: a unit with endurance and a
+// defence-scaled barrier would get a different barrier in one declaration order
+// than in another, with nothing on either trait saying so. Base is the only
+// reading that is a fact about the unit rather than about the loop.
+//
+// Through Rules.Restore, which is the same expression a regeneration and an
+// inflicted barrier are built from, so a granted guard and a cast one cannot
+// disagree about what a share of a stat comes to.
+func (b *Battle) granted(unit *Unit, grant passive.Grant) int64 {
+	if grant.Power <= 0 {
+		return 0
+	}
+	return b.books.Rules.Restore(unit.Base[grant.Scaling], grant.Power)
 }
 
 // Begin records the opening board. It takes no turn.

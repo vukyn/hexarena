@@ -703,16 +703,22 @@ func (s *Set) CountIn(category Category) int {
 //
 // Stacks below one are nothing to hold. It reports how many stacks went on,
 // which is nought when the status is timed or already at its cap.
-func (s *Set) Hold(kind Kind, stacks int) int {
+func (s *Set) Hold(kind Kind, amount int64, stacks int) int {
 	if !kind.Permanent || stacks < 1 {
 		return 0
 	}
 	held := 0
 	for range stacks {
-		// A tick amount of nought: a permanent status can be neither a
-		// damage-over-time nor a regeneration, which ParseBook refuses, so there
-		// is nothing here to snapshot.
-		if added, _ := s.Apply(kind, 0); !added {
+		// ⚠️ **The amount used to be a hardcoded nought**, on the argument that a
+		// permanent status can be neither a damage-over-time nor a regeneration
+		// and so has nothing to snapshot. That was true of every permanent status
+		// there was, and stopped being true the moment a guard could be
+		// permanent: a barrier granted with a nought amount is a pool of nought,
+		// which parses, applies, shows in the log and stops nothing whatsoever.
+		//
+		// Whoever grants decides what the figure means, exactly as whoever
+		// inflicts does — Apply files it by category either way.
+		if added, _ := s.Apply(kind, amount); !added {
 			break
 		}
 		held++
@@ -1106,14 +1112,16 @@ func ParseBook(raw []byte) (*Book, error) {
 			return nil, fmt.Errorf("status %q is %s but declares pool_power %d, which only an %s uses",
 				declared.ID, category, declared.PoolPower, Absorb)
 		}
-		// A permanent absorb is a pool that never runs out of turns, so once it is
-		// spent it sits at nought for the rest of the battle and once refreshed it
-		// is a wall with no clock. Refused with the ticking pair above rather than
-		// beside them, because the reason is the clock rather than the arithmetic.
-		if declared.Permanent && category == Absorb {
-			return nil, fmt.Errorf("status %q is a permanent %s, which is a guard with no clock",
-				declared.ID, category)
-		}
+		// ⚠️ **A permanent absorb used to be refused here and the rule was in the
+		// wrong place.** The argument was "a guard with no clock", and it is
+		// wrong about a pool: a pool has a clock of its own, which is the damage
+		// in it. Spent is gone, and nothing puts it back.
+		//
+		// What is actually dangerous is a **gate**, because hold and release run
+		// a grant again every time one reopens — a barrier behind `below_health`
+		// would come back full each time its holder crossed the line. That is a
+		// fact about a passive rather than about a status, so it is refused where
+		// it can be seen: passive.ParseBook, on the trait that names the gate.
 		if category == Charge && len(declared.Modifiers) > 0 {
 			return nil, fmt.Errorf("status %q is a %s carrying %d modifier(s): a counter that is spent may not also change a stat, because its cap of %d bounds an effect it was never meant to have",
 				declared.ID, category, len(declared.Modifiers), stackCap)

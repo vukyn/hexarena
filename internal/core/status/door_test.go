@@ -45,7 +45,7 @@ func TestHoldAndReleaseAreTheDoorAPassiveOwns(t *testing.T) {
 	toughened := doorKind(t, book, "toughened")
 	var set status.Set
 
-	if held := set.Hold(toughened, 2); held != 2 {
+	if held := set.Hold(toughened, 0, 2); held != 2 {
 		t.Fatalf("Hold put on %d stacks, want 2", held)
 	}
 	if got := set.Stacks("toughened"); got != 2 {
@@ -78,7 +78,7 @@ func TestTheDoorRefusesTimedStatusesBothWays(t *testing.T) {
 	poison := doorKind(t, book, "poison")
 	var set status.Set
 
-	if held := set.Hold(poison, 2); held != 0 {
+	if held := set.Hold(poison, 0, 2); held != 0 {
 		t.Errorf("Hold put %d stacks of a timed status on", held)
 	}
 	if set.Has("poison") {
@@ -105,13 +105,13 @@ func TestHoldStopsAtTheDeclaredCap(t *testing.T) {
 	book := doorBook(t)
 	toughened := doorKind(t, book, "toughened")
 	var set status.Set
-	if held := set.Hold(toughened, 5); held != 2 {
+	if held := set.Hold(toughened, 0, 5); held != 2 {
 		t.Errorf("Hold put on %d stacks against a cap of 2", held)
 	}
 	if got := set.Stacks("toughened"); got != 2 {
 		t.Errorf("the unit carries %d stacks, want the cap of 2", got)
 	}
-	if held := set.Hold(toughened, 0); held != 0 {
+	if held := set.Hold(toughened, 0, 0); held != 0 {
 		t.Errorf("holding nothing put on %d stacks", held)
 	}
 }
@@ -125,7 +125,7 @@ func TestHoldStopsAtTheDeclaredCap(t *testing.T) {
 func TestAHeldStatusIsNotTimed(t *testing.T) {
 	book := doorBook(t)
 	var set status.Set
-	set.Hold(doorKind(t, book, "toughened"), 1)
+	set.Hold(doorKind(t, book, "toughened"), 0, 1)
 	if set.Timed() {
 		t.Error("a held grant counts as timed, so a board holding one can never be a draw")
 	}

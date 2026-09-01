@@ -206,6 +206,28 @@ func (r Rules) damage(attack, defense int64, skillMultiplier, affinityMultiplier
 	return damage
 }
 
+// divided is damage without the floor, and it exists for exactly one caller: a
+// strike that is resolved in two halves against two different defences.
+//
+// The floor is per STRIKE rather than per term. Applying it to each half would
+// hand a converting attacker two minimum-damage points where everybody else gets
+// one, which is a free point that grows with nothing and belongs to no rule.
+func (r Rules) divided(attack, defense int64, skillMultiplier, affinityMultiplier, critMultiplier int) int64 {
+	if attack <= 0 || skillMultiplier <= 0 || affinityMultiplier <= 0 || critMultiplier <= 0 ||
+		r.DefenseConstant <= 0 {
+		return 0
+	}
+	if defense < 0 {
+		defense = 0
+	}
+	numerator := widen(uint64(attack), uint64(skillMultiplier)).
+		times(uint64(affinityMultiplier)).
+		times(uint64(critMultiplier)).
+		times(uint64(r.DefenseConstant))
+	denominator := int64(PermilleBase) * int64(PermilleBase) * int64(PermilleBase) * (r.DefenseConstant + defense)
+	return numerator.over(uint64(denominator))
+}
+
 // wide is an unsigned 128-bit intermediate together with whether it is still
 // exact. It exists for the two products in this package that do not fit an
 // int64 — the damage numerator and Swung — and for nothing else.
@@ -357,6 +379,16 @@ type Hit struct {
 	Affinity int
 	// Defense is the target's defence, already buffed and not yet pierced.
 	Defense int64
+	// Convert is the share of this blow that meets no defence at all, in parts
+	// per thousand, and it belongs to the ATTACKER rather than to the skill.
+	//
+	// Pierce is a property of a skill — razor_leaf pierces because that is what
+	// razor_leaf is — so it is authored on the skill and every carrier gets the
+	// same ratio. This one is a property of whoever is swinging: a trait that
+	// says "part of everything I throw goes straight through" applies to the
+	// whole kit, and there was no way to write that. The battle layer sums it
+	// across the traits in force and hands it down here.
+	Convert int
 	// Pierce is the share of that defence the skill ignores, in parts per
 	// thousand. Zero is every skill that does not pierce, which is why adding
 	// the field moved no golden file.
@@ -722,7 +754,33 @@ func (r Rules) Strike(h Hit) int64 { return r.strike(h, PermilleBase) }
 func (r Rules) CriticalStrike(h Hit) int64 { return r.strike(h, r.CriticalMultiplier) }
 
 func (r Rules) strike(h Hit, critMultiplier int) int64 {
-	return r.damage(h.Scaling, Pierced(h.Defense, h.Pierce), h.Multiplier, h.Affinity, critMultiplier)
+	if h.Convert <= 0 {
+		return r.damage(h.Scaling, Pierced(h.Defense, h.Pierce), h.Multiplier, h.Affinity, critMultiplier)
+	}
+	// A converted strike is resolved as two strikes and reported as one: a share
+	// of its power meets whatever defence is left standing, and the rest meets
+	// none at all.
+	//
+	// ⚠️ **Conversion is not a bigger Pierce, and the two are not the same shape.**
+	// Piercing lowers the *divisor* — it makes armour smaller and the blow is
+	// still divided by what is left, so a heavy enough armour still eats most of
+	// it. Conversion splits the blow: the converted share is divided by nothing,
+	// so it arrives whole however deep the armour is. That is why one is the
+	// answer to armour in general and the other is the answer to a wall.
+	//
+	// Both halves are computed unfloored and the floor is applied to the sum, so
+	// a converting attacker does not collect the minimum twice. And a Convert of
+	// nought takes the branch above rather than falling through this one at a
+	// share of a thousand, so every figure that shipped before this existed is
+	// bit for bit what it was — see TestConvertingNothingChangesNothing.
+	share := h.Multiplier * (PermilleBase - h.Convert) / PermilleBase
+	converted := h.Multiplier * h.Convert / PermilleBase
+	total := r.divided(h.Scaling, Pierced(h.Defense, h.Pierce), share, h.Affinity, critMultiplier) +
+		r.divided(h.Scaling, 0, converted, h.Affinity, critMultiplier)
+	if total < r.MinimumDamage {
+		return r.MinimumDamage
+	}
+	return total
 }
 
 // Resolve returns the damage of each strike in order.

@@ -103,6 +103,12 @@ var (
 		// of it. A player who read the two as one word would be reading the wrong
 		// half of the only choice the two guards offer.
 		"aegis": "lá chắn",
+		// The granted twin of the one above, and a different word because they
+		// are a different bargain: `aegis` is a turn somebody spent and runs out,
+		// `bastion` is what a unit simply walked in wearing and never comes back
+		// once it is gone. A player reading both as "lá chắn" would think the
+		// first one could be put back up.
+		"bastion": "thành trì",
 		// The three that shipped without one. A regen, and the two permanent
 		// statuses a trait grants -- which are the ones a reader is least able
 		// to guess at, because nothing else on screen says what they do.

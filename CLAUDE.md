@@ -2726,6 +2726,130 @@ firing in real battles first, though — 60 squad battles put 354 barriers up an
 soaked 128,329 damage across 446 strikes — because a skill nothing casts is the
 failure mode this section already has one example of.
 
+## Three new axes: a grant with a number, a share past defence, a price in health
+
+Shipped together because the first two are the wall and the third is what a
+character pays to break one.
+
+### A grant that carries a quantity
+
+`passive.Grant` was `{Status, Stacks}` and every grant before this was a
+**switch**: `toughened` is a status whose modifiers say what it does, so granting
+it needs nothing but its name. A barrier is not a switch — it is a pool, and how
+deep the pool is is the whole of what the trait says.
+
+- ⚠️ **`Set.Hold` applied a nought amount**, on the argument that a permanent
+  status can be neither a damage-over-time nor a regeneration and so has nothing
+  to snapshot. That was true of every permanent status there was, and stopped
+  being true the moment a guard could be permanent. A barrier granted that way
+  parses, applies, shows in the log and **stops nothing at all**.
+- ⚠️ **The permanent-absorb refusal was the wrong rule in the wrong place.**
+  `status.ParseBook` refused it as "a guard with no clock", and that is wrong
+  about a pool: a pool has a clock of its own, which is the damage in it. What is
+  actually dangerous is a **gate** — `hold` and `release` run a grant again every
+  time one reopens, so a barrier behind `below_health` comes back full each time
+  its holder crosses the line. The rule now lives on `passive.ParseBook`, where
+  the gate can be seen.
+- **The pool is read off the holder's BASE line.** Grants go on one trait after
+  another at enlistment, so a buffed reading would make the answer depend on which
+  trait was applied first — a unit with `endurance` and a defence-scaled barrier
+  would get a different barrier in one declaration order than in another, with
+  nothing on either trait saying so.
+- The stat comes through `skill.ParseScaling`, which is the sentence that function
+  is exported under, and it brings the health refusal with it.
+
+### ⚠️ A pool is worth most where the frame is thinnest, which makes one of the two traits self-defeating
+
+A pool is a flat quantity, so what it is worth is a share of what its holder could
+already take. Attack does not correlate with survivability, so an attack-scaled
+barrier lands wherever it lands. **Defence does** — so a defence-scaled one hands
+the deepest pool to the unit that needs it least, and on a wall it competes with a
+permanent defence stat that is worth more precisely because the defence is already
+high.
+
+| carrier | trait | spar | the lead trait it replaces |
+|---|---|---|---|
+| Charizard | `projection` (attack) | **71.9%** | `blaze` 63.2% |
+| Blastoise | `carapace` (defence) | **29.2%** | `endurance` 32.1% |
+
+Both ship: a weaker option is still an option. What is written down is the
+*reason*, so a later balance pass does not read the figures as a bug.
+
+### Converting is not a bigger pierce
+
+`passive.Converts` sends a share of every blow its holder throws past defence
+entirely. It sits beside `Drains` for that field's own reason: a skill's drain
+belongs to the skill and a trait's belongs to the unit.
+
+**Piercing lowers the divisor** — armour gets smaller and the blow is still
+divided by what is left, so what gets through keeps falling as armour rises.
+**Converting splits the blow** — the converted share is divided by nothing, so it
+arrives whole however deep the armour is and puts a floor under the blow that
+armour cannot lower.
+
+| defence | pierced 400‰ | converted 400‰ |
+|---|---:|---:|
+| 0 | 600 | 600 |
+| 300 | 375 | 420 |
+| 900 | 214 | 330 |
+| 2400 | 103 | **280** |
+
+So one is the answer to armour in general and the other is the answer to a **wall**
+— which is what makes it the damage dealer's tool against a tank rather than a
+second helping of the same thing. Measured on the shipped cast, Machamp with
+`rending` against Blastoise: **150-0 over 30 turns**, against `blood_thirst`'s
+138-12 over **71**. And it costs where there is nothing to bypass — against
+Charizard it wins ten fewer duels than the drain it replaces.
+
+- ⚠️ **Both halves are computed unfloored and the floor is applied to the sum.**
+  Two `damage` calls would floor twice, handing a converting attacker a free
+  minimum-damage point that grows with nothing.
+- ⚠️ **A conversion of nought takes a separate branch** rather than falling
+  through at a share of a thousand, which truncates differently. That is what let
+  this ship without moving a single figure in a single golden —
+  `TestConvertingNothingChangesNothing`.
+
+### A price in health
+
+`skill.Cost` is a share of the caster's **maximum** health, paid **up front** and
+**whether or not anything lands**. A share taken out of the damage dealt would be
+free on a turn the skill missed, and a skill that is free when it fails has no
+decision in it. Of maximum rather than current, so the price is the same on the
+first turn and the last.
+
+⚠️ **It may never take the last point.** `Suggest` prices what a turn is worth to
+the board and has no term at all for "and then I am not here", so a cast that
+could be lethal would be rated as pure gain. The floor keeps the whole question
+out of the rating.
+
+#### ⚠️ The bug it shipped with: a cost filed in a branch that does not run
+
+A health cost is a cost of *acting*, so it went into `friendlyFire` — which is
+where every other cost of acting lives. But `rate` calls that arm only when
+`declared.Target == skill.All`. So a single-target skill charging a quarter of its
+caster's health was charged **nothing**: measured, a Magnezone holding one cast it
+three times a battle, handed over seven tenths of itself and lost **120 of 120**
+duels, against 69-51 for the same kit without it. It is subtracted in `rate` now,
+for every skill.
+
+#### ⚠️ And the clamp that made it cheapest when it was most fatal
+
+The price was first read through the same expression that pays it — the floor
+included — so the skill got *cheaper* exactly as casting it got more dangerous: a
+unit at two hundred was charged a hundred and ninety nine instead of seven
+hundred and fifty, and the rating therefore liked it best in the one position
+where it should refuse.
+
+`spentHealth` is now the one figure in `price.go` deliberately **not** the one the
+resolving function pays. The rule the file is written under is about arithmetic
+that could drift; this is the same arithmetic with one clamp left off, and that
+clamp is *what a unit can afford* rather than *what the skill costs*. A unit that
+cannot afford it should decline.
+
+With both fixed, `steel_beam` is cast when the board is worth it and not
+otherwise — against Blastoise (defence 640) 30 casts in 120 duels, against
+Charizard (400) **129**.
+
 ## Pricing a summon, so the opponent casts one
 
 Shipped. `battle.Suggest` rates a summoning skill in the one unit it counts in —

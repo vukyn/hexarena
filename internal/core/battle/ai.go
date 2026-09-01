@@ -249,11 +249,17 @@ func (b *Battle) hitAgainst(actor *Unit, actorStats progression.Values, declared
 	return combat.Hit{
 		Scaling: combat.PickScaling(declared.Scaling.Source,
 			actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat]),
-		Multiplier:    power,
-		Strikes:       declared.StrikeCount(),
-		Affinity:      multiplier,
-		Defense:       targetStats[progression.Defense],
-		Pierce:        declared.Pierce,
+		Multiplier: power,
+		Strikes:    declared.StrikeCount(),
+		Affinity:   multiplier,
+		Defense:    targetStats[progression.Defense],
+		Pierce:     declared.Pierce,
+		// The actor's own conversion, read here for the reason this whole
+		// function exists: a rating that built its hit without it would price
+		// every blow a converting unit throws as smaller than the one it lands,
+		// and against a wall — the exact board the trait is for — it would prefer
+		// anything else.
+		Convert:       b.converts(actor),
 		Crit:          declared.Crit,
 		SkillAccuracy: declared.Accuracy,
 		AccuracyStat:  actorStats[progression.Accuracy],

@@ -296,7 +296,7 @@ func (b *Battle) reconsider(unit *Unit, turn atb.Turn) {
 				if err != nil {
 					continue
 				}
-				unit.Statuses.Hold(kind, grant.Stacks)
+				unit.Statuses.Hold(kind, b.granted(unit, grant), grant.Stacks)
 				b.emit(Event{
 					Kind: PassiveHeld, At: turn.At, Turn: turn.Number,
 					Actor: unit.ID, Passive: held.ID,
@@ -347,6 +347,38 @@ func (b *Battle) retuneAll(turn atb.Turn) {
 			Before: scheduled, Amount: current,
 		})
 	}
+}
+
+// spendHealth takes a skill's price out of its caster, and never the last point
+// of it.
+//
+// ⚠️ **A skill may not kill its own user**, and the floor is the design rather
+// than a safety net. Suggest prices what a turn is worth to the board and has no
+// term at all for "and then I am not here" — a cast that could be lethal would be
+// rated as pure gain, so a unit holding one would spend itself on the first turn
+// it could. Leaving a point standing keeps the whole question out of the rating,
+// and a caster on one point is a caster that has already paid everything the
+// skill can ask.
+//
+// The share is of MAXIMUM health, so the price is the same on the first turn and
+// the last. A share of current would get cheaper exactly as it got more
+// dangerous, which prices a desperate cast lowest.
+func (b *Battle) spendHealth(unit *Unit, known skill.Skill, turn atb.Turn) {
+	if known.Cost <= 0 {
+		return
+	}
+	paid := unit.MaxHP() * int64(known.Cost) / scale.Base
+	if room := unit.HP - 1; paid > room {
+		paid = room
+	}
+	if paid <= 0 {
+		return
+	}
+	unit.HP -= paid
+	b.emit(Event{
+		Kind: Paid, At: turn.At, Turn: turn.Number, Actor: unit.ID,
+		Skill: known.ID, Amount: paid, Remaining: unit.HP,
+	})
 }
 
 // spendCooldowns brings a unit's cooldowns down by the turn it just served.
@@ -737,6 +769,11 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		Gradient: brought.Share,
 	})
 
+	// The price, before anything is rolled and whether or not anything lands.
+	// That is what makes it a cost: a share taken out of the damage dealt would
+	// be free on a turn the skill missed, and a skill that is free when it fails
+	// has no decision in it.
+	b.spendHealth(unit, known, turn)
 	// Before applyToSelf, deliberately: a skill that both grants a status and
 	// spends one would otherwise pay itself, and "hits harder while furied"
 	// would hold for the skill that just applied the fury.
@@ -1054,6 +1091,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 		Affinity:      multiplier,
 		Defense:       targetStats[progression.Defense],
 		Pierce:        known.Pierce,
+		Convert:       b.converts(actor),
 		Crit:          known.Crit,
 		SkillAccuracy: known.Accuracy,
 		AccuracyStat:  actorStats[progression.Accuracy],
@@ -1260,6 +1298,34 @@ func (b *Battle) lifesteal(actor *Unit) int {
 			continue
 		}
 		total += held.Drains
+	}
+	return total
+}
+
+// converts is the share of the actor's blows that meets no defence at all, added
+// across the traits in force.
+//
+// Added rather than composed, exactly as lifesteal is: a share of a blow is not a
+// chance, so two traits that each send a fifth through send two fifths through.
+// Bounded at the base by its caller for the same reason a drain is — more than
+// the whole blow converted is not a stronger trait but a meaningless one.
+func (b *Battle) converts(actor *Unit) int {
+	if len(actor.Passives) == 0 || b.books.Passives == nil {
+		return 0
+	}
+	total := 0
+	for _, id := range actor.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			continue
+		}
+		if held.Converts == 0 || !b.inForce(actor, held) {
+			continue
+		}
+		total += held.Converts
+	}
+	if total > scale.Base {
+		return scale.Base
 	}
 	return total
 }
