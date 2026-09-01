@@ -242,6 +242,81 @@
       "passives": [
         "elusive"
       ]
+    },
+    {
+      "id": "mew.feed",
+      "character": "pokemon.mew",
+      "name": "ăn mộng",
+      "intent": "Ru cho ngủ rồi ngồi xuống ăn dần, càng ăn càng lành lại",
+      "skills": [
+        "hypnosis",
+        "dream_eater",
+        "psychic",
+        "recover"
+      ],
+      "passives": [
+        "elusive"
+      ]
+    },
+    {
+      "id": "mew.borrowed",
+      "character": "pokemon.mew",
+      "name": "học lỏm",
+      "intent": "Không dùng đến thứ gì của riêng mình, chỉ đánh bằng những miếng nhặt được của kẻ khác",
+      "skills": [
+        "cross_chop",
+        "submission",
+        "vital_throw",
+        "body_slam"
+      ],
+      "passives": [
+        "endurance"
+      ]
+    },
+    {
+      "id": "mew.wither",
+      "character": "pokemon.mew",
+      "name": "gieo mầm",
+      "intent": "Rải độc trước rồi mới ra đòn, để thứ đã ngấm sẵn làm phần còn lại",
+      "skills": [
+        "poison_powder",
+        "sludge_bomb",
+        "venoshock",
+        "swift"
+      ],
+      "passives": [
+        "contagion"
+      ]
+    },
+    {
+      "id": "mewtwo.breach",
+      "character": "pokemon.mewtwo",
+      "name": "xuyên giáp",
+      "intent": "Đánh thẳng vào bên trong, dày hay mỏng thì cũng chừng ấy",
+      "skills": [
+        "psystrike",
+        "psycho_cut",
+        "shadow_ball",
+        "dark_pulse"
+      ],
+      "passives": [
+        "berserk"
+      ]
+    },
+    {
+      "id": "mewtwo.origin",
+      "character": "pokemon.mewtwo",
+      "name": "gốc gác",
+      "intent": "Chỉ dùng những miếng của kẻ nó được dựng lên từ đó, trên một cái thân khác hẳn",
+      "skills": [
+        "psychic",
+        "hypnosis",
+        "dream_eater",
+        "recover"
+      ],
+      "passives": [
+        "elusive"
+      ]
     }
   ]
 }

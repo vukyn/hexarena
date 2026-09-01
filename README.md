@@ -1540,6 +1540,18 @@ authored, and `hexforge archetypes` shows it in the `needs` column; a preset who
 kit demanded three elements would be rejected, because no affinity can hold
 three.
 
+The inert element is a legal thing for a character to *be*, and it reads oddly
+until the carry rule above is remembered: a unit with no element takes no bonus
+and no penalty from anybody, and in exchange it may carry only the neutral
+skills — everybody's plain moves and nobody's line. That is the largest single
+pool in the book, so "no type" comes out as the widest kit in the cast rather
+than as the narrowest.
+
+Light and dark are the one *mutual* pair, and a mutual pair only means anything
+once both halves are carried: an element strong against nobody on the board is an
+inert one wearing a name. Cleffa held light alone for a while, and Mewtwo is what
+put something on the other side of it.
+
 ```
 go run ./cmd/hexforge                  # list the subcommands
 go run ./cmd/hexforge origins          # the catalog of works

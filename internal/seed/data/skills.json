@@ -1723,6 +1723,293 @@
         "consume_stacks": 0,
         "arc_power": 180
       }
+    },
+    {
+      "id": "psychic",
+      "name": "niệm lực",
+      "flavour": "Không đưa tay ra, không bước tới — chỉ nhìn, và thứ đang đứng đó oằn xuống",
+      "element": "neutral",
+      "range": 3,
+      "pattern": "single",
+      "power": 1600,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "mythic"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "expose",
+          "chance": 350,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "hypnosis",
+      "name": "thôi miên",
+      "flavour": "Đưa mắt qua lại vài lượt, chậm rãi, cho tới khi kẻ đối diện quên mất mình đang đứng đâu",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "mythic"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 550,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "dream_eater",
+      "name": "nuốt mộng",
+      "flavour": "Kẻ đang ngủ mơ thấy gì, nó ngồi xuống bên cạnh và ăn hết chỗ đó",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "single",
+      "power": 700,
+      "strikes": 1,
+      "accuracy": 900,
+      "drains": 700,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "mythic"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "requires": {
+        "status": "stun",
+        "min_stacks": 1,
+        "bonus_power": 900
+      }
+    },
+    {
+      "id": "transform",
+      "name": "biến hình",
+      "flavour": "Trong một nhịp thở nó đã là thứ khác, và thứ ấy đang nhìn lại bằng chính mắt bạn",
+      "element": "neutral",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 5,
+      "target": "self",
+      "restrict": {
+        "characters": [
+          "pokemon.mew"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "fury",
+          "chance": 1000,
+          "stacks": 1
+        },
+        {
+          "status": "haste",
+          "chance": 1000,
+          "stacks": 1
+        },
+        {
+          "status": "focus",
+          "chance": 1000,
+          "stacks": 1
+        },
+        {
+          "status": "veil",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "recover",
+      "name": "tự lành",
+      "flavour": "Khép mắt lại một lúc, mở ra thì chỗ rách đã liền như chưa từng rách",
+      "element": "neutral",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "restores": 700,
+      "cooldown": 4,
+      "target": "self",
+      "restrict": {
+        "species": [
+          "mythic"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "swift",
+      "name": "mưa sao",
+      "flavour": "Một vốc sao nhỏ rời khỏi tay, tản ra rồi rơi xuống khắp chỗ trước mặt",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "arc_up",
+      "power": 700,
+      "strikes": 1,
+      "accuracy": 1000,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "mythic"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "psystrike",
+      "name": "kích tâm",
+      "flavour": "Đòn không rơi xuống chỗ nó đang đứng mà rơi thẳng vào bên trong, nơi chẳng có gì che",
+      "element": "dark",
+      "range": 2,
+      "pattern": "single",
+      "power": 1500,
+      "strikes": 1,
+      "accuracy": 880,
+      "pierce": 800,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "characters": [
+          "pokemon.mewtwo"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "shadow_ball",
+      "name": "cầu bóng tối",
+      "flavour": "Một khối tối đặc quánh lăn tới, chạm vào đâu là chỗ đó lạnh đi",
+      "element": "dark",
+      "range": 3,
+      "pattern": "single",
+      "power": 1200,
+      "strikes": 1,
+      "accuracy": 900,
+      "pierce": 500,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "expose",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "psycho_cut",
+      "name": "chém niệm",
+      "flavour": "Vệt cắt đi ngang không khí, tới nơi rồi mới nghe thấy tiếng",
+      "element": "dark",
+      "range": 2,
+      "pattern": "arc_up",
+      "power": 540,
+      "strikes": 2,
+      "accuracy": 880,
+      "pierce": 600,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "dark_pulse",
+      "name": "sóng tối",
+      "flavour": "Bóng tối dội ra thành từng đợt, ai đứng trong đó cũng thôi nhìn thấy đường",
+      "element": "dark",
+      "range": 2,
+      "pattern": "column",
+      "power": 800,
+      "strikes": 1,
+      "accuracy": 900,
+      "pierce": 400,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "blind",
+          "chance": 450,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "nasty_plot",
+      "name": "mưu hiểm",
+      "flavour": "Đứng yên một nhịp, nghĩ tới thứ mình sắp làm, rồi cười",
+      "element": "dark",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "fury",
+          "chance": 1000,
+          "stacks": 2
+        }
+      ]
     }
   ]
 }

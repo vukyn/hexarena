@@ -59,7 +59,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | skill blurb =====
-withdraw <thủ thế>  26/73
+withdraw <thủ thế>  26/84
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -81,6 +81,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   titan      lực sĩ
   fae        tiên
   construct  cỗ máy
+  mythic     huyền thoại
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -110,26 +111,26 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | trait blurb =====
-Bulbasaur  cấp 60
+Mew  cấp 60
 
-  venom_blood <máu độc>
-    Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
-    Miễn nhiễm trúng độc.
-    Ai đánh trúng thì có 4% khả năng dính trúng độc.
+  elusive <huyền ảo>
+    Chỗ vừa đứng đã trống, mà chỗ đòn rơi xuống thì lại chẳng có ai.
+    Luôn mang khinh công.
+
+  composure <vững tâm>
+    Đứng giữa ồn ào mà đầu vẫn tỉnh, ai gào thét cỡ nào cũng chẳng lay được.
+    Giảm 50% khả năng dính choáng.
+    Giảm 50% khả năng dính bị khiêu khích.
+
+  swiftness <thần tốc>
+    Quen chạy hơn quen đứng, ra tay xong đã ở chỗ khác.
+    Luôn mang gia tốc.
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
     Luôn mang kiên cường.
 
-  blood_thirst <khát máu>
-    Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức.
-    Mọi đòn hút lại 25% sát thương gây ra.
-
-  virulence <độc lực>
-    Nọc tiết ra đặc và ngấm sâu hơn thứ độc tầm thường.
-    Hiệu quả trúng độc mạnh hơn 30%.
-    Khả năng gây trúng độc tăng 20%.
-  … 17/26 dòng, [/] để cuộn
+  … 17/29 dòng, [/] để cuộn
 ----- footer -----
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | traitless build =====
@@ -160,11 +161,11 @@ nội tại  các nội tại đã khai báo, và ai mang
   heatproof     chịu nhiệt     pokemon.charmander@16
   virulence     độc lực        pokemon.bulbasaur@32
   venom_blood   máu độc        pokemon.bulbasaur@24
-  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16
-  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44
-  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon…
+  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
+  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16
+  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@…
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -184,6 +185,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   titan      lực sĩ
   fae        tiên
   construct  cỗ máy
+  mythic     huyền thoại
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -218,6 +220,13 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
     magnemite.trickle   nhỏ giọt
     magnemite.surge     sấm dội
     magnemite.hoard     gom một mẻ
+  pokemon.mew
+    mew.feed            ăn mộng
+    mew.borrowed        học lỏm
+    mew.wither          gieo mầm
+  pokemon.mewtwo
+    mewtwo.breach       xuyên giáp
+    mewtwo.origin       gốc gác
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -268,7 +277,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | skill blurb =====
-withdraw <thủ thế>  26/73
+withdraw <thủ thế>  26/84
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -290,6 +299,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   titan      lực sĩ
   fae        tiên
   construct  cỗ máy
+  mythic     huyền thoại
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -340,34 +350,37 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | trait blurb =====
-Bulbasaur  cấp 60
+Mew  cấp 60
 
-  venom_blood <máu độc>
-    Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
-    Miễn nhiễm trúng độc.
-    Ai đánh trúng thì có 4% khả năng dính trúng độc.
+  elusive <huyền ảo>
+    Chỗ vừa đứng đã trống, mà chỗ đòn rơi xuống thì lại chẳng có ai.
+    Luôn mang khinh công.
+
+  composure <vững tâm>
+    Đứng giữa ồn ào mà đầu vẫn tỉnh, ai gào thét cỡ nào cũng chẳng lay được.
+    Giảm 50% khả năng dính choáng.
+    Giảm 50% khả năng dính bị khiêu khích.
+
+  swiftness <thần tốc>
+    Quen chạy hơn quen đứng, ra tay xong đã ở chỗ khác.
+    Luôn mang gia tốc.
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
     Luôn mang kiên cường.
 
+  contagion <lây lan>
+    Chạm vào đâu là thứ gì đó ở lại đó, ngấm dần cho tới khi đòn đánh nhẹ bẫng đi.
+    Đòn đánh gây thêm suy yếu, 25% khả năng.
+
   blood_thirst <khát máu>
     Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức.
     Mọi đòn hút lại 25% sát thương gây ra.
-
-  virulence <độc lực>
-    Nọc tiết ra đặc và ngấm sâu hơn thứ độc tầm thường.
-    Hiệu quả trúng độc mạnh hơn 30%.
-    Khả năng gây trúng độc tăng 20%.
 
   last_gasp <hấp hối>
     Càng thoi thóp, cơn khát càng trỗi dậy.
     Mọi đòn hút lại 40% sát thương gây ra.
     Chỉ có hiệu lực khi còn <=40% máu.
-
-  contagion <lây lan>
-    Chạm vào đâu là thứ gì đó ở lại đó, ngấm dần cho tới khi đòn đánh nhẹ bẫng đi.
-    Đòn đánh gây thêm suy yếu, 25% khả năng.
 ----- footer -----
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | traitless build =====
@@ -397,6 +410,13 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
     magnemite.trickle   nhỏ giọt
     magnemite.surge     sấm dội
     magnemite.hoard     gom một mẻ
+  pokemon.mew
+    mew.feed            ăn mộng
+    mew.borrowed        học lỏm
+    mew.wither          gieo mầm
+  pokemon.mewtwo
+    mewtwo.breach       xuyên giáp
+    mewtwo.origin       gốc gác
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -414,17 +434,17 @@ nội tại  các nội tại đã khai báo, và ai mang
   heatproof     chịu nhiệt     pokemon.charmander@16
   virulence     độc lực        pokemon.bulbasaur@32
   venom_blood   máu độc        pokemon.bulbasaur@24
-  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16
-  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44
-  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24
+  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
+  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16
+  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16
   ballast       trụ vững       pokemon.squirtle@44
-  composure     vững tâm       pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40
-  elusive       huyền ảo       pokemon.cleffa@40 pokemon.magnemite@32
-  contagion     lây lan        pokemon.bulbasaur@28
+  composure     vững tâm       pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24
+  elusive       huyền ảo       pokemon.cleffa@40 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40
+  contagion     lây lan        pokemon.bulbasaur@28 pokemon.mew@40
   spiteful      nham hiểm      pokemon.poliwag@36
-  berserk       cuồng chiến    pokemon.machop@40
+  berserk       cuồng chiến    pokemon.machop@40 pokemon.mewtwo@32
   unyielding    bất khuất      pokemon.machop@24
 
   endurance <bền bỉ>
@@ -445,6 +465,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   titan      lực sĩ
   fae        tiên
   construct  cỗ máy
+  mythic     huyền thoại
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -511,7 +532,7 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | skill blurb =====
-withdraw  26 of 73
+withdraw  26 of 84
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -532,6 +553,7 @@ species  the declared kinds, and where each line is drawn
   titan
   fae
   construct
+  mythic
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -561,26 +583,26 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | trait blurb =====
-Bulbasaur  level 60
+Mew  level 60
 
-  venom_blood
-    Refuses poison outright.
-    Whatever damages it has a 4% chance of catching poison.
+  elusive
+    Always carries evasive.
+
+  composure
+    Refuses 50% of any stun aimed at it.
+    Refuses 50% of any taunting aimed at it.
+
+  swiftness
+    Always carries quickened.
 
   endurance
     Always carries toughened.
 
+  contagion
+    Its attacks also inflict weaken, 25% of the time.
+
   blood_thirst
-    Everything it does takes back 25% of the damage dealt.
-
-  virulence
-    The effect of poison is 30% stronger.
-    The chance of inflicting poison is 20% higher.
-
-  last_gasp
-    Everything it does takes back 40% of the damage dealt.
-    In force only at or below 40% health.
-  … 17/20 lines, [/] to scroll
+  … 17/22 lines, [/] to scroll
 ----- footer -----
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | traitless build =====
@@ -610,11 +632,11 @@ traits  the declared traits, and who carries each
   heatproof     pokemon.charmander@16
   virulence     pokemon.bulbasaur@32
   venom_blood   pokemon.bulbasaur@24
-  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16
-  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44
-  reckless      pokemon.charmander@44 pokemon.machop@44
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon…
+  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
+  reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16
+  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewt…
 
   endurance
     Always carries toughened.
@@ -633,6 +655,7 @@ species  the declared kinds, and where each line is drawn
   titan
   fae
   construct
+  mythic
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -667,6 +690,13 @@ builds  the kit and the trait a character fields at level 60, furthest form
     magnemite.trickle
     magnemite.surge
     magnemite.hoard
+  pokemon.mew
+    mew.feed
+    mew.borrowed
+    mew.wither
+  pokemon.mewtwo
+    mewtwo.breach
+    mewtwo.origin
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -715,7 +745,7 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | skill blurb =====
-withdraw  26 of 73
+withdraw  26 of 84
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -736,6 +766,7 @@ species  the declared kinds, and where each line is drawn
   titan
   fae
   construct
+  mythic
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -786,28 +817,30 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | trait blurb =====
-Bulbasaur  level 60
+Mew  level 60
 
-  venom_blood
-    Refuses poison outright.
-    Whatever damages it has a 4% chance of catching poison.
+  elusive
+    Always carries evasive.
+
+  composure
+    Refuses 50% of any stun aimed at it.
+    Refuses 50% of any taunting aimed at it.
+
+  swiftness
+    Always carries quickened.
 
   endurance
     Always carries toughened.
 
+  contagion
+    Its attacks also inflict weaken, 25% of the time.
+
   blood_thirst
     Everything it does takes back 25% of the damage dealt.
-
-  virulence
-    The effect of poison is 30% stronger.
-    The chance of inflicting poison is 20% higher.
 
   last_gasp
     Everything it does takes back 40% of the damage dealt.
     In force only at or below 40% health.
-
-  contagion
-    Its attacks also inflict weaken, 25% of the time.
 ----- footer -----
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | traitless build =====
@@ -837,6 +870,13 @@ builds  the kit and the trait a character fields at level 60, furthest form
     magnemite.trickle
     magnemite.surge
     magnemite.hoard
+  pokemon.mew
+    mew.feed
+    mew.borrowed
+    mew.wither
+  pokemon.mewtwo
+    mewtwo.breach
+    mewtwo.origin
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -848,22 +888,22 @@ builds  the kit and the trait a character fields at level 60, furthest form
 traits  the declared traits, and who carries each
 
   id            carried by
-> endurance     pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16 pokemon.magnemite@24
+> endurance     pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16 pokemon.magnemite@24 pokemon.…
   blaze         pokemon.charmander@16
   heatproof     pokemon.charmander@16
   virulence     pokemon.bulbasaur@32
   venom_blood   pokemon.bulbasaur@24
-  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16
-  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44
-  reckless      pokemon.charmander@44 pokemon.machop@44
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24
+  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
+  reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16
+  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16
   ballast       pokemon.squirtle@44
-  composure     pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40
-  elusive       pokemon.cleffa@40 pokemon.magnemite@32
-  contagion     pokemon.bulbasaur@28
+  composure     pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24
+  elusive       pokemon.cleffa@40 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40
+  contagion     pokemon.bulbasaur@28 pokemon.mew@40
   spiteful      pokemon.poliwag@36
-  berserk       pokemon.machop@40
+  berserk       pokemon.machop@40 pokemon.mewtwo@32
   unyielding    pokemon.machop@24
 
   endurance
@@ -883,6 +923,7 @@ species  the declared kinds, and where each line is drawn
   titan
   fae
   construct
+  mythic
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào

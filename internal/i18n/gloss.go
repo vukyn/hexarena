@@ -151,6 +151,8 @@ var (
 		"slugger":    "kẻ giáng đòn",
 		"mender":     "người chữa lành",
 		"bombardier": "kẻ oanh tạc",
+		"shifter":    "kẻ vạn biến",
+		"breaker":    "kẻ phá giáp",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its

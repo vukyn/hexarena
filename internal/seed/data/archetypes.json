@@ -403,6 +403,120 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "shifter",
+      "role": "the one that holds no extreme: every stat the midpoint of what the cast already fields, and a kit borrowed from everybody else's, so what it is for is decided by the four skills it brings rather than by the line it stands on",
+      "column": 1,
+      "stats": {
+        "hp": {
+          "base": 1238,
+          "max": 3600
+        },
+        "attack": {
+          "base": 202,
+          "max": 590
+        },
+        "defense": {
+          "base": 168,
+          "max": 490
+        },
+        "speed": {
+          "base": 37,
+          "max": 110
+        },
+        "accuracy": {
+          "base": 59,
+          "max": 172
+        },
+        "dodge": {
+          "base": 16,
+          "max": 49
+        }
+      },
+      "skills": [
+        "body_slam",
+        "bite",
+        "withdraw",
+        "smokescreen",
+        "rally",
+        "inner_focus",
+        "taunt",
+        "wide_guard",
+        "pummel",
+        "poison_powder",
+        "sludge_bomb",
+        "venoshock",
+        "skull_bash",
+        "submission",
+        "vital_throw",
+        "rapid_spin"
+      ],
+      "passives": [
+        {
+          "id": "elusive",
+          "at_level": 16
+        },
+        {
+          "id": "composure",
+          "at_level": 32
+        }
+      ]
+    },
+    {
+      "id": "breaker",
+      "role": "the one armour does not answer: nearly every blow it throws ignores most of what is in the way, bought with the thinnest frame on the board and the speed to spend it before anything reaches back",
+      "column": 2,
+      "stats": {
+        "hp": {
+          "base": 1032,
+          "max": 3000
+        },
+        "attack": {
+          "base": 178,
+          "max": 520
+        },
+        "defense": {
+          "base": 96,
+          "max": 280
+        },
+        "speed": {
+          "base": 48,
+          "max": 140
+        },
+        "accuracy": {
+          "base": 68,
+          "max": 200
+        },
+        "dodge": {
+          "base": 23,
+          "max": 68
+        }
+      },
+      "skills": [
+        "shadow_ball",
+        "psycho_cut",
+        "dark_pulse",
+        "nasty_plot",
+        "body_slam",
+        "bite",
+        "smokescreen",
+        "taunt",
+        "inner_focus",
+        "submission",
+        "vital_throw",
+        "skull_bash"
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "berserk",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }
