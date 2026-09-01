@@ -246,7 +246,7 @@
     {
       "id": "mew.feed",
       "character": "pokemon.mew",
-      "name": "ăn mộng",
+      "name": "kẻ ăn giấc mơ",
       "intent": "Ru cho ngủ rồi ngồi xuống ăn dần, càng ăn càng lành lại",
       "skills": [
         "hypnosis",
@@ -276,7 +276,7 @@
     {
       "id": "mew.wither",
       "character": "pokemon.mew",
-      "name": "gieo mầm",
+      "name": "suy tàn",
       "intent": "Rải độc trước rồi mới ra đòn, để thứ đã ngấm sẵn làm phần còn lại",
       "skills": [
         "poison_powder",
@@ -306,7 +306,7 @@
     {
       "id": "mewtwo.origin",
       "character": "pokemon.mewtwo",
-      "name": "gốc gác",
+      "name": "bản sao",
       "intent": "Chỉ dùng những miếng của kẻ nó được dựng lên từ đó, trên một cái thân khác hẳn",
       "skills": [
         "psychic",
