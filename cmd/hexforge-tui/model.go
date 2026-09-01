@@ -644,6 +644,94 @@ func (m model) answerGuard(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	return answered.navigate(guard.asked, action)
 }
 
+// pickLanding is what one destination means to this client: whose screen it
+// belongs to, and the adapter that hands the answer there.
+//
+// The screen is carried rather than read off m.screen, for the reason `ask`
+// takes one: a picker is drawn over whatever raised it, so m.screen happens to
+// be the right answer today and would be a coincidence the dispatch rested on.
+// It is what navigate is given as the "from", so the day a pick raises another
+// screen — which is 5d's question and not this step's — the trip already knows
+// where it came from.
+type pickLanding struct {
+	on   screen
+	land func(model, pickDest, pickAnswer) (model, draw.Action)
+}
+
+// pickedInto is where each finished pick goes.
+//
+// A map keyed by the destination and read by key, never ranged over into
+// anything that reaches a screen — the discipline raiseTargets, `subjects` and
+// confirmedBy already hold.
+//
+// ⚠️ It has to be **total over pickDestCount**: a destination with no entry here
+// swallows a finished pick in silence — the list closes, the reader believes
+// they chose, and the field is unchanged. That is the confirmedBy failure again
+// and it is easier to make, because there are ten of these across three screens
+// rather than four screens with one apiece.
+// TestEveryPickDestinationLandsSomewhere walks the count rather than this map,
+// for the reason the other three walks do.
+//
+// ⚠️ Three adapters against ten entries is not a table wanting collapsing. The
+// key is the destination because a *destination* is what may go unhandled;
+// keying it by screen would make the five allowlists one entry and put the
+// question of which field back inside the screen, where nothing counts it.
+var pickedInto = map[pickDest]pickLanding{
+	pickIntoKit:          {on: screenNew, land: landOnForm},
+	pickIntoSpecies:      {on: screenNew, land: landOnForm},
+	pickIntoKeptElements: {on: screenSkills, land: landOnSkills},
+	pickIntoKeptRoles:    {on: screenSkills, land: landOnSkills},
+	pickIntoKeptWorlds:   {on: screenSkills, land: landOnSkills},
+	pickIntoKeptKinds:    {on: screenSkills, land: landOnSkills},
+	pickIntoKeptWho:      {on: screenSkills, land: landOnSkills},
+	pickIntoInflicts:     {on: screenSkills, land: landOnSkills},
+	pickIntoSquadKit:     {on: screenSquads, land: landOnSquads},
+	pickIntoSquadTrait:   {on: screenSquads, land: landOnSquads},
+}
+
+// landOnForm, landOnSkills and landOnSquads are the three adapters between the
+// dispatch above and the screens' own Picked.
+//
+// Each is the same three lines — hand the screen the context, the destination
+// and the answer, put what comes back on the model, and give the client the
+// action — and they are written out rather than generated because a screen's
+// field is named on the model and Go has nowhere else to say which one. Exactly
+// the shape confirmForm and its three siblings already have.
+func landOnForm(m model, into pickDest, answer pickAnswer) (model, draw.Action) {
+	form, action := m.form.Picked(m.ctx(), into, answer)
+	m.form = form
+	return m, action
+}
+
+func landOnSkills(m model, into pickDest, answer pickAnswer) (model, draw.Action) {
+	skills, action := m.skills.Picked(m.ctx(), into, answer)
+	m.skills = skills
+	return m, action
+}
+
+func landOnSquads(m model, into pickDest, answer pickAnswer) (model, draw.Action) {
+	squad, action := m.squad.Picked(m.ctx(), into, answer)
+	m.squad = squad
+	return m, action
+}
+
+// answerPick hands a closed picker's answer to the screen the destination names.
+//
+// Both halves are applied the way every converted keystroke already is: the
+// screen changed itself, and the client does whatever leaving it costs. None of
+// the ten leaves today — a pick fills in a field and the reader is put back in
+// front of the form they were filling — so all ten hand back the zero action,
+// and the pair is (screen, action) anyway because that is the shape Update and
+// Confirmed have and 5d must not have to convert it twice.
+func (m model) answerPick(into pickDest, answer pickAnswer) (tea.Model, tea.Cmd) {
+	landing, known := pickedInto[into]
+	if !known {
+		return m, nil
+	}
+	picked, action := landing.land(m, into, answer)
+	return picked.navigate(landing.on, action)
+}
+
 // ask raises a confirmation, naming the screen that asked and what about.
 //
 // The screen is passed rather than read off m.screen: a question is a fact about

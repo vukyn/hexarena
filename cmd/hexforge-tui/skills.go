@@ -630,44 +630,28 @@ func (m model) openAllowlist(field int) model {
 			title: i18n.PickerElementsTitle, kind: pickElements,
 			hint:    i18n.PickerAllowlistHint,
 			options: idOptions(forge.ElementNames()), chosen: m.skills.keptElements,
-			apply: func(m model, answer pickAnswer) model {
-				m.skills.keptElements = answer.Chosen
-				m.skills.touched = true
-				return m
-			},
+			into: pickIntoKeptElements,
 		})
 	case skillFieldKeptForRoles:
 		return m.pick(&pickState{
 			title: i18n.PickerRolesTitle, kind: pickArchetypes,
 			hint:    i18n.PickerAllowlistHint,
 			options: idOptions(m.lib.Archetypes().IDs()), chosen: m.skills.keptRoles,
-			apply: func(m model, answer pickAnswer) model {
-				m.skills.keptRoles = answer.Chosen
-				m.skills.touched = true
-				return m
-			},
+			into: pickIntoKeptRoles,
 		})
 	case skillFieldKeptForOrigins:
 		return m.pick(&pickState{
 			title: i18n.PickerOriginsTitle, kind: pickOrigins,
 			hint:    i18n.PickerAllowlistHint,
 			options: idOptions(m.lib.Origins().IDs()), chosen: m.skills.keptWorlds,
-			apply: func(m model, answer pickAnswer) model {
-				m.skills.keptWorlds = answer.Chosen
-				m.skills.touched = true
-				return m
-			},
+			into: pickIntoKeptWorlds,
 		})
 	case skillFieldKeptForSpecies:
 		return m.pick(&pickState{
 			title: i18n.PickerSpeciesTitle, kind: pickSpecies,
 			hint:    i18n.PickerAllowlistHint,
 			options: idOptions(m.lib.Species().IDs()), chosen: m.skills.keptKinds,
-			apply: func(m model, answer pickAnswer) model {
-				m.skills.keptKinds = answer.Chosen
-				m.skills.touched = true
-				return m
-			},
+			into: pickIntoKeptKinds,
 		})
 	default:
 		// The one list with a filter, because it is the one that grows: the
@@ -681,11 +665,7 @@ func (m model) openAllowlist(field int) model {
 			footer:  i18n.PickerFilterFooter,
 			options: characterOptions(m.lib), groups: m.lib.OriginIDs(),
 			chosen: m.skills.keptWho,
-			apply: func(m model, answer pickAnswer) model {
-				m.skills.keptWho = answer.Chosen
-				m.skills.touched = true
-				return m
-			},
+			into:   pickIntoKeptWho,
 		})
 	}
 }
@@ -710,30 +690,69 @@ func (m model) openStatuses() model {
 		options: statusOptions(m.lib),
 		typed:   numberField(forge.DefaultApplicationChance),
 		label:   i18n.PickerChance,
-		apply: func(m model, answer pickAnswer) model {
-			if len(answer.Chosen) == 0 {
-				return m
-			}
-			field := &m.skills.inputs[skillFieldInflicts]
-			written, err := m.lib.AddApplications(field.Value(), answer.Chosen, answer.Typed)
-			if err != nil {
-				// A refusal from here can only be a chance that is not a number,
-				// which the field refuses a keystroke at a time — so this is
-				// unreachable and reported rather than swallowed, on the form's
-				// own error line.
-				m.skills.err = err
-				return m
-			}
-			field.SetValue(written)
-			// The cursor goes to the end, because what was just written is at the
-			// end and the author's next move is usually to adjust it.
-			field.CursorEnd()
-			m.skills.touched = true
-			m.skills.err = nil
-			m.skills.added, m.skills.edited = nil, nil
-			return m
-		},
+		into:    pickIntoInflicts,
 	})
+}
+
+// Picked is what the six lists this form raises write back.
+//
+// ⚠️ **Five of the six are one line and the sixth is not, and that is the shape
+// rather than an exception.** A destination says *where* an answer lands; what
+// the field does with it belongs to the field. The five allowlists take the
+// chosen ids as the list they are, and the inflicts field is text that already
+// holds entries, so its answer is composed into what is there through
+// forge.AddApplications — the same call the typed syntax goes through, which is
+// why it is a branch here rather than a second kind of picker.
+func (s skillsScreen) Picked(c draw.Context, into pickDest, answer pickAnswer) (skillsScreen, draw.Action) {
+	switch into {
+	case pickIntoKeptElements:
+		s.keptElements = answer.Chosen
+	case pickIntoKeptRoles:
+		s.keptRoles = answer.Chosen
+	case pickIntoKeptWorlds:
+		s.keptWorlds = answer.Chosen
+	case pickIntoKeptKinds:
+		s.keptKinds = answer.Chosen
+	case pickIntoKeptWho:
+		s.keptWho = answer.Chosen
+	case pickIntoInflicts:
+		return s.inflict(c, answer), draw.Action{}
+	default:
+		// A destination this form does not own; see formScreen.Picked.
+		return s, draw.Action{}
+	}
+	s.touched = true
+	// No list leaves the form, so no list carries an action.
+	return s, draw.Action{}
+}
+
+// inflict writes what the status picker chose into the inflicts field.
+//
+// It is a method of its own rather than a sixth arm inline, because it is the
+// one landing that reads a book, can refuse, and clears more than the dirty
+// flag — an arm of that size in a switch of one-liners reads as though the
+// others had been abbreviated.
+func (s skillsScreen) inflict(c draw.Context, answer pickAnswer) skillsScreen {
+	if len(answer.Chosen) == 0 {
+		return s
+	}
+	field := &s.inputs[skillFieldInflicts]
+	written, err := c.Lib.AddApplications(field.Value(), answer.Chosen, answer.Typed)
+	if err != nil {
+		// A refusal from here can only be a chance that is not a number, which
+		// the field refuses a keystroke at a time — so this is unreachable and
+		// reported rather than swallowed, on the form's own error line.
+		s.err = err
+		return s
+	}
+	field.SetValue(written)
+	// The cursor goes to the end, because what was just written is at the end
+	// and the author's next move is usually to adjust it.
+	field.CursorEnd()
+	s.touched = true
+	s.err = nil
+	s.added, s.edited = nil, nil
+	return s
 }
 
 func (s skillsScreen) moveTo(target int) skillsScreen {
