@@ -173,7 +173,7 @@ pokemon.magnemite — Magnemite
   element  electric/metal
   species  construct
   art      assets/magnemite.svg
-  kit      thunder_shock discharge@8 thunderbolt@12 flash_cannon@14 charge_beam@16 electro_ball@18 magnetise@20 spark@22 overload@23 mirror_shot@24 thunder_wave@26 metal_sound@28 magnet_rise@30 zap_cannon@32 smokescreen@36 inner_focus@40 taunt@44
+  kit      thunder_shock discharge@8 thunderbolt@12 flash_cannon@14 charge_beam@16 electro_ball@18 magnetise@20 spark@22 overload@23 mirror_shot@24 thunder_wave@26 metal_sound@28 magnet_rise@30 zap_cannon@32 smokescreen@36 inner_focus@40 taunt@44 steel_beam@42
   stage "Magnemite" owns levels 1 to 15, showing assets/magnemite.svg
     level 1  hp 737, atk 152, def 84, spd 27, acc 44, ddg 15
              absorbs 943 of the 11500 budget, 10557 to spare

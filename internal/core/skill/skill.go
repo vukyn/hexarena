@@ -648,6 +648,30 @@ type Skill struct {
 	// caster, in parts per thousand. It reads damage *dealt* rather than damage
 	// rolled, so a strike that missed or was blocked drains nothing.
 	Drains int
+	// Cost is the health the caster pays to use the skill, in parts per thousand
+	// of its MAXIMUM health.
+	//
+	// # Paid up front, and paid whether or not anything lands
+	//
+	// That is what makes it a cost rather than a recoil. A share taken out of the
+	// damage dealt would be free on a turn the skill missed, and a skill that is
+	// free when it fails is a skill with no decision in it — the whole of what
+	// this field is for is that using it is worse than not using it unless the
+	// blow is worth the health.
+	//
+	// # A share of maximum rather than current, and never lethal
+	//
+	// Of maximum, so the price is the same on the first turn and the last: a
+	// share of *current* health gets cheaper exactly as it gets more dangerous,
+	// which prices a desperate cast lowest. And the caster is left standing on at
+	// least one point — see Battle.spendHealth. A skill that could kill its own
+	// user is a different design question, and one nothing in the rating is built
+	// to answer: Suggest prices what a turn is worth, not whether there is a
+	// next one.
+	//
+	// ⚠️ It is refused on a skill that throws no strike, the way Pierce is. A
+	// price with nothing bought is a skill an author wrote by accident.
+	Cost int
 	// Cooldown is how many of the caster's own turns must pass before it can be
 	// used again. Counting the caster's turns rather than cycles means a fast
 	// unit really does get its skill back sooner, in step with everything else
@@ -788,6 +812,7 @@ type skillFile struct {
 	Crit         int               `json:"crit,omitempty"`
 	Restores     int               `json:"restores,omitempty"`
 	Drains       int               `json:"drains,omitempty"`
+	Cost         int               `json:"cost,omitempty"`
 	Cooldown     int               `json:"cooldown"`
 	Target       string            `json:"target"`
 	Restrict     *restrictFile     `json:"restrict,omitempty"`
@@ -900,7 +925,7 @@ func (s Skill) file() skillFile {
 		Power: s.Power, Strikes: s.Strikes, Repeat: s.Repeat, MaxStrikes: s.MaxStrikes,
 		Accuracy: s.Accuracy,
 		Pierce:   s.Pierce, Unblockable: s.Unblockable,
-		Crit: s.Crit, Restores: s.Restores, Drains: s.Drains,
+		Crit: s.Crit, Restores: s.Restores, Drains: s.Drains, Cost: s.Cost,
 		Cooldown: s.Cooldown, Target: s.Target.String(),
 		Applies: applicationFiles(s.Applies), SelfApplies: applicationFiles(s.SelfApplies),
 	}
@@ -1096,6 +1121,10 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return fail("pierces defence it never attacks through")
 	case declared.Unblockable && declared.Power == 0:
 		return fail("declares itself unblockable and throws no strike for anything to stop")
+	case declared.Cost < 0 || declared.Cost >= scale.Base:
+		return fail("costs %d of its caster's health, want a share under the whole of it", declared.Cost)
+	case declared.Cost > 0 && declared.Power == 0:
+		return fail("costs its caster health and throws no strike to buy with it")
 	case declared.Crit < 0 || declared.Crit > scale.Base:
 		return fail("crits %d, want a share in parts per thousand", declared.Crit)
 	// Not tidiness: turn.go's power <= 0 branch never reaches combat.Roll, so a
@@ -1231,7 +1260,7 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		Requires: requires, SelfRequires: selfRequires, SelfGradient: selfGradient,
 		Strips: strips, Restrict: restrict,
 		Summons:  summons,
-		Restores: declared.Restores, Drains: declared.Drains,
+		Restores: declared.Restores, Drains: declared.Drains, Cost: declared.Cost,
 		Cooldown: declared.Cooldown, Target: target,
 	}, nil
 }

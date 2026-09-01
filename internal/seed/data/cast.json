@@ -342,6 +342,10 @@
         {
           "id": "reckless",
           "at_level": 44
+        },
+        {
+          "id": "projection",
+          "at_level": 48
         }
       ]
     },
@@ -514,6 +518,10 @@
         {
           "id": "ballast",
           "at_level": 44
+        },
+        {
+          "id": "carapace",
+          "at_level": 48
         }
       ]
     },
@@ -1058,6 +1066,10 @@
         {
           "id": "berserk",
           "at_level": 40
+        },
+        {
+          "id": "rending",
+          "at_level": 48
         }
       ]
     },
@@ -1416,6 +1428,10 @@
         {
           "id": "taunt",
           "at_level": 44
+        },
+        {
+          "id": "steel_beam",
+          "at_level": 42
         }
       ],
       "passives": [

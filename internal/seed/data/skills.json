@@ -2148,6 +2148,25 @@
           "pokemon"
         ]
       }
+    },
+    {
+      "id": "steel_beam",
+      "name": "trụ thép",
+      "flavour": "Rút thép từ chính thân mình ra rồi bắn đi, chỗ rút vẫn còn nguyên đó",
+      "element": "metal",
+      "range": 2,
+      "pattern": "single",
+      "power": 3600,
+      "strikes": 1,
+      "accuracy": 900,
+      "cost": 150,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     }
   ]
 }

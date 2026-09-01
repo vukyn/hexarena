@@ -116,6 +116,11 @@ func (l Lang) describeOpening(declared skill.Skill) string {
 	if declared.Unblockable {
 		sentence += l.Text(BlurbSkillUnstoppable)
 	}
+	// The price comes after everything the skill does, because that is the order
+	// a reader decides in: what it is worth, and then what it takes.
+	if declared.Cost > 0 {
+		sentence += l.Say(BlurbSkillCosts, share(declared.Cost))
+	}
 	// The chance and nothing else. What a critical strike is worth is a
 	// game-wide constant living on combat.Rules, and naming it here would need
 	// this package to import that one — which would put the rules book behind
@@ -531,6 +536,9 @@ func (l Lang) SummariseSkill(declared skill.Skill, shapes *pattern.Book) string 
 	if declared.Drains > 0 {
 		parts = append(parts, l.Say(SummaryDrains, share(declared.Drains)))
 	}
+	if declared.Cost > 0 {
+		parts = append(parts, l.Say(SummaryCosts, share(declared.Cost)))
+	}
 	if declared.Summons.Summons() {
 		// Counted and named through summonSubject, which is the sentence's own
 		// reading of the same three decisions rather than a second one of them.
@@ -916,6 +924,12 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 	}
 	if held.Drains > 0 {
 		lines = append(lines, l.Say(BlurbTraitDrains, share(held.Drains)))
+	}
+	// Beside the drain, because the two are the same shape asked of two
+	// different things: a share of what the holder deals, taken back as health
+	// or sent past armour.
+	if held.Converts > 0 {
+		lines = append(lines, l.Say(BlurbTraitConverts, share(held.Converts)))
 	}
 	// One sentence for the whole reply rather than one per part: what a reader
 	// wants is what it costs to attack this unit, and a damage line filed apart

@@ -525,6 +525,11 @@ Nắm tay đi qua chỗ đáng lẽ phải chặn nó lại, rồi mới dừng 
 Tầm 1 · 90% trúng · hồi 4 lượt.
 [one line] 90% công · tầm 1 · hồi 4
 
+steel_beam
+Rút thép từ chính thân mình ra rồi bắn đi, chỗ rút vẫn còn nguyên đó, 360% công, tốn 15% máu tối đa của người dùng dù trúng hay trượt.
+Tầm 2 · 90% trúng · hồi 3 lượt.
+[one line] 360% công · tốn 15% máu · tầm 2 · hồi 3
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -603,6 +608,18 @@ Tăng 30% khả năng dính sa lầy.
 [trait] unyielding
 Đã nhắm ai thì nhắm tới cùng, ai chen vào giữa cũng chỉ là chen vào giữa.
 Miễn nhiễm bị khiêu khích.
+
+[trait] carapace
+Lớp ngoài dày lên một tầng nữa, chỉ để đó chờ chịu đòn đầu tiên.
+Luôn mang thành trì.
+
+[trait] projection
+Sức nó đánh ra không đi hết vào đòn, một phần đọng lại quanh người.
+Luôn mang thành trì.
+
+[trait] rending
+Đòn của nó tìm được chỗ hở mà lớp che nào cũng có.
+25% mỗi đòn nó đánh trúng đi thẳng, không qua giáp.
 
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
@@ -719,6 +736,12 @@ Giữ sẵn một lượng sát thương bên mang không phải chịu, đòn n
 Mỗi cộng dồn giữ được 180% công của bên tạo ra nó.
 Nó ăn sát thương chứ không ăn nhát đánh, nên nhiều đòn nhỏ bào mòn hệt như một đòn lớn, và phần dư của cú đánh nó đỡ không nổi sẽ đi xuyên qua.
 Lá chắn, thấm sát thương cho tới khi cạn · 3 lượt · tối đa 2 cộng dồn.
+
+[status] bastion
+Giữ sẵn một lượng sát thương bên mang không phải chịu, đòn nào tới cũng bào mòn chỗ đó.
+Mỗi cộng dồn giữ được 90% công của bên tạo ra nó.
+Nó ăn sát thương chứ không ăn nhát đánh, nên nhiều đòn nhỏ bào mòn hệt như một đòn lớn, và phần dư của cú đánh nó đỡ không nổi sẽ đi xuyên qua.
+Lá chắn, thấm sát thương cho tới khi cạn · vĩnh viễn · 1 cộng dồn.
 
 [element] neutral
 Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
@@ -1275,6 +1298,11 @@ Hits an enemy for 90% of attack, through 100% of the armourNeither a shield nor 
 Range 1 · 90% to hit · 4 turns to recharge.
 [one line] 90% attack · range 1 · cd 4
 
+steel_beam
+Hits an enemy for 360% of attack, costing its caster 15% of full health whether it lands or not.
+Range 2 · 90% to hit · 3 turns to recharge.
+[one line] 360% attack · costs 15% health · range 2 · cd 3
+
 [trait] endurance
 Always carries toughened.
 
@@ -1336,6 +1364,15 @@ Takes 30% more of any mire aimed at it.
 
 [trait] unyielding
 Refuses taunting outright.
+
+[trait] carapace
+Always carries bastion.
+
+[trait] projection
+Always carries bastion.
+
+[trait] rending
+25% of every blow it lands meets no defence at all.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.
@@ -1452,6 +1489,12 @@ Holds a pool of damage its holder does not take, and every blow that arrives spe
 The pool is 180% of the caster's attack a stack.
 It eats damage rather than strikes, so many small blows drain it exactly as one large one does, and whatever is left of a blow it cannot cover goes through.
 Soaks up damage until it is used up · 3 turns · up to 2 stacks.
+
+[status] bastion
+Holds a pool of damage its holder does not take, and every blow that arrives spends it down.
+The pool is 90% of the caster's attack a stack.
+It eats damage rather than strikes, so many small blows drain it exactly as one large one does, and whatever is left of a blow it cannot cover goes through.
+Soaks up damage until it is used up · always in force · 1 stack.
 
 [element] neutral
 Inert: it beats nothing and nothing beats it; every trade is 100%.

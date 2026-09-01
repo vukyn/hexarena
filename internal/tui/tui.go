@@ -340,6 +340,12 @@ func Line(event battle.Event, tags, glosses map[string]string) string {
 		return head + fmt.Sprintf("  misses %s (%d%%)", tag(event.Target), event.Chance/10)
 	case battle.Blocked:
 		return head + fmt.Sprintf("  is blocked by %s, %d charges left", tag(event.Target), event.Remaining)
+	case battle.Paid:
+		// Beside the guard's line because both are health moving for a reason a
+		// strike does not explain, and worded so it cannot be read as damage:
+		// this is the caster handing something over, not somebody taking it.
+		return head + fmt.Sprintf(" pays %d for %s, %d hp left",
+			event.Amount, gloss(event.Skill), event.Remaining)
 	case battle.Absorbed:
 		// A line of its own beside the block above, and the two words are chosen
 		// to be unmistakable: a blocked strike is stopped and this one is eaten.

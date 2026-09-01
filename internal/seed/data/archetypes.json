@@ -97,6 +97,10 @@
         {
           "id": "heatproof",
           "at_level": 16
+        },
+        {
+          "id": "projection",
+          "at_level": 48
         }
       ]
     },
@@ -145,6 +149,10 @@
         {
           "id": "endurance",
           "at_level": 16
+        },
+        {
+          "id": "carapace",
+          "at_level": 48
         }
       ]
     },
@@ -293,6 +301,10 @@
         {
           "id": "endurance",
           "at_level": 32
+        },
+        {
+          "id": "rending",
+          "at_level": 48
         }
       ]
     },
@@ -392,7 +404,8 @@
         "metal_sound",
         "magnet_rise",
         "zap_cannon",
-        "overload"
+        "overload",
+        "steel_beam"
       ],
       "passives": [
         {

@@ -146,6 +146,18 @@ const Skills = `[
     }
   },
   {
+    "id": "bloodprice",
+    "element": "neutral",
+    "range": 1,
+    "pattern": "single",
+    "power": 1000,
+    "strikes": 1,
+    "accuracy": 1000,
+    "cost": 200,
+    "cooldown": 0,
+    "target": "enemy"
+  },
+  {
     "id": "ward",
     "element": "neutral",
     "range": 0,

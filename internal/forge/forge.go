@@ -316,7 +316,11 @@ func (l *Library) Held(base progression.Values, traits []string) (progression.Va
 			// granted one would wear off on its holder's turns with nothing to
 			// put it back. Repeating the condition here would be a second place
 			// for it to be wrong.
-			carried.Hold(kind, grant.Stacks)
+			// A nought amount, which is right here and not a shortcut: this
+			// function exists to read what a trait does to a STAT LINE, and a
+			// guard's pool moves no stat. Handing it the real figure would file a
+			// number nothing below this line reads.
+			carried.Hold(kind, 0, grant.Stacks)
 		}
 	}
 	return carried.Modifiers().Stats(base, l.limits.Ceilings, l.bounds), nil

@@ -593,6 +593,9 @@ const (
 	BlurbStatusAbsorbsPool
 	BlurbStatusSpills
 	BlurbSkillUnstoppable
+	BlurbTraitConverts
+	BlurbSkillCosts
+	SummaryCosts
 	BlurbStatusCutsHealing
 	BlurbStatusCutsHealingOnce
 	BlurbStatusRaises

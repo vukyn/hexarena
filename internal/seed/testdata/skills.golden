@@ -93,6 +93,7 @@ night_shade     dark      enemy    2  column          800     1    800   900    
 curse           dark      enemy    2  single            0     1      0  1000    4     0     0        0
 light_screen    light     ally     1  single            0     1      0  1000    4     0     0        0
 shadow_punch    dark      enemy    1  single          900     1    900   900    4  1000     0      720
+steel_beam      metal     enemy    2  single         3600     1   3600   900    3     0     0     1234
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -240,6 +241,7 @@ night_shade     -          -                 -                   -         pokem
 curse           -          -                 -                   -         pokemon
 light_screen    -          -                 -                   -         pokemon
 shadow_punch    -          -                 -                   -         pokemon
+steel_beam      -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -300,6 +302,7 @@ fester      heal_cut            2       2            0      0               0   
 evasive     buff                1       0            0      0               0          0   dodge +15.0%
 charge      charge            999       4            0      0               0          0   -
 aegis       absorb              2       3            0      0               0          0   -
+bastion     absorb              1       0            0      0               0          0   -
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

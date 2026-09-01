@@ -234,6 +234,39 @@
           "amount": 1000
         }
       ]
+    },
+    {
+      "id": "carapace",
+      "name": "vỏ cứng",
+      "flavour": "Lớp ngoài dày lên một tầng nữa, chỉ để đó chờ chịu đòn đầu tiên",
+      "grants": [
+        {
+          "status": "bastion",
+          "stacks": 1,
+          "power": 900,
+          "scaling": "defense"
+        }
+      ]
+    },
+    {
+      "id": "projection",
+      "name": "hộ thể",
+      "flavour": "Sức nó đánh ra không đi hết vào đòn, một phần đọng lại quanh người",
+      "grants": [
+        {
+          "status": "bastion",
+          "stacks": 1,
+          "power": 900,
+          "scaling": "attack"
+        }
+      ]
+    },
+    {
+      "id": "rending",
+      "name": "xé giáp",
+      "flavour": "Đòn của nó tìm được chỗ hở mà lớp che nào cũng có",
+      "grants": [],
+      "converts": 250
     }
   ]
 }

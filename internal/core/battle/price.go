@@ -92,6 +92,23 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 	// same reason: a rating that cannot see it prefers the attack that answers
 	// itself.
 	total -= p.replied(actor, declared, aim)
+	// The health the skill charges its own caster, subtracted for every skill
+	// that has one rather than for an all-sided one.
+	//
+	// ⚠️ **It lived inside friendlyFire first, and that arm only runs when the
+	// target side is All.** So a single-target skill that cost a quarter of its
+	// caster's health was charged nothing at all: measured, a Magnezone holding
+	// one cast it three times a battle, handed over seven tenths of itself and
+	// lost 120 of 120 duels — against 69-51 for the same kit without it. A cost
+	// filed in a branch that does not run is a cost nobody pays.
+	//
+	// ⚠️ Priced as the health itself rather than as the turns it costs. That
+	// under-states it on a thin frame, and the alternative is worse: charging it
+	// at the caster's own worth needs a horizon nothing here has, and a rating
+	// that guessed at one would decline a skill for a turn that never came.
+	// Health is the unit the rest of this file counts in, and it is what the
+	// caster actually hands over.
+	total -= p.spentHealth(actor, declared)
 	// SelfApplies land on the caster whatever the skill is aimed at, which is how
 	// a unit shields or braces itself, so they are priced outside the shape.
 	total += p.granted(actor, actor, from, declared.SelfApplies)
@@ -218,6 +235,7 @@ func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset
 	if declared.Power == 0 {
 		return 0
 	}
+	total := int64(0)
 	shape, err := p.fight.books.Patterns.Lookup(declared.Pattern)
 	if err != nil {
 		return 0
@@ -227,7 +245,6 @@ func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset
 	// same caster for every cell its own bomb catches, and a gradient asks how
 	// hurt it is.
 	brought := swingOf(declared, actor)
-	total := int64(0)
 	for position, cell := range covers(shape, declared, aim) {
 		target := p.fight.occupant(cell)
 		if target == nil || target.Side != actor.Side {
@@ -247,6 +264,31 @@ func (p *pricing) friendlyFire(actor *Unit, declared skill.Skill, aim hex.Offset
 		}
 	}
 	return total
+}
+
+// spentHealth is what a skill ASKS of its caster, which is deliberately not what
+// a caster on its last legs would actually hand over.
+//
+// ⚠️ **The floor Battle.spendHealth applies is left out of the price on purpose,
+// and the first version included it.** That version read the clamped figure — the
+// health there is, rather than the health asked for — so the skill got *cheaper*
+// exactly as casting it got more fatal: a unit at two hundred was charged a
+// hundred and ninety nine instead of seven hundred and fifty, and the rating
+// therefore liked it best in the one position where it should refuse. Measured
+// that way, a Magnezone cast it eighty-eight times and did it almost entirely
+// while nearly dead.
+//
+// So this is the one figure in the file that is deliberately not the one the
+// resolving function pays. The rule the file is written under — read the
+// resolving function, never a second copy — is about arithmetic that could drift;
+// this is the same arithmetic with one clamp left off, and the clamp is what a
+// unit can afford rather than what the skill costs. A unit that cannot afford it
+// should decline, which is what charging the full ask makes it do.
+func (p *pricing) spentHealth(actor *Unit, declared skill.Skill) int64 {
+	if declared.Cost <= 0 {
+		return 0
+	}
+	return actor.MaxHP() * int64(declared.Cost) / scale.Base
 }
 
 // replied is what an attack costs its own caster in answers: the damage the
