@@ -51,6 +51,9 @@ func TestTheShippedBuildsAreTheOnesTheTestsMeasure(t *testing.T) {
 		{"machop.sure", sureBuild, "unyielding"},
 		{"cleffa.mend", mendBuild, "composure"},
 		{"cleffa.hex", hexBuild, "elusive"},
+		{"magnemite.trickle", trickleBuild, "swiftness"},
+		{"magnemite.surge", surgeBuild, "endurance"},
+		{"magnemite.hoard", hoardBuild, "elusive"},
 	} {
 		build, known := book.Get(want.id)
 		if !known {
