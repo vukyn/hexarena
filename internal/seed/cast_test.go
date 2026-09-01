@@ -87,6 +87,7 @@ func TestShippedArchetypesMatchTheReferenceProfiles(t *testing.T) {
 		{"slugger", 0, profile(3300, 760, 460, 85, 210, 28)},
 		{"mender", 0, profile(4200, 420, 380, 115, 155, 55)},
 		{"bombardier", 2, profile(3000, 620, 340, 110, 180, 62)},
+		{"shifter", 1, profile(3600, 590, 490, 110, 172, 49)},
 	}
 	book := mustArchetypes(t)
 	if got, want := len(book.All()), len(design); got != want {

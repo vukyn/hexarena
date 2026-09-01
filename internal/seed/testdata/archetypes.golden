@@ -97,4 +97,16 @@ bombardier, formation column 2
            absorbs 6410 of the 11500 budget, 5090 to spare
   kit      thunder_shock discharge thunderbolt flash_cannon charge_beam electro_ball magnetise spark mirror_shot thunder_wave metal_sound magnet_rise zap_cannon overload
 
-8 presets
+shifter, formation column 1
+  the one that holds no extreme: every stat the midpoint of what the cast already fields, and a kit borrowed from everybody else's, so what it is for is decided by the four skills it brings rather than by the line it stands on
+  demands  any element carries this kit
+  hp 1238->3600  attack 202->590  defense 168->490  speed 37->110  accuracy 59->172  dodge 16->49
+  level 1  hp 1238, atk 202, def 168, spd 37, acc 59, ddg 16
+           absorbs 1931 of the 11500 budget, 9569 to spare
+  level 30 hp 2398, atk 392, def 326, spd 72, acc 114, ddg 32
+           absorbs 5006 of the 11500 budget, 6494 to spare
+  level 60 hp 3600, atk 590, def 490, spd 110, acc 172, ddg 49
+           absorbs 9498 of the 11500 budget, 2002 to spare
+  kit      body_slam bite withdraw smokescreen rally inner_focus taunt wide_guard pummel poison_powder sludge_bomb venoshock skull_bash submission vital_throw rapid_spin
+
+9 presets

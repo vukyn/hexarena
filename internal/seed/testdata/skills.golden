@@ -76,6 +76,12 @@ magnetise       electric  enemy    2  column          500     1    500   920    
 electro_ball    electric  enemy    2  single          640     2   1280   900    2     0     0      438
 spark           electric  enemy    1  single          342     2    684   930    2     0     0      234
 overload        electric  enemy    2  single          880     1    880   880    4     0     0      301
+psychic         neutral   enemy    3  single         1600     1   1600   900    3     0     0      548
+hypnosis        neutral   enemy    2  single            0     1      0  1000    4     0     0        0
+dream_eater     neutral   enemy    2  single          700     1    700   900    3     0     0      240
+transform       neutral   self     0  single            0     1      0  1000    5     0     0        0
+recover         neutral   self     0  single            0     1      0  1000    4     0     0        0
+swift           neutral   enemy    2  arc_up          700     1    700  1000    2     0     0      240
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -125,6 +131,12 @@ magnet_rise     veil (self)            2     1000       1000                -
 zap_cannon      stun                   1     1000        550              550
 charge_beam     charge                 2     1000        950              950
 magnetise       charge                 3     1000        920              920
+psychic         expose                 1      350        900              315
+hypnosis        stun                   1      550       1000              550
+transform       fury (self)            1     1000       1000                -
+transform       haste (self)           1     1000       1000                -
+transform       focus (self)           1     1000       1000                -
+transform       veil (self)            1     1000       1000                -
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -194,6 +206,12 @@ magnetise       -          -                 -                   -         pokem
 electro_ball    -          -                 -                   -         pokemon
 spark           -          -                 -                   -         pokemon
 overload        -          -                 -                   -         pokemon
+psychic         -          -                 -                   mythic    pokemon
+hypnosis        -          -                 -                   mythic    pokemon
+dream_eater     -          -                 -                   mythic    pokemon
+transform       -          -                 pokemon.mew         -         pokemon
+recover         -          -                 -                   mythic    pokemon
+swift           -          -                 -                   mythic    pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -205,6 +223,7 @@ dragon_drive    target   expose                            1     900        2300
 electro_ball    target   charge                            1     640         640      219         219  1.00x (consumes)
 spark           target   charge                            1     342         342      117         117  1.00x (consumes)
 overload        target   charge                            2     880         880      301         301  1.00x (consumes)
+dream_eater     target   stun                              1     700        1600      240         548  2.28x
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar

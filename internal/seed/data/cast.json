@@ -1432,6 +1432,173 @@
           "at_level": 40
         }
       ]
+    },
+    {
+      "id": "pokemon.mew",
+      "name": "Mew",
+      "origin": "pokemon",
+      "archetype": "shifter",
+      "image": "assets/mew.svg",
+      "element": "neutral",
+      "species": [
+        "mythic"
+      ],
+      "bio": "Người ta đi tìm nó suốt bao nhiêu mùa mà chỉ mang về được những lời kể chẳng khớp nhau. Mew không giữ lấy một hình hài nào lâu, cũng không giữ lấy một lối đánh nào: thấy ai làm gì hay, nó làm lại được ngay lần sau.",
+      "stages": [
+        {
+          "name": "Mew",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 1238,
+              "max": 3600
+            },
+            "attack": {
+              "base": 202,
+              "max": 590
+            },
+            "defense": {
+              "base": 168,
+              "max": 490
+            },
+            "speed": {
+              "base": 37,
+              "max": 110
+            },
+            "accuracy": {
+              "base": 59,
+              "max": 172
+            },
+            "dodge": {
+              "base": 16,
+              "max": 49
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "psychic"
+        },
+        {
+          "id": "body_slam",
+          "at_level": 8
+        },
+        {
+          "id": "dream_eater",
+          "at_level": 12
+        },
+        {
+          "id": "recover",
+          "at_level": 14
+        },
+        {
+          "id": "hypnosis",
+          "at_level": 16
+        },
+        {
+          "id": "transform",
+          "at_level": 18
+        },
+        {
+          "id": "swift",
+          "at_level": 20
+        },
+        {
+          "id": "withdraw",
+          "at_level": 22
+        },
+        {
+          "id": "bite",
+          "at_level": 24
+        },
+        {
+          "id": "smokescreen",
+          "at_level": 26
+        },
+        {
+          "id": "rally",
+          "at_level": 28
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 30
+        },
+        {
+          "id": "taunt",
+          "at_level": 32
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 34
+        },
+        {
+          "id": "pummel",
+          "at_level": 36
+        },
+        {
+          "id": "poison_powder",
+          "at_level": 38
+        },
+        {
+          "id": "sludge_bomb",
+          "at_level": 40
+        },
+        {
+          "id": "venoshock",
+          "at_level": 42
+        },
+        {
+          "id": "skull_bash",
+          "at_level": 44
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 46
+        },
+        {
+          "id": "submission",
+          "at_level": 48
+        },
+        {
+          "id": "vital_throw",
+          "at_level": 52
+        },
+        {
+          "id": "cross_chop",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "elusive",
+          "at_level": 16
+        },
+        {
+          "id": "composure",
+          "at_level": 24
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        },
+        {
+          "id": "endurance",
+          "at_level": 36
+        },
+        {
+          "id": "contagion",
+          "at_level": 40
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 44
+        },
+        {
+          "id": "last_gasp",
+          "at_level": 48
+        }
+      ]
     }
   ]
 }

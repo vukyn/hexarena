@@ -190,4 +190,17 @@ pokemon.magnemite — Magnemite
     level 60 hp 3000, atk 620, def 340, spd 110, acc 180, ddg 62
              absorbs 6410 of the 11500 budget, 5090 to spare
 
-8 characters
+pokemon.mew — Mew
+  from     Pokémon (anime)
+  preset   shifter
+  element  neutral
+  species  mythic
+  art      assets/mew.svg
+  kit      psychic body_slam@8 dream_eater@12 recover@14 hypnosis@16 transform@18 swift@20 withdraw@22 bite@24 smokescreen@26 rally@28 inner_focus@30 taunt@32 wide_guard@34 pummel@36 poison_powder@38 sludge_bomb@40 venoshock@42 skull_bash@44 rapid_spin@46 submission@48 vital_throw@52 cross_chop@56
+  stage "Mew" owns levels 1 to 60, showing assets/mew.svg
+    level 1  hp 1238, atk 202, def 168, spd 37, acc 59, ddg 16
+             absorbs 1931 of the 11500 budget, 9569 to spare
+    level 60 hp 3600, atk 590, def 490, spd 110, acc 172, ddg 49
+             absorbs 9498 of the 11500 budget, 2002 to spare
+
+9 characters

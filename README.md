@@ -1540,6 +1540,13 @@ authored, and `hexforge archetypes` shows it in the `needs` column; a preset who
 kit demanded three elements would be rejected, because no affinity can hold
 three.
 
+The inert element is a legal thing for a character to *be*, and it reads oddly
+until the carry rule above is remembered: a unit with no element takes no bonus
+and no penalty from anybody, and in exchange it may carry only the neutral
+skills — everybody's plain moves and nobody's line. That is the largest single
+pool in the book, so "no type" comes out as the widest kit in the cast rather
+than as the narrowest.
+
 ```
 go run ./cmd/hexforge                  # list the subcommands
 go run ./cmd/hexforge origins          # the catalog of works

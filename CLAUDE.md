@@ -2090,7 +2090,7 @@ of what that form does know.
   it is that character's kit, and a screen offering a single option tells a player
   they have a decision they do not have. A character with none is the honest case —
   Naruto today — and `TestABuildIsACatalogueOfChoicesRatherThanOfKits` is the claim.
-- **Three is the shape a mechanism with a middle needs.** Magnemite is the only
+- **Three is the shape a mechanism with a middle needs.** Magnemite was the first
   character with three, and the third is what says its question has more than a yes
   and a no in it: `trickle` converts the counter as fast as it lays it down,
   `surge` ignores the mechanism entirely, and `hoard` waits and takes the pile.
@@ -2103,6 +2103,18 @@ of what that form does know.
   mender's two did not. What a duel prices here is what a build spends its turns
   on, and the ordering is what is held: blows, size of each, and stacks a
   discharge (drip **1.00**, hoard **3.85**).
+- **Mew has three for the opposite reason**, and the pair is worth reading
+  together. Magnemite's three are three answers to *one* question; Mew has no
+  question of its own — no counter to spend, no element to lean on — so its three
+  are three different characters, and what is held is that no two of them spend a
+  turn on the same thing: `feed` is the only one that heals at all, `wither`
+  inflicts several times the statuses, and `borrowed` deals the most damage and
+  misses by far the most doing it. Four columns, three builds, each leading one.
+  ⚠️ **`borrowed` carries nothing written for Mew** — every skill in it is already
+  carried by somebody else — which is `surge`'s move made about a whole character
+  rather than about a mechanism, and `TestOneMewBuildCarriesNothingOfItsOwn`
+  counts rather than spot-checks, because a build that quietly picked one of Mew's
+  own back up would still work and would no longer be saying anything.
 - ⚠️ **The catalogue and the design tables in the tests must agree.**
   `poisonBuild`/`sustainBuild` (`bulbasaur_test.go`), `fireBuild`/`dragonBuild`
   (`dragon_test.go`) and `tankBuild`/`semiBuild` (`squirtle_test.go`) are hardcoded
@@ -2348,6 +2360,92 @@ crossover is a thing that happens, and because every other axis here is one.
   record cannot show.** Origins arrived and thirty-two rows appeared in
   `skills.golden`'s "who may carry" table with nothing but dashes across them,
   because the report had four columns and the book had five.
+
+## The inert element, and what a character with no type actually buys
+
+Shipped with `pokemon.mew`, the first character to declare `neutral`. The chart
+has listed it as inert since the beginning and nothing had ever stood on it, so
+this is a value the engine already supported being used rather than a feature.
+
+- **It is a real affinity, not an absence.** `element.Single(Neutral)` builds,
+  `Chart.ValidateAffinity` accepts, and `MultiplierAgainst` reads a flat thousand
+  in both directions against every shipped affinity —
+  `TestMewNeitherGainsNorLosesAgainstAnyShippedAffinity`, which also refuses to
+  pass unless *some* other pairing in the cast moves, or it would be measuring a
+  chart with no edges rather than an element with none.
+  ⚠️ `Dual` still refuses to pair with it, and rightly: an inert second element
+  adds no line to the multiplier. It adds a line to the *kit*, which is the next
+  bullet, and that is a different question.
+- **What it actually costs is the kit, and the cost is the identity.** A unit may
+  carry a skill of an element it shares or a neutral one, so an inert character
+  can carry **only** the neutral skills — which is the largest single pool in the
+  book and, by construction, nobody's signature: everybody's plain moves and no
+  element's line. That inverts into the widest learnset in the cast (23 skills
+  against Magnemite's 17), and it is why Mew's own five had to be authored neutral
+  and gated by `restrict.species` rather than by an element.
+- ⚠️ **It does not flatten a matchup profile, and the expectation that it would
+  was wrong.** Mew's spar rates run from nought to a hundred across the cast,
+  exactly as polarised as every other character's — every shipped character spans
+  roughly ninety points. What decides a pairing here is tempo and sustain; the
+  chart is a term inside a strike, not the shape of a fight. **Removing the
+  elemental term removes the elemental term.**
+
+### A one-form line, and a stat line that is a median rather than a share
+
+- **Mew is the first shipped character that does not evolve**, and nothing in the
+  engine moved for it: `progression.Line` has always resolved a single form
+  (`TestALineWithOneFormStillResolves` predates this by a long way). A level still
+  means what it meant — the curve runs base to max, the learnset still opens over
+  it — so what a one-form line gives up is the threshold and the fork, not
+  progression. `TestTheCastHasALineThatDoesNotEvolve` holds all three halves.
+- ⚠️ **"The same share of every ceiling" is not the same idea as "the middle of
+  the cast", and the first one is a trap.** The first draft put Mew at seventy per
+  cent of all six declared ceilings, which reads like the fiction's "a hundred in
+  everything". The cast uses the ceilings very unevenly — attack tops out at
+  nineteen twentieths of its ceiling and **dodge at less than half of its** — so an
+  even share handed Mew the cast's best dodge by half again and its best speed
+  outright. It sparred **72.4%**. The midpoint of what the cast actually fields,
+  axis by axis, reads **56.4%** with hp and attack *higher* than the first draft.
+  `TestMewHoldsNoExtremeOnAnyStat` is the claim, and it is stated against the
+  shipped top forms rather than against `progression.json`.
+
+### ⚠️ A one-turn control status cannot be a setup for a skill on a cooldown
+
+The most useful thing measured here, and it is about the engine rather than about
+Mew. `dream_eater` reads a condition — hit harder into a stunned target — and the
+character carrying it is also the one applying the stun. That looks like a two-card
+combo and is not one.
+
+`stun` lasts a single turn and the turn it lasts is the **target's**, which the
+target then spends being skipped. So the whole window in which the condition holds
+is one slot of the turn queue, and who owns that slot is decided by speed alone.
+Sixty duels each, same kit, same stun source:
+
+| opponent | speed | stuns landed | amplified |
+|---|---:|---:|---:|
+| Blastoise | 85 | 239 | **50** |
+| Venusaur | 100 | 66 | 2 |
+| Sennin | 134 | 77 | 2 |
+| Charizard | 140 | 31 | **0** |
+
+Two things follow, and both were measured rather than reasoned:
+
+- **Raising the chance makes it worse.** Swapping the source for `hypnosis`, which
+  lands more than twice as many stuns, took the conversion *down* — 9381 stuns to
+  6 amplifications against Blastoise. The turn that lays the status down is the
+  same turn that could have spent it, so a kit that stuns more attacks less and
+  reaches the window less often. That is why `hypnosis` is not among the four the
+  character brings by default; it lives in a build.
+- **Shortening the skill's cooldown moves almost nothing** (3 → 2 → 1 changed the
+  Charizard column not at all), which is the tell that the bound is the queue and
+  not the availability.
+
+So an amplifier on a duration-one control is a **speed check**, and should be
+priced as a rare doubling rather than as a combo. A condition meant to be set up
+on purpose wants a status that outlives the setter's next turn — `expose`, `mire`
+and `weaken` all last two or three — and `venoshock`/`dragon_drive` are the shipped
+skills that do it that way. `TestAOneTurnSetupIsAQueueRaceRatherThanACombo` holds
+the direction rather than the figures.
 
 ## Pricing a summon, so the opponent casts one
 

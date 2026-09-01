@@ -403,6 +403,65 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "shifter",
+      "role": "the one that holds no extreme: every stat the midpoint of what the cast already fields, and a kit borrowed from everybody else's, so what it is for is decided by the four skills it brings rather than by the line it stands on",
+      "column": 1,
+      "stats": {
+        "hp": {
+          "base": 1238,
+          "max": 3600
+        },
+        "attack": {
+          "base": 202,
+          "max": 590
+        },
+        "defense": {
+          "base": 168,
+          "max": 490
+        },
+        "speed": {
+          "base": 37,
+          "max": 110
+        },
+        "accuracy": {
+          "base": 59,
+          "max": 172
+        },
+        "dodge": {
+          "base": 16,
+          "max": 49
+        }
+      },
+      "skills": [
+        "body_slam",
+        "bite",
+        "withdraw",
+        "smokescreen",
+        "rally",
+        "inner_focus",
+        "taunt",
+        "wide_guard",
+        "pummel",
+        "poison_powder",
+        "sludge_bomb",
+        "venoshock",
+        "skull_bash",
+        "submission",
+        "vital_throw",
+        "rapid_spin"
+      ],
+      "passives": [
+        {
+          "id": "elusive",
+          "at_level": 16
+        },
+        {
+          "id": "composure",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

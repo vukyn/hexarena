@@ -427,6 +427,42 @@ Mục tiêu đang dính ít nhất 2 cộng dồn nhiễm điện, mỗi cộng 
 Tầm 2 · 88% trúng · hồi 4 lượt.
 [one line] 88% công · nhiễm điện 2+→nổ · tầm 2 · hồi 4
 
+psychic
+Không đưa tay ra, không bước tới — chỉ nhìn, và thứ đang đứng đó oằn xuống, 160% công.
+Gây phá giáp cho mục tiêu, 35% khả năng.
+Tầm 3 · 90% trúng · hồi 3 lượt.
+[one line] 160% công · phá giáp 35% · tầm 3 · hồi 3
+
+hypnosis
+Đưa mắt qua lại vài lượt, chậm rãi, cho tới khi kẻ đối diện quên mất mình đang đứng đâu.
+Gây choáng cho mục tiêu, 55% khả năng.
+Tầm 2 · 100% trúng · hồi 4 lượt.
+[one line] choáng 55% · tầm 2 · hồi 4
+
+dream_eater
+Kẻ đang ngủ mơ thấy gì, nó ngồi xuống bên cạnh và ăn hết chỗ đó, 70% công.
+Hút lại 70% sát thương gây ra.
+Mục tiêu đang dính choáng: 160% công.
+Tầm 2 · 90% trúng · hồi 3 lượt.
+[one line] 70% công · hút 70% · choáng→160% · tầm 2 · hồi 3
+
+transform
+Trong một nhịp thở nó đã là thứ khác, và thứ ấy đang nhìn lại bằng chính mắt bạn.
+Nhận cuồng nộ, nhanh nhẹn, tập trung và mờ ảo.
+Bản thân · hồi 5 lượt.
+[one line] tự nhận cuồng nộ, nhanh nhẹn, tập trung và mờ ảo · bản thân · hồi 5
+
+recover
+Khép mắt lại một lúc, mở ra thì chỗ rách đã liền như chưa từng rách.
+Hồi máu bằng 70% công.
+Bản thân · hồi 4 lượt.
+[one line] hồi 70% công · bản thân · hồi 4
+
+swift
+Một vốc sao nhỏ rời khỏi tay, tản ra rồi rơi xuống khắp chỗ trước mặt, 70% công.
+Tầm 2 · 3 ô · 100% trúng · hồi 2 lượt.
+[one line] 70% công · tầm 2 · 3 ô · hồi 2
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1075,6 +1111,40 @@ Hits an enemy for 88% of attack.
 While the target is carrying at least 2 stacks of charge, every stack of charge that goes off deals 18% of attack through any guard, spending every stack of the charge it had.
 Range 2 · 88% to hit · 4 turns to recharge.
 [one line] 88% attack · charge 2+→discharges · range 2 · cd 4
+
+psychic
+Hits an enemy for 160% of attack.
+Inflicts expose, 35% of the time.
+Range 3 · 90% to hit · 3 turns to recharge.
+[one line] 160% attack · expose 35% · range 3 · cd 3
+
+hypnosis
+Aims at an enemy.
+Inflicts stun, 55% of the time.
+Range 2 · 100% to hit · 4 turns to recharge.
+[one line] stun 55% · range 2 · cd 4
+
+dream_eater
+Hits an enemy for 70% of attack.
+Takes back 70% of the damage it deals.
+While the target is carrying stun: 160% of attack.
+Range 2 · 90% to hit · 3 turns to recharge.
+[one line] 70% attack · drains 70% · stun→160% · range 2 · cd 3
+
+transform
+Puts fury, haste, focus and veil on itself.
+Itself · 5 turns to recharge.
+[one line] self fury, haste, focus and veil · itself · cd 5
+
+recover
+Heals for 70% of attack.
+Itself · 4 turns to recharge.
+[one line] heals 70% attack · itself · cd 4
+
+swift
+Hits an enemy for 70% of attack.
+Range 2 · 3 cells · 100% to hit · 2 turns to recharge.
+[one line] 70% attack · range 2 · 3 cells · cd 2
 
 [trait] endurance
 Always carries toughened.
