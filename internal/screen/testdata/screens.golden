@@ -181,7 +181,10 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.cleffa
     cleffa.mend         chở che
     cleffa.hex          ru ngủ
-  pokemon.magnemite     chưa viết bản dựng nào cho nhân vật này
+  pokemon.magnemite
+    magnemite.trickle   rỉ rả
+    magnemite.surge     sấm dội
+    magnemite.hoard     gom một mẻ
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -316,7 +319,10 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.cleffa
     cleffa.mend         chở che
     cleffa.hex          ru ngủ
-  pokemon.magnemite     chưa viết bản dựng nào cho nhân vật này
+  pokemon.magnemite
+    magnemite.trickle   rỉ rả
+    magnemite.surge     sấm dội
+    magnemite.hoard     gom một mẻ
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -551,7 +557,10 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.cleffa
     cleffa.mend
     cleffa.hex
-  pokemon.magnemite     no build written for this one yet
+  pokemon.magnemite
+    magnemite.trickle
+    magnemite.surge
+    magnemite.hoard
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -684,7 +693,10 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.cleffa
     cleffa.mend
     cleffa.hex
-  pokemon.magnemite     no build written for this one yet
+  pokemon.magnemite
+    magnemite.trickle
+    magnemite.surge
+    magnemite.hoard
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có

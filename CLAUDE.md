@@ -2085,6 +2085,19 @@ of what that form does know.
   it is that character's kit, and a screen offering a single option tells a player
   they have a decision they do not have. A character with none is the honest case —
   Naruto today — and `TestABuildIsACatalogueOfChoicesRatherThanOfKits` is the claim.
+- **Three is the shape a mechanism with a middle needs.** Magnemite is the only
+  character with three, and the third is what says its question has more than a yes
+  and a no in it: `trickle` converts the counter as fast as it lays it down,
+  `surge` ignores the mechanism entirely, and `hoard` waits and takes the pile.
+  ⚠️ **`surge` is a direction rather than an absence** — the same character built
+  as though the counter were not there — and
+  `TestTheThreeMagnemiteBuildsAnswerTheCounterDifferently` asserts it spends
+  **nothing**, because "three answers" is otherwise two answers and a duplicate.
+  ⚠️ **None of the three wins a duel** (0 or 1 of sixty against Charizard, the
+  heaviest attacker in the cast against the thinnest frame in it), exactly as the
+  mender's two did not. What a duel prices here is what a build spends its turns
+  on, and the ordering is what is held: blows, size of each, and stacks a
+  discharge (drip **1.00**, hoard **3.85**).
 - ⚠️ **The catalogue and the design tables in the tests must agree.**
   `poisonBuild`/`sustainBuild` (`bulbasaur_test.go`), `fireBuild`/`dragonBuild`
   (`dragon_test.go`) and `tankBuild`/`semiBuild` (`squirtle_test.go`) are hardcoded

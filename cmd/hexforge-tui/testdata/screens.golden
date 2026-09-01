@@ -2288,7 +2288,10 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.machop
     machop.gamble       đánh cược
     machop.sure         chắc đòn
-  pokemon.magnemite     chưa viết bản dựng nào cho nhân vật này
+  pokemon.magnemite
+    magnemite.trickle   rỉ rả
+    magnemite.surge     sấm dội
+    magnemite.hoard     gom một mẻ
   pokemon.poliwag
     poliwag.flurry      liên hoàn
     poliwag.riptide     nghịch lưu
@@ -2303,9 +2306,6 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
                    phấn độc · độc bùn · độc kích · phi diệp
   nội tại          virulence
                    độc lực
-
-
-
 
 
 
@@ -3940,7 +3940,10 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.machop
     machop.gamble       đánh cược
     machop.sure         chắc đòn
-  pokemon.magnemite     chưa viết bản dựng nào cho nhân vật này
+  pokemon.magnemite
+    magnemite.trickle   rỉ rả
+    magnemite.surge     sấm dội
+    magnemite.hoard     gom một mẻ
   pokemon.poliwag
     poliwag.flurry      liên hoàn
     poliwag.riptide     nghịch lưu
@@ -3954,9 +3957,6 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
                    phấn độc · độc bùn · độc kích · phi diệp
   nội tại          không lấy nội tại nào
-
-
-
 
 
 
@@ -6388,7 +6388,10 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.machop
     machop.gamble
     machop.sure
-  pokemon.magnemite     no build written for this one yet
+  pokemon.magnemite
+    magnemite.trickle
+    magnemite.surge
+    magnemite.hoard
   pokemon.poliwag
     poliwag.flurry
     poliwag.riptide
@@ -6401,9 +6404,6 @@ builds  the kit and the trait a character fields at level 60, furthest form
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
   kit           poison_powder sludge_bomb venoshock razor_leaf
   traits        virulence
-
-
-
 
 
 
@@ -8040,7 +8040,10 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.machop
     machop.gamble
     machop.sure
-  pokemon.magnemite     no build written for this one yet
+  pokemon.magnemite
+    magnemite.trickle
+    magnemite.surge
+    magnemite.hoard
   pokemon.poliwag
     poliwag.flurry
     poliwag.riptide
@@ -8053,9 +8056,6 @@ builds  the kit and the trait a character fields at level 60, furthest form
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
   kit           poison_powder sludge_bomb venoshock razor_leaf
   traits        takes no trait
-
-
-
 
 
 

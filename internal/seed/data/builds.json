@@ -197,6 +197,51 @@
       "passives": [
         "elusive"
       ]
+    },
+    {
+      "id": "magnemite.trickle",
+      "character": "pokemon.magnemite",
+      "name": "rỉ rả",
+      "intent": "Rải điện lên khắp rồi rút ra từng chút một, đòn nào cũng nhỏ mà không lúc nào ngơi",
+      "skills": [
+        "charge_beam",
+        "magnetise",
+        "electro_ball",
+        "spark"
+      ],
+      "passives": [
+        "swiftness"
+      ]
+    },
+    {
+      "id": "magnemite.surge",
+      "character": "pokemon.magnemite",
+      "name": "sấm dội",
+      "intent": "Bỏ hẳn chuyện tích góp, chỉ nhắm những cú nặng nhất rồi dội thẳng xuống",
+      "skills": [
+        "zap_cannon",
+        "thunderbolt",
+        "flash_cannon",
+        "discharge"
+      ],
+      "passives": [
+        "endurance"
+      ]
+    },
+    {
+      "id": "magnemite.hoard",
+      "character": "pokemon.magnemite",
+      "name": "gom một mẻ",
+      "intent": "Nhồi cho thật đầy rồi mới buông, một lần dồn hết những gì đã tích được",
+      "skills": [
+        "charge_beam",
+        "magnetise",
+        "overload",
+        "thunderbolt"
+      ],
+      "passives": [
+        "elusive"
+      ]
     }
   ]
 }
