@@ -49,6 +49,11 @@
       "id": "mythic",
       "name": "huyền thoại",
       "note": "Thứ người ta kể lại chứ không phải thứ người ta gặp: không đàn, không tổ, không ai từng thấy hai con cùng lúc — mỗi lần xuất hiện là một lần được kể thêm"
+    },
+    {
+      "id": "shade",
+      "name": "bóng ma",
+      "note": "Thứ không có ký lô nào mà vẫn đứng chắn được lối: nắm không trúng, đẩy không đi, mà đêm nào cũng thấy ở đúng chỗ ấy"
     }
   ]
 }

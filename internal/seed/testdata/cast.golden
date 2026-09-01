@@ -216,4 +216,27 @@ pokemon.mewtwo — Mewtwo
     level 60 hp 3000, atk 520, def 280, spd 140, acc 200, ddg 68
              absorbs 5802 of the 11500 budget, 5698 to spare
 
-10 characters
+pokemon.gastly — Gastly
+  from     Pokémon (anime)
+  preset   hexer
+  element  dark
+  species  shade
+  art      assets/gastly.svg
+  kit      shadow_claw shadow_ball@8 night_shade@12 spite@14 curse@16 bite@18 smokescreen@20 poison_powder@22 sludge_bomb@24 venoshock@26 dark_pulse@28 nasty_plot@30 taunt@32 body_slam@36 skull_bash@40
+  stage "Gastly" owns levels 1 to 15, showing assets/gastly.svg
+    level 1  hp 688, atk 141, def 68, spd 30, acc 41, ddg 18
+             absorbs 844 of the 11500 budget, 10656 to spare
+    level 15 hp 999, atk 204, def 99, spd 44, acc 59, ddg 26
+             absorbs 1330 of the 11500 budget, 10170 to spare
+  stage "Haunter" owns levels 16 to 31, showing assets/haunter.svg
+    level 16 hp 1276, atk 262, def 135, spd 55, acc 74, ddg 34
+             absorbs 1851 of the 11500 budget, 9649 to spare
+    level 31 hp 1693, atk 348, def 179, spd 74, acc 99, ddg 45
+             absorbs 2704 of the 11500 budget, 8796 to spare
+  stage "Gengar" owns levels 32 to 60, showing assets/gengar.svg
+    level 32 hp 2066, atk 426, def 233, spd 89, acc 120, ddg 54
+             absorbs 3676 of the 11500 budget, 7824 to spare
+    level 60 hp 3000, atk 620, def 340, spd 130, acc 175, ddg 80
+             absorbs 6410 of the 11500 budget, 5090 to spare
+
+11 characters

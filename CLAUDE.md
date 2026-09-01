@@ -2519,6 +2519,99 @@ the cheap half. Mewtwo passes the budget at 5800 of 11500 — the thinnest line 
 the cast — while reading 98.5%. Tune the speed and the attack; the budget will not
 tell you.
 
+## A strip pointed outward: what `dispelled` was missing, and how it was found
+
+Shipped with `pokemon.gastly`, the first character to carry a strip aimed at an
+**enemy**. `battle.Suggest` has had `dispelled` since strips were priced at all,
+and it had never once fired on shipped data — both existing strips (`rapid_spin`,
+`rinse`) point at the caster's own side and go through `cleansed`.
+
+⚠️ **There are three things a strip can take and it priced one.** A stat buff
+moves a number, so `dispelled`'s hypothetical reads it for free. A **shield** and
+a **regeneration** move no stat at all — so both came back nought, and an
+opponent handed a dispel declined it in favour of a ten-power poke. Measured
+before anything was written: an actor holding a strip and a `jab` chose the `jab`
+against an enemy carrying three block charges, three regeneration stacks, and both
+at once.
+
+The two terms added are the **inverses of the ones that price putting each on**,
+read from those functions rather than written again — `unguarded` is `shielded`
+backwards (charges times `strikeThreat`, clamped at `guardHorizon` for the same
+reason), and `undone` runs the denied ticks through `worthHealing`, the same three
+clamps a heal is priced by.
+
+- ⚠️ **A regeneration on a unit at full health is worth nothing to take**, because
+  the healing it owes cannot be banked. That falls out of `worthHealing`'s room
+  clamp rather than being written, and it is a row in the test rather than a
+  footnote.
+- ⚠️ **`undone` refuses to fire when the strip names a harmful category.**
+  `Pending` totals every stack's frozen tick without asking whether it heals or
+  hurts, so a strip naming `dot` would be taking a poison *off* an enemy and the
+  same difference would report that as a gain. Nothing shipped does that; the
+  guard is there because the arithmetic cannot tell.
+- **Nothing moved.** The whole suite, every golden, every measured rate: unchanged
+  by the fix, because no shipped skill reached the arm. That is the tell that a
+  priced branch was dead rather than wrong.
+
+### ⚠️ Two rows of that test passed for the wrong reason, and only a mutation said so
+
+`TestADispelIsPricedForEachOfTheThreeThingsAStripCanTake` was first written with
+every enemy at half health. Deleting the shield term left it **green**: on a hurt
+target the rating prefers the strip anyway, for a reason that is not the shield.
+The block row now reads a target at **full** health, which is the only version
+that goes red when the term it exists to hold is removed.
+
+The same trap caught the build test one file over. Two Gengar kits made *identical*
+and told apart only by their traits still read 1300 damage against 1178 and 153
+statuses against 81 — `contagion` weakens what it hits and a weakened enemy takes
+longer to win — so `miasma.dealt > unbind.dealt` passed on two copies of one build.
+The margin asked for is now the one the two kits actually produce, plus a
+disjointness check. **A separation test needs a margin taken from the mutation, not
+from the reading.**
+
+### A dispel cannot be measured by a duel either
+
+`spite` takes a shield and a regeneration off an enemy, and neither is a thing a
+lone unit brings to a duel — so `hexforge spar` reads it as a 700-power attack and
+says nothing, exactly the blind spot that made Cleffa read 0 to 7 per mille. The
+instrument is the mender's: one striker, one wall, and the slot under test, fought
+both ways round. Three opponents differing only in their wall's fourth skill, two
+Gengars differing only in `spite` against `bite`, 300 battles a row:
+
+| opponent wall | kit | strips | my blows blocked | the wall healed |
+|---|---|---:|---:|---:|
+| shields (`withdraw`) | with `spite` | 508 | **1541** | 270722 |
+| | without | 0 | **2434** | 276988 |
+| only hits | with `spite` | **0** | 0 | 0 |
+| | without | 0 | 0 | 0 |
+| regenerates (`aqua_ring`) | with `spite` | 589 | 0 | **297579** |
+| | without | 0 | 0 | **899834** |
+
+⚠️ **The win rate is not what is being read** — it moves 500 to 540 per mille
+against the shielding wall, because a shield is not the whole of a fight. What a
+squad says exactly is what the skill *did*: a third of the blows the block would
+have eaten no longer are, and the regeneration gives back barely a third.
+
+⚠️ **The middle row is what makes the other two mean anything.** Against a squad
+with nothing to take, the skill strips nought and is a plain attack, and the rate
+goes very slightly the *other* way. A utility skill worth its slot everywhere
+would not be a utility skill.
+
+⚠️ **A restore is not a regeneration.** `withdraw` heals on the turn it is cast
+and cannot be taken back, which is why the shielding wall's two healing figures
+are level while the regenerating wall's differ by two thirds. Only the ongoing
+tick is strippable.
+
+### ⚠️ What a dispel may not name, and why `buff` is not in it
+
+`status.Set.Cleanse` does not skip permanent statuses, and only a **gated** trait
+(`While != nil`) re-applies its grant — `Battle.hold` runs once at enlistment for
+everything else. So a strip naming `buff` would permanently take `toughened` off
+an `endurance` holder, `evasive` off an `elusive` one, `quickened` off `swiftness`,
+and never give them back. That is a whole design decision about whether a trait can
+be removed, not a side effect to ship inside a character, so `spite` names `shield`
+and `regen` and nothing else. Do not widen it without deciding that question first.
+
 ## Pricing a summon, so the opponent casts one
 
 Shipped. `battle.Suggest` rates a summoning skill in the one unit it counts in —

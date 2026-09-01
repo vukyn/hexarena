@@ -317,6 +317,36 @@
       "passives": [
         "elusive"
       ]
+    },
+    {
+      "id": "gastly.unbind",
+      "character": "pokemon.gastly",
+      "name": "gỡ chỗ dựa",
+      "intent": "Rút hết thứ bên kia đang dựa vào rồi ghim cho vết thương khỏi khép lại",
+      "skills": [
+        "spite",
+        "curse",
+        "shadow_claw",
+        "night_shade"
+      ],
+      "passives": [
+        "elusive"
+      ]
+    },
+    {
+      "id": "gastly.miasma",
+      "character": "pokemon.gastly",
+      "name": "chướng khí",
+      "intent": "Không gỡ gì cả, chỉ rải cho ngấm rồi dội lên chỗ đã ngấm",
+      "skills": [
+        "poison_powder",
+        "sludge_bomb",
+        "venoshock",
+        "shadow_ball"
+      ],
+      "passives": [
+        "contagion"
+      ]
     }
   ]
 }
