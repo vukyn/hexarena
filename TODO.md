@@ -443,6 +443,74 @@ is only so the shape is readable.
       the test at the committed file** so the property is held rather than
       asserted. Doing the reformat without the test fix buys one tidy day.
 
+- [ ] ⚠️ **Four mechanics `Suggest` resolves and does not price, measured 2026-09-02.**
+      Every row below is a choice `Suggest` actually made on a fixture board, not a
+      reading of the source. All four run the direction `price.go` errs in — a
+      marginal cast rather than a kill — but three of them are large.
+
+      | mechanic | field | what the rating did |
+      |---|---|---|
+      | repeating strikes | `Repeat`, `MaxStrikes` | a 700-power single beat a 600-power skill landing ~5.2 times |
+      | draining | `Skill.Drains`, `Passive.Drains` | a plain hit beat the same hit returning 90% as healing |
+      | unblockable | `Skill.Unblockable` | into three block charges, the blockable 700 beat the unblockable 600 |
+      | attacking **into** a guard | `Shield` / `Absorb` on the target | preferred the softer target carrying a pool of 100,000 — in all three arrangements, including with no pool at all |
+
+      ⚠️ **`Repeat` is the sharpest and it is a rule already written down.**
+      `combat.go` says *"ExpectedStrikes is the figure everything outside the roll
+      reads"* and the rating is the one caller that does not: `Rules.Expected`
+      multiplies by `h.StrikeCount()`, and `hitAgainst` never sets `Repeat` or
+      `MaxStrikes` on the `Hit` at all, so fixing `Expected` alone would move
+      nothing. `spark` (repeat 500, max 10, two base strikes) is priced at its
+      floor.
+
+      ⚠️ **The guard half is an internal contradiction rather than an omission.**
+      `shielded` and `guarded` pay to *put* a guard up; nothing discounts a blow
+      *into* one. So the rating buys walls and treats the enemy's as absent, which
+      makes `warden`'s whole trade — a charge cancels one strike, so multi-strike
+      answers it — invisible, and hands `shadow_punch` its `unblockable` for free.
+
+      Drains covers four shipped things worth nought today: `leech_seed`,
+      `dream_eater`, `blood_thirst`, `last_gasp`. `taunt` and `heal_cut` are the
+      same class and are already recorded in `README.md` § *Cutting the healing*.
+
+      Suggested order: **repeat → guard (with `unblockable`) → drains**, each its
+      own measured change. Worth adding with the first of them: a structural test
+      that every `status.Category` has an arm in `granted` or `inflictedOn`, and a
+      hand-kept table of every `Skill` field marked *priced* or *deliberately not,
+      with the reason* — the guard that would have caught all four at once.
+      → `README.md` § *Cutting the healing* for the two already known.
+
+- [ ] ⚠️ **The fallback cast ignores the cooldown tie-break, and burns scarce
+      utility on a board with nothing to use it on.** Measured 2026-09-02: with two
+      skills both worth nought — one on a three-turn cooldown, one on none — kit
+      `[spin, dust]` casts `spin` and kit `[dust, spin]` casts `dust`. Kit order
+      decides it. That is exactly the mistake
+      `TestAScarceSkillIsNotSpentOnWhatACommonOneBuys` installed the tie-break to
+      fix, one branch over: `Suggest` applies it through `take` for every *rated*
+      option and the fallback arm keeps "the first such skill in kit order".
+      Applying the same tie-break there is free and needs no lookahead.
+
+      ⚠️ **The second half is a design question and is NOT covered by
+      *Waiting* below.** That entry's arithmetic — acting is worth `bestValue` now
+      plus next turn's best, waiting is nought plus the same — assumes next turn's
+      best is unchanged by acting. It is not: an act starts a cooldown on the skill
+      it cast, which `TestAPassBuysNoCooldownAnActDoesNot` asserts as the one
+      difference an act is allowed to make. When `bestValue` is **nought** the
+      dominance is by nought and the cooldown is a strict loss — a `rapid_spin`
+      (power 0, cooldown 3, strips one stack) cast on a board with nothing to strip
+      is three turns of a cleanse spent to remove nothing. Measured: a unit holding
+      only `spin` casts it rather than passing.
+
+      `Suggest` already *can* pass — returning `(Choice{}, false)` is what
+      `RunToEndWith` turns into `Battle.Pass` — so this is a rating rule, not a new
+      mechanism, and `frozen()` is a pure function of state rather than a count of
+      quiet turns, so a pass cannot open a new infinite board.
+      ⚠️ The risk is the entry above: a skill worth nought to the rating may not be
+      worth nought, and every gap listed there is an under-price. Do the pricing
+      work first, then decide whether "every option rates nought and the cheapest
+      carries a cooldown" should pass.
+      → `CLAUDE.md` § Rating an action; `internal/core/battle/holding_test.go`.
+
 ## Decided against — do not re-raise
 
 - **Re-rolling the turn-order tie-break from the seed.** Kept, and the reason
