@@ -76,7 +76,7 @@ func (f fightScreen) refresh() fightScreen {
 }
 
 func (f fightScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	squads := m.squad.saved
+	squads := m.squad.Saved
 	switch message.String() {
 	case "esc", "f":
 		m.screen = screenSquads
@@ -123,7 +123,7 @@ func (f fightScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 // step — but which two of it are fought is settled here, so the screen is a
 // whole subject on its own and can be opened by anybody.
 func (f fightScreen) sides(m model) (home, away placement.Squad, ok bool) {
-	squads := m.squad.saved
+	squads := m.squad.Saved
 	if len(squads) == 0 {
 		return placement.Squad{}, placement.Squad{}, false
 	}

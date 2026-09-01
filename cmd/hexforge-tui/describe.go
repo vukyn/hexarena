@@ -42,6 +42,7 @@ var subjects = map[draw.SubjectKind]func(model, draw.Subject) (model, bool){
 	draw.StatusSubject:    landStatus,
 	draw.SkillSubject:     landSkill,
 	draw.CharacterSubject: landCharacter,
+	draw.SquadSubject:     landSquad,
 }
 
 // landStatus puts the statuses reference's cursor on the status a raise named.
@@ -78,6 +79,30 @@ func landCharacter(m model, subject draw.Subject) (model, bool) {
 	m.blurb.Subject = subject
 	m.preview.Subject = subject
 	return m, true
+}
+
+// landSquad puts the fight's home side on the squad a raise named.
+//
+// ⚠️ **The id is turned into a row here, and that is the whole reason the raise
+// names an id.** fightScreen.home is an index into the catalogue — the list its
+// choosers walk — and an index is a fact about *this client's* two screens
+// standing next to each other, which is not something a screen in
+// internal/screen may know or should have to.
+//
+// It reports, like landStatus, and a raise that cannot land declines the whole
+// trip. Nothing a keystroke produces reaches that: the catalogue writes itself
+// back onto the model before navigate is called, so the id it named is on the
+// list this reads. A squad the catalogue does not hold is a fault rather than a
+// state, and opening the fight on whichever row happened to be under `home`
+// would answer a question nobody asked.
+func landSquad(m model, subject draw.Subject) (model, bool) {
+	for index, squad := range m.squad.Saved {
+		if squad.ID == subject.ID {
+			m.fight.home = index
+			return m, true
+		}
+	}
+	return m, false
 }
 
 // applySubject lands whatever a raise was about, and says whether it could.

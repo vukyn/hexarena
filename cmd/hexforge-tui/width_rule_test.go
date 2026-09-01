@@ -1098,7 +1098,7 @@ func TestEveryFloorWrappedBlockTakesTheRowsItTakes(t *testing.T) {
 		for _, one := range lib.Passives().All() {
 			lines := 0
 			for _, sentence := range strings.Split(base.lang.DescribePassive(one), "\n") {
-				lines += len(wrapWords(sentence, minWidth-1-traitIndent))
+				lines += len(wrapWords(sentence, minWidth-1-draw.TraitIndent))
 			}
 			if lines > worst {
 				worst = lines

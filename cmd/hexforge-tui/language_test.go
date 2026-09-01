@@ -172,7 +172,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	building := squadEmpty
 	building.squad = someSquad(t, building)
 	member := building
-	member.squad = member.squad.editUnit(0)
+	member.squad = member.squad.EditUnit(0)
 	// And the same member standing in the rank whose name is longest. The
 	// fixture puts it in the front rank, so the other two ranks' words are drawn
 	// by nothing here — and a wording nothing renders is a wording no width test
@@ -199,8 +199,8 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		t.Fatalf("the held-back member state draws no held-back line, so every sweep over it measures nothing:\n%s",
 			heldBack.screenContent())
 	}
-	skillPick := member.openSquadSkills()
-	traitPick := member.openSquadPassives()
+	skillPick := member.pick(member.squad.OpenSkills())
+	traitPick := member.pick(member.squad.OpenPassives())
 	// And each picker with a description in front of its list, which is the
 	// picker's other state and shares no line with the list. The trait one needs
 	// a member that actually learns a trait: the fixture cast declares none, so
@@ -208,7 +208,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// how it shipped drawing an error where each row's detail belongs.
 	skillReading := reading(skillPick)
 	traitHolder, holds := aTraitHolder(building)
-	traitRows := traitHolder.openSquadPassives()
+	traitRows := traitHolder.pick(traitHolder.squad.OpenPassives())
 	traitReading := reading(traitRows)
 	// The fight, which is the only screen here that runs battles to draw itself.
 	// It needs a squad the library has actually been told about, because the run
@@ -356,19 +356,19 @@ func everyScreen(t *testing.T, m model) map[string]model {
 // is one the shipped data does not have, and authoring it here keeps the fixture
 // from depending on which character cast.json happens to hide. The slice is
 // copied because everyScreen hands out models sharing this one's backing array.
-func withAHeldBackMember(t *testing.T, s squadScreen) squadScreen {
+func withAHeldBackMember(t *testing.T, s squadsScreen) squadsScreen {
 	t.Helper()
-	characters := append([]cast.Character(nil), s.characters...)
+	characters := append([]cast.Character(nil), s.Characters...)
 	held := false
 	for index := range characters {
-		if characters[index].ID == s.unit.Character {
+		if characters[index].ID == s.Unit.Character {
 			characters[index].Hidden, held = true, true
 		}
 	}
 	if !held {
-		t.Fatalf("the fixture member names %q, which is not in the cast the screen holds", s.unit.Character)
+		t.Fatalf("the fixture member names %q, which is not in the cast the screen holds", s.Unit.Character)
 	}
-	s.characters = characters
+	s.Characters = characters
 	return s
 }
 
@@ -382,17 +382,17 @@ func withAHeldBackMember(t *testing.T, s squadScreen) squadScreen {
 func aTraitHolder(m model) (model, bool) {
 	s := m.squad
 	found, most := -1, 0
-	for index, character := range s.characters {
+	for index, character := range s.Characters {
 		if held := len(character.PassivesAt(
 			progression.LevelCap, progression.Furthest)); held > most {
 			found, most = index, held
 		}
 	}
-	if found < 0 || len(s.editing.Units) == 0 {
+	if found < 0 || len(s.Editing.Units) == 0 {
 		return m, false
 	}
-	character := s.characters[found]
-	unit := s.editing.Units[0]
+	character := s.Characters[found]
+	unit := s.Editing.Units[0]
 	unit.Character, unit.Level, unit.Stage = character.ID, progression.LevelCap, ""
 	known := character.SkillsAt(unit.Level, progression.Furthest)
 	if len(known) > cast.SkillSlots {
@@ -400,8 +400,8 @@ func aTraitHolder(m model) (model, bool) {
 	}
 	unit.Skills = known
 	unit.Passives = character.PassivesAt(unit.Level, progression.Furthest)[:cast.TraitSlots]
-	s.editing.Units = []placement.Placement{unit}
-	m.squad = s.editUnit(0)
+	s.Editing.Units = []placement.Placement{unit}
+	m.squad = s.EditUnit(0)
 	return m, true
 }
 
@@ -424,15 +424,15 @@ func reading(m model) model {
 // The rank is looked up rather than named, for the reason widestElementRow and
 // widestTraitRow are: which of the three words is longest is a fact about a
 // language, so naming one would measure English and skip Vietnamese.
-func inTheWidestRank(m model) squadScreen {
+func inTheWidestRank(m model) squadsScreen {
 	s := m.squad
-	found, most := s.unit.Slot, 0
-	for _, slot := range formationSlots() {
-		if width := lipgloss.Width(m.rankLabel(slot)); width > most {
+	found, most := s.Unit.Slot, 0
+	for _, slot := range draw.FormationSlots() {
+		if width := lipgloss.Width(draw.RankLabel(m.ctx(), slot)); width > most {
 			found, most = slot, width
 		}
 	}
-	s.unit.Slot = found
+	s.Unit.Slot = found
 	return s
 }
 
@@ -486,17 +486,17 @@ func withNobodyClaiming(s speciesScreen) speciesScreen {
 // It is the widest state the builder draws: an id and a name typed, somebody in
 // the front rank, and a full kit — every one of which is a line the empty
 // listing never renders and every one of which is wording.
-func someSquad(t *testing.T, m model) squadScreen {
+func someSquad(t *testing.T, m model) squadsScreen {
 	t.Helper()
-	s := m.squad.begin()
-	s.editing.ID = "do-thu"
-	s.editing.Name = "đội thử"
-	s.idInput.SetValue(s.editing.ID)
-	s.nameInput.SetValue(s.editing.Name)
-	if len(s.characters) == 0 {
+	s := m.squad.Begin()
+	s.Editing.ID = "do-thu"
+	s.Editing.Name = "đội thử"
+	s.IDInput.SetValue(s.Editing.ID)
+	s.NameInput.SetValue(s.Editing.Name)
+	if len(s.Characters) == 0 {
 		t.Fatal("the fixture cast is empty, so no squad can be built from it")
 	}
-	character := s.characters[0]
+	character := s.Characters[0]
 	unit := placement.Placement{
 		ID:        "mot",
 		Character: character.ID,
@@ -511,8 +511,8 @@ func someSquad(t *testing.T, m model) squadScreen {
 	if traits := character.PassivesAt(unit.Level, progression.Furthest); len(traits) > 0 {
 		unit.Passives = traits[:cast.TraitSlots]
 	}
-	s.editing.Units = []placement.Placement{unit}
-	s.unit = unit
+	s.Editing.Units = []placement.Placement{unit}
+	s.Unit = unit
 	return s
 }
 
@@ -521,7 +521,7 @@ func someSquad(t *testing.T, m model) squadScreen {
 // in the catalogue rather than taking them from the screen.
 func withASquadSaved(t *testing.T, m model) model {
 	t.Helper()
-	if err := m.lib.SaveSquad(m.squad.editing); err != nil {
+	if err := m.lib.SaveSquad(m.squad.Editing); err != nil {
 		t.Fatalf("save the fixture squad: %v", err)
 	}
 	// The squad in hand is now the squad on the file, so the baseline the
@@ -529,8 +529,8 @@ func withASquadSaved(t *testing.T, m model) model {
 	// does for a squad built through the keyboard. Without this the screen would
 	// hold a squad differing from nothing and still be asked about discarding
 	// it, and every fixture that backs out to the catalogue would stop there.
-	m.squad.baseline = m.squad.editing.Clone()
-	m.squad = m.squad.refresh(m.lib)
+	m.squad.Baseline = m.squad.Editing.Clone()
+	m.squad = m.squad.Refresh(m.ctx())
 	return m
 }
 
@@ -1996,7 +1996,7 @@ func TestTheSquadPickersSayWhatTheirOwnListsAre(t *testing.T) {
 		m = menuTo(t, m, screenSquads)
 		m.squad = someSquad(t, m)
 		member := m
-		member.squad = member.squad.editUnit(0)
+		member.squad = member.squad.EditUnit(0)
 		holder, holds := aTraitHolder(m)
 		if !holds {
 			t.Skip("no character in the book learns a trait, so the trait list has no rows")
@@ -2006,8 +2006,8 @@ func TestTheSquadPickersSayWhatTheirOwnListsAre(t *testing.T) {
 			opened model
 			hint   i18n.Key
 		}{
-			{"kit", member.openSquadSkills(), i18n.SquadKitHint},
-			{"trait", holder.openSquadPassives(), i18n.SquadTraitHint},
+			{"kit", member.pick(member.squad.OpenSkills()), i18n.SquadKitHint},
+			{"trait", holder.pick(holder.squad.OpenPassives()), i18n.SquadTraitHint},
 		} {
 			if list.opened.picker == nil || len(list.opened.picker.Options) == 0 {
 				t.Fatalf("the %s %s field raised no picker with rows in it", lang, list.what)

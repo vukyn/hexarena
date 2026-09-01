@@ -176,6 +176,15 @@ func press(t *testing.T, name string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyBackspace}
 	case "tab":
 		return tea.KeyPressMsg{Code: tea.KeyTab}
+	// ⚠️ The two chords are here because the squad builder answers both
+	// **itself** — ctrl+s writes the squad through internal/forge and ctrl+x
+	// takes a member out — so they are not the exception to the paragraph above
+	// either. A modified key carries no Text, which is what stops ctrl+x being
+	// read as the letter x by the level field's digit filter.
+	case "ctrl+s":
+		return tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl}
+	case "ctrl+x":
+		return tea.KeyPressMsg{Code: 'x', Mod: tea.ModCtrl}
 	}
 	// ⚠️ A single printable character is a **rune with its Text set**, and both
 	// halves matter: String() reports the letter off Code, and the skill filter

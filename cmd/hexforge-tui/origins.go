@@ -114,7 +114,7 @@ func (o originsScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.
 //
 // It stays on this screen — the listing behind the form is where the reader was
 // — so the action is the zero one, draw.Stay.
-func (o originsScreen) Confirmed(_ draw.Context, _ guardSubject) (originsScreen, draw.Action) {
+func (o originsScreen) Confirmed(_ draw.Context, _ any) (originsScreen, draw.Action) {
 	o = o.resetForm()
 	o.adding = false
 	return o, draw.Action{}
@@ -135,7 +135,7 @@ func (o originsScreen) updateForm(m model, message tea.KeyPressMsg) (tea.Model, 
 			m.origins = o
 			return m, nil
 		}
-		return m.ask(i18n.OriginFormDiscard, screenOrigins, guardSubject{}), nil
+		return m.ask(i18n.OriginFormDiscard, screenOrigins, nil), nil
 	case "up", "shift+tab":
 		o = o.moveTo(o.field - 1)
 		m.origins = o

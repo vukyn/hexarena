@@ -172,11 +172,12 @@ func TestEveryScreenThatAsksAnswersItsOwnQuestion(t *testing.T) {
 // screen grows one guard and it is noticed, while the skill form alone raises
 // six pickers that differ in nothing but which field they fill.
 //
-// ⚠️ **There are two destination vocabularies now and both are walked.** Six of
-// the ten followed the skill form into internal/screen and are draw.SkillsPick;
-// the four naming a screen still in this package are pickDest. The map is keyed
-// by `any` because PickState carries either, so a walk over one count alone
-// would leave the other free to grow an entry in silence.
+// ⚠️ **There are three destination vocabularies now and all three are walked.**
+// Six of the ten followed the skill form into internal/screen as
+// draw.SkillsPick and two followed the squad builder as draw.SquadsPick; the two
+// naming a screen still in this package are pickDest. The map is keyed by `any`
+// because PickState carries any of them, so a walk over one count alone would
+// leave the others free to grow an entry in silence.
 //
 // ⚠️ It walks the counts rather than the map, for the reason the three walks
 // above walk theirs — and here a count is doing more than a list would. Adding a
@@ -189,9 +190,9 @@ func TestEveryScreenThatAsksAnswersItsOwnQuestion(t *testing.T) {
 // measured on the guard. What holds the other half is one behaviour test per
 // destination, driven through the real keys: TestEachAllowlistPickLandsInItsOwnField
 // and TestTheCharacterFormsTwoPicksLandInTheirOwnFields in picked_test.go for
-// seven of the ten, screen.TestEverySkillsPickDestinationWritesItsOwnField for
-// the six on that side of the boundary, and the four named in their doc comment
-// for the rest.
+// the two still here, screen.TestEverySkillsPickDestinationWritesItsOwnField and
+// screen.TestEverySquadsPickDestinationWritesItsOwnField for the eight on the
+// other side of the boundary.
 func TestEveryPickDestinationLandsSomewhere(t *testing.T) {
 	for value := 1; value < int(pickDestCount); value++ {
 		into := pickDest(value)
@@ -207,10 +208,18 @@ func TestEveryPickDestinationLandsSomewhere(t *testing.T) {
 				"with enter on it takes the list down and writes nothing", value)
 		}
 	}
+	for value := 1; value < int(draw.SquadsPickCount); value++ {
+		into := draw.SquadsPick(value)
+		if _, known := pickedInto[into]; !known {
+			t.Errorf("draw.SquadsPick %d lands nowhere in this client, so a picker closed "+
+				"with enter on it takes the list down and writes nothing", value)
+		}
+	}
 	// And nothing beyond them, which is the other half of total: an entry for a
-	// value neither enum declares is a landing no picker could reach.
-	if got, want := len(pickedInto), int(pickDestCount)-1+int(draw.SkillsPickCount)-1; got != want {
-		t.Errorf("pickedInto holds %d entries against the %d destinations the two enums "+
+	// value none of the three enums declares is a landing no picker could reach.
+	want := int(pickDestCount) - 1 + int(draw.SkillsPickCount) - 1 + int(draw.SquadsPickCount) - 1
+	if got := len(pickedInto); got != want {
+		t.Errorf("pickedInto holds %d entries against the %d destinations the three enums "+
 			"declare besides their zeros", got, want)
 	}
 	// The two zero values are what a picker with no destination carries, so a
@@ -220,6 +229,9 @@ func TestEveryPickDestinationLandsSomewhere(t *testing.T) {
 	}
 	if _, known := pickedInto[draw.SkillsPickNothing]; known {
 		t.Error("draw.SkillsPickNothing lands somewhere, and it names no field")
+	}
+	if _, known := pickedInto[draw.SquadsPickNothing]; known {
+		t.Error("draw.SquadsPickNothing lands somewhere, and it names no field")
 	}
 }
 
@@ -332,6 +344,49 @@ func TestEveryActionKindIsAppliedByThisClient(t *testing.T) {
 	}
 	if command != nil {
 		t.Error("a Stay asked for a command")
+	}
+}
+
+// TestARaiseAboutASquadOpensTheFightOnThatSquad is the effect half of the newest
+// subject applier, and the half TestEverySubjectKindIsAppliedByThisClient cannot
+// state.
+//
+// A SquadSubject names a squad by **id** and fightScreen.home is an **index**, so
+// this client is where the one becomes the other. The walk one function up proves
+// the kind is applied by something; an applier that wrote whichever row sorted
+// first, or that was one off, passes it completely.
+//
+// ⚠️ **Every row of a two-squad catalogue, rather than one.** A cursor left on the
+// last row cannot tell `+1` from correct — the index is clamped — which is exactly
+// what TestTheCatalogueStillFightsTheSquadUnderItsCursor in fight_test.go cannot
+// see, since it deliberately reads the second of two.
+func TestARaiseAboutASquadOpensTheFightOnThatSquad(t *testing.T) {
+	base, _, _ := start(t, i18n.En)
+	base = twoSquadsSaved(t, base)
+	for row, squad := range base.squad.Saved {
+		raised, _ := base.navigate(screenSquads, draw.Action{
+			Kind: draw.Raise, Target: draw.Fight,
+			Subject: draw.Subject{Kind: draw.SquadSubject, ID: squad.ID},
+		})
+		after := raised.(model)
+		if after.screen != screenFight {
+			t.Fatalf("a raise about %q landed on screen %v", squad.ID, after.screen)
+		}
+		if after.fight.home != row {
+			t.Errorf("a raise about %q opened the fight on row %d, want %d",
+				squad.ID, after.fight.home, row)
+		}
+	}
+
+	// And a squad the catalogue does not hold declines the whole trip rather than
+	// opening the fight on whichever row `home` happened to be pointing at, which
+	// is what landStatus does with a status the book has lost.
+	stayed, _ := base.navigate(screenSquads, draw.Action{
+		Kind: draw.Raise, Target: draw.Fight,
+		Subject: draw.Subject{Kind: draw.SquadSubject, ID: "no.such.squad"},
+	})
+	if got := stayed.(model).screen; got != base.screen {
+		t.Errorf("a raise about a squad nobody holds moved to screen %v", got)
 	}
 }
 

@@ -73,12 +73,12 @@ func TestTheFightWalksTheCatalogueAndTheSeedCount(t *testing.T) {
 	m.squad = someSquad(t, m)
 	m = withASquadSaved(t, m)
 	// A second squad, so the opponent chooser has somewhere to walk to.
-	second := m.squad.editing.Clone()
+	second := m.squad.Editing.Clone()
 	second.ID = "khac"
 	if err := m.lib.SaveSquad(second); err != nil {
 		t.Fatalf("save a second squad: %v", err)
 	}
-	m.squad = m.squad.refresh(m.lib)
+	m.squad = m.squad.Refresh(m.ctx())
 	m = key(t, m, "esc")
 	m = typeText(t, m, "f")
 
@@ -129,20 +129,20 @@ func twoSquadsSaved(t *testing.T, m model) model {
 	m = menuTo(t, m, screenSquads)
 	m.squad = someSquad(t, m)
 	m = withASquadSaved(t, m)
-	second := m.squad.editing.Clone()
+	second := m.squad.Editing.Clone()
 	second.ID = "khac"
 	if err := m.lib.SaveSquad(second); err != nil {
 		t.Fatalf("save the second squad: %v", err)
 	}
-	m.squad = m.squad.refresh(m.lib)
+	m.squad = m.squad.Refresh(m.ctx())
 	// Back out to the catalogue: the builder leaves the squad open, and f in a
 	// name field is a letter.
 	m = key(t, m, "esc")
 	if m.screen != screenSquads {
 		t.Fatalf("esc left the builder for %v", m.screen)
 	}
-	if len(m.squad.saved) != 2 {
-		t.Fatalf("the catalogue holds %d squads, want the two just saved", len(m.squad.saved))
+	if len(m.squad.Saved) != 2 {
+		t.Fatalf("the catalogue holds %d squads, want the two just saved", len(m.squad.Saved))
 	}
 	return m
 }
@@ -179,7 +179,7 @@ func TestTheCatalogueStillFightsTheSquadUnderItsCursor(t *testing.T) {
 	m, _, _ := start(t, i18n.En)
 	m = twoSquadsSaved(t, m)
 	m = key(t, m, "down")
-	wanted := m.squad.saved[m.squad.cursor].ID
+	wanted := m.squad.Saved[m.squad.Cursor].ID
 	m = typeText(t, m, "f")
 	if m.screen != screenFight {
 		t.Fatalf("f opened %v", m.screen)
@@ -243,7 +243,7 @@ func TestTheMenuReachesTheFight(t *testing.T) {
 		t.Fatalf("the menu opened %v", fresh.screen)
 	}
 	home, away := homeAndAway(t, fresh)
-	saved := fresh.squad.saved
+	saved := fresh.squad.Saved
 	if len(saved) != 2 {
 		t.Fatalf("the fight sees %d squads, want the two on the file", len(saved))
 	}

@@ -1,3 +1,113 @@
+===== vi | 120x24 | a deep member =====
+trong đội: mot
+
+>   nhân vật   < pokemon.mew >
+    cấp        60     
+    dạng       < dạng xa nhất >
+    đứng ở     < 1,0  hàng giữa >
+    mang theo  psychic body_slam dream_eater recover 4/4
+    nội tại    elusive 1/1
+
+thế đứng
+     .  (1)  .  
+     .   .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 120x24 | a held-back member =====
+trong đội: mot
+
+>   nhân vật   < pokemon.mew >
+    cấp        60     
+    dạng       < dạng xa nhất >
+    đứng ở     < 2,1  hàng đầu >
+    mang theo  psychic body_slam dream_eater recover 4/4
+    nội tại    elusive 1/1
+  nhân vật này đã ẩn — vẫn còn trong danh sách vì thành viên đang dùng
+
+thế đứng
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 120x24 | a squad =====
+đội hình
+
+  mã           do-thu
+  tên          đội thử                                  
+
+> 1 mot pokemon.mew@60 dạng xa nhất 2,1 4/4 chiêu, 1/1 nội tại
+  thêm người
+
+thế đứng
+     .   .   .  
+    [1]  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ chọn · enter mở · tab mã/tên · ctrl+x bỏ ra · ctrl+s lưu · esc quay lại
+===== vi | 120x24 | a squad kit =====
+chiêu người này mang theo  4/4 ô
+space để chọn · số là thứ tự trong bộ · ? mô tả · đều là chiêu đã học
+
+>  1   psychic        chủng loài mythic, vũ trụ pokemon
+   2   body_slam      vũ trụ pokemon
+   3   dream_eater    chủng loài mythic, vũ trụ pokemon
+   4   recover        chủng loài mythic, vũ trụ pokemon
+       hypnosis       chủng loài mythic, vũ trụ pokemon
+       transform      của riêng pokemon.mew, vũ trụ pokemon
+       swift          chủng loài mythic, vũ trụ pokemon
+       withdraw       ai cũng được
+       bite           ai cũng được
+       smokescreen    ai cũng được
+       rally          ai cũng được
+       inner_focus    vũ trụ pokemon
+       taunt          ai cũng được
+
+  psychic body_slam dream_eater recover
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
+===== vi | 120x24 | a squad member =====
+trong đội: mot
+
+>   nhân vật   < pokemon.mew >
+    cấp        60     
+    dạng       < dạng xa nhất >
+    đứng ở     < 2,1  hàng đầu >
+    mang theo  psychic body_slam dream_eater recover 4/4
+    nội tại    elusive 1/1
+
+thế đứng
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 120x24 | a squad trait =====
+nội tại người này giữ  1/1 ô
+space để chọn · một nội tại, hoặc bỏ trống · ? mô tả · đều là nội tại đã học
+
+>  1   elusive       huyền ảo
+       composure     vững tâm
+       swiftness     thần tốc
+       endurance     bền bỉ
+       contagion     lây lan
+       blood_thirst  khát máu
+       last_gasp     hấp hối
+
+  elusive
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | add a skill =====
 chiêu mới  sát thương tính ngay khi gõ, đúng bằng công thức lúc đánh
 
@@ -345,6 +455,14 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   rồng chút nào
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | squads =====
+đội hình  đã dựng 2 đội, mỗi phe tối đa 5 người
+
+  mã         gồm những ai
+> do-thu     1 người  đội thử
+  do-thu-hai 1 người  đội thử hai
+----- footer -----
+↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
 chiêu này gây hiệu ứng gì  1/29
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
@@ -473,6 +591,126 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | a deep member =====
+trong đội: mot
+
+>   nhân vật   < pokemon.mew >
+    cấp        60     
+    dạng       < dạng xa nhất >
+    đứng ở     < 1,0  hàng giữa >
+    mang theo  psychic body_slam dream_eater recover 4/4
+    nội tại    elusive 1/1
+
+thế đứng
+     .  (1)  .  
+     .   .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 160x60 | a held-back member =====
+trong đội: mot
+
+>   nhân vật   < pokemon.mew >
+    cấp        60     
+    dạng       < dạng xa nhất >
+    đứng ở     < 2,1  hàng đầu >
+    mang theo  psychic body_slam dream_eater recover 4/4
+    nội tại    elusive 1/1
+  nhân vật này đã ẩn — vẫn còn trong danh sách vì thành viên đang dùng
+
+thế đứng
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 160x60 | a squad =====
+đội hình
+
+  mã           do-thu
+  tên          đội thử                                  
+
+> 1 mot pokemon.mew@60 dạng xa nhất 2,1 4/4 chiêu, 1/1 nội tại
+  thêm người
+
+thế đứng
+     .   .   .  
+    [1]  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ chọn · enter mở · tab mã/tên · ctrl+x bỏ ra · ctrl+s lưu · esc quay lại
+===== vi | 160x60 | a squad kit =====
+chiêu người này mang theo  4/4 ô
+space để chọn · số là thứ tự trong bộ · ? mô tả · đều là chiêu đã học
+
+>  1   psychic        chủng loài mythic, vũ trụ pokemon
+   2   body_slam      vũ trụ pokemon
+   3   dream_eater    chủng loài mythic, vũ trụ pokemon
+   4   recover        chủng loài mythic, vũ trụ pokemon
+       hypnosis       chủng loài mythic, vũ trụ pokemon
+       transform      của riêng pokemon.mew, vũ trụ pokemon
+       swift          chủng loài mythic, vũ trụ pokemon
+       withdraw       ai cũng được
+       bite           ai cũng được
+       smokescreen    ai cũng được
+       rally          ai cũng được
+       inner_focus    vũ trụ pokemon
+       taunt          ai cũng được
+       wide_guard     ai cũng được
+       pummel         vũ trụ pokemon
+       poison_powder  vũ trụ pokemon
+       sludge_bomb    vũ trụ pokemon
+       venoshock      vũ trụ pokemon
+       skull_bash     vũ trụ pokemon
+       rapid_spin     ai cũng được
+       submission     vũ trụ pokemon
+       vital_throw    vũ trụ pokemon
+       cross_chop     vũ trụ pokemon
+
+  psychic body_slam dream_eater recover
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
+===== vi | 160x60 | a squad member =====
+trong đội: mot
+
+>   nhân vật   < pokemon.mew >
+    cấp        60     
+    dạng       < dạng xa nhất >
+    đứng ở     < 2,1  hàng đầu >
+    mang theo  psychic body_slam dream_eater recover 4/4
+    nội tại    elusive 1/1
+
+thế đứng
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 160x60 | a squad trait =====
+nội tại người này giữ  1/1 ô
+space để chọn · một nội tại, hoặc bỏ trống · ? mô tả · đều là nội tại đã học
+
+>  1   elusive       huyền ảo
+       composure     vững tâm
+       swiftness     thần tốc
+       endurance     bền bỉ
+       contagion     lây lan
+       blood_thirst  khát máu
+       last_gasp     hấp hối
+
+  elusive
+
+----- footer -----
+space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | add a skill =====
 chiêu mới  sát thương tính ngay khi gõ, đúng bằng công thức lúc đánh
 
@@ -1006,6 +1244,14 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   rồng chút nào
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | squads =====
+đội hình  đã dựng 2 đội, mỗi phe tối đa 5 người
+
+  mã         gồm những ai
+> do-thu     1 người  đội thử
+  do-thu-hai 1 người  đội thử hai
+----- footer -----
+↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
 chiêu này gây hiệu ứng gì  1/29
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
@@ -1227,6 +1473,116 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== en | 120x24 | a deep member =====
+in the squad: mot
+
+>   character  < pokemon.mew >
+    level      60     
+    form       < furthest >
+    stands at  < 1,0  middle rank >
+    brings     psychic body_slam dream_eater recover 4 of 4
+    trait      elusive 1 of 1
+
+the formation
+     .  (1)  .  
+     .   .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 120x24 | a held-back member =====
+in the squad: mot
+
+>   character  < pokemon.mew >
+    level      60     
+    form       < furthest >
+    stands at  < 2,1  front rank >
+    brings     psychic body_slam dream_eater recover 4 of 4
+    trait      elusive 1 of 1
+  this character is held back — still on the list because this member has it
+
+the formation
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 120x24 | a squad =====
+the squad
+
+  id           do-thu
+  name         đội thử                                  
+
+> 1 mot pokemon.mew@60 furthest 2,1 4/4 skills, 1/1 traits
+  add somebody
+
+the formation
+     .   .   .  
+    [1]  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ move · enter open · tab id/name · ctrl+x remove · ctrl+s save · esc back
+===== en | 120x24 | a squad kit =====
+what this unit brings  4 of 4 slots
+space chooses · the number is the order · ? describes · these are all learned
+
+>  1   psychic        kept for a mythic, out of pokemon
+   2   body_slam      out of pokemon
+   3   dream_eater    kept for a mythic, out of pokemon
+   4   recover        kept for a mythic, out of pokemon
+       hypnosis       kept for a mythic, out of pokemon
+       transform      belongs to pokemon.mew, out of pokemon
+       swift          kept for a mythic, out of pokemon
+       withdraw       anyone
+       bite           anyone
+       smokescreen    anyone
+       rally          anyone
+       inner_focus    out of pokemon
+       taunt          anyone
+
+  psychic body_slam dream_eater recover
+
+----- footer -----
+space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | a squad member =====
+in the squad: mot
+
+>   character  < pokemon.mew >
+    level      60     
+    form       < furthest >
+    stands at  < 2,1  front rank >
+    brings     psychic body_slam dream_eater recover 4 of 4
+    trait      elusive 1 of 1
+
+the formation
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 120x24 | a squad trait =====
+the trait it holds  1 of 1 slots
+space chooses · one trait, or none · ? describes · these are all learned
+
+>  1   elusive
+       composure
+       swiftness
+       endurance
+       contagion
+       blood_thirst
+       last_gasp
+
+  elusive
+
+----- footer -----
+space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | add a skill =====
 new skill  the damage is the engine's own, worked out as you type
 
@@ -1565,6 +1921,14 @@ species  the declared kinds, and where each line is drawn
   rồng chút nào
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | squads =====
+squads  2 built, at most 5 to a side
+
+  id         who is in it
+> do-thu     1 in it  đội thử
+  do-thu-hai 1 in it  đội thử hai
+----- footer -----
+↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
 the statuses this skill inflicts  1 of 29
 space chooses a status · type the chance in parts per thousand
@@ -1691,6 +2055,126 @@ species  the declared kinds, and where each line is drawn
   no character is one
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | a deep member =====
+in the squad: mot
+
+>   character  < pokemon.mew >
+    level      60     
+    form       < furthest >
+    stands at  < 1,0  middle rank >
+    brings     psychic body_slam dream_eater recover 4 of 4
+    trait      elusive 1 of 1
+
+the formation
+     .  (1)  .  
+     .   .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 160x60 | a held-back member =====
+in the squad: mot
+
+>   character  < pokemon.mew >
+    level      60     
+    form       < furthest >
+    stands at  < 2,1  front rank >
+    brings     psychic body_slam dream_eater recover 4 of 4
+    trait      elusive 1 of 1
+  this character is held back — still on the list because this member has it
+
+the formation
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 160x60 | a squad =====
+the squad
+
+  id           do-thu
+  name         đội thử                                  
+
+> 1 mot pokemon.mew@60 furthest 2,1 4/4 skills, 1/1 traits
+  add somebody
+
+the formation
+     .   .   .  
+    [1]  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ move · enter open · tab id/name · ctrl+x remove · ctrl+s save · esc back
+===== en | 160x60 | a squad kit =====
+what this unit brings  4 of 4 slots
+space chooses · the number is the order · ? describes · these are all learned
+
+>  1   psychic        kept for a mythic, out of pokemon
+   2   body_slam      out of pokemon
+   3   dream_eater    kept for a mythic, out of pokemon
+   4   recover        kept for a mythic, out of pokemon
+       hypnosis       kept for a mythic, out of pokemon
+       transform      belongs to pokemon.mew, out of pokemon
+       swift          kept for a mythic, out of pokemon
+       withdraw       anyone
+       bite           anyone
+       smokescreen    anyone
+       rally          anyone
+       inner_focus    out of pokemon
+       taunt          anyone
+       wide_guard     anyone
+       pummel         out of pokemon
+       poison_powder  out of pokemon
+       sludge_bomb    out of pokemon
+       venoshock      out of pokemon
+       skull_bash     out of pokemon
+       rapid_spin     anyone
+       submission     out of pokemon
+       vital_throw    out of pokemon
+       cross_chop     out of pokemon
+
+  psychic body_slam dream_eater recover
+
+----- footer -----
+space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | a squad member =====
+in the squad: mot
+
+>   character  < pokemon.mew >
+    level      60     
+    form       < furthest >
+    stands at  < 2,1  front rank >
+    brings     psychic body_slam dream_eater recover 4 of 4
+    trait      elusive 1 of 1
+
+the formation
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 160x60 | a squad trait =====
+the trait it holds  1 of 1 slots
+space chooses · one trait, or none · ? describes · these are all learned
+
+>  1   elusive
+       composure
+       swiftness
+       endurance
+       contagion
+       blood_thirst
+       last_gasp
+
+  elusive
+
+----- footer -----
+space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | add a skill =====
 new skill  the damage is the engine's own, worked out as you type
 
@@ -2215,6 +2699,14 @@ species  the declared kinds, and where each line is drawn
   rồng chút nào
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | squads =====
+squads  2 built, at most 5 to a side
+
+  id         who is in it
+> do-thu     1 in it  đội thử
+  do-thu-hai 1 in it  đội thử hai
+----- footer -----
+↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
 the statuses this skill inflicts  1 of 29
 space chooses a status · type the chance in parts per thousand

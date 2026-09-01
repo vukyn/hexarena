@@ -8,6 +8,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
 // TestABracketIsTheKeystrokeItLooksLike is the premise the whole alias rests on,
@@ -44,7 +45,7 @@ func TestABracketIsTheKeystrokeItLooksLike(t *testing.T) {
 	// picker's number field refuses it; a bracket is not a save key, so the battle
 	// screen's isSaveKey lets it through to the log.
 	for _, press := range []tea.KeyPressMsg{{Code: '[', Text: "["}, {Code: ']', Text: "]"}} {
-		if numberKey(press) {
+		if draw.NumberKey(press) {
 			t.Errorf("numberKey takes %q, so the picker's typed field would swallow it",
 				press.String())
 		}
@@ -121,8 +122,8 @@ func scrollSites() []scrollSite {
 			building := base.enter(screenSquads)
 			building.squad = someSquad(t, building)
 			member := building
-			member.squad = member.squad.editUnit(0)
-			return reading(member.openSquadSkills())
+			member.squad = member.squad.EditUnit(0)
+			return reading(member.pick(member.squad.OpenSkills()))
 		},
 		state: func(m model) string { return fmt.Sprintf("scroll %d", m.picker.Scroll) },
 	}}

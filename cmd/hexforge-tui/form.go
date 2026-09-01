@@ -383,7 +383,7 @@ func (f formScreen) leave(m model) model {
 		m.screen = screenMenu
 		return m
 	}
-	return m.ask(i18n.FormDiscard, screenNew, guardSubject{})
+	return m.ask(i18n.FormDiscard, screenNew, nil)
 }
 
 // Confirmed is what happens when the discard question above is answered yes: the
@@ -395,7 +395,7 @@ func (f formScreen) leave(m model) model {
 // client's own views — and a draw.Back says the same thing without naming
 // anything: this form is only ever entered from the menu, so one step back is
 // the menu.
-func (f formScreen) Confirmed(c draw.Context, _ guardSubject) (formScreen, draw.Action) {
+func (f formScreen) Confirmed(c draw.Context, _ any) (formScreen, draw.Action) {
 	return newFormScreen(c.Lib), draw.Action{Kind: draw.Back}
 }
 

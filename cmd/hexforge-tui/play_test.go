@@ -17,6 +17,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 	"github.com/vukyn/hexarena/internal/tui"
 )
 
@@ -159,10 +160,10 @@ func TestAimingIsAskedOnlyWhenItIsADecision(t *testing.T) {
 	m = menuTo(t, m, screenSquads)
 	m.squad = someSquad(t, m)
 	// A second member, so an enemy-aimed skill has two cells to choose between.
-	second := m.squad.editing.Units[0].Clone()
+	second := m.squad.Editing.Units[0].Clone()
 	second.ID = "hai"
 	second.Slot = hex.Offset{Col: hex.FormationCols - 1, Row: 0}
-	m.squad.editing.Units = append(m.squad.editing.Units, second)
+	m.squad.Editing.Units = append(m.squad.Editing.Units, second)
 	m = withASquadSaved(t, m)
 	m = key(t, m, "esc")
 	m = typeText(t, m, "f")
@@ -687,7 +688,7 @@ func TestTheQuestionMarkDescribesTheOptionInFront(t *testing.T) {
 			t.Errorf("%s: the description does not name %q:\n%s", lang, option.Skill, body)
 		}
 		// The same sentences the listing draws, rather than a second rendering.
-		for _, line := range skillLines(raised.ctx(), mustSkill(t, raised, option.Skill)) {
+		for _, line := range draw.SkillLines(raised.ctx(), mustSkill(t, raised, option.Skill)) {
 			if !strings.Contains(body, strings.TrimSpace(line)) {
 				t.Errorf("%s: the description is missing the listing's line %q:\n%s",
 					lang, line, body)
@@ -936,7 +937,7 @@ func TestASquadNameCannotClimbOutOfTheBattlesFolder(t *testing.T) {
 	m, _, dir := start(t, i18n.En)
 	m = menuTo(t, m, screenSquads)
 	m.squad = someSquad(t, m)
-	m.squad.editing.ID = "../../escaped"
+	m.squad.Editing.ID = "../../escaped"
 	m = withASquadSaved(t, m)
 	m = key(t, m, "esc")
 	m = typeText(t, m, "f")
@@ -975,9 +976,9 @@ func atABattleOf(t *testing.T, m model, side int) model {
 	// Named after its size, so a catalogue may hold one of each without one
 	// squad replacing another — Library.SaveSquad replaces by id.
 	id := "do-thu-" + strconv.Itoa(side)
-	m.squad.editing.ID = id
-	m.squad.idInput.SetValue(id)
-	characters := m.squad.characters
+	m.squad.Editing.ID = id
+	m.squad.IDInput.SetValue(id)
+	characters := m.squad.Characters
 	if len(characters) == 0 {
 		t.Fatal("the fixture cast is empty, so no squad can be built from it")
 	}
@@ -1002,7 +1003,7 @@ func atABattleOf(t *testing.T, m model, side int) model {
 		}
 		units = append(units, unit)
 	}
-	m.squad.editing.Units = units
+	m.squad.Editing.Units = units
 	m = withASquadSaved(t, m)
 	m = key(t, m, "esc")
 	// Point the catalogue at the squad just saved and both of the fight's sides
@@ -1010,7 +1011,7 @@ func atABattleOf(t *testing.T, m model, side int) model {
 	// squad, and the away chooser because it opens on the first squad on the
 	// list rather than on the one under the cursor. A squad against a copy of
 	// itself is the one pairing any catalogue is guaranteed to be able to field.
-	m.squad.cursor = squadIndex(t, m, id)
+	m.squad.Cursor = squadIndex(t, m, id)
 	m = typeText(t, m, "f")
 	m.fight.away = m.fight.home
 	m = typeText(t, m, "p")
@@ -1033,7 +1034,7 @@ func atABattleOf(t *testing.T, m model, side int) model {
 // squadIndex is where a squad of a given id sits in the catalogue.
 func squadIndex(t *testing.T, m model, id string) int {
 	t.Helper()
-	for index, squad := range m.squad.saved {
+	for index, squad := range m.squad.Saved {
 		if squad.ID == id {
 			return index
 		}

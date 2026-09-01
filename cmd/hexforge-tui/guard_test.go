@@ -121,9 +121,9 @@ func TestDiscardingAHalfWrittenSkillEmptiesTheFormAndStays(t *testing.T) {
 // shows the file's version rather than the edit that was supposedly thrown away.
 func TestDiscardingASquadUnderEditPutsTheFileBackAndReturnsToTheCatalogue(t *testing.T) {
 	m := aSavedSquad(t)
-	saved := m.squad.baseline.Clone()
+	saved := m.squad.Baseline.Clone()
 	m = typeText(t, m, "x")
-	if !m.squad.dirty() {
+	if !m.squad.Dirty() {
 		t.Fatal("typing into the name left the squad reading as the one on the file")
 	}
 
@@ -139,13 +139,13 @@ func TestDiscardingASquadUnderEditPutsTheFileBackAndReturnsToTheCatalogue(t *tes
 	if m.guard != nil {
 		t.Error("the question is still pending after a yes")
 	}
-	if m.squad.mode != squadList {
-		t.Errorf("confirming the discard left the builder in %v", m.squad.mode)
+	if m.squad.Mode != draw.SquadList {
+		t.Errorf("confirming the discard left the builder in %v", m.squad.Mode)
 	}
-	if !m.squad.editing.Equal(saved) {
-		t.Errorf("the squad in hand is %+v, want the one on the file back", m.squad.editing)
+	if !m.squad.Editing.Equal(saved) {
+		t.Errorf("the squad in hand is %+v, want the one on the file back", m.squad.Editing)
 	}
-	if m.squad.dirty() {
+	if m.squad.Dirty() {
 		t.Error("the squad in hand still differs from the one written down")
 	}
 	// And the file itself was not touched: this question discards an edit, it
@@ -167,11 +167,11 @@ func TestDiscardingASquadUnderEditPutsTheFileBackAndReturnsToTheCatalogue(t *tes
 // refreshed from the library and would agree with it either way.
 func TestDeletingASquadTakesTheOneUnderTheCursorAndNoOther(t *testing.T) {
 	m := aCatalogueOfTwoSquads(t)
-	wanted, spared := m.squad.saved[0].ID, m.squad.saved[1].ID
+	wanted, spared := m.squad.Saved[0].ID, m.squad.Saved[1].ID
 	if wanted == spared {
 		t.Fatalf("both fixture squads are called %q, so nothing here can tell them apart", wanted)
 	}
-	m.squad.cursor = 0
+	m.squad.Cursor = 0
 
 	m = typeText(t, m, "d")
 	if m.guard == nil {
@@ -182,17 +182,27 @@ func TestDeletingASquadTakesTheOneUnderTheCursorAndNoOther(t *testing.T) {
 	}
 	// The id travels with the question rather than being read back off the
 	// cursor when the answer arrives, and this is what says so.
-	if m.guard.about.Kind != guardsASavedSquad || m.guard.about.ID != wanted {
-		t.Errorf("the pending question is about %v %q, want the squad under the cursor",
-			m.guard.about.Kind, m.guard.about.ID)
+	//
+	// ⚠️ **The pending subject is an `any` now**, because the screen that asks is
+	// in internal/screen and the vocabulary telling its two questions apart went
+	// with it. This client carries the value and never opens it, so the assertion
+	// has to say which type it expected — a guard filed under some other screen's
+	// vocabulary would fail the assertion here rather than silently comparing
+	// unequal.
+	about, carried := m.guard.about.(draw.SquadsAsk)
+	if !carried {
+		t.Fatalf("the pending question is about a %T, want a draw.SquadsAsk", m.guard.about)
+	}
+	if want := (draw.SquadsAsk{Kind: draw.SquadsAskSavedSquad, ID: wanted}); about != want {
+		t.Errorf("the pending question is about %v, want %v", about, want)
 	}
 
 	m = typeText(t, m, "y")
 	if m.guard != nil {
 		t.Error("the question is still pending after a yes")
 	}
-	if m.squad.err != nil {
-		t.Fatalf("the delete was refused: %v", m.squad.err)
+	if m.squad.Err != nil {
+		t.Fatalf("the delete was refused: %v", m.squad.Err)
 	}
 	held := m.lib.Squads()
 	if len(held) != 1 {
@@ -203,7 +213,7 @@ func TestDeletingASquadTakesTheOneUnderTheCursorAndNoOther(t *testing.T) {
 			held[0].ID, spared)
 	}
 	// And the screen was refreshed rather than left showing a squad that is gone.
-	if got := len(m.squad.saved); got != 1 {
+	if got := len(m.squad.Saved); got != 1 {
 		t.Errorf("the catalogue on screen still lists %d squads", got)
 	}
 	if m.screen != screenSquads {
@@ -219,7 +229,7 @@ func TestDeletingASquadTakesTheOneUnderTheCursorAndNoOther(t *testing.T) {
 func aCatalogueOfTwoSquads(t *testing.T) model {
 	t.Helper()
 	m := aSavedSquad(t)
-	second := m.squad.editing.Clone()
+	second := m.squad.Editing.Clone()
 	second.ID, second.Name = "do-hai", "đội hai"
 	if err := m.lib.SaveSquad(second); err != nil {
 		t.Fatalf("save the second fixture squad: %v", err)
@@ -228,11 +238,11 @@ func aCatalogueOfTwoSquads(t *testing.T) model {
 	if m.guard != nil {
 		t.Fatalf("backing out of an unedited squad raised %v", m.guard.question)
 	}
-	if m.squad.mode != squadList {
-		t.Fatalf("escape from the fixture squad landed in %v", m.squad.mode)
+	if m.squad.Mode != draw.SquadList {
+		t.Fatalf("escape from the fixture squad landed in %v", m.squad.Mode)
 	}
-	m.squad = m.squad.refresh(m.lib)
-	if got := len(m.squad.saved); got != 2 {
+	m.squad = m.squad.Refresh(m.ctx())
+	if got := len(m.squad.Saved); got != 2 {
 		t.Fatalf("the fixture catalogue holds %d squads, want two", got)
 	}
 	return m
