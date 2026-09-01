@@ -1547,6 +1547,11 @@ skills — everybody's plain moves and nobody's line. That is the largest single
 pool in the book, so "no type" comes out as the widest kit in the cast rather
 than as the narrowest.
 
+Light and dark are the one *mutual* pair, and a mutual pair only means anything
+once both halves are carried: an element strong against nobody on the board is an
+inert one wearing a name. Cleffa held light alone for a while, and Mewtwo is what
+put something on the other side of it.
+
 ```
 go run ./cmd/hexforge                  # list the subcommands
 go run ./cmd/hexforge origins          # the catalog of works

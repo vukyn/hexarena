@@ -1599,6 +1599,145 @@
           "at_level": 48
         }
       ]
+    },
+    {
+      "id": "pokemon.mewtwo",
+      "name": "Mewtwo",
+      "origin": "pokemon",
+      "archetype": "breaker",
+      "image": "assets/mewtwo.svg",
+      "element": "dark",
+      "species": [
+        "mythic"
+      ],
+      "bio": "Nó ra đời trong một căn phòng kín, giữa những người cầm sổ đứng nhìn qua lớp kính. Người ta dựng nó lên từ một thứ có sẵn rồi bỏ đi phần mềm yếu, và cái còn lại chỉ biết đúng một việc, làm việc ấy giỏi hơn tất cả.",
+      "stages": [
+        {
+          "name": "Mewtwo",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 1032,
+              "max": 3000
+            },
+            "attack": {
+              "base": 178,
+              "max": 520
+            },
+            "defense": {
+              "base": 96,
+              "max": 280
+            },
+            "speed": {
+              "base": 48,
+              "max": 140
+            },
+            "accuracy": {
+              "base": 68,
+              "max": 200
+            },
+            "dodge": {
+              "base": 23,
+              "max": 68
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "psystrike"
+        },
+        {
+          "id": "shadow_ball",
+          "at_level": 8
+        },
+        {
+          "id": "psycho_cut",
+          "at_level": 12
+        },
+        {
+          "id": "recover",
+          "at_level": 14
+        },
+        {
+          "id": "dark_pulse",
+          "at_level": 16
+        },
+        {
+          "id": "nasty_plot",
+          "at_level": 18
+        },
+        {
+          "id": "psychic",
+          "at_level": 20
+        },
+        {
+          "id": "swift",
+          "at_level": 22
+        },
+        {
+          "id": "bite",
+          "at_level": 24
+        },
+        {
+          "id": "hypnosis",
+          "at_level": 26
+        },
+        {
+          "id": "dream_eater",
+          "at_level": 28
+        },
+        {
+          "id": "body_slam",
+          "at_level": 30
+        },
+        {
+          "id": "smokescreen",
+          "at_level": 32
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 34
+        },
+        {
+          "id": "taunt",
+          "at_level": 36
+        },
+        {
+          "id": "skull_bash",
+          "at_level": 40
+        },
+        {
+          "id": "submission",
+          "at_level": 44
+        },
+        {
+          "id": "vital_throw",
+          "at_level": 48
+        }
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 24
+        },
+        {
+          "id": "berserk",
+          "at_level": 32
+        },
+        {
+          "id": "elusive",
+          "at_level": 40
+        },
+        {
+          "id": "reckless",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }

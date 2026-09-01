@@ -462,6 +462,61 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "breaker",
+      "role": "the one armour does not answer: nearly every blow it throws ignores most of what is in the way, bought with the thinnest frame on the board and the speed to spend it before anything reaches back",
+      "column": 2,
+      "stats": {
+        "hp": {
+          "base": 1032,
+          "max": 3000
+        },
+        "attack": {
+          "base": 178,
+          "max": 520
+        },
+        "defense": {
+          "base": 96,
+          "max": 280
+        },
+        "speed": {
+          "base": 48,
+          "max": 140
+        },
+        "accuracy": {
+          "base": 68,
+          "max": 200
+        },
+        "dodge": {
+          "base": 23,
+          "max": 68
+        }
+      },
+      "skills": [
+        "shadow_ball",
+        "psycho_cut",
+        "dark_pulse",
+        "nasty_plot",
+        "body_slam",
+        "bite",
+        "smokescreen",
+        "taunt",
+        "inner_focus",
+        "submission",
+        "vital_throw",
+        "skull_bash"
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "berserk",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

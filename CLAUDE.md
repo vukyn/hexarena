@@ -2115,6 +2115,10 @@ of what that form does know.
   rather than about a mechanism, and `TestOneMewBuildCarriesNothingOfItsOwn`
   counts rather than spot-checks, because a build that quietly picked one of Mew's
   own back up would still work and would no longer be saying anything.
+- **`mewtwo.origin` is that build's mirror**, and the pair of them is why both are
+  in the catalogue: one carries nothing of its own and the other carries nothing
+  but the original's. It is also a *measurement* rather than only a theme — see
+  the pierce section below for what putting one loadout on two bodies said.
 - ⚠️ **The catalogue and the design tables in the tests must agree.**
   `poisonBuild`/`sustainBuild` (`bulbasaur_test.go`), `fireBuild`/`dragonBuild`
   (`dragon_test.go`) and `tankBuild`/`semiBuild` (`squirtle_test.go`) are hardcoded
@@ -2392,12 +2396,15 @@ this is a value the engine already supported being used rather than a feature.
 
 ### A one-form line, and a stat line that is a median rather than a share
 
-- **Mew is the first shipped character that does not evolve**, and nothing in the
-  engine moved for it: `progression.Line` has always resolved a single form
+- **The two mythics are the first shipped characters that do not evolve**, and
+  nothing in the engine moved for them: `progression.Line` has always resolved a
+  single form
   (`TestALineWithOneFormStillResolves` predates this by a long way). A level still
   means what it meant — the curve runs base to max, the learnset still opens over
   it — so what a one-form line gives up is the threshold and the fork, not
-  progression. `TestTheCastHasALineThatDoesNotEvolve` holds all three halves.
+  progression. `TestTheCastHasALineThatDoesNotEvolve` holds each of those and
+  that the pair is both of them and nobody else — a third one-form line would be a
+  decision rather than an accident, and this is where it would be noticed.
 - ⚠️ **"The same share of every ceiling" is not the same idea as "the middle of
   the cast", and the first one is a trap.** The first draft put Mew at seventy per
   cent of all six declared ceilings, which reads like the fiction's "a hundred in
@@ -2446,6 +2453,71 @@ on purpose wants a status that outlives the setter's next turn — `expose`, `mi
 and `weaken` all last two or three — and `venoshock`/`dragon_drive` are the shipped
 skills that do it that way. `TestAOneTurnSetupIsAQueueRaceRatherThanACombo` holds
 the direction rather than the figures.
+
+### The other half of the pair: `dark`, `pierce`, and what a stat line is for
+
+`pokemon.mewtwo` is the first character to carry **dark**, which is the other half
+of the chart's only mutual pair. Light had a carrier — Cleffa — and dark had
+none, so for as long as that was true Cleffa's element was, in play,
+indistinguishable from an inert one: strong against nobody, weak to nobody.
+`TestTheMutualPairFinallyHasBothHalves` is the claim that the pair is now
+*fielded* rather than declared, and it checks both directions, because both ways
+is what mutual means and what a cycle never gives.
+
+- **What Mewtwo is for is `pierce`**, an axis three shipped skills touched and no
+  character was about. ⚠️ **The obvious measurement of it cannot say anything**:
+  three attackers of different elements against three targets of different armour
+  is three different chart readings, and the elemental term swamps the one being
+  read. What works is **one attacker carrying two skills** — `psystrike` pierces
+  800 and `body_slam` pierces nothing — thrown at the same targets, so the
+  elemental term is a constant that divides out. Across the whole armour range the
+  cast fields (Blastoise 640 down to Magnezone 340), armour costs the piercing
+  blow **175 per mille** and the plain one **381**.
+- **`mewtwo.origin` carries Mew's own four on Mewtwo's frame**, which makes it the
+  only reading in the package that puts one loadout on two bodies — and therefore
+  the only way to say what the stat line actually changed. ⚠️ **It changed it for
+  the worse on every column that kit is about**: fewer turns, less healing (a
+  restore reads attack, and the clone's is lower) and less damage. A stat line is
+  not "more"; it is **pointed**, and Mewtwo's points at skills that pierce —
+  `mewtwo.breach` on the same body out-damages it better than two to one.
+  `TestTheSameLoadoutIsWorseOnTheClone` holds all four of those.
+- **`mythic` is the first species in the book with two members.** Every other one
+  gates for exactly one character, so this is the first time the axis does the
+  thing it was added for: five skills authored for Mew are carried by both,
+  and `TestTheCloneKnowsWhatTheOriginalKnowsExceptHowToBeSomethingElse` refuses a
+  species gate that one of its two members declines — that is a character gate
+  written the long way. The exception is `transform`, gated on the character, so
+  the one thing the clone cannot do is be anything else.
+
+### ⚠️ At the top of the cast, speed is the dominant currency and armour is nearly free
+
+Tuning Mewtwo took it from **98.5%** to **68.0%**, and almost none of that came
+from where it was expected. Measured one dial at a time, everything else held:
+
+| dial | reading |
+|---|---|
+| `psystrike` pierce 700 → 400 → 0 | 98.4 → 97.0 → **90.1** |
+| speed 150 → 130 → 110 → 90 | 98.4 → 91.4 → 79.7 → **69.3** |
+| attack 740 → 620 → 520 → 440 | 98.4 → 89.7 → 79.4 → **71.3** |
+| hp 3200→2900 **and** defence 300→240 together | 98.4 → **96.5** |
+
+So the eight-hundred-per-mille signature is worth about eight points, thinning
+the frame past the thinnest in the cast is worth two, and **sixty points of speed
+is worth twenty-nine**. A glass cannon is not paying for its glass: the enemy
+needs turns to spend the opening, and a fast unit does not give them.
+
+⚠️ **This is not the finding `swiftness` failed on and does not contradict it.**
+That one is about *trait-sized* deltas — `+150` read 59.0% where `+50` read 74.0%,
+which is noise wearing an ordering — and it still stands. What is ordered cleanly
+here is a **sixty-point** range, four readings, monotone. A duel rate can separate
+speeds that are far apart and cannot separate speeds that are close, which is the
+same fact as "the queue is discrete and lumpy" seen from the other end.
+
+The practical consequence for authoring: **the EffHP budget cannot hold a
+character down.** It bounds survivability and nothing else, and survivability is
+the cheap half. Mewtwo passes the budget at 5800 of 11500 — the thinnest line in
+the cast — while reading 98.5%. Tune the speed and the attack; the budget will not
+tell you.
 
 ## Pricing a summon, so the opponent casts one
 

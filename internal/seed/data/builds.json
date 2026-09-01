@@ -287,6 +287,36 @@
       "passives": [
         "contagion"
       ]
+    },
+    {
+      "id": "mewtwo.breach",
+      "character": "pokemon.mewtwo",
+      "name": "xuyên giáp",
+      "intent": "Đánh thẳng vào bên trong, dày hay mỏng thì cũng chừng ấy",
+      "skills": [
+        "psystrike",
+        "psycho_cut",
+        "shadow_ball",
+        "dark_pulse"
+      ],
+      "passives": [
+        "berserk"
+      ]
+    },
+    {
+      "id": "mewtwo.origin",
+      "character": "pokemon.mewtwo",
+      "name": "gốc gác",
+      "intent": "Chỉ dùng những miếng của kẻ nó được dựng lên từ đó, trên một cái thân khác hẳn",
+      "skills": [
+        "psychic",
+        "hypnosis",
+        "dream_eater",
+        "recover"
+      ],
+      "passives": [
+        "elusive"
+      ]
     }
   ]
 }

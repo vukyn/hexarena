@@ -463,6 +463,34 @@ Một vốc sao nhỏ rời khỏi tay, tản ra rồi rơi xuống khắp chỗ
 Tầm 2 · 3 ô · 100% trúng · hồi 2 lượt.
 [one line] 70% công · tầm 2 · 3 ô · hồi 2
 
+psystrike
+Đòn không rơi xuống chỗ nó đang đứng mà rơi thẳng vào bên trong, nơi chẳng có gì che, 150% công, xuyên 80% giáp.
+Tầm 2 · 88% trúng · hồi 3 lượt.
+[one line] 150% công · tầm 2 · hồi 3
+
+shadow_ball
+Một khối tối đặc quánh lăn tới, chạm vào đâu là chỗ đó lạnh đi, 120% công, xuyên 50% giáp.
+Gây phá giáp cho mục tiêu, 40% khả năng.
+Tầm 3 · 90% trúng · hồi 3 lượt.
+[one line] 120% công · phá giáp 40% · tầm 3 · hồi 3
+
+psycho_cut
+Vệt cắt đi ngang không khí, tới nơi rồi mới nghe thấy tiếng, 2 nhát, mỗi nhát 54% công (tổng 108%), xuyên 60% giáp.
+Tầm 2 · 3 ô · 88% trúng · hồi 2 lượt.
+[one line] 108% công · tầm 2 · 3 ô · hồi 2
+
+dark_pulse
+Bóng tối dội ra thành từng đợt, ai đứng trong đó cũng thôi nhìn thấy đường, 80% công, xuyên 40% giáp.
+Gây mù cho mục tiêu, 45% khả năng.
+Tầm 2 · 3 ô · 90% trúng · hồi 3 lượt.
+[one line] 80% công · mù 45% · tầm 2 · 3 ô · hồi 3
+
+nasty_plot
+Đứng yên một nhịp, nghĩ tới thứ mình sắp làm, rồi cười.
+Nhận cuồng nộ x2.
+Bản thân · hồi 4 lượt.
+[one line] tự nhận cuồng nộ x2 · bản thân · hồi 4
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1145,6 +1173,33 @@ swift
 Hits an enemy for 70% of attack.
 Range 2 · 3 cells · 100% to hit · 2 turns to recharge.
 [one line] 70% attack · range 2 · 3 cells · cd 2
+
+psystrike
+Hits an enemy for 150% of attack, through 80% of the armour.
+Range 2 · 88% to hit · 3 turns to recharge.
+[one line] 150% attack · range 2 · cd 3
+
+shadow_ball
+Hits an enemy for 120% of attack, through 50% of the armour.
+Inflicts expose, 40% of the time.
+Range 3 · 90% to hit · 3 turns to recharge.
+[one line] 120% attack · expose 40% · range 3 · cd 3
+
+psycho_cut
+Hits an enemy for 2 strikes of 54% of attack each, 108% in all, through 60% of the armour.
+Range 2 · 3 cells · 88% to hit · 2 turns to recharge.
+[one line] 108% attack · range 2 · 3 cells · cd 2
+
+dark_pulse
+Hits an enemy for 80% of attack, through 40% of the armour.
+Inflicts blind, 45% of the time.
+Range 2 · 3 cells · 90% to hit · 3 turns to recharge.
+[one line] 80% attack · blind 45% · range 2 · 3 cells · cd 3
+
+nasty_plot
+Puts fury x2 on itself.
+Itself · 4 turns to recharge.
+[one line] self fury x2 · itself · cd 4
 
 [trait] endurance
 Always carries toughened.

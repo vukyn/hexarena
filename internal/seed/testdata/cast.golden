@@ -203,4 +203,17 @@ pokemon.mew — Mew
     level 60 hp 3600, atk 590, def 490, spd 110, acc 172, ddg 49
              absorbs 9498 of the 11500 budget, 2002 to spare
 
-9 characters
+pokemon.mewtwo — Mewtwo
+  from     Pokémon (anime)
+  preset   breaker
+  element  dark
+  species  mythic
+  art      assets/mewtwo.svg
+  kit      psystrike shadow_ball@8 psycho_cut@12 recover@14 dark_pulse@16 nasty_plot@18 psychic@20 swift@22 bite@24 hypnosis@26 dream_eater@28 body_slam@30 smokescreen@32 inner_focus@34 taunt@36 skull_bash@40 submission@44 vital_throw@48
+  stage "Mewtwo" owns levels 1 to 60, showing assets/mewtwo.svg
+    level 1  hp 1032, atk 178, def 96, spd 48, acc 68, ddg 23
+             absorbs 1363 of the 11500 budget, 10137 to spare
+    level 60 hp 3000, atk 520, def 280, spd 140, acc 200, ddg 68
+             absorbs 5802 of the 11500 budget, 5698 to spare
+
+10 characters

@@ -109,4 +109,16 @@ shifter, formation column 1
            absorbs 9498 of the 11500 budget, 2002 to spare
   kit      body_slam bite withdraw smokescreen rally inner_focus taunt wide_guard pummel poison_powder sludge_bomb venoshock skull_bash submission vital_throw rapid_spin
 
-9 presets
+breaker, formation column 2
+  the one armour does not answer: nearly every blow it throws ignores most of what is in the way, bought with the thinnest frame on the board and the speed to spend it before anything reaches back
+  demands  a character built from it must carry dark
+  hp 1032->3000  attack 178->520  defense 96->280  speed 48->140  accuracy 68->200  dodge 23->68
+  level 1  hp 1032, atk 178, def 96, spd 48, acc 68, ddg 23
+           absorbs 1363 of the 11500 budget, 10137 to spare
+  level 30 hp 1999, atk 346, def 186, spd 93, acc 132, ddg 45
+           absorbs 3239 of the 11500 budget, 8261 to spare
+  level 60 hp 3000, atk 520, def 280, spd 140, acc 200, ddg 68
+           absorbs 5802 of the 11500 budget, 5698 to spare
+  kit      shadow_ball psycho_cut dark_pulse nasty_plot body_slam bite smokescreen taunt inner_focus submission vital_throw skull_bash
+
+10 presets

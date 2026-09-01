@@ -1892,6 +1892,124 @@
           "pokemon"
         ]
       }
+    },
+    {
+      "id": "psystrike",
+      "name": "kích tâm",
+      "flavour": "Đòn không rơi xuống chỗ nó đang đứng mà rơi thẳng vào bên trong, nơi chẳng có gì che",
+      "element": "dark",
+      "range": 2,
+      "pattern": "single",
+      "power": 1500,
+      "strikes": 1,
+      "accuracy": 880,
+      "pierce": 800,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "characters": [
+          "pokemon.mewtwo"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "shadow_ball",
+      "name": "cầu bóng tối",
+      "flavour": "Một khối tối đặc quánh lăn tới, chạm vào đâu là chỗ đó lạnh đi",
+      "element": "dark",
+      "range": 3,
+      "pattern": "single",
+      "power": 1200,
+      "strikes": 1,
+      "accuracy": 900,
+      "pierce": 500,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "expose",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "psycho_cut",
+      "name": "chém niệm",
+      "flavour": "Vệt cắt đi ngang không khí, tới nơi rồi mới nghe thấy tiếng",
+      "element": "dark",
+      "range": 2,
+      "pattern": "arc_up",
+      "power": 540,
+      "strikes": 2,
+      "accuracy": 880,
+      "pierce": 600,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "dark_pulse",
+      "name": "sóng tối",
+      "flavour": "Bóng tối dội ra thành từng đợt, ai đứng trong đó cũng thôi nhìn thấy đường",
+      "element": "dark",
+      "range": 2,
+      "pattern": "column",
+      "power": 800,
+      "strikes": 1,
+      "accuracy": 900,
+      "pierce": 400,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "blind",
+          "chance": 450,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "nasty_plot",
+      "name": "mưu hiểm",
+      "flavour": "Đứng yên một nhịp, nghĩ tới thứ mình sắp làm, rồi cười",
+      "element": "dark",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "fury",
+          "chance": 1000,
+          "stacks": 2
+        }
+      ]
     }
   ]
 }

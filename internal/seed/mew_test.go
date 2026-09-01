@@ -356,17 +356,30 @@ func readSetup(t *testing.T, foe string) (amplified, stuns int) {
 	return amplified, stuns
 }
 
-// TestTheCastHasALineThatDoesNotEvolve is the first one, and the point is that
-// nothing in the engine had to change for it: progression.Line has always
+// TestTheCastHasALineThatDoesNotEvolve is the first ones, and the point is that
+// nothing in the engine had to change for them: progression.Line has always
 // resolved a single form, and no shipped character had ever declared one.
 //
 // A level still means something on such a line — the stat curve runs from base to
 // max exactly as it does on three forms, and the learnset still opens over it —
 // so what is given up is the fork and the threshold, not progression.
+//
+// Both mythics are one, and the fiction is the same fact twice: the original has
+// nothing before it and the clone was finished in a tank, so neither has anywhere
+// to go. Every other shipped character grows into somebody with another name.
 func TestTheCastHasALineThatDoesNotEvolve(t *testing.T) {
 	book, err := seed.Cast()
 	if err != nil {
 		t.Fatalf("load the cast: %v", err)
+	}
+	still := []string{}
+	for _, character := range book.All() {
+		if len(character.Stages) == 1 {
+			still = append(still, character.ID)
+		}
+	}
+	if len(still) != 2 {
+		t.Errorf("%v are the one-form lines; the pair is supposed to be both of them and nobody else", still)
 	}
 	mew, known := book.Get("pokemon.mew")
 	if !known {
