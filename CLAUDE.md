@@ -1217,7 +1217,12 @@ state directly; the raiser pushes a `screen.Subject` now and the describer reach
 for nothing (`cmd/hexforge-tui/describe.go`). A listed skill and a battle option
 turned out to be **one** subject rather than two — same id, same position, same
 paragraph — so the kinds are three (`StatusSubject`, `SkillSubject`,
-`CharacterSubject`) and not the four the raise sites suggest. A **fourth** reading of a skill sits beside that one and is not it:
+`CharacterSubject`) and not the four the raise sites suggest. Both describers
+moved into `internal/screen` once they stopped reaching (`screen.BlurbScreen`,
+`screen.PreviewScreen`); what stayed in the client is `describe.go`, the applier
+that says which of *its* screens a subject lands on and which raiser an arrow key
+walks — and `blurbScreen.from`, which is a `screen`, this binary's own enum, so it
+could not travel. A **fourth** reading of a skill sits beside that one and is not it:
 `Lang.SummariseSkill` is the compact line the played battle draws on every
 option's own row, and *Where a form beats a prompt* says why it cannot be this
 one with the prose dropped. ⚠️ **The forge form is not the place for it** — 19
@@ -2124,19 +2129,29 @@ regenerated on autopilot:
   prints one in the body too. See the doc comment on
   `TestEveryScreenDrawsWhatTheGoldenHolds` for both, and for what a golden
   written today does and does not prove about the step before it.
-- `internal/screen/testdata/screens.golden` is the **six moved listings, in the
-  package that owns them**: `chart`, `elements`, `species`, `statuses`, `traits`,
-  `builds` plus the two states nothing shipped can draw (`unclaimed kind`,
-  `traitless build`), in both languages at the 120x24 floor and at 160x60 —
-  **32 renders, 724 lines**, body and footer recorded apart because a screen here
-  answers with the two separately and every wording squeeze in this file is a
-  footer. ⚠️ **It exists because the layout of code in `internal/screen` was held
-  by a file in another package.** Measured after #205: widening the status
-  category column by one cell (`Pad(row.Category.String(), column+1)` →
-  `column+2`) left **every test in `internal/screen` green** and was caught by
-  `cmd/hexforge-tui/testdata/screens.golden` alone. Three more screens move next,
+- `internal/screen/testdata/screens.golden` is the **moved screens, in the
+  package that owns them**: the six listings — `chart`, `elements`, `species`,
+  `statuses`, `traits`, `builds` — plus the two states nothing shipped can draw
+  (`unclaimed kind`, `traitless build`) and the **description screen in both of
+  its readings** (`skill blurb`, `trait blurb`), in both languages at the 120x24
+  floor and at 160x60 — **40 renders, 880 lines**, body and footer recorded apart
+  because a screen here answers with the two separately and every wording squeeze
+  in this file is a footer. ⚠️ **It exists because the layout of code in
+  `internal/screen` was held by a file in another package.** Measured after #205:
+  widening the status category column by one cell
+  (`Pad(row.Category.String(), column+1)` → `column+2`) left **every test in
+  `internal/screen` green** and was caught by
+  `cmd/hexforge-tui/testdata/screens.golden` alone. Three screens still to move,
   and once `cmd/hexarena` stands up a screen the authoring tool stops drawing
   would lose its only layout net in silence.
+  ⚠️ **The blurb gets two entries for three subject kinds, and the art preview
+  gets none.** A listed skill and a battle option are one `SubjectKind` — same id,
+  same paragraph, same footer, only `At`/`Of` differ — so a third entry would
+  record the same render twice; `NoSubject` is the arm a raise cannot reach, and
+  a client's applier is what proves that. The preview is left out **deliberately**
+  and not by omission: it draws rasterised art, so what such an entry would assert
+  is an open question — → `TODO.md`, which now carries the reproducibility
+  measurement that question was waiting on.
   ⚠️ **Neither golden is a subset of the other and neither may be dropped**, which
   was measured both ways rather than assumed. A trailing newline left on
   `SpeciesScreen.View`'s body reddens this one and is **absorbed by the frame's

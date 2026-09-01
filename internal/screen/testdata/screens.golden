@@ -58,6 +58,16 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
   Đơn vị hai hệ hứng cả hai hệ số; một đòn luôn mang đúng một hệ.
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | skill blurb =====
+withdraw <thủ thế>  26/73
+
+  Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
+  Hồi máu bằng 50% công.
+  Nhận đỡ đòn x2.
+  Bản thân · hồi 3 lượt.
+
+----- footer -----
+↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | species =====
 chủng loài  các loài đã khai báo, và ranh giới của từng loài
 
@@ -99,6 +109,29 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | trait blurb =====
+Bulbasaur  cấp 60
+
+  venom_blood <máu độc>
+    Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
+    Miễn nhiễm trúng độc.
+    Ai đánh trúng thì có 4% khả năng dính trúng độc.
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+
+  blood_thirst <khát máu>
+    Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức.
+    Mọi đòn hút lại 25% sát thương gây ra.
+
+  virulence <độc lực>
+    Nọc tiết ra đặc và ngấm sâu hơn thứ độc tầm thường.
+    Hiệu quả trúng độc mạnh hơn 30%.
+    Khả năng gây trúng độc tăng 20%.
+  … 17/26 dòng, [/] để cuộn
+----- footer -----
+↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | traitless build =====
 bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
 
@@ -231,6 +264,16 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
   Đơn vị hai hệ hứng cả hai hệ số; một đòn luôn mang đúng một hệ.
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | skill blurb =====
+withdraw <thủ thế>  26/73
+
+  Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
+  Hồi máu bằng 50% công.
+  Nhận đỡ đòn x2.
+  Bản thân · hồi 3 lượt.
+
+----- footer -----
+↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | species =====
 chủng loài  các loài đã khai báo, và ranh giới của từng loài
 
@@ -293,6 +336,37 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | trait blurb =====
+Bulbasaur  cấp 60
+
+  venom_blood <máu độc>
+    Máu chảy trong người vốn là nọc; ai cắn phải thì tự chuốc lấy.
+    Miễn nhiễm trúng độc.
+    Ai đánh trúng thì có 4% khả năng dính trúng độc.
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+
+  blood_thirst <khát máu>
+    Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức.
+    Mọi đòn hút lại 25% sát thương gây ra.
+
+  virulence <độc lực>
+    Nọc tiết ra đặc và ngấm sâu hơn thứ độc tầm thường.
+    Hiệu quả trúng độc mạnh hơn 30%.
+    Khả năng gây trúng độc tăng 20%.
+
+  last_gasp <hấp hối>
+    Càng thoi thóp, cơn khát càng trỗi dậy.
+    Mọi đòn hút lại 40% sát thương gây ra.
+    Chỉ có hiệu lực khi còn <=40% máu.
+
+  contagion <lây lan>
+    Chạm vào đâu là thứ gì đó ở lại đó, ngấm dần cho tới khi đòn đánh nhẹ bẫng đi.
+    Đòn đánh gây thêm suy yếu, 25% khả năng.
+----- footer -----
+↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | traitless build =====
 bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
 
@@ -430,6 +504,15 @@ elements  the affinity chart: what beats what, and by how much
   A dual unit takes both multipliers; an attack carries exactly one element.
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | skill blurb =====
+withdraw  26 of 73
+
+  Heals for 50% of attack.
+  Puts block x2 on itself.
+  Itself · 3 turns to recharge.
+
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | species =====
 species  the declared kinds, and where each line is drawn
 
@@ -471,6 +554,29 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   Declared figures: a trait amplifying or resisting changes what lands.
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | trait blurb =====
+Bulbasaur  level 60
+
+  venom_blood
+    Refuses poison outright.
+    Whatever damages it has a 4% chance of catching poison.
+
+  endurance
+    Always carries toughened.
+
+  blood_thirst
+    Everything it does takes back 25% of the damage dealt.
+
+  virulence
+    The effect of poison is 30% stronger.
+    The chance of inflicting poison is 20% higher.
+
+  last_gasp
+    Everything it does takes back 40% of the damage dealt.
+    In force only at or below 40% health.
+  … 17/20 lines, [/] to scroll
+----- footer -----
+↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | traitless build =====
 builds  the kit and the trait a character fields at level 60, furthest form
 
@@ -599,6 +705,15 @@ elements  the affinity chart: what beats what, and by how much
   A dual unit takes both multipliers; an attack carries exactly one element.
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | skill blurb =====
+withdraw  26 of 73
+
+  Heals for 50% of attack.
+  Puts block x2 on itself.
+  Itself · 3 turns to recharge.
+
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | species =====
 species  the declared kinds, and where each line is drawn
 
@@ -661,6 +776,31 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   Declared figures: a trait amplifying or resisting changes what lands.
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | trait blurb =====
+Bulbasaur  level 60
+
+  venom_blood
+    Refuses poison outright.
+    Whatever damages it has a 4% chance of catching poison.
+
+  endurance
+    Always carries toughened.
+
+  blood_thirst
+    Everything it does takes back 25% of the damage dealt.
+
+  virulence
+    The effect of poison is 30% stronger.
+    The chance of inflicting poison is 20% higher.
+
+  last_gasp
+    Everything it does takes back 40% of the damage dealt.
+    In force only at or below 40% health.
+
+  contagion
+    Its attacks also inflict weaken, 25% of the time.
+----- footer -----
+↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | traitless build =====
 builds  the kit and the trait a character fields at level 60, furthest form
 

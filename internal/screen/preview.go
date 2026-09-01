@@ -1,4 +1,4 @@
-package main
+package screen
 
 import (
 	"fmt"
@@ -10,52 +10,59 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/i18n"
-	draw "github.com/vukyn/hexarena/internal/screen"
 )
 
-// previewScreen draws the picture a character shows at the level it is being
+// PreviewScreen draws the picture a character shows at the level it is being
 // read at.
 //
 // It keeps no cursor and no level of its own: the browser that raises it hands
-// both over as a draw.Subject and re-pushes on every key that moves either, so
-// the two cannot disagree about which character is in front and walking the level
-// here walks it there. ⚠️ It used to read m.browse.level and m.browse.cursor
-// directly, which is a screen that cannot move into internal/screen and cannot be
-// drawn by a client whose browser is a different one.
+// both over as a Subject and re-pushes on every key that moves either, so the two
+// cannot disagree about which character is in front and walking the level here
+// walks it there. ⚠️ It used to read the authoring tool's browser — its level and
+// its cursor — directly, which is a screen that could not live here and could not
+// be drawn by a client whose browser is a different one.
 //
 // What it does own is the cache, because rasterising the shipped art takes tens
-// of milliseconds and bubbletea redraws on every keystroke — without one, holding
-// the arrow key down would spend a second a second.
-type previewScreen struct {
-	// subject is the character and the level being looked at, pushed in by the
+// of milliseconds and a full-screen client redraws on every keystroke — without
+// one, holding the arrow key down would spend a second a second.
+//
+// ⚠️ **It is the one screen in this package that draws something other than
+// text**, which is why it asks the palette whether colour is available rather
+// than only rendering through it: the monochrome path is a *different drawing*,
+// a ramp of weights keeping the shading, not the coloured one with the escape
+// codes stripped out.
+type PreviewScreen struct {
+	// Subject is the character and the level being looked at, pushed in by the
 	// browser. The zero value draws the same "nothing here" line an empty
 	// listing does.
-	subject draw.Subject
+	Subject Subject
 	// rendered is keyed by the picture and the size it was drawn at, so a
 	// resized window redraws and an unchanged one does not. Written and read by
 	// key only; nothing ranges over it.
 	//
-	// A map rather than a field because the model is passed by value: every
-	// method here has a value receiver, so a plain field written in View would
-	// be thrown away with the copy. A map header copies to the same map, which
-	// is what lets a draw be remembered at all.
+	// A map rather than a field because a client's model is passed by value:
+	// every method here has a value receiver, so a plain field written in View
+	// would be thrown away with the copy. A map header copies to the same map,
+	// which is what lets a draw be remembered at all.
 	rendered map[string]string
 }
 
-func newPreviewScreen() previewScreen {
-	return previewScreen{rendered: map[string]string{}}
+// NewPreviewScreen is a preview with an empty cache, which is the only state it
+// has that a zero value would get wrong.
+func NewPreviewScreen() PreviewScreen {
+	return PreviewScreen{rendered: map[string]string{}}
 }
 
-func (p previewScreen) View(c draw.Context) (string, string) {
+func (p PreviewScreen) View(c Context) (string, string) {
 	footer := c.Text(i18n.PreviewFooter)
-	if p.subject.Of == 0 {
+	if p.Subject.Of == 0 {
 		return "  " + c.Text(i18n.BrowseNothingHere) + "\n", footer
 	}
-	character, known := c.Lib.Characters().Get(p.subject.ID)
+	character, known := c.Lib.Characters().Get(p.Subject.ID)
 	if !known {
 		return "  " + c.Text(i18n.BrowseNothingHere) + "\n", footer
 	}
-	_, stage, err := character.Resolve(p.subject.Level, progression.Furthest)
+	_, stage, err := character.Resolve(p.Subject.Level, progression.Furthest)
 	if err != nil {
 		return "  " + c.Style.Bad.Render(c.Lang.Error(err)) + "\n", footer
 	}
@@ -64,7 +71,7 @@ func (p previewScreen) View(c draw.Context) (string, string) {
 	var out strings.Builder
 	out.WriteString(c.Style.Heading.Render(character.ID+" — "+character.Name) + "\n")
 	out.WriteString("  " + c.Style.Label.Render(c.Text(i18n.PreviewTitle,
-		art, p.subject.Level, stage.Name)) + "\n\n")
+		art, p.Subject.Level, stage.Name)) + "\n\n")
 	// A file that is simply not there is said the way the browser and the check
 	// screen say it, rather than as a decode error carrying an absolute path: a
 	// missing picture is the ordinary case while art is still being drawn, and
@@ -89,8 +96,8 @@ func (p previewScreen) View(c draw.Context) (string, string) {
 // It was guessed once, at five, and the picture came out three rows too tall at
 // every window size — so the frame replaced the bottom row of the drawing with
 // its "there was more than this" notice, on a screen with visible space above
-// and below the sprite. That is the same arithmetic the skill form's formRoom
-// records having to learn twice, and it is worth naming every row here:
+// and below the sprite. That is the same arithmetic cmd/hexforge-tui's skill
+// form records having to learn twice, and it is worth naming every row here:
 //
 //	2  the frame's own header and the blank under it
 //	1  the character's id and name
@@ -101,6 +108,12 @@ func (p previewScreen) View(c draw.Context) (string, string) {
 //
 // The last three are the ones a guess misses, because none of them is a row this
 // file writes on purpose.
+//
+// ⚠️ Five of those eight are a **mirror** of a client's frame rather than its
+// declaration — a screen package cannot see what wraps it, exactly as the
+// `- 4` every Room helper here spends cannot. What holds the real frame is
+// cmd/hexforge-tui's TestThePreviewFitsTheWindowItWasGiven, which walks seven
+// window heights and refuses the notice at any of them.
 const previewChrome = 8
 
 // picture is the cached drawing, rasterised on the first look at this size.
@@ -108,7 +121,7 @@ const previewChrome = 8
 // The stamp is what the file was when the caller looked, so redrawing the art
 // outside the program invalidates the drawing rather than being ignored until a
 // restart.
-func (p previewScreen) picture(c draw.Context, art, stamp string) (string, error) {
+func (p PreviewScreen) picture(c Context, art, stamp string) (string, error) {
 	cells := c.UsableWidth() - 4
 	rows := c.Height - previewChrome
 	if cells < 8 || rows < 4 {
@@ -118,7 +131,7 @@ func (p previewScreen) picture(c draw.Context, art, stamp string) (string, error
 	// about twice as tall as it is wide, so a half block is very nearly square
 	// and the picture keeps its proportions without the caller correcting for
 	// the font.
-	key := fmt.Sprintf("%s|%s|%dx%d|%t", art, stamp, cells, rows, plainTerminal())
+	key := fmt.Sprintf("%s|%s|%dx%d|%t", art, stamp, cells, rows, c.Style.Plain)
 	if held, known := p.rendered[key]; known {
 		return held, nil
 	}
@@ -133,15 +146,15 @@ func (p previewScreen) picture(c draw.Context, art, stamp string) (string, error
 
 // cellRows turns pixels into terminal rows, two pixel rows to a line.
 //
-// This is the one place in the program where colour carries the information
+// This is the one place in these clients where colour carries the information
 // rather than decorating it, which is why the monochrome path is a different
 // drawing rather than the same one with the colour taken out: a silhouette in
 // one character says the shape and nothing else, while a ramp of weights keeps
 // the shading that tells a leaf from a shadow. The palette's rule still holds —
 // everything a reader has to *decide* from is words elsewhere on the screen.
-func cellRows(drawn *image.RGBA, style draw.Palette) string {
+func cellRows(drawn *image.RGBA, style Palette) string {
 	bounds := drawn.Bounds()
-	plain := plainTerminal()
+	plain := style.Plain
 	var out strings.Builder
 	for y := bounds.Min.Y; y < bounds.Max.Y; y += 2 {
 		out.WriteString("  ")
@@ -212,7 +225,7 @@ func (i inkColour) luminance() int {
 // A cell with nothing in either half is a plain space rather than a styled one,
 // so a transparent margin shows the terminal's own background instead of a
 // rectangle of whatever this program guessed it to be.
-func blockCell(top, bottom inkColour, style draw.Palette) string {
+func blockCell(top, bottom inkColour, style Palette) string {
 	switch {
 	case !top.painted && !bottom.painted:
 		return " "
@@ -226,30 +239,35 @@ func blockCell(top, bottom inkColour, style draw.Palette) string {
 	}
 }
 
-// ramp is the monochrome drawing, lightest to heaviest. Inverted against
-// luminance, so dark ink reads as a heavy character on a light terminal and a
-// pale one on a dark terminal — the shape is the same either way.
-const ramp = " .:-=+*#%@"
+// Ramp is the monochrome drawing's alphabet, lightest to heaviest. Inverted
+// against luminance, so dark ink reads as a heavy character on a light terminal
+// and a pale one on a dark terminal — the shape is the same either way.
+//
+// Exported because a client's own test tells a row of drawn art from a row of
+// wording by its alphabet, and an alphabet written down twice is two alphabets:
+// a character added here and not there turns a picture row into a wording row
+// and quietly stops that test measuring anything.
+const Ramp = " .:-=+*#%@"
 
 func rampCell(top, bottom inkColour) string {
 	switch {
 	case !top.painted && !bottom.painted:
 		return " "
 	case !top.painted:
-		return string(ramp[step(bottom.luminance())])
+		return string(Ramp[step(bottom.luminance())])
 	case !bottom.painted:
-		return string(ramp[step(top.luminance())])
+		return string(Ramp[step(top.luminance())])
 	default:
-		return string(ramp[step((top.luminance()+bottom.luminance())/2)])
+		return string(Ramp[step((top.luminance()+bottom.luminance())/2)])
 	}
 }
 
 func step(luminance int) int {
 	// At least one step in, so a painted pixel is never drawn as a blank: a
 	// white pixel that reads as nothing turns a filled shape into a hole.
-	position := (255-luminance)*(len(ramp)-1)/255 + 1
-	if position > len(ramp)-1 {
-		return len(ramp) - 1
+	position := (255-luminance)*(len(Ramp)-1)/255 + 1
+	if position > len(Ramp)-1 {
+		return len(Ramp) - 1
 	}
 	return position
 }

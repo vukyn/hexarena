@@ -32,6 +32,17 @@ type Palette struct {
 	// cannot take you.
 	Emphasis lipgloss.Style
 	Footer   lipgloss.Style
+	// Plain is what NewPalette was told about the terminal in front, kept so a
+	// screen that draws something other than styled text can ask.
+	//
+	// ⚠️ It is a **remembered answer, never a second one**: this package reads no
+	// environment, so the binary asks Plain and hands the result to NewPalette,
+	// and this field is that same bool. The art preview needs it because its
+	// monochrome path is a *different drawing* rather than the coloured one with
+	// the escape codes taken out — a ramp of weights instead of half blocks — so
+	// it cannot get the answer by rendering through a style and finding nothing
+	// happened.
+	Plain bool
 	// Elements is one style per element, indexed by the enum.
 	//
 	// It is the one place in this program where colour is *about* the data
@@ -88,7 +99,7 @@ func NewPalette(plain bool) Palette {
 		blank := Palette{
 			Title: plainStyle, Heading: plainStyle, Label: plainStyle, Dim: plainStyle,
 			Good: plainStyle, Bad: plainStyle, Selected: plainStyle, Emphasis: plainStyle,
-			Footer: plainStyle,
+			Footer: plainStyle, Plain: true,
 		}
 		for member := range blank.Elements {
 			blank.Elements[member] = plainStyle

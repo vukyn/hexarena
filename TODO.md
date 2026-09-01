@@ -357,17 +357,48 @@ is only so the shape is readable.
       power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
       that is not a count of landings. → `CLAUDE.md` § Pricing one number.
 
-- [ ] **`screenPreview` is still outside `everyScreen`**
-      (`cmd/hexforge-tui/language_test.go`), so it has **no width test, no
-      translation test and no leak test at all**. ⚠️ This is the **fifth**
-      instance of a shape `CLAUDE.md` records having been made four times — after
-      `plainTerminal`, `playScreen`, the species picker and the skill filter's
-      states — and it is the one instance that has been *known* the whole time:
-      the `CLAUDE.md` line describing the trait blurb already admits it ("Both
-      blurb shapes are in it now; `screenPreview` still is not") and nobody filed
-      it. The screen draws art, so it is also the one screen where a width test
-      would be measuring a drawing rather than a sentence; decide what the entry
-      asserts before adding it, or it will pass on nothing.
+- [ ] **The art preview is outside every sweep there is.** It is not in
+      `everyScreen` (`cmd/hexforge-tui/language_test.go`) and not in
+      `everyMovedScreen` (`internal/screen/screens_golden_test.go`), so it has
+      **no width test, no translation test, no leak test and no golden entry**.
+      ⚠️ This is the **fifth** instance of a shape `CLAUDE.md` records having been
+      made four times — after `plainTerminal`, `playScreen`, the species picker
+      and the skill filter's states — and it is the one instance that has been
+      *known* the whole time: the `CLAUDE.md` line describing the trait blurb
+      already admits it ("Both blurb shapes are in it now; `screenPreview` still
+      is not") and nobody filed it. The screen draws art, so it is also the one
+      screen where a width test would be measuring a drawing rather than a
+      sentence; decide what the entry asserts before adding it, or it will pass on
+      nothing. It moved to `screen.PreviewScreen` in the describer step and the
+      question moved with it unchanged.
+
+      **What is measured, so the decision has its input.** ⚠️ **The rasterised
+      art IS reproducible here**: the whole shipped cast previewed at the level
+      cap digests byte for byte identically across three separate `go test`
+      processes, in both the monochrome and the coloured drawing, and twice inside
+      one process off two separately loaded libraries. So a golden entry would be
+      **stable on this machine** — it is `internal/forge.rasteriseSVG` and nothing
+      in it reads a clock, a map or an environment.
+      ⚠️ **What is NOT measured is another architecture**, and there is a named
+      reason to doubt it rather than a general one: `rasterx` calls `math.Sin`
+      (15), `math.Cos` (10), `math.Atan2` (6), `math.Tan` (4) and `math.Sqrt`
+      (23). `Sqrt` is an IEEE-exact instruction, but the four transcendentals are
+      the family where Go's standard library has had per-architecture assembly, so
+      "same seed, same bytes, every machine" — the promise `internal/core` makes
+      and this repository's goldens rest on — is **not** established for a
+      drawing. Whether the shipped traced SVGs even reach an arc path is unknown;
+      they are `vtracer` output, which is beziers and polygons.
+      ⚠️ **And the size, measured before anybody argues about taste.** One
+      character, one language, monochrome: **19 lines / 2.0 KB** at 120x24 and
+      **55 lines / 8.4 KB** at 160x60. Coloured, the *same* 19 and 55 lines are
+      **14 KB** and **128 KB**, because every cell carries its own escape
+      sequence. So a plain-text entry is affordable and a coloured one is not —
+      which also means a golden taken under `NO_COLOR`, as both of them are,
+      would record the ramp and leave `blockCell` measured by nothing.
+      ⚠️ Today `internal/screen/preview_test.go` is the whole of what any suite
+      says about the drawing, and it only asserts *ink versus blank*: measured,
+      swapping the red and green luminance weights and swapping `▀` for `▄` each
+      left `go test ./...` **entirely green**.
 - [ ] **A saturating multiplier is re-narrowed one line downstream.** #185 let
       `combat.Swung` hand back `math.MaxInt64`, and three sites take that value
       into plain `int` arithmetic: `internal/core/battle/turn.go` multiplies the

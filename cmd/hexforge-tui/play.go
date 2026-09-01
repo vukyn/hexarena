@@ -382,7 +382,7 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 		if len(p.pending.Options) > 0 {
 			m.play = p
 			m.blurb.from = screenPlay
-			m.blurb.scroll = 0
+			m.blurb.Scroll = 0
 			m = m.hand(p.subject())
 			m.screen = screenBlurb
 			return m, nil
