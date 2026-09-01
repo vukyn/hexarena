@@ -320,16 +320,7 @@ func (m model) openKit() model {
 		title: i18n.PickerKitTitle, kind: pickSkills,
 		options: kitOptions(m.lib, m.form.draft().Carrier()),
 		chosen:  m.form.kit,
-		apply: func(m model, answer pickAnswer) model {
-			m.form.kit = answer.Chosen
-			// Choosing is setting it by hand, so it stops following the preset,
-			// on the same terms as typing a kit used to.
-			m.form.kitFollowsPreset = false
-			m.form.touched = true
-			m.form.err = nil
-			m.form.notes = nil
-			return m
-		},
+		into:    pickIntoKit,
 	})
 }
 
@@ -344,14 +335,39 @@ func (m model) openSpecies() model {
 		title: i18n.PickerSpeciesTitle, kind: pickSpecies,
 		options: idOptions(m.lib.Species().IDs()),
 		chosen:  m.form.species,
-		apply: func(m model, answer pickAnswer) model {
-			m.form.species = answer.Chosen
-			m.form.touched = true
-			m.form.err = nil
-			m.form.notes = nil
-			return m
-		},
+		into:    pickIntoSpecies,
 	})
+}
+
+// Picked is what the two lists this form raises write back.
+//
+// ⚠️ **The tail is shared and the head is not**, which is the whole of what a
+// destination buys here: both answers make the form dirty and clear whatever the
+// last save said, and only the kit stops following the preset. Writing that once
+// is safe because the switch returns before it for a destination this form does
+// not own — a fallthrough that touched `touched` on somebody else's pick would
+// be this screen reacting to a list it never raised.
+func (f formScreen) Picked(_ draw.Context, into pickDest, answer pickAnswer) (formScreen, draw.Action) {
+	switch into {
+	case pickIntoKit:
+		f.kit = answer.Chosen
+		// Choosing is setting it by hand, so it stops following the preset, on
+		// the same terms as typing a kit used to.
+		f.kitFollowsPreset = false
+	case pickIntoSpecies:
+		f.species = answer.Chosen
+	default:
+		// A destination this form does not own. Nothing can raise one — the
+		// dispatch sends each destination to exactly one screen — so this is the
+		// arm that stays unreachable rather than the arm that guesses.
+		return f, draw.Action{}
+	}
+	f.touched = true
+	f.err = nil
+	f.notes = nil
+	// Neither list leaves the form: the answer is a field on the screen the
+	// reader is still filling in.
+	return f, draw.Action{}
 }
 
 // leave goes back to the menu, asking first if there is anything to lose.

@@ -772,14 +772,7 @@ func (m model) openSquadSkills() model {
 		slots:   cast.SkillSlots,
 		options: squadOptions(character.SkillsAt(s.unit.Level, s.form())),
 		chosen:  append([]string(nil), s.unit.Skills...),
-		apply: func(m model, answer pickAnswer) model {
-			squad := m.squad
-			squad.unit.Skills = answer.Chosen
-			squad.err = squad.refuse(cast.SkillSlots, answer.Chosen, "skill",
-				character.SkillsAt(squad.unit.Level, squad.form()), cast.Required)
-			m.squad = squad.commit()
-			return m
-		},
+		into:    pickIntoSquadKit,
 	})
 }
 
@@ -796,15 +789,42 @@ func (m model) openSquadPassives() model {
 		slots:   cast.TraitSlots,
 		options: squadOptions(character.PassivesAt(s.unit.Level, s.form())),
 		chosen:  append([]string(nil), s.unit.Passives...),
-		apply: func(m model, answer pickAnswer) model {
-			squad := m.squad
-			squad.unit.Passives = answer.Chosen
-			squad.err = squad.refuse(cast.TraitSlots, answer.Chosen, "trait",
-				character.PassivesAt(squad.unit.Level, squad.form()), cast.Optional)
-			m.squad = squad.commit()
-			return m
-		},
+		into:    pickIntoSquadTrait,
 	})
+}
+
+// Picked is what the builder's two lists write back: one half of the member's
+// loadout each, judged by the rule the write uses and committed to the squad in
+// hand.
+//
+// ⚠️ **The character is looked up here rather than carried from the raise.** The
+// two closures this replaces captured it at the moment the list opened, and the
+// capture was doing nothing a lookup does not: the picker takes every key while
+// it is up, so the member under edit cannot have changed character between the
+// question and the answer — and the screen already knows how to find its own,
+// because every other row on it is read the same way.
+func (s squadScreen) Picked(_ draw.Context, into pickDest, answer pickAnswer) (squadScreen, draw.Action) {
+	character, known := s.character()
+	if !known {
+		// The raise declines on the same reading, so this is unreachable from a
+		// keystroke; it is here because the learnset cannot be read without one.
+		return s, draw.Action{}
+	}
+	switch into {
+	case pickIntoSquadKit:
+		s.unit.Skills = answer.Chosen
+		s.err = s.refuse(cast.SkillSlots, answer.Chosen, "skill",
+			character.SkillsAt(s.unit.Level, s.form()), cast.Required)
+	case pickIntoSquadTrait:
+		s.unit.Passives = answer.Chosen
+		s.err = s.refuse(cast.TraitSlots, answer.Chosen, "trait",
+			character.PassivesAt(s.unit.Level, s.form()), cast.Optional)
+	default:
+		// A destination this screen does not own; see formScreen.Picked.
+		return s, draw.Action{}
+	}
+	// Both stay on the member being edited, so both hand back the zero action.
+	return s.commit(), draw.Action{}
 }
 
 // refuse is the loadout rule asked early, so an over-filled slot is a line under

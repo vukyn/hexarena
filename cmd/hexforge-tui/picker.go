@@ -198,9 +198,68 @@ type pickState struct {
 	// is *read* buys is that an offset past a short answer still draws it.
 	reading bool
 	scroll  int
-	// apply hands the answer back to whoever raised the picker.
-	apply func(model, pickAnswer) model
+	// into is where the answer lands when the list is closed with enter.
+	//
+	// ⚠️ **It used to be an `apply func(model, pickAnswer) model`**, and that
+	// closure is the last thing keeping the skill listing and the squad builder
+	// in this binary: a callback naming `model` names this client, so a screen
+	// holding one is a screen written for the client it was written in. Measured
+	// before it was replaced — there are **ten** of them, in three files, and
+	// every one writes the answer into one named field of its own screen and
+	// then sets a flag or two beside it. That is a destination, and a
+	// destination is data.
+	into pickDest
 }
+
+// pickDest is where a finished pick lands: one named field of one screen.
+//
+// A closed enum rather than a screen alone, because three screens raise ten
+// pickers between them and the screen cannot say which of its own fields was
+// being filled — the skill form alone has five allowlists that differ in nothing
+// but that. It is the same division guardSubject makes for the squad builder's
+// two questions, taken one step finer because the count here is ten rather than
+// two.
+//
+// ⚠️ **A destination is *where*, never *how*.** Nine of the ten assign the answer
+// to a list field; pickIntoInflicts composes it into a text field through
+// forge.AddApplications. Both are destinations, and what the receiving screen
+// does when the answer arrives is that screen's business — the alternative was
+// bending nine into a shape the tenth could share, which would have been a
+// vocabulary invented for one case.
+type pickDest uint8
+
+const (
+	// pickNowhere is the zero value: a picker whose answer goes nowhere. It is
+	// what a pickState built by hand carries, and no raise in this client uses
+	// it — enter on such a picker closes the list and writes nothing, which is
+	// exactly what the nil callback this replaced did.
+	//
+	// ⚠️ It is deliberately outside the dispatch, and
+	// TestEveryPickDestinationLandsSomewhere asserts that as well: it is the one
+	// destination for which swallowing an answer is the definition rather than
+	// the defect.
+	pickNowhere pickDest = iota
+	// The character form's two, from form.go.
+	pickIntoKit
+	pickIntoSpecies
+	// The skill form's five allowlists and its inflicts field, from skills.go.
+	// Each is named after the field it fills, so a destination pointed at the
+	// wrong one reads wrong at the raise site as well as at the landing.
+	pickIntoKeptElements
+	pickIntoKeptRoles
+	pickIntoKeptWorlds
+	pickIntoKeptKinds
+	pickIntoKeptWho
+	pickIntoInflicts
+	// The squad builder's two halves of a loadout, from squads.go.
+	pickIntoSquadKit
+	pickIntoSquadTrait
+	// pickDestCount is the count the dispatch is held total against, in the
+	// shape screen.SubjectKindCount and screen.TargetCount already have: a
+	// destination added above it enters the walk without anybody remembering to
+	// list it, which a hand-written list of ten would not give.
+	pickDestCount
+)
 
 // describes reports whether the row under the cursor has a description behind
 // it, which is what decides whether ? is offered at all.
@@ -429,12 +488,19 @@ func (p *pickState) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 		if p.typed != nil {
 			answer.Typed = p.typed.Value()
 		}
-		apply := p.apply
+		// The question comes down first and what the landing needs travels as an
+		// argument, which is answerGuard's ordering for the same reason: a
+		// landing that read m.picker would have to run while the picker it is
+		// closing is still open.
+		//
+		// ⚠️ This used to read `apply := p.apply` before clearing m.picker and
+		// call it after. Nothing is lost with it — p is a local pointer and
+		// clearing the model's own field never reached it — and the ordering
+		// stops being something a reader has to hold, because a destination
+		// cannot be un-set by anything the client does next.
+		into := p.into
 		m.picker = nil
-		if apply != nil {
-			m = apply(m, answer)
-		}
-		return m, nil
+		return m.answerPick(into, answer)
 	case "up", "k":
 		p.cursor = clamp(p.cursor-1, 0, len(p.visible())-1)
 	case "down", "j":

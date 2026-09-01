@@ -162,6 +162,49 @@ func TestEveryScreenThatAsksAnswersItsOwnQuestion(t *testing.T) {
 	}
 }
 
+// TestEveryPickDestinationLandsSomewhere is the fourth totality walk in this
+// file, and the widest of the four: ten cases against the guard's four.
+//
+// A picker is closed with enter, the list comes down, and the reader believes
+// they chose. If the destination has no entry in pickedInto that is **all** that
+// happens — the field is unchanged and nothing on screen says the answer went
+// nowhere. It is confirmedBy's failure exactly, and it is easier to make: a
+// screen grows one guard and it is noticed, while the skill form alone raises
+// six pickers that differ in nothing but which field they fill.
+//
+// ⚠️ It walks pickDestCount rather than the map, for the reason the three walks
+// above walk theirs — and here the count is doing more than a list would.
+// Adding a destination is adding a constant, and a constant added above
+// pickDestCount enters this walk without anybody remembering to enrol it, which
+// is a failure guardAskers' hand-written list can still have.
+//
+// ⚠️ **And it proves presence, not effect.** An entry that exists and writes the
+// wrong field passes this completely, which is the #207 shape and the one #214
+// measured on the guard. What holds the other half is one behaviour test per
+// destination, driven through the real keys: TestEachAllowlistPickLandsInItsOwnField
+// and TestTheCharacterFormsTwoPicksLandInTheirOwnFields in picked_test.go for
+// seven of the ten, and the four named in their doc comment for the rest.
+func TestEveryPickDestinationLandsSomewhere(t *testing.T) {
+	for value := 1; value < int(pickDestCount); value++ {
+		into := pickDest(value)
+		if _, known := pickedInto[into]; !known {
+			t.Errorf("pickDest %d lands nowhere in this client, so a picker closed with "+
+				"enter on it takes the list down and writes nothing", value)
+		}
+	}
+	// And nothing beyond them, which is the other half of total: an entry for a
+	// value the enum does not declare is a landing no picker could reach.
+	if got, want := len(pickedInto), int(pickDestCount)-1; got != want {
+		t.Errorf("pickedInto holds %d entries against the %d destinations declared besides pickNowhere",
+			got, want)
+	}
+	// pickNowhere is the zero value, which a pickState built by hand carries, so
+	// a landing for it would be one every un-destined picker fell into.
+	if _, known := pickedInto[pickNowhere]; known {
+		t.Error("pickNowhere lands somewhere, and it is what a picker with no destination carries")
+	}
+}
+
 // TestARaiseAboutNothingStillArrives is the case the loop above cannot state: a
 // Raise carrying no subject is ordinary rather than a subject nobody applied.
 //
