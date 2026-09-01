@@ -112,7 +112,7 @@ func scrollSites() []scrollSite {
 			raised.screen = screenBlurb
 			return raised
 		},
-		state: func(m model) string { return fmt.Sprintf("scroll %d", m.blurb.scroll) },
+		state: func(m model) string { return fmt.Sprintf("scroll %d", m.blurb.Scroll) },
 	}, {
 		name: "the picker's reading pane",
 		fresh: func(t *testing.T, lang i18n.Lang) model {

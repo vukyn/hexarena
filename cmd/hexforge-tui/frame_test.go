@@ -12,6 +12,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 	"github.com/vukyn/hexarena/internal/tui"
 )
 
@@ -85,7 +86,7 @@ func aPictureRow(row string) bool {
 		return false
 	}
 	for _, letter := range plain {
-		if !strings.ContainsRune(ramp, letter) && !strings.ContainsRune("▀▄", letter) {
+		if !strings.ContainsRune(draw.Ramp, letter) && !strings.ContainsRune("▀▄", letter) {
 			return false
 		}
 	}

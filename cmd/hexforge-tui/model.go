@@ -6,6 +6,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/vukyn/hexarena/internal/core/passive"
+	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
@@ -109,7 +111,30 @@ type (
 	// buildRow is one line of the build catalogue, named here because this
 	// client's own width fixture builds a catalogue state by hand.
 	buildRow = draw.BuildRow
+	// previewScreen is the art preview, which moved with the describers. It
+	// carries nothing this client owns, so it is an alias like the six above.
+	previewScreen = draw.PreviewScreen
 )
+
+// blurbScreen is the description screen plus the one fact about it that only
+// this client can hold: which of *its* screens raised it.
+//
+// ⚠️ **The embedded value is the whole screen, and this adds no state to it** —
+// no second cursor, no second scroll, no second subject. `from` is a `screen`,
+// this binary's own enum, so it could not travel with the describer for exactly
+// the reason `draw.Action` exists: a screen in that package may not name a view
+// of a client it was not written for. Every other moved screen is a bare alias
+// because none of them had a field of this kind.
+//
+// The describer itself never reads it. It branches on `Subject.Kind`; `from` is
+// read by this client alone, for `esc` and for which raiser an arrow key walks
+// while a description is in front — see describe.go.
+type blurbScreen struct {
+	draw.BlurbScreen
+
+	// from is the screen that raised it, and where esc goes back to.
+	from screen
+}
 
 // model is the whole program: a library, the language, the screen in front, and
 // the four screens' own state.
@@ -210,7 +235,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		fight:    newFightScreen(),
 		play:     newPlayScreen(),
 		check:    newCheckScreen(lib),
-		preview:  newPreviewScreen(),
+		preview:  draw.NewPreviewScreen(),
 		spar:     newSparScreen(),
 	}
 }
@@ -811,6 +836,36 @@ func window(total, cursor, room int) (from, to int) { return draw.Window(total, 
 // front, which is where the id, the label and the first half of a sentence are.
 // It is the one cutting rule the whole client goes through, frame included.
 func clip(text string, room int) string { return draw.Clip(text, room) }
+
+// The three readings the description screen took with it into internal/screen,
+// forwarded here because the kit picker — a screen that has not moved — asks for
+// all three, and because the paragraph an author reads under the picker has to
+// be the paragraph a player reads under the blurb.
+//
+// One-line forwarders rather than call sites rewritten, which is the house
+// pattern pad, clip, clamp and window already follow: the rows that spend them
+// read unchanged, and there is still exactly one body.
+
+// skillLines is what a skill does, one line per sentence and already marked.
+func skillLines(c draw.Context, declared skill.Skill) []string {
+	return draw.SkillLines(c, declared)
+}
+
+// traitSentences is one trait's description, wrapped and indented under whatever
+// named it above.
+func traitSentences(c draw.Context, one passive.Passive) []string {
+	return draw.TraitSentences(c, one)
+}
+
+// traitRoom is how many lines of sentences fit: the window, less the two the
+// heading takes and the one the position line does.
+func traitRoom(c draw.Context) int { return draw.TraitRoom(c) }
+
+// traitIndent is how far the sentences sit under the trait they belong to,
+// declared in internal/screen because both screens that spend it went there.
+// Named here as well for the reason minWidth is: the rows that measure against
+// it read unchanged.
+const traitIndent = draw.TraitIndent
 
 // labelAt is label in a caller-chosen column.
 //

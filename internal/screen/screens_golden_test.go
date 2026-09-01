@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -162,15 +163,28 @@ type drawable interface {
 	View(Context) (string, string)
 }
 
-// everyMovedScreen is the eight entries, named as cmd/hexforge-tui's
+// everyMovedScreen is the ten entries, named as cmd/hexforge-tui's
 // `everyScreen` names them.
 //
-// ⚠️ **The two hand-built states assert that they drew the line they exist for.**
+// ⚠️ **Every hand-built state asserts that it drew the line it exists for.**
 // A registered state that renders nothing passes every sweep over it, and this
 // repository has shipped that fixture more than once — a screen entered at its
-// early return, a battle already finished. Neither state is reachable from the
-// shipped books (every kind is claimed, every build spends its trait slot), so
-// there is nothing else to notice if the construction stops working.
+// early return, a battle already finished. Two of them are not reachable from
+// the shipped books at all (every kind is claimed, every build spends its trait
+// slot), so there is nothing else to notice if the construction stops working;
+// the two blurbs are reachable, and are checked for the same reason — a subject
+// built here with the wrong id draws the describer's "nothing to describe" arm,
+// which is a perfectly well-formed screen that measures none of the code the
+// entry was added for.
+//
+// ⚠️ **The blurb answers three subject kinds and gets two entries.** A listed
+// skill and a battle option are **one** kind (see Subject.SkillSubject: same id,
+// same paragraph, same footer — only At and Of differ), so a third entry would
+// record the same render under a second name; and the third kind, NoSubject, is
+// the arm a raise cannot reach, which a client's applier is what proves. The art
+// preview moved with the blurb and is deliberately **not** here: it draws
+// rasterised art, so what such an entry would assert is an open question rather
+// than an oversight — see TODO.md § Not done.
 func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]drawable {
 	t.Helper()
 	species := NewSpeciesScreen(lib)
@@ -189,12 +203,86 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"builds":          builds,
 		"chart":           ChartScreen{},
 		"elements":        ElementsScreen{},
+		"skill blurb":     skillBlurb(t, c, lib),
 		"species":         species,
 		"statuses":        NewStatusesScreen(lib),
+		"trait blurb":     traitBlurb(t, c, lib),
 		"traitless build": traitless,
 		"traits":          NewPassivesScreen(lib),
 		"unclaimed kind":  unclaimed,
 	}
+}
+
+// skillBlurb is the description screen over the shipped skill whose reading
+// takes the most lines.
+//
+// The widest reading rather than the first row, for the reason the client's
+// fixture picks its widest element and its widest trait row: what a golden of a
+// layout is for is the case that spends the most of it. Measured in **one**
+// language whatever the reader's is, so both records describe the same skill —
+// which skill is the widest is a fact about the book, and a record that changed
+// subject between the two halves of the file would be two records.
+//
+// The position is where the skill sits in the book, exactly as the listing that
+// raises this counts it: the raiser hands over At and Of, and Of at nought is how
+// it says there was nothing to describe.
+func skillBlurb(t *testing.T, c Context, lib *forge.Library) BlurbScreen {
+	t.Helper()
+	skills := lib.Skills().Skills()
+	if len(skills) == 0 {
+		t.Fatal("the shipped book holds no skills, so there is nothing to describe")
+	}
+	found, most := 0, 0
+	for index, declared := range skills {
+		lines := len(strings.Split(i18n.Vi.Describe(declared, lib.Patterns()), "\n"))
+		if lines > most {
+			found, most = index, lines
+		}
+	}
+	blurb := BlurbScreen{Subject: Subject{
+		Kind: SkillSubject, ID: skills[found].ID, At: found + 1, Of: len(skills),
+	}}
+	if drawn, _ := blurb.View(c); !strings.Contains(drawn, skills[found].ID) {
+		t.Fatalf("the skill blurb does not name %q, so the golden records the "+
+			"describer's nothing-to-describe arm:\n%s", skills[found].ID, drawn)
+	}
+	return blurb
+}
+
+// traitBlurb is the description screen over the shipped character carrying the
+// most traits at the level cap.
+//
+// The most traits, because that is the state the screen's scroll exists for: five
+// at the cap wrap past a 120x24 window, so this is the entry that records the
+// line saying there is more to read. It is recorded **unscrolled**, which is
+// where a raise leaves it.
+func traitBlurb(t *testing.T, c Context, lib *forge.Library) BlurbScreen {
+	t.Helper()
+	characters := lib.Characters().All()
+	found, most := 0, 0
+	for index, character := range characters {
+		held := len(lib.KitPassives(
+			character.PassivesAt(progression.LevelCap, progression.Furthest)))
+		if held > most {
+			found, most = index, held
+		}
+	}
+	if most < 2 {
+		t.Fatalf("the widest shipped character carries %d traits at the cap, so this "+
+			"entry records the carries-nothing line rather than the sentences", most)
+	}
+	blurb := BlurbScreen{Subject: Subject{
+		Kind: CharacterSubject, ID: characters[found].ID, Level: progression.LevelCap,
+		At: found + 1, Of: len(characters),
+	}}
+	held := lib.KitPassives(
+		characters[found].PassivesAt(progression.LevelCap, progression.Furthest))
+	drawn, _ := blurb.View(c)
+	if !strings.Contains(drawn, held[0].ID) {
+		t.Fatalf("the trait blurb does not name %q, the first trait %s carries at the "+
+			"cap:\n%s", held[0].ID, characters[found].ID, drawn)
+	}
+	return blurb
 }
 
 // startOverTheShippedBooks is a Context over internal/seed/data itself.

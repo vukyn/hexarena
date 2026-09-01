@@ -61,7 +61,7 @@ func landStatus(m model, subject draw.Subject) (model, bool) {
 
 // landSkill hands the description screen a skill to describe.
 func landSkill(m model, subject draw.Subject) (model, bool) {
-	m.blurb.subject = subject
+	m.blurb.Subject = subject
 	return m, true
 }
 
@@ -75,8 +75,8 @@ func landSkill(m model, subject draw.Subject) (model, bool) {
 // Writing the other one costs a field on a value that is copied every keystroke
 // anyway, and it is what keeps the two from disagreeing about who is in front.
 func landCharacter(m model, subject draw.Subject) (model, bool) {
-	m.blurb.subject = subject
-	m.preview.subject = subject
+	m.blurb.Subject = subject
+	m.preview.Subject = subject
 	return m, true
 }
 
@@ -152,7 +152,7 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 				m.play = m.play.move(1)
 			}
 		}
-		m.blurb.subject = m.play.subject()
+		m.blurb.Subject = m.play.subject()
 		return m, nil
 	}
 	if b.from == screenBrowse {
@@ -165,11 +165,11 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		// which is what makes the alias free rather than a letter stolen from
 		// something being typed.
 		case "pgdown", "]":
-			b.scroll++
+			b.Scroll++
 			m.blurb = b
 			return m, nil
 		case "pgup", "[":
-			b.scroll = max(b.scroll-1, 0)
+			b.Scroll = max(b.Scroll-1, 0)
 			m.blurb = b
 			return m, nil
 		case "up", "k":
@@ -187,7 +187,7 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 		// Anything that changed which character or which level is in front
 		// changed the answer, so the offset into the old one means nothing.
-		b.scroll = 0
+		b.Scroll = 0
 		m.blurb = b
 		return m.hand(m.browse.subject()), nil
 	}
@@ -202,7 +202,7 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "down", "j":
 		m.skills.cursor = clamp(m.skills.cursor+1, 0, rows-1)
 	}
-	m.blurb.subject = m.skills.subject()
+	m.blurb.Subject = m.skills.subject()
 	return m, nil
 }
 
