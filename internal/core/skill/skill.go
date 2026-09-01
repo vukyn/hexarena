@@ -575,6 +575,22 @@ type Skill struct {
 	// a pierced tick is worth several pierced hits, which is a larger effect
 	// than an author setting a per-strike ratio is asking for.
 	Pierce int
+	// Unblockable says nothing stops this skill's strikes: neither a block
+	// charge, which would otherwise cancel one whole, nor an absorbing pool,
+	// which would otherwise eat the damage before health did.
+	//
+	// A switch rather than a share, and it is the only switch of its kind here on
+	// purpose. Pierce is a ratio because defence is continuous and a ratio walks
+	// an armoured unit's edge instead of jumping to the end of it; a guard is
+	// **discrete** — a charge is spent or it is not, a pool is there or it is not
+	// — so there is no middle for a ratio to express. "Half a block charge" is
+	// not a quantity this engine has.
+	//
+	// ⚠️ It says nothing about defence. A skill that wants to ignore armour as
+	// well says so with Pierce, and a skill that wants to ignore everything says
+	// both — which is a great deal for one skill to be given, and the reason to
+	// price it with a cooldown rather than to hand it out.
+	Unblockable bool
 	// Crit is the chance each of its strikes lands critically, in parts per
 	// thousand. What a critical strike is worth is one game-wide constant on
 	// combat.Rules, so this is the whole of what makes one skill crit more than
@@ -763,6 +779,10 @@ type skillFile struct {
 	// below it: no shipped skill pierces, so the shipped book round-trips byte
 	// for byte and the tables measured from it did not move when it arrived.
 	Pierce int `json:"pierce,omitempty"`
+	// Unblockable is written only when set, for the reason Pierce is written
+	// only when there is some: the shipped book round-trips byte for byte and no
+	// golden moved when the field arrived.
+	Unblockable bool `json:"unblockable,omitempty"`
 	// Crit is written only when there is some, for the same reason Pierce is:
 	// no shipped skill crits, so the shipped book round-trips byte for byte.
 	Crit         int               `json:"crit,omitempty"`
@@ -879,7 +899,8 @@ func (s Skill) file() skillFile {
 		Element: s.Element.String(), Range: s.Range, Pattern: s.Pattern,
 		Power: s.Power, Strikes: s.Strikes, Repeat: s.Repeat, MaxStrikes: s.MaxStrikes,
 		Accuracy: s.Accuracy,
-		Pierce:   s.Pierce, Crit: s.Crit, Restores: s.Restores, Drains: s.Drains,
+		Pierce:   s.Pierce, Unblockable: s.Unblockable,
+		Crit: s.Crit, Restores: s.Restores, Drains: s.Drains,
 		Cooldown: s.Cooldown, Target: s.Target.String(),
 		Applies: applicationFiles(s.Applies), SelfApplies: applicationFiles(s.SelfApplies),
 	}
@@ -1073,6 +1094,8 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return fail("pierces %d, want a share in parts per thousand", declared.Pierce)
 	case declared.Pierce > 0 && declared.Power == 0:
 		return fail("pierces defence it never attacks through")
+	case declared.Unblockable && declared.Power == 0:
+		return fail("declares itself unblockable and throws no strike for anything to stop")
 	case declared.Crit < 0 || declared.Crit > scale.Base:
 		return fail("crits %d, want a share in parts per thousand", declared.Crit)
 	// Not tidiness: turn.go's power <= 0 branch never reaches combat.Roll, so a
@@ -1202,7 +1225,8 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		Power: declared.Power, Strikes: declared.Strikes,
 		Repeat: declared.Repeat, MaxStrikes: declared.MaxStrikes,
 		Accuracy: declared.Accuracy,
-		Pierce:   declared.Pierce, Crit: declared.Crit,
+		Pierce:   declared.Pierce, Unblockable: declared.Unblockable,
+		Crit:    declared.Crit,
 		Scaling: scaling, Applies: applies, SelfApplies: selfApplies,
 		Requires: requires, SelfRequires: selfRequires, SelfGradient: selfGradient,
 		Strips: strips, Restrict: restrict,

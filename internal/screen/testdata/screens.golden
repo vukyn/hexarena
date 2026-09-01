@@ -97,7 +97,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | skill blurb =====
-withdraw <thủ thế>  26/88
+withdraw <thủ thế>  26/90
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -357,7 +357,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | skill blurb =====
-withdraw <thủ thế>  26/88
+withdraw <thủ thế>  26/90
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -422,6 +422,8 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   fester       lở loét
   charge       tích lại để tiêu
   charge       nhiễm điện
+  absorb       lá chắn, thấm sát thương cho tới khi cạn
+  aegis        lá chắn
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -650,7 +652,7 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | skill blurb =====
-withdraw  26 of 88
+withdraw  26 of 90
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -900,7 +902,7 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | skill blurb =====
-withdraw  26 of 88
+withdraw  26 of 90
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -964,6 +966,8 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   fester       
   charge       builds up to be spent
   charge       
+  absorb       soaks up damage until it is used up
+  aegis        
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.

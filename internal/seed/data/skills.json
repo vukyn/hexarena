@@ -2103,6 +2103,51 @@
           "stacks": 2
         }
       ]
+    },
+    {
+      "id": "light_screen",
+      "name": "màn sáng",
+      "flavour": "Dựng một vách sáng mỏng trước mặt đồng đội, thứ gì tới cũng chậm lại một nhịp",
+      "element": "light",
+      "range": 1,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "aegis",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "shadow_punch",
+      "name": "quyền xuyên",
+      "flavour": "Nắm tay đi qua chỗ đáng lẽ phải chặn nó lại, rồi mới dừng ở bên trong",
+      "element": "dark",
+      "range": 1,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 900,
+      "pierce": 1000,
+      "unblockable": true,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     }
   ]
 }

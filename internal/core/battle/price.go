@@ -575,6 +575,8 @@ func (p *pricing) granted(actor, target *Unit, from origin,
 			value = worthHealing(tick*ticks, target, p.threat(target))
 		case status.Shield:
 			value = p.shielded(target, kind, application.Stacks)
+		case status.Absorb:
+			value = p.guarded(actor, target, from, kind, application.Stacks)
 		case status.Buff:
 			value = p.standing(target, kind, application.Stacks)
 		}
@@ -604,6 +606,47 @@ func (p *pricing) shielded(target *Unit, kind status.Kind, stacks int) int64 {
 		gained = horizon
 	}
 	return gained * p.strikeThreat(target)
+}
+
+// guarded is what an absorbing pool is worth: the damage it will eat, bounded by
+// the damage there is to eat.
+//
+// The pool itself comes from the expression inflict freezes onto the stack — the
+// caster's own scaling stat through Rules.Restore — for the reason every price in
+// this file reads the resolving function rather than a second copy of it. The
+// bound is the one shielded uses and for the same argument: a guard is only worth
+// what can actually be thrown at it before it runs out, so it is capped at the
+// worst attack on the board times the turns the stack will live, and a barrier
+// nobody can reach is worth nothing without a case saying so.
+//
+// ⚠️ It is NOT clamped at the holder's health the way a heal is clamped at the
+// room there is. A heal above the maximum is thrown away by heal itself; a pool
+// larger than the holder's remaining health is not wasted at all — it is the
+// difference between dying and not.
+func (p *pricing) guarded(actor, target *Unit, from origin, kind status.Kind, stacks int) int64 {
+	pool := p.fight.books.Rules.Restore(from.stat(p.fight, actor), kind.PoolPower)
+	if pool <= 0 {
+		return 0
+	}
+	// ⚠️ Through With rather than multiplied by the stack count, and the first
+	// version did the arithmetic instead. Apply refuses a stack past the cap, so
+	// a barrier already at it gains nothing — and a price that multiplied would
+	// have rated putting one up on a unit that already had one, every turn,
+	// forever. That is the same term that stops two units buffing each other for
+	// ever, and it is exactly what shielded and standing read the same way.
+	before := target.Statuses.PoolIn(status.Absorb)
+	after := target.Statuses.With(kind, pool, stacks)
+	gained := after.PoolIn(status.Absorb) - before
+	if gained <= 0 {
+		return 0
+	}
+	if ceiling := p.threat(target) * turnsOf(kind, guardHorizon); gained > ceiling {
+		gained = ceiling
+	}
+	if gained < 0 {
+		return 0
+	}
+	return gained
 }
 
 // standing is what a stat change is worth to whoever holds it, in both
@@ -758,6 +801,7 @@ func (p *pricing) dispelled(target *Unit, declared skill.Skill) int64 {
 	worth := p.strike(target) - p.fight.bestStrike(stripped)
 	worth += p.threatAgainst(stripped) - p.threat(target)
 	worth += p.unguarded(target, after)
+	worth += p.unbarriered(target, after)
 	worth += p.undone(target, after, declared.Strips.Categories)
 	if worth <= 0 {
 		return 0
@@ -780,6 +824,25 @@ func (p *pricing) unguarded(target *Unit, after status.Set) int64 {
 		taken = guardHorizon
 	}
 	return taken * p.strikeThreat(target)
+}
+
+// unbarriered is the pool a removed absorb still had, which is damage the enemy
+// will now take after all.
+//
+// The mirror of unguarded one function up, and separate from it because the two
+// count different things: a charge is worth a whole strike and a pool is worth
+// exactly itself. Bounded by the same argument — what the board can actually
+// throw before the stack expires — read through the horizon rather than through
+// the stack's own duration, because a strip does not know which stack it took.
+func (p *pricing) unbarriered(target *Unit, after status.Set) int64 {
+	taken := target.Statuses.PoolIn(status.Absorb) - after.PoolIn(status.Absorb)
+	if taken <= 0 {
+		return 0
+	}
+	if ceiling := p.threat(target) * guardHorizon; taken > ceiling {
+		taken = ceiling
+	}
+	return taken
 }
 
 // undone is the healing a removed regeneration still owed, run through the same

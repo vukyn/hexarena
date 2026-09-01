@@ -356,6 +356,7 @@ func (l Lang) StatusCategory(name string) string {
 		"taunt":       CategoryTaunt,
 		"heal_cut":    CategoryHealCut,
 		"charge":      CategoryCharge,
+		"absorb":      CategoryAbsorb,
 	}
 	if key, known := worded[name]; known {
 		return l.Text(key)
@@ -393,6 +394,7 @@ func (l Lang) StatusCategoryNoun(name string) string {
 		"taunt":       CategoryNounTaunt,
 		"heal_cut":    CategoryNounHealCut,
 		"charge":      CategoryNounCharge,
+		"absorb":      CategoryNounAbsorb,
 	}
 	if key, known := worded[name]; known {
 		return l.Text(key)

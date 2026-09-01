@@ -114,10 +114,31 @@ const (
 	// so appending cannot reinterpret a saved log, while slotting one in beside
 	// Amplified would move KindCount and every table built from declaration order.
 	Spread
+	// Absorbed is an absorbing guard eating part or all of a strike, and it
+	// carries what it ate and what the pool has left.
+	//
+	// It has to exist for the reason Pierce and Refused were added: the log is
+	// the only contract a renderer has, and without this a reader watches a
+	// strike land for a thousand and the target's health not move, with nothing
+	// anywhere to account for it. A Damaged carrying a smaller number would be
+	// worse than no line at all — it would say the blow was weaker than it was.
+	//
+	// One per strike the pool ate, emitted **before** that strike's own Damaged,
+	// because the guard is spent before the remainder reaches health and a log
+	// that reported them the other way round would have a reader see health fall
+	// and then be told why.
+	//
+	// ⚠️ Not a Blocked. That one says the strike never happened; this one says it
+	// happened and its damage went somewhere else, which is the difference the
+	// whole category rests on.
+	//
+	// Declared last, which is the rule for this enum: the kind serialises by
+	// name, so appending cannot reinterpret a saved log.
+	Absorbed
 )
 
 // KindCount is the number of event kinds.
-const KindCount = int(Spread) + 1
+const KindCount = int(Absorbed) + 1
 
 var kindNames = [KindCount]string{
 	Started:         "started",
@@ -143,6 +164,7 @@ var kindNames = [KindCount]string{
 	Summoned:        "summoned",
 	Left:            "left",
 	Spread:          "spread",
+	Absorbed:        "absorbed",
 }
 
 func (k Kind) String() string {

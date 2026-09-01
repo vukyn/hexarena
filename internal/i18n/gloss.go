@@ -97,6 +97,12 @@ var (
 		// something being done to them. Nothing is being done — that is the point of
 		// the category — and a verb would promise otherwise.
 		"charge": "nhiễm điện",
+		// A noun for the same reason the counter above is one, and a different
+		// word from the block charge two lines up on purpose: `block` is "đỡ đòn",
+		// what a unit DOES with a charge, while this is a thing standing in front
+		// of it. A player who read the two as one word would be reading the wrong
+		// half of the only choice the two guards offer.
+		"aegis": "lá chắn",
 		// The three that shipped without one. A regen, and the two permanent
 		// statuses a trait grants -- which are the ones a reader is least able
 		// to guess at, because nothing else on screen says what they do.

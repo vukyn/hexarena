@@ -524,6 +524,23 @@ type Attempt struct {
 	// start missing exactly the strikes that hit hardest. A critical strike is
 	// a strike that landed well, not a different thing from a strike.
 	Critical bool
+	// Absorbed is how much of this strike an absorbing guard ate before the rest
+	// reached health. Damage is what was left over.
+	//
+	// A field beside the outcome rather than a fourth Outcome, for exactly the
+	// reason Critical is one: a strike a pool ate **connected**. It arrived, it
+	// was paid for, and only where its damage went is different — so the riders
+	// it carries land, its drains drain what actually reached health, and
+	// Count(attempts, Struck) counts it. A Blocked strike is the other thing: it
+	// never happened. Spelling the two the same way would have every on-hit
+	// tally in the engine start missing the strikes a barrier ate.
+	//
+	// So a fully eaten strike is Struck with Damage nought, and that is not the
+	// minimum-damage floor failing. The floor exists so an attack always does
+	// something against defence, which is a *reduction*; a pool is a quantity
+	// that was paid for and can be spent down to nothing, and eating a blow
+	// whole is the thing it was bought to do.
+	Absorbed int64
 }
 
 // Roll resolves every strike of a hit against its chance to connect, spending
@@ -573,6 +590,52 @@ func (r Rules) Roll(h Hit, blocks int, source *rng.Source) (attempts []Attempt, 
 		}
 	}
 	return out, remaining
+}
+
+// Absorb spends a pool of absorbing guard across the strikes that landed, in
+// order, moving what it eats out of Damage and into Absorbed. It returns what is
+// left of the pool.
+//
+// ⚠️ **A pass over the outcomes rather than a branch inside Roll**, and the shape
+// is the design rather than convenience. A block charge is spent *during* the
+// roll because it decides whether a strike happens at all — it cancels the
+// strike, so nothing downstream of it exists. A pool is spent *after*, because it
+// only reduces what already landed, and the critical that decides how big a
+// strike was has to be rolled before there is a figure to eat. Two mechanics,
+// two moments, and the code says so.
+//
+// It touches no randomness and walks the attempts in the order Roll produced
+// them, so it is a pure function of its arguments — which is what lets a battle
+// still replay from its seed with a barrier on the board.
+func Absorb(attempts []Attempt, pool int64) (left int64) {
+	if pool <= 0 {
+		return 0
+	}
+	for i := range attempts {
+		if pool == 0 {
+			break
+		}
+		if attempts[i].Outcome != Struck || attempts[i].Damage <= 0 {
+			continue
+		}
+		eaten := attempts[i].Damage
+		if eaten > pool {
+			eaten = pool
+		}
+		attempts[i].Damage -= eaten
+		attempts[i].Absorbed += eaten
+		pool -= eaten
+	}
+	return pool
+}
+
+// AbsorbedBy returns how much of a set of attempts an absorbing guard ate.
+func AbsorbedBy(attempts []Attempt) int64 {
+	total := int64(0)
+	for _, attempt := range attempts {
+		total += attempt.Absorbed
+	}
+	return total
 }
 
 // DamageDealt returns how much damage a set of attempts actually dealt.

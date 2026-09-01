@@ -128,6 +128,33 @@ the counter triangle
   multi strike           nothing directly dodge by averaging, block by burning charges
   single heavy hit       block, dodge     armour, since one big number beats the defence curve
 
+== absorbing barriers ==
+a barrier holds a pool of damage rather than a count of strikes, so it is spent
+against what arrives rather than against how it arrives
+
+one 617 blow against three of 205, the same total either way
+pool     one heavy blow gets through   three light ones do   left in the pool
+   0                           617                   615                  0
+ 100                           517                   515                  0
+ 300                           317                   315                  0
+ 600                            17                    15                  0
+ 900                             0                     0                283
+1800                             0                     0               1183
+the two columns stay exactly two apart at every pool, and then meet at nothing:
+those two are the truncation a split volley loses before any guard sees it, so the
+barrier changes nothing at all about how the damage arrived. a wall of charges in
+the section above turns the same pair into 0 and 100
+
+and it spills rather than cancelling, which a charge can never do
+pool   blow   soaked   through
+   0    617        0       617
+   1    617        1       616
+ 200    617      200       417
+ 400    617      400       217
+ 800    617      617         0
+a barrier with a single point left still lets all but one point through, where a
+charge with one left erases the blow entirely
+
 == multi strike, ignoring accuracy ==
 1800 per mille of total power split across strikes, 800 attack
 shape            per strike    total   lost to truncation

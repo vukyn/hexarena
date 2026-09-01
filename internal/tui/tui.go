@@ -340,6 +340,14 @@ func Line(event battle.Event, tags, glosses map[string]string) string {
 		return head + fmt.Sprintf("  misses %s (%d%%)", tag(event.Target), event.Chance/10)
 	case battle.Blocked:
 		return head + fmt.Sprintf("  is blocked by %s, %d charges left", tag(event.Target), event.Remaining)
+	case battle.Absorbed:
+		// A line of its own beside the block above, and the two words are chosen
+		// to be unmistakable: a blocked strike is stopped and this one is eaten.
+		// The figure after it is what the barrier has left rather than a charge
+		// count, which is the whole difference between the two guards said in the
+		// unit each is measured in.
+		return head + fmt.Sprintf("  %d soaked by %s, %d left in the barrier",
+			event.Amount, tag(event.Target), event.Remaining)
 	case battle.Damaged:
 		// A reply is damage, and the only thing that separates it from a strike
 		// in the log is that a trait rather than a skill is named — so it is the

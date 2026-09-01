@@ -37,6 +37,13 @@ import (
 // from drifting apart.
 const blockStatus = "block"
 
+// absorbCategory is the guard whose pool a strike is eaten by. Named as a
+// CATEGORY rather than as an id, unlike the block above, and the difference is
+// not an inconsistency: block charges are counted, and a count belongs to one
+// kind, while a pool is a quantity that arriving damage does not sort by name.
+// Two kinds of barrier on one unit are one pool to whatever hits it.
+const absorbCategory = status.Absorb
+
 // stunStatus is the control effect that costs a unit its action.
 const stunStatus = "stun"
 
