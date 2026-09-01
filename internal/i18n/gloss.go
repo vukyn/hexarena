@@ -128,6 +128,20 @@ var (
 		// ("mờ ảo"): those two are speed and a timed blur, and this is the
 		// standing quality of being hard to land a blow on.
 		"evasive": "khinh công",
+		// The three reserves. Nouns, for the reason `charge` two dozen lines up is
+		// one — a counter is a THING its holder is carrying and nothing is being
+		// done to anybody — and each is the weather its element leaves behind
+		// rather than a word for fuel, so a reader who has never seen the category
+		// still reads "there is a lot of heat about" off the row.
+		//
+		// ⚠️ `swelter` is "sóng nhiệt" and the fire skill that used to carry that
+		// name is now "luồng nhiệt". A skill and a status sharing a name is two
+		// different sentences in the log reading identically — "dùng sóng nhiệt"
+		// against "sóng nhiệt ×3" — and the id collision that forced the rename
+		// here was the same fact arriving through the gloss table.
+		"swelter":  "sóng nhiệt",
+		"verdure":  "xum xuê",
+		"moisture": "ẩm ướt",
 	}
 
 	// The status categories were glossed here and are not any more. A gloss

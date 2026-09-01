@@ -952,7 +952,18 @@ func (b *Battle) spend(unit *Unit, known skill.Skill, brought swing, turn atb.Tu
 		Stacks: against.Stacks, Power: known.Power + brought.Bonus,
 	})
 	if known.SelfRequires.Consume {
-		consumed, forgone := unit.Statuses.Consume(known.SelfRequires.Status)
+		// ⚠️ **Through Takes, not Consume.** Consume empties the status, and it was
+		// what this called from the day the field existed — so `consume_stacks`
+		// parsed on a caster's own condition, round-tripped through the file and
+		// was thrown away, taking the whole pile however few stacks the author
+		// asked for. Nothing shipped noticed, because until now no shipped skill
+		// spent anything of its own at all.
+		//
+		// The same function the power was read through: Skill.SelfBonus asks
+		// Takes what the spend costs and this removes exactly that, so a blow can
+		// never land paid for by stacks the caster kept.
+		consumed, forgone := unit.Statuses.Remove(
+			known.SelfRequires.Status, known.SelfRequires.Takes(against.Stacks))
 		b.emit(Event{
 			Kind: StatusConsumed, At: turn.At, Turn: turn.Number, Actor: unit.ID,
 			Target: unit.ID, Skill: known.ID, Status: known.SelfRequires.Status,

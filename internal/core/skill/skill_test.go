@@ -29,8 +29,9 @@ func deps(t *testing.T) skill.Deps {
 		t.Fatalf("patterns: %v", err)
 	}
 	statuses, err := status.ParseBook([]byte(`{
-	  "max_stacks": 5, "max_duration": 6,
+	  "max_stacks": 5, "max_duration": 6, "max_counter_stacks": 40,
 	  "kinds": [
+	    {"id": "fuel", "category": "reserve", "max_stacks": 40, "duration": 6},
 	    {"id": "poison", "category": "dot", "max_stacks": 3, "duration": 3, "tick_power": 500},
 	    {"id": "burn", "category": "dot", "max_stacks": 2, "duration": 2, "tick_power": 800},
 	    {"id": "weaken", "category": "stat_debuff", "max_stacks": 3, "duration": 3,

@@ -326,7 +326,7 @@
     },
     {
       "id": "heat_wave",
-      "name": "sóng nhiệt",
+      "name": "luồng nhiệt",
       "flavour": "Đẩy một luồng khí khô rát tràn qua, táp thẳng vào mặt",
       "element": "fire",
       "range": 2,
@@ -2167,6 +2167,281 @@
           "pokemon"
         ]
       }
+    },
+    {
+      "id": "bank_embers",
+      "name": "ủ than",
+      "flavour": "Táp một hơi ngắn rồi giữ phần còn lại trong lồng ngực, chỗ ấy cứ nóng dần lên",
+      "element": "fire",
+      "range": 2,
+      "pattern": "single",
+      "power": 700,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "swelter",
+          "chance": 1000,
+          "stacks": 5
+        }
+      ]
+    },
+    {
+      "id": "flare",
+      "name": "loé lửa",
+      "flavour": "Hé miệng một cái, chỗ hơi nóng dồn lâu nhất thoát ra trước",
+      "element": "fire",
+      "range": 2,
+      "pattern": "single",
+      "power": 700,
+      "strikes": 1,
+      "accuracy": 940,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "swelter",
+        "min_stacks": 1,
+        "consume": true,
+        "consume_stacks": 1,
+        "bonus_power": 550
+      }
+    },
+    {
+      "id": "pyre",
+      "name": "giàn hoả",
+      "flavour": "Mở hết ra một lần; giữ được bao lâu thì lúc mở ra dài bấy nhiêu",
+      "element": "fire",
+      "range": 2,
+      "pattern": "single",
+      "power": 800,
+      "strikes": 1,
+      "accuracy": 870,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "swelter",
+        "min_stacks": 5,
+        "consume": true,
+        "consume_stacks": 0,
+        "stack_power": 230
+      }
+    },
+    {
+      "id": "overgrow",
+      "name": "xanh tốt",
+      "flavour": "Rải một lượt phấn xuống chân đồng đội, cỏ chỗ đó dày lên trông thấy",
+      "element": "grass",
+      "range": 1,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 2,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "verdure",
+          "chance": 1000,
+          "stacks": 6
+        }
+      ]
+    },
+    {
+      "id": "thorn_volley",
+      "name": "loạt gai",
+      "flavour": "Gai rụng khỏi thân một loạt rồi bay đi, chỗ vừa rụng liền nhú lại",
+      "element": "grass",
+      "range": 2,
+      "pattern": "single",
+      "power": 550,
+      "strikes": 2,
+      "accuracy": 900,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "verdure",
+        "min_stacks": 5,
+        "consume": true,
+        "consume_stacks": 5,
+        "bonus_power": 650
+      }
+    },
+    {
+      "id": "bloom_burst",
+      "name": "bung hoa",
+      "flavour": "Nụ giữ kín suốt mấy mùa, tới lượt nó thì mở ra một lần rồi thôi",
+      "element": "grass",
+      "range": 2,
+      "pattern": "arc_up",
+      "power": 700,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "verdure",
+        "min_stacks": 10,
+        "consume": true,
+        "consume_stacks": 10,
+        "bonus_power": 2200
+      }
+    },
+    {
+      "id": "drench",
+      "name": "dầm nước",
+      "flavour": "Dội đủ để người bên cạnh ướt tới tận trong, đứng một lát vẫn còn nhỏ giọt",
+      "element": "water",
+      "range": 1,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 2,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "moisture",
+          "chance": 1000,
+          "stacks": 6
+        }
+      ]
+    },
+    {
+      "id": "soak",
+      "name": "ngấm nước",
+      "flavour": "Phun một vòi vừa phải, phần chưa dùng tới thì giữ lại trong mai",
+      "element": "water",
+      "range": 2,
+      "pattern": "single",
+      "power": 800,
+      "strikes": 1,
+      "accuracy": 940,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "moisture",
+          "chance": 1000,
+          "stacks": 5
+        }
+      ]
+    },
+    {
+      "id": "tide_break",
+      "name": "vỡ sóng",
+      "flavour": "Nước dồn lại một chỗ rất lâu, tới lúc không giữ nổi nữa thì đổ ập xuống",
+      "element": "water",
+      "range": 2,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 880,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "moisture",
+        "min_stacks": 20,
+        "consume": true,
+        "consume_stacks": 20,
+        "bonus_power": 3800
+      }
+    },
+    {
+      "id": "deluge",
+      "name": "trút nước",
+      "flavour": "Nghiêng cả mai đổ xuống một dải, đổ tới đâu thì trong người nhẹ đi tới đó",
+      "element": "water",
+      "range": 1,
+      "pattern": "column",
+      "power": 600,
+      "strikes": 1,
+      "accuracy": 860,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "moisture",
+        "min_stacks": 3,
+        "consume": true,
+        "consume_stacks": 0,
+        "stack_power": 200
+      }
+    },
+    {
+      "id": "sprout",
+      "name": "nảy mầm",
+      "flavour": "Bắn một hạt đi rồi cắm rễ ngay tại chỗ mình đứng, dưới chân cứ dày dần lên",
+      "element": "grass",
+      "range": 2,
+      "pattern": "single",
+      "power": 800,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "verdure",
+          "chance": 1000,
+          "stacks": 5
+        }
+      ]
     }
   ]
 }

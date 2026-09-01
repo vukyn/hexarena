@@ -522,10 +522,31 @@ whole reason it is a category rather than a flag on an existing one. `max_stacks
 bounds an *effect*: five stacks of a debuff at 300 per mille each is a figure the
 stat budget was reasoned against, so the cap and the budget are one argument. A
 counter multiplies nothing, so five would be a number with no argument behind it,
-borrowed from a category it has nothing in common with. `max_charge_stacks` is
+borrowed from a category it has nothing in common with. `max_counter_stacks` is
 where the real ceiling is said out loud, it is 999, and a charge carrying a
 modifier or a tick is refused at parse — because that combination is the one the
 ceiling was granted on the understanding of.
+
+`reserve` is the same category from the other side of the board, and the pair is
+what stops either being the other under a different name. A charge is laid on an
+**enemy** and cashed by hitting them, so it is *harmful*: the victim's own side
+washes it off, and that is its entire cost — `rinse` is a shipped cleanse a squad
+points at its own ally naming `dot`, `stat_debuff` and `charge`. A reserve is its
+**holder's** own fuel, bought by that holder's own skills through `self_requires`,
+so it is the opposite in every one of those: not harmful, untouched by a cleanse
+aimed at debuffs, and answered by an enemy's dispel. Folding the two together
+would make that one shipped skill a heal that empties the tank it was meant to
+help. Both are bounded by `max_counter_stacks` and both refuse a modifier, which
+is the whole of what they share — see `Category.Counter`.
+
+A reserve is also the one thing priced by different arithmetic. A pile of charges
+is worth far less than a stack times its height, because a conduit cashes one per
+blow: the second stack needs one more turn to go right than the first, so each is
+worth half the one before. A reserve spender cashes a whole **run** at once, so
+the second stack goes off in the same cast as the first — it is flat up to what
+its holder's kit can take in one go, and speculative above that. That was
+measured rather than reasoned: with the halving in force the shipped fire loop
+banked 456 stacks over forty duels and spent **none** of them.
 
 Spending it needed a second currency. A `requires` block could already consume a
 status, and the parser refused one that consumed *for no bonus power* — "throws

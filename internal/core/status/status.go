@@ -111,7 +111,7 @@ const (
 	// bounds an *effect* — five stacks of a debuff at 300 per mille each is a
 	// number the stat budget was reasoned about. A charge multiplies nothing, so
 	// the figure that bounds it is the one on the skill that spends it, and
-	// max_charge_stacks in the book is where that is said out loud. A category
+	// max_counter_stacks in the book is where that is said out loud. A category
 	// carrying a modifier or a tick is refused at parse for exactly this reason.
 	//
 	// It is HARMFUL: it goes on an enemy, and what it buys is bought by whoever
@@ -153,10 +153,41 @@ const (
 	//
 	// Declared last, which is the rule.
 	Absorb
+	// Reserve is a counter its holder builds up on itself and spends on its own
+	// skills, and it is Charge read from the other side of the board.
+	//
+	// ⚠️ **The difference from Charge is who it belongs to, and that is not a
+	// detail of targeting.** A charge is laid on an ENEMY and cashed by hitting
+	// them: whoever put it there paid a turn for it, so it is HARMFUL, a cleanse
+	// takes it off, and its whole cost is that the victim's own side can wash it
+	// away. A reserve sits on its holder and buys its holder's own skills, so it
+	// is the opposite in every one of those: it is NOT harmful, a cleanse aimed
+	// at debuffs may not touch it, and what takes it off is an enemy's dispel.
+	//
+	// Folding the two into one category was tried on paper and is wrong in a way
+	// that shows immediately: `rinse` is a cleanse a squad points at its own ally
+	// naming dot, stat_debuff and charge, and a fuel gauge in that list is a heal
+	// that empties the tank it was meant to help.
+	//
+	// It is a counter, so everything Charge's comment says about a counter is
+	// true here too: it changes no stat, ticks for nothing, does nothing at all
+	// until a skill names it, and it is bounded by max_counter_stacks rather than
+	// by the stack cap that bounds an effect. A modifier or a tick on one is
+	// refused at parse for exactly that reason.
+	//
+	// It does NOT outlast a shield. The half of that predicate a counter earns is
+	// "a charge is nothing but something left on the target", and it is earned by
+	// a RIDER — a charge goes on because a blow arrived. Nothing puts a reserve on
+	// a unit by hitting it: it is granted to its own side, where no shield stands
+	// between the caster and the grant, so the question the predicate answers is
+	// one nobody asks about it.
+	//
+	// Declared last, which is the rule.
+	Reserve
 )
 
 // CategoryCount is the number of categories.
-const CategoryCount = int(Absorb) + 1
+const CategoryCount = int(Reserve) + 1
 
 var categoryNames = [CategoryCount]string{
 	Dot:        "dot",
@@ -169,6 +200,7 @@ var categoryNames = [CategoryCount]string{
 	HealCut:    "heal_cut",
 	Charge:     "charge",
 	Absorb:     "absorb",
+	Reserve:    "reserve",
 }
 
 func (c Category) String() string {
@@ -191,6 +223,19 @@ func (c Category) Harmful() bool {
 		return false
 	}
 }
+
+// Counter reports whether the category is a bare tally — something that changes
+// nothing on its holder and exists to be spent by a skill that names it.
+//
+// It is what the two counters share and it is the whole of what they share: the
+// cap that bounds them is max_counter_stacks rather than the one that bounds an
+// effect, and a modifier on either is refused. Which side of the board each
+// belongs to is the thing they do NOT share, and that lives in Harmful.
+//
+// A predicate rather than two names spelled out at each site, because there are
+// three sites and a list written three times is a list that will disagree with
+// itself the next time somebody appends.
+func (c Category) Counter() bool { return c == Charge || c == Reserve }
 
 // OutlastsAShield reports whether a rider of this category still lands when the
 // strike carrying it was eaten by a shield.
@@ -965,8 +1010,9 @@ type Book struct {
 	// be authored far outside the range the rest are balanced against.
 	MaxStacks   int
 	MaxDuration int
-	// MaxChargeStacks bounds a Charge instead of MaxStacks, and is a separate
-	// number because it is bounding a different thing.
+	// MaxCounterStacks bounds a counter — see Category.Counter — instead of
+	// MaxStacks, and is a separate number because it is bounding a different
+	// thing.
 	//
 	// MaxStacks bounds an *effect*: five stacks of a debuff at 300 per mille each
 	// is a figure the stat budget was reasoned against, so the cap and the
@@ -979,16 +1025,16 @@ type Book struct {
 	// consumer buys is capped by the pattern book's own max_targets, and a
 	// ceiling nobody reaches in practice is what says out loud that reaching it
 	// was never the plan.
-	MaxChargeStacks int
-	kinds           []Kind
-	byID            map[string]Kind
+	MaxCounterStacks int
+	kinds            []Kind
+	byID             map[string]Kind
 }
 
 type bookFile struct {
-	MaxStacks       int `json:"max_stacks"`
-	MaxDuration     int `json:"max_duration"`
-	MaxChargeStacks int `json:"max_charge_stacks"`
-	Kinds           []struct {
+	MaxStacks        int `json:"max_stacks"`
+	MaxDuration      int `json:"max_duration"`
+	MaxCounterStacks int `json:"max_counter_stacks"`
+	Kinds            []struct {
 		ID        string              `json:"id"`
 		Category  string              `json:"category"`
 		MaxStacks int                 `json:"max_stacks"`
@@ -1013,22 +1059,22 @@ func ParseBook(raw []byte) (*Book, error) {
 	if file.MaxDuration < 1 {
 		return nil, fmt.Errorf("max_duration is %d, want at least 1", file.MaxDuration)
 	}
-	// A book that declares no charge cap keeps the ordinary one, so every book
+	// A book that declares no counter cap keeps the ordinary one, so every book
 	// written before the category existed still parses and still means what it
 	// said. Raising it is an explicit decision, taken in the data.
-	chargeStacks := file.MaxChargeStacks
-	if chargeStacks == 0 {
-		chargeStacks = file.MaxStacks
+	counterStacks := file.MaxCounterStacks
+	if counterStacks == 0 {
+		counterStacks = file.MaxStacks
 	}
-	if chargeStacks < file.MaxStacks {
-		return nil, fmt.Errorf("max_charge_stacks is %d, under the %d every other status may have",
-			chargeStacks, file.MaxStacks)
+	if counterStacks < file.MaxStacks {
+		return nil, fmt.Errorf("max_counter_stacks is %d, under the %d every other status may have",
+			counterStacks, file.MaxStacks)
 	}
 	book := &Book{
-		MaxStacks:       file.MaxStacks,
-		MaxDuration:     file.MaxDuration,
-		MaxChargeStacks: chargeStacks,
-		byID:            make(map[string]Kind, len(file.Kinds)),
+		MaxStacks:        file.MaxStacks,
+		MaxDuration:      file.MaxDuration,
+		MaxCounterStacks: counterStacks,
+		byID:             make(map[string]Kind, len(file.Kinds)),
 	}
 	for _, declared := range file.Kinds {
 		if declared.ID == "" {
@@ -1038,12 +1084,12 @@ func ParseBook(raw []byte) (*Book, error) {
 		if err != nil {
 			return nil, fmt.Errorf("status %q: %w", declared.ID, err)
 		}
-		// A Charge is bounded by its own ceiling. Which bound applied is named in
+		// A counter is bounded by its own ceiling. Which bound applied is named in
 		// the refusal, because "over the limit of 5" against a book that also
 		// declares 999 is a message that sends the reader to the wrong number.
 		stackCap, capName := book.MaxStacks, "max_stacks"
-		if category == Charge {
-			stackCap, capName = book.MaxChargeStacks, "max_charge_stacks"
+		if category.Counter() {
+			stackCap, capName = book.MaxCounterStacks, "max_counter_stacks"
 		}
 		switch {
 		case declared.MaxStacks < 1:
@@ -1095,7 +1141,7 @@ func ParseBook(raw []byte) (*Book, error) {
 			return nil, fmt.Errorf("status %q is %s but declares heal_share %d, which only a %s uses",
 				declared.ID, category, declared.HealShare, HealCut)
 		}
-		// A Charge that carries a modifier is a Charge that is bounded by nothing
+		// A counter that carries a modifier is a counter that is bounded by nothing
 		// and does something anyway, which is the one combination its own cap was
 		// written on the understanding of. Refused here rather than left to the
 		// author's discretion, because the ceiling is nine hundred and ninety
@@ -1122,7 +1168,7 @@ func ParseBook(raw []byte) (*Book, error) {
 		// would come back full each time its holder crossed the line. That is a
 		// fact about a passive rather than about a status, so it is refused where
 		// it can be seen: passive.ParseBook, on the trait that names the gate.
-		if category == Charge && len(declared.Modifiers) > 0 {
+		if category.Counter() && len(declared.Modifiers) > 0 {
 			return nil, fmt.Errorf("status %q is a %s carrying %d modifier(s): a counter that is spent may not also change a stat, because its cap of %d bounds an effect it was never meant to have",
 				declared.ID, category, len(declared.Modifiers), stackCap)
 		}

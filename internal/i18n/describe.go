@@ -394,6 +394,15 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 		sentence = l.Say(opening, l.join(clauses),
 			share(amplified*declared.StrikeCount()), l.describeStat(declared.Scaling.Stat))
 	}
+	// A per-stack payment quotes a rate rather than a total, because the total is
+	// whatever the caster has managed to bank. Appended rather than replacing the
+	// opening the way a flat bonus does: the skill's own power is still the figure
+	// it lands with on an empty tank, so a sentence that overwrote it would hide
+	// the half of the bargain the reader is choosing between.
+	if condition.Scales() {
+		sentence += l.Say(BlurbScalesPerStack,
+			l.glossed(condition.Status), share(condition.StackPower))
+	}
 	// What the discharge does, then what it costs — the order the bargain is
 	// made in. A reader told what was eaten and only then what that bought has to
 	// hold the first clause open until the second arrives.
@@ -412,6 +421,13 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 		// A conduit says "a strike" as well, because that is the unit it spends
 		// in: one blow, one stack, so a skill that lands twice spends twice.
 		switch {
+		case condition.Scales() && condition.ConsumeStacks == 0:
+			// ⚠️ "Eats the lot" would be a lie here. A scaling spend refuses stacks
+			// past what the spend ceiling pays for — see skill.Condition.Takes — so
+			// what it takes off a deep reserve is a count, and it is the count the
+			// reader has to know to decide whether banking further is worth a turn.
+			sentence += l.Say(BlurbConsumesUpTo,
+				condition.Takes(skill.MaxSpendPower), l.glossed(condition.Status))
 		case condition.Arcs() && condition.ConsumeStacks == 0:
 			// A nuke, and it needs a clause of its own rather than the detonate's:
 			// "eats the charge" reads as one stack against a sentence that has just
@@ -676,6 +692,19 @@ func (l Lang) summariseCondition(
 	// compact line promising a bonus the long one does not, which is worse than
 	// saying nothing: what a shape-paid condition buys is cells, and the summary
 	// has no room for a shape.
+	// A per-stack payment has a figure and it is a RATE, so the arrow carries the
+	// rate rather than a total. Quoting a total here would mean choosing a stack
+	// count to quote it at, and the only honest one is whatever the caster has
+	// banked — which is not a fact about the skill and not something a listing
+	// can know.
+	//
+	// ⚠️ It is checked before the silent arm below, because a scaling condition
+	// declares no bonus_power: the shape wording would have caught it and printed
+	// "spreads", which is the word for a chain — the one thing a caster's own
+	// condition is forbidden to do.
+	if condition.Scales() {
+		return l.Say(SummarySelfScaled, l.join(clauses), share(condition.StackPower))
+	}
 	if condition.BonusPower == 0 {
 		return l.Say(shapeWording(wording, condition), l.join(clauses))
 	}
@@ -1262,6 +1291,12 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		// it: this one is a status, and a status that names its consumers would go
 		// stale the day somebody authors another.
 		out = append(out, l.Text(BlurbStatusStores))
+	case status.Reserve:
+		// The charge sentence with the two facts a charge does not have: whose it
+		// is, and that the pile size is itself the decision. A reader handed the
+		// charge sentence for a reserve would go looking for the enemy it was
+		// meant to go on.
+		out = append(out, l.Text(BlurbStatusStocks))
 	}
 	for _, term := range kind.Modifiers {
 		// "Per stack" only where there can be a second one. A status capped at

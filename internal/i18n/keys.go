@@ -238,6 +238,7 @@ const (
 	CategoryHealCut
 	CategoryCharge
 	CategoryAbsorb
+	CategoryReserve
 
 	// The same nine categories as **noun phrases**, for a sentence that names
 	// one rather than a column that explains one. The family above answers "what
@@ -268,6 +269,7 @@ const (
 	CategoryNounHealCut
 	CategoryNounCharge
 	CategoryNounAbsorb
+	CategoryNounReserve
 
 	// What a kit and a preset demand of an affinity.
 	KitTakesAnyElement
@@ -492,10 +494,13 @@ const (
 	SummaryAmplifiedShape
 	SummaryAmplifiedArc
 	SummarySelfAmplifiedShape
+	SummarySelfScaled
 	BlurbArcs
 	BlurbChains
 	BlurbConsumesEachStrike
 	BlurbConsumesPile
+	BlurbScalesPerStack
+	BlurbConsumesUpTo
 	BlurbAtLeast
 	BlurbRepeats
 	BlurbCostRange
@@ -588,6 +593,7 @@ const (
 	BlurbStatusTaunts
 	BlurbStatusShields
 	BlurbStatusStores
+	BlurbStatusStocks
 	BlurbStatusSeeps
 	BlurbStatusAbsorbs
 	BlurbStatusAbsorbsPool

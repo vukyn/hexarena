@@ -1,7 +1,7 @@
 {
   "max_stacks": 5,
   "max_duration": 6,
-  "max_charge_stacks": 999,
+  "max_counter_stacks": 999,
   "kinds": [
     {
       "id": "poison",
@@ -290,6 +290,24 @@
       "duration": 0,
       "permanent": true,
       "pool_power": 900
+    },
+    {
+      "id": "swelter",
+      "category": "reserve",
+      "max_stacks": 999,
+      "duration": 5
+    },
+    {
+      "id": "verdure",
+      "category": "reserve",
+      "max_stacks": 999,
+      "duration": 5
+    },
+    {
+      "id": "moisture",
+      "category": "reserve",
+      "max_stacks": 999,
+      "duration": 5
     }
   ]
 }

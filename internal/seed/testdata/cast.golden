@@ -6,7 +6,7 @@ pokemon.bulbasaur — Bulbasaur
   element  grass
   species  plant
   art      assets/bulbasaur.svg
-  kit      vine_whip razor_leaf poison_powder@8 sleep_powder@12[Bulbasaur,Ivysaur] leech_seed@16 synthesis@20 venoshock@24 sludge_bomb@32 ingrain@36
+  kit      vine_whip razor_leaf poison_powder@8 sleep_powder@12[Bulbasaur,Ivysaur] leech_seed@16 synthesis@20 venoshock@24 sludge_bomb@32 ingrain@36 overgrow@20 thorn_volley@24 bloom_burst@36 sprout@20
   stage "Bulbasaur" owns levels 1 to 15, showing assets/bulbasaur.svg
     level 1  hp 900, atk 150, def 130, spd 30, acc 40, ddg 15
              absorbs 1291 of the 11500 budget, 10209 to spare
@@ -29,7 +29,7 @@ pokemon.charmander — Charmander
   element  fire
   species  lizard dragon
   art      assets/charmander.svg
-  kit      ember fire_spin fire_fang@8 smokescreen@12 flamethrower@16 dragon_rage@20 dragon_dance@24 heat_wave@32 inferno@36 dragon_claw@40 outrage@44 dragon_drive@48
+  kit      ember fire_spin fire_fang@8 smokescreen@12 flamethrower@16 dragon_rage@20 dragon_dance@24 heat_wave@32 inferno@36 dragon_claw@40 outrage@44 dragon_drive@48 bank_embers@20 flare@24 pyre@40
   stage "Charmander" owns levels 1 to 15, showing assets/charmander.svg
     level 1  hp 760, atk 180, def 95, spd 46, acc 48, ddg 22
              absorbs 1001 of the 11500 budget, 10499 to spare
@@ -52,7 +52,7 @@ pokemon.squirtle — Squirtle
   element  water
   species  turtle
   art      assets/squirtle.svg
-  kit      water_gun bubble bite@8 withdraw@12 whirlpool@16 brine@20 rapid_spin@24 aqua_ring@28 hydro_pump@36 water_pulse@32 taunt@40 skull_bash@44 wide_guard@44
+  kit      water_gun bubble bite@8 withdraw@12 whirlpool@16 brine@20 rapid_spin@24 aqua_ring@28 hydro_pump@36 water_pulse@32 taunt@40 skull_bash@44 wide_guard@44 soak@20 deluge@44
   stage "Squirtle" owns levels 1 to 15, showing assets/squirtle.svg
     level 1  hp 950, atk 120, def 175, spd 24, acc 40, ddg 11
              absorbs 1505 of the 11500 budget, 9995 to spare
@@ -99,7 +99,7 @@ pokemon.poliwag — Poliwag
   element  water
   species  amphibian
   art      assets/poliwag.svg
-  kit      water_gun bubble pummel@8 body_slam@12 bubble_beam@16 brine@20 whirlpool@24 taunt@32 submission@36[Poliwrath] hydro_pump@40 rally@44 rinse@32[Politoed] chorus@36[Politoed]
+  kit      water_gun bubble pummel@8 body_slam@12 bubble_beam@16 brine@20 whirlpool@24 taunt@32 submission@36[Poliwrath] hydro_pump@40 rally@44 rinse@32[Politoed] chorus@36[Politoed] drench@28 soak@20 tide_break@36
   stage "Poliwag" owns levels 1 to 15, showing assets/poliwag.svg
     level 1  hp 963, atk 168, def 145, spd 25, acc 38, ddg 11
              absorbs 1428 of the 11500 budget, 10072 to spare
