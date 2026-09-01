@@ -734,7 +734,20 @@ func (p *pricing) cleansed(target *Unit, declared skill.Skill) int64 {
 }
 
 // dispelled is cleansed pointed at somebody else: what an enemy loses when a
-// buff or a shield comes off it.
+// buff, a shield or a regeneration comes off it.
+//
+// ⚠️ **There are three things a strip can take and this priced one of them.** A
+// stat buff moves a number, so the hypothetical below reads it for free — but a
+// shield and a regeneration move no stat at all, so both came back nought and an
+// opponent handed a dispel would never have cast one. Measured before the two
+// terms were added: an actor holding a strip and a ten-power poke chose the poke
+// against an enemy carrying three block charges, three regeneration stacks, and
+// both at once.
+//
+// The two terms are the inverses of the ones that price *putting* each on, and
+// they are read from those functions rather than written again — which is the
+// rule this file exists under, and here it is also the only way the price and
+// the effect can agree about what a charge or a tick was worth.
 func (p *pricing) dispelled(target *Unit, declared skill.Skill) int64 {
 	if declared.Strips == nil {
 		return 0
@@ -744,10 +757,52 @@ func (p *pricing) dispelled(target *Unit, declared skill.Skill) int64 {
 	// Their attack, weakened, plus what they no longer survive.
 	worth := p.strike(target) - p.fight.bestStrike(stripped)
 	worth += p.threatAgainst(stripped) - p.threat(target)
+	worth += p.unguarded(target, after)
+	worth += p.undone(target, after, declared.Strips.Categories)
 	if worth <= 0 {
 		return 0
 	}
 	return worth
+}
+
+// unguarded is what taking block charges off an enemy is worth: the strikes they
+// would have eaten, which is exactly what shielded pays for putting them on.
+//
+// Clamped at the guard horizon for shielded's reason rather than as a safety
+// net: a charge that outlives the horizon was never going to be spent inside it,
+// and counting it would make a dispel worth more than the shield it removes.
+func (p *pricing) unguarded(target *Unit, after status.Set) int64 {
+	taken := int64(target.Statuses.CountIn(status.Shield) - after.CountIn(status.Shield))
+	if taken <= 0 {
+		return 0
+	}
+	if taken > guardHorizon {
+		taken = guardHorizon
+	}
+	return taken * p.strikeThreat(target)
+}
+
+// undone is the healing a removed regeneration still owed, run through the same
+// three clamps a heal is: health above the room there is cannot be banked, and
+// health above what this side could take off cannot be denied.
+//
+// ⚠️ It is restricted to strips that name nothing harmful, and the restriction is
+// the whole of what keeps the sign honest. Pending totals every stack's frozen
+// tick without asking whether it heals or hurts, so a strip naming `dot` would be
+// taking a poison OFF an enemy and the same difference would report that as a
+// gain. Nothing shipped does that; the guard is here because the arithmetic
+// cannot tell, not because the data currently would.
+func (p *pricing) undone(target *Unit, after status.Set, categories []status.Category) int64 {
+	for _, category := range categories {
+		if category.Harmful() {
+			return 0
+		}
+	}
+	denied := target.Statuses.Pending() - after.Pending()
+	if denied <= 0 {
+		return 0
+	}
+	return worthHealing(denied, target, p.threat(target))
 }
 
 // inflictedOn is what a harmful status is worth on whoever receives it: the

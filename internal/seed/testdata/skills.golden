@@ -87,6 +87,10 @@ shadow_ball     dark      enemy    3  single         1200     1   1200   900    
 psycho_cut      dark      enemy    2  arc_up          540     2   1080   880    2   600     0      562
 dark_pulse      dark      enemy    2  column          800     1    800   900    3   400     0      355
 nasty_plot      dark      self     0  single            0     1      0  1000    4     0     0        0
+shadow_claw     dark      enemy    1  single         1300     1   1300   900    2     0     0      445
+spite           dark      enemy    2  single          700     1    700   900    3     0     0      240
+night_shade     dark      enemy    2  column          800     1    800   900    3     0     0      274
+curse           dark      enemy    2  single            0     1      0  1000    4     0     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -145,6 +149,8 @@ transform       veil (self)            1     1000       1000                -
 shadow_ball     expose                 1      400        900              360
 dark_pulse      blind                  1      450        900              405
 nasty_plot      fury (self)            2     1000       1000                -
+night_shade     blind                  1      450        900              405
+curse           fester                 2      800       1000              800
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -225,6 +231,10 @@ shadow_ball     -          -                 -                   -         pokem
 psycho_cut      -          -                 -                   -         pokemon
 dark_pulse      -          -                 -                   -         pokemon
 nasty_plot      -          -                 -                   -         pokemon
+shadow_claw     -          -                 -                   -         pokemon
+spite           -          -                 -                   -         pokemon
+night_shade     -          -                 -                   -         pokemon
+curse           -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -256,6 +266,7 @@ overload        charge   unpriced         0              342           342     3
 skill           categories                    stacks
 rapid_spin      stat_debuff, dot, heal_cut         1
 rinse           dot, stat_debuff, charge           2
+spite           shield, regen                      3
 
 == timed effects ==
 status      category      stacks   turns   tick power   tick   over its life   heal cut   modifiers

@@ -1738,6 +1738,195 @@
           "at_level": 44
         }
       ]
+    },
+    {
+      "id": "pokemon.gastly",
+      "name": "Gastly",
+      "origin": "pokemon",
+      "archetype": "hexer",
+      "image": "assets/gastly.svg",
+      "element": "dark",
+      "species": [
+        "shade"
+      ],
+      "bio": "Ban ngày chẳng ai thấy nó đâu, tối xuống thì cái bóng dài ra một chút so với thứ đang đứng đó. Gastly không đánh nhau bằng sức; nó đợi cho kẻ kia dựa vào cái gì đó, rồi rút cái ấy đi.",
+      "stages": [
+        {
+          "name": "Gastly",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 688,
+              "max": 2000
+            },
+            "attack": {
+              "base": 141,
+              "max": 410
+            },
+            "defense": {
+              "base": 68,
+              "max": 200
+            },
+            "speed": {
+              "base": 30,
+              "max": 90
+            },
+            "accuracy": {
+              "base": 41,
+              "max": 120
+            },
+            "dodge": {
+              "base": 18,
+              "max": 55
+            }
+          }
+        },
+        {
+          "name": "Haunter",
+          "min_level": 16,
+          "image": "assets/haunter.svg",
+          "stats": {
+            "hp": {
+              "base": 860,
+              "max": 2500
+            },
+            "attack": {
+              "base": 177,
+              "max": 515
+            },
+            "defense": {
+              "base": 91,
+              "max": 265
+            },
+            "speed": {
+              "base": 37,
+              "max": 110
+            },
+            "accuracy": {
+              "base": 50,
+              "max": 148
+            },
+            "dodge": {
+              "base": 23,
+              "max": 68
+            }
+          }
+        },
+        {
+          "name": "Gengar",
+          "min_level": 32,
+          "image": "assets/gengar.svg",
+          "stats": {
+            "hp": {
+              "base": 1032,
+              "max": 3000
+            },
+            "attack": {
+              "base": 213,
+              "max": 620
+            },
+            "defense": {
+              "base": 116,
+              "max": 340
+            },
+            "speed": {
+              "base": 44,
+              "max": 130
+            },
+            "accuracy": {
+              "base": 60,
+              "max": 175
+            },
+            "dodge": {
+              "base": 27,
+              "max": 80
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "shadow_claw"
+        },
+        {
+          "id": "shadow_ball",
+          "at_level": 8
+        },
+        {
+          "id": "night_shade",
+          "at_level": 12
+        },
+        {
+          "id": "spite",
+          "at_level": 14
+        },
+        {
+          "id": "curse",
+          "at_level": 16
+        },
+        {
+          "id": "bite",
+          "at_level": 18
+        },
+        {
+          "id": "smokescreen",
+          "at_level": 20
+        },
+        {
+          "id": "poison_powder",
+          "at_level": 22
+        },
+        {
+          "id": "sludge_bomb",
+          "at_level": 24
+        },
+        {
+          "id": "venoshock",
+          "at_level": 26
+        },
+        {
+          "id": "dark_pulse",
+          "at_level": 28
+        },
+        {
+          "id": "nasty_plot",
+          "at_level": 30
+        },
+        {
+          "id": "taunt",
+          "at_level": 32
+        },
+        {
+          "id": "body_slam",
+          "at_level": 36
+        },
+        {
+          "id": "skull_bash",
+          "at_level": 40
+        }
+      ],
+      "passives": [
+        {
+          "id": "blood_thirst",
+          "at_level": 16
+        },
+        {
+          "id": "elusive",
+          "at_level": 24
+        },
+        {
+          "id": "spiteful",
+          "at_level": 32
+        },
+        {
+          "id": "contagion",
+          "at_level": 40
+        },
+        {
+          "id": "swiftness",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }

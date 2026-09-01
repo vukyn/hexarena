@@ -517,6 +517,62 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "hexer",
+      "role": "the one that takes the answer away rather than beating it: it strips off whatever is keeping the other side standing and then stops the wound closing, and it is built to be missed rather than to be survived",
+      "column": 1,
+      "stats": {
+        "hp": {
+          "base": 1032,
+          "max": 3000
+        },
+        "attack": {
+          "base": 213,
+          "max": 620
+        },
+        "defense": {
+          "base": 116,
+          "max": 340
+        },
+        "speed": {
+          "base": 44,
+          "max": 130
+        },
+        "accuracy": {
+          "base": 60,
+          "max": 175
+        },
+        "dodge": {
+          "base": 27,
+          "max": 80
+        }
+      },
+      "skills": [
+        "shadow_claw",
+        "spite",
+        "night_shade",
+        "curse",
+        "shadow_ball",
+        "dark_pulse",
+        "nasty_plot",
+        "poison_powder",
+        "sludge_bomb",
+        "venoshock",
+        "smokescreen",
+        "bite",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "blood_thirst",
+          "at_level": 16
+        },
+        {
+          "id": "elusive",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

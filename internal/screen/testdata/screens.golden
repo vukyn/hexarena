@@ -1,5 +1,5 @@
 ===== vi | 120x24 | browse =====
-danh sách nhân vật  đang xem tất cả nguồn (10 trong 10 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (11 trong 11 nhân vật)
 
 > pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
@@ -11,6 +11,7 @@ danh sách nhân vật  đang xem tất cả nguồn (10 trong 10 nhân vật)
   pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
+  pokemon.gastly           pokemon        dark <bóng tối>
 
 pokemon.bulbasaur — Bulbasaur
   nguồn tham khảo  Pokémon (anime, pokemon)
@@ -96,7 +97,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | skill blurb =====
-withdraw <thủ thế>  26/84
+withdraw <thủ thế>  26/88
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -119,6 +120,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   fae        tiên
   construct  cỗ máy
   mythic     huyền thoại
+  shade      bóng ma
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -223,6 +225,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   fae        tiên
   construct  cỗ máy
   mythic     huyền thoại
+  shade      bóng ma
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -231,7 +234,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | browse =====
-danh sách nhân vật  đang xem tất cả nguồn (10 trong 10 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (11 trong 11 nhân vật)
 
 > pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
@@ -243,6 +246,7 @@ danh sách nhân vật  đang xem tất cả nguồn (10 trong 10 nhân vật)
   pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
+  pokemon.gastly           pokemon        dark <bóng tối>
 
 pokemon.bulbasaur — Bulbasaur
   nguồn tham khảo  Pokémon (anime, pokemon)
@@ -300,6 +304,9 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.mewtwo
     mewtwo.breach       xuyên giáp
     mewtwo.origin       bản sao
+  pokemon.gastly
+    gastly.unbind       gỡ chỗ dựa
+    gastly.miasma       chướng khí
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -350,7 +357,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ----- footer -----
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | skill blurb =====
-withdraw <thủ thế>  26/84
+withdraw <thủ thế>  26/88
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -373,6 +380,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   fae        tiên
   construct  cỗ máy
   mythic     huyền thoại
+  shade      bóng ma
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -490,6 +498,9 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.mewtwo
     mewtwo.breach       xuyên giáp
     mewtwo.origin       bản sao
+  pokemon.gastly
+    gastly.unbind       gỡ chỗ dựa
+    gastly.miasma       chướng khí
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -507,16 +518,16 @@ nội tại  các nội tại đã khai báo, và ai mang
   heatproof     chịu nhiệt     pokemon.charmander@16
   virulence     độc lực        pokemon.bulbasaur@32
   venom_blood   máu độc        pokemon.bulbasaur@24
-  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.gastly…
   last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
   reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16
+  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.gastly@44
   ballast       trụ vững       pokemon.squirtle@44
   composure     vững tâm       pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24
-  elusive       huyền ảo       pokemon.cleffa@40 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40
-  contagion     lây lan        pokemon.bulbasaur@28 pokemon.mew@40
-  spiteful      nham hiểm      pokemon.poliwag@36
+  elusive       huyền ảo       pokemon.cleffa@40 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.gastly@24
+  contagion     lây lan        pokemon.bulbasaur@28 pokemon.mew@40 pokemon.gastly@40
+  spiteful      nham hiểm      pokemon.poliwag@36 pokemon.gastly@32
   berserk       cuồng chiến    pokemon.machop@40 pokemon.mewtwo@32
   unyielding    bất khuất      pokemon.machop@24
 
@@ -539,6 +550,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   fae        tiên
   construct  cỗ máy
   mythic     huyền thoại
+  shade      bóng ma
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -547,7 +559,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== en | 120x24 | browse =====
-cast  showing all origins (10 of 10 characters)
+cast  showing all origins (11 of 11 characters)
 
 > pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
@@ -559,6 +571,7 @@ cast  showing all origins (10 of 10 characters)
   pokemon.magnemite        pokemon        electric/metal
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
+  pokemon.gastly           pokemon        dark
 
 pokemon.bulbasaur — Bulbasaur
   from          Pokémon (anime, pokemon)
@@ -637,7 +650,7 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | skill blurb =====
-withdraw  26 of 84
+withdraw  26 of 88
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -659,6 +672,7 @@ species  the declared kinds, and where each line is drawn
   fae
   construct
   mythic
+  shade
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -761,6 +775,7 @@ species  the declared kinds, and where each line is drawn
   fae
   construct
   mythic
+  shade
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -769,7 +784,7 @@ species  the declared kinds, and where each line is drawn
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | browse =====
-cast  showing all origins (10 of 10 characters)
+cast  showing all origins (11 of 11 characters)
 
 > pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
@@ -781,6 +796,7 @@ cast  showing all origins (10 of 10 characters)
   pokemon.magnemite        pokemon        electric/metal
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
+  pokemon.gastly           pokemon        dark
 
 pokemon.bulbasaur — Bulbasaur
   from          Pokémon (anime, pokemon)
@@ -833,6 +849,9 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.mewtwo
     mewtwo.breach
     mewtwo.origin
+  pokemon.gastly
+    gastly.unbind
+    gastly.miasma
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -881,7 +900,7 @@ elements  the affinity chart: what beats what, and by how much
 ----- footer -----
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | skill blurb =====
-withdraw  26 of 84
+withdraw  26 of 88
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -903,6 +922,7 @@ species  the declared kinds, and where each line is drawn
   fae
   construct
   mythic
+  shade
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -1013,6 +1033,9 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.mewtwo
     mewtwo.breach
     mewtwo.origin
+  pokemon.gastly
+    gastly.unbind
+    gastly.miasma
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -1029,16 +1052,16 @@ traits  the declared traits, and who carries each
   heatproof     pokemon.charmander@16
   virulence     pokemon.bulbasaur@32
   venom_blood   pokemon.bulbasaur@24
-  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.gastly@16
   last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
   reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16
+  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.gastly@44
   ballast       pokemon.squirtle@44
   composure     pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24
-  elusive       pokemon.cleffa@40 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40
-  contagion     pokemon.bulbasaur@28 pokemon.mew@40
-  spiteful      pokemon.poliwag@36
+  elusive       pokemon.cleffa@40 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.gastly@24
+  contagion     pokemon.bulbasaur@28 pokemon.mew@40 pokemon.gastly@40
+  spiteful      pokemon.poliwag@36 pokemon.gastly@32
   berserk       pokemon.machop@40 pokemon.mewtwo@32
   unyielding    pokemon.machop@24
 
@@ -1060,6 +1083,7 @@ species  the declared kinds, and where each line is drawn
   fae
   construct
   mythic
+  shade
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào

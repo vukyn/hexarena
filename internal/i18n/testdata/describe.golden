@@ -491,6 +491,29 @@ Nhận cuồng nộ x2.
 Bản thân · hồi 4 lượt.
 [one line] tự nhận cuồng nộ x2 · bản thân · hồi 4
 
+shadow_claw
+Bóng dưới chân dựng lên thành móng, cào một nhát rồi nằm xuống lại, 130% công.
+Tầm 1 · 90% trúng · hồi 2 lượt.
+[one line] 130% công · tầm 1 · hồi 2
+
+spite
+Thò tay vào chỗ kẻ kia đang dựa dẫm rồi rút phăng nó ra, 70% công.
+Gỡ 3 cộng dồn hiệu ứng khiên chắn và hiệu ứng hồi máu.
+Tầm 2 · 90% trúng · hồi 3 lượt.
+[one line] 70% công · gỡ 3 hiệu ứng · tầm 2 · hồi 3
+
+night_shade
+Đêm kéo tới sớm hơn thường lệ, phủ lên cả hàng đứng trước mặt, 80% công.
+Gây mù cho mục tiêu, 45% khả năng.
+Tầm 2 · 3 ô · 90% trúng · hồi 3 lượt.
+[one line] 80% công · mù 45% · tầm 2 · 3 ô · hồi 3
+
+curse
+Ghim một thứ vào người kẻ kia, chỗ nào rách thì cứ để đó mà rách.
+Gây lở loét x2 cho mục tiêu, 80% khả năng.
+Tầm 2 · 100% trúng · hồi 4 lượt.
+[one line] lở loét x2 80% · tầm 2 · hồi 4
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1200,6 +1223,29 @@ nasty_plot
 Puts fury x2 on itself.
 Itself · 4 turns to recharge.
 [one line] self fury x2 · itself · cd 4
+
+shadow_claw
+Hits an enemy for 130% of attack.
+Range 1 · 90% to hit · 2 turns to recharge.
+[one line] 130% attack · range 1 · cd 2
+
+spite
+Hits an enemy for 70% of attack.
+Strips 3 stacks of shielding and healing over time.
+Range 2 · 90% to hit · 3 turns to recharge.
+[one line] 70% attack · strips 3 · range 2 · cd 3
+
+night_shade
+Hits an enemy for 80% of attack.
+Inflicts blind, 45% of the time.
+Range 2 · 3 cells · 90% to hit · 3 turns to recharge.
+[one line] 80% attack · blind 45% · range 2 · 3 cells · cd 3
+
+curse
+Aims at an enemy.
+Inflicts fester x2, 80% of the time.
+Range 2 · 100% to hit · 4 turns to recharge.
+[one line] fester x2 80% · range 2 · cd 4
 
 [trait] endurance
 Always carries toughened.

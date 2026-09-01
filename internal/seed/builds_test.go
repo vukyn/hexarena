@@ -59,6 +59,8 @@ func TestTheShippedBuildsAreTheOnesTheTestsMeasure(t *testing.T) {
 		{"mew.wither", witherBuild, "contagion"},
 		{"mewtwo.breach", breachBuild, "berserk"},
 		{"mewtwo.origin", originBuild, "elusive"},
+		{"gastly.unbind", unbindBuild, "elusive"},
+		{"gastly.miasma", miasmaBuild, "contagion"},
 	} {
 		build, known := book.Get(want.id)
 		if !known {
