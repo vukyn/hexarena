@@ -94,6 +94,17 @@ curse           dark      enemy    2  single            0     1      0  1000    
 light_screen    light     ally     1  single            0     1      0  1000    4     0     0        0
 shadow_punch    dark      enemy    1  single          900     1    900   900    4  1000     0      720
 steel_beam      metal     enemy    2  single         3600     1   3600   900    3     0     0     1234
+bank_embers     fire      enemy    2  single          700     1    700   950    1     0     0      240
+flare           fire      enemy    2  single          700     1    700   940    1     0     0      240
+pyre            fire      enemy    2  single          800     1    800   870    4     0     0      274
+overgrow        grass     ally     1  single            0     1      0  1000    2     0     0        0
+thorn_volley    grass     enemy    2  single          550     2   1100   900    2     0     0      376
+bloom_burst     grass     enemy    2  arc_up          700     1    700   900    3     0     0      240
+drench          water     ally     1  single            0     1      0  1000    2     0     0        0
+soak            water     enemy    2  single          800     1    800   940    1     0     0      274
+tide_break      water     enemy    2  single          900     1    900   880    3     0     0      308
+deluge          water     enemy    1  column          600     1    600   860    4     0     0      205
+sprout          grass     enemy    2  single          800     1    800   950    1     0     0      274
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -155,6 +166,11 @@ nasty_plot      fury (self)            2     1000       1000                -
 night_shade     blind                  1      450        900              405
 curse           fester                 2      800       1000              800
 light_screen    aegis                  1     1000       1000             1000
+bank_embers     swelter (self)         5     1000        950                -
+overgrow        verdure                6     1000       1000             1000
+drench          moisture               6     1000       1000             1000
+soak            moisture (self)        5     1000        940                -
+sprout          verdure (self)         5     1000        950                -
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -242,6 +258,17 @@ curse           -          -                 -                   -         pokem
 light_screen    -          -                 -                   -         pokemon
 shadow_punch    -          -                 -                   -         pokemon
 steel_beam      -          -                 -                   -         pokemon
+bank_embers     -          -                 -                   -         pokemon
+flare           -          -                 -                   -         pokemon
+pyre            -          -                 -                   -         pokemon
+overgrow        -          -                 -                   -         pokemon
+thorn_volley    -          -                 -                   -         pokemon
+bloom_burst     -          -                 -                   -         pokemon
+drench          -          -                 -                   -         pokemon
+soak            -          -                 -                   -         pokemon
+tide_break      -          -                 -                   -         pokemon
+deluge          -          -                 -                   -         pokemon
+sprout          -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -254,6 +281,12 @@ electro_ball    target   charge                            1     640         640
 spark           target   charge                            1     342         342      117         117  1.00x (consumes)
 overload        target   charge                            2     880         880      301         301  1.00x (consumes)
 dream_eater     target   stun                              1     700        1600      240         548  2.28x
+flare           caster   swelter                           1     700        1250      240         428  1.78x (consumes)
+pyre            caster   swelter                           5     800         800      274         274  1.00x (consumes)
+thorn_volley    caster   verdure                           5     550        1200      188         411  2.18x (consumes)
+bloom_burst     caster   verdure                          10     700        2900      240         994  4.14x (consumes)
+tide_break      caster   moisture                         20     900        4700      308        1611  5.23x (consumes)
+deluge          caster   moisture                          3     600         600      205         205  1.00x (consumes)
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar
@@ -303,6 +336,9 @@ evasive     buff                1       0            0      0               0   
 charge      charge            999       4            0      0               0          0   -
 aegis       absorb              2       3            0      0               0          0   -
 bastion     absorb              1       0            0      0               0          0   -
+swelter     reserve           999       5            0      0               0          0   -
+verdure     reserve           999       5            0      0               0          0   -
+moisture    reserve           999       5            0      0               0          0   -
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

@@ -143,6 +143,22 @@
         {
           "id": "ingrain",
           "at_level": 36
+        },
+        {
+          "id": "overgrow",
+          "at_level": 20
+        },
+        {
+          "id": "thorn_volley",
+          "at_level": 24
+        },
+        {
+          "id": "bloom_burst",
+          "at_level": 36
+        },
+        {
+          "id": "sprout",
+          "at_level": 20
         }
       ],
       "passives": [
@@ -324,6 +340,18 @@
         {
           "id": "dragon_drive",
           "at_level": 48
+        },
+        {
+          "id": "bank_embers",
+          "at_level": 20
+        },
+        {
+          "id": "flare",
+          "at_level": 24
+        },
+        {
+          "id": "pyre",
+          "at_level": 40
         }
       ],
       "passives": [
@@ -503,6 +531,14 @@
         },
         {
           "id": "wide_guard",
+          "at_level": 44
+        },
+        {
+          "id": "soak",
+          "at_level": 20
+        },
+        {
+          "id": "deluge",
           "at_level": 44
         }
       ],
@@ -869,6 +905,18 @@
           "stages": [
             "Politoed"
           ]
+        },
+        {
+          "id": "drench",
+          "at_level": 28
+        },
+        {
+          "id": "soak",
+          "at_level": 20
+        },
+        {
+          "id": "tide_break",
+          "at_level": 36
         }
       ],
       "passives": [

@@ -3028,11 +3028,31 @@ tick, no turn. It is ammunition, and it is the ninth category, appended last for
 the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
 *Counting instead of doing*; what matters when editing:
 
-- **It is the one category `Book.MaxStacks` does not bound.** `max_charge_stacks`
+- **It is the one category `Book.MaxStacks` does not bound.** `max_counter_stacks`
   (999) bounds it instead, and a charge carrying a modifier or a tick is refused
   at parse — the ceiling was granted on the understanding that it multiplies
   nothing. Do not "tidy" that into one cap; the two numbers bound different
   things.
+- **`reserve` is the same category on the caster's own side**, and the two are
+  told apart by `Harmful` alone: a charge goes on an enemy so a cleanse strips it
+  (`rinse` names it), a reserve is its holder's fuel so only an enemy's dispel
+  does. `Category.Counter()` is what the cap and the modifier refusal ask, so
+  appending a third counter means adding it there and nowhere else. Spent through
+  `self_requires`, and a reserve is priced FLAT up to `pricing.capacity` — the
+  deepest single spend the holder's kit owns — rather than halved like a charge,
+  because a reserve spender cashes the whole run at once. Measured: with the
+  halving the shipped loop banked 456 stacks over forty duels and spent none.
+- **`self_requires` gained `stack_power`**, the caster-side answer to `arc_power`:
+  power per stack consumed, so "spend everything" has arithmetic in it. Bounded by
+  `skill.MaxSpendPower` applied in `Condition.Takes` — on the STACKS, never on the
+  power, so the leftovers stay in the tank; clamping the bonus instead is the bug
+  `Skill.Cost` shipped one field along. `Skill.SelfCeiling` is the reading a bound
+  must use, because `Satisfying` is the cheapest case and a scaling payment is
+  worth most at the deepest.
+- ⚠️ **`Battle.spend` called `Set.Consume` for as long as the field existed**, so
+  `consume_stacks` on a caster's own condition parsed, round-tripped and was
+  thrown away — the whole pile went whatever the author asked for. Nothing noticed
+  because nothing shipped ever spent anything of its own.
 - **Never permanent.** `Set.Remove` refuses a permanent status (that is what keeps
   a trait from being dispelled) and a consume goes through `Remove`, so a
   permanent counter is one nothing could ever spend.

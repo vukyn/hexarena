@@ -97,7 +97,7 @@ func largestPowerHeld(bonus, share int, holds func(power int) bool) int {
 // are facts about the data, and the figures derived from them are measurements of
 // the book rather than of a ceiling.
 const (
-	worstShippedBonus = 1200 // outrage's self_requires
+	worstShippedBonus = 4000 // deluge's self_requires, emptied to the spend ceiling
 	worstShippedShare = 900  // comeback's self_gradient at_empty
 )
 
@@ -116,7 +116,11 @@ func TestTheWorstShippedSwingIsTheOneMeasuredAgainst(t *testing.T) {
 	bonus, share, power, landed := 0, 0, 0, 0
 	var bonusID, shareID, powerID, landedID string
 	for _, shipped := range books.Skills.Skills() {
-		if got := shipped.SelfBonus(shipped.SelfRequires.Satisfying()); got > bonus {
+		// The ceiling rather than the threshold: a per-stack payment is worth more
+		// the deeper the reserve, so reading it at the stack count that merely
+		// satisfies the condition would measure the smallest case and call it the
+		// worst. See Skill.SelfCeiling.
+		if got := shipped.SelfCeiling(); got > bonus {
 			bonus, bonusID = got, shipped.ID
 		}
 		// The bottom of the caster's bar, which is where a gradient is worth
@@ -129,7 +133,7 @@ func TestTheWorstShippedSwingIsTheOneMeasuredAgainst(t *testing.T) {
 		}
 		best := combat.Swung(
 			shipped.PowerAgainst(shipped.Requires.Satisfying()),
-			shipped.SelfBonus(shipped.SelfRequires.Satisfying()),
+			shipped.SelfCeiling(),
 			shipped.SelfScale(0, 1),
 		)
 		if best > landed {

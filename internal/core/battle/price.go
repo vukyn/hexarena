@@ -109,6 +109,11 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 	// Health is the unit the rest of this file counts in, and it is what the
 	// caster actually hands over.
 	total -= p.spentHealth(actor, declared)
+	// And the other thing a skill charges its own caster: the counter it cashes
+	// in. Subtracted here rather than anywhere nearer the gain, because the gain
+	// is inside expected and the two are separate readings on purpose — see
+	// spentCounter.
+	total -= p.spentCounter(actor, declared)
 	// SelfApplies land on the caster whatever the skill is aimed at, which is how
 	// a unit shields or braces itself, so they are priced outside the shape.
 	total += p.granted(actor, actor, from, declared.SelfApplies)
@@ -621,6 +626,13 @@ func (p *pricing) granted(actor, target *Unit, from origin,
 			value = p.guarded(actor, target, from, kind, application.Stacks)
 		case status.Buff:
 			value = p.standing(target, kind, application.Stacks)
+		case status.Reserve:
+			// A reserve reaches this branch and a charge reaches inflictedOn's,
+			// which is the whole of the difference between them written where the
+			// rating can see it: one is a gift to its holder and the other a mark
+			// on a victim. Both go through charged, because what either is worth
+			// is the same question — what somebody can do with it.
+			value = p.charged(actor, target, kind, application.Stacks)
 		}
 		if value <= 0 {
 			continue
@@ -844,6 +856,7 @@ func (p *pricing) dispelled(target *Unit, declared skill.Skill) int64 {
 	worth += p.threatAgainst(stripped) - p.threat(target)
 	worth += p.unguarded(target, after)
 	worth += p.unbarriered(target, after)
+	worth += p.unfuelled(target, after)
 	worth += p.undone(target, after, declared.Strips.Categories)
 	if worth <= 0 {
 		return 0
@@ -1035,16 +1048,89 @@ func (p *pricing) charged(actor, target *Unit, kind status.Kind, stacks int) int
 	// and it is the *height* that makes a stack speculative rather than the cast
 	// that put it there. Without this a charger is worth its full opening every
 	// turn, which is the same mistake one step further along.
-	worth, total := p.spendable(actor, kind.ID), int64(0)
-	for range before {
-		worth /= 2
+	return p.pile(actor, target, kind, before, int(gained))
+}
+
+// pile is what a run of counter stacks is worth, and it is the one place the two
+// counters are priced by different arithmetic.
+//
+// ⚠️ **The halving above is right for a charge and wrong for a reserve, and the
+// reason is a sentence from that comment.** "A consumer cashes one stack per
+// cast, so the second stack needs one more turn to go right" is exact for a
+// conduit: one blow, one charge. A reserve spender cashes a WHOLE RUN at once, so
+// the second stack does not need another turn — it goes off in the same cast as
+// the first, and pricing it at half is pricing a mechanic as if it were the one
+// it was built to be the opposite of.
+//
+// So a reserve is flat up to what its holder can actually cash in one go, and
+// speculative — the same halving — above that. The flat region is bounded by the
+// KIT rather than by a horizon: stacks past the deepest spend the holder owns
+// buy nothing this cast, and a second cast is exactly the speculation the halving
+// was written for. A holder with no spender has a capacity of nought, so every
+// stack is speculative and spendable has already answered nought anyway.
+func (p *pricing) pile(actor, target *Unit, kind status.Kind, under, count int) int64 {
+	worth := p.spendable(actor, target, kind)
+	if kind.Category != status.Reserve {
+		return pileWorth(worth, under, count)
 	}
-	for range gained {
-		if worth == 0 {
+	flat := 0
+	if room := p.capacity(target, kind.ID) - under; room > 0 {
+		flat = min(room, count)
+	}
+	return int64(flat)*worth + pileWorth(worth, under+flat, count-flat)
+}
+
+// capacity is the most of one reserve the unit could spend in a single cast,
+// read off the skills it actually carries.
+//
+// Through Takes, so it is the same figure the spend removes — including the
+// ceiling a scaling payment stops at. A spender that takes "all of them" for a
+// flat bonus has no ceiling of its own, and the status's cap is what bounds it
+// there, which is the honest answer: what it could spend really is everything.
+func (p *pricing) capacity(holder *Unit, id string) int {
+	most := 0
+	for _, held := range holder.Skills {
+		declared, err := p.fight.books.Skills.Lookup(held)
+		if err != nil || declared.SelfRequires == nil {
+			continue
+		}
+		spends := declared.SelfRequires
+		if !spends.Consume || spends.Status != id {
+			continue
+		}
+		kind, err := p.fight.books.Statuses.Lookup(id)
+		if err != nil {
+			continue
+		}
+		if takes := spends.Takes(kind.MaxStacks); takes > most {
+			most = takes
+		}
+	}
+	return most
+}
+
+// pileWorth is what count stacks sitting on top of a pile already `under` high
+// are worth, at one stack's value halving with every stack beneath it.
+//
+// One function because two callers ask and they must agree: charged asks what
+// adding to the top is worth, and spentCounter asks what taking the top off
+// gives up. A grant and a spend priced by two copies of this series would drift
+// the first time either was edited, and the drift would read as a rating that
+// liked charging more than cashing in — or the other way, which is worse.
+func pileWorth(perStack int64, under, count int) int64 {
+	total := int64(0)
+	for range under {
+		perStack /= 2
+		if perStack == 0 {
+			return 0
+		}
+	}
+	for range count {
+		if perStack == 0 {
 			break
 		}
-		total += worth
-		worth /= 2
+		total += perStack
+		perStack /= 2
 	}
 	return total
 }
@@ -1066,7 +1152,21 @@ func (p *pricing) charged(actor, target *Unit, kind status.Kind, stacks int) int
 // because that is what a stack actually buys.** One blow spends one charge, so a
 // skill that lands twice on average discharges twice — and reading the floor
 // would price a repeating conduit at half what it does.
-func (p *pricing) spendable(actor *Unit, id string) int64 {
+// ⚠️ **Who may spend it is a property of the category, not of the caller**, and
+// getting that wrong would make one of the two counters worth nothing. A charge
+// is on an ENEMY, so anybody on the charger's side who can cash it counts —
+// laying one down for a squadmate to discharge is the whole of what a support
+// charger does. A reserve is on its HOLDER and buys the holder's own skills
+// through self_requires, so a squadmate's kit is irrelevant to it: reading the
+// side there would price fuel by what somebody else could have done with it.
+//
+// So the search is over the holder alone for a reserve and over the caster's
+// side for a charge, and the holder is passed in rather than inferred, because
+// for a charge the two are on opposite halves of the board.
+func (p *pricing) spendable(actor, holder *Unit, kind status.Kind) int64 {
+	if kind.Category == status.Reserve {
+		return p.selfSpendable(holder, kind.ID)
+	}
 	best := int64(0)
 	for _, mate := range p.fight.units {
 		if mate.Dead || mate.Side != actor.Side {
@@ -1078,7 +1178,7 @@ func (p *pricing) spendable(actor *Unit, id string) int64 {
 				continue
 			}
 			if declared.Requires == nil || !declared.Requires.Consume ||
-				declared.Requires.Status != id {
+				declared.Requires.Status != kind.ID {
 				continue
 			}
 			gain := int64(declared.Requires.BonusPower)
@@ -1098,6 +1198,119 @@ func (p *pricing) spendable(actor *Unit, id string) int64 {
 		}
 	}
 	return best
+}
+
+// selfSpendable is spendable's reserve half: what one stack of fuel buys the unit
+// standing on it, read off that unit's own kit.
+//
+// ⚠️ **The gain is divided by the stacks a cast actually takes, which the charge
+// half does not do**, and the difference is real rather than an inconsistency. A
+// detonate spends a pile for a flat bonus and the pile is whatever happened to be
+// there, so there is no honest divisor; a reserve spender names its price. A flat
+// bonus bought with twenty stacks is worth a twentieth of itself per stack, and
+// pricing it otherwise would have a unit hoarding to twenty to buy what one stack
+// was already rated as buying.
+//
+// A per-stack payment needs no divisor at all: it *is* the per-stack figure, and
+// that is the shape "spend all of it" is written in.
+func (p *pricing) selfSpendable(holder *Unit, id string) int64 {
+	best := int64(0)
+	for _, held := range holder.Skills {
+		declared, err := p.fight.books.Skills.Lookup(held)
+		if err != nil || declared.Power == 0 {
+			continue
+		}
+		spends := declared.SelfRequires
+		if spends == nil || !spends.Consume || spends.Status != id {
+			continue
+		}
+		gain := int64(spends.StackPower)
+		if gain == 0 {
+			// The stacks one cast hands over: the count it names, or the floor it
+			// needs when it names none and takes everything.
+			perCast := spends.ConsumeStacks
+			if perCast < spends.MinStacks {
+				perCast = spends.MinStacks
+			}
+			if perCast < 1 {
+				perCast = 1
+			}
+			gain = int64(spends.BonusPower) / int64(perCast)
+		}
+		if gain <= 0 {
+			continue
+		}
+		if value := p.strike(holder) * gain / (int64(declared.Power) + gain); value > best {
+			best = value
+		}
+	}
+	return best
+}
+
+// spentCounter is what a skill gives up by cashing its caster's own reserve in,
+// and it is the cost half of a spend that the gain half was already priced for.
+//
+// ⚠️ **Without it the rating spends everything the moment it may.** SelfBonus is
+// read inside expected, so the damage a spend buys is counted; the stacks it
+// hands over were counted by nothing, so emptying a full reserve for a small
+// bonus rated identically to spending one stack for it. That is the shape
+// Skill.Cost shipped in — a price filed where the rating never looks — one field
+// along.
+//
+// Priced through the same series the grant is, from the same per-stack figure, so
+// a stack cannot be worth one thing going on and another coming off. It is the
+// TOP of the pile that goes: a consume takes the speculative stacks, which are
+// the cheap ones, so a spend costs less than the charging turns nominally bought.
+// That is the honest reading rather than a discount — the alternative prices a
+// cash-in at more than the hoard, and a rating handed that never cashes in.
+func (p *pricing) spentCounter(actor *Unit, declared skill.Skill) int64 {
+	spends := declared.SelfRequires
+	if spends == nil || !spends.Consume {
+		return 0
+	}
+	kind, err := p.fight.books.Statuses.Lookup(spends.Status)
+	if err != nil {
+		return 0
+	}
+	against := conditionCaster(declared, actor)
+	if !declared.SelfAmplified(against) {
+		return 0
+	}
+	taken := spends.Takes(against.Stacks)
+	if taken <= 0 {
+		return 0
+	}
+	return pileWorth(p.spendable(actor, actor, kind), against.Stacks-taken, taken)
+}
+
+// unfuelled is the reserve a dispel takes off an enemy, which is the casts it
+// will now never make.
+//
+// The third of the strip terms, beside unguarded and unbarriered, and it exists
+// for the reason they do: Without removes the stacks, and every other reading in
+// dispelled is a stat or a tick, so a counter that changes neither would come off
+// an enemy for a price of nothing. A dispel is the only answer a squad has to a
+// unit hoarding fuel, and a rating that could not see the answer would never
+// play it.
+//
+// ⚠️ Read from the HOLDER's side of the arithmetic — spendable asks what the
+// holder's own kit could do with it — because a reserve is worth what its owner
+// can spend, and the unit doing the stripping has no skill that names it.
+func (p *pricing) unfuelled(target *Unit, after status.Set) int64 {
+	total := int64(0)
+	for _, id := range target.Statuses.Active() {
+		kind, err := p.fight.books.Statuses.Lookup(id)
+		if err != nil || kind.Category != status.Reserve {
+			continue
+		}
+		taken := target.Statuses.Stacks(id) - after.Stacks(id)
+		if taken <= 0 {
+			continue
+		}
+		total += pileWorth(p.spendable(target, target, kind),
+			target.Statuses.Stacks(id)-taken, taken)
+	}
+	return total
 }
 
 // standingLost is standing read as harm: what a debuff takes off its holder is

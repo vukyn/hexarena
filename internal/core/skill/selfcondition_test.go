@@ -26,7 +26,7 @@ func TestBothConditionsAreRefusedTheSameWay(t *testing.T) {
 		{"a share outside the scale", `{"below_health":1400,"bonus_power":900}`, "parts per thousand"},
 		{"negative power", `{"below_health":500,"bonus_power":-1}`, "zero or more"},
 		{"consumes what it never names", `{"below_health":500,"bonus_power":900,"consume":true}`, "names none"},
-		{"consumes for nothing", `{"status":"poison","consume":true}`, "neither a bonus nor a discharge"},
+		{"consumes for nothing", `{"status":"poison","consume":true}`, "for neither a bonus, a discharge nor a per-stack payment"},
 		{"more stacks than exist", `{"status":"poison","min_stacks":9,"bonus_power":900}`, "caps at"},
 		{"a status nobody declared", `{"status":"nonesuch","bonus_power":900}`, "nonesuch"},
 	} {

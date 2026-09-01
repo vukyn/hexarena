@@ -203,11 +203,36 @@ type Condition struct {
 	// conduit has over an ordinary attack, and it is the reason the counter is
 	// worth laying down in front of a wall.
 	ArcPower int
+	// StackPower is what one consumed stack adds to the skill's own power, and it
+	// is the caster's side of the board answering ArcPower.
+	//
+	// ⚠️ **It is the only payment that scales with the size of the spend**, which
+	// is the whole reason it exists. BonusPower is flat, so a skill that empties a
+	// reserve of nine hundred for it pays exactly what a skill that spends twenty
+	// pays — "spend all of it" written with a flat payment is a sentence with no
+	// arithmetic in it. This one multiplies, so how much is left is a decision
+	// every turn rather than a threshold crossed once.
+	//
+	// ⚠️ **It is not ArcPower and does not behave like it.** An arc is the charge
+	// going off on the target: unaimed, unrolled, and not stopped by a guard. This
+	// is the caster hitting harder, so it goes into the skill's power and is
+	// therefore aimed, rolled against accuracy and dodge, divided by defence and
+	// eaten by a shield exactly as the rest of the blow is. That is why it can be
+	// caster-side while an arc may not be: it reads nothing about the board.
+	//
+	// ⚠️ **Caster-side only, and refused on `requires`.** The target's condition
+	// already has a per-stack currency, and taking both would be the ceiling
+	// charged twice with nothing downstream able to tell which half a figure came
+	// from — the same refusal BonusPower and ArcPower already share.
+	StackPower int
 }
 
 // Arcs reports whether the condition discharges the status it consumes into
 // damage of its own.
 func (c *Condition) Arcs() bool { return c != nil && c.ArcPower > 0 }
+
+// Scales reports whether the condition pays its caster per stack it spends.
+func (c *Condition) Scales() bool { return c != nil && c.StackPower > 0 }
 
 // ChainsOn reports whether the consume travels to adjacent carriers.
 func (c *Condition) ChainsOn() bool { return c != nil && c.Chains }
@@ -224,14 +249,33 @@ func (c *Condition) ChainsOn() bool { return c != nil && c.Chains }
 // repeating strike and a pile of counters the same bet twice over, and what keeps
 // a multi-strike conduit from being a single-strike one with better numbers.
 func (c *Condition) Takes(held int) int {
+	taken := 0
 	switch {
 	case c == nil || !c.Consume:
 		return 0
 	case c.ConsumeStacks <= 0 || c.ConsumeStacks > held:
-		return held
+		taken = held
 	default:
-		return c.ConsumeStacks
+		taken = c.ConsumeStacks
 	}
+	// ⚠️ **A scaling spend never takes more than it can pay for**, and that is a
+	// rule about the STACKS rather than about the power.
+	//
+	// MaxSpendPower bounds what one cast may buy, and the obvious place to apply
+	// it is the product — clamp the bonus and be done. That is the shape of the
+	// bug this engine has already shipped twice: the blow would land paid for by
+	// a pile the caster handed over and did not use, so a full reserve emptied
+	// into a capped bonus would be worth less per stack than a small one, and the
+	// rating would prefer to spend at exactly the wrong moment. Clamping here
+	// instead means what is removed and what is bought are the same figure read
+	// once, the leftovers stay in the tank, and "spend all of it" means "spend all
+	// of it that this skill can use".
+	if c.StackPower > 0 {
+		if most := MaxSpendPower / c.StackPower; taken > most {
+			taken = most
+		}
+	}
+	return taken
 }
 
 // ReadsStatus reports whether the condition asks what the target is carrying.
@@ -743,11 +787,43 @@ func (s Skill) SelfAmplified(caster Target) bool { return s.SelfRequires.Holds(c
 // two are read at different moments: the target's condition is read per target,
 // and this one is read once for the whole use. Folding them would make the
 // second follow the first around the shape.
+// ⚠️ **A per-stack payment is read here and nowhere else.** It is what the spend
+// buys, so it belongs to the same reading as the flat bonus rather than to the
+// consume — and it is multiplied by what the consume will actually take, which is
+// Condition.Takes of what the caster is holding right now. That is the same
+// figure Battle.spend removes, from the same function, so the power the blow
+// lands with and the stacks that paid for it cannot disagree.
 func (s Skill) SelfBonus(caster Target) int {
 	if !s.SelfAmplified(caster) {
 		return 0
 	}
+	if s.SelfRequires.Scales() {
+		return s.SelfRequires.StackPower * s.SelfRequires.Takes(caster.Stacks)
+	}
 	return s.SelfRequires.BonusPower
+}
+
+// SelfCeiling is the most the caster's own condition can add to this skill's
+// power, and it is the figure any bound on the swing must be read against.
+//
+// ⚠️ **Not SelfBonus at Satisfying, and the difference is new.** Satisfying is
+// the CHEAPEST target a condition holds against, and for a flat bonus the
+// cheapest case and the dearest one are the same number — so one reading served
+// both until stack_power existed. A per-stack payment is worth more the deeper
+// the reserve, so a bound taken at the threshold would be a bound on the
+// smallest case the skill can produce.
+//
+// The ceiling comes from Takes rather than from the status book, because Takes
+// is where the ceiling actually bites: a scaling spend refuses stacks past what
+// MaxSpendPower will pay for, whatever the book allows anybody to hold.
+func (s Skill) SelfCeiling() int {
+	if s.SelfRequires == nil {
+		return 0
+	}
+	if s.SelfRequires.Scales() {
+		return s.SelfRequires.StackPower * s.SelfRequires.Takes(MaxSpendPower)
+	}
+	return s.SelfBonus(s.SelfRequires.Satisfying())
 }
 
 // SelfScale is the share the caster's own wounds add to the skill's power, in
@@ -852,6 +928,7 @@ type conditionFile struct {
 	ConsumeStacks int    `json:"consume_stacks,omitempty"`
 	Chains        bool   `json:"chains,omitempty"`
 	ArcPower      int    `json:"arc_power,omitempty"`
+	StackPower    int    `json:"stack_power,omitempty"`
 }
 
 // gradientFile is its own shape rather than a field on conditionFile, because a
@@ -949,7 +1026,7 @@ func (s Skill) file() skillFile {
 			BelowHealth: s.SelfRequires.BelowHealth,
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
 			ConsumeStacks: s.SelfRequires.ConsumeStacks, Chains: s.SelfRequires.Chains,
-			ArcPower: s.SelfRequires.ArcPower,
+			ArcPower: s.SelfRequires.ArcPower, StackPower: s.SelfRequires.StackPower,
 		}
 	}
 	if s.SelfGradient != nil {
@@ -961,7 +1038,7 @@ func (s Skill) file() skillFile {
 			BelowHealth: s.Requires.BelowHealth,
 			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
 			ConsumeStacks: s.Requires.ConsumeStacks, Chains: s.Requires.Chains,
-			ArcPower: s.Requires.ArcPower,
+			ArcPower: s.Requires.ArcPower, StackPower: s.Requires.StackPower,
 		}
 	}
 	if s.Strips != nil {
@@ -1052,6 +1129,25 @@ func ParseBook(raw []byte, deps Deps) (*Book, error) {
 // board's longest diagonal — five — which was the right bound while a range was
 // a distance and is a lie now.
 const maxRange = hex.FormationCols
+
+// MaxSpendPower is the most one spend of a counter may add to a skill's own
+// power, in parts per thousand of the caster's scaling stat.
+//
+// It exists because Condition.StackPower is the only authored power in this
+// package that is multiplied before it is used, and the multiplier is a stack
+// count capped at nine hundred and ninety nine. Every other ceiling here bounds
+// a term an author can read at a glance; this one bounds a product the author
+// never writes down.
+//
+// Applied by Condition.Takes rather than by clamping the bonus, so what a spend
+// removes and what it buys stay one figure — read that comment before moving it.
+//
+// Four times the scaling stat, which is a little over twice the heaviest single
+// skill in the shipped book. A spend is meant to be the biggest thing a turn can
+// do and not a different game: at this ceiling emptying a full reserve is worth
+// about two ordinary casts, so hoarding stays a real decision and never becomes
+// the only one.
+const MaxSpendPower = 4 * scale.Base
 
 func resolve(declared skillFile, deps Deps) (Skill, error) {
 	if declared.ID == "" {
@@ -1442,6 +1538,28 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 	if field != "requires" && (declared.Chains || declared.ArcPower != 0) {
 		return fail("chains or arcs, which only the target's condition may do: both are read off the unit at the aim")
 	}
+	// And the mirror of it: a per-stack payment into the caster's own power is
+	// the caster's side to make. The target's condition already pays per stack,
+	// through the arc, and a condition holding both currencies would be the
+	// ceiling charged twice with nothing downstream able to say which half a
+	// figure came from — which is the refusal bonus_power and arc_power already
+	// share two clauses below.
+	if field == "requires" && declared.StackPower != 0 {
+		return fail("adds %d power per stack, which only the caster's own condition may do: a target's condition is paid per stack through arc_power",
+			declared.StackPower)
+	}
+	if declared.StackPower < 0 {
+		return fail("adds %d power per stack, want zero or more", declared.StackPower)
+	}
+	// The product is bounded at resolve time — see Condition.Takes, which stops a
+	// spend taking stacks the ceiling will not pay for. What is refused here is
+	// the one figure that clamp cannot rescue: a term already over the ceiling
+	// buys nothing on its second stack however deep the reserve, so the skill an
+	// author meant to write scales and the one they wrote does not.
+	if declared.StackPower > MaxSpendPower {
+		return fail("adds %d power per stack, over the %d one spend may buy: the second stack would be worth nothing",
+			declared.StackPower, MaxSpendPower)
+	}
 	if declared.ArcPower < 0 {
 		return fail("arcs for %d power, want zero or more", declared.ArcPower)
 	}
@@ -1451,6 +1569,13 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 	if declared.ConsumeStacks > 0 && !declared.Consume {
 		return fail("names %d stacks to consume but does not consume", declared.ConsumeStacks)
 	}
+	if !declared.Consume && declared.StackPower != 0 {
+		// A per-stack payment off a status the skill never spends is a bonus that
+		// grows for ever off a counter nothing brings down, which is the same free
+		// shape the arc rule below refuses.
+		return fail("adds %d power per stack without consuming anything, so it would be paid for the same stack every turn",
+			declared.StackPower)
+	}
 	if !declared.Consume && (declared.Chains || declared.ArcPower != 0) {
 		// Both describe what spending the status does. Without the consume they
 		// would be a skill that arcs and chains for ever off a status it never
@@ -1458,8 +1583,8 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		// reason.
 		return fail("chains or arcs without consuming anything, so the discharge would be free every turn the condition held")
 	}
-	if declared.Consume && declared.BonusPower == 0 && declared.ArcPower == 0 {
-		return fail("consumes %q for neither a bonus nor a discharge, which throws the status away for nothing", statusID)
+	if declared.Consume && declared.BonusPower == 0 && declared.ArcPower == 0 && declared.StackPower == 0 {
+		return fail("consumes %q for neither a bonus, a discharge nor a per-stack payment, which throws the status away for nothing", statusID)
 	}
 	if declared.BonusPower != 0 && declared.ArcPower != 0 {
 		// Two payments for one stack. A detonate is paid in its own power and a
@@ -1468,11 +1593,18 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return fail("is paid both %d bonus power and %d arc power for one stack, which is the same purchase made twice",
 			declared.BonusPower, declared.ArcPower)
 	}
+	if declared.StackPower != 0 && declared.BonusPower != 0 {
+		// The same refusal one currency along. A flat bonus and a per-stack one
+		// are both paid into the skill's power out of one spend, and a reader
+		// comparing two skills could not say which half a figure came from.
+		return fail("is paid both %d bonus power and %d power per stack for one spend, which is the same purchase made twice",
+			declared.BonusPower, declared.StackPower)
+	}
 	return &Condition{
 		Status: statusID, MinStacks: minStacks, BelowHealth: declared.BelowHealth,
 		BonusPower: declared.BonusPower, Consume: declared.Consume,
 		ConsumeStacks: declared.ConsumeStacks, Chains: declared.Chains,
-		ArcPower: declared.ArcPower,
+		ArcPower: declared.ArcPower, StackPower: declared.StackPower,
 	}, nil
 }
 

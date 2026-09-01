@@ -530,6 +530,72 @@ Rút thép từ chính thân mình ra rồi bắn đi, chỗ rút vẫn còn ngu
 Tầm 2 · 90% trúng · hồi 3 lượt.
 [one line] 360% công · tốn 15% máu · tầm 2 · hồi 3
 
+bank_embers
+Táp một hơi ngắn rồi giữ phần còn lại trong lồng ngực, chỗ ấy cứ nóng dần lên, 70% công.
+Nhận sóng nhiệt x5.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+[one line] 70% công · tự nhận sóng nhiệt x5 · tầm 2 · hồi 1
+
+flare
+Hé miệng một cái, chỗ hơi nóng dồn lâu nhất thoát ra trước, 70% công.
+Bản thân đang dính sóng nhiệt: 125% công, và tiêu 1 cộng dồn sóng nhiệt.
+Tầm 2 · 94% trúng · hồi 1 lượt.
+[one line] 70% công · tự sóng nhiệt→125% · tầm 2 · hồi 1
+
+pyre
+Mở hết ra một lần; giữ được bao lâu thì lúc mở ra dài bấy nhiêu, 80% công.
+Bản thân đang dính ít nhất 5 cộng dồn sóng nhiệt, mỗi cộng dồn sóng nhiệt tiêu đi cộng thêm 23% công vào đòn, tiêu tối đa 17 cộng dồn sóng nhiệt.
+Tầm 2 · 87% trúng · hồi 4 lượt.
+[one line] 80% công · tự sóng nhiệt 5+→+23%/cộng · tầm 2 · hồi 4
+
+overgrow
+Rải một lượt phấn xuống chân đồng đội, cỏ chỗ đó dày lên trông thấy.
+Cho mục tiêu xum xuê x6, 100% khả năng.
+Tầm 1 · 100% trúng · hồi 2 lượt.
+[one line] xum xuê x6 100% · đồng đội · tầm 1 · hồi 2
+
+thorn_volley
+Gai rụng khỏi thân một loạt rồi bay đi, chỗ vừa rụng liền nhú lại, 2 nhát, mỗi nhát 55% công (tổng 110%).
+Bản thân đang dính ít nhất 5 cộng dồn xum xuê: 240% công, và tiêu 5 cộng dồn xum xuê.
+Tầm 2 · 90% trúng · hồi 2 lượt.
+[one line] 110% công · tự xum xuê 5+→240% · tầm 2 · hồi 2
+
+bloom_burst
+Nụ giữ kín suốt mấy mùa, tới lượt nó thì mở ra một lần rồi thôi, 70% công.
+Bản thân đang dính ít nhất 10 cộng dồn xum xuê: 290% công, và tiêu 10 cộng dồn xum xuê.
+Tầm 2 · 3 ô · 90% trúng · hồi 3 lượt.
+[one line] 70% công · tự xum xuê 10+→290% · tầm 2 · 3 ô · hồi 3
+
+drench
+Dội đủ để người bên cạnh ướt tới tận trong, đứng một lát vẫn còn nhỏ giọt.
+Cho mục tiêu ẩm ướt x6, 100% khả năng.
+Tầm 1 · 100% trúng · hồi 2 lượt.
+[one line] ẩm ướt x6 100% · đồng đội · tầm 1 · hồi 2
+
+soak
+Phun một vòi vừa phải, phần chưa dùng tới thì giữ lại trong mai, 80% công.
+Nhận ẩm ướt x5.
+Tầm 2 · 94% trúng · hồi 1 lượt.
+[one line] 80% công · tự nhận ẩm ướt x5 · tầm 2 · hồi 1
+
+tide_break
+Nước dồn lại một chỗ rất lâu, tới lúc không giữ nổi nữa thì đổ ập xuống, 90% công.
+Bản thân đang dính ít nhất 20 cộng dồn ẩm ướt: 470% công, và tiêu 20 cộng dồn ẩm ướt.
+Tầm 2 · 88% trúng · hồi 3 lượt.
+[one line] 90% công · tự ẩm ướt 20+→470% · tầm 2 · hồi 3
+
+deluge
+Nghiêng cả mai đổ xuống một dải, đổ tới đâu thì trong người nhẹ đi tới đó, 60% công.
+Bản thân đang dính ít nhất 3 cộng dồn ẩm ướt, mỗi cộng dồn ẩm ướt tiêu đi cộng thêm 20% công vào đòn, tiêu tối đa 20 cộng dồn ẩm ướt.
+Tầm 1 · 3 ô · 86% trúng · hồi 4 lượt.
+[one line] 60% công · tự ẩm ướt 3+→+20%/cộng · tầm 1 · 3 ô · hồi 4
+
+sprout
+Bắn một hạt đi rồi cắm rễ ngay tại chỗ mình đứng, dưới chân cứ dày dần lên, 80% công.
+Nhận xum xuê x5.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+[one line] 80% công · tự nhận xum xuê x5 · tầm 2 · hồi 1
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -742,6 +808,18 @@ Giữ sẵn một lượng sát thương bên mang không phải chịu, đòn n
 Mỗi cộng dồn giữ được 90% công của bên tạo ra nó.
 Nó ăn sát thương chứ không ăn nhát đánh, nên nhiều đòn nhỏ bào mòn hệt như một đòn lớn, và phần dư của cú đánh nó đỡ không nổi sẽ đi xuyên qua.
 Lá chắn, thấm sát thương cho tới khi cạn · vĩnh viễn · 1 cộng dồn.
+
+[status] swelter
+Tự nó không làm gì cả. Nó dồn lại trên người mang, và chính chiêu của người đó tiêu nó đi — dồn được càng nhiều thì một chiêu tiêu được càng nhiều.
+Dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn.
+
+[status] verdure
+Tự nó không làm gì cả. Nó dồn lại trên người mang, và chính chiêu của người đó tiêu nó đi — dồn được càng nhiều thì một chiêu tiêu được càng nhiều.
+Dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn.
+
+[status] moisture
+Tự nó không làm gì cả. Nó dồn lại trên người mang, và chính chiêu của người đó tiêu nó đi — dồn được càng nhiều thì một chiêu tiêu được càng nhiều.
+Dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn.
 
 [element] neutral
 Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
@@ -1303,6 +1381,72 @@ Hits an enemy for 360% of attack, costing its caster 15% of full health whether 
 Range 2 · 90% to hit · 3 turns to recharge.
 [one line] 360% attack · costs 15% health · range 2 · cd 3
 
+bank_embers
+Hits an enemy for 70% of attack.
+Puts swelter x5 on itself.
+Range 2 · 95% to hit · 1 turn to recharge.
+[one line] 70% attack · self swelter x5 · range 2 · cd 1
+
+flare
+Hits an enemy for 70% of attack.
+While the caster is carrying swelter: 125% of attack, and eats 1 stack of the swelter.
+Range 2 · 94% to hit · 1 turn to recharge.
+[one line] 70% attack · self swelter→125% · range 2 · cd 1
+
+pyre
+Hits an enemy for 80% of attack.
+While this unit is carrying at least 5 stacks of swelter, every stack of swelter it spends adds 23% of attack to the blow, eating up to 17 stacks of the swelter.
+Range 2 · 87% to hit · 4 turns to recharge.
+[one line] 80% attack · self swelter 5+→+23%/stack · range 2 · cd 4
+
+overgrow
+Aims at an ally.
+Gives its target verdure x6, 100% of the time.
+Range 1 · 100% to hit · 2 turns to recharge.
+[one line] verdure x6 100% · an ally · range 1 · cd 2
+
+thorn_volley
+Hits an enemy for 2 strikes of 55% of attack each, 110% in all.
+While the caster is carrying at least 5 stacks of verdure: 240% of attack, and eats 5 stack of the verdure.
+Range 2 · 90% to hit · 2 turns to recharge.
+[one line] 110% attack · self verdure 5+→240% · range 2 · cd 2
+
+bloom_burst
+Hits an enemy for 70% of attack.
+While the caster is carrying at least 10 stacks of verdure: 290% of attack, and eats 10 stack of the verdure.
+Range 2 · 3 cells · 90% to hit · 3 turns to recharge.
+[one line] 70% attack · self verdure 10+→290% · range 2 · 3 cells · cd 3
+
+drench
+Aims at an ally.
+Gives its target moisture x6, 100% of the time.
+Range 1 · 100% to hit · 2 turns to recharge.
+[one line] moisture x6 100% · an ally · range 1 · cd 2
+
+soak
+Hits an enemy for 80% of attack.
+Puts moisture x5 on itself.
+Range 2 · 94% to hit · 1 turn to recharge.
+[one line] 80% attack · self moisture x5 · range 2 · cd 1
+
+tide_break
+Hits an enemy for 90% of attack.
+While the caster is carrying at least 20 stacks of moisture: 470% of attack, and eats 20 stack of the moisture.
+Range 2 · 88% to hit · 3 turns to recharge.
+[one line] 90% attack · self moisture 20+→470% · range 2 · cd 3
+
+deluge
+Hits an enemy for 60% of attack.
+While this unit is carrying at least 3 stacks of moisture, every stack of moisture it spends adds 20% of attack to the blow, eating up to 20 stacks of the moisture.
+Range 1 · 3 cells · 86% to hit · 4 turns to recharge.
+[one line] 60% attack · self moisture 3+→+20%/stack · range 1 · 3 cells · cd 4
+
+sprout
+Hits an enemy for 80% of attack.
+Puts verdure x5 on itself.
+Range 2 · 95% to hit · 1 turn to recharge.
+[one line] 80% attack · self verdure x5 · range 2 · cd 1
+
 [trait] endurance
 Always carries toughened.
 
@@ -1495,6 +1639,18 @@ Holds a pool of damage its holder does not take, and every blow that arrives spe
 The pool is 90% of the caster's attack a stack.
 It eats damage rather than strikes, so many small blows drain it exactly as one large one does, and whatever is left of a blow it cannot cover goes through.
 Soaks up damage until it is used up · always in force · 1 stack.
+
+[status] swelter
+Does nothing at all on its own. It builds up on whoever holds it, and that unit's own skills spend it — the more there is, the more one of them can spend at once.
+Builds up for its holder to spend · 5 turns · up to 999 stacks.
+
+[status] verdure
+Does nothing at all on its own. It builds up on whoever holds it, and that unit's own skills spend it — the more there is, the more one of them can spend at once.
+Builds up for its holder to spend · 5 turns · up to 999 stacks.
+
+[status] moisture
+Does nothing at all on its own. It builds up on whoever holds it, and that unit's own skills spend it — the more there is, the more one of them can spend at once.
+Builds up for its holder to spend · 5 turns · up to 999 stacks.
 
 [element] neutral
 Inert: it beats nothing and nothing beats it; every trade is 100%.
