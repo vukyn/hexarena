@@ -127,6 +127,41 @@ func TestEverySubjectKindIsAppliedByThisClient(t *testing.T) {
 	}
 }
 
+// TestEveryScreenThatAsksAnswersItsOwnQuestion is the third totality walk in
+// this file, and it guards the quietest of the three failures.
+//
+// A screen raises a guard, the reader reads the question and presses y, and the
+// question comes down. If the asking screen has no entry in confirmedBy, that is
+// **all** that happens: the work is not discarded, the squad is not deleted, and
+// nothing on screen says the answer went nowhere — a keystroke that reads as
+// having worked. A missing target draws no screen and a missing subject applier
+// draws an empty one; this one draws the screen the reader was already looking
+// at.
+//
+// ⚠️ It walks guardAskers rather than the map, for the reason the two above walk
+// their counts: the failure being guarded against is a screen that grew a
+// question and no answer, and ranging over confirmedBy would ask the map whether
+// it holds what it holds.
+//
+// ⚠️ **And it proves presence, not effect.** A dispatch entry that exists and
+// does nothing passes this completely — the same blind spot #207 measured on an
+// applier table. What holds the other half is one behaviour test per confirm:
+// TestLeavingAnEditedFormAsksFirst in tui_test.go for the character form, and
+// the four in guard_test.go for the other four.
+func TestEveryScreenThatAsksAnswersItsOwnQuestion(t *testing.T) {
+	for _, asked := range guardAskers {
+		if _, known := confirmedBy[asked]; !known {
+			t.Errorf("screen %v raises a guard and answers none, so a confirmed y on it "+
+				"takes the question down and does nothing", asked)
+		}
+	}
+	// And nothing beyond them, which is the other half of total: an entry for a
+	// screen that never asks is an answer to a question nobody can raise.
+	if got, want := len(confirmedBy), len(guardAskers); got != want {
+		t.Errorf("confirmedBy holds %d entries against the %d screens that ask", got, want)
+	}
+}
+
 // TestARaiseAboutNothingStillArrives is the case the loop above cannot state: a
 // Raise carrying no subject is ordinary rather than a subject nobody applied.
 //

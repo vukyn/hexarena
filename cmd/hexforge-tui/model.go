@@ -212,15 +212,79 @@ type model struct {
 	guard *guardState
 }
 
-// guardState is a pending "are you sure" and what to do if the answer is yes.
+// guardState is a pending "are you sure": the wording, the screen that asked it,
+// and what it is about.
 //
 // The question is a key rather than a sentence so that switching language with
 // one pending redraws it, instead of leaving the last language's words on the
 // screen until the question is answered.
+//
+// ⚠️ **It used to hold a `func(model) model`**, and that closure is why the two
+// screens that carry one — the skill listing and the squad builder — could not
+// move into internal/screen: a callback naming `model` names this client, so a
+// screen holding one is a screen written for the client it was written in. The
+// three fields below are the same mechanism as data, and the shape they take is
+// the one this client already applies everywhere else — a state change the
+// screen makes to itself, and a draw.Action the client applies for it.
 type guardState struct {
 	question i18n.Key
-	confirm  func(model) model
+
+	// asked is the screen the question belongs to, and it is what confirmedBy
+	// turns back into that screen's Confirmed. A screen rather than a second
+	// enum: `screen` already names every view this client has, and a parallel
+	// vocabulary for the four of them that ask would be two names for one idea.
+	asked screen
+
+	// about is what the question is about. Three of the five confirms name
+	// nothing — a form throwing its own draft away is about the screen that
+	// asked — and the squad builder's two are told apart by it.
+	about guardSubject
 }
+
+// guardSubject is what a pending question is about, carried rather than
+// recomputed.
+//
+// ⚠️ **One confirm captures a value the screen does not hold**: deleting a saved
+// squad reads the id under the catalogue's cursor at the moment `d` is pressed,
+// and nothing on squadScreen remembers it. Reading the cursor again when the
+// answer arrives would work — the guard freezes every other key, so the cursor
+// cannot move between the question and the answer — and that is a subtle
+// invariant to rest a file deletion on for nothing. The id travels with the
+// question instead.
+//
+// ⚠️ **draw.Subject was the obvious carrier and does not fit.** Its Kind is the
+// closed list of things a *raise* may land on, counted by
+// screen.SubjectKindCount, and this client's `subjects` applier is held total
+// over that count by TestEverySubjectKindIsAppliedByThisClient — so a squad kind
+// added there would demand a raise applier for a kind no raise carries. Carrying
+// a squad id under NoSubject is the other half of the same mistake: a value
+// filed under a kind that says there is none, which is the absence-encoded-into-a-value
+// shape this repository has paid for twice.
+type guardSubject struct {
+	Kind guardSubjectKind
+
+	// ID is a squad id, and only guardsASavedSquad spends it.
+	ID string
+}
+
+// guardSubjectKind is what sort of thing a pending question is about.
+type guardSubjectKind uint8
+
+const (
+	// guardsNothing is the zero value, and it is what three of the five confirms
+	// carry: a form throwing its own draft away names nothing, because the draft
+	// *is* the screen and the screen is handed back to itself.
+	guardsNothing guardSubjectKind = iota
+	// guardsASavedSquad names a squad on the file, by the id that was under the
+	// catalogue's cursor when the question was asked.
+	guardsASavedSquad
+	// guardsTheSquadInHand is the half-built squad under edit, which is the
+	// other question the squad builder asks and the reason a kind is carried at
+	// all: one screen, two confirms, and a screen told them apart by looking at
+	// its own mode would be reading state to answer a question that could have
+	// said which one it was.
+	guardsTheSquadInHand
+)
 
 func newModel(lib *forge.Library, lang i18n.Lang) model {
 	style := newPalette()
@@ -489,26 +553,104 @@ func (m model) raise(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// confirmedBy is what a confirmed guard means to this client: which screen's
+// Confirmed answers the question that screen asked.
+//
+// A map keyed by the asking screen and read by key, never ranged over into
+// anything that reaches a screen — the same discipline raiseTargets and
+// `subjects` already hold one field over.
+//
+// ⚠️ It has to be **total over guardAskers**: a screen that can ask and has no
+// entry here swallows a confirmed `y` in silence — the question comes down, the
+// reader believes they answered it, and nothing happens. That is the same shape
+// as a target with no screen and a subject kind with no applier, and
+// TestEveryScreenThatAsksAnswersItsOwnQuestion walks the declared list rather
+// than this map for the reason those two walk their counts.
+var confirmedBy = map[screen]func(model, guardSubject) (model, draw.Action){
+	screenNew:     confirmForm,
+	screenOrigins: confirmOrigins,
+	screenSkills:  confirmSkills,
+	screenSquads:  confirmSquads,
+}
+
+// guardAskers is every screen that raises a guard, written down rather than
+// derived.
+//
+// ⚠️ It is the declared count the dispatch above is held against, and it is a
+// list rather than a `screenCount` because most screens never ask: a walk over
+// every view would demand a Confirmed from the chart and the menu. Adding a
+// question to a screen means adding it here, which is the act that puts the
+// screen under the totality test instead of leaving it to be noticed by a reader
+// pressing `y` and getting nothing.
+var guardAskers = [...]screen{screenNew, screenOrigins, screenSkills, screenSquads}
+
+// confirmForm, confirmOrigins, confirmSkills and confirmSquads are the four
+// adapters between the dispatch above and the screens' own Confirmed.
+//
+// Each is the same three lines — hand the screen the context and what the
+// question was about, put what comes back on the model, and give the client the
+// action — and they are written out rather than generated because a screen's
+// field is named on the model and Go has nowhere else to say which one.
+func confirmForm(m model, about guardSubject) (model, draw.Action) {
+	form, action := m.form.Confirmed(m.ctx(), about)
+	m.form = form
+	return m, action
+}
+
+func confirmOrigins(m model, about guardSubject) (model, draw.Action) {
+	origins, action := m.origins.Confirmed(m.ctx(), about)
+	m.origins = origins
+	return m, action
+}
+
+func confirmSkills(m model, about guardSubject) (model, draw.Action) {
+	skills, action := m.skills.Confirmed(m.ctx(), about)
+	m.skills = skills
+	return m, action
+}
+
+func confirmSquads(m model, about guardSubject) (model, draw.Action) {
+	squad, action := m.squad.Confirmed(m.ctx(), about)
+	m.squad = squad
+	return m, action
+}
+
 // answerGuard resolves a pending confirmation. Anything that is not a yes is a
 // no, which is the same default hexforge's own confirmation takes.
 //
 // The y is the same letter in both languages on purpose: it is what the [y/N]
 // on screen offers, and what every other confirmation in this repository takes.
+//
+// ⚠️ The question is taken off the model **before** anything runs, and what the
+// confirm needs travels as an argument. A confirm reading m.guard would be a
+// confirm that has to be run while the question it answers is still pending,
+// which is an ordering nothing states and one keystroke handler could break.
 func (m model) answerGuard(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	confirm := m.guard.confirm
-	switch strings.ToLower(message.String()) {
-	case "y":
-		m.guard = nil
-		return confirm(m), nil
-	default:
-		m.guard = nil
+	guard := *m.guard
+	m.guard = nil
+	if strings.ToLower(message.String()) != "y" {
 		return m, nil
 	}
+	confirm, known := confirmedBy[guard.asked]
+	if !known {
+		return m, nil
+	}
+	answered, action := confirm(m, guard.about)
+	// Both halves, applied the way every converted screen's keystroke already is:
+	// the screen changed itself, and the client does whatever leaving it costs.
+	// One of the five navigates — discarding a half-written character goes back
+	// to the menu — and it says so with a draw.Back rather than by writing
+	// m.screen from inside a screen's own file.
+	return answered.navigate(guard.asked, action)
 }
 
-// ask raises a confirmation. The callback runs only if the answer is yes.
-func (m model) ask(question i18n.Key, confirm func(model) model) model {
-	m.guard = &guardState{question: question, confirm: confirm}
+// ask raises a confirmation, naming the screen that asked and what about.
+//
+// The screen is passed rather than read off m.screen: a question is a fact about
+// who raised it, and taking it from whatever happens to be in front would make
+// the dispatch depend on a coincidence that holds today.
+func (m model) ask(question i18n.Key, asked screen, about guardSubject) model {
+	m.guard = &guardState{question: question, asked: asked, about: about}
 	return m
 }
 
