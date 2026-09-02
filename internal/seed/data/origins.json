@@ -1,16 +1,16 @@
 {
   "origins": [
     {
-      "id": "pokemon",
-      "title": "Pokémon",
-      "medium": "anime",
-      "year": 1997
-    },
-    {
       "id": "naruto",
       "title": "Naruto",
       "medium": "anime",
       "year": 2002
+    },
+    {
+      "id": "pokemon",
+      "title": "Pokémon",
+      "medium": "anime",
+      "year": 1997
     }
   ]
 }

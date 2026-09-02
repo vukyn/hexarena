@@ -734,23 +734,38 @@ is only so the shape is readable.
       what fits, so it would newly mark a line #186 does not cut today — which is
       why #186 left it alone rather than folding it in.
 
-- [ ] **The committed cast is not in the form the tool writes, and the test that
-      was supposed to catch that is vacuous.** `CLAUDE.md` says `cast.json` and
-      `origins.json` are committed exactly as `Book.Marshal` writes them — sorted
-      by id — so that `hexforge new`, which rewrites the whole file, produces a
-      one-block diff instead of a whole-file one. Measured 2026-08-31: **neither
-      is.** `cast.json` is in declaration order (`naruto.naruto` fourth where
-      Marshal puts it first) and `origins.json` reads `pokemon` then `naruto`, so
-      the next real `hexforge new` reshuffles both.
-      ⚠️ **`TestWrittenCastIsStableAndReloads` cannot fail on this**, which is
-      why it went unnoticed: it reads the file out of the **scratch** directory,
-      and `scratchData` → `testfixture.Inject` has already rewritten that copy
-      through `SaveCharacter`/`Marshal`. It compares Marshal's output against
-      Marshal's own output and would pass whatever is committed. Two halves to do
-      apart: **reformat the two files** (a large diff that says nothing, so it
-      wants a commit of its own and no other change riding along), and **point
-      the test at the committed file** so the property is held rather than
-      asserted. Doing the reformat without the test fix buys one tidy day.
+- [x] **The committed cast is not in the form the tool writes, and the test that
+      was supposed to catch that is vacuous. DONE.** Both halves done apart, in
+      that order: the two files reformatted in a commit carrying nothing else,
+      then the property pointed at the committed file.
+      ⚠️ **The old test could not fail and the new one is measured going red.**
+      `TestWrittenCastIsStableAndReloads` read the *scratch* copy, which
+      `scratchData` → `testfixture.Inject` had already rewritten through
+      `SaveCharacter` — Marshal compared against Marshal, green whatever the
+      repository held. `TestTheCommittedBooksAreInTheFormTheToolWrites` reads the
+      committed file, and with the old data restored it fails on both books while
+      the old test still passes. That pairing is the whole finding: **a property
+      about a committed file cannot be held by a test that writes the file first.**
+      The old check is kept and re-worded to the smaller claim it does hold — that
+      a save puts Marshal's exact bytes on disk.
+
+- [ ] ⚠️ **A `hexforge new` still churns `screens.golden`, and sorting the cast
+      did not fix that half.** Measured while reformatting the cast: the reorder
+      moved **1,292 lines** of `internal/screen/testdata/screens.golden`, because
+      `aSquadOfSide` (`internal/screen/play_test.go`) builds its squad as
+      `characters[index % len(characters)]` — so which characters every battle
+      screen shows is a function of the cast file's ORDER, and the next character
+      whose id sorts before the third moves them all again.
+      ⚠️ **The obvious fix is against a rule that fixture states outright**: it
+      names no character on purpose, because "a test that names a character breaks
+      the day somebody edits the cast for a reason that has nothing to do with it".
+      Both rules are about not churning on an unrelated edit and they point
+      opposite ways here, so this is a decision to take rather than a bug to fix —
+      and it was deliberately not taken inside a commit about file formatting.
+      A third option exists and is untried: pick the squad by a property that is
+      neither the name nor the position — the first n that satisfy something the
+      screen is actually measuring (a unit with a trait, a unit at an evolved
+      stage), which would move only when that property moves.
 
 - [x] ⚠️ **Four mechanics `Suggest` resolved and did not price, measured 2026-09-02. DONE.**
       Every row below is a choice `Suggest` actually made on a fixture board, not a

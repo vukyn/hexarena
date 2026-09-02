@@ -1,5 +1,29 @@
 == the authored cast ==
 
+naruto.naruto — Naruto
+  hidden   held back from the lists an author builds a side out of
+  from     Naruto (anime)
+  preset   summoner
+  element  wind
+  species  human
+  art      assets/naruto.svg
+  kit      kunai substitution@8 shadow_clone@12 wind_shuriken@20 summon_toad@28 rasengan@36 comeback@44
+  stage "Naruto" owns levels 1 to 15, showing assets/naruto.svg
+    level 1  hp 1020, atk 180, def 130, spd 48, acc 64, ddg 26
+             absorbs 1463 of the 11500 budget, 10037 to spare
+    level 15 hp 1501, atk 255, def 182, spd 63, acc 84, ddg 33
+             absorbs 2413 of the 11500 budget, 9087 to spare
+  stage "Shippuden" owns levels 16 to 31, showing assets/naruto-shippuden.svg
+    level 16 hp 1648, atk 291, def 199, spd 71, acc 92, ddg 37
+             absorbs 2742 of the 11500 budget, 8758 to spare
+    level 31 hp 2177, atk 377, def 259, spd 89, acc 114, ddg 46
+             absorbs 4061 of the 11500 budget, 7439 to spare
+  stage "Sennin" owns levels 32 to 60, showing assets/naruto-sage-mode.svg
+    level 32 hp 2374, atk 421, def 282, spd 98, acc 122, ddg 51
+             absorbs 4609 of the 11500 budget, 6891 to spare
+    level 60 hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
+             absorbs 7943 of the 11500 budget, 3557 to spare
+
 pokemon.bulbasaur — Bulbasaur
   from     Pokémon (anime)
   preset   blighter
@@ -46,80 +70,51 @@ pokemon.charmander — Charmander
     level 60 hp 3100, atk 700, def 400, spd 140, acc 150, ddg 70
              absorbs 7242 of the 11500 budget, 4258 to spare
 
-pokemon.squirtle — Squirtle
+pokemon.cleffa — Cleffa
   from     Pokémon (anime)
-  preset   warden
-  element  water
-  species  turtle
-  art      assets/squirtle.svg
-  kit      water_gun bubble bite@8 withdraw@12 whirlpool@16 brine@20 rapid_spin@24 aqua_ring@28 hydro_pump@36 water_pulse@32 taunt@40 skull_bash@44 wide_guard@44 soak@20 deluge@44
-  stage "Squirtle" owns levels 1 to 15, showing assets/squirtle.svg
-    level 1  hp 950, atk 120, def 175, spd 24, acc 40, ddg 11
-             absorbs 1505 of the 11500 budget, 9995 to spare
-    level 15 hp 1412, atk 176, def 252, spd 35, acc 57, ddg 15
-             absorbs 2600 of the 11500 budget, 8900 to spare
-  stage "Wartortle" owns levels 16 to 31, showing assets/wartortle.svg
-    level 16 hp 1631, atk 207, def 290, spd 39, acc 63, ddg 17
-             absorbs 3210 of the 11500 budget, 8290 to spare
-    level 31 hp 2183, atk 276, def 385, spd 52, acc 84, ddg 23
-             absorbs 4995 of the 11500 budget, 6505 to spare
-  stage "Blastoise" owns levels 32 to 60, showing assets/blastoise.svg
-    level 32 hp 2461, atk 315, def 438, spd 57, acc 92, ddg 26
-             absorbs 6061 of the 11500 budget, 5439 to spare
-    level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
-             absorbs 11285 of the 11500 budget, 215 to spare
+  preset   mender
+  element  light
+  species  fae
+  art      assets/cleffa.svg
+  kit      moonblast charm moonlight@8 solar_beam@12 sing@14 smokescreen@16 wish@20 rally@24 wide_guard@28 taunt@32 withdraw@36 rapid_spin@40 light_screen@34
+  stage "Cleffa" owns levels 1 to 15, showing assets/cleffa.svg
+    level 1  hp 1032, atk 103, def 93, spd 29, acc 39, ddg 14
+             absorbs 1352 of the 11500 budget, 10148 to spare
+    level 15 hp 1498, atk 149, def 135, spd 42, acc 56, ddg 20
+             absorbs 2174 of the 11500 budget, 9326 to spare
+  stage "Clefairy" owns levels 16 to 31, showing assets/clefairy.svg
+    level 16 hp 1838, atk 181, def 166, spd 50, acc 68, ddg 24
+             absorbs 2858 of the 11500 budget, 8642 to spare
+    level 31 hp 2439, atk 240, def 220, spd 67, acc 90, ddg 32
+             absorbs 4234 of the 11500 budget, 7266 to spare
+  stage "Clefable" owns levels 32 to 60, showing assets/clefable.svg
+    level 32 hp 2892, atk 289, def 261, spd 79, acc 106, ddg 37
+             absorbs 5415 of the 11500 budget, 6085 to spare
+    level 60 hp 4200, atk 420, def 380, spd 115, acc 155, ddg 55
+             absorbs 9523 of the 11500 budget, 1977 to spare
 
-naruto.naruto — Naruto
-  hidden   held back from the lists an author builds a side out of
-  from     Naruto (anime)
-  preset   summoner
-  element  wind
-  species  human
-  art      assets/naruto.svg
-  kit      kunai substitution@8 shadow_clone@12 wind_shuriken@20 summon_toad@28 rasengan@36 comeback@44
-  stage "Naruto" owns levels 1 to 15, showing assets/naruto.svg
-    level 1  hp 1020, atk 180, def 130, spd 48, acc 64, ddg 26
-             absorbs 1463 of the 11500 budget, 10037 to spare
-    level 15 hp 1501, atk 255, def 182, spd 63, acc 84, ddg 33
-             absorbs 2413 of the 11500 budget, 9087 to spare
-  stage "Shippuden" owns levels 16 to 31, showing assets/naruto-shippuden.svg
-    level 16 hp 1648, atk 291, def 199, spd 71, acc 92, ddg 37
-             absorbs 2742 of the 11500 budget, 8758 to spare
-    level 31 hp 2177, atk 377, def 259, spd 89, acc 114, ddg 46
-             absorbs 4061 of the 11500 budget, 7439 to spare
-  stage "Sennin" owns levels 32 to 60, showing assets/naruto-sage-mode.svg
-    level 32 hp 2374, atk 421, def 282, spd 98, acc 122, ddg 51
-             absorbs 4609 of the 11500 budget, 6891 to spare
-    level 60 hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
-             absorbs 7943 of the 11500 budget, 3557 to spare
-
-pokemon.poliwag — Poliwag
+pokemon.gastly — Gastly
   from     Pokémon (anime)
-  preset   bruiser
-  element  water
-  species  amphibian
-  art      assets/poliwag.svg
-  kit      water_gun bubble pummel@8 body_slam@12 bubble_beam@16 brine@20 whirlpool@24 taunt@32 submission@36[Poliwrath] hydro_pump@40 rally@44 rinse@32[Politoed] chorus@36[Politoed] drench@28 soak@20 tide_break@36
-  stage "Poliwag" owns levels 1 to 15, showing assets/poliwag.svg
-    level 1  hp 963, atk 168, def 145, spd 25, acc 38, ddg 11
-             absorbs 1428 of the 11500 budget, 10072 to spare
-    level 15 hp 1398, atk 244, def 210, spd 36, acc 55, ddg 15
-             absorbs 2377 of the 11500 budget, 9123 to spare
-  stage "Poliwhirl" owns levels 16 to 31, showing assets/poliwhirl.svg
-    level 16 hp 1644, atk 291, def 249, spd 40, acc 63, ddg 18
-             absorbs 3010 of the 11500 budget, 8490 to spare
-    level 31 hp 2181, atk 386, def 331, spd 53, acc 84, ddg 24
-             absorbs 4591 of the 11500 budget, 6909 to spare
-  stage "Poliwrath" owns levels 32 to 31, showing assets/poliwrath.svg
-    level 32 hp 2547, atk 454, def 385, spd 62, acc 96, ddg 27
-             absorbs 5828 of the 11500 budget, 5672 to spare
-    level 31 hp 2506, atk 447, def 379, spd 61, acc 94, ddg 27
-             absorbs 5682 of the 11500 budget, 5818 to spare
-  stage "Politoed" owns levels 32 to 60, showing assets/politoed.svg
-    level 32 hp 2616, atk 399, def 399, spd 55, acc 103, ddg 30
-             absorbs 6097 of the 11500 budget, 5403 to spare
-    level 60 hp 3800, atk 580, def 580, spd 80, acc 150, ddg 45
-             absorbs 11176 of the 11500 budget, 324 to spare
+  preset   hexer
+  element  dark
+  species  shade
+  art      assets/gastly.svg
+  kit      shadow_claw shadow_ball@8 night_shade@12 spite@14 curse@16 bite@18 smokescreen@20 poison_powder@22 sludge_bomb@24 venoshock@26 dark_pulse@28 nasty_plot@30 taunt@32 body_slam@36 skull_bash@40 shadow_punch@38
+  stage "Gastly" owns levels 1 to 15, showing assets/gastly.svg
+    level 1  hp 688, atk 141, def 68, spd 30, acc 41, ddg 18
+             absorbs 844 of the 11500 budget, 10656 to spare
+    level 15 hp 999, atk 204, def 99, spd 44, acc 59, ddg 26
+             absorbs 1330 of the 11500 budget, 10170 to spare
+  stage "Haunter" owns levels 16 to 31, showing assets/haunter.svg
+    level 16 hp 1276, atk 262, def 135, spd 55, acc 74, ddg 34
+             absorbs 1851 of the 11500 budget, 9649 to spare
+    level 31 hp 1693, atk 348, def 179, spd 74, acc 99, ddg 45
+             absorbs 2704 of the 11500 budget, 8796 to spare
+  stage "Gengar" owns levels 32 to 60, showing assets/gengar.svg
+    level 32 hp 2066, atk 426, def 233, spd 89, acc 120, ddg 54
+             absorbs 3676 of the 11500 budget, 7824 to spare
+    level 60 hp 3000, atk 620, def 340, spd 130, acc 175, ddg 80
+             absorbs 6410 of the 11500 budget, 5090 to spare
 
 pokemon.machop — Machop
   from     Pokémon (anime)
@@ -143,29 +138,6 @@ pokemon.machop — Machop
              absorbs 4665 of the 11500 budget, 6835 to spare
     level 60 hp 3300, atk 760, def 460, spd 85, acc 210, ddg 28
              absorbs 8375 of the 11500 budget, 3125 to spare
-
-pokemon.cleffa — Cleffa
-  from     Pokémon (anime)
-  preset   mender
-  element  light
-  species  fae
-  art      assets/cleffa.svg
-  kit      moonblast charm moonlight@8 solar_beam@12 sing@14 smokescreen@16 wish@20 rally@24 wide_guard@28 taunt@32 withdraw@36 rapid_spin@40 light_screen@34
-  stage "Cleffa" owns levels 1 to 15, showing assets/cleffa.svg
-    level 1  hp 1032, atk 103, def 93, spd 29, acc 39, ddg 14
-             absorbs 1352 of the 11500 budget, 10148 to spare
-    level 15 hp 1498, atk 149, def 135, spd 42, acc 56, ddg 20
-             absorbs 2174 of the 11500 budget, 9326 to spare
-  stage "Clefairy" owns levels 16 to 31, showing assets/clefairy.svg
-    level 16 hp 1838, atk 181, def 166, spd 50, acc 68, ddg 24
-             absorbs 2858 of the 11500 budget, 8642 to spare
-    level 31 hp 2439, atk 240, def 220, spd 67, acc 90, ddg 32
-             absorbs 4234 of the 11500 budget, 7266 to spare
-  stage "Clefable" owns levels 32 to 60, showing assets/clefable.svg
-    level 32 hp 2892, atk 289, def 261, spd 79, acc 106, ddg 37
-             absorbs 5415 of the 11500 budget, 6085 to spare
-    level 60 hp 4200, atk 420, def 380, spd 115, acc 155, ddg 55
-             absorbs 9523 of the 11500 budget, 1977 to spare
 
 pokemon.magnemite — Magnemite
   from     Pokémon (anime)
@@ -216,27 +188,55 @@ pokemon.mewtwo — Mewtwo
     level 60 hp 3000, atk 520, def 280, spd 140, acc 200, ddg 68
              absorbs 5802 of the 11500 budget, 5698 to spare
 
-pokemon.gastly — Gastly
+pokemon.poliwag — Poliwag
   from     Pokémon (anime)
-  preset   hexer
-  element  dark
-  species  shade
-  art      assets/gastly.svg
-  kit      shadow_claw shadow_ball@8 night_shade@12 spite@14 curse@16 bite@18 smokescreen@20 poison_powder@22 sludge_bomb@24 venoshock@26 dark_pulse@28 nasty_plot@30 taunt@32 body_slam@36 skull_bash@40 shadow_punch@38
-  stage "Gastly" owns levels 1 to 15, showing assets/gastly.svg
-    level 1  hp 688, atk 141, def 68, spd 30, acc 41, ddg 18
-             absorbs 844 of the 11500 budget, 10656 to spare
-    level 15 hp 999, atk 204, def 99, spd 44, acc 59, ddg 26
-             absorbs 1330 of the 11500 budget, 10170 to spare
-  stage "Haunter" owns levels 16 to 31, showing assets/haunter.svg
-    level 16 hp 1276, atk 262, def 135, spd 55, acc 74, ddg 34
-             absorbs 1851 of the 11500 budget, 9649 to spare
-    level 31 hp 1693, atk 348, def 179, spd 74, acc 99, ddg 45
-             absorbs 2704 of the 11500 budget, 8796 to spare
-  stage "Gengar" owns levels 32 to 60, showing assets/gengar.svg
-    level 32 hp 2066, atk 426, def 233, spd 89, acc 120, ddg 54
-             absorbs 3676 of the 11500 budget, 7824 to spare
-    level 60 hp 3000, atk 620, def 340, spd 130, acc 175, ddg 80
-             absorbs 6410 of the 11500 budget, 5090 to spare
+  preset   bruiser
+  element  water
+  species  amphibian
+  art      assets/poliwag.svg
+  kit      water_gun bubble pummel@8 body_slam@12 bubble_beam@16 brine@20 whirlpool@24 taunt@32 submission@36[Poliwrath] hydro_pump@40 rally@44 rinse@32[Politoed] chorus@36[Politoed] drench@28 soak@20 tide_break@36
+  stage "Poliwag" owns levels 1 to 15, showing assets/poliwag.svg
+    level 1  hp 963, atk 168, def 145, spd 25, acc 38, ddg 11
+             absorbs 1428 of the 11500 budget, 10072 to spare
+    level 15 hp 1398, atk 244, def 210, spd 36, acc 55, ddg 15
+             absorbs 2377 of the 11500 budget, 9123 to spare
+  stage "Poliwhirl" owns levels 16 to 31, showing assets/poliwhirl.svg
+    level 16 hp 1644, atk 291, def 249, spd 40, acc 63, ddg 18
+             absorbs 3010 of the 11500 budget, 8490 to spare
+    level 31 hp 2181, atk 386, def 331, spd 53, acc 84, ddg 24
+             absorbs 4591 of the 11500 budget, 6909 to spare
+  stage "Poliwrath" owns levels 32 to 31, showing assets/poliwrath.svg
+    level 32 hp 2547, atk 454, def 385, spd 62, acc 96, ddg 27
+             absorbs 5828 of the 11500 budget, 5672 to spare
+    level 31 hp 2506, atk 447, def 379, spd 61, acc 94, ddg 27
+             absorbs 5682 of the 11500 budget, 5818 to spare
+  stage "Politoed" owns levels 32 to 60, showing assets/politoed.svg
+    level 32 hp 2616, atk 399, def 399, spd 55, acc 103, ddg 30
+             absorbs 6097 of the 11500 budget, 5403 to spare
+    level 60 hp 3800, atk 580, def 580, spd 80, acc 150, ddg 45
+             absorbs 11176 of the 11500 budget, 324 to spare
+
+pokemon.squirtle — Squirtle
+  from     Pokémon (anime)
+  preset   warden
+  element  water
+  species  turtle
+  art      assets/squirtle.svg
+  kit      water_gun bubble bite@8 withdraw@12 whirlpool@16 brine@20 rapid_spin@24 aqua_ring@28 hydro_pump@36 water_pulse@32 taunt@40 skull_bash@44 wide_guard@44 soak@20 deluge@44
+  stage "Squirtle" owns levels 1 to 15, showing assets/squirtle.svg
+    level 1  hp 950, atk 120, def 175, spd 24, acc 40, ddg 11
+             absorbs 1505 of the 11500 budget, 9995 to spare
+    level 15 hp 1412, atk 176, def 252, spd 35, acc 57, ddg 15
+             absorbs 2600 of the 11500 budget, 8900 to spare
+  stage "Wartortle" owns levels 16 to 31, showing assets/wartortle.svg
+    level 16 hp 1631, atk 207, def 290, spd 39, acc 63, ddg 17
+             absorbs 3210 of the 11500 budget, 8290 to spare
+    level 31 hp 2183, atk 276, def 385, spd 52, acc 84, ddg 23
+             absorbs 4995 of the 11500 budget, 6505 to spare
+  stage "Blastoise" owns levels 32 to 60, showing assets/blastoise.svg
+    level 32 hp 2461, atk 315, def 438, spd 57, acc 92, ddg 26
+             absorbs 6061 of the 11500 budget, 5439 to spare
+    level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
+             absorbs 11285 of the 11500 budget, 215 to spare
 
 11 characters
