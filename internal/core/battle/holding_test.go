@@ -175,3 +175,53 @@ func firstAim(prompt *battle.Prompt, skillID string) (hex.Offset, bool) {
 	}
 	return hex.Offset{}, false
 }
+
+// TestTheFallbackFollowsTheTieBreakToo is the same rule as the three tests above,
+// in the one arm of Suggest that had been left out of it.
+//
+// The tie-break exists because two options worth the SAME are not the same to
+// spend, and options worth **nothing** are the sharpest case of that rather than
+// an exception to it: whichever is cast buys nought either way, so the only thing
+// that separates them is what casting it costs. `scour` and `wipe` strip the same
+// two categories off an ally carrying neither, so both rate nought — and one of
+// them is gone for three turns afterwards.
+//
+// ⚠️ **Measured before it was written**: this arm kept "the first such skill in
+// kit order" long after `take` stopped doing so, so kit `[scour, wipe]` cast
+// `scour` and kit `[wipe, scour]` cast `wipe`. Kit order was the whole of the
+// decision. The shipped shape of it is `rapid_spin` — power nought, cooldown
+// three, strips one stack — cast on a board with nothing to strip, which is a
+// cleanse spent for three turns and nothing bought.
+//
+// ⚠️ Both orders are asserted, and the second is the control: it passes whichever
+// rule is in force, so a test that ran only that way round would be green against
+// kit order.
+func TestTheFallbackFollowsTheTieBreakToo(t *testing.T) {
+	for _, kit := range [][]string{{"scour", "wipe"}, {"wipe", "scour"}} {
+		// No enemy skill and nothing on anybody to strip, so every option the
+		// actor holds is worth exactly nought and the fallback is the whole
+		// decision. A single rated option anywhere would make this test about
+		// `take` instead.
+		fight := squad(t, kit, []string{"jab"}, []string{"jab"}, 0, 0, 0)
+		if choice := chosen(t, fight); choice.Skill != "wipe" {
+			t.Errorf("with kit %v Suggest picked %q, want wipe: two options worth "+
+				"nothing are not the same to spend, and one of them is gone for "+
+				"three turns", kit, choice.Skill)
+		}
+	}
+}
+
+// TestTheFallbackStillLosesToAnythingWorthDoing is the other half, and it keeps
+// the tie-break a tie-break here exactly as TestTheCheaperSkillDoesNotWinOnValue
+// keeps it one for a rated option.
+//
+// A cooldown says nothing about what a skill is worth. `scour` is the cheapest
+// thing in this kit to spend and it is still the wrong answer the moment there is
+// something in reach worth hitting.
+func TestTheFallbackStillLosesToAnythingWorthDoing(t *testing.T) {
+	fight := squad(t, []string{"wipe", "jab"}, []string{"jab"}, []string{"jab"}, 0, 0, 0)
+	if choice := chosen(t, fight); choice.Skill != "jab" {
+		t.Errorf("Suggest picked %q with an enemy in reach, want jab: the fallback "+
+			"is taken only when nothing at all was worth doing", choice.Skill)
+	}
+}
