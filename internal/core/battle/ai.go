@@ -84,7 +84,7 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 		return Choice{}, false
 	}
 	best, bestValue, bestCooldown, found := Choice{}, int64(-1), 0, false
-	fallback, hasFallback := Choice{}, false
+	fallback, fallbackCooldown, hasFallback := Choice{}, 0, false
 	prices := b.newPricing()
 
 	// take is the whole of the decision, and it is a pair rather than a number:
@@ -140,9 +140,28 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 			rated = true
 			take(Choice{Skill: option.Skill, Aim: aim}, value, declared.Cooldown)
 		}
-		// Worth nothing to anybody it could reach: the fallback, on the same terms
-		// as before. The first such skill in kit order is kept, and it is taken
-		// only if nothing at all was worth doing.
+		// Worth nothing to anybody it could reach: the fallback. It is taken only
+		// if nothing at all was worth doing, and which one is taken goes through
+		// the same tie-break every rated option goes through — the cheapest to
+		// have spent, with kit order deciding a tie, exactly as `take` reads it.
+		//
+		// ⚠️ **This arm kept "the first in kit order" long after `take` stopped
+		// doing so, and it is the same mistake one branch over.** The tie-break
+		// exists because two options worth the same are not the same to spend:
+		// `TestAScarceSkillIsNotSpentOnWhatACommonOneBuys` was written for a
+		// `clout` burnt on ten points of health while the `jab` beside it would
+		// have done. Options worth *nothing* are the sharpest case of that, not an
+		// exception to it — a `rapid_spin` at three turns of cooldown, cast on a
+		// board with nothing to strip, is a cleanse gone for three turns bought
+		// with nothing, while a cooldownless option in the same kit costs the turn
+		// and no more. Measured before it was written: with two skills both worth
+		// nought, kit `[spin, dust]` cast `spin` and kit `[dust, spin]` cast
+		// `dust` — kit order was the whole of the decision.
+		//
+		// ⚠️ It is NOT a pass. Whether a unit should decline a turn rather than
+		// spend a cooldown for nothing is a separate question and a larger one,
+		// because every gap in what this file prices is an *under*-price: worth
+		// nothing to the rating is not yet worth nothing. See TODO.md.
 		//
 		// ⚠️ Worth nothing and worth **less than nothing** are different, and
 		// lumping them together is what made this rating cast a skill it had just
@@ -156,8 +175,9 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 		if bestPriced < 0 {
 			continue
 		}
-		if !rated && !hasFallback {
-			fallback, hasFallback = Choice{Skill: option.Skill, Aim: option.Aims[0]}, true
+		if !rated && (!hasFallback || declared.Cooldown < fallbackCooldown) {
+			fallback, fallbackCooldown, hasFallback =
+				Choice{Skill: option.Skill, Aim: option.Aims[0]}, declared.Cooldown, true
 		}
 	}
 	if found {

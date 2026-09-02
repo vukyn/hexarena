@@ -480,18 +480,16 @@ is only so the shape is readable.
       with the reason* — the guard that would have caught all four at once.
       → `README.md` § *Cutting the healing* for the two already known.
 
-- [ ] ⚠️ **The fallback cast ignores the cooldown tie-break, and burns scarce
-      utility on a board with nothing to use it on.** Measured 2026-09-02: with two
-      skills both worth nought — one on a three-turn cooldown, one on none — kit
-      `[spin, dust]` casts `spin` and kit `[dust, spin]` casts `dust`. Kit order
-      decides it. That is exactly the mistake
-      `TestAScarceSkillIsNotSpentOnWhatACommonOneBuys` installed the tie-break to
-      fix, one branch over: `Suggest` applies it through `take` for every *rated*
-      option and the fallback arm keeps "the first such skill in kit order".
-      Applying the same tie-break there is free and needs no lookahead.
+- [ ] ⚠️ **Should a unit PASS rather than spend a cooldown on nothing?** The
+      tie-break half of this is done — the fallback now takes the cheapest option
+      to have spent rather than the first in kit order, see
+      `TestTheFallbackFollowsTheTieBreakToo` — and what is left is the harder
+      question it does not answer: what to do when every option worth nought
+      carries a cooldown, which on the shipped cast is **all of them** (no
+      zero-power skill in the book sits below a cooldown of two).
 
-      ⚠️ **The second half is a design question and is NOT covered by
-      *Waiting* below.** That entry's arithmetic — acting is worth `bestValue` now
+      ⚠️ **It is NOT covered by *Waiting* below.** That entry's arithmetic —
+      acting is worth `bestValue` now
       plus next turn's best, waiting is nought plus the same — assumes next turn's
       best is unchanged by acting. It is not: an act starts a cooldown on the skill
       it cast, which `TestAPassBuysNoCooldownAnActDoesNot` asserts as the one

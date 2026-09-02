@@ -141,6 +141,16 @@ Rules for anything added to that file:
   corrected for. Measure a change like this **head to head** (the tie-break on one
   side at a time): both sides use `Suggest`, so the roster rate shows which squad's
   kit gained, not whether the rating improved.
+  ⚠️ **The FALLBACK obeys the same tie-break**, and did not until 2026-09-02.
+  `Suggest` keeps one option worth nought in case nothing at all is worth doing,
+  and that arm kept "the first such skill in kit order" long after `take` stopped
+  doing so — so kit `[scour, wipe]` cast the three-turn cleanse and `[wipe, scour]`
+  cast the free one, with kit order the whole of the decision. Options worth
+  *nothing* are the sharpest case of the rule rather than an exception to it: both
+  buy nought, so what casting one costs is all there is to separate them.
+  ⚠️ Whether such a turn should be **passed** instead is a different and larger
+  question — every gap in what `price.go` sees is an *under*-price, so "worth
+  nought to the rating" is not yet "worth nought". → `TODO.md`.
 - ⚠️ **The queue may break a tie; it may never set a price.** A queue reading is
   **compared**, never added or multiplied. A value that reaches an arithmetic
   expression is tempo, and tempo is priced from the **speed stat** — see the tempo
