@@ -80,6 +80,8 @@ func books(t *testing.T) battle.Books {
 	   "power":1000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"jab","element":"neutral","range":1,"pattern":"single",
 	   "power":60,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"overkill","element":"neutral","range":1,"pattern":"column",
+	   "power":9000000000000000000,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"triple","element":"neutral","range":1,"pattern":"single",
 	   "power":400,"strikes":3,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"thorn","element":"grass","range":1,"pattern":"single",

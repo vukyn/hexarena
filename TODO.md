@@ -662,29 +662,53 @@ is only so the shape is readable.
       says about the drawing, and it only asserts *ink versus blank*: measured,
       swapping the red and green luminance weights and swapping `▀` for `▄` each
       left `go test ./...` **entirely green**.
-- [ ] **A saturating multiplier is re-narrowed one line downstream.** #185 let
-      `combat.Swung` hand back `math.MaxInt64`, and three sites take that value
-      into plain `int` arithmetic: `internal/core/battle/turn.go` multiplies the
-      power by the splash share (`power * SplashPower / scale.Base`), the same
-      file does it to a restore, and `internal/core/battle/ai.go` does it to the
-      rating's power. Same class as #180 and #185, and **strictly better than
-      before either of them** — the value arriving there used to be a wrapped
-      negative — so this is the tail of that work rather than a new defect.
-      ⚠️ Fixing it is not four more widenings: the question worth answering first
-      is whether a saturated multiplier should be *carried* at all, or refused
-      where it is produced.
-- [ ] **`combat.ExpectedStrike` weights in a narrow `int64` product**
-      (`internal/core/combat/combat.go`): `ordinary*(PermilleBase-chance) +
-      critical*chance`, with both `Strike` results now able to reach
-      `math.MaxInt64` after #180. Rating-only — it never reaches a golden — which
-      is exactly why nothing would report it.
-      ⚠️ **#226 added a second product on the same path and it belongs to this
-      item**: `Rules.Expected` is now `ExpectedStrike(h) * ExpectedStrikes() /
-      PermilleBase`, and the multiplier there reaches the strike cap in per mille —
-      about ten thousand — so a saturated `ExpectedStrike` wraps one line sooner
-      than it did. Same class, same fix, and whatever answers the question above
-      ("carry a saturated multiplier, or refuse it where it is produced") answers
-      both.
+- [x] ⚠️ **A saturating multiplier is re-narrowed one line downstream. DONE.**
+      The question this asked first — carry a saturated multiplier, or refuse it
+      where it is produced — is **answered by this file's own § Decided against**:
+      a ceiling on `Skill.Power` is an implementation limit dressed as a design
+      bound, so there is nothing to refuse with, and the figure is carried. Carrying
+      it means the arithmetic that takes it is exact, which is the answer this
+      package already gave twice.
+      **The three sites were nine.** Beyond the two splash shares and the restore:
+      the rating's own splash share, its `perStrike × connecting`, its wall of
+      block charges, `Rules.Total`, `ExpectedStrike`'s weighted average,
+      `Rules.Expected`, both halves of a converted strike **and their sum**,
+      `Restore`, `Pierced`, `ExpectedStrikes`' own count, and the two attempt
+      tallies. `combat.Scaled`, `combat.Repeated`, `wide.plus` and a saturating
+      `summed` now carry all of them.
+      ⚠️ **The worst of them was not a limit of the type at all**: a weighted
+      average lies between the two figures it averages, so `ExpectedStrike` could
+      never legitimately need more than an `int64` — and it wrapped to **−1**,
+      arithmetic thrown away on the way to a number that was always representable.
+      ⚠️ **The property is monotonicity, not a table.** *"Never smaller for more
+      power"* is what a wrap always breaks and a saturation never does, so it
+      catches a site nobody has written yet. Measured: no golden moves and no
+      shipped figure changes — the largest landable multiplier in the book is
+      3,500, twelve orders below where any of this begins.
+      → `internal/core/combat/carry_test.go`, `internal/core/battle/carry_test.go`,
+      `CLAUDE.md` § *Saturate continuous values, cap discrete ones*.
+- [x] **`combat.ExpectedStrike` weights in a narrow `int64` product. DONE.**
+      Folded into the item above and fixed with it: the weighted average is built
+      in 128 bits through `wide.plus`, and `Rules.Expected`'s second product —
+      added by #226 on the same path — goes through `combat.Scaled`. Both were
+      rating-only and reached no golden, which is exactly why nothing reported
+      them; `TestNoFigureFallsAsPowerRises` reports them now.
+
+- [ ] ⚠️ **The rating's `landed > target.HP` clamp hides overflow from every
+      board.** Eight of the nine narrow products above are measurable through a
+      consequence — a unit that did or did not take damage, a skill Suggest did or
+      did not pick. The ninth, the wall of block charges in `pastAWall`, is not:
+      a wrapped figure that stays positive is clamped to the target's health
+      exactly as a correct one is, so the choice comes out the same. The board that
+      nearly showed it wrapped **twice** and cancelled — `damage - (perStrike ×
+      charges)` overflowed on the subtraction too, landing back under nought and
+      taking the guard the correct arithmetic takes. It has an arithmetic test
+      (`TestRepeatedIsTheNarrowProductWhereverThatHeld`) and no board, which is
+      worth writing down rather than papering over with a fixture tuned to a
+      modular coincidence.
+      ⚠️ The general shape is the one this repo keeps meeting: **a clamp downstream
+      of a defect makes the defect unobservable**, and the instrument reads the
+      same either way. Same family as the blind boards in the guard sweep.
 
 - [ ] ⚠️ **A declined turn makes a slow board slower, on a wall-heavy roster.**
       Measured 2026-09-03, before the block-charge clause landed: `forge.Bout` on a

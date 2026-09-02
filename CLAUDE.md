@@ -2053,6 +2053,29 @@ reverting the widening moves **no golden and fails no other package** — `swung
 is the whole guard, and `narrowSwung` in it is the pre-fix expression kept verbatim
 and marked for deletion.
 
+⚠️ **A saturation that is only produced is not a saturation — it has to be carried.**
+Both widenings above end at one `return math.MaxInt64`, and the figure then travels:
+into a splash share, a strike count, a weighted average, a wall of block charges, a
+tally of attempts. Every one of those was a plain narrow product, so the value that
+saturated at the widest the type holds came back out the other side **small, and
+often negative** — the exact defect the widening was written to remove, moved one
+line later. So `combat.Scaled` (a ratio in parts per thousand) and `combat.Repeated`
+(a whole count) reuse `wide`/`over` rather than multiplying narrowly, `wide.plus`
+exists for the one expression whose *answer* always fitted and whose working did not
+(`ExpectedStrike`'s weighted average, which wrapped to **−1**), and the two tallies
+`DamageDealt`/`AbsorbedBy` saturate their sums. Both `battle`'s splash shares, the
+rating's own splash share, its `perStrike × connecting` and its wall of charges go
+through the same two functions. ⚠️ **The property to test is monotonicity, not a
+table**: a table says what the arithmetic does today, and *"never comes back smaller
+for more power"* is the one thing a wrap always does and a saturation never does, so
+it catches a narrow product nobody has written yet — `TestNoFigureFallsAsPowerRises`
+in `internal/core/combat/carry_test.go`. ⚠️ **A strike count is the one input with no
+ceiling anywhere**: `Skill.Validate` refuses a negative and says nothing about a
+large one, so `Hit.ExpectedStrikes` guards its own product. ⚠️ And **the rating's
+`landed > target.HP` clamp hides overflow**: a wrapped figure that stays positive is
+clamped to health like a correct one, which is why the wall-of-charges product has an
+arithmetic test and no board — see `TODO.md` § *Not done*.
+
 **Healing is not damage with a sign.** Three mechanisms give health back — a
 skill's `restores`, a skill's `drains`, and a `regen` status — and each obeys the
 same four rules. `combat.Rules.Restore` deliberately does **not** divide by the

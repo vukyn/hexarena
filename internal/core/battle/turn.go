@@ -1009,7 +1009,7 @@ func (b *Battle) restore(actor, target *Unit, known skill.Skill, position int, t
 	}
 	restore := known.Restores
 	if position > 0 {
-		restore = restore * b.books.Patterns.SplashPower / scale.Base
+		restore = int(combat.Scaled(int64(restore), b.books.Patterns.SplashPower))
 	}
 	b.heal(target, b.books.Rules.Restore(
 		combat.PickScaling(known.Scaling.Source,
@@ -1084,7 +1084,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	// is worth less however the power was arrived at.
 	power = brought.applied(power)
 	if position > 0 {
-		power = power * b.books.Patterns.SplashPower / scale.Base
+		power = int(combat.Scaled(int64(power), b.books.Patterns.SplashPower))
 	}
 
 	actorStats := b.Stats(actor)

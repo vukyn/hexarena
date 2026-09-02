@@ -233,8 +233,9 @@ func (r Rules) divided(attack, defense int64, skillMultiplier, affinityMultiplie
 }
 
 // wide is an unsigned 128-bit intermediate together with whether it is still
-// exact. It exists for the two products in this package that do not fit an
-// int64 — the damage numerator and Swung — and for nothing else.
+// exact. It exists for the products in this package that do not fit an int64 —
+// the damage numerator, Swung, and everything downstream that has to carry what
+// those two can saturate to — and for nothing else.
 //
 // exact goes false the moment a product passes 128 bits and never goes back, so
 // one overflow anywhere in a chain is still an overflow when the chain ends.
@@ -266,6 +267,21 @@ func (w wide) times(factor uint64) wide {
 	high, low := bits.Mul64(w.low, factor)
 	high, carry := bits.Add64(high, upperLow, 0)
 	return wide{high: high, low: low, exact: w.exact && upperHigh == 0 && carry == 0}
+}
+
+// plus adds two 128-bit intermediates.
+//
+// It exists for one expression — the weighted average in ExpectedStrike — and the
+// reason that expression needs it is the reason this type exists at all. Both
+// terms of a convex combination are products of a strike by a weight, and a
+// strike can be a saturated figure; the *answer* always fits, because a weighted
+// average of two values lies between them, but the sum on the way there does not.
+// Adding in 64 bits therefore wraps at exactly the point where the arithmetic is
+// still perfectly well defined, which is the worst of the two ways to be wrong.
+func (w wide) plus(other wide) wide {
+	low, carry := bits.Add64(w.low, other.low, 0)
+	high, spill := bits.Add64(w.high, other.high, carry)
+	return wide{high: high, low: low, exact: w.exact && other.exact && spill == 0}
 }
 
 // over divides by a 64-bit denominator, saturating rather than panicking on a
@@ -310,6 +326,62 @@ func (w wide) over(denominator uint64) int64 {
 	return int64(quotient)
 }
 
+// Scaled returns a value taken at a ratio in parts per thousand.
+//
+// ⚠️ **It exists because saturating at math.MaxInt64 is only half an answer.**
+// A quotient that will not fit stops at the widest figure the type holds, which
+// is the right thing for the quotient and useless to the next line: every plain
+// `value * ratio / PermilleBase` downstream of a saturated figure wraps, and a
+// wrap is the one answer that comes back SMALLER. So the saturation has to be
+// carried rather than merely produced, and carrying it means the arithmetic that
+// takes it is exact — the same answer this package already gave twice, once for
+// the damage numerator and once for Swung.
+//
+// It is bit for bit `value * ratio / PermilleBase` for every pair that fits an
+// int64, which is every pair any battle can reach; the widening only changes the
+// answer where the narrow expression had stopped being one.
+//
+// A ratio of PermilleBase returns the value untouched, for the reason Swung's
+// comment gives: a guard that saturated on the product alone would refuse a
+// figure it was handed and could have returned.
+func Scaled(value int64, ratio int) int64 {
+	if value <= 0 || ratio <= 0 {
+		return 0
+	}
+	return widen(uint64(value), uint64(ratio)).over(PermilleBase)
+}
+
+// Repeated returns a value taken a whole number of times.
+//
+// The same argument as Scaled, for the two places a per-strike figure is
+// multiplied by a count rather than by a ratio.
+func Repeated(value int64, count int) int64 {
+	if value <= 0 || count <= 0 {
+		return 0
+	}
+	return widen(uint64(value), uint64(count)).over(1)
+}
+
+// summed adds figures that are known to be non-negative, saturating.
+//
+// Every caller sums damage, and damage has no negative. That precondition is
+// what makes the check below a single comparison: a sum of two non-negative
+// values is smaller than either only when it has wrapped.
+func summed(values ...int64) int64 {
+	total := int64(0)
+	for _, value := range values {
+		if value <= 0 {
+			continue
+		}
+		if sum := total + value; sum >= total {
+			total = sum
+			continue
+		}
+		return math.MaxInt64
+	}
+	return total
+}
+
 // Restore returns how much health a multiplier of a stat gives back.
 //
 // It does not divide by the defence curve, and damage over time does. That
@@ -323,7 +395,7 @@ func (r Rules) Restore(stat int64, multiplier int) int64 {
 	if stat <= 0 || multiplier <= 0 {
 		return 0
 	}
-	return stat * int64(multiplier) / int64(PermilleBase)
+	return Scaled(stat, multiplier)
 }
 
 // Pierced returns the defence a hit resolves against once a piercing ratio has
@@ -349,7 +421,7 @@ func Pierced(defense int64, pierce int) int64 {
 	if pierce >= PermilleBase {
 		return 0
 	}
-	return defense * int64(PermilleBase-pierce) / int64(PermilleBase)
+	return Scaled(defense, PermilleBase-pierce)
 }
 
 // DefenseReduction returns the share of damage that gets through a given
@@ -669,7 +741,7 @@ func Absorb(attempts []Attempt, pool int64) (left int64) {
 func AbsorbedBy(attempts []Attempt) int64 {
 	total := int64(0)
 	for _, attempt := range attempts {
-		total += attempt.Absorbed
+		total = summed(total, attempt.Absorbed)
 	}
 	return total
 }
@@ -679,7 +751,7 @@ func DamageDealt(attempts []Attempt) int64 {
 	total := int64(0)
 	for _, attempt := range attempts {
 		if attempt.Outcome == Struck {
-			total += attempt.Damage
+			total = summed(total, attempt.Damage)
 		}
 	}
 	return total
@@ -731,6 +803,13 @@ func (h Hit) RollStrikes(source *rng.Source) int {
 // integer arithmetic that cannot drift from the loop it describes.
 func (h Hit) ExpectedStrikes() int {
 	count := h.StrikeCount()
+	// Nothing validates a strike count from above — see Skill.Validate, which
+	// refuses a negative and nothing else — so the one product here is guarded
+	// rather than assumed. A count this large is a book nobody would ship, and it
+	// must still not come back as a small number.
+	if count > math.MaxInt/PermilleBase {
+		return math.MaxInt
+	}
 	total := count * PermilleBase
 	if h.Repeat <= 0 || h.MaxStrikes <= count {
 		return total
@@ -777,10 +856,16 @@ func (r Rules) strike(h Hit, critMultiplier int) int64 {
 	// nought takes the branch above rather than falling through this one at a
 	// share of a thousand, so every figure that shipped before this existed is
 	// bit for bit what it was — see TestConvertingNothingChangesNothing.
-	share := h.Multiplier * (PermilleBase - h.Convert) / PermilleBase
-	converted := h.Multiplier * h.Convert / PermilleBase
-	total := r.divided(h.Scaling, Pierced(h.Defense, h.Pierce), share, h.Affinity, critMultiplier) +
-		r.divided(h.Scaling, 0, converted, h.Affinity, critMultiplier)
+	//
+	// ⚠️ Both shares and the sum go through this package's own arithmetic rather
+	// than the plain expressions they used to be. The multiplier arriving here is
+	// Swung's answer, which saturates; multiplying a saturated multiplier by a
+	// share in a narrow int is where that saturation turned back into a wrap.
+	share := int(Scaled(int64(h.Multiplier), PermilleBase-h.Convert))
+	converted := int(Scaled(int64(h.Multiplier), h.Convert))
+	total := summed(
+		r.divided(h.Scaling, Pierced(h.Defense, h.Pierce), share, h.Affinity, critMultiplier),
+		r.divided(h.Scaling, 0, converted, h.Affinity, critMultiplier))
 	if total < r.MinimumDamage {
 		return r.MinimumDamage
 	}
@@ -814,7 +899,7 @@ func (r Rules) Resolve(h Hit) []int64 {
 // Anything rating a hypothetical action wants Expected instead. Do not delete
 // this as dead weight: doing so takes the golden column with it.
 func (r Rules) Total(h Hit) int64 {
-	return r.Strike(h) * int64(h.StrikeCount())
+	return Repeated(r.Strike(h), h.StrikeCount())
 }
 
 // ExpectedStrike returns what one strike is worth before it is rolled, with the
@@ -838,7 +923,15 @@ func (r Rules) ExpectedStrike(h Hit) int64 {
 	}
 	ordinary := r.Strike(h)
 	critical := r.CriticalStrike(h)
-	return (ordinary*(int64(PermilleBase)-chance) + critical*chance) / int64(PermilleBase)
+	if ordinary < 0 || critical < 0 {
+		return 0
+	}
+	// The average of two figures always fits; the sum on the way to it does not
+	// once a strike has saturated, which is why this is 128 bits and not one
+	// expression. See wide.plus.
+	return widen(uint64(ordinary), uint64(int64(PermilleBase)-chance)).
+		plus(widen(uint64(critical), uint64(chance))).
+		over(PermilleBase)
 }
 
 // Expected returns what every strike of a hit is worth before any is rolled.
@@ -865,7 +958,7 @@ func (r Rules) ExpectedStrike(h Hit) int64 {
 // returns the plain count for a skill that does not repeat, this is still bit for
 // bit Total for every shipped skill but the repeating ones.
 func (r Rules) Expected(h Hit) int64 {
-	return r.ExpectedStrike(h) * int64(h.ExpectedStrikes()) / int64(PermilleBase)
+	return Scaled(r.ExpectedStrike(h), h.ExpectedStrikes())
 }
 
 // Gradient returns the share a hurt caster adds to its own skill's power, in
