@@ -197,11 +197,30 @@ func ink(pixel color.RGBA) inkColour {
 		return inkColour{}
 	}
 	return inkColour{
-		r:       uint8(int(pixel.R) * 255 / int(pixel.A)),
-		g:       uint8(int(pixel.G) * 255 / int(pixel.A)),
-		b:       uint8(int(pixel.B) * 255 / int(pixel.A)),
+		r:       unpremultiply(pixel.R, pixel.A),
+		g:       unpremultiply(pixel.G, pixel.A),
+		b:       unpremultiply(pixel.B, pixel.A),
 		painted: true,
 	}
+}
+
+// unpremultiply recovers one channel of a colour from its stored value.
+//
+// The result saturates instead of wrapping. A premultiplied channel never
+// exceeds its own alpha, so the division stays inside a byte for every pixel a
+// rasteriser produces; the ceiling is there so a pixel built by hand cannot
+// turn a bright colour dark by overflowing on the way back.
+func unpremultiply(channel, alpha uint8) uint8 {
+	if alpha == 0 {
+		return 0
+	}
+	recovered := int(channel) * 255 / int(alpha)
+	if recovered > 255 {
+		return 255
+	}
+	// #nosec G115 -- the ceiling above is the bound, and both operands of the
+	// division are bytes, so the value is between nought and 255 here.
+	return uint8(recovered)
 }
 
 // hex is the pixel as a colour a style can take.

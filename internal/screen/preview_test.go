@@ -102,3 +102,37 @@ func TestThePaletteRemembersWhichTerminalItWasBuiltFor(t *testing.T) {
 			monochrome)
 	}
 }
+
+// TestARecoveredColourSaturates is about the one arithmetic step between a
+// rasterised pixel and a cell: alpha-premultiplied storage means the colour has
+// to be divided back out, and division back out can leave a byte.
+//
+// A channel above its own alpha is not something a rasteriser produces, so this
+// is a guard rather than a case. It is worth holding anyway because of what the
+// wrong answer looks like: without the ceiling the conversion wraps, and a
+// wrapped bright colour comes out DARK rather than merely wrong. A hole in the
+// middle of a lit shape reads as a bug in the picture, and it would be hunted
+// in the rasteriser rather than here.
+func TestARecoveredColourSaturates(t *testing.T) {
+	for _, test := range []struct {
+		name           string
+		channel, alpha uint8
+		want           uint8
+	}{
+		// The ordinary path: half coverage stored dark, handed back bright.
+		{"half covered", 100, 200, 127},
+		{"fully covered", 200, 255, 200},
+		// Above its alpha. 120 over 100 recovers as 306, which wraps to 50 — a
+		// dark cell where the brightest one belongs.
+		{"brighter than its coverage", 120, 100, 255},
+		{"far past its coverage", 255, 41, 255},
+		// No coverage at all never reaches here through ink, but the division
+		// still has to have an answer.
+		{"no coverage", 200, 0, 0},
+	} {
+		if got := unpremultiply(test.channel, test.alpha); got != test.want {
+			t.Errorf("%s: %d over %d recovered as %d, want %d",
+				test.name, test.channel, test.alpha, got, test.want)
+		}
+	}
+}

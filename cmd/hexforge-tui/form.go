@@ -485,6 +485,8 @@ func fieldLabel(m model, field int) string {
 	if key, named := labels[field]; named {
 		return m.text(key)
 	}
+	// #nosec G115 -- the map above names every field below fieldStatBase, so a
+	// field that reaches this line is a stat row and the difference is its index.
 	return forge.ShortStat(progression.Kind(field - fieldStatBase))
 }
 
@@ -543,6 +545,7 @@ func (f formScreen) row(m model, field, labelWidth int) string {
 	case field == fieldSpecies:
 		value = f.speciesValue(m, labelWidth)
 	case field >= fieldStatBase:
+		// #nosec G115 -- the case is the bound: the difference is a stat index.
 		value = f.statRow(m, progression.Kind(field-fieldStatBase))
 	default:
 		value = f.inputs[field].View()
