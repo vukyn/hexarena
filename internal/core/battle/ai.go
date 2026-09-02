@@ -276,7 +276,7 @@ func (b *Battle) against(actor *Unit, actorStats progression.Values, declared sk
 	connecting := int64(hit.ExpectedStrikes()) * int64(b.books.Rules.Chance(hit)) /
 		combat.PermilleBase
 	landed := b.pastAWall(target, declared, perStrike, connecting,
-		perStrike*connecting/combat.PermilleBase)
+		combat.Scaled(perStrike, int(connecting)))
 	// Damage past a target's remaining health is wasted, so a finishing blow is not
 	// rated above one that would kill twice over.
 	if landed > target.HP {
@@ -314,7 +314,12 @@ func (b *Battle) pastAWall(target *Unit, declared skill.Skill,
 		return b.pastAPool(target, declared, damage)
 	}
 	if charges := int64(target.Statuses.Stacks(blockStatus)); charges > 0 {
-		damage -= perStrike * charges
+		// A wall this deep is unreachable and the product is not: perStrike is
+		// what ExpectedStrike answered, which saturates, and a saturated figure
+		// times a stack count is where that turns back into a wrap. What comes
+		// out here is subtracted from a non-negative damage, so a saturated wall
+		// drives the blow under nought and the guard below answers it.
+		damage -= combat.Repeated(perStrike, int(charges))
 		if damage <= 0 {
 			return 0
 		}
@@ -385,7 +390,7 @@ func (b *Battle) hitAgainst(actor *Unit, actorStats progression.Values, declared
 	target *Unit, position int, brought swing) combat.Hit {
 	power := brought.applied(declared.PowerAgainst(conditionTarget(declared, target)))
 	if position > 0 {
-		power = power * b.books.Patterns.SplashPower / 1000
+		power = int(combat.Scaled(int64(power), b.books.Patterns.SplashPower))
 	}
 	targetStats := b.Stats(target)
 	multiplier := b.books.Chart.MultiplierAgainst(declared.Element, target.Affinity)
