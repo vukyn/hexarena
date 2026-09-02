@@ -311,14 +311,22 @@ func TestWrittenCastIsStableAndReloads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
-	// The shipped file is already in this form, so writing it back is a no-op
-	// on disk. That is the property that keeps a `new` diff to one block.
+	// What the last write left, which is a real property and a small one: the
+	// fixture reached this directory through SaveCharacter, so this says the
+	// bytes a save puts on disk are exactly the bytes Marshal produces.
+	//
+	// ⚠️ **It is NOT the claim about the committed file**, and it used to be
+	// worded as though it were. Marshal wrote this copy, so comparing it against
+	// Marshal is comparing a function to itself: it would pass whatever the
+	// repository shipped, which is how the repository came to ship something else
+	// for months. That claim is TestTheCommittedBooksAreInTheFormTheToolWrites,
+	// which reads the committed file and cannot be satisfied by a rewrite.
 	onDisk, err := os.ReadFile(filepath.Join(dir, castFile))
 	if err != nil {
-		t.Fatalf("read the shipped cast: %v", err)
+		t.Fatalf("read the written cast: %v", err)
 	}
 	if string(onDisk) != string(first) {
-		t.Error("the shipped cast.json is not in the form the tool writes, so the first write will churn the whole file")
+		t.Error("a saved cast.json is not the bytes Marshal produces, so a save and a write disagree")
 	}
 
 	character, err := Draft{
@@ -2795,4 +2803,71 @@ func TestTheShippedCatalogueIsReadThroughTheLibrary(t *testing.T) {
 		t.Errorf("the catalogue holds %d builds and the characters account for %d",
 			len(every), grouped)
 	}
+}
+
+// TestTheCommittedBooksAreInTheFormTheToolWrites holds the property that keeps
+// `hexforge new` reviewable.
+//
+// The tool rewrites a whole book on every append. If the committed file is
+// already the bytes Marshal produces, adding a character is a one-block diff and
+// a reviewer reads the character. If it is not, the first append reformats
+// everything and the character is one block in a file-sized diff — the change
+// nobody can see.
+//
+// ⚠️ **It reads the COMMITTED file, and that is the whole point.** Its
+// predecessor read the scratch copy, which the fixture had already rewritten
+// through SaveCharacter — Marshal compared against Marshal, green whatever the
+// repository held. Measured on 2026-08-31: neither file was in that form, and
+// nothing said so. A property about a committed file cannot be held by a test
+// that writes the file first.
+func TestTheCommittedBooksAreInTheFormTheToolWrites(t *testing.T) {
+	library, err := Load(shippedDataDir)
+	if err != nil {
+		t.Fatalf("load the shipped data: %v", err)
+	}
+	for _, book := range []struct {
+		file    string
+		written func() ([]byte, error)
+	}{
+		{castFile, library.Characters().Marshal},
+		{originsFile, library.Origins().Marshal},
+	} {
+		want, err := book.written()
+		if err != nil {
+			t.Errorf("marshal %s: %v", book.file, err)
+			continue
+		}
+		onDisk, err := os.ReadFile(filepath.Join(shippedDataDir, book.file))
+		if err != nil {
+			t.Errorf("read the committed %s: %v", book.file, err)
+			continue
+		}
+		if string(onDisk) == string(want) {
+			continue
+		}
+		line, held, tool := firstDifference(string(onDisk), string(want))
+		t.Errorf("the committed %s is not the form the tool writes, so the next "+
+			"append churns the whole file.\n  line %d committed: %s\n  line %d tool:      %s",
+			book.file, line, held, line, tool)
+	}
+}
+
+// firstDifference names the line two renderings of a book part company on,
+// because a byte count says nothing a reader can act on and a full diff of a
+// data file says too much.
+func firstDifference(held, written string) (line int, fromFile, fromTool string) {
+	heldLines, writtenLines := strings.Split(held, "\n"), strings.Split(written, "\n")
+	for i := range max(len(heldLines), len(writtenLines)) {
+		from, to := "<end of file>", "<end of file>"
+		if i < len(heldLines) {
+			from = strings.TrimSpace(heldLines[i])
+		}
+		if i < len(writtenLines) {
+			to = strings.TrimSpace(writtenLines[i])
+		}
+		if from != to {
+			return i + 1, from, to
+		}
+	}
+	return 0, "", ""
 }
