@@ -306,7 +306,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 	// from a library alone, which is where the answer already lives
 	// (draw.Palette.Plain). The window is not filled in because nothing a
 	// constructor does measures one.
-	ctx := draw.Context{Lib: lib, Lang: lang, Style: style}
+	ctx := draw.Context{Lib: lib, Lang: lang, Style: style, Authoring: true}
 	return model{
 		lib:      lib,
 		lang:     lang,
@@ -344,6 +344,15 @@ func (m model) ctx() draw.Context {
 		Lang:  m.lang,
 		Style: m.style,
 		Width: m.width, Height: m.height,
+		// ⚠️ **This client is the one that authors, so it is the one that says
+		// so.** draw.Context.Authoring is nought for a read-only client, and
+		// nought is the reading a forgotten declaration falls into — which is why
+		// the declaration lives on the side that has a suite pressing every one
+		// of those keys by name. Dropping it here takes `a` and `e` off the skill
+		// listing, `a` off the works catalogue and `n`, `enter` and `d` off the
+		// squad catalogue, and reddens the tests that press them rather than
+		// going quiet.
+		Authoring: true,
 	}
 }
 

@@ -649,4 +649,30 @@ q or ctrl+c to quit`,
 	PlayHiddenNote:       "save note",
 	PlayHiddenUnits:      "%d units",
 	PlayHiddenUnitsOne:   "1 unit",
+
+	SkillsReadFooter:  "↑/↓ · / filter · ? describe · ctrl+l tiếng Việt · esc · q",
+	OriginsReadFooter: "↑/↓ move · ctrl+l tiếng Việt · esc back · q quit",
+	SquadsReadFooter:  "↑/↓ move · f fight · ctrl+l tiếng Việt · esc back",
+
+	GameNotATerminal: "stdout is not a terminal, and a full-screen program would write control codes into it.\n" +
+		"Use hexarena instead: the same engine and the same battles, it takes flags and reads a\n" +
+		"pipe, and hexarena --replay draws a battle saved here",
+	GameTerminalTooSmall: `terminal too small
+
+needs at least %dx%d
+this window is %dx%d
+
+Make it bigger, or use
+hexarena instead: same
+engine, any terminal.
+
+q or ctrl+c to quit`,
+	GameMenuNote: "A battle here is fought out of the directory above, while the game boots from\n" +
+		"the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s\n" +
+		"writes the log that hexarena --replay draws that same battle back from.",
+	GameMenuSkillsDetail: "look a skill up: what each does, and who may carry it",
+	GameMenuWorksDetail:  "look a work up: the fictions the cast is borrowed from",
+	GameMenuSquadsDetail: "the sides that have been built, and take one into a battle",
+	GameMenuBattle:       "battle",
+	GameMenuBattleDetail: "play a battle yourself, with the first side on the list",
 }

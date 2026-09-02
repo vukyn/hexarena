@@ -285,10 +285,22 @@ func (s SquadsScreen) updateList(c Context, message tea.KeyPressMsg) (SquadsScre
 		s.Cursor = Clamp(s.Cursor-1, 0, len(s.Saved)-1)
 	case "down", "j":
 		s.Cursor = Clamp(s.Cursor+1, 0, len(s.Saved)-1)
+	// The three keys that reach the builder, all guarded on the client being
+	// able to write — see Context.Authoring. A game client draws this catalogue
+	// so a player can see which sides have been built and take one into a
+	// battle, and every one of these three ends in squads.json: `n` and `enter`
+	// open the two depths under this one and `d` deletes a file outright.
+	//
+	// ⚠️ **`f` is not among them**, which is the whole reason this screen is on a
+	// game client's menu at all: fighting a side is what a side is for. It raises
+	// a Target and the client turns that into one of its own screens, which is
+	// the seam the two clients answer differently.
 	case "n":
-		s = s.Begin()
+		if c.Authoring {
+			s = s.Begin()
+		}
 	case "enter":
-		if len(s.Saved) > 0 {
+		if len(s.Saved) > 0 && c.Authoring {
 			s = s.Open(s.Saved[Clamp(s.Cursor, 0, len(s.Saved)-1)])
 		}
 	case "f":
@@ -309,7 +321,7 @@ func (s SquadsScreen) updateList(c Context, message tea.KeyPressMsg) (SquadsScre
 			}}, nil
 		}
 	case "d":
-		if len(s.Saved) > 0 {
+		if len(s.Saved) > 0 && c.Authoring {
 			return s, Action{
 				Kind:     Ask,
 				Question: i18n.SquadDiscardSaved,
@@ -964,7 +976,7 @@ func (s SquadsScreen) View(c Context) (string, string) {
 	case SquadUnit:
 		return s.viewUnit(c), c.Text(i18n.SquadUnitFooter)
 	}
-	return s.viewList(c), c.Text(i18n.SquadsFooter)
+	return s.viewList(c), c.Footer(i18n.SquadsFooter, i18n.SquadsReadFooter)
 }
 
 func (s SquadsScreen) viewList(c Context) string {

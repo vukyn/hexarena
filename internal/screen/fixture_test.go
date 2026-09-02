@@ -98,6 +98,12 @@ func start(t *testing.T, lang i18n.Lang) (Context, *forge.Library) {
 	return Context{
 		Lib: lib, Lang: lang, Style: NewPalette(plainHere()),
 		Width: 120, Height: 44,
+		// The tests in this package are written from the authoring tool's side —
+		// they press `a`, `e`, `n`, `d` and `enter` and assert a form opens or a
+		// file is written — so the Context they drive with is the one that can.
+		// The read-only reading is measured in cmd/hexarena-tui, which is the
+		// client that has it.
+		Authoring: true,
 	}, lib
 }
 

@@ -48,24 +48,32 @@ go run ./cmd/hexforge spar some.id --seeds 200   # duel it against the whole cas
 go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal), in Vietnamese
 go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG=en does the same, ctrl+l toggles
 
+go run ./cmd/hexarena-tui                        # play, full screen: the catalogues a reader wants, and a battle
+go run ./cmd/hexarena-tui --lang en              # ...in English; same flag, same variable, same ctrl+l
+
 go test ./...
-go test ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui -update   # accept new goldens
+go test ./cmd/hexarena-tui ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui -update   # accept new goldens
 go test ./internal/core/battle -run TestControl                     # one test
 gofmt -l . && go vet ./...
 ```
 
-The `Makefile` wraps those and nothing more — `make build install run auto forge
-forge-tui forge-tui-en test golden fmt vet check clean`. `make build` builds all three
-binaries; `make forge ARGS="show some.id"` passes arguments through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
+The `Makefile` wraps those and nothing more — `make build install run auto
+play-tui forge forge-tui forge-tui-en test golden fmt vet check clean`. `make
+build` builds all four binaries; `make forge ARGS="show some.id"` and `make
+play-tui ARGS="--lang en"` pass arguments through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
 `go test ./... -count=1`); `make golden` is the `-update` line above. The raw
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
 
-`-update` is only defined in the six packages that hold golden files
-(`cmd/hexforge-tui`, `internal/core/hex`, `internal/i18n`, `internal/screen`,
-`internal/seed`, `internal/tui`), so `go test ./... -update` fails on the rest. A
-new package with a golden has to be added to that command **and** to the `golden`
-target.
+`-update` is only defined in the seven packages that hold golden files
+(`cmd/hexarena-tui`, `cmd/hexforge-tui`, `internal/core/hex`, `internal/i18n`,
+`internal/screen`, `internal/seed`, `internal/tui`), so `go test ./... -update`
+fails on the rest. A new package with a golden has to be added to that command
+**and** to the `golden` target. ⚠️ **This list has gone stale twice**, so it is
+spelled in exactly three places — that command, the `golden` target, and the
+paragraph under § *Data and golden files* — and a package added to one and not
+the others is the next reader running `make golden` and not accepting a golden
+they have moved.
 
 ## Rating an action: how Suggest prices what is not damage
 
@@ -1115,6 +1123,103 @@ element does not empty the kit, it turns those rows into marked rows and the car
 line red, which is a state an author can see and fix rather than one that happened
 behind them. Do not "tidy" that by dropping the offending skills: a silent
 mutation is how a one-way order comes back, and it makes the live check a lie.
+
+## Two full-screen clients over one `internal/screen`
+
+`cmd/hexforge-tui` authors the cast and **`cmd/hexarena-tui`** plays the game,
+and they draw the same screens out of the same package. That is what the eleven
+extraction steps were for, and it is the same shape the authoring pair already
+had one layer down — a CLI for pipes, a `-tui` for the screen, one `internal/`
+package under both, so the two cannot disagree.
+
+⚠️ **`cmd/hexarena` is not that client and must not become one.** It is the
+**verification contract**: `--replay --verify` re-runs a log from its seed and
+checks every event, and `--auto` / `--log` are the scriptable half. Nothing about
+it changed, and nothing about it may.
+
+**What the game client offers**: a menu, the seven catalogues a reader wants
+(characters, skills, elements, traits, species, works, squads) and a battle, plus
+three screens reached by a keystroke rather than by the menu — the affinity chart
+(`g` on the elements listing), the statuses reference (`?` on the traits listing)
+and the description screen (`?` from three places). The build catalogue and the
+art preview are the two `internal/screen` owns that it does not reach; both are
+decisions filed in `TODO.md` rather than wiring nobody got to.
+
+### One capability, because three shared screens author and one client cannot
+
+`skills` has `a` and `e`, `origins` has `a`, and the squad catalogue's `n`,
+`enter` and `d` reach the two depths that write `squads.json` and the deletion
+that removes a side. A game client offers none of that.
+
+`screen.Context.Authoring` is the whole answer, consulted **beside** the
+keystroke it turns off so the keys and the footer are decided in one place.
+`Context.Footer(authoring, reading)` is the footer half, and a read-only footer
+is a **second wording** rather than the authoring one with a clause deleted by a
+program: dropping `a thêm` out of a rendered line would leave the separators
+either side of it, and nothing would measure what was left.
+
+⚠️ **Nought is the read-only reading, and that is the load-bearing half.** The
+safe answer has to be the one a forgotten declaration falls into, and here the
+safe answer is *fewer* keys: a read-only client that quietly authored would write
+the author's files off a key its footer never named, while a tool that quietly
+stopped authoring loses `a`, `e`, `n`, `d` and `enter`. So the tool that can
+author declares it (`model.ctx`, `newModel`, and both test fixtures in
+`internal/screen`); the client that cannot has nothing to declare and therefore
+nothing to forget.
+
+⚠️ **Which suite catches a dropped declaration was measured, and it is not the
+authoring client's.** Inverting one guard at a time and counting failing tests:
+`skills.go`'s `a` reddens **internal/screen 4 · cmd/hexarena-tui 2 ·
+cmd/hexforge-tui 0**; `squads.go`'s `n` reddens **internal/screen 10 ·
+cmd/hexarena-tui 2** and cmd/hexforge-tui as well. The nought is that client's
+`everyScreen` setting `SkillsScreen.Adding` **by hand** rather than pressing `a`,
+so nothing in that package drives the key at all. The authoring half of these
+guards is therefore held in `internal/screen` and the read-only half in
+`cmd/hexarena-tui`, and neither client's suite alone covers both.
+
+⚠️ **A key announced on a screen that ignores it is worse than one nobody was
+told about** (`internal/screen/picker.go`), so the footers are measured rather
+than reasoned about. `cmd/hexarena-tui/readonly_test.go` is four tests because
+the claim has four independent halves: the keys do nothing (driven through the
+real model), no footer the client draws names one, **the list of such keys is
+derived** — every keystroke the suite can send, pressed under both readings, and
+held equal to the written list in both directions — and the two footers differ,
+because a read-only footer identical to the authoring one would satisfy the
+second test by naming nothing at all.
+
+### `draw.Fight` means two different things, and that is the PvP seam
+
+`internal/screen/squads.go` raises `Action{Kind: Raise, Target: Fight}` about a
+squad **by id**, and the catalogue is in the shared package — so both clients
+receive it and each turns it into one of its own screens.
+`TestEveryRaiseTargetNamesAScreenInThisClient` is held total **per client**,
+which is what makes a Target sayable for a screen this package will never draw.
+
+- In **cmd/hexforge-tui** it means *pick a second squad and measure the pairing*:
+  two choosers, both arrangements over the same seeds, a win rate with a control
+  that is exactly 500‰ by construction.
+- In **cmd/hexarena-tui** it means *take this side into a battle*. The named
+  squad is `Home` — the side the player fights on, since `Squad.Take` fields home
+  as the ally half — and the opponent is `Away`.
+
+⚠️ **The opponent is the seam and it is stubbed rather than invented.**
+`README.md` § *PvP over a LAN* says what the real answer is: two people on a LAN,
+each bringing a squad saved on their own machine, and a **server** that pairs
+them. Until a server sends one, `cmd/hexarena-tui/pairing.go` takes **the next
+side on the file, wrapping** — which is one side against a copy of itself when
+the catalogue holds one, the pairing every fixture in `internal/screen` opens on
+and the one the authoring tool's fight calls its control. `pairing` is one
+function on purpose: when the server arrives it is the only thing that changes,
+and the battle screen never learns that the second squad came off a socket.
+
+⚠️ **A mirror was the obvious answer and is measurably worse.** Two identical
+sides make the halves of a battle interchangeable — same board, same roster, same
+order line whichever way round they are fielded — so *nothing* can see a client
+that opens the battle with the sides swapped. The fixture therefore builds its
+two sides around **different characters**, and
+`TestABattleOpensOnTheSideTheRaiseNamed` walks **every** row of the catalogue and
+names both halves, because home alone is satisfied by a client that fields the
+named side twice and a cursor on the last row cannot tell `+1` from correct.
 
 ## The event log is the contract
 
@@ -2215,7 +2320,8 @@ regenerated on autopilot:
   resolved at each of its stage boundaries and at the cap.
 - `cmd/hexforge-tui/testdata/screens.golden` is the **rendered client**: every
   entry `everyScreen` registers, in both languages, at the 120x24 floor and at
-  160x60 — 200 renders, 8200 lines. It is the only golden in a `cmd` package, and
+  160x60 — 200 renders, 8200 lines. It was the only golden in a `cmd` package
+  until `cmd/hexarena-tui` grew one, and
   it exists because the screens had *property* tests (width, translation, no
   leaked wording) and no byte-level one, so a misplaced space or a moved clip
   point passed everything. ⚠️ **The header line is deliberately not recorded** —
@@ -2297,9 +2403,39 @@ regenerated on autopilot:
   the books load straight from `../seed/data`. `noAbsolutePath` asserts that
   anyway — a property that holds by construction is one a later change breaks
   quietly.
+- `cmd/hexarena-tui/testdata/screens.golden` is the **game client's** framing of
+  the same screens: every entry its own `everyScreen` registers — 24 over 12 of
+  its 13 views — in both languages at the 120x24 floor and at 160x60,
+  **96 renders, 3936 lines**. It is the third record of one set of screens and
+  none of the three replaces another: `internal/screen`'s holds the drawing, the
+  authoring tool's holds *its* framing of it, and this one holds **three things
+  neither of the others can draw**.
+  ⚠️ **The three read-only footers.** `i18n.SkillsReadFooter`,
+  `i18n.OriginsReadFooter` and `i18n.SquadsReadFooter` are what a screen draws
+  when `screen.Context.Authoring` is nought, and measured before this golden
+  existed they came back at **nought hits in both** of the others, in both
+  languages, because there was no client to draw them.
+  ⚠️ **A squad catalogue with rows on it.** Both other fixtures delete
+  `squads.json` — it is the author's own working document — and this one writes
+  two sides into it, so the id column that #222 measured as invisible to the
+  whole authoring suite is finally recorded somewhere.
+  ⚠️ **A battle at three a side.** A one-a-side board, roster, order line and
+  option list come to exactly the twenty rows the floor leaves, so nothing is
+  ever dropped and the notice naming what the window was too short for is drawn
+  by nothing; three a side is 24 rows against 20, which is where the budget
+  starts deciding.
+  ⚠️ It drops its header line and hands `forge.Load` a **relative** directory,
+  for the reason the authoring tool's does: `frame` names the data directory and
+  a saved battle's own note names the file it wrote, both of which would
+  otherwise be a machine in a committed file. The drop is **asserted** rather
+  than scrubbed, and `noAbsolutePath` walks every recorded line.
+  ⚠️ The **art preview** is in no sweep and therefore in no golden, deliberately
+  and in all three records: it draws rasterised art, so what such an entry would
+  assert is an open question — → `TODO.md`.
 
-Run `make golden` (`go test ./cmd/hexforge-tui ./internal/core/hex
-./internal/i18n ./internal/screen ./internal/seed ./internal/tui -update`) to accept a change and
+Run `make golden` (`go test ./cmd/hexarena-tui ./cmd/hexforge-tui
+./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed
+./internal/tui -update`) to accept a change and
 then **read the diff**. That diff is what the files are for: a balance change that
 moves numbers you did not expect is a finding, not noise.
 

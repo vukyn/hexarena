@@ -202,14 +202,31 @@ is only so the shape is readable.
       the ones nothing else can start without.
 
       **Groundwork**
-      - [ ] Factor the reference screens out of `cmd/hexforge-tui` into a package
-            both binaries draw, and stand up `cmd/hexarena` as a full-screen
-            client over it. ⚠️ **The biggest single item and the one that gates
-            everything**: 10k lines of tightly-coupled bubbletea under 13.7k
-            of tests, and the tests are the hard half — `everyScreen` is the
-            harness, and a screen that moves out without being re-registered
-            silently loses its width, translation and leak tests, which is a
-            shape this file already records five times.
+      - [x] Factor the reference screens out of `cmd/hexforge-tui` into a package
+            both binaries draw, and stand up a full-screen client over it.
+            **Done** — eleven screens are in `internal/screen` and
+            **`cmd/hexarena-tui`** draws them: a menu, seven catalogues and a
+            battle. ⚠️ **The binary is `cmd/hexarena-tui` and not `cmd/hexarena`**,
+            which this item used to say: `cmd/hexarena` is the *verification*
+            contract — `--replay --verify` re-runs a log from its seed and checks
+            every event, and `--auto`/`--log` are the scriptable half — so it is
+            untouched, and the pair follows the house rule the authoring tools
+            already do (a CLI for pipes, a `-tui` for the screen, one package
+            under both).
+            ⚠️ The tests were the hard half exactly as predicted, and what the
+            new client was born with is the answer: its own `everyScreen`, its
+            own wording walker (the third copy — the walker reads its own package
+            directory only, so the ban does not follow code into a new package),
+            its own golden, and one thing the authoring tool's sweep has never
+            had — `screenCount`, a **count** the sweep is held against, so a view
+            added without an entry or a written exclusion is a red test rather
+            than a screen nothing measures.
+            ⚠️ Two catalogues are left out on purpose and both are gaps rather
+            than half-finished screens: **`BuildsScreen`** is the eighth listing
+            `internal/screen` owns and this client's menu is the seven the step
+            asked for, and the **art preview** is registered in no sweep because
+            it draws rasterised art and what an entry would assert about it is
+            still open (the same decision the other two records take).
       - [ ] `internal/wire`: the protocol as one stdlib-only package. The
             envelope, the three version numbers, and error **codes** rather than
             prose. A golden per message, so a wire change shows up in a diff.

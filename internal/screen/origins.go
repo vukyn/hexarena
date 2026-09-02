@@ -142,9 +142,14 @@ func (o OriginsScreen) Update(c Context, message tea.KeyPressMsg) (OriginsScreen
 	case "down", "j":
 		o.Cursor = Clamp(o.Cursor+1, 0, len(o.Origins)-1)
 	case "a":
-		o = o.ResetForm(c)
-		o.Adding = true
-		o.Added = nil
+		// Guarded on the client being able to write — see Context.Authoring. A
+		// game client draws this catalogue so a reader can see which fiction the
+		// cast is borrowed from, and the form over it writes origins.json.
+		if c.Authoring {
+			o = o.ResetForm(c)
+			o.Adding = true
+			o.Added = nil
+		}
 	}
 	return o, Action{}, nil
 }
@@ -257,7 +262,7 @@ func (o OriginsScreen) View(c Context) (string, string) {
 	if o.Adding {
 		return o.viewForm(c)
 	}
-	footer := c.Text(i18n.OriginsFooter)
+	footer := c.Footer(i18n.OriginsFooter, i18n.OriginsReadFooter)
 	var out strings.Builder
 	out.WriteString(c.Style.Heading.Render(c.Text(i18n.OriginsHeading)) + "  " +
 		c.Style.Dim.Render(c.Text(i18n.OriginsSubtitle)) + "\n\n")

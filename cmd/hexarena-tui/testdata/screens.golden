@@ -1,0 +1,3936 @@
+===== vi | 120x24 | a battle =====
+
+trận đấu  seed 1  diễn biến 56-56/56
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+> strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a battle blurb =====
+
+strike <đòn đánh>  1/4
+
+  Đánh đối phương, 100% công.
+  Tầm 1 · 96% trúng · dùng mọi lượt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 120x24 | a battle over =====
+
+trận đấu  seed 1  diễn biến 191-195/195
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        fallen                      90   poison x2 (3t)
+A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
+A3   Example Adept        fallen                      90   poison x3 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [########..]  1765/2200    200   -
+
+next: E2 E3 E1 E2 E3 E1
+
+    E1   hits A3 for 699 (doubly weak!), 0 left
+    E1   A3 resists stun <choáng> (25%)
+    A3  falls at 2,2
+  
+  the enemy side wins
+
+phe bạn ngã
+n đánh trận khác · [/] cuộn · ctrl+s lưu lại · esc quay lại
+===== vi | 120x24 | a battle with no pairing =====
+
+trận đấu  seed 1
+
+  chưa dựng đội nào; bấm n để bắt đầu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a saved battle =====
+
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+A2 Example Adept, lượt 1
+> strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+
+đã ghi phe-0-vs-phe-1-seed1.json vào data/battles/phe-0-vs-phe-1-seed1.json
+phát lại bằng: hexarena --replay battles/phe-0-vs-phe-1-seed1.json --verify — build lại trước, vì game đọc bản dữ liệu
+nhúng trong nó chứ không đọc mấy file này
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a scrolled battle log =====
+
+trận đấu  seed 1  diễn biến 99-99/138
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        fallen                      90   poison x2 (3t)
+A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
+A3   Example Adept        [#######...]  2430/3100     90   -
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [#########.]  2037/2200    200   -
+
+next: E1 E2 E3 E1 E2 E3
+
+    A3  uses riptide <sóng ngầm> at 3,0
+
+A3 Example Adept, lượt 3
+> strike      100% công · tầm 1
+  riptide     3 turns of cooldown left
+  guard_wall  3 turns of cooldown left
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a skill blurb =====
+
+vine_whip <roi dây leo>  1/130
+
+  Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
+  Tầm 1 · 95% trúng · hồi 1 lượt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 120x24 | a squeezed battle =====
+
+trận đấu  seed 1  diễn biến 56-56/56
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+> strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a trait blurb =====
+
+Mew  cấp 60
+
+  elusive <huyền ảo>
+    Chỗ vừa đứng đã trống, mà chỗ đòn rơi xuống thì lại chẳng có ai.
+    Luôn mang khinh công.
+
+  composure <vững tâm>
+    Đứng giữa ồn ào mà đầu vẫn tỉnh, ai gào thét cỡ nào cũng chẳng lay được.
+    Giảm 50% khả năng dính choáng.
+    Giảm 50% khả năng dính bị khiêu khích.
+
+  swiftness <thần tốc>
+    Quen chạy hơn quen đứng, ra tay xong đã ở chỗ khác.
+    Luôn mang gia tốc.
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+
+  … 17/29 dòng, [/] để cuộn
+↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 120x24 | aiming =====
+
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+
+A2 Example Adept, lượt 1
+  strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+
+nhắm strike vào
+> 3,0  E3 Bloom
+  3,1  E2 Bloom
+  3,2  E1 Bloom
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 120x24 | an empty squad catalogue =====
+
+đội hình  đã dựng 0 đội, mỗi phe tối đa 5 người
+
+chưa dựng đội nào; bấm n để bắt đầu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại
+===== vi | 120x24 | cast =====
+
+danh sách nhân vật  đang xem tất cả nguồn (13 trong 13 nhân vật)
+
+> fixture-anime.adept      fixture-anime  water/ice <nước/băng>
+  fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
+  naruto.naruto            naruto         wind <gió>
+  pokemon.bulbasaur        pokemon        grass <cỏ>
+  pokemon.charmander       pokemon        fire <lửa>
+  pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.gastly           pokemon        dark <bóng tối>
+  pokemon.machop           pokemon        ground <đất>
+  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
+  pokemon.mew              pokemon        neutral <trung tính>
+  pokemon.mewtwo           pokemon        dark <bóng tối>
+  pokemon.poliwag          pokemon        water <nước>
+  pokemon.squirtle         pokemon        water <nước>
+
+fixture-anime.adept — Example Adept
+  nguồn tham khảo  Example Anime (anime, fixture-anime)
+  lối chơi         sentinel
+… bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
+↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
+===== vi | 120x24 | chart =====
+
+đồ thị tương khắc  mỗi vòng: hệ trước khắc hệ sau, hệ cuối khắc hệ đầu
+
+  organic
+    ,--> water --> fire --> grass --> ground --,
+    `------------------------------------------'
+  industrial
+    ,--> ice --> metal --> wind --> electric --,
+    `------------------------------------------'
+  cross
+    ,--> water --> metal --> grass --> wind --> fire --> ice --> ground --> electric --,
+    `----------------------------------------------------------------------------------'
+  đối lập
+    light <--> dark
+  trơ
+    neutral
+
+  khắc 150% · thường 100% · bị khắc 67%
+
+
+
+ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | elements =====
+
+hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
+
+> neutral   trung tính
+  water     nước
+  fire      lửa
+  grass     cỏ
+  ground    đất
+  ice       băng
+  metal     kim loại
+  wind      gió
+  electric  điện
+  light     ánh sáng
+  dark      bóng tối
+
+  Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
+
+  Đơn vị hai hệ hứng cả hai hệ số; một đòn luôn mang đúng một hệ.
+
+
+
+↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | filtered skills =====
+
+danh sách chiêu  mỗi chiêu làm được gì, và ai học được
+  đang lọc a (109 trong 130 chiêu)
+
+  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
+  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ember          than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
+  flamethrower   phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
+
+  sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
+130 chiêu · 23 chiêu ai cũng học được
+
+
+
+gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
+===== vi | 120x24 | filtering skills =====
+
+danh sách chiêu  mỗi chiêu làm được gì, và ai học được
+  gõ tên hay mã chiêu để lọc
+
+  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+
+  sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
+130 chiêu · 23 chiêu ai cũng học được
+
+
+
+gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
+===== vi | 120x24 | menu =====
+
+bạn muốn làm gì?
+
+> danh sách nhân vật  xem các nhân vật đã tạo, ở bất kỳ cấp nào
+  danh sách chiêu     tra cứu chiêu: mỗi chiêu làm gì, ai học được
+  hệ                  tra cứu bảng khắc chế: khắc gì, bị gì khắc, bao nhiêu
+  nội tại             tra cứu nội tại: mỗi loại làm gì, ai học được
+  chủng loài          tra cứu chủng loài: mỗi loài nghĩa là gì
+  nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
+  đội hình            các đội đã dựng, và mang một đội vào trận
+  vào trận            tự cầm quân đánh một trận với đội đầu danh sách
+
+Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
+sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại
+diễn biến để hexarena --replay vẽ lại đúng trận đó.
+
+
+
+
+
+
+↑/↓ chọn · enter mở · ctrl+l English · q thoát
+===== vi | 120x24 | skills =====
+
+danh sách chiêu  mỗi chiêu làm được gì, và ai học được
+
+  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+
+  sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
+130 chiêu · 23 chiêu ai cũng học được
+
+
+
+
+↑/↓ · / lọc · ? mô tả · ctrl+l English · esc · q
+===== vi | 120x24 | skills filtered to none =====
+
+danh sách chiêu  mỗi chiêu làm được gì, và ai học được
+  đang lọc zzqx (0 trong 130 chiêu)
+
+  không có chiêu nào khớp.
+
+130 chiêu · 23 chiêu ai cũng học được
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
+===== vi | 120x24 | species =====
+
+chủng loài  các loài đã khai báo, và ranh giới của từng loài
+
+  id         tên tiếng Việt
+> dragon     rồng
+  lizard     thằn lằn
+  plant      thực vật
+  turtle     rùa
+  human      con người
+  amphibian  lưỡng cư
+  titan      lực sĩ
+  fae        tiên
+  construct  cỗ máy
+  mythic     huyền thoại
+  shade      bóng ma
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+
+
+
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | squads =====
+
+đội hình  đã dựng 2 đội, mỗi phe tối đa 5 người
+
+  mã    gồm những ai
+> phe-0 3 người  đội thử 0
+  phe-1 3 người  đội thử 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại
+===== vi | 120x24 | statuses =====
+
+hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
+
+  control      khống chế, mất lượt
+  stun         choáng
+  buff         tăng chỉ số
+  fury         cuồng nộ
+  haste        nhanh nhẹn
+  focus        tập trung
+> toughened    kiên cường
+  veil         mờ ảo
+  unleashed    bộc phát
+  kindled      bùng cháy
+  fortified    kiên cố
+  quickened    gia tốc
+
+  Tăng thủ 15%.
+  Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
+
+  Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
+
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | traits =====
+
+nội tại  các nội tại đã khai báo, và ai mang
+
+  id            tên tiếng Việt ai mang
+> endurance     bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.machop@32 pokemon.magne…
+  blaze         bùng lửa       pokemon.charmander@16
+  heatproof     chịu nhiệt     pokemon.charmander@16
+  virulence     độc lực        pokemon.bulbasaur@32
+  venom_blood   máu độc        pokemon.bulbasaur@24
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.…
+  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
+  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
+  thorns        phản đòn       pokemon.squirtle@32
+  swiftness     thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@3…
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+
+
+
+↑/↓ chọn · ? hiệu ứng · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | works =====
+
+nguồn  các tác phẩm mà nhân vật được mượn từ
+
+> fixture-anime    anime   2002   1 nhân vật  Example Anime
+  fixture-film     film    1999   0 nhân vật  Example Film
+  fixture-game     game    2011   1 nhân vật  Example Game
+  naruto           anime   2002   1 nhân vật  Naruto
+  pokemon          anime   1997  10 nhân vật  Pokémon
+
+  ghi chú          A test fixture, not shipped.
+
+5 tác phẩm · loại: anime film series game comic novel
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | a battle =====
+
+trận đấu  seed 1  diễn biến 29-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    E3   poison <trúng độc> x1 on A2, now 3
+    E3   hits A1 for 72, 2884 left
+    E3   A1 resists poison <trúng độc> (65%)
+    E3   hits A3 for 72, 2884 left
+    E3   poison <trúng độc> x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt <hồ quang> at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt <hồ quang> at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun <choáng> (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt <hồ quang> at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun <choáng> (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison <trúng độc> x1
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+> strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a battle blurb =====
+
+strike <đòn đánh>  1/4
+
+  Đánh đối phương, 100% công.
+  Tầm 1 · 96% trúng · dùng mọi lượt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 160x60 | a battle over =====
+
+trận đấu  seed 1  diễn biến 164-195/195
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/E3\__/  \
+/  \__/  \__/  \__/
+\__/  \__/E2\__/  \
+/  \__/  \__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        fallen                      90   poison x2 (3t)
+A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
+A3   Example Adept        fallen                      90   poison x3 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [########..]  1765/2200    200   -
+
+next: E2 E3 E1 E2 E3 E1
+
+  
+  E3  turn 8
+    E3  uses bolt <tia bắn> at 2,2
+    E3   hits A3 for 165, 1191 left
+  
+  A3  turn 4
+    A3  takes 309 from poison <trúng độc> x3
+    A3  uses purify <thanh tẩy> at 2,2
+    A3   strips 3 off A3
+  
+  E1  turn 9
+    E1  uses venom_fang <nanh độc> at 2,2
+    E1   hits A3 for 248, 634 left
+    E1   poison <trúng độc> x1 on A3, now 1
+  
+  E2  turn 9
+    E2  uses venom_fang <nanh độc> at 2,2
+    E2   hits A3 for 248, 386 left
+    E2   poison <trúng độc> x1 on A3, now 2
+  
+  E3  turn 9
+    E3  uses venom_fang <nanh độc> at 2,2
+    E3   hits A3 for 248, 138 left
+    E3   poison <trúng độc> x1 on A3, now 3
+  
+  E1  turn 10
+    E1  uses arc_bolt <hồ quang> at 2,2
+    E1   hits A3 for 699 (doubly weak!), 0 left
+    E1   A3 resists stun <choáng> (25%)
+    A3  falls at 2,2
+  
+  the enemy side wins
+
+phe bạn ngã
+n đánh trận khác · [/] cuộn · ctrl+s lưu lại · esc quay lại
+===== vi | 160x60 | a battle with no pairing =====
+
+trận đấu  seed 1
+
+  chưa dựng đội nào; bấm n để bắt đầu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a saved battle =====
+
+trận đấu  seed 1  diễn biến 33-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    E3   poison <trúng độc> x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt <hồ quang> at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt <hồ quang> at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun <choáng> (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt <hồ quang> at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun <choáng> (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison <trúng độc> x1
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+> strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+
+đã ghi phe-0-vs-phe-1-seed1.json vào data/battles/phe-0-vs-phe-1-seed1.json
+phát lại bằng: hexarena --replay battles/phe-0-vs-phe-1-seed1.json --verify — build lại trước, vì game đọc bản dữ liệu
+nhúng trong nó chứ không đọc mấy file này
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a scrolled battle log =====
+
+trận đấu  seed 1  diễn biến 99-126/138
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/E3\__/  \
+/  \__/  \__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        fallen                      90   poison x2 (3t)
+A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
+A3   Example Adept        [#######...]  2430/3100     90   -
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [#########.]  2037/2200    200   -
+
+next: E1 E2 E3 E1 E2 E3
+
+    A3  uses riptide <sóng ngầm> at 3,0
+    A3   hits E3 for 163 (resisted), 2037 left
+    A3   misses E3 (77%)
+    A3   E3 resists mire <sa lầy> (55%)
+  
+  E1  turn 5
+    E1  uses creeping_rot <mục rữa> at 2,1
+    E1   is blocked by A2, 0 charges left
+    E1   A2 resists poison <trúng độc> (65%)
+    E1   is blocked by A3, 0 charges left
+    E1   A3 resists poison <trúng độc> (65%)
+  
+  E2  turn 5
+    E2  uses creeping_rot <mục rữa> at 2,1
+    E2   hits A2 for 145, 1902 left
+    E2   poison <trúng độc> x0 on A2, now 3, 1 wasted at the cap
+    E2   misses A3 (93%)
+  
+  E3  turn 5
+    E3  uses venom_fang <nanh độc> at 2,2
+    E3   hits A3 for 248, 2430 left
+    E3   A3 resists poison <trúng độc> (90%)
+  
+  E1  turn 6
+    E1  uses arc_bolt <hồ quang> at 2,1
+    E1   hits A2 for 699 (doubly weak!), 1203 left
+    E1   stun <choáng> x1 on A2, now 1
+  
+
+A3 Example Adept, lượt 3
+> strike      100% công · tầm 1
+  riptide     3 turns of cooldown left
+  guard_wall  3 turns of cooldown left
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a skill blurb =====
+
+vine_whip <roi dây leo>  1/130
+
+  Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
+  Tầm 1 · 95% trúng · hồi 1 lượt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 160x60 | a squeezed battle =====
+
+trận đấu  seed 1  diễn biến 29-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    E3   poison <trúng độc> x1 on A2, now 3
+    E3   hits A1 for 72, 2884 left
+    E3   A1 resists poison <trúng độc> (65%)
+    E3   hits A3 for 72, 2884 left
+    E3   poison <trúng độc> x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt <hồ quang> at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt <hồ quang> at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun <choáng> (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt <hồ quang> at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun <choáng> (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison <trúng độc> x1
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+> strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a trait blurb =====
+
+Mew  cấp 60
+
+  elusive <huyền ảo>
+    Chỗ vừa đứng đã trống, mà chỗ đòn rơi xuống thì lại chẳng có ai.
+    Luôn mang khinh công.
+
+  composure <vững tâm>
+    Đứng giữa ồn ào mà đầu vẫn tỉnh, ai gào thét cỡ nào cũng chẳng lay được.
+    Giảm 50% khả năng dính choáng.
+    Giảm 50% khả năng dính bị khiêu khích.
+
+  swiftness <thần tốc>
+    Quen chạy hơn quen đứng, ra tay xong đã ở chỗ khác.
+    Luôn mang gia tốc.
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+
+  contagion <lây lan>
+    Chạm vào đâu là thứ gì đó ở lại đó, ngấm dần cho tới khi đòn đánh nhẹ bẫng đi.
+    Đòn đánh gây thêm suy yếu, 25% khả năng.
+
+  blood_thirst <khát máu>
+    Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức.
+    Mọi đòn hút lại 25% sát thương gây ra.
+
+  last_gasp <hấp hối>
+    Càng thoi thóp, cơn khát càng trỗi dậy.
+    Mọi đòn hút lại 40% sát thương gây ra.
+    Chỉ có hiệu lực khi còn <=40% máu.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 160x60 | aiming =====
+
+trận đấu  seed 1  diễn biến 34-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+  
+  E1  turn 2
+    E1  uses arc_bolt <hồ quang> at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt <hồ quang> at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun <choáng> (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt <hồ quang> at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun <choáng> (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison <trúng độc> x1
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+  strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+
+nhắm strike vào
+> 3,0  E3 Bloom
+  3,1  E2 Bloom
+  3,2  E1 Bloom
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 160x60 | an empty squad catalogue =====
+
+đội hình  đã dựng 0 đội, mỗi phe tối đa 5 người
+
+chưa dựng đội nào; bấm n để bắt đầu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại
+===== vi | 160x60 | cast =====
+
+danh sách nhân vật  đang xem tất cả nguồn (13 trong 13 nhân vật)
+
+> fixture-anime.adept      fixture-anime  water/ice <nước/băng>
+  fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
+  naruto.naruto            naruto         wind <gió>
+  pokemon.bulbasaur        pokemon        grass <cỏ>
+  pokemon.charmander       pokemon        fire <lửa>
+  pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.gastly           pokemon        dark <bóng tối>
+  pokemon.machop           pokemon        ground <đất>
+  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
+  pokemon.mew              pokemon        neutral <trung tính>
+  pokemon.mewtwo           pokemon        dark <bóng tối>
+  pokemon.poliwag          pokemon        water <nước>
+  pokemon.squirtle         pokemon        water <nước>
+
+fixture-anime.adept — Example Adept
+  nguồn tham khảo  Example Anime (anime, fixture-anime)
+  lối chơi         sentinel
+                   trấn thủ
+  hệ               water/ice
+                   nước/băng
+  bộ chiêu         strike riptide guard_wall purify
+                   đòn đánh · sóng ngầm · tường chắn · thanh tẩy
+  giai đoạn        Example Adept@1
+  tiểu sử          A test fixture, injected into a scratch data directory so a test does not depend on whatever cast the repository happens to hold.
+  ảnh              assets/fixture/adept.svg  có
+  cấp 60           hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 giai đoạn Example Adept
+  máu quy đổi      [=======================-] 11397/11500, còn dư 103
+                   xuyên hết giáp thì chỉ đỡ được 3100
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
+===== vi | 160x60 | chart =====
+
+đồ thị tương khắc  mỗi vòng: hệ trước khắc hệ sau, hệ cuối khắc hệ đầu
+
+  organic
+    ,--> water --> fire --> grass --> ground --,
+    `------------------------------------------'
+  industrial
+    ,--> ice --> metal --> wind --> electric --,
+    `------------------------------------------'
+  cross
+    ,--> water --> metal --> grass --> wind --> fire --> ice --> ground --> electric --,
+    `----------------------------------------------------------------------------------'
+  đối lập
+    light <--> dark
+  trơ
+    neutral
+
+  khắc 150% · thường 100% · bị khắc 67%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | elements =====
+
+hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
+
+> neutral   trung tính
+  water     nước
+  fire      lửa
+  grass     cỏ
+  ground    đất
+  ice       băng
+  metal     kim loại
+  wind      gió
+  electric  điện
+  light     ánh sáng
+  dark      bóng tối
+
+  Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
+
+  Đơn vị hai hệ hứng cả hai hệ số; một đòn luôn mang đúng một hệ.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | filtered skills =====
+
+danh sách chiêu  mỗi chiêu làm được gì, và ai học được
+  đang lọc a (109 trong 130 chiêu)
+
+  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
+  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ember          than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
+  flamethrower   phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
+  fire_fang      nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
+  fire_spin      xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
+  heat_wave      luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
+  inferno        hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
+  dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
+  smokescreen    màn khói             neutral   0x1              ai cũng được
+  dragon_dance   long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
+  water_gun      súng nước            water     1000x1           hệ water, vũ trụ pokemon
+  whirlpool      xoáy nước            water     800x1            hệ water, vũ trụ pokemon
+  bite           cắn                  neutral   1200x1           ai cũng được
+  brine          nước mặn             water     1000x1           hệ water, vũ trụ pokemon
+  hydro_pump     thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
+  withdraw       thủ thế              neutral   0x1              ai cũng được
+  aqua_ring      vòng nước            water     0x1              hệ water, vũ trụ pokemon
+  rapid_spin     xoay nhanh           neutral   0x1              ai cũng được
+  rally          khích lệ             neutral   0x1              ai cũng được
+  dragon_claw    long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
+  outrage        cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
+  dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
+  taunt          khiêu khích          neutral   0x1              ai cũng được
+  kunai          phi đao              neutral   700x1            vũ trụ naruto
+  wind_shuriken  phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
+  rasengan       xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
+  substitution   thế thân             neutral   0x1              vũ trụ naruto
+  shadow_clone   phân thân            neutral   0x1              vũ trụ naruto
+  comeback       vùng lên             neutral   900x1            vũ trụ naruto
+  summon_toad    triệu hồi cóc        neutral   0x1              vũ trụ naruto
+  water_pulse    sóng nước            water     600x1            hệ water, vũ trụ pokemon
+  skull_bash     húc đầu              neutral   850x1            vũ trụ pokemon
+  wide_guard     che chắn             neutral   0x1              ai cũng được
+  bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
+  body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
+  pummel         đánh dồn dập         neutral   480x3            vũ trụ pokemon
+  submission     khoá siết            neutral   2000x1           vũ trụ pokemon
+  rock_throw     ném đá               ground    1100x1           hệ ground, vũ trụ pokemon
+  seismic_toss   quật đất             ground    2000x1           hệ ground, vũ trụ pokemon
+
+  sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
+130 chiêu · 23 chiêu ai cũng học được
+
+
+
+gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
+===== vi | 160x60 | filtering skills =====
+
+danh sách chiêu  mỗi chiêu làm được gì, và ai học được
+  gõ tên hay mã chiêu để lọc
+
+  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ember          than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
+  flamethrower   phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
+  fire_fang      nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
+  fire_spin      xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
+  heat_wave      luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
+  inferno        hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
+  dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
+  smokescreen    màn khói             neutral   0x1              ai cũng được
+  dragon_dance   long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
+  water_gun      súng nước            water     1000x1           hệ water, vũ trụ pokemon
+  bubble         bong bóng            water     700x1            hệ water, vũ trụ pokemon
+  whirlpool      xoáy nước            water     800x1            hệ water, vũ trụ pokemon
+  bite           cắn                  neutral   1200x1           ai cũng được
+  brine          nước mặn             water     1000x1           hệ water, vũ trụ pokemon
+  hydro_pump     thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
+  withdraw       thủ thế              neutral   0x1              ai cũng được
+  aqua_ring      vòng nước            water     0x1              hệ water, vũ trụ pokemon
+  rapid_spin     xoay nhanh           neutral   0x1              ai cũng được
+  rally          khích lệ             neutral   0x1              ai cũng được
+  dragon_claw    long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
+  outrage        cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
+  dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
+  taunt          khiêu khích          neutral   0x1              ai cũng được
+  kunai          phi đao              neutral   700x1            vũ trụ naruto
+  wind_shuriken  phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
+  rasengan       xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
+  substitution   thế thân             neutral   0x1              vũ trụ naruto
+  shadow_clone   phân thân            neutral   0x1              vũ trụ naruto
+  comeback       vùng lên             neutral   900x1            vũ trụ naruto
+  summon_toad    triệu hồi cóc        neutral   0x1              vũ trụ naruto
+  water_pulse    sóng nước            water     600x1            hệ water, vũ trụ pokemon
+  skull_bash     húc đầu              neutral   850x1            vũ trụ pokemon
+  wide_guard     che chắn             neutral   0x1              ai cũng được
+  bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
+  body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
+  pummel         đánh dồn dập         neutral   480x3            vũ trụ pokemon
+
+  sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
+130 chiêu · 23 chiêu ai cũng học được
+
+
+
+gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
+===== vi | 160x60 | menu =====
+
+bạn muốn làm gì?
+
+> danh sách nhân vật  xem các nhân vật đã tạo, ở bất kỳ cấp nào
+  danh sách chiêu     tra cứu chiêu: mỗi chiêu làm gì, ai học được
+  hệ                  tra cứu bảng khắc chế: khắc gì, bị gì khắc, bao nhiêu
+  nội tại             tra cứu nội tại: mỗi loại làm gì, ai học được
+  chủng loài          tra cứu chủng loài: mỗi loài nghĩa là gì
+  nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
+  đội hình            các đội đã dựng, và mang một đội vào trận
+  vào trận            tự cầm quân đánh một trận với đội đầu danh sách
+
+Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
+sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại
+diễn biến để hexarena --replay vẽ lại đúng trận đó.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · enter mở · ctrl+l English · q thoát
+===== vi | 160x60 | skills =====
+
+danh sách chiêu  mỗi chiêu làm được gì, và ai học được
+
+  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ember          than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
+  flamethrower   phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
+  fire_fang      nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
+  fire_spin      xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
+  heat_wave      luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
+  inferno        hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
+  dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
+  smokescreen    màn khói             neutral   0x1              ai cũng được
+  dragon_dance   long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
+  water_gun      súng nước            water     1000x1           hệ water, vũ trụ pokemon
+  bubble         bong bóng            water     700x1            hệ water, vũ trụ pokemon
+  whirlpool      xoáy nước            water     800x1            hệ water, vũ trụ pokemon
+  bite           cắn                  neutral   1200x1           ai cũng được
+  brine          nước mặn             water     1000x1           hệ water, vũ trụ pokemon
+  hydro_pump     thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
+  withdraw       thủ thế              neutral   0x1              ai cũng được
+  aqua_ring      vòng nước            water     0x1              hệ water, vũ trụ pokemon
+  rapid_spin     xoay nhanh           neutral   0x1              ai cũng được
+  rally          khích lệ             neutral   0x1              ai cũng được
+  dragon_claw    long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
+  outrage        cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
+  dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
+  taunt          khiêu khích          neutral   0x1              ai cũng được
+  kunai          phi đao              neutral   700x1            vũ trụ naruto
+  wind_shuriken  phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
+  rasengan       xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
+  substitution   thế thân             neutral   0x1              vũ trụ naruto
+  shadow_clone   phân thân            neutral   0x1              vũ trụ naruto
+  comeback       vùng lên             neutral   900x1            vũ trụ naruto
+  summon_toad    triệu hồi cóc        neutral   0x1              vũ trụ naruto
+  water_pulse    sóng nước            water     600x1            hệ water, vũ trụ pokemon
+  skull_bash     húc đầu              neutral   850x1            vũ trụ pokemon
+  wide_guard     che chắn             neutral   0x1              ai cũng được
+  bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
+  body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
+  pummel         đánh dồn dập         neutral   480x3            vũ trụ pokemon
+
+  sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
+130 chiêu · 23 chiêu ai cũng học được
+
+
+
+
+↑/↓ · / lọc · ? mô tả · ctrl+l English · esc · q
+===== vi | 160x60 | skills filtered to none =====
+
+danh sách chiêu  mỗi chiêu làm được gì, và ai học được
+  đang lọc zzqx (0 trong 130 chiêu)
+
+  không có chiêu nào khớp.
+
+130 chiêu · 23 chiêu ai cũng học được
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
+===== vi | 160x60 | species =====
+
+chủng loài  các loài đã khai báo, và ranh giới của từng loài
+
+  id         tên tiếng Việt
+> dragon     rồng
+  lizard     thằn lằn
+  plant      thực vật
+  turtle     rùa
+  human      con người
+  amphibian  lưỡng cư
+  titan      lực sĩ
+  fae        tiên
+  construct  cỗ máy
+  mythic     huyền thoại
+  shade      bóng ma
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | squads =====
+
+đội hình  đã dựng 2 đội, mỗi phe tối đa 5 người
+
+  mã    gồm những ai
+> phe-0 3 người  đội thử 0
+  phe-1 3 người  đội thử 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại
+===== vi | 160x60 | statuses =====
+
+hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
+
+  dot          sát thương mỗi lượt
+  poison       trúng độc
+  burn         bỏng
+  stat_debuff  giảm chỉ số
+  weaken       suy yếu
+  expose       phá giáp
+  blind        mù
+  mire         sa lầy
+  bare         trần trụi
+  encumber     nặng nề
+  control      khống chế, mất lượt
+  stun         choáng
+  buff         tăng chỉ số
+  fury         cuồng nộ
+  haste        nhanh nhẹn
+  focus        tập trung
+> toughened    kiên cường
+  veil         mờ ảo
+  unleashed    bộc phát
+  kindled      bùng cháy
+  fortified    kiên cố
+  quickened    gia tốc
+  evasive      khinh công
+  shield       khiên, chặn một nhát
+  block        đỡ đòn
+  regen        hồi máu mỗi lượt
+  regrowth     tái sinh
+  taunt        ép chọn mục tiêu
+  taunting     bị khiêu khích
+  heal_cut     giảm máu hồi vào
+  fester       lở loét
+  charge       tích lại để tiêu
+  charge       nhiễm điện
+  absorb       lá chắn, thấm sát thương cho tới khi cạn
+  aegis        lá chắn
+  bastion      thành trì
+  reserve      dồn lại cho chính người mang tiêu
+  swelter      sóng nhiệt
+  verdure      xum xuê
+  moisture     ẩm ướt
+
+  Tăng thủ 15%.
+  Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
+
+  Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | traits =====
+
+nội tại  các nội tại đã khai báo, và ai mang
+
+  id            tên tiếng Việt ai mang
+> endurance     bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.machop@32 pokemon.magnemite@24 pokemon.mew@36 pokemon.poliwag@1…
+  blaze         bùng lửa       pokemon.charmander@16
+  heatproof     chịu nhiệt     pokemon.charmander@16
+  virulence     độc lực        pokemon.bulbasaur@32
+  venom_blood   máu độc        pokemon.bulbasaur@24
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwag…
+  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
+  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
+  thorns        phản đòn       pokemon.squirtle@32
+  swiftness     thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32
+  ballast       trụ vững       pokemon.squirtle@44
+  composure     vững tâm       pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24 pokemon.poliwag@40[Politoed]
+  elusive       huyền ảo       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40
+  contagion     lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40
+  spiteful      nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
+  berserk       cuồng chiến    pokemon.machop@40 pokemon.mewtwo@32
+  unyielding    bất khuất      pokemon.machop@24
+  carapace      vỏ cứng        pokemon.squirtle@48
+  projection    hộ thể         pokemon.charmander@48
+  rending       xé giáp        pokemon.machop@48
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ? hiệu ứng · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | works =====
+
+nguồn  các tác phẩm mà nhân vật được mượn từ
+
+> fixture-anime    anime   2002   1 nhân vật  Example Anime
+  fixture-film     film    1999   0 nhân vật  Example Film
+  fixture-game     game    2011   1 nhân vật  Example Game
+  naruto           anime   2002   1 nhân vật  Naruto
+  pokemon          anime   1997  10 nhân vật  Pokémon
+
+  ghi chú          A test fixture, not shipped.
+
+5 tác phẩm · loại: anime film series game comic novel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== en | 120x24 | a battle =====
+
+the battle  seed 1  log 56-56/56
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+> strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a battle blurb =====
+
+strike  1 of 4
+
+  Hits an enemy for 100% of attack.
+  Range 1 · 96% to hit · usable every turn.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 120x24 | a battle over =====
+
+the battle  seed 1  log 191-195/195
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        fallen                      90   poison x2 (3t)
+A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
+A3   Example Adept        fallen                      90   poison x3 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [########..]  1765/2200    200   -
+
+next: E2 E3 E1 E2 E3 E1
+
+    E1   hits A3 for 699 (doubly weak!), 0 left
+    E1   A3 resists stun (25%)
+    A3  falls at 2,2
+  
+  the enemy side wins
+
+your side falls
+n another battle · [/] scroll · ctrl+s save it · esc back
+===== en | 120x24 | a battle with no pairing =====
+
+the battle  seed 1
+
+  nothing built yet; n starts one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a saved battle =====
+
+the battle  seed 1
+the window is too short for: board, turn order, log
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+A2 Example Adept, turn 1
+> strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+
+wrote phe-0-vs-phe-1-seed1.json to data/battles/phe-0-vs-phe-1-seed1.json
+replay it with: hexarena --replay battles/phe-0-vs-phe-1-seed1.json --verify — rebuild first, because the game reads
+the copy baked into it rather than these files
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a scrolled battle log =====
+
+the battle  seed 1  log 99-99/138
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        fallen                      90   poison x2 (3t)
+A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
+A3   Example Adept        [#######...]  2430/3100     90   -
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [#########.]  2037/2200    200   -
+
+next: E1 E2 E3 E1 E2 E3
+
+    A3  uses riptide at 3,0
+
+A3 Example Adept, turn 3
+> strike      100% attack · range 1
+  riptide     3 turns of cooldown left
+  guard_wall  3 turns of cooldown left
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a skill blurb =====
+
+vine_whip  1 of 130
+
+  Hits an enemy for 110% of attack.
+  Range 1 · 95% to hit · 1 turn to recharge.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 120x24 | a squeezed battle =====
+
+the battle  seed 1  log 56-56/56
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+> strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a trait blurb =====
+
+Mew  level 60
+
+  elusive
+    Always carries evasive.
+
+  composure
+    Refuses 50% of any stun aimed at it.
+    Refuses 50% of any taunting aimed at it.
+
+  swiftness
+    Always carries quickened.
+
+  endurance
+    Always carries toughened.
+
+  contagion
+    Its attacks also inflict weaken, 25% of the time.
+
+  blood_thirst
+  … 17/22 lines, [/] to scroll
+↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 120x24 | aiming =====
+
+the battle  seed 1
+the window is too short for: board, 1 unit, turn order, log
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+
+A2 Example Adept, turn 1
+  strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+
+point strike at
+> 3,0  E3 Bloom
+  3,1  E2 Bloom
+  3,2  E1 Bloom
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 120x24 | an empty squad catalogue =====
+
+squads  0 built, at most 5 to a side
+
+nothing built yet; n starts one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · f fight · ctrl+l tiếng Việt · esc back
+===== en | 120x24 | cast =====
+
+cast  showing all origins (13 of 13 characters)
+
+> fixture-anime.adept      fixture-anime  water/ice
+  fixture-game.sprout      fixture-game   grass/electric
+  naruto.naruto            naruto         wind
+  pokemon.bulbasaur        pokemon        grass
+  pokemon.charmander       pokemon        fire
+  pokemon.cleffa           pokemon        light
+  pokemon.gastly           pokemon        dark
+  pokemon.machop           pokemon        ground
+  pokemon.magnemite        pokemon        electric/metal
+  pokemon.mew              pokemon        neutral
+  pokemon.mewtwo           pokemon        dark
+  pokemon.poliwag          pokemon        water
+  pokemon.squirtle         pokemon        water
+
+fixture-anime.adept — Example Adept
+  from          Example Anime (anime, fixture-anime)
+  playstyle     sentinel
+… cut off; a taller window shows the rest
+↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
+===== en | 120x24 | chart =====
+
+the affinity chart  each ring: a member beats the next, the last the first
+
+  organic
+    ,--> water --> fire --> grass --> ground --,
+    `------------------------------------------'
+  industrial
+    ,--> ice --> metal --> wind --> electric --,
+    `------------------------------------------'
+  cross
+    ,--> water --> metal --> grass --> wind --> fire --> ice --> ground --> electric --,
+    `----------------------------------------------------------------------------------'
+  both ways
+    light <--> dark
+  inert
+    neutral
+
+  strong 150% · even 100% · weak 67%
+
+
+
+ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | elements =====
+
+elements  the affinity chart: what beats what, and by how much
+
+  neutral
+  water
+  fire
+  grass
+> ground
+  ice
+  metal
+  wind
+  electric
+  light
+  dark
+
+  Strong against water and electric: an attack of this element deals 150%.
+  Weak to grass and ice: an attack of theirs deals 67% to it.
+
+  A dual unit takes both multipliers; an attack carries exactly one element.
+
+
+↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | filtered skills =====
+
+skills  what each one does, and who may carry it
+  filtering a (109 of 130 skills)
+
+  id             element   damage multiplier who may carry it
+> vine_whip      grass     1100x1            grass units, out of pokemon
+  razor_leaf     grass     600x2             grass units, out of pokemon
+  solar_beam     light     2400x1            light units, out of pokemon
+  sleep_powder   grass     0x1               grass units, out of pokemon
+  poison_powder  neutral   0x1               out of pokemon
+  leech_seed     grass     700x1             grass units, out of pokemon
+  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+  ember          fire      1000x1            fire units, out of pokemon
+  flamethrower   fire      1600x1            fire units, out of pokemon
+
+  damage        377 per strike, 377 in all, against 800 atk and 400 def
+130 skills · 23 anyone may carry
+
+
+
+type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
+===== en | 120x24 | filtering skills =====
+
+skills  what each one does, and who may carry it
+  type a name or an id to filter
+
+  id             element   damage multiplier who may carry it
+> vine_whip      grass     1100x1            grass units, out of pokemon
+  razor_leaf     grass     600x2             grass units, out of pokemon
+  solar_beam     light     2400x1            light units, out of pokemon
+  sleep_powder   grass     0x1               grass units, out of pokemon
+  poison_powder  neutral   0x1               out of pokemon
+  sludge_bomb    neutral   1300x1            out of pokemon
+  venoshock      neutral   900x1             out of pokemon
+  leech_seed     grass     700x1             grass units, out of pokemon
+  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+
+  damage        377 per strike, 377 in all, against 800 atk and 400 def
+130 skills · 23 anyone may carry
+
+
+
+type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
+===== en | 120x24 | menu =====
+
+what would you like to do?
+
+> cast      browse the authored characters, at any level
+  skills    look a skill up: what each does, and who may carry it
+  elements  look the chart up: what it beats, what beats it, at what rate
+  traits    look a trait up: what each does, and who learns it
+  species   look a kind up: what each one means
+  origins   look a work up: the fictions the cast is borrowed from
+  squads    the sides that have been built, and take one into a battle
+  battle    play a battle yourself, with the first side on the list
+
+A battle here is fought out of the directory above, while the game boots from
+the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s
+writes the log that hexarena --replay draws that same battle back from.
+
+
+
+
+
+
+↑/↓ move · enter open · ctrl+l tiếng Việt · q quit
+===== en | 120x24 | skills =====
+
+skills  what each one does, and who may carry it
+
+  id             element   damage multiplier who may carry it
+> vine_whip      grass     1100x1            grass units, out of pokemon
+  razor_leaf     grass     600x2             grass units, out of pokemon
+  solar_beam     light     2400x1            light units, out of pokemon
+  sleep_powder   grass     0x1               grass units, out of pokemon
+  poison_powder  neutral   0x1               out of pokemon
+  sludge_bomb    neutral   1300x1            out of pokemon
+  venoshock      neutral   900x1             out of pokemon
+  leech_seed     grass     700x1             grass units, out of pokemon
+  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+
+  damage        377 per strike, 377 in all, against 800 atk and 400 def
+130 skills · 23 anyone may carry
+
+
+
+
+↑/↓ · / filter · ? describe · ctrl+l tiếng Việt · esc · q
+===== en | 120x24 | skills filtered to none =====
+
+skills  what each one does, and who may carry it
+  filtering zzqx (0 of 130 skills)
+
+  nothing matches that.
+
+130 skills · 23 anyone may carry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
+===== en | 120x24 | species =====
+
+species  the declared kinds, and where each line is drawn
+
+  id
+> dragon
+  lizard
+  plant
+  turtle
+  human
+  amphibian
+  titan
+  fae
+  construct
+  mythic
+  shade
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | squads =====
+
+squads  2 built, at most 5 to a side
+
+  id    who is in it
+> phe-0 3 in it  đội thử 0
+  phe-1 3 in it  đội thử 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · f fight · ctrl+l tiếng Việt · esc back
+===== en | 120x24 | statuses =====
+
+statuses  the buffs and debuffs a skill or a trait puts on a unit
+
+  control      costs a turn
+  stun         
+  buff         raises a stat
+  fury         
+  haste        
+  focus        
+> toughened    
+  veil         
+  unleashed    
+  kindled      
+  fortified    
+  quickened    
+
+  Raises defence by 15%.
+  Raises a stat · always in force · 1 stack.
+
+  Declared figures: a trait amplifying or resisting changes what lands.
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | traits =====
+
+traits  the declared traits, and who carries each
+
+  id            carried by
+> endurance     naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.machop@32 pokemon.magnemite@24 pokemon…
+  blaze         pokemon.charmander@16
+  heatproof     pokemon.charmander@16
+  virulence     pokemon.bulbasaur@32
+  venom_blood   pokemon.bulbasaur@24
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.…
+  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
+  reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
+  thorns        pokemon.squirtle@32
+  swiftness     naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtw…
+
+  endurance
+    Always carries toughened.
+
+
+
+
+↑/↓ move · ? the status · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | works =====
+
+origins  the works the cast is borrowed from
+
+> fixture-anime    anime   2002   1 cast  Example Anime
+  fixture-film     film    1999   0 cast  Example Film
+  fixture-game     game    2011   1 cast  Example Game
+  naruto           anime   2002   1 cast  Naruto
+  pokemon          anime   1997  10 cast  Pokémon
+
+  note          A test fixture, not shipped.
+
+5 works · media: anime film series game comic novel
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | a battle =====
+
+the battle  seed 1  log 29-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    E3   poison x1 on A2, now 3
+    E3   hits A1 for 72, 2884 left
+    E3   A1 resists poison (65%)
+    E3   hits A3 for 72, 2884 left
+    E3   poison x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison x1
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+> strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a battle blurb =====
+
+strike  1 of 4
+
+  Hits an enemy for 100% of attack.
+  Range 1 · 96% to hit · usable every turn.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 160x60 | a battle over =====
+
+the battle  seed 1  log 164-195/195
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/E3\__/  \
+/  \__/  \__/  \__/
+\__/  \__/E2\__/  \
+/  \__/  \__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        fallen                      90   poison x2 (3t)
+A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
+A3   Example Adept        fallen                      90   poison x3 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [########..]  1765/2200    200   -
+
+next: E2 E3 E1 E2 E3 E1
+
+  
+  E3  turn 8
+    E3  uses bolt at 2,2
+    E3   hits A3 for 165, 1191 left
+  
+  A3  turn 4
+    A3  takes 309 from poison x3
+    A3  uses purify at 2,2
+    A3   strips 3 off A3
+  
+  E1  turn 9
+    E1  uses venom_fang at 2,2
+    E1   hits A3 for 248, 634 left
+    E1   poison x1 on A3, now 1
+  
+  E2  turn 9
+    E2  uses venom_fang at 2,2
+    E2   hits A3 for 248, 386 left
+    E2   poison x1 on A3, now 2
+  
+  E3  turn 9
+    E3  uses venom_fang at 2,2
+    E3   hits A3 for 248, 138 left
+    E3   poison x1 on A3, now 3
+  
+  E1  turn 10
+    E1  uses arc_bolt at 2,2
+    E1   hits A3 for 699 (doubly weak!), 0 left
+    E1   A3 resists stun (25%)
+    A3  falls at 2,2
+  
+  the enemy side wins
+
+your side falls
+n another battle · [/] scroll · ctrl+s save it · esc back
+===== en | 160x60 | a battle with no pairing =====
+
+the battle  seed 1
+
+  nothing built yet; n starts one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a saved battle =====
+
+the battle  seed 1  log 33-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    E3   poison x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison x1
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+> strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+
+wrote phe-0-vs-phe-1-seed1.json to data/battles/phe-0-vs-phe-1-seed1.json
+replay it with: hexarena --replay battles/phe-0-vs-phe-1-seed1.json --verify — rebuild first, because the game reads
+the copy baked into it rather than these files
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a scrolled battle log =====
+
+the battle  seed 1  log 99-126/138
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/E3\__/  \
+/  \__/  \__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        fallen                      90   poison x2 (3t)
+A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
+A3   Example Adept        [#######...]  2430/3100     90   -
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [#########.]  2037/2200    200   -
+
+next: E1 E2 E3 E1 E2 E3
+
+    A3  uses riptide at 3,0
+    A3   hits E3 for 163 (resisted), 2037 left
+    A3   misses E3 (77%)
+    A3   E3 resists mire (55%)
+  
+  E1  turn 5
+    E1  uses creeping_rot at 2,1
+    E1   is blocked by A2, 0 charges left
+    E1   A2 resists poison (65%)
+    E1   is blocked by A3, 0 charges left
+    E1   A3 resists poison (65%)
+  
+  E2  turn 5
+    E2  uses creeping_rot at 2,1
+    E2   hits A2 for 145, 1902 left
+    E2   poison x0 on A2, now 3, 1 wasted at the cap
+    E2   misses A3 (93%)
+  
+  E3  turn 5
+    E3  uses venom_fang at 2,2
+    E3   hits A3 for 248, 2430 left
+    E3   A3 resists poison (90%)
+  
+  E1  turn 6
+    E1  uses arc_bolt at 2,1
+    E1   hits A2 for 699 (doubly weak!), 1203 left
+    E1   stun x1 on A2, now 1
+  
+
+A3 Example Adept, turn 3
+> strike      100% attack · range 1
+  riptide     3 turns of cooldown left
+  guard_wall  3 turns of cooldown left
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a skill blurb =====
+
+vine_whip  1 of 130
+
+  Hits an enemy for 110% of attack.
+  Range 1 · 95% to hit · 1 turn to recharge.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 160x60 | a squeezed battle =====
+
+the battle  seed 1  log 29-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    E3   poison x1 on A2, now 3
+    E3   hits A1 for 72, 2884 left
+    E3   A1 resists poison (65%)
+    E3   hits A3 for 72, 2884 left
+    E3   poison x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison x1
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+> strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a trait blurb =====
+
+Mew  level 60
+
+  elusive
+    Always carries evasive.
+
+  composure
+    Refuses 50% of any stun aimed at it.
+    Refuses 50% of any taunting aimed at it.
+
+  swiftness
+    Always carries quickened.
+
+  endurance
+    Always carries toughened.
+
+  contagion
+    Its attacks also inflict weaken, 25% of the time.
+
+  blood_thirst
+    Everything it does takes back 25% of the damage dealt.
+
+  last_gasp
+    Everything it does takes back 40% of the damage dealt.
+    In force only at or below 40% health.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 160x60 | aiming =====
+
+the battle  seed 1  log 34-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+  
+  E1  turn 2
+    E1  uses arc_bolt at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison x1
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+  strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+
+point strike at
+> 3,0  E3 Bloom
+  3,1  E2 Bloom
+  3,2  E1 Bloom
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 160x60 | an empty squad catalogue =====
+
+squads  0 built, at most 5 to a side
+
+nothing built yet; n starts one
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · f fight · ctrl+l tiếng Việt · esc back
+===== en | 160x60 | cast =====
+
+cast  showing all origins (13 of 13 characters)
+
+> fixture-anime.adept      fixture-anime  water/ice
+  fixture-game.sprout      fixture-game   grass/electric
+  naruto.naruto            naruto         wind
+  pokemon.bulbasaur        pokemon        grass
+  pokemon.charmander       pokemon        fire
+  pokemon.cleffa           pokemon        light
+  pokemon.gastly           pokemon        dark
+  pokemon.machop           pokemon        ground
+  pokemon.magnemite        pokemon        electric/metal
+  pokemon.mew              pokemon        neutral
+  pokemon.mewtwo           pokemon        dark
+  pokemon.poliwag          pokemon        water
+  pokemon.squirtle         pokemon        water
+
+fixture-anime.adept — Example Adept
+  from          Example Anime (anime, fixture-anime)
+  playstyle     sentinel
+  element       water/ice
+  kit           strike riptide guard_wall purify
+  stages        Example Adept@1
+  biography     A test fixture, injected into a scratch data directory so a test does not depend on whatever cast the repository happens to hold.
+  art           assets/fixture/adept.svg  present
+  level 60      hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 stage Example Adept
+  effective hp  [=======================-] 11397 of 11500, 103 to spare
+                3100 against damage that pierces its armour outright
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
+===== en | 160x60 | chart =====
+
+the affinity chart  each ring: a member beats the next, the last the first
+
+  organic
+    ,--> water --> fire --> grass --> ground --,
+    `------------------------------------------'
+  industrial
+    ,--> ice --> metal --> wind --> electric --,
+    `------------------------------------------'
+  cross
+    ,--> water --> metal --> grass --> wind --> fire --> ice --> ground --> electric --,
+    `----------------------------------------------------------------------------------'
+  both ways
+    light <--> dark
+  inert
+    neutral
+
+  strong 150% · even 100% · weak 67%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | elements =====
+
+elements  the affinity chart: what beats what, and by how much
+
+  neutral
+  water
+  fire
+  grass
+> ground
+  ice
+  metal
+  wind
+  electric
+  light
+  dark
+
+  Strong against water and electric: an attack of this element deals 150%.
+  Weak to grass and ice: an attack of theirs deals 67% to it.
+
+  A dual unit takes both multipliers; an attack carries exactly one element.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | filtered skills =====
+
+skills  what each one does, and who may carry it
+  filtering a (109 of 130 skills)
+
+  id             element   damage multiplier who may carry it
+> vine_whip      grass     1100x1            grass units, out of pokemon
+  razor_leaf     grass     600x2             grass units, out of pokemon
+  solar_beam     light     2400x1            light units, out of pokemon
+  sleep_powder   grass     0x1               grass units, out of pokemon
+  poison_powder  neutral   0x1               out of pokemon
+  leech_seed     grass     700x1             grass units, out of pokemon
+  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+  ember          fire      1000x1            fire units, out of pokemon
+  flamethrower   fire      1600x1            fire units, out of pokemon
+  fire_fang      fire      650x2             fire units, out of pokemon
+  fire_spin      fire      850x1             fire units, out of pokemon
+  heat_wave      fire      1100x1            fire units, out of pokemon
+  inferno        fire      1000x1            fire units, out of pokemon
+  dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
+  smokescreen    neutral   0x1               anyone
+  dragon_dance   neutral   0x1               kept for a dragon, out of pokemon
+  water_gun      water     1000x1            water units, out of pokemon
+  whirlpool      water     800x1             water units, out of pokemon
+  bite           neutral   1200x1            anyone
+  brine          water     1000x1            water units, out of pokemon
+  hydro_pump     water     2200x1            water units, out of pokemon
+  withdraw       neutral   0x1               anyone
+  aqua_ring      water     0x1               water units, out of pokemon
+  rapid_spin     neutral   0x1               anyone
+  rally          neutral   0x1               anyone
+  dragon_claw    neutral   1100x1            kept for a dragon, out of pokemon
+  outrage        neutral   2200x1            kept for a dragon, out of pokemon
+  dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
+  taunt          neutral   0x1               anyone
+  kunai          neutral   700x1             out of naruto
+  wind_shuriken  wind      620x2             wind units, out of naruto
+  rasengan       wind      2200x1            wind units, out of naruto
+  substitution   neutral   0x1               out of naruto
+  shadow_clone   neutral   0x1               out of naruto
+  comeback       neutral   900x1             out of naruto
+  summon_toad    neutral   0x1               out of naruto
+  water_pulse    water     600x1             water units, out of pokemon
+  skull_bash     neutral   850x1             out of pokemon
+  wide_guard     neutral   0x1               anyone
+  bubble_beam    water     900x1             water units, out of pokemon
+  body_slam      neutral   1200x1            out of pokemon
+  pummel         neutral   480x3             out of pokemon
+  submission     neutral   2000x1            out of pokemon
+  rock_throw     ground    1100x1            ground units, out of pokemon
+  seismic_toss   ground    2000x1            ground units, out of pokemon
+
+  damage        377 per strike, 377 in all, against 800 atk and 400 def
+130 skills · 23 anyone may carry
+
+
+
+type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
+===== en | 160x60 | filtering skills =====
+
+skills  what each one does, and who may carry it
+  type a name or an id to filter
+
+  id             element   damage multiplier who may carry it
+> vine_whip      grass     1100x1            grass units, out of pokemon
+  razor_leaf     grass     600x2             grass units, out of pokemon
+  solar_beam     light     2400x1            light units, out of pokemon
+  sleep_powder   grass     0x1               grass units, out of pokemon
+  poison_powder  neutral   0x1               out of pokemon
+  sludge_bomb    neutral   1300x1            out of pokemon
+  venoshock      neutral   900x1             out of pokemon
+  leech_seed     grass     700x1             grass units, out of pokemon
+  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+  ember          fire      1000x1            fire units, out of pokemon
+  flamethrower   fire      1600x1            fire units, out of pokemon
+  fire_fang      fire      650x2             fire units, out of pokemon
+  fire_spin      fire      850x1             fire units, out of pokemon
+  heat_wave      fire      1100x1            fire units, out of pokemon
+  inferno        fire      1000x1            fire units, out of pokemon
+  dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
+  smokescreen    neutral   0x1               anyone
+  dragon_dance   neutral   0x1               kept for a dragon, out of pokemon
+  water_gun      water     1000x1            water units, out of pokemon
+  bubble         water     700x1             water units, out of pokemon
+  whirlpool      water     800x1             water units, out of pokemon
+  bite           neutral   1200x1            anyone
+  brine          water     1000x1            water units, out of pokemon
+  hydro_pump     water     2200x1            water units, out of pokemon
+  withdraw       neutral   0x1               anyone
+  aqua_ring      water     0x1               water units, out of pokemon
+  rapid_spin     neutral   0x1               anyone
+  rally          neutral   0x1               anyone
+  dragon_claw    neutral   1100x1            kept for a dragon, out of pokemon
+  outrage        neutral   2200x1            kept for a dragon, out of pokemon
+  dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
+  taunt          neutral   0x1               anyone
+  kunai          neutral   700x1             out of naruto
+  wind_shuriken  wind      620x2             wind units, out of naruto
+  rasengan       wind      2200x1            wind units, out of naruto
+  substitution   neutral   0x1               out of naruto
+  shadow_clone   neutral   0x1               out of naruto
+  comeback       neutral   900x1             out of naruto
+  summon_toad    neutral   0x1               out of naruto
+  water_pulse    water     600x1             water units, out of pokemon
+  skull_bash     neutral   850x1             out of pokemon
+  wide_guard     neutral   0x1               anyone
+  bubble_beam    water     900x1             water units, out of pokemon
+  body_slam      neutral   1200x1            out of pokemon
+  pummel         neutral   480x3             out of pokemon
+
+  damage        377 per strike, 377 in all, against 800 atk and 400 def
+130 skills · 23 anyone may carry
+
+
+
+type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
+===== en | 160x60 | menu =====
+
+what would you like to do?
+
+> cast      browse the authored characters, at any level
+  skills    look a skill up: what each does, and who may carry it
+  elements  look the chart up: what it beats, what beats it, at what rate
+  traits    look a trait up: what each does, and who learns it
+  species   look a kind up: what each one means
+  origins   look a work up: the fictions the cast is borrowed from
+  squads    the sides that have been built, and take one into a battle
+  battle    play a battle yourself, with the first side on the list
+
+A battle here is fought out of the directory above, while the game boots from
+the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s
+writes the log that hexarena --replay draws that same battle back from.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · enter open · ctrl+l tiếng Việt · q quit
+===== en | 160x60 | skills =====
+
+skills  what each one does, and who may carry it
+
+  id             element   damage multiplier who may carry it
+> vine_whip      grass     1100x1            grass units, out of pokemon
+  razor_leaf     grass     600x2             grass units, out of pokemon
+  solar_beam     light     2400x1            light units, out of pokemon
+  sleep_powder   grass     0x1               grass units, out of pokemon
+  poison_powder  neutral   0x1               out of pokemon
+  sludge_bomb    neutral   1300x1            out of pokemon
+  venoshock      neutral   900x1             out of pokemon
+  leech_seed     grass     700x1             grass units, out of pokemon
+  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+  ember          fire      1000x1            fire units, out of pokemon
+  flamethrower   fire      1600x1            fire units, out of pokemon
+  fire_fang      fire      650x2             fire units, out of pokemon
+  fire_spin      fire      850x1             fire units, out of pokemon
+  heat_wave      fire      1100x1            fire units, out of pokemon
+  inferno        fire      1000x1            fire units, out of pokemon
+  dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
+  smokescreen    neutral   0x1               anyone
+  dragon_dance   neutral   0x1               kept for a dragon, out of pokemon
+  water_gun      water     1000x1            water units, out of pokemon
+  bubble         water     700x1             water units, out of pokemon
+  whirlpool      water     800x1             water units, out of pokemon
+  bite           neutral   1200x1            anyone
+  brine          water     1000x1            water units, out of pokemon
+  hydro_pump     water     2200x1            water units, out of pokemon
+  withdraw       neutral   0x1               anyone
+  aqua_ring      water     0x1               water units, out of pokemon
+  rapid_spin     neutral   0x1               anyone
+  rally          neutral   0x1               anyone
+  dragon_claw    neutral   1100x1            kept for a dragon, out of pokemon
+  outrage        neutral   2200x1            kept for a dragon, out of pokemon
+  dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
+  taunt          neutral   0x1               anyone
+  kunai          neutral   700x1             out of naruto
+  wind_shuriken  wind      620x2             wind units, out of naruto
+  rasengan       wind      2200x1            wind units, out of naruto
+  substitution   neutral   0x1               out of naruto
+  shadow_clone   neutral   0x1               out of naruto
+  comeback       neutral   900x1             out of naruto
+  summon_toad    neutral   0x1               out of naruto
+  water_pulse    water     600x1             water units, out of pokemon
+  skull_bash     neutral   850x1             out of pokemon
+  wide_guard     neutral   0x1               anyone
+  bubble_beam    water     900x1             water units, out of pokemon
+  body_slam      neutral   1200x1            out of pokemon
+  pummel         neutral   480x3             out of pokemon
+
+  damage        377 per strike, 377 in all, against 800 atk and 400 def
+130 skills · 23 anyone may carry
+
+
+
+
+↑/↓ · / filter · ? describe · ctrl+l tiếng Việt · esc · q
+===== en | 160x60 | skills filtered to none =====
+
+skills  what each one does, and who may carry it
+  filtering zzqx (0 of 130 skills)
+
+  nothing matches that.
+
+130 skills · 23 anyone may carry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
+===== en | 160x60 | species =====
+
+species  the declared kinds, and where each line is drawn
+
+  id
+> dragon
+  lizard
+  plant
+  turtle
+  human
+  amphibian
+  titan
+  fae
+  construct
+  mythic
+  shade
+
+  Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
+  rồng chút nào
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | squads =====
+
+squads  2 built, at most 5 to a side
+
+  id    who is in it
+> phe-0 3 in it  đội thử 0
+  phe-1 3 in it  đội thử 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · f fight · ctrl+l tiếng Việt · esc back
+===== en | 160x60 | statuses =====
+
+statuses  the buffs and debuffs a skill or a trait puts on a unit
+
+  dot          damages every turn
+  poison       
+  burn         
+  stat_debuff  lowers a stat
+  weaken       
+  expose       
+  blind        
+  mire         
+  bare         
+  encumber     
+  control      costs a turn
+  stun         
+  buff         raises a stat
+  fury         
+  haste        
+  focus        
+> toughened    
+  veil         
+  unleashed    
+  kindled      
+  fortified    
+  quickened    
+  evasive      
+  shield       blocks one strike
+  block        
+  regen        restores every turn
+  regrowth     
+  taunt        costs a choice of target
+  taunting     
+  heal_cut     cuts healing received
+  fester       
+  charge       builds up to be spent
+  charge       
+  absorb       soaks up damage until it is used up
+  aegis        
+  bastion      
+  reserve      builds up for its holder to spend
+  swelter      
+  verdure      
+  moisture     
+
+  Raises defence by 15%.
+  Raises a stat · always in force · 1 stack.
+
+  Declared figures: a trait amplifying or resisting changes what lands.
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | traits =====
+
+traits  the declared traits, and who carries each
+
+  id            carried by
+> endurance     naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.machop@32 pokemon.magnemite@24 pokemon.mew@36 pokemon.poliwag@16 pokemon.squir…
+  blaze         pokemon.charmander@16
+  heatproof     pokemon.charmander@16
+  virulence     pokemon.bulbasaur@32
+  venom_blood   pokemon.bulbasaur@24
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwag@44
+  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
+  reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
+  thorns        pokemon.squirtle@32
+  swiftness     naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32
+  ballast       pokemon.squirtle@44
+  composure     pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24 pokemon.poliwag@40[Politoed]
+  elusive       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40
+  contagion     pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40
+  spiteful      pokemon.gastly@32 pokemon.poliwag@36
+  berserk       pokemon.machop@40 pokemon.mewtwo@32
+  unyielding    pokemon.machop@24
+  carapace      pokemon.squirtle@48
+  projection    pokemon.charmander@48
+  rending       pokemon.machop@48
+
+  endurance
+    Always carries toughened.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ? the status · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | works =====
+
+origins  the works the cast is borrowed from
+
+> fixture-anime    anime   2002   1 cast  Example Anime
+  fixture-film     film    1999   0 cast  Example Film
+  fixture-game     game    2011   1 cast  Example Game
+  naruto           anime   2002   1 cast  Naruto
+  pokemon          anime   1997  10 cast  Pokémon
+
+  note          A test fixture, not shipped.
+
+5 works · media: anime film series game comic novel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
