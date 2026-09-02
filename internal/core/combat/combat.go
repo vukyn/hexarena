@@ -839,10 +839,29 @@ func (r Rules) ExpectedStrike(h Hit) int64 {
 
 // Expected returns what every strike of a hit is worth before any is rolled.
 //
-// Because ExpectedStrike returns early at a chance of nought, this is bit for
-// bit Total for every shipped skill.
+// ⚠️ **Through ExpectedStrikes rather than StrikeCount, which is the rule Repeat
+// is declared under and which this was the one place not to follow.** A repeating
+// skill's count is a distribution — mostly the floor, occasionally a great deal
+// more — so a rating cannot use the ceiling (it would price every cast as the
+// best cast) and cannot use the floor either. This was reading the floor, and
+// nothing said so: measured, a seven-hundred-power single beat a six-hundred one
+// landing about five times, and `spark` was priced at two strikes rather than
+// three.
+//
+// The count comes in parts per thousand, so the division is here and not at the
+// call site — a caller multiplying a per-strike figure by a per-mille count is
+// exactly the second copy of the arithmetic this package exists to prevent.
+//
+// ⚠️ Total is deliberately NOT changed to match: it is the deterministic figure
+// skills.golden's damage column is written from, and a number that moved with an
+// expected value would stop being the thing an author compares two skills by.
+// See its comment. The two answer different questions and both are wanted.
+//
+// Because ExpectedStrike returns early at a chance of nought and ExpectedStrikes
+// returns the plain count for a skill that does not repeat, this is still bit for
+// bit Total for every shipped skill but the repeating ones.
 func (r Rules) Expected(h Hit) int64 {
-	return r.ExpectedStrike(h) * int64(h.StrikeCount())
+	return r.ExpectedStrike(h) * int64(h.ExpectedStrikes()) / int64(PermilleBase)
 }
 
 // Gradient returns the share a hurt caster adds to its own skill's power, in
