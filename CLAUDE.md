@@ -166,6 +166,13 @@ Rules for anything added to that file:
   compares two skills by. The two answer different questions.
   Measured: a Magnemite kit built on `spark` read **3.6%** with the floor and
   **25.0%** with the expectation — the rating would not cast its own best skill.
+- **Health a skill gives back is priced as healing, from both sources.**
+  `pricing.drained` reads `drainShare(declared.Drains + lifesteal(actor))` — the
+  expression `resolveAgainst` pays it with, sum first and then bound — over the
+  damage `expected` says will land, and runs it through `worthHealing`. Reading
+  only the skill's own field prices `leech_seed` and leaves `blood_thirst` at
+  nought, which is half a fix; skipping `worthHealing` makes it a flat bonus
+  wearing a health check.
 - ⚠️ **The queue may break a tie; it may never set a price.** A queue reading is
   **compared**, never added or multiplied. A value that reaches an arithmetic
   expression is tempo, and tempo is priced from the **speed stat** — see the tempo

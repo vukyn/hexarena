@@ -1,5 +1,5 @@
 == battle from seed 11 ==
-51 turns, 248 events, ally won
+52 turns, 257 events, ally won
 
 the first 90 events
        0 started         ally.venusaur      ally   0,1  3800 hp
@@ -92,40 +92,40 @@ the first 90 events
    50312 damaged         foe.ivysaur        vine_whip hit ally.wartortle for 191, x1000 affinity, 1085 hp left
    51282 turn_began      ally.wartortle     turn 2   1085 hp
    51282 status_ticked   ally.wartortle     poison x1  86 damage
-... 158 more
+... 167 more
 
 the last 12 events
-  217514 skill_used      ally.venusaur      venoshock at 5,1
-  217514 amplified       ally.venusaur      venoshock on poison x1, power 1800
-  217514 damaged         ally.venusaur      venoshock hit foe.blastoise for 324, x1000 affinity, 394 hp left
-  227514 turn_began      ally.venusaur      turn 22  44 hp
-  227514 skill_used      ally.venusaur      razor_leaf at 5,1
-  227514 damaged         ally.venusaur      razor_leaf hit foe.blastoise for 151, x1000 affinity, 400 per mille pierced, 243 hp left
-  227514 damaged         ally.venusaur      razor_leaf hit foe.blastoise for 189, x1000 affinity, 400 per mille pierced, 54 hp left
-  228869 turn_began      foe.blastoise      turn 19  54 hp
+  227514 damaged         ally.venusaur      razor_leaf hit foe.blastoise for 189, x1000 affinity, 400 per mille pierced, 126 hp left
+  228869 turn_began      foe.blastoise      turn 19  126 hp
   228869 status_ticked   foe.blastoise      poison x1  90 damage
-  228869 died            foe.blastoise      fell at 5,1
-  228869 ended                              victory to the ally side
-  228869 turn_skipped    foe.blastoise      died
+  228869 skill_used      foe.blastoise      water_gun at 0,1
+  228869 damaged         foe.blastoise      water_gun hit ally.venusaur for 168, x1000 affinity, 26 hp left
+  228869 status_resisted ally.venusaur      foe.blastoise resisted poison at 40 per mille
+  237514 turn_began      ally.venusaur      turn 23  26 hp
+  237514 skill_used      ally.venusaur      leech_seed at 5,1
+  237514 damaged         ally.venusaur      leech_seed hit foe.blastoise for 126, x1000 affinity, 0 hp left
+  237514 healed          ally.venusaur     
+  237514 died            foe.blastoise      fell at 5,1
+  237514 ended                              victory to the ally side
 
 event counts
   started              6
-  turn_began          51
+  turn_began          52
   status_ticked       10
   status_expired       6
   speed_changed        8
-  turn_skipped         2
-  skill_used          49
-  amplified            5
+  turn_skipped         1
+  skill_used          51
+  amplified            6
   status_consumed      0
   missed               7
   blocked              0
-  damaged             62
+  damaged             64
   status_applied      10
-  status_resisted     23
+  status_resisted     24
   status_stripped      0
   died                 5
-  healed               0
+  healed               3
   passive_held         3
   passive_released     0
   ended                1
@@ -136,7 +136,7 @@ event counts
   paid                 0
 
 final board
-  ally.venusaur     ally   alive     44 / 3800   hp   grass
+  ally.venusaur     ally   alive    101 / 3800   hp   grass
   ally.wartortle    ally   dead       0 / 1631   hp   water
   ally.charmander   ally   dead       0 / 954    hp   fire
   foe.blastoise     enemy  dead       0 / 3600   hp   water
