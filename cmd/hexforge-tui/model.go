@@ -6,8 +6,6 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"github.com/vukyn/hexarena/internal/core/passive"
-	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
@@ -119,6 +117,14 @@ type (
 	// previewScreen is the art preview, which moved with the describers. It
 	// carries nothing this client owns, so it is an alias like the six above.
 	previewScreen = draw.PreviewScreen
+	// squadsScreen is the squad builder — the catalogue, one squad under edit
+	// and one member of it. ⚠️ A **plain alias** like the browser and the skill
+	// listing: it names no view of this client's, because esc is a draw.Back,
+	// its two questions are draw.Ask actions carrying their own subject, its two
+	// pickers are draw.Pick actions, and the fight it raises with `f` is a
+	// draw.Raise at draw.Fight — a Target this package maps to a screen the
+	// builder itself may not name.
+	squadsScreen = draw.SquadsScreen
 	// skillsScreen is the skill book and the form over it. ⚠️ A **plain alias**
 	// like the browser: everything it holds is its own — the listing's cursor,
 	// the typed filter, the form's fields and its six destinations — and it
@@ -193,7 +199,7 @@ type model struct {
 	elements elementsScreen
 	species  speciesScreen
 	builds   buildsScreen
-	squad    squadScreen
+	squad    squadsScreen
 	fight    fightScreen
 	play     playScreen
 	// chart holds nothing: it is drawn from the library every time and has no
@@ -249,56 +255,20 @@ type guardState struct {
 	// vocabulary for the four of them that ask would be two names for one idea.
 	asked screen
 
-	// about is what the question is about. Three of the five confirms name
-	// nothing — a form throwing its own draft away is about the screen that
-	// asked — and the squad builder's two are told apart by it.
-	about guardSubject
+	// about is what the question is about, and this client never reads it: it
+	// travels from the screen that asked to that screen's own Confirmed, which
+	// is the only thing that knows what the value means.
+	//
+	// ⚠️ **An `any`, and it is draw.Action.About's own type rather than a
+	// vocabulary of this client's.** It used to be a guardSubject declared here,
+	// because the one screen that asks about anything — the squad builder — was
+	// in this package; that screen is in internal/screen now and its two
+	// questions are told apart by a draw.SquadsAsk, so the carrier had to be
+	// something a screen in that package can fill in. Three of the five confirms
+	// still name nothing at all: a form throwing its own draft away is about the
+	// screen that asked, and nil is what they pass.
+	about any
 }
-
-// guardSubject is what a pending question is about, carried rather than
-// recomputed.
-//
-// ⚠️ **One confirm captures a value the screen does not hold**: deleting a saved
-// squad reads the id under the catalogue's cursor at the moment `d` is pressed,
-// and nothing on squadScreen remembers it. Reading the cursor again when the
-// answer arrives would work — the guard freezes every other key, so the cursor
-// cannot move between the question and the answer — and that is a subtle
-// invariant to rest a file deletion on for nothing. The id travels with the
-// question instead.
-//
-// ⚠️ **draw.Subject was the obvious carrier and does not fit.** Its Kind is the
-// closed list of things a *raise* may land on, counted by
-// screen.SubjectKindCount, and this client's `subjects` applier is held total
-// over that count by TestEverySubjectKindIsAppliedByThisClient — so a squad kind
-// added there would demand a raise applier for a kind no raise carries. Carrying
-// a squad id under NoSubject is the other half of the same mistake: a value
-// filed under a kind that says there is none, which is the absence-encoded-into-a-value
-// shape this repository has paid for twice.
-type guardSubject struct {
-	Kind guardSubjectKind
-
-	// ID is a squad id, and only guardsASavedSquad spends it.
-	ID string
-}
-
-// guardSubjectKind is what sort of thing a pending question is about.
-type guardSubjectKind uint8
-
-const (
-	// guardsNothing is the zero value, and it is what three of the five confirms
-	// carry: a form throwing its own draft away names nothing, because the draft
-	// *is* the screen and the screen is handed back to itself.
-	guardsNothing guardSubjectKind = iota
-	// guardsASavedSquad names a squad on the file, by the id that was under the
-	// catalogue's cursor when the question was asked.
-	guardsASavedSquad
-	// guardsTheSquadInHand is the half-built squad under edit, which is the
-	// other question the squad builder asks and the reason a kind is carried at
-	// all: one screen, two confirms, and a screen told them apart by looking at
-	// its own mode would be reading state to answer a question that could have
-	// said which one it was.
-	guardsTheSquadInHand
-)
 
 func newModel(lib *forge.Library, lang i18n.Lang) model {
 	style := newPalette()
@@ -320,7 +290,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		passives: draw.NewPassivesScreen(lib),
 		species:  draw.NewSpeciesScreen(lib),
 		builds:   draw.NewBuildsScreen(lib),
-		squad:    newSquadScreen(lib),
+		squad:    draw.NewSquadsScreen(ctx),
 		fight:    newFightScreen(),
 		play:     newPlayScreen(),
 		check:    newCheckScreen(lib),
@@ -462,7 +432,9 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.builds = builds
 		return m.navigate(screenBuilds, action)
 	case screenSquads:
-		return m.squad.update(m, message)
+		squad, action, command := m.squad.Update(m.ctx(), message)
+		m.squad = squad
+		return m.navigateWith(screenSquads, action, command)
 	case screenFight:
 		return m.fight.update(m, message)
 	case screenPlay:
@@ -498,13 +470,20 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 var raiseTargets = map[draw.Target]screen{
 	draw.Chart:    screenChart,
 	draw.Statuses: screenStatuses,
-	// The two describers. ⚠️ Nothing returns a Raise naming either yet — the
-	// three screens that raise them still write m.screen and push their subject
-	// through model.hand — and they are listed anyway, so the day those screens
-	// return actions the entry is already here rather than being the thing that
-	// was forgotten.
+	// The two describers. Both were listed here **before** anything returned a
+	// Raise naming either, which is what put them under
+	// TestEveryRaiseTargetNamesAScreenInThisClient ahead of their raisers rather
+	// than after. Three of the four raisers have arrived since — the cast
+	// browser raises both, the skill listing raises the blurb — and the fourth,
+	// the played battle, still writes m.screen and pushes its subject through
+	// model.hand, because that screen has not moved.
 	draw.Blurb:   screenBlurb,
 	draw.Preview: screenPreview,
+	// The squad catalogue raises this one and the fight itself has not moved,
+	// which is what a Target is for: a screen in internal/screen may not name a
+	// view of a client it was not written for, so it asks for one and this map
+	// answers.
+	draw.Fight: screenFight,
 }
 
 // navigate applies what a screen asked for.
@@ -528,10 +507,12 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		return m.raise(from, action)
 	case draw.Ask:
 		// The asking screen is the one that asked, which is what `from` already
-		// is — so nothing has to be read off m.screen — and the subject is this
-		// client's own zero, because no moved screen asks about anything yet.
-		// See draw.Action.Question for the field the squad builder will need.
-		return m.ask(action.Question, from, guardSubject{}), nil
+		// is, so nothing has to be read off m.screen — and what the question is
+		// about travels with it, opaque, straight back to that screen's own
+		// Confirmed. This client never opens it: the squad builder's two
+		// questions are told apart by a draw.SquadsAsk and the other three are
+		// about nothing.
+		return m.ask(action.Question, from, action.About), nil
 	case draw.Pick:
 		// The screen built the list; the client owns it while it is up. Raise
 		// settles the defaults a literal did not fill in, exactly as it does for
@@ -597,14 +578,33 @@ func (m model) raise(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 	// ⚠️ The description screen keeps its own way back beside raisedFrom, and
 	// that is not a duplicate. `blurbScreen.from` is read by updateBlurb for two
 	// things raisedFrom cannot answer — esc, and which raiser an arrow key walks
-	// — and its other two raisers, the skill listing and the played battle, still
-	// write m.screen themselves and never reach here. So the one raiser that does
-	// has to fill it in, or a description raised from the browser would escape to
-	// wherever the last one did.
+	// — so whichever raiser arrives through here has to fill it in, or a
+	// description raised from the browser would escape to wherever the last one
+	// did.
+	//
+	// ⚠️ **Two of the three raisers come through here now and the third does
+	// not**: the cast browser and the skill listing both return a Raise naming
+	// draw.Blurb, and the played battle still writes m.screen and pushes its
+	// subject through model.hand, because that screen has not moved. `from` is a
+	// `screen`, this binary's own enum, so it could not travel with the
+	// describer — and **converting the played battle is what closes it**, not
+	// this step.
 	if target == screenBlurb {
 		m.blurb.from = from
 	}
 	m.raisedFrom = from
+	// ⚠️ **One target goes through enter and the other four do not**, which is a
+	// difference rather than an inconsistency to tidy away. enter refreshes the
+	// screen being entered, and three of the other four are raised *about*
+	// something — a statuses reference refreshed after applySubject has moved its
+	// cursor is a cursor put back where it started. The fight holds a cache of
+	// runs keyed on the pairing and the seed count, so arriving with the last
+	// visit's cache is a screen reporting a squad that has since been edited;
+	// that is what its own refresh is for, and it is what `f` from the catalogue
+	// has always done.
+	if target == screenFight {
+		return m.enter(target), nil
+	}
 	m.screen = target
 	return m, nil
 }
@@ -622,7 +622,7 @@ func (m model) raise(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 // as a target with no screen and a subject kind with no applier, and
 // TestEveryScreenThatAsksAnswersItsOwnQuestion walks the declared list rather
 // than this map for the reason those two walk their counts.
-var confirmedBy = map[screen]func(model, guardSubject) (model, draw.Action){
+var confirmedBy = map[screen]func(model, any) (model, draw.Action){
 	screenNew:     confirmForm,
 	screenOrigins: confirmOrigins,
 	screenSkills:  confirmSkills,
@@ -647,25 +647,25 @@ var guardAskers = [...]screen{screenNew, screenOrigins, screenSkills, screenSqua
 // question was about, put what comes back on the model, and give the client the
 // action — and they are written out rather than generated because a screen's
 // field is named on the model and Go has nowhere else to say which one.
-func confirmForm(m model, about guardSubject) (model, draw.Action) {
+func confirmForm(m model, about any) (model, draw.Action) {
 	form, action := m.form.Confirmed(m.ctx(), about)
 	m.form = form
 	return m, action
 }
 
-func confirmOrigins(m model, about guardSubject) (model, draw.Action) {
+func confirmOrigins(m model, about any) (model, draw.Action) {
 	origins, action := m.origins.Confirmed(m.ctx(), about)
 	m.origins = origins
 	return m, action
 }
 
-func confirmSkills(m model, about guardSubject) (model, draw.Action) {
+func confirmSkills(m model, about any) (model, draw.Action) {
 	skills, action := m.skills.Confirmed(m.ctx(), about)
 	m.skills = skills
 	return m, action
 }
 
-func confirmSquads(m model, about guardSubject) (model, draw.Action) {
+func confirmSquads(m model, about any) (model, draw.Action) {
 	squad, action := m.squad.Confirmed(m.ctx(), about)
 	m.squad = squad
 	return m, action
@@ -733,13 +733,14 @@ type pickLanding struct {
 // keying it by screen would make the five allowlists one entry and put the
 // question of which field back inside the screen, where nothing counts it.
 //
-// ⚠️ **The key is an `any` because there are two vocabularies now, and this is
-// the one place entitled to know both.** Six of the ten destinations followed
-// the skill form into internal/screen and are draw.SkillsPick values; the four
-// that name a screen still in this package are pickDest values. PickState
-// carries either as the `any` it always was, so the map that turns one back into
-// a landing takes the same type. TestEveryPickDestinationLandsSomewhere walks
-// **both** counts, which is what stops either enum growing an entry in silence.
+// ⚠️ **The key is an `any` because there are three vocabularies now, and this is
+// the one place entitled to know all of them.** Six of the ten destinations
+// followed the skill form into internal/screen as draw.SkillsPick and two
+// followed the squad builder as draw.SquadsPick; the two that name a screen
+// still in this package are pickDest values. PickState carries any of them as
+// the `any` it always was, so the map that turns one back into a landing takes
+// the same type. TestEveryPickDestinationLandsSomewhere walks **all three**
+// counts, which is what stops any of them growing an entry in silence.
 var pickedInto = map[any]pickLanding{
 	pickIntoKit:             {on: screenNew, land: landOnForm},
 	pickIntoSpecies:         {on: screenNew, land: landOnForm},
@@ -749,8 +750,8 @@ var pickedInto = map[any]pickLanding{
 	draw.SkillsPickKinds:    {on: screenSkills, land: landOnSkills},
 	draw.SkillsPickWho:      {on: screenSkills, land: landOnSkills},
 	draw.SkillsPickInflicts: {on: screenSkills, land: landOnSkills},
-	pickIntoSquadKit:        {on: screenSquads, land: landOnSquads},
-	pickIntoSquadTrait:      {on: screenSquads, land: landOnSquads},
+	draw.SquadsPickKit:      {on: screenSquads, land: landOnSquads},
+	draw.SquadsPickTrait:    {on: screenSquads, land: landOnSquads},
 }
 
 // landOnForm, landOnSkills and landOnSquads are the three adapters between the
@@ -831,7 +832,7 @@ func (m model) answerPick(carried any, answer pickAnswer) (tea.Model, tea.Cmd) {
 // The screen is passed rather than read off m.screen: a question is a fact about
 // who raised it, and taking it from whatever happens to be in front would make
 // the dispatch depend on a coincidence that holds today.
-func (m model) ask(question i18n.Key, asked screen, about guardSubject) model {
+func (m model) ask(question i18n.Key, asked screen, about any) model {
 	m.guard = &guardState{question: question, asked: asked, about: about}
 	return m
 }
@@ -876,7 +877,7 @@ func (m model) enter(target screen) model {
 	case screenBuilds:
 		m.builds = m.builds.Refresh(m.lib)
 	case screenSquads:
-		m.squad = m.squad.refresh(m.lib)
+		m.squad = m.squad.Refresh(m.ctx())
 	case screenFight:
 		// The fight draws both of its sides out of the catalogue's list, so it
 		// reads that list on the way in the way every other listing screen here
@@ -892,7 +893,7 @@ func (m model) enter(target screen) model {
 		// suite. It is here so the fight owns its subject rather than depending
 		// on somebody having visited the catalogue first, and it must not be
 		// read as a guard against a state that has been seen.
-		m.squad = m.squad.refresh(m.lib)
+		m.squad = m.squad.Refresh(m.ctx())
 		m.fight = m.fight.refresh()
 	case screenPlay:
 		// A battle is built on the way in rather than lazily in the view: the
@@ -951,7 +952,7 @@ func (m model) screenContent() string {
 	case screenBuilds:
 		body, footer = m.builds.View(m.ctx())
 	case screenSquads:
-		body, footer = m.squad.view(m)
+		body, footer = m.squad.View(m.ctx())
 	case screenFight:
 		body, footer = m.fight.view(m)
 	case screenPlay:
@@ -1137,49 +1138,28 @@ func wrapWords(text string, room int) []string { return draw.WrapWords(text, roo
 // when the range is empty.
 func clamp(value, low, high int) int { return draw.Clamp(value, low, high) }
 
-// window is the slice of a list to draw, keeping the cursor inside it. It
-// scrolls by the least it can, so stepping back and forth across one boundary
-// does not make the whole list jump about.
-func window(total, cursor, room int) (from, to int) { return draw.Window(total, cursor, room) }
-
 // clip shortens a line to a number of cells and says that it did, keeping the
 // front, which is where the id, the label and the first half of a sentence are.
 // It is the one cutting rule the whole client goes through, frame included.
 func clip(text string, room int) string { return draw.Clip(text, room) }
 
-// The three readings the description screen took with it into internal/screen,
-// forwarded here because the kit picker — a screen that has not moved — asks for
-// all three, and because the paragraph an author reads under the picker has to
-// be the paragraph a player reads under the blurb.
-//
-// One-line forwarders rather than call sites rewritten, which is the house
-// pattern pad, clip, clamp and window already follow: the rows that spend them
-// read unchanged, and there is still exactly one body.
+// ⚠️ **Four forwarders went with the squad builder, and one is left.** The rule
+// this file follows for pad, clip and clamp is that a forwarder exists for the
+// *production* call sites it spares: a body in internal/screen, a call site here
+// reading as it read. `window` and `traitSentences` had exactly one caller each
+// and it was that screen; `skillLines` and `traitIndent` had lost theirs when the
+// multi-select moved and were being kept alive by tests alone, which is a
+// declaration for nobody. All four are draw.Window, draw.TraitSentences,
+// draw.SkillLines and draw.TraitIndent at the handful of sites that still ask.
 
 // budgetLine is the joint health-and-defence bound drawn as a meter and as
 // numbers. It moved with the cast browser, which is the pane it was written for,
 // and is forwarded here because the new-character form draws the same row and
-// has not moved.
+// has not moved — the one reading of the three that still has a production
+// caller in this package.
 func budgetLine(m model, budget forge.Budget) string {
 	return draw.BudgetLine(m.ctx(), budget)
 }
-
-// skillLines is what a skill does, one line per sentence and already marked.
-func skillLines(c draw.Context, declared skill.Skill) []string {
-	return draw.SkillLines(c, declared)
-}
-
-// traitSentences is one trait's description, wrapped and indented under whatever
-// named it above.
-func traitSentences(c draw.Context, one passive.Passive) []string {
-	return draw.TraitSentences(c, one)
-}
-
-// traitIndent is how far the sentences sit under the trait they belong to,
-// declared in internal/screen because both screens that spend it went there.
-// Named here as well for the reason minWidth is: the rows that measure against
-// it read unchanged.
-const traitIndent = draw.TraitIndent
 
 // labelAt is label in a caller-chosen column.
 //

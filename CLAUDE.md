@@ -561,7 +561,7 @@ answers rather than screen logic:
   cell — the one column every other row leaves empty because a line filling it
   wraps on some terminals. The surviving test measures the room off the rendered
   row against `minWidth - 1`, which is where that cell is now accounted for.
-- The **squad builder** (`cmd/hexforge-tui/squads.go`) is the one screen that
+- The **squad builder** (`internal/screen/squads.go`) is the one screen that
   writes the author's own file rather than the game's: every other file here is
   data somebody wrote for the game, and `squads.json` is a side built to be
   fought with. It **ships like the rest of them** — the `go:embed` copy means a
@@ -2171,17 +2171,19 @@ regenerated on autopilot:
   client's own sweep registers (`skills`, `add a skill`, `edit a skill`,
   `edited a skill`, `filtering skills`, `filtered skills`,
   `skills filtered to none`, `shape diagram`), in both languages at the 120x24
-  floor and at 160x60 — **96 renders, 2401 lines**, body and footer recorded apart
+  floor and at 160x60 — **124 renders, 2921 lines**, body and footer recorded apart
   because a screen here answers with the two separately and every wording squeeze
   in this file is a footer. ⚠️ **It exists because the layout of code in
   `internal/screen` was held by a file in another package.** Measured after #205:
   widening the status category column by one cell
   (`Pad(row.Category.String(), column+1)` → `column+2`) left **every test in
   `internal/screen` green** and was caught by
-  `cmd/hexforge-tui/testdata/screens.golden` alone. One screen still to move —
-  the squad builder — and once `cmd/hexarena` stands up a
-  screen the authoring tool stops drawing would lose its only layout net in
-  silence.
+  `cmd/hexforge-tui/testdata/screens.golden` alone. ⚠️ **And it now catches what
+  the client cannot.** Measured after #222: widening the squad catalogue's id
+  column by one cell leaves the **whole client suite green**, because
+  `scratchData` deletes `squads.json` and so no test in `cmd/hexforge-tui` ever
+  draws a catalogue with a row in it. The two goldens are not one net in two
+  places; each sees a screen the other is blind to.
   ⚠️ **The skill listing's entries are driven with keys where the client's are**,
   and each hand-built state asserts it drew the line it exists for. The three
   filter states are what the query decides, so a field set by hand would record a

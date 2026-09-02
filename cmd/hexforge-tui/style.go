@@ -15,24 +15,21 @@ import (
 // client draws the same screens and must not have a second answer to any of
 // them. Reading the environment is the binary's business; answering the question
 // is not.
+//
+// ⚠️ **numberField went with the squad builder and is not coming back.** It was
+// the digits-only twin of newInput below, forwarded here on the rule pad, clip,
+// clamp and window follow — a body in internal/screen and a call site left
+// reading as it read. The squad builder's level field was its **last** caller in
+// this package once the skill form's chance field had moved, so what was left
+// was a forwarder nothing in the program called: draw.NumberField takes the
+// answer off the Palette it is handed, which is where a moved screen already
+// gets it.
 
 // newPalette picks the styles for the terminal this program is attached to.
 func newPalette() draw.Palette { return draw.NewPalette(plainTerminal()) }
 
 // newInput is a text field dressed the way this program draws them.
 func newInput() textinput.Model { return draw.NewInput(plainTerminal()) }
-
-// numberField is a text field that takes digits and nothing else: the chance
-// beside the status picker's list, and the squad builder's level.
-//
-// It sits beside newInput for the same reason, which is the only reason: it
-// reads the machine. The field itself is draw.NumberField's, and the one screen
-// that still raises one from this package is the squad builder — the skill
-// form's chance field went with that screen into internal/screen, where the
-// answer is already on the palette it is handed.
-func numberField(placeholder string) *textinput.Model {
-	return draw.NumberField(plainTerminal(), placeholder)
-}
 
 // plainTerminal reports whether colour would be noise rather than help.
 //

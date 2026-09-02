@@ -2170,7 +2170,7 @@ func TestTheStatusPickerFitsTheSmallestWindow(t *testing.T) {
 // it. On every other kind ? goes nowhere, exactly as f does on a picker with no
 // groups.
 func TestAPickerWithNoDescriberIgnoresTheQuestionMark(t *testing.T) {
-	if numberKey(tea.KeyPressMsg{Code: '?', Text: "?"}) {
+	if draw.NumberKey(tea.KeyPressMsg{Code: '?', Text: "?"}) {
 		t.Error("? is taken for a digit, so it would be typed into a chance")
 	}
 	m, _, _ := start(t, i18n.En)

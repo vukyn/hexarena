@@ -34,6 +34,13 @@ import (
 // Pick is not one either (the picker is not a screen a client names, it is a
 // state the screen built and handed over). So there are six, and the count
 // below is what stops the seventh arriving unhandled.
+//
+// **A screen later, the count still holds and two of the fields grew.** The
+// squad builder is the third moved screen with keys the four could not say, and
+// neither of them needed a Kind: it asks **two** questions rather than one, so
+// an Ask had to be able to say which (About, below), and it raises a screen the
+// client is keeping, so Target gained a name for a view this package will never
+// draw. Both are the vocabulary widening rather than the grammar.
 type Action struct {
 	Kind   Kind
 	Target Target
@@ -58,24 +65,37 @@ type Action struct {
 
 	// Question is the wording an Ask puts to the reader, and is a key rather
 	// than a sentence so that switching language with one pending redraws it.
+	Question i18n.Key
+
+	// About is what an Ask is about, and the package never reads it.
 	//
-	// ⚠️ **What the question is *about* is deliberately not carried, and this is
-	// the field the squad builder will have to widen.** The one asking screen in
-	// this package names nothing — a form throwing its own draft away is about
-	// the screen that asked, so the client fills in its own zero subject — while
-	// the squad builder asks two questions told apart by a squad id. That screen
-	// is still in cmd/hexforge-tui and still calls the client's own `ask`, so
-	// there is nothing here for a subject to be about yet, and a field only nil
-	// is ever passed for is a field no test can discriminate.
+	// The squad builder is why it exists and it was predicted here before that
+	// screen arrived: one screen, **two** questions — discard the squad in hand,
+	// and delete the saved one under the catalogue's cursor — told apart by
+	// which they are about rather than by what mode the screen happens to be in.
+	// The delete also needs a value the screen does not hold: the id that was
+	// under the cursor when `d` was pressed. Reading either back when the answer
+	// arrives would work, because a pending question freezes every other key,
+	// and that is a subtle invariant to rest a file deletion on for nothing.
+	//
+	// ⚠️ **An opaque `any`, exactly as PickState.Into is, and for the same
+	// reason.** What a question is about is the *asking screen's* own
+	// vocabulary — SquadsAsk here, and whatever a client's own unmoved screens
+	// use over there — so this field carries it from the screen that asked to
+	// that screen's own Confirmed without anything in between learning what it
+	// means. The client's only job is to keep it while the question is up.
 	//
 	// ⚠️ **Subject above is NOT the carrier and may not become one.** Its Kind is
 	// the closed list of things a *raise* may land on, counted by
-	// SubjectKindCount and held total by a client's raise applier — so a squad
+	// SubjectKindCount and held total by a client's raise applier — so an ask
 	// kind added there would demand a raise applier for a kind no raise carries.
-	// That was measured in #217's step and the answer was a client-local
-	// guardSubject; the same answer belongs here, carried as an `any` the way
-	// PickState.Into is, on the day a screen that asks about something moves.
-	Question i18n.Key
+	// That was measured in #214's step, where the answer was a client-local
+	// guardSubject; this field is that answer moved to where the asking screen
+	// can reach it. The two are not interchangeable: SquadSubject below is
+	// carried by a **raise** and is applied by a raise applier, and the two
+	// questions here are carried by an **Ask** and are read by nobody but the
+	// screen that asked.
+	About any
 
 	// Picker is the list a Pick wants put in front, built by the screen and
 	// owned by the client.
@@ -114,7 +134,8 @@ type Action struct {
 type Subject struct {
 	Kind SubjectKind
 
-	// ID is a status id, a skill id or a character id, depending on Kind.
+	// ID is a status id, a skill id, a character id or a squad id, depending on
+	// Kind.
 	ID string
 
 	// Level is the level a character is being read at, and only a
@@ -165,6 +186,23 @@ const (
 	// naming them apart would be naming the *describer* rather than the thing,
 	// which is what Target already does.
 	CharacterSubject
+	// SquadSubject is a squad, named by its id, and it is the first kind that
+	// is neither described nor put under a cursor: the fight is raised **about**
+	// one, and lands it as the side it opens on.
+	//
+	// ⚠️ **A raise says which, rather than the client reading it back.** The
+	// catalogue's `f` means "fight the squad under the cursor", and the client
+	// owns both screens, so it could recover the answer from the catalogue's own
+	// cursor after the raise had arrived. That is the mistake Action.About
+	// exists to have stopped one field up, made worse: a pending question at
+	// least freezes the keyboard while it waits, and a raise applier reading
+	// another screen's cursor rests on nothing at all.
+	//
+	// It is an **id** and not the index the fight keeps, which is the idiom
+	// stated above: a raise names what it wants and asks nobody where it lives,
+	// so turning the id back into a row of the catalogue is the client's job and
+	// the refusal is the client's too.
+	SquadSubject
 )
 
 // SubjectKindCount is how many SubjectKind values are declared, NoSubject
@@ -174,13 +212,14 @@ const (
 // **total**. A kind nothing applies makes a raise hand the describer nothing and
 // draw an empty screen, and a test that walks the kinds somebody remembered to
 // list cannot see the one they forgot. Walk the count.
-const SubjectKindCount = int(CharacterSubject) + 1
+const SubjectKindCount = int(SquadSubject) + 1
 
 var subjectKindNames = [SubjectKindCount]string{
 	NoSubject:        "none",
 	StatusSubject:    "status",
 	SkillSubject:     "skill",
 	CharacterSubject: "character",
+	SquadSubject:     "squad",
 }
 
 // String names a SubjectKind for a diagnostic, and nothing draws it — the same
@@ -306,6 +345,17 @@ const (
 	// Preview is the art a character shows at the level it is being read at, and
 	// is declared ahead of its raiser for the reason Blurb is.
 	Preview
+	// Fight is two squads measured against each other.
+	//
+	// ⚠️ **It names a screen that has not moved and may never**, and that is
+	// what a Target is for rather than a hole in the scheme: a Target is a
+	// *request*, and the client's own map is what turns one into whichever of
+	// its views answers to it. The squad catalogue is in this package now and
+	// the fight it raises is not, so the raise has to be sayable without the
+	// screen being sayable — which is exactly the sentence at the top of this
+	// type. What the client owes in exchange is an entry in that map, which
+	// TargetCount is what collects.
+	Fight
 )
 
 // TargetCount is how many Target values are declared, NoTarget included.
@@ -315,7 +365,7 @@ const (
 // out of everyScreen, which this repository has now recorded five times — and a
 // test that walks the values somebody remembered to list cannot see the one they
 // forgot. Walk the count.
-const TargetCount = int(Preview) + 1
+const TargetCount = int(Fight) + 1
 
 var targetNames = [TargetCount]string{
 	NoTarget: "none",
@@ -323,6 +373,7 @@ var targetNames = [TargetCount]string{
 	Statuses: "statuses",
 	Blurb:    "blurb",
 	Preview:  "preview",
+	Fight:    "fight",
 }
 
 // String names a Target for a diagnostic, and nothing draws it.

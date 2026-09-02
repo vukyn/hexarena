@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -16,7 +15,19 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	draw "github.com/vukyn/hexarena/internal/screen"
 )
+
+// What is left here after the squad builder moved into internal/screen: the
+// wiring, the file, and the picker as this client puts it in front.
+//
+// The split is the one every step since #205 has taken — a test that asserts
+// **where you land**, or that a key **reaches** something, is a client test and
+// stays; a test that asserts what the screen **draws**, or how its cursor, its
+// modes and its fields behave, went with it. What that leaves here is the menu
+// entry, the whole feature driven end to end onto a real `squads.json`, the two
+// states that need a directory the test wrote into, and the reading pane, which
+// is drawn over this client's own `m.picker` and inside its own `frame`.
 
 // TestTheMenuOpensTheSquadBuilder is the wiring: a screen with a view and an
 // update and no menu entry is a screen nobody can open, and assigning m.screen
@@ -36,30 +47,45 @@ func TestTheMenuOpensTheSquadBuilder(t *testing.T) {
 	}
 }
 
+// TestTheCatalogueGoesBackToWhereverRaisedIt is the client half of the
+// catalogue's esc: internal/screen asserts the screen asks for a draw.Back, and
+// this asserts what a Back off this screen costs.
+func TestTheCatalogueGoesBackToWhereverRaisedIt(t *testing.T) {
+	m, _, _ := start(t, i18n.Vi)
+	m = menuTo(t, m, screenSquads)
+	if back := key(t, m, "esc"); back.screen != screenMenu {
+		t.Errorf("escape from the catalogue landed on screen %v", back.screen)
+	}
+}
+
 // TestASquadIsBuiltAndSavedAndComesBack is the whole feature end to end, driven
 // through the keys a person presses.
+//
+// It stays in this client because it is about the **file**: the write goes onto
+// a scratch directory, a library loaded fresh off it has to see the squad, and
+// the squad has to take the field. Nothing in internal/screen writes.
 func TestASquadIsBuiltAndSavedAndComesBack(t *testing.T) {
 	m, lib, dir := start(t, i18n.En)
 	m = menuTo(t, m, screenSquads)
 
 	// n starts one, and the id is typed once.
 	m = typeText(t, m, "n")
-	if m.squad.mode != squadEdit {
+	if m.squad.Mode != draw.SquadEdit {
 		t.Fatalf("n did not open a squad to build")
 	}
 	m = typeText(t, m, "greens")
 
 	// enter on the row under the members adds somebody, which opens that unit.
 	m = key(t, m, "enter")
-	if m.squad.mode != squadUnit {
-		t.Fatalf("adding a member did not open it, mode is %v", m.squad.mode)
+	if m.squad.Mode != draw.SquadUnit {
+		t.Fatalf("adding a member did not open it, mode is %v", m.squad.Mode)
 	}
-	if len(m.squad.editing.Units) != 1 {
-		t.Fatalf("the squad holds %d members", len(m.squad.editing.Units))
+	if len(m.squad.Editing.Units) != 1 {
+		t.Fatalf("the squad holds %d members", len(m.squad.Editing.Units))
 	}
 	// A member arrives with a character, a level and a cell, because a blank one
 	// would be a form somebody has to fill from nothing.
-	unit := m.squad.editing.Units[0]
+	unit := m.squad.Editing.Units[0]
 	if unit.Character == "" || unit.Level == 0 {
 		t.Errorf("the member arrived as %+v", unit)
 	}
@@ -71,18 +97,18 @@ func TestASquadIsBuiltAndSavedAndComesBack(t *testing.T) {
 	// a placement that brings nothing cannot act.
 	m = key(t, m, "esc")
 	m = key(t, m, "ctrl+s")
-	if m.squad.err == nil {
+	if m.squad.Err == nil {
 		t.Fatal("a squad whose member brings no skills was saved")
 	}
-	if !strings.Contains(m.squad.err.Error(), "chooses no skills") {
-		t.Errorf("the refusal is %q, want the loadout rule's own words", m.squad.err)
+	if !strings.Contains(m.squad.Err.Error(), "chooses no skills") {
+		t.Errorf("the refusal is %q, want the loadout rule's own words", m.squad.Err)
 	}
 
 	// Choose a kit: down to the member, enter to open it, down to the skills
 	// field, enter to raise the picker, space to take the row under the cursor.
 	m = key(t, m, "up")
 	m = key(t, m, "enter")
-	for m.squad.field != unitSkills {
+	for m.squad.Field != draw.SquadUnitSkills {
 		m = key(t, m, "down")
 	}
 	m = key(t, m, "enter")
@@ -91,20 +117,20 @@ func TestASquadIsBuiltAndSavedAndComesBack(t *testing.T) {
 	}
 	m = key(t, m, "space")
 	m = key(t, m, "enter")
-	if len(m.squad.unit.Skills) != 1 {
-		t.Fatalf("the picker handed back %v", m.squad.unit.Skills)
+	if len(m.squad.Unit.Skills) != 1 {
+		t.Fatalf("the picker handed back %v", m.squad.Unit.Skills)
 	}
 	// And the choice reached the squad, not only the unit under edit.
-	if len(m.squad.editing.Units[0].Skills) != 1 {
-		t.Errorf("the squad's own copy brings %v", m.squad.editing.Units[0].Skills)
+	if len(m.squad.Editing.Units[0].Skills) != 1 {
+		t.Errorf("the squad's own copy brings %v", m.squad.Editing.Units[0].Skills)
 	}
 
 	m = key(t, m, "esc")
 	m = key(t, m, "ctrl+s")
-	if m.squad.err != nil {
-		t.Fatalf("saving a finished squad was refused: %v", m.squad.err)
+	if m.squad.Err != nil {
+		t.Fatalf("saving a finished squad was refused: %v", m.squad.Err)
 	}
-	if len(m.squad.notes) == 0 {
+	if len(m.squad.Notes) == 0 {
 		t.Error("a write said nothing")
 	}
 
@@ -141,110 +167,6 @@ func TestASquadIsBuiltAndSavedAndComesBack(t *testing.T) {
 	_ = lib
 }
 
-// TestTwoMembersCannotStandOnOneCell is the chooser stepping over what is taken.
-//
-// A cell holding two units is not a formation, and a chooser that stops on one
-// is a chooser that can be left in a state the save has to reject — so the
-// arrow keys skip it rather than the write refusing it later.
-func TestTwoMembersCannotStandOnOneCell(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = menuTo(t, m, screenSquads)
-	m = typeText(t, m, "n")
-	m = typeText(t, m, "pair")
-	m = key(t, m, "enter")
-	m = key(t, m, "esc")
-	// Down off the member just added, onto the row that adds another.
-	m = key(t, m, "down")
-	m = key(t, m, "enter")
-	if len(m.squad.editing.Units) != 2 {
-		t.Fatalf("the squad holds %d members", len(m.squad.editing.Units))
-	}
-	first := m.squad.editing.Units[0].Slot
-	if m.squad.editing.Units[1].Slot == first {
-		t.Fatalf("both members arrived at %s", first)
-	}
-	// Walking the chooser all the way round never lands on the taken cell.
-	for m.squad.field != unitSlot {
-		m = key(t, m, "down")
-	}
-	for range hex.FormationCols * hex.FormationRows {
-		m = key(t, m, "right")
-		if m.squad.unit.Slot == first {
-			t.Fatalf("the chooser landed on %s, where the other member stands", first)
-		}
-	}
-}
-
-// TestASquadMemberIsReadAgainstItsOwnCharacter is the field that everything
-// under it depends on: changing who the unit is empties a kit that was chosen
-// from somebody else's learnset.
-func TestASquadMemberIsReadAgainstItsOwnCharacter(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = menuTo(t, m, screenSquads)
-	m = typeText(t, m, "n")
-	m = typeText(t, m, "swap")
-	m = key(t, m, "enter")
-	for m.squad.field != unitSkills {
-		m = key(t, m, "down")
-	}
-	m = key(t, m, "enter")
-	m = key(t, m, "space")
-	m = key(t, m, "enter")
-	if len(m.squad.unit.Skills) == 0 {
-		t.Fatal("nothing was chosen to be lost")
-	}
-	was := m.squad.unit.Character
-	for m.squad.field != unitCharacter {
-		m = key(t, m, "up")
-	}
-	m = key(t, m, "right")
-	if m.squad.unit.Character == was {
-		t.Skip("the fixture cast has one character, so there is nothing to change to")
-	}
-	if len(m.squad.unit.Skills) != 0 {
-		t.Errorf("the kit survived the character changing: %v", m.squad.unit.Skills)
-	}
-}
-
-// TestTheSquadKitIsCappedByTheSameRuleTheWriteUses is the live refusal: an
-// over-filled kit is a line under the picker rather than a surprise at the save.
-//
-// It asks the screen's own check rather than pressing space five times, because
-// how many skills the fixture cast happens to know at the cap is not what is
-// being tested — and a test that skipped itself on a short learnset would be a
-// test of the fixture.
-func TestTheSquadKitIsCappedByTheSameRuleTheWriteUses(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = menuTo(t, m, screenSquads)
-	m = typeText(t, m, "n")
-	m = typeText(t, m, "over")
-	m = key(t, m, "enter")
-	s := m.squad
-	character, known := s.character()
-	if !known {
-		t.Fatal("the member names no character in the book")
-	}
-	available := character.SkillsAt(s.unit.Level, s.form())
-	if len(available) == 0 {
-		t.Fatal("the member knows nothing at its own level")
-	}
-	// One more than the slots hold, taken from what it does know so the refusal
-	// is about the count rather than about a name.
-	overfull := make([]string, 0, cast.SkillSlots+1)
-	for len(overfull) <= cast.SkillSlots {
-		overfull = append(overfull, available[len(overfull)%len(available)])
-	}
-	err := s.refuse(cast.SkillSlots, overfull, "skill", available, cast.Required)
-	if err == nil {
-		t.Fatalf("%d skills into %d slots was accepted", len(overfull), cast.SkillSlots)
-	}
-	// Whichever way it is wrong first — too many, or the same one twice — the
-	// words are the rule's own and not the screen's.
-	if !strings.Contains(err.Error(), "slot(s)") && !strings.Contains(err.Error(), "twice") {
-		t.Errorf("the refusal is %q, want the loadout rule's own words", err)
-	}
-}
-
 // aSquadPicker is a squad under construction with one of its two loadout
 // pickers open, driven through the keys a person presses.
 func aSquadPicker(t *testing.T, lang i18n.Lang, id string, field int) model {
@@ -254,7 +176,7 @@ func aSquadPicker(t *testing.T, lang i18n.Lang, id string, field int) model {
 	m = typeText(t, m, "n")
 	m = typeText(t, m, id)
 	m = key(t, m, "enter")
-	for m.squad.field != field {
+	for m.squad.Field != field {
 		m = key(t, m, "down")
 	}
 	m = key(t, m, "enter")
@@ -262,77 +184,6 @@ func aSquadPicker(t *testing.T, lang i18n.Lang, id string, field int) model {
 		t.Fatalf("the field raised no picker")
 	}
 	return m
-}
-
-// TestTheSquadTraitPickerReadsTheTraitBook is the bug the reading state
-// uncovered, kept as a regression.
-//
-// The builder raised its trait picker as pickSkills while handing it trait ids,
-// so every row looked itself up in the skill book, missed, and drew "unknown
-// skill" in red where its detail belongs. Nothing caught it because the fixture
-// cast learns no traits: every test that opened that picker opened an empty one.
-func TestTheSquadTraitPickerReadsTheTraitBook(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		m, _, _ := start(t, lang)
-		m = menuTo(t, m, screenSquads)
-		m.squad = someSquad(t, m)
-		m, holds := aTraitHolder(m)
-		if !holds {
-			t.Skip("no character in the book learns a trait, so there is no row to draw")
-		}
-		m = m.openSquadPassives()
-		if m.picker == nil || len(m.picker.Options) == 0 {
-			t.Fatal("the trait field raised no picker with rows in it")
-		}
-		if m.picker.Kind != pickPassives {
-			t.Errorf("the trait picker is a %v, so its rows are read out of the wrong book",
-				m.picker.Kind)
-		}
-		body, _ := m.picker.View(m.ctx())
-		for _, option := range m.picker.Options {
-			// A trait sharing a name with a skill would prove nothing either
-			// way, so only the ids the skill book really refuses are asked
-			// about — and what they must not put on screen is its refusal.
-			_, err := m.lib.Skills().Lookup(option.ID)
-			if err == nil {
-				continue
-			}
-			if refusal := m.lang.Error(err); strings.Contains(body, refusal) {
-				t.Errorf("the %s trait picker draws %q where %s's detail belongs:\n%s",
-					lang, refusal, option.ID, body)
-			}
-		}
-		// And it draws the trait's own name, which is what the listing puts
-		// beside an id -- nothing in English, where a data name is not
-		// translated and the id is the whole row.
-		rows := m.picker.Visible()
-		held, err := m.lib.Passives().Lookup(rows[m.picker.Cursor].ID)
-		if err != nil {
-			t.Fatalf("the row under the cursor is not a trait the book holds: %v", err)
-		}
-		if name := m.lang.PassiveName(held); name != "" && !strings.Contains(body, name) {
-			t.Errorf("the %s trait picker does not name %s:\n%s", lang, held.ID, body)
-		}
-
-		// And ? reads the trait out of the same book, in the sentences the
-		// blurb screen gives -- which is the half a row's detail is too narrow
-		// to carry, and the whole reason an English row being a bare id costs
-		// nothing.
-		m = typeText(t, m, "?")
-		if !m.picker.Reading {
-			t.Fatalf("? opened no description on the %s trait picker", lang)
-		}
-		body, _ = m.picker.View(m.ctx())
-		if !strings.Contains(body, m.lang.GlossedPassive(held)) {
-			t.Errorf("the %s description does not name %s:\n%s", lang, held.ID, body)
-		}
-		for _, line := range traitSentences(m.ctx(), held) {
-			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
-				t.Errorf("the %s description of %s is missing %q:\n%s",
-					lang, held.ID, sentence, body)
-			}
-		}
-	}
 }
 
 // TestTheSquadPickerDescribesTheRowUnderItsCursor is what ? is for: an author
@@ -345,7 +196,7 @@ func TestTheSquadTraitPickerReadsTheTraitBook(t *testing.T) {
 // about rather than something to press.
 func TestTheSquadPickerDescribesTheRowUnderItsCursor(t *testing.T) {
 	for _, lang := range i18n.Langs() {
-		m := aSquadPicker(t, lang, "doc", unitSkills)
+		m := aSquadPicker(t, lang, "doc", draw.SquadUnitSkills)
 		m = key(t, m, "space")
 		chosen := append([]string(nil), m.picker.Chosen...)
 		if len(chosen) == 0 {
@@ -365,7 +216,7 @@ func TestTheSquadPickerDescribesTheRowUnderItsCursor(t *testing.T) {
 		if !strings.Contains(body, m.lang.GlossedSkill(declared)) {
 			t.Errorf("the %s description does not name %s:\n%s", lang, declared.ID, body)
 		}
-		for _, line := range skillLines(m.ctx(), declared) {
+		for _, line := range draw.SkillLines(m.ctx(), declared) {
 			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
 				t.Errorf("the %s description is missing %q:\n%s", lang, sentence, body)
 			}
@@ -397,8 +248,8 @@ func TestTheSquadPickerDescribesTheRowUnderItsCursor(t *testing.T) {
 		}
 		// Enter still hands back exactly what was chosen before any of it.
 		m = key(t, m, "enter")
-		if !slices.Equal(m.squad.unit.Skills, chosen) {
-			t.Errorf("the %s picker handed back %v, want %v", lang, m.squad.unit.Skills, chosen)
+		if !slices.Equal(m.squad.Unit.Skills, chosen) {
+			t.Errorf("the %s picker handed back %v, want %v", lang, m.squad.Unit.Skills, chosen)
 		}
 	}
 }
@@ -408,7 +259,7 @@ func TestTheSquadPickerDescribesTheRowUnderItsCursor(t *testing.T) {
 // going back to the list between them is the interaction the blurb screen
 // already refused.
 func TestWalkingWhileReadingMovesToTheNextDescription(t *testing.T) {
-	m := aSquadPicker(t, i18n.Vi, "doc", unitSkills)
+	m := aSquadPicker(t, i18n.Vi, "doc", draw.SquadUnitSkills)
 	if len(m.picker.Visible()) < 2 {
 		t.Skip("the learnset holds one skill, so there is no next description")
 	}
@@ -449,9 +300,12 @@ func TestWalkingWhileReadingMovesToTheNextDescription(t *testing.T) {
 // clamped where the answer is **read** and not where the key moves it: a picker
 // scrolled to the bottom of a long answer and walked onto a short one has an
 // offset past the end of it, and clamping at the other end would draw nothing.
+//
+// It stays in this client because the cut it refuses is `frame`'s, which is this
+// client's own.
 func TestTheReadingStateIsNotCutAndCannotBeScrolledOffItsAnswer(t *testing.T) {
 	for _, lang := range i18n.Langs() {
-		m := aSquadPicker(t, lang, "doc", unitSkills)
+		m := aSquadPicker(t, lang, "doc", draw.SquadUnitSkills)
 		m.width, m.height = minWidth, minHeight
 		declared, err := m.lib.Skills().Lookup(m.picker.Visible()[m.picker.Cursor].ID)
 		if err != nil {
@@ -475,292 +329,13 @@ func TestTheReadingStateIsNotCutAndCannotBeScrolledOffItsAnswer(t *testing.T) {
 			m = send(t, m, tea.KeyPressMsg{Code: tea.KeyPgDown})
 		}
 		body, _ := m.picker.View(m.ctx())
-		for _, line := range skillLines(m.ctx(), declared) {
+		for _, line := range draw.SkillLines(m.ctx(), declared) {
 			if sentence := strings.TrimSpace(line); !strings.Contains(body, sentence) {
 				t.Errorf("scrolling past the end of the %s description lost %q:\n%s",
 					lang, sentence, body)
 			}
 		}
 	}
-}
-
-// markerAt is where a mark sits in a rendered screen, as a line and a column,
-// or (-1, -1) when it is not drawn.
-//
-// It reads the render rather than the state on purpose: everything below is
-// about the picture, and every one of these assertions was already true of
-// s.unit.Slot while the grid beside it stood still.
-func markerAt(body, mark string) (int, int) {
-	for index, line := range strings.Split(body, "\n") {
-		if at := strings.Index(line, mark); at >= 0 {
-			return index, at
-		}
-	}
-	return -1, -1
-}
-
-// aSquadMember is a squad with one member under edit, on the field named.
-func aSquadMember(t *testing.T, lang i18n.Lang, id string, field int) model {
-	t.Helper()
-	m, _, _ := start(t, lang)
-	m = menuTo(t, m, screenSquads)
-	m = typeText(t, m, "n")
-	m = typeText(t, m, id)
-	m = key(t, m, "enter")
-	for m.squad.field != field {
-		m = key(t, m, "down")
-	}
-	return m
-}
-
-// TestTheFormationFollowsTheArrowsWhileTheCellIsChosen is the defect this grid
-// was drawn to be free of.
-//
-// The slot row stepped s.unit.Slot and the grid under it was built from
-// s.editing.Units, which commit() writes and which nothing writes until the
-// member is left or a picker is opened. So the picture jumped to the new cell
-// only after the choosing was over, which is the one moment it says nothing.
-//
-// Asserted on the render and not on s.unit.Slot: the cell moving was already
-// true before the fix, and a test of it would have passed throughout.
-func TestTheFormationFollowsTheArrowsWhileTheCellIsChosen(t *testing.T) {
-	m := aSquadMember(t, i18n.En, "live", unitSlot)
-	mark := fmt.Sprintf("(%d)", m.squad.unitIndex+1)
-	opened := m.screenContent()
-	line, column := markerAt(opened, mark)
-	if line < 0 {
-		t.Fatalf("the member under edit is not marked on the grid:\n%s", opened)
-	}
-
-	was := m.squad.unit.Slot
-	m = key(t, m, "right")
-	if m.squad.unit.Slot == was {
-		t.Fatal("the chooser did not move, so there is nothing for the grid to follow")
-	}
-	stepped := m.screenContent()
-	movedLine, movedColumn := markerAt(stepped, mark)
-	if movedLine < 0 {
-		t.Fatalf("the member under edit vanished off the grid:\n%s", stepped)
-	}
-	if movedLine == line && movedColumn == column {
-		t.Errorf("the cell went %s -> %s and the mark stayed at line %d column %d:\n%s",
-			was, m.squad.unit.Slot, line, column, stepped)
-	}
-
-	// And it tracks rather than merely differing: stepping back puts the mark
-	// where it started, on the cell the arrows are on and not on some other one.
-	m = key(t, m, "left")
-	if m.squad.unit.Slot != was {
-		t.Fatalf("stepping back landed on %s rather than on %s", m.squad.unit.Slot, was)
-	}
-	backLine, backColumn := markerAt(m.screenContent(), mark)
-	if backLine != line || backColumn != column {
-		t.Errorf("back on %s the mark is at line %d column %d, want %d and %d:\n%s",
-			was, backLine, backColumn, line, column, m.screenContent())
-	}
-}
-
-// TestTheLiveFormationDrawsWithoutCommitting is the trap the live picture had to
-// be built around, kept as a test rather than as a comment.
-//
-// The obvious fix is commit() on every keypress, and s.editing.Units is shared
-// with every model copied off this one — so a write from inside a drawing
-// reaches all of them, which is what a value receiver looks like it prevents and
-// does not. So the drawing reads the unit under edit and writes nothing, and
-// this is the two halves of that: a key that changes nothing leaves the guard
-// down, and a key that moves the cell leaves the squad's own copy alone until
-// the member is left.
-func TestTheLiveFormationDrawsWithoutCommitting(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = menuTo(t, m, screenSquads)
-	m.squad = someSquad(t, m)
-	m = withASquadSaved(t, m)
-	m.squad = m.squad.open(m.squad.saved[0])
-	m = key(t, m, "enter")
-	if m.squad.mode != squadUnit {
-		t.Fatalf("enter on the first member opened %v", m.squad.mode)
-	}
-	if m.squad.dirty() {
-		t.Fatal("opening a member off a saved squad already claims changes")
-	}
-
-	// Walking the fields changes nothing about the unit, so nothing may reach
-	// the guard.
-	for range unitFieldCount + 1 {
-		m = key(t, m, "down")
-		_ = m.screenContent()
-		if m.squad.dirty() {
-			t.Fatalf("moving onto field %d raised the discard guard", m.squad.field)
-		}
-	}
-
-	for m.squad.field != unitSlot {
-		m = key(t, m, "down")
-	}
-	index := m.squad.unitIndex
-	before := m.squad.editing.Units[index].Slot
-	m = key(t, m, "right")
-	if m.squad.unit.Slot == before {
-		t.Fatal("the chooser did not move, so there is nothing to commit early")
-	}
-	chosen := m.squad.unit.Slot
-	// Drawn more than once, because s.editing.Units is a slice shared with every
-	// model copied off this one: a write into it from inside a drawing would
-	// reach all of them, value receiver or not.
-	for range 3 {
-		_ = m.screenContent()
-	}
-	if now := m.squad.editing.Units[index].Slot; now != before {
-		t.Errorf("the squad's own copy moved to %s while the cell was being chosen, want %s",
-			now, before)
-	}
-	// The picture is live all the same, which is what says the two are not the
-	// same reading: the mark is on the cell the arrows are on.
-	mark := fmt.Sprintf("(%d)", index+1)
-	if line, _ := markerAt(m.screenContent(), mark); line < 0 {
-		t.Fatalf("the member under edit is not marked on the grid:\n%s", m.screenContent())
-	}
-
-	// esc is what commits, and it still does.
-	m = key(t, m, "esc")
-	if now := m.squad.editing.Units[index].Slot; now != chosen {
-		t.Errorf("leaving the member wrote %s back, want %s", now, chosen)
-	}
-}
-
-// TestTheFormationMarksTheRankThatMeetsTheEnemyFirst is the other half of
-// "standing somewhere is a picture": a coordinate does not say which end of the
-// grid an attack arrives at, and reach is counted in ranks from that end.
-//
-// The front column is derived here from hex.Ranks and hex.Place rather than
-// taken from the screen's own helper, so the drawing and the reach rule are two
-// readings that have to agree.
-func TestTheFormationMarksTheRankThatMeetsTheEnemyFirst(t *testing.T) {
-	front := frontColumn(t)
-	back := -1
-	for col := range hex.FormationCols {
-		if col != front {
-			back = col
-		}
-	}
-	for _, lang := range i18n.Langs() {
-		m, _, _ := start(t, lang)
-		m = menuTo(t, m, screenSquads)
-		m.squad = someSquad(t, m)
-		s := m.squad
-		if len(s.editing.Units) == 0 {
-			t.Fatal("the fixture squad is empty, so nothing stands anywhere")
-		}
-		// One member in the front rank and one behind it, so the mark can be
-		// shown to be under the first and not under the second.
-		screened := s.editing.Units[0]
-		screened.ID, screened.Slot = "sau", hex.Offset{Col: back, Row: 0}
-		s.editing.Units = []placement.Placement{s.editing.Units[0], screened}
-		s.editing.Units[0].Slot = hex.Offset{Col: front, Row: 0}
-		m.squad = s.editUnit(0)
-		body := m.screenContent()
-
-		caret := strings.Repeat("^", formationCell)
-		caretLine, caretColumn := markerAt(body, caret)
-		if caretLine < 0 {
-			t.Fatalf("the %s grid marks no front rank:\n%s", lang, body)
-		}
-		if words := m.text(i18n.SquadFormationFront); !strings.Contains(
-			strings.Split(body, "\n")[caretLine], words) {
-			t.Errorf("the %s mark does not say %q:\n%s", lang, words, body)
-		}
-		if _, at := markerAt(body, "(1)"); at != caretColumn {
-			t.Errorf("the %s front-rank member is drawn at column %d and the mark at %d:\n%s",
-				lang, at, caretColumn, body)
-		}
-		if _, at := markerAt(body, "[2]"); at == caretColumn {
-			t.Errorf("the %s member behind the front rank is drawn under the mark:\n%s",
-				lang, body)
-		}
-	}
-}
-
-// TestTheSlotRowSaysWhichRankItStandsIn is the row the grid is beside: it keeps
-// the coordinate, because that is what squads.json holds and what an author
-// matches a file against, and puts the rank next to it, because that is the half
-// a coordinate cannot say.
-func TestTheSlotRowSaysWhichRankItStandsIn(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		m := aSquadMember(t, lang, "rank", unitSlot)
-		body := m.screenContent()
-		if !strings.Contains(body, m.squad.unit.Slot.String()) {
-			t.Errorf("the %s slot row lost the cell %s:\n%s", lang, m.squad.unit.Slot, body)
-		}
-		want := m.rankLabel(m.squad.unit.Slot)
-		if want == "" {
-			t.Fatalf("the member stands at %s, which is on no rank", m.squad.unit.Slot)
-		}
-		if !strings.Contains(body, want) {
-			t.Errorf("the %s slot row does not say %q:\n%s", lang, want, body)
-		}
-		// And the reading follows the arrows too: walking off the front column
-		// has to stop saying front rank.
-		for range hex.FormationRows {
-			m = key(t, m, "right")
-		}
-		if m.rankLabel(m.squad.unit.Slot) == want {
-			t.Fatalf("the chooser is still in the %s after a whole column", want)
-		}
-		if body := m.screenContent(); !strings.Contains(body, m.rankLabel(m.squad.unit.Slot)) {
-			t.Errorf("the %s slot row still reads %q at %s:\n%s",
-				lang, want, m.squad.unit.Slot, body)
-		}
-	}
-}
-
-// TestARankIsTheSameDepthOnEitherSide is what lets rankOf ask the question of
-// one side and answer it for both, which a squad needs because a squad carries
-// no side — placement.Squad.Take fields the same cells as either half.
-//
-// It holds because hex.Place rotates an enemy formation 180 degrees rather than
-// translating it: the depth is preserved and only the column number is not.
-func TestARankIsTheSameDepthOnEitherSide(t *testing.T) {
-	depthOn := func(side hex.Side, slot hex.Offset) int {
-		placed := hex.Place(side, slot)
-		for depth, rank := range hex.Ranks(side) {
-			for _, cell := range rank {
-				if cell == placed {
-					return depth
-				}
-			}
-		}
-		return -1
-	}
-	for col := range hex.FormationCols {
-		for row := range hex.FormationRows {
-			slot := hex.Offset{Col: col, Row: row}
-			want := depthOn(hex.SideAlly, slot)
-			if want < 0 {
-				t.Fatalf("%s is on no ally rank", slot)
-			}
-			if got := depthOn(hex.SideEnemy, slot); got != want {
-				t.Errorf("%s is rank %d as an ally and rank %d as an enemy", slot, want, got)
-			}
-			if got := rankOf(slot); got != want {
-				t.Errorf("the builder reads %s as rank %d, want %d", slot, got, want)
-			}
-		}
-	}
-}
-
-// frontColumn is the authoring column hex.Ranks calls depth 0.
-func frontColumn(t *testing.T) int {
-	t.Helper()
-	for col := range hex.FormationCols {
-		placed := hex.Place(hex.SideAlly, hex.Offset{Col: col})
-		for _, cell := range hex.Ranks(hex.SideAlly)[0] {
-			if cell == placed {
-				return col
-			}
-		}
-	}
-	t.Fatal("no authoring column maps onto the rank that meets the enemy first")
-	return -1
 }
 
 // aSavedSquad is a squad written to the file and taken back up for editing,
@@ -770,16 +345,21 @@ func frontColumn(t *testing.T) int {
 // Its member is built around whichever character in the book learns a trait, so
 // the trait list has a row to toggle. Naming one would tie this to content the
 // author is free to change, which is what the injected fixture exists to avoid.
+//
+// ⚠️ **This one really writes**, unlike its namesake in internal/screen, which
+// builds the same state as a value. The two confirms it feeds are about a file:
+// one asks whether the catalogue on disk still holds what it held, and the other
+// deletes a row of it.
 func aSavedSquad(t *testing.T) model {
 	t.Helper()
 	m, _, _ := start(t, i18n.En)
 	m = menuTo(t, m, screenSquads)
-	s := m.squad.begin()
-	s.editing.ID, s.editing.Name = "do-luu", "đội lưu"
-	s.idInput.SetValue(s.editing.ID)
-	s.nameInput.SetValue(s.editing.Name)
+	s := m.squad.Begin()
+	s.Editing.ID, s.Editing.Name = "do-luu", "đội lưu"
+	s.IDInput.SetValue(s.Editing.ID)
+	s.NameInput.SetValue(s.Editing.Name)
 
-	character, learns := aCharacterWithATrait(s.characters)
+	character, learns := aCharacterWithATrait(s.Characters)
 	if !learns {
 		t.Fatal("no character in the book learns a trait, so no member can bring one")
 	}
@@ -795,13 +375,13 @@ func aSavedSquad(t *testing.T) model {
 	}
 	unit.Skills = kit
 	unit.Passives = character.PassivesAt(unit.Level, progression.Furthest)[:cast.TraitSlots]
-	s.editing.Units = []placement.Placement{unit}
+	s.Editing.Units = []placement.Placement{unit}
 
 	m.squad = s
 	m = withASquadSaved(t, m)
-	m.squad = m.squad.open(m.squad.saved[0])
-	if m.squad.mode != squadEdit {
-		t.Fatalf("the fixture squad opened in %v", m.squad.mode)
+	m.squad = m.squad.Open(m.squad.Saved[0])
+	if m.squad.Mode != draw.SquadEdit {
+		t.Fatalf("the fixture squad opened in %v", m.squad.Mode)
 	}
 	return m
 }
@@ -815,222 +395,24 @@ func aCharacterWithATrait(characters []cast.Character) (cast.Character, bool) {
 	return cast.Character{}, false
 }
 
-// TestARoundTripThroughAMemberLeavesTheGuardDown is what the guard being a
-// comparison rather than a latch buys, and it is the defect PR #153 recorded and
-// deliberately left standing.
-//
-// commit() writes a member back on the way out of it whether or not a key moved
-// anything, so under a flag set from there, *opening* a member and pressing
-// escape claimed a change — and arrowing the cell chooser onto another cell and
-// back claimed one twice over. Both are round trips: what they put back is what
-// they took, so the squad on the file and the squad in hand are the same squad
-// and nobody may be asked about discarding it.
-func TestARoundTripThroughAMemberLeavesTheGuardDown(t *testing.T) {
-	m := aSavedSquad(t)
-	if m.squad.dirty() {
-		t.Fatal("a squad just read off the file already differs from it")
-	}
-
-	// One: open a member and leave it.
-	m = key(t, m, "enter")
-	if m.squad.mode != squadUnit {
-		t.Fatalf("enter on the first member opened %v", m.squad.mode)
-	}
-	m = key(t, m, "esc")
-	if m.squad.dirty() {
-		t.Error("opening a member and pressing escape changed the squad")
-	}
-
-	// Two: arrow the cell onto another and back.
-	m = key(t, m, "enter")
-	for m.squad.field != unitSlot {
-		m = key(t, m, "down")
-	}
-	was := m.squad.unit.Slot
-	m = key(t, m, "right")
-	if m.squad.unit.Slot == was {
-		t.Fatal("the chooser did not move, so there is no round trip to make")
-	}
-	m = key(t, m, "left")
-	if m.squad.unit.Slot != was {
-		t.Fatalf("stepping back landed on %s rather than on %s", m.squad.unit.Slot, was)
-	}
-	m = key(t, m, "esc")
-	if m.squad.dirty() {
-		t.Error("arrowing the cell onto another and back changed the squad")
-	}
-
-	// And the whole point of it: leaving asks nothing.
-	m = key(t, m, "esc")
-	if m.guard != nil {
-		t.Errorf("leaving raised %v over changes nobody made", m.guard.question)
-	}
-	if m.squad.mode != squadList {
-		t.Errorf("escape from an unchanged squad landed in %v", m.squad.mode)
-	}
-}
-
-// TestEveryRealEditRaisesTheGuard is the other side of it, and it is a table
-// rather than one case because catching every kind of edit was the latch's one
-// virtue: a comparison that missed a field would lose that edit in silence, with
-// no question asked and nothing on screen looking wrong.
-//
-// Every case leaves the model on the squad view, so the escape below is the one
-// the guard hangs off. The member cases go in and come back out, because that is
-// the route by which a member's own fields reach the squad.
-func TestEveryRealEditRaisesTheGuard(t *testing.T) {
-	intoTheMember := func(t *testing.T, m model, field int) model {
-		t.Helper()
-		m = key(t, m, "enter")
-		if m.squad.mode != squadUnit {
-			t.Fatalf("enter on the first member opened %v", m.squad.mode)
-		}
-		for m.squad.field != field {
-			m = key(t, m, "down")
-		}
-		return m
-	}
-	edits := []struct {
-		what string
-		make func(*testing.T, model) model
-	}{
-		{"the name", func(t *testing.T, m model) model {
-			return typeText(t, m, "x")
-		}},
-		{"another member", func(t *testing.T, m model) model {
-			m = key(t, m, "down")
-			m = key(t, m, "enter")
-			if len(m.squad.editing.Units) != 2 {
-				t.Fatalf("the squad holds %d members", len(m.squad.editing.Units))
-			}
-			return key(t, m, "esc")
-		}},
-		{"a member taken out", func(t *testing.T, m model) model {
-			m = key(t, m, "ctrl+x")
-			if len(m.squad.editing.Units) != 0 {
-				t.Fatalf("the squad still holds %d members", len(m.squad.editing.Units))
-			}
-			return m
-		}},
-		{"the character", func(t *testing.T, m model) model {
-			m = intoTheMember(t, m, unitCharacter)
-			was := m.squad.unit.Character
-			m = key(t, m, "right")
-			if m.squad.unit.Character == was {
-				t.Fatalf("the cast holds only %q, so it cannot be cycled", was)
-			}
-			return key(t, m, "esc")
-		}},
-		{"the level", func(t *testing.T, m model) model {
-			m = intoTheMember(t, m, unitLevel)
-			was := m.squad.unit.Level
-			m = key(t, m, "backspace")
-			if m.squad.unit.Level == was {
-				t.Fatalf("the level field still reads %d", was)
-			}
-			return key(t, m, "esc")
-		}},
-		{"the form", func(t *testing.T, m model) model {
-			m = intoTheMember(t, m, unitStage)
-			was := m.squad.unit.Stage
-			m = key(t, m, "right")
-			if m.squad.unit.Stage == was {
-				t.Fatalf("the form chooser stayed on %q", was)
-			}
-			return key(t, m, "esc")
-		}},
-		{"the cell", func(t *testing.T, m model) model {
-			m = intoTheMember(t, m, unitSlot)
-			was := m.squad.unit.Slot
-			m = key(t, m, "right")
-			if m.squad.unit.Slot == was {
-				t.Fatalf("the cell chooser stayed on %s", was)
-			}
-			return key(t, m, "esc")
-		}},
-		{"the kit", func(t *testing.T, m model) model {
-			m = intoTheMember(t, m, unitSkills)
-			return throughTheList(t, m)
-		}},
-		{"the trait", func(t *testing.T, m model) model {
-			m = intoTheMember(t, m, unitPassives)
-			return throughTheList(t, m)
-		}},
-	}
-	for _, edit := range edits {
-		t.Run(edit.what, func(t *testing.T) {
-			m := edit.make(t, aSavedSquad(t))
-			if m.squad.mode != squadEdit {
-				t.Fatalf("the edit left the screen in %v", m.squad.mode)
-			}
-			if !m.squad.dirty() {
-				t.Fatalf("changing %s left the squad reading as the one on the file", edit.what)
-			}
-			m = key(t, m, "esc")
-			if m.guard == nil {
-				t.Fatalf("leaving after changing %s discarded it without asking", edit.what)
-			}
-			if m.guard.question != i18n.SquadDiscard {
-				t.Errorf("the question asked was %v", m.guard.question)
-			}
-		})
-	}
-
-	// The id is the one field a saved squad does not offer — changing it would
-	// write a second squad rather than rename this one — so it is asked of a
-	// squad nobody has written yet, where typing one is the whole of the edit.
-	t.Run("the id", func(t *testing.T) {
-		m, _, _ := start(t, i18n.En)
-		m = menuTo(t, m, screenSquads)
-		m = typeText(t, m, "n")
-		if m.squad.dirty() {
-			t.Fatal("a squad nobody has typed into already claims changes")
-		}
-		m = typeText(t, m, "moi")
-		if !m.squad.dirty() {
-			t.Fatal("typing an id left the squad reading as an empty one")
-		}
-		if m = key(t, m, "esc"); m.guard == nil {
-			t.Fatal("leaving after typing an id discarded it without asking")
-		}
-	})
-}
-
-// throughTheList opens the list under the cursor, toggles the row under its own,
-// takes the answer and comes back out to the squad.
-func throughTheList(t *testing.T, m model) model {
-	t.Helper()
-	m = key(t, m, "enter")
-	if m.picker == nil {
-		t.Fatal("the field raised no picker")
-	}
-	if len(m.picker.Options) == 0 {
-		t.Fatal("the list is empty, so there is no row to toggle")
-	}
-	m = key(t, m, "space")
-	m = key(t, m, "enter")
-	if m.picker != nil {
-		t.Fatal("the list is still open")
-	}
-	return key(t, m, "esc")
-}
-
 // TestSavingSettlesTheGuardAndReopeningStartsClean is the third state a
 // comparison has to get right: a write moves the thing being compared against,
 // so a squad just saved is a squad with nothing outstanding — and one taken back
 // up off the file starts from the file rather than from whatever the screen was
 // last holding.
+//
+// It needs the write, so it stays here.
 func TestSavingSettlesTheGuardAndReopeningStartsClean(t *testing.T) {
 	m := aSavedSquad(t)
 	m = typeText(t, m, "x")
-	if !m.squad.dirty() {
+	if !m.squad.Dirty() {
 		t.Fatal("typing into the name left the guard down")
 	}
 	m = key(t, m, "ctrl+s")
-	if m.squad.err != nil {
-		t.Fatalf("the save was refused: %v", m.squad.err)
+	if m.squad.Err != nil {
+		t.Fatalf("the save was refused: %v", m.squad.Err)
 	}
-	if m.squad.dirty() {
+	if m.squad.Dirty() {
 		t.Error("a squad just written still reads as changed")
 	}
 	m = key(t, m, "esc")
@@ -1039,94 +421,11 @@ func TestSavingSettlesTheGuardAndReopeningStartsClean(t *testing.T) {
 	}
 
 	m = key(t, m, "enter")
-	if m.squad.mode != squadEdit {
-		t.Fatalf("enter on the catalogue opened %v", m.squad.mode)
+	if m.squad.Mode != draw.SquadEdit {
+		t.Fatalf("enter on the catalogue opened %v", m.squad.Mode)
 	}
-	if m.squad.dirty() {
+	if m.squad.Dirty() {
 		t.Error("a squad taken back up off the file already differs from it")
-	}
-}
-
-// TestTheBuilderOffersAShownCharacterAndNotAHeldBackOne is the rule on its own,
-// over a cast written here.
-//
-// Authored rather than read off the shipped book, and that is the point of the
-// fixture: a test that passed because the shipped data happens to hide exactly
-// one character is a test that breaks the day the data changes, and what it
-// would be measuring is cast.json rather than the rule. The one place the
-// shipped data is the subject is the golden report.
-func TestTheBuilderOffersAShownCharacterAndNotAHeldBackOne(t *testing.T) {
-	// The held-back one is declared FIRST on purpose. It is what makes the
-	// "not offered" case discriminating at both call sites at once: a new
-	// member takes the first character offered, so a filter that did nothing
-	// would start every new member on the character an author has taken out of
-	// the choice, and that is a different mistake from cycling onto one.
-	all := []cast.Character{
-		{ID: "book.held", Hidden: true},
-		{ID: "book.shown"},
-		{ID: "book.other"},
-	}
-
-	if got, want := offeredIDs(offeredCharacters(all, "")), []string{"book.shown", "book.other"}; !slices.Equal(got, want) {
-		t.Errorf("with nobody held the builder offers %v, want %v", got, want)
-	}
-
-	// A member opened on the held-back one is offered it, **in the place it was
-	// declared** rather than appended at the end: the chooser walks this list
-	// with the arrow keys, so moving a row would mean the key that steps away
-	// from a character no longer steps back onto it.
-	if got, want := offeredIDs(offeredCharacters(all, "book.held")), []string{"book.held", "book.shown", "book.other"}; !slices.Equal(got, want) {
-		t.Errorf("a member opened on the held-back one is offered %v, want %v", got, want)
-	}
-
-	// And a member opened on a shown character brings nobody else back — the
-	// exemption is for the one character named and for no other.
-	if got, want := offeredIDs(offeredCharacters(all, "book.shown")), []string{"book.shown", "book.other"}; !slices.Equal(got, want) {
-		t.Errorf("a member opened on a shown character is offered %v, want %v", got, want)
-	}
-}
-
-func offeredIDs(characters []cast.Character) []string {
-	out := make([]string, 0, len(characters))
-	for _, character := range characters {
-		out = append(out, character.ID)
-	}
-	return out
-}
-
-// TestANewMemberNeverStartsOnAHeldBackCharacter drives the other call site
-// through the key an author presses, on a cast whose first character is held
-// back.
-//
-// The cast is written onto the screen rather than into the library because the
-// order is the whole fixture: a book grown through SaveCharacter appends, so the
-// character this needs at the front of the list could only get there by being
-// the one the fixture already ships — which is the coupling the fixture exists
-// to avoid.
-func TestANewMemberNeverStartsOnAHeldBackCharacter(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = menuTo(t, m, screenSquads)
-	shipped := m.squad.characters
-	if len(shipped) == 0 {
-		t.Fatal("the fixture cast is empty, so no member can be added at all")
-	}
-	held := shipped[0]
-	held.ID, held.Hidden = "fixture-anime.recluse", true
-	shown := shipped[0]
-	m.squad.characters = append([]cast.Character{held}, shown)
-
-	m = typeText(t, m, "n")
-	m = typeText(t, m, "moi")
-	m = key(t, m, "enter")
-	if m.squad.mode != squadUnit {
-		t.Fatalf("adding a member did not open it, mode is %v", m.squad.mode)
-	}
-	if m.squad.unit.Character == held.ID {
-		t.Errorf("a new member started on %q, which the cast holds back", held.ID)
-	}
-	if m.squad.unit.Character != shown.ID {
-		t.Errorf("a new member started on %q, want the first character still offered, %q",
-			m.squad.unit.Character, shown.ID)
 	}
 }
 
@@ -1140,6 +439,13 @@ func TestANewMemberNeverStartsOnAHeldBackCharacter(t *testing.T) {
 // and its learnset go empty and the kit picker will not open at all, and the
 // arrow keys write somebody else into a member nobody asked to change — in the
 // author's own saved file, from the one screen here that writes it.
+//
+// ⚠️ **It stays here because the claim is about the FILE.** The screen-level
+// rule — a held-back character stays offered where it is already chosen — is
+// `screen.TestTheBuilderOffersAShownCharacterAndNotAHeldBackOne` and
+// `screen.TestANewMemberNeverStartsOnAHeldBackCharacter`; what this adds is that
+// a squad **on disk** naming one still loads, still opens and still comes back
+// out unchanged.
 func TestASquadAlreadyNamingAHeldBackCharacterKeepsIt(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		m, lib, _ := start(t, lang)
@@ -1155,35 +461,35 @@ func TestASquadAlreadyNamingAHeldBackCharacterKeepsIt(t *testing.T) {
 		// It still loads, which is half the claim: a squad naming a held-back
 		// character is as valid as any other and the catalogue lists it.
 		m = menuTo(t, m, screenSquads)
-		if len(m.squad.saved) != 1 {
-			t.Fatalf("%v: the catalogue holds %d squads, want the one just written", lang, len(m.squad.saved))
+		if len(m.squad.Saved) != 1 {
+			t.Fatalf("%v: the catalogue holds %d squads, want the one just written", lang, len(m.squad.Saved))
 		}
 		m = key(t, m, "enter")
-		if m.squad.mode != squadEdit {
-			t.Fatalf("%v: enter on the catalogue opened %v", lang, m.squad.mode)
+		if m.squad.Mode != draw.SquadEdit {
+			t.Fatalf("%v: enter on the catalogue opened %v", lang, m.squad.Mode)
 		}
 		m = key(t, m, "enter")
-		if m.squad.mode != squadUnit {
-			t.Fatalf("%v: enter on the member opened %v", lang, m.squad.mode)
+		if m.squad.Mode != draw.SquadUnit {
+			t.Fatalf("%v: enter on the member opened %v", lang, m.squad.Mode)
 		}
-		if m.squad.field != unitCharacter {
-			t.Fatalf("%v: the member opened on field %d, want the character row", lang, m.squad.field)
+		if m.squad.Field != draw.SquadUnitCharacter {
+			t.Fatalf("%v: the member opened on field %d, want the character row", lang, m.squad.Field)
 		}
 
 		// The character resolves, so everything read against it is still there.
 		// This is what a filtered lookup slice takes away, and it takes it away
 		// silently — the row still prints the id.
-		character, known := m.squad.character()
+		character, known := m.squad.Character()
 		if !known {
 			t.Fatalf("%v: the member's own character is not in the cast the screen holds", lang)
 		}
 		if !character.Hidden {
 			t.Fatalf("%v: the fixture character is not held back, so this measures nothing", lang)
 		}
-		if len(m.squad.stageChoices()) == 0 {
+		if len(m.squad.StageChoices()) == 0 {
 			t.Errorf("%v: the member offers no form at all", lang)
 		}
-		if len(character.SkillsAt(m.squad.unit.Level, m.squad.form())) == 0 {
+		if len(character.SkillsAt(m.squad.Unit.Level, m.squad.Form())) == 0 {
 			t.Errorf("%v: the member knows nothing, so its kit picker would open empty", lang)
 		}
 
@@ -1198,13 +504,13 @@ func TestASquadAlreadyNamingAHeldBackCharacterKeepsIt(t *testing.T) {
 		// chooser, because changing the character empties the kit by design and
 		// a squad edited on purpose is meant to read as changed.
 		m = key(t, m, "esc")
-		if m.squad.mode != squadEdit {
-			t.Fatalf("%v: esc out of the member landed in %v", lang, m.squad.mode)
+		if m.squad.Mode != draw.SquadEdit {
+			t.Fatalf("%v: esc out of the member landed in %v", lang, m.squad.Mode)
 		}
-		if m.squad.dirty() {
+		if m.squad.Dirty() {
 			t.Errorf("%v: opening a member holding a held-back character changed the squad", lang)
 		}
-		if got := m.squad.editing.Units[0].Character; got != held.ID {
+		if got := m.squad.Editing.Units[0].Character; got != held.ID {
 			t.Errorf("%v: the member now names %q, want the %q it was saved with", lang, got, held.ID)
 		}
 
@@ -1214,24 +520,24 @@ func TestASquadAlreadyNamingAHeldBackCharacterKeepsIt(t *testing.T) {
 		// BACK, because a character off the list is one the arrows can never
 		// return to.
 		m = key(t, m, "enter")
-		if m.squad.mode != squadUnit || m.squad.field != unitCharacter {
-			t.Fatalf("%v: reopening the member landed in %v on field %d", lang, m.squad.mode, m.squad.field)
+		if m.squad.Mode != draw.SquadUnit || m.squad.Field != draw.SquadUnitCharacter {
+			t.Fatalf("%v: reopening the member landed in %v on field %d", lang, m.squad.Mode, m.squad.Field)
 		}
-		was := m.squad.unit.Character
+		was := m.squad.Unit.Character
 		m = key(t, m, "right")
-		if m.squad.unit.Character == was {
+		if m.squad.Unit.Character == was {
 			t.Fatalf("%v: the chooser did not move at all, so the round trip below measures nothing", lang)
 		}
 		// Stepped onto a character that is not held back, so the note goes: it
 		// reads the answer in hand rather than the exemption behind the list.
 		if body := m.screenContent(); strings.Contains(body, m.text(i18n.SquadHeldBack)) {
 			t.Errorf("%v: the member now names %q, which is offered like any other, and the screen still calls it held back",
-				lang, m.squad.unit.Character)
+				lang, m.squad.Unit.Character)
 		}
 		m = key(t, m, "left")
-		if m.squad.unit.Character != was {
+		if m.squad.Unit.Character != was {
 			t.Errorf("%v: stepping the character chooser away and back landed on %q, want %q — the held-back character is off the list",
-				lang, m.squad.unit.Character, was)
+				lang, m.squad.Unit.Character, was)
 		}
 
 		// Walked the whole way round, the chooser offers the character it was
@@ -1244,7 +550,7 @@ func TestASquadAlreadyNamingAHeldBackCharacterKeepsIt(t *testing.T) {
 		// test wrote, so the claim does not rest on the shipped cast holding
 		// anybody back.
 		var otherHeldBack []string
-		for _, candidate := range m.squad.characters {
+		for _, candidate := range m.squad.Characters {
 			if candidate.Hidden && candidate.ID != was {
 				otherHeldBack = append(otherHeldBack, candidate.ID)
 			}
@@ -1254,16 +560,16 @@ func TestASquadAlreadyNamingAHeldBackCharacterKeepsIt(t *testing.T) {
 				lang, unnamed.ID, otherHeldBack)
 		}
 		visited := map[string]bool{}
-		for range len(m.squad.characters) + 1 {
+		for range len(m.squad.Characters) + 1 {
 			m = key(t, m, "right")
-			visited[m.squad.unit.Character] = true
-			if m.squad.unit.Character == was {
+			visited[m.squad.Unit.Character] = true
+			if m.squad.Unit.Character == was {
 				break
 			}
 		}
-		if m.squad.unit.Character != was {
+		if m.squad.Unit.Character != was {
 			t.Fatalf("%v: walking the chooser right round ended on %q rather than back at %q",
-				lang, m.squad.unit.Character, was)
+				lang, m.squad.Unit.Character, was)
 		}
 		for _, id := range otherHeldBack {
 			if visited[id] {
@@ -1274,7 +580,7 @@ func TestASquadAlreadyNamingAHeldBackCharacterKeepsIt(t *testing.T) {
 		// And the member the round trip put back is the member that goes back
 		// into the squad, rather than only into the copy under edit.
 		m = key(t, m, "esc")
-		if got := m.squad.editing.Units[0].Character; got != held.ID {
+		if got := m.squad.Editing.Units[0].Character; got != held.ID {
 			t.Errorf("%v: the member now names %q, want the %q it was saved with", lang, got, held.ID)
 		}
 	}

@@ -10,6 +10,11 @@ import (
 	"strings"
 	"testing"
 
+	"charm.land/lipgloss/v2"
+
+	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -31,21 +36,36 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 //	                    drawn  "  dot           sát thương mỗi lượt"
 //
 // That is real coverage sitting in another package, and it gets worse rather
-// than better: two more screens move next, and after `cmd/hexarena` stands up,
-// a screen the authoring tool stops drawing loses its only layout net **in
-// silence**. So this file is that net, here, while the package holds eight
-// screens rather than ten.
+// than better: after `cmd/hexarena` stands up, a screen the authoring tool stops
+// drawing loses its only layout net **in silence**. So this file is that net,
+// here, and the package holds ten screens now that the skill listing and the
+// squad builder have both arrived.
 //
 // ## What is recorded
 //
-// Sixteen entries over those eight screens — the six listings, the description
-// screen in both of its readings, the two states nothing shipped can draw (a
-// species kind nobody claims, a build that spends no trait slot) and the five
-// states of the picker, which is handed its list and so has no one shape — in
-// **both** languages at **two** sizes: the MinWidth x MinHeight floor, where the
-// Room helpers bite, and 160x60, where nothing is squeezed. The entry names are
-// the client's own, so a reader holding both diffs is looking at the same
-// words.
+// Twenty-three entries over those ten screens — the six listings, the
+// description screen in both of its readings, the two states nothing shipped can
+// draw (a species kind nobody claims, a build that spends no trait slot), the
+// five states of the picker, which is handed its list and so has no one shape,
+// the skill listing with the seven states of it the client's sweep registers, and
+// the squad builder at each of its three depths plus the two states and the two
+// pickers that go with them — in **both** languages at **two** sizes: the
+// MinWidth x MinHeight floor, where the Room helpers bite, and 160x60, where
+// nothing is squeezed — **124 renders, 2921 lines**. The entry names are the
+// client's own, so a reader holding both diffs is looking at the same words.
+//
+// ⚠️ **Three of the squad entries are the same screen in a fuller state than the
+// client's of the same name, and that is deliberate.** The client's fixture
+// deletes `squads.json` before it loads anything, because that file is the
+// author's own working document and a suite that read it would be measuring
+// somebody's saved sides — so its `squads` entry is the **empty** listing, and
+// its `a squad trait` is a picker over a fixture cast that learns no traits. A
+// listing with no rows measures no id column and a picker with no rows measures
+// no row, so what the two records hold between them is the empty shape and the
+// full one. The squads here are **built as values** and never read off
+// `squads.json` for the same reason the client deletes it: a golden that moved
+// when an author saved a side would be recording the author rather than the
+// screen.
 //
 // Each render carries a banner naming it, so a diff says which screen moved
 // rather than which line number did. The names are **sorted** before they are
@@ -208,6 +228,8 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 			"an ordinary build catalogue twice:\n%s", drawn)
 	}
 	listing := NewSkillsScreen(c)
+	catalogue := squadCatalogue(t, c, lib)
+	member := squadMember(t, c, catalogue)
 	return map[string]drawable{
 		// The cast browser as a raise leaves it: the first row, at the level
 		// cap, with no origin filter. That is the state the client's own sweep
@@ -241,7 +263,205 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"filtered skills":         theFilterFinding(t, c, listing),
 		"skills filtered to none": theFilterFindingNothing(t, c, listing),
 		"shape diagram":           theShapeDiagram(t, c, lib, listing),
+		// The squad builder at each of its three depths, the two states of a
+		// member that share no line with the plain one, and the two pickers it
+		// raises — under the client's own names, for the reason every other
+		// entry here carries them.
+		"squads":             catalogue,
+		"a squad":            squadInHand(t, c, catalogue),
+		"a squad member":     member,
+		"a deep member":      deepMember(t, c, member),
+		"a held-back member": heldBackMember(t, c, member),
+		"a squad kit":        squadKitPicker(t, c, member),
+		"a squad trait":      squadTraitPicker(t, c, member),
 	}
+}
+
+// # The squad builder's seven entries, and why every one of them is a value
+//
+// The builder is the tenth screen in this package and the only one that **writes
+// the author's own file**. Nothing here writes: `Saved` is a field, `Open` takes
+// its baseline off whatever it is handed, and a picker is a literal the screen
+// builds — so every state below is arranged the way `anEditedSkill` arranges its
+// reported edit, as data rather than as the result of an edit.
+//
+// ⚠️ Each asserts it drew the line it exists for, as every hand-built state in
+// this file does. A catalogue with no rows, a member on a character the book has
+// lost and a picker over an empty learnset all render perfectly good screens that
+// measure none of the code the entry was added for.
+
+// aSquadOverTheShippedCast is one squad, built around whichever character the
+// shipped book gives the most traits.
+//
+// The most traits, so the trait picker below has rows to draw: which character
+// that is is a fact about the book, and naming one would tie this record to
+// content an author is free to change.
+func aSquadOverTheShippedCast(t *testing.T, lib *forge.Library) placement.Squad {
+	t.Helper()
+	characters := lib.Characters().All()
+	if len(characters) == 0 {
+		t.Fatal("the shipped book holds no characters, so no squad can be built")
+	}
+	found, most := 0, -1
+	for index, character := range characters {
+		held := len(character.PassivesAt(progression.LevelCap, progression.Furthest))
+		if held > most {
+			found, most = index, held
+		}
+	}
+	character := characters[found]
+	unit := placement.Placement{
+		ID:        "mot",
+		Character: character.ID,
+		Level:     progression.LevelCap,
+		Slot:      hex.Offset{Col: hex.FormationCols - 1, Row: 1},
+	}
+	kit := character.SkillsAt(unit.Level, progression.Furthest)
+	if len(kit) > cast.SkillSlots {
+		kit = kit[:cast.SkillSlots]
+	}
+	unit.Skills = kit
+	if traits := character.PassivesAt(unit.Level, progression.Furthest); len(traits) > 0 {
+		unit.Passives = traits[:cast.TraitSlots]
+	}
+	return placement.Squad{
+		ID: "do-thu", Name: "đội thử", Units: []placement.Placement{unit},
+	}
+}
+
+// squadCatalogue is the listing with two squads on it, which is the state that
+// measures the id column: it is sized over the rows **and** the header, so a
+// listing with nothing in it draws neither.
+//
+// Two rather than one because the second is wider than the first, so a column
+// measured off one row alone would come back a different number.
+func squadCatalogue(t *testing.T, c Context, lib *forge.Library) SquadsScreen {
+	t.Helper()
+	s := NewSquadsScreen(c)
+	first := aSquadOverTheShippedCast(t, lib)
+	second := first.Clone()
+	second.ID, second.Name = "do-thu-hai", "đội thử hai"
+	s.Saved = []placement.Squad{first, second}
+	drawn, _ := s.View(c)
+	if strings.Contains(drawn, c.Text(i18n.SquadsEmpty)) {
+		t.Fatalf("the catalogue records the empty listing, which the client's golden of "+
+			"this name already holds:\n%s", drawn)
+	}
+	if !strings.Contains(drawn, second.ID) {
+		t.Fatalf("the catalogue does not list %q, so its id column is measured over one "+
+			"row:\n%s", second.ID, drawn)
+	}
+	return s
+}
+
+// squadInHand is the first of those squads taken up for editing: the id, the
+// name, the member rows and the formation under them.
+func squadInHand(t *testing.T, c Context, catalogue SquadsScreen) SquadsScreen {
+	t.Helper()
+	s := catalogue.Open(catalogue.Saved[0])
+	if s.Mode != SquadEdit {
+		t.Fatalf("opening a saved squad landed in %v", s.Mode)
+	}
+	if drawn, _ := s.View(c); !strings.Contains(drawn, c.Text(i18n.SquadAddMember)) {
+		t.Fatalf("the squad under edit draws no row to add a member:\n%s", drawn)
+	}
+	return s
+}
+
+// squadMember is that squad's one member opened, which is the six-row form and
+// the live formation beside it.
+func squadMember(t *testing.T, c Context, catalogue SquadsScreen) SquadsScreen {
+	t.Helper()
+	s := squadInHand(t, c, catalogue).EditUnit(0)
+	if s.Mode != SquadUnit {
+		t.Fatalf("opening a member landed in %v", s.Mode)
+	}
+	if drawn, _ := s.View(c); !strings.Contains(drawn, c.Text(i18n.SquadFieldSlot)) {
+		t.Fatalf("the member draws no slot row:\n%s", drawn)
+	}
+	return s
+}
+
+// deepMember is the same member standing in the rank whose name is longest.
+//
+// The rank is looked up rather than named, for the reason skillBlurb takes the
+// widest reading: which of the three words is longest is a fact about a language,
+// so naming one would record English and skip Vietnamese. The cell is written on
+// the unit under edit rather than committed, which is also the state the live
+// grid is for — the picture follows the arrows.
+func deepMember(t *testing.T, c Context, member SquadsScreen) SquadsScreen {
+	t.Helper()
+	found, most := member.Unit.Slot, 0
+	for _, slot := range FormationSlots() {
+		if width := lipgloss.Width(RankLabel(c, slot)); width > most {
+			found, most = slot, width
+		}
+	}
+	member.Unit.Slot = found
+	if drawn, _ := member.View(c); !strings.Contains(drawn, RankLabel(c, found)) {
+		t.Fatalf("the deep member does not say it stands in %q:\n%s",
+			RankLabel(c, found), drawn)
+	}
+	return member
+}
+
+// heldBackMember is the same member holding a character the cast has taken out
+// of the builder's list, which is the one state that draws the held-back line.
+//
+// It edits the screen's own copy of the cast rather than the book, which is what
+// withNoTraitTaken does and for the same reason: nothing shipped need be hidden
+// for the wording to be recorded. The slice is copied because every state here
+// shares one backing array.
+func heldBackMember(t *testing.T, c Context, member SquadsScreen) SquadsScreen {
+	t.Helper()
+	characters := append([]cast.Character(nil), member.Characters...)
+	held := false
+	for index := range characters {
+		if characters[index].ID == member.Unit.Character {
+			characters[index].Hidden, held = true, true
+		}
+	}
+	if !held {
+		t.Fatalf("the fixture member names %q, which is not in the cast the screen holds",
+			member.Unit.Character)
+	}
+	member.Characters = characters
+	if drawn, _ := member.View(c); !strings.Contains(drawn, c.Text(i18n.SquadHeldBack)) {
+		t.Fatalf("the held-back member draws no line saying so, so this records an "+
+			"ordinary member twice:\n%s", drawn)
+	}
+	return member
+}
+
+// squadKitPicker and squadTraitPicker are the two lists the member raises,
+// **raised** rather than built: they are the one pair of picker entries in this
+// file that a screen here composes, since the builder is the only raiser that
+// has moved.
+func squadKitPicker(t *testing.T, c Context, member SquadsScreen) *PickState {
+	t.Helper()
+	raised := member.OpenSkills()
+	if raised == nil {
+		t.Fatal("the member names no character, so its kit list will not open")
+	}
+	picker := raised.Raise()
+	if len(picker.Options) == 0 {
+		t.Fatal("the kit picker holds no rows, so it records an empty list")
+	}
+	return picker
+}
+
+func squadTraitPicker(t *testing.T, c Context, member SquadsScreen) *PickState {
+	t.Helper()
+	raised := member.OpenPassives()
+	if raised == nil {
+		t.Fatal("the member names no character, so its trait list will not open")
+	}
+	picker := raised.Raise()
+	if len(picker.Options) == 0 {
+		t.Fatal("the trait picker holds no rows; the fixture picks the character with " +
+			"the most traits, so the shipped book has none at all")
+	}
+	return picker
 }
 
 // # The skill listing's seven states, and what each is here for
