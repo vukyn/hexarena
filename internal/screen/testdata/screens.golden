@@ -3,18 +3,18 @@ trận đấu  seed 1  diễn biến 10-10/10
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-next: E2 A1 E1 A3 E3 A2
+next: E3 A1 E1 A2 E2 A3
 
-  A2  turn 1
+  A3  turn 1
 
-A2 Charizard, lượt 1
+A3 Charizard, lượt 1
 > ember        100% công · bỏng 30% · tầm 1 · hồi 1
   fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
   fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
@@ -22,26 +22,26 @@ A2 Charizard, lượt 1
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a battle over =====
-trận đấu  seed 1  diễn biến 1018-1022/1022
-cửa sổ quá ngắn cho: bàn cờ
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, 6 đơn vị, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             fallen                     100   -
-A2   Charizard            fallen                     140   kindled (always), expose (1t), fester (2t)
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             fallen                     100   burn (2t), fester (2t)
-E2   Charizard            fallen                     140   kindled (always)
-E3   Blastoise            fallen                      85   toughened (always)
+A1   Sennin               fallen                     134   toughened (always)
+A2   Venusaur             fallen                     100   burn (1t)
+A3   Charizard            fallen                     140   kindled (always), fester (2t)
+E1   Sennin               [######....]  2300/3400    134   toughened (always)
+E2   Venusaur             fallen                     100   -
+E3   Charizard            [##........]   805/3100    140   kindled (always)
+     phân thân 1          fallen                      53   -
+     phân thân 2          fallen                      53   -
+     phân thân 1          fallen                      53   -
+     phân thân 2          fallen                      53   -
+     phân thân 3          fallen                      53   burn (1t)
+     phân thân 4          fallen                      53   burn (1t)
+     phân thân 3          fallen                      53   -
+     phân thân 4          fallen                      53   burn (1t)
 
-next: A3 A3 A3 A3 A3 A3
-
-    A3  uses water_gun <súng nước> at 3,0
-    A3   hits E3 for 133, 0 left
-    E3  falls at 3,0
-  
-  the ally side wins
-
-phe bạn thắng
+phe bạn ngã
 ----- footer -----
 n đánh trận khác · [/] cuộn · ctrl+s lưu lại · esc quay lại
 ===== vi | 120x24 | a battle with no pairing =====
@@ -98,7 +98,7 @@ thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có tron
 
 năm để trống được nếu không rõ; ghi chú là chữ tự do
 
-chưa thêm được: nguồn "pokemon" đã có trong danh mục rồi
+chưa thêm được: nguồn "naruto" đã có trong danh mục rồi
 
 ----- footer -----
 ↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
@@ -107,14 +107,14 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-A2 Charizard, lượt 1
+A3 Charizard, lượt 1
 > ember        100% công · bỏng 30% · tầm 1 · hồi 1
   fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
   fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
@@ -126,26 +126,26 @@ liệu nhúng trong nó chứ không đọc mấy file này
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a scrolled battle log =====
-trận đấu  seed 1  diễn biến 91-91/130
-cửa sổ quá ngắn cho: bàn cờ
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [######....]  2477/3800    100   -
-A2   Charizard            [#####.....]  1592/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always), block x2 (2t)
-E1   Venusaur             [####......]  1577/3800     81   mire (1t)
-E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
-E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [####......]  1592/3800    100   burn x2 (1t)
+A3   Charizard            [#########.]  2973/3100    140   -
+E1   Sennin               [########..]  3028/3400    134   toughened (always)
+E2   Venusaur             [#####.....]  2078/3800    100   fester (2t)
+E3   Charizard            [########..]  2493/3100    140   -
+     phân thân 1          [##........]   293/1360     53   -
+     phân thân 2          [#.........]    88/1360     53   -
+     phân thân 1          [#.........]    31/1360     53   -
+     phân thân 2          [##........]   384/1360     53   -
 
-next: A1 E2 E1 A3 E3 A2
-
-    E1   A2 resists poison <trúng độc> (4%)
-
-A2 Charizard, lượt 4
-> ember        100% công · bỏng 30% · tầm 1 · hồi 1
-  fire_spin    1 turns of cooldown left
-  fire_fang    2 turns of cooldown left
-  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+A1 Sennin, lượt 3
+> kunai          70% công · tầm 2
+  substitution   tự nhận mờ ảo x2 · bản thân · hồi 4
+  shadow_clone   4 turns of cooldown left
+  wind_shuriken  2 turns of cooldown left
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a squad =====
@@ -261,22 +261,22 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
 
-A2 Charizard, lượt 1
+A3 Charizard, lượt 1
   ember        100% công · bỏng 30% · tầm 1 · hồi 1
   fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
   fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
   smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
 
 nhắm ember vào
-> 3,0  E3 Blastoise
-  3,1  E2 Charizard
-  3,2  E1 Venusaur
+> 3,0  E3 Charizard
+  3,1  E2 Venusaur
+  3,2  E1 Sennin
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | allowlist picker =====
@@ -284,17 +284,17 @@ nhân vật nào được học chiêu này  0/11
 space để chọn · để trống thì ai cũng học được chiêu này
 đang xem tất cả nguồn (11 trong 11)
 
->      pokemon.bulbasaur
+>      naruto.naruto
+       pokemon.bulbasaur
        pokemon.charmander
-       pokemon.squirtle
-       naruto.naruto
-       pokemon.poliwag
-       pokemon.machop
        pokemon.cleffa
+       pokemon.gastly
+       pokemon.machop
        pokemon.magnemite
        pokemon.mew
        pokemon.mewtwo
-       pokemon.gastly
+       pokemon.poliwag
+       pokemon.squirtle
 
   chưa chọn gì
 
@@ -310,53 +310,52 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 ===== vi | 120x24 | browse =====
 danh sách nhân vật  đang xem tất cả nguồn (11 trong 11 nhân vật)
 
-> pokemon.bulbasaur        pokemon        grass <cỏ>
+> naruto.naruto            naruto         wind <gió>
+  pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
-  pokemon.squirtle         pokemon        water <nước>
-  naruto.naruto            naruto         wind <gió>
-  pokemon.poliwag          pokemon        water <nước>
-  pokemon.machop           pokemon        ground <đất>
   pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.gastly           pokemon        dark <bóng tối>
+  pokemon.machop           pokemon        ground <đất>
   pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
-  pokemon.gastly           pokemon        dark <bóng tối>
+  pokemon.poliwag          pokemon        water <nước>
+  pokemon.squirtle         pokemon        water <nước>
 
-pokemon.bulbasaur — Bulbasaur
-  nguồn tham khảo  Pokémon (anime, pokemon)
-  lối chơi         blighter
-                   kẻ gieo độc
-  hệ               grass
-                   cỏ
-  bộ chiêu         vine_whip razor_leaf poison_powder sleep_powder[Bulbasaur,Ivysaur] leech_seed synthesis venoshock
-                   sludge_bomb ingrain overgrow thorn_volley bloom_burst sprout
-                   roi dây leo · phi diệp · phấn độc · phấn ngủ · hạt ký sinh · quang hợp · độc kích · độc bùn · cắm rễ
-                   · xanh tốt · loạt gai · bung hoa · nảy mầm
-  giai đoạn        Bulbasaur@1 → Ivysaur@16 → Venusaur@32
-  tiểu sử          Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ
-                   nhiều, đi chậm, hiếm khi tỏ ra vội — cái gì cần thời gian thì cứ để thời gian làm.
-  ảnh              assets/venusaur.svg  có
-  loài             plant
-                   thực vật
-  nội tại          venom_blood endurance blood_thirst virulence last_gasp contagion
-                   máu độc · bền bỉ · khát máu · độc lực · hấp hối · lây lan
-  cấp 60           hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50 giai đoạn Venusaur
-  máu quy đổi      [=====================---] 10410/11500, còn dư 1090
-                   xuyên hết giáp thì chỉ đỡ được 3800
+naruto.naruto — Naruto
+  nguồn tham khảo  Naruto (anime, naruto)
+  lối chơi         summoner
+                   người triệu hồi
+  hệ               wind
+                   gió
+  bộ chiêu         kunai substitution shadow_clone wind_shuriken summon_toad rasengan comeback
+                   phi đao · thế thân · phân thân · phong ma thủ lý kiếm · triệu hồi cóc · xoáy cầu · vùng lên
+  giai đoạn        Naruto@1 → Shippuden@16 → Sennin@32
+  tiểu sử          Ồn ào, lì lợm, và chưa bao giờ chịu đứng một mình lâu — thiếu người thì tự nhân mình ra cho đủ. Đã ký
+                   giao ước với loài cóc bằng máu, nên khi cần một cái bóng lớn hơn thì cứ gọi, và cóc thì bao giờ cũng
+                   cằn nhằn trước khi chịu đánh.
+  ảnh              assets/naruto-sage-mode.svg  có
+  loài             human
+                   con người
+  nội tại          endurance swiftness
+                   bền bỉ · thần tốc
+  cấp 60           hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70 giai đoạn Sennin
+  máu quy đổi      [================--------] 7943/11500, còn dư 3557
+                   xuyên hết giáp thì chỉ đỡ được 3400
 
 ----- footer -----
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | builds =====
 bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
 
+  naruto.naruto         chưa viết bản dựng nào cho nhân vật này
   pokemon.bulbasaur
 >   bulbasaur.poison    rải độc
     bulbasaur.parasite  ký sinh
   pokemon.charmander
     charmander.scorch   thiêu đốt
     charmander.dragon   long tộc
-  pokemon.squirtle
-    squirtle.fortress   cố thủ
+  pokemon.cleffa
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -452,18 +451,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ===== vi | 120x24 | filtered picker =====
 nhân vật nào được học chiêu này  0/11
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem pokemon (10 trong 11)
+đang xem naruto (1 trong 11)
 
->      pokemon.bulbasaur
-       pokemon.charmander
-       pokemon.squirtle
-       pokemon.poliwag
-       pokemon.machop
-       pokemon.cleffa
-       pokemon.magnemite
-       pokemon.mew
-       pokemon.mewtwo
-       pokemon.gastly
+>      naruto.naruto
 
   chưa chọn gì
 
@@ -530,8 +520,8 @@ space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · c
 ===== vi | 120x24 | origins =====
 nguồn  các tác phẩm mà nhân vật được mượn từ
 
-> pokemon          anime   1997  10 nhân vật  Pokémon
-  naruto           anime   2002   1 nhân vật  Naruto
+> naruto           anime   2002   1 nhân vật  Naruto
+  pokemon          anime   1997  10 nhân vật  Pokémon
 
 2 tác phẩm · loại: anime film series game comic novel
 ----- footer -----
@@ -698,14 +688,14 @@ Mew  cấp 60
 ===== vi | 120x24 | traitless build =====
 bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
 
+  naruto.naruto         chưa viết bản dựng nào cho nhân vật này
   pokemon.bulbasaur
 >   bulbasaur.poison    rải độc
     bulbasaur.parasite  ký sinh
   pokemon.charmander
     charmander.scorch   thiêu đốt
     charmander.dragon   long tộc
-  pokemon.squirtle
-    squirtle.fortress   cố thủ
+  pokemon.cleffa
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -718,16 +708,16 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
 nội tại  các nội tại đã khai báo, và ai mang
 
   id            tên tiếng Việt ai mang
-> endurance     bền bỉ         pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.ma…
+> endurance     bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.machop@32 pokemon.magne…
   blaze         bùng lửa       pokemon.charmander@16
   heatproof     chịu nhiệt     pokemon.charmander@16
   virulence     độc lực        pokemon.bulbasaur@32
   venom_blood   máu độc        pokemon.bulbasaur@24
-  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon…
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.…
   last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
   reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@…
+  swiftness     thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@3…
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -770,27 +760,27 @@ trận đấu  seed 1
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-next: E2 A1 E1 A3 E3 A2
+next: E3 A1 E1 A2 E2 A3
 
-    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
-    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
-    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
-    A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
-    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
-    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
-    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
-    E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
   
-  A2  turn 1
+  A3  turn 1
 
-A2 Charizard, lượt 1
+A3 Charizard, lượt 1
 > ember        100% công · bỏng 30% · tầm 1 · hồi 1
   fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
   fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
@@ -798,62 +788,62 @@ A2 Charizard, lượt 1
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a battle over =====
-trận đấu  seed 1  diễn biến 991-1022/1022
+trận đấu  seed 1  diễn biến 542-559/559
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
  __    __    __
 /  \__/  \__/  \__
-\__/  \__/  \__/  \
+\__/  \__/E3\__/  \
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
-/  \__/A3\__/  \__/
-\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             fallen                     100   -
-A2   Charizard            fallen                     140   kindled (always), expose (1t), fester (2t)
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             fallen                     100   burn (2t), fester (2t)
-E2   Charizard            fallen                     140   kindled (always)
-E3   Blastoise            fallen                      85   toughened (always)
+A1   Sennin               fallen                     134   toughened (always)
+A2   Venusaur             fallen                     100   burn (1t)
+A3   Charizard            fallen                     140   kindled (always), fester (2t)
+E1   Sennin               [######....]  2300/3400    134   toughened (always)
+E2   Venusaur             fallen                     100   -
+E3   Charizard            [##........]   805/3100    140   kindled (always)
+     phân thân 1          fallen                      53   -
+     phân thân 2          fallen                      53   -
+     phân thân 1          fallen                      53   -
+     phân thân 2          fallen                      53   -
+     phân thân 3          fallen                      53   burn (1t)
+     phân thân 4          fallen                      53   burn (1t)
+     phân thân 3          fallen                      53   -
+     phân thân 4          fallen                      53   burn (1t)
+     phân thân 5          fallen                      53   -
+     phân thân 6          fallen                      53   burn x2 (2t)
+     phân thân 5          fallen                      53   -
+     phân thân 7          fallen                      53   -
+     phân thân 6          [######....]   906/1360     53   -
+     phân thân 7          [#######...]  1076/1360     53   -
 
-next: A3 A3 A3 A3 A3 A3
+next: E3 E1 E3 enemy.2,0#6 enemy.2,0#7 E1
 
   
-  A3  turn 78
-    A3  uses withdraw <thủ thế> at 2,2
-    A3   block <đỡ đòn> x2 on A3, now 2
+  A1  turn 20
+    A1  fester <lở loét> wears off
+    A1  uses wind_shuriken <phong ma thủ lý kiếm> at 4,2
+    A1   hits enemy.2,0#6 for 227, 1133 left
+    A1   hits enemy.2,0#6 for 227, 906 left
+    A1   hits enemy.2,0#7 for 142 (critical), 1218 left
+    A1   hits enemy.2,0#7 for 142 (critical), 1076 left
   
-  E3  turn 78
-    E3  loses the turn (nothing usable)
+  E1  turn 20
+    E1  uses wind_shuriken <phong ma thủ lý kiếm> at 2,0
+    E1   hits A1 for 144, 78 left
+    E1   hits A1 for 180 (critical), 0 left
+    A1  falls at 2,0
+    ally.2,0#5 leaves at 1,0 (summoner died)
+    ally.2,0#7 leaves at 1,1 (summoner died)
   
-  A3  turn 79
-    A3  loses the turn (nothing usable)
-  
-  E3  turn 79
-    E3  block <đỡ đòn> wears off
-    E3  uses bubble <bong bóng> at 2,2
-    E3   is blocked by A3, 1 charges left
-  
-  A3  turn 80
-    A3  block <đỡ đòn> wears off
-    A3  uses bite <cắn> at 3,0
-    A3   hits E3 for 160, 122 left
-    A3   E3 resists expose <phá giáp> (50%)
-  
-  E3  turn 80
-    E3  uses bite <cắn> at 2,2
-    E3   misses A3 (92%)
-  
-  A3  turn 81
-    A3  uses water_gun <súng nước> at 3,0
-    A3   hits E3 for 133, 0 left
-    E3  falls at 3,0
-  
-  the ally side wins
+  the enemy side wins
 
-phe bạn thắng
+phe bạn ngã
 ----- footer -----
 n đánh trận khác · [/] cuộn · ctrl+s lưu lại · esc quay lại
 ===== vi | 160x60 | a battle with no pairing =====
@@ -910,7 +900,7 @@ thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có tron
 
 năm để trống được nếu không rõ; ghi chú là chữ tự do
 
-chưa thêm được: nguồn "pokemon" đã có trong danh mục rồi
+chưa thêm được: nguồn "naruto" đã có trong danh mục rồi
 
 ----- footer -----
 ↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
@@ -928,27 +918,27 @@ trận đấu  seed 1
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-next: E2 A1 E1 A3 E3 A2
+next: E3 A1 E1 A2 E2 A3
 
-    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
-    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
-    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
-    A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
-    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
-    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
-    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
-    E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
   
-  A2  turn 1
+  A3  turn 1
 
-A2 Charizard, lượt 1
+A3 Charizard, lượt 1
 > ember        100% công · bỏng 30% · tầm 1 · hồi 1
   fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
   fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
@@ -960,7 +950,7 @@ liệu nhúng trong nó chứ không đọc mấy file này
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a scrolled battle log =====
-trận đấu  seed 1  diễn biến 91-118/130
+trận đấu  seed 1  diễn biến 97-120/120
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -973,49 +963,49 @@ trận đấu  seed 1  diễn biến 91-118/130
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [######....]  2477/3800    100   -
-A2   Charizard            [#####.....]  1592/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always), block x2 (2t)
-E1   Venusaur             [####......]  1577/3800     81   mire (1t)
-E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
-E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [####......]  1592/3800    100   burn x2 (1t)
+A3   Charizard            [#########.]  2973/3100    140   -
+E1   Sennin               [########..]  3028/3400    134   toughened (always)
+E2   Venusaur             [#####.....]  2078/3800    100   fester (2t)
+E3   Charizard            [########..]  2493/3100    140   -
+     phân thân 1          [##........]   293/1360     53   -
+     phân thân 2          [#.........]    88/1360     53   -
+     phân thân 1          [#.........]    31/1360     53   -
+     phân thân 2          [##........]   384/1360     53   -
 
-next: A1 E2 E1 A3 E3 A2
+next: E1 ally.2,0#1 ally.2,0#2 enemy.2,0#1 enemy.2,0#2 A3
 
-    E1   A2 resists poison <trúng độc> (4%)
+    A2  drains 242, 60% of what it dealt, 2232 hp left
   
-  E1  turn 2
-    E1  takes 307 from burn <bỏng> x1
-    E1  burn <bỏng> wears off
-    E1  uses razor_leaf <phi diệp> at 2,1
-    E1   hits A2 for 137 (resisted) (through 40% of the armour), 1964 left
-    E1   hits A2 for 137 (resisted) (through 40% of the armour), 1827 left
-    E1   hits A1 for 91 (through 40% of the armour), 3069 left
-    E1   hits A1 for 91 (through 40% of the armour), 2978 left
-    A1   E1 is immune to poison <trúng độc>
+  E2  turn 2
+    E2  takes 307 from burn <bỏng> x1
+    E2  burn <bỏng> wears off
+    E2  uses leech_seed <hạt ký sinh> at 1,0
+    E2   hits ally.2,0#1 for 404 (weak), 293 left
+    E2  drains 242, 60% of what it dealt, 2718 hp left
   
-  A3  turn 2
-    A3  uses withdraw <thủ thế> at 2,2
-    A3   block <đỡ đòn> x2 on A3, now 2
-    A3  heals 57, 3600 hp left
+  A3  turn 3
+    A3  uses fire_fang <nanh lửa> at 3,1
+    A3   hits E2 for 320 (weak) (through 35% of the armour), 2398 left
+    A3   hits E2 for 320 (weak) (through 35% of the armour), 2078 left
+    A3   fester <lở loét> x1 on E2, now 1
+    E2   A3 resists poison <trúng độc> (4%)
   
-  E3  turn 2
-    E3  takes 108 from burn <bỏng> x1
-    E3  takes 90 from poison <trúng độc> x1
-    E3  burn <bỏng> wears off
-    E3  uses bubble <bong bóng> at 2,0
-    E3   hits A1 for 117, 2861 left
-    E3   A1 resists mire <sa lầy> (70%)
-    E3   hits A2 for 103 (weak), 1724 left
-    E3   A2 resists mire <sa lầy> (70%)
-    A1   E3 resists poison <trúng độc> (4%)
+  E3  turn 3
+    E3  uses fire_fang <nanh lửa> at 2,1
+    E3   hits A2 for 320 (weak) (through 35% of the armour), 1912 left
+    E3   hits A2 for 320 (weak) (through 35% of the armour), 1592 left
+    E3   A2 resists fester <lở loét> (50%)
+    A2   E3 resists poison <trúng độc> (4%)
   
+  A1  turn 3
 
-A2 Charizard, lượt 4
-> ember        100% công · bỏng 30% · tầm 1 · hồi 1
-  fire_spin    1 turns of cooldown left
-  fire_fang    2 turns of cooldown left
-  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+A1 Sennin, lượt 3
+> kunai          70% công · tầm 2
+  substitution   tự nhận mờ ảo x2 · bản thân · hồi 4
+  shadow_clone   4 turns of cooldown left
+  wind_shuriken  2 turns of cooldown left
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a squad =====
@@ -1158,36 +1148,36 @@ trận đấu  seed 1
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-next: E2 A1 E1 A3 E3 A2
+next: E3 A1 E1 A2 E2 A3
 
-    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
-    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
-    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
-    A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
-    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
-    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
-    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
-    E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
   
-  A2  turn 1
+  A3  turn 1
 
-A2 Charizard, lượt 1
+A3 Charizard, lượt 1
   ember        100% công · bỏng 30% · tầm 1 · hồi 1
   fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
   fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
   smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
 
 nhắm ember vào
-> 3,0  E3 Blastoise
-  3,1  E2 Charizard
-  3,2  E1 Venusaur
+> 3,0  E3 Charizard
+  3,1  E2 Venusaur
+  3,2  E1 Sennin
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | allowlist picker =====
@@ -1195,17 +1185,17 @@ nhân vật nào được học chiêu này  0/11
 space để chọn · để trống thì ai cũng học được chiêu này
 đang xem tất cả nguồn (11 trong 11)
 
->      pokemon.bulbasaur
+>      naruto.naruto
+       pokemon.bulbasaur
        pokemon.charmander
-       pokemon.squirtle
-       naruto.naruto
-       pokemon.poliwag
-       pokemon.machop
        pokemon.cleffa
+       pokemon.gastly
+       pokemon.machop
        pokemon.magnemite
        pokemon.mew
        pokemon.mewtwo
-       pokemon.gastly
+       pokemon.poliwag
+       pokemon.squirtle
 
   chưa chọn gì
 
@@ -1221,65 +1211,59 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 ===== vi | 160x60 | browse =====
 danh sách nhân vật  đang xem tất cả nguồn (11 trong 11 nhân vật)
 
-> pokemon.bulbasaur        pokemon        grass <cỏ>
+> naruto.naruto            naruto         wind <gió>
+  pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
-  pokemon.squirtle         pokemon        water <nước>
-  naruto.naruto            naruto         wind <gió>
-  pokemon.poliwag          pokemon        water <nước>
-  pokemon.machop           pokemon        ground <đất>
   pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.gastly           pokemon        dark <bóng tối>
+  pokemon.machop           pokemon        ground <đất>
   pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
-  pokemon.gastly           pokemon        dark <bóng tối>
+  pokemon.poliwag          pokemon        water <nước>
+  pokemon.squirtle         pokemon        water <nước>
 
-pokemon.bulbasaur — Bulbasaur
-  nguồn tham khảo  Pokémon (anime, pokemon)
-  lối chơi         blighter
-                   kẻ gieo độc
-  hệ               grass
-                   cỏ
-  bộ chiêu         vine_whip razor_leaf poison_powder sleep_powder[Bulbasaur,Ivysaur] leech_seed synthesis venoshock sludge_bomb ingrain overgrow thorn_volley
-                   bloom_burst sprout
-                   roi dây leo · phi diệp · phấn độc · phấn ngủ · hạt ký sinh · quang hợp · độc kích · độc bùn · cắm rễ · xanh tốt · loạt gai · bung hoa · nảy
-                   mầm
-  giai đoạn        Bulbasaur@1 → Ivysaur@16 → Venusaur@32
-  tiểu sử          Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ nhiều, đi chậm, hiếm khi tỏ ra vội — cái
-                   gì cần thời gian thì cứ để thời gian làm.
-  ảnh              assets/venusaur.svg  có
-  loài             plant
-                   thực vật
-  nội tại          venom_blood endurance blood_thirst virulence last_gasp contagion
-                   máu độc · bền bỉ · khát máu · độc lực · hấp hối · lây lan
-  cấp 60           hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50 giai đoạn Venusaur
-  máu quy đổi      [=====================---] 10410/11500, còn dư 1090
-                   xuyên hết giáp thì chỉ đỡ được 3800
+naruto.naruto — Naruto
+  nguồn tham khảo  Naruto (anime, naruto)
+  lối chơi         summoner
+                   người triệu hồi
+  hệ               wind
+                   gió
+  bộ chiêu         kunai substitution shadow_clone wind_shuriken summon_toad rasengan comeback
+                   phi đao · thế thân · phân thân · phong ma thủ lý kiếm · triệu hồi cóc · xoáy cầu · vùng lên
+  giai đoạn        Naruto@1 → Shippuden@16 → Sennin@32
+  tiểu sử          Ồn ào, lì lợm, và chưa bao giờ chịu đứng một mình lâu — thiếu người thì tự nhân mình ra cho đủ. Đã ký giao ước với loài cóc bằng máu, nên khi
+                   cần một cái bóng lớn hơn thì cứ gọi, và cóc thì bao giờ cũng cằn nhằn trước khi chịu đánh.
+  ảnh              assets/naruto-sage-mode.svg  có
+  loài             human
+                   con người
+  nội tại          endurance swiftness
+                   bền bỉ · thần tốc
+  cấp 60           hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70 giai đoạn Sennin
+  máu quy đổi      [================--------] 7943/11500, còn dư 3557
+                   xuyên hết giáp thì chỉ đỡ được 3400
 
 ----- footer -----
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 160x60 | builds =====
 bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
 
+  naruto.naruto         chưa viết bản dựng nào cho nhân vật này
   pokemon.bulbasaur
 >   bulbasaur.poison    rải độc
     bulbasaur.parasite  ký sinh
   pokemon.charmander
     charmander.scorch   thiêu đốt
     charmander.dragon   long tộc
-  pokemon.squirtle
-    squirtle.fortress   cố thủ
-    squirtle.ram        giáp kích
-  naruto.naruto         chưa viết bản dựng nào cho nhân vật này
-  pokemon.poliwag
-    poliwag.flurry      liên hoàn
-    poliwag.riptide     nghịch lưu
-    poliwag.chorus      giữ nhịp
-  pokemon.machop
-    machop.gamble       đánh cược
-    machop.sure         chắc đòn
   pokemon.cleffa
     cleffa.mend         chở che
     cleffa.hex          ru ngủ
+  pokemon.gastly
+    gastly.unbind       gỡ chỗ dựa
+    gastly.miasma       chướng khí
+  pokemon.machop
+    machop.gamble       đánh cược
+    machop.sure         chắc đòn
   pokemon.magnemite
     magnemite.trickle   nhỏ giọt
     magnemite.surge     sấm dội
@@ -1291,9 +1275,13 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.mewtwo
     mewtwo.breach       xuyên giáp
     mewtwo.origin       bản sao
-  pokemon.gastly
-    gastly.unbind       gỡ chỗ dựa
-    gastly.miasma       chướng khí
+  pokemon.poliwag
+    poliwag.flurry      liên hoàn
+    poliwag.riptide     nghịch lưu
+    poliwag.chorus      giữ nhịp
+  pokemon.squirtle
+    squirtle.fortress   cố thủ
+    squirtle.ram        giáp kích
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -1433,18 +1421,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ===== vi | 160x60 | filtered picker =====
 nhân vật nào được học chiêu này  0/11
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem pokemon (10 trong 11)
+đang xem naruto (1 trong 11)
 
->      pokemon.bulbasaur
-       pokemon.charmander
-       pokemon.squirtle
-       pokemon.poliwag
-       pokemon.machop
-       pokemon.cleffa
-       pokemon.magnemite
-       pokemon.mew
-       pokemon.mewtwo
-       pokemon.gastly
+>      naruto.naruto
 
   chưa chọn gì
 
@@ -1583,8 +1562,8 @@ space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · c
 ===== vi | 160x60 | origins =====
 nguồn  các tác phẩm mà nhân vật được mượn từ
 
-> pokemon          anime   1997  10 nhân vật  Pokémon
-  naruto           anime   2002   1 nhân vật  Naruto
+> naruto           anime   2002   1 nhân vật  Naruto
+  pokemon          anime   1997  10 nhân vật  Pokémon
 
 2 tác phẩm · loại: anime film series game comic novel
 ----- footer -----
@@ -1844,26 +1823,22 @@ Mew  cấp 60
 ===== vi | 160x60 | traitless build =====
 bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 60, dạng cuối
 
+  naruto.naruto         chưa viết bản dựng nào cho nhân vật này
   pokemon.bulbasaur
 >   bulbasaur.poison    rải độc
     bulbasaur.parasite  ký sinh
   pokemon.charmander
     charmander.scorch   thiêu đốt
     charmander.dragon   long tộc
-  pokemon.squirtle
-    squirtle.fortress   cố thủ
-    squirtle.ram        giáp kích
-  naruto.naruto         chưa viết bản dựng nào cho nhân vật này
-  pokemon.poliwag
-    poliwag.flurry      liên hoàn
-    poliwag.riptide     nghịch lưu
-    poliwag.chorus      giữ nhịp
-  pokemon.machop
-    machop.gamble       đánh cược
-    machop.sure         chắc đòn
   pokemon.cleffa
     cleffa.mend         chở che
     cleffa.hex          ru ngủ
+  pokemon.gastly
+    gastly.unbind       gỡ chỗ dựa
+    gastly.miasma       chướng khí
+  pokemon.machop
+    machop.gamble       đánh cược
+    machop.sure         chắc đòn
   pokemon.magnemite
     magnemite.trickle   nhỏ giọt
     magnemite.surge     sấm dội
@@ -1875,9 +1850,13 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.mewtwo
     mewtwo.breach       xuyên giáp
     mewtwo.origin       bản sao
-  pokemon.gastly
-    gastly.unbind       gỡ chỗ dựa
-    gastly.miasma       chướng khí
+  pokemon.poliwag
+    poliwag.flurry      liên hoàn
+    poliwag.riptide     nghịch lưu
+    poliwag.chorus      giữ nhịp
+  pokemon.squirtle
+    squirtle.fortress   cố thủ
+    squirtle.ram        giáp kích
 
   bulbasaur.poison <rải độc>
   ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -1890,21 +1869,21 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
 nội tại  các nội tại đã khai báo, và ai mang
 
   id            tên tiếng Việt ai mang
-> endurance     bền bỉ         pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16 pokemon.magnem…
+> endurance     bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.machop@32 pokemon.magnemite@24 pokemon.mew@36 pokemon.poliwag@1…
   blaze         bùng lửa       pokemon.charmander@16
   heatproof     chịu nhiệt     pokemon.charmander@16
   virulence     độc lực        pokemon.bulbasaur@32
   venom_blood   máu độc        pokemon.bulbasaur@24
-  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.gastly…
+  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwag…
   last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
   reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.gastly@44
+  swiftness     thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32
   ballast       trụ vững       pokemon.squirtle@44
-  composure     vững tâm       pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24
-  elusive       huyền ảo       pokemon.cleffa@40 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.gastly@24
-  contagion     lây lan        pokemon.bulbasaur@28 pokemon.mew@40 pokemon.gastly@40
-  spiteful      nham hiểm      pokemon.poliwag@36 pokemon.gastly@32
+  composure     vững tâm       pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24 pokemon.poliwag@40[Politoed]
+  elusive       huyền ảo       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40
+  contagion     lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40
+  spiteful      nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
   berserk       cuồng chiến    pokemon.machop@40 pokemon.mewtwo@32
   unyielding    bất khuất      pokemon.machop@24
   carapace      vỏ cứng        pokemon.squirtle@48
@@ -1943,18 +1922,18 @@ the battle  seed 1  log 10-10/10
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-next: E2 A1 E1 A3 E3 A2
+next: E3 A1 E1 A2 E2 A3
 
-  A2  turn 1
+  A3  turn 1
 
-A2 Charizard, turn 1
+A3 Charizard, turn 1
 > ember        100% attack · burn 30% · range 1 · cd 1
   fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
   fire_fang    130% attack · fester 50% · range 1 · cd 2
@@ -1962,26 +1941,26 @@ A2 Charizard, turn 1
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a battle over =====
-the battle  seed 1  log 1018-1022/1022
-the window is too short for: board
+the battle  seed 1
+the window is too short for: board, 6 units, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             fallen                     100   -
-A2   Charizard            fallen                     140   kindled (always), expose (1t), fester (2t)
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             fallen                     100   burn (2t), fester (2t)
-E2   Charizard            fallen                     140   kindled (always)
-E3   Blastoise            fallen                      85   toughened (always)
+A1   Sennin               fallen                     134   toughened (always)
+A2   Venusaur             fallen                     100   burn (1t)
+A3   Charizard            fallen                     140   kindled (always), fester (2t)
+E1   Sennin               [######....]  2300/3400    134   toughened (always)
+E2   Venusaur             fallen                     100   -
+E3   Charizard            [##........]   805/3100    140   kindled (always)
+     phân thân 1          fallen                      53   -
+     phân thân 2          fallen                      53   -
+     phân thân 1          fallen                      53   -
+     phân thân 2          fallen                      53   -
+     phân thân 3          fallen                      53   burn (1t)
+     phân thân 4          fallen                      53   burn (1t)
+     phân thân 3          fallen                      53   -
+     phân thân 4          fallen                      53   burn (1t)
 
-next: A3 A3 A3 A3 A3 A3
-
-    A3  uses water_gun at 3,0
-    A3   hits E3 for 133, 0 left
-    E3  falls at 3,0
-  
-  the ally side wins
-
-your side wins
+your side falls
 ----- footer -----
 n another battle · [/] scroll · ctrl+s save it · esc back
 ===== en | 120x24 | a battle with no pairing =====
@@ -2038,7 +2017,7 @@ add a work  a character can only name a work the catalog holds
 
 the year may be left empty when it is unknown; the note is free text
 
-cannot add: the origin "pokemon" is already in the catalog
+cannot add: the origin "naruto" is already in the catalog
 
 ----- footer -----
 ↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
@@ -2047,14 +2026,14 @@ the battle  seed 1
 the window is too short for: board, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-A2 Charizard, turn 1
+A3 Charizard, turn 1
 > ember        100% attack · burn 30% · range 1 · cd 1
   fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
   fire_fang    130% attack · fester 50% · range 1 · cd 2
@@ -2066,26 +2045,26 @@ the copy baked into it rather than these files
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a scrolled battle log =====
-the battle  seed 1  log 91-91/130
-the window is too short for: board
+the battle  seed 1
+the window is too short for: board, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [######....]  2477/3800    100   -
-A2   Charizard            [#####.....]  1592/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always), block x2 (2t)
-E1   Venusaur             [####......]  1577/3800     81   mire (1t)
-E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
-E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [####......]  1592/3800    100   burn x2 (1t)
+A3   Charizard            [#########.]  2973/3100    140   -
+E1   Sennin               [########..]  3028/3400    134   toughened (always)
+E2   Venusaur             [#####.....]  2078/3800    100   fester (2t)
+E3   Charizard            [########..]  2493/3100    140   -
+     phân thân 1          [##........]   293/1360     53   -
+     phân thân 2          [#.........]    88/1360     53   -
+     phân thân 1          [#.........]    31/1360     53   -
+     phân thân 2          [##........]   384/1360     53   -
 
-next: A1 E2 E1 A3 E3 A2
-
-    E1   A2 resists poison (4%)
-
-A2 Charizard, turn 4
-> ember        100% attack · burn 30% · range 1 · cd 1
-  fire_spin    1 turns of cooldown left
-  fire_fang    2 turns of cooldown left
-  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+A1 Sennin, turn 3
+> kunai          70% attack · range 2
+  substitution   self veil x2 · itself · cd 4
+  shadow_clone   4 turns of cooldown left
+  wind_shuriken  2 turns of cooldown left
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a squad =====
@@ -2201,22 +2180,22 @@ the battle  seed 1
 the window is too short for: board, 1 unit, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
 
-A2 Charizard, turn 1
+A3 Charizard, turn 1
   ember        100% attack · burn 30% · range 1 · cd 1
   fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
   fire_fang    130% attack · fester 50% · range 1 · cd 2
   smokescreen  blind 80% · range 2 · 2 cells · cd 3
 
 point ember at
-> 3,0  E3 Blastoise
-  3,1  E2 Charizard
-  3,2  E1 Venusaur
+> 3,0  E3 Charizard
+  3,1  E2 Venusaur
+  3,2  E1 Sennin
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | allowlist picker =====
@@ -2224,17 +2203,17 @@ characters allowed to carry it  0 of 11
 space chooses · leaving it empty lets anyone carry the skill
 showing all origins (11 of 11)
 
->      pokemon.bulbasaur
+>      naruto.naruto
+       pokemon.bulbasaur
        pokemon.charmander
-       pokemon.squirtle
-       naruto.naruto
-       pokemon.poliwag
-       pokemon.machop
        pokemon.cleffa
+       pokemon.gastly
+       pokemon.machop
        pokemon.magnemite
        pokemon.mew
        pokemon.mewtwo
-       pokemon.gastly
+       pokemon.poliwag
+       pokemon.squirtle
 
   nothing chosen yet
 
@@ -2250,47 +2229,47 @@ origins  the works the cast is borrowed from
 ===== en | 120x24 | browse =====
 cast  showing all origins (11 of 11 characters)
 
-> pokemon.bulbasaur        pokemon        grass
+> naruto.naruto            naruto         wind
+  pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
-  pokemon.squirtle         pokemon        water
-  naruto.naruto            naruto         wind
-  pokemon.poliwag          pokemon        water
-  pokemon.machop           pokemon        ground
   pokemon.cleffa           pokemon        light
+  pokemon.gastly           pokemon        dark
+  pokemon.machop           pokemon        ground
   pokemon.magnemite        pokemon        electric/metal
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
-  pokemon.gastly           pokemon        dark
+  pokemon.poliwag          pokemon        water
+  pokemon.squirtle         pokemon        water
 
-pokemon.bulbasaur — Bulbasaur
-  from          Pokémon (anime, pokemon)
-  playstyle     blighter
-  element       grass
-  kit           vine_whip razor_leaf poison_powder sleep_powder[Bulbasaur,Ivysaur] leech_seed synthesis venoshock
-                sludge_bomb ingrain overgrow thorn_volley bloom_burst sprout
-  stages        Bulbasaur@1 → Ivysaur@16 → Venusaur@32
-  biography     Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ
-                nhiều, đi chậm, hiếm khi tỏ ra vội — cái gì cần thời gian thì cứ để thời gian làm.
-  art           assets/venusaur.svg  present
-  species       plant
-  traits        venom_blood endurance blood_thirst virulence last_gasp contagion
-  level 60      hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50 stage Venusaur
-  effective hp  [=====================---] 10410 of 11500, 1090 to spare
-                3800 against damage that pierces its armour outright
+naruto.naruto — Naruto
+  from          Naruto (anime, naruto)
+  playstyle     summoner
+  element       wind
+  kit           kunai substitution shadow_clone wind_shuriken summon_toad rasengan comeback
+  stages        Naruto@1 → Shippuden@16 → Sennin@32
+  biography     Ồn ào, lì lợm, và chưa bao giờ chịu đứng một mình lâu — thiếu người thì tự nhân mình ra cho đủ. Đã ký
+                giao ước với loài cóc bằng máu, nên khi cần một cái bóng lớn hơn thì cứ gọi, và cóc thì bao giờ cũng cằn
+                nhằn trước khi chịu đánh.
+  art           assets/naruto-sage-mode.svg  present
+  species       human
+  traits        endurance swiftness
+  level 60      hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70 stage Sennin
+  effective hp  [================--------] 7943 of 11500, 3557 to spare
+                3400 against damage that pierces its armour outright
 
 ----- footer -----
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | builds =====
 builds  the kit and the trait a character fields at level 60, furthest form
 
+  naruto.naruto         no build written for this one yet
   pokemon.bulbasaur
 >   bulbasaur.poison
     bulbasaur.parasite
   pokemon.charmander
     charmander.scorch
     charmander.dragon
-  pokemon.squirtle
-    squirtle.fortress
+  pokemon.cleffa
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -2384,18 +2363,9 @@ elements  the affinity chart: what beats what, and by how much
 ===== en | 120x24 | filtered picker =====
 characters allowed to carry it  0 of 11
 space chooses · leaving it empty lets anyone carry the skill
-showing pokemon (10 of 11)
+showing naruto (1 of 11)
 
->      pokemon.bulbasaur
-       pokemon.charmander
-       pokemon.squirtle
-       pokemon.poliwag
-       pokemon.machop
-       pokemon.cleffa
-       pokemon.magnemite
-       pokemon.mew
-       pokemon.mewtwo
-       pokemon.gastly
+>      naruto.naruto
 
   nothing chosen yet
 
@@ -2462,8 +2432,8 @@ space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l ti
 ===== en | 120x24 | origins =====
 origins  the works the cast is borrowed from
 
-> pokemon          anime   1997  10 cast  Pokémon
-  naruto           anime   2002   1 cast  Naruto
+> naruto           anime   2002   1 cast  Naruto
+  pokemon          anime   1997  10 cast  Pokémon
 
 2 works · media: anime film series game comic novel
 ----- footer -----
@@ -2629,14 +2599,14 @@ Mew  level 60
 ===== en | 120x24 | traitless build =====
 builds  the kit and the trait a character fields at level 60, furthest form
 
+  naruto.naruto         no build written for this one yet
   pokemon.bulbasaur
 >   bulbasaur.poison
     bulbasaur.parasite
   pokemon.charmander
     charmander.scorch
     charmander.dragon
-  pokemon.squirtle
-    squirtle.fortress
+  pokemon.cleffa
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -2648,16 +2618,16 @@ builds  the kit and the trait a character fields at level 60, furthest form
 traits  the declared traits, and who carries each
 
   id            carried by
-> endurance     pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon…
+> endurance     naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.machop@32 pokemon.magnemite@24 pokemon…
   blaze         pokemon.charmander@16
   heatproof     pokemon.charmander@16
   virulence     pokemon.bulbasaur@32
   venom_blood   pokemon.bulbasaur@24
-  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon…
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.…
   last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
   reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewt…
+  swiftness     naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtw…
 
   endurance
     Always carries toughened.
@@ -2699,27 +2669,27 @@ the battle  seed 1
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-next: E2 A1 E1 A3 E3 A2
+next: E3 A1 E1 A2 E2 A3
 
-    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
-    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
-    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
-    A3   holds endurance: toughened x1
-    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
-    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
-    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
-    E3   holds endurance: toughened x1
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance: toughened x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance: toughened x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
   
-  A2  turn 1
+  A3  turn 1
 
-A2 Charizard, turn 1
+A3 Charizard, turn 1
 > ember        100% attack · burn 30% · range 1 · cd 1
   fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
   fire_fang    130% attack · fester 50% · range 1 · cd 2
@@ -2727,62 +2697,62 @@ A2 Charizard, turn 1
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a battle over =====
-the battle  seed 1  log 991-1022/1022
+the battle  seed 1  log 542-559/559
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
  __    __    __
 /  \__/  \__/  \__
-\__/  \__/  \__/  \
+\__/  \__/E3\__/  \
 /  \__/  \__/  \__/
 \__/  \__/  \__/  \
-/  \__/A3\__/  \__/
-\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             fallen                     100   -
-A2   Charizard            fallen                     140   kindled (always), expose (1t), fester (2t)
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             fallen                     100   burn (2t), fester (2t)
-E2   Charizard            fallen                     140   kindled (always)
-E3   Blastoise            fallen                      85   toughened (always)
+A1   Sennin               fallen                     134   toughened (always)
+A2   Venusaur             fallen                     100   burn (1t)
+A3   Charizard            fallen                     140   kindled (always), fester (2t)
+E1   Sennin               [######....]  2300/3400    134   toughened (always)
+E2   Venusaur             fallen                     100   -
+E3   Charizard            [##........]   805/3100    140   kindled (always)
+     phân thân 1          fallen                      53   -
+     phân thân 2          fallen                      53   -
+     phân thân 1          fallen                      53   -
+     phân thân 2          fallen                      53   -
+     phân thân 3          fallen                      53   burn (1t)
+     phân thân 4          fallen                      53   burn (1t)
+     phân thân 3          fallen                      53   -
+     phân thân 4          fallen                      53   burn (1t)
+     phân thân 5          fallen                      53   -
+     phân thân 6          fallen                      53   burn x2 (2t)
+     phân thân 5          fallen                      53   -
+     phân thân 7          fallen                      53   -
+     phân thân 6          [######....]   906/1360     53   -
+     phân thân 7          [#######...]  1076/1360     53   -
 
-next: A3 A3 A3 A3 A3 A3
+next: E3 E1 E3 enemy.2,0#6 enemy.2,0#7 E1
 
   
-  A3  turn 78
-    A3  uses withdraw at 2,2
-    A3   block x2 on A3, now 2
+  A1  turn 20
+    A1  fester wears off
+    A1  uses wind_shuriken at 4,2
+    A1   hits enemy.2,0#6 for 227, 1133 left
+    A1   hits enemy.2,0#6 for 227, 906 left
+    A1   hits enemy.2,0#7 for 142 (critical), 1218 left
+    A1   hits enemy.2,0#7 for 142 (critical), 1076 left
   
-  E3  turn 78
-    E3  loses the turn (nothing usable)
+  E1  turn 20
+    E1  uses wind_shuriken at 2,0
+    E1   hits A1 for 144, 78 left
+    E1   hits A1 for 180 (critical), 0 left
+    A1  falls at 2,0
+    ally.2,0#5 leaves at 1,0 (summoner died)
+    ally.2,0#7 leaves at 1,1 (summoner died)
   
-  A3  turn 79
-    A3  loses the turn (nothing usable)
-  
-  E3  turn 79
-    E3  block wears off
-    E3  uses bubble at 2,2
-    E3   is blocked by A3, 1 charges left
-  
-  A3  turn 80
-    A3  block wears off
-    A3  uses bite at 3,0
-    A3   hits E3 for 160, 122 left
-    A3   E3 resists expose (50%)
-  
-  E3  turn 80
-    E3  uses bite at 2,2
-    E3   misses A3 (92%)
-  
-  A3  turn 81
-    A3  uses water_gun at 3,0
-    A3   hits E3 for 133, 0 left
-    E3  falls at 3,0
-  
-  the ally side wins
+  the enemy side wins
 
-your side wins
+your side falls
 ----- footer -----
 n another battle · [/] scroll · ctrl+s save it · esc back
 ===== en | 160x60 | a battle with no pairing =====
@@ -2839,7 +2809,7 @@ add a work  a character can only name a work the catalog holds
 
 the year may be left empty when it is unknown; the note is free text
 
-cannot add: the origin "pokemon" is already in the catalog
+cannot add: the origin "naruto" is already in the catalog
 
 ----- footer -----
 ↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
@@ -2857,27 +2827,27 @@ the battle  seed 1
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-next: E2 A1 E1 A3 E3 A2
+next: E3 A1 E1 A2 E2 A3
 
-    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
-    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
-    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
-    A3   holds endurance: toughened x1
-    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
-    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
-    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
-    E3   holds endurance: toughened x1
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance: toughened x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance: toughened x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
   
-  A2  turn 1
+  A3  turn 1
 
-A2 Charizard, turn 1
+A3 Charizard, turn 1
 > ember        100% attack · burn 30% · range 1 · cd 1
   fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
   fire_fang    130% attack · fester 50% · range 1 · cd 2
@@ -2889,7 +2859,7 @@ the copy baked into it rather than these files
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a scrolled battle log =====
-the battle  seed 1  log 91-118/130
+the battle  seed 1  log 97-120/120
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2902,49 +2872,49 @@ the battle  seed 1  log 91-118/130
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [######....]  2477/3800    100   -
-A2   Charizard            [#####.....]  1592/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always), block x2 (2t)
-E1   Venusaur             [####......]  1577/3800     81   mire (1t)
-E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
-E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [####......]  1592/3800    100   burn x2 (1t)
+A3   Charizard            [#########.]  2973/3100    140   -
+E1   Sennin               [########..]  3028/3400    134   toughened (always)
+E2   Venusaur             [#####.....]  2078/3800    100   fester (2t)
+E3   Charizard            [########..]  2493/3100    140   -
+     phân thân 1          [##........]   293/1360     53   -
+     phân thân 2          [#.........]    88/1360     53   -
+     phân thân 1          [#.........]    31/1360     53   -
+     phân thân 2          [##........]   384/1360     53   -
 
-next: A1 E2 E1 A3 E3 A2
+next: E1 ally.2,0#1 ally.2,0#2 enemy.2,0#1 enemy.2,0#2 A3
 
-    E1   A2 resists poison (4%)
+    A2  drains 242, 60% of what it dealt, 2232 hp left
   
-  E1  turn 2
-    E1  takes 307 from burn x1
-    E1  burn wears off
-    E1  uses razor_leaf at 2,1
-    E1   hits A2 for 137 (resisted) (through 40% of the armour), 1964 left
-    E1   hits A2 for 137 (resisted) (through 40% of the armour), 1827 left
-    E1   hits A1 for 91 (through 40% of the armour), 3069 left
-    E1   hits A1 for 91 (through 40% of the armour), 2978 left
-    A1   E1 is immune to poison
+  E2  turn 2
+    E2  takes 307 from burn x1
+    E2  burn wears off
+    E2  uses leech_seed at 1,0
+    E2   hits ally.2,0#1 for 404 (weak), 293 left
+    E2  drains 242, 60% of what it dealt, 2718 hp left
   
-  A3  turn 2
-    A3  uses withdraw at 2,2
-    A3   block x2 on A3, now 2
-    A3  heals 57, 3600 hp left
+  A3  turn 3
+    A3  uses fire_fang at 3,1
+    A3   hits E2 for 320 (weak) (through 35% of the armour), 2398 left
+    A3   hits E2 for 320 (weak) (through 35% of the armour), 2078 left
+    A3   fester x1 on E2, now 1
+    E2   A3 resists poison (4%)
   
-  E3  turn 2
-    E3  takes 108 from burn x1
-    E3  takes 90 from poison x1
-    E3  burn wears off
-    E3  uses bubble at 2,0
-    E3   hits A1 for 117, 2861 left
-    E3   A1 resists mire (70%)
-    E3   hits A2 for 103 (weak), 1724 left
-    E3   A2 resists mire (70%)
-    A1   E3 resists poison (4%)
+  E3  turn 3
+    E3  uses fire_fang at 2,1
+    E3   hits A2 for 320 (weak) (through 35% of the armour), 1912 left
+    E3   hits A2 for 320 (weak) (through 35% of the armour), 1592 left
+    E3   A2 resists fester (50%)
+    A2   E3 resists poison (4%)
   
+  A1  turn 3
 
-A2 Charizard, turn 4
-> ember        100% attack · burn 30% · range 1 · cd 1
-  fire_spin    1 turns of cooldown left
-  fire_fang    2 turns of cooldown left
-  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+A1 Sennin, turn 3
+> kunai          70% attack · range 2
+  substitution   self veil x2 · itself · cd 4
+  shadow_clone   4 turns of cooldown left
+  wind_shuriken  2 turns of cooldown left
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a squad =====
@@ -3087,36 +3057,36 @@ the battle  seed 1
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [##########]  3800/3800    100   -
-A2   Charizard            [##########]  3100/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always)
-E1   Venusaur             [##########]  3800/3800    100   -
-E2   Charizard            [##########]  3100/3100    140   -
-E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
 
-next: E2 A1 E1 A3 E3 A2
+next: E3 A1 E1 A2 E2 A3
 
-    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
-    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
-    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
-    A3   holds endurance: toughened x1
-    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
-    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
-    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
-    E3   holds endurance: toughened x1
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance: toughened x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance: toughened x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
   
-  A2  turn 1
+  A3  turn 1
 
-A2 Charizard, turn 1
+A3 Charizard, turn 1
   ember        100% attack · burn 30% · range 1 · cd 1
   fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
   fire_fang    130% attack · fester 50% · range 1 · cd 2
   smokescreen  blind 80% · range 2 · 2 cells · cd 3
 
 point ember at
-> 3,0  E3 Blastoise
-  3,1  E2 Charizard
-  3,2  E1 Venusaur
+> 3,0  E3 Charizard
+  3,1  E2 Venusaur
+  3,2  E1 Sennin
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | allowlist picker =====
@@ -3124,17 +3094,17 @@ characters allowed to carry it  0 of 11
 space chooses · leaving it empty lets anyone carry the skill
 showing all origins (11 of 11)
 
->      pokemon.bulbasaur
+>      naruto.naruto
+       pokemon.bulbasaur
        pokemon.charmander
-       pokemon.squirtle
-       naruto.naruto
-       pokemon.poliwag
-       pokemon.machop
        pokemon.cleffa
+       pokemon.gastly
+       pokemon.machop
        pokemon.magnemite
        pokemon.mew
        pokemon.mewtwo
-       pokemon.gastly
+       pokemon.poliwag
+       pokemon.squirtle
 
   nothing chosen yet
 
@@ -3150,59 +3120,54 @@ origins  the works the cast is borrowed from
 ===== en | 160x60 | browse =====
 cast  showing all origins (11 of 11 characters)
 
-> pokemon.bulbasaur        pokemon        grass
+> naruto.naruto            naruto         wind
+  pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
-  pokemon.squirtle         pokemon        water
-  naruto.naruto            naruto         wind
-  pokemon.poliwag          pokemon        water
-  pokemon.machop           pokemon        ground
   pokemon.cleffa           pokemon        light
+  pokemon.gastly           pokemon        dark
+  pokemon.machop           pokemon        ground
   pokemon.magnemite        pokemon        electric/metal
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
-  pokemon.gastly           pokemon        dark
+  pokemon.poliwag          pokemon        water
+  pokemon.squirtle         pokemon        water
 
-pokemon.bulbasaur — Bulbasaur
-  from          Pokémon (anime, pokemon)
-  playstyle     blighter
-  element       grass
-  kit           vine_whip razor_leaf poison_powder sleep_powder[Bulbasaur,Ivysaur] leech_seed synthesis venoshock sludge_bomb ingrain overgrow thorn_volley
-                bloom_burst sprout
-  stages        Bulbasaur@1 → Ivysaur@16 → Venusaur@32
-  biography     Hạt giống trên lưng lớn lên cùng chủ của mình: no nắng thì căng mọng, thiếu nắng thì quắt lại. Ngủ nhiều, đi chậm, hiếm khi tỏ ra vội — cái gì
-                cần thời gian thì cứ để thời gian làm.
-  art           assets/venusaur.svg  present
-  species       plant
-  traits        venom_blood endurance blood_thirst virulence last_gasp contagion
-  level 60      hp 3800, atk 620, def 520, spd 100, acc 140, ddg 50 stage Venusaur
-  effective hp  [=====================---] 10410 of 11500, 1090 to spare
-                3800 against damage that pierces its armour outright
+naruto.naruto — Naruto
+  from          Naruto (anime, naruto)
+  playstyle     summoner
+  element       wind
+  kit           kunai substitution shadow_clone wind_shuriken summon_toad rasengan comeback
+  stages        Naruto@1 → Shippuden@16 → Sennin@32
+  biography     Ồn ào, lì lợm, và chưa bao giờ chịu đứng một mình lâu — thiếu người thì tự nhân mình ra cho đủ. Đã ký giao ước với loài cóc bằng máu, nên khi
+                cần một cái bóng lớn hơn thì cứ gọi, và cóc thì bao giờ cũng cằn nhằn trước khi chịu đánh.
+  art           assets/naruto-sage-mode.svg  present
+  species       human
+  traits        endurance swiftness
+  level 60      hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70 stage Sennin
+  effective hp  [================--------] 7943 of 11500, 3557 to spare
+                3400 against damage that pierces its armour outright
 
 ----- footer -----
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 160x60 | builds =====
 builds  the kit and the trait a character fields at level 60, furthest form
 
+  naruto.naruto         no build written for this one yet
   pokemon.bulbasaur
 >   bulbasaur.poison
     bulbasaur.parasite
   pokemon.charmander
     charmander.scorch
     charmander.dragon
-  pokemon.squirtle
-    squirtle.fortress
-    squirtle.ram
-  naruto.naruto         no build written for this one yet
-  pokemon.poliwag
-    poliwag.flurry
-    poliwag.riptide
-    poliwag.chorus
-  pokemon.machop
-    machop.gamble
-    machop.sure
   pokemon.cleffa
     cleffa.mend
     cleffa.hex
+  pokemon.gastly
+    gastly.unbind
+    gastly.miasma
+  pokemon.machop
+    machop.gamble
+    machop.sure
   pokemon.magnemite
     magnemite.trickle
     magnemite.surge
@@ -3214,9 +3179,13 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.mewtwo
     mewtwo.breach
     mewtwo.origin
-  pokemon.gastly
-    gastly.unbind
-    gastly.miasma
+  pokemon.poliwag
+    poliwag.flurry
+    poliwag.riptide
+    poliwag.chorus
+  pokemon.squirtle
+    squirtle.fortress
+    squirtle.ram
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -3354,18 +3323,9 @@ elements  the affinity chart: what beats what, and by how much
 ===== en | 160x60 | filtered picker =====
 characters allowed to carry it  0 of 11
 space chooses · leaving it empty lets anyone carry the skill
-showing pokemon (10 of 11)
+showing naruto (1 of 11)
 
->      pokemon.bulbasaur
-       pokemon.charmander
-       pokemon.squirtle
-       pokemon.poliwag
-       pokemon.machop
-       pokemon.cleffa
-       pokemon.magnemite
-       pokemon.mew
-       pokemon.mewtwo
-       pokemon.gastly
+>      naruto.naruto
 
   nothing chosen yet
 
@@ -3504,8 +3464,8 @@ space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l ti
 ===== en | 160x60 | origins =====
 origins  the works the cast is borrowed from
 
-> pokemon          anime   1997  10 cast  Pokémon
-  naruto           anime   2002   1 cast  Naruto
+> naruto           anime   2002   1 cast  Naruto
+  pokemon          anime   1997  10 cast  Pokémon
 
 2 works · media: anime film series game comic novel
 ----- footer -----
@@ -3757,26 +3717,22 @@ Mew  level 60
 ===== en | 160x60 | traitless build =====
 builds  the kit and the trait a character fields at level 60, furthest form
 
+  naruto.naruto         no build written for this one yet
   pokemon.bulbasaur
 >   bulbasaur.poison
     bulbasaur.parasite
   pokemon.charmander
     charmander.scorch
     charmander.dragon
-  pokemon.squirtle
-    squirtle.fortress
-    squirtle.ram
-  naruto.naruto         no build written for this one yet
-  pokemon.poliwag
-    poliwag.flurry
-    poliwag.riptide
-    poliwag.chorus
-  pokemon.machop
-    machop.gamble
-    machop.sure
   pokemon.cleffa
     cleffa.mend
     cleffa.hex
+  pokemon.gastly
+    gastly.unbind
+    gastly.miasma
+  pokemon.machop
+    machop.gamble
+    machop.sure
   pokemon.magnemite
     magnemite.trickle
     magnemite.surge
@@ -3788,9 +3744,13 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.mewtwo
     mewtwo.breach
     mewtwo.origin
-  pokemon.gastly
-    gastly.unbind
-    gastly.miasma
+  pokemon.poliwag
+    poliwag.flurry
+    poliwag.riptide
+    poliwag.chorus
+  pokemon.squirtle
+    squirtle.fortress
+    squirtle.ram
 
   bulbasaur.poison
   intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
@@ -3802,21 +3762,21 @@ builds  the kit and the trait a character fields at level 60, furthest form
 traits  the declared traits, and who carries each
 
   id            carried by
-> endurance     pokemon.bulbasaur@16 pokemon.squirtle@16 naruto.naruto@16 pokemon.poliwag@16 pokemon.machop@32 pokemon.cleffa@16 pokemon.magnemite@24 pokemon.…
+> endurance     naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.machop@32 pokemon.magnemite@24 pokemon.mew@36 pokemon.poliwag@16 pokemon.squir…
   blaze         pokemon.charmander@16
   heatproof     pokemon.charmander@16
   virulence     pokemon.bulbasaur@32
   venom_blood   pokemon.bulbasaur@24
-  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.poliwag@44 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.gastly@16
+  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwag@44
   last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.mew@48
   reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.poliwag@32 pokemon.cleffa@32 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.gastly@44
+  swiftness     naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32
   ballast       pokemon.squirtle@44
-  composure     pokemon.poliwag@40[Politoed] pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24
-  elusive       pokemon.cleffa@40 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.gastly@24
-  contagion     pokemon.bulbasaur@28 pokemon.mew@40 pokemon.gastly@40
-  spiteful      pokemon.poliwag@36 pokemon.gastly@32
+  composure     pokemon.cleffa@24 pokemon.magnemite@40 pokemon.mew@24 pokemon.poliwag@40[Politoed]
+  elusive       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40
+  contagion     pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40
+  spiteful      pokemon.gastly@32 pokemon.poliwag@36
   berserk       pokemon.machop@40 pokemon.mewtwo@32
   unyielding    pokemon.machop@24
   carapace      pokemon.squirtle@48

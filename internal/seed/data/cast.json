@@ -1,6 +1,152 @@
 {
   "characters": [
     {
+      "id": "naruto.naruto",
+      "name": "Naruto",
+      "origin": "naruto",
+      "archetype": "summoner",
+      "image": "assets/naruto.svg",
+      "element": "wind",
+      "bio": "Ồn ào, lì lợm, và chưa bao giờ chịu đứng một mình lâu — thiếu người thì tự nhân mình ra cho đủ. Đã ký giao ước với loài cóc bằng máu, nên khi cần một cái bóng lớn hơn thì cứ gọi, và cóc thì bao giờ cũng cằn nhằn trước khi chịu đánh.",
+      "hidden": true,
+      "species": [
+        "human"
+      ],
+      "stages": [
+        {
+          "name": "Naruto",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 1020,
+              "max": 3050
+            },
+            "attack": {
+              "base": 180,
+              "max": 500
+            },
+            "defense": {
+              "base": 130,
+              "max": 350
+            },
+            "speed": {
+              "base": 48,
+              "max": 112
+            },
+            "accuracy": {
+              "base": 64,
+              "max": 150
+            },
+            "dodge": {
+              "base": 26,
+              "max": 58
+            }
+          }
+        },
+        {
+          "name": "Shippuden",
+          "min_level": 16,
+          "image": "assets/naruto-shippuden.svg",
+          "stats": {
+            "hp": {
+              "base": 1120,
+              "max": 3200
+            },
+            "attack": {
+              "base": 205,
+              "max": 545
+            },
+            "defense": {
+              "base": 140,
+              "max": 375
+            },
+            "speed": {
+              "base": 54,
+              "max": 124
+            },
+            "accuracy": {
+              "base": 70,
+              "max": 158
+            },
+            "dodge": {
+              "base": 29,
+              "max": 64
+            }
+          }
+        },
+        {
+          "name": "Sennin",
+          "min_level": 32,
+          "image": "assets/naruto-sage-mode.svg",
+          "stats": {
+            "hp": {
+              "base": 1240,
+              "max": 3400
+            },
+            "attack": {
+              "base": 235,
+              "max": 590
+            },
+            "defense": {
+              "base": 152,
+              "max": 400
+            },
+            "speed": {
+              "base": 60,
+              "max": 134
+            },
+            "accuracy": {
+              "base": 76,
+              "max": 165
+            },
+            "dodge": {
+              "base": 32,
+              "max": 70
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "kunai"
+        },
+        {
+          "id": "substitution",
+          "at_level": 8
+        },
+        {
+          "id": "shadow_clone",
+          "at_level": 12
+        },
+        {
+          "id": "wind_shuriken",
+          "at_level": 20
+        },
+        {
+          "id": "summon_toad",
+          "at_level": 28
+        },
+        {
+          "id": "rasengan",
+          "at_level": 36
+        },
+        {
+          "id": "comeback",
+          "at_level": 44
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
+        }
+      ]
+    },
+    {
       "id": "pokemon.bulbasaur",
       "name": "Bulbasaur",
       "origin": "pokemon",
@@ -378,760 +524,16 @@
       ]
     },
     {
-      "id": "pokemon.squirtle",
-      "name": "Squirtle",
-      "origin": "pokemon",
-      "archetype": "warden",
-      "element": "water",
-      "image": "assets/squirtle.svg",
-      "bio": "Cái mai không chỉ để trốn: mặt trong nhẵn bóng vì rúc ra rúc vào cả ngày, và Squirtle thuộc từng chỗ lồi lõm bên trong. Ra khỏi mai thì hiền, rúc vào rồi thì đừng mong gọi ra sớm.",
-      "species": [
-        "turtle"
-      ],
-      "stages": [
-        {
-          "name": "Squirtle",
-          "min_level": 1,
-          "stats": {
-            "hp": {
-              "base": 950,
-              "max": 2900
-            },
-            "attack": {
-              "base": 120,
-              "max": 360
-            },
-            "defense": {
-              "base": 175,
-              "max": 500
-            },
-            "speed": {
-              "base": 24,
-              "max": 72
-            },
-            "accuracy": {
-              "base": 40,
-              "max": 115
-            },
-            "dodge": {
-              "base": 11,
-              "max": 32
-            }
-          }
-        },
-        {
-          "name": "Wartortle",
-          "min_level": 16,
-          "image": "assets/wartortle.svg",
-          "stats": {
-            "hp": {
-              "base": 1080,
-              "max": 3250
-            },
-            "attack": {
-              "base": 138,
-              "max": 410
-            },
-            "defense": {
-              "base": 195,
-              "max": 570
-            },
-            "speed": {
-              "base": 26,
-              "max": 78
-            },
-            "accuracy": {
-              "base": 43,
-              "max": 125
-            },
-            "dodge": {
-              "base": 12,
-              "max": 35
-            }
-          }
-        },
-        {
-          "name": "Blastoise",
-          "min_level": 32,
-          "image": "assets/blastoise.svg",
-          "stats": {
-            "hp": {
-              "base": 1200,
-              "max": 3600
-            },
-            "attack": {
-              "base": 155,
-              "max": 460
-            },
-            "defense": {
-              "base": 215,
-              "max": 640
-            },
-            "speed": {
-              "base": 28,
-              "max": 85
-            },
-            "accuracy": {
-              "base": 46,
-              "max": 135
-            },
-            "dodge": {
-              "base": 13,
-              "max": 38
-            }
-          }
-        }
-      ],
-      "skills": [
-        {
-          "id": "water_gun"
-        },
-        {
-          "id": "bubble"
-        },
-        {
-          "id": "bite",
-          "at_level": 8
-        },
-        {
-          "id": "withdraw",
-          "at_level": 12
-        },
-        {
-          "id": "whirlpool",
-          "at_level": 16
-        },
-        {
-          "id": "brine",
-          "at_level": 20
-        },
-        {
-          "id": "rapid_spin",
-          "at_level": 24
-        },
-        {
-          "id": "aqua_ring",
-          "at_level": 28
-        },
-        {
-          "id": "hydro_pump",
-          "at_level": 36
-        },
-        {
-          "id": "water_pulse",
-          "at_level": 32
-        },
-        {
-          "id": "taunt",
-          "at_level": 40
-        },
-        {
-          "id": "skull_bash",
-          "at_level": 44
-        },
-        {
-          "id": "wide_guard",
-          "at_level": 44
-        },
-        {
-          "id": "soak",
-          "at_level": 20
-        },
-        {
-          "id": "deluge",
-          "at_level": 44
-        }
-      ],
-      "passives": [
-        {
-          "id": "endurance",
-          "at_level": 16
-        },
-        {
-          "id": "thorns",
-          "at_level": 32
-        },
-        {
-          "id": "ballast",
-          "at_level": 44
-        },
-        {
-          "id": "carapace",
-          "at_level": 48
-        }
-      ]
-    },
-    {
-      "id": "naruto.naruto",
-      "name": "Naruto",
-      "origin": "naruto",
-      "archetype": "summoner",
-      "element": "wind",
-      "bio": "Ồn ào, lì lợm, và chưa bao giờ chịu đứng một mình lâu — thiếu người thì tự nhân mình ra cho đủ. Đã ký giao ước với loài cóc bằng máu, nên khi cần một cái bóng lớn hơn thì cứ gọi, và cóc thì bao giờ cũng cằn nhằn trước khi chịu đánh.",
-      "hidden": true,
-      "species": [
-        "human"
-      ],
-      "stages": [
-        {
-          "name": "Naruto",
-          "min_level": 1,
-          "stats": {
-            "hp": {
-              "base": 1020,
-              "max": 3050
-            },
-            "attack": {
-              "base": 180,
-              "max": 500
-            },
-            "defense": {
-              "base": 130,
-              "max": 350
-            },
-            "speed": {
-              "base": 48,
-              "max": 112
-            },
-            "accuracy": {
-              "base": 64,
-              "max": 150
-            },
-            "dodge": {
-              "base": 26,
-              "max": 58
-            }
-          }
-        },
-        {
-          "name": "Shippuden",
-          "min_level": 16,
-          "stats": {
-            "hp": {
-              "base": 1120,
-              "max": 3200
-            },
-            "attack": {
-              "base": 205,
-              "max": 545
-            },
-            "defense": {
-              "base": 140,
-              "max": 375
-            },
-            "speed": {
-              "base": 54,
-              "max": 124
-            },
-            "accuracy": {
-              "base": 70,
-              "max": 158
-            },
-            "dodge": {
-              "base": 29,
-              "max": 64
-            }
-          },
-          "image": "assets/naruto-shippuden.svg"
-        },
-        {
-          "name": "Sennin",
-          "min_level": 32,
-          "stats": {
-            "hp": {
-              "base": 1240,
-              "max": 3400
-            },
-            "attack": {
-              "base": 235,
-              "max": 590
-            },
-            "defense": {
-              "base": 152,
-              "max": 400
-            },
-            "speed": {
-              "base": 60,
-              "max": 134
-            },
-            "accuracy": {
-              "base": 76,
-              "max": 165
-            },
-            "dodge": {
-              "base": 32,
-              "max": 70
-            }
-          },
-          "image": "assets/naruto-sage-mode.svg"
-        }
-      ],
-      "skills": [
-        {
-          "id": "kunai"
-        },
-        {
-          "id": "substitution",
-          "at_level": 8
-        },
-        {
-          "id": "shadow_clone",
-          "at_level": 12
-        },
-        {
-          "id": "wind_shuriken",
-          "at_level": 20
-        },
-        {
-          "id": "summon_toad",
-          "at_level": 28
-        },
-        {
-          "id": "rasengan",
-          "at_level": 36
-        },
-        {
-          "id": "comeback",
-          "at_level": 44
-        }
-      ],
-      "passives": [
-        {
-          "id": "endurance",
-          "at_level": 16
-        },
-        {
-          "id": "swiftness",
-          "at_level": 24
-        }
-      ],
-      "image": "assets/naruto.svg"
-    },
-    {
-      "id": "pokemon.poliwag",
-      "name": "Poliwag",
-      "origin": "pokemon",
-      "archetype": "bruiser",
-      "image": "assets/poliwag.svg",
-      "element": "water",
-      "species": [
-        "amphibian"
-      ],
-      "bio": "Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu nổi điều gì — kể cả lúc sợ. Da lúc nào cũng trơn nhẫy: ai chộp được cũng chỉ giữ nổi trong chớp mắt.",
-      "stages": [
-        {
-          "name": "Poliwag",
-          "min_level": 1,
-          "stats": {
-            "hp": {
-              "base": 963,
-              "max": 2800
-            },
-            "attack": {
-              "base": 168,
-              "max": 490
-            },
-            "defense": {
-              "base": 145,
-              "max": 420
-            },
-            "speed": {
-              "base": 25,
-              "max": 72
-            },
-            "accuracy": {
-              "base": 38,
-              "max": 112
-            },
-            "dodge": {
-              "base": 11,
-              "max": 32
-            }
-          }
-        },
-        {
-          "name": "Poliwhirl",
-          "min_level": 16,
-          "after": "Poliwag",
-          "image": "assets/poliwhirl.svg",
-          "stats": {
-            "hp": {
-              "base": 1108,
-              "max": 3220
-            },
-            "attack": {
-              "base": 196,
-              "max": 570
-            },
-            "defense": {
-              "base": 168,
-              "max": 490
-            },
-            "speed": {
-              "base": 27,
-              "max": 80
-            },
-            "accuracy": {
-              "base": 43,
-              "max": 125
-            },
-            "dodge": {
-              "base": 12,
-              "max": 36
-            }
-          }
-        },
-        {
-          "name": "Poliwrath",
-          "min_level": 32,
-          "after": "Poliwhirl",
-          "image": "assets/poliwrath.svg",
-          "stats": {
-            "hp": {
-              "base": 1272,
-              "max": 3700
-            },
-            "attack": {
-              "base": 227,
-              "max": 660
-            },
-            "defense": {
-              "base": 192,
-              "max": 560
-            },
-            "speed": {
-              "base": 31,
-              "max": 90
-            },
-            "accuracy": {
-              "base": 48,
-              "max": 140
-            },
-            "dodge": {
-              "base": 14,
-              "max": 40
-            }
-          }
-        },
-        {
-          "name": "Politoed",
-          "min_level": 32,
-          "after": "Poliwhirl",
-          "image": "assets/politoed.svg",
-          "stats": {
-            "hp": {
-              "base": 1307,
-              "max": 3800
-            },
-            "attack": {
-              "base": 200,
-              "max": 580
-            },
-            "defense": {
-              "base": 200,
-              "max": 580
-            },
-            "speed": {
-              "base": 28,
-              "max": 80
-            },
-            "accuracy": {
-              "base": 52,
-              "max": 150
-            },
-            "dodge": {
-              "base": 15,
-              "max": 45
-            }
-          }
-        }
-      ],
-      "skills": [
-        {
-          "id": "water_gun"
-        },
-        {
-          "id": "bubble"
-        },
-        {
-          "id": "pummel",
-          "at_level": 8
-        },
-        {
-          "id": "body_slam",
-          "at_level": 12
-        },
-        {
-          "id": "bubble_beam",
-          "at_level": 16
-        },
-        {
-          "id": "brine",
-          "at_level": 20
-        },
-        {
-          "id": "whirlpool",
-          "at_level": 24
-        },
-        {
-          "id": "taunt",
-          "at_level": 32
-        },
-        {
-          "id": "submission",
-          "at_level": 36,
-          "stages": [
-            "Poliwrath"
-          ]
-        },
-        {
-          "id": "hydro_pump",
-          "at_level": 40
-        },
-        {
-          "id": "rally",
-          "at_level": 44
-        },
-        {
-          "id": "rinse",
-          "at_level": 32,
-          "stages": [
-            "Politoed"
-          ]
-        },
-        {
-          "id": "chorus",
-          "at_level": 36,
-          "stages": [
-            "Politoed"
-          ]
-        },
-        {
-          "id": "drench",
-          "at_level": 28
-        },
-        {
-          "id": "soak",
-          "at_level": 20
-        },
-        {
-          "id": "tide_break",
-          "at_level": 36
-        }
-      ],
-      "passives": [
-        {
-          "id": "endurance",
-          "at_level": 16
-        },
-        {
-          "id": "swiftness",
-          "at_level": 32
-        },
-        {
-          "id": "blood_thirst",
-          "at_level": 44
-        },
-        {
-          "id": "spiteful",
-          "at_level": 36
-        },
-        {
-          "id": "composure",
-          "at_level": 40,
-          "stages": [
-            "Politoed"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "pokemon.machop",
-      "name": "Machop",
-      "origin": "pokemon",
-      "archetype": "slugger",
-      "image": "assets/machop.svg",
-      "element": "ground",
-      "species": [
-        "titan"
-      ],
-      "bio": "Cả ngày chỉ làm một việc: nhấc thứ nặng hơn mình lên rồi đặt xuống, rồi nhấc lại. Machop tin sức mạnh không phải thứ trời cho mà là thứ kiếm được từng chút một, nên nó không nghỉ.",
-      "stages": [
-        {
-          "name": "Machop",
-          "min_level": 1,
-          "stats": {
-            "hp": {
-              "base": 860,
-              "max": 2500
-            },
-            "attack": {
-              "base": 196,
-              "max": 570
-            },
-            "defense": {
-              "base": 120,
-              "max": 350
-            },
-            "speed": {
-              "base": 23,
-              "max": 66
-            },
-            "accuracy": {
-              "base": 55,
-              "max": 160
-            },
-            "dodge": {
-              "base": 8,
-              "max": 22
-            }
-          }
-        },
-        {
-          "name": "Machoke",
-          "min_level": 16,
-          "image": "assets/machoke.svg",
-          "stats": {
-            "hp": {
-              "base": 998,
-              "max": 2900
-            },
-            "attack": {
-              "base": 229,
-              "max": 665
-            },
-            "defense": {
-              "base": 139,
-              "max": 405
-            },
-            "speed": {
-              "base": 26,
-              "max": 75
-            },
-            "accuracy": {
-              "base": 64,
-              "max": 185
-            },
-            "dodge": {
-              "base": 9,
-              "max": 25
-            }
-          }
-        },
-        {
-          "name": "Machamp",
-          "min_level": 32,
-          "image": "assets/machamp.svg",
-          "stats": {
-            "hp": {
-              "base": 1135,
-              "max": 3300
-            },
-            "attack": {
-              "base": 261,
-              "max": 760
-            },
-            "defense": {
-              "base": 158,
-              "max": 460
-            },
-            "speed": {
-              "base": 29,
-              "max": 85
-            },
-            "accuracy": {
-              "base": 72,
-              "max": 210
-            },
-            "dodge": {
-              "base": 10,
-              "max": 28
-            }
-          }
-        }
-      ],
-      "skills": [
-        {
-          "id": "rock_throw"
-        },
-        {
-          "id": "body_slam"
-        },
-        {
-          "id": "cross_chop",
-          "at_level": 8
-        },
-        {
-          "id": "vital_throw",
-          "at_level": 12
-        },
-        {
-          "id": "seismic_toss",
-          "at_level": 16
-        },
-        {
-          "id": "inner_focus",
-          "at_level": 20
-        },
-        {
-          "id": "submission",
-          "at_level": 24
-        },
-        {
-          "id": "taunt",
-          "at_level": 32
-        },
-        {
-          "id": "skull_bash",
-          "at_level": 36
-        },
-        {
-          "id": "rally",
-          "at_level": 40
-        },
-        {
-          "id": "wide_guard",
-          "at_level": 44
-        }
-      ],
-      "passives": [
-        {
-          "id": "blood_thirst",
-          "at_level": 16
-        },
-        {
-          "id": "endurance",
-          "at_level": 32
-        },
-        {
-          "id": "reckless",
-          "at_level": 44
-        },
-        {
-          "id": "unyielding",
-          "at_level": 24
-        },
-        {
-          "id": "berserk",
-          "at_level": 40
-        },
-        {
-          "id": "rending",
-          "at_level": 48
-        }
-      ]
-    },
-    {
       "id": "pokemon.cleffa",
       "name": "Cleffa",
       "origin": "pokemon",
       "archetype": "mender",
       "image": "assets/cleffa.svg",
       "element": "light",
+      "bio": "Rơi xuống cùng một đêm sao băng, và từ đó cứ tới đêm trăng tròn lại tụ về một chỗ mà nhảy múa. Cleffa hiếm khi ra tay trước — thứ nó giỏi là làm dịu đi, cho phe mình lẫn cho kẻ đứng đối diện.",
       "species": [
         "fae"
       ],
-      "bio": "Rơi xuống cùng một đêm sao băng, và từ đó cứ tới đêm trăng tròn lại tụ về một chỗ mà nhảy múa. Cleffa hiếm khi ra tay trước — thứ nó giỏi là làm dịu đi, cho phe mình lẫn cho kẻ đứng đối diện.",
       "stages": [
         {
           "name": "Cleffa",
@@ -1302,6 +704,375 @@
       ]
     },
     {
+      "id": "pokemon.gastly",
+      "name": "Gastly",
+      "origin": "pokemon",
+      "archetype": "hexer",
+      "image": "assets/gastly.svg",
+      "element": "dark",
+      "bio": "Ban ngày chẳng ai thấy nó đâu, tối xuống thì cái bóng dài ra một chút so với thứ đang đứng đó. Gastly không đánh nhau bằng sức; nó đợi cho kẻ kia dựa vào cái gì đó, rồi rút cái ấy đi.",
+      "species": [
+        "shade"
+      ],
+      "stages": [
+        {
+          "name": "Gastly",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 688,
+              "max": 2000
+            },
+            "attack": {
+              "base": 141,
+              "max": 410
+            },
+            "defense": {
+              "base": 68,
+              "max": 200
+            },
+            "speed": {
+              "base": 30,
+              "max": 90
+            },
+            "accuracy": {
+              "base": 41,
+              "max": 120
+            },
+            "dodge": {
+              "base": 18,
+              "max": 55
+            }
+          }
+        },
+        {
+          "name": "Haunter",
+          "min_level": 16,
+          "image": "assets/haunter.svg",
+          "stats": {
+            "hp": {
+              "base": 860,
+              "max": 2500
+            },
+            "attack": {
+              "base": 177,
+              "max": 515
+            },
+            "defense": {
+              "base": 91,
+              "max": 265
+            },
+            "speed": {
+              "base": 37,
+              "max": 110
+            },
+            "accuracy": {
+              "base": 50,
+              "max": 148
+            },
+            "dodge": {
+              "base": 23,
+              "max": 68
+            }
+          }
+        },
+        {
+          "name": "Gengar",
+          "min_level": 32,
+          "image": "assets/gengar.svg",
+          "stats": {
+            "hp": {
+              "base": 1032,
+              "max": 3000
+            },
+            "attack": {
+              "base": 213,
+              "max": 620
+            },
+            "defense": {
+              "base": 116,
+              "max": 340
+            },
+            "speed": {
+              "base": 44,
+              "max": 130
+            },
+            "accuracy": {
+              "base": 60,
+              "max": 175
+            },
+            "dodge": {
+              "base": 27,
+              "max": 80
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "shadow_claw"
+        },
+        {
+          "id": "shadow_ball",
+          "at_level": 8
+        },
+        {
+          "id": "night_shade",
+          "at_level": 12
+        },
+        {
+          "id": "spite",
+          "at_level": 14
+        },
+        {
+          "id": "curse",
+          "at_level": 16
+        },
+        {
+          "id": "bite",
+          "at_level": 18
+        },
+        {
+          "id": "smokescreen",
+          "at_level": 20
+        },
+        {
+          "id": "poison_powder",
+          "at_level": 22
+        },
+        {
+          "id": "sludge_bomb",
+          "at_level": 24
+        },
+        {
+          "id": "venoshock",
+          "at_level": 26
+        },
+        {
+          "id": "dark_pulse",
+          "at_level": 28
+        },
+        {
+          "id": "nasty_plot",
+          "at_level": 30
+        },
+        {
+          "id": "taunt",
+          "at_level": 32
+        },
+        {
+          "id": "body_slam",
+          "at_level": 36
+        },
+        {
+          "id": "skull_bash",
+          "at_level": 40
+        },
+        {
+          "id": "shadow_punch",
+          "at_level": 38
+        }
+      ],
+      "passives": [
+        {
+          "id": "blood_thirst",
+          "at_level": 16
+        },
+        {
+          "id": "elusive",
+          "at_level": 24
+        },
+        {
+          "id": "spiteful",
+          "at_level": 32
+        },
+        {
+          "id": "contagion",
+          "at_level": 40
+        },
+        {
+          "id": "swiftness",
+          "at_level": 44
+        }
+      ]
+    },
+    {
+      "id": "pokemon.machop",
+      "name": "Machop",
+      "origin": "pokemon",
+      "archetype": "slugger",
+      "image": "assets/machop.svg",
+      "element": "ground",
+      "bio": "Cả ngày chỉ làm một việc: nhấc thứ nặng hơn mình lên rồi đặt xuống, rồi nhấc lại. Machop tin sức mạnh không phải thứ trời cho mà là thứ kiếm được từng chút một, nên nó không nghỉ.",
+      "species": [
+        "titan"
+      ],
+      "stages": [
+        {
+          "name": "Machop",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 860,
+              "max": 2500
+            },
+            "attack": {
+              "base": 196,
+              "max": 570
+            },
+            "defense": {
+              "base": 120,
+              "max": 350
+            },
+            "speed": {
+              "base": 23,
+              "max": 66
+            },
+            "accuracy": {
+              "base": 55,
+              "max": 160
+            },
+            "dodge": {
+              "base": 8,
+              "max": 22
+            }
+          }
+        },
+        {
+          "name": "Machoke",
+          "min_level": 16,
+          "image": "assets/machoke.svg",
+          "stats": {
+            "hp": {
+              "base": 998,
+              "max": 2900
+            },
+            "attack": {
+              "base": 229,
+              "max": 665
+            },
+            "defense": {
+              "base": 139,
+              "max": 405
+            },
+            "speed": {
+              "base": 26,
+              "max": 75
+            },
+            "accuracy": {
+              "base": 64,
+              "max": 185
+            },
+            "dodge": {
+              "base": 9,
+              "max": 25
+            }
+          }
+        },
+        {
+          "name": "Machamp",
+          "min_level": 32,
+          "image": "assets/machamp.svg",
+          "stats": {
+            "hp": {
+              "base": 1135,
+              "max": 3300
+            },
+            "attack": {
+              "base": 261,
+              "max": 760
+            },
+            "defense": {
+              "base": 158,
+              "max": 460
+            },
+            "speed": {
+              "base": 29,
+              "max": 85
+            },
+            "accuracy": {
+              "base": 72,
+              "max": 210
+            },
+            "dodge": {
+              "base": 10,
+              "max": 28
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "rock_throw"
+        },
+        {
+          "id": "body_slam"
+        },
+        {
+          "id": "cross_chop",
+          "at_level": 8
+        },
+        {
+          "id": "vital_throw",
+          "at_level": 12
+        },
+        {
+          "id": "seismic_toss",
+          "at_level": 16
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 20
+        },
+        {
+          "id": "submission",
+          "at_level": 24
+        },
+        {
+          "id": "taunt",
+          "at_level": 32
+        },
+        {
+          "id": "skull_bash",
+          "at_level": 36
+        },
+        {
+          "id": "rally",
+          "at_level": 40
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 44
+        }
+      ],
+      "passives": [
+        {
+          "id": "blood_thirst",
+          "at_level": 16
+        },
+        {
+          "id": "endurance",
+          "at_level": 32
+        },
+        {
+          "id": "reckless",
+          "at_level": 44
+        },
+        {
+          "id": "unyielding",
+          "at_level": 24
+        },
+        {
+          "id": "berserk",
+          "at_level": 40
+        },
+        {
+          "id": "rending",
+          "at_level": 48
+        }
+      ]
+    },
+    {
       "id": "pokemon.magnemite",
       "name": "Magnemite",
       "origin": "pokemon",
@@ -1311,10 +1082,10 @@
         "electric",
         "metal"
       ],
+      "bio": "Không ai biết nó tới từ đâu, chỉ biết chỗ nào có dòng chạy qua là chỗ đó nó bám vào. Magnemite không thở, không ăn, không ngủ — thứ duy nhất nó cần là thứ nó hút được từ chung quanh.",
       "species": [
         "construct"
       ],
-      "bio": "Không ai biết nó tới từ đâu, chỉ biết chỗ nào có dòng chạy qua là chỗ đó nó bám vào. Magnemite không thở, không ăn, không ngủ — thứ duy nhất nó cần là thứ nó hút được từ chung quanh.",
       "stages": [
         {
           "name": "Magnemite",
@@ -1508,10 +1279,10 @@
       "archetype": "shifter",
       "image": "assets/mew.svg",
       "element": "neutral",
+      "bio": "Người ta đi tìm nó suốt bao nhiêu mùa mà chỉ mang về được những lời kể chẳng khớp nhau. Mew không giữ lấy một hình hài nào lâu, cũng không giữ lấy một lối đánh nào: thấy ai làm gì hay, nó làm lại được ngay lần sau.",
       "species": [
         "mythic"
       ],
-      "bio": "Người ta đi tìm nó suốt bao nhiêu mùa mà chỉ mang về được những lời kể chẳng khớp nhau. Mew không giữ lấy một hình hài nào lâu, cũng không giữ lấy một lối đánh nào: thấy ai làm gì hay, nó làm lại được ngay lần sau.",
       "stages": [
         {
           "name": "Mew",
@@ -1675,10 +1446,10 @@
       "archetype": "breaker",
       "image": "assets/mewtwo.svg",
       "element": "dark",
+      "bio": "Nó ra đời trong một căn phòng kín, giữa những người cầm sổ đứng nhìn qua lớp kính. Người ta dựng nó lên từ một thứ có sẵn rồi bỏ đi phần mềm yếu, và cái còn lại chỉ biết đúng một việc, làm việc ấy giỏi hơn tất cả.",
       "species": [
         "mythic"
       ],
-      "bio": "Nó ra đời trong một căn phòng kín, giữa những người cầm sổ đứng nhìn qua lớp kính. Người ta dựng nó lên từ một thứ có sẵn rồi bỏ đi phần mềm yếu, và cái còn lại chỉ biết đúng một việc, làm việc ấy giỏi hơn tất cả.",
       "stages": [
         {
           "name": "Mewtwo",
@@ -1808,195 +1579,424 @@
       ]
     },
     {
-      "id": "pokemon.gastly",
-      "name": "Gastly",
+      "id": "pokemon.poliwag",
+      "name": "Poliwag",
       "origin": "pokemon",
-      "archetype": "hexer",
-      "image": "assets/gastly.svg",
-      "element": "dark",
+      "archetype": "bruiser",
+      "image": "assets/poliwag.svg",
+      "element": "water",
+      "bio": "Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu nổi điều gì — kể cả lúc sợ. Da lúc nào cũng trơn nhẫy: ai chộp được cũng chỉ giữ nổi trong chớp mắt.",
       "species": [
-        "shade"
+        "amphibian"
       ],
-      "bio": "Ban ngày chẳng ai thấy nó đâu, tối xuống thì cái bóng dài ra một chút so với thứ đang đứng đó. Gastly không đánh nhau bằng sức; nó đợi cho kẻ kia dựa vào cái gì đó, rồi rút cái ấy đi.",
       "stages": [
         {
-          "name": "Gastly",
+          "name": "Poliwag",
           "min_level": 1,
           "stats": {
             "hp": {
-              "base": 688,
-              "max": 2000
+              "base": 963,
+              "max": 2800
             },
             "attack": {
-              "base": 141,
-              "max": 410
+              "base": 168,
+              "max": 490
             },
             "defense": {
-              "base": 68,
-              "max": 200
+              "base": 145,
+              "max": 420
             },
             "speed": {
-              "base": 30,
+              "base": 25,
+              "max": 72
+            },
+            "accuracy": {
+              "base": 38,
+              "max": 112
+            },
+            "dodge": {
+              "base": 11,
+              "max": 32
+            }
+          }
+        },
+        {
+          "name": "Poliwhirl",
+          "min_level": 16,
+          "image": "assets/poliwhirl.svg",
+          "after": "Poliwag",
+          "stats": {
+            "hp": {
+              "base": 1108,
+              "max": 3220
+            },
+            "attack": {
+              "base": 196,
+              "max": 570
+            },
+            "defense": {
+              "base": 168,
+              "max": 490
+            },
+            "speed": {
+              "base": 27,
+              "max": 80
+            },
+            "accuracy": {
+              "base": 43,
+              "max": 125
+            },
+            "dodge": {
+              "base": 12,
+              "max": 36
+            }
+          }
+        },
+        {
+          "name": "Poliwrath",
+          "min_level": 32,
+          "image": "assets/poliwrath.svg",
+          "after": "Poliwhirl",
+          "stats": {
+            "hp": {
+              "base": 1272,
+              "max": 3700
+            },
+            "attack": {
+              "base": 227,
+              "max": 660
+            },
+            "defense": {
+              "base": 192,
+              "max": 560
+            },
+            "speed": {
+              "base": 31,
               "max": 90
             },
             "accuracy": {
-              "base": 41,
-              "max": 120
+              "base": 48,
+              "max": 140
             },
             "dodge": {
-              "base": 18,
-              "max": 55
+              "base": 14,
+              "max": 40
             }
           }
         },
         {
-          "name": "Haunter",
-          "min_level": 16,
-          "image": "assets/haunter.svg",
-          "stats": {
-            "hp": {
-              "base": 860,
-              "max": 2500
-            },
-            "attack": {
-              "base": 177,
-              "max": 515
-            },
-            "defense": {
-              "base": 91,
-              "max": 265
-            },
-            "speed": {
-              "base": 37,
-              "max": 110
-            },
-            "accuracy": {
-              "base": 50,
-              "max": 148
-            },
-            "dodge": {
-              "base": 23,
-              "max": 68
-            }
-          }
-        },
-        {
-          "name": "Gengar",
+          "name": "Politoed",
           "min_level": 32,
-          "image": "assets/gengar.svg",
+          "image": "assets/politoed.svg",
+          "after": "Poliwhirl",
           "stats": {
             "hp": {
-              "base": 1032,
-              "max": 3000
+              "base": 1307,
+              "max": 3800
             },
             "attack": {
-              "base": 213,
-              "max": 620
+              "base": 200,
+              "max": 580
             },
             "defense": {
-              "base": 116,
-              "max": 340
+              "base": 200,
+              "max": 580
             },
             "speed": {
-              "base": 44,
-              "max": 130
+              "base": 28,
+              "max": 80
             },
             "accuracy": {
-              "base": 60,
-              "max": 175
+              "base": 52,
+              "max": 150
             },
             "dodge": {
-              "base": 27,
-              "max": 80
+              "base": 15,
+              "max": 45
             }
           }
         }
       ],
       "skills": [
         {
-          "id": "shadow_claw"
+          "id": "water_gun"
         },
         {
-          "id": "shadow_ball",
+          "id": "bubble"
+        },
+        {
+          "id": "pummel",
           "at_level": 8
         },
         {
-          "id": "night_shade",
+          "id": "body_slam",
           "at_level": 12
         },
         {
-          "id": "spite",
-          "at_level": 14
-        },
-        {
-          "id": "curse",
+          "id": "bubble_beam",
           "at_level": 16
         },
         {
-          "id": "bite",
-          "at_level": 18
-        },
-        {
-          "id": "smokescreen",
+          "id": "brine",
           "at_level": 20
         },
         {
-          "id": "poison_powder",
-          "at_level": 22
-        },
-        {
-          "id": "sludge_bomb",
+          "id": "whirlpool",
           "at_level": 24
-        },
-        {
-          "id": "venoshock",
-          "at_level": 26
-        },
-        {
-          "id": "dark_pulse",
-          "at_level": 28
-        },
-        {
-          "id": "nasty_plot",
-          "at_level": 30
         },
         {
           "id": "taunt",
           "at_level": 32
         },
         {
-          "id": "body_slam",
-          "at_level": 36
+          "id": "submission",
+          "at_level": 36,
+          "stages": [
+            "Poliwrath"
+          ]
         },
         {
-          "id": "skull_bash",
+          "id": "hydro_pump",
           "at_level": 40
         },
         {
-          "id": "shadow_punch",
-          "at_level": 38
+          "id": "rally",
+          "at_level": 44
+        },
+        {
+          "id": "rinse",
+          "at_level": 32,
+          "stages": [
+            "Politoed"
+          ]
+        },
+        {
+          "id": "chorus",
+          "at_level": 36,
+          "stages": [
+            "Politoed"
+          ]
+        },
+        {
+          "id": "drench",
+          "at_level": 28
+        },
+        {
+          "id": "soak",
+          "at_level": 20
+        },
+        {
+          "id": "tide_break",
+          "at_level": 36
         }
       ],
       "passives": [
         {
-          "id": "blood_thirst",
+          "id": "endurance",
           "at_level": 16
         },
         {
-          "id": "elusive",
-          "at_level": 24
-        },
-        {
-          "id": "spiteful",
+          "id": "swiftness",
           "at_level": 32
         },
         {
-          "id": "contagion",
+          "id": "blood_thirst",
+          "at_level": 44
+        },
+        {
+          "id": "spiteful",
+          "at_level": 36
+        },
+        {
+          "id": "composure",
+          "at_level": 40,
+          "stages": [
+            "Politoed"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pokemon.squirtle",
+      "name": "Squirtle",
+      "origin": "pokemon",
+      "archetype": "warden",
+      "image": "assets/squirtle.svg",
+      "element": "water",
+      "bio": "Cái mai không chỉ để trốn: mặt trong nhẵn bóng vì rúc ra rúc vào cả ngày, và Squirtle thuộc từng chỗ lồi lõm bên trong. Ra khỏi mai thì hiền, rúc vào rồi thì đừng mong gọi ra sớm.",
+      "species": [
+        "turtle"
+      ],
+      "stages": [
+        {
+          "name": "Squirtle",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 950,
+              "max": 2900
+            },
+            "attack": {
+              "base": 120,
+              "max": 360
+            },
+            "defense": {
+              "base": 175,
+              "max": 500
+            },
+            "speed": {
+              "base": 24,
+              "max": 72
+            },
+            "accuracy": {
+              "base": 40,
+              "max": 115
+            },
+            "dodge": {
+              "base": 11,
+              "max": 32
+            }
+          }
+        },
+        {
+          "name": "Wartortle",
+          "min_level": 16,
+          "image": "assets/wartortle.svg",
+          "stats": {
+            "hp": {
+              "base": 1080,
+              "max": 3250
+            },
+            "attack": {
+              "base": 138,
+              "max": 410
+            },
+            "defense": {
+              "base": 195,
+              "max": 570
+            },
+            "speed": {
+              "base": 26,
+              "max": 78
+            },
+            "accuracy": {
+              "base": 43,
+              "max": 125
+            },
+            "dodge": {
+              "base": 12,
+              "max": 35
+            }
+          }
+        },
+        {
+          "name": "Blastoise",
+          "min_level": 32,
+          "image": "assets/blastoise.svg",
+          "stats": {
+            "hp": {
+              "base": 1200,
+              "max": 3600
+            },
+            "attack": {
+              "base": 155,
+              "max": 460
+            },
+            "defense": {
+              "base": 215,
+              "max": 640
+            },
+            "speed": {
+              "base": 28,
+              "max": 85
+            },
+            "accuracy": {
+              "base": 46,
+              "max": 135
+            },
+            "dodge": {
+              "base": 13,
+              "max": 38
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "water_gun"
+        },
+        {
+          "id": "bubble"
+        },
+        {
+          "id": "bite",
+          "at_level": 8
+        },
+        {
+          "id": "withdraw",
+          "at_level": 12
+        },
+        {
+          "id": "whirlpool",
+          "at_level": 16
+        },
+        {
+          "id": "brine",
+          "at_level": 20
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 24
+        },
+        {
+          "id": "aqua_ring",
+          "at_level": 28
+        },
+        {
+          "id": "hydro_pump",
+          "at_level": 36
+        },
+        {
+          "id": "water_pulse",
+          "at_level": 32
+        },
+        {
+          "id": "taunt",
           "at_level": 40
         },
         {
-          "id": "swiftness",
+          "id": "skull_bash",
           "at_level": 44
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 44
+        },
+        {
+          "id": "soak",
+          "at_level": 20
+        },
+        {
+          "id": "deluge",
+          "at_level": 44
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "thorns",
+          "at_level": 32
+        },
+        {
+          "id": "ballast",
+          "at_level": 44
+        },
+        {
+          "id": "carapace",
+          "at_level": 48
         }
       ]
     }
