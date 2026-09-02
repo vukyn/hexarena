@@ -268,14 +268,58 @@ func (b *Battle) against(actor *Unit, actorStats progression.Values, declared sk
 	// Expected rather than Total: a critical is a chance, and this file weights
 	// chances rather than rolling them. It returns Total exactly whenever the
 	// skill cannot crit, which is every skill in the book today.
-	landed := b.pastAPool(target, declared,
-		b.books.Rules.Expected(hit)*int64(b.books.Rules.Chance(hit))/combat.PermilleBase)
+	// The two halves are taken apart rather than multiplied straight through,
+	// because a wall of charges needs both: what ONE strike comes to, and how many
+	// strikes connect. Rules.Expected is those two multiplied, so this is the same
+	// reading and not a second one.
+	perStrike := b.books.Rules.ExpectedStrike(hit)
+	connecting := int64(hit.ExpectedStrikes()) * int64(b.books.Rules.Chance(hit)) /
+		combat.PermilleBase
+	landed := b.pastAWall(target, declared, perStrike, connecting,
+		perStrike*connecting/combat.PermilleBase)
 	// Damage past a target's remaining health is wasted, so a finishing blow is not
 	// rated above one that would kill twice over.
 	if landed > target.HP {
 		landed = target.HP
 	}
 	return landed
+}
+
+// pastAWall is what is left of a blow after a wall of block charges on the target
+// has cancelled what it can, and it is the half of a guard that #229 measured,
+// wrote, and deliberately left out.
+//
+// A charge cancels a STRIKE whole, which is the whole of `warden`'s trade: a wall
+// answers one heavy blow and multi-strike answers a wall.
+//
+// ⚠️ **A wall deeper than the blow needs no clamp**, and the first cut of this
+// carried one anyway — the charge count trimmed to the strikes that would have
+// connected, on the reasoning that Rules.Roll spends nothing on a miss. True, and
+// arithmetically dead: subtracting more than the blow drives it under nought and
+// the guard below already answers nought. The miss is priced where it belongs, in
+// `connecting`, which is the strike count weighted by the chance to land. A clause
+// no mutation can break is a clause that is not doing anything.
+//
+// ⚠️ **It is charged on every cast, and a charge is only paid for once.** A wall
+// of three cancels three strikes over the whole battle, so a rating one turn deep
+// that discounts by the whole wall every turn is pricing the same loss again and
+// again. That over-count is real and it is accepted, because the alternative is a
+// dial and there is no setting on it: measured, every discount small enough to
+// leave the shipped balance claims standing reads INSIDE the measurement's own
+// band against the frozen ruler, and every discount large enough to clear that
+// band moves them. See TODO.md for the sweep.
+func (b *Battle) pastAWall(target *Unit, declared skill.Skill,
+	perStrike, connecting, damage int64) int64 {
+	if declared.Unblockable || damage <= 0 {
+		return b.pastAPool(target, declared, damage)
+	}
+	if charges := int64(target.Statuses.Stacks(blockStatus)); charges > 0 {
+		damage -= perStrike * charges
+		if damage <= 0 {
+			return 0
+		}
+	}
+	return b.pastAPool(target, declared, damage)
 }
 
 // pastAPool is what is left of a blow after an absorbing pool on the target has

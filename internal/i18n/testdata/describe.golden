@@ -411,19 +411,19 @@ Tầm 2 · 3 ô · 92% trúng · hồi 3 lượt.
 
 electro_ball
 Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chạm vào ai đang sẵn dòng là cả vùng sáng lên, 2 nhát, mỗi nhát 64% công (tổng 128%).
-Mục tiêu đang dính nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 29% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
+Mục tiêu đang dính nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 43% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 [one line] 128% công · nhiễm điện→lan · tầm 2 · hồi 2
 
 spark
 Chớp một cái vào một chỗ, rồi có khi chớp thêm cái nữa, rồi lại cái nữa, 2 nhát, mỗi nhát 34% công (tổng 68%), đánh xong mỗi nhát còn 50% khả năng đánh thêm, tối đa 10.
-Mục tiêu đang dính nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 19% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
+Mục tiêu đang dính nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 29% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
 Tầm 1 · 93% trúng · hồi 2 lượt.
 [one line] 68% công · nhiễm điện→lan · tầm 1 · hồi 2
 
 overload
 Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng không còn gì đứng lại, 88% công.
-Mục tiêu đang dính ít nhất 2 cộng dồn nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 18% công, xuyên qua mọi lớp đỡ, tiêu sạch số cộng dồn nhiễm điện nó đang mang.
+Mục tiêu đang dính ít nhất 2 cộng dồn nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 27% công, xuyên qua mọi lớp đỡ, tiêu sạch số cộng dồn nhiễm điện nó đang mang.
 Tầm 2 · 88% trúng · hồi 4 lượt.
 [one line] 88% công · nhiễm điện 2+→nổ · tầm 2 · hồi 4
 
@@ -1265,19 +1265,19 @@ Range 2 · 3 cells · 92% to hit · 3 turns to recharge.
 
 electro_ball
 Hits an enemy for 2 strikes of 64% of attack each, 128% in all.
-While the target is carrying charge, every stack of charge that goes off deals 29% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
+While the target is carrying charge, every stack of charge that goes off deals 43% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
 Range 2 · 90% to hit · 2 turns to recharge.
 [one line] 128% attack · charge→spreads · range 2 · cd 2
 
 spark
 Hits an enemy for 2 strikes of 34% of attack each, 68% in all, and a 50% chance of another after each, up to 10.
-While the target is carrying charge, every stack of charge that goes off deals 19% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
+While the target is carrying charge, every stack of charge that goes off deals 29% of attack through any guard, arcing on to every neighbour carrying it, eating 1 stack of the charge per strike.
 Range 1 · 93% to hit · 2 turns to recharge.
 [one line] 68% attack · charge→spreads · range 1 · cd 2
 
 overload
 Hits an enemy for 88% of attack.
-While the target is carrying at least 2 stacks of charge, every stack of charge that goes off deals 18% of attack through any guard, spending every stack of the charge it had.
+While the target is carrying at least 2 stacks of charge, every stack of charge that goes off deals 27% of attack through any guard, spending every stack of the charge it had.
 Range 2 · 88% to hit · 4 turns to recharge.
 [one line] 88% attack · charge 2+→discharges · range 2 · cd 4
 

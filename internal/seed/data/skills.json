@@ -1668,7 +1668,7 @@
         "consume": true,
         "consume_stacks": 1,
         "chains": true,
-        "arc_power": 285
+        "arc_power": 430
       }
     },
     {
@@ -1694,7 +1694,7 @@
         "consume": true,
         "consume_stacks": 1,
         "chains": true,
-        "arc_power": 190
+        "arc_power": 285
       },
       "repeat_chance": 500,
       "max_strikes": 10
@@ -1721,7 +1721,7 @@
         "min_stacks": 2,
         "consume": true,
         "consume_stacks": 0,
-        "arc_power": 180
+        "arc_power": 270
       }
     },
     {

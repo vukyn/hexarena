@@ -60,7 +60,7 @@ cửa sổ quá ngắn cho: diễn biến
 \__/  \__/  \__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]    18/3100     73   mire (1t)
+A1   Example Adept        [#.........]   492/3100     90   -
 E1   Example Adept        fallen                      90   -
 
 next: A1 A1 A1 A1 A1 A1
@@ -99,8 +99,8 @@ trận đánh  do-thu  gặp  < do-thu >
 
   tỉ lệ         50%
   thành tích    thắng 100, thua 100, hoà 0
-  theo phe      59% khi cầm phe nhà, 41% khi cầm phe khách
-  độ dài        65 lượt, lấy trận ở giữa
+  theo phe      58% khi cầm phe nhà, 42% khi cầm phe khách
+  độ dài        73 lượt, lấy trận ở giữa
 
   đây không phải tỉ lệ thắng của roster: roster là thước đo, còn đội hình là thứ ai đó dựng ra
 
@@ -720,8 +720,8 @@ trận đánh  do-thu  gặp  < do-thu >
 
   tỉ lệ         50%
   thành tích    thắng 100, thua 100, hoà 0
-  theo phe      59% khi cầm phe nhà, 41% khi cầm phe khách
-  độ dài        65 lượt, lấy trận ở giữa
+  theo phe      58% khi cầm phe nhà, 42% khi cầm phe khách
+  độ dài        73 lượt, lấy trận ở giữa
 
   đây không phải tỉ lệ thắng của roster: roster là thước đo, còn đội hình là thứ ai đó dựng ra
 
@@ -927,18 +927,18 @@ thử trận  fixture-anime.adept — Example Adept
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [------------] 6.4%
+  tỉ lệ chung      [------------] 2.8%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
-> fixture-anime.adept (đối chứng) 50.0%   100-100-0       65     +18.0%
+> fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
-  naruto.naruto                   0.0%    0-200-0         54     +0.0%
-  pokemon.bulbasaur               2.0%    4-196-0         43     +0.0%
-  pokemon.charmander              2.0%    4-196-0         25     +0.0%
-  pokemon.cleffa                  61.0%   122-78-0        99     +0.0%
-  pokemon.gastly                  4.0%    8-192-0         36     +0.0%
-  pokemon.machop                  1.0%    2-198-0         35     +0.0%
-  pokemon.magnemite               0.0%    0-200-0         23     +0.0%
+  naruto.naruto                   0.0%    0-200-0         55     +0.0%
+  pokemon.bulbasaur               5.0%    10-190-0        46     +0.0%
+  pokemon.charmander              4.0%    8-192-0         25     +0.0%
+  pokemon.cleffa                  5.0%    10-190-0        88     +0.0%
+  pokemon.gastly                  8.0%    16-184-0        37     +0.0%
+  pokemon.machop                  0.0%    0-200-0         33     +0.0%
+  pokemon.magnemite               1.0%    2-198-0         23     +0.0%
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · ←/→ cấp · +/- số trận · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | species =====
@@ -1268,7 +1268,7 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | a battle over =====
 
-trận đấu  seed 1  diễn biến 295-330/330
+trận đấu  seed 1  diễn biến 291-326/326
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1281,44 +1281,44 @@ trận đấu  seed 1  diễn biến 295-330/330
 \__/  \__/  \__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]    18/3100     73   mire (1t)
+A1   Example Adept        [#.........]   492/3100     90   -
 E1   Example Adept        fallen                      90   -
 
 next: A1 A1 A1 A1 A1 A1
 
-    E1   hits A1 for 136, 534 left
-  
-  A1  turn 30
-    A1  uses strike <đòn đánh> at 3,1
-    A1   hits E1 for 136, 248 left
-  
-  E1  turn 31
-    E1  uses strike <đòn đánh> at 2,1
-    E1   hits A1 for 136, 398 left
-  
-  A1  turn 31
-    A1  uses strike <đòn đánh> at 3,1
-    A1   misses E1 (95%)
-  
-  E1  turn 32
-    E1  uses strike <đòn đánh> at 2,1
-    E1   hits A1 for 136, 262 left
+    E1  uses guard_wall <tường chắn> at 3,1
+    E1   block <đỡ đòn> x2 on E1, now 2
   
   A1  turn 32
-    A1  uses strike <đòn đánh> at 3,1
-    A1   hits E1 for 136, 112 left
+    A1  uses guard_wall <tường chắn> at 2,1
+    A1   block <đỡ đòn> x2 on A1, now 2
   
   E1  turn 33
-    E1  uses riptide <sóng ngầm> at 2,1
-    E1   hits A1 for 122, 140 left
-    E1   hits A1 for 122, 18 left
-    E1   mire <sa lầy> x1 on A1, now 1
-    A1  speed 90 to 73
+    E1  uses strike <đòn đánh> at 2,1
+    E1   is blocked by A1, 1 charges left
   
   A1  turn 33
     A1  uses riptide <sóng ngầm> at 3,1
-    A1   hits E1 for 122, 0 left
-    A1   E1 resists mire <sa lầy> (55%)
+    A1   is blocked by E1, 0 charges left
+    A1   is blocked by E1, 0 charges left
+  
+  E1  turn 34
+    E1  uses riptide <sóng ngầm> at 2,1
+    E1   is blocked by A1, 0 charges left
+    E1   hits A1 for 122, 628 left
+    E1   A1 resists mire <sa lầy> (55%)
+  
+  A1  turn 34
+    A1  uses strike <đòn đánh> at 3,1
+    A1   hits E1 for 136, 56 left
+  
+  E1  turn 35
+    E1  uses strike <đòn đánh> at 2,1
+    E1   hits A1 for 136, 492 left
+  
+  A1  turn 35
+    A1  uses strike <đòn đánh> at 3,1
+    A1   hits E1 for 136, 0 left
     E1  falls at 3,1
   
   the ally side wins
@@ -1393,8 +1393,8 @@ trận đánh  do-thu  gặp  < do-thu >
 
   tỉ lệ         50%
   thành tích    thắng 100, thua 100, hoà 0
-  theo phe      59% khi cầm phe nhà, 41% khi cầm phe khách
-  độ dài        65 lượt, lấy trận ở giữa
+  theo phe      58% khi cầm phe nhà, 42% khi cầm phe khách
+  độ dài        73 lượt, lấy trận ở giữa
 
   đây không phải tỉ lệ thắng của roster: roster là thước đo, còn đội hình là thứ ai đó dựng ra
 
@@ -2986,8 +2986,8 @@ trận đánh  do-thu  gặp  < do-thu >
 
   tỉ lệ         50%
   thành tích    thắng 100, thua 100, hoà 0
-  theo phe      59% khi cầm phe nhà, 41% khi cầm phe khách
-  độ dài        65 lượt, lấy trận ở giữa
+  theo phe      58% khi cầm phe nhà, 42% khi cầm phe khách
+  độ dài        73 lượt, lấy trận ở giữa
 
   đây không phải tỉ lệ thắng của roster: roster là thước đo, còn đội hình là thứ ai đó dựng ra
 
@@ -3517,23 +3517,23 @@ thử trận  fixture-anime.adept — Example Adept
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [------------] 6.4%
+  tỉ lệ chung      [------------] 2.8%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
-> fixture-anime.adept (đối chứng) 50.0%   100-100-0       65     +18.0%
+> fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
-  naruto.naruto                   0.0%    0-200-0         54     +0.0%
-  pokemon.bulbasaur               2.0%    4-196-0         43     +0.0%
-  pokemon.charmander              2.0%    4-196-0         25     +0.0%
-  pokemon.cleffa                  61.0%   122-78-0        99     +0.0%
-  pokemon.gastly                  4.0%    8-192-0         36     +0.0%
-  pokemon.machop                  1.0%    2-198-0         35     +0.0%
-  pokemon.magnemite               0.0%    0-200-0         23     +0.0%
-  pokemon.mew                     0.0%    0-200-0         79     +0.0%
+  naruto.naruto                   0.0%    0-200-0         55     +0.0%
+  pokemon.bulbasaur               5.0%    10-190-0        46     +0.0%
+  pokemon.charmander              4.0%    8-192-0         25     +0.0%
+  pokemon.cleffa                  5.0%    10-190-0        88     +0.0%
+  pokemon.gastly                  8.0%    16-184-0        37     +0.0%
+  pokemon.machop                  0.0%    0-200-0         33     +0.0%
+  pokemon.magnemite               1.0%    2-198-0         23     +0.0%
+  pokemon.mew                     0.0%    0-200-0         64     +0.0%
   pokemon.mewtwo                  0.0%    0-200-0         27     +0.0%
   pokemon.poliwag                 4.5%    9-191-0         43     -5.0%
   pokemon.poliwag                 9.0%    18-182-0        41     +0.0%
-  pokemon.squirtle                0.0%    0-200-0         121    +0.0%
+  pokemon.squirtle                0.0%    0-200-0         122    +0.0%
 
 hai bên đều mang 4 kỹ năng và 1 nội tại đầu tiên mà nhân vật khai báo.
 mỗi cặp đấu ở cả hai chỗ rồi cộng lại: hàng đợi lượt phá hòa bằng thứ tự xếp,
@@ -4160,7 +4160,7 @@ the window is too short for: log
 \__/  \__/  \__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]    18/3100     73   mire (1t)
+A1   Example Adept        [#.........]   492/3100     90   -
 E1   Example Adept        fallen                      90   -
 
 next: A1 A1 A1 A1 A1 A1
@@ -4199,8 +4199,8 @@ the fight  do-thu  against  < do-thu >
 
   rate       50%
   record     100 won, 100 lost, 0 drawn
-  by side    59% as the ally, 41% as the enemy
-  length     65 turns, the middle one
+  by side    58% as the ally, 42% as the enemy
+  length     73 turns, the middle one
 
   this is not the roster's win rate: the roster is the instrument, a squad is whatever was built
 
@@ -4820,8 +4820,8 @@ the fight  do-thu  against  < do-thu >
 
   rate       50%
   record     100 won, 100 lost, 0 drawn
-  by side    59% as the ally, 41% as the enemy
-  length     65 turns, the middle one
+  by side    58% as the ally, 42% as the enemy
+  length     73 turns, the middle one
 
   this is not the roster's win rate: the roster is the instrument, a squad is whatever was built
 
@@ -5027,18 +5027,18 @@ spar  fixture-anime.adept — Example Adept
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [------------] 6.4%
+  overall       [------------] 2.8%
 
   opponent                      rate    won-lost-drawn  turns  first move
-> fixture-anime.adept (control) 50.0%   100-100-0       65     +18.0%
+> fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
-  naruto.naruto                 0.0%    0-200-0         54     +0.0%
-  pokemon.bulbasaur             2.0%    4-196-0         43     +0.0%
-  pokemon.charmander            2.0%    4-196-0         25     +0.0%
-  pokemon.cleffa                61.0%   122-78-0        99     +0.0%
-  pokemon.gastly                4.0%    8-192-0         36     +0.0%
-  pokemon.machop                1.0%    2-198-0         35     +0.0%
-  pokemon.magnemite             0.0%    0-200-0         23     +0.0%
+  naruto.naruto                 0.0%    0-200-0         55     +0.0%
+  pokemon.bulbasaur             5.0%    10-190-0        46     +0.0%
+  pokemon.charmander            4.0%    8-192-0         25     +0.0%
+  pokemon.cleffa                5.0%    10-190-0        88     +0.0%
+  pokemon.gastly                8.0%    16-184-0        37     +0.0%
+  pokemon.machop                0.0%    0-200-0         33     +0.0%
+  pokemon.magnemite             1.0%    2-198-0         23     +0.0%
 … cut off; a taller window shows the rest
 ↑/↓ move · ←/→ level · +/- battles · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | species =====
@@ -5368,7 +5368,7 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | a battle over =====
 
-the battle  seed 1  log 295-330/330
+the battle  seed 1  log 291-326/326
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -5381,44 +5381,44 @@ the battle  seed 1  log 295-330/330
 \__/  \__/  \__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [#.........]    18/3100     73   mire (1t)
+A1   Example Adept        [#.........]   492/3100     90   -
 E1   Example Adept        fallen                      90   -
 
 next: A1 A1 A1 A1 A1 A1
 
-    E1   hits A1 for 136, 534 left
-  
-  A1  turn 30
-    A1  uses strike at 3,1
-    A1   hits E1 for 136, 248 left
-  
-  E1  turn 31
-    E1  uses strike at 2,1
-    E1   hits A1 for 136, 398 left
-  
-  A1  turn 31
-    A1  uses strike at 3,1
-    A1   misses E1 (95%)
-  
-  E1  turn 32
-    E1  uses strike at 2,1
-    E1   hits A1 for 136, 262 left
+    E1  uses guard_wall at 3,1
+    E1   block x2 on E1, now 2
   
   A1  turn 32
-    A1  uses strike at 3,1
-    A1   hits E1 for 136, 112 left
+    A1  uses guard_wall at 2,1
+    A1   block x2 on A1, now 2
   
   E1  turn 33
-    E1  uses riptide at 2,1
-    E1   hits A1 for 122, 140 left
-    E1   hits A1 for 122, 18 left
-    E1   mire x1 on A1, now 1
-    A1  speed 90 to 73
+    E1  uses strike at 2,1
+    E1   is blocked by A1, 1 charges left
   
   A1  turn 33
     A1  uses riptide at 3,1
-    A1   hits E1 for 122, 0 left
-    A1   E1 resists mire (55%)
+    A1   is blocked by E1, 0 charges left
+    A1   is blocked by E1, 0 charges left
+  
+  E1  turn 34
+    E1  uses riptide at 2,1
+    E1   is blocked by A1, 0 charges left
+    E1   hits A1 for 122, 628 left
+    E1   A1 resists mire (55%)
+  
+  A1  turn 34
+    A1  uses strike at 3,1
+    A1   hits E1 for 136, 56 left
+  
+  E1  turn 35
+    E1  uses strike at 2,1
+    E1   hits A1 for 136, 492 left
+  
+  A1  turn 35
+    A1  uses strike at 3,1
+    A1   hits E1 for 136, 0 left
     E1  falls at 3,1
   
   the ally side wins
@@ -5493,8 +5493,8 @@ the fight  do-thu  against  < do-thu >
 
   rate       50%
   record     100 won, 100 lost, 0 drawn
-  by side    59% as the ally, 41% as the enemy
-  length     65 turns, the middle one
+  by side    58% as the ally, 42% as the enemy
+  length     73 turns, the middle one
 
   this is not the roster's win rate: the roster is the instrument, a squad is whatever was built
 
@@ -7086,8 +7086,8 @@ the fight  do-thu  against  < do-thu >
 
   rate       50%
   record     100 won, 100 lost, 0 drawn
-  by side    59% as the ally, 41% as the enemy
-  length     65 turns, the middle one
+  by side    58% as the ally, 42% as the enemy
+  length     73 turns, the middle one
 
   this is not the roster's win rate: the roster is the instrument, a squad is whatever was built
 
@@ -7617,23 +7617,23 @@ spar  fixture-anime.adept — Example Adept
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [------------] 6.4%
+  overall       [------------] 2.8%
 
   opponent                      rate    won-lost-drawn  turns  first move
-> fixture-anime.adept (control) 50.0%   100-100-0       65     +18.0%
+> fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
-  naruto.naruto                 0.0%    0-200-0         54     +0.0%
-  pokemon.bulbasaur             2.0%    4-196-0         43     +0.0%
-  pokemon.charmander            2.0%    4-196-0         25     +0.0%
-  pokemon.cleffa                61.0%   122-78-0        99     +0.0%
-  pokemon.gastly                4.0%    8-192-0         36     +0.0%
-  pokemon.machop                1.0%    2-198-0         35     +0.0%
-  pokemon.magnemite             0.0%    0-200-0         23     +0.0%
-  pokemon.mew                   0.0%    0-200-0         79     +0.0%
+  naruto.naruto                 0.0%    0-200-0         55     +0.0%
+  pokemon.bulbasaur             5.0%    10-190-0        46     +0.0%
+  pokemon.charmander            4.0%    8-192-0         25     +0.0%
+  pokemon.cleffa                5.0%    10-190-0        88     +0.0%
+  pokemon.gastly                8.0%    16-184-0        37     +0.0%
+  pokemon.machop                0.0%    0-200-0         33     +0.0%
+  pokemon.magnemite             1.0%    2-198-0         23     +0.0%
+  pokemon.mew                   0.0%    0-200-0         64     +0.0%
   pokemon.mewtwo                0.0%    0-200-0         27     +0.0%
   pokemon.poliwag               4.5%    9-191-0         43     -5.0%
   pokemon.poliwag               9.0%    18-182-0        41     +0.0%
-  pokemon.squirtle              0.0%    0-200-0         121    +0.0%
+  pokemon.squirtle              0.0%    0-200-0         122    +0.0%
 
 both sides bring the first 4 skills and 1 trait their learnset declares.
 every pairing is fought from both slots and added up: the turn queue breaks a

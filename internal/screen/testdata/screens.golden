@@ -22,21 +22,21 @@ A2 Charizard, lượt 1
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a battle over =====
-trận đấu  seed 1  diễn biến 1529-1533/1533
+trận đấu  seed 1  diễn biến 1018-1022/1022
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
 A1   Venusaur             fallen                     100   -
-A2   Charizard            fallen                     140   kindled (always)
-A3   Blastoise            [#########.]  3440/3600     85   toughened (always), expose (1t)
-E1   Venusaur             fallen                     100   burn (1t)
-E2   Charizard            fallen                     140   kindled (always), blind (1t), burn (2t)
-E3   Blastoise            fallen                      68   toughened (always), mire (2t)
+A2   Charizard            fallen                     140   kindled (always), expose (1t), fester (2t)
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             fallen                     100   burn (2t), fester (2t)
+E2   Charizard            fallen                     140   kindled (always)
+E3   Blastoise            fallen                      85   toughened (always)
 
 next: A3 A3 A3 A3 A3 A3
 
-    A3   hits E3 for 93, 0 left
-    A3   mire <sa lầy> x1 on E3, now 1
+    A3  uses water_gun <súng nước> at 3,0
+    A3   hits E3 for 133, 0 left
     E3  falls at 3,0
   
   the ally side wins
@@ -126,20 +126,20 @@ liệu nhúng trong nó chứ không đọc mấy file này
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a scrolled battle log =====
-trận đấu  seed 1  diễn biến 89-89/128
+trận đấu  seed 1  diễn biến 91-91/130
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [######....]  2594/3800    100   burn (2t)
-A2   Charizard            [####......]  1488/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always), block (2t)
+A1   Venusaur             [######....]  2477/3800    100   -
+A2   Charizard            [#####.....]  1592/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always), block x2 (2t)
 E1   Venusaur             [####......]  1577/3800     81   mire (1t)
 E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
 E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
 
 next: A1 E2 E1 A3 E3 A2
 
-    A2   hits E1 for 320 (weak) (through 35% of the armour), 1884 left
+    E1   A2 resists poison <trúng độc> (4%)
 
 A2 Charizard, lượt 4
 > ember        100% công · bỏng 30% · tầm 1 · hồi 1
@@ -798,7 +798,7 @@ A2 Charizard, lượt 1
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a battle over =====
-trận đấu  seed 1  diễn biến 1502-1533/1533
+trận đấu  seed 1  diễn biến 991-1022/1022
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -812,43 +812,43 @@ trận đấu  seed 1  diễn biến 1502-1533/1533
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Venusaur             fallen                     100   -
-A2   Charizard            fallen                     140   kindled (always)
-A3   Blastoise            [#########.]  3440/3600     85   toughened (always), expose (1t)
-E1   Venusaur             fallen                     100   burn (1t)
-E2   Charizard            fallen                     140   kindled (always), blind (1t), burn (2t)
-E3   Blastoise            fallen                      68   toughened (always), mire (2t)
+A2   Charizard            fallen                     140   kindled (always), expose (1t), fester (2t)
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             fallen                     100   burn (2t), fester (2t)
+E2   Charizard            fallen                     140   kindled (always)
+E3   Blastoise            fallen                      85   toughened (always)
 
 next: A3 A3 A3 A3 A3 A3
 
   
-  E3  turn 131
+  A3  turn 78
+    A3  uses withdraw <thủ thế> at 2,2
+    A3   block <đỡ đòn> x2 on A3, now 2
+  
+  E3  turn 78
+    E3  loses the turn (nothing usable)
+  
+  A3  turn 79
+    A3  loses the turn (nothing usable)
+  
+  E3  turn 79
     E3  block <đỡ đòn> wears off
-    E3  uses water_gun <súng nước> at 2,2
+    E3  uses bubble <bong bóng> at 2,2
     E3   is blocked by A3, 1 charges left
   
-  A3  turn 131
-    A3  expose <phá giáp> wears off
+  A3  turn 80
+    A3  block <đỡ đòn> wears off
     A3  uses bite <cắn> at 3,0
-    A3   hits E3 for 160, 165 left
+    A3   hits E3 for 160, 122 left
     A3   E3 resists expose <phá giáp> (50%)
   
-  E3  turn 132
-    E3  uses bubble <bong bóng> at 2,2
-    E3   is blocked by A3, 0 charges left
-  
-  A3  turn 132
-    A3  uses water_gun <súng nước> at 3,0
-    A3   hits E3 for 133, 32 left
-  
-  E3  turn 133
+  E3  turn 80
     E3  uses bite <cắn> at 2,2
-    E3   hits A3 for 160, 3440 left
-    E3   expose <phá giáp> x1 on A3, now 1
+    E3   misses A3 (92%)
   
-  A3  turn 133
-    A3  uses bubble <bong bóng> at 3,0
-    A3   hits E3 for 93, 0 left
-    A3   mire <sa lầy> x1 on E3, now 1
+  A3  turn 81
+    A3  uses water_gun <súng nước> at 3,0
+    A3   hits E3 for 133, 0 left
     E3  falls at 3,0
   
   the ally side wins
@@ -960,7 +960,7 @@ liệu nhúng trong nó chứ không đọc mấy file này
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a scrolled battle log =====
-trận đấu  seed 1  diễn biến 89-116/128
+trận đấu  seed 1  diễn biến 91-118/130
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -973,17 +973,15 @@ trận đấu  seed 1  diễn biến 89-116/128
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [######....]  2594/3800    100   burn (2t)
-A2   Charizard            [####......]  1488/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always), block (2t)
+A1   Venusaur             [######....]  2477/3800    100   -
+A2   Charizard            [#####.....]  1592/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always), block x2 (2t)
 E1   Venusaur             [####......]  1577/3800     81   mire (1t)
 E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
 E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
 
 next: A1 E2 E1 A3 E3 A2
 
-    A2   hits E1 for 320 (weak) (through 35% of the armour), 1884 left
-    A2   E1 resists fester <lở loét> (50%)
     E1   A2 resists poison <trúng độc> (4%)
   
   E1  turn 2
@@ -1005,10 +1003,12 @@ next: A1 E2 E1 A3 E3 A2
     E3  takes 108 from burn <bỏng> x1
     E3  takes 90 from poison <trúng độc> x1
     E3  burn <bỏng> wears off
-    E3  uses bubble <bong bóng> at 2,1
-    E3   hits A2 for 207 (weak), 1620 left
+    E3  uses bubble <bong bóng> at 2,0
+    E3   hits A1 for 117, 2861 left
+    E3   A1 resists mire <sa lầy> (70%)
+    E3   hits A2 for 103 (weak), 1724 left
     E3   A2 resists mire <sa lầy> (70%)
-    E3   is blocked by A3, 1 charges left
+    A1   E3 resists poison <trúng độc> (4%)
   
 
 A2 Charizard, lượt 4
@@ -1962,21 +1962,21 @@ A2 Charizard, turn 1
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a battle over =====
-the battle  seed 1  log 1529-1533/1533
+the battle  seed 1  log 1018-1022/1022
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
 A1   Venusaur             fallen                     100   -
-A2   Charizard            fallen                     140   kindled (always)
-A3   Blastoise            [#########.]  3440/3600     85   toughened (always), expose (1t)
-E1   Venusaur             fallen                     100   burn (1t)
-E2   Charizard            fallen                     140   kindled (always), blind (1t), burn (2t)
-E3   Blastoise            fallen                      68   toughened (always), mire (2t)
+A2   Charizard            fallen                     140   kindled (always), expose (1t), fester (2t)
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             fallen                     100   burn (2t), fester (2t)
+E2   Charizard            fallen                     140   kindled (always)
+E3   Blastoise            fallen                      85   toughened (always)
 
 next: A3 A3 A3 A3 A3 A3
 
-    A3   hits E3 for 93, 0 left
-    A3   mire x1 on E3, now 1
+    A3  uses water_gun at 3,0
+    A3   hits E3 for 133, 0 left
     E3  falls at 3,0
   
   the ally side wins
@@ -2066,20 +2066,20 @@ the copy baked into it rather than these files
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a scrolled battle log =====
-the battle  seed 1  log 89-89/128
+the battle  seed 1  log 91-91/130
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [######....]  2594/3800    100   burn (2t)
-A2   Charizard            [####......]  1488/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always), block (2t)
+A1   Venusaur             [######....]  2477/3800    100   -
+A2   Charizard            [#####.....]  1592/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always), block x2 (2t)
 E1   Venusaur             [####......]  1577/3800     81   mire (1t)
 E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
 E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
 
 next: A1 E2 E1 A3 E3 A2
 
-    A2   hits E1 for 320 (weak) (through 35% of the armour), 1884 left
+    E1   A2 resists poison (4%)
 
 A2 Charizard, turn 4
 > ember        100% attack · burn 30% · range 1 · cd 1
@@ -2727,7 +2727,7 @@ A2 Charizard, turn 1
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a battle over =====
-the battle  seed 1  log 1502-1533/1533
+the battle  seed 1  log 991-1022/1022
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2741,43 +2741,43 @@ the battle  seed 1  log 1502-1533/1533
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Venusaur             fallen                     100   -
-A2   Charizard            fallen                     140   kindled (always)
-A3   Blastoise            [#########.]  3440/3600     85   toughened (always), expose (1t)
-E1   Venusaur             fallen                     100   burn (1t)
-E2   Charizard            fallen                     140   kindled (always), blind (1t), burn (2t)
-E3   Blastoise            fallen                      68   toughened (always), mire (2t)
+A2   Charizard            fallen                     140   kindled (always), expose (1t), fester (2t)
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             fallen                     100   burn (2t), fester (2t)
+E2   Charizard            fallen                     140   kindled (always)
+E3   Blastoise            fallen                      85   toughened (always)
 
 next: A3 A3 A3 A3 A3 A3
 
   
-  E3  turn 131
+  A3  turn 78
+    A3  uses withdraw at 2,2
+    A3   block x2 on A3, now 2
+  
+  E3  turn 78
+    E3  loses the turn (nothing usable)
+  
+  A3  turn 79
+    A3  loses the turn (nothing usable)
+  
+  E3  turn 79
     E3  block wears off
-    E3  uses water_gun at 2,2
+    E3  uses bubble at 2,2
     E3   is blocked by A3, 1 charges left
   
-  A3  turn 131
-    A3  expose wears off
+  A3  turn 80
+    A3  block wears off
     A3  uses bite at 3,0
-    A3   hits E3 for 160, 165 left
+    A3   hits E3 for 160, 122 left
     A3   E3 resists expose (50%)
   
-  E3  turn 132
-    E3  uses bubble at 2,2
-    E3   is blocked by A3, 0 charges left
-  
-  A3  turn 132
-    A3  uses water_gun at 3,0
-    A3   hits E3 for 133, 32 left
-  
-  E3  turn 133
+  E3  turn 80
     E3  uses bite at 2,2
-    E3   hits A3 for 160, 3440 left
-    E3   expose x1 on A3, now 1
+    E3   misses A3 (92%)
   
-  A3  turn 133
-    A3  uses bubble at 3,0
-    A3   hits E3 for 93, 0 left
-    A3   mire x1 on E3, now 1
+  A3  turn 81
+    A3  uses water_gun at 3,0
+    A3   hits E3 for 133, 0 left
     E3  falls at 3,0
   
   the ally side wins
@@ -2889,7 +2889,7 @@ the copy baked into it rather than these files
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a scrolled battle log =====
-the battle  seed 1  log 89-116/128
+the battle  seed 1  log 91-118/130
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2902,17 +2902,15 @@ the battle  seed 1  log 89-116/128
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Venusaur             [######....]  2594/3800    100   burn (2t)
-A2   Charizard            [####......]  1488/3100    140   -
-A3   Blastoise            [##########]  3600/3600     85   toughened (always), block (2t)
+A1   Venusaur             [######....]  2477/3800    100   -
+A2   Charizard            [#####.....]  1592/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always), block x2 (2t)
 E1   Venusaur             [####......]  1577/3800     81   mire (1t)
 E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
 E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
 
 next: A1 E2 E1 A3 E3 A2
 
-    A2   hits E1 for 320 (weak) (through 35% of the armour), 1884 left
-    A2   E1 resists fester (50%)
     E1   A2 resists poison (4%)
   
   E1  turn 2
@@ -2934,10 +2932,12 @@ next: A1 E2 E1 A3 E3 A2
     E3  takes 108 from burn x1
     E3  takes 90 from poison x1
     E3  burn wears off
-    E3  uses bubble at 2,1
-    E3   hits A2 for 207 (weak), 1620 left
+    E3  uses bubble at 2,0
+    E3   hits A1 for 117, 2861 left
+    E3   A1 resists mire (70%)
+    E3   hits A2 for 103 (weak), 1724 left
     E3   A2 resists mire (70%)
-    E3   is blocked by A3, 1 charges left
+    A1   E3 resists poison (4%)
   
 
 A2 Charizard, turn 4

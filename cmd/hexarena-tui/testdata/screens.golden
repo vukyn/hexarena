@@ -46,21 +46,21 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | a battle over =====
 
-trận đấu  seed 1  diễn biến 191-195/195
+trận đấu  seed 1  diễn biến 187-191/191
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x2 (3t)
-A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
-A3   Example Adept        fallen                      90   poison x3 (3t)
+A1   Example Adept        fallen                      90   poison x3 (3t)
+A2   Example Adept        fallen                      90   poison x3 (2t)
+A3   Example Adept        fallen                      90   poison x2 (3t)
 E1   Bloom                [##########]  2200/2200    200   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Bloom                [########..]  1765/2200    200   -
 
-next: E2 E3 E1 E2 E3 E1
+next: E3 E1 E2 E3 E1 E2
 
-    E1   hits A3 for 699 (doubly weak!), 0 left
-    E1   A3 resists stun <choáng> (25%)
+    E2   hits A3 for 248, 0 left
+    E2   poison <trúng độc> x1 on A3, now 2
     A3  falls at 2,2
   
   the enemy side wins
@@ -115,20 +115,20 @@ nhúng trong nó chứ không đọc mấy file này
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 99-99/138
+trận đấu  seed 1  diễn biến 105-105/144
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x2 (3t)
-A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
-A3   Example Adept        [#######...]  2430/3100     90   -
+A1   Example Adept        fallen                      90   poison x3 (3t)
+A2   Example Adept        fallen                      90   poison x3 (2t)
+A3   Example Adept        [######....]  1876/3100     90   poison (2t)
 E1   Bloom                [##########]  2200/2200    200   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Bloom                [#########.]  2037/2200    200   -
 
 next: E1 E2 E3 E1 E2 E3
 
-    A3  uses riptide <sóng ngầm> at 3,0
+    E1  uses venom_fang <nanh độc> at 2,1
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
@@ -670,7 +670,7 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | a battle over =====
 
-trận đấu  seed 1  diễn biến 164-195/195
+trận đấu  seed 1  diễn biến 160-191/191
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -683,19 +683,29 @@ trận đấu  seed 1  diễn biến 164-195/195
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x2 (3t)
-A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
-A3   Example Adept        fallen                      90   poison x3 (3t)
+A1   Example Adept        fallen                      90   poison x3 (3t)
+A2   Example Adept        fallen                      90   poison x3 (2t)
+A3   Example Adept        fallen                      90   poison x2 (3t)
 E1   Bloom                [##########]  2200/2200    200   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Bloom                [########..]  1765/2200    200   -
 
-next: E2 E3 E1 E2 E3 E1
+next: E3 E1 E2 E3 E1 E2
 
+    E3   hits A3 for 248, 1132 left
+    E3   poison <trúng độc> x0 on A3, now 3, 1 wasted at the cap
+  
+  E1  turn 8
+    E1  uses bolt <tia bắn> at 2,2
+    E1   hits A3 for 165, 967 left
+  
+  E2  turn 8
+    E2  uses bolt <tia bắn> at 2,2
+    E2   hits A3 for 165, 802 left
   
   E3  turn 8
     E3  uses bolt <tia bắn> at 2,2
-    E3   hits A3 for 165, 1191 left
+    E3   hits A3 for 165, 637 left
   
   A3  turn 4
     A3  takes 309 from poison <trúng độc> x3
@@ -704,23 +714,13 @@ next: E2 E3 E1 E2 E3 E1
   
   E1  turn 9
     E1  uses venom_fang <nanh độc> at 2,2
-    E1   hits A3 for 248, 634 left
+    E1   hits A3 for 248, 80 left
     E1   poison <trúng độc> x1 on A3, now 1
   
   E2  turn 9
     E2  uses venom_fang <nanh độc> at 2,2
-    E2   hits A3 for 248, 386 left
+    E2   hits A3 for 248, 0 left
     E2   poison <trúng độc> x1 on A3, now 2
-  
-  E3  turn 9
-    E3  uses venom_fang <nanh độc> at 2,2
-    E3   hits A3 for 248, 138 left
-    E3   poison <trúng độc> x1 on A3, now 3
-  
-  E1  turn 10
-    E1  uses arc_bolt <hồ quang> at 2,2
-    E1   hits A3 for 699 (doubly weak!), 0 left
-    E1   A3 resists stun <choáng> (25%)
     A3  falls at 2,2
   
   the enemy side wins
@@ -847,7 +847,7 @@ nhúng trong nó chứ không đọc mấy file này
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 99-126/138
+trận đấu  seed 1  diễn biến 105-132/144
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -860,43 +860,43 @@ trận đấu  seed 1  diễn biến 99-126/138
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x2 (3t)
-A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
-A3   Example Adept        [#######...]  2430/3100     90   -
+A1   Example Adept        fallen                      90   poison x3 (3t)
+A2   Example Adept        fallen                      90   poison x3 (2t)
+A3   Example Adept        [######....]  1876/3100     90   poison (2t)
 E1   Bloom                [##########]  2200/2200    200   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Bloom                [#########.]  2037/2200    200   -
 
 next: E1 E2 E3 E1 E2 E3
 
-    A3  uses riptide <sóng ngầm> at 3,0
-    A3   hits E3 for 163 (resisted), 2037 left
-    A3   misses E3 (77%)
-    A3   E3 resists mire <sa lầy> (55%)
-  
-  E1  turn 5
-    E1  uses creeping_rot <mục rữa> at 2,1
-    E1   is blocked by A2, 0 charges left
-    E1   A2 resists poison <trúng độc> (65%)
-    E1   is blocked by A3, 0 charges left
-    E1   A3 resists poison <trúng độc> (65%)
+    E1  uses venom_fang <nanh độc> at 2,1
+    E1   hits A2 for 248, 1634 left
+    E1   poison <trúng độc> x0 on A2, now 3, 1 wasted at the cap
   
   E2  turn 5
     E2  uses creeping_rot <mục rữa> at 2,1
-    E2   hits A2 for 145, 1902 left
-    E2   poison <trúng độc> x0 on A2, now 3, 1 wasted at the cap
-    E2   misses A3 (93%)
+    E2   hits A2 for 145, 1489 left
+    E2   A2 resists poison <trúng độc> (65%)
+    E2   is blocked by A3, 1 charges left
+    E2   poison <trúng độc> x1 on A3, now 1
   
   E3  turn 5
-    E3  uses venom_fang <nanh độc> at 2,2
-    E3   hits A3 for 248, 2430 left
-    E3   A3 resists poison <trúng độc> (90%)
+    E3  uses creeping_rot <mục rữa> at 2,1
+    E3   misses A2 (93%)
+    E3   is blocked by A3, 0 charges left
+    E3   A3 resists poison <trúng độc> (65%)
   
   E1  turn 6
     E1  uses arc_bolt <hồ quang> at 2,1
-    E1   hits A2 for 699 (doubly weak!), 1203 left
+    E1   hits A2 for 699 (doubly weak!), 790 left
     E1   stun <choáng> x1 on A2, now 1
   
+  E2  turn 6
+    E2  uses arc_bolt <hồ quang> at 2,1
+    E2   hits A2 for 699 (doubly weak!), 91 left
+    E2   A2 resists stun <choáng> (25%)
+  
+  E3  turn 6
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
@@ -2014,21 +2014,21 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | a battle over =====
 
-the battle  seed 1  log 191-195/195
+the battle  seed 1  log 187-191/191
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x2 (3t)
-A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
-A3   Example Adept        fallen                      90   poison x3 (3t)
+A1   Example Adept        fallen                      90   poison x3 (3t)
+A2   Example Adept        fallen                      90   poison x3 (2t)
+A3   Example Adept        fallen                      90   poison x2 (3t)
 E1   Bloom                [##########]  2200/2200    200   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Bloom                [########..]  1765/2200    200   -
 
-next: E2 E3 E1 E2 E3 E1
+next: E3 E1 E2 E3 E1 E2
 
-    E1   hits A3 for 699 (doubly weak!), 0 left
-    E1   A3 resists stun (25%)
+    E2   hits A3 for 248, 0 left
+    E2   poison x1 on A3, now 2
     A3  falls at 2,2
   
   the enemy side wins
@@ -2083,20 +2083,20 @@ the copy baked into it rather than these files
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a scrolled battle log =====
 
-the battle  seed 1  log 99-99/138
+the battle  seed 1  log 105-105/144
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x2 (3t)
-A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
-A3   Example Adept        [#######...]  2430/3100     90   -
+A1   Example Adept        fallen                      90   poison x3 (3t)
+A2   Example Adept        fallen                      90   poison x3 (2t)
+A3   Example Adept        [######....]  1876/3100     90   poison (2t)
 E1   Bloom                [##########]  2200/2200    200   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Bloom                [#########.]  2037/2200    200   -
 
 next: E1 E2 E3 E1 E2 E3
 
-    A3  uses riptide at 3,0
+    E1  uses venom_fang at 2,1
 
 A3 Example Adept, turn 3
 > strike      100% attack · range 1
@@ -2638,7 +2638,7 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | a battle over =====
 
-the battle  seed 1  log 164-195/195
+the battle  seed 1  log 160-191/191
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2651,19 +2651,29 @@ the battle  seed 1  log 164-195/195
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x2 (3t)
-A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
-A3   Example Adept        fallen                      90   poison x3 (3t)
+A1   Example Adept        fallen                      90   poison x3 (3t)
+A2   Example Adept        fallen                      90   poison x3 (2t)
+A3   Example Adept        fallen                      90   poison x2 (3t)
 E1   Bloom                [##########]  2200/2200    200   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Bloom                [########..]  1765/2200    200   -
 
-next: E2 E3 E1 E2 E3 E1
+next: E3 E1 E2 E3 E1 E2
 
+    E3   hits A3 for 248, 1132 left
+    E3   poison x0 on A3, now 3, 1 wasted at the cap
+  
+  E1  turn 8
+    E1  uses bolt at 2,2
+    E1   hits A3 for 165, 967 left
+  
+  E2  turn 8
+    E2  uses bolt at 2,2
+    E2   hits A3 for 165, 802 left
   
   E3  turn 8
     E3  uses bolt at 2,2
-    E3   hits A3 for 165, 1191 left
+    E3   hits A3 for 165, 637 left
   
   A3  turn 4
     A3  takes 309 from poison x3
@@ -2672,23 +2682,13 @@ next: E2 E3 E1 E2 E3 E1
   
   E1  turn 9
     E1  uses venom_fang at 2,2
-    E1   hits A3 for 248, 634 left
+    E1   hits A3 for 248, 80 left
     E1   poison x1 on A3, now 1
   
   E2  turn 9
     E2  uses venom_fang at 2,2
-    E2   hits A3 for 248, 386 left
+    E2   hits A3 for 248, 0 left
     E2   poison x1 on A3, now 2
-  
-  E3  turn 9
-    E3  uses venom_fang at 2,2
-    E3   hits A3 for 248, 138 left
-    E3   poison x1 on A3, now 3
-  
-  E1  turn 10
-    E1  uses arc_bolt at 2,2
-    E1   hits A3 for 699 (doubly weak!), 0 left
-    E1   A3 resists stun (25%)
     A3  falls at 2,2
   
   the enemy side wins
@@ -2815,7 +2815,7 @@ the copy baked into it rather than these files
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a scrolled battle log =====
 
-the battle  seed 1  log 99-126/138
+the battle  seed 1  log 105-132/144
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2828,43 +2828,43 @@ the battle  seed 1  log 99-126/138
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x2 (3t)
-A2   Example Adept        fallen                      90   poison x3 (3t), stun (1t)
-A3   Example Adept        [#######...]  2430/3100     90   -
+A1   Example Adept        fallen                      90   poison x3 (3t)
+A2   Example Adept        fallen                      90   poison x3 (2t)
+A3   Example Adept        [######....]  1876/3100     90   poison (2t)
 E1   Bloom                [##########]  2200/2200    200   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Bloom                [#########.]  2037/2200    200   -
 
 next: E1 E2 E3 E1 E2 E3
 
-    A3  uses riptide at 3,0
-    A3   hits E3 for 163 (resisted), 2037 left
-    A3   misses E3 (77%)
-    A3   E3 resists mire (55%)
-  
-  E1  turn 5
-    E1  uses creeping_rot at 2,1
-    E1   is blocked by A2, 0 charges left
-    E1   A2 resists poison (65%)
-    E1   is blocked by A3, 0 charges left
-    E1   A3 resists poison (65%)
+    E1  uses venom_fang at 2,1
+    E1   hits A2 for 248, 1634 left
+    E1   poison x0 on A2, now 3, 1 wasted at the cap
   
   E2  turn 5
     E2  uses creeping_rot at 2,1
-    E2   hits A2 for 145, 1902 left
-    E2   poison x0 on A2, now 3, 1 wasted at the cap
-    E2   misses A3 (93%)
+    E2   hits A2 for 145, 1489 left
+    E2   A2 resists poison (65%)
+    E2   is blocked by A3, 1 charges left
+    E2   poison x1 on A3, now 1
   
   E3  turn 5
-    E3  uses venom_fang at 2,2
-    E3   hits A3 for 248, 2430 left
-    E3   A3 resists poison (90%)
+    E3  uses creeping_rot at 2,1
+    E3   misses A2 (93%)
+    E3   is blocked by A3, 0 charges left
+    E3   A3 resists poison (65%)
   
   E1  turn 6
     E1  uses arc_bolt at 2,1
-    E1   hits A2 for 699 (doubly weak!), 1203 left
+    E1   hits A2 for 699 (doubly weak!), 790 left
     E1   stun x1 on A2, now 1
   
+  E2  turn 6
+    E2  uses arc_bolt at 2,1
+    E2   hits A2 for 699 (doubly weak!), 91 left
+    E2   A2 resists stun (25%)
+  
+  E3  turn 6
 
 A3 Example Adept, turn 3
 > strike      100% attack · range 1

@@ -140,6 +140,8 @@ func books(t *testing.T) battle.Books {
 	   "self_applies":[{"status":"aegis","chance":1000,"stacks":1}]},
 	  {"id":"heavy","element":"neutral","range":1,"pattern":"single",
 	   "power":1200,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
+	  {"id":"crush","element":"neutral","range":1,"pattern":"single",
+	   "power":1500,"strikes":1,"accuracy":1000,"cooldown":0,"target":"enemy"},
 	  {"id":"unstoppable","element":"neutral","range":1,"pattern":"single",
 	   "power":100,"strikes":1,"accuracy":1000,"pierce":1000,"unblockable":true,
 	   "cooldown":0,"target":"enemy"},
