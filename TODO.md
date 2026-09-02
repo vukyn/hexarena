@@ -472,42 +472,58 @@ is only so the shape is readable.
       `worthHealing` clamps a restore gets, so it is worth nothing on a caster
       with no room and nothing on a caster nothing can reach.
 
-      ⚠️ **What is left is the GUARD, and it is written and measured on branch
-      `fix/the-rating-sees-a-guard` rather than merged.** Measured with
-      `forge.Bout` against the frozen ruler on a guard-heavy board — two walls
-      carrying `withdraw` and `carapace`, an unblockable carrier a side, 400 seeds
-      — the change reads **997‰ over 58 turns with every battle decided**, against
-      a rating without it that **refuses to answer at all**: 212 of 800 battles
-      undecided, because a rating that cannot see a wall keeps swinging into one.
-      The shipped roster carries no guard, which is why
-      `TestTheRatingBeatsPickingTheFirstThingItCan` reads 81.1% either way and why
-      nothing had noticed.
+      ⚠️ **The GUARD is half done. The absorbing POOL and `unblockable` are in
+      (`Battle.pastAPool`); a wall of block CHARGES deliberately is not, and that
+      is a measurement rather than an oversight.**
 
-      It is not merged because it breaks three design claims and each needs
-      deciding rather than re-baselining:
+      The charge half was written and measured. Against the frozen ruler:
 
-      - `TestAShapeEarnsItsPowerWhereASparCannotSeeIt` — 353/281 becomes 235/440,
-        so the claim **flips**. Under a rating that can see walls, focus fire
+      | board | with charges | without |
+      |---|---|---|
+      | thick with `withdraw` | **990‰**, every battle decided | cannot answer — 212 of 800 undecided |
+      | the ordinary squad board the design record is quoted on | **668‰** | **668‰** |
+
+      So it is a large gain exactly where walls are dense and reads as **nothing**
+      where they are sparse — while on that second board it moves squad rates by
+      up to 180‰ and breaks three balance claims at once:
+
+      - `TestAShapeEarnsItsPowerWhereASparCannotSeeIt` — 353/281 becomes 245/446,
+        so the claim **FLIPS**. Under a rating that can see walls, focus fire
         concentrates and a column catches less.
-      - `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne` — 324 apart against
-        the 318 held, and ⚠️ **this one is a bug in the patch**: an arc is *not*
-        stopped by a guard, but `spendable` prices it as a share of
-        `strike(mate)`, which the patch discounts. A conduit should be worth
-        **more** against a wall, not less. Fix this first.
-      - `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip` — the strip leaves
-        1816 blows blocked against 2002 without it, under what is held.
+      - `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne` — 246 against a
+        floor of 327.
+      - `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip` — 1598 blows blocked
+        against 2065 without the strip, under what is held.
 
-      ⚠️ **The guard half is an internal contradiction rather than an omission.**
-      `shielded` and `guarded` pay to *put* a guard up; nothing discounts a blow
-      *into* one. So the rating buys walls and treats the enemy's as absent, which
-      makes `warden`'s whole trade — a charge cancels one strike, so multi-strike
-      answers it — invisible, and hands `shadow_punch` its `unblockable` for free.
+      ⚠️ **Bisected, so none of this is guesswork.** Every figure above comes from
+      the charge clause alone: remove it and leave only the pool, and all three
+      read their exact baseline (353/366, 353/281) with nothing failing. And the
+      pool half buys nothing on the wall board either — 231 of 800 undecided
+      against the blind rating's 212. **The half that works is the half that costs
+      the claims, and the half that costs nothing buys nothing.**
 
-      Drains covers four shipped things worth nought today: `leech_seed`,
-      `dream_eater`, `blood_thirst`, `last_gasp`. `taunt` and `heal_cut` are the
-      same class and are already recorded in `README.md` § *Cutting the healing*.
+      Redistributing which kit wins without playing measurably better is a balance
+      change wearing a rating fix. Merging the charge half means re-deriving three
+      claims, one of which reverses, and that is a design decision about the cast
+      rather than a re-baseline.
 
-      What is left is the **guard** alone, and the branch above is where it is. Worth adding with the first of them: a structural test
+      ⚠️ **Close this first**: a conduit's arc is *not* stopped by a guard, and
+      `Requires.ArcPower` is priced only in `spendable` — the decision to *charge*
+      — and **not at all in the decision to discharge**. So a rating that learns to
+      avoid a wall stops firing arcs into the one board they are for, and the
+      charge half cannot be judged fairly until that is fixed.
+
+      The gap it came from: `shielded` and `guarded` pay to *put* a guard up and
+      nothing discounted a blow *into* one, so the rating bought walls and treated
+      the enemy's as absent. Half of that is now closed — a pool is read, and
+      `shadow_punch` no longer carries its `unblockable` for free — and the half
+      still open is `warden`'s own trade, that a charge cancels one strike so
+      multi-strike answers a wall.
+
+      `taunt` and `heal_cut` are the same class of omission and are already
+      recorded in `README.md` § *Cutting the healing*.
+
+      What is left is the **charge** half of the guard, above. Worth adding with the first of them: a structural test
       that every `status.Category` has an arm in `granted` or `inflictedOn`, and a
       hand-kept table of every `Skill` field marked *priced* or *deliberately not,
       with the reason* — the guard that would have caught all four at once.

@@ -173,6 +173,17 @@ Rules for anything added to that file:
   only the skill's own field prices `leech_seed` and leaves `blood_thirst` at
   nought, which is half a fix; skipping `worthHealing` makes it a flat bonus
   wearing a health check.
+- **A blow is discounted by an absorbing POOL on its target, and an unblockable
+  one is not.** `Battle.pastAPool`, read in `against` so every damage figure in
+  the file inherits it. What a pool takes over a volley is the smaller of the pool
+  and the damage, which is what `combat.Absorb` comes to across one — not a second
+  copy of it. ⚠️ **A wall of block CHARGES is deliberately absent**: it was
+  written and measured, it is a large gain where walls are dense (990‰ against the
+  ruler, against a blind rating that cannot finish 212 of 800 battles) and reads
+  as **nothing** on the ordinary squad boards (668‰ either way) while moving squad
+  rates by 180‰ and breaking three balance claims, one of which reverses. Bisected
+  to the charge clause alone. Do not add it without re-deriving those claims — and
+  read the note in TODO.md about `ArcPower` being unpriced on the discharge first.
 - ⚠️ **The queue may break a tie; it may never set a price.** A queue reading is
   **compared**, never added or multiplied. A value that reaches an arithmetic
   expression is tempo, and tempo is priced from the **speed stat** — see the tempo
