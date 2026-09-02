@@ -39,11 +39,26 @@ func TestTheRoomReadsNoClock(t *testing.T) {
 		// is a source of entropy, which is the thing being banned — the two sit
 		// beside each other in the standard library and only one of them can make
 		// a match irreproducible.
-		"crypto/rand":                  "a match's every battle is derived from the room's one seed, so nothing here draws entropy",
-		"os":                           "the room is a state machine over messages: no I/O",
-		"net":                          "the transport is its own item and is confined to its own boundary",
-		"net/http":                     "the transport is its own item and is confined to its own boundary",
-		"sync":                         "a room owns its battle in one goroutine and shares it with nothing; the registry takes the mutex",
+		"crypto/rand": "a match's every battle is derived from the room's one seed, so nothing here draws entropy",
+		"os":          "the room is a state machine over messages: no I/O",
+		"net":         "the transport is its own item and is confined to its own boundary",
+		"net/http":    "the transport is its own item and is confined to its own boundary",
+		// ⚠️ **`sync` used to be on this list and had to come off**, and the reason
+		// is worth reading before it is put back. Its stated ground was "a room
+		// owns its battle in one goroutine and shares it with nothing; the
+		// registry takes the mutex" — written when the registry was expected to
+		// live in a package of its own. It landed *here*, and one of the two
+		// reasons is this very walk: a registry beside the room inherits the clock
+		// ban for free, where a registry in its own package would need a second
+		// copy of it. So the import ban would have refused precisely the file it
+		// was written to make room for.
+		//
+		// The claim it was making survives and is **sharper** than an import ban
+		// could be, because a package-wide import ban cannot say *which* type may
+		// take a mutex: TestNoRoomMethodTouchesTheMutex refuses a mutex, a channel
+		// and a goroutine on any method of Room by receiver, which holds "a battle
+		// never does" wherever the file it is written in sits, and
+		// TestNoLockingFunctionSendsOnAChannel holds the registry's half.
 		"github.com/gorilla/websocket": "the transport is its own item and is confined to its own boundary",
 	}
 	scanned := 0
@@ -69,7 +84,11 @@ func TestTheRoomReadsNoClock(t *testing.T) {
 	if scanned == 0 {
 		t.Fatal("the scan read no source files, so it measures nothing")
 	}
-	t.Logf("scanned %d source files; no clock and no goroutine can enter this package", scanned)
+	// ⚠️ This line used to say "no clock and no goroutine can enter this package",
+	// and the second half stopped being true when the registry landed here: one
+	// goroutine per room is exactly what it runs. The clock half is untouched and
+	// is the load-bearing one.
+	t.Logf("scanned %d source files; no clock can enter this package", scanned)
 }
 
 // TestNothingHereDrainsTheBattle is the invariant the server has to respect,
