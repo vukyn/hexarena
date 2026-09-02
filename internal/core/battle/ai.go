@@ -236,13 +236,62 @@ func (b *Battle) against(actor *Unit, actorStats progression.Values, declared sk
 	// Expected rather than Total: a critical is a chance, and this file weights
 	// chances rather than rolling them. It returns Total exactly whenever the
 	// skill cannot crit, which is every skill in the book today.
-	landed := b.books.Rules.Expected(hit) * int64(b.books.Rules.Chance(hit)) / combat.PermilleBase
+	landed := b.pastAPool(target, declared,
+		b.books.Rules.Expected(hit)*int64(b.books.Rules.Chance(hit))/combat.PermilleBase)
 	// Damage past a target's remaining health is wasted, so a finishing blow is not
 	// rated above one that would kill twice over.
 	if landed > target.HP {
 		landed = target.HP
 	}
 	return landed
+}
+
+// pastAPool is what is left of a blow after an absorbing pool on the target has
+// taken its share, and it is half of a gap this rating had: `shielded` and
+// `guarded` paid to PUT a guard up, and nothing discounted a blow INTO one.
+//
+// Measured before it was written: offered two identical enemies, one of them the
+// softer target and carrying a pool of a hundred thousand, the rating aimed at
+// the softer one every time — and could not land a point of it.
+//
+// A pool eats damage and is indifferent to how it arrives, so what it takes over
+// a volley is simply the smaller of the pool and the damage. That is the whole of
+// what combat.Absorb comes to across a volley rather than a second copy of it:
+// the function spreads the same total over the strikes so each one's line can
+// report its share, and nothing here needs the shares.
+//
+// ⚠️ An unblockable skill is offered nothing, exactly as resolveAgainst offers it
+// nothing — and *offered*, not emptied: what the target is carrying is untouched.
+//
+// ⚠️ It is deliberately not a per-attacker reservation. Two allies swinging at one
+// barrier both read it whole, so the second is under-priced, which is the
+// direction this file errs in everywhere.
+//
+// ⚠️⚠️ **The other half — a wall of BLOCK CHARGES — is deliberately not here, and
+// it is a measurement rather than an oversight.** A charge cancels a strike
+// whole, so the arithmetic is easy and it was written; what it does is the
+// problem. On a board thick with `withdraw` it is a large improvement — 990 per
+// mille against the frozen ruler with every battle decided, where the rating
+// without it cannot finish 212 of 800 — but on the ordinary squad boards the
+// design record is quoted on it reads **identically** against that ruler (668
+// either way) while moving squad rates by up to a hundred and eighty per mille,
+// which broke three balance claims at once and FLIPPED one of them.
+// Redistributing which kit wins without playing measurably better is a balance
+// change wearing a rating fix, and it needs those claims re-derived rather than
+// re-baselined. The pool half has no such history: nothing shipped fields a deep
+// pool, so there was nothing to disturb, and the three claims do not move.
+// See TODO.md.
+func (b *Battle) pastAPool(target *Unit, declared skill.Skill, damage int64) int64 {
+	if declared.Unblockable || damage <= 0 {
+		return damage
+	}
+	if pool := target.Statuses.PoolIn(absorbCategory); pool > 0 {
+		if pool >= damage {
+			return 0
+		}
+		damage -= pool
+	}
+	return damage
 }
 
 // hitAgainst is the combat.Hit one target would be struck with, and it is a
