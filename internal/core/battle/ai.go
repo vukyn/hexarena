@@ -12,6 +12,16 @@ import (
 // and a replay cannot diverge from the log over a turn of phrase.
 const NoActionReason = "nothing usable"
 
+// DeclinedReason is the note recorded when a unit HAD something it could use and
+// the rating refused it, which is the one pass in this engine that is a decision.
+//
+// ⚠️ It is a second constant rather than a reuse of the one above, because the
+// two are different facts about the board and a log that spelled them the same
+// would be telling a reader a unit was helpless when it was choosing. `TestNothing
+// WaitsOnPurpose` counts passes by reason and was written to name this the day it
+// appeared; a rule that arrived without its own note would have slipped past it.
+const DeclinedReason = "nothing worth doing"
+
 // summonHorizon is how many of a summoned unit's own turns a rating is allowed
 // to pay for.
 //
@@ -183,7 +193,29 @@ func (b *Battle) Suggest(prompt *Prompt) (Choice, bool) {
 	if found {
 		return best, true
 	}
-	if hasFallback {
+	// Nothing was worth anything to anybody it could reach. Casting the cheapest
+	// of those buys nought either way, so the only thing left to decide is what it
+	// COSTS — and a skill on a cooldown is gone for turns afterwards, bought with
+	// nothing.
+	//
+	// ⚠️ **Returning no choice is a pass, and the mechanism already existed**:
+	// RunToEndWith turns `(Choice{}, false)` into Battle.Pass, on the same terms as
+	// a unit with nothing it can use. This is a rating rule, not a new verb.
+	//
+	// ⚠️ **It waited for the pricing, and that was the right order.** TODO.md held
+	// this behind six gaps — a repeating skill read at its floor, a drain worth
+	// nothing, a pool nothing discounted a blow into, a discharge priced nowhere,
+	// a taunt and a heal cut with no arm at all — because every one of them was an
+	// *under*-price, and "worth nought to the rating" was not yet "worth nought".
+	// With all six closed it is much nearer, which is what makes declining a turn
+	// safe rather than merely cheap.
+	//
+	// ⚠️ A cooldownless option is still cast. It costs the turn and no more, and
+	// what this file cannot see is always something rather than nothing — the
+	// shipped `taunt` was worth nought here until an hour ago. The shape of the
+	// error is chosen: refusing a free cast could throw away a real effect, while
+	// refusing a priced one only declines a turn nobody had a use for.
+	if hasFallback && fallbackCooldown == 0 {
 		return fallback, true
 	}
 	return Choice{}, false
@@ -531,6 +563,22 @@ func conditionTarget(declared skill.Skill, target *Unit) skill.Target {
 	}
 }
 
+// passReason tells the two kinds of pass apart by asking what was on offer, which
+// is the one place both facts are in hand: the Chooser has already answered, and
+// the prompt still says what it was answering about.
+//
+// Read off Option.Available rather than off the option count, because a prompt
+// lists every skill a unit knows and marks the ones it cannot use — a unit with
+// four skills all cooling down is helpless and its prompt is not empty.
+func passReason(prompt *Prompt) string {
+	for _, option := range prompt.Options {
+		if option.Available() {
+			return DeclinedReason
+		}
+	}
+	return NoActionReason
+}
+
 // Chooser picks an action for whoever is prompted. Battle.Suggest is one.
 //
 // It is called once per open turn and reports false when there is nothing it can
@@ -581,8 +629,10 @@ func (b *Battle) RunToEndWith(maxTurns int, choose Chooser) (int, error) {
 		if !ok {
 			// The Chooser took nothing, which is a legal answer: every skill is
 			// cooling down or out of reach, or the rating declined what was on
-			// offer. Either way the turn is spent and its cooldowns come down.
-			if err := b.Pass(NoActionReason); err != nil {
+			// offer. Either way the turn is spent and its cooldowns come down —
+			// but the two are written down apart, because one is a unit with no
+			// move and the other is a unit that had one and would not take it.
+			if err := b.Pass(passReason(prompt)); err != nil {
 				return taken, err
 			}
 			continue

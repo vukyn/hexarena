@@ -156,9 +156,19 @@ Rules for anything added to that file:
   cast the free one, with kit order the whole of the decision. Options worth
   *nothing* are the sharpest case of the rule rather than an exception to it: both
   buy nought, so what casting one costs is all there is to separate them.
-  ⚠️ Whether such a turn should be **passed** instead is a different and larger
-  question — every gap in what `price.go` sees is an *under*-price, so "worth
-  nought to the rating" is not yet "worth nought". → `TODO.md`.
+  ⚠️ **And when the cheapest of them still costs a cooldown, the turn is
+  DECLINED.** `Suggest` returns no choice, which `RunToEndWith` turns into
+  `Battle.Pass` — the mechanism already existed — and the pass carries
+  `DeclinedReason` rather than `NoActionReason`, because a unit with no move and a
+  unit that had one and would not take it are different facts about the board. A
+  cooldownless option is still cast: what this file cannot see is always something
+  rather than nothing, so refusing a free cast could throw away a real effect while
+  refusing a priced one only declines a turn nobody had a use for. It waited for
+  all six pricing gaps to close, and that was the right order.
+  ⚠️ Not the *waiting* TODO.md decided against: that is passing to get a skill
+  back sooner, which stays empty because `spendCooldowns` runs on a pass and an act
+  alike. This is not starting a cooldown, and the same arithmetic is what makes it
+  sound.
 - ⚠️ **A repeating count is read as its EXPECTATION, never as either end.**
   `Rules.Expected` goes through `Hit.ExpectedStrikes` (parts per thousand, so the
   division lives in `Expected` and not at the call site) and `hitAgainst` carries

@@ -927,15 +927,15 @@ thử trận  fixture-anime.adept — Example Adept
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [------------] 6.1%
+  tỉ lệ chung      [------------] 6.4%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       65     +18.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
   naruto.naruto                   0.0%    0-200-0         54     +0.0%
   pokemon.bulbasaur               2.0%    4-196-0         43     +0.0%
-  pokemon.charmander              1.0%    2-198-0         25     +0.0%
-  pokemon.cleffa                  58.0%   116-84-0        99     +0.0%
+  pokemon.charmander              2.0%    4-196-0         25     +0.0%
+  pokemon.cleffa                  61.0%   122-78-0        99     +0.0%
   pokemon.gastly                  4.0%    8-192-0         36     +0.0%
   pokemon.machop                  1.0%    2-198-0         35     +0.0%
   pokemon.magnemite               0.0%    0-200-0         23     +0.0%
@@ -3517,15 +3517,15 @@ thử trận  fixture-anime.adept — Example Adept
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [------------] 6.1%
+  tỉ lệ chung      [------------] 6.4%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       65     +18.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
   naruto.naruto                   0.0%    0-200-0         54     +0.0%
   pokemon.bulbasaur               2.0%    4-196-0         43     +0.0%
-  pokemon.charmander              1.0%    2-198-0         25     +0.0%
-  pokemon.cleffa                  58.0%   116-84-0        99     +0.0%
+  pokemon.charmander              2.0%    4-196-0         25     +0.0%
+  pokemon.cleffa                  61.0%   122-78-0        99     +0.0%
   pokemon.gastly                  4.0%    8-192-0         36     +0.0%
   pokemon.machop                  1.0%    2-198-0         35     +0.0%
   pokemon.magnemite               0.0%    0-200-0         23     +0.0%
@@ -5027,15 +5027,15 @@ spar  fixture-anime.adept — Example Adept
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [------------] 6.1%
+  overall       [------------] 6.4%
 
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       65     +18.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
   naruto.naruto                 0.0%    0-200-0         54     +0.0%
   pokemon.bulbasaur             2.0%    4-196-0         43     +0.0%
-  pokemon.charmander            1.0%    2-198-0         25     +0.0%
-  pokemon.cleffa                58.0%   116-84-0        99     +0.0%
+  pokemon.charmander            2.0%    4-196-0         25     +0.0%
+  pokemon.cleffa                61.0%   122-78-0        99     +0.0%
   pokemon.gastly                4.0%    8-192-0         36     +0.0%
   pokemon.machop                1.0%    2-198-0         35     +0.0%
   pokemon.magnemite             0.0%    0-200-0         23     +0.0%
@@ -7617,15 +7617,15 @@ spar  fixture-anime.adept — Example Adept
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [------------] 6.1%
+  overall       [------------] 6.4%
 
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       65     +18.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
   naruto.naruto                 0.0%    0-200-0         54     +0.0%
   pokemon.bulbasaur             2.0%    4-196-0         43     +0.0%
-  pokemon.charmander            1.0%    2-198-0         25     +0.0%
-  pokemon.cleffa                58.0%   116-84-0        99     +0.0%
+  pokemon.charmander            2.0%    4-196-0         25     +0.0%
+  pokemon.cleffa                61.0%   122-78-0        99     +0.0%
   pokemon.gastly                4.0%    8-192-0         36     +0.0%
   pokemon.machop                1.0%    2-198-0         35     +0.0%
   pokemon.magnemite             0.0%    0-200-0         23     +0.0%

@@ -578,35 +578,6 @@ is only so the shape is readable.
       with the reason* — the guard that would have caught all four at once.
       → `README.md` § *Cutting the healing* for the two already known.
 
-- [ ] ⚠️ **Should a unit PASS rather than spend a cooldown on nothing?** The
-      tie-break half of this is done — the fallback now takes the cheapest option
-      to have spent rather than the first in kit order, see
-      `TestTheFallbackFollowsTheTieBreakToo` — and what is left is the harder
-      question it does not answer: what to do when every option worth nought
-      carries a cooldown, which on the shipped cast is **all of them** (no
-      zero-power skill in the book sits below a cooldown of two).
-
-      ⚠️ **It is NOT covered by *Waiting* below.** That entry's arithmetic —
-      acting is worth `bestValue` now
-      plus next turn's best, waiting is nought plus the same — assumes next turn's
-      best is unchanged by acting. It is not: an act starts a cooldown on the skill
-      it cast, which `TestAPassBuysNoCooldownAnActDoesNot` asserts as the one
-      difference an act is allowed to make. When `bestValue` is **nought** the
-      dominance is by nought and the cooldown is a strict loss — a `rapid_spin`
-      (power 0, cooldown 3, strips one stack) cast on a board with nothing to strip
-      is three turns of a cleanse spent to remove nothing. Measured: a unit holding
-      only `spin` casts it rather than passing.
-
-      `Suggest` already *can* pass — returning `(Choice{}, false)` is what
-      `RunToEndWith` turns into `Battle.Pass` — so this is a rating rule, not a new
-      mechanism, and `frozen()` is a pure function of state rather than a count of
-      quiet turns, so a pass cannot open a new infinite board.
-      ⚠️ The risk is the entry above: a skill worth nought to the rating may not be
-      worth nought, and every gap listed there is an under-price. Do the pricing
-      work first, then decide whether "every option rates nought and the cheapest
-      carries a cooldown" should pass.
-      → `CLAUDE.md` § Rating an action; `internal/core/battle/holding_test.go`.
-
 ## Decided against — do not re-raise
 
 - **Re-rolling the turn-order tie-break from the seed.** Kept, and the reason
@@ -656,8 +627,14 @@ is only so the shape is readable.
   acting dominates waiting by exactly what the action is worth. The two available
   lookaheads each break a rule of `price.go` — one rolls, the other is a second
   copy of the resolving arithmetic — and either costs about ×36 a turn.
-  → `CLAUDE.md` § Rating an action; `TestAPassBuysNoCooldownAnActDoesNot` and
-  `TestNothingWaitsOnPurpose`.
+  ⚠️ **This is NOT the pass that now exists.** `Suggest` declines a turn when
+  every available option is worth nought and the cheapest of them would start a
+  cooldown, and that is the opposite question: not "wait to get a skill back" but
+  "do not spend one on nothing". The arithmetic above is what makes it sound —
+  an act pays its own cooldown and a pass does not — so the two live together.
+  → `CLAUDE.md` § Rating an action; `TestAPassBuysNoCooldownAnActDoesNot`,
+  `TestATurnIsDeclinedRatherThanSpentOnACooldownForNothing` and
+  `TestATurnIsGivenUpOnlyForAReasonThatIsWrittenDown`.
 - **Rebalancing `reckless`.** All three levers the item named are measured and
   dead, and the trait is kept as it stands: an extreme trade that loses badly to
   one matchup and wins nearly everything else — **22.1%** against the fire line
