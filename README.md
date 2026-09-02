@@ -2603,6 +2603,48 @@ security** — this is a plain WebSocket on a LAN, and the password keeps strang
 in the house off the board rather than keeping an attacker out. It is compared in
 constant time and never logged, which is the least a password is owed regardless.
 
+⚠️ **Those two paragraphs collide, and building the registry is what surfaced
+it.** "A code carries its own address" and "one process, many rooms" cannot both
+hold with **one listener**: every room in the process would encode the same
+address and the same port, so the ten characters would name the process rather
+than the room, and pasting one would be a coin toss between the rooms running in
+it. Two ways out, and they are not the same size. **One listener per room** — the
+process opens a port per room and the code names that listener — costs nothing
+written down here: the wire format is untouched, `messages.golden` does not move,
+and the code stays ten characters. Changing `wire.RoomCode` to carry a room id
+beside the address is the other, and it moves the format, the golden and the
+ten-character claim at once. So the reading is the first one, and it is recorded
+as a reading rather than as a decision: allocating a port is I/O, the registry has
+none, and the socket is where the answer actually lands. → `TODO.md`, under the
+WebSocket transport.
+
+**Built: the registry.** `room.Registry` is the many-rooms half, keyed by the
+code, and it is the concurrency around the room and nothing else — no socket, no
+clock, no log writer, no spectator. One goroutine per room reading a channel of
+**values**: a `func(*Room)` on that channel is the tidy-looking design that
+defeats the whole invariant, because it lets the caller keep the pointer it
+captured, so what travels is a small discriminated request and the `*Room` is
+reachable from nothing but its own goroutine. The mutex guards **the map and
+nothing else** — a lookup releases it before the room it found is sent anything,
+because a mutex held across the send keeps the letter of the rule while making N
+rooms as slow as one, and that failure is invisible to every test and to the race
+detector alike. Both halves are held by AST walks rather than by these sentences,
+and the second one was measured: holding the lock across the send reddens the walk
+by name and deadlocks the in-flight test.
+
+An unknown code answers `wire.CodeRoomUnknown`, which until now was **a code that
+shipped dead** — the room's own gate documents it as *the registry's* refusal and
+says no room ever sends one, so no peer could ever have been shown it.
+
+Two things the registry's shape forced, both worth knowing before writing the
+transport. A room **retires its own entry the moment its match ends**, so nothing
+sweeps and a finished room stops being joinable — but the protocol has no message
+for "the match is over and here is why", so a transport that asked afterwards what
+the result was would be asking about a room that had already gone. The result
+therefore travels on the answer to the input that ended the match. And the room
+still reads no clock and neither does the registry: `TimedOut` is **forwarded**
+exactly as it is taken, because whoever owns the transport owns the countdown.
+
 ### The invariant the server has to respect
 
 `Drain` empties the buffer. It is a single-consumer call, and a room has two

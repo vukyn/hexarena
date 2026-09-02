@@ -201,11 +201,12 @@ is only so the shape is readable.
       The items below are in dependency order, and the four in **Groundwork** are
       the ones nothing else can start without. **All four are done, and so is the
       room** — `internal/room` is a state machine over `internal/wire` messages
-      with no I/O and **no clock** in it. What is left of *The room* is the
-      registry (one goroutine per room), writing a finished match out as a
-      `battle.Log`, and two things the protocol cannot currently say: a capped
-      battle and a forfeit. The next item to pick up is either the registry or
-      the WebSocket under *The wire*.
+      with no I/O and **no clock** in it — **and so is the registry**, which is
+      one goroutine per room around it and reads no clock either. What is left of
+      *The room* is writing a finished match out as a `battle.Log` and two things
+      the protocol cannot currently say: a capped battle and a forfeit. The next
+      item to pick up is the **WebSocket** under *The wire*, which is also where
+      the one-listener-per-room question the registry could not decide lands.
 
       **Groundwork**
       - [x] Factor the reference screens out of `cmd/hexforge-tui` into a package
@@ -355,13 +356,59 @@ is only so the shape is readable.
             **selector** `Drain`: 261 call sites elsewhere make reaching for it
             one keystroke, and it would silently take the events another
             consumer was about to read.
-      - [ ] Many rooms per process. A room owns its battle in **one goroutine**
+      - [x] Many rooms per process. A room owns its battle in **one goroutine**
             and shares it with nothing; the registry takes a mutex, a battle
-            never does. ⚠️ Deliberately **not** in the room's own commit:
-            concurrency does not belong beside "this has no I/O". Nothing in
-            `internal/room` is safe for concurrent use and nothing there needs to
-            be; `sync` is on that package's own import ban. `wire.CodeRoomUnknown`
-            is this item's refusal and no room sends it today.
+            never does. **Done** — `room.Registry`, keyed by `wire.RoomCode`:
+            `Open` · `Join` · `Deliver` · `TimedOut` · `Left` each answering
+            `(Answer, error)`, plus `Read` · `Close` · `CloseAll` · `Wait` ·
+            `Count` · `Running` · `Codes`. `wire.CodeRoomUnknown` is what an
+            unknown code answers, which **closes a code that shipped dead**:
+            nothing in the repository sent it before this.
+            ⚠️ **It is in `internal/room` rather than a package of its own**, and
+            both reasons are mechanical: `TestTheRoomReadsNoClock` walks the
+            package's own directory, so a registry beside the room inherits the
+            clock ban rather than needing a second copy of it, and the `*Room`
+            never has to be exported out of the package at all.
+            ⚠️ **A request on the channel is a VALUE, never a `func(*Room)`.** A
+            closure lets the caller capture the pointer and keep it, which
+            defeats the whole invariant while reading as the tidier design. So a
+            small discriminated `request` travels and `answerFrom` is the one
+            place a `*Room` is called.
+            ⚠️ **The mutex guards the map and NOTHING else** — `lookup` is the one
+            place a request path locks and it releases before `ask` sends, or
+            every room in the process would serialise through one lock: the letter
+            of the rule kept with its point lost, and invisible to every test.
+            `TestNoLockingFunctionSendsOnAChannel` is an AST walk holding it, and
+            it is a **reachability** analysis rather than a per-function one
+            because the mutation that hides from that is a locking function that
+            merely *calls* the sender. Measured: holding the mutex across the send
+            reddens it in half a second by name, and **deadlocks** the in-flight
+            test (a retiring room needs the mutex the blocked sender is holding) —
+            two catches, and the walk is the one that says why.
+            ⚠️ **`sync` came OFF that package's import ban and the entry's stated
+            reason is why**: it read "the registry takes the mutex", written when
+            the registry was expected to live elsewhere, so it would have refused
+            the one file it was written to accommodate. The claim survives
+            *sharper* as `TestNoRoomMethodTouchesTheMutex`, which refuses a mutex,
+            a channel and a goroutine on any method of `Room` **by receiver** —
+            an import ban cannot say which type may lock. `TestTheRegistryHandsOutNoRoom`
+            is the other guard: no exported method's type graph reaches a
+            `*room.Room`, in or out.
+            ⚠️ **The registry reads no clock either.** `TimedOut` is *forwarded*
+            and nothing starts a timer: whoever owns the transport owns the
+            countdown, and the transport is the next item.
+            ⚠️ **A room retires its own entry the moment its match ends**, which
+            forced the API: the protocol has no "the match is over" message, so a
+            transport asking afterwards would be asking about a room that had
+            already gone. Hence the `Reading` rides on the `Answer` to the input
+            that ended the match. `Wait` closes nothing, deliberately — that is
+            what makes "no goroutine is left behind" a measurement rather than a
+            tidy-up.
+            ⚠️ `make check` now runs this package a second time with **-race**:
+            3.9s against a gate of about a minute, and a race test nobody runs is
+            not a net.
+            **Still not in it**: the WebSocket, the clock, writing a finished
+            match out as a `battle.Log`, spectators.
       - [x] Validate a squad at the gate: `Squad.Validate`, then the format's
             size, level 60, a stage that is a **leaf** of the line, then `Take`
             (which is already the loadout check). **Done** — five rules under
@@ -513,6 +560,23 @@ is only so the shape is readable.
 
       **The wire**
       - [ ] WebSocket transport, the dependency confined to one boundary.
+            ⚠️ **Two settled decisions collide here, and this item is where the
+            collision has to be resolved.** The design record says a room code
+            **carries its own address** — base32 of four address bytes and two
+            port bytes, ten characters — *and* that one process runs **many
+            rooms**. With one listener those cannot both hold: every room in the
+            process would encode the same address and port, so the code would not
+            identify a room. The reading that satisfies both without touching the
+            wire format is **one listener per room** — the process opens a port
+            per room and the code names that listener; changing `wire.RoomCode`
+            instead moves `messages.golden` and breaks the ten-character claim
+            the record makes, so it is the more expensive answer.
+            It was **not decided in the registry's own commit**, and could not be:
+            allocating a port is I/O and the registry has none. `Registry.Open`
+            therefore takes the code it is given, refuses a duplicate, and
+            refuses one that does not decode. The fixtures in
+            `internal/room/registry_test.go` build a code per room off a port per
+            room, which is the likely answer written down rather than chosen.
       - [ ] Room code: base32 of a four-byte address and a two-byte port, ten
             characters, with a round-trip test.
       - [ ] Room password: constant-time comparison, never logged. Documented as

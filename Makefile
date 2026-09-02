@@ -62,10 +62,19 @@ vet:
 	@go vet ./...
 
 # The gate: what has to be clean before a change is done.
+#
+# internal/room is run a second time under the race detector, and that is the
+# only place in the repository where concurrency exists: the registry runs one
+# goroutine per room, and the detector is the primary net over it — a data race
+# there is a battle that stops reproducing from its seed, which takes the log
+# format, --verify and undo down with it. Measured at ~3s against a gate of about
+# a minute, which is what makes it affordable. A race test nobody runs is not a
+# net, so it is in the gate rather than in a comment.
 check:
 	@gofmt -l .
 	@go vet ./...
 	@go test ./... -count=1
+	@go test -race -count=1 ./internal/room/
 
 clean:
 	@rm -rf bin/

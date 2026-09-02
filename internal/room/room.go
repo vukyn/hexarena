@@ -4,12 +4,18 @@
 // It speaks internal/wire and declares no message of its own. It owns one
 // *battle.Battle at a time, the series that battle is one of, the gate a peer
 // gets past to sit down, and the counting that turns three missed allowances
-// into a forfeit. It opens no socket, starts no goroutine, takes no mutex, and
-// — see below — reads no clock. Two fake clients therefore drive a whole match
-// in-process, at the speed of the engine, which is the reason it was built this
-// way round: a server with the transport in the middle of the state machine
+// into a forfeit. A Room opens no socket, starts no goroutine, takes no mutex,
+// and — see below — reads no clock. Two fake clients therefore drive a whole
+// match in-process, at the speed of the engine, which is the reason it was built
+// this way round: a server with the transport in the middle of the state machine
 // would make this the least-tested code in a repository whose whole method is
 // measurement.
+//
+// ⚠️ **Registry, in this package, is the one thing here that does hold a
+// goroutine and a mutex**, and the two are kept apart by receiver rather than by
+// file: TestNoRoomMethodTouchesTheMutex refuses a mutex, a channel or a goroutine
+// on any method of Room, wherever it is written. → Registry, and the note there
+// on why it is not a package of its own.
 //
 // # The room reads no clock, and that is the load-bearing shape
 //
@@ -34,15 +40,17 @@
 //
 // So a reader does not go looking for it:
 //
-//   - **The registry of many rooms, and the one-goroutine-per-room rule.** Its
-//     own TODO.md item. Concurrency does not belong in the same commit as "this
-//     has no I/O": a room that owns its battle in one goroutine and shares it
-//     with nothing is a property of the thing that *holds* rooms, and the
-//     mutex the registry takes is the registry's. Nothing here is safe for
-//     concurrent use and nothing here needs to be.
+//   - **The registry of many rooms, and the one-goroutine-per-room rule.** Not
+//     in a *Room*, which is what this list is about: concurrency did not belong
+//     in the same commit as "this has no I/O", so it landed in the one after it,
+//     as Registry. A room owning its battle in one goroutine and sharing it with
+//     nothing is a property of the thing that *holds* rooms, and the mutex is
+//     the registry's. **Nothing on a Room is safe for concurrent use and nothing
+//     on it needs to be** — the registry is what makes that true rather than
+//     what makes it a problem.
 //   - **The WebSocket**, and everything that makes a peer a peer: a connection,
-//     a seat token, a rejoin. wire.CodeRoomUnknown belongs to the registry for
-//     the same reason and no room ever sends it.
+//     a seat token, a rejoin. wire.CodeRoomUnknown is the **registry's** refusal
+//     and no room ever sends it.
 //   - **Writing the finished match out as a battle.Log.** The room holds every
 //     decision the engine took only through the engine; a log writer is another
 //     cursor over the record, which is exactly why Since exists.

@@ -1358,6 +1358,84 @@ than papered over: a **forfeit** (the room sends nothing and the transport
 closes) and a **capped battle** (no `Ended` event, and `TurnCap` is not on the
 wire, so a mirror is left holding an open prompt).
 
+### Many rooms: `room.Registry`, and the two things holding the invariant
+
+`room.Registry` is the concurrency around the room and **nothing else** — no
+socket, no clock, no log writer, no spectator. Keyed by `wire.RoomCode`: `Open`,
+then `Join` · `Deliver` · `TimedOut` · `Left` each answering `(Answer, error)`,
+plus `Read` (the room's own accessors, taken inside its goroutine) and
+`Close` / `CloseAll` / `Wait` / `Count` / `Running` / `Codes`.
+
+**⚠️ It is in `internal/room` and that is not a free choice.** Two mechanical
+reasons: `TestTheRoomReadsNoClock` walks the package's **own directory**, so a
+registry beside the room inherits the clock ban rather than needing a second copy
+of it; and the `*Room` never has to leave the package, which is what lets the
+invariant below be enforced instead of asked for. **The registry reads no clock
+either** — `TimedOut` is forwarded exactly as the room takes it, because whoever
+owns the transport owns the countdown.
+
+**⚠️ A request on the channel is a VALUE, never a `func(*Room)`.** A closure is
+the tidier-looking design and it defeats the whole thing: the caller captures the
+pointer and may keep it, so the battle is reachable from a goroutine that is not
+its own and nothing about the code looks wrong. A small discriminated `request`
+travels instead, and `answerFrom` is the **one** place a `*Room` is called.
+
+**⚠️ The mutex guards the map and NOTHING else.** `lookup` is the one place a
+request path locks and it releases **before** `ask` sends to the room it found. A
+mutex held across the send keeps the letter of "one goroutine per room" while
+making N rooms as slow as one — and that failure is invisible to every test *and*
+to the race detector, so it is held mechanically:
+
+- `TestNoLockingFunctionSendsOnAChannel` is an AST **reachability** walk (send
+  marks propagated to callers to a fixed point), because the mutation that hides
+  from a per-function check is a locker that merely *calls* the sender. A `go`
+  statement is deliberately not an edge: starting a goroutine blocks nobody.
+  Measured — holding the lock across the send reddens it by name in half a second
+  **and** deadlocks the in-flight test, since a retiring room needs the mutex the
+  blocked sender is holding.
+- `TestNoRoomMethodTouchesTheMutex` refuses a mutex, a channel or a goroutine on
+  any method of `Room`, **by receiver**. ⚠️ It replaced `sync` on the clock ban's
+  import list, which had to come off: its stated reason was "the registry takes
+  the mutex", written when the registry was expected to live in its own package,
+  so the ban would have refused the one file it was written to accommodate. The
+  receiver check is *stronger* — an import ban cannot say which type may lock.
+- `TestTheRegistryHandsOutNoRoom` walks the type graph of every exported
+  signature: no `*room.Room` is reachable in or out. It cannot see through an
+  interface, which is why the request's doc comment argues the closure point too.
+
+**⚠️ A room retires its own entry the moment its match ends**, so nothing sweeps
+and a finished room stops being joinable — and that is what forced the API shape.
+The protocol has no message for "the match is over and here is why", so a
+transport asking *afterwards* would be asking about a room that had already gone
+and every match's result would be unreachable. Hence `Answer` carries the
+`Reading` taken after the input, and `Read` is for looking at a room that is still
+running. `Wait` **closes nothing**, deliberately: that is what makes "no goroutine
+is left behind" a measurement rather than a tidy-up — a leaked room hangs it where
+a shutdown call would have cleaned the leak up and reported success. A shutdown is
+`CloseAll` then `Wait`, two calls.
+
+**⚠️ A send on a closed channel panics and a second close panics, and both are
+reachable here.** So a room's inbox is **never closed** — the escape from a send
+nobody will read is the room's `done` channel, closed by the goroutine itself as
+its last act — and `quit` is closed only by the `Close` that won the removal from
+the map, which makes exactly-once a property of the code rather than an agreement.
+
+**`wire.CodeRoomUnknown` is what an unknown code answers, and this closed a code
+that shipped dead**: `gate.go` documents it as *the registry's* refusal and says
+no room ever sends one, so before this nothing in the repository sent it at all.
+It names **no seat**, for the reason a refusal at the gate names none.
+
+**`make check` runs this package a second time with `-race`** (3.9s against a gate
+of about a minute). The race detector is the primary net over the only concurrency
+in the repository, and a race test nobody runs is not a net.
+
+⚠️ **`Open` takes the room code from its caller**, which is a decomposition rather
+than laziness: allocating a port is I/O and the registry has none, so it takes the
+code it is given, refuses a duplicate and refuses one that does not decode. The
+collision behind that — a code carries its own address *and* one process runs many
+rooms, which cannot both hold with one listener — is written up in `README.md` §
+*A room, and getting into one* and lands with the socket in `TODO.md`.
+
 ## The event log is the contract
 
 `battle` emits `[]Event`. Anything that draws a battle reads that and nothing
