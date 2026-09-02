@@ -269,13 +269,34 @@ func (c Context) Wrapped(name string, width int, value string) string {
 // spaces and disappeared. The dim reading lost its dimness and the art row lost
 // its existence, from one Render around the wrong thing.
 //
-// ⚠️ **The `- 2 - width - 1` is one cell short of what every other row spends,
-// and it is moved here unchanged on purpose.** It lets a wrapped value fill the
-// window's final column — the one column every other row leaves empty, because a
-// line filling it wraps on some terminals. `TODO.md` records it as left alone
-// deliberately: fixing it changes what fits, on every pane that wraps.
+// ⚠️ **A wrapped row spends UsableWidth() - 1, and the cell it gives up is the
+// window's last one.** LabelAt draws `marker + Pad(name, width) + " " + value`,
+// so what is left for the value is the window less its final column, less the
+// marker, less the label column and less the gap after it — the same terms
+// FieldValueRoom spends and in the same order, without the two this row has not
+// got (a fixed part of the value, and a gap before whatever follows it).
+//
+// The final column is left empty for the reason frame leaves it: a line filling
+// a terminal's final cell wraps on some of them, and one wrapped line pushes the
+// footer off the bottom. This spent `- 2 - width - 1` until then and filled it —
+// measured at the floor, browse's biography row came to exactly 120 of the 120
+// there are — which made it the fifth copy of the off-by-one FieldValueRoom's own
+// comment records fixing in four other places, rather than a decision. The clip
+// below is measured off the corrected room too, so the narrow case gives up the
+// same cell the wrapped one does.
+//
+// ⚠️ **The bound is on the room and not on the drawn line, because WrapWords has
+// an exception this cannot close**: a word longer than the room takes a line of
+// its own and overflows it rather than being cut, so a value holding one still
+// reaches the last column, and the frame is what answers for that. It is out of
+// reach on shipped data — the longest token any recorded screen draws is 38
+// cells against a room of 99 at the floor — and narrowing the room by one adds
+// no case to it, since a word that overflowed the wider room overflowed the
+// narrower one already.
+// TestAWrappedRowLeavesTheWindowsLastColumnEmpty is what holds it.
 func (c Context) WrappedIn(name string, width int, style lipgloss.Style, value string) string {
-	room := c.UsableWidth() - 2 - width - 1
+	const marker = 2
+	room := c.UsableWidth() - 1 - marker - width - 1
 	if room < 8 {
 		// Narrower than this and wrapping makes a column of syllables; the
 		// clip is the lesser evil.

@@ -4278,7 +4278,14 @@ is the constraint each piece has to respect.
       — so the frame would eat the last one.
       ⚠️ **Wrap to `minWidth`, NOT to `m.usableWidth()`** — the opposite of
       `m.wrapped`, which carries authored free text and takes whatever width there
-      is. These are the program's own prose: `TestEveryWordingFitsTheMinimumWidth`
+      is, less the one column at the end of it that every row here leaves empty.
+      ⚠️ **That last clause was missing from the code as well as from this line
+      until it was measured.** `screen.WrappedIn` spent `- 2 - width - 1`, a cell
+      more than every other row, so a wrapped value filled the window's final
+      column — the column `frame` leaves empty precisely so a full-width line
+      cannot wrap. It spends `UsableWidth() - 1 - marker - width - 1` now; the
+      measurement, and why no golden moved for it, is in `TODO.md`.
+      These are the program's own prose: `TestEveryWordingFitsTheMinimumWidth`
       renders at width 200 and measures against the floor less one (79 when that
       line was written, 119 now), and free text is excused while
       a derived sentence is not. Unwrapped, the reply line was cut mid-word at the
