@@ -199,6 +199,8 @@ func (r Rules) damage(attack, defense int64, skillMultiplier, affinityMultiplier
 	// 800, which puts the largest reachable value of that sum at 2,699 with the
 	// shipped constant of 300. Three million times the room it needs.
 	denominator := int64(PermilleBase) * int64(PermilleBase) * int64(PermilleBase) * (r.DefenseConstant + defense)
+	// #nosec G115 -- the guards above leave every factor positive, so the
+	// product the comment sizes is positive too.
 	damage := numerator.over(uint64(denominator))
 	if damage < r.MinimumDamage {
 		return r.MinimumDamage
@@ -225,6 +227,8 @@ func (r Rules) divided(attack, defense int64, skillMultiplier, affinityMultiplie
 		times(uint64(critMultiplier)).
 		times(uint64(r.DefenseConstant))
 	denominator := int64(PermilleBase) * int64(PermilleBase) * int64(PermilleBase) * (r.DefenseConstant + defense)
+	// #nosec G115 -- the same positive denominator as damage, sized in the
+	// comment there.
 	return numerator.over(uint64(denominator))
 }
 

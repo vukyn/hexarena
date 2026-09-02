@@ -59,6 +59,8 @@ func (s *Source) Intn(n int) int {
 	for {
 		draw := s.Next()
 		if draw <= limit {
+			// #nosec G115 -- the remainder is below bound, and bound came from an
+			// int the guard above already proved positive.
 			return int(draw % bound)
 		}
 	}

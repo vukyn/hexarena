@@ -50,6 +50,8 @@ func EncodeRoom(at netip.AddrPort) (RoomCode, error) {
 		return "", fmt.Errorf("room code: %s is not an IPv4 address", at)
 	}
 	octets := address.As4()
+	// #nosec G115 -- a port is a uint16 and the two bytes below are its halves,
+	// so the narrowing is the encoding rather than a loss.
 	raw := []byte{octets[0], octets[1], octets[2], octets[3], byte(at.Port() >> 8), byte(at.Port())}
 	code := RoomCode(roomCodes.EncodeToString(raw))
 	// A length that is not ten means the arithmetic above stopped being true,
