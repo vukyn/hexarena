@@ -542,49 +542,67 @@ is only so the shape is readable.
       with no room and nothing on a caster nothing can reach.
 
       ⚠️ **The GUARD is half done. The absorbing POOL and `unblockable` are in
-      (`Battle.pastAPool`); a wall of block CHARGES deliberately is not, and that
-      is a measurement rather than an oversight.**
+      (`Battle.pastAPool`); a wall of block CHARGES is still out, and the reason
+      changed on 2026-09-03 — it is now a DESIGN decision rather than a missing
+      justification.**
 
-      The charge half was written and measured. Against the frozen ruler:
+      ⚠️ **The earlier "no measured benefit" reading was an INSTRUMENT failure, and
+      that is the finding.** Two boards were used and both were blind: the shipped
+      roster carries no guard at all, so `TestTheRatingBeatsPickingTheFirstThing
+      ItCan` reads the same either way; and the wall-heavy board built for it does
+      not RESOLVE — `forge.Bout` refuses it, control and all, with or without the
+      change. A wall board built to actually finish — one `withdraw` carrier a side
+      and two real attackers, 900 seeds, 1800 battles — says the opposite:
 
-      | board | with charges | without |
+      | | rate against the frozen ruler |
+      |---|---|
+      | without the charge clause | **889‰** ± 24 |
+      | with it | **917‰** ± 24 |
+
+      Twenty-eight per mille, outside the band. So the clause **does** play better,
+      and the three balance claims it breaks were measured against a rating that
+      could not see a wall. Those claims are two kits against a fixed opposition
+      with `Suggest` on both sides, which the design record itself warns cannot see
+      a rating.
+
+      ⚠️ **Amortising it does not buy a free setting.** A charge cancels one strike
+      EVER, so discounting a blow by the whole wall on every cast charges the same
+      loss every turn — which is why the full clause moves squad rates so far. A
+      share sweep (the discount scaled in per mille):
+
+      | share | claims | ruler on the wall board |
       |---|---|---|
-      | thick with `withdraw` | **990‰**, every battle decided | cannot answer — 212 of 800 undecided |
-      | the ordinary squad board the design record is quoted on | **668‰** | **668‰** |
+      | 1000 | 3 fail (one **reverses**) | 926‰ |
+      | 200 | 1 fails | — |
+      | 100 | all pass | 908‰ (inside the band) |
+      | 0 | all pass | 904‰ |
 
-      So it is a large gain exactly where walls are dense and reads as **nothing**
-      where they are sparse — while on that second board it moves squad rates by
-      up to 180‰ and breaks three balance claims at once:
+      Monotone both ways: every setting that keeps the claims is inside the band,
+      and every setting that clears the band breaks them. There is no dial.
 
-      - `TestAShapeEarnsItsPowerWhereASparCannotSeeIt` — 353/281 becomes 245/446,
-        so the claim **FLIPS**. Under a rating that can see walls, focus fire
-        concentrates and a column catches less.
-      - `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne` — 246 against a
-        floor of 327.
-      - `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip` — 1598 blows blocked
-        against 2065 without the strip, under what is held.
+      **What is left is a decision about the cast, not a measurement.** Taking the
+      full clause means accepting that
+      `TestAShapeEarnsItsPowerWhereASparCannotSeeIt` **reverses** — 353/281 becomes
+      245/446, so a column shape stops being worth its slot on that board — which
+      is a statement about the bombardier preset rather than a re-baseline.
+      `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne` (246 against a floor
+      of 327) and `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip` go with it.
 
-      ⚠️ **Bisected, so none of this is guesswork.** Every figure above comes from
-      the charge clause alone: remove it and leave only the pool, and all three
-      read their exact baseline (353/366, 353/281) with nothing failing. And the
-      pool half buys nothing on the wall board either — 231 of 800 undecided
-      against the blind rating's 212. **The half that works is the half that costs
-      the claims, and the half that costs nothing buys nothing.**
+      ⚠️ **Two hypotheses about the cause were measured and killed before this**:
+      `spendable` reading a guard-discounted `strike(mate)`, and `ArcPower` being
+      unpriced on the discharge. The second was a real fix (#230) and did nothing
+      for this. Neither was the cause; the cause was that nothing being measured
+      could see the change.
 
-      Redistributing which kit wins without playing measurably better is a balance
-      change wearing a rating fix. Merging the charge half means re-deriving three
-      claims, one of which reverses, and that is a design decision about the cast
-      rather than a re-baseline.
-
-      ⚠️ **The `ArcPower` gap named here is now closed** — `pricing.discharged`
-      prices the cash-in, and the conduit kit went **353 → 406 per mille**, above
-      the bursting kit it is measured against for the first time. ⚠️ **It did NOT
-      unblock the charge half**: with both in, the three claims still read
-      190/530 and 235/440 and all three still fail. That was the second hypothesis
-      about *why* the charge half hurts conduits to be measured and killed — the
-      first was `spendable` reading a discounted `strike(mate)`. **Whatever the
-      cause is, it has not been found, and it is not either of those.** Bisect the
-      next guess before writing it down.
+- [ ] ⚠️ **A declined turn makes a slow board slower, on a wall-heavy roster.**
+      Measured 2026-09-03 on the carapace board above: `forge.Bout` leaves **175 of
+      800** battles undecided with #234's pass rule off and **308 of 800** with it
+      on, and with it on the refusal comes from the CONTROL — Suggest against
+      itself. The shipped roster is unaffected (four declines over two hundred
+      battles, every one resolved), and the board is a constructed extreme, so this
+      is recorded rather than acted on. What it says is that declining a turn is
+      not free on a board that was already struggling to end: `frozen()` cannot
+      call it, because a unit with a self-aimed utility can still aim at something.
 
       The gap it came from: `shielded` and `guarded` pay to *put* a guard up and
       nothing discounted a blow *into* one, so the rating bought walls and treated
