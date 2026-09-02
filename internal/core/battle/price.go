@@ -81,8 +81,13 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 	total := int64(0)
 	from := fromSkill(declared)
 	if aimedAtAnEnemy(declared) {
-		total += p.fight.expected(actor, declared, aim)
+		dealt := p.fight.expected(actor, declared, aim)
+		total += dealt
 		total += p.finished(actor, declared, aim)
+		// And the health the blow takes back, which nothing here charged for
+		// until 2026-09-02: a plain hit rated above the same hit returning nine
+		// tenths of itself as healing.
+		total += p.drained(actor, declared, dealt)
 	}
 	if declared.Target == skill.All {
 		total -= p.friendlyFire(actor, declared, aim)
@@ -294,6 +299,43 @@ func (p *pricing) spentHealth(actor *Unit, declared skill.Skill) int64 {
 		return 0
 	}
 	return actor.MaxHP() * int64(declared.Cost) / scale.Base
+}
+
+// drained is the health a skill takes back out of the damage it deals, priced as
+// healing on the caster.
+//
+// ⚠️ **Four shipped things were worth nothing here** — `leech_seed`,
+// `dream_eater`, `blood_thirst` and `last_gasp` — and the measurement was blunt:
+// offered a plain hit and the same hit returning nine tenths of itself, the
+// rating took the plain one.
+//
+// A drain is the exact mirror of `restores`: health arriving on a unit that has
+// room for it. So it goes through worthHealing and collects the same three
+// clamps, the horizon included — the one that stops a heal outranking a kill by
+// construction, because expected clamps damage at what is left of a target while
+// a full bar of room has no such ceiling.
+//
+// The share comes from drainShare over the skill's own figure plus the caster's
+// traits, which is the expression resolveAgainst pays it with, cap and all: a
+// share of damage dealt is not a chance, so two drains simply both drain and the
+// sum is bounded rather than saturated. Reading only `declared.Drains` would have
+// priced `leech_seed` and left `blood_thirst` at nought, which is the shape of
+// half a fix.
+//
+// ⚠️ It reads damage **dealt** rather than damage rolled, which is what the field
+// means: a strike that missed drains nothing, and `expected` is already the
+// figure with the chance to hit weighted into it.
+//
+// ⚠️ Not clamped a second time against the damage. worthHealing's room clamp is
+// what bounds it, and drainShare has already bounded the share at the base — the
+// conservation the resolving side enforces is that health taken back cannot
+// exceed damage dealt, and a share of at most one of the damage cannot.
+func (p *pricing) drained(actor *Unit, declared skill.Skill, dealt int64) int64 {
+	share := drainShare(declared.Drains + p.fight.lifesteal(actor))
+	if share <= 0 || dealt <= 0 {
+		return 0
+	}
+	return worthHealing(dealt*int64(share)/scale.Base, actor, p.threat(actor))
 }
 
 // replied is what an attack costs its own caster in answers: the damage the

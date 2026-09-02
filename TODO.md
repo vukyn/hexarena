@@ -451,7 +451,7 @@ is only so the shape is readable.
       | mechanic | field | what the rating did |
       |---|---|---|
       | ~~repeating strikes~~ | ~~`Repeat`, `MaxStrikes`~~ | **done** — `Rules.Expected` reads `ExpectedStrikes` and `hitAgainst` carries the fields; a Magnemite kit built on `spark` went **3.6% → 25.0%** |
-      | draining | `Skill.Drains`, `Passive.Drains` | a plain hit beat the same hit returning 90% as healing |
+      | ~~draining~~ | ~~`Skill.Drains`, `Passive.Drains`~~ | **done** — `pricing.drained` through `worthHealing`; the shipped replay now has Venusaur casting `leech_seed` and healing where it healed nothing |
       | unblockable | `Skill.Unblockable` | into three block charges, the blockable 700 beat the unblockable 600 |
       | attacking **into** a guard | `Shield` / `Absorb` on the target | preferred the softer target carrying a pool of 100,000 — in all three arrangements, including with no pool at all |
 
@@ -467,7 +467,35 @@ is only so the shape is readable.
       `TestTheRatingReadsTheTailOfARepeatingSkill`,
       `TestAGuardIsWorthLessAgainstAnAttackerThatKeepsGoing`.
 
-      What is left is **guard** and **drains**, in that order.
+      **Drains is done too** — `pricing.drained` reads `drainShare(skill + traits)`
+      over the damage `expected` says will land and runs it through the same
+      `worthHealing` clamps a restore gets, so it is worth nothing on a caster
+      with no room and nothing on a caster nothing can reach.
+
+      ⚠️ **What is left is the GUARD, and it is written and measured on branch
+      `fix/the-rating-sees-a-guard` rather than merged.** Measured with
+      `forge.Bout` against the frozen ruler on a guard-heavy board — two walls
+      carrying `withdraw` and `carapace`, an unblockable carrier a side, 400 seeds
+      — the change reads **997‰ over 58 turns with every battle decided**, against
+      a rating without it that **refuses to answer at all**: 212 of 800 battles
+      undecided, because a rating that cannot see a wall keeps swinging into one.
+      The shipped roster carries no guard, which is why
+      `TestTheRatingBeatsPickingTheFirstThingItCan` reads 81.1% either way and why
+      nothing had noticed.
+
+      It is not merged because it breaks three design claims and each needs
+      deciding rather than re-baselining:
+
+      - `TestAShapeEarnsItsPowerWhereASparCannotSeeIt` — 353/281 becomes 235/440,
+        so the claim **flips**. Under a rating that can see walls, focus fire
+        concentrates and a column catches less.
+      - `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne` — 324 apart against
+        the 318 held, and ⚠️ **this one is a bug in the patch**: an arc is *not*
+        stopped by a guard, but `spendable` prices it as a share of
+        `strike(mate)`, which the patch discounts. A conduit should be worth
+        **more** against a wall, not less. Fix this first.
+      - `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip` — the strip leaves
+        1816 blows blocked against 2002 without it, under what is held.
 
       ⚠️ **The guard half is an internal contradiction rather than an omission.**
       `shielded` and `guarded` pay to *put* a guard up; nothing discounts a blow
@@ -479,8 +507,7 @@ is only so the shape is readable.
       `dream_eater`, `blood_thirst`, `last_gasp`. `taunt` and `heal_cut` are the
       same class and are already recorded in `README.md` § *Cutting the healing*.
 
-      Suggested order: **guard (with `unblockable`) → drains**, each its
-      own measured change. Worth adding with the first of them: a structural test
+      What is left is the **guard** alone, and the branch above is where it is. Worth adding with the first of them: a structural test
       that every `status.Category` has an arm in `granted` or `inflictedOn`, and a
       hand-kept table of every `Skill` field marked *priced* or *deliberately not,
       with the reason* — the guard that would have caught all four at once.
