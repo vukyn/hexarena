@@ -184,6 +184,17 @@ Rules for anything added to that file:
   rates by 180‰ and breaking three balance claims, one of which reverses. Bisected
   to the charge clause alone. Do not add it without re-deriving those claims — and
   read the note in TODO.md about `ArcPower` being unpriced on the discharge first.
+- **A discharge is priced on the turn that fires it, not only on the turn that
+  charges.** `pricing.discharged` walks `chainFrom` — the same function the
+  resolution walks, so the aim gates it identically — and prices each carrier at
+  the resolving `Rules.Damage` expression with `ArcPower * Takes(held)`, over the
+  expected strikes weighted by the chance to connect (an arc rides a strike that
+  did not MISS, so a blocked one still fires) and capped at the rounds the carrier
+  has stacks for. ⚠️ Before this, `ArcPower` appeared in one place in the file —
+  `spendable`, which decides whether *laying a charge down* is worth a turn — so a
+  conduit's whole payload was a free rider on the skill's own power. The aimed
+  carrier's arc is clamped at what the blow itself leaves of it, or a conduit
+  aimed at a sliver is worth that health twice.
 - ⚠️ **The queue may break a tie; it may never set a price.** A queue reading is
   **compared**, never added or multiplied. A value that reaches an arithmetic
   expression is tempo, and tempo is priced from the **speed stat** — see the tempo
