@@ -19,6 +19,16 @@ import (
 // different ones — so the direction is inverted: the raiser builds a
 // draw.Subject and pushes it, and the describer draws what it was handed.
 //
+// ⚠️ **And the describer's own way back is m.raisedFrom now.** The blurb carried
+// a `from screen` of its own for three releases, because one of its raisers still
+// wrote m.screen itself rather than returning a draw.Raise. All three return one
+// now, so navigate records the raiser in the slot it already keeps for a Back,
+// and the field is gone. `Subject.Kind` could not have replaced it: #207 measured
+// a listed skill and a battle option to be **one** subject and collapsed them
+// into SkillSubject, so the subject cannot tell the listing from the battle. The
+// raiser can, because it is this client's own enum and this is this client's own
+// file.
+//
 // What lives here is therefore everything a describer may not know: which of
 // this client's screens a subject belongs on, and which raiser an arrow key
 // walks while a describer is in front. The describers themselves are in
@@ -157,36 +167,35 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "q":
 		return m, tea.Quit
 	case "esc", "?":
-		m.screen = b.from
-		// ⚠️ And the raise is forgotten as it is used, exactly as navigate does
-		// with its own Back. This describer answers esc itself rather than
-		// through navigate, so nothing else clears the slot — and the browser's
-		// esc is a draw.Back now, so a record left behind would send the browser
-		// back to the browser.
-		m.raisedFrom = screenMenu
-		return m, nil
+		// ⚠️ Through goBack, exactly as navigate's own Back is. This describer
+		// answers esc itself rather than through navigate, so nothing else
+		// clears the slot — and the browser's esc is a draw.Back now, so a record
+		// left behind would send the browser back to the browser. It is also
+		// what restores the way back of a screen that was raised and then raised
+		// this: see model.raisedOver.
+		return m.goBack(), nil
 	}
-	if b.from == screenPlay {
+	if m.raisedFrom == screenPlay {
 		// The option behind moves from here too, the way the listing's cursor
 		// does, so four options can be read one after another without going back
-		// and forth. It goes through playScreen.move, which is the one place that
+		// and forth. It goes through draw.PlayScreen.Move, which is the one place that
 		// knows an unavailable option is stepped over.
 		//
 		// While aiming they do nothing: the skill is settled and the cell is
 		// what is being chosen, so walking the options would change what is
 		// described out from under a decision already half taken.
-		if m.play.pending != nil && !m.play.aiming {
+		if m.play.Pending != nil && !m.play.Aiming {
 			switch message.String() {
 			case "up", "k":
-				m.play = m.play.move(-1)
+				m.play = m.play.Move(-1)
 			case "down", "j":
-				m.play = m.play.move(1)
+				m.play = m.play.Move(1)
 			}
 		}
-		m.blurb.Subject = m.play.subject()
+		m.blurb.Subject = m.play.Subject()
 		return m, nil
 	}
-	if b.from == screenBrowse {
+	if m.raisedFrom == screenBrowse {
 		rows := len(m.browse.Rows())
 		switch message.String() {
 		// [ and ] alias the page keys, here and at the other two sites that
@@ -244,10 +253,11 @@ func (m model) updatePreview(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "q":
 		return m, tea.Quit
 	case "esc", "p":
-		m.screen = screenBrowse
-		// Forgotten as it is used, for the reason updateBlurb's esc forgets it.
-		m.raisedFrom = screenMenu
-		return m, nil
+		// Through goBack, for the reason updateBlurb's esc goes through it. The
+		// browser is the only thing that raises this, so what it follows is the
+		// browser — read rather than written down, which is the whole point of
+		// the client keeping the record.
+		return m.goBack(), nil
 	case "left", "h":
 		m.browse.Level = clamp(m.browse.Level-1, 1, progression.LevelCap)
 	case "right", "l":

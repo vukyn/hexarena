@@ -70,8 +70,8 @@ func TestTheBrowserRaisesBothDescribersAndStillLeaves(t *testing.T) {
 			// The description screen is the one that keeps its own way back, and
 			// it is filled in by the raise rather than by the describer: its two
 			// other raisers never come through navigate at all.
-			if trip.raised == screenBlurb && m.blurb.from != screenBrowse {
-				t.Errorf("the description thinks it was raised from screen %v", m.blurb.from)
+			if trip.raised == screenBlurb && m.raisedFrom != screenBrowse {
+				t.Errorf("the description thinks it was raised from screen %v", m.raisedFrom)
 			}
 			m = key(t, m, "esc")
 			if m.screen != screenBrowse {

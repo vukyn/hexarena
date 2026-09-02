@@ -8,9 +8,10 @@
 // the six read-only references (the affinity chart and its rings, the elements,
 // statuses, species, builds and traits listings) with their cursors and their
 // keystrokes, the two describers, the multi-select, the skill listing and the
-// form over it, the squad builder, and the works catalogue with the add-a-work
+// form over it, the squad builder, the works catalogue with the add-a-work
 // form over it — the seventh and last of the catalogues a game client will
-// offer.
+// offer — and the played battle, which is the screen a game client needs most
+// and the last of them to arrive.
 //
 // ⚠️ **Not every screen here is read-only any more.** The skill listing writes
 // `skills.json`, the squad builder writes `squads.json` and the works catalogue

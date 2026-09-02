@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -34,8 +33,8 @@ func atTheBattle(t *testing.T, m model) model {
 	if m.screen != screenPlay {
 		t.Fatalf("p opened %v rather than the battle", m.screen)
 	}
-	if m.play.err != nil {
-		t.Fatalf("the battle would not start: %v", m.play.err)
+	if m.play.Err != nil {
+		t.Fatalf("the battle would not start: %v", m.play.Err)
 	}
 	return m
 }
@@ -45,20 +44,20 @@ func atTheBattle(t *testing.T, m model) model {
 func TestTheFightRaisesABattleYouPlay(t *testing.T) {
 	m, _, _ := start(t, i18n.En)
 	m = atTheBattle(t, m)
-	if m.play.fight == nil {
+	if m.play.Fight == nil {
 		t.Fatal("no battle was built")
 	}
-	if m.play.pending == nil {
+	if m.play.Pending == nil {
 		t.Fatal("the battle opened without a turn for the player")
 	}
 	// The turn waiting is the player's own, which is the whole claim: every
 	// other side's turn is taken on the way here.
-	unit, known := m.play.fight.Unit(m.play.pending.Unit)
-	if !known || unit.Side != m.play.side {
-		t.Fatalf("the battle is waiting on %q", m.play.pending.Unit)
+	unit, known := m.play.Fight.Unit(m.play.Pending.Unit)
+	if !known || unit.Side != m.play.Side {
+		t.Fatalf("the battle is waiting on %q", m.play.Pending.Unit)
 	}
 	// And the cursor is on something that can actually be taken.
-	if option := m.play.pending.Options[m.play.option]; !option.Available() {
+	if option := m.play.Pending.Options[m.play.Option]; !option.Available() {
 		t.Errorf("the cursor opened on %q, which cannot be used: %s", option.Skill, option.Reason)
 	}
 	if back := key(t, m, "esc"); back.screen != screenFight {
@@ -66,278 +65,60 @@ func TestTheFightRaisesABattleYouPlay(t *testing.T) {
 	}
 }
 
-// TestATurnTakenMovesTheBattleOn is the loop: the player acts, the engine
-// answers, and the next thing waiting is the player again.
-func TestATurnTakenMovesTheBattleOn(t *testing.T) {
+// TestAWayBackSurvivesTheScreenItRaised is the whole of what model.raisedOver is
+// for, and it is the path no other test walks.
+//
+// A screen that was raised and then raises something itself has **two** doors
+// open at once: its own, and the one it just opened. The battle is the first
+// screen in this client with both — the fight opens it, and `?` opens a
+// description over it — so a way back kept in one slot is a way back the raise
+// overwrites, and the reader is quietly returned somewhere they have never been.
+//
+// ⚠️ **Depth one cannot see this, and depth one is what every other test walks.**
+// TestTheFightRaisesABattleYouPlay above presses `fight → p → esc` and lands on
+// the fight from a single slot, perfectly correctly; the defect needs the raise
+// **in between**. Measured: collapsing the push to an assignment
+// (`m.raisedOver, m.raisedFrom = m.raisedFrom, from` → `m.raisedFrom = from`)
+// leaves the entire client suite green except this test.
+//
+// The two walks share one battle, which is safe for exactly the four keystrokes
+// below: `?` reads the option under the cursor and `esc` leaves a screen, so
+// neither steps the pointer the model does not copy.
+func TestAWayBackSurvivesTheScreenItRaised(t *testing.T) {
 	m, _, _ := start(t, i18n.En)
 	m = atTheBattle(t, m)
-	before := len(m.play.script)
-	events := len(m.play.events)
-	m = key(t, m, "enter")
-	if len(m.play.script) <= before {
-		t.Fatal("nothing was written down")
+	described := typeText(t, m, "?")
+	if described.screen != screenBlurb {
+		t.Fatalf("? opened %v rather than the description", described.screen)
 	}
-	if len(m.play.events) <= events {
-		t.Error("a turn was taken and the battle recorded nothing")
+	returned := key(t, described, "esc")
+	if returned.screen != screenPlay {
+		t.Fatalf("esc left the description for %v rather than the battle it was raised "+
+			"from", returned.screen)
 	}
-	// The opponent answered on the way back, so the script grew by more than the
-	// one decision the player made.
-	if len(m.play.script) < before+2 && !m.play.fight.Finished() {
-		t.Errorf("the script holds %d decisions, want the player's and the engine's",
-			len(m.play.script))
+	if left := key(t, returned, "esc"); left.screen != screenFight {
+		t.Errorf("after a description had been read, esc left the battle for %v — want "+
+			"the fight that raised it, which is the door the raise displaced",
+			left.screen)
 	}
-	if m.play.pending == nil && !m.play.fight.Finished() {
-		t.Error("the battle stopped without a turn for the player and without ending")
+	// And the same key with nothing raised over the battle, so a failure above is
+	// about the raise rather than about esc.
+	if plain := key(t, m, "esc"); plain.screen != screenFight {
+		t.Errorf("esc left the battle for %v with nothing raised over it", plain.screen)
 	}
-}
-
-// TestUndoTakesBackYourOwnTurnAndNotTheEngines is the one thing a hand-played
-// battle needs that a simulation does not.
-//
-// It works because a battle is a pure function of its seed and the decisions
-// taken: undo is not an unwinding, it is a shorter list replayed. That is the
-// same property --verify rests on, which is why this is worth asserting here
-// rather than trusting.
-func TestUndoTakesBackYourOwnTurnAndNotTheEngines(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = atTheBattle(t, m)
-	opening := m.play.script
-	m = key(t, m, "enter")
-	if len(m.play.script) <= len(opening) {
-		t.Fatal("nothing to take back")
-	}
-	fought := len(m.play.script)
-	m = typeText(t, m, "u")
-	if len(m.play.script) >= fought {
-		t.Fatalf("undo left %d decisions of %d", len(m.play.script), fought)
-	}
-	// What is left ends with somebody else's turn: undo cuts at the player's
-	// last decision, so nothing of theirs survives it.
-	for _, decision := range m.play.script {
-		unit, known := m.play.fight.Unit(decision.Unit)
-		if known && unit.Side == m.play.side {
-			t.Errorf("a turn of the player's own survived the undo: %+v", decision)
-		}
-	}
-	// And the battle is waiting on the player again rather than on nobody.
-	if m.play.pending == nil && !m.play.fight.Finished() {
-		t.Error("after an undo the battle waits on nothing")
-	}
-	// Nothing to take back is not an error, it is a key that does nothing.
-	fresh, _, _ := start(t, i18n.En)
-	fresh = atTheBattle(t, fresh)
-	fresh = typeText(t, fresh, "u")
-	if fresh.play.err != nil {
-		t.Errorf("undo with nothing of the player's in the script reported %v", fresh.play.err)
-	}
-}
-
-// TestAnotherSeedIsAnotherBattle is what a player asks for when a pairing has
-// been played once.
-func TestAnotherSeedIsAnotherBattle(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = atTheBattle(t, m)
-	m = key(t, m, "enter")
-	seed := m.play.seed
-	fought := len(m.play.script)
-	m = typeText(t, m, "n")
-	if m.play.seed != seed+1 {
-		t.Errorf("n moved the seed to %d, want %d", m.play.seed, seed+1)
-	}
-	if len(m.play.script) >= fought {
-		t.Errorf("the new battle kept %d decisions from the old one", len(m.play.script))
-	}
-	if m.play.err != nil {
-		t.Errorf("the new battle would not start: %v", m.play.err)
-	}
-}
-
-// TestAimingIsAskedOnlyWhenItIsADecision is the second question: a skill with
-// one legal cell does not ask it, because a question with one answer is not a
-// decision.
-func TestAimingIsAskedOnlyWhenItIsADecision(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = menuTo(t, m, screenSquads)
-	m.squad = someSquad(t, m)
-	// A second member, so an enemy-aimed skill has two cells to choose between.
-	second := m.squad.Editing.Units[0].Clone()
-	second.ID = "hai"
-	second.Slot = hex.Offset{Col: hex.FormationCols - 1, Row: 0}
-	m.squad.Editing.Units = append(m.squad.Editing.Units, second)
-	m = withASquadSaved(t, m)
-	m = key(t, m, "esc")
-	m = typeText(t, m, "f")
-	m = typeText(t, m, "p")
-	if m.play.pending == nil {
-		t.Fatal("the battle opened without a turn for the player")
-	}
-	// Walk to a skill with more than one cell, if the opening turn has one.
-	found := false
-	for index, option := range m.play.pending.Options {
-		if option.Available() && len(option.Aims) > 1 {
-			m.play.option = index
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Skip("no skill on the opening turn has two cells to choose between")
-	}
-	m = key(t, m, "enter")
-	if !m.play.aiming {
-		t.Fatal("a skill with two cells acted without asking where")
-	}
-	body := m.screenContent()
-	if !strings.Contains(body, strings.Fields(m.text(i18n.PlayAimAt, "x"))[0]) {
-		t.Errorf("the aim list is not drawn:\n%s", body)
-	}
-	// esc backs out of the second question without spending the turn.
-	before := len(m.play.script)
-	m = key(t, m, "esc")
-	if m.play.aiming {
-		t.Error("esc did not leave the aim list")
-	}
-	if m.screen != screenPlay {
-		t.Errorf("esc left the battle for %v", m.screen)
-	}
-	if len(m.play.script) != before {
-		t.Error("backing out of an aim spent the turn")
-	}
-}
-
-// TestABattlePlayedOutEndsAndSaysHow is the far end of the screen, driven by
-// the key that hands each turn to the engine.
-func TestABattlePlayedOutEndsAndSaysHow(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = atTheBattle(t, m)
-	for range playTurnLimit {
-		if m.play.fight.Finished() || m.play.err != nil {
-			break
-		}
-		m = typeText(t, m, "a")
-	}
-	if m.play.err != nil {
-		t.Fatalf("the battle broke: %v", m.play.err)
-	}
-	if !m.play.fight.Finished() {
-		t.Fatal("the battle never ended")
-	}
-	// It says which of the four endings it was, in words rather than in a code.
-	body := m.screenContent()
-	said := false
-	for _, ending := range []i18n.Key{i18n.PlayWon, i18n.PlayLost, i18n.PlayDrawn, i18n.PlayEmptied} {
-		if strings.Contains(body, m.text(ending)) {
-			said = true
-		}
-	}
-	if !said {
-		t.Errorf("the battle ended and the screen does not say how:\n%s", body)
-	}
-	// The script is the whole battle, both sides in it, so what was played can
-	// be replayed.
-	sides := map[hex.Side]int{}
-	for _, decision := range m.play.script {
-		if unit, known := m.play.fight.Unit(decision.Unit); known {
-			sides[unit.Side]++
-		}
-	}
-	if sides[hex.SideAlly] == 0 || sides[hex.SideEnemy] == 0 {
-		t.Errorf("the script holds %v, want turns from both sides", sides)
-	}
-	var _ battle.Script = m.play.script
-}
-
-// TestEveryOptionIsSummarised is the first half of the claim: the turn's options
-// each have a compact line, asked of the function that composes it rather than of
-// the row that draws it.
-//
-// Split from the row test on purpose. What SummariseSkill returns and what fits
-// on a row are two different questions, and asserting them together made the
-// second one silently assert the first: a row is **clipped**, so "the full summary
-// appears in the row" is a claim the design does not make and cannot keep. purify
-// is where that showed — it strips three categories and its Vietnamese line came
-// to 104 cells against 65 of room.
-func TestEveryOptionIsSummarised(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		m, _, _ := start(t, lang)
-		m = atTheBattle(t, m)
-		options := m.play.pending.Options
-		if len(options) == 0 {
-			t.Fatalf("%s: the opening turn offers nothing to describe", lang)
-		}
-		for _, option := range options {
-			// The wording is i18n's own, so this asks for that string rather than
-			// for a clause of its own: a test naming one here would be the wording
-			// living in two places, which is what the AST scan refuses.
-			summary := m.lang.SummariseSkill(
-				mustSkill(t, m, option.Skill), m.lib.Patterns())
-			if strings.TrimSpace(summary) == "" {
-				t.Errorf("%s: %q summarises as nothing", lang, option.Skill)
-			}
-		}
-	}
-}
-
-// TestAnOptionRowCarriesAsMuchOfItsSummaryAsItHasRoomFor is the second half: the
-// row.
-//
-// Three things, and the row count is the one that matters most. The screen is
-// already eight rows past the window it declares, so a pane under the list would
-// have been a pane nobody in a 120x24 terminal ever sees — which is why the answer
-// is a line beside each option.
-//
-// The other two are what clipping actually promises. The slot holds a **prefix**
-// of the summary, and the longest prefix the room allows: shorter would be the row
-// throwing away cells it has, longer would be the row running past the window. It
-// is read out of the row at the offset the constants give rather than searched
-// for, because a clipped summary has no index to find — which is the second
-// failure purify produced, and it was a consequence of the first rather than a
-// separate defect.
-func TestAnOptionRowCarriesAsMuchOfItsSummaryAsItHasRoomFor(t *testing.T) {
-	const drawable = minWidth - 1
-	for _, lang := range i18n.Langs() {
-		m, _, _ := start(t, lang)
-		m = atTheBattle(t, m)
-		options := m.play.pending.Options
-		if len(options) == 0 {
-			t.Fatalf("%s: the opening turn offers nothing to draw", lang)
-		}
-		drawn := m.play.choices(m)
-		rows := strings.Split(strings.TrimRight(drawn, "\n"), "\n")
-		// One heading and one row an option: exactly what it was before the
-		// summary arrived.
-		if len(rows) != len(options)+1 {
-			t.Fatalf("%s: %d options draw %d rows, want one each under one heading:\n%s",
-				lang, len(options), len(rows), drawn)
-		}
-		room := drawable - markerWidth - m.play.optionWidth() - optionGap
-		for index, option := range options {
-			row := rows[index+1]
-			if width := lipgloss.Width(row); width > drawable {
-				t.Errorf("%s: row %d is %d cells over the %d it has:\n%s",
-					lang, index, width, drawable, row)
-			}
-			// The id sits in the measured column, which is what makes every slot
-			// after it start in the same place.
-			named, tail := optionColumns(m, row)
-			if named != option.Skill {
-				t.Errorf("%s: row %d holds %q in the id column, want %q:\n%s",
-					lang, index, named, option.Skill, row)
-			}
-			summary := m.lang.SummariseSkill(
-				mustSkill(t, m, option.Skill), m.lib.Patterns())
-			if !strings.HasPrefix(summary, tail) || tail == "" {
-				t.Errorf("%s: %q draws %q beside it, which is no part of %q",
-					lang, option.Skill, tail, summary)
-				continue
-			}
-			if tail != summary && lipgloss.Width(tail) != room {
-				t.Errorf("%s: %q draws %d of the %d cells its row has and its "+
-					"summary is %d: a clip has to take the whole room",
-					lang, option.Skill, lipgloss.Width(tail), room,
-					lipgloss.Width(summary))
-			}
-		}
+	// ⚠️ **And the rest of the way out, which is what makes two slots enough
+	// rather than merely today's number.** This chain is catalogue → fight →
+	// battle → description, which is **three** pushes and not two, so the third
+	// one displaces the catalogue and nothing puts it back. It is sound only
+	// because the fight answers esc by naming the catalogue **itself** instead
+	// of following a way back — see model.raisedOver. Walking to the bottom is
+	// what measures that: the day the fight's esc becomes a draw.Back, this leg
+	// lands on the menu and two slots stop being enough.
+	out := key(t, key(t, returned, "esc"), "esc")
+	if out.screen != screenSquads {
+		t.Errorf("leaving the fight after a battle and a description landed on %v, want "+
+			"the catalogue — the chain is three raises deep and two slots hold it only "+
+			"while the fight names its own door", out.screen)
 	}
 }
 
@@ -351,12 +132,12 @@ func TestAnOptionRowCarriesAsMuchOfItsSummaryAsItHasRoomFor(t *testing.T) {
 // and an id is ASCII, both of which are held by tests of their own.
 func optionColumns(m model, row string) (named, tail string) {
 	letters := []rune(row)
-	column := markerWidth + m.play.optionWidth()
-	if len(letters) < column+optionGap {
+	column := draw.PlayMarkerWidth + m.play.OptionWidth()
+	if len(letters) < column+draw.PlayOptionGap {
 		return "", ""
 	}
-	return strings.TrimRight(string(letters[markerWidth:column]), " "),
-		string(letters[column+optionGap:])
+	return strings.TrimRight(string(letters[draw.PlayMarkerWidth:column]), " "),
+		string(letters[column+draw.PlayOptionGap:])
 }
 
 // widestIDInTheBook is the id column at its worst: the widest skill id anything
@@ -376,45 +157,6 @@ const (
 	widestIDInTheBook = 13
 	summaryOvershoot  = 4
 )
-
-// TestNoSummaryIsWiderThanARowCanHold is the guard that was missing, and purify
-// is why it exists.
-//
-// It strips three categories, and the summary enumerated them: 79 cells for that
-// clause alone in Vietnamese, before the aim and the cooldown were appended, on a
-// line that has 62 at worst — so the aim, the range and the cooldown could never
-// be drawn at all. Nothing said so. The golden records the text and not its width,
-// and the row test cannot help: a clip is the design, so an unboundedly long
-// summary clips to a legal row and every assertion passes.
-//
-// So the width is measured here, over every skill the library holds rather than
-// over the shipped book — purify is a fixture skill, which is exactly how it
-// stayed invisible while describe.golden looked fine.
-func TestNoSummaryIsWiderThanARowCanHold(t *testing.T) {
-	room := minWidth - 1 - markerWidth - widestIDInTheBook - optionGap
-	for _, lang := range i18n.Langs() {
-		m, _, _ := start(t, lang)
-		skills := m.lib.Skills().Skills()
-		if len(skills) == 0 {
-			t.Fatalf("%s: the library holds no skills, so nothing was measured", lang)
-		}
-		worst, worstAt := 0, ""
-		for _, declared := range skills {
-			if width := lipgloss.Width(
-				m.lang.SummariseSkill(declared, m.lib.Patterns())); width > worst {
-				worst, worstAt = width, declared.ID
-			}
-		}
-		if worst > room+summaryOvershoot {
-			t.Errorf("%s: %q summarises to %d cells against the %d a row has at "+
-				"the widest id, past the %d this allows: a clause that can only "+
-				"arrive trimmed is not a reading",
-				lang, worstAt, worst, room, room+summaryOvershoot)
-		}
-		t.Logf("%s: the widest is %q at %d cells, against %d of room",
-			lang, worstAt, worst, room)
-	}
-}
 
 // TestAClippedRowKeepsTheLongestPrefixItHasRoomFor is the clip itself, measured
 // where it actually happens.
@@ -514,7 +256,7 @@ func aBookWithALongID(t *testing.T, lang i18n.Lang) model {
 		plain.lang.SummariseSkill(theWidestSummary(plain), plain.lib.Patterns()))
 
 	dir := scratchData(t)
-	length := minWidth - 1 - markerWidth - optionGap - (widest - clearlyInside)
+	length := minWidth - 1 - draw.PlayMarkerWidth - draw.PlayOptionGap - (widest - clearlyInside)
 	if length < 1 {
 		t.Fatalf("%s: the widest summary is %d cells, so no id shrinks the row under it",
 			lang, widest)
@@ -530,7 +272,7 @@ func theClippedRow(t *testing.T, lang i18n.Lang, drawable int,
 	m := book(t, lang)
 	m = atTheBattle(t, m)
 	wordiest, longest := theWidestSummary(m), theWidestID(m)
-	room := drawable - markerWidth - lipgloss.Width(longest.ID) - optionGap
+	room := drawable - draw.PlayMarkerWidth - lipgloss.Width(longest.ID) - draw.PlayOptionGap
 	summary := m.lang.SummariseSkill(wordiest, m.lib.Patterns())
 	if lipgloss.Width(summary) <= room {
 		if !mayNotClip {
@@ -545,15 +287,15 @@ func theClippedRow(t *testing.T, lang i18n.Lang, drawable int,
 			"so nothing in the book clips", lang, wordiest.ID,
 			lipgloss.Width(summary), room)
 	}
-	m.play.pending = &battle.Prompt{
-		Unit: m.play.pending.Unit, Turn: m.play.pending.Turn,
+	m.play.Pending = &battle.Prompt{
+		Unit: m.play.Pending.Unit, Turn: m.play.Pending.Turn,
 		Options: []battle.Option{
-			{Skill: wordiest.ID, Aims: m.play.pending.Options[0].Aims},
-			{Skill: longest.ID, Aims: m.play.pending.Options[0].Aims},
+			{Skill: wordiest.ID, Aims: m.play.Pending.Options[0].Aims},
+			{Skill: longest.ID, Aims: m.play.Pending.Options[0].Aims},
 		},
 	}
-	m.play.option = 0
-	rows := strings.Split(strings.TrimRight(m.play.choices(m), "\n"), "\n")
+	m.play.Option = 0
+	rows := strings.Split(strings.TrimRight(m.play.Choices(m.ctx()), "\n"), "\n")
 	if len(rows) != 3 {
 		t.Fatalf("%s: two options drew %d rows", lang, len(rows))
 	}
@@ -607,57 +349,6 @@ func theWidestID(m model) skill.Skill {
 	return found
 }
 
-// TestAnUnavailableOptionKeepsItsReasonAndNotItsSummary is the one row where the
-// two answers compete for one slot.
-//
-// ⚠️ The reason wins, and that is not an oversight to be tidied later. Why a
-// skill cannot be cast is the live question the moment a cursor steps over it,
-// and what the skill does is one keystroke away on the description screen.
-//
-// Read out of the slot rather than searched for, for the reason the tests above
-// are: "the summary is not in the row" passes for free on a row where the summary
-// was merely clipped, which would make this assert nothing at all.
-func TestAnUnavailableOptionKeepsItsReasonAndNotItsSummary(t *testing.T) {
-	m, _, _ := start(t, i18n.En)
-	m = atTheBattle(t, m)
-	// Something has to go on cooldown first: every option is available on the
-	// turn a battle opens, which is exactly why this is not covered by the tests
-	// above.
-	found := -1
-	for range 40 {
-		if m.play.pending == nil || m.play.err != nil {
-			break
-		}
-		for index, option := range m.play.pending.Options {
-			if !option.Available() && option.Reason != "" {
-				found = index
-			}
-		}
-		if found >= 0 {
-			break
-		}
-		m = typeText(t, m, "a")
-	}
-	if found < 0 {
-		t.Skip("nothing came off cooldown in forty turns, so no option is refused")
-	}
-	option := m.play.pending.Options[found]
-	rows := strings.Split(strings.TrimRight(m.play.choices(m), "\n"), "\n")
-	_, tail := optionColumns(m, rows[found+1])
-	if tail == "" || !strings.HasPrefix(option.Reason, tail) {
-		t.Errorf("the refused option draws %q beside it, which is no part of its "+
-			"reason %q", tail, option.Reason)
-	}
-	summary := m.lang.SummariseSkill(mustSkill(t, m, option.Skill), m.lib.Patterns())
-	if strings.TrimSpace(summary) == "" {
-		t.Fatalf("%q summarises as nothing, so this proves nothing", option.Skill)
-	}
-	if strings.HasPrefix(summary, tail) {
-		t.Errorf("the refused option draws %q, which is its summary rather than "+
-			"its reason %q", tail, option.Reason)
-	}
-}
-
 // TestTheQuestionMarkDescribesTheOptionInFront is the long form of the line
 // beside the cursor.
 //
@@ -669,17 +360,17 @@ func TestTheQuestionMarkDescribesTheOptionInFront(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		m, _, _ := start(t, lang)
 		m = atTheBattle(t, m)
-		fought := len(m.play.script)
-		option := m.play.pending.Options[m.play.option]
+		fought := len(m.play.Script)
+		option := m.play.Pending.Options[m.play.Option]
 		raised := typeText(t, m, "?")
-		if raised.screen != screenBlurb || raised.blurb.from != screenPlay {
-			t.Fatalf("%s: ? opened %v from %v", lang, raised.screen, raised.blurb.from)
+		if raised.screen != screenBlurb || raised.raisedFrom != screenPlay {
+			t.Fatalf("%s: ? opened %v from %v", lang, raised.screen, raised.raisedFrom)
 		}
 		// ⚠️ The battle is a pointer, so raising and leaving this must step no
 		// turn: view reads the option and nothing else.
-		if len(raised.play.script) != fought || raised.play.fight.Finished() {
+		if len(raised.play.Script) != fought || raised.play.Fight.Finished() {
 			t.Errorf("%s: raising the description spent %d decisions",
-				lang, len(raised.play.script)-fought)
+				lang, len(raised.play.Script)-fought)
 		}
 		body := raised.screenContent()
 		if !strings.Contains(body, option.Skill) &&
@@ -700,14 +391,14 @@ func TestTheQuestionMarkDescribesTheOptionInFront(t *testing.T) {
 		if back.screen != screenPlay {
 			t.Errorf("%s: esc left the description for %v", lang, back.screen)
 		}
-		if len(back.play.script) != fought || back.play.seed != m.play.seed {
+		if len(back.play.Script) != fought || back.play.Seed != m.play.Seed {
 			t.Errorf("%s: coming back rebuilt the battle: seed %d, %d decisions",
-				lang, back.play.seed, len(back.play.script))
+				lang, back.play.Seed, len(back.play.Script))
 		}
 		// ↑/↓ walks the option behind, so four of them can be read one after
 		// another.
 		walked := key(t, raised, "down")
-		if len(m.play.pending.Options) > 1 && walked.play.option == raised.play.option {
+		if len(m.play.Pending.Options) > 1 && walked.play.Option == raised.play.Option {
 			t.Errorf("%s: the cursor behind the description did not move", lang)
 		}
 	}
@@ -725,118 +416,42 @@ func TestTheQuestionMarkWorksWhileAimingAndNotWithoutAPrompt(t *testing.T) {
 	m, _, _ := start(t, i18n.En)
 	m = atTheBattle(t, m)
 	aiming := m
-	aiming.play.aiming = true
+	aiming.play.Aiming = true
 	raised := typeText(t, aiming, "?")
-	if raised.screen != screenBlurb || raised.blurb.from != screenPlay {
-		t.Fatalf("? while aiming opened %v from %v", raised.screen, raised.blurb.from)
+	if raised.screen != screenBlurb || raised.raisedFrom != screenPlay {
+		t.Fatalf("? while aiming opened %v from %v", raised.screen, raised.raisedFrom)
 	}
 	if !strings.Contains(raised.screenContent(),
-		aiming.play.pending.Options[aiming.play.option].Skill) &&
+		aiming.play.Pending.Options[aiming.play.Option].Skill) &&
 		strings.TrimSpace(raised.screenContent()) == "" {
 		t.Error("the description while aiming is empty")
 	}
 	// And it leaves the aim where it was: coming back has to land on the second
 	// question rather than on the first.
-	if back := key(t, raised, "esc"); !back.play.aiming {
+	if back := key(t, raised, "esc"); !back.play.Aiming {
 		t.Error("coming back from the description dropped the aim")
 	}
 	// ↑/↓ does nothing here: the skill is settled, and walking the options would
 	// change what is described out from under a half-taken decision.
-	if walked := key(t, raised, "down"); walked.play.option != raised.play.option {
+	if walked := key(t, raised, "down"); walked.play.Option != raised.play.Option {
 		t.Error("the description walked the option list while a skill was already chosen")
 	}
 
 	// Nothing pending is a key that does nothing.
 	over := m
-	for range playTurnLimit {
-		if over.play.fight.Finished() || over.play.err != nil {
+	for range draw.PlayTurnLimit {
+		if over.play.Fight.Finished() || over.play.Err != nil {
 			break
 		}
 		over = typeText(t, over, "a")
 	}
-	if !over.play.fight.Finished() {
+	if !over.play.Fight.Finished() {
 		t.Fatal("the battle never ended, so there is no promptless state to test")
 	}
 	if quiet := typeText(t, over, "?"); quiet.screen != screenPlay {
 		t.Errorf("? on a finished battle opened %v", quiet.screen)
 	}
 }
-
-// TestTheBattleFootersNameTheDescriptionKeyAndFit is the defect this shipped
-// with, measured rather than counted.
-//
-// ⚠️ Both battle footers were over the window and nothing said so: the fixture
-// in everyScreen handed the width sweep a battle that was already finished, so
-// PlayFooter and PlayAimFooter were drawn by nothing in the suite and came to 82
-// and 83 cells against the 79 there are. The sweep covers them now; this holds
-// the other half, which a width test cannot — that the key the whole feature
-// hangs on is still named after the next person trims a footer.
-// ⚠️ **The scroll keys are named here too, and the aim footer carries them
-// because the log is drawn while aiming.** Room had to be made rather than a key
-// given up, which is the choice this feature was asked for: the battle footer was
-// 77 cells (vi) and 78 (en) of the 79 there are, so the words after ↑/↓, enter and
-// ? are dropped — the three keys whose meaning the screen itself shows, which is
-// the same judgement BrowseFooter and this footer's own esc already took. The
-// widths below are logged rather than asserted against a number, because a
-// hand-count of a candidate came back four cells wrong twice in a row.
-func TestTheBattleFootersNameTheDescriptionKeyAndFit(t *testing.T) {
-	const drawable = minWidth - 1
-	for _, lang := range i18n.Langs() {
-		m, _, _ := start(t, lang)
-		footers := map[string]string{
-			"battle": m.text(i18n.PlayFooter, saveKeyLabel()),
-			"aim":    m.text(i18n.PlayAimFooter),
-			// The log is drawn on a finished battle as well, and reading back
-			// through it is most of what is left to do there.
-			"over": m.text(i18n.PlayOverFooter, saveKeyLabel()),
-		}
-		for name, footer := range footers {
-			if width := lipgloss.Width(footer); width > drawable {
-				t.Errorf("%s: the %s footer is %d cells over the %d it has: %q",
-					lang, name, width, drawable, footer)
-			}
-			for _, named := range []string{scrollBackKey, scrollOnKey} {
-				if !strings.Contains(footer, named) {
-					t.Errorf("%s: the %s footer does not name %q: %q",
-						lang, name, named, footer)
-				}
-			}
-			t.Logf("%s: the %s footer is %d cells", lang, name, lipgloss.Width(footer))
-		}
-		// The two footers a turn is taken from also name the key the description
-		// hangs on. The finished battle has no option under a cursor, so it has
-		// nothing to describe and does not offer it.
-		for _, name := range []string{"battle", "aim"} {
-			if !strings.Contains(footers[name], describeKey) {
-				t.Errorf("%s: the %s footer does not name %q: %q",
-					lang, name, describeKey, footers[name])
-			}
-		}
-	}
-}
-
-// describeKey is the keystroke that raises a description, and the two scroll keys
-// are the pair that walks the log — named here so the test above is about the
-// footer and not about a letter.
-//
-// They are [ and ] because ↑/↓ walk the options and may not be taken, and because
-// this pair scrolls the trait description and the picker too: a second pair for one
-// idea is the drift this repository keeps a list of. The footer spells them the way
-// PickerReadingFooter does.
-//
-// ⚠️ **They are what the footer NAMES, which is no longer all that scrolls.**
-// pgup/pgdown still walk every one of those frames and are not going away — the
-// brackets are aliases for them, asserted site by site in
-// TestABracketScrollsWhereverAPageKeyDoes. What changed is which pair is
-// advertised, and it is the brackets because a compact keyboard has no page keys
-// at all: the pair naming them was unreachable advice on such a board, and
-// advertising both does not fit (pgdn/pgup is nine cells against the brackets'
-// three, and the English aim footer would come to 86 of the 79 there are).
-const (
-	describeKey   = "?"
-	scrollBackKey = "["
-	scrollOnKey   = "]"
-)
 
 // mustSkill is one skill out of the library in hand.
 func mustSkill(t *testing.T, m model, id string) skill.Skill {
@@ -869,16 +484,16 @@ func TestASavedBattleReplaysExactly(t *testing.T) {
 	// A few turns in, so the script has both sides in it and the save is not
 	// recording an opening board.
 	for range 6 {
-		if m.play.fight.Finished() {
+		if m.play.Fight.Finished() {
 			break
 		}
 		m = typeText(t, m, "a")
 	}
 	m = key(t, m, "ctrl+s")
-	if m.play.err != nil {
-		t.Fatalf("the save was refused: %v", m.play.err)
+	if m.play.Err != nil {
+		t.Fatalf("the save was refused: %v", m.play.Err)
 	}
-	if len(m.play.notes) == 0 {
+	if len(m.play.Notes) == 0 {
 		t.Fatal("a write said nothing")
 	}
 	// It landed in the battles folder, under a name built from the pairing.
@@ -897,9 +512,9 @@ func TestASavedBattleReplaysExactly(t *testing.T) {
 	if !log.Replayable() {
 		t.Fatal("the log records no placement, so nothing could re-run it")
 	}
-	if log.Seed != m.play.seed || len(log.Choices) != len(m.play.script) {
+	if log.Seed != m.play.Seed || len(log.Choices) != len(m.play.Script) {
 		t.Errorf("the log holds seed %d and %d choices, want %d and %d",
-			log.Seed, len(log.Choices), m.play.seed, len(m.play.script))
+			log.Seed, len(log.Choices), m.play.Seed, len(m.play.Script))
 	}
 
 	rerun, err := battle.New(lib.Books(), log.Seed, log.Roster)
@@ -907,7 +522,7 @@ func TestASavedBattleReplaysExactly(t *testing.T) {
 		t.Fatalf("rebuild: %v", err)
 	}
 	rerun.Begin()
-	if _, _, err := rerun.Replay(log.Choices, playTurnLimit, nil); err != nil {
+	if _, _, err := rerun.Replay(log.Choices, draw.PlayTurnLimit, nil); err != nil {
 		t.Fatalf("re-running the battle: %v", err)
 	}
 	produced := rerun.Drain()
@@ -943,8 +558,8 @@ func TestASquadNameCannotClimbOutOfTheBattlesFolder(t *testing.T) {
 	m = typeText(t, m, "f")
 	m = typeText(t, m, "p")
 	m = key(t, m, "ctrl+s")
-	if m.play.err != nil {
-		t.Fatalf("the save was refused: %v", m.play.err)
+	if m.play.Err != nil {
+		t.Fatalf("the save was refused: %v", m.play.Err)
 	}
 	written, err := filepath.Glob(filepath.Join(dir, "battles", "*.json"))
 	if err != nil || len(written) != 1 {
@@ -1018,15 +633,15 @@ func atABattleOf(t *testing.T, m model, side int) model {
 	if m.screen != screenPlay {
 		t.Fatalf("p opened %v rather than the battle", m.screen)
 	}
-	if m.play.err != nil {
-		t.Fatalf("a %d-a-side battle would not start: %v", side, m.play.err)
+	if m.play.Err != nil {
+		t.Fatalf("a %d-a-side battle would not start: %v", side, m.play.Err)
 	}
-	if m.play.fight == nil {
+	if m.play.Fight == nil {
 		t.Fatalf("a %d-a-side battle built nothing", side)
 	}
-	if want := side * 2; len(m.play.fight.Units()) != want {
+	if want := side * 2; len(m.play.Fight.Units()) != want {
 		t.Fatalf("a %d-a-side pairing fielded %d units, want %d",
-			side, len(m.play.fight.Units()), want)
+			side, len(m.play.Fight.Units()), want)
 	}
 	return m
 }
@@ -1061,9 +676,9 @@ func squadSlots(n int) []hex.Offset {
 // # The battle screen's height, and where the cut lands
 //
 // The screen cannot fit the window the tool declares, and nothing below pretends
-// it can. Measured at 120x24, where playBodyRoom leaves the body twenty rows: the
+// it can. Measured at 120x24, where draw.PlayBodyRoom leaves the body twenty rows: the
 // heading is one, tui.Board is a fixed ten, tui.Roster is one plus a row a unit,
-// tui.Order is one, the log asks for playLogWanted and the option list is one plus
+// tui.Order is one, the log asks for draw.PlayLogWanted and the option list is one plus
 // a row an option — so a 1v1 wants twenty of those rows before a single blank or
 // log line, a 3v3 twenty-four and a 5v5 **twenty-eight**. A legal squad is up to
 // hex.MaxTeamSize a side, so twenty-eight is the floor for one, and a summon puts
@@ -1101,16 +716,16 @@ func heightsFrom(low, high int) []int {
 func withAFullLog(t *testing.T, m model) model {
 	t.Helper()
 	for range 20 {
-		if len(m.play.logRows(m)) >= playLogWanted || m.play.fight.Finished() {
+		if len(m.play.LogRows(m.ctx())) >= draw.PlayLogWanted || m.play.Fight.Finished() {
 			break
 		}
 		m = typeText(t, m, "a")
 	}
-	if rows := len(m.play.logRows(m)); rows < playLogWanted {
+	if rows := len(m.play.LogRows(m.ctx())); rows < draw.PlayLogWanted {
 		t.Fatalf("the history came to %d rows of %d, so a squeezed log was not measured",
-			rows, playLogWanted)
+			rows, draw.PlayLogWanted)
 	}
-	if m.play.pending == nil {
+	if m.play.Pending == nil {
 		t.Fatal("the battle stopped waiting on the player, so no option list is drawn")
 	}
 	return m
@@ -1127,17 +742,17 @@ func withAFullLog(t *testing.T, m model) model {
 // This fails rather than measuring nothing if the battle ends first.
 func withALongLog(t *testing.T, m model, rows int) model {
 	t.Helper()
-	for range playTurnLimit {
-		if len(m.play.logRows(m)) >= rows || m.play.fight.Finished() ||
-			m.play.err != nil {
+	for range draw.PlayTurnLimit {
+		if len(m.play.LogRows(m.ctx())) >= rows || m.play.Fight.Finished() ||
+			m.play.Err != nil {
 			break
 		}
 		m = typeText(t, m, "a")
 	}
-	if m.play.err != nil {
-		t.Fatalf("playing the battle out broke: %v", m.play.err)
+	if m.play.Err != nil {
+		t.Fatalf("playing the battle out broke: %v", m.play.Err)
 	}
-	if got := len(m.play.logRows(m)); got < rows {
+	if got := len(m.play.LogRows(m.ctx())); got < rows {
 		t.Fatalf("the battle finished with a history of %d rows against the %d this "+
 			"needs, so nothing above the frame was constructed", got, rows)
 	}
@@ -1160,7 +775,7 @@ type drawn struct {
 }
 
 func whatIsDrawn(m model) (drawn, string, string) {
-	body, footer := m.play.view(m)
+	body, footer := m.play.View(m.ctx())
 	lines := strings.Split(body, "\n")
 	present := make(map[string]int, len(lines))
 	for _, line := range lines {
@@ -1168,22 +783,22 @@ func whatIsDrawn(m model) (drawn, string, string) {
 	}
 	p := m.play
 	var found drawn
-	board := strings.Split(tui.Board(p.fight, p.tags), "\n")
+	board := strings.Split(tui.Board(p.Fight, p.Tags), "\n")
 	found.board = present[board[0]] > 0 && present[board[len(board)-1]] > 0
 	// The header is not a unit, so the count starts past it.
-	for _, row := range strings.Split(tui.Roster(p.fight, p.tags), "\n")[1:] {
+	for _, row := range strings.Split(tui.Roster(p.Fight, p.Tags), "\n")[1:] {
 		if present[row] > 0 {
 			found.roster++
 		}
 	}
-	found.order = present[m.style.Dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))] > 0
+	found.order = present[m.style.Dim.Render(tui.Order(p.Fight.Queue(), p.Tags, 6))] > 0
 	// Counted as a multiset and not by lookup: the log's rows are not distinct —
 	// tui.Line opens a turn with a blank one — so asking whether each is on the
 	// screen counts every blank row once per blank row there is. Over the **whole
 	// history** rather than over the frame, because the frame is what is being
 	// measured: counting the rows the screen decided to draw would be the test
 	// asking the view what it had decided.
-	for _, row := range p.logRows(m) {
+	for _, row := range p.LogRows(m.ctx()) {
 		if present[row] > 0 {
 			present[row]--
 			found.log++
@@ -1213,7 +828,7 @@ func noticeOpening(m model) string {
 // reason.
 func rowHolding(body, id string) (string, bool) {
 	for _, line := range strings.Split(body, "\n") {
-		if len(line) > markerWidth && strings.HasPrefix(line[markerWidth:], id) {
+		if len(line) > draw.PlayMarkerWidth && strings.HasPrefix(line[draw.PlayMarkerWidth:], id) {
 			return line, true
 		}
 	}
@@ -1231,7 +846,7 @@ func TestTheOptionListSurvivesEveryWindowTheToolWillDraw(t *testing.T) {
 		for _, side := range playSides {
 			base, _, _ := start(t, lang)
 			base = atABattleOf(t, base, side)
-			options := base.play.pending.Options
+			options := base.play.Pending.Options
 			if len(options) == 0 {
 				t.Fatalf("%s %dv%d: the opening turn offers nothing to draw", lang, side, side)
 			}
@@ -1250,7 +865,7 @@ func TestTheOptionListSurvivesEveryWindowTheToolWillDraw(t *testing.T) {
 							lang, side, side, height, option.Skill, body)
 						continue
 					}
-					if index == m.play.option && !strings.HasPrefix(row, "> ") {
+					if index == m.play.Option && !strings.HasPrefix(row, "> ") {
 						t.Errorf("%s %dv%d h=%d: the option under the cursor draws %q, "+
 							"want the marker", lang, side, side, height, row)
 					}
@@ -1262,42 +877,6 @@ func TestTheOptionListSurvivesEveryWindowTheToolWillDraw(t *testing.T) {
 				if last := screen[len(screen)-1]; !strings.Contains(last, strings.TrimSpace(footer)) {
 					t.Errorf("%s %dv%d h=%d: the last row is %q, want the footer %q",
 						lang, side, side, height, last, footer)
-				}
-			}
-		}
-	}
-}
-
-// TestTheAimListSurvivesEveryWindowToo is the same claim for the second question.
-//
-// Aiming is the taller of the two states — the option list is still drawn above
-// the cells — so it is where a budget reserving only the options would show.
-func TestTheAimListSurvivesEveryWindowToo(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		for _, side := range playSides {
-			base, _, _ := start(t, lang)
-			base = atABattleOf(t, base, side)
-			base.play.aiming = true
-			aims := base.play.pending.Options[base.play.option].Aims
-			if len(aims) == 0 {
-				t.Fatalf("%s %dv%d: the option under the cursor has nowhere to point",
-					lang, side, side)
-			}
-			for _, height := range playHeights {
-				m := base
-				m.width, m.height = minWidth, height
-				_, body, _ := whatIsDrawn(m)
-				for index, cell := range aims {
-					row, ok := rowHolding(body, cell.String())
-					if !ok {
-						t.Errorf("%s %dv%d h=%d: the cell %s is not on the screen:\n%s",
-							lang, side, side, height, cell, body)
-						continue
-					}
-					if index == m.play.aim && !strings.HasPrefix(row, "> ") {
-						t.Errorf("%s %dv%d h=%d: the aim under the cursor draws %q, "+
-							"want the marker", lang, side, side, height, row)
-					}
 				}
 			}
 		}
@@ -1323,18 +902,18 @@ func TestTheBattleScreenIsNeverTruncated(t *testing.T) {
 			base = withAFullLog(t, atABattleOf(t, base, side))
 			states := map[string]model{"a turn": base}
 			aiming := base
-			aiming.play.aiming = true
+			aiming.play.Aiming = true
 			states["aiming"] = aiming
 			states["saved"] = key(t, base, "ctrl+s")
 			over, _, _ := start(t, lang)
 			over = atABattleOf(t, over, side)
-			for range playTurnLimit {
-				if over.play.fight.Finished() || over.play.err != nil {
+			for range draw.PlayTurnLimit {
+				if over.play.Fight.Finished() || over.play.Err != nil {
 					break
 				}
 				over = typeText(t, over, "a")
 			}
-			if !over.play.fight.Finished() {
+			if !over.play.Fight.Finished() {
 				t.Fatalf("%s %dv%d: the battle never ended, so the ending was not measured",
 					lang, side, side)
 			}
@@ -1343,10 +922,10 @@ func TestTheBattleScreenIsNeverTruncated(t *testing.T) {
 				for _, height := range playHeights {
 					m := state
 					m.width, m.height = minWidth, height
-					body, _ := m.play.view(m)
-					if rows := len(strings.Split(body, "\n")); rows > playBodyRoom(height) {
+					body, _ := m.play.View(m.ctx())
+					if rows := len(strings.Split(body, "\n")); rows > draw.PlayBodyRoom(height) {
 						t.Errorf("%s %dv%d %s h=%d: the body is %d rows against the %d it has",
-							lang, side, side, name, height, rows, playBodyRoom(height))
+							lang, side, side, name, height, rows, draw.PlayBodyRoom(height))
 					}
 					if drawn := m.screenContent(); strings.Contains(drawn, m.text(i18n.Truncated)) {
 						t.Errorf("%s %dv%d %s h=%d: the screen was cut:\n%s",
@@ -1354,174 +933,6 @@ func TestTheBattleScreenIsNeverTruncated(t *testing.T) {
 					}
 				}
 			}
-		}
-	}
-}
-
-// TestTheBattleScreenDropsInTheOrderItStates measures the priority rather than
-// assuming it.
-//
-// Two universal claims over the whole sweep and two steps that have to exist in
-// it:
-//
-//   - A roster row is given up only when the board is already gone. The board is
-//     ten rows whose information is recoverable — the aim list prints the occupant
-//     beside every cell it offers — while a roster row is a unit's health and
-//     effects, which is what a turn is decided on.
-//   - The log is drawn only where the order line is, which is the log going first
-//     of the two.
-//   - A height exists where the board is gone and the roster is whole.
-//   - A one-row step exists where the log goes and the order line stays.
-//
-// ⚠️ **What disappears is not monotone in the height, and that is the priority
-// working rather than a defect.** The board takes ten rows or none, so at the
-// height where it still just fits it takes the rows the order line and the log
-// would have had, and one row shorter it cannot fit at all and both come back.
-// Only the *priority* is monotone: rows are offered to the roster, then the board,
-// then the order line, then the log, at every height there is.
-func TestTheBattleScreenDropsInTheOrderItStates(t *testing.T) {
-	for _, side := range playSides {
-		base, _, _ := start(t, i18n.Vi)
-		base = withAFullLog(t, atABattleOf(t, base, side))
-		units := len(base.play.fight.Units())
-		boardGoneRosterWhole, logWentBeforeOrder := false, false
-		previous := drawn{log: -1}
-		for _, height := range playHeights {
-			m := base
-			m.width, m.height = minWidth, height
-			found, body, _ := whatIsDrawn(m)
-			if found.roster < units && found.board {
-				t.Errorf("%dv%d h=%d: %d of %d units are drawn while the board still is:\n%s",
-					side, side, height, found.roster, units, body)
-			}
-			if found.log > 0 && !found.order {
-				t.Errorf("%dv%d h=%d: %d log rows are drawn with no order line:\n%s",
-					side, side, height, found.log, body)
-			}
-			if !found.board && found.roster == units {
-				boardGoneRosterWhole = true
-			}
-			// The sweep walks upwards, so the previous reading is the window one
-			// row shorter.
-			if previous.log == 0 && found.log > 0 && previous.order {
-				logWentBeforeOrder = true
-			}
-			previous = found
-		}
-		if !boardGoneRosterWhole {
-			t.Errorf("%dv%d: no height in the sweep drops the board and keeps the roster whole, "+
-				"so the priority between those two went unmeasured", side, side)
-		}
-		if !logWentBeforeOrder {
-			t.Errorf("%dv%d: no one-row step in the sweep takes the log and leaves the order "+
-				"line, so the priority between those two went unmeasured", side, side)
-		}
-	}
-}
-
-// TestTheRosterIsClippedARowAtATime is the one section that compresses by degrees,
-// and the case the fixture does not reach on its own.
-//
-// ⚠️ **It has to be constructed.** A 5-a-side pairing at the declared floor keeps
-// its whole roster: the heading and a four-option list reserve seven of the twenty
-// rows and the notice one, and the twelve left are exactly what the pane wants.
-// Aiming is what takes them — the cells are reserved with the options — so the
-// case is built by opening the second question, and this fails rather than passing
-// quietly if that turns out to clip nothing.
-func TestTheRosterIsClippedARowAtATime(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		base, _, _ := start(t, lang)
-		base = atABattleOf(t, base, hex.MaxTeamSize)
-		base.play.aiming = true
-		units := len(base.play.fight.Units())
-		clipped := 0
-		for _, height := range playHeights {
-			m := base
-			m.width, m.height = minWidth, height
-			found, body, _ := whatIsDrawn(m)
-			if found.roster >= units || found.roster == 0 {
-				continue
-			}
-			clipped++
-			hidden := units - found.roster
-			want := m.text(i18n.PlayHiddenUnits, hidden)
-			if hidden == 1 {
-				want = m.text(i18n.PlayHiddenUnitsOne)
-			}
-			if !strings.Contains(found.notice, want) {
-				t.Errorf("%s h=%d: %d of %d units are drawn and the notice reads %q, want %q:\n%s",
-					lang, height, found.roster, units, found.notice, want, body)
-			}
-		}
-		if clipped == 0 {
-			t.Errorf("%s: no height in the sweep clipped the roster, so the section that "+
-				"compresses a row at a time went unmeasured", lang)
-		}
-	}
-}
-
-// TestTheLogIsCappedByRenderedLinesAndNotByEvents is the second defect the height
-// work turned up, held.
-//
-// The log's budget is spent in **rows** and not in events. The two are not the
-// same number: tui.Line opens a turn with a blank row of its own, so one event
-// arrives as two rows, and the section with the loosest claim on the screen was
-// the one whose stated budget did not hold.
-//
-// ⚠️ The multi-row event has to be **reached**, which the opening board does not
-// do: it takes a turn or two before the log holds one. This builds that and fails
-// if it cannot, rather than measuring a log every row of which is one event.
-func TestTheLogIsCappedByRenderedLinesAndNotByEvents(t *testing.T) {
-	m, _, _ := start(t, i18n.Vi)
-	m = withAFullLog(t, atABattleOf(t, m, 3))
-	widest := 0
-	for _, event := range m.play.events {
-		if line := tui.Line(event, m.play.tags, nil); line != "" {
-			widest = max(widest, len(strings.Split(line, "\n")))
-		}
-	}
-	if widest < 2 {
-		t.Fatal("no event in the log renders to more than one row, so the cap this test " +
-			"is about could not have been exceeded and nothing was measured")
-	}
-	// The cap taken the wrong way: the last playLogWanted events, rendered.
-	events := m.play.events
-	if len(events) > playLogWanted {
-		events = events[len(events)-playLogWanted:]
-	}
-	byEvent := 0
-	for _, event := range events {
-		if line := tui.Line(event, m.play.tags, nil); line != "" {
-			byEvent += len(strings.Split(line, "\n"))
-		}
-	}
-	if byEvent <= playLogWanted {
-		t.Fatalf("the last %d events render to %d rows, so counting events happened to hold "+
-			"here and this fixture measures nothing", playLogWanted, byEvent)
-	}
-	t.Logf("the last %d events render to %d rows", playLogWanted, byEvent)
-	// And the bound that is one: the frame never draws more rows than it was
-	// given, at every budget from nothing up to the whole history.
-	whole := m.play.logRows(m)
-	if len(whole) == 0 {
-		t.Fatal("the log renders nothing")
-	}
-	for room := 0; room <= len(whole)+1; room++ {
-		if rows := len(m.play.logFrame(whole, room)); rows > room {
-			t.Errorf("a log budget of %d rows drew %d", room, rows)
-		}
-	}
-	// The tail rather than the head, which is what a player who has not scrolled
-	// has to read: every budget that draws anything ends on the history's own last
-	// row.
-	for room := 1; room <= playLogWanted; room++ {
-		rows := m.play.logFrame(whole, room)
-		if len(rows) == 0 {
-			continue
-		}
-		if rows[len(rows)-1] != whole[len(whole)-1] {
-			t.Errorf("a budget of %d rows ends on %q, want the log's own last row %q",
-				room, rows[len(rows)-1], whole[len(whole)-1])
 		}
 	}
 }
@@ -1560,414 +971,6 @@ const (
 	longLogHeight = 40
 )
 
-// theLogFrame is the history, how many rows of it the window in hand leaves, and
-// where the frame starts — read the way the screen reads them, through the same
-// drawings and the same playFit, because a test with its own arithmetic for this
-// would agree with itself rather than with the screen.
-func theLogFrame(m model) (history []string, room, start int) {
-	drawn := m.play.drawings(m)
-	room = playFit(playBodyRoom(m.height), drawn.sizes()).log
-	return drawn.log, room, m.play.logStart(len(drawn.log), room)
-}
-
-// TestTheLogGrowsWithTheWindow is the first defect.
-//
-// The rows the log is drawn are what the budget leaves it, so a taller window
-// gives it more of them. Measured at the floor, in the middle and at a height
-// nobody's laptop is short of, in both languages and at every squad size — and the
-// two ends may not be equal, which is exactly what they were.
-func TestTheLogGrowsWithTheWindow(t *testing.T) {
-	heights := []int{minHeight, 40, 80}
-	for _, lang := range i18n.Langs() {
-		for _, side := range playSides {
-			base := aLongLog(t, lang, side)
-			rooms := make([]int, 0, len(heights))
-			for _, height := range heights {
-				m := base
-				m.width, m.height = minWidth, height
-				found, body, _ := whatIsDrawn(m)
-				_, room, _ := theLogFrame(m)
-				if found.log != room {
-					t.Errorf("%s %dv%d h=%d: the budget gave the log %d rows and %d are "+
-						"drawn:\n%s", lang, side, side, height, room, found.log, body)
-				}
-				rooms = append(rooms, room)
-			}
-			if rooms[0] >= rooms[len(rooms)-1] {
-				t.Errorf("%s %dv%d: the log is %d rows at h=%d and %d at h=%d — a taller "+
-					"window buys the history nothing, which is the defect",
-					lang, side, side, rooms[0], heights[0],
-					rooms[len(rooms)-1], heights[len(heights)-1])
-			}
-			t.Logf("%s %dv%d: %v rows at %v", lang, side, side, rooms, heights)
-		}
-	}
-}
-
-// TestEveryRowOfTheHistoryIsReachable is the second defect: two hundred and
-// ninety-two rows of three hundred could not be got at by any means.
-//
-// Scrolled to the top the battle's first event is on screen; scrolled back down
-// its newest is. Both ends are walked with a page count taken off the history
-// rather than a number written here, so the test cannot pass by not going far
-// enough.
-func TestEveryRowOfTheHistoryIsReachable(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		base := aLongLog(t, lang, 3)
-		history, room, _ := theLogFrame(base)
-		if room <= 0 || len(history) <= room {
-			t.Fatalf("%s: the frame holds %d rows of a %d-row history, so there is "+
-				"nothing above it and nothing to reach", lang, room, len(history))
-		}
-		pages := len(history)/room + 2
-		top := base
-		for range pages {
-			top = key(t, top, "pgup")
-		}
-		if _, _, start := theLogFrame(top); start != 0 {
-			t.Errorf("%s: scrolling to the top left the frame at row %d", lang, start)
-		}
-		body, _ := top.play.view(top)
-		if !strings.Contains(body, history[0]) {
-			t.Errorf("%s: the battle's first row %q is not on screen at the top:\n%s",
-				lang, history[0], body)
-		}
-		bottom := top
-		for range pages {
-			bottom = key(t, bottom, "pgdown")
-		}
-		body, _ = bottom.play.view(bottom)
-		if !strings.Contains(body, history[len(history)-1]) {
-			t.Errorf("%s: the newest row %q is not on screen at the bottom:\n%s",
-				lang, history[len(history)-1], body)
-		}
-		// And coming back down is a reader asking for the newest rows, which is
-		// the state rather than the number that happens to be the newest now.
-		if !bottom.play.logFollow {
-			t.Errorf("%s: scrolling back to the bottom left the log at an offset "+
-				"rather than following the tail", lang)
-		}
-	}
-}
-
-// TestFollowingTheTailIsNotAnOffset is the load-bearing claim, and the one a
-// stored-offset implementation fails while passing everything else here.
-//
-// ⚠️ **The tail moves.** A reader at the newest rows is in a *state*, and if that
-// state is stored as the offset which happened to be the newest, then the next
-// event to arrive leaves them one frame behind with nothing saying so.
-//
-// ⚠️ **The event is appended rather than fought for, and that is the point.**
-// Every turn this screen takes goes through record, which puts the reader back on
-// the tail — so a test that played a turn would be measuring that reset and would
-// pass against a stored offset. What has to be measured is an event arriving with
-// no decision behind it, which is what a skipped turn and an engine's own turn do
-// between the player's. The event is one the battle really emitted; a duplicate
-// row is a row like any other to a frame.
-func TestFollowingTheTailIsNotAnOffset(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		base := aLongLog(t, lang, 3)
-		if !base.play.logFollow {
-			t.Fatalf("%s: the battle opened without following its own tail", lang)
-		}
-		// At the tail, and with rows above the frame, or nothing below measures.
-		history, room, start := theLogFrame(base)
-		if room <= 0 || len(history) <= room {
-			t.Fatalf("%s: the whole history is on screen, so following it is not a "+
-				"question this fixture asks", lang)
-		}
-		if start != len(history)-room {
-			t.Fatalf("%s: following the tail starts the frame at row %d of %d",
-				lang, start, len(history))
-		}
-		grown := base
-		grown.play.events = append(grown.play.events, grown.play.events[len(grown.play.events)-1])
-		after, room, start := theLogFrame(grown)
-		if len(after) <= len(history) {
-			t.Fatalf("%s: the appended event added no row, so nothing arrived", lang)
-		}
-		if start != len(after)-room {
-			t.Errorf("%s: an event arrived and the frame stayed at row %d of %d — the "+
-				"reader is looking at a stored offset rather than at the tail",
-				lang, start, len(after))
-		}
-		body, _ := grown.play.view(grown)
-		if !strings.Contains(body, after[len(after)-1]) {
-			t.Errorf("%s: the newest row is not on screen after an event arrived:\n%s",
-				lang, body)
-		}
-	}
-}
-
-// TestActingReturnsTheLogToItsTail is the rule the blurb screen already follows:
-// anything that changes the answer resets the offset into it.
-//
-// A player who scrolled back to read what happened and then took a turn would
-// otherwise be looking at a frame from before their own decision, which is the one
-// moment the log is certainly stale. Every way of spending a turn is measured,
-// because they are four keys and one of them is the engine's.
-func TestActingReturnsTheLogToItsTail(t *testing.T) {
-	// The four ways a turn is spent: cast the option under the cursor, hand the
-	// turn to the engine, pass it, and take one back. enter is a named key and the
-	// other three are letters, which is how a terminal delivers them.
-	spend := []string{"enter", "a", "p", "u"}
-	for _, spent := range spend {
-		base := aLongLog(t, i18n.Vi, 3)
-		// Somebody's turn has to have been taken before undo has anything to take
-		// back, and withALongLog has played dozens.
-		scrolled := key(t, base, "pgup")
-		if scrolled.play.logFollow {
-			t.Fatalf("%q: pgup did not scroll back, so the reset is not being measured", spent)
-		}
-		acted := scrolled
-		if spent == "enter" {
-			acted = key(t, acted, spent)
-			// A skill with more than one cell asks where before it is cast, and
-			// opening that question is not spending the turn — so this presses on
-			// until the turn is actually taken.
-			if acted.play.aiming {
-				acted = key(t, acted, spent)
-			}
-		} else {
-			acted = typeText(t, acted, spent)
-		}
-		if acted.play.err != nil {
-			t.Fatalf("%q: taking the turn broke: %v", spent, acted.play.err)
-		}
-		if len(acted.play.script) == len(scrolled.play.script) {
-			t.Fatalf("%q spent no turn, so the reset it is about was not reached", spent)
-		}
-		if !acted.play.logFollow {
-			t.Errorf("%q left the log at offset %d rather than back on the tail",
-				spent, acted.play.logOffset)
-		}
-	}
-	// And another seed is another battle, so it is another history.
-	base := aLongLog(t, i18n.Vi, 3)
-	fresh := typeText(t, key(t, base, "pgup"), "n")
-	if !fresh.play.logFollow || fresh.play.logOffset != 0 {
-		t.Errorf("another seed kept the old battle's offset: following %v at %d",
-			fresh.play.logFollow, fresh.play.logOffset)
-	}
-}
-
-// TestTheLogFrameSurvivesAnUndo is the shortening nothing else here can produce.
-//
-// ⚠️ **Undo makes the history shorter.** It cuts the script at the player's last
-// decision and rebuilds the battle from the seed, so the events are rebuilt too and
-// an offset kept across it can point past the end. The offset is therefore clamped
-// wherever it is read and not only where it is written — and this constructs the
-// case by writing an offset from the longer history onto the rebuilt one, which is
-// the state a clamp only at the write would leave behind.
-func TestTheLogFrameSurvivesAnUndo(t *testing.T) {
-	base := aLongLog(t, i18n.Vi, 3)
-	before, _, _ := theLogFrame(base)
-	undone := typeText(t, base, "u")
-	if undone.play.err != nil {
-		t.Fatalf("undo broke: %v", undone.play.err)
-	}
-	after, room, _ := theLogFrame(undone)
-	if len(after) >= len(before) {
-		t.Fatalf("undo left a history of %d rows against %d, so a shortening was not "+
-			"measured", len(after), len(before))
-	}
-	// The offset the longer history could hold, carried onto the shorter one.
-	stale := undone
-	stale.play.logFollow, stale.play.logOffset = false, len(before)
-	history, room, start := theLogFrame(stale)
-	if start+room > len(history) {
-		t.Errorf("an offset of %d over a %d-row history frames rows %d..%d",
-			len(before), len(history), start, start+room)
-	}
-	body, _ := stale.play.view(stale)
-	if strings.Contains(body, stale.text(i18n.Truncated)) {
-		t.Errorf("the stale offset cut the screen:\n%s", body)
-	}
-	if rows := len(stale.play.logFrame(history, room)); rows != min(room, len(history)) {
-		t.Errorf("the frame drew %d rows of the %d it has", rows, room)
-	}
-}
-
-// TestTheLogScrollIsClampedAtBothEnds is the two edges and the case where the key
-// has nothing to do.
-//
-// ⚠️ The third of those is a branch the long fixture cannot reach and the short one
-// cannot miss, so both are here: a history that fits its frame has nothing above
-// it, and the key must do nothing rather than framing rows that are not there.
-func TestTheLogScrollIsClampedAtBothEnds(t *testing.T) {
-	base := aLongLog(t, i18n.Vi, 3)
-	history, room, _ := theLogFrame(base)
-	pages := len(history)/room + 2
-	top := base
-	for range pages {
-		top = key(t, top, "pgup")
-	}
-	if again := key(t, top, "pgup"); again.play.logOffset != top.play.logOffset {
-		t.Errorf("pgup at the top moved the frame from %d to %d",
-			top.play.logOffset, again.play.logOffset)
-	}
-	bottom := base
-	if again := key(t, bottom, "pgdown"); again.play.logOffset != bottom.play.logOffset ||
-		!again.play.logFollow {
-		t.Errorf("pgdown at the bottom moved the frame to %d (following %v)",
-			again.play.logOffset, again.play.logFollow)
-	}
-	// A history that fits: the keys are quiet rather than helpful.
-	short, _, _ := start(t, i18n.Vi)
-	short = withAFullLog(t, atABattleOf(t, short, 1))
-	short.width, short.height = minWidth, 80
-	rows, room, _ := theLogFrame(short)
-	if len(rows) > room {
-		t.Fatalf("the short fixture holds %d rows in a frame of %d, so it is not the "+
-			"case this is about", len(rows), room)
-	}
-	for _, pressed := range []string{"pgup", "pgdown"} {
-		quiet := key(t, short, pressed)
-		if !quiet.play.logFollow || quiet.play.logOffset != 0 {
-			t.Errorf("%s with the whole history on screen left the log at %d (following %v)",
-				pressed, quiet.play.logOffset, quiet.play.logFollow)
-		}
-	}
-}
-
-// TestTheLogScrollsWhileAiming is the state the keys are easiest to forget in and
-// the one a width sweep could not see for a whole release.
-//
-// The log is drawn while a cell is being chosen, so it is still the thing being
-// read — the same argument that put ? there.
-func TestTheLogScrollsWhileAiming(t *testing.T) {
-	base := aLongLog(t, i18n.Vi, 3)
-	base.play.aiming = true
-	_, _, start := theLogFrame(base)
-	scrolled := key(t, base, "pgup")
-	if !scrolled.play.aiming {
-		t.Fatal("pgup while aiming dropped the aim")
-	}
-	_, _, moved := theLogFrame(scrolled)
-	if moved >= start {
-		t.Errorf("pgup while aiming left the frame at row %d of %d", moved, start)
-	}
-}
-
-// TestThePositionOnTheHeadingNamesTheRowsOnScreen is the indicator.
-//
-// Three things. It is on the heading row rather than on a row of its own, because
-// this screen has no row to spare. It appears exactly when rows are hidden — not
-// only when somebody has scrolled back, since the other half of the defect was that
-// nothing said a history existed at all. And its numbers are checked against the
-// rows the body actually drew rather than against a second calculation: the run of
-// history rows it claims is on screen has to be on screen, contiguously.
-func TestThePositionOnTheHeadingNamesTheRowsOnScreen(t *testing.T) {
-	for _, lang := range i18n.Langs() {
-		for _, side := range playSides {
-			base := aLongLog(t, lang, side)
-			said, quiet := 0, 0
-			for _, height := range playHeights {
-				m := base
-				m.width, m.height = minWidth, height
-				history, room, _ := theLogFrame(m)
-				body, _ := m.play.view(m)
-				lines := strings.Split(body, "\n")
-				hidden := room > 0 && len(history) > room
-				position := m.text(i18n.PlayLogRange,
-					m.play.logStart(len(history), room)+1,
-					m.play.logStart(len(history), room)+room, len(history))
-				switch {
-				case hidden && !strings.Contains(lines[0], position):
-					t.Errorf("%s %dv%d h=%d: %d rows of %d are drawn and the heading is "+
-						"%q, want %q", lang, side, side, height, room, len(history),
-						lines[0], position)
-				case !hidden && strings.Contains(lines[0], onlyThePosition(m)):
-					t.Errorf("%s %dv%d h=%d: the whole log is on screen and the heading "+
-						"still says where the frame is: %q", lang, side, side, height, lines[0])
-				}
-				if !hidden {
-					quiet++
-					continue
-				}
-				said++
-				// The numbers, against the screen: the rows the heading names are the
-				// rows the body drew, in that order and next to each other.
-				first, last := numbersIn(t, lines[0], len(history))
-				if last-first+1 != room {
-					t.Errorf("%s %dv%d h=%d: the heading names rows %d..%d and the frame "+
-						"holds %d", lang, side, side, height, first, last, room)
-				}
-				if !holdsRun(lines, history[first-1:last]) {
-					t.Errorf("%s %dv%d h=%d: the heading names rows %d..%d and they are not "+
-						"the rows on screen:\n%s", lang, side, side, height, first, last, body)
-				}
-			}
-			if said == 0 {
-				t.Errorf("%s %dv%d: no height in the sweep hid a row, so the position is "+
-					"drawn by nothing", lang, side, side)
-			}
-			if quiet == 0 {
-				t.Errorf("%s %dv%d: every height in the sweep hid a row, so the case the "+
-					"position stays away from went unmeasured", lang, side, side)
-			}
-		}
-	}
-}
-
-// onlyThePosition is everything the position says before its first number, which
-// is what tells that clause apart from the rest of the heading row.
-func onlyThePosition(m model) string {
-	const mark = "\x00"
-	return strings.SplitN(m.text(i18n.PlayLogRange, mark, mark, mark), mark, 2)[0]
-}
-
-// numbersIn reads the first and last row the heading claims to be showing.
-//
-// The heading's figures are the seed and then the position's three, in both
-// languages, so the last three digit runs are the range and the total — read out of
-// the row rather than filled into the wording, which would be the test agreeing
-// with itself.
-func numbersIn(t *testing.T, heading string, total int) (first, last int) {
-	t.Helper()
-	figures := digitsIn(heading)
-	if len(figures) < 3 {
-		t.Fatalf("the heading %q names no range", heading)
-	}
-	said := figures[len(figures)-3:]
-	if said[2] != total {
-		t.Fatalf("the heading %q counts a history of %d rows, and it has %d",
-			heading, said[2], total)
-	}
-	return said[0], said[1]
-}
-
-// digitsIn is every run of digits in a line, in order, as numbers.
-func digitsIn(text string) []int {
-	var out []int
-	for at := 0; at < len(text); {
-		if text[at] < '0' || text[at] > '9' {
-			at++
-			continue
-		}
-		end := at
-		for end < len(text) && text[end] >= '0' && text[end] <= '9' {
-			end++
-		}
-		value, err := strconv.Atoi(text[at:end])
-		if err == nil {
-			out = append(out, value)
-		}
-		at = end
-	}
-	return out
-}
-
-// holdsRun says whether the lines hold the run next to each other and in order.
-func holdsRun(lines, run []string) bool {
-	for at := 0; at+len(run) <= len(lines); at++ {
-		if slices.Equal(lines[at:at+len(run)], run) {
-			return true
-		}
-	}
-	return false
-}
-
 // TestTheSaveNoteOutranksTheBoard is where a write's own answer sits in the
 // priority, and the arithmetic that says the other half of it cannot be reached.
 //
@@ -1998,17 +1001,17 @@ func TestTheSaveNoteOutranksTheBoard(t *testing.T) {
 		m, _, _ := start(t, lang)
 		m = atABattleOf(t, m, hex.MaxTeamSize)
 		m = key(t, m, "ctrl+s")
-		if m.play.err != nil {
-			t.Fatalf("%s: the save failed, so no note was measured: %v", lang, m.play.err)
+		if m.play.Err != nil {
+			t.Fatalf("%s: the save failed, so no note was measured: %v", lang, m.play.Err)
 		}
-		notes := m.play.wrote(m)
+		notes := m.play.Wrote(m.ctx())
 		if len(notes) == 0 {
 			t.Fatalf("%s: the save left no note behind", lang)
 		}
 		for _, height := range playHeights {
 			state := m
 			state.width, state.height = minWidth, height
-			body, _ := state.play.view(state)
+			body, _ := state.play.View(state.ctx())
 			if !strings.Contains(body, notes[0]) {
 				t.Errorf("%s h=%d: the save's own note is not on the screen:\n%s",
 					lang, height, body)
@@ -2017,7 +1020,7 @@ func TestTheSaveNoteOutranksTheBoard(t *testing.T) {
 		// The window that does take it, below the floor the tool draws at.
 		short := m
 		short.width, short.height = minWidth, minHeight-9
-		body, _ := short.play.view(short)
+		body, _ := short.play.View(short.ctx())
 		if strings.Contains(body, notes[0]) {
 			t.Fatalf("%s: neither the sweep nor a window below it drops the save note, so "+
 				"the wording naming it is rendered by nothing:\n%s", lang, body)
@@ -2034,184 +1037,4 @@ func TestTheSaveNoteOutranksTheBoard(t *testing.T) {
 				lang, width, drawable, notice)
 		}
 	}
-}
-
-// TestTheNoticeNamesWhatIsMissingAndNothingElse is the line itself.
-//
-// It exists because a screen silently missing its board reads as a broken screen.
-// Three things: it appears when and only when a section is missing, it fits the
-// narrowest window the tool draws — the wording sweep renders every screen at
-// width 200, so the one row that is only ever drawn in a short window has to be
-// measured here — and every section it can name is named by some height in the
-// sweep, so none of those wordings is rendered by nothing.
-//
-// ⚠️ **A shorter log frame is not a missing section.** The log is a frame over a
-// history that is always longer than it, so a frame two rows shorter is the
-// section working; a frame with no rows at all is not, and that is the line the
-// notice is drawn on. Since the log now asks for the whole history, *some* of it
-// is hidden in nearly every window — which is what the position on the heading row
-// says, and it is a different statement from the notice's.
-func TestTheNoticeNamesWhatIsMissingAndNothingElse(t *testing.T) {
-	const drawable = minWidth - 1
-	nameable := []i18n.Key{i18n.PlayHiddenBoard, i18n.PlayHiddenOrder, i18n.PlayHiddenLog}
-	for _, lang := range i18n.Langs() {
-		for _, side := range playSides {
-			base, _, _ := start(t, lang)
-			base = withAFullLog(t, atABattleOf(t, base, side))
-			named := make(map[i18n.Key]bool)
-			for _, height := range playHeights {
-				m := base
-				m.width, m.height = minWidth, height
-				found, body, _ := whatIsDrawn(m)
-				units := len(m.play.fight.Units())
-				wanted := len(m.play.logRows(m))
-				missing := !found.board || found.roster < units || !found.order ||
-					(wanted > 0 && found.log == 0)
-				switch {
-				case missing && found.notice == "":
-					t.Errorf("%s %dv%d h=%d: a section is missing and the screen does not "+
-						"say which:\n%s", lang, side, side, height, body)
-				case !missing && found.notice != "":
-					t.Errorf("%s %dv%d h=%d: nothing is missing and the screen says "+
-						"otherwise: %q", lang, side, side, height, found.notice)
-				}
-				if width := lipgloss.Width(found.notice); width > drawable {
-					t.Errorf("%s %dv%d h=%d: the notice is %d cells wide, over the %d there "+
-						"are: %q", lang, side, side, height, width, drawable, found.notice)
-				}
-				for _, key := range nameable {
-					if found.notice != "" && strings.Contains(found.notice, m.lang.Text(key)) {
-						named[key] = true
-					}
-				}
-			}
-			for _, key := range nameable {
-				if !named[key] {
-					t.Errorf("%s %dv%d: no height in the sweep hides what %q names, so that "+
-						"wording is rendered by nothing", lang, side, side, base.lang.Text(key))
-				}
-			}
-		}
-	}
-}
-
-// TestTheBudgetSpendsWhatItSaysItDoes is the arithmetic on its own.
-//
-// Every other test here reads the screen, which is the right way round: a test
-// that asked the view what it had decided would be measuring itself. This one is
-// different in kind and is here for a reason the others cannot cover — the greedy
-// walk has corners no board can reach. A window shorter than nine rows of purse
-// takes the save's note, and one shorter still leaves the roster no room for its
-// first unit, and both of those are below the height m.tooSmall draws a message
-// at. Written out rather than left uncovered, so the walk cannot be re-ordered
-// silently.
-//
-// The sizes are one 5-a-side board's: ten units, ten rows of board, a four-option
-// list and a full log.
-func TestTheBudgetSpendsWhatItSaysItDoes(t *testing.T) {
-	squad := playSizes{tail: 5, board: 10, units: 10, log: 8}
-	saved := playSizes{tail: 5, notes: 4, board: 10, units: 10, log: 8}
-	aiming := playSizes{tail: 12, board: 10, units: 10, log: 8}
-	// The same board with a history longer than any window, which is what a
-	// battle a dozen turns in actually has. It is a separate fixture because the
-	// three above cannot reach the surplus: a history of eight rows is a history
-	// with nothing left over to hand the log.
-	history := playSizes{tail: 5, board: 10, units: 10, log: 300}
-	cases := []struct {
-		why   string
-		room  int
-		sizes playSizes
-		want  playPlan
-		names []i18n.Key
-	}{{
-		why:   "everything fits, so nothing is said",
-		room:  40,
-		sizes: squad,
-		want:  playPlan{board: true, roster: 10, order: true, log: 8},
-	}, {
-		why: "one row short takes a row off the log's tail, and a shorter tail " +
-			"is the section working rather than a section missing",
-		room:  39,
-		sizes: squad,
-		want:  playPlan{board: true, roster: 10, order: true, log: 7},
-	}, {
-		why:   "the log goes before the order line",
-		room:  32,
-		sizes: squad,
-		want:  playPlan{board: true, roster: 10, order: true, notice: true},
-		names: []i18n.Key{i18n.PlayHiddenLog},
-	}, {
-		why: "the board goes before the roster's last row, and its ten rows " +
-			"buy the order line and most of the log back",
-		room:  29,
-		sizes: squad,
-		want:  playPlan{roster: 10, order: true, log: 6, notice: true},
-		names: []i18n.Key{i18n.PlayHiddenBoard},
-	}, {
-		why:   "the aim list is reserved too, and the roster gives up rows for it",
-		room:  20,
-		sizes: aiming,
-		want:  playPlan{roster: 3, notice: true},
-		names: []i18n.Key{i18n.PlayHiddenBoard, i18n.PlayHiddenUnits,
-			i18n.PlayHiddenOrder, i18n.PlayHiddenLog},
-	}, {
-		why: "a long history takes every row nobody above it claimed, so a tall " +
-			"window buys the log something: sixteen rows over the eight it asked for",
-		room:  56,
-		sizes: history,
-		want:  playPlan{board: true, roster: 10, order: true, log: 24},
-	}, {
-		why: "and it takes them without anything above it losing a row: the same " +
-			"purse gives the roster, the board and the order line exactly what the " +
-			"eight-row history did",
-		room:  29,
-		sizes: history,
-		want:  playPlan{roster: 10, order: true, log: 6, notice: true},
-		names: []i18n.Key{i18n.PlayHiddenBoard},
-	}, {
-		why: "a purse with no room for the log's first row gives it none, however " +
-			"long the history is",
-		room:  32,
-		sizes: history,
-		want:  playPlan{board: true, roster: 10, order: true, notice: true},
-		names: []i18n.Key{i18n.PlayHiddenLog},
-	}, {
-		why: "a save's note outranks the board and everything under it, and is " +
-			"given up only where the roster has nothing left either",
-		room:  12,
-		sizes: saved,
-		want:  playPlan{roster: 2, notice: true},
-		names: []i18n.Key{i18n.PlayHiddenBoard, i18n.PlayHiddenUnits,
-			i18n.PlayHiddenOrder, i18n.PlayHiddenLog, i18n.PlayHiddenNote},
-	}}
-	for _, test := range cases {
-		got := playFit(test.room, test.sizes)
-		if got != test.want {
-			t.Errorf("a purse of %d rows gives %+v, want %+v — %s",
-				test.room, got, test.want, test.why)
-		}
-		if test.names != nil {
-			if named := playHidden(got, test.sizes); !sameKeys(named, test.names) {
-				t.Errorf("a purse of %d rows names %v, want %v — %s",
-					test.room, named, test.names, test.why)
-			}
-		}
-		// The invariant the priority states, at every row count there is: the
-		// board is never drawn over a roster that is not.
-		if got.board && got.roster == 0 {
-			t.Errorf("a purse of %d rows draws the board with no unit under it", test.room)
-		}
-	}
-}
-
-func sameKeys(got, want []i18n.Key) bool {
-	if len(got) != len(want) {
-		return false
-	}
-	for index := range got {
-		if got[index] != want[index] {
-			return false
-		}
-	}
-	return true
 }

@@ -1,22 +1,21 @@
-package main
+package screen
 
 import (
+	"path/filepath"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"path/filepath"
-
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
-	draw "github.com/vukyn/hexarena/internal/screen"
 	"github.com/vukyn/hexarena/internal/tui"
 )
 
-// playScreen is a battle fought by hand against the opponent the engine plays.
+// PlayScreen is a battle fought by hand against the opponent the engine plays.
 //
 // It is raised from the fight for the reason the fight is raised from the
 // catalogue: that is where a pairing is already chosen, and a battle wants two
@@ -30,48 +29,72 @@ import (
 // copy of the model there is. So the battle is stepped in update and **never**
 // touched in view — view reads it and draws, and that division is what keeps a
 // redraw from playing a turn.
-type playScreen struct {
-	// seed is which battle this is. Walking it is how a player asks for another
+type PlayScreen struct {
+	// Seed is which battle this is. Walking it is how a player asks for another
 	// arrangement of the same pairing, and it is the same number the log carries,
 	// so a battle played here can be replayed by the game client.
-	seed uint64
-	// side is the half the player is fighting on: the home squad's, always, so
+	Seed uint64
+	// Side is the half the player is fighting on: the home squad's, always, so
 	// that the squad under the catalogue's cursor is the one being played rather
 	// than the one being played against.
-	side hex.Side
+	Side hex.Side
 
-	fight *battle.Battle
-	// roster is what the battle was built from, kept because a log records it:
+	// Home and Away are the pairing this screen was opened on, and they are
+	// **handed in** rather than fetched.
+	//
+	// ⚠️ This is the one thing about the move that was design rather than
+	// mechanics. The screen used to ask the client's own fight screen — a screen
+	// that has not moved and is not going to — which two squads it was between,
+	// twice: once to field the roster when a battle starts, and once to name the
+	// log file a save writes. Both are the same question, and it is a question
+	// about *opening* this screen rather than something to reach sideways for. So
+	// the client, which owns the fight, answers it once and passes the answer to
+	// Open; the same fix #207 made for the two describers, which used to read
+	// three other screens and are now handed a Subject.
+	//
+	// Both are kept rather than reduced to what each caller wants, because the
+	// two callers want different halves of them: fielding needs the units and the
+	// save needs the ids, and undo and another seed both re-field from here.
+	Home, Away placement.Squad
+
+	// Fight is the battle in hand, and nil is a screen with no pairing to open
+	// one on.
+	Fight *battle.Battle
+	// Roster is what the battle was built from, kept because a log records it:
 	// a log carrying the resolved placement is what makes it re-runnable across
 	// a data edit, and asking the battle for it afterwards would be asking for
 	// the units as they are now rather than as they were placed.
-	roster []battle.Roster
-	tags   map[string]string
-	names  map[string]string
-	events []battle.Event
-	// script is every decision taken, the player's and the engine's alike. It is
+	Roster []battle.Roster
+	// Tags and Names are what a drawing calls each unit, read off the board once
+	// when the battle is built.
+	Tags  map[string]string
+	Names map[string]string
+	// Events is every event the battle has emitted, which is the whole history
+	// the log is a frame over.
+	Events []battle.Event
+	// Script is every decision taken, the player's and the engine's alike. It is
 	// what undo shortens and what the whole battle is rebuilt from, which is why
 	// a rebuild needs nothing else: a battle is a pure function of its seed and
 	// the decisions taken.
-	script battle.Script
-	// pending is the turn waiting on the player. Nil means the battle is between
+	Script battle.Script
+	// Pending is the turn waiting on the player. Nil means the battle is between
 	// turns, which is where the engine's own units act.
-	pending *battle.Prompt
+	Pending *battle.Prompt
 
-	// option and aim are the two questions a turn asks, and aiming says which of
+	// Option and Aim are the two questions a turn asks, and Aiming says which of
 	// them is in front.
-	option int
-	aim    int
-	aiming bool
+	Option int
+	Aim    int
+	Aiming bool
 
-	// logFollow and logOffset are where the log's frame sits, and they are two
+	// LogFollow and LogOffset are where the log's frame sits, and they are two
 	// fields rather than one for the one reason that decides this whole feature.
 	//
 	// ⚠️ **Following the tail is a state, not an offset value, because the tail
 	// moves.** The reader is normally looking at the newest rows; an offset
 	// storing "the newest rows" would be a number that means something different
 	// every time an event arrives, so every turn taken would silently shift what
-	// is under the reader. So logOffset counts rows **from the start of the
+	// is under the reader. So LogOffset counts rows **from the start of the
 	// history** — which is exactly what the position on the heading row states —
 	// and following is carried **beside** it rather than encoded into it.
 	//
@@ -81,67 +104,89 @@ type playScreen struct {
 	// tail" would be that mistake again — and it would read as working, because
 	// the sentinel is a legal offset on the turn it is written.
 	//
-	// logOffset is meaningless while logFollow holds, and it is clamped against
+	// LogOffset is meaningless while LogFollow holds, and it is clamped against
 	// the history's current length wherever it is read rather than only where it
 	// is written: undo rebuilds the battle from a shortened script, so the
 	// history it rebuilds is shorter and an offset kept across it can point past
 	// the end.
-	logFollow bool
-	logOffset int
+	LogFollow bool
+	LogOffset int
 
-	err error
-	// notes are what a write left behind, held as facts rather than as a
-	// sentence so ctrl+l redraws them in the other language.
-	notes []forge.Note
+	// Err is what went wrong building or stepping the battle, drawn in place of
+	// the screen.
+	Err error
+	// Notes are what a write left behind, held as facts rather than as a
+	// sentence so a language toggle redraws them in the other one.
+	Notes []forge.Note
 }
 
-// playTurnLimit is where a battle is abandoned, and it is cmd/hexarena's number
+// PlayTurnLimit is where a battle is abandoned, and it is cmd/hexarena's number
 // deliberately: a battle this screen calls endless and a battle the game calls
 // endless have to be the same battle.
-const playTurnLimit = 4000
+const PlayTurnLimit = 4000
 
-func newPlayScreen() playScreen {
+// NewPlayScreen is the screen before a pairing has been handed to it: no
+// battle, the first seed, and the player on the home side.
+func NewPlayScreen() PlayScreen {
 	// Following, because the newest rows are what a battle nobody has scrolled is
 	// showing, and because the alternative would be an offset into a history that
 	// does not exist yet.
-	return playScreen{seed: 1, side: hex.SideAlly, logFollow: true}
+	return PlayScreen{Seed: 1, Side: hex.SideAlly, LogFollow: true}
+}
+
+// Open enters the screen on a pairing and plays it up to the player's first
+// decision.
+//
+// The two squads are the whole of what this screen needs from the client, and
+// they are a **parameter of opening** rather than something to fetch — see Home
+// and Away for why that is the design and not a signature preference. The seed
+// and the side are kept, so re-opening the same pairing walks on from the seed
+// the reader had reached.
+//
+// ⚠️ **A squad with nobody in it is not a pairing**, which is what a client with
+// an empty catalogue has to hand over, and the screen then says nothing has been
+// built rather than reporting the refusal fielding one would give. That is a
+// reading of the value rather than a sentinel: placement.Squad.Validate already
+// refuses an empty squad, so nothing that could be fielded arrives this way.
+func (p PlayScreen) Open(c Context, home, away placement.Squad) PlayScreen {
+	p.Home, p.Away = home, away
+	return p.begin(c)
 }
 
 // begin builds the battle from the pairing in front and runs it up to the
 // player's first decision.
-func (p playScreen) begin(m model) playScreen {
-	p.fight, p.tags, p.names = nil, nil, nil
-	p.roster = nil
-	p.events, p.script, p.pending = nil, nil, nil
-	p.option, p.aim, p.aiming = 0, 0, false
-	p.logFollow, p.logOffset = true, 0
-	p.err, p.notes = nil, nil
+func (p PlayScreen) begin(c Context) PlayScreen {
+	p.Fight, p.Tags, p.Names = nil, nil, nil
+	p.Roster = nil
+	p.Events, p.Script, p.Pending = nil, nil, nil
+	p.Option, p.Aim, p.Aiming = 0, 0, false
+	p.LogFollow, p.LogOffset = true, 0
+	p.Err, p.Notes = nil, nil
 
-	home, away, ok := m.fight.sides(m)
-	if !ok {
+	if len(p.Home.Units) == 0 || len(p.Away.Units) == 0 {
 		return p
 	}
-	roster, err := home.Take(hex.SideAlly, m.lib.Characters())
+	roster, err := p.Home.Take(hex.SideAlly, c.Lib.Characters())
 	if err != nil {
-		p.err = err
+		p.Err = err
 		return p
 	}
-	facing, err := away.Take(hex.SideEnemy, m.lib.Characters())
+	facing, err := p.Away.Take(hex.SideEnemy, c.Lib.Characters())
 	if err != nil {
-		p.err = err
+		p.Err = err
 		return p
 	}
 	placed := append(roster, facing...)
-	fight, err := battle.New(m.lib.Books(), p.seed, placed)
+	fight, err := battle.New(c.Lib.Books(), p.Seed, placed)
 	if err != nil {
-		p.err = err
+		p.Err = err
 		return p
 	}
 	fight.Begin()
-	p.fight = fight
-	p.roster = placed
-	p.tags = tui.Tags(fight.Units())
-	p.names = tui.Names(fight.Units())
+	p.Fight = fight
+	p.Roster = placed
+	p.Tags = tui.Tags(fight.Units())
+	p.Names = tui.Names(fight.Units())
 	p.collect()
 	return p.run()
 }
@@ -151,11 +196,11 @@ func (p playScreen) begin(m model) playScreen {
 // The event log is the only contract a reader of a battle has, and this screen
 // is a reader like any other: a screen that summed its own strikes would be a
 // second place where what a battle did is decided.
-func (p *playScreen) collect() {
-	if p.fight == nil {
+func (p *PlayScreen) collect() {
+	if p.Fight == nil {
 		return
 	}
-	p.events = append(p.events, p.fight.Drain()...)
+	p.Events = append(p.Events, p.Fight.Drain()...)
 }
 
 // run takes every turn that is not the player's, and stops on the one that is.
@@ -163,21 +208,21 @@ func (p *playScreen) collect() {
 // A skipped turn is stepped past rather than shown: a unit that lost its action
 // to control has no decision in it, and a screen that stopped there would ask a
 // question with no answers.
-func (p playScreen) run() playScreen {
-	if p.fight == nil {
+func (p PlayScreen) run() PlayScreen {
+	if p.Fight == nil {
 		return p
 	}
-	for steps := 0; steps < playTurnLimit; steps++ {
-		if p.fight.Finished() {
-			p.pending = nil
+	for steps := 0; steps < PlayTurnLimit; steps++ {
+		if p.Fight.Finished() {
+			p.Pending = nil
 			return p
 		}
-		prompt := p.pending
-		p.pending = nil
+		prompt := p.Pending
+		p.Pending = nil
 		if prompt == nil {
-			opened, err := p.fight.Advance()
+			opened, err := p.Fight.Advance()
 			if err != nil {
-				p.err = err
+				p.Err = err
 				return p
 			}
 			prompt = opened
@@ -186,7 +231,7 @@ func (p playScreen) run() playScreen {
 		if prompt.Skipped {
 			continue
 		}
-		unit, known := p.fight.Unit(prompt.Unit)
+		unit, known := p.Fight.Unit(prompt.Unit)
 		if !known {
 			// A turn offered to somebody who is not fighting is stepped past
 			// rather than reported. It cannot happen — the queue holds units the
@@ -194,14 +239,14 @@ func (p playScreen) run() playScreen {
 			// it did; the step limit above is what stops this being a loop.
 			continue
 		}
-		if unit.Side == p.side {
-			p.pending = prompt
-			p.option = p.firstAvailable(prompt)
-			p.aim, p.aiming = 0, false
+		if unit.Side == p.Side {
+			p.Pending = prompt
+			p.Option = p.firstAvailable(prompt)
+			p.Aim, p.Aiming = 0, false
 			return p
 		}
 		if err := p.engineOrder(prompt); err != nil {
-			p.err = err
+			p.Err = err
 			return p
 		}
 	}
@@ -211,7 +256,7 @@ func (p playScreen) run() playScreen {
 // firstAvailable is the option the cursor starts on: the first the unit may
 // actually take, rather than the first declared. A cursor that opened on a skill
 // on cooldown would be one press from a refusal on most turns.
-func (p playScreen) firstAvailable(prompt *battle.Prompt) int {
+func (p PlayScreen) firstAvailable(prompt *battle.Prompt) int {
 	for index, option := range prompt.Options {
 		if option.Available() {
 			return index
@@ -226,8 +271,8 @@ func (p playScreen) firstAvailable(prompt *battle.Prompt) int {
 // It lands in the script as a decision like the player's own, because the script
 // is what the whole battle is rebuilt from: a half of it that was not written
 // down would replay as a different battle.
-func (p *playScreen) engineOrder(prompt *battle.Prompt) error {
-	choice, acted := p.fight.Suggest(prompt)
+func (p *PlayScreen) engineOrder(prompt *battle.Prompt) error {
+	choice, acted := p.Fight.Suggest(prompt)
 	if !acted {
 		return p.skip(prompt, battle.NoActionReason)
 	}
@@ -238,8 +283,8 @@ func (p *playScreen) engineOrder(prompt *battle.Prompt) error {
 // methods rather than one taking a decision so that a decision with a skill and
 // no aim — which the engine would refuse and nothing here should be able to
 // build — cannot be written at all.
-func (p *playScreen) take(prompt *battle.Prompt, skill string, aim hex.Offset) error {
-	if err := p.fight.Act(skill, aim); err != nil {
+func (p *PlayScreen) take(prompt *battle.Prompt, skill string, aim hex.Offset) error {
+	if err := p.Fight.Act(skill, aim); err != nil {
 		return err
 	}
 	return p.record(battle.Decision{
@@ -247,25 +292,25 @@ func (p *playScreen) take(prompt *battle.Prompt, skill string, aim hex.Offset) e
 	})
 }
 
-func (p *playScreen) skip(prompt *battle.Prompt, reason string) error {
+func (p *PlayScreen) skip(prompt *battle.Prompt, reason string) error {
 	decision := battle.Decision{
 		Unit: prompt.Unit, Turn: prompt.Turn, Passed: true, Reason: reason,
 	}
-	if err := p.fight.Pass(decision.PassReason()); err != nil {
+	if err := p.Fight.Pass(decision.PassReason()); err != nil {
 		return err
 	}
 	return p.record(decision)
 }
 
-func (p *playScreen) record(decision battle.Decision) error {
-	p.script = append(p.script, decision)
+func (p *PlayScreen) record(decision battle.Decision) error {
+	p.Script = append(p.Script, decision)
 	// A turn taken puts the reader back on the live tail, and this is the one
 	// place every turn goes through — the player's, the engine's, the one the
 	// "let it pick" key hands over and the pass. Somebody who scrolled back to
 	// read what happened and then acted would otherwise be reading a frame from
 	// before their own decision, which is the one moment the log is certainly
 	// stale. Undo and another seed reset it too, through begin.
-	p.logFollow, p.logOffset = true, 0
+	p.LogFollow, p.LogOffset = true, 0
 	p.collect()
 	return nil
 }
@@ -275,31 +320,34 @@ func (p *playScreen) record(decision battle.Decision) error {
 // It is the whole of undo, and it works because a battle is a pure function of
 // its seed and the decisions taken: there is no state to unwind, only a shorter
 // list to replay. That is the same property the log's --verify rests on.
-func (p playScreen) rewind(m model, script battle.Script) playScreen {
-	seed, side := p.seed, p.side
-	fresh := newPlayScreen()
-	fresh.seed, fresh.side = seed, side
-	fresh = fresh.begin(m)
-	if fresh.fight == nil || fresh.err != nil {
+func (p PlayScreen) rewind(c Context, script battle.Script) PlayScreen {
+	fresh := NewPlayScreen()
+	fresh.Seed, fresh.Side = p.Seed, p.Side
+	// The pairing goes with it: a rebuild is the same two squads at the same
+	// seed, which is the whole of why a shorter script replays as the same
+	// battle.
+	fresh.Home, fresh.Away = p.Home, p.Away
+	fresh = fresh.begin(c)
+	if fresh.Fight == nil || fresh.Err != nil {
 		return fresh
 	}
-	replayed, pending, err := fresh.fight.Replay(script, playTurnLimit, nil)
+	replayed, pending, err := fresh.Fight.Replay(script, PlayTurnLimit, nil)
 	if err != nil {
-		fresh.err = err
+		fresh.Err = err
 		return fresh
 	}
-	fresh.script = replayed
-	fresh.pending = pending
-	fresh.events = fresh.fight.Drain()
+	fresh.Script = replayed
+	fresh.Pending = pending
+	fresh.Events = fresh.Fight.Drain()
 	return fresh.run()
 }
 
 // undo drops the player's last decision and everything that followed it.
-func (p playScreen) undo(m model) playScreen {
+func (p PlayScreen) undo(c Context) PlayScreen {
 	cut := -1
-	for index := len(p.script) - 1; index >= 0; index-- {
-		unit, known := p.fight.Unit(p.script[index].Unit)
-		if known && unit.Side == p.side {
+	for index := len(p.Script) - 1; index >= 0; index-- {
+		unit, known := p.Fight.Unit(p.Script[index].Unit)
+		if known && unit.Side == p.Side {
 			cut = index
 			break
 		}
@@ -308,33 +356,38 @@ func (p playScreen) undo(m model) playScreen {
 		return p
 	}
 	shortened := make(battle.Script, cut)
-	copy(shortened, p.script[:cut])
-	return p.rewind(m, shortened)
+	copy(shortened, p.Script[:cut])
+	return p.rewind(c, shortened)
 }
 
-func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+// Update routes one keystroke.
+//
+// ⚠️ **Two returns and not three.** A screen with a text field on it has to hand
+// back the field's own command — the cursor blink — which is why the skill form
+// answers with three; this screen has no field on it at all, so there is nothing
+// to carry and an Action says the whole of what it wants.
+func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Action) {
 	// Saving is asked before the switch because it answers to more than one
-	// keystroke; isSaveKey is the single declaration of which.
-	if isSaveKey(message) {
-		p = p.save(m)
-		m.play = p
-		return m, nil
+	// keystroke; IsSaveKey is the single declaration of which.
+	if IsSaveKey(message) {
+		return p.save(c), Action{}
 	}
 	switch message.String() {
 	case "esc":
-		if p.aiming {
-			p.aiming = false
-			m.play = p
-			return m, nil
+		if p.Aiming {
+			p.Aiming = false
+			return p, Action{}
 		}
-		m.screen = screenFight
-		return m, nil
+		// One step back towards whoever raised this, which the client is what
+		// remembers: a screen may not name its own way out even while it has
+		// only one raiser.
+		return p, Action{Kind: Back}
 	case "n":
-		p.seed++
-		p = p.begin(m)
+		p.Seed++
+		p = p.begin(c)
 	case "u":
-		if p.fight != nil {
-			p = p.undo(m)
+		if p.Fight != nil {
+			p = p.undo(c)
 		}
 	// The log's own keys, and they are answered **here** rather than under the
 	// guard below: the log is drawn between turns and on a battle that has
@@ -355,19 +408,18 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 	// vocabulary the paragraph above refuses. Back is [ and forward is ], which
 	// is the direction ↑/↓ reads in and the order the footers print them in.
 	case "pgup", "[":
-		p = p.scrollLog(m, -1)
+		p = p.scrollLog(c, -1)
 	case "pgdown", "]":
-		p = p.scrollLog(m, 1)
+		p = p.scrollLog(c, 1)
 	}
-	if p.pending == nil {
-		m.play = p
-		return m, nil
+	if p.Pending == nil {
+		return p, Action{}
 	}
 	switch message.String() {
 	case "up", "k":
-		p = p.move(-1)
+		p = p.Move(-1)
 	case "down", "j":
-		p = p.move(1)
+		p = p.Move(1)
 	case "?":
 		// The full description of the option under the cursor, on the screen the
 		// rest of this tool already raises with this key. It is free here and it
@@ -379,36 +431,30 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 		// is not, so "what does this do" is still the live question. An empty
 		// option list is refused rather than indexed: a turn with nothing to take
 		// is a turn with nothing to describe.
-		if len(p.pending.Options) > 0 {
-			m.play = p
-			m.blurb.from = screenPlay
-			m.blurb.Scroll = 0
-			m = m.hand(p.subject())
-			m.screen = screenBlurb
-			return m, nil
+		if len(p.Pending.Options) > 0 {
+			return p, Action{Kind: Raise, Target: Blurb, Subject: p.Subject()}
 		}
 	case "enter", "space":
-		p = p.choose(m)
+		p = p.choose(c)
 	case "a":
 		// The engine's own answer, taken as the player's: somebody who wants to
 		// see what it would do here should not have to guess it, and it lands in
 		// the script as a decision like any other.
-		if err := p.engineOrder(p.pending); err != nil {
-			p.err = err
+		if err := p.engineOrder(p.Pending); err != nil {
+			p.Err = err
 		} else {
-			p.pending = nil
+			p.Pending = nil
 			p = p.run()
 		}
 	case "p":
-		if err := p.skip(p.pending, ""); err != nil {
-			p.err = err
+		if err := p.skip(p.Pending, ""); err != nil {
+			p.Err = err
 		} else {
-			p.pending = nil
+			p.Pending = nil
 			p = p.run()
 		}
 	}
-	m.play = p
-	return m, nil
+	return p, Action{}
 }
 
 // move walks whichever of the two lists is in front.
@@ -417,7 +463,7 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 // offered list.
 //
 // ⚠️ **It names the skill and hands over nothing of the battle**, which is what
-// keeps the promise above the ? key: playScreen is the one screen holding
+// keeps the promise above the ? key: PlayScreen is the one screen holding
 // something the model does not copy, so a describer given a battle to read is a
 // redraw that could step a turn. The id is looked up in the library instead,
 // because a battle carries a unit's resolved kit and the sentences are about the
@@ -427,32 +473,32 @@ func (p playScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 // turn nobody is being asked about is a turn with nothing to describe — and they
 // come back as a subject with Of at nought, which is how the describer is told
 // so without looking.
-func (p playScreen) subject() draw.Subject {
-	if p.pending == nil || len(p.pending.Options) == 0 {
-		return draw.Subject{Kind: draw.SkillSubject}
+func (p PlayScreen) Subject() Subject {
+	if p.Pending == nil || len(p.Pending.Options) == 0 {
+		return Subject{Kind: SkillSubject}
 	}
-	at := clamp(p.option, 0, len(p.pending.Options)-1)
-	return draw.Subject{
-		Kind: draw.SkillSubject,
-		ID:   p.pending.Options[at].Skill,
+	at := Clamp(p.Option, 0, len(p.Pending.Options)-1)
+	return Subject{
+		Kind: SkillSubject,
+		ID:   p.Pending.Options[at].Skill,
 		At:   at + 1,
-		Of:   len(p.pending.Options),
+		Of:   len(p.Pending.Options),
 	}
 }
 
-func (p playScreen) move(by int) playScreen {
-	if p.aiming {
-		aims := p.pending.Options[p.option].Aims
-		p.aim = (p.aim + by + len(aims)) % len(aims)
+func (p PlayScreen) Move(by int) PlayScreen {
+	if p.Aiming {
+		aims := p.Pending.Options[p.Option].Aims
+		p.Aim = (p.Aim + by + len(aims)) % len(aims)
 		return p
 	}
 	// Unavailable options are stepped over rather than hidden: a player deciding
 	// what to do needs to know a skill exists and is two turns away, and a cursor
 	// that could rest on one would be a cursor whose enter does nothing.
-	for step := 1; step <= len(p.pending.Options); step++ {
-		next := (p.option + by*step + len(p.pending.Options)*len(p.pending.Options)) % len(p.pending.Options)
-		if p.pending.Options[next].Available() {
-			p.option = next
+	for step := 1; step <= len(p.Pending.Options); step++ {
+		next := (p.Option + by*step + len(p.Pending.Options)*len(p.Pending.Options)) % len(p.Pending.Options)
+		if p.Pending.Options[next].Available() {
+			p.Option = next
 			return p
 		}
 	}
@@ -463,24 +509,24 @@ func (p playScreen) move(by int) playScreen {
 //
 // A skill with one legal cell does not ask the second question, because a
 // question with one answer is not a decision.
-func (p playScreen) choose(m model) playScreen {
-	option := p.pending.Options[clamp(p.option, 0, len(p.pending.Options)-1)]
+func (p PlayScreen) choose(c Context) PlayScreen {
+	option := p.Pending.Options[Clamp(p.Option, 0, len(p.Pending.Options)-1)]
 	if !option.Available() {
 		return p
 	}
-	if !p.aiming && len(option.Aims) > 1 {
-		p.aiming, p.aim = true, 0
+	if !p.Aiming && len(option.Aims) > 1 {
+		p.Aiming, p.Aim = true, 0
 		return p
 	}
 	aim := option.Aims[0]
-	if p.aiming {
-		aim = option.Aims[clamp(p.aim, 0, len(option.Aims)-1)]
+	if p.Aiming {
+		aim = option.Aims[Clamp(p.Aim, 0, len(option.Aims)-1)]
 	}
-	if err := p.take(p.pending, option.Skill, aim); err != nil {
-		p.err = err
+	if err := p.take(p.Pending, option.Skill, aim); err != nil {
+		p.Err = err
 		return p
 	}
-	p.pending, p.aiming = nil, false
+	p.Pending, p.Aiming = nil, false
 	return p.run()
 }
 
@@ -490,22 +536,18 @@ func (p playScreen) choose(m model) playScreen {
 // concession: a battle stopped halfway is a battle, its script is consistent,
 // and re-running it reproduces exactly the half that was played. What a log
 // records is what happened, not what finished.
-func (p playScreen) save(m model) playScreen {
-	if p.fight == nil {
+func (p PlayScreen) save(c Context) PlayScreen {
+	if p.Fight == nil {
 		return p
 	}
-	home, away, ok := m.fight.sides(m)
-	if !ok {
-		return p
-	}
-	path, err := m.lib.SaveBattleLog(home.ID, away.ID, p.seed, battle.Log{
-		Seed: p.seed, Roster: p.roster, Choices: p.script, Events: p.events,
+	path, err := c.Lib.SaveBattleLog(p.Home.ID, p.Away.ID, p.Seed, battle.Log{
+		Seed: p.Seed, Roster: p.Roster, Choices: p.Script, Events: p.Events,
 	})
 	if err != nil {
-		p.err, p.notes = err, nil
+		p.Err, p.Notes = err, nil
 		return p
 	}
-	p.err = nil
+	p.Err = nil
 	// The second note is the whole reason the first one is worth having, and it
 	// carries the rebuild warning itself: --verify re-runs against the copy
 	// baked into the game binary, so a log written after an edit nobody rebuilt
@@ -515,17 +557,17 @@ func (p playScreen) save(m model) playScreen {
 	// --replay is a path somebody has to type and the absolute one is mostly the
 	// part they are already standing in.
 	relative := path
-	if shortened, err := filepath.Rel(m.lib.Dir(), path); err == nil {
+	if shortened, err := filepath.Rel(c.Lib.Dir(), path); err == nil {
 		relative = shortened
 	}
-	p.notes = []forge.Note{
+	p.Notes = []forge.Note{
 		{Kind: forge.NoteWrote, ID: filepath.Base(path), Path: path},
 		{Kind: forge.NoteBattleVerify, Path: relative},
 	}
 	return p
 }
 
-// playLogWanted is how many rendered rows the log asks the budget for.
+// PlayLogWanted is how many rendered rows the log asks the budget for.
 //
 // It is what the player has to read: what happened since they last chose. A
 // screen that grew a line per event would push the board off the top by the
@@ -555,23 +597,23 @@ func (p playScreen) save(m model) playScreen {
 //
 // Renamed off playLogLines because the number no longer says how many lines the
 // screen keeps — it says how many it asks for.
-const playLogWanted = 8
+const PlayLogWanted = 8
 
-// playBodyRoom is how many rows the body may write before frame cuts it.
+// PlayBodyRoom is how many rows the body may write before frame cuts it.
 //
-// frame gives the whole screen m.height - 2 rows, spends the first two on the
+// frame gives the whole screen c.Height - 2 rows, spends the first two on the
 // header and the blank under it, and puts the footer below whatever padding is
 // left — so the body's own purse is four rows short of the window. Reading it
 // off frame's arithmetic rather than writing the number down is the point: a
 // second copy of "how many rows are there" is how a screen comes to disagree
 // with the frame drawn around it.
-func playBodyRoom(height int) int { return height - 4 }
+func PlayBodyRoom(height int) int { return height - 4 }
 
 // The battle screen budgets its own body, and the reason is that it cannot fit.
 //
 // Measured at the declared 120x24 floor, where the body's purse is twenty rows:
 // the heading is one, tui.Board is a fixed ten, tui.Roster is one plus a row a
-// unit, tui.Order is one, the log asks for playLogWanted, and the option list is
+// unit, tui.Order is one, the log asks for PlayLogWanted, and the option list is
 // one plus a row an option. A legal squad is up to hex.MaxTeamSize a side, so
 // **28 rows is the floor for a 5-a-side pairing** before a single blank or log
 // line — and a summon puts units on the board past the five the squad brought,
@@ -597,10 +639,10 @@ func playBodyRoom(height int) int { return height - 4 }
 //     rather than all at once.
 //  3. tui.Board, dropped **whole**, because ten rows of ASCII art have no half.
 //     What it says is recoverable: the aim list already prints the occupant
-//     beside every cell it offers (playScreen.occupant), so the question the
+//     beside every cell it offers (PlayScreen.occupant), so the question the
 //     board answers is answered again where the player is pointing.
 //  4. tui.Order, one row, ahead of the log.
-//  5. The log, which asks for playLogWanted rendered rows and then takes every
+//  5. The log, which asks for PlayLogWanted rendered rows and then takes every
 //     row nobody above it claimed. It is last because it is history rather than
 //     state, and the two-part answer is what lets a tall window buy the history
 //     something without any of the four sections above losing a row.
@@ -608,7 +650,7 @@ func playBodyRoom(height int) int { return height - 4 }
 // ⚠️ **How many rows the save note takes is not a fixed number, and two comments
 // here used to say it was — disagreeing with each other.** This one read "four"
 // and play_test.go read "five" about the same pair. The second note is catalog
-// wording wrapped at minWidth, so it is two rows at a floor of 120 and was three
+// wording wrapped at MinWidth, so it is two rows at a floor of 120 and was three
 // at the old 80; the *first* names the file it wrote and therefore carries a
 // path, which is free text as long as whoever chose the data directory made it.
 // The catalog half moves with the floor, the path half moves with the
@@ -618,7 +660,7 @@ func playBodyRoom(height int) int { return height - 4 }
 // The log is also the one section a reader can move: it is a frame over the whole
 // history rather than a fixed tail, and pgup/pgdown walk it — as do [ and ], the
 // aliases the footer advertises, because a compact keyboard has neither page key.
-// Following the tail is a state and not an offset — see the fields on playScreen
+// Following the tail is a state and not an offset — see the fields on PlayScreen
 // for why that is the decision the rest of it hangs off.
 //
 // ⚠️ Nothing here may touch the battle. The plan is computed while drawing, and
@@ -723,14 +765,14 @@ func playTake(left int, sizes playSizes) (playPlan, bool) {
 	} else {
 		whole = false
 	}
-	// The log asks for playLogWanted rows and is answered in two parts, which is
+	// The log asks for PlayLogWanted rows and is answered in two parts, which is
 	// what lets it grow without moving anything above it. First its own ask, so
 	// that "everything fits" still means something: a window that gives it those
 	// rows has nothing missing. Then whatever nobody claimed, because a tall
 	// terminal ought to buy the history something and the log is the only section
 	// on this screen with more to show than it is ever given.
 	if sizes.log > 0 {
-		wanted := min(sizes.log, playLogWanted)
+		wanted := min(sizes.log, PlayLogWanted)
 		if rows := left - 1; rows > 0 {
 			plan.log = min(wanted, rows)
 			left -= 1 + plan.log
@@ -797,7 +839,7 @@ func playHidden(plan playPlan, sizes playSizes) []i18n.Key {
 const hiddenSeparator = ", "
 
 // notice is the one line saying what is not shown and why.
-func (p playScreen) notice(m model, plan playPlan, sizes playSizes) string {
+func (p PlayScreen) notice(c Context, plan playPlan, sizes playSizes) string {
 	hidden := playHidden(plan, sizes)
 	parts := make([]string, 0, len(hidden))
 	for _, key := range hidden {
@@ -805,17 +847,17 @@ func (p playScreen) notice(m model, plan playPlan, sizes playSizes) string {
 		// the singular where Vietnamese does not — hence the second key rather
 		// than a plural rule.
 		if key != i18n.PlayHiddenUnits {
-			parts = append(parts, m.text(key))
+			parts = append(parts, c.Text(key))
 			continue
 		}
 		if left := sizes.units - plan.roster; left == 1 {
-			parts = append(parts, m.text(i18n.PlayHiddenUnitsOne))
+			parts = append(parts, c.Text(i18n.PlayHiddenUnitsOne))
 		} else {
-			parts = append(parts, m.text(i18n.PlayHiddenUnits, left))
+			parts = append(parts, c.Text(i18n.PlayHiddenUnits, left))
 		}
 	}
-	return m.style.Dim.Render(
-		m.text(i18n.PlayHidden, strings.Join(parts, hiddenSeparator)))
+	return c.Style.Dim.Render(
+		c.Text(i18n.PlayHidden, strings.Join(parts, hiddenSeparator)))
 }
 
 // playDrawn is every section of this screen drawn whole, before the budget says
@@ -844,7 +886,7 @@ type playDrawn struct {
 }
 
 // drawings measures every section against the board as it stands.
-func (p playScreen) drawings(m model) playDrawn {
+func (p PlayScreen) drawings(c Context) playDrawn {
 	var drawn playDrawn
 	// The turn in front, read before anything else because it is what the rest of
 	// the screen is budgeted around. A finished battle first, because its ending
@@ -852,17 +894,17 @@ func (p playScreen) drawings(m model) playDrawn {
 	// With neither — between turns, where the engine's own units act — there is no
 	// question on the screen and nothing to reserve room for.
 	switch {
-	case p.fight.Finished():
-		drawn.tail = []string{m.style.Emphasis.Render(p.ending(m))}
+	case p.Fight.Finished():
+		drawn.tail = []string{c.Style.Emphasis.Render(p.ending(c))}
 		drawn.over = true
-	case p.pending != nil:
-		drawn.tail = drawnRows(p.choices(m))
+	case p.Pending != nil:
+		drawn.tail = drawnRows(p.Choices(c))
 	}
-	drawn.board = drawnRows(tui.Board(p.fight, p.tags))
-	drawn.roster = drawnRows(tui.Roster(p.fight, p.tags))
-	drawn.order = m.style.Dim.Render(tui.Order(p.fight.Queue(), p.tags, 6))
-	drawn.log = p.logRows(m)
-	drawn.notes = p.wrote(m)
+	drawn.board = drawnRows(tui.Board(p.Fight, p.Tags))
+	drawn.roster = drawnRows(tui.Roster(p.Fight, p.Tags))
+	drawn.order = c.Style.Dim.Render(tui.Order(p.Fight.Queue(), p.Tags, 6))
+	drawn.log = p.LogRows(c)
+	drawn.notes = p.Wrote(c)
 	return drawn
 }
 
@@ -878,29 +920,29 @@ func (d playDrawn) sizes() playSizes {
 	}
 }
 
-func (p playScreen) view(m model) (string, string) {
-	footer := m.text(i18n.PlayFooter, saveKeyLabel())
-	if p.aiming {
-		footer = m.text(i18n.PlayAimFooter)
+func (p PlayScreen) View(c Context) (string, string) {
+	footer := c.Text(i18n.PlayFooter, SaveKeyLabel())
+	if p.Aiming {
+		footer = c.Text(i18n.PlayAimFooter)
 	}
-	if p.err != nil {
-		return p.heading(m, "") + "\n\n  " + m.style.Bad.Render(m.lang.Error(p.err)), footer
+	if p.Err != nil {
+		return p.heading(c, "") + "\n\n  " + c.Style.Bad.Render(c.Lang.Error(p.Err)), footer
 	}
-	if p.fight == nil {
-		return p.heading(m, "") + "\n\n  " + m.text(i18n.SquadsEmpty), footer
+	if p.Fight == nil {
+		return p.heading(c, "") + "\n\n  " + c.Text(i18n.SquadsEmpty), footer
 	}
 
-	drawn := p.drawings(m)
+	drawn := p.drawings(c)
 	if drawn.over {
-		footer = m.text(i18n.PlayOverFooter, saveKeyLabel())
+		footer = c.Text(i18n.PlayOverFooter, SaveKeyLabel())
 	}
 	sizes := drawn.sizes()
-	plan := playFit(playBodyRoom(m.height), sizes)
+	plan := playFit(PlayBodyRoom(c.Height), sizes)
 	log := p.logFrame(drawn.log, plan.log)
 
-	body := []string{p.heading(m, p.logPosition(m, len(drawn.log), plan.log))}
+	body := []string{p.heading(c, p.logPosition(c, len(drawn.log), plan.log))}
 	if plan.notice {
-		body = append(body, p.notice(m, plan, sizes))
+		body = append(body, p.notice(c, plan, sizes))
 	}
 	if plan.board || plan.roster > 0 {
 		body = append(body, "")
@@ -935,13 +977,13 @@ func (p playScreen) view(m model) (string, string) {
 // ⚠️ **The position goes here rather than on a row of its own.** A row of its own
 // would cost what the budget below spent a whole feature proving this screen has
 // not got, and the title is about seventeen cells of the seventy-nine there are.
-func (p playScreen) heading(m model, position string) string {
-	row := m.style.Heading.Render(m.text(i18n.PlayHeading)) + "  " +
-		m.style.Dim.Render(m.text(i18n.PlaySeed, p.seed))
+func (p PlayScreen) heading(c Context, position string) string {
+	row := c.Style.Heading.Render(c.Text(i18n.PlayHeading)) + "  " +
+		c.Style.Dim.Render(c.Text(i18n.PlaySeed, p.Seed))
 	if position == "" {
 		return row
 	}
-	return row + "  " + m.style.Dim.Render(position)
+	return row + "  " + c.Style.Dim.Render(position)
 }
 
 // logPosition is where the frame sits in the whole history, and nothing when the
@@ -956,12 +998,12 @@ func (p playScreen) heading(m model, position string) string {
 // Nothing is said when the log is not drawn at all — the notice under the heading
 // already names it as a section the window is too short for, and a range for a
 // frame nobody can see would be a position in a thing that is not there.
-func (p playScreen) logPosition(m model, total, room int) string {
+func (p PlayScreen) logPosition(c Context, total, room int) string {
 	if room <= 0 || total <= room {
 		return ""
 	}
 	start := p.logStart(total, room)
-	return m.text(i18n.PlayLogRange, start+1, start+room, total)
+	return c.Text(i18n.PlayLogRange, start+1, start+room, total)
 }
 
 // scrollLog moves the log's frame by whole pages, and does nothing at all when
@@ -978,24 +1020,24 @@ func (p playScreen) logPosition(m model, total, room int) string {
 // next event arrives. So the offset goes back to nothing there — nought is also a
 // perfectly ordinary offset, meaning the top of the history, and the flag beside
 // it is what tells the two apart. That is the whole argument for two fields.
-func (p playScreen) scrollLog(m model, pages int) playScreen {
-	if p.fight == nil || p.err != nil {
+func (p PlayScreen) scrollLog(c Context, pages int) PlayScreen {
+	if p.Fight == nil || p.Err != nil {
 		return p
 	}
-	drawn := p.drawings(m)
-	room := playFit(playBodyRoom(m.height), drawn.sizes()).log
+	drawn := p.drawings(c)
+	room := playFit(PlayBodyRoom(c.Height), drawn.sizes()).log
 	total := len(drawn.log)
 	if room <= 0 || total <= room {
 		// Nothing above the frame, so nothing to scroll to.
 		return p
 	}
 	tail := total - room
-	offset := clamp(p.logStart(total, room)+pages*room, 0, tail)
+	offset := Clamp(p.logStart(total, room)+pages*room, 0, tail)
 	if offset == tail {
-		p.logFollow, p.logOffset = true, 0
+		p.LogFollow, p.LogOffset = true, 0
 		return p
 	}
-	p.logFollow, p.logOffset = false, offset
+	p.LogFollow, p.LogOffset = false, offset
 	return p
 }
 
@@ -1022,7 +1064,7 @@ func drawnRows(drawn string) []string {
 // ⚠️ **Every event, and it used to be the last few.** The old reading walked from
 // the end and stopped at the budget, which meant the rows past the frame were not
 // merely off screen — they did not exist, so no key could have reached them and
-// the frame had nothing to be a window into. p.events holds every event a battle
+// the frame had nothing to be a window into. p.Events holds every event a battle
 // has emitted (collect appends and never trims), so the history was always there
 // and it was the view that threw it away.
 //
@@ -1034,21 +1076,21 @@ func drawnRows(drawn string) []string {
 //
 // Nothing here reads the battle: the event log is the only contract a reader of
 // one has.
-func (p playScreen) logRows(m model) []string {
+func (p PlayScreen) LogRows(c Context) []string {
 	// ⚠️ Built **once**, here, and not once a row. This renders the whole history
 	// now rather than the last few rows, so a per-row build would walk the skill,
 	// status and passive books again for every event a battle has emitted. It is
-	// not on the screen beside p.tags either, for one reason: ctrl+l toggles the
-	// language and this is read every draw, while p.tags is written once a battle.
-	glosses := m.lang.LogGlosses(
-		m.lib.Skills().Skills(), m.lib.Statuses().Kinds(), m.lib.Passives().All())
+	// not on the screen beside p.Tags either, for one reason: ctrl+l toggles the
+	// language and this is read every draw, while p.Tags is written once a battle.
+	glosses := c.Lang.LogGlosses(
+		c.Lib.Skills().Skills(), c.Lib.Statuses().Kinds(), c.Lib.Passives().All())
 	var lines []string
-	for _, event := range p.events {
-		line := tui.Line(event, p.tags, glosses)
+	for _, event := range p.Events {
+		line := tui.Line(event, p.Tags, glosses)
 		if line == "" {
 			continue
 		}
-		lines = append(lines, drawnRows("  "+m.style.Dim.Render(line))...)
+		lines = append(lines, drawnRows("  "+c.Style.Dim.Render(line))...)
 	}
 	return lines
 }
@@ -1059,20 +1101,20 @@ func (p playScreen) logRows(m model) []string {
 // offset is written. Undo is a shorter script replayed, so the history is rebuilt
 // shorter than the one the offset was taken in, and an offset carried across it
 // points past the end.
-func (p playScreen) logStart(total, room int) int {
+func (p PlayScreen) logStart(total, room int) int {
 	if room <= 0 {
 		return 0
 	}
 	tail := max(total-room, 0)
-	if p.logFollow {
+	if p.LogFollow {
 		return tail
 	}
-	return clamp(p.logOffset, 0, tail)
+	return Clamp(p.LogOffset, 0, tail)
 }
 
 // logFrame is the rows of the history that are on screen: the tail while the
 // reader is following it, and whichever page they scrolled back to otherwise.
-func (p playScreen) logFrame(rows []string, room int) []string {
+func (p PlayScreen) logFrame(rows []string, room int) []string {
 	if room <= 0 {
 		return nil
 	}
@@ -1085,28 +1127,28 @@ func (p playScreen) logFrame(rows []string, room int) []string {
 
 // choices is the turn in front: whose it is, what they may do, and where it may
 // be pointed once a skill is picked.
-func (p playScreen) choices(m model) string {
-	unit, known := p.fight.Unit(p.pending.Unit)
+func (p PlayScreen) Choices(c Context) string {
+	unit, known := p.Fight.Unit(p.Pending.Unit)
 	if !known {
 		return ""
 	}
 	var out strings.Builder
-	out.WriteString(m.style.Label.Render(m.text(i18n.PlayYourTurn,
-		p.tags[unit.ID], unit.Name, p.pending.Turn)) + "\n")
+	out.WriteString(c.Style.Label.Render(c.Text(i18n.PlayYourTurn,
+		p.Tags[unit.ID], unit.Name, p.Pending.Turn)) + "\n")
 	// The id column is measured over the options this turn offers rather than
 	// fixed, for the reason menuLabelWidth and every detail pane measure theirs.
 	// Over the options and not over the book: the widest id in the game is
 	// thirteen cells and this unit may be bringing four short ones, so a
 	// book-wide column would spend the summary's room on a skill nobody here can
 	// cast.
-	width := p.optionWidth()
+	width := p.OptionWidth()
 	// Clipped to the floor rather than to the window in hand, which is what the
 	// caution line and the trait sentences do and for the same reason: measuring
 	// the real terminal gives one line two shapes and leaves the width sweep
 	// nothing to hold. Below the floor no screen is drawn at all, so the floor is
 	// also the narrowest room this row ever really has.
-	clip := lipgloss.NewStyle().MaxWidth(max(minWidth-1-markerWidth-width-optionGap, 0))
-	for index, option := range p.pending.Options {
+	clip := lipgloss.NewStyle().MaxWidth(max(MinWidth-1-PlayMarkerWidth-width-PlayOptionGap, 0))
+	for index, option := range p.Pending.Options {
 		marker := "  "
 		// ⚠️ An unavailable option keeps its reason and **drops its summary**.
 		// The row has one slot and the two answer different questions: the reason
@@ -1114,38 +1156,38 @@ func (p playScreen) choices(m model) string {
 		// cursor steps over it, and what the skill does is a ? away. Do not
 		// "fix" this by drawing both — the second one would be the half that got
 		// clipped.
-		tail := p.summarise(m, option.Skill)
+		tail := p.summarise(c, option.Skill)
 		if !option.Available() {
 			tail = option.Reason
 		}
 		line := option.Skill
 		if tail != "" {
 			line += strings.Repeat(" ",
-				width-lipgloss.Width(option.Skill)+optionGap) + clip.Render(tail)
+				width-lipgloss.Width(option.Skill)+PlayOptionGap) + clip.Render(tail)
 		}
 		switch {
 		case !option.Available():
-			line = m.style.Dim.Render(line)
-		case index == p.option && !p.aiming:
+			line = c.Style.Dim.Render(line)
+		case index == p.Option && !p.Aiming:
 			marker = "> "
-			line = m.style.Selected.Render(line)
+			line = c.Style.Selected.Render(line)
 		}
 		out.WriteString(marker + line + "\n")
 	}
-	if !p.aiming {
+	if !p.Aiming {
 		return out.String()
 	}
-	option := p.pending.Options[clamp(p.option, 0, len(p.pending.Options)-1)]
-	out.WriteString("\n" + m.style.Label.Render(m.text(i18n.PlayAimAt, option.Skill)) + "\n")
+	option := p.Pending.Options[Clamp(p.Option, 0, len(p.Pending.Options)-1)]
+	out.WriteString("\n" + c.Style.Label.Render(c.Text(i18n.PlayAimAt, option.Skill)) + "\n")
 	for index, cell := range option.Aims {
 		marker := "  "
 		line := cell.String()
 		if held := p.occupant(cell); held != "" {
 			line += "  " + held
 		}
-		if index == p.aim {
+		if index == p.Aim {
 			marker = "> "
-			line = m.style.Selected.Render(line)
+			line = c.Style.Selected.Render(line)
 		}
 		out.WriteString(marker + line + "\n")
 	}
@@ -1155,14 +1197,14 @@ func (p playScreen) choices(m model) string {
 // The two fixed columns a row spends before its summary: the cursor marker, and
 // the gap between the id column and whatever follows it.
 const (
-	markerWidth = 2
-	optionGap   = 2
+	PlayMarkerWidth = 2
+	PlayOptionGap   = 2
 )
 
 // optionWidth is the id column, measured over the turn's own options.
-func (p playScreen) optionWidth() int {
+func (p PlayScreen) OptionWidth() int {
 	width := 0
-	for _, option := range p.pending.Options {
+	for _, option := range p.Pending.Options {
 		if drawn := lipgloss.Width(option.Skill); drawn > width {
 			width = drawn
 		}
@@ -1182,39 +1224,39 @@ func (p playScreen) optionWidth() int {
 // A skill the book cannot find summarises as nothing rather than as an error.
 // The options come out of the battle, which was built from the same library, so
 // a miss is not reachable; and a row is the wrong place to report that it was.
-func (p playScreen) summarise(m model, id string) string {
-	declared, err := m.lib.Skills().Lookup(id)
+func (p PlayScreen) summarise(c Context, id string) string {
+	declared, err := c.Lib.Skills().Lookup(id)
 	if err != nil {
 		return ""
 	}
-	return m.lang.SummariseSkill(declared, m.lib.Patterns())
+	return c.Lang.SummariseSkill(declared, c.Lib.Patterns())
 }
 
 // occupant is the tag and name standing on a cell, so an aim reads as somebody
 // rather than as a coordinate.
-func (p playScreen) occupant(cell hex.Offset) string {
-	for _, unit := range p.fight.Units() {
+func (p PlayScreen) occupant(cell hex.Offset) string {
+	for _, unit := range p.Fight.Units() {
 		if unit.Dead || unit.Cell != cell {
 			continue
 		}
-		return p.tags[unit.ID] + " " + unit.Name
+		return p.Tags[unit.ID] + " " + unit.Name
 	}
 	return ""
 }
 
 // ending is how the battle finished, in the words the game client uses for it.
-func (p playScreen) ending(m model) string {
-	switch p.fight.Outcome() {
+func (p PlayScreen) ending(c Context) string {
+	switch p.Fight.Outcome() {
 	case battle.Victory:
-		winner, _ := p.fight.Winner()
-		if winner == p.side {
-			return m.text(i18n.PlayWon)
+		winner, _ := p.Fight.Winner()
+		if winner == p.Side {
+			return c.Text(i18n.PlayWon)
 		}
-		return m.text(i18n.PlayLost)
+		return c.Text(i18n.PlayLost)
 	case battle.Stalemate:
-		return m.text(i18n.PlayDrawn)
+		return c.Text(i18n.PlayDrawn)
 	default:
-		return m.text(i18n.PlayEmptied)
+		return c.Text(i18n.PlayEmptied)
 	}
 }
 
@@ -1223,20 +1265,20 @@ func (p playScreen) ending(m model) string {
 // It hands back the rows rather than a block, because the budget above counts
 // them: a section that reported itself as one string would have to be measured
 // twice, once to place it and once to draw it.
-func (p playScreen) wrote(m model) []string {
-	if len(p.notes) == 0 {
+func (p PlayScreen) Wrote(c Context) []string {
+	if len(p.Notes) == 0 {
 		return nil
 	}
 	var out []string
-	for index, note := range m.lang.Notes(p.notes) {
-		style := m.style.Dim
+	for index, note := range c.Lang.Notes(p.Notes) {
+		style := c.Style.Dim
 		if index == 0 {
-			style = m.style.Good
+			style = c.Style.Good
 		}
-		// Wrapped against minWidth rather than the window in hand, for the
+		// Wrapped against MinWidth rather than the window in hand, for the
 		// reason the fight's caution is: measuring the real terminal would give
 		// one sentence two shapes and leave the width sweep nothing to hold.
-		for _, line := range wrapWords(note, minWidth-1) {
+		for _, line := range WrapWords(note, MinWidth-1) {
 			out = append(out, style.Render(line))
 		}
 	}

@@ -91,8 +91,8 @@ type SkillsScreen struct {
 	// back on the rows is an ordinary state and the one the feature exists for.
 	// Reading focus off "the query is not empty" would make that state
 	// unreachable and would also make a filter impossible to open before
-	// anything has been typed into it — the same shape as playScreen carrying
-	// logFollow beside logOffset instead of encoding "follow" as a sentinel
+	// anything has been typed into it — the same shape as PlayScreen carrying
+	// LogFollow beside LogOffset instead of encoding "follow" as a sentinel
 	// offset, and as a queue reading having to declare absence rather than
 	// detect it.
 	//

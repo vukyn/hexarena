@@ -137,27 +137,20 @@ type (
 	// what it named of this client was one way back, now a draw.Back, and one
 	// question, now a draw.Ask about nothing.
 	originsScreen = draw.OriginsScreen
+	// playScreen is the battle fought by hand. ⚠️ A **plain alias** like the
+	// rest: esc is a draw.Back and `?` is a draw.Raise at draw.Blurb, and the two
+	// squads it fights — the one thing it used to read off another screen — are
+	// handed to draw.PlayScreen.Open by whoever owns the fight.
+	playScreen = draw.PlayScreen
+	// blurbScreen is the description screen. ⚠️ A **plain alias now**, and it was
+	// the last one that was not: it carried a `from screen` — this binary's own
+	// enum, so it could not travel with the describer — for as long as one of its
+	// three raisers still wrote m.screen itself. All three return a draw.Raise at
+	// draw.Blurb through navigate, so m.raisedFrom already records who raised it
+	// and the field had no job left. See updateBlurb for what replaced its three
+	// readings.
+	blurbScreen = draw.BlurbScreen
 )
-
-// blurbScreen is the description screen plus the one fact about it that only
-// this client can hold: which of *its* screens raised it.
-//
-// ⚠️ **The embedded value is the whole screen, and this adds no state to it** —
-// no second cursor, no second scroll, no second subject. `from` is a `screen`,
-// this binary's own enum, so it could not travel with the describer for exactly
-// the reason `draw.Action` exists: a screen in that package may not name a view
-// of a client it was not written for. Every other moved screen is a bare alias
-// because none of them had a field of this kind.
-//
-// The describer itself never reads it. It branches on `Subject.Kind`; `from` is
-// read by this client alone, for `esc` and for which raiser an arrow key walks
-// while a description is in front — see describe.go.
-type blurbScreen struct {
-	draw.BlurbScreen
-
-	// from is the screen that raised it, and where esc goes back to.
-	from screen
-}
 
 // model is the whole program: a library, the language, the screen in front, and
 // the four screens' own state.
@@ -182,19 +175,49 @@ type model struct {
 	// raisedFrom is where a Back goes: the screen that raised whatever is in
 	// front, remembered by the client because a screen may not name one.
 	//
-	// One slot, and that is all the six screens converted to draw.Action need —
-	// they raise one deep and no further (the elements listing raises the chart,
-	// the traits listing raises the statuses reference, and neither of those two
-	// raises anything at all), so there is no stack to keep and nothing to pop.
-	//
 	// ⚠️ Two facts make this exactly what it replaces, a `from screen` field on
 	// the statuses screen. screenMenu is the **zero value** of screen, so an
 	// unwritten slot already means the menu, which is where esc went from all
 	// four of the screens that never raise; and it is cleared **as it is used**,
-	// in navigate, because the old field was cleared in the screen's own esc
-	// rather than by enter — a reader who came through the menu after coming
-	// through a trait must not inherit the trait.
+	// in goBack, because the old field was cleared in the screen's own esc rather
+	// than by enter — a reader who came through the menu after coming through a
+	// trait must not inherit the trait.
 	raisedFrom screen
+
+	// raisedOver is the way back that raisedFrom displaced, and it is what turns
+	// one slot into a two-step answer.
+	//
+	// ⚠️ **The played battle is the first screen in this client that is both
+	// raised and a raiser**: the fight opens it and it raises the description
+	// screen with `?`. One slot cannot hold both — measured, the moment that
+	// screen's `?` started going through navigate: read a description, come back,
+	// leave the battle, and esc landed on the **menu** instead of on the fight,
+	// because the raise had overwritten the only record there was.
+	//
+	// ⚠️ **TestAWayBackSurvivesTheScreenItRaised is what holds this**, and it had
+	// to be written for it: every other way-back test in this client walks a
+	// chain one raise deep, which a single slot answers perfectly. The defect
+	// needs the raise **in between** — `fight → p → ? → esc → esc` — so
+	// collapsing the push below to `m.raisedFrom = from` leaves the whole client
+	// suite green except that one test. A field whose only reader is a hand
+	// trace is a field the next person simplifies.
+	//
+	// ⚠️ **Two is ENOUGH FOR TODAY and is not sufficient by design — and the
+	// reason is not the one it looks like.** The longest chain here is catalogue
+	// → fight → battle → description, which is **three** pushes, so the third
+	// one displaces the catalogue and nothing puts it back. That is sound only
+	// because the fight answers esc by writing `screenSquads` **itself** rather
+	// than by following a way back, so the displaced entry is one nothing ever
+	// reads. Both of those are facts about the screens this client happens to
+	// have, not properties of the scheme: convert the fight's esc to a draw.Back,
+	// or give a screen that is already two deep a raise of its own, and the third
+	// entry starts being read and two slots silently answer with the wrong door.
+	// The last leg of that same test is what measures it — it walks out to the
+	// catalogue, so the day the fight starts popping the test fails instead of
+	// the reader ending up on the menu. A real `[]screen` is the answer then; it
+	// was passed over now only because two named fields left all twelve existing
+	// raisedFrom sites and every everyScreen entry untouched.
+	raisedOver screen
 
 	browse   browseScreen
 	form     formScreen
@@ -298,7 +321,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		builds:   draw.NewBuildsScreen(lib),
 		squad:    draw.NewSquadsScreen(ctx),
 		fight:    newFightScreen(),
-		play:     newPlayScreen(),
+		play:     draw.NewPlayScreen(),
 		check:    newCheckScreen(lib),
 		preview:  draw.NewPreviewScreen(),
 		spar:     newSparScreen(),
@@ -447,7 +470,9 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case screenFight:
 		return m.fight.update(m, message)
 	case screenPlay:
-		return m.play.update(m, message)
+		play, action := m.play.Update(m.ctx(), message)
+		m.play = play
+		return m.navigate(screenPlay, action)
 	case screenCheck:
 		return m.check.update(m, message)
 	case screenPreview:
@@ -482,10 +507,8 @@ var raiseTargets = map[draw.Target]screen{
 	// The two describers. Both were listed here **before** anything returned a
 	// Raise naming either, which is what put them under
 	// TestEveryRaiseTargetNamesAScreenInThisClient ahead of their raisers rather
-	// than after. Three of the four raisers have arrived since — the cast
-	// browser raises both, the skill listing raises the blurb — and the fourth,
-	// the played battle, still writes m.screen and pushes its subject through
-	// model.hand, because that screen has not moved.
+	// than after. All four raisers have arrived since: the cast browser raises
+	// both, and the skill listing and the played battle raise the blurb.
 	draw.Blurb:   screenBlurb,
 	draw.Preview: screenPreview,
 	// The squad catalogue raises this one and the fight itself has not moved,
@@ -507,11 +530,7 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		// exactly why the screen handed back an action instead of the command.
 		return m, tea.Quit
 	case draw.Back:
-		m.screen = m.raisedFrom
-		// Forgotten as it is used: the next visit through the menu must not
-		// inherit this one's way back.
-		m.raisedFrom = screenMenu
-		return m, nil
+		return m.goBack(), nil
 	case draw.Raise:
 		return m.raise(from, action)
 	case draw.Ask:
@@ -584,24 +603,19 @@ func (m model) raise(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	m = handed
-	// ⚠️ The description screen keeps its own way back beside raisedFrom, and
-	// that is not a duplicate. `blurbScreen.from` is read by updateBlurb for two
-	// things raisedFrom cannot answer — esc, and which raiser an arrow key walks
-	// — so whichever raiser arrives through here has to fill it in, or a
-	// description raised from the browser would escape to wherever the last one
-	// did.
+	// ⚠️ A description is opened at its own top, and this is the one place that
+	// says so now.
 	//
-	// ⚠️ **Two of the three raisers come through here now and the third does
-	// not**: the cast browser and the skill listing both return a Raise naming
-	// draw.Blurb, and the played battle still writes m.screen and pushes its
-	// subject through model.hand, because that screen has not moved. `from` is a
-	// `screen`, this binary's own enum, so it could not travel with the
-	// describer — and **converting the played battle is what closes it**, not
-	// this step.
+	// It used to be one raiser's own business — the played battle zeroed the
+	// scroll in its `?` handler and the other two did not, which was a latent
+	// disagreement rather than a decision: a reader who had scrolled a trait
+	// description and then asked about a battle option would have opened the
+	// second one at the first one's offset. Raising is what starts a new reading,
+	// so the reset belongs to the raise.
 	if target == screenBlurb {
-		m.blurb.from = from
+		m.blurb.Scroll = 0
 	}
-	m.raisedFrom = from
+	m = m.raisedBy(from)
 	// ⚠️ **One target goes through enter and the other four do not**, which is a
 	// difference rather than an inconsistency to tidy away. enter refreshes the
 	// screen being entered, and three of the other four are raised *about*
@@ -616,6 +630,27 @@ func (m model) raise(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 	}
 	m.screen = target
 	return m, nil
+}
+
+// raisedBy records a way back, keeping the one it displaces.
+//
+// ⚠️ It is a push and not an assignment because of raisedOver's own note: a
+// screen that was itself raised keeps its door while it raises another.
+func (m model) raisedBy(from screen) model {
+	m.raisedOver, m.raisedFrom = m.raisedFrom, from
+	return m
+}
+
+// goBack follows the way back and forgets it, which is what every Back in this
+// client comes to.
+//
+// Forgotten as it is used: the next visit through the menu must not inherit this
+// one's way back. What was under it moves up, so the screen being returned to
+// still has the door it arrived through.
+func (m model) goBack() model {
+	m.screen = m.raisedFrom
+	m.raisedFrom, m.raisedOver = m.raisedOver, screenMenu
+	return m
 }
 
 // confirmedBy is what a confirmed guard means to this client: which screen's
@@ -908,7 +943,19 @@ func (m model) enter(target screen) model {
 		// A battle is built on the way in rather than lazily in the view: the
 		// screen holds a pointer, and building one while drawing would be a
 		// redraw with a side effect.
-		m.play = m.play.begin(m)
+		//
+		// ⚠️ **The pairing is handed over here**, which is the one thing that
+		// screen used to reach for: it asked the fight which two squads it was
+		// between, and the fight is a screen of this client's that has not moved.
+		// Which two squads a battle is between is a parameter of opening it, so
+		// the client that owns both screens answers once and passes the answer in.
+		//
+		// The bool is dropped rather than branched on: an empty catalogue hands
+		// back two squads with nobody in them, which is exactly what Open refuses,
+		// and it says so on the screen. Branching here would put that refusal in
+		// two places.
+		home, away, _ := m.fight.sides(m)
+		m.play = m.play.Open(m.ctx(), home, away)
 	case screenSpar:
 		m.spar = m.spar.refresh()
 	}
@@ -965,7 +1012,7 @@ func (m model) screenContent() string {
 	case screenFight:
 		body, footer = m.fight.view(m)
 	case screenPlay:
-		body, footer = m.play.view(m)
+		body, footer = m.play.View(m.ctx())
 	case screenCheck:
 		body, footer = m.check.view(m)
 	case screenPreview:

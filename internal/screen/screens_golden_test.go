@@ -38,23 +38,26 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 // That is real coverage sitting in another package, and it gets worse rather
 // than better: after `cmd/hexarena` stands up, a screen the authoring tool stops
 // drawing loses its only layout net **in silence**. So this file is that net,
-// here, and the package holds eleven screens now that the skill listing, the
-// squad builder and the works catalogue have all arrived.
+// here, and the package holds twelve screens now that the skill listing, the
+// squad builder, the works catalogue and the played battle have all arrived.
 //
 // ## What is recorded
 //
-// Thirty-five entries over those eleven screens — the six listings, the
+// Forty-one entries over those twelve screens — the six listings, the
 // description screen in both of its readings, the two states nothing shipped can
 // draw (a species kind nobody claims, a build that spends no trait slot), the
 // five states of the picker, which is handed its list and so has no one shape,
 // the skill listing with the seven states of it the client's sweep registers, the
 // squad builder at each of its three depths plus the two states and the two
-// pickers that go with them, and the works catalogue with the add-a-work form
+// pickers that go with them, the works catalogue with the add-a-work form
 // over it plus the two states **neither** sweep could draw before — an empty
-// catalogue and a refused write — in **both** languages at **two** sizes: the
-// MinWidth x MinHeight floor, where the Room helpers bite, and 160x60, where
-// nothing is squeezed — **140 renders, 3097 lines**. The entry names are the
-// client's own, so a reader holding both diffs is looking at the same words.
+// catalogue and a refused write — and the played battle in the six states of it
+// that share no line, two of which are also states neither sweep could draw (a
+// save's own note, and a battle with no pairing to open on) — in **both**
+// languages at **two** sizes: the MinWidth x MinHeight floor, where the Room
+// helpers bite, and 160x60, where nothing is squeezed — **164 renders, 3851
+// lines**. The entry names are the client's own, so a reader holding both diffs
+// is looking at the same words.
 //
 // ⚠️ **Two of the works entries are states the client's fixture cannot reach at
 // all**, which is the same kind of finding as the three squad entries above and
@@ -300,7 +303,175 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"a held-back member":       heldBackMember(t, c, member),
 		"a squad kit":              squadKitPicker(t, c, member),
 		"a squad trait":            squadTraitPicker(t, c, member),
+		// The played battle in the six states of it that share no line, under
+		// the client's own names where it has one. Each builds its own battle —
+		// see the note over these builders for the pointer that makes that a
+		// rule rather than tidiness.
+		"a battle":                 aBattle(t, c),
+		"aiming":                   aBattleAiming(t, c),
+		"a battle over":            aFinishedBattle(t, c),
+		"a scrolled battle log":    aScrolledBattleLog(t, c),
+		"a saved battle":           aSavedBattle(t, c),
+		"a battle with no pairing": aBattleWithNoPairing(t, c),
 	}
+}
+
+// # The played battle's six entries
+//
+// The twelfth screen in this package and the one a game client needs most. What
+// is recorded is the six paths through View that share no line: the turn in
+// front, the cell being chosen, the ending, the log scrolled back off its tail,
+// the note a write leaves, and the screen with no pairing to open a battle on.
+//
+// ⚠️ **Every one of them builds its own battle, and that is a rule rather than
+// tidiness.** PlayScreen holds a `*battle.Battle`, the one thing on a screen in
+// this package that a copy does not copy — so a fixture handing several states
+// one battle would step them all, and the state driven furthest would decide
+// what the others drew. The client's own sweep shipped exactly that: three
+// states shared a battle, the finished one played it out, and both battle
+// footers were over the window for a release with every width test passing.
+//
+// ⚠️ **`a battle`, `aiming` and `a battle over` are three a side where the
+// client's of the same name are one**, and that is the squad entries' asymmetry
+// again: the client's fixture squad has a single member, so its board draws one
+// roster row and never reaches the budget. Three is what makes the floor render
+// a squeeze — the notice, a dropped board, a log with no rows — which is the
+// half of this screen the arithmetic is about. The client's `a squeezed battle`
+// pair has no counterpart here for the opposite reason: this golden sets the
+// window itself, so every entry's floor render *is* the squeezed one.
+//
+// ⚠️ **`a saved battle` is a state NEITHER golden could draw before.** Measured
+// over both, in both languages: `i18n.NoteWrote` and `i18n.NoteBattleVerify` on
+// this screen came back at **nought hits in 8,201 and 3,098 lines**. The client
+// cannot reach it — its fixture writes into a temp directory, so the note names
+// a path whose length is not stable between two runs on one machine, which is
+// why `everyScreen` leaves the state out and says so. Here the note is a
+// **value** carrying a relative path, which is also what a real write produces
+// in this package's own directory, so `noAbsolutePath` holds and the rows are
+// recorded.
+//
+// ⚠️ **`a battle with no pairing` is the other one.** The client's fight guards
+// its `p` on the catalogue holding a squad, so nothing there can open a battle
+// on nothing; `Open` refuses two empty squads and says so, and this is the only
+// record of that arm.
+
+// aBattle is the turn in front: the board, the roster, the order line, the log
+// and the option list under them.
+func aBattle(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p := withAFullLog(t, c, atABattleOf(t, c, 3))
+	if drawn, _ := p.View(c); !strings.Contains(drawn, c.Text(i18n.PlayHeading)) {
+		t.Fatalf("the battle draws no heading of its own:\n%s", drawn)
+	}
+	return p
+}
+
+// aBattleAiming is the second question: the same board with the cells the chosen
+// skill may be pointed at under the option list.
+//
+// ⚠️ Its own battle, and the aim list is asserted rather than assumed: an option
+// with one cell never opens the question, so a state built on the wrong row
+// records an ordinary battle screen twice.
+func aBattleAiming(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p := withAFullLog(t, c, atABattleOf(t, c, 3))
+	p.Aiming = true
+	option := p.Pending.Options[p.Option]
+	if len(option.Aims) == 0 {
+		t.Fatalf("the option %q has nowhere to point, so the aim list is empty",
+			option.Skill)
+	}
+	drawn, _ := p.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.PlayAimAt, option.Skill)) {
+		t.Fatalf("the aiming battle draws no aim list:\n%s", drawn)
+	}
+	return p
+}
+
+// aFinishedBattle is the ending, which replaces the option list and takes the
+// over footer with it.
+func aFinishedBattle(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p := playedOut(t, c, atABattleOf(t, c, 3))
+	drawn, _ := p.View(c)
+	said := false
+	for _, ending := range []i18n.Key{
+		i18n.PlayWon, i18n.PlayLost, i18n.PlayDrawn, i18n.PlayEmptied,
+	} {
+		if strings.Contains(drawn, c.Text(ending)) {
+			said = true
+		}
+	}
+	if !said {
+		t.Fatalf("the finished battle says nothing about how it ended:\n%s", drawn)
+	}
+	return p
+}
+
+// aScrolledBattleLog is the log walked back off its own tail, which is the one
+// state that draws the position on the heading row.
+//
+// ⚠️ It has to be **built twice over**: a battle a few turns old has a history
+// that fits its frame, so nothing is hidden and the position is correctly not
+// drawn — and the floor this golden renders at gives a three-a-side board no log
+// row at all. So the history is played out past any frame, and the frame is
+// walked back with the key a reader would press, in a window the log has rows
+// in. The position then draws at the roomy size and the notice names the log at
+// the floor, which is both halves of the record.
+func aScrolledBattleLog(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	tall := inAWindow(c, longLogHeight)
+	p := withALongLog(t, tall, atABattleOf(t, tall, 3), longLogRows)
+	for range 4 {
+		p = playing(t, tall, p, "pgup")
+	}
+	if p.LogFollow || p.LogOffset == 0 {
+		t.Fatalf("the log did not scroll back (following %v at %d), so the position "+
+			"is drawn by nothing here", p.LogFollow, p.LogOffset)
+	}
+	roomy := c
+	roomy.Width, roomy.Height = goldenSizes[len(goldenSizes)-1][0], goldenSizes[len(goldenSizes)-1][1]
+	history, room, _ := theLogFrame(roomy, p)
+	if room <= 0 || len(history) <= room {
+		t.Fatalf("the roomy window holds the whole %d-row history in %d rows, so no "+
+			"position is drawn", len(history), room)
+	}
+	return p
+}
+
+// aSavedBattle is the pair of notes a write leaves behind, drawn under the
+// option list.
+//
+// ⚠️ The notes are a **value** and nothing here writes: the path is relative,
+// which is what a save in this package's own data directory really produces and
+// what keeps noAbsolutePath true. It is the one state neither golden held — see
+// the note above for the measurement.
+func aSavedBattle(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p := withAFullLog(t, c, atABattleOf(t, c, 3))
+	p.Notes = aSaveNote()
+	rows := p.Wrote(c)
+	if len(rows) == 0 {
+		t.Fatal("the fixture note renders no row")
+	}
+	if drawn, _ := p.View(c); !strings.Contains(drawn, rows[0]) {
+		t.Fatalf("the saved battle does not draw its own note:\n%s", drawn)
+	}
+	return p
+}
+
+// aBattleWithNoPairing is the screen a client with an empty catalogue opens: no
+// battle, and the line saying nothing has been built.
+func aBattleWithNoPairing(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p := NewPlayScreen().Open(c, placement.Squad{}, placement.Squad{})
+	if p.Fight != nil || p.Err != nil {
+		t.Fatalf("two empty squads opened a battle (%v)", p.Err)
+	}
+	if drawn, _ := p.View(c); !strings.Contains(drawn, c.Text(i18n.SquadsEmpty)) {
+		t.Fatalf("the unpaired battle says nothing about a side having to be built:\n%s", drawn)
+	}
+	return p
 }
 
 // addingAWork is the add-a-work form over the catalogue: five rows, the medium

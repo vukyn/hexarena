@@ -104,7 +104,10 @@ func (f fightScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cm
 		// says why.
 		if len(squads) > 0 {
 			m.fight = f
-			return m.enter(screenPlay), nil
+			// The way back is recorded here because this is the raiser, and the
+			// battle's own esc is a draw.Back: a screen may not name its own
+			// door even while it has one raiser.
+			return m.raisedBy(screenFight).enter(screenPlay), nil
 		}
 	case "+", "=":
 		f.seeds = clamp(f.seeds*2, fightMinSeeds, fightMaxSeeds)

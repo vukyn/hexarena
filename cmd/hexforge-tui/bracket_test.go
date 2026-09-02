@@ -96,7 +96,7 @@ func scrollSites() []scrollSite {
 			return aLongLog(t, lang, 3)
 		},
 		state: func(m model) string {
-			return fmt.Sprintf("offset %d follow %v", m.play.logOffset, m.play.logFollow)
+			return fmt.Sprintf("offset %d follow %v", m.play.LogOffset, m.play.LogFollow)
 		},
 	}, {
 		name: "the browse blurb",
@@ -108,7 +108,7 @@ func scrollSites() []scrollSite {
 			// only worth walking on a description that runs past the window.
 			raised.browse.Cursor = widestTraitRow(raised)
 			raised.browse.Level = progression.LevelCap
-			raised.blurb.from = screenBrowse
+			raised.raisedFrom = screenBrowse
 			raised = raised.hand(raised.browse.Subject())
 			raised.screen = screenBlurb
 			return raised
