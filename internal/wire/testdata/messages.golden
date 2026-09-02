@@ -1,0 +1,165 @@
+[hello]
+{
+  "kind": "hello",
+  "body": {
+    "protocol": 1,
+    "build": "fixture-build",
+    "data": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "squad": {
+      "id": "fixture.squad",
+      "name": "Fixture",
+      "units": [
+        {
+          "id": "fixture.front",
+          "character": "fixture.character.one",
+          "level": 60,
+          "stage": "fixture.stage.two",
+          "slot": {
+            "col": 1,
+            "row": 1
+          },
+          "skills": [
+            "fixture.strike",
+            "fixture.guard",
+            "fixture.mend",
+            "fixture.hex"
+          ],
+          "passives": [
+            "fixture.trait"
+          ]
+        },
+        {
+          "id": "fixture.back",
+          "character": "fixture.character.two",
+          "level": 60,
+          "slot": {
+            "col": 0,
+            "row": 2
+          },
+          "skills": [
+            "fixture.strike",
+            "fixture.guard",
+            "fixture.mend",
+            "fixture.hex"
+          ]
+        }
+      ]
+    },
+    "name": "Fixture Player",
+    "password": "the-cat-sat-on-the-mat"
+  }
+}
+
+[act]
+{
+  "kind": "act",
+  "body": {
+    "skill": "fixture.strike",
+    "aim": {
+      "col": 4,
+      "row": 1
+    }
+  }
+}
+
+[pass]
+{
+  "kind": "pass",
+  "body": {}
+}
+
+[welcome]
+{
+  "kind": "welcome",
+  "body": {
+    "format": 3,
+    "battles": 3,
+    "allowance": 90,
+    "seat": "guest"
+  }
+}
+
+[refused]
+{
+  "kind": "refused",
+  "body": {
+    "code": "data_mismatch"
+  }
+}
+
+[start]
+{
+  "kind": "start",
+  "body": {
+    "seed": 11,
+    "roster": [
+      {
+        "id": "fixture.ally",
+        "name": "Ally",
+        "side": "ally",
+        "slot": {
+          "col": 1,
+          "row": 1
+        },
+        "element": "water",
+        "stats": {
+          "hp": 9000,
+          "attack": 500,
+          "defense": 400,
+          "speed": 300,
+          "accuracy": 900,
+          "dodge": 100
+        },
+        "skills": [
+          "fixture.strike",
+          "fixture.guard"
+        ],
+        "passives": [
+          "fixture.trait"
+        ]
+      },
+      {
+        "id": "fixture.enemy",
+        "name": "Enemy",
+        "side": "enemy",
+        "slot": {
+          "col": 1,
+          "row": 1
+        },
+        "element": "fire",
+        "stats": {
+          "hp": 9000,
+          "attack": 500,
+          "defense": 400,
+          "speed": 300,
+          "accuracy": 900,
+          "dodge": 100
+        },
+        "skills": [
+          "fixture.strike",
+          "fixture.hex"
+        ]
+      }
+    ],
+    "side": "enemy",
+    "battle": 2
+  }
+}
+
+[turn]
+{
+  "kind": "turn",
+  "body": {
+    "decision": {
+      "unit": "fixture.ally",
+      "turn": 4,
+      "skill": "fixture.strike",
+      "aim": {
+        "col": 4,
+        "row": 1
+      }
+    },
+    "events": "2361e1e1ef3c1895ad88842c920a02dc24fa160f15124e6fd996955608ac7649"
+  }
+}
+

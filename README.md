@@ -2377,6 +2377,67 @@ the client is Vietnamese-first with an English toggle. This is the same rule the
 rest of the client already lives under — a description is derived from the data,
 and the id is the only thing that travels.
 
+### The seven messages, and what four of them deliberately do not carry
+
+Built: `internal/wire`, the protocol as one package with no I/O in it, no room
+and no socket. Three messages go up and four come back.
+
+| client → server | server → client |
+| --- | --- |
+| `hello` — the three version numbers, the squad, the room's password, a name | `welcome` — the format, `battles` N, the turn allowance, and which **seat** |
+| `act` — a skill and an aim | `refused` — a `Code` |
+| `pass` — **nothing at all** | `start` — the seed, the roster, which **side**, which battle of the series |
+| | `turn` — the decision taken, and the digest of the events it produced |
+
+Almost all of it is types that already existed, which is the design rather than
+a saving: `placement.Squad` is the squad format, `battle.Roster` already carries
+json tags, `hex.Cell` is the aim with its own absence, `battle.Decision` is a
+taken turn, and `seed.Digest` is the data fingerprint. Nothing is declared twice.
+
+What each message leaves out is the part worth reading:
+
+- **`pass` carries no reason.** A passed turn's wording lives on
+  `battle.Decision` and `battle.NoActionReason` is the single declaration of it;
+  a client that sent a reason would be a second one, and two callers wording the
+  same choice differently is what made a replay diverge from the log it was
+  replaying once already. The server records it, because the server writes the
+  log.
+- **`act` carries no unit.** The server knows whose turn it is — it holds the
+  authoritative battle and it produced the prompt — so a unit on this message
+  could only add a disagreement to resolve. The same reasoning keeps a whole
+  `Decision` off the client's side of the wire: it carries the unit, the turn
+  number and the pass reason, and all three are the server's to record.
+- **There is no series-standing message**, and a reader will look for one. The
+  client is a mirror: it learns each battle's outcome from its own `Ended` event
+  and already knows the series length from `welcome`. A standing message would be
+  a second declaration of a fact the client computes — and the one place two
+  peers could disagree about who was winning while both of their battles agreed.
+- **`start` carries one roster slice rather than an ally list and an enemy
+  list**, in the order the battle enlists them, which is exactly what
+  `battle.Log.Roster` is. The order is load-bearing: `seq` is assigned in the
+  order `battle.New` is handed its roster, so the caller's slice order decides
+  which side wins a speed tie — see *Which side you get is worth up to sixty
+  points*. Two fields would be a second statement of an order the slice already
+  holds.
+
+A **seat** and a **side** are two facts and get two messages. The seat is which
+of the room's two places a client took and holds for the whole match; the side
+changes between battles, because a match is fought both ways round. A client that
+read one for the other would draw the wrong half of the board from the second
+battle on.
+
+The per-turn digest is `wire.DigestEvents`, and it lives in the protocol rather
+than in either peer because both have to compute it identically — two
+implementations of it is the drift this repository bans everywhere else, and the
+one place it would surface is a divergence report that was itself the divergence.
+Each event is framed the way `seed.digest` frames a file, minus the name: an
+event's identity is *inside* its bytes (`kind` is a field) where a file's name is
+not, so a name prefix would be a second copy of something already in the frame.
+⚠️ The length prefix is kept as defence in depth and, unlike seed's, **has no
+test that isolates it** — `json.Marshal` escapes every quote, so no free-text
+`Note` can forge a `{"kind":"` boundary and the moved-boundary collision seed
+could write down cannot be built here at all.
+
 ### The clock is not part of the battle
 
 A turn times out after ninety seconds and the server passes for the player. What

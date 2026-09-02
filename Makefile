@@ -53,7 +53,7 @@ test:
 # Accept new golden files, then read the diff — the goldens are the design
 # record. Add a package here when it gains one.
 golden:
-	@go test ./cmd/hexarena-tui ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui -update
+	@go test ./cmd/hexarena-tui ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui ./internal/wire -update
 
 fmt:
 	@gofmt -w .

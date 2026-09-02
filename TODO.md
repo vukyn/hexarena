@@ -199,7 +199,9 @@ is only so the shape is readable.
       measurements and is the place to argue with, not this list.
 
       The items below are in dependency order, and the four in **Groundwork** are
-      the ones nothing else can start without.
+      the ones nothing else can start without. **All four are now done**, so the
+      next item to pick up is the room — a state machine over `internal/wire`
+      messages with no I/O in it.
 
       **Groundwork**
       - [x] Factor the reference screens out of `cmd/hexforge-tui` into a package
@@ -227,9 +229,48 @@ is only so the shape is readable.
             asked for, and the **art preview** is registered in no sweep because
             it draws rasterised art and what an entry would assert about it is
             still open (the same decision the other two records take).
-      - [ ] `internal/wire`: the protocol as one stdlib-only package. The
+      - [x] `internal/wire`: the protocol as one stdlib-only package. The
             envelope, the three version numbers, and error **codes** rather than
             prose. A golden per message, so a wire change shows up in a diff.
+            **Done** — seven kinds (`hello` `act` `pass` · `welcome` `refused`
+            `start` `turn`), ten codes, an envelope of a named kind plus a raw
+            body, `wire.Digest` carrying `seed.Digest`, `EventDigest` +
+            `DigestEvents`, `RoomCode`, `Password`, and
+            `internal/wire/testdata/messages.golden`.
+            ⚠️ **It imports `internal/seed`**, deliberately: the gate has to
+            compare two `seed.Digest` values so the *compiler* checks the
+            comparison, and both peers already import seed (neither can compute
+            its own digest without it), so the embedded data costs nothing that
+            was not already paid. No cycle — seed is data over `internal/core`
+            and this is a protocol over both.
+            ⚠️ **`start` carries ONE roster slice, not an ally list and an enemy
+            list.** `atb.Queue.Add` assigns `seq` in the order `battle.New` is
+            handed its roster, so *the caller's slice order decides which side
+            wins a speed tie* — worth up to sixty points in a mirror. Two fields
+            would be a second statement of an order the slice already holds and
+            the peer would have to re-derive the enlistment by a convention
+            written down nowhere. It is exactly what `battle.Log.Roster` is.
+            ⚠️ **An envelope naming no kind at all is refused** rather than
+            represented, which is the opposite answer to `hex.SideNone`'s and
+            deliberate: a side genuinely has a "nobody", and an envelope with no
+            kind is not a message this format has. Without the refusal
+            `{"body":{}}` reads as a `hello`, since that is the zero value —
+            `Envelope.UnmarshalJSON` exists for that one case.
+            ⚠️ The event digest frames each event as **length then bytes** and
+            drops the *name* half of `seed.digest`'s framing, because an event's
+            identity is *inside* its bytes (`kind` is a field) where a file's
+            name is not, so a name prefix would be a second copy of something
+            already in the frame. The length is kept as defence in depth and
+            **no test isolates it** — `json.Marshal` escapes every quote, so no
+            free-text `Note` can forge a `{"kind":"` boundary and the collision
+            seed could write down cannot be built here. Not shared with
+            `seed.digest`: two different framings, and a shared helper would need
+            a third package both `internal/seed` and `internal/wire` import.
+            ⚠️ The load-bearing test is
+            `TestTheEventDigestReadsEveryFieldOfAnEvent`, which walks
+            `battle.Event`'s 29 fields by reflection — a digest marshalling two
+            or three of them passes any hand-written table, and would agree about
+            two turns that differed in everything a reader cares about.
       - [x] The data digest — the fifteen embedded JSON files, in `go:embed`
             order, hashed as bytes, no parsing. `assets/` excluded: art cannot
             reach the simulation. **Done** — `seed.DataDigest`, and it is a
@@ -363,6 +404,19 @@ is only so the shape is readable.
             ⚠️ And gloss the new pass reason — `tui.Line` prints `event.Note`
             **raw**, so today a timeout would read `loses the turn (timeout)` in
             both languages.
+            ⚠️ **`wire.CodeCount` is TEN and no client words any of them yet**,
+            which is the "shipped dead" shape this repository has recorded
+            several times — a refusal a player cannot be shown. It could not be
+            held where the codes live: `internal/wire` must not import
+            `internal/i18n`, because the whole point of sending a code is that
+            the wording lives at the far end, so `TestEveryRefusalCodeHasANameAndTravels`
+            holds the **count** and says in its own comment that it cannot hold
+            the wording. The walk over `wire.CodeCount` against both books
+            belongs **here**, in the commit that adds these lines, in the shape
+            `TestEveryKeyIsWordedInBothLanguages` already has. The ten are
+            `none` (never sent) · `protocol_mismatch` · `data_mismatch` ·
+            `bad_password` · `room_unknown` · `room_full` · `squad_refused` ·
+            `not_your_turn` · `illegal_action` · `unknown_message`.
 
       **Later, deliberately**
       - [ ] Spectators, which the cursor above makes nearly free.
