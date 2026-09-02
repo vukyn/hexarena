@@ -35,9 +35,10 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 //	client golden     → golden "  dot          sát thương mỗi lượt"
 //	                    drawn  "  dot           sát thương mỗi lượt"
 //
-// That is real coverage sitting in another package, and it gets worse rather
-// than better: after `cmd/hexarena` stands up, a screen the authoring tool stops
-// drawing loses its only layout net **in silence**. So this file is that net,
+// That is real coverage sitting in another package, and it got worse rather than
+// better the moment `cmd/hexarena-tui` stood up: a screen the authoring tool
+// stops drawing would lose its only layout net **in silence**. So this file is
+// that net,
 // here, and the package holds twelve screens now that the skill listing, the
 // squad builder, the works catalogue and the played battle have all arrived.
 //
@@ -1183,6 +1184,14 @@ func startOverTheShippedBooks(t *testing.T, lang i18n.Lang) (Context, *forge.Lib
 	return Context{
 		Lib: lib, Lang: lang, Style: NewPalette(plainHere()),
 		Width: MinWidth, Height: MinHeight,
+		// Authoring, because this golden records the screens **as the authoring
+		// tool draws them** — the skill form, the add-a-work form and the squad
+		// builder are three of the twelve, and none of them opens without it.
+		// The read-only spellings of the three footers those screens switch are
+		// recorded in cmd/hexarena-tui's golden, which is the client that draws
+		// them. ⚠️ Dropping this line moves this golden by three footers and no
+		// body, which is exactly loud enough.
+		Authoring: true,
 	}, lib
 }
 

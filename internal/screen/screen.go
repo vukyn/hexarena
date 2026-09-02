@@ -2,16 +2,17 @@
 // clients needs, and none of what any one of them decides.
 //
 // Two clients draw the same reference screens — the authoring tool
-// (`cmd/hexforge-tui`) and the PvP game client — so what lives here is the
-// screens themselves plus everything they are drawn out of: the palette, the
-// floor a window has to clear, the row-drawing helpers every pane is built from,
-// the six read-only references (the affinity chart and its rings, the elements,
+// (`cmd/hexforge-tui`) and the game client (`cmd/hexarena-tui`), which exists
+// now and is what all of this was for — so what lives here is the screens
+// themselves plus everything they are drawn out of: the palette, the floor a
+// window has to clear, the row-drawing helpers every pane is built from, the six
+// read-only references (the affinity chart and its rings, the elements,
 // statuses, species, builds and traits listings) with their cursors and their
 // keystrokes, the two describers, the multi-select, the skill listing and the
-// form over it, the squad builder, the works catalogue with the add-a-work
-// form over it — the seventh and last of the catalogues a game client will
-// offer — and the played battle, which is the screen a game client needs most
-// and the last of them to arrive.
+// form over it, the squad builder, the works catalogue with the add-a-work form
+// over it — the seventh and last of the catalogues the game client offers — and
+// the played battle, which is the screen it needs most and the last of them to
+// arrive.
 //
 // ⚠️ **Not every screen here is read-only any more.** The skill listing writes
 // `skills.json`, the squad builder writes `squads.json` and the works catalogue
@@ -20,6 +21,12 @@
 // itself, and the golden under testdata is built from values for that reason: it
 // loads the shipped books straight out of ../seed/data, with no temp copy
 // anywhere near the bytes.
+//
+// ⚠️ **And the three that write only offer to when the client in front can.**
+// Context.Authoring is that answer and it is consulted in one place per screen,
+// so the keystrokes and the footer cannot disagree about what is on offer — a
+// game client draws all three of these catalogues and authors none of them. See
+// Context.Authoring for why nought is the read-only reading.
 //
 // What it still excludes is everything a *client* decides. A screen is handed a
 // Context, which holds nothing the client owns, and answers a keystroke with an
@@ -53,13 +60,81 @@ import (
 // It is a value, copied per draw, and holds nothing a screen owns — no cursor,
 // no mode, no pending question. That is what makes it shareable: a client keeps
 // its own model and hands one of these down, so the helpers below cannot be told
-// anything about which client is asking.
+// anything about which client is asking — only, since Authoring arrived, what
+// the one in front is able to carry out.
 type Context struct {
 	Lib   *forge.Library
 	Lang  i18n.Lang
 	Style Palette
 
 	Width, Height int
+
+	// Authoring says whether the client in front can carry out a change to the
+	// data, and it is the one field here that is about the client rather than
+	// about the drawing.
+	//
+	// ⚠️ **It does not break the promise above, and the distinction is worth
+	// being exact about.** The paragraph over this type says a screen may not be
+	// told *which* client is asking, and it still may not: this says what the
+	// client in front is *able to do about a keystroke*, which is a capability
+	// and not an identity. Three screens here author — the skill listing writes
+	// `skills.json`, the works catalogue writes `origins.json`, the squad builder
+	// writes `squads.json` — and a game client offers none of that, so those
+	// three need an answer to one question and none of them may ask who is
+	// holding it.
+	//
+	// ⚠️ **Nought is the read-only reading, and that is deliberate rather than
+	// alphabetical.** The safe half of this flag has to be the one a forgotten
+	// declaration falls into, and here the safe half is *fewer* keys: a
+	// read-only client that quietly authored would write the author's files off
+	// a key its footer never named, while a tool that quietly stopped authoring
+	// loses `a`, `e`, `n`, `d` and `enter` — which the suites over these screens
+	// press by name. So the tool that can author declares it; the client that
+	// cannot has nothing to declare and therefore nothing to forget.
+	//
+	// ⚠️ **Which suite is the net was measured, and "the authoring client's own"
+	// is false for one of the three screens.** Inverting one guard at a time
+	// (`c.Authoring` → `!c.Authoring`) and counting failing tests:
+	//
+	//	skills.go's `a`  internal/screen 4 · cmd/hexarena-tui 2 · cmd/hexforge-tui 0
+	//	squads.go's `n`  internal/screen 10 · cmd/hexarena-tui 2 · cmd/hexforge-tui reddens
+	//
+	// The nought is `everyScreen` in cmd/hexforge-tui setting `SkillsScreen.Adding`
+	// **by hand** rather than pressing `a`, so nothing in that package drives that
+	// key at all. So the authoring half of these guards is held **here** — in this
+	// package's own suite — and the read-only half in cmd/hexarena-tui's, and
+	// neither client's suite alone covers both.
+	//
+	// ⚠️ **Both halves are measured, in the client that has the most to lose.**
+	// cmd/hexarena-tui presses every authoring key on every screen it draws and
+	// asserts nothing happened, and checks that no footer it draws names one of
+	// them — because a key announced on a screen that ignores it is worse than
+	// one nobody was told about, which is the rule picker.go states and the one
+	// this flag has to keep on three footers at once.
+	Authoring bool
+}
+
+// Footer picks between a screen's two footers: the one naming the keys that
+// author and the one naming only the keys a reader has.
+//
+// ⚠️ **It exists so the choice is made in one place rather than three.** The
+// keys and the footer are two halves of one decision, and a screen that guarded
+// the keys and drew the old footer would announce `a thêm` on a listing that
+// ignores `a` — which is the failure picker.go's own comment names: *"A key
+// announced on a screen that ignores it is worse than one nobody was told
+// about."* A screen ignoring a keystroke is a reader wondering whether they
+// pressed it; a footer naming that keystroke is the program promising something
+// it does not do.
+//
+// Neither wording takes an argument, and that is a property of the three
+// footers this switches rather than of the idea: every authoring key on them is
+// a bare letter, so the two spellings differ by whole clauses and not by a
+// blank. A footer needing one is the site to widen this.
+func (c Context) Footer(authoring, reading i18n.Key) string {
+	if c.Authoring {
+		return c.Text(authoring)
+	}
+	return c.Text(reading)
 }
 
 // The smallest window the screens fit in.

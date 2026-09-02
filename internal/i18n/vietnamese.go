@@ -633,4 +633,30 @@ q hoặc ctrl+c để thoát`,
 	PlayHiddenNote:       "dòng vừa lưu",
 	PlayHiddenUnits:      "%d đơn vị",
 	PlayHiddenUnitsOne:   "1 đơn vị",
+
+	SkillsReadFooter:  "↑/↓ · / lọc · ? mô tả · ctrl+l English · esc · q",
+	OriginsReadFooter: "↑/↓ chọn · ctrl+l English · esc quay lại · q thoát",
+	SquadsReadFooter:  "↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại",
+
+	GameNotATerminal: "đầu ra không phải màn hình terminal, mà chương trình toàn màn hình sẽ đổ mã điều khiển vào đó.\n" +
+		"Hãy dùng hexarena: cùng bộ máy, cùng những trận đấu, nhận cờ dòng lệnh và đọc được pipe;\n" +
+		"hexarena --replay vẽ lại một trận đã lưu ở đây",
+	GameTerminalTooSmall: `màn hình quá nhỏ
+
+cần ít nhất %dx%d
+đang có %dx%d
+
+Kéo rộng cửa sổ, hoặc
+dùng hexarena: cùng bộ
+máy, cỡ nào cũng chạy.
+
+q hoặc ctrl+c để thoát`,
+	GameMenuNote: "Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng\n" +
+		"sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại\n" +
+		"diễn biến để hexarena --replay vẽ lại đúng trận đó.",
+	GameMenuSkillsDetail: "tra cứu chiêu: mỗi chiêu làm gì, ai học được",
+	GameMenuWorksDetail:  "tra cứu nguồn: các tác phẩm nhân vật được mượn từ",
+	GameMenuSquadsDetail: "các đội đã dựng, và mang một đội vào trận",
+	GameMenuBattle:       "vào trận",
+	GameMenuBattleDetail: "tự cầm quân đánh một trận với đội đầu danh sách",
 }

@@ -792,6 +792,35 @@ const (
 	PlayHiddenUnits
 	PlayHiddenUnitsOne
 
+	// The read-only spellings of the three footers whose screens author.
+	//
+	// ⚠️ **A read-only footer is a second wording rather than the authoring one
+	// with a clause taken out of it.** Deleting `a thêm` from a rendered line
+	// would leave the separators either side of it, and nothing would measure
+	// what was left — while a wording of its own is measured by every sweep the
+	// catalog already has: both languages, one cell per letter, inside the floor.
+	// Which of the two a screen draws is Context.Footer's one decision, taken
+	// beside the decision that ignores the keystroke, so the two cannot disagree.
+	SkillsReadFooter
+	OriginsReadFooter
+	SquadsReadFooter
+
+	// The game client, cmd/hexarena-tui: a menu of the catalogues a player
+	// reads, and a battle.
+	//
+	// Most of the authoring tool's menu wordings serve it unchanged — a listing
+	// of the cast is a listing of the cast — so what is here is the entries whose
+	// wording names an authoring key, plus the two lines that point somebody at
+	// the other front-end and have to point at a different one.
+	GameNotATerminal
+	GameTerminalTooSmall
+	GameMenuNote
+	GameMenuSkillsDetail
+	GameMenuWorksDetail
+	GameMenuSquadsDetail
+	GameMenuBattle
+	GameMenuBattleDetail
+
 	keyCount
 )
 

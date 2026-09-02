@@ -493,11 +493,18 @@ func (s SkillsScreen) Update(c Context, message tea.KeyPressMsg) (SkillsScreen, 
 		// here that indexes nothing, and a filter that has found nothing is
 		// exactly the moment an author wants to write the skill they were
 		// looking for.
-		s = s.ResetForm(c)
-		s.Adding = true
-		s.Added, s.Edited = nil, nil
+		//
+		// It is guarded on the client being able to write, which is the other
+		// question entirely — see Context.Authoring. A game client draws this
+		// listing so a player can read what a skill does, and the form over it
+		// writes skills.json.
+		if c.Authoring {
+			s = s.ResetForm(c)
+			s.Adding = true
+			s.Added, s.Edited = nil, nil
+		}
 	case "e":
-		if selected, held := s.Selected(); held {
+		if selected, held := s.Selected(); held && c.Authoring {
 			s = s.Prefill(c, selected)
 			s.Added, s.Edited = nil, nil
 		}
@@ -1058,8 +1065,11 @@ func (s SkillsScreen) View(c Context) (string, string) {
 	if s.FormInFront() {
 		return s.viewForm(c)
 	}
-	footer := c.Text(i18n.SkillsFooter)
+	footer := c.Footer(i18n.SkillsFooter, i18n.SkillsReadFooter)
 	if s.Filtering {
+		// One footer for both clients, because the filter takes the keyboard: a
+		// and e are letters in the query on either, so there is nothing for the
+		// two spellings to differ about.
 		footer = c.Text(i18n.SkillsFilterFooter)
 	}
 	var out strings.Builder
