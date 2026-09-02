@@ -38,21 +38,33 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 // That is real coverage sitting in another package, and it gets worse rather
 // than better: after `cmd/hexarena` stands up, a screen the authoring tool stops
 // drawing loses its only layout net **in silence**. So this file is that net,
-// here, and the package holds ten screens now that the skill listing and the
-// squad builder have both arrived.
+// here, and the package holds eleven screens now that the skill listing, the
+// squad builder and the works catalogue have all arrived.
 //
 // ## What is recorded
 //
-// Twenty-three entries over those ten screens — the six listings, the
+// Thirty-five entries over those eleven screens — the six listings, the
 // description screen in both of its readings, the two states nothing shipped can
 // draw (a species kind nobody claims, a build that spends no trait slot), the
 // five states of the picker, which is handed its list and so has no one shape,
-// the skill listing with the seven states of it the client's sweep registers, and
-// the squad builder at each of its three depths plus the two states and the two
-// pickers that go with them — in **both** languages at **two** sizes: the
+// the skill listing with the seven states of it the client's sweep registers, the
+// squad builder at each of its three depths plus the two states and the two
+// pickers that go with them, and the works catalogue with the add-a-work form
+// over it plus the two states **neither** sweep could draw before — an empty
+// catalogue and a refused write — in **both** languages at **two** sizes: the
 // MinWidth x MinHeight floor, where the Room helpers bite, and 160x60, where
-// nothing is squeezed — **124 renders, 2921 lines**. The entry names are the
+// nothing is squeezed — **140 renders, 3097 lines**. The entry names are the
 // client's own, so a reader holding both diffs is looking at the same words.
+//
+// ⚠️ **Two of the works entries are states the client's fixture cannot reach at
+// all**, which is the same kind of finding as the three squad entries above and
+// arrived the same way — by asking what each wording is rendered by rather than
+// by trusting the map. `i18n.OriginsEmpty` needs a book with no works and every
+// book either fixture loads has some; `i18n.AddRefused` on this form needs a
+// refusal, which the client only ever produces mid-write. Measured before they
+// were added: both lines returned **nought hits in both goldens**, in both
+// languages. A third, `i18n.OriginAdded`, stays unrecorded on purpose — see
+// aRefusedWork for why.
 //
 // ⚠️ **Three of the squad entries are the same screen in a fuller state than the
 // client's of the same name, and that is deliberate.** The client's fixture
@@ -85,7 +97,10 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 // data directory as a body line. **Neither applies here.** Measured: no file in
 // this package calls `.Dir()`, and `check` did not move — so the books are
 // loaded **straight** from `shippedDataDir`, with no temp copy anywhere near the
-// bytes. These seven screens are read-only and nothing here writes.
+// bytes. Every screen recorded here is drawn read-only, and nothing in this file
+// writes — the two screens that *can* write, the skill form and the add-a-work
+// form, are recorded with their fields as an author would have typed them and
+// their save keys never pressed.
 //
 // ⚠️ The cast browser's art row is the one line that names a **file**, and it
 // names a relative one: `cast.Character.StageArt` is a path out of the data
@@ -191,8 +206,9 @@ type drawable interface {
 	View(Context) (string, string)
 }
 
-// everyMovedScreen is the sixteen entries, named as cmd/hexforge-tui's
-// `everyScreen` names them.
+// everyMovedScreen is the thirty-five entries, named as cmd/hexforge-tui's
+// `everyScreen` names them — and, for the four works entries, named in that
+// convention even though two of them are states the client has no entry for.
 //
 // ⚠️ **Every hand-built state asserts that it drew the line it exists for.**
 // A registered state that renders nothing passes every sweep over it, and this
@@ -228,6 +244,7 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 			"an ordinary build catalogue twice:\n%s", drawn)
 	}
 	listing := NewSkillsScreen(c)
+	works := NewOriginsScreen(c)
 	catalogue := squadCatalogue(t, c, lib)
 	member := squadMember(t, c, catalogue)
 	return map[string]drawable{
@@ -267,14 +284,113 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		// member that share no line with the plain one, and the two pickers it
 		// raises — under the client's own names, for the reason every other
 		// entry here carries them.
-		"squads":             catalogue,
-		"a squad":            squadInHand(t, c, catalogue),
-		"a squad member":     member,
-		"a deep member":      deepMember(t, c, member),
-		"a held-back member": heldBackMember(t, c, member),
-		"a squad kit":        squadKitPicker(t, c, member),
-		"a squad trait":      squadTraitPicker(t, c, member),
+		// The works catalogue and the add-a-work form over it, under the client's
+		// own names. The listing is drawn off the shipped book rather than off
+		// values, unlike the squads below it: origins.json is data somebody wrote
+		// for the game and it ships with rows in it, so nothing has to be
+		// authored to measure a row.
+		"origins":                  works,
+		"add a work":               addingAWork(t, c, works),
+		"an empty works catalogue": anEmptyWorksCatalogue(t, c, works),
+		"a refused work":           aRefusedWork(t, c, works),
+		"squads":                   catalogue,
+		"a squad":                  squadInHand(t, c, catalogue),
+		"a squad member":           member,
+		"a deep member":            deepMember(t, c, member),
+		"a held-back member":       heldBackMember(t, c, member),
+		"a squad kit":              squadKitPicker(t, c, member),
+		"a squad trait":            squadTraitPicker(t, c, member),
 	}
+}
+
+// addingAWork is the add-a-work form over the catalogue: five rows, the medium
+// chooser among them, and the hint under them.
+//
+// Driven with the key an author would press rather than by writing the flag,
+// which is the rule every state in this file follows — and it asserts it drew
+// the form's own heading, because a flag set on a screen that had stopped
+// reading it renders the listing again and passes every sweep over it.
+func addingAWork(t *testing.T, c Context, works OriginsScreen) OriginsScreen {
+	t.Helper()
+	form := onOrigins(t, c, works, "a")
+	if !form.Adding {
+		t.Fatal("a did not open the add-a-work form")
+	}
+	if drawn, _ := form.View(c); !strings.Contains(drawn, c.Text(i18n.OriginFormHeading)) {
+		t.Fatalf("the add-a-work form draws no heading of its own:\n%s", drawn)
+	}
+	return form
+}
+
+// anEmptyWorksCatalogue is the listing with nothing on it, which is a state a
+// reader can genuinely arrive at: a fresh data directory has no origins.json,
+// and forge.Load takes a missing file as an empty catalogue.
+//
+// ⚠️ It is here because that line had **never been drawn by anything**. Measured:
+// neither this golden nor the client's held `i18n.OriginsEmpty` in either
+// language, because every book either fixture loads has works in it — so the one
+// sentence a first-run author sees had never been measured against the floor.
+// Built by emptying the fields for the reason withNoTraitTaken empties a build's
+// trait slot: nothing shipped need be deleted for a wording to be recorded.
+func anEmptyWorksCatalogue(t *testing.T, c Context, works OriginsScreen) OriginsScreen {
+	t.Helper()
+	works.Origins, works.Counts = nil, nil
+	drawn, _ := works.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.OriginsEmpty)) {
+		t.Fatalf("the empty catalogue draws no line saying so, so the golden records an "+
+			"ordinary works listing twice:\n%s", drawn)
+	}
+	return works
+}
+
+// aRefusedWork is the add-a-work form with the catalogue's own refusal under it:
+// an id somebody has already used.
+//
+// The refusal is a **value** rather than the result of a write, which is the rule
+// this file holds throughout — `Err` is a field, and the error is the one
+// internal/forge would have handed back. It is the duplicate-id refusal rather
+// than a bad year because that one is worded in internal/i18n
+// (`ErrorOriginTaken`) in both languages, so the record measures two spellings; a
+// raw Go error string would be the same English line twice and would measure
+// nothing about the pair.
+//
+// ⚠️ It is here because how this line **draws** had never been recorded. The
+// client drives it behaviourally — TestAddingAWorkWritesTheCatalog presses the
+// same id twice and looks for the refusal in `screenContent` — but a
+// strings.Contains is not a layout, and neither golden held `i18n.AddRefused` on
+// this form in either language.
+//
+// ⚠️ **The line the form draws after a SUCCESSFUL write, `i18n.OriginAdded`, is
+// deliberately NOT here and must not be added.** It names the file it wrote,
+// through `Lib.OriginsPath()`, and `noAbsolutePath` below walks the whole
+// recorded body — so an entry holding it would either record wherever this
+// checkout happens to sit or would need the relative-directory trick the
+// client's golden takes, which is the one thing this record's own doc comment
+// says it does not do. That state stays a gap, stated rather than closed.
+func aRefusedWork(t *testing.T, c Context, works OriginsScreen) OriginsScreen {
+	t.Helper()
+	taken := c.Lib.Origins().All()
+	if len(taken) == 0 {
+		t.Fatal("the shipped book holds no works, so no id can already be taken")
+	}
+	// Its own ResetForm rather than addingAWork's, because a form's Inputs slice is
+	// SHARED between copies of the screen — the caveat OriginsScreen.Inputs carries
+	// — and two golden entries writing through one slice would be two records of
+	// whichever wrote last.
+	form := onOrigins(t, c, works, "a")
+	if !form.Adding {
+		t.Fatal("a did not open the add-a-work form")
+	}
+	form.Err = &forge.OriginTakenError{ID: taken[0].ID}
+	drawn, _ := form.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.AddRefused, c.Lang.Error(form.Err))) {
+		t.Fatalf("the refused form draws no refusal, so the golden records an ordinary "+
+			"add-a-work form twice:\n%s", drawn)
+	}
+	if !strings.Contains(drawn, taken[0].ID) {
+		t.Fatalf("the refusal does not name the work it is about (%q):\n%s", taken[0].ID, drawn)
+	}
+	return form
 }
 
 // # The squad builder's seven entries, and why every one of them is a value

@@ -1044,26 +1044,25 @@ func TestQuitKeysWorkFromEveryScreen(t *testing.T) {
 	}
 }
 
-// TestAnUndatedWorkPrintsNoYearRatherThanAZero is the year nobody recorded, and
-// it is here because the shipped data stopped covering it.
+// TestAWorkWithNoYearIsWrittenUndated is the write half of the year nobody
+// recorded, and it is what is left here now that the origins screen has moved.
 //
 // cast.Origin.Year is optional and zero means "not recorded", so three places
-// render the absence: this row leaves the cell blank, cmd/hexforge leaves it
-// empty, and the golden report writes "undated". All three were exercised by one
-// shipped origin — Pokémon, undated until its year was filled in — and by
-// nothing else, because every fixture work carries a year. So an undated one is
-// authored here instead.
+// render the absence: the catalogue row leaves the cell blank, cmd/hexforge
+// leaves it empty, and the golden report writes "undated". All three were
+// exercised by one shipped origin — Pokémon, undated until its year was filled
+// in — and by nothing else, because every fixture work carries a year. So an
+// undated one is authored here instead.
 //
-// ⚠️ The assertion is the blank and NOT the alignment, and the first version of
-// this test had that backwards. A row is id, medium, year, count and title at
-// fixed widths, so it reads as though a missing guard would shift every column
-// after it — but pad gives the cell its five cells whatever is in it, so
-// removing the guard entirely left the table perfectly aligned and printed
-// "anime 0" beside "0 nhân vật". Both mutations passed. What the guard is for is
-// the word, so that is what is measured: the cell a dated row puts its year in
-// has nothing in it on an undated one.
-func TestAnUndatedWorkPrintsNoYearRatherThanAZero(t *testing.T) {
-	m, _, _ := start(t, i18n.Vi)
+// ⚠️ **The row half went with the screen** and is
+// screen.TestAnUndatedWorkPrintsNoYearRatherThanAZero, built out of values: what
+// the cell draws is a render, and internal/screen may not open a file. What
+// cannot go with it is the sentence this test now is — that the *form* accepts an
+// empty year field and the write stores a nought — because that needs a real
+// directory, which is what scratchData is for and why every end-to-end write in
+// this program is driven from here.
+func TestAWorkWithNoYearIsWrittenUndated(t *testing.T) {
+	m, _, dir := start(t, i18n.Vi)
 	m = m.enter(screenOrigins)
 	m = typeText(t, m, "a")
 	m = typeText(t, m, "example-undated")
@@ -1072,8 +1071,8 @@ func TestAnUndatedWorkPrintsNoYearRatherThanAZero(t *testing.T) {
 	m = key(t, m, "down") // medium: keep the first
 	m = key(t, m, "down") // year: leave it empty, which is the whole point
 	m = key(t, m, "ctrl+s")
-	if m.origins.err != nil {
-		t.Fatalf("a work with no year was refused: %v", m.origins.err)
+	if m.origins.Err != nil {
+		t.Fatalf("a work with no year was refused: %v", m.origins.Err)
 	}
 	added, known := m.lib.Origins().Get("example-undated")
 	if !known {
@@ -1082,34 +1081,19 @@ func TestAnUndatedWorkPrintsNoYearRatherThanAZero(t *testing.T) {
 	if added.Year != 0 {
 		t.Errorf("an empty year came back as %d, so this measures nothing", added.Year)
 	}
-	dated, holds := m.lib.Origins().Get("naruto")
-	if !holds || dated.Year == 0 {
-		t.Skip("the catalog no longer has a dated work to compare against")
+	// Off the disk as well, because what the library in hand holds is what the
+	// screen just put there and a nought that never reached the file is a nought
+	// the next load would not see.
+	reloaded, err := forge.Load(dir)
+	if err != nil {
+		t.Fatalf("reload: %v", err)
 	}
-
-	body, _ := m.origins.view(m)
-	row := func(id string) string {
-		t.Helper()
-		for _, line := range strings.Split(body, "\n") {
-			if strings.Contains(line, id) {
-				return line
-			}
-		}
-		t.Fatalf("the listing has no row for %s:\n%s", id, body)
-		return ""
+	written, holds := reloaded.Origins().Get("example-undated")
+	if !holds {
+		t.Fatal("the work is not in the reloaded catalog")
 	}
-	// Where the year lives, read off the row that has one rather than declared
-	// here: the column widths are origins.go's and a second copy of them would
-	// be the thing that drifts.
-	written := strconv.Itoa(dated.Year)
-	at := strings.Index(row(dated.ID), written)
-	if at < 0 {
-		t.Fatalf("the dated row does not draw its year:\n%s", row(dated.ID))
-	}
-	blank := row("example-undated")
-	if cell := blank[at : at+len(written)]; strings.TrimSpace(cell) != "" {
-		t.Errorf("an undated row draws %q where a year goes:\n%s\n%s",
-			cell, row(dated.ID), blank)
+	if written.Year != 0 {
+		t.Errorf("the written work reads year %d, want none recorded", written.Year)
 	}
 }
 
@@ -1119,7 +1103,7 @@ func TestAddingAWorkWritesTheCatalog(t *testing.T) {
 	m, _, dir := start(t, i18n.Vi)
 	m = m.enter(screenOrigins)
 	m = typeText(t, m, "a")
-	if !m.origins.adding {
+	if !m.origins.Adding {
 		t.Fatal("a did not open the add form")
 	}
 	m = typeText(t, m, "example-play")
@@ -1131,10 +1115,10 @@ func TestAddingAWorkWritesTheCatalog(t *testing.T) {
 	m = key(t, m, "down")
 	m = typeText(t, m, "Added by a test.")
 	m = key(t, m, "ctrl+s")
-	if m.origins.err != nil {
-		t.Fatalf("the work was refused: %v", m.origins.err)
+	if m.origins.Err != nil {
+		t.Fatalf("the work was refused: %v", m.origins.Err)
 	}
-	if m.origins.adding {
+	if m.origins.Adding {
 		t.Error("the add form is still open after a successful write")
 	}
 
@@ -1157,14 +1141,14 @@ func TestAddingAWorkWritesTheCatalog(t *testing.T) {
 	m = key(t, m, "down")
 	m = typeText(t, m, "Duplicate")
 	m = key(t, m, "ctrl+s")
-	if m.origins.err == nil {
+	if m.origins.Err == nil {
 		t.Fatal("a duplicate id was accepted")
 	}
 	// The refusal is the catalog's own, as a value, so the screen says it in the
 	// language in front while cmd/hexforge keeps its English.
 	var taken *forge.OriginTakenError
-	if !errors.As(m.origins.err, &taken) {
-		t.Fatalf("the refusal is a %T, want a *forge.OriginTakenError", m.origins.err)
+	if !errors.As(m.origins.Err, &taken) {
+		t.Fatalf("the refusal is a %T, want a *forge.OriginTakenError", m.origins.Err)
 	}
 	if want := `nguồn "example-play" đã có trong danh mục rồi`; m.lang.Error(taken) != want {
 		t.Errorf("the refusal reads\n %q\nwant\n %q", m.lang.Error(taken), want)

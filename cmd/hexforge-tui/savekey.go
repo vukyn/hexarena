@@ -13,9 +13,10 @@ import (
 // missed, and the package boundary is not a reason to make it four.
 //
 // The two forwarders below are here on the rule this package already follows for
-// pad, clip, clamp and window: the character form and the origins form have not
-// moved and still ask, the call sites read unchanged, and there is still exactly
-// one body.
+// pad, clip, clamp and window: the character form has not moved and still asks,
+// its call sites read unchanged, and there is still exactly one body. The
+// origins form asked through them until it moved too, so what is left is one
+// caller in this package and the footer label beside it.
 
 // isSaveKey reports whether a keystroke asks for the work to be written.
 func isSaveKey(message tea.KeyPressMsg) bool { return draw.IsSaveKey(message) }
