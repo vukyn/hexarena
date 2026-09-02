@@ -52,7 +52,7 @@ go run ./cmd/hexarena-tui                        # play, full screen: the catalo
 go run ./cmd/hexarena-tui --lang en              # ...in English; same flag, same variable, same ctrl+l
 
 go test ./...
-go test ./cmd/hexarena-tui ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui -update   # accept new goldens
+go test ./cmd/hexarena-tui ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui ./internal/wire -update   # accept new goldens
 go test ./internal/core/battle -run TestControl                     # one test
 gofmt -l . && go vet ./...
 ```
@@ -65,9 +65,10 @@ play-tui ARGS="--lang en"` pass arguments through. `make check` is the gate (`go
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
 
-`-update` is only defined in the seven packages that hold golden files
+`-update` is only defined in the eight packages that hold golden files
 (`cmd/hexarena-tui`, `cmd/hexforge-tui`, `internal/core/hex`, `internal/i18n`,
-`internal/screen`, `internal/seed`, `internal/tui`), so `go test ./... -update`
+`internal/screen`, `internal/seed`, `internal/tui`, `internal/wire`), so
+`go test ./... -update`
 fails on the rest. A new package with a golden has to be added to that command
 **and** to the `golden` target. ⚠️ **This list has gone stale twice**, so it is
 spelled in exactly three places — that command, the `golden` target, and the
@@ -2459,10 +2460,26 @@ regenerated on autopilot:
   ⚠️ The **art preview** is in no sweep and therefore in no golden, deliberately
   and in all three records: it draws rasterised art, so what such an entry would
   assert is an open question — → `TODO.md`.
+- `internal/wire/testdata/messages.golden` is the **PvP protocol**: one entry per
+  message kind — the exact bytes `wire.Encode` produces, indented so a diff points
+  at a field rather than at a four-hundred-character line — so a **wire change
+  shows up in a diff**. A field renamed, a field dropped, an `omitempty` added or
+  taken away, a kind or a code renamed, or the event digest's framing changed each
+  moves a line here and nothing else in the suite shows a reader what moved.
+  ⚠️ **Every body is a hand-written fixture and none of it comes from the shipped
+  data**, which is the whole reason this file is safe to have. A `start` body
+  carrying a real roster would move on every balance commit — a stat curve retuned,
+  a skill's level moved, a character added — while measuring nothing about the
+  protocol, and a golden that moves for reasons unrelated to what it measures is a
+  merge-conflict generator. It is the same argument that gives `internal/seed`
+  **no** golden on the data digest at all, and it is held rather than promised:
+  `TestTheGoldenIsBuiltFromNothingShipped` refuses a record holding any shipped id
+  prefix. The `turn` entry's digest **is** computed, off the fixture events, which
+  is what pins `DigestEvents`' framing in the same diff.
 
 Run `make golden` (`go test ./cmd/hexarena-tui ./cmd/hexforge-tui
 ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed
-./internal/tui -update`) to accept a change and
+./internal/tui ./internal/wire -update`) to accept a change and
 then **read the diff**. That diff is what the files are for: a balance change that
 moves numbers you did not expect is a finding, not noise.
 
