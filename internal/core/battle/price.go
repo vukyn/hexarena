@@ -84,6 +84,9 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 		dealt := p.fight.expected(actor, declared, aim)
 		total += dealt
 		total += p.finished(actor, declared, aim)
+		// And what the charge already on the board deals when this cast sets it
+		// off, which nothing here charged for at all.
+		total += p.discharged(actor, declared, aim)
 		// And the health the blow takes back, which nothing here charged for
 		// until 2026-09-02: a plain hit rated above the same hit returning nine
 		// tenths of itself as healing.
@@ -299,6 +302,97 @@ func (p *pricing) spentHealth(actor *Unit, declared skill.Skill) int64 {
 		return 0
 	}
 	return actor.MaxHP() * int64(declared.Cost) / scale.Base
+}
+
+// discharged is what the charge already sitting on the board deals when this cast
+// sets it off, and it is the CASH-IN of the conduit playstyle.
+//
+// ⚠️ **It was priced nowhere at all.** `ArcPower` appeared in exactly one place in
+// this file — `spendable`, which values a stack to decide whether *laying one
+// down* is worth a turn — and the turn that spends it was rated on the skill's own
+// power and nothing else. So a conduit's whole payload was a free rider: the
+// rating chose `electro_ball` because six hundred and forty times two is a decent
+// blow, and the discharge happened to come with it.
+//
+// That was invisible while nothing else moved, and it stopped being invisible the
+// moment the rating learned to read a guard: **an arc is not stopped by one** —
+// the single thing a conduit has over an ordinary attack, and the reason a counter
+// is worth laying down in front of a wall — so a rating that starts avoiding a
+// wall stops firing arcs into the one board they exist for, and the playstyle
+// reads as a trap. See TODO.md.
+//
+// The model is the resolving loop read once per carrier rather than once per
+// strike:
+//
+//   - The chain is `chainFrom`, the same function the discharge walks, so the aim
+//     gates it identically — a chain from an uncharged unit is empty however much
+//     charge is standing beside it.
+//   - `Takes` says how many stacks one strike spends, and the arc fires once per
+//     strike that did not MISS — a blocked strike discharges, because the guard
+//     stopped the blow and not what was already on the target. So the round count
+//     is the expected strikes weighted by the chance to connect, and it is capped
+//     at the rounds the carrier actually has stacks for.
+//   - The damage is the resolving expression itself, with the same scaling, the
+//     same defence and the same chart lookup — and deliberately NOT the caster's
+//     own affinity modifier, which `hitAgainst` applies and the discharge does
+//     not.
+//
+// ⚠️ The aimed carrier's arc is clamped at what the skill's own blow will leave of
+// it. Without that a conduit aimed at a unit on a sliver is worth its remaining
+// health twice over, which is the same double-count `expected`'s own clamp exists
+// to refuse.
+func (p *pricing) discharged(actor *Unit, declared skill.Skill, aim hex.Offset) int64 {
+	if !declared.Requires.Arcs() {
+		return 0
+	}
+	chain := p.fight.chainFrom(actor, declared, aim)
+	if len(chain) == 0 {
+		return 0
+	}
+	actorStats := p.fight.Stats(actor)
+	brought := swingOf(declared, actor)
+	from := fromSkill(declared)
+	scaling := combat.PickScaling(declared.Scaling.Source,
+		actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat])
+	// Rolled once for the cast and against the unit it was AIMED at, because that
+	// is where combat.Roll reads its accuracy — the units further down a chain are
+	// never rolled against at all.
+	rounds := int64(declared.ExpectedStrikes()) *
+		int64(p.fight.books.Rules.Chance(p.fight.hitAgainst(
+			actor, actorStats, declared, chain[0], 0, brought))) / scale.Base
+	total := int64(0)
+	for at, unit := range chain {
+		stacks := unit.Statuses.Stacks(declared.Requires.Status)
+		take := declared.Requires.Takes(stacks)
+		if take <= 0 {
+			continue
+		}
+		amount := p.fight.books.Rules.Damage(scaling,
+			p.fight.Stats(unit)[progression.Defense],
+			declared.Requires.ArcPower*take,
+			p.fight.books.Chart.MultiplierAgainst(from.Element, unit.Affinity))
+		if amount <= 0 {
+			continue
+		}
+		// The rounds this carrier has stacks for, in the same per mille the strike
+		// count comes in.
+		spent := rounds
+		if capacity := int64(stacks/take) * scale.Base; spent > capacity {
+			spent = capacity
+		}
+		value := amount * spent / scale.Base
+		room := unit.HP
+		if at == 0 {
+			room -= p.fight.against(actor, actorStats, declared, unit, 0, brought)
+		}
+		if value > room {
+			value = room
+		}
+		if value > 0 {
+			total += value
+		}
+	}
+	return total
 }
 
 // drained is the health a skill takes back out of the damage it deals, priced as

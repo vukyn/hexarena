@@ -507,11 +507,15 @@ is only so the shape is readable.
       claims, one of which reverses, and that is a design decision about the cast
       rather than a re-baseline.
 
-      ⚠️ **Close this first**: a conduit's arc is *not* stopped by a guard, and
-      `Requires.ArcPower` is priced only in `spendable` — the decision to *charge*
-      — and **not at all in the decision to discharge**. So a rating that learns to
-      avoid a wall stops firing arcs into the one board they are for, and the
-      charge half cannot be judged fairly until that is fixed.
+      ⚠️ **The `ArcPower` gap named here is now closed** — `pricing.discharged`
+      prices the cash-in, and the conduit kit went **353 → 406 per mille**, above
+      the bursting kit it is measured against for the first time. ⚠️ **It did NOT
+      unblock the charge half**: with both in, the three claims still read
+      190/530 and 235/440 and all three still fail. That was the second hypothesis
+      about *why* the charge half hurts conduits to be measured and killed — the
+      first was `spendable` reading a discounted `strike(mate)`. **Whatever the
+      cause is, it has not been found, and it is not either of those.** Bisect the
+      next guess before writing it down.
 
       The gap it came from: `shielded` and `guarded` pay to *put* a guard up and
       nothing discounted a blow *into* one, so the rating bought walls and treated
