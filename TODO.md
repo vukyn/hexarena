@@ -450,18 +450,24 @@ is only so the shape is readable.
 
       | mechanic | field | what the rating did |
       |---|---|---|
-      | repeating strikes | `Repeat`, `MaxStrikes` | a 700-power single beat a 600-power skill landing ~5.2 times |
+      | ~~repeating strikes~~ | ~~`Repeat`, `MaxStrikes`~~ | **done** — `Rules.Expected` reads `ExpectedStrikes` and `hitAgainst` carries the fields; a Magnemite kit built on `spark` went **3.6% → 25.0%** |
       | draining | `Skill.Drains`, `Passive.Drains` | a plain hit beat the same hit returning 90% as healing |
       | unblockable | `Skill.Unblockable` | into three block charges, the blockable 700 beat the unblockable 600 |
       | attacking **into** a guard | `Shield` / `Absorb` on the target | preferred the softer target carrying a pool of 100,000 — in all three arrangements, including with no pool at all |
 
-      ⚠️ **`Repeat` is the sharpest and it is a rule already written down.**
-      `combat.go` says *"ExpectedStrikes is the figure everything outside the roll
-      reads"* and the rating is the one caller that does not: `Rules.Expected`
-      multiplies by `h.StrikeCount()`, and `hitAgainst` never sets `Repeat` or
-      `MaxStrikes` on the `Hit` at all, so fixing `Expected` alone would move
-      nothing. `spark` (repeat 500, max 10, two base strikes) is priced at its
-      floor.
+      ⚠️ **`Repeat` was the sharpest and is done.** It was a rule already written
+      down that the rating was the one caller not to follow, and it took both
+      halves: `Rules.Expected` multiplied by `h.StrikeCount()`, and `hitAgainst`
+      never set `Repeat` or `MaxStrikes` on the `Hit` at all, so fixing either
+      alone would have moved nothing. `worstStrikes` read the same floor and now
+      reads the same count, in per mille, because a charge is worth *less* against
+      a repeating attacker and the floor could not say so. `Total` deliberately
+      stays on the floor — it is the deterministic column `skills.golden` is
+      written from. → `TestExpectedReadsTheDistributionAndTotalReadsTheFloor`,
+      `TestTheRatingReadsTheTailOfARepeatingSkill`,
+      `TestAGuardIsWorthLessAgainstAnAttackerThatKeepsGoing`.
+
+      What is left is **guard** and **drains**, in that order.
 
       ⚠️ **The guard half is an internal contradiction rather than an omission.**
       `shielded` and `guarded` pay to *put* a guard up; nothing discounts a blow
@@ -473,7 +479,7 @@ is only so the shape is readable.
       `dream_eater`, `blood_thirst`, `last_gasp`. `taunt` and `heal_cut` are the
       same class and are already recorded in `README.md` § *Cutting the healing*.
 
-      Suggested order: **repeat → guard (with `unblockable`) → drains**, each its
+      Suggested order: **guard (with `unblockable`) → drains**, each its
       own measured change. Worth adding with the first of them: a structural test
       that every `status.Category` has an arm in `granted` or `inflictedOn`, and a
       hand-kept table of every `Skill` field marked *priced* or *deliberately not,

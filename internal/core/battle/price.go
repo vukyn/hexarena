@@ -1335,18 +1335,36 @@ func (p *pricing) standingLost(target *Unit, kind status.Kind, stacks int) int64
 
 // strikeThreat is threat for a single strike rather than a whole turn, which is
 // what a block charge cancels.
+//
+// The division is by a count in parts per thousand, so it is written out rather
+// than left as a plain divide: see worstStrikes for why the count is not a whole
+// number.
 func (p *pricing) strikeThreat(unit *Unit) int64 {
 	strikes := p.worstStrikes(unit)
-	if strikes < 1 {
-		strikes = 1
+	if strikes < scale.Base {
+		strikes = scale.Base
 	}
-	return p.threat(unit) / int64(strikes)
+	return p.threat(unit) * scale.Base / int64(strikes)
 }
 
 // worstStrikes is how many strikes the heaviest attack aimed at this unit would
-// come in, so a charge is priced against one of them rather than all.
+// come in, in parts per thousand, so a charge is priced against one of them
+// rather than all.
+//
+// ⚠️ **In per mille, and through ExpectedStrikes, because a repeating attacker
+// makes a charge worth LESS and the floor could not say so.** A charge cancels
+// one strike whole, so what it is worth is the share of a turn one strike is —
+// and against a skill that lands about five times that share is a fifth, not a
+// half. Reading StrikeCount here priced a guard against the strikes an attacker
+// is guaranteed and none of the tail, which is the same floor Rules.Expected was
+// reading and the other half of one fact.
+//
+// A whole number cannot carry it: rounding a count of 3,120 down to 3 inflates
+// every charge priced against it, and this figure is a DIVISOR, so the rounding
+// error runs the wrong way — over-pricing a guard costs a kill where under-pricing
+// costs a marginal cast.
 func (p *pricing) worstStrikes(unit *Unit) int {
-	strikes := 1
+	strikes := scale.Base
 	for _, other := range p.fight.units {
 		if other.Dead || other.Side == unit.Side {
 			continue
@@ -1356,7 +1374,7 @@ func (p *pricing) worstStrikes(unit *Unit) int {
 			if err != nil || declared.Power == 0 || !aimedAtAnEnemy(declared) {
 				continue
 			}
-			if count := declared.StrikeCount(); count > strikes {
+			if count := declared.ExpectedStrikes(); count > strikes {
 				strikes = count
 			}
 		}

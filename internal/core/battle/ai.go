@@ -271,6 +271,14 @@ func (b *Battle) hitAgainst(actor *Unit, actorStats progression.Values, declared
 			actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat]),
 		Multiplier: power,
 		Strikes:    declared.StrikeCount(),
+		// ⚠️ **Carried, because a Hit that leaves them out is a Hit that repeats
+		// nothing.** Rules.Expected reads the count through Hit.ExpectedStrikes,
+		// and a zero Repeat makes that answer the floor — so the rating priced a
+		// repeating skill at the strikes it is guaranteed and none of the tail,
+		// however long the tail. Fixing Expected alone would have moved nothing:
+		// the two halves are one change.
+		Repeat:     declared.Repeat,
+		MaxStrikes: declared.MaxStrikes,
 		Affinity:   multiplier,
 		Defense:    targetStats[progression.Defense],
 		Pierce:     declared.Pierce,

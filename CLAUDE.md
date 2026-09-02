@@ -151,6 +151,21 @@ Rules for anything added to that file:
   ⚠️ Whether such a turn should be **passed** instead is a different and larger
   question — every gap in what `price.go` sees is an *under*-price, so "worth
   nought to the rating" is not yet "worth nought". → `TODO.md`.
+- ⚠️ **A repeating count is read as its EXPECTATION, never as either end.**
+  `Rules.Expected` goes through `Hit.ExpectedStrikes` (parts per thousand, so the
+  division lives in `Expected` and not at the call site) and `hitAgainst` carries
+  `Repeat` and `MaxStrikes` onto the `Hit`. Both halves or neither: with the
+  fields dropped, `ExpectedStrikes` answers the plain count and fixing `Expected`
+  alone moves nothing. `pricing.worstStrikes` reads the same figure and returns it
+  in per mille — a charge cancels ONE strike, so it is worth *less* against an
+  attacker that keeps going, and a whole number cannot carry a count of 3,120
+  without inflating every guard priced against it.
+  ⚠️ **`Rules.Total` deliberately stays on `StrikeCount`.** It is the
+  deterministic figure `skills.golden`'s damage column is written from, and a
+  number that moved with an expected value would stop being what an author
+  compares two skills by. The two answer different questions.
+  Measured: a Magnemite kit built on `spark` read **3.6%** with the floor and
+  **25.0%** with the expectation — the rating would not cast its own best skill.
 - ⚠️ **The queue may break a tie; it may never set a price.** A queue reading is
   **compared**, never added or multiplied. A value that reaches an arithmetic
   expression is tempo, and tempo is priced from the **speed stat** — see the tempo
