@@ -762,6 +762,8 @@ func (p *pricing) granted(actor, target *Unit, from origin,
 			value = p.guarded(actor, target, from, kind, application.Stacks)
 		case status.Buff:
 			value = p.standing(target, kind, application.Stacks)
+		case status.Taunt:
+			value = p.taunting(target, kind)
 		case status.Reserve:
 			// A reserve reaches this branch and a charge reaches inflictedOn's,
 			// which is the whole of the difference between them written where the
@@ -1136,6 +1138,8 @@ func (p *pricing) inflictedOn(actor, target *Unit, from origin,
 			value = p.standingLost(target, kind, application.Stacks)
 		case status.Charge:
 			value = p.charged(actor, target, kind, application.Stacks)
+		case status.HealCut:
+			value = p.uncured(target, kind, application.Stacks)
 		}
 		if value <= 0 {
 			continue
@@ -1143,6 +1147,74 @@ func (p *pricing) inflictedOn(actor, target *Unit, from origin,
 		total += value * chance / scale.Base
 	}
 	return total
+}
+
+// taunting is what a taunt is worth to WHOEVER HOLDS IT, and where it sits is the
+// whole of why this is a `granted` case and not an `inflictedOn` one.
+//
+// ⚠️ **The status goes on the unit doing the taunting, not on the unit being
+// taunted** — `battle.tauntStatus` says so in as many words, and the shipped
+// `taunt` is a self-aimed skill whose whole body is `self_applies`. The first cut
+// of this priced it in `inflictedOn`, which is where a HARMFUL self-application is
+// charged as a cost, so a unit that taunted was billed its own best strike three
+// times over for doing it. That is worse than the nothing it was worth before.
+//
+// What it buys is the aim it takes off every enemy at once: each of them wanted
+// its best cast and is left with whatever it can do to the holder. A taunt is not
+// a Control and pricing it as one would be wrong the other way — a stunned unit
+// does not act, a taunted one acts and is simply not allowed to pick.
+//
+// ⚠️ **An enemy the holder was already the best target of contributes nothing**,
+// and that is the honest answer rather than a missing case: a taunt that changes
+// nobody's mind changes nothing. It is also what keeps the term from paying for
+// the taunt a squishy unit should not be casting — the value is the denial, and
+// what it costs to stand in the way is not modelled, so the board where this
+// would over-price is the board where the difference is nought anyway.
+func (p *pricing) taunting(holder *Unit, kind status.Kind) int64 {
+	denied := int64(0)
+	for _, other := range p.fight.units {
+		if other.Dead || other.Side == holder.Side {
+			continue
+		}
+		best := p.strike(other)
+		if narrowed := p.fight.bestAgainst(other, holder); best > narrowed {
+			denied += best - narrowed
+		}
+	}
+	return denied * turnsOf(kind, buffHorizon)
+}
+
+// uncured is what cutting somebody's healing denies them, priced as the healing
+// itself.
+//
+// ⚠️ **It was worth nothing too**, and the consequence was written down when
+// `fester` shipped: the opponent never aimed one at a healer on purpose. The cut
+// is read through `healingFor`, which is the expression the battle pays a heal
+// with — the floor at total negation included — so the two cannot disagree about
+// how much of a heal a stack takes.
+//
+// ⚠️ **Only the regeneration already ticking on the target is counted**, and that
+// is deliberately less than the truth: a cut applies to every heal the holder
+// receives, including a restore an ally has not cast yet and a drain nobody has
+// rolled. Those need a lookahead this file does not have and will not grow, so
+// what is priced is the healing that is visibly owed. Under-pricing costs a
+// marginal cast, which is the direction every cap here errs in.
+//
+// Clamped by worthHealing for the reason `undone` is: health above the room there
+// is cannot be denied, and neither can health above what this side could take off.
+func (p *pricing) uncured(target *Unit, kind status.Kind, stacks int) int64 {
+	owed := target.Statuses.PendingIn(status.Regen)
+	if owed <= 0 {
+		return 0
+	}
+	before, _ := healingFor(target, owed)
+	after, _ := healingFor(
+		p.fight.hypothetical(target, target.Statuses.With(kind, 0, stacks)), owed)
+	denied := before - after
+	if denied <= 0 {
+		return 0
+	}
+	return worthHealing(denied, target, p.threat(target))
 }
 
 // charged is what a counter is worth to whoever puts it on, which is not a

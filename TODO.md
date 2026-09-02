@@ -541,8 +541,16 @@ is only so the shape is readable.
       still open is `warden`'s own trade, that a charge cancels one strike so
       multi-strike answers a wall.
 
-      `taunt` and `heal_cut` are the same class of omission and are already
-      recorded in `README.md` § *Cutting the healing*.
+      `taunt` and `heal_cut` were the same class of omission and are **done** —
+      `pricing.taunting` and `pricing.uncured`, so every one of the eleven status
+      categories now has an arm in `granted` or `inflictedOn`. ⚠️ The taunt is in
+      **granted**, not `inflictedOn`: the status sits on the unit DOING the
+      taunting, so pricing it as harm charged its own caster for casting it.
+      Measured in a squad, which is the only place a taunt can be measured at all
+      — it is worth **exactly nothing** in a duel by construction, because the
+      taunter is the only target there is — a wall carrying `taunt` in place of
+      `withdraw` read **395‰ before and 783‰ after**, against 646‰ for the control
+      that carries neither.
 
       What is left is the **charge** half of the guard, above. Worth adding with the first of them: a structural test
       that every `status.Category` has an arm in `granted` or `inflictedOn`, and a

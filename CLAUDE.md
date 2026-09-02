@@ -203,6 +203,18 @@ Rules for anything added to that file:
   conduit's whole payload was a free rider on the skill's own power. The aimed
   carrier's arc is clamped at what the blow itself leaves of it, or a conduit
   aimed at a sliver is worth that health twice.
+- **Every status category has an arm.** `granted` takes the ones a holder wants
+  — Regen, Shield, Absorb, Buff, Reserve, **Taunt** — and `inflictedOn` the ones
+  it does not — Dot, Control, StatDebuff, Charge, **HealCut**. ⚠️ A taunt is a
+  `granted` case even though `Category.Harmful` says otherwise, because
+  `tauntStatus` **sits on the unit doing the taunting**: pricing it as harm bills
+  its own caster its best strike three times over for casting it. Worth the aim it
+  takes off every enemy at once, and nought against an enemy the holder was
+  already the best target of — which is why it reads as exactly nothing in a duel
+  and has to be measured in a squad. A heal cut is priced through `healingFor`,
+  the expression a heal is paid with, over `Set.PendingIn(Regen)` — the
+  regeneration visibly owed, deliberately less than the truth, because every other
+  source of healing needs a lookahead this file does not have.
 - ⚠️ **The queue may break a tie; it may never set a price.** A queue reading is
   **compared**, never added or multiplied. A value that reaches an arithmetic
   expression is tempo, and tempo is priced from the **speed stat** — see the tempo
