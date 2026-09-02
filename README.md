@@ -2348,6 +2348,20 @@ order the `go:embed` directive declares them, hashed as bytes. No parsing: a
 digest that depended on parsing would be a second reading of the data, and two
 readings is the thing this repository keeps refusing to have.
 
+Each file is **framed** rather than merely concatenated: the hash is fed the
+file's name, then its byte length as a fixed-width integer, then its bytes. That
+is not a precaution taken on principle, and the case that argues for it is not
+the case that suggests itself. Two files *exchanging contents* is the obvious
+justification and it is the wrong one — the files are read in a fixed order, so a
+swap moves those bytes to different offsets and a hash over the concatenation
+sees it perfectly well. What a plain concatenation genuinely cannot see is a
+**boundary that moved** — two adjacent files holding the same total bytes split
+differently — or a **rename**, the same bytes read under another name. Both were
+measured, both are blind, and the framing catches both. The name does nearly all
+the work, since a name sitting between two files' bytes is also a separator; the
+length is what makes the framing unambiguous rather than merely hard to confuse.
+→ `internal/seed/digest.go`, whose tests take the two halves apart one at a time.
+
 Art is **not** in it. `assets/` cannot reach the simulation, so a client with a
 newer picture is not a client that fights a different battle.
 

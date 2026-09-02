@@ -230,9 +230,29 @@ is only so the shape is readable.
       - [ ] `internal/wire`: the protocol as one stdlib-only package. The
             envelope, the three version numbers, and error **codes** rather than
             prose. A golden per message, so a wire change shows up in a diff.
-      - [ ] The data digest — the fifteen embedded JSON files, in `go:embed`
+      - [x] The data digest — the fifteen embedded JSON files, in `go:embed`
             order, hashed as bytes, no parsing. `assets/` excluded: art cannot
-            reach the simulation.
+            reach the simulation. **Done** — `seed.DataDigest`, and it is a
+            *peer-equality* check rather than a version number: every data commit
+            is supposed to move it.
+            ⚠️ Each file is **framed** — name, then byte length, then bytes — and
+            the reason written into the brief for it was **wrong**. A plain
+            `sha256(concat(bytes))` is *not* blind to two files exchanging
+            contents: the files are read in a fixed order, so a swap moves those
+            bytes to different offsets and a content-only hash sees it. What a
+            concatenation genuinely cannot see is a **boundary that moved** or a
+            **rename**. Measured, not reviewed; the conclusion survived and the
+            reason did not. → `README.md` § Three version numbers.
+            ⚠️ The load-bearing test is the **walk**, not the sensitivity table:
+            these fifteen names exist in three independent copies (the directive,
+            the fifteen `ReadFile` calls, `dataFiles`), and dropping one name
+            reddens the walk while the per-file byte-flip test stays **green** —
+            it is table-driven off that same list and cannot see a file the list
+            forgot. A test that checks a list against itself cannot see a
+            consistent omission.
+            ⚠️ No golden on the digest value, deliberately: it would move on every
+            unrelated data commit while catching nothing the properties do, which
+            here makes it a merge-conflict generator that measures nothing.
       - [ ] Replace `Drain` at the server with an append-only record and a cursor
             per consumer. ⚠️ `Drain` **empties the buffer** and a room has two
             players, spectators and a log; the cursor is also what reconnect and
