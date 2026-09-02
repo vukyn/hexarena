@@ -1004,6 +1004,27 @@ func (s *Set) Pending() int64 {
 	return total
 }
 
+// PendingIn is Pending restricted to one category: what the ticking stacks of
+// that category still owe over the turns they have left.
+//
+// It exists because Pending totals every ticking stack without asking which way
+// the sign points, and a caller that wants only the healing cannot subtract the
+// harm out of it — the same reason undone has to refuse a strip that names
+// anything harmful rather than reading the difference. Written beside PoolIn and
+// CountIn, which restrict the other two per-stack figures the same way.
+func (s *Set) PendingIn(category Category) int64 {
+	total := int64(0)
+	for i := range s.entries {
+		if s.entries[i].kind.Category != category {
+			continue
+		}
+		for _, stack := range s.entries[i].stacks {
+			total += stack.worth()
+		}
+	}
+	return total
+}
+
 // Book is the declared statuses plus the limits they obey.
 type Book struct {
 	// MaxStacks and MaxDuration bound every declared kind, so one status cannot
