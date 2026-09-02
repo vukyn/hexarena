@@ -4355,8 +4355,12 @@ trait cannot finish reading one.
 
 ⚠️ **The sentences wrap to the floor, not to the window** — the opposite of what
 `m.wrapped` does, and right for a different reason. Those rows carry authored
-free text, which has to go somewhere and takes whatever width there is; these are
-the program's own prose, and prose has a measure. Before wrapping, the reply
+free text, which has to go somewhere and takes whatever width there is, less the
+one column at the end of it that every row on these screens leaves empty; these
+are the program's own prose, and prose has a measure. That last column is not a
+detail: a wrapped row used to take it as well, which is a line filling a
+terminal's final cell — the thing that wraps on some of them and pushes the
+footer off the bottom. It gives it up now. Before wrapping, the reply
 sentence was cut mid-word at the floor — *…3% khả nă* — which reads as the tool
 being broken rather than as a terminal being narrow.
 

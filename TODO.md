@@ -724,15 +724,55 @@ is only so the shape is readable.
       and it was already refusing before the rule. **It was written down once and
       lost in a rewrite of the entry above it**, which is the only reason it is
       dated to a session that had already finished with it.
-- [ ] **`m.wrapped` fills the window's final column.** `wrappedIn`
-      (`cmd/hexforge-tui/model.go`) computes `room = usableWidth() - 2 - width -
-      1`, so `labelAt` emits exactly `usableWidth()` cells — measured at 120 on
-      `browse`'s biography row: exactly 120. Every other row in this client
-      deliberately leaves the last column empty, because a line filling a
-      terminal's final cell wraps on some of them, and `fieldValueRoom`'s comment
-      records fixing this same off-by-one in four other places. ⚠️ It changes
-      what fits, so it would newly mark a line #186 does not cut today — which is
-      why #186 left it alone rather than folding it in.
+- [x] **`m.wrapped` no longer fills the window's final column. DONE.**
+      `Context.WrappedIn` (`internal/screen/screen.go`) spent
+      `UsableWidth() - 2 - width - 1`, so `LabelAt` emitted exactly
+      `UsableWidth()` cells and a wrapped row filled the one column every other
+      row leaves empty — the fifth copy of the off-by-one `FieldValueRoom`'s own
+      comment records fixing in four other places. It spends
+      `UsableWidth() - 1 - marker - width - 1` now, written in that function's
+      idiom (the window less its final column, less the marker, less the label
+      column, less the gap after it), and the `room < 8` clip is measured off the
+      corrected number too, so the narrow branch gives up the same cell.
+      ⚠️ **Three golden lines moved and they are all the same row**: `browse`'s
+      biography for `naruto.naruto`, in Vietnamese at both windows and in English
+      at the floor, each losing a word off a line and taking it up on the next.
+      **No row count changed**, so no screen's vertical budget moved, and the
+      other sixteen golden files are byte for byte what they were — including
+      both clients', whose own `browse` entries draw a character whose bio does
+      not sit on the boundary.
+      ⚠️ **That is far less than the defect is, and the gap is the fixture rather
+      than the fix.** A `browse` or `builds` record holds the detail pane of
+      **one** character — the one under the cursor — so it can only ever see that
+      character's wrap points. Over the whole cast the defect is ordinary:
+      **11 of 26** biography rows in Vietnamese and **6 of 26** in English filled
+      the final column before the fix (thirteen characters, at the 120 floor and
+      at 160), `pokemon.gastly`, `pokemon.mew`, `pokemon.mewtwo`,
+      `pokemon.machop` and both fixture characters among them.
+      ⚠️ **And which character the record draws is itself data.** Measured on the
+      tree as it stood before #242, which sorted `cast.json` by id and so moved
+      the browse cursor onto Naruto: `make golden` under each arithmetic in turn
+      came back **byte for byte identical, all seventeen files**. The same fix,
+      the same suite, the same screens — and one data commit is the whole
+      difference between a golden that reports it and a golden that cannot.
+      ⚠️ **Nothing is newly cut by #186 either**, which is the reason this was
+      left alone rather than folded in. A word longer than the room still takes a
+      line of its own and overflows it — `WrapWords` says so on purpose — so
+      narrowing the room by one can only newly mark a line carrying a word of
+      exactly the *old* room. The longest whitespace-delimited token drawn on any
+      recorded screen is **38** cells against a room of **99** at the floor, and
+      the ellipsis count in the three `screens.golden` is unchanged at 25 / 13 /
+      15. The bound is `WrapWords`' own exception rather than this function's, so
+      it stays stated rather than closed.
+      → `TestAWrappedRowLeavesTheWindowsLastColumnEmpty` holds the property, at
+      three windows and in two word-length families, because the interesting
+      value is the one that fills the row *exactly* and greedy packing reaches an
+      odd length or an even one depending on the words it is given; the widest
+      line emitted anywhere in the sweep is asserted to be `UsableWidth() - 1`,
+      so it cannot pass by drawing everything comfortably short.
+      `TestTheBiographyRowFitsTheWindowItIsDrawnIn` is the same claim at the call
+      site the defect was measured on, over the cast in both languages. Both go
+      red on the old arithmetic and the first names the offending row and width.
 
 - [x] **The committed cast is not in the form the tool writes, and the test that
       was supposed to catch that is vacuous. DONE.** Both halves done apart, in
