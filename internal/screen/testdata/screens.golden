@@ -1,3 +1,55 @@
+===== vi | 120x24 | a battle =====
+trận đấu  seed 1  diễn biến 10-10/10
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+next: E2 A1 E1 A3 E3 A2
+
+  A2  turn 1
+
+A2 Charizard, lượt 1
+> ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
+  fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+----- footer -----
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a battle over =====
+trận đấu  seed 1  diễn biến 1529-1533/1533
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             fallen                     100   -
+A2   Charizard            fallen                     140   kindled (always)
+A3   Blastoise            [#########.]  3440/3600     85   toughened (always), expose (1t)
+E1   Venusaur             fallen                     100   burn (1t)
+E2   Charizard            fallen                     140   kindled (always), blind (1t), burn (2t)
+E3   Blastoise            fallen                      68   toughened (always), mire (2t)
+
+next: A3 A3 A3 A3 A3 A3
+
+    A3   hits E3 for 93, 0 left
+    A3   mire <sa lầy> x1 on E3, now 1
+    E3  falls at 3,0
+  
+  the ally side wins
+
+phe bạn thắng
+----- footer -----
+n đánh trận khác · [/] cuộn · ctrl+s lưu lại · esc quay lại
+===== vi | 120x24 | a battle with no pairing =====
+trận đấu  seed 1
+
+  chưa dựng đội nào; bấm n để bắt đầu
+----- footer -----
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a deep member =====
 trong đội: mot
 
@@ -50,6 +102,52 @@ chưa thêm được: nguồn "pokemon" đã có trong danh mục rồi
 
 ----- footer -----
 ↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
+===== vi | 120x24 | a saved battle =====
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+A2 Charizard, lượt 1
+> ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
+  fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+
+đã ghi do-thu-vs-do-thu-seed1.json vào battles/do-thu-vs-do-thu-seed1.json
+phát lại bằng: hexarena --replay battles/do-thu-vs-do-thu-seed1.json --verify — build lại trước, vì game đọc bản dữ
+liệu nhúng trong nó chứ không đọc mấy file này
+----- footer -----
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a scrolled battle log =====
+trận đấu  seed 1  diễn biến 89-89/128
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [######....]  2594/3800    100   burn (2t)
+A2   Charizard            [####......]  1488/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always), block (2t)
+E1   Venusaur             [####......]  1577/3800     81   mire (1t)
+E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
+E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
+
+next: A1 E2 E1 A3 E3 A2
+
+    A2   hits E1 for 320 (weak) (through 35% of the armour), 1884 left
+
+A2 Charizard, lượt 4
+> ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    1 turns of cooldown left
+  fire_fang    2 turns of cooldown left
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+----- footer -----
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a squad =====
 đội hình
 
@@ -158,6 +256,29 @@ năm để trống được nếu không rõ; ghi chú là chữ tự do
 
 ----- footer -----
 ↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
+===== vi | 120x24 | aiming =====
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+
+A2 Charizard, lượt 1
+  ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
+  fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+
+nhắm ember vào
+> 3,0  E3 Blastoise
+  3,1  E2 Charizard
+  3,2  E1 Venusaur
+----- footer -----
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | allowlist picker =====
 nhân vật nào được học chiêu này  0/11
 space để chọn · để trống thì ai cũng học được chiêu này
@@ -635,6 +756,112 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | a battle =====
+trận đấu  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+next: E2 A1 E1 A3 E3 A2
+
+    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
+    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
+    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
+    A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
+    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
+    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
+    E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+  
+  A2  turn 1
+
+A2 Charizard, lượt 1
+> ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
+  fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+----- footer -----
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a battle over =====
+trận đấu  seed 1  diễn biến 1502-1533/1533
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/  \__/  \
+/  \__/A3\__/  \__/
+\__/  \__/  \__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             fallen                     100   -
+A2   Charizard            fallen                     140   kindled (always)
+A3   Blastoise            [#########.]  3440/3600     85   toughened (always), expose (1t)
+E1   Venusaur             fallen                     100   burn (1t)
+E2   Charizard            fallen                     140   kindled (always), blind (1t), burn (2t)
+E3   Blastoise            fallen                      68   toughened (always), mire (2t)
+
+next: A3 A3 A3 A3 A3 A3
+
+  
+  E3  turn 131
+    E3  block <đỡ đòn> wears off
+    E3  uses water_gun <súng nước> at 2,2
+    E3   is blocked by A3, 1 charges left
+  
+  A3  turn 131
+    A3  expose <phá giáp> wears off
+    A3  uses bite <cắn> at 3,0
+    A3   hits E3 for 160, 165 left
+    A3   E3 resists expose <phá giáp> (50%)
+  
+  E3  turn 132
+    E3  uses bubble <bong bóng> at 2,2
+    E3   is blocked by A3, 0 charges left
+  
+  A3  turn 132
+    A3  uses water_gun <súng nước> at 3,0
+    A3   hits E3 for 133, 32 left
+  
+  E3  turn 133
+    E3  uses bite <cắn> at 2,2
+    E3   hits A3 for 160, 3440 left
+    E3   expose <phá giáp> x1 on A3, now 1
+  
+  A3  turn 133
+    A3  uses bubble <bong bóng> at 3,0
+    A3   hits E3 for 93, 0 left
+    A3   mire <sa lầy> x1 on E3, now 1
+    E3  falls at 3,0
+  
+  the ally side wins
+
+phe bạn thắng
+----- footer -----
+n đánh trận khác · [/] cuộn · ctrl+s lưu lại · esc quay lại
+===== vi | 160x60 | a battle with no pairing =====
+trận đấu  seed 1
+
+  chưa dựng đội nào; bấm n để bắt đầu
+----- footer -----
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a deep member =====
 trong đội: mot
 
@@ -687,6 +914,110 @@ chưa thêm được: nguồn "pokemon" đã có trong danh mục rồi
 
 ----- footer -----
 ↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
+===== vi | 160x60 | a saved battle =====
+trận đấu  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+next: E2 A1 E1 A3 E3 A2
+
+    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
+    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
+    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
+    A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
+    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
+    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
+    E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+  
+  A2  turn 1
+
+A2 Charizard, lượt 1
+> ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
+  fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+
+đã ghi do-thu-vs-do-thu-seed1.json vào battles/do-thu-vs-do-thu-seed1.json
+phát lại bằng: hexarena --replay battles/do-thu-vs-do-thu-seed1.json --verify — build lại trước, vì game đọc bản dữ
+liệu nhúng trong nó chứ không đọc mấy file này
+----- footer -----
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a scrolled battle log =====
+trận đấu  seed 1  diễn biến 89-116/128
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [######....]  2594/3800    100   burn (2t)
+A2   Charizard            [####......]  1488/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always), block (2t)
+E1   Venusaur             [####......]  1577/3800     81   mire (1t)
+E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
+E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
+
+next: A1 E2 E1 A3 E3 A2
+
+    A2   hits E1 for 320 (weak) (through 35% of the armour), 1884 left
+    A2   E1 resists fester <lở loét> (50%)
+    E1   A2 resists poison <trúng độc> (4%)
+  
+  E1  turn 2
+    E1  takes 307 from burn <bỏng> x1
+    E1  burn <bỏng> wears off
+    E1  uses razor_leaf <phi diệp> at 2,1
+    E1   hits A2 for 137 (resisted) (through 40% of the armour), 1964 left
+    E1   hits A2 for 137 (resisted) (through 40% of the armour), 1827 left
+    E1   hits A1 for 91 (through 40% of the armour), 3069 left
+    E1   hits A1 for 91 (through 40% of the armour), 2978 left
+    A1   E1 is immune to poison <trúng độc>
+  
+  A3  turn 2
+    A3  uses withdraw <thủ thế> at 2,2
+    A3   block <đỡ đòn> x2 on A3, now 2
+    A3  heals 57, 3600 hp left
+  
+  E3  turn 2
+    E3  takes 108 from burn <bỏng> x1
+    E3  takes 90 from poison <trúng độc> x1
+    E3  burn <bỏng> wears off
+    E3  uses bubble <bong bóng> at 2,1
+    E3   hits A2 for 207 (weak), 1620 left
+    E3   A2 resists mire <sa lầy> (70%)
+    E3   is blocked by A3, 1 charges left
+  
+
+A2 Charizard, lượt 4
+> ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    1 turns of cooldown left
+  fire_fang    2 turns of cooldown left
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+----- footer -----
+↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a squad =====
 đội hình
 
@@ -813,6 +1144,52 @@ năm để trống được nếu không rõ; ghi chú là chữ tự do
 
 ----- footer -----
 ↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
+===== vi | 160x60 | aiming =====
+trận đấu  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+next: E2 A1 E1 A3 E3 A2
+
+    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
+    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
+    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
+    A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
+    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
+    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
+    E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+  
+  A2  turn 1
+
+A2 Charizard, lượt 1
+  ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
+  fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+
+nhắm ember vào
+> 3,0  E3 Blastoise
+  3,1  E2 Charizard
+  3,2  E1 Venusaur
+----- footer -----
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | allowlist picker =====
 nhân vật nào được học chiêu này  0/11
 space để chọn · để trống thì ai cũng học được chiêu này
@@ -1561,6 +1938,58 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   chưa nhân vật nào thuộc loài này
 ----- footer -----
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
+===== en | 120x24 | a battle =====
+the battle  seed 1  log 10-10/10
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+next: E2 A1 E1 A3 E3 A2
+
+  A2  turn 1
+
+A2 Charizard, turn 1
+> ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
+  fire_fang    130% attack · fester 50% · range 1 · cd 2
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+----- footer -----
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a battle over =====
+the battle  seed 1  log 1529-1533/1533
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             fallen                     100   -
+A2   Charizard            fallen                     140   kindled (always)
+A3   Blastoise            [#########.]  3440/3600     85   toughened (always), expose (1t)
+E1   Venusaur             fallen                     100   burn (1t)
+E2   Charizard            fallen                     140   kindled (always), blind (1t), burn (2t)
+E3   Blastoise            fallen                      68   toughened (always), mire (2t)
+
+next: A3 A3 A3 A3 A3 A3
+
+    A3   hits E3 for 93, 0 left
+    A3   mire x1 on E3, now 1
+    E3  falls at 3,0
+  
+  the ally side wins
+
+your side wins
+----- footer -----
+n another battle · [/] scroll · ctrl+s save it · esc back
+===== en | 120x24 | a battle with no pairing =====
+the battle  seed 1
+
+  nothing built yet; n starts one
+----- footer -----
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a deep member =====
 in the squad: mot
 
@@ -1613,6 +2042,52 @@ cannot add: the origin "pokemon" is already in the catalog
 
 ----- footer -----
 ↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
+===== en | 120x24 | a saved battle =====
+the battle  seed 1
+the window is too short for: board, turn order, log
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+A2 Charizard, turn 1
+> ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
+  fire_fang    130% attack · fester 50% · range 1 · cd 2
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+
+wrote do-thu-vs-do-thu-seed1.json to battles/do-thu-vs-do-thu-seed1.json
+replay it with: hexarena --replay battles/do-thu-vs-do-thu-seed1.json --verify — rebuild first, because the game reads
+the copy baked into it rather than these files
+----- footer -----
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a scrolled battle log =====
+the battle  seed 1  log 89-89/128
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [######....]  2594/3800    100   burn (2t)
+A2   Charizard            [####......]  1488/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always), block (2t)
+E1   Venusaur             [####......]  1577/3800     81   mire (1t)
+E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
+E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
+
+next: A1 E2 E1 A3 E3 A2
+
+    A2   hits E1 for 320 (weak) (through 35% of the armour), 1884 left
+
+A2 Charizard, turn 4
+> ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    1 turns of cooldown left
+  fire_fang    2 turns of cooldown left
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+----- footer -----
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a squad =====
 the squad
 
@@ -1721,6 +2196,29 @@ the year may be left empty when it is unknown; the note is free text
 
 ----- footer -----
 ↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
+===== en | 120x24 | aiming =====
+the battle  seed 1
+the window is too short for: board, 1 unit, turn order, log
+
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+
+A2 Charizard, turn 1
+  ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
+  fire_fang    130% attack · fester 50% · range 1 · cd 2
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+
+point ember at
+> 3,0  E3 Blastoise
+  3,1  E2 Charizard
+  3,2  E1 Venusaur
+----- footer -----
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | allowlist picker =====
 characters allowed to carry it  0 of 11
 space chooses · leaving it empty lets anyone carry the skill
@@ -2187,6 +2685,112 @@ species  the declared kinds, and where each line is drawn
   no character is one
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | a battle =====
+the battle  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+next: E2 A1 E1 A3 E3 A2
+
+    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
+    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
+    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
+    A3   holds endurance: toughened x1
+    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
+    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
+    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
+    E3   holds endurance: toughened x1
+  
+  A2  turn 1
+
+A2 Charizard, turn 1
+> ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
+  fire_fang    130% attack · fester 50% · range 1 · cd 2
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+----- footer -----
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a battle over =====
+the battle  seed 1  log 1502-1533/1533
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/  \__/  \__
+\__/  \__/  \__/  \
+/  \__/  \__/  \__/
+\__/  \__/  \__/  \
+/  \__/A3\__/  \__/
+\__/  \__/  \__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             fallen                     100   -
+A2   Charizard            fallen                     140   kindled (always)
+A3   Blastoise            [#########.]  3440/3600     85   toughened (always), expose (1t)
+E1   Venusaur             fallen                     100   burn (1t)
+E2   Charizard            fallen                     140   kindled (always), blind (1t), burn (2t)
+E3   Blastoise            fallen                      68   toughened (always), mire (2t)
+
+next: A3 A3 A3 A3 A3 A3
+
+  
+  E3  turn 131
+    E3  block wears off
+    E3  uses water_gun at 2,2
+    E3   is blocked by A3, 1 charges left
+  
+  A3  turn 131
+    A3  expose wears off
+    A3  uses bite at 3,0
+    A3   hits E3 for 160, 165 left
+    A3   E3 resists expose (50%)
+  
+  E3  turn 132
+    E3  uses bubble at 2,2
+    E3   is blocked by A3, 0 charges left
+  
+  A3  turn 132
+    A3  uses water_gun at 3,0
+    A3   hits E3 for 133, 32 left
+  
+  E3  turn 133
+    E3  uses bite at 2,2
+    E3   hits A3 for 160, 3440 left
+    E3   expose x1 on A3, now 1
+  
+  A3  turn 133
+    A3  uses bubble at 3,0
+    A3   hits E3 for 93, 0 left
+    A3   mire x1 on E3, now 1
+    E3  falls at 3,0
+  
+  the ally side wins
+
+your side wins
+----- footer -----
+n another battle · [/] scroll · ctrl+s save it · esc back
+===== en | 160x60 | a battle with no pairing =====
+the battle  seed 1
+
+  nothing built yet; n starts one
+----- footer -----
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a deep member =====
 in the squad: mot
 
@@ -2239,6 +2843,110 @@ cannot add: the origin "pokemon" is already in the catalog
 
 ----- footer -----
 ↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
+===== en | 160x60 | a saved battle =====
+the battle  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+next: E2 A1 E1 A3 E3 A2
+
+    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
+    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
+    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
+    A3   holds endurance: toughened x1
+    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
+    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
+    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
+    E3   holds endurance: toughened x1
+  
+  A2  turn 1
+
+A2 Charizard, turn 1
+> ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
+  fire_fang    130% attack · fester 50% · range 1 · cd 2
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+
+wrote do-thu-vs-do-thu-seed1.json to battles/do-thu-vs-do-thu-seed1.json
+replay it with: hexarena --replay battles/do-thu-vs-do-thu-seed1.json --verify — rebuild first, because the game reads
+the copy baked into it rather than these files
+----- footer -----
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a scrolled battle log =====
+the battle  seed 1  log 89-116/128
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [######....]  2594/3800    100   burn (2t)
+A2   Charizard            [####......]  1488/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always), block (2t)
+E1   Venusaur             [####......]  1577/3800     81   mire (1t)
+E2   Charizard            [#####.....]  1826/3100    140   poison (1t)
+E3   Blastoise            [#########.]  3377/3600     85   toughened (always), poison (1t), block x2 (1t)
+
+next: A1 E2 E1 A3 E3 A2
+
+    A2   hits E1 for 320 (weak) (through 35% of the armour), 1884 left
+    A2   E1 resists fester (50%)
+    E1   A2 resists poison (4%)
+  
+  E1  turn 2
+    E1  takes 307 from burn x1
+    E1  burn wears off
+    E1  uses razor_leaf at 2,1
+    E1   hits A2 for 137 (resisted) (through 40% of the armour), 1964 left
+    E1   hits A2 for 137 (resisted) (through 40% of the armour), 1827 left
+    E1   hits A1 for 91 (through 40% of the armour), 3069 left
+    E1   hits A1 for 91 (through 40% of the armour), 2978 left
+    A1   E1 is immune to poison
+  
+  A3  turn 2
+    A3  uses withdraw at 2,2
+    A3   block x2 on A3, now 2
+    A3  heals 57, 3600 hp left
+  
+  E3  turn 2
+    E3  takes 108 from burn x1
+    E3  takes 90 from poison x1
+    E3  burn wears off
+    E3  uses bubble at 2,1
+    E3   hits A2 for 207 (weak), 1620 left
+    E3   A2 resists mire (70%)
+    E3   is blocked by A3, 1 charges left
+  
+
+A2 Charizard, turn 4
+> ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    1 turns of cooldown left
+  fire_fang    2 turns of cooldown left
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+----- footer -----
+↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a squad =====
 the squad
 
@@ -2365,6 +3073,52 @@ the year may be left empty when it is unknown; the note is free text
 
 ----- footer -----
 ↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
+===== en | 160x60 | aiming =====
+the battle  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Venusaur             [##########]  3800/3800    100   -
+A2   Charizard            [##########]  3100/3100    140   -
+A3   Blastoise            [##########]  3600/3600     85   toughened (always)
+E1   Venusaur             [##########]  3800/3800    100   -
+E2   Charizard            [##########]  3100/3100    140   -
+E3   Blastoise            [##########]  3600/3600     85   toughened (always)
+
+next: E2 A1 E1 A3 E3 A2
+
+    A1  Venusaur enters at 2,0 on the ally side with 3800 health, grass
+    A2  Charizard enters at 2,1 on the ally side with 3100 health, fire
+    A3  Blastoise enters at 2,2 on the ally side with 3600 health, water
+    A3   holds endurance: toughened x1
+    E1  Venusaur enters at 3,2 on the enemy side with 3800 health, grass
+    E2  Charizard enters at 3,1 on the enemy side with 3100 health, fire
+    E3  Blastoise enters at 3,0 on the enemy side with 3600 health, water
+    E3   holds endurance: toughened x1
+  
+  A2  turn 1
+
+A2 Charizard, turn 1
+  ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
+  fire_fang    130% attack · fester 50% · range 1 · cd 2
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+
+point ember at
+> 3,0  E3 Blastoise
+  3,1  E2 Charizard
+  3,2  E1 Venusaur
+----- footer -----
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | allowlist picker =====
 characters allowed to carry it  0 of 11
 space chooses · leaving it empty lets anyone carry the skill

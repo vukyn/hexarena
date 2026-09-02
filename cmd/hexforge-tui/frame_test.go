@@ -242,12 +242,12 @@ func TestNoDrawingIsEverWideEnoughToBeMarked(t *testing.T) {
 	base, _, _ := start(t, i18n.Vi)
 	base.width, base.height = minWidth, 60
 	fought := atABattleOf(t, base, hex.MaxTeamSize)
-	if fought.play.fight == nil {
+	if fought.play.Fight == nil {
 		t.Fatal("the fixture reached the battle screen without a battle, so no board is drawn")
 	}
 	for name, drawn := range map[string]string{
-		"board":  tui.Board(fought.play.fight, fought.play.tags),
-		"roster": tui.Roster(fought.play.fight, fought.play.tags),
+		"board":  tui.Board(fought.play.Fight, fought.play.Tags),
+		"roster": tui.Roster(fought.play.Fight, fought.play.Tags),
 	} {
 		rows := strings.Split(strings.TrimRight(drawn, "\n"), "\n")
 		if len(rows) < 2 {

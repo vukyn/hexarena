@@ -165,8 +165,8 @@ func TestTheDescriptionRaisedFromTheListingIsTheFilteredRow(t *testing.T) {
 	if described.screen != screenBlurb {
 		t.Fatalf("? left the screen at %v rather than raising the description", described.screen)
 	}
-	if described.blurb.from != screenSkills {
-		t.Errorf("the description records screen %v as its way back", described.blurb.from)
+	if described.raisedFrom != screenSkills {
+		t.Errorf("the description records screen %v as its way back", described.raisedFrom)
 	}
 	body, _ := described.blurb.View(described.ctx())
 	if named := described.lang.GlossedSkill(want); !strings.Contains(body, named) {
@@ -183,7 +183,7 @@ func TestTheDescriptionRaisedFromTheListingIsTheFilteredRow(t *testing.T) {
 			position, body)
 	}
 	// esc comes back to the listing the raise came from, which is what
-	// blurbScreen.from is for.
+	// model.raisedFrom is for.
 	if back := key(t, described, "esc"); back.screen != screenSkills {
 		t.Errorf("escaping the description went to screen %v", back.screen)
 	}

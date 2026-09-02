@@ -91,8 +91,8 @@ func TestTheBrowserDescribesTheTraitsItIsShowing(t *testing.T) {
 	if m.screen != screenBlurb {
 		t.Fatalf("? from the browser landed on screen %d, want the description", m.screen)
 	}
-	if m.blurb.from != screenBrowse {
-		t.Fatalf("the description screen thinks it was raised from screen %d", m.blurb.from)
+	if m.raisedFrom != screenBrowse {
+		t.Fatalf("the description screen thinks it was raised from screen %d", m.raisedFrom)
 	}
 	body, _ := m.blurb.View(m.ctx())
 	held := lib.KitPassives(rows[found].PassivesAt(progression.LevelCap, progression.Furthest))

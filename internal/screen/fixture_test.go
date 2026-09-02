@@ -174,6 +174,22 @@ func press(t *testing.T, name string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyRight}
 	case "backspace":
 		return tea.KeyPressMsg{Code: tea.KeyBackspace}
+	// ⚠️ The two page keys are here because the played battle walks its log with
+	// them **itself** — the log is a frame over the whole history and the frame is
+	// this screen's own state — so they are not the exception to the paragraph
+	// above either. The brackets that alias them need no entry: a bracket is a
+	// printable character and falls out of the single-rune case at the bottom,
+	// which is what makes it the keystroke it looks like.
+	//
+	// ⚠️ Each one sends **what its name says**. A helper mapping "[" to a KeyPgUp
+	// would pass the whole alias-equality table in cmd/hexforge-tui while proving
+	// nothing at all, which is the vacuity that test's own
+	// TestABracketIsTheKeystrokeItLooksLike exists to catch; the same trap is one
+	// line away here, in the other direction.
+	case "pgup":
+		return tea.KeyPressMsg{Code: tea.KeyPgUp}
+	case "pgdown":
+		return tea.KeyPressMsg{Code: tea.KeyPgDown}
 	case "tab":
 		return tea.KeyPressMsg{Code: tea.KeyTab}
 	// ⚠️ Shift-tab is a **modified tab** rather than a key of its own, which is

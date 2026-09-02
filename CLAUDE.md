@@ -697,7 +697,7 @@ answers rather than screen logic:
     widening would leave the width sweep nothing to hold — was answering the
     wrong half of a row: the sweep measures the **catalog's wording**, and the
     catalog parts of the art row are exactly what `artRoom` *subtracts*.
-- The **played battle** (`cmd/hexforge-tui/play.go`) is raised from the fight
+- The **played battle** (`internal/screen/play.go`) is raised from the fight
   with `p`: the same pairing, one battle, the opponent played by
   `battle.Suggest`. `↑/↓` a skill, `enter` takes it and asks *where* only when
   there is more than one cell, `?` describes the one under the cursor, `a` hands
@@ -758,7 +758,7 @@ answers rather than screen logic:
     still open) and does nothing with no prompt or no options.
   - ⚠️ **The width sweep could not see any of this, and the fixture is why.**
     `everyScreen` built one battle and copied the model three times for its three
-    states — but `playScreen` holds a `*battle.Battle`, so playing the "over"
+    states — but `PlayScreen` holds a `*battle.Battle`, so playing the "over"
     state out to its end **stepped the battle the other two pointed at**. By the
     time anything drew them `p.fight.Finished()` was true, `view` returned at the
     game-over branch, and `PlayFooter`, `PlayAimFooter`, the option rows and the
@@ -783,7 +783,7 @@ answers rather than screen logic:
   - **The budget: this screen cannot fit the window the tool declares, so it
     decides for itself what to give up.** The fit was not a hard problem, it was
     an impossible one, and the measurement is worth keeping rather than
-    re-taking. At 120x24 `playBodyRoom` leaves the body **twenty** rows:
+    re-taking. At 120x24 `PlayBodyRoom` leaves the body **twenty** rows:
 
     | section | rows |
     |---|---:|
@@ -791,7 +791,7 @@ answers rather than screen logic:
     | `tui.Board` | **10**, fixed |
     | `tui.Roster` | **1 + one a unit** |
     | `tui.Order` | 1 |
-    | the log | `playLogWanted`, then **every row nobody else claimed** |
+    | the log | `PlayLogWanted`, then **every row nobody else claimed** |
     | the option list | 1 + one an option |
 
     | squad | roster | heading + board + roster + order + options | vs 20 |
@@ -848,7 +848,7 @@ answers rather than screen logic:
     puts out of reach is the save note being dropped, which needs h ≤ 15; it is
     constructed deliberately in `TestTheSaveNoteOutranksTheBoard` and the comment
     there carries the arithmetic.
-    ⚠️ **`playLogWanted` is a floor of intent and used to be a ceiling** (and
+    ⚠️ **`PlayLogWanted` is a floor of intent and used to be a ceiling** (and
     before that it counted events, which is a third thing again — `tui.Line` opens
     a turn with a blank row of its own, so one event arrives as two rows and eight
     events measured **eleven** a few turns in). The ceiling was a defect on its
@@ -857,7 +857,7 @@ answers rather than screen logic:
     grew **20 → 42** rows and the log stood still. Measured on the fixture, 3 a
     side, mid-battle: **8 rows at h=24, h=40 and h=80 alike**. A tall terminal
     bought the history nothing.
-    The log now asks for `playLogWanted` **first** and then takes every row still
+    The log now asks for `PlayLogWanted` **first** and then takes every row still
     unspent, which is why the same fixture reads **0 / 6 / 46** rows at those three
     heights (1v1: 5 / 12 / 52; 5v5: 1 / 8 / 48) — and why *nothing above it moved*:
     ⚠️ **growing the log may only ever spend rows nobody else claimed**, because
@@ -879,7 +879,7 @@ answers rather than screen logic:
     `p.events` always held every event (`collect` appends and never trims) and the
     view threw the rest away: 283 rows rendered, eight drawn, **275 unreachable by
     any means** — no key, and nothing on the screen saying a history existed.
-    `playScreen.logRows` renders all of it and `logFrame` is the window; `pgup`
+    `PlayScreen.LogRows` renders all of it and `logFrame` is the window; `pgup`
     and `pgdown` walk it, which is the pair that already scrolls the trait
     description and the picker rather than a second vocabulary for one idea (`↑/↓`
     walk the options and could not be taken). They work **while aiming** and **on a
@@ -1257,8 +1257,16 @@ paragraph — so the kinds are three (`StatusSubject`, `SkillSubject`,
 moved into `internal/screen` once they stopped reaching (`screen.BlurbScreen`,
 `screen.PreviewScreen`); what stayed in the client is `describe.go`, the applier
 that says which of *its* screens a subject lands on and which raiser an arrow key
-walks — and `blurbScreen.from`, which is a `screen`, this binary's own enum, so it
-could not travel. A **fourth** reading of a skill sits beside that one and is not it:
+walks. ⚠️ **`blurbScreen.from` is gone**: it was a `screen`, this binary's own
+enum, so it could not travel with the describer, and it survived for as long as
+one of the blurb's three raisers still wrote `m.screen` itself. All three return
+a `draw.Raise` at `draw.Blurb` through `navigate` now, so `model.raisedFrom` —
+the slot the client already keeps for a Back — records who raised it, and its
+three readings (the `esc`, and the two branches saying which raiser an arrow key
+walks) read that. ⚠️ **`Subject.Kind` could not have replaced it**, which is
+worth being exact about: the collapse above measured a listed skill and a battle
+option to be *one* subject, so the subject cannot tell the listing from the
+battle. A **fourth** reading of a skill sits beside that one and is not it:
 `Lang.SummariseSkill` is the compact line the played battle draws on every
 option's own row, and *Where a form beats a prompt* says why it cannot be this
 one with the prose dropped. ⚠️ **The forge form is not the place for it** — 19
@@ -2205,13 +2213,18 @@ regenerated on autopilot:
   `edited a skill`, `filtering skills`, `filtered skills`,
   `skills filtered to none`, `shape diagram`), the **squad builder** at each of
   its three depths with the two member states and the two pickers that go with
-  them, and the **works catalogue** with the `add a work` form over it plus the
+  them, the **works catalogue** with the `add a work` form over it plus the
   two states **neither** sweep could draw before it moved (`an empty works
   catalogue`, `a refused work` — `i18n.OriginsEmpty` and `i18n.AddRefused` each
   measured at **nought hits in both goldens** beforehand; the third gap,
   `i18n.OriginAdded`, stays open because it prints `Lib.OriginsPath()` and
-  `noAbsolutePath` walks the recorded body) — in both languages at the 120x24
-  floor and at 160x60 — **140 renders, 3097 lines**, body and footer recorded apart
+  `noAbsolutePath` walks the recorded body), and the **played battle** in the
+  six states of it that share no line (`a battle`, `aiming`, `a battle over`,
+  `a scrolled battle log`, plus two more **neither** sweep could draw —
+  `a saved battle`, whose note measured **nought hits in both goldens** and whose
+  path is a *relative* value here, and `a battle with no pairing`, which the
+  client's fight guards its `p` against) — in both languages at the 120x24
+  floor and at 160x60 — **164 renders, 3851 lines**, body and footer recorded apart
   because a screen here answers with the two separately and every wording squeeze
   in this file is a footer. ⚠️ **It exists because the layout of code in
   `internal/screen` was held by a file in another package.** Measured after #205:
@@ -3909,15 +3922,15 @@ is the constraint each piece has to respect.
       walking**, and `hexforge passives` gained the `answers` and `drains` columns
       it never had — two of the six jobs the parser accepts had rendered **nowhere**
       in the tool, so `blood_thirst` printed a row blank after its name.
-      ⚠️ **One screen, not two.** `blurbScreen.from` is which screen is behind,
-      which `esc` had to answer anyway and used to answer with a constant, and it
-      is **not a cursor**. A second screen would be a second copy of the framing,
-      the footer and the escape.
-      ⚠️ **It used to be the single field the screen kept, and it no longer is** —
-      the subject it was handed sits beside it, because reading `m.browse`,
-      `m.skills` and `m.play` is what made this screen unmovable. `from` is now
-      read only by the **client** (`esc`, and which raiser an arrow key walks);
-      the describer branches on `subject.Kind`.
+      ⚠️ **One screen, not two.** Which screen is behind is what `esc` had to
+      answer anyway and used to answer with a constant, and it is **not a
+      cursor**. A second screen would be a second copy of the framing, the footer
+      and the escape.
+      ⚠️ **It used to be the single field the screen kept, then it was read only
+      by the client, and now it is gone** — the subject it was handed replaced it,
+      because reading `m.browse`, `m.skills` and `m.play` is what made this screen
+      unmovable, and `model.raisedFrom` replaced the way back once all three
+      raisers returned a `draw.Raise`. The describer branches on `subject.Kind`.
       ⚠️ **It scrolls, and `scroll` is still not the refused cursor.** A cursor
       could point at a different character than the browser behind it; an offset
       selects nothing and every key that changes *what* is described resets it.

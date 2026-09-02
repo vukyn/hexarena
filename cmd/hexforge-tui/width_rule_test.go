@@ -180,13 +180,13 @@ func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 
 		// A save's own note, which is the other sentence wrapped this way.
 		played := key(t, atABattleOf(t, base, 3), "ctrl+s")
-		if played.play.err != nil {
-			t.Fatalf("%s: the save failed, so no note was measured: %v", lang, played.play.err)
+		if played.play.Err != nil {
+			t.Fatalf("%s: the save failed, so no note was measured: %v", lang, played.play.Err)
 		}
 		wrote := func(width int) []string {
 			m := played
 			m.width, m.height = width, 60
-			return m.play.wrote(m)
+			return m.play.Wrote(m.ctx())
 		}
 
 		for _, prose := range []struct {
@@ -1111,10 +1111,10 @@ func TestEveryFloorWrappedBlockTakesTheRowsItTakes(t *testing.T) {
 
 		// play.go — the save note that is catalog wording rather than a path.
 		played := key(t, atABattleOf(t, base, 3), "ctrl+s")
-		if played.play.err != nil {
-			t.Fatalf("%s: the save failed, so no note was measured: %v", lang, played.play.err)
+		if played.play.Err != nil {
+			t.Fatalf("%s: the save failed, so no note was measured: %v", lang, played.play.Err)
 		}
-		notes := played.lang.Notes(played.play.notes)
+		notes := played.lang.Notes(played.play.Notes)
 		if len(notes) < 2 {
 			t.Fatalf("%s: a save left %d notes, so the one without a path in it is not there",
 				lang, len(notes))

@@ -132,13 +132,13 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// which screen raised it, and the two branches share no line, so measuring
 	// one measures nothing about the other.
 	skillBlurb := m.enter(screenSkills)
-	skillBlurb.blurb.from = screenSkills
+	skillBlurb.raisedFrom = screenSkills
 	skillBlurb = skillBlurb.hand(skillBlurb.skills.Subject())
 	skillBlurb.screen = screenBlurb
 	traitBlurb := m.enter(screenBrowse)
 	traitBlurb.browse.Cursor = widestTraitRow(traitBlurb)
 	traitBlurb.browse.Level = progression.LevelCap
-	traitBlurb.blurb.from = screenBrowse
+	traitBlurb.raisedFrom = screenBrowse
 	traitBlurb = traitBlurb.hand(traitBlurb.browse.Subject())
 	traitBlurb.screen = screenBlurb
 	// The affinity chart, on the element whose description is longest: the rows
@@ -240,17 +240,17 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// screen's early exit measures the exit.
 	battle := fight.enter(screenPlay)
 	aiming := fight.enter(screenPlay)
-	aiming.play.aiming = true
+	aiming.play.Aiming = true
 	// The description of the option under the battle's cursor, which is a state of
 	// the blurb rather than a screen of its own — and its own battle for the
 	// reason above, even though nothing here steps it.
 	playBlurb := fight.enter(screenPlay)
-	playBlurb.blurb.from = screenPlay
-	playBlurb = playBlurb.hand(playBlurb.play.subject())
+	playBlurb.raisedFrom = screenPlay
+	playBlurb = playBlurb.hand(playBlurb.play.Subject())
 	playBlurb.screen = screenBlurb
 	finished := fight.enter(screenPlay)
 	for range 200 {
-		if finished.play.fight == nil || finished.play.fight.Finished() {
+		if finished.play.Fight == nil || finished.play.Fight.Finished() {
 			break
 		}
 		finished = typeText(t, finished, "a")
@@ -270,7 +270,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	squeezed := atABattleOf(t, m, hex.MaxTeamSize)
 	squeezed.width, squeezed.height = minWidth, minHeight
 	squeezedAim := squeezed
-	squeezedAim.play.aiming = true
+	squeezedAim.play.Aiming = true
 	// And the battle with its log scrolled back, which is a state of the screen
 	// rather than a screen of its own and is here for the reason every other state
 	// is: it is the only one that draws the log's position on the heading row, and
@@ -284,7 +284,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// playScreen holds a pointer the model does not copy.
 	scrolled := aLongLog(t, m.lang, 3)
 	scrolled = key(t, scrolled, "pgup")
-	if scrolled.play.logFollow {
+	if scrolled.play.LogFollow {
 		t.Fatal("the scrolled battle did not scroll, so the log's position is drawn " +
 			"by nothing in the sweep")
 	}
