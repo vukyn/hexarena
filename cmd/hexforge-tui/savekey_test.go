@@ -64,10 +64,10 @@ func TestTheCommandKeySavesWhereverControlSDoes(t *testing.T) {
 		m = typeText(t, m, "1999")
 		m = key(t, m, "super+s")
 
-		if m.origins.err != nil {
-			t.Fatalf("the Command key refused the work: %v", m.origins.err)
+		if m.origins.Err != nil {
+			t.Fatalf("the Command key refused the work: %v", m.origins.Err)
 		}
-		if m.origins.adding {
+		if m.origins.Adding {
 			t.Error("the add form is still open after the Command key wrote")
 		}
 		reloaded, err := forge.Load(dir)
@@ -151,7 +151,7 @@ func TestEveryFormFooterNamesTheSaveKey(t *testing.T) {
 
 		m = base.enter(screenOrigins)
 		m = typeText(t, m, "a")
-		_, footers["the origins form"] = m.origins.view(m)
+		_, footers["the origins form"] = m.origins.View(m.ctx())
 
 		m = base.enter(screenSkills)
 		m = typeText(t, m, "a")

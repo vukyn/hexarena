@@ -131,6 +131,12 @@ type (
 	// names no view of this client's, because esc, `?`, the discard question and
 	// the six pickers all say what they want in a draw.Action now.
 	skillsScreen = draw.SkillsScreen
+	// originsScreen is the works catalogue and the add-a-work form over it. ⚠️ A
+	// **plain alias** like the skill listing: it was the cleanest of the seven
+	// moves — no cursor of another screen's, no raise, no cross-screen read — so
+	// what it named of this client was one way back, now a draw.Back, and one
+	// question, now a draw.Ask about nothing.
+	originsScreen = draw.OriginsScreen
 )
 
 // blurbScreen is the description screen plus the one fact about it that only
@@ -284,7 +290,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		style:    style,
 		browse:   draw.NewBrowseScreen(lib),
 		form:     newFormScreen(lib),
-		origins:  newOriginsScreen(lib),
+		origins:  draw.NewOriginsScreen(ctx),
 		skills:   draw.NewSkillsScreen(ctx),
 		statuses: draw.NewStatusesScreen(lib),
 		passives: draw.NewPassivesScreen(lib),
@@ -400,17 +406,20 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case screenNew:
 		return m.form.update(m, message)
 	case screenOrigins:
-		return m.origins.update(m, message)
+		origins, action, command := m.origins.Update(m.ctx(), message)
+		m.origins = origins
+		return m.navigateWith(screenOrigins, action, command)
 	case screenSkills:
 		skills, action, command := m.skills.Update(m.ctx(), message)
 		m.skills = skills
 		return m.navigateWith(screenSkills, action, command)
 	// ⚠️ Two mechanisms sit side by side in this switch, and that is deliberate
 	// rather than half-finished. The screens that have moved into internal/screen
-	// — the cast browser above and the six below — return a draw.Action, what
-	// they want, and this client decides what it means, which is what lets them
-	// stop naming entries of an enum only this binary has. Every other branch
-	// still writes m.screen itself and will be converted as it moves.
+	// — the cast browser and the works catalogue above, and the six below —
+	// return a draw.Action, what they want, and this client decides what it
+	// means, which is what lets them stop naming entries of an enum only this
+	// binary has. Every other branch still writes m.screen itself and will be
+	// converted as it moves.
 	case screenStatuses:
 		statuses, action := m.statuses.Update(m.ctx(), message)
 		m.statuses = statuses
@@ -865,7 +874,7 @@ func (m model) enter(target screen) model {
 	case screenCheck:
 		m.check = m.check.refresh(m.lib)
 	case screenOrigins:
-		m.origins = m.origins.refresh(m.lib)
+		m.origins = m.origins.Refresh(m.ctx())
 	case screenSkills:
 		m.skills = m.skills.Refresh(m.ctx())
 	case screenStatuses:
@@ -938,7 +947,7 @@ func (m model) screenContent() string {
 	case screenNew:
 		body, footer = m.form.view(m)
 	case screenOrigins:
-		body, footer = m.origins.view(m)
+		body, footer = m.origins.View(m.ctx())
 	case screenSkills:
 		body, footer = m.skills.View(m.ctx())
 	case screenStatuses:

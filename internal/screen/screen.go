@@ -8,14 +8,17 @@
 // the six read-only references (the affinity chart and its rings, the elements,
 // statuses, species, builds and traits listings) with their cursors and their
 // keystrokes, the two describers, the multi-select, the skill listing and the
-// form over it, and the squad builder.
+// form over it, the squad builder, and the works catalogue with the add-a-work
+// form over it — the seventh and last of the catalogues a game client will
+// offer.
 //
 // ⚠️ **Not every screen here is read-only any more.** The skill listing writes
-// `skills.json` and the squad builder writes `squads.json`, both through
-// internal/forge, which is the one part of the module allowed to touch a real
-// file. Nothing in this package opens one itself, and the two goldens under
-// testdata are built from values for that reason: they load the shipped books
-// straight out of ../seed/data, with no temp copy anywhere near the bytes.
+// `skills.json`, the squad builder writes `squads.json` and the works catalogue
+// writes `origins.json`, all three through internal/forge, which is the one part
+// of the module allowed to touch a real file. Nothing in this package opens one
+// itself, and the golden under testdata is built from values for that reason: it
+// loads the shipped books straight out of ../seed/data, with no temp copy
+// anywhere near the bytes.
 //
 // What it still excludes is everything a *client* decides. A screen is handed a
 // Context, which holds nothing the client owns, and answers a keystroke with an

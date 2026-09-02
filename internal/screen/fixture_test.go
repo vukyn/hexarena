@@ -176,6 +176,12 @@ func press(t *testing.T, name string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyBackspace}
 	case "tab":
 		return tea.KeyPressMsg{Code: tea.KeyTab}
+	// ⚠️ Shift-tab is a **modified tab** rather than a key of its own, which is
+	// what makes it fall out of a switch on String() as "shift+tab". The
+	// add-a-work form walks its fields backwards with it, so it is a key a screen
+	// here answers by itself.
+	case "shift+tab":
+		return tea.KeyPressMsg{Code: tea.KeyTab, Mod: tea.ModShift}
 	// ⚠️ The two chords are here because the squad builder answers both
 	// **itself** — ctrl+s writes the squad through internal/forge and ctrl+x
 	// takes a member out — so they are not the exception to the paragraph above

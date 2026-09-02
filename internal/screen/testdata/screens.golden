@@ -35,6 +35,21 @@ thế đứng
     [n] có người  (n) người đang sửa  . trống
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 120x24 | a refused work =====
+thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có trong danh mục
+
+> id                                                    
+  tên                                                   
+  loại     < anime >  1/6
+  năm                                                   
+  ghi chú                                               
+
+năm để trống được nếu không rõ; ghi chú là chữ tự do
+
+chưa thêm được: nguồn "pokemon" đã có trong danh mục rồi
+
+----- footer -----
+↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 120x24 | a squad =====
 đội hình
 
@@ -130,6 +145,19 @@ chiêu mới  sát thương tính ngay khi gõ, đúng bằng công thức lúc 
   tên trong dữ liệu, chữ thường và gạch dưới — ví dụ: ember_lance
 ----- footer -----
 ↑/↓ ô · ←/→ chọn · space mở · ctrl+s ghi · esc quay lại · ctrl+l English
+===== vi | 120x24 | add a work =====
+thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có trong danh mục
+
+> id                                                    
+  tên                                                   
+  loại     < anime >  1/6
+  năm                                                   
+  ghi chú                                               
+
+năm để trống được nếu không rõ; ghi chú là chữ tự do
+
+----- footer -----
+↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 120x24 | allowlist picker =====
 nhân vật nào được học chiêu này  0/11
 space để chọn · để trống thì ai cũng học được chiêu này
@@ -151,6 +179,13 @@ space để chọn · để trống thì ai cũng học được chiêu này
 
 ----- footer -----
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
+===== vi | 120x24 | an empty works catalogue =====
+nguồn  các tác phẩm mà nhân vật được mượn từ
+
+  danh mục chưa có tác phẩm nào. Bấm a để thêm.
+
+----- footer -----
+↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | browse =====
 danh sách nhân vật  đang xem tất cả nguồn (11 trong 11 nhân vật)
 
@@ -371,6 +406,15 @@ space để chọn · số là thứ tự trong bộ · dấu ! là chiêu khôn
 
 ----- footer -----
 space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
+===== vi | 120x24 | origins =====
+nguồn  các tác phẩm mà nhân vật được mượn từ
+
+> pokemon          anime   1997  10 nhân vật  Pokémon
+  naruto           anime   2002   1 nhân vật  Naruto
+
+2 tác phẩm · loại: anime film series game comic novel
+----- footer -----
+↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | reading a skill =====
 withdraw <thủ thế>  26/102
 
@@ -628,6 +672,21 @@ thế đứng
     [n] có người  (n) người đang sửa  . trống
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 160x60 | a refused work =====
+thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có trong danh mục
+
+> id                                                    
+  tên                                                   
+  loại     < anime >  1/6
+  năm                                                   
+  ghi chú                                               
+
+năm để trống được nếu không rõ; ghi chú là chữ tự do
+
+chưa thêm được: nguồn "pokemon" đã có trong danh mục rồi
+
+----- footer -----
+↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 160x60 | a squad =====
 đội hình
 
@@ -741,6 +800,19 @@ chiêu mới  sát thương tính ngay khi gõ, đúng bằng công thức lúc 
   tên trong dữ liệu, chữ thường và gạch dưới — ví dụ: ember_lance
 ----- footer -----
 ↑/↓ ô · ←/→ chọn · space mở · ctrl+s ghi · esc quay lại · ctrl+l English
+===== vi | 160x60 | add a work =====
+thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có trong danh mục
+
+> id                                                    
+  tên                                                   
+  loại     < anime >  1/6
+  năm                                                   
+  ghi chú                                               
+
+năm để trống được nếu không rõ; ghi chú là chữ tự do
+
+----- footer -----
+↑/↓ ô · ←/→ loại · ctrl+s thêm · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 160x60 | allowlist picker =====
 nhân vật nào được học chiêu này  0/11
 space để chọn · để trống thì ai cũng học được chiêu này
@@ -762,6 +834,13 @@ space để chọn · để trống thì ai cũng học được chiêu này
 
 ----- footer -----
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
+===== vi | 160x60 | an empty works catalogue =====
+nguồn  các tác phẩm mà nhân vật được mượn từ
+
+  danh mục chưa có tác phẩm nào. Bấm a để thêm.
+
+----- footer -----
+↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | browse =====
 danh sách nhân vật  đang xem tất cả nguồn (11 trong 11 nhân vật)
 
@@ -1124,6 +1203,15 @@ space để chọn · số là thứ tự trong bộ · dấu ! là chiêu khôn
 
 ----- footer -----
 space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
+===== vi | 160x60 | origins =====
+nguồn  các tác phẩm mà nhân vật được mượn từ
+
+> pokemon          anime   1997  10 nhân vật  Pokémon
+  naruto           anime   2002   1 nhân vật  Naruto
+
+2 tác phẩm · loại: anime film series game comic novel
+----- footer -----
+↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | reading a skill =====
 withdraw <thủ thế>  26/102
 
@@ -1510,6 +1598,21 @@ the formation
     [n] stands there  (n) the one being edited  . nobody
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 120x24 | a refused work =====
+add a work  a character can only name a work the catalog holds
+
+> id                                                   
+  title                                                
+  medium  < anime >  1 of 6
+  year                                                 
+  note                                                 
+
+the year may be left empty when it is unknown; the note is free text
+
+cannot add: the origin "pokemon" is already in the catalog
+
+----- footer -----
+↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 120x24 | a squad =====
 the squad
 
@@ -1605,6 +1708,19 @@ new skill  the damage is the engine's own, worked out as you type
   the name the data files use: lower case and underscores — e.g. ember_lance
 ----- footer -----
 ↑/↓ field · ←/→ pick · space list · ctrl+s save · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | add a work =====
+add a work  a character can only name a work the catalog holds
+
+> id                                                   
+  title                                                
+  medium  < anime >  1 of 6
+  year                                                 
+  note                                                 
+
+the year may be left empty when it is unknown; the note is free text
+
+----- footer -----
+↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 120x24 | allowlist picker =====
 characters allowed to carry it  0 of 11
 space chooses · leaving it empty lets anyone carry the skill
@@ -1626,6 +1742,13 @@ showing all origins (11 of 11)
 
 ----- footer -----
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | an empty works catalogue =====
+origins  the works the cast is borrowed from
+
+  no works in the catalog yet. Press a to add one.
+
+----- footer -----
+↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | browse =====
 cast  showing all origins (11 of 11 characters)
 
@@ -1838,6 +1961,15 @@ space chooses · the number is the order · ! is one this character cannot take
 
 ----- footer -----
 space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | origins =====
+origins  the works the cast is borrowed from
+
+> pokemon          anime   1997  10 cast  Pokémon
+  naruto           anime   2002   1 cast  Naruto
+
+2 works · media: anime film series game comic novel
+----- footer -----
+↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | reading a skill =====
 outrage  31 of 102
 
@@ -2092,6 +2224,21 @@ the formation
     [n] stands there  (n) the one being edited  . nobody
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 160x60 | a refused work =====
+add a work  a character can only name a work the catalog holds
+
+> id                                                   
+  title                                                
+  medium  < anime >  1 of 6
+  year                                                 
+  note                                                 
+
+the year may be left empty when it is unknown; the note is free text
+
+cannot add: the origin "pokemon" is already in the catalog
+
+----- footer -----
+↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 160x60 | a squad =====
 the squad
 
@@ -2205,6 +2352,19 @@ new skill  the damage is the engine's own, worked out as you type
   the name the data files use: lower case and underscores — e.g. ember_lance
 ----- footer -----
 ↑/↓ field · ←/→ pick · space list · ctrl+s save · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | add a work =====
+add a work  a character can only name a work the catalog holds
+
+> id                                                   
+  title                                                
+  medium  < anime >  1 of 6
+  year                                                 
+  note                                                 
+
+the year may be left empty when it is unknown; the note is free text
+
+----- footer -----
+↑/↓ move · ←/→ medium · ctrl+s add · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 160x60 | allowlist picker =====
 characters allowed to carry it  0 of 11
 space chooses · leaving it empty lets anyone carry the skill
@@ -2226,6 +2386,13 @@ showing all origins (11 of 11)
 
 ----- footer -----
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | an empty works catalogue =====
+origins  the works the cast is borrowed from
+
+  no works in the catalog yet. Press a to add one.
+
+----- footer -----
+↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | browse =====
 cast  showing all origins (11 of 11 characters)
 
@@ -2580,6 +2747,15 @@ space chooses · the number is the order · ! is one this character cannot take
 
 ----- footer -----
 space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | origins =====
+origins  the works the cast is borrowed from
+
+> pokemon          anime   1997  10 cast  Pokémon
+  naruto           anime   2002   1 cast  Naruto
+
+2 works · media: anime film series game comic novel
+----- footer -----
+↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | reading a skill =====
 outrage  31 of 102
 

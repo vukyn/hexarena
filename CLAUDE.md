@@ -337,10 +337,10 @@ key over the classic escape sequences.** There is no encoding for it, and v1's
 concerned. The Kitty keyboard protocol does carry it, v2 parses that protocol,
 and a Command key now arrives as `tea.ModSuper`. `internal/screen/savekey.go` is
 the single declaration of which keystrokes save; all three forms ask `IsSaveKey`
-rather than matching a string of their own. It moved there with the skill form —
-`cmd/hexforge-tui/savekey.go` is two one-line forwarders now, because the
-character form and the origins form have not moved and a copy on each side of the
-package boundary would be the fourth spelling this exists to stop.
+rather than matching a string of their own. It moved there with the skill form,
+and the origins form followed it — `cmd/hexforge-tui/savekey.go` is two one-line
+forwarders now, because the character form has not moved and a copy on each side
+of the package boundary would be the fourth spelling this exists to stop.
 
 ⚠️ **That does not make ⌘S universally available and nothing in this repo can.**
 The terminal has to speak the protocol (kitty, Ghostty, WezTerm, foot, iTerm2
@@ -922,8 +922,9 @@ answers rather than screen logic:
     itself. `[` is safe to take because it reaches no text field — the picker
     enters its reading pane before the typed field and `numberKey` admits only
     digits, the browse blurb has no input, and `isSaveKey` is asked ahead of the
-    battle screen's switch — while `form.go` and `origins.go`, which do have
-    fields, never handled a page key and are untouched.
+    battle screen's switch — while `form.go` and
+    `internal/screen/origins.go`, which do have fields, never handled a page key
+    and are untouched.
     ⚠️ **`internal/tui` did not change and did not need a row-limited `Roster`.**
     Clipping the roster's *rows* is this screen splitting a drawing it was given;
     reformatting it would be the other thing. The old
@@ -2170,8 +2171,15 @@ regenerated on autopilot:
   `reading a skill`) and the **skill listing with the seven states of it** the
   client's own sweep registers (`skills`, `add a skill`, `edit a skill`,
   `edited a skill`, `filtering skills`, `filtered skills`,
-  `skills filtered to none`, `shape diagram`), in both languages at the 120x24
-  floor and at 160x60 — **124 renders, 2921 lines**, body and footer recorded apart
+  `skills filtered to none`, `shape diagram`), the **squad builder** at each of
+  its three depths with the two member states and the two pickers that go with
+  them, and the **works catalogue** with the `add a work` form over it plus the
+  two states **neither** sweep could draw before it moved (`an empty works
+  catalogue`, `a refused work` — `i18n.OriginsEmpty` and `i18n.AddRefused` each
+  measured at **nought hits in both goldens** beforehand; the third gap,
+  `i18n.OriginAdded`, stays open because it prints `Lib.OriginsPath()` and
+  `noAbsolutePath` walks the recorded body) — in both languages at the 120x24
+  floor and at 160x60 — **140 renders, 3097 lines**, body and footer recorded apart
   because a screen here answers with the two separately and every wording squeeze
   in this file is a footer. ⚠️ **It exists because the layout of code in
   `internal/screen` was held by a file in another package.** Measured after #205:

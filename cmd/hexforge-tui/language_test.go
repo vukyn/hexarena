@@ -35,7 +35,7 @@ import (
 func everyScreen(t *testing.T, m model) map[string]model {
 	t.Helper()
 	adding := m.enter(screenOrigins)
-	adding.origins.adding = true
+	adding.origins.Adding = true
 	form := m.enter(screenNew)
 	addSkill := m.enter(screenSkills)
 	addSkill.skills.Adding = true
@@ -1190,7 +1190,7 @@ func TestTheDetailPanesMeasureTheirLabelColumn(t *testing.T) {
 
 		// The origins pane shares the column, which is what makes the panes line
 		// up with each other rather than each with itself.
-		note, _ := m.enter(screenOrigins).origins.view(m)
+		note, _ := m.enter(screenOrigins).origins.View(m.ctx())
 		for _, line := range strings.Split(note, "\n") {
 			if !strings.Contains(line, lang.Text(i18n.LabelNote)) {
 				continue

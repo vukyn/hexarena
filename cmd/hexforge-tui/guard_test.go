@@ -28,11 +28,11 @@ func TestDiscardingAHalfTypedWorkEmptiesTheFormAndStays(t *testing.T) {
 	m, _, _ := start(t, i18n.Vi)
 	m = menuTo(t, m, screenOrigins)
 	m = typeText(t, m, "a")
-	if !m.origins.adding {
+	if !m.origins.Adding {
 		t.Fatal("a did not open the add-a-work form")
 	}
 	m = typeText(t, m, "fixture.work")
-	if !m.origins.touched {
+	if !m.origins.Touched {
 		t.Fatal("typing an id left the form reading as untouched, so escape asks nothing")
 	}
 
@@ -48,13 +48,13 @@ func TestDiscardingAHalfTypedWorkEmptiesTheFormAndStays(t *testing.T) {
 	if m.guard != nil {
 		t.Error("the question is still pending after a yes")
 	}
-	if m.origins.adding {
+	if m.origins.Adding {
 		t.Error("confirming the discard left the form open")
 	}
-	if m.origins.touched {
+	if m.origins.Touched {
 		t.Error("the form that came back still claims changes")
 	}
-	if got := m.origins.inputs[originFieldID].Value(); got != "" {
+	if got := m.origins.Inputs[draw.OriginFieldID].Value(); got != "" {
 		t.Errorf("the id field still reads %q, want the typed work thrown away", got)
 	}
 	// It stays on the works listing: this confirm hands back the zero action, so
