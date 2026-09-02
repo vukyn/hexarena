@@ -195,13 +195,18 @@ Rules for anything added to that file:
   one is not.** `Battle.pastAPool`, read in `against` so every damage figure in
   the file inherits it. What a pool takes over a volley is the smaller of the pool
   and the damage, which is what `combat.Absorb` comes to across one — not a second
-  copy of it. ⚠️ **A wall of block CHARGES is deliberately absent**: it was
-  written and measured, it is a large gain where walls are dense (990‰ against the
-  ruler, against a blind rating that cannot finish 212 of 800 battles) and reads
-  as **nothing** on the ordinary squad boards (668‰ either way) while moving squad
-  rates by 180‰ and breaking three balance claims, one of which reverses. Bisected
-  to the charge clause alone. Do not add it without re-deriving those claims — and
-  read the note in TODO.md about `ArcPower` being unpriced on the discharge first.
+  copy of it. **A wall of block CHARGES is `Battle.pastAWall`**, and it cancels a
+  STRIKE rather than damage — that is `warden`'s whole trade, so a wall answers one
+  heavy blow and multi-strike answers a wall.
+  ⚠️ **It is charged on every cast and a charge is only paid for once**, which is a
+  real over-count and is accepted: measured, every discount small enough to leave
+  the balance claims standing reads inside the measurement's own band against the
+  frozen ruler, and every discount large enough to clear that band moves them.
+  Monotone both ways, no setting in between. → `TODO.md` for the sweep.
+  ⚠️ **It took two dead hypotheses and a broken instrument to land.** The boards
+  used to judge it were blind — the shipped roster carries no guard, and the
+  wall-heavy board built for it does not resolve — so the gain read as nothing.
+  Build a wall board that FINISHES before quoting a figure about a guard.
 - **A discharge is priced on the turn that fires it, not only on the turn that
   charges.** `pricing.discharged` walks `chainFrom` — the same function the
   resolution walks, so the aim gates it identically — and prices each carrier at

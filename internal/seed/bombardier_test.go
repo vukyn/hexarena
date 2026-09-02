@@ -5,11 +5,14 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
+	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/seed"
 )
 
-// shapeMargin is how much of the gap between the two kits is held.
+// shapeMargin is how much of the gap between the two kits is held on a board
+// with nothing standing in the way of the shape.
 //
 // The reading it was written against is 353 against 281 per mille over six
 // hundred battles, so thirty leaves the claim room to move with every character
@@ -19,7 +22,8 @@ import (
 const shapeMargin = 30
 
 // TestAShapeEarnsItsPowerWhereASparCannotSeeIt prices the thing the bombardier
-// preset is, against the tool that is structurally blind to it.
+// preset is, against the tool that is structurally blind to it — and then prices
+// the answer to it, which is the half this test did not have.
 //
 // `hexforge spar` fights one unit against one unit, and a skill whose value is
 // landing on more than it was pointed at has nowhere to spend that in a duel: a
@@ -46,6 +50,23 @@ const shapeMargin = 30
 // shape wins; against one of nearly twice the power (`flash_cannon`) it still
 // loses. A splash lands at half, so a column caught twice is worth one and a
 // half hits, and that is the whole of what a pattern buys.
+//
+// ⚠️⚠️ **A WALL STANDING IN THE COLUMN IS THE ANSWER TO A SHAPE, and this test
+// used to hide that.** Its opposition carries `withdraw`, and until the rating
+// could see a block charge the shape read as winning anyway. It cannot: a charge
+// cancels the strike on the body it is standing on, so a column that caught two
+// bodies catches one — and a single-target skill simply aims somewhere else,
+// because it was never anchored. Measured, the same swap on the same squads:
+//
+//	opposition's wall     shaped   pointed   the shape is worth
+//	carries `withdraw`       286       485                 -199
+//	carries an attack        456       400                  +56
+//
+// So the claim is now BOTH rows. The shape earns its slot where nothing cancels
+// it — which is what the preset is for — and it is answered by a wall in the
+// column, which is what makes bringing one a decision rather than a formality.
+// A test holding only the first row would be a test that could not tell a shape
+// from a shape nobody had thought to counter.
 func TestAShapeEarnsItsPowerWhereASparCannotSeeIt(t *testing.T) {
 	books, err := seed.Books()
 	if err != nil {
@@ -56,30 +77,60 @@ func TestAShapeEarnsItsPowerWhereASparCannotSeeIt(t *testing.T) {
 		t.Fatalf("load the cast: %v", err)
 	}
 
-	// The opposition, held fixed. Three bodies rather than one is the whole
-	// point: two of them stand in the same formation column, so a column pattern
-	// has something to catch and the single-target kit is not being punished for
-	// a board it could never have used.
-	opposition := aSquadOf("plain", aThirdMember("pokemon.machop",
-		"rock_throw", "body_slam", "cross_chop", "vital_throw"))
-
 	shaped := aSquadOf("with-the-shape", aThirdMember("pokemon.magnemite",
 		"thunder_shock", "discharge", "thunderbolt", "flash_cannon"))
 	pointed := aSquadOf("without-it", aThirdMember("pokemon.magnemite",
 		"thunder_shock", "mirror_shot", "thunderbolt", "flash_cannon"))
 
-	// Each kit against the opposition, never against each other. Two kits of one
-	// character fought head to head measure the twin rather than the kit — the
-	// same reason every build reading in this package is taken against a fixed
-	// opponent.
-	withShape := rateAgainst(t, books, characters, shaped, opposition)
-	without := rateAgainst(t, books, characters, pointed, opposition)
-	t.Logf("the shaped kit reads %d per mille, the pointed one %d", withShape, without)
+	for _, board := range []struct {
+		name    string
+		wallKit []string
+		cancels bool
+	}{
+		{"nothing in the way of it", []string{"water_gun", "bubble", "bite", "brine"}, false},
+		{"a wall standing in the column", []string{"water_gun", "bubble", "bite", "withdraw"}, true},
+	} {
+		// The opposition, held fixed but for the wall's fourth slot. Three bodies
+		// rather than one is the whole point: two of them stand in the same
+		// formation column, so a column pattern has something to catch and the
+		// single-target kit is not being punished for a board it could never have
+		// used.
+		opposition := placement.Squad{ID: "plain", Units: []placement.Placement{
+			{ID: "fire", Character: "pokemon.charmander", Level: progression.LevelCap,
+				Slot:     hex.Offset{Col: 1, Row: 0},
+				Skills:   []string{"flamethrower", "fire_spin", "ember", "inferno"},
+				Passives: []string{"blaze"}},
+			{ID: "wall", Character: "pokemon.squirtle", Level: progression.LevelCap,
+				Slot: hex.Offset{Col: 1, Row: 1}, Skills: board.wallKit,
+				Passives: []string{"endurance"}},
+			aThirdMember("pokemon.machop",
+				"rock_throw", "body_slam", "cross_chop", "vital_throw"),
+		}}
 
-	if withShape-without < shapeMargin {
-		t.Errorf("swapping a single-target skill for a shaped one of the same power moved the squad from %d to %d per mille, under the %d held: "+
-			"a pattern that buys nothing makes the preset a slugger with worse numbers",
-			without, withShape, shapeMargin)
+		// Each kit against the opposition, never against each other. Two kits of
+		// one character fought head to head measure the twin rather than the kit —
+		// the same reason every build reading in this package is taken against a
+		// fixed opponent.
+		withShape := rateAgainst(t, books, characters, shaped, opposition)
+		without := rateAgainst(t, books, characters, pointed, opposition)
+		t.Logf("with %s: the shaped kit reads %d per mille, the pointed one %d",
+			board.name, withShape, without)
+
+		if board.cancels {
+			if withShape >= without {
+				t.Errorf("with %s the shaped kit reads %d against the pointed kit's %d: "+
+					"a charge cancels the strike on the body it is standing on, so a "+
+					"column that caught two catches one — and if a wall does not answer "+
+					"a shape, nothing does",
+					board.name, withShape, without)
+			}
+			continue
+		}
+		if withShape-without < shapeMargin {
+			t.Errorf("with %s the swap moved the squad from %d to %d per mille, under the %d held: "+
+				"a pattern that buys nothing makes the preset a slugger with worse numbers",
+				board.name, without, withShape, shapeMargin)
+		}
 	}
 }
 

@@ -512,7 +512,7 @@ is only so the shape is readable.
       the test at the committed file** so the property is held rather than
       asserted. Doing the reformat without the test fix buys one tidy day.
 
-- [ ] ⚠️ **Four mechanics `Suggest` resolves and does not price, measured 2026-09-02.**
+- [x] ⚠️ **Four mechanics `Suggest` resolved and did not price, measured 2026-09-02. DONE.**
       Every row below is a choice `Suggest` actually made on a fixture board, not a
       reading of the source. All four run the direction `price.go` errs in — a
       marginal cast rather than a kill — but three of them are large.
@@ -541,57 +541,55 @@ is only so the shape is readable.
       `worthHealing` clamps a restore gets, so it is worth nothing on a caster
       with no room and nothing on a caster nothing can reach.
 
-      ⚠️ **The GUARD is half done. The absorbing POOL and `unblockable` are in
-      (`Battle.pastAPool`); a wall of block CHARGES deliberately is not, and that
-      is a measurement rather than an oversight.**
+      ⚠️ **The GUARD is done.** `Battle.pastAWall` takes the block charges,
+      `Battle.pastAPool` the absorbing pool, and an `unblockable` skill meets
+      neither — the same three the resolution offers.
 
-      The charge half was written and measured. Against the frozen ruler:
+      ⚠️ **What blocked the charge half for two attempts was the INSTRUMENT, not
+      the model.** Both boards used to judge it were blind: the shipped roster
+      carries no guard at all, and the wall-heavy board built for it does not
+      RESOLVE — `forge.Bout` refuses it, control and all, either way. A wall board
+      built to actually finish, one `withdraw` carrier a side and two real
+      attackers, 900 seeds:
 
-      | board | with charges | without |
-      |---|---|---|
-      | thick with `withdraw` | **990‰**, every battle decided | cannot answer — 212 of 800 undecided |
-      | the ordinary squad board the design record is quoted on | **668‰** | **668‰** |
+      | | rate against the frozen ruler |
+      |---|---|
+      | without the charge clause | **889‰** ± 24 |
+      | with it | **917‰** ± 24 |
 
-      So it is a large gain exactly where walls are dense and reads as **nothing**
-      where they are sparse — while on that second board it moves squad rates by
-      up to 180‰ and breaks three balance claims at once:
+      Outside the band. Two hypotheses about *why the balance moved* were measured
+      and killed before that — `spendable` reading a guard-discounted
+      `strike(mate)`, and `ArcPower` unpriced on the discharge — and the second was
+      a real fix (#230) that did nothing for this. Neither was the cause.
 
-      - `TestAShapeEarnsItsPowerWhereASparCannotSeeIt` — 353/281 becomes 245/446,
-        so the claim **FLIPS**. Under a rating that can see walls, focus fire
-        concentrates and a column catches less.
-      - `TestAccumulatingIsAWayOfFightingRatherThanASlowerOne` — 246 against a
-        floor of 327.
-      - `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip` — 1598 blows blocked
-        against 2065 without the strip, under what is held.
+      ⚠️ **Amortising is not a dial.** A charge cancels one strike EVER, so
+      discounting a blow by the whole wall on every cast charges the same loss
+      every turn, and the over-count is real. It is accepted, because every
+      discount small enough to leave the balance claims standing reads INSIDE the
+      band and every discount large enough to clear the band moves them — monotone
+      both ways, no setting in between.
 
-      ⚠️ **Bisected, so none of this is guesswork.** Every figure above comes from
-      the charge clause alone: remove it and leave only the pool, and all three
-      read their exact baseline (353/366, 353/281) with nothing failing. And the
-      pool half buys nothing on the wall board either — 231 of 800 undecided
-      against the blind rating's 212. **The half that works is the half that costs
-      the claims, and the half that costs nothing buys nothing.**
+      So the balance moved, and the two claims that broke are re-derived rather
+      than re-baselined:
 
-      Redistributing which kit wins without playing measurably better is a balance
-      change wearing a rating fix. Merging the charge half means re-deriving three
-      claims, one of which reverses, and that is a design decision about the cast
-      rather than a re-baseline.
-
-      ⚠️ **The `ArcPower` gap named here is now closed** — `pricing.discharged`
-      prices the cash-in, and the conduit kit went **353 → 406 per mille**, above
-      the bursting kit it is measured against for the first time. ⚠️ **It did NOT
-      unblock the charge half**: with both in, the three claims still read
-      190/530 and 235/440 and all three still fail. That was the second hypothesis
-      about *why* the charge half hurts conduits to be measured and killed — the
-      first was `spendable` reading a discounted `strike(mate)`. **Whatever the
-      cause is, it has not been found, and it is not either of those.** Bisect the
-      next guess before writing it down.
+      - **The conduit was under-armed for the board it is meant to answer.** Its
+        arc is the one thing a guard does not stop, and once the rating could see a
+        guard the arcs were not strong enough to be that answer: `electro_ball`
+        285→430, `spark` 190→285, `overload` 180→270. The accumulating kit reads
+        **426‰** against the bursting kit's 590 (floor 354), where it read 193.
+      - **A wall standing in the column is the answer to a shape**, and
+        `TestAShapeEarnsItsPowerWhereASparCannotSeeIt` used to hide it: its
+        opposition carries `withdraw`, and a rating blind to the charge reported
+        the shape winning anyway. Measured on both boards — 456/400 with nothing in
+        the way, 286/485 with the wall — so the test now holds BOTH rows, which is
+        a stronger claim than the one it replaced.
+      - `TestAStripEarnsItsSlotOnlyAgainstSomethingToStrip` came back on its own:
+        the strip now visibly reduces blocked blows, 665 against 1298.
 
       The gap it came from: `shielded` and `guarded` pay to *put* a guard up and
       nothing discounted a blow *into* one, so the rating bought walls and treated
-      the enemy's as absent. Half of that is now closed — a pool is read, and
-      `shadow_punch` no longer carries its `unblockable` for free — and the half
-      still open is `warden`'s own trade, that a charge cancels one strike so
-      multi-strike answers a wall.
+      the enemy's as absent. Both halves are closed now, `warden`'s own trade
+      included.
 
       `taunt` and `heal_cut` were the same class of omission and are **done** —
       `pricing.taunting` and `pricing.uncured`, so every one of the eleven status
@@ -604,7 +602,7 @@ is only so the shape is readable.
       `withdraw` read **395‰ before and 783‰ after**, against 646‰ for the control
       that carries neither.
 
-      What is left is the **charge** half of the guard, above. Worth adding with the first of them: a structural test
+      Nothing is left of this item. Worth adding with the first of them: a structural test
       that every `status.Category` has an arm in `granted` or `inflictedOn`, and a
       hand-kept table of every `Skill` field marked *priced* or *deliberately not,
       with the reason* — the guard that would have caught all four at once.
