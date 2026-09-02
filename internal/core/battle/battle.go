@@ -9,9 +9,15 @@
 // battle rendered twice rather than two implementations of it.
 //
 // The output is an event log. A caller drives the battle a turn at a time and
-// drains the events; nothing about drawing a battle needs to read the state
+// reads the events; nothing about drawing a battle needs to read the state
 // here, which is the property that keeps a renderer from quietly becoming a
 // second copy of the rules.
+//
+// That log is append-only and is kept for the battle's whole life, so a battle
+// has as many consumers as anybody wants: each holds a cursor of its own (see
+// Battle.Since), and Drain is one such consumer with its cursor kept by the
+// battle. Two players, a spectator who joined halfway and the log writer are
+// four cursors over one record rather than four copies of a battle.
 package battle
 
 import (
@@ -170,7 +176,12 @@ type Battle struct {
 	units  []*Unit
 	byID   map[string]*Unit
 
+	// events is the append-only record of everything this battle has emitted,
+	// kept for the battle's whole life, and drained is how far Drain has read
+	// into it. A cursor rather than a truncation is what lets a room hand the
+	// same battle to two players, a spectator and a log at once — see Since.
 	events   []Event
+	drained  int
 	acting   *Unit
 	prompt   *Prompt
 	awaiting bool
@@ -456,12 +467,60 @@ func (b *Battle) emit(event Event) {
 	b.events = append(b.events, event)
 }
 
-// Drain returns the events recorded since the last call and clears them.
+// Drain returns the events recorded since the last call.
+//
+// It is one consumer of the record — the battle's own — holding a cursor the
+// battle keeps for it, which is why it may sit beside any number of Since
+// readers without disturbing them or being disturbed. It no longer empties
+// anything, and that is the only thing about it that changed: it still answers
+// exactly the events since the last call, and still answers **nil** when there
+// are none.
+//
+// ⚠️ The nil is kept because keeping it is free, and **not** because anything
+// reads it. Measured: returning an empty non-nil slice instead reddens three
+// tests, all three of them new here, and **none** of the several hundred
+// existing Drain callers — they all take a length or a range. So the rule is
+// held by its own tests and by nothing else, which is worth knowing before
+// somebody decides it is load-bearing and builds on it.
 func (b *Battle) Drain() []Event {
-	out := b.events
-	b.events = nil
+	out, next := b.Since(b.drained)
+	b.drained = next
 	return out
 }
+
+// Since returns the events recorded from cursor onward, and the cursor to pass
+// next time. A consumer holds its own cursor and nothing else, so a room's two
+// players, its spectators and its log each read the whole battle at their own
+// pace: Since(0) is a consumer that wants everything, which is what a spectator
+// joining a battle already in progress is.
+//
+// It panics on a cursor the record cannot answer, and that is deliberate rather
+// than defensive. Answering an out-of-range cursor with an empty slice would
+// make a consumer that has somehow got ahead of the battle look exactly like one
+// that is up to date, which is the silent desync a cursor exists to prevent; and
+// a cursor is a number this method handed the caller itself, so a bad one is a
+// programming error rather than a runtime condition — the same reading rng.Intn
+// takes of a non-positive bound.
+func (b *Battle) Since(cursor int) ([]Event, int) {
+	recorded := len(b.events)
+	if cursor < 0 || cursor > recorded {
+		panic(fmt.Sprintf("battle: Since called with a cursor of %d against a record of %d events", cursor, recorded))
+	}
+	if cursor == recorded {
+		return nil, recorded
+	}
+	// Three-index, so the view's capacity is its length and a caller's own
+	// append has to reallocate. Sharing the record's spare capacity corrupts
+	// BOTH sides: the caller's append writes into the slot the next emit is
+	// going to use, and that emit then overwrites what the caller appended.
+	// Measured in TestAViewAndTheRecordSurviveEachOthersAppends; a copy would
+	// answer as well and cost more.
+	return b.events[cursor:recorded:recorded], recorded
+}
+
+// Recorded reports how many events the record holds, which is the cursor a
+// consumer joining now would start from if it wanted only what happens next.
+func (b *Battle) Recorded() int { return len(b.events) }
 
 // Finished reports whether the battle is over.
 func (b *Battle) Finished() bool { return b.finished }
