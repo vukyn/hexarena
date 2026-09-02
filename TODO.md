@@ -538,6 +538,28 @@ is only so the shape is readable.
       critical*chance`, with both `Strike` results now able to reach
       `math.MaxInt64` after #180. Rating-only — it never reaches a golden — which
       is exactly why nothing would report it.
+      ⚠️ **#226 added a second product on the same path and it belongs to this
+      item**: `Rules.Expected` is now `ExpectedStrike(h) * ExpectedStrikes() /
+      PermilleBase`, and the multiplier there reaches the strike cap in per mille —
+      about ten thousand — so a saturated `ExpectedStrike` wraps one line sooner
+      than it did. Same class, same fix, and whatever answers the question above
+      ("carry a saturated multiplier, or refuse it where it is produced") answers
+      both.
+
+- [ ] ⚠️ **A declined turn makes a slow board slower, on a wall-heavy roster.**
+      Measured 2026-09-03, before the block-charge clause landed: `forge.Bout` on a
+      board of two `carapace` walls carrying `withdraw` a side leaves **175 of
+      800** battles undecided with #234's pass rule off and **308 of 800** with it
+      on — and with it on the refusal comes from the CONTROL, `Suggest` against
+      itself. The shipped roster is unaffected: four declines over two hundred
+      battles, every one resolved.
+      ⚠️ `frozen()` cannot call such a board a draw, because a unit holding a
+      self-aimed utility can still aim at something, so the turn limit catches it
+      instead — and a battle that ends on the limit reports nothing about what
+      happened. Recorded rather than acted on: the board is a constructed extreme
+      and it was already refusing before the rule. **It was written down once and
+      lost in a rewrite of the entry above it**, which is the only reason it is
+      dated to a session that had already finished with it.
 - [ ] **`m.wrapped` fills the window's final column.** `wrappedIn`
       (`cmd/hexforge-tui/model.go`) computes `room = usableWidth() - 2 - width -
       1`, so `labelAt` emits exactly `usableWidth()` cells — measured at 120 on
