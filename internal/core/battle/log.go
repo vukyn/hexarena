@@ -169,7 +169,7 @@ func (b *Battle) Replay(script Script, limit int, fallback Chooser) (Script, *Pr
 			if ok {
 				decision.Aim = hex.At(choice.Aim)
 			} else {
-				decision.Reason = NoActionReason
+				decision.Reason = passReason(prompt)
 			}
 		default:
 			// The script is spent and nothing decides for it, so the turn that

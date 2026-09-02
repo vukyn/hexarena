@@ -225,3 +225,73 @@ func TestTheFallbackStillLosesToAnythingWorthDoing(t *testing.T) {
 			"is taken only when nothing at all was worth doing", choice.Skill)
 	}
 }
+
+// TestATurnIsDeclinedRatherThanSpentOnACooldownForNothing is the half of the
+// fallback the tie-break could not reach.
+//
+// The tie-break picks the cheapest option worth nought; this asks what to do when
+// the cheapest one still costs something. Casting it buys nought and takes the
+// skill away for turns afterwards, so declining the turn is strictly better — an
+// act pays its own cooldown and a pass does not, which is the one asymmetry
+// TestAPassBuysNoCooldownAnActDoesNot pins.
+//
+// ⚠️ **Not the waiting TODO.md decided against.** That is about passing to get a
+// skill back sooner, and it stays empty: `spendCooldowns` runs on a pass and an
+// act alike, so the skill comes back on the same turn either way. This is about
+// not STARTING a cooldown, which is the opposite question.
+//
+// ⚠️ **A cooldownless option is still cast**, and the third row is what holds it.
+// What this rating cannot see is always something rather than nothing — the
+// shipped `taunt` was worth nought to it until this week — so a free cast is worth
+// taking and a priced one is not.
+func TestATurnIsDeclinedRatherThanSpentOnACooldownForNothing(t *testing.T) {
+	for _, row := range []struct {
+		name string
+		kit  []string
+		want string
+	}{
+		{"one option, and it costs three turns", []string{"scour"}, ""},
+		{"one option, and it is free", []string{"wipe"}, "wipe"},
+		{"something actually worth doing", []string{"scour", "jab"}, "jab"},
+	} {
+		fight := squad(t, row.kit, []string{"jab"}, []string{"jab"}, 0, 0, 0)
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("%s: advance: %v", row.name, err)
+		}
+		choice, ok := fight.Suggest(prompt)
+		switch {
+		case row.want == "" && ok:
+			t.Errorf("with %s, Suggest picked %q, want a pass: a cooldown spent on "+
+				"nothing is a cooldown spent for nothing", row.name, choice.Skill)
+		case row.want != "" && !ok:
+			t.Errorf("with %s, Suggest declined the turn, want %q", row.name, row.want)
+		case row.want != "" && choice.Skill != row.want:
+			t.Errorf("with %s, Suggest picked %q, want %q", row.name, choice.Skill, row.want)
+		}
+	}
+}
+
+// TestADeclinedTurnSaysSoInTheLog is what makes the pass above nameable, and it
+// is the fact TestATurnIsGivenUpOnlyForAReasonThatIsWrittenDown counts.
+//
+// A unit with nothing it can use and a unit that had something and would not take
+// it are different facts about the board, and a log that spelled them the same
+// would tell a reader the second was helpless.
+func TestADeclinedTurnSaysSoInTheLog(t *testing.T) {
+	fight := squad(t, []string{"scour"}, []string{"jab"}, []string{"jab"}, 0, 0, 0)
+	if _, err := fight.RunToEndWith(1, fight.Suggest); err != nil {
+		t.Fatalf("run: %v", err)
+	}
+	notes := map[string]int{}
+	for _, event := range fight.Drain() {
+		if event.Kind == battle.TurnSkipped {
+			notes[event.Note]++
+		}
+	}
+	if notes[battle.DeclinedReason] == 0 {
+		t.Errorf("the skipped turns read %v, and none of them say the rating declined "+
+			"one: a pass on purpose that logs as `%s` is a unit reported helpless "+
+			"while it was choosing", notes, battle.NoActionReason)
+	}
+}

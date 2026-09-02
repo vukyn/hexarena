@@ -67,24 +67,36 @@ func TestTheRatingBeatsPickingTheFirstThingItCan(t *testing.T) {
 	}
 }
 
-// TestNothingWaitsOnPurpose is the executable half of "waiting is arithmetically
-// empty in this engine".
+// TestATurnIsGivenUpOnlyForAReasonThatIsWrittenDown is what
+// TestNothingWaitsOnPurpose became, and the change of name is the change of
+// claim.
 //
-// A turn is skipped for exactly three reasons, and every one of them is forced: a
-// unit died to a timed effect before it could act, control took its turn, or it had
-// nothing it could use. None of those is a decision. If a waiting rule is ever
-// added, it will pass a turn on purpose and that pass will carry a note of its own
-// — a fourth reason — so this test is what names it the day it appears.
+// It used to hold that a turn is skipped for exactly three reasons and every one
+// of them is FORCED — a unit died to a timed effect before it could act, control
+// took its turn, or it had nothing it could use — and its own comment said that
+// if a waiting rule were ever added it would pass a turn on purpose, carry a note
+// of its own, and be named here the day it appeared. That day has arrived.
 //
-// It plays the shipped roster rather than a fixture because the claim is about the
-// opponent the game ships, and it is here rather than in internal/core/battle for
-// the layer rule: a test in that package may not reach for the seed data.
-func TestNothingWaitsOnPurpose(t *testing.T) {
-	// The three notes a skipped turn may carry. "died" and the stun are emitted by
-	// Advance; NoActionReason is what RunToEnd passes with when a unit has nothing
-	// usable. A unit whose summon ran out leaves rather than skipping, and emits no
-	// TurnSkipped at all.
-	forced := map[string]bool{"died": true, "stun": true, battle.NoActionReason: true}
+// ⚠️ **The pass that now exists is not the waiting TODO.md decided against**, and
+// keeping the two apart is the point of this comment. That entry is about passing
+// to get a skill back sooner, and it is still arithmetically empty: spendCooldowns
+// runs on a pass and on an act alike, so the skill comes back on the same turn
+// either way. This is the opposite question — whether to START a cooldown on a
+// skill that buys nothing — and there the pass is strictly better, because an act
+// pays its own cooldown and the pass does not.
+//
+// So the note set is asserted rather than the count, and DeclinedReason has to
+// actually appear: a rule nothing on the shipped roster reaches is a rule this
+// test is not measuring.
+func TestATurnIsGivenUpOnlyForAReasonThatIsWrittenDown(t *testing.T) {
+	// "died" and the stun are emitted by Advance; the other two are what RunToEnd
+	// passes with — one for a unit with no move, one for a unit that had one and
+	// would not take it. A unit whose summon ran out leaves rather than skipping,
+	// and emits no TurnSkipped at all.
+	written := map[string]bool{
+		"died": true, "stun": true,
+		battle.NoActionReason: true, battle.DeclinedReason: true,
+	}
 
 	skipped := map[string]int{}
 	for seedValue := uint64(0); seedValue < 200; seedValue++ {
@@ -101,10 +113,10 @@ func TestNothingWaitsOnPurpose(t *testing.T) {
 				continue
 			}
 			skipped[event.Note]++
-			if !forced[event.Note] {
+			if !written[event.Note] {
 				t.Fatalf("seed %d: %s skipped a turn for %q, which is not one of the "+
-					"three forced reasons: a turn given up on purpose is waiting, and "+
-					"waiting is decided against — see CLAUDE.md § Rating an action",
+					"reasons this engine records: a pass nobody can name is a rating "+
+					"quietly getting worse — see CLAUDE.md § Rating an action",
 					seedValue, event.Actor, event.Note)
 			}
 		}
@@ -113,6 +125,13 @@ func TestNothingWaitsOnPurpose(t *testing.T) {
 	// having looked at anything.
 	if len(skipped) == 0 {
 		t.Error("no turn was skipped at all over 200 battles, so nothing was checked")
+	}
+	// And the new one has to be reached, or this test is holding a claim about a
+	// branch the shipped roster never takes.
+	if skipped[battle.DeclinedReason] == 0 {
+		t.Errorf("no turn was declined over 200 battles: the rule that refuses to "+
+			"spend a cooldown on nothing is either unreachable on the shipped roster "+
+			"or gone, and %v is all that happened", skipped)
 	}
 	t.Logf("skipped turns by reason: %v", skipped)
 }
