@@ -305,3 +305,106 @@ func TestALineIsReadByOrderOrByNameAndNeverBoth(t *testing.T) {
 		})
 	}
 }
+
+// TestALeafIsAFactAboutTheLineRatherThanTheLevel is the leaf rule, and it is
+// measured on a **forking fixture** rather than on shipped data on purpose.
+//
+// The rule's caller is a PvP room's join gate, which insists a squad field fully
+// grown units. What makes it worth a predicate of its own is that the obvious
+// spelling — "the furthest form the level reaches" — is a different *question*:
+// on a forking line at a level between the two thresholds the two answers
+// **differ**, which is the discriminator below. `Furthest(20)` names Vine,
+// because level 20 has not reached the stage that grows out of it, while Vine is
+// not a leaf and never becomes one.
+//
+// ⚠️ **What this test does NOT hold, and cannot: that the gate needed the
+// distinction.** At the cap the two agree on every line `Validate` accepts,
+// because `Validate` refuses a stage whose MinLevel is past the cap — so
+// `Furthest(LevelCap)` is the tip of each arm by construction. Measured:
+// substituting it for `Leaves` inside `IsLeaf` passes this test and all twenty
+// of the gate's, and no test can be written that it fails, because no legal line
+// exhibits the difference at that level. The gate asks only at 60 (it insists on
+// level 60 first), so the level a caller would have to supply is the whole value
+// of the name. The assertions below are still worth having — they are what says
+// the predicate answers the question it is named after — but they are not
+// evidence that the gate would have been wrong without it.
+//
+// ⚠️ CLAUDE.md records that "nothing shipped forks yet"; that is **stale** —
+// `pokemon.poliwag` ships as `Poliwag → Poliwhirl → (Poliwrath | Politoed)`, and
+// the gate's own test in internal/room measures it there. This one stays because
+// a fixture reaches what shipped data cannot: an interior stage of a fork at a
+// level below its child's threshold.
+func TestALeafIsAFactAboutTheLineRatherThanTheLevel(t *testing.T) {
+	line := forkedStages(t)
+
+	leaves, err := line.Leaves()
+	if err != nil {
+		t.Fatalf("the leaves of a forked line: %v", err)
+	}
+	if got := strings.Join(progression.StageNames(leaves), " "); got != "Fang Bloom" {
+		t.Errorf("the tips of the line are %q, want the tip of each arm", got)
+	}
+
+	for _, one := range []struct {
+		stage string
+		leaf  bool
+		why   string
+	}{
+		{stage: "Bloom", leaf: true, why: "the deep arm's tip"},
+		{stage: "Fang", leaf: true, why: "the shallow arm's whole extent"},
+		{stage: "Vine", leaf: false, why: "Bloom grows out of it"},
+		{stage: "Seed", leaf: false, why: "both arms grow out of it"},
+	} {
+		leaf, err := line.IsLeaf(one.stage)
+		if err != nil {
+			t.Fatalf("is %q a leaf: %v", one.stage, err)
+		}
+		if leaf != one.leaf {
+			t.Errorf("%q reports leaf=%v, want %v — %s", one.stage, leaf, one.leaf, one.why)
+		}
+	}
+
+	// The discriminator, stated as the comparison rather than as two readings: at
+	// a level between the thresholds the level's furthest forms include an
+	// interior stage, and the line's tips do not.
+	furthest, err := line.Furthest(20)
+	if err != nil {
+		t.Fatalf("furthest at 20: %v", err)
+	}
+	if got := strings.Join(progression.StageNames(furthest), " "); got != "Vine Fang" {
+		t.Fatalf("level 20's furthest forms are %q; this test needs the interior stage among them", got)
+	}
+	interior, err := line.IsLeaf("Vine")
+	if err != nil {
+		t.Fatalf("is Vine a leaf: %v", err)
+	}
+	if interior {
+		t.Error("Vine is a furthest form at level 20 and is reported as a leaf, so the two questions have collapsed into one")
+	}
+
+	// A name the line does not answer to is an error rather than a false: a typo
+	// and a form with something after it are different mistakes, and a gate whose
+	// job is to say which rule a squad broke cannot be handed one answer for both.
+	if _, err := line.IsLeaf("Nonesuch"); err == nil {
+		t.Error("a stage the line does not have was reported as not-a-leaf rather than refused")
+	} else if !strings.Contains(err.Error(), "Nonesuch") {
+		t.Errorf("the refusal reads %q, want it to name the stage", err)
+	}
+
+	// On a line that does not fork there is one tip, and it is the one Furthest
+	// gives at the cap — which is precisely why the shipped cast cannot tell the
+	// two questions apart and why this test is written on a fixture.
+	linear, err := threeStages(t).Leaves()
+	if err != nil {
+		t.Fatalf("the leaves of a linear line: %v", err)
+	}
+	if got := progression.StageNames(linear); len(got) != 1 || got[0] != "Bloom" {
+		t.Errorf("a linear line has the tips %q, want just its last stage", got)
+	}
+
+	// A line with no stage has no tip, which is a refusal rather than an empty
+	// answer: a caller handed nothing would field nothing and hear nothing.
+	if _, err := (progression.Line{}).Leaves(); err == nil {
+		t.Error("a line with no stage answered with tips")
+	}
+}

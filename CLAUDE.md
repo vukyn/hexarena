@@ -1249,6 +1249,115 @@ two sides around **different characters**, and
 names both halves, because home alone is satisfied by a client that fields the
 named side twice and a cursor on the last row cannot tell `+1` from correct.
 
+## The room: a state machine with no I/O, and no clock either
+
+`internal/room` is a PvP match as a state machine over `internal/wire`: messages
+and prompts in, messages and decisions out. It declares **no message of its own**
+— the protocol is `wire`'s and the room speaks it. Four inputs, each answering
+`([]Outbound, error)`:
+
+| input | what it is |
+|---|---|
+| `Join(hello)` | the gate; also returns the seat, zero on a refusal |
+| `Deliver(seat, body)` | a `wire.Act` or a `wire.Pass` from a seated peer |
+| `TimedOut(seat)` | the transport reporting that an allowance ran out |
+| `Left(seat)` | the transport reporting that a peer went away |
+
+and three readings a transport needs: `Awaiting()` (the seat whose answer is due,
+which is what an allowance is started on), `Result()` / `Finished()`, and
+`Played()`.
+
+**⚠️ A timeout is an INPUT, not a reading, and that is the load-bearing shape.**
+The room never asks what time it is; whoever owns the transport owns the
+countdown and *tells* it. So `time` is unimported,
+`TestTheRoomReadsNoClock` holds that with an AST walk over the package's own
+directory (the shape `internal/wire` and both TUI clients already use), and
+"three consecutive timeouts forfeit" is **pure counting** — a tally of inputs,
+testable with no clock anywhere near it. It also means a whole bo3 plays out
+in-process in 40 ms rather than in real seconds, and a PvP log stays exactly as
+verifiable as one from a battle nobody was waiting on.
+
+⚠️ `internal/wire/clock_test.go`'s own comment says a room "does need a clock"
+and that a copy of the ban there "would be exactly wrong". **That expectation was
+wrong**; the comment is stale and the ban is inherited rather than escaped.
+
+**⚠️ `Drain` is never called here, and a walk says so.** `TestNothingHereDrainsTheBattle`
+looks for the *selector* rather than the string, because `Drain` is what every
+other consumer of a battle in this repository calls — 261 sites — so reaching for
+it is one keystroke, and it would silently take the events another consumer was
+about to read. The room holds one cursor into `Battle.Since`; the point of
+reading it that way is that a log writer, a spectator and a reconnect need no
+change here.
+
+**The order in `resolved` is what keeps the mirror's digest equal to the room's.**
+The room advances to the next open turn **before** reading its cursor, because
+that is exactly what a mirror does — `Replay` with one decision and a nil
+fallback applies it, walks through whatever is forced after it, and stops on the
+prompt it cannot decide. Both event runs therefore hold the decision, then every
+skipped turn, then the next turn's opening. Reading the cursor a step earlier
+makes **every** digest disagree while both peers are fighting the same battle
+perfectly; that mutation reddens the headline test on turn 1.
+
+**The turn cap is checked where the room would otherwise ASK somebody** — after
+the skipped test, never before it — for the same reason. A mirror only stops at a
+turn it is asked to decide. Skipped turns still count towards the cap; they
+cannot be the turn it bites on.
+
+**⚠️ Nothing is added to `battle.Outcome`, and a capped battle is not stamped
+with one.** A forfeit, a dropped socket and a refused join are results of the
+**match**, so they live in `room.Verdict` / `room.Forfeit` — deliberately not
+called an outcome, so nobody writes `battle.Outcome(result.Verdict)`. A battle the
+cap stopped keeps `Undecided` and sets `BattleResult.Capped`: the engine
+concluded nothing about it, a room writing an outcome the engine never produced
+would be a second reading of how a battle ends, and the eventual log would fail
+its own `--verify`. The standing counts it as the draw it is, which is all "the
+outcome already carries the draws" needs to buy.
+`TestAForfeitAndADisconnectAddNothingToTheBattlesOutcomes` holds
+`battle.OutcomeCount` against a **literal 4** — reading the constant and
+comparing it to itself would agree with any number at all.
+
+**The gate's order is part of its answer**: version (protocol before digest,
+which `wire.Version.Check` owns) → password → seat → squad. A gate whose order is
+untested reports whichever fault it happened to notice first, so
+`TestTheGateRefusesInItsOwnOrder` gives it a peer wrong about **two adjacent
+things** per case. The squad half is five rules under one `wire.CodeSquadRefused`
+— `Squad.Validate`, the format's size, level 60, a **leaf** of the line, then
+`Take`, which is already the loadout check.
+
+⚠️ **A leaf is not `Furthest` and not `StageAt` — and the reason first written
+down for that was wrong.** `progression.Line.Leaves` / `IsLeaf` were added for
+this gate: a leaf is a fact about the *line*, `Furthest` about a *level*. The
+claim was that a gate written on `Furthest` would start accepting an unfinished
+form the day a stage was authored above the cap. **That day cannot come**:
+`Line.Validate` refuses a stage whose `MinLevel` is past the cap, so every stage
+of every legal line is reachable there and `Furthest(LevelCap)` **is** the tip of
+each arm, by construction. Measured — substituting it inside `IsLeaf` passes all
+twenty-one tests over the predicate and its gate, and no test can be written that
+it fails.
+So what the predicate buys is the **level that is no longer in the question**: the
+two answers diverge at every level below the cap, and a caller reaching for
+`Furthest` has to supply one. This gate asks only at 60 (it insists on level 60
+first), so it is the *next* caller the name protects. The difference that is real
+today is that `IsLeaf` **errors** on a name the line does not have rather than
+answering false — a typo and a form with something after it are different
+mistakes, and this gate's job is to say which rule was broken.
+
+⚠️ **One squad MAY field the same character twice**, decided rather than
+overlooked, with the reasoning at `squadIsFieldable`.
+
+**The seed derivation is `sha256(seed ‖ index)` and the obvious reuse was
+measured wrong.** `rng.New(Seed + index).Next()` looks like the right move under
+this file's rule about not restating arithmetic, and splitmix64 advances by
+**adding a constant** — so one round of it is a function of the sum, and battle
+two of a match seeded 6 *is* battle one of a match seeded 7. Exactly, for every
+adjacent pair. Every counter-based generator has that shape: a derivation from
+two numbers needs a function of two numbers.
+
+**Two things the shipped protocol cannot say**, both filed in `TODO.md` rather
+than papered over: a **forfeit** (the room sends nothing and the transport
+closes) and a **capped battle** (no `Ended` event, and `TurnCap` is not on the
+wire, so a mirror is left holding an open prompt).
+
 ## The event log is the contract
 
 `battle` emits `[]Event`. Anything that draws a battle reads that and nothing
@@ -3422,8 +3531,14 @@ is the constraint each piece has to respect.
       Jolteon@32)` — because joining them with the same arrow reads as a chain.
       `i18n.Lang.StageSummary` delegates to `forge.StageSummary` now instead of
       repeating the shape; the two were byte-identical.
-      **Nothing shipped forks yet**, deliberately: the mechanism lands without a
-      balance move, the way crit did. An Eevee is content and its own decision.
+      ⚠️ **This entry said "nothing shipped forks yet" until 2026-09-03 and that
+      is stale.** `pokemon.poliwag` ships as
+      `Poliwag → Poliwhirl → (Poliwrath | Politoed)` since `ed79a28`, so the
+      mechanism has a shipped user and the fork's interesting cases are reachable
+      from real data — which is what let the PvP gate's leaf rule be measured on
+      both arms and on the interior stage rather than only on a fixture. The
+      original intent (the mechanism lands without a balance move, the way crit
+      did) held: `politoed` was authored as a data change of its own.
       ⚠️ **Not the same thing as the tailed-beast Naruto**, which is a separate
       *character* beside Naruto: a stage is the same unit later, and that is a
       different unit. The two want completely different mechanisms.

@@ -2446,6 +2446,19 @@ timestamp, never a duration, never a reading of a clock. So the log stays exactl
 as verifiable as one from a battle nobody was waiting on, and `--verify` cannot
 tell a timed-out match from any other.
 
+⚠️ **And the room itself reads no clock at all**, which is one step further than
+this section originally asked for and turned out to be free. A timeout is an
+**input**: whoever owns the transport owns the countdown — it owns the connection
+— and *tells* the room the allowance ran out, at which point the room applies the
+pass. So `internal/room` imports `time` not at all, held mechanically by the same
+AST walk `internal/wire` uses, and "three consecutive timeouts forfeit" becomes
+pure counting rather than a thing measured against a wall clock. Two prices worth
+naming: the room cannot distinguish a genuine timeout from a transport that
+reported one wrongly, so a timeout on a seat nobody is being asked is refused and
+**not counted**; and whether a peer has really gone or is merely slow is likewise
+the transport's judgement, so a reconnect window sits in front of that report
+rather than inside the room.
+
 Three details that follow from it:
 
 - A prompt that arrives `Skipped` starts no clock. The unit has already lost its
@@ -2549,6 +2562,14 @@ lead of each contested speed group alternates (see the tie-break note under
 *Decided against*, which is what makes that free). It is honestly uncancelled, and
 saying so is better than a coin dressed as fairness.
 
+⚠️ **Built: the seed half. Deferred: the alternation.** The room derives each
+battle's seed from the match's one seed and reads that seed's low bit for the
+uncancelled battle; the roster slice order is left as the squads were authored.
+The alternation needs the roster composed against the queue rather than against
+the file, the side is worth up to sixty points, and what it is worth at 3v3 or
+5v5 does not exist as a figure yet — so it is its own item with its own
+measurement, not a refinement to fold in on a hunch.
+
 ⚠️ Two different squads almost never tie at all, so most of what that rule
 addresses evaporates the moment the two players are not mirroring each other.
 What remains is the residual that the complementarity note describes, whose size
@@ -2602,6 +2623,80 @@ the shell is wired up.
 Doing it the other way round — a server with the transport in the middle of the
 state machine — would make this the least-tested code in a repository whose whole
 method is measurement.
+
+### The room, built — and the four things building it decided
+
+`internal/room` is that state machine. It speaks the seven messages and declares
+none of its own, and everything above about the clock, the series, the sides and
+the cursor is now code with tests against it. Four things were open when this
+section was written and are answered here.
+
+**One squad may field the same character twice.** `placement.Squad.Validate`
+checks ids and slots and says nothing about characters; the squad builder will
+happily write two Charizards; and `Squad.Take` prefixes ids with the side, so even
+a mirror of a mirror stays readable in a log. A gate that refused it would refuse
+a player their own saved squad for a reason no screen has ever told them — and
+the screen that would have to start telling them does not exist. The measurement
+that argues the other way, that two copies of one character is the strongest
+squad available, has **not** been taken; refusing a shape on a hunch is not how
+anything else here was decided.
+
+**A leaf of the line is not the furthest form the level reaches.** The gate wants
+"there is nothing after this form", which is a fact about the *line*;
+`Line.Furthest` answers "the grown end of everything this level has reached",
+which is a fact about a *level*. At the cap the two agree by coincidence on every
+line that ships. ⚠️ **The next sentence used to be that a gate written on
+`Furthest` starts accepting an unfinished form the day a stage is authored above
+the cap, and that is wrong** — `Line.Validate` refuses exactly that stage, so the
+day cannot come and the two answers are identical at the cap by construction.
+Measured: substituting `Furthest(LevelCap)` inside `IsLeaf` reddens nothing.
+What the predicate buys is therefore the **level that is no longer in the
+question** — the two diverge everywhere below the cap, so a caller reaching for
+`Furthest` has to supply a level and the wrong one is a silent wrong answer — plus
+an error rather than a false on a name the line does not have. The conclusion
+survived the correction and the reason did not.
+`Line.Leaves` / `Line.IsLeaf` are the predicate, in
+`internal/core/progression` because a second copy in the room would be the drift
+this repository keeps a list of. `politoed` shipping made the fork's interesting
+cases reachable from real data — both arms accepted, `Poliwhirl` refused — and a
+forking *fixture* still measures the case shipped data cannot reach: an interior
+stage at a level below its child's threshold, which is where the two questions
+visibly disagree.
+
+**A match is reproducible from one number, and the obvious derivation was
+measured wrong.** Each battle's seed is the first eight bytes of
+`sha256(seed ‖ index)`, framed the way `internal/seed` and `internal/wire`
+already frame their inputs. Reusing the mixer `internal/core/rng` already
+declares — one round of splitmix64 over `seed + index` — looked like exactly the
+right move, and it **collides structurally**: splitmix64 advances by adding a
+constant, so one round of it is a function of the sum alone, and battle two of a
+match seeded 6 *is* battle one of a match seeded 7. Exactly, for every adjacent
+pair of seeds. Every counter-based generator has that shape, so no arrangement of
+`rng` fixes it: a derivation from two numbers needs a function of two numbers.
+The test caught it by asking the question over a sweep rather than by asserting
+three values.
+
+**A turn cap needs no new outcome, and the room must not invent one.** The cap
+ends a battle as a draw in the *standing*, and `battle.Outcome` stays exactly
+where it was — the room records `Undecided` plus a `Capped` flag rather than
+stamping `Stalemate` on a battle the engine concluded nothing about. A room
+writing an outcome the engine never produced would be a second reading of how a
+battle ends, and the log written from it would fail its own `--verify`.
+
+⚠️ **Two things the seven messages cannot say**, found by building the room
+rather than by reading the protocol, and both left as gaps rather than papered
+over:
+
+- **A forfeit has no message.** Nothing carries "the match is over and here is
+  why", so the room answers a forfeit with no message at all and the transport
+  closes the connection. The client words it from its own books — "opponent left"
+  is already on the wordings list — and a message for it is a protocol bump.
+- **A capped battle is invisible to a mirror.** The turn cap is room
+  configuration and is not on `welcome`, and a battle the cap stopped emits no
+  `Ended` event — so the rule that a client learns each battle's outcome from its
+  own `Ended` has a hole in it, and a mirror is left holding an open prompt until
+  the next `start` arrives. Either the cap travels (a protocol bump) or it becomes
+  a constant both peers read, which costs the host the setting.
 
 ### Not in the first version
 
