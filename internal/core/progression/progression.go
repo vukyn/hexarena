@@ -650,6 +650,102 @@ func (l Line) Furthest(level int) ([]Stage, error) {
 	return out, nil
 }
 
+// Leaves is every stage of the line that nothing grows out of: the tip of a
+// line that does not fork, and one per arm of a line that does.
+//
+// ⚠️ **It is not Furthest, and the difference is the whole reason it exists.**
+// Furthest is a fact about a *level* — the grown end of everything that level
+// has reached — so it moves as the level moves and answers "what has this unit
+// become". This is a fact about the *line* and moves only when the line is
+// edited: it answers "is there anything after this form at all". A caller that
+// wanted the second question and asked the first would get the right answer at
+// the cap and a different one everywhere else, which is a silent wrong answer
+// rather than an error.
+//
+// The caller it was added for is a PvP room's join gate, which insists a squad
+// field fully grown units. ⚠️ **Written as Furthest(LevelCap) that gate would be
+// right — provably, not by luck — and substituting it reddens nothing in this
+// repository.** Validate refuses a stage whose MinLevel is past the cap, so every
+// stage of every line it accepts is reachable at the cap, and there the grown end
+// of what the cap reaches *is* the tip of each arm. That was measured rather than
+// reasoned: the substitution passes all twenty-one tests over this predicate and
+// its gate, because no legal line can tell the two apart at that level.
+//
+// So this exists to **name the question**, not to answer it differently, and the
+// value of the name is the level that is no longer in it: the two answers diverge
+// at every level below the cap, so a caller that wanted "is anything after this
+// form" and reached for Furthest would have to supply a level, and the wrong
+// level is a silent wrong answer rather than an error. The gate happens to ask
+// only at 60 — it insists on level 60 before it asks — so it is the *next*
+// caller this protects, and the difference that is real today is the error on a
+// name the line does not answer to, below.
+//
+// An earlier draft of this comment justified it as "would start refusing a legal
+// squad the day a stage was authored above the cap". That day cannot come:
+// Validate is what refuses it. The conclusion survived the correction and the
+// reason did not.
+//
+// It cannot be StageAt either, which refuses a fork outright rather than
+// reporting both arms as tips.
+//
+// Parentage is read through Parents and never worked out here, because Parents
+// is the one place the two spellings of a line meet: a line where nothing names
+// an After is read by order, and one where anything does is read by name only.
+// A second reading of that rule is how a gate comes to disagree with the engine
+// about what a file says.
+func (l Line) Leaves() ([]Stage, error) {
+	parents, err := l.Parents()
+	if err != nil {
+		return nil, err
+	}
+	grown := make([]bool, len(l))
+	for index := range l {
+		if parents[index] >= 0 {
+			grown[parents[index]] = true
+		}
+	}
+	out := make([]Stage, 0, len(l))
+	for index, stage := range l {
+		if !grown[index] {
+			out = append(out, stage)
+		}
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("no stage of this line is a tip, so every stage grows out of another")
+	}
+	return out, nil
+}
+
+// IsLeaf reports whether the named stage is a tip of the line: nothing in the
+// line grows out of it.
+//
+// A name the line does not answer to is an **error** rather than a false. The
+// two are different mistakes — a typo and a form with something after it — and
+// answering false to both would let a misspelled stage be refused for the wrong
+// reason, in a gate whose whole job is to say which rule a squad broke.
+func (l Line) IsLeaf(name string) (bool, error) {
+	leaves, err := l.Leaves()
+	if err != nil {
+		return false, err
+	}
+	found := false
+	for _, stage := range l {
+		if stage.Name == name {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return false, fmt.Errorf("no stage of this line is called %q; it has %v", name, StageNames(l))
+	}
+	for _, stage := range leaves {
+		if stage.Name == name {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // Allowed is every stage a level may be fielded as, in line order.
 //
 // A level reaching Venusaur reaches Ivysaur and Bulbasaur too, so a line that

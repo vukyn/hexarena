@@ -199,9 +199,13 @@ is only so the shape is readable.
       measurements and is the place to argue with, not this list.
 
       The items below are in dependency order, and the four in **Groundwork** are
-      the ones nothing else can start without. **All four are now done**, so the
-      next item to pick up is the room — a state machine over `internal/wire`
-      messages with no I/O in it.
+      the ones nothing else can start without. **All four are done, and so is the
+      room** — `internal/room` is a state machine over `internal/wire` messages
+      with no I/O and **no clock** in it. What is left of *The room* is the
+      registry (one goroutine per room), writing a finished match out as a
+      `battle.Log`, and two things the protocol cannot currently say: a capped
+      battle and a forfeit. The next item to pick up is either the registry or
+      the WebSocket under *The wire*.
 
       **Groundwork**
       - [x] Factor the reference screens out of `cmd/hexforge-tui` into a package
@@ -332,42 +336,180 @@ is only so the shape is readable.
             a finished 1v1).
 
       **The room, with no network in it**
-      - [ ] The room as a state machine over messages with no I/O: two fake
-            clients drive a whole match in-process. ⚠️ Build it the other way
-            round and this becomes the least-tested code in the repository.
+      - [x] The room as a state machine over messages with no I/O: two fake
+            clients drive a whole match in-process. **Done** — `internal/room`,
+            four inputs (`Join` · `Deliver` · `TimedOut` · `Left`) each answering
+            `([]Outbound, error)`, and `TestTwoFakeClientsFightAWholeBo3InProcess`
+            plays a whole bo3 in **40 ms** over 123 decisions with the two
+            mirrors' digests compared on every one of them.
+            ⚠️ **The room reads NO clock, which the brief did not ask for and is
+            the shape everything else rests on.** A timeout is an **input** —
+            the transport owns the countdown and calls `TimedOut` — so `time` is
+            unimported, `TestTheRoomReadsNoClock` holds it with an AST walk over
+            the package's own directory, and "three consecutive timeouts
+            forfeit" is pure counting. `internal/wire/clock_test.go`'s comment
+            says a room "does need a clock" and that a copy of the ban here
+            "would be exactly wrong"; that expectation was wrong and the comment
+            is now stale.
+            ⚠️ `TestNothingHereDrainsTheBattle` is the same walk pointed at the
+            **selector** `Drain`: 261 call sites elsewhere make reaching for it
+            one keystroke, and it would silently take the events another
+            consumer was about to read.
       - [ ] Many rooms per process. A room owns its battle in **one goroutine**
             and shares it with nothing; the registry takes a mutex, a battle
-            never does.
-      - [ ] Validate a squad at the gate: `Squad.Validate`, then `Take` (which is
-            already the loadout check), then the format's size, level 60, and a
-            stage that is a **leaf** of the line. ⚠️ Not `Furthest` — that refuses
-            on a fork, and `politoed` is queued above as the first fork.
-      - [ ] Decide whether one squad may field the same character twice.
-            `Squad.Validate` allows it today and checks only ids and slots.
-      - [ ] The clock: ninety seconds a prompt, a timeout passing with a single
-            constant reason. ⚠️ Never a timestamp into the battle. A `Skipped`
-            prompt starts no clock. Three consecutive timeouts forfeit.
-      - [ ] A forfeit, a disconnect and a refused join are results of the
-            **match**. ⚠️ Nothing is added to `battle.Outcome` — a dropped socket
-            is not a way a battle can end, and that enum is a core type.
-      - [ ] A **series**, not a bo2: `battles: N` plus a rule for what ends it,
-            from the room's first line, because *this* is the part that hurts to
-            add later. ⚠️ **bo1 is not a special case — it is N = 1.** The room
-            offers **bo1 and bo3**; bo2 is deliberately not offered, because only
-            an even series cancels the side and only an even series has to invent
-            a rule for a 1–1. The aggregate-health tie-break an earlier draft
-            proposed is **dropped**, so no invented metric ships anywhere here.
-      - [ ] One rule for bo1 *and* for the third battle of a bo3, which are the
-            same problem: the seed picks the side, and the lead of each contested
-            speed group alternates. ⚠️ Honestly uncancelled — say so rather than
-            dress a coin as fairness.
-      - [ ] The per-turn allowance belongs in the room's configuration beside the
-            format. Measured on the shipped 3v3: **34–55 decisions a battle**, so
-            ninety seconds each is 68 minutes a battle and 3.5 hours for a bo3.
-      - [ ] A turn cap per battle so a stalemate ends. `Outcome` already has the
-            draws.
+            never does. ⚠️ Deliberately **not** in the room's own commit:
+            concurrency does not belong beside "this has no I/O". Nothing in
+            `internal/room` is safe for concurrent use and nothing there needs to
+            be; `sync` is on that package's own import ban. `wire.CodeRoomUnknown`
+            is this item's refusal and no room sends it today.
+      - [x] Validate a squad at the gate: `Squad.Validate`, then the format's
+            size, level 60, a stage that is a **leaf** of the line, then `Take`
+            (which is already the loadout check). **Done** — five rules under
+            `wire.CodeSquadRefused`, and the whole gate's order is
+            version → password → seat → squad, pinned by
+            `TestTheGateRefusesInItsOwnOrder` with a peer wrong about two
+            adjacent things per case.
+            ⚠️ **Not `Furthest` and not `StageAt`** — `progression.Line.Leaves` /
+            `IsLeaf` were added for it, because a leaf is a fact about the *line*
+            where `Furthest` is a fact about a *level*.
+            ⚠️ **The justification first written for it was WRONG**: it said a
+            gate on `Furthest` would start accepting an unfinished form the day a
+            stage was authored above the cap. `Line.Validate` refuses that stage,
+            so the day cannot come and `Furthest(LevelCap)` **is** the tip of each
+            arm by construction. Measured — substituting it inside `IsLeaf` passes
+            all twenty-one tests over the predicate and its gate, and no test can
+            be written that it fails. What the predicate buys is the **level that
+            is no longer in the question** (the two diverge everywhere below the
+            cap, and this gate asks only at 60), plus: `IsLeaf` **errors** on a
+            name the line does not have rather than answering false — a typo and a
+            form with something after it are different mistakes.
+            ⚠️ **`politoed` is no longer "queued": it SHIPPED** (`ed79a28`), so
+            `pokemon.poliwag` forks as
+            `Poliwag → Poliwhirl → (Poliwrath | Politoed)` and the gate's own
+            test measures both arms and the interior stage on real data. The
+            fixture test in `internal/core/progression` stays because it reaches
+            what shipped data cannot — an interior stage of a fork at a level
+            below its child's threshold, which is where `Leaves` and `Furthest`
+            visibly disagree. **`CLAUDE.md` § Open work still says "nothing
+            shipped forks yet" and is stale.**
+      - [x] Decide whether one squad may field the same character twice.
+            **Decided: it MAY**, and the reasoning is written where the gate is
+            (`squadIsFieldable`). `Squad.Validate` checks ids and slots and says
+            nothing about characters, the squad builder will happily write two
+            Charizards, and `Take` prefixes ids with the side so even a mirror of
+            a mirror reads apart in a log. A gate that refused it would refuse a
+            player their own saved squad for a reason no screen has ever told
+            them, and the screen that would have to start telling them does not
+            exist. ⚠️ The measurement that argues the other way — that two copies
+            of one character is the strongest squad available — has **not** been
+            taken; refusing a shape on a hunch is what this repository does not
+            do. `TestOneSquadMayFieldTheSameCharacterTwice` stops it being
+            "tightened" later.
+      - [x] The clock: the allowance a prompt gets, a timeout passing with a
+            single constant reason. **Done** — `room.TimeoutReason` is that one
+            constant and `room.TimeoutLimit` is three.
+            ⚠️ **Never a timestamp into the battle**, and now never a *reading*
+            either: the room is told. A `Skipped` prompt starts no clock because
+            the room walks past one itself and never leaves it open —
+            `TestASkippedPromptStartsNoClock` asserts that over a whole match and
+            holds it against `Room.Skipped()`, a count exposed precisely because
+            a skipped turn produces no decision and therefore no message, so
+            without it the claim would be held by nothing.
+            ⚠️ A `TimedOut` on a seat nobody is asking is **refused and not
+            counted** — otherwise a transport reporting a spurious timeout could
+            forfeit a player through the back door
+            (`TestATimeoutOnNothingIsRefusedAndCountsNothing`).
+            ⚠️ A voluntary pass leaves `Decision.Reason` **empty** and lets
+            `battle.Pass` supply "passed", so the room adds no second spelling of
+            it. An **illegal** act does not reset the miss count: a peer that
+            could clear its tally by sending nonsense would never be forfeited.
+            ⚠️ The timeout reason is **not glossed** — `tui.Line` prints
+            `event.Note` raw, so today it reads `timeout` in both languages. That
+            is the wordings item under *The client*.
+      - [x] A forfeit, a disconnect and a refused join are results of the
+            **match**. **Done** — `room.Verdict` (`unfinished` · `won` · `drawn` ·
+            `forfeited`) and `room.Forfeit` (`none` · `timed_out` · `left`),
+            deliberately **not** called an outcome so nobody writes
+            `battle.Outcome(result.Verdict)`. Both routes to a forfeit are
+            reached by `TestAForfeitAndADisconnectAddNothingToTheBattlesOutcomes`,
+            so neither is a dead branch, and that test holds
+            `battle.OutcomeCount` against a **literal 4** — reading the constant
+            and comparing it to itself would agree with any number at all.
+            ⚠️ **The protocol has no message for a forfeit**, so the room sends
+            *nothing* and the transport closes. That is a gap rather than a
+            decision — see the wordings item, which already lists "opponent
+            left" — and a message for it is a protocol bump.
+            ⚠️ `Left` before the first battle **frees the seat** instead of
+            forfeiting: there is nothing to give up yet. A reconnect window sits
+            in front of `Left` rather than inside it.
+      - [x] A **series**, not a bo2: `battles: N` plus a rule for what ends it,
+            from the room's first line. **Done** — a seat holding more than
+            `Battles/2` ends it, otherwise every battle is fought and a series
+            with no leader is `VerdictDrawn`. **bo1 is not a special case — it is
+            N = 1**, and `Config.Validate` refuses an even series **by name**,
+            saying which tie it would have to invent a rule for. The
+            aggregate-health tie-break is **dropped**: no invented metric ships
+            anywhere in the package.
+      - [x] One rule for bo1 *and* for the third battle of a bo3, which are the
+            same problem: **the seed picks the side**. `Config.HomeFor` alternates
+            every battle that pairs off (`2 * (N/2)` of them, which is none of a
+            bo1's) and reads the low bit of the battle's own derived seed for the
+            one that does not. Honestly uncancelled, and it says so.
+            ⚠️ The sharpest test of it is that **a bo3 and a bo1 on the same seed
+            disagree about battle one** — half of an alternating pair in one, the
+            uncancelled battle in the other — which is what a bo1 written as its
+            own branch would get wrong.
+            ⚠️ **The seed derivation is `sha256(seed ‖ index)`, not one round of
+            `rng`**, and the obvious version was written, measured and thrown
+            away: splitmix64 advances by adding a constant, so
+            `rng.New(Seed + index).Next()` is a function of the **sum** and
+            battle two of a match seeded 6 *is* battle one of a match seeded 7 —
+            two different matches sharing a fight, exactly. Every counter-based
+            generator has that shape, so a derivation from two numbers needs a
+            function of two numbers.
+      - [ ] The lead of each contested speed group alternates, on top of the seed
+            picking the side. ⚠️ **Deferred on purpose and not forgotten.** It
+            needs the roster slice composed against the queue rather than as the
+            squads were authored, the side is worth **up to sixty points** in a
+            mirror, and what it is worth at 3v3 or 5v5 is **unmeasured** — the
+            two-unit mirror reads 49.6% for alternating against 54.2% for
+            ally-first, and above one unit a side a one-way rate is not a
+            measurement at all. Not something to implement on a hunch. The room
+            leaves the roster slice order as the squads were authored.
+      - [x] The per-turn allowance belongs in the room's configuration beside the
+            format. **Done** — `Config.Allowance`, seconds, handed to both clients
+            on `wire.Welcome` and never counted down here.
+            `room.DefaultAllowance` is 90 because that is what was decided, and
+            it is *configuration* because the argument is not settled: at 34–55
+            decisions a battle it is 68 minutes a battle and 3.5 hours for a bo3.
+      - [x] A turn cap per battle so a stalemate ends. **Done** —
+            `Config.TurnCap`, default `room.DefaultTurnCap` = 400, and it needs no
+            new `battle.Outcome`.
+            ⚠️ **The room does not stamp `Stalemate` on a battle it stopped.** The
+            engine concluded nothing about that battle, and a room writing an
+            outcome the engine never produced would be a second reading of how a
+            battle ends — and the eventual log would fail its own `--verify`. So
+            `BattleResult.Outcome` stays `Undecided`, `BattleResult.Capped` says
+            what happened, and the standing counts it as the draw it is. That is
+            all "the outcome already carries the draws" buys.
+            ⚠️ **The cap is checked where the room would otherwise ASK somebody**
+            — after the skipped test, never before it. A mirror only stops at a
+            turn it is asked to decide, so capping mid-run of skipped turns would
+            leave the room's event run one short of the mirror's and report a
+            divergence that was not one. Skipped turns still count towards the
+            cap; they just cannot be the turn it bites on.
+      - [ ] A capped battle is **invisible to a mirror**. `TurnCap` is not on the
+            wire, no `Ended` event is emitted, and the design record's rule is
+            that a client learns each battle's outcome from its own `Ended`. So a
+            client is left holding an open prompt on a battle the room has
+            stopped, and the next thing it hears is a `start` (or nothing). Two
+            ways out, both bigger than a fix: carry the cap on `wire.Welcome`
+            (a protocol bump), or make it a **constant** both peers read, which
+            costs the host the setting.
       - [ ] Write each finished match out as a `battle.Log`, which makes every
-            PvP match `--replay --verify`-able for nothing.
+            PvP match `--replay --verify`-able for nothing. ⚠️ The room holds no
+            second copy of the events for it — a log writer is another cursor
+            over `Battle.Since`, which is exactly why the room reads it that way.
 
       **The wire**
       - [ ] WebSocket transport, the dependency confined to one boundary.
@@ -456,13 +598,11 @@ is only so the shape is readable.
       **gastly → haunter → gengar** · **magnemite → magneton → magnezone** ·
       **onix → steelix** · **riolu → lucario** · **mew** and **mewtwo**, which
       have no line at all.
-      ⚠️ **`politoed` is the odd one and the interesting one: it is a FORK.** The
-      poliwag line already ships as `poliwag → poliwhirl → poliwrath`, and
-      politoed grows out of poliwhirl as a second arm. The forking mechanism is
-      built and `CLAUDE.md` records that **nothing shipped forks yet,
-      deliberately** — so this is one `after` field away from being that
-      mechanism's first shipped user, and it should be authored knowingly rather
-      than as one more evolution. → `CLAUDE.md` § Open work, the forking entry.
+      ⚠️ **`politoed` has SHIPPED and is off this list.** It landed in `ed79a28`
+      as the forking mechanism's first user — `poliwag → poliwhirl →
+      (poliwrath | politoed)` — so `CLAUDE.md` § Open work's "nothing shipped
+      forks yet" is **stale**, and the PvP gate's leaf rule measures both arms
+      and the interior stage on real data because of it.
       ⚠️ Each of these needs more than a picture: an origin (`pokemon` exists), a
       species claim if any skill it wants is a lineage skill, an archetype whose
       kit its affinity can carry, and a stat table inside
