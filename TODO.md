@@ -253,10 +253,42 @@ is only so the shape is readable.
             ⚠️ No golden on the digest value, deliberately: it would move on every
             unrelated data commit while catching nothing the properties do, which
             here makes it a merge-conflict generator that measures nothing.
-      - [ ] Replace `Drain` at the server with an append-only record and a cursor
+      - [x] Replace `Drain` at the server with an append-only record and a cursor
             per consumer. ⚠️ `Drain` **empties the buffer** and a room has two
             players, spectators and a log; the cursor is also what reconnect and
             mid-battle spectating are made of.
+            **Done** — the record is kept for the battle's whole life and
+            `Since(cursor) ([]Event, int)` hands out views into it, with
+            `Recorded()` for a consumer that wants only what happens next.
+            `Drain` is now *implemented as* a Since consumer whose cursor the
+            battle keeps, so its behaviour is unchanged and its 261 existing call
+            sites did not move. An out-of-range cursor **panics** — the reading
+            `rng.Intn` takes of a bad bound, and the only other panics in
+            `internal/core` are its two; answering with an empty slice would make
+            a consumer that got *ahead* of the battle look identical to one that
+            is up to date, which is the silent desync a cursor exists to prevent.
+            ⚠️ Every view is a **three-index slice** (`b.events[c:n:n]`), and this
+            is not defensive tidiness — an uncapped view corrupts **both**
+            directions, measured: the caller's own `append` writes into the slot
+            the next `emit` will use, and that `emit` then overwrites the value
+            the caller appended. Both clients sit on that path
+            (`internal/screen/play.go:341`+`203`, `cmd/hexarena/main.go:193`
+            each assign a drained slice and later append to it).
+            ⚠️ **One test in the entire repository catches it** —
+            `TestAViewAndTheRecordSurviveEachOthersAppends`, confirmed by
+            stripping the cap and running everything. It is also only *reachable*
+            while `cap > len`, so it sweeps ten record lengths and fails if the
+            sweep observed nothing, rather than asserting once and hoping.
+            ⚠️ `Drain` returning **nil** rather than an empty slice when nothing
+            is new is kept because keeping it is free, **not** because anything
+            reads it: mutating it to an empty non-nil slice reddens three tests,
+            all three new, and **none** of the several hundred existing callers.
+            Worth knowing before somebody treats it as load-bearing.
+            ⚠️ The record is now a **second copy** of bytes the process already
+            held — both clients accumulate their own event slice and never trim.
+            A room's consumers should hold a cursor and read `Since` rather than
+            accumulate; the engine needs no mechanism (296 B an event, ~16 KB for
+            a finished 1v1).
 
       **The room, with no network in it**
       - [ ] The room as a state machine over messages with no I/O: two fake
