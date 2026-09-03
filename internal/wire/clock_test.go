@@ -31,12 +31,16 @@ import (
 // unreadable in a golden and unreadable to anything that is not Go.
 func TestTheProtocolCannotReadAClock(t *testing.T) {
 	banned := map[string]string{
-		"time":                         "a duration or a timestamp on the wire would put a clock reading in the battle's record",
-		"math/rand":                    "randomness in this engine comes only from a passed-in rng.Source",
-		"math/rand/v2":                 "randomness in this engine comes only from a passed-in rng.Source",
-		"os":                           "the protocol is the format and nothing else: no I/O",
-		"net/http":                     "the transport is the next item and is confined to its own boundary",
-		"github.com/gorilla/websocket": "the transport is the next item and is confined to its own boundary",
+		"time":         "a duration or a timestamp on the wire would put a clock reading in the battle's record",
+		"math/rand":    "randomness in this engine comes only from a passed-in rng.Source",
+		"math/rand/v2": "randomness in this engine comes only from a passed-in rng.Source",
+		"os":           "the protocol is the format and nothing else: no I/O",
+		"net/http":     "the transport lives in internal/socket and is confined to its own boundary",
+		// ⚠️ The library by name, and it is the one actually used. This entry
+		// read `github.com/gorilla/websocket` while the transport was unbuilt,
+		// which is a ban on a library the module does not depend on and could
+		// therefore never fire. → internal/socket.
+		"github.com/coder/websocket": "the transport lives in internal/socket and is confined to its own boundary",
 	}
 	scanned := 0
 	for _, entry := range mustReadPackageDir(t) {

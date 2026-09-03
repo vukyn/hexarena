@@ -67,7 +67,15 @@ func TestTheRoomReadsNoClock(t *testing.T) {
 		// and a goroutine on any method of Room by receiver, which holds "a battle
 		// never does" wherever the file it is written in sits, and
 		// TestNoLockingFunctionSendsOnAChannel holds the registry's half.
-		"github.com/gorilla/websocket": "the transport is its own item and is confined to its own boundary",
+		// ⚠️ The library, by name, and it is the one actually used —
+		// `github.com/coder/websocket`, which internal/socket imports and which
+		// this package may not. It used to name `github.com/gorilla/websocket`,
+		// written when the transport was unbuilt and gorilla was the assumed
+		// choice; a ban on a library nothing in the module depends on is a ban
+		// that could never fire, so the entry moved with the decision rather
+		// than being kept as a second, dead line. → internal/socket, and the
+		// note there on why coder rather than gorilla.
+		"github.com/coder/websocket": "the transport lives in internal/socket and is confined to its own boundary",
 	}
 	scanned := 0
 	for _, name := range packageSources(t) {
