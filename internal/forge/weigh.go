@@ -310,7 +310,13 @@ func Mechanisms(declared skill.Skill) []Mechanism {
 	if len(declared.Applies) > 0 || len(declared.SelfApplies) > 0 {
 		found = append(found, Applying)
 	}
-	if declared.Restores > 0 {
+	// Both places a heal can be written. A reserve-paid heal carries no flat
+	// `restores` at all — the whole payout is the condition's rate times the
+	// stacks the spend takes — so a reading of that field alone would report such
+	// a skill as declaring no mechanism, and Weigh refuses a row that declares
+	// none in so many words.
+	if declared.Restores > 0 ||
+		(declared.SelfRequires != nil && declared.SelfRequires.StackRestore > 0) {
 		found = append(found, Restoring)
 	}
 	if declared.Strips != nil {

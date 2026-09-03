@@ -305,6 +305,10 @@
         {
           "id": "sprout",
           "at_level": 20
+        },
+        {
+          "id": "verdant_mend",
+          "at_level": 28
         }
       ],
       "passives": [
@@ -498,6 +502,10 @@
         {
           "id": "pyre",
           "at_level": 40
+        },
+        {
+          "id": "cauterise",
+          "at_level": 28
         }
       ],
       "passives": [
@@ -1909,6 +1917,10 @@
         {
           "id": "tide_break",
           "at_level": 36
+        },
+        {
+          "id": "wellspring",
+          "at_level": 28
         }
       ],
       "passives": [

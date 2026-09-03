@@ -110,7 +110,16 @@ func TestTheShippedSpendersCoverTheLadder(t *testing.T) {
 		if err != nil || kind.Category != status.Reserve {
 			continue
 		}
-		if spends.Scales() {
+		// The question is what SHAPE the payment is, not what it buys. A spender
+		// paid per stack names no rung — it is the "spend what is there" arm
+		// whatever currency it is paid in — so a heal that scales would otherwise
+		// fall into the fixed-rung map below and collide with the blow that really
+		// does spend that count flat.
+		//
+		// ⚠️ Asked as two predicates rather than by widening Scales(), which the
+		// description reads to decide whether to promise a per-stack bonus to the
+		// blow. See skill.Condition.ScalesRestore.
+		if spends.Scales() || spends.ScalesRestore() {
 			scaling++
 			continue
 		}

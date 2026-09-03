@@ -105,6 +105,9 @@ soak            water     enemy    2  single          800     1    800   940    
 tide_break      water     enemy    2  single          900     1    900   880    3     0     0      308
 deluge          water     enemy    1  column          600     1    600   860    4     0     0      205
 sprout          grass     enemy    2  single          800     1    800   950    1     0     0      274
+cauterise       fire      self     0  single            0     1      0  1000    4     0     0        0
+verdant_mend    grass     self     0  single            0     1      0  1000    3     0     0        0
+wellspring      water     self     0  single            0     1      0  1000    4     0     0        0
 ice_shard       ice       enemy    2  single          750     1    750   950    1     0     0      257
 ice_beam        ice       enemy    3  single         1400     1   1400   900    3     0     0      480
 blizzard        ice       enemy    3  column          950     1    950   720    4     0     0      325
@@ -277,6 +280,9 @@ soak            -          -                 -                   -         pokem
 tide_break      -          -                 -                   -         pokemon
 deluge          -          -                 -                   -         pokemon
 sprout          -          -                 -                   -         pokemon
+cauterise       -          -                 -                   -         pokemon
+verdant_mend    -          -                 -                   -         pokemon
+wellspring      -          -                 -                   -         pokemon
 ice_shard       -          -                 -                   -         pokemon
 ice_beam        -          -                 -                   -         pokemon
 blizzard        -          -                 -                   -         pokemon
@@ -300,11 +306,21 @@ thorn_volley    caster   verdure                           5     550        1200
 bloom_burst     caster   verdure                          10     700        2900      240         994  4.14x (consumes)
 tide_break      caster   moisture                         20     900        4700      308        1611  5.23x (consumes)
 deluge          caster   moisture                          3     600         600      205         205  1.00x (consumes)
+cauterise       caster   swelter                           5       0           0        0           0      - (consumes)
+verdant_mend    caster   verdure                          10       0           0        0           0      - (consumes)
+wellspring      caster   moisture                         20       0           0        0           0      - (consumes)
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar
 skill           at empty   power   at the bottom   damage   at the bottom    gain
 comeback              900     900            1710      308             586   1.90x
+
+== what a reserve buys back ==
+health per stack, paid out of the caster's own counter, at the threshold and at the ceiling Takes clamps
+skill           status     needs   per stack   spends   restores   health   ceiling
+cauterise       swelter        5          90       22        450      360      1980
+verdant_mend    verdure       10         100       10       1000      800      1000
+wellspring      moisture      20          85       20       1700     1360      1700
 
 == what a detonate gives up ==
 the ticks of a damage-over-time, or the extra damage a stat debuff was letting through

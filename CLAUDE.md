@@ -210,6 +210,15 @@ Rules for anything added to that file:
   only the skill's own field prices `leech_seed` and leaves `blood_thirst` at
   nought, which is half a fix; skipping `worthHealing` makes it a flat bonus
   wearing a health check.
+- **A restore is priced from both its halves too, through `swingOf`.**
+  `pricing.restored` reads `declared.Restores + swingOf(...).Restore`, which is
+  the expression `Battle.restore` pays with — one function, so the price and the
+  payout cannot drift. A reserve-paid heal carries no flat `restores` at all, so a
+  price read off that field alone rates every one of them at nought and `Suggest`
+  never casts one. The cost side is `pricing.selfSpendable`, which has a health
+  arm beside its damage arm: a per-stack restore needs no share-of-a-cast because
+  it *is* the per-stack figure, and it clamps through `worthHealing` against the
+  holder — exact rather than a guess, because the skill is aimed at its caster.
 - **A blow is discounted by an absorbing POOL on its target, and an unblockable
   one is not.** `Battle.pastAPool`, read in `against` so every damage figure in
   the file inherits it. What a pool takes over a volley is the smaller of the pool
@@ -4045,6 +4054,30 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
   `Skill.Cost` shipped one field along. `Skill.SelfCeiling` is the reading a bound
   must use, because `Satisfying` is the cheapest case and a scaling payment is
   worth most at the deepest.
+- **`self_requires` also gained `stack_restore`**, the health twin of
+  `stack_power`: health per stack consumed, in permille of the caster's scaling
+  stat, which is the unit `restores` already counts in. It is what lets a reserve
+  pay for a heal instead of a blow, and with a base `restores` of nought the gate
+  falls out of the arithmetic — a caster holding no fuel heals nothing without a
+  cast gate being written anywhere. Bounded by `skill.MaxSpendRestore` in
+  `Condition.Takes`, on the STACKS for every word of the reason above, and
+  `Skill.SelfRestoreCeiling` is its reading of a bound.
+  ⚠️ **A condition may hold one rate or the other, never both** — two ceilings
+  cannot answer one `Takes`, so `resolveCondition` refuses the pair rather than
+  leaving `Takes` to choose.
+  ⚠️ **Do not widen `Condition.Scales` to cover it.** `describe.go` branches on
+  `Scales` to print what a stack adds *to the blow*, so a heal-only spender would
+  print that clause with a power of nought — wrong prose, and no test would fail.
+  `ScalesRestore` is a separate predicate for exactly that reason.
+  ⚠️ **The figure is handed to `Battle.restore`, not read there.** `Act` spends
+  before it pays out, so a reading taken inside `restore` asks an emptied tank and
+  answers nought on every cast, silently. It travels on `swing`, the reading taken
+  once per use — which is also why it cannot be read per target.
+  ⚠️ **`pricing.selfSpendable` skipped every skill of no power**, which is the
+  shape a reserve-paid heal has, so a unit whose only spender was a heal valued
+  its whole tank at nought: it never banked, cashing in cost nothing, and a dispel
+  against it was free. The guard belongs on the damage ARM, not on the search —
+  a share of a cast is meaningless when the cast is not a blow.
 - ⚠️ **`Battle.spend` called `Set.Consume` for as long as the field existed**, so
   `consume_stacks` on a caster's own condition parsed, round-tripped and was
   thrown away — the whole pile went whatever the author asked for. Nothing noticed
