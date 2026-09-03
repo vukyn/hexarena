@@ -234,7 +234,7 @@ func (l *listener) open(t *testing.T, configuration room.Config, dependencies ro
 // that are *about* a refusal call Dial themselves.
 func (l *listener) dial(t *testing.T, code wire.RoomCode, joining wire.Hello, books battle.Books) *Client {
 	t.Helper()
-	client, err := Dial(context.Background(), code, joining, books, l.timings)
+	client, err := Dial(context.Background(), code, joining, books, ClientOptions{Timings: l.timings})
 	if err != nil {
 		t.Fatalf("dial room %s: %v", code, err)
 	}
@@ -372,9 +372,20 @@ func (s *sink) everything() []string {
 // stepped is a decision the fixture counted, for a test that wants to act at a
 // chosen point in a match rather than at the end of one.
 //
-// It wraps a chooser and signals once, on the nth decision, which is race-free
-// where reading a Mirror from another goroutine would not be: a Mirror belongs
-// to its own client's loop.
+// It wraps a chooser and signals once, on the nth decision.
+//
+// ⚠️ **This note used to say that a test may not read a client's Mirror from
+// another goroutine, and that has changed: a Mirror carries an RWMutex now, so
+// every accessor and Mirror.Read are safe from anywhere.** What changed it was
+// not the tests — it was the full-screen client, which draws a battle its own
+// Play goroutine is stepping, and a lock was the only answer that did not turn
+// the client into the thin one README.md refuses.
+//
+// The wrapped chooser stays, and for a reason the lock does not cover: it gives
+// a test a **turn-ordered** signal rather than merely a safe one. "Read the
+// mirror when the third decision is being taken" is a thing a poll cannot say —
+// a poll can only report what it happened to see — and a fixture that slept
+// instead would be a fixture that fails on a loaded machine.
 func stepped(choose battle.Chooser, nth int) (battle.Chooser, <-chan struct{}) {
 	reached := make(chan struct{})
 	taken := 0

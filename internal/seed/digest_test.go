@@ -15,6 +15,8 @@ package seed
 import (
 	"crypto/sha256"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -328,5 +330,62 @@ func TestTheShippedDigestIsStableAndNotVacuous(t *testing.T) {
 	}
 	if first.Short() != first.String()[:12] {
 		t.Fatalf("Short %s is not the first twelve of %s", first.Short(), first.String())
+	}
+}
+
+// TestAnUneditedDirectoryDigestsAsTheEmbeddedCopyDoes is the claim DigestOf
+// exists to make, and it is the one this package's own framing can break without
+// either digest looking wrong.
+//
+// The shipped data directory **is** the embedded copy — go:embed reads exactly
+// these files — so the two digests must be equal. They were not: the first
+// DigestOf fed the hash `skills.json` where DataDigest feeds it
+// `data/skills.json`, and a name is part of the frame, so every unedited
+// directory came back as edited. Both digests were well formed and stable, which
+// is why nothing else noticed.
+//
+// What it sees: the prefix dropped from the framed name, a file read from the
+// wrong place, and a framing that stops matching DataDigest's for any other
+// reason.
+// What it cannot see: whether an *edited* directory is reported as edited — the
+// half below is what says that.
+func TestAnUneditedDirectoryDigestsAsTheEmbeddedCopyDoes(t *testing.T) {
+	embedded, err := DataDigest()
+	if err != nil {
+		t.Fatalf("digest the embedded copy: %v", err)
+	}
+	onDisk, err := DigestOf(os.DirFS("data"))
+	if err != nil {
+		t.Fatalf("digest the data directory: %v", err)
+	}
+	if onDisk != embedded {
+		t.Errorf("the shipped data directory digests %s and the copy embedded from it "+
+			"digests %s; these are the same bytes, so the two readings disagree about the "+
+			"framing rather than about the data", onDisk.Short(), embedded.Short())
+	}
+
+	// And the other half: a directory that really has been edited says so. A
+	// copy with one byte changed is the smallest edit there is.
+	scratch := t.TempDir()
+	for _, name := range dataFiles {
+		raw, err := files.ReadFile(name)
+		if err != nil {
+			t.Fatalf("read the embedded %s: %v", name, err)
+		}
+		if name == "data/skills.json" {
+			raw = append(raw, ' ')
+		}
+		bare := strings.TrimPrefix(name, dataPrefix)
+		if err := os.WriteFile(filepath.Join(scratch, bare), raw, 0o600); err != nil {
+			t.Fatalf("write %s: %v", bare, err)
+		}
+	}
+	edited, err := DigestOf(os.DirFS(scratch))
+	if err != nil {
+		t.Fatalf("digest the edited directory: %v", err)
+	}
+	if edited == embedded {
+		t.Error("a data directory with a byte added to skills.json digests the same as the " +
+			"embedded copy, so the notice this feeds would never fire")
 	}
 }

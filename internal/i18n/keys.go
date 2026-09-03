@@ -871,6 +871,81 @@ const (
 	// would have to name it on every character the key does nothing on. Drawn only
 	// while there is a choice, so a line that does not fork is exactly what it was.
 	FormChoice
+	// The two seats a room hands out, worded.
+	//
+	// wire.Seat travels as an id like every other protocol value, and this is
+	// the far end of it — the same shape Lang.Refusal and Lang.Closure take,
+	// keyed by the name wire.Seat already writes. It is worded rather than
+	// printed raw because a seat goes on the waiting screen beside sentences: a
+	// bare "host" on a Vietnamese screen is an English word in a column, which
+	// is exactly the leak the sweeps hunt for elsewhere.
+	SeatHost
+	SeatGuest
+
+	// # The lobby: joining a room, waiting for the second player, the result
+	//
+	// The three screens cmd/hexarena-tui grew for a match over a LAN, and they
+	// live in that client rather than in internal/screen because a lobby is
+	// drawn by one client — the authoring tool has no room to join. The
+	// wordings are here all the same, because that is where every wording in
+	// this repository lives and the client may hold none of its own.
+	//
+	// ⚠️ **This is what makes the ten refusals and the three closures readable
+	// by a person.** They were worded and unread until these screens arrived,
+	// which TODO.md records as one step narrower than "shipped dead": the join
+	// screen is where a refusal at the gate is drawn, the live battle is where
+	// a refusal mid-match is, and the result screen is where a closure is.
+	GameMenuJoin
+	GameMenuJoinDetail
+
+	JoinHeading
+	JoinCodeLabel
+	JoinCodePlaceholder
+	JoinPasswordLabel
+	JoinPasswordPlaceholder
+	JoinSquadLabel
+	JoinHint
+	JoinNoSquad
+	JoinCodeLength
+	// JoinDataEdited is the one honest consequence of the mirror being built
+	// from the embedded books: with a --data directory whose files differ from
+	// the ones this binary embeds, the catalogues are drawn from the library
+	// and the battle is fought on the built-in data, so the two can disagree.
+	//
+	// ⚠️ It is drawn only when the two digests really **differ**, measured
+	// rather than assumed: a --data pointing at an unmodified copy is the
+	// common case, and warning about that would be noise on every join.
+	JoinDataEdited
+	JoinDialling
+	JoinRefused
+	JoinFooter
+
+	WaitingHeading
+	WaitingForPeer
+	WaitingRoom
+	WaitingSeat
+	WaitingFormat
+	WaitingFooter
+
+	ResultHeading
+	ResultStanding
+	ResultBattleLine
+	ResultWon
+	ResultLost
+	ResultDrawn
+	ResultFooter
+
+	// The battle screen in live mode. Three footers and one drawn line.
+	//
+	// ⚠️ **The footers are second wordings rather than the local ones with
+	// clauses deleted**, which is the rule Context.Footer states for the
+	// authoring pair: a program deleting a clause out of a rendered line leaves
+	// the separators either side of it, and nothing measures what is left. A
+	// live battle names neither `u`, `n` nor the save key.
+	PlayLiveWaiting
+	PlayLiveFooter
+	PlayLiveAimFooter
+	PlayLiveOverFooter
 
 	keyCount
 )

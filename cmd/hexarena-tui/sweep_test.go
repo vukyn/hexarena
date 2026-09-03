@@ -7,11 +7,15 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
 
+	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/element"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
+	"github.com/vukyn/hexarena/internal/socket"
+	"github.com/vukyn/hexarena/internal/wire"
 )
 
 // # The sweep, and why this client had to be born with one
@@ -188,6 +192,18 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	// row's own value rather than a length: an exemption by length is a column
 	// waiting for the next row, which is what traitCarriers records going wrong.
 	screens["a forked detail pane"] = forked
+	// The lobby: three screens this client owns outright, and the battle in the
+	// three states live mode adds. → lobby.go for why they are not in
+	// internal/screen, and for the cost of that (one golden rather than two).
+	screens["a join screen"] = aJoinScreen(t, m)
+	screens["a join screen with no squad saved"] = aJoinScreenWithNothingToBring(t, m)
+	screens["a refused join"] = aRefusedJoin(t, m)
+	screens["waiting for the other player"] = waitingForTheOtherPlayer(t, m)
+	screens["a live battle"] = aLiveBattle(t, m)
+	screens["a live battle waiting on the other player"] = aLiveBattleWaiting(t, m)
+	screens["aiming in a live battle"] = aimingInALiveBattle(t, m)
+	screens["a finished match"] = aFinishedMatch(t, m)
+	screens["a match the other player left"] = aMatchTheOtherPlayerLeft(t, m)
 	return screens
 }
 
@@ -223,6 +239,210 @@ func theForkedBrowser(t *testing.T, m model) model {
 	}
 	t.Fatalf("no character in the cast forks at level %d, so nothing in this sweep "+
 		"measures the case the art preview refused to draw", forkLevel)
+	return m
+}
+
+// # The lobby's nine entries
+//
+// ⚠️ **None of them opens a socket, and that is a decision rather than a
+// shortcut.** What a sweep entry and a golden record is the **drawing**, and
+// nothing drawn here goes through a mirror: the battle screen is handed a
+// draw.PlayLive built in the test, the waiting and result screens are values the
+// model fills inside a Mirror.Read, and a refusal is a wire.Code. A room and two
+// sockets would put a network's timing into a golden for no line of it.
+//
+// What that leaves unmeasured is stated rather than implied: that this client
+// really *does* fill those values from a mirror is
+// TestAJoinedMatchPlaysToItsEndOverALoopbackListener, over a real listener, and
+// it is the only test here that can see it.
+
+// aJoinScreen is the screen as a reader finds it: two empty fields showing their
+// placeholders, and the first side on the catalogue under the chooser.
+func aJoinScreen(t *testing.T, m model) model {
+	t.Helper()
+	joining := m.enter(screenJoin)
+	if len(joining.join.Squads) == 0 {
+		t.Fatal("the join screen found no squad to bring, so this records the empty state twice")
+	}
+	drawn := drawnBody(joining)
+	if !strings.Contains(drawn, joining.text(i18n.JoinCodeLabel)) {
+		t.Fatalf("the join screen draws no room-code field:\n%s", drawn)
+	}
+	// The placeholder is wording like any other and is the one part of a text
+	// field a sweep can hold, so it is asserted here rather than assumed.
+	if !strings.Contains(drawn, joining.text(i18n.JoinCodePlaceholder)) {
+		t.Fatalf("the empty code field shows no placeholder:\n%s", drawn)
+	}
+	return joining
+}
+
+// aJoinScreenWithNothingToBring is the screen before the authoring tool has been
+// run: a room can be typed and there is no side to take into it.
+func aJoinScreenWithNothingToBring(t *testing.T, m model) model {
+	t.Helper()
+	joining := m.enter(screenJoin)
+	joining.join.Squads = nil
+	if !strings.Contains(drawnBody(joining), joining.text(i18n.JoinNoSquad)) {
+		t.Fatalf("the join screen with no squad says nothing about it, so this records an "+
+			"ordinary join screen twice:\n%s", drawnBody(joining))
+	}
+	// And the key does nothing, which is the other half of that line's promise.
+	pressed := key(t, joining, "enter")
+	if pressed.join.Dialling {
+		t.Fatal("a join with no squad to bring still called a room")
+	}
+	return joining
+}
+
+// aRefusedJoin is the gate turning this client away, which is where six of the
+// ten wire.Code refusals are read.
+func aRefusedJoin(t *testing.T, m model) model {
+	t.Helper()
+	joining := m.enter(screenJoin)
+	joining.join = joining.join.Failed(&socket.Refusal{Code: wire.CodeSquadRefused})
+	worded := joining.lang.Refusal(wire.CodeSquadRefused.String())
+	if !strings.Contains(drawnBody(joining), draw.WrapWords(worded, draw.MinWidth-3)[0]) {
+		t.Fatalf("the refused join draws nothing of the refusal:\n%s", drawnBody(joining))
+	}
+	return joining
+}
+
+// waitingForTheOtherPlayer is the room joined and the second seat still empty.
+func waitingForTheOtherPlayer(t *testing.T, m model) model {
+	t.Helper()
+	m.screen = screenWaiting
+	m.waiting = waitingScreen{
+		Code: fixtureRoomCode,
+		Seat: wire.SeatGuest,
+		Welcome: wire.Welcome{
+			Format: wire.Format3v3, Battles: 3, Allowance: 90,
+			TurnCap: 400, Seat: wire.SeatGuest,
+		},
+		Seated: true,
+	}
+	drawn := drawnBody(m)
+	// The seat is **worded**, which is the one thing about this screen a
+	// language sweep could otherwise miss: a bare "guest" in a Vietnamese column
+	// is an English word where the wording should be.
+	if !strings.Contains(drawn, m.lang.Seat(string(wire.SeatGuest))) {
+		t.Fatalf("the waiting screen does not name the seat in the reader's language:\n%s", drawn)
+	}
+	if !strings.Contains(drawn, string(fixtureRoomCode)) {
+		t.Fatalf("the waiting screen does not name the room that was joined:\n%s", drawn)
+	}
+	return m
+}
+
+// fixtureRoomCode is a code of the right shape for a screen to draw. It is never
+// dialled — nothing in this file opens a socket — so what matters about it is
+// that it is twelve characters of the alphabet a real one uses.
+const fixtureRoomCode = wire.RoomCode("VQICBXRVBMAA")
+
+// aLiveBattle is the battle screen over a battle **somebody else is driving**.
+//
+// ⚠️ **It builds its own battle**, like every other battle entry in this sweep
+// and for the same reason: draw.PlayScreen holds a *battle.Battle, so a fixture
+// handing several states one battle would step them all. The battle is built
+// through the local path and then handed to a live screen, which is exactly the
+// shape a socket.Mirror produces — an engine somebody else owns.
+func aLiveBattle(t *testing.T, m model) model {
+	t.Helper()
+	return attachedTo(t, withAFullLog(t, m.enter(screenBattle)), true)
+}
+
+// aLiveBattleWaiting is the same with the turn on the other side of the wire,
+// which is the one line live mode adds to the drawing.
+func aLiveBattleWaiting(t *testing.T, m model) model {
+	t.Helper()
+	waiting := attachedTo(t, withAFullLog(t, m.enter(screenBattle)), false)
+	if !strings.Contains(drawnBody(waiting), waiting.text(i18n.PlayLiveWaiting)) {
+		t.Fatalf("the waiting live battle says nothing about waiting, so this records an "+
+			"ordinary battle twice:\n%s", drawnBody(waiting))
+	}
+	return waiting
+}
+
+// aimingInALiveBattle is the second question a turn asks, on a battle this
+// screen does not drive.
+func aimingInALiveBattle(t *testing.T, m model) model {
+	t.Helper()
+	live := attachedTo(t, withAFullLog(t, m.enter(screenBattle)), true)
+	live.battle.Aiming = true
+	option := live.battle.Pending.Options[live.battle.Option]
+	if len(option.Aims) == 0 {
+		t.Fatalf("the option %q has nowhere to point, so the aim list is empty", option.Skill)
+	}
+	if want := live.text(i18n.PlayAimAt, option.Skill); !strings.Contains(drawnBody(live), want) {
+		t.Fatalf("the aiming live battle draws no aim list:\n%s", drawnBody(live))
+	}
+	return live
+}
+
+// attachedTo turns a local battle screen into a live one over the same engine,
+// with or without a turn of this player's open.
+func attachedTo(t *testing.T, m model, asking bool) model {
+	t.Helper()
+	if m.battle.Fight == nil || m.battle.Pending == nil {
+		t.Fatalf("the battle opened on nothing to attach to: %v", m.battle.Err)
+	}
+	live := draw.PlayLive{Fight: m.battle.Fight, Side: m.battle.Side, Seed: m.battle.Seed}
+	if asking {
+		live.Asking = m.battle.Pending
+	}
+	m.battle = draw.NewPlayScreen().Attach(m.ctx(), live)
+	m.screen = screenBattle
+	if !m.battle.Live {
+		t.Fatal("the battle screen did not go live, so this records a local battle twice")
+	}
+	if _, footer := m.parts(); footer == m.text(i18n.PlayFooter, draw.SaveKeyLabel()) {
+		t.Fatalf("the live battle draws the local footer:\n%s", footer)
+	}
+	return m
+}
+
+// aFinishedMatch is the series settled, which is where the standing is drawn.
+//
+// ⚠️ **Three battles with a side that swapped**, because a match is fought both
+// ways round: a fixture with one side throughout would record a standing that
+// could not tell a bo3 from a bo1 played three times.
+func aFinishedMatch(t *testing.T, m model) model {
+	t.Helper()
+	m.screen = screenResult
+	m.result = resultScreen{Fought: []socket.Fought{
+		{Battle: 1, Side: hex.SideAlly, Seed: 11, Outcome: battle.Victory,
+			Winner: hex.SideAlly, Decided: true, Turns: 40},
+		{Battle: 2, Side: hex.SideEnemy, Seed: 12, Outcome: battle.Victory,
+			Winner: hex.SideAlly, Decided: true, Turns: 36},
+		{Battle: 3, Side: hex.SideAlly, Seed: 13, Outcome: battle.Stalemate, Turns: 51},
+	}}
+	mine, theirs := m.result.standing()
+	if mine != 1 || theirs != 1 {
+		t.Fatalf("the fixture standing is %d-%d, want a battle each so the drawn line "+
+			"carries two different numbers of its own", mine, theirs)
+	}
+	if !strings.Contains(drawnBody(m), m.text(i18n.ResultStanding, mine, theirs)) {
+		t.Fatalf("the finished match draws no standing:\n%s", drawnBody(m))
+	}
+	return m
+}
+
+// aMatchTheOtherPlayerLeft is the one ending a mirror cannot compute, and the
+// only place a wire.Closure is ever read.
+func aMatchTheOtherPlayerLeft(t *testing.T, m model) model {
+	t.Helper()
+	m.screen = screenResult
+	m.result = resultScreen{
+		Fought: []socket.Fought{
+			{Battle: 1, Side: hex.SideAlly, Seed: 11, Outcome: battle.Victory,
+				Winner: hex.SideEnemy, Decided: true, Turns: 44},
+		},
+		Closure: wire.ClosureLeft.String(),
+	}
+	worded := m.lang.Closure(wire.ClosureLeft.String())
+	if !strings.Contains(drawnBody(m), draw.WrapWords(worded, draw.MinWidth-3)[0]) {
+		t.Fatalf("the abandoned match says nothing about why it stopped, so this records "+
+			"an ordinary result twice:\n%s", drawnBody(m))
+	}
 	return m
 }
 

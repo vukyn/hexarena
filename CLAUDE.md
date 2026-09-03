@@ -50,8 +50,10 @@ go run ./cmd/hexforge spar some.id --seeds 200   # duel it against the whole cas
 go run ./cmd/hexforge-tui                        # the same authoring, full screen (needs a terminal), in Vietnamese
 go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG=en does the same, ctrl+l toggles
 
-go run ./cmd/hexarena-tui                        # play, full screen: the catalogues a reader wants, and a battle
+go run ./cmd/hexarena-tui                        # play, full screen: the catalogues a reader wants, a battle, and a room to join
 go run ./cmd/hexarena-tui --lang en              # ...in English; same flag, same variable, same ctrl+l
+#   ninth menu entry: paste the twelve-character code a host printed, type the room's
+#   password if it has one, pick the squad to bring, and play the other person
 
 go run ./cmd/hexarena-host                       # host one PvP match: prints the room code, serves it, prints the result
 go run ./cmd/hexarena-host -battles 3 -password nhaminh   # a bo3 behind a gate; -h says why that flag is visible in ps
@@ -68,11 +70,16 @@ play-tui forge forge-tui forge-tui-en host test golden fmt vet check clean`. `ma
 build` builds all **five** binaries; `make forge ARGS="show some.id"`, `make
 play-tui ARGS="--lang en"` and `make host ARGS="-battles 3"` pass arguments
 through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
-`go test ./... -count=1`, then `-race` over `internal/room`, `internal/socket`
-**and `cmd/hexarena-host`** — the three places concurrency lives; the host binary
-prints from three goroutines at once, because the transport calls its Joined and
-Report callbacks on a connection's own goroutine); `make golden` is the `-update`
-line above. The raw
+`go test ./... -count=1`, then `-race` over `internal/room`, `internal/socket`,
+**`cmd/hexarena-host` and `cmd/hexarena-tui`** — the four places concurrency
+lives; the host binary prints from three goroutines at once, because the
+transport calls its Joined and Report callbacks on a connection's own goroutine,
+and the game client **draws a battle another goroutine is stepping**, which is
+the first thing in the repository to do so. ⚠️ The client's is by far the most
+expensive line: **3.6s plain, 33.1s under the detector**, and almost none of that
+is the concurrency — the four tests that run a match total about 4s and the rest
+is that package's five sweeps rendering every screen in both languages at two
+sizes); `make golden` is the `-update` line above. The raw
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
 
@@ -1187,8 +1194,9 @@ checks every event, and `--auto` / `--log` are the scriptable half. Nothing abou
 it changed, and nothing about it may.
 
 **What the game client offers**: a menu, the seven catalogues a reader wants
-(characters, skills, elements, traits, species, works, squads) and a battle, plus
-three screens reached by a keystroke rather than by the menu — the affinity chart
+(characters, skills, elements, traits, species, works, squads), a battle and a
+**room to join** — the ninth entry, which is the lobby the PvP work landed
+in — plus three screens reached by a keystroke rather than by the menu — the affinity chart
 (`g` on the elements listing), the statuses reference (`?` on the traits listing)
 and the description screen (`?` from three places). The build catalogue and the
 art preview are the two `internal/screen` owns that it does not reach; both are
@@ -1251,15 +1259,20 @@ which is what makes a Target sayable for a screen this package will never draw.
   squad is `Home` — the side the player fights on, since `Squad.Take` fields home
   as the ally half — and the opponent is `Away`.
 
-⚠️ **The opponent is the seam and it is stubbed rather than invented.**
-`README.md` § *PvP over a LAN* says what the real answer is: two people on a LAN,
-each bringing a squad saved on their own machine, and a **server** that pairs
-them. Until a server sends one, `cmd/hexarena-tui/pairing.go` takes **the next
-side on the file, wrapping** — which is one side against a copy of itself when
-the catalogue holds one, the pairing every fixture in `internal/screen` opens on
-and the one the authoring tool's fight calls its control. `pairing` is one
-function on purpose: when the server arrives it is the only thing that changes,
-and the battle screen never learns that the second squad came off a socket.
+⚠️ **The opponent WAS the seam, and the seam has now been crossed — but not
+where that sentence predicted.** `cmd/hexarena-tui/pairing.go` still takes **the
+next side on the file, wrapping**, which is one side against a copy of itself
+when the catalogue holds one, the pairing every fixture in `internal/screen`
+opens on and the one the authoring tool's fight calls its control. What is no
+longer true is the claim that `pairing` is the only thing the server replaces:
+three quarters of it was wrong and the file now says so. On the network path the
+away side is **never a `placement.Squad` on this client** — it arrives already
+resolved as `[]battle.Roster` on a `wire.Start`, because `Squad.Take` is the
+*server's* call at the gate — `enter` does not hand two squads to `Open` (a live
+battle is `Attach`ed), and the battle screen **does** learn the difference, in
+one field: `draw.PlayScreen.Live`. What survived is that `landSquad` still
+records which side the reader chose, and that answer now fills
+`wire.Hello.Squad`.
 
 ⚠️ **A mirror was the obvious answer and is measurably worse.** Two identical
 sides make the halves of a battle interchangeable — same board, same roster, same
@@ -1694,6 +1707,37 @@ on one connection, which is what makes a close from that connection's own gorout
 safe against a dispatch from somebody else's. Always taken in that order, so there
 is no cycle.
 
+**⚠️ The `Mirror` is safe to DRAW while `Play` is stepping it, and that is new.**
+It used to say it was not safe for concurrent use and needed not to be — one
+client, one connection, one goroutine reading it — and that stopped being true
+the moment a terminal drew one. `cmd/hexarena-tui` runs `Play` on its own
+goroutine and redraws on bubbletea's, so the battle `Play` is stepping is the
+battle the screen is reading. So `Mirror` carries an `RWMutex`: `Receive` takes
+the write lock for a whole message, every accessor takes the read lock, and
+`Mirror.Read(func(Sight))` is the one safe way for a renderer to look at several
+readings at once — a screen that asked for the battle, then the prompt, then the
+side would otherwise get three readings of three different moments.
+- ⚠️ **`Decide` releases the lock before it calls the chooser**, and *why* that
+  matters was got wrong once. It is **not** "two readers cannot both be in" — an
+  RWMutex admits several, and holding the lock across `choose` passes a test
+  built on that prediction (measured). What breaks is a **writer arriving while
+  the chooser waits**: Go queues a waiting writer ahead of new readers, so the
+  next `Receive` blocks behind the held read lock and the renderer blocks behind
+  the writer — and the renderer is what the player is waiting to see before they
+  can answer. `TestDecideDoesNotHoldTheLockAcrossTheChooser` builds that three-way
+  and is the only thing that sees it.
+- ⚠️ **Nothing a `Sight` hands over may outlive the callback**, and that is held
+  by the doc comment and by nothing else — a `*battle.Battle` is handed out on
+  purpose, because a client computes the board by computing the battle, so no
+  type walk can refuse one. Same rule as `room.request`'s closure argument.
+- **`ClientOptions.Stepped`** is the redraw hook, called on the `Play` goroutine
+  after every message that loop takes in, **with no lock held** and handed
+  **nothing**. A chooser alone cannot drive a screen: it only fires on this
+  client's turns, so a board driven by one would sit still for the whole of the
+  opponent's — up to a ninety-second allowance of a screen that looks frozen.
+  ⚠️ It is *not* called for the welcome, which arrives during the handshake
+  before `Play` exists; a screen has the room's format the moment `Dial` returns.
+
 **⚠️ The `Mirror` is production code in this package, and that is a decision about
 the protocol.** It is filed in `TODO.md` under *the client*, and it is here because
 **nothing on the wire says whose turn it is**: `wire.Turn` carries a decision and a
@@ -1733,18 +1777,23 @@ one, and writing it as a fixture to promote later would be writing it twice.
   list: the only deadline here is the write timeout, so exceeding one is a peer
   that has stopped reading — exactly what the error sink is for.
 
+**⚠️ Two fixture rules, one of which has been retired.** A test may now read a
+client's `Mirror` from another goroutine — the lock is what changed — and the
+wrapped chooser stays anyway, because it gives a test a **turn-ordered** signal
+rather than merely a safe one: "read the mirror when the third decision is being
+taken" is a thing a poll cannot say. The other rule stands: a client returning
+from `Play` does **not** mean the server has torn its table down, which is why
+the leak check polls.
+
 **⚠️ The tests are IN `package socket`**, the opposite of `internal/room`'s choice,
 and the reason is that two claims cannot be produced from outside: a **late
 timeout** is a race, so driving it from outside means sleeping and hoping, and
 **`table.late`** leaves no other trace. Everything else goes over a real loopback
-listener through the exported surface. Two fixture rules came out of it: a test may
-not read a client's `Mirror` from another goroutine (it belongs to that client's
-loop, and the detector is right about it) — so the fixtures signal through a
-**wrapped chooser** instead; and a client returning from `Play` does **not** mean
-the server has torn its table down, which is why the leak check **polls**.
+listener through the exported surface. → the two fixture rules above.
 
 **What is deliberately NOT in here**, so a reader does not go looking: any TUI
-screen, the lobby/waiting/countdown drawing, the wordings (a `wire.Code` and a
+screen — the lobby, waiting and result screens are `cmd/hexarena-tui`'s own and
+the countdown is unbuilt — the wordings (a `wire.Code` and a
 `wire.Closure` travel as ids precisely so the sentence lives at the client's far
 end — `socket.Refusal` carries the code and words nothing), the seat token and the
 rejoin, writing a finished match out as a `battle.Log`, spectators, TLS (→
@@ -2651,6 +2700,19 @@ code.
 
 Balance lives in `internal/seed/data`, embedded with `go:embed`. Changing a number
 there changes the game without touching Go.
+
+**Two goldens grew with the lobby, and both are named here so the next `make
+golden` reader knows what moved.** `internal/screen/testdata/screens.golden`
+gained **two** entries — `a live battle` and `a live battle waiting`, the two
+states `draw.PlayScreen.Live` adds — and
+`cmd/hexarena-tui/testdata/screens.golden` gained **nine**: three join-screen
+states, the waiting screen, three live battle states and two result screens. The
+only *existing* block that moved in either is that client's **menu**, which grew
+its ninth row and, in English, widened its measured label column from eight cells
+to eleven because "join a room" is the longest label there now.
+`cmd/hexforge-tui`'s golden is **unchanged**, which is the check that the local
+`PlayScreen` drawing did not move: that client draws it in local mode only, so
+any diff there would have been the regression.
 
 `skills.json` is the exception that is **balance and tool-written at once**:
 `hexforge skills add` and the full-screen client's skill form both append to it,

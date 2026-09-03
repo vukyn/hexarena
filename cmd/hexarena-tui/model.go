@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -9,6 +10,9 @@ import (
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
+	"github.com/vukyn/hexarena/internal/seed"
+	"github.com/vukyn/hexarena/internal/socket"
+	"github.com/vukyn/hexarena/internal/wire"
 )
 
 // screen is which view is in front.
@@ -54,6 +58,20 @@ const (
 	// screenPreview is the art a character shows at the level being walked,
 	// raised from the browser with `p`.
 	screenPreview
+	// The three lobby screens, which are this client's own and are drawn by
+	// nothing in internal/screen. → lobby.go for why they live here.
+	//
+	// screenJoin is reached from the menu — a ninth entry — rather than with a
+	// key on the squad catalogue, even though a squad is under a cursor there:
+	// that would need a draw.Target both clients must map and cmd/hexforge-tui
+	// could only decline, and the squad chooser belongs beside the code and the
+	// password it is submitted with anyway.
+	screenJoin
+	// screenWaiting is the room joined and the second seat still empty.
+	screenWaiting
+	// screenResult is the match's end, and it is the one screen that draws a
+	// wire.Closure — the ending a mirror cannot compute for itself.
+	screenResult
 	// screenCount is how many views this client has, and it exists so a test can
 	// walk them.
 	//
@@ -106,6 +124,7 @@ var menuItems = []menuItem{
 	{i18n.MenuOrigins, i18n.GameMenuWorksDetail, screenWorks},
 	{i18n.MenuSquads, i18n.GameMenuSquadsDetail, screenSquads},
 	{i18n.GameMenuBattle, i18n.GameMenuBattleDetail, screenBattle},
+	{i18n.GameMenuJoin, i18n.GameMenuJoinDetail, screenJoin},
 }
 
 // model is the whole program: a library, the language, the screen in front, and
@@ -176,9 +195,26 @@ type model struct {
 	chart   draw.ChartScreen
 	blurb   draw.BlurbScreen
 	preview draw.PreviewScreen
+
+	// The three this client owns outright. → lobby.go.
+	join    joinScreen
+	waiting waitingScreen
+	result  resultScreen
+
+	// session is the PvP side: the socket, the goroutine running Play, and the
+	// two channels between it and this model.
+	//
+	// ⚠️ **A pointer, and it is the one field on this model that is not copied
+	// with it.** The model is a value handed back on every keystroke, so a
+	// session copied with it would be a second set of channels and a second
+	// idea of which match is live. It is also the reason draw.PlayScreen's own
+	// note about holding a pointer the model does not copy now has a
+	// neighbour — and the discipline is the same: the battle behind it is read
+	// under a lock and never kept.
+	session *session
 }
 
-func newModel(lib *forge.Library, lang i18n.Lang) model {
+func newModel(lib *forge.Library, lang i18n.Lang, sess *session) model {
 	style := newPalette()
 	// Two of these screens are built from a Context rather than from a library
 	// alone, because they dress text fields and internal/screen may not read the
@@ -207,6 +243,8 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		battle:   draw.NewPlayScreen(),
 		statuses: draw.NewStatusesScreen(lib),
 		preview:  draw.NewPreviewScreen(),
+		join:     newJoinScreen(),
+		session:  sess,
 	}
 }
 
@@ -237,8 +275,112 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyPressMsg:
 		return m.key(typed)
+	case matchJoinedMsg:
+		return m.joined(typed.client), nil
+	case matchFailedMsg:
+		m.join = m.join.Failed(typed.err)
+		// The dial is over however it went, so the session is disarmed here
+		// rather than left holding a cancel nobody will call.
+		m.session.leave()
+		return m, nil
+	case matchSteppedMsg, matchAskingMsg:
+		// ⚠️ **Both are redraw triggers carrying nothing** and both come to the
+		// same thing: read the mirror and re-attach. matchAskingMsg is not a
+		// separate arm because "it is your turn" is not a fact this model keeps
+		// — socket.Mirror.Asking is the only derivation there is, and it is read
+		// under the lock like everything else.
+		return m.stepped(), nil
+	case matchEndedMsg:
+		return m.ended(), nil
 	}
 	return m, nil
+}
+
+// joined is the dial having got past the gate: the session takes the client and
+// starts its loop, and the reader lands on the waiting screen.
+//
+// The welcome is read here rather than waited for, and that is measured: it
+// arrives during the handshake, before Play exists, so it is on the mirror the
+// moment Dial returns and no step has to happen for the room's format to be
+// drawable. → socket's TestSteppedIsCalledForEveryMessageAndHoldsNoLock.
+func (m model) joined(client *socket.Client) model {
+	m.session.begin(client)
+	m.waiting.Code, m.waiting.Seat = client.Code(), client.Seat()
+	m.waiting.Welcome, m.waiting.Seated = client.Mirror().Welcome()
+	m.join.Dialling, m.join.At = false, ""
+	m.screen = screenWaiting
+	return m
+}
+
+// stepped re-reads the mirror and points the battle screen at whatever it found.
+//
+// ⚠️ **Everything about the battle happens inside the callback**, which is the
+// whole discipline this client is under: session.read runs it under the mirror's
+// read lock, and a *battle.Battle handed out of it would be a pointer into a
+// battle the Play goroutine is stepping.
+func (m model) stepped() model {
+	m.session.read(func(sight socket.Sight) {
+		if sight.Fight != nil {
+			m.battle = m.battle.Attach(m.ctx(), liveOf(sight))
+			if m.screen == screenWaiting {
+				m.screen = screenBattle
+			}
+		}
+		if sight.Over {
+			m.result = resultOf(sight)
+		}
+	})
+	return m
+}
+
+// ended is Play having returned: the reader lands on the result, with whatever
+// the loop returned beside the standing.
+//
+// ⚠️ **It reads the mirror one last time rather than trusting what the last step
+// left**, because the ending itself arrives as a message: the wire.Closed a
+// departure sends is taken in by Receive, and the step that carried it is the
+// one immediately before Play returns.
+func (m model) ended() model {
+	m.session.read(func(sight socket.Sight) { m.result = resultOf(sight) })
+	if err, done := m.session.outcome(); done {
+		m.result.Err = err
+	}
+	m.screen = screenResult
+	return m
+}
+
+// liveOf is a mirror's reading turned into what the battle screen needs of it.
+//
+// ⚠️ **The refusal is carried as a NAME**, which is what keeps internal/wire out
+// of internal/screen: the screen draws it through i18n.Lang.Refusal, whose whole
+// signature exists so that a shared drawing package never has to know the
+// protocol. The **latest** one, because a refusal does not end a connection —
+// several can arrive in a match, and what a player needs is the one that just
+// happened.
+func liveOf(sight socket.Sight) draw.PlayLive {
+	live := draw.PlayLive{
+		Fight:  sight.Fight,
+		Asking: sight.Asking,
+		Side:   sight.Side,
+		Seed:   sight.Seed,
+	}
+	if len(sight.Refusals) > 0 {
+		live.Refusal = sight.Refusals[len(sight.Refusals)-1].String()
+	}
+	return live
+}
+
+// resultOf is a mirror's reading turned into the result screen.
+//
+// ⚠️ **The fought list is COPIED out of the sight.** Mirror.Read's own rule is
+// that nothing it hands over may outlive the call, and this screen keeps what it
+// is given until the reader leaves it.
+func resultOf(sight socket.Sight) resultScreen {
+	result := resultScreen{Fought: slices.Clone(sight.Fought)}
+	if sight.Closure.Closes() {
+		result.Closure = sight.Closure.String()
+	}
+	return result
 }
 
 // key routes one keystroke.
@@ -315,8 +457,97 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.updateBlurb(message)
 	case screenPreview:
 		return m.updatePreview(message)
+	case screenJoin:
+		next, action, command := m.join.Update(m.ctx(), message)
+		dial := m.dialling(next)
+		m.join = next
+		if dial != nil {
+			// ⚠️ The dial replaces the field's own blink, and that is right
+			// rather than a loss: a screen with a network round trip in flight
+			// takes no keystrokes, so there is no cursor to keep alive.
+			return m, dial
+		}
+		return m.navigateWith(screenJoin, action, command)
+	case screenWaiting:
+		return m.updateWaiting(message)
+	case screenResult:
+		return m.updateResult(message)
 	}
 	return m, nil
+}
+
+// dialling is the command a join screen asked for by turning Dialling on, and
+// nil the rest of the time.
+//
+// ⚠️ **The screen says which room and the client owns the socket**, which is the
+// same division every raise in this program is under: a screen names what it
+// wants and asks nobody how it is done. It is read as a *transition* — off, then
+// on — so a redraw while a dial is in flight does not open a second one.
+func (m model) dialling(next joinScreen) tea.Cmd {
+	if m.join.Dialling || !next.Dialling {
+		return nil
+	}
+	squad, have := next.Chosen()
+	if !have {
+		return nil
+	}
+	// ⚠️ **The mirror is built from the EMBEDDED books, whatever --data says.**
+	// wire.Version's digest is over the embedded files, so a client that fought
+	// on an edited directory would pass a gate promising the two peers simulate
+	// the same battle and then fight a different one — a divergence on turn one,
+	// reported correctly and confusingly. Refusing to pass the digest's own
+	// promise on to the battle is the whole reason the digest exists. The join
+	// screen says so when the two really differ. → i18n.JoinDataEdited.
+	books, err := seed.Books()
+	if err != nil {
+		m.join.Err = err
+		return nil
+	}
+	version, err := wire.Local(buildString())
+	if err != nil {
+		m.join.Err = err
+		return nil
+	}
+	return m.session.dial(next.At, wire.Hello{
+		Version:  version,
+		Squad:    squad,
+		Password: wire.Password(next.Password.Value()),
+	}, books)
+}
+
+// updateWaiting and updateResult are the two lobby screens with no keys of their
+// own beyond leaving.
+//
+// esc on the waiting screen **leaves the room**, which costs nothing and is not
+// asked about: nobody forfeits, so a confirmation would be this client inventing
+// a cost the design refused. → session.leave.
+func (m model) updateWaiting(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if message.String() == "esc" {
+		return m.leaveMatch(), nil
+	}
+	return m, nil
+}
+
+func (m model) updateResult(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if message.String() == "esc" {
+		// The match is already over, so this is only tidying: the session is
+		// disarmed and the battle screen goes back to being a local one.
+		return m.leaveMatch(), nil
+	}
+	return m, nil
+}
+
+// leaveMatch ends whatever match is joined and puts the reader back on the menu.
+//
+// The battle screen is replaced rather than merely marked, because a live
+// PlayScreen holds the mirror's battle: keeping it would leave this client
+// drawing a board nobody is stepping any more.
+func (m model) leaveMatch() model {
+	m.session.leave()
+	m.battle = draw.NewPlayScreen()
+	m.screen = screenMenu
+	m.raisedFrom, m.raisedOver = screenMenu, screenMenu
+	return m
 }
 
 // raiseTargets is what a draw.Target means to this client.
@@ -351,18 +582,45 @@ var raiseTargets = map[draw.Target]screen{
 func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 	switch action.Kind {
 	case draw.Quit:
-		// ⚠️ **This client ends there too, for now.** draw.Quit is an action
-		// rather than a tea.Cmd precisely so a game client with a battle half
-		// played could ask first — the kind's own comment says so — and a battle
-		// here is a pure function of its seed and the decisions taken, so
-		// abandoning one costs nothing that `ctrl+s` could not have written out.
-		// The day a match is a thing two people are in the middle of, this is the
-		// one line that changes.
+		// ⚠️ **This client ends there, and the day a match was a thing two
+		// people were in the middle of has come without this line changing.**
+		// The comment here used to predict the opposite — "this is the one line
+		// that changes" — and it was wrong for a reason worth keeping rather
+		// than deleting: **leaving mid-match costs nothing by design.** Nobody
+		// forfeits (→ README.md § Nobody forfeits: "a player who is losing can
+		// leave at no cost… the enforcement is social"), a departure announces
+		// and ends the match as abandoned, and neither seat is charged with
+		// anything. A confirmation would be this client inventing a cost the
+		// design deliberately refused.
+		//
+		// What a quit mid-match does owe is that the Play goroutine stops, and
+		// that is not this line's job either: run's own `defer sess.leave()`
+		// fires however program.Run returns, which is what makes it a guarantee
+		// rather than a thing to remember here.
+		//
+		// A hot-seat battle is likewise a pure function of its seed and the
+		// decisions taken, so abandoning one costs nothing `ctrl+s` could not
+		// have written out.
 		return m, tea.Quit
 	case draw.Back:
+		// ⚠️ **esc out of a live battle leaves the MATCH rather than going back
+		// one screen**, and that is the one place a Back means something this
+		// client had to decide: the screen behind a match is the room it was
+		// joined from, which no longer exists. Leaving costs nothing and is not
+		// asked about — nobody forfeits — so this is the whole of it.
+		if from == screenBattle && m.battle.Live {
+			return m.leaveMatch(), nil
+		}
 		return m.goBack(), nil
 	case draw.Raise:
 		return m.raise(from, action)
+	case draw.Answer:
+		// The one keystroke a battle is about, on its way to the chooser Play is
+		// blocked on. It **never blocks**: nobody asking means the answer is
+		// dropped, which is right, because there is no turn for it to be about.
+		// → session.answer.
+		m.session.answer(action.Answer)
+		return m, nil
 	case draw.Ask, draw.Pick:
 		// ⚠️ **Nothing this client draws can ask for either, and that is measured
 		// rather than assumed.** Both are the authoring half of the vocabulary: an
@@ -476,7 +734,7 @@ func (m model) updateMenu(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			m.menu++
 		}
 	case "enter", "space":
-		return m.enter(menuItems[m.menu].target), nil
+		return m.enterUnlessInAMatch(menuItems[m.menu].target), nil
 	}
 	return m, nil
 }
@@ -513,7 +771,37 @@ func (m model) enter(target screen) model {
 		m.squads = m.squads.Refresh(m.ctx())
 		home, away := m.pairing()
 		m.battle = m.battle.Open(m.ctx(), home, away)
+	case screenJoin:
+		// The catalogue is re-read for the reason the battle re-reads it: the
+		// authoring tool is the thing that writes squads.json and the ordinary
+		// way somebody plays a side is to have just built it.
+		m.squads = m.squads.Refresh(m.ctx())
+		m.join = m.join.Refresh(m.ctx(), m.squads.Saved)
 	}
+	return m
+}
+
+// enter is asked before either of the two screens a match owns, because a match
+// is a thing two people are in the middle of.
+//
+// ⚠️ **This is one of the two risks of drawing a live battle and a hot-seat one
+// on ONE model field.** A player cannot be in both at once, so one
+// draw.PlayScreen serves both — but the menu still offers a battle, and
+// `enter(screenBattle)` from the menu while a match is live would Open a
+// hot-seat game over the top of the mirror's: the reader would be playing
+// themselves while a person on another machine waited for a turn. The join
+// entry is refused for the mirror image of the same reason — a second Dial
+// would orphan the first socket. Both go to the match instead, which is where
+// the reader was trying to get back to anyway.
+func (m model) enterUnlessInAMatch(target screen) model {
+	if !m.session.live() || (target != screenBattle && target != screenJoin) {
+		return m.enter(target)
+	}
+	if m.battle.Live && m.battle.Fight != nil {
+		m.screen = screenBattle
+		return m
+	}
+	m.screen = screenWaiting
 	return m
 }
 
@@ -567,6 +855,12 @@ func (m model) parts() (body, footer string) {
 		return m.blurb.View(m.ctx())
 	case screenPreview:
 		return m.preview.View(m.ctx())
+	case screenJoin:
+		return m.join.View(m.ctx())
+	case screenWaiting:
+		return m.waiting.View(m.ctx())
+	case screenResult:
+		return m.result.View(m.ctx())
 	}
 	return "", ""
 }

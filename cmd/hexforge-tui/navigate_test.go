@@ -3,6 +3,7 @@ package main
 import (
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
 )
@@ -302,6 +303,36 @@ func TestEveryActionKindIsAppliedByThisClient(t *testing.T) {
 			if asked.screen != base.screen {
 				t.Errorf("an Ask moved to screen %v; a question is drawn over what is in front",
 					asked.screen)
+			}
+		},
+		draw.Answer: func(t *testing.T) {
+			// ⚠️ **Nothing this client draws can produce one**, which is the
+			// same reasoning cmd/hexarena-tui's own Ask-and-Pick arm rests on
+			// pointed the other way: an Answer is a decision taken on a battle
+			// the screen does not drive — draw.PlayScreen.Live — and that mode
+			// belongs to a PvP match. This client draws that screen in local
+			// mode only, where every turn goes through the engine on the way in.
+			//
+			// So what is asserted is that the arm exists and does nothing:
+			// nothing moves, no command is asked for, and the decision goes
+			// nowhere, because there is no socket behind this client to send it
+			// down. The count is what stops it being *absent* instead.
+			before := base.screenContent()
+			after, command := base.navigate(screenFight, draw.Action{
+				Kind:   draw.Answer,
+				Answer: draw.PlayAnswer{Choice: battle.Choice{Skill: "razor_leaf"}, Acted: true},
+			})
+			if command != nil {
+				t.Error("an Answer asked for a command")
+			}
+			applied := after.(model)
+			if applied.screen != base.screen {
+				t.Errorf("an Answer moved to screen %v; a decision navigates nowhere",
+					applied.screen)
+			}
+			if applied.screenContent() != before {
+				t.Error("an Answer changed what this client draws, and this client has no " +
+					"battle anybody else is driving")
 			}
 		},
 		draw.Pick: func(t *testing.T) {

@@ -2280,8 +2280,15 @@ with the registry of many rooms beside it, **`internal/socket` is the
 transport** — a WebSocket server around the registry, a dialling client, and the
 mirror that client needs in order to be a client at all — and
 **`cmd/hexarena-host` is the host binary**, which opens a room, prints the code,
-serves the match and exits. What is left is **the client's own screens**; each
-subsection below says which of it is code and which is still the record.
+serves the match and exits. **The client's own screens are built too**: the ninth
+entry on `cmd/hexarena-tui`'s menu is a lobby where a player pastes a code, types
+the room's password and picks the squad to bring, and from there a waiting screen,
+the ordinary battle screen driven by the mirror, and a result screen that finally
+*speaks* the refusals and the closures.
+
+What is left of this section as a record rather than as code: the **countdown**
+(both clocks drawn, so a player can see the other one thinking), **rejoin**, a
+player squad file, spectators and mDNS browsing. → `TODO.md`.
 
 ```
 $ hexarena-host -battles 3

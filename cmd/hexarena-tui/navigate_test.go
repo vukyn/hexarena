@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
@@ -124,6 +125,38 @@ func TestEveryActionKindIsAppliedByThisClient(t *testing.T) {
 			}
 			if command != nil {
 				t.Error("an Ask asked for a command")
+			}
+		},
+		draw.Answer: func(t *testing.T) {
+			// ⚠️ **This client is the one that CAN apply an Answer**, unlike the
+			// authoring tool, so this arm drives the real thing: the decision is
+			// handed to the session's answer channel, and what says it arrived is
+			// that the chooser waiting on that channel takes it.
+			//
+			// It is driven through navigate rather than by pressing enter on a
+			// live battle, because what this walk is about is the *applier* being
+			// total — TestALiveBattleTakesNoTurnOfItsOwn over in internal/screen
+			// is what says the key produces the Answer in the first place.
+			m := base
+			m.session.open()
+			taken := draw.PlayAnswer{Choice: battle.Choice{Skill: "razor_leaf"}, Acted: true}
+			after, command := m.navigate(screenBattle,
+				draw.Action{Kind: draw.Answer, Answer: taken})
+			if command != nil {
+				t.Error("an Answer asked for a command")
+			}
+			if got := after.(model); got.screen != base.screen {
+				t.Errorf("an Answer moved to screen %v; a decision navigates nowhere", got.screen)
+			}
+			answers, _ := m.session.turn()
+			select {
+			case got := <-answers:
+				if got != taken {
+					t.Errorf("the session was handed %+v, want %+v", got, taken)
+				}
+			default:
+				t.Error("an Answer reached the session's channel not at all, so the one " +
+					"keystroke a battle is about was swallowed")
 			}
 		},
 		draw.Pick: func(t *testing.T) {
@@ -342,11 +375,11 @@ func TestTheMenuOpensEveryCatalogueItOffers(t *testing.T) {
 			t.Errorf("entry %d drew nothing", index)
 		}
 	}
-	// Seven catalogues and a battle, which is what this client offers. A count
-	// rather than a spot check: an entry quietly dropped is a catalogue nothing
-	// reaches, and the sweep would still pass because the screen is registered
-	// there directly.
-	if got, want := len(menuItems), 8; got != want {
+	// Seven catalogues, a battle and a room to join, which is what this client
+	// offers. A count rather than a spot check: an entry quietly dropped is a
+	// catalogue nothing reaches, and the sweep would still pass because the
+	// screen is registered there directly.
+	if got, want := len(menuItems), 9; got != want {
 		t.Errorf("the menu offers %d entries, want the %d this client was built to offer",
 			got, want)
 	}

@@ -229,7 +229,7 @@ func TestARoomPasswordIsNeverPrintedByTheHost(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), theWholeShutdown)
 	defer cancel()
-	client, err := socket.Dial(ctx, held.code, joining, dependencies.Books, socket.Timings{})
+	client, err := socket.Dial(ctx, held.code, joining, dependencies.Books, socket.ClientOptions{})
 	if err == nil {
 		client.Close()
 		t.Fatal("a wrong password got past the gate")
@@ -313,7 +313,7 @@ func TestAJoinIsAnnouncedAndAFinishedMatchIsReported(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), theWholeShutdown)
 	defer cancel()
-	client, err := socket.Dial(ctx, held.code, joining, dependencies.Books, socket.Timings{})
+	client, err := socket.Dial(ctx, held.code, joining, dependencies.Books, socket.ClientOptions{})
 	if err != nil {
 		t.Fatalf("join the room this host opened: %v", err)
 	}

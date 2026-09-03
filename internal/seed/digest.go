@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io/fs"
+	"strings"
 )
 
 // Digest is the fingerprint of the embedded data. It answers exactly one
@@ -135,3 +136,48 @@ func digest(fsys fs.FS, names []string) (Digest, error) {
 	copy(out[:], hasher.Sum(nil))
 	return out, nil
 }
+
+// DigestOf is the digest of the same fifteen files read out of a filesystem the
+// caller hands in, so a directory somebody has been editing can be compared
+// against the embedded copy.
+//
+// ⚠️ **The caller's FS is rooted AT a data directory and the framed names keep
+// their `data/` prefix anyway, and getting that wrong is the one way this
+// function can be silently useless.** dataFiles mirrors the go:embed directive,
+// whose paths are relative to this package; a --data directory is the data
+// directory itself and is called whatever the person running the tool called it.
+// So the two have to be told apart: `data/skills.json` is what the **hash** is
+// fed, because that is what DataDigest feeds it, and `skills.json` is what is
+// **read**.
+//
+// ⚠️ It was written the other way round first — the prefix stripped from the
+// name that goes into the hash as well as from the name that is read — and every
+// unedited directory then came back as different from the embedded copy, because
+// the *names* differed by six characters. It looked exactly like working code:
+// the digests were both well formed and both stable. What caught it was running
+// the client, which drew "your edits will not reach the battle" over a directory
+// nobody had touched. TestAnUneditedDirectoryDigestsAsTheEmbeddedCopyDoes is
+// what would have.
+//
+// ⚠️ **It takes an fs.FS and never a path, which keeps this package's own rule
+// intact.** internal/seed reads the embedded copy and nothing else; the real
+// filesystem belongs to internal/forge, which is the one part of the module
+// allowed to touch one. So the os.DirFS is forge's line, not this one. → the
+// package comment, and internal/forge's.
+func DigestOf(fsys fs.FS) (Digest, error) { return digest(underData{fsys}, dataFiles) }
+
+// underData is a data directory made to answer to the embed's own paths, so that
+// one list of names serves both the reading and the framing.
+//
+// It is a wrapper rather than a second name list because the framing is the
+// thing being compared: two lists is two places for the prefix to be got wrong,
+// and the whole failure above was the two disagreeing.
+type underData struct{ fs.FS }
+
+func (u underData) Open(name string) (fs.File, error) {
+	return u.FS.Open(strings.TrimPrefix(name, dataPrefix))
+}
+
+// dataPrefix is the directory the go:embed directive names, and it is written
+// down once so DigestOf and dataFiles cannot disagree about it.
+const dataPrefix = "data/"

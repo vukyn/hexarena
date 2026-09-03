@@ -555,6 +555,21 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		// settles the defaults a literal did not fill in, exactly as it does for
 		// the four raise sites still in this package.
 		return m.pick(action.Picker), nil
+	case draw.Answer:
+		// ⚠️ **Nothing this client draws can produce one, and the reason is one
+		// field.** An Answer is a decision taken on a battle the screen does
+		// *not* drive — draw.PlayScreen.Live — and that mode belongs to a PvP
+		// match, which is cmd/hexarena-tui's. This client draws PlayScreen in
+		// local mode only, where every turn goes through the engine on the way
+		// in and there is nothing left to hand a client.
+		//
+		// So the honest answer is to do nothing rather than to invent somewhere
+		// to send it: a decision with no socket behind it would be a keystroke
+		// this client claimed to have carried out. It has an arm at all because
+		// draw.KindCount is what stops a kind arriving unnamed, and a swallowed
+		// Answer is the quietest failure in that list — it looks exactly like a
+		// turn nobody has resolved yet.
+		return m, nil
 	}
 	// draw.Stay, which is every keystroke a screen handled without leaving.
 	return m, nil

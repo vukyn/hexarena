@@ -46,6 +46,29 @@ func (l Lang) Refusal(name string) string {
 	return name
 }
 
+// Seat words a wire.Seat — which of a room's two places this client took.
+//
+// ⚠️ **A seat is worded where an id would normally travel unworded, and the
+// distinction is which sort of name it is.** The house rule leaves *data* ids
+// alone — a character id, a skill id, a stat label — because those are the data
+// files' own keys and a reader looks them up. A seat is neither: it is a Go
+// constant with exactly two values, it goes on the waiting screen inside a
+// sentence, and a bare "host" in a Vietnamese column is the leak the sweeps
+// hunt for on every other screen.
+//
+// Keyed by the name wire.Seat already writes, like its two neighbours, so
+// internal/wire stays out of this package's production imports.
+func (l Lang) Seat(name string) string {
+	worded := map[string]Key{
+		"host":  SeatHost,
+		"guest": SeatGuest,
+	}
+	if key, known := worded[name]; known {
+		return l.Text(key)
+	}
+	return name
+}
+
 // Closure words a wire.Closure — why a match stopped for a reason the board
 // cannot show.
 //

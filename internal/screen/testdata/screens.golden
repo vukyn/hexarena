@@ -174,6 +174,52 @@ thế đứng
     [n] có người  (n) người đang sửa  . trống
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 120x24 | a live battle =====
+trận đấu  seed 1  diễn biến 10-10/10
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
+
+next: E3 A1 E1 A2 E2 A3
+
+  A3  turn 1
+
+A3 Charizard, lượt 1
+> ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
+  fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+----- footer -----
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 120x24 | a live battle waiting =====
+trận đấu  seed 1  diễn biến 6-10/10
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
+
+next: E3 A1 E1 A2 E2 A3
+
+    E1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
+  
+  A3  turn 1
+
+đang chờ bên kia đi
+----- footer -----
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 120x24 | a refused work =====
 thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có trong danh mục
 
@@ -1125,6 +1171,84 @@ thế đứng
     [n] có người  (n) người đang sửa  . trống
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 160x60 | a live battle =====
+trận đấu  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
+
+next: E3 A1 E1 A2 E2 A3
+
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
+  
+  A3  turn 1
+
+A3 Charizard, lượt 1
+> ember        100% công · bỏng 30% · tầm 1 · hồi 1
+  fire_spin    85% công · bỏng 70% · tầm 2 · 3 ô · hồi 3
+  fire_fang    130% công · lở loét 50% · tầm 1 · hồi 2
+  smokescreen  mù 80% · tầm 2 · 2 ô · hồi 3
+----- footer -----
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 160x60 | a live battle waiting =====
+trận đấu  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
+
+next: E3 A1 E1 A2 E2 A3
+
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
+  
+  A3  turn 1
+
+đang chờ bên kia đi
+----- footer -----
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 160x60 | a refused work =====
 thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có trong danh mục
 
@@ -2383,6 +2507,52 @@ the formation
     [n] stands there  (n) the one being edited  . nobody
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 120x24 | a live battle =====
+the battle  seed 1  log 10-10/10
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
+
+next: E3 A1 E1 A2 E2 A3
+
+  A3  turn 1
+
+A3 Charizard, turn 1
+> ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
+  fire_fang    130% attack · fester 50% · range 1 · cd 2
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+----- footer -----
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 120x24 | a live battle waiting =====
+the battle  seed 1  log 6-10/10
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
+
+next: E3 A1 E1 A2 E2 A3
+
+    E1   holds endurance: toughened x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
+  
+  A3  turn 1
+
+waiting on the other player
+----- footer -----
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 120x24 | a refused work =====
 add a work  a character can only name a work the catalog holds
 
@@ -3314,6 +3484,84 @@ the formation
     [n] stands there  (n) the one being edited  . nobody
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 160x60 | a live battle =====
+the battle  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
+
+next: E3 A1 E1 A2 E2 A3
+
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance: toughened x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance: toughened x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
+  
+  A3  turn 1
+
+A3 Charizard, turn 1
+> ember        100% attack · burn 30% · range 1 · cd 1
+  fire_spin    85% attack · burn 70% · range 2 · 3 cells · cd 3
+  fire_fang    130% attack · fester 50% · range 1 · cd 2
+  smokescreen  blind 80% · range 2 · 2 cells · cd 3
+----- footer -----
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 160x60 | a live battle waiting =====
+the battle  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always)
+A2   Venusaur             [##########]  3800/3800    100   -
+A3   Charizard            [##########]  3100/3100    140   -
+E1   Sennin               [##########]  3400/3400    134   toughened (always)
+E2   Venusaur             [##########]  3800/3800    100   -
+E3   Charizard            [##########]  3100/3100    140   -
+
+next: E3 A1 E1 A2 E2 A3
+
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance: toughened x1
+    A2  Venusaur enters at 2,1 on the ally side with 3800 health, grass
+    A3  Charizard enters at 2,2 on the ally side with 3100 health, fire
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance: toughened x1
+    E2  Venusaur enters at 3,1 on the enemy side with 3800 health, grass
+    E3  Charizard enters at 3,0 on the enemy side with 3100 health, fire
+  
+  A3  turn 1
+
+waiting on the other player
+----- footer -----
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 160x60 | a refused work =====
 add a work  a character can only name a work the catalog holds
 

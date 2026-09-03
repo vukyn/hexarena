@@ -90,6 +90,29 @@ trận đấu  seed 1
 
 
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a finished match =====
+
+trận đấu đã xong
+
+  tỉ số 1 - 1
+
+  trận 1: thắng
+  trận 2: thua
+  trận 3: hoà
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l English · esc quay lại
 ===== vi | 120x24 | a forked art preview =====
 
 pokemon.poliwag — Poliwag
@@ -159,6 +182,144 @@ Poliwag  cấp 46
     Khả năng gây sa lầy tăng 30%.
 
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 120x24 | a join screen =====
+
+vào phòng đấu
+
+  Mã phòng do máy mở phòng in ra, gồm 12 chữ và số. Mã đã mang sẵn địa chỉ máy đó nên không cần hỏi gì thêm.
+
+  Dữ liệu trong thư mục đang mở khác với dữ liệu nhúng trong bản build này. Trận sẽ đánh bằng bản nhúng, nên những gì
+  vừa sửa ngoài kia không vào trận.
+
+> mã phòng      12 chữ và số             
+  mật khẩu      bỏ trống nếu phòng không đặt       
+  đội mang theo < đội thử 0 >  phe-0
+
+
+
+
+
+
+
+
+
+
+tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
+===== vi | 120x24 | a join screen with no squad saved =====
+
+vào phòng đấu
+
+  Mã phòng do máy mở phòng in ra, gồm 12 chữ và số. Mã đã mang sẵn địa chỉ máy đó nên không cần hỏi gì thêm.
+
+  Dữ liệu trong thư mục đang mở khác với dữ liệu nhúng trong bản build này. Trận sẽ đánh bằng bản nhúng, nên những gì
+  vừa sửa ngoài kia không vào trận.
+
+> mã phòng      12 chữ và số             
+  mật khẩu      bỏ trống nếu phòng không đặt       
+  đội mang theo …
+
+  chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng
+
+
+
+
+
+
+
+
+tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
+===== vi | 120x24 | a live battle =====
+
+trận đấu  seed 1  diễn biến 56-56/56
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+> strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 120x24 | a live battle waiting on the other player =====
+
+trận đấu  seed 1  diễn biến 52-56/56
+cửa sổ quá ngắn cho: bàn cờ
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison <trúng độc> x3
+
+đang chờ bên kia đi
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 120x24 | a match the other player left =====
+
+trận đấu đã xong
+
+  tỉ số 0 - 1
+
+  trận 1: thua
+
+  bên kia mất kết nối nên trận dừng ở đây; không tính ai thắng ai thua, muốn đánh tiếp thì mở phòng mới
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l English · esc quay lại
+===== vi | 120x24 | a refused join =====
+
+vào phòng đấu
+
+  Mã phòng do máy mở phòng in ra, gồm 12 chữ và số. Mã đã mang sẵn địa chỉ máy đó nên không cần hỏi gì thêm.
+
+  Dữ liệu trong thư mục đang mở khác với dữ liệu nhúng trong bản build này. Trận sẽ đánh bằng bản nhúng, nên những gì
+  vừa sửa ngoài kia không vào trận.
+
+> mã phòng      12 chữ và số             
+  mật khẩu      bỏ trống nếu phòng không đặt       
+  đội mang theo < đội thử 0 >  phe-0
+
+  phòng không cho vào:
+  đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
+  sửa đội rồi vào lại
+
+
+
+
+
+
+tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 120x24 | a saved battle =====
 
 trận đấu  seed 1
@@ -275,6 +436,29 @@ Mew  cấp 60
   … 17/29 dòng, [/] để cuộn
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | aiming =====
+
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+
+A2 Example Adept, lượt 1
+  strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+
+nhắm strike vào
+> 3,0  E3 Bloom
+  3,1  E2 Bloom
+  3,2  E1 Bloom
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 120x24 | aiming in a live battle =====
 
 trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
@@ -447,11 +631,11 @@ bạn muốn làm gì?
   nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
   đội hình            các đội đã dựng, và mang một đội vào trận
   vào trận            tự cầm quân đánh một trận với đội đầu danh sách
+  vào phòng đấu       gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ
 
 Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
 sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại
 diễn biến để hexarena --replay vẽ lại đúng trận đó.
-
 
 
 
@@ -619,6 +803,29 @@ nội tại  các nội tại đã khai báo, và ai mang
 
 
 ↑/↓ chọn · ? hiệu ứng · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | waiting for the other player =====
+
+đang chờ người thứ hai
+
+  Đã vào phòng. Trận bắt đầu ngay khi người kia ngồi vào chỗ còn lại, không phải bấm gì thêm.
+
+  mã phòng VQICBXRVBMAA
+  chỗ ngồi khách
+  3v3, 3 trận, mỗi lượt 90 giây
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l English · esc rời phòng
 ===== vi | 120x24 | works =====
 
 nguồn  các tác phẩm mà nhân vật được mượn từ
@@ -878,6 +1085,65 @@ trận đấu  seed 1
 
 
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a finished match =====
+
+trận đấu đã xong
+
+  tỉ số 1 - 1
+
+  trận 1: thắng
+  trận 2: thua
+  trận 3: hoà
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l English · esc quay lại
 ===== vi | 160x60 | a forked art preview =====
 
 pokemon.poliwag — Poliwag
@@ -1055,6 +1321,360 @@ Poliwag  cấp 46
 
 
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 160x60 | a join screen =====
+
+vào phòng đấu
+
+  Mã phòng do máy mở phòng in ra, gồm 12 chữ và số. Mã đã mang sẵn địa chỉ máy đó nên không cần hỏi gì thêm.
+
+  Dữ liệu trong thư mục đang mở khác với dữ liệu nhúng trong bản build này. Trận sẽ đánh bằng bản nhúng, nên những gì
+  vừa sửa ngoài kia không vào trận.
+
+> mã phòng      12 chữ và số             
+  mật khẩu      bỏ trống nếu phòng không đặt       
+  đội mang theo < đội thử 0 >  phe-0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
+===== vi | 160x60 | a join screen with no squad saved =====
+
+vào phòng đấu
+
+  Mã phòng do máy mở phòng in ra, gồm 12 chữ và số. Mã đã mang sẵn địa chỉ máy đó nên không cần hỏi gì thêm.
+
+  Dữ liệu trong thư mục đang mở khác với dữ liệu nhúng trong bản build này. Trận sẽ đánh bằng bản nhúng, nên những gì
+  vừa sửa ngoài kia không vào trận.
+
+> mã phòng      12 chữ và số             
+  mật khẩu      bỏ trống nếu phòng không đặt       
+  đội mang theo …
+
+  chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
+===== vi | 160x60 | a live battle =====
+
+trận đấu  seed 1  diễn biến 29-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    E3   poison <trúng độc> x1 on A2, now 3
+    E3   hits A1 for 72, 2884 left
+    E3   A1 resists poison <trúng độc> (65%)
+    E3   hits A3 for 72, 2884 left
+    E3   poison <trúng độc> x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt <hồ quang> at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt <hồ quang> at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun <choáng> (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt <hồ quang> at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun <choáng> (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison <trúng độc> x1
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+> strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 160x60 | a live battle waiting on the other player =====
+
+trận đấu  seed 1  diễn biến 25-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+  
+  E3  turn 1
+    E3  uses creeping_rot <mục rữa> at 2,1
+    E3   hits A2 for 145, 2665 left
+    E3   poison <trúng độc> x1 on A2, now 3
+    E3   hits A1 for 72, 2884 left
+    E3   A1 resists poison <trúng độc> (65%)
+    E3   hits A3 for 72, 2884 left
+    E3   poison <trúng độc> x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt <hồ quang> at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt <hồ quang> at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun <choáng> (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt <hồ quang> at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun <choáng> (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison <trúng độc> x1
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison <trúng độc> x3
+
+đang chờ bên kia đi
+↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 160x60 | a match the other player left =====
+
+trận đấu đã xong
+
+  tỉ số 0 - 1
+
+  trận 1: thua
+
+  bên kia mất kết nối nên trận dừng ở đây; không tính ai thắng ai thua, muốn đánh tiếp thì mở phòng mới
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l English · esc quay lại
+===== vi | 160x60 | a refused join =====
+
+vào phòng đấu
+
+  Mã phòng do máy mở phòng in ra, gồm 12 chữ và số. Mã đã mang sẵn địa chỉ máy đó nên không cần hỏi gì thêm.
+
+  Dữ liệu trong thư mục đang mở khác với dữ liệu nhúng trong bản build này. Trận sẽ đánh bằng bản nhúng, nên những gì
+  vừa sửa ngoài kia không vào trận.
+
+> mã phòng      12 chữ và số             
+  mật khẩu      bỏ trống nếu phòng không đặt       
+  đội mang theo < đội thử 0 >  phe-0
+
+  phòng không cho vào:
+  đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
+  sửa đội rồi vào lại
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 160x60 | a saved battle =====
 
 trận đấu  seed 1  diễn biến 33-56/56
@@ -1351,6 +1971,65 @@ Mew  cấp 60
 
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | aiming =====
+
+trận đấu  seed 1  diễn biến 34-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+  
+  E1  turn 2
+    E1  uses arc_bolt <hồ quang> at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun <choáng> x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt <hồ quang> at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun <choáng> (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt <hồ quang> at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun <choáng> (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison <trúng độc> x1
+    A1  stun <choáng> wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison <trúng độc> x3
+
+A2 Example Adept, lượt 1
+  strike      100% công · tầm 1
+  riptide     180% công · sa lầy 55% · tầm 3 · 3 ô · hồi 3
+  guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
+  purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
+
+nhắm strike vào
+> 3,0  E3 Bloom
+  3,1  E2 Bloom
+  3,2  E1 Bloom
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 160x60 | aiming in a live battle =====
 
 trận đấu  seed 1  diễn biến 34-56/56
 
@@ -1775,11 +2454,11 @@ bạn muốn làm gì?
   nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
   đội hình            các đội đã dựng, và mang một đội vào trận
   vào trận            tự cầm quân đánh một trận với đội đầu danh sách
+  vào phòng đấu       gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ
 
 Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
 sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại
 diễn biến để hexarena --replay vẽ lại đúng trận đó.
-
 
 
 
@@ -2235,6 +2914,65 @@ nội tại  các nội tại đã khai báo, và ai mang
 
 
 ↑/↓ chọn · ? hiệu ứng · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | waiting for the other player =====
+
+đang chờ người thứ hai
+
+  Đã vào phòng. Trận bắt đầu ngay khi người kia ngồi vào chỗ còn lại, không phải bấm gì thêm.
+
+  mã phòng VQICBXRVBMAA
+  chỗ ngồi khách
+  3v3, 3 trận, mỗi lượt 90 giây
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l English · esc rời phòng
 ===== vi | 160x60 | works =====
 
 nguồn  các tác phẩm mà nhân vật được mượn từ
@@ -2386,6 +3124,29 @@ the battle  seed 1
 
 
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a finished match =====
+
+the match is over
+
+  standing 1 - 1
+
+  battle 1: won
+  battle 2: lost
+  battle 3: drawn
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l tiếng Việt · esc back
 ===== en | 120x24 | a forked art preview =====
 
 pokemon.poliwag — Poliwag
@@ -2455,6 +3216,144 @@ Poliwag  level 46
 
 
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 120x24 | a join screen =====
+
+join a room
+
+  The code is printed by the machine hosting the room, twelve letters and digits. It already carries that machine's
+  address, so there is nothing else to ask for.
+
+  The data in the directory this client is reading differs from the data built into this binary. The match is played on
+  the built-in copy, so the edits out there do not reach it.
+
+> room code          12 letters and digits    
+  password           leave empty if the room has none   
+  the squad to bring < đội thử 0 >  phe-0
+
+
+
+
+
+
+
+
+
+tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
+===== en | 120x24 | a join screen with no squad saved =====
+
+join a room
+
+  The code is printed by the machine hosting the room, twelve letters and digits. It already carries that machine's
+  address, so there is nothing else to ask for.
+
+  The data in the directory this client is reading differs from the data built into this binary. The match is played on
+  the built-in copy, so the edits out there do not reach it.
+
+> room code          12 letters and digits    
+  password           leave empty if the room has none   
+  the squad to bring …
+
+  no squad has been built, and a room has to be joined with one; build a side under the squad catalogue
+
+
+
+
+
+
+
+tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
+===== en | 120x24 | a live battle =====
+
+the battle  seed 1  log 56-56/56
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+> strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 120x24 | a live battle waiting on the other player =====
+
+the battle  seed 1  log 52-56/56
+the window is too short for: board
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison x3
+
+waiting on the other player
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 120x24 | a match the other player left =====
+
+the match is over
+
+  standing 0 - 1
+
+  battle 1: lost
+
+  the other side dropped out, so the match stops here; nobody wins it and nobody loses it, and a new room is where you
+  carry on
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l tiếng Việt · esc back
+===== en | 120x24 | a refused join =====
+
+join a room
+
+  The code is printed by the machine hosting the room, twelve letters and digits. It already carries that machine's
+  address, so there is nothing else to ask for.
+
+  The data in the directory this client is reading differs from the data built into this binary. The match is played on
+  the built-in copy, so the edits out there do not reach it.
+
+> room code          12 letters and digits    
+  password           leave empty if the room has none   
+  the squad to bring < đội thử 0 >  phe-0
+
+  the room would not let this client in:
+  the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
+  take; fix it and join again
+
+
+
+
+
+tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 120x24 | a saved battle =====
 
 the battle  seed 1
@@ -2571,6 +3470,29 @@ Mew  level 60
   … 17/22 lines, [/] to scroll
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | aiming =====
+
+the battle  seed 1
+the window is too short for: board, 1 unit, turn order, log
+
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+
+A2 Example Adept, turn 1
+  strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+
+point strike at
+> 3,0  E3 Bloom
+  3,1  E2 Bloom
+  3,2  E1 Bloom
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 120x24 | aiming in a live battle =====
 
 the battle  seed 1
 the window is too short for: board, 1 unit, turn order, log
@@ -2735,19 +3657,19 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 what would you like to do?
 
-> cast      browse the authored characters, at any level
-  skills    look a skill up: what each does, and who may carry it
-  elements  look the chart up: what it beats, what beats it, at what rate
-  traits    look a trait up: what each does, and who learns it
-  species   look a kind up: what each one means
-  origins   look a work up: the fictions the cast is borrowed from
-  squads    the sides that have been built, and take one into a battle
-  battle    play a battle yourself, with the first side on the list
+> cast         browse the authored characters, at any level
+  skills       look a skill up: what each does, and who may carry it
+  elements     look the chart up: what it beats, what beats it, at what rate
+  traits       look a trait up: what each does, and who learns it
+  species      look a kind up: what each one means
+  origins      look a work up: the fictions the cast is borrowed from
+  squads       the sides that have been built, and take one into a battle
+  battle       play a battle yourself, with the first side on the list
+  join a room  paste the code a friend sent and play them over the local network
 
 A battle here is fought out of the directory above, while the game boots from
 the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s
 writes the log that hexarena --replay draws that same battle back from.
-
 
 
 
@@ -2915,6 +3837,29 @@ traits  the declared traits, and who carries each
 
 
 ↑/↓ move · ? the status · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | waiting for the other player =====
+
+waiting for the second player
+
+  You are in. The match starts the moment the other player takes the free seat; nothing else to press.
+
+  room VQICBXRVBMAA
+  seat guest
+  3v3, 3 battles, 90 seconds a turn
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l tiếng Việt · esc leave the room
 ===== en | 120x24 | works =====
 
 origins  the works the cast is borrowed from
@@ -3174,6 +4119,65 @@ the battle  seed 1
 
 
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a finished match =====
+
+the match is over
+
+  standing 1 - 1
+
+  battle 1: won
+  battle 2: lost
+  battle 3: drawn
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l tiếng Việt · esc back
 ===== en | 160x60 | a forked art preview =====
 
 pokemon.poliwag — Poliwag
@@ -3351,6 +4355,360 @@ Poliwag  level 46
 
 
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 160x60 | a join screen =====
+
+join a room
+
+  The code is printed by the machine hosting the room, twelve letters and digits. It already carries that machine's
+  address, so there is nothing else to ask for.
+
+  The data in the directory this client is reading differs from the data built into this binary. The match is played on
+  the built-in copy, so the edits out there do not reach it.
+
+> room code          12 letters and digits    
+  password           leave empty if the room has none   
+  the squad to bring < đội thử 0 >  phe-0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
+===== en | 160x60 | a join screen with no squad saved =====
+
+join a room
+
+  The code is printed by the machine hosting the room, twelve letters and digits. It already carries that machine's
+  address, so there is nothing else to ask for.
+
+  The data in the directory this client is reading differs from the data built into this binary. The match is played on
+  the built-in copy, so the edits out there do not reach it.
+
+> room code          12 letters and digits    
+  password           leave empty if the room has none   
+  the squad to bring …
+
+  no squad has been built, and a room has to be joined with one; build a side under the squad catalogue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
+===== en | 160x60 | a live battle =====
+
+the battle  seed 1  log 29-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+    E3   poison x1 on A2, now 3
+    E3   hits A1 for 72, 2884 left
+    E3   A1 resists poison (65%)
+    E3   hits A3 for 72, 2884 left
+    E3   poison x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison x1
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+> strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 160x60 | a live battle waiting on the other player =====
+
+the battle  seed 1  log 25-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+  
+  E3  turn 1
+    E3  uses creeping_rot at 2,1
+    E3   hits A2 for 145, 2665 left
+    E3   poison x1 on A2, now 3
+    E3   hits A1 for 72, 2884 left
+    E3   A1 resists poison (65%)
+    E3   hits A3 for 72, 2884 left
+    E3   poison x1 on A3, now 2
+  
+  E1  turn 2
+    E1  uses arc_bolt at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison x1
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison x3
+
+waiting on the other player
+↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 160x60 | a match the other player left =====
+
+the match is over
+
+  standing 0 - 1
+
+  battle 1: lost
+
+  the other side dropped out, so the match stops here; nobody wins it and nobody loses it, and a new room is where you
+  carry on
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l tiếng Việt · esc back
+===== en | 160x60 | a refused join =====
+
+join a room
+
+  The code is printed by the machine hosting the room, twelve letters and digits. It already carries that machine's
+  address, so there is nothing else to ask for.
+
+  The data in the directory this client is reading differs from the data built into this binary. The match is played on
+  the built-in copy, so the edits out there do not reach it.
+
+> room code          12 letters and digits    
+  password           leave empty if the room has none   
+  the squad to bring < đội thử 0 >  phe-0
+
+  the room would not let this client in:
+  the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
+  take; fix it and join again
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 160x60 | a saved battle =====
 
 the battle  seed 1  log 33-56/56
@@ -3647,6 +5005,65 @@ Mew  level 60
 
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | aiming =====
+
+the battle  seed 1  log 34-56/56
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Example Adept        [##........]   684/3100     90   poison (2t)
+A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
+A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   -
+E3   Bloom                [##########]  2200/2200    200   -
+
+next: A3 E1 E2 E3 E1 E2
+
+  
+  E1  turn 2
+    E1  uses arc_bolt at 2,0
+    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   stun x1 on A1, now 1
+  
+  E2  turn 2
+    E2  uses arc_bolt at 2,0
+    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   A1 resists stun (25%)
+  
+  E3  turn 2
+    E3  uses arc_bolt at 2,0
+    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   A1 resists stun (25%)
+  
+  A1  turn 1
+    A1  takes 103 from poison x1
+    A1  stun wears off
+    A1  loses the turn (stun)
+  
+  A2  turn 1
+    A2  takes 309 from poison x3
+
+A2 Example Adept, turn 1
+  strike      100% attack · range 1
+  riptide     180% attack · mire 55% · range 3 · 3 cells · cd 3
+  guard_wall  self block x2 · itself · cd 4
+  purify      strips 3 harmful · an ally · range 2 · cd 3
+
+point strike at
+> 3,0  E3 Bloom
+  3,1  E2 Bloom
+  3,2  E1 Bloom
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 160x60 | aiming in a live battle =====
 
 the battle  seed 1  log 34-56/56
 
@@ -4063,19 +5480,19 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 what would you like to do?
 
-> cast      browse the authored characters, at any level
-  skills    look a skill up: what each does, and who may carry it
-  elements  look the chart up: what it beats, what beats it, at what rate
-  traits    look a trait up: what each does, and who learns it
-  species   look a kind up: what each one means
-  origins   look a work up: the fictions the cast is borrowed from
-  squads    the sides that have been built, and take one into a battle
-  battle    play a battle yourself, with the first side on the list
+> cast         browse the authored characters, at any level
+  skills       look a skill up: what each does, and who may carry it
+  elements     look the chart up: what it beats, what beats it, at what rate
+  traits       look a trait up: what each does, and who learns it
+  species      look a kind up: what each one means
+  origins      look a work up: the fictions the cast is borrowed from
+  squads       the sides that have been built, and take one into a battle
+  battle       play a battle yourself, with the first side on the list
+  join a room  paste the code a friend sent and play them over the local network
 
 A battle here is fought out of the directory above, while the game boots from
 the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s
 writes the log that hexarena --replay draws that same battle back from.
-
 
 
 
@@ -4531,6 +5948,65 @@ traits  the declared traits, and who carries each
 
 
 ↑/↓ move · ? the status · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | waiting for the other player =====
+
+waiting for the second player
+
+  You are in. The match starts the moment the other player takes the free seat; nothing else to press.
+
+  room VQICBXRVBMAA
+  seat guest
+  3v3, 3 battles, 90 seconds a turn
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ctrl+l tiếng Việt · esc leave the room
 ===== en | 160x60 | works =====
 
 origins  the works the cast is borrowed from

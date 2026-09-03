@@ -129,7 +129,7 @@ func TestAJoinerRefusedForAFullRoomIsToldSo(t *testing.T) {
 
 	_, err := Dial(context.Background(), code,
 		hello(t, theHostSquad(t, dependencies.Characters), "Third", ""),
-		dependencies.Books, held.timings)
+		dependencies.Books, ClientOptions{Timings: held.timings})
 	refusal := refusalOf(t, err)
 	if refusal.Code != wire.CodeRoomFull {
 		t.Errorf("a third client was refused with %q, want %q", refusal.Code, wire.CodeRoomFull)

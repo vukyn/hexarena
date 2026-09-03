@@ -111,7 +111,7 @@ func TestAWrongPasswordIsRefusedAndNeverPrinted(t *testing.T) {
 	// would meet the refusal.
 	_, err := Dial(context.Background(), code,
 		hello(t, theHostSquad(t, dependencies.Characters), "Stranger", "open-sesame"),
-		dependencies.Books, held.timings)
+		dependencies.Books, ClientOptions{Timings: held.timings})
 	var refusal *Refusal
 	if !errors.As(err, &refusal) {
 		t.Fatalf("a wrong password was answered with %v, want a *Refusal", err)

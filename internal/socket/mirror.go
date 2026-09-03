@@ -2,6 +2,7 @@ package socket
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/hex"
@@ -41,9 +42,37 @@ import (
 // on either side makes every digest disagree while both peers fight the same
 // battle perfectly.
 //
-// It is not safe for concurrent use and needs not to be: one client, one
-// connection, one goroutine reading it.
+// # It is safe to DRAW while Play is stepping it, and that is new
+//
+// ⚠️ **This comment used to end "it is not safe for concurrent use and needs not
+// to be: one client, one connection, one goroutine reading it", and that stopped
+// being true the moment a terminal drew one.** A full-screen client runs Play on
+// its own goroutine and redraws on bubbletea's, so the battle Play is stepping
+// is the battle the screen is reading — which is exactly the concurrent use that
+// sentence said would never happen. The answer is a lock rather than a copy: a
+// *battle.Battle is a pointer and copying one is not a thing this repository can
+// do, and handing a renderer the events instead would be the thin client
+// README.md § *The client runs the engine too* refuses.
+//
+// So: Receive takes the write lock and every reading accessor takes the read
+// lock. Read is the only safe way for a renderer on another goroutine to look at
+// more than one of those readings at once — a screen that asked for the battle,
+// then the prompt, then the side would get three readings of three different
+// moments.
+//
+// ⚠️ **Decide releases the lock before it calls the chooser**, and that is the
+// one ordering here that must not be got wrong. → Decide, which carries the
+// measurement of *why* — the reason is a writer queuing, not the two readers,
+// and getting that wrong once made a test that could not see the mistake.
 type Mirror struct {
+	// mu orders a Play goroutine stepping this mirror against a renderer drawing
+	// it. → the paragraph above for why it exists at all.
+	//
+	// It is an RWMutex rather than a Mutex because drawing is a read and there
+	// may be more than one reader — View and Update both take it in the game
+	// client, and neither excludes the other.
+	mu sync.RWMutex
+
 	seat  wire.Seat
 	books battle.Books
 
@@ -120,33 +149,74 @@ func NewMirror(seat wire.Seat, books battle.Books) *Mirror {
 }
 
 // Seat is which of the room's two places this client took.
-func (m *Mirror) Seat() wire.Seat { return m.seat }
+//
+// It takes the read lock like every other accessor even though the seat is
+// written once, at the handshake, before Play exists: a rule that holds for
+// "the fields that change" is a rule somebody has to classify a field under
+// every time one is added, and the classification is what goes wrong.
+func (m *Mirror) Seat() wire.Seat {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.seat
+}
 
 // Welcome is the room's configuration as this client was told it, and Seated
 // whether it has been told.
-func (m *Mirror) Welcome() (wire.Welcome, bool) { return m.welcome, m.seated }
+func (m *Mirror) Welcome() (wire.Welcome, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.welcome, m.seated
+}
 
 // Side is the half of the board this client plays in the battle in progress.
-func (m *Mirror) Side() hex.Side { return m.side }
+func (m *Mirror) Side() hex.Side {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.side
+}
 
 // Battle is this client's own battle, for a renderer or a rating. Nil between
 // battles and before the first one.
-func (m *Mirror) Battle() *battle.Battle { return m.fight }
+//
+// ⚠️ **The lock is around the pointer and not around the battle.** A caller that
+// keeps what this returns and reads it later is reading a battle Play may be
+// stepping, which is precisely what Read exists to do instead. This accessor is
+// for a caller on the Play goroutine itself — the chooser is the one that
+// matters, since Play calls it and nothing else is running.
+func (m *Mirror) Battle() *battle.Battle {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.fight
+}
 
 // Events is everything this client's battle has produced in the battle in
 // progress, which is what a renderer draws.
-func (m *Mirror) Events() []battle.Event { return m.events[:len(m.events):len(m.events)] }
+func (m *Mirror) Events() []battle.Event {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.events[:len(m.events):len(m.events)]
+}
 
 // Fought is every battle of the series this client has settled, in order.
-func (m *Mirror) Fought() []Fought { return m.fought[:len(m.fought):len(m.fought)] }
+func (m *Mirror) Fought() []Fought {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.fought[:len(m.fought):len(m.fought)]
+}
 
 // Compared is how many per-turn digests this client has checked. → the field.
-func (m *Mirror) Compared() int { return m.compared }
+func (m *Mirror) Compared() int {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.compared
+}
 
 // Refusals is every wire.Code this client has been sent, in order, for a screen
 // to word. Nothing here words one: the whole point of a code is that the
 // sentence lives at this end, in the player's own language.
 func (m *Mirror) Refusals() []wire.Code {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
 	return m.refusals[:len(m.refusals):len(m.refusals)]
 }
 
@@ -157,11 +227,19 @@ func (m *Mirror) Refusals() []wire.Code {
 // no Ended for the battle in progress and no further Start, so a client handed
 // nothing would hang on its own open prompt. Every other ending is computed
 // here. → wire.Closed.
-func (m *Mirror) Closure() (wire.Closure, bool) { return m.closure, m.closure.Closes() }
+func (m *Mirror) Closure() (wire.Closure, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.closure, m.closure.Closes()
+}
 
 // Capped reports whether this client's battle in progress stopped at the turn
 // cap the room named on wire.Welcome.
-func (m *Mirror) Capped() bool { return m.capped }
+func (m *Mirror) Capped() bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.capped
+}
 
 // Over reports whether the match is finished, by this client's own arithmetic.
 //
@@ -177,6 +255,19 @@ func (m *Mirror) Capped() bool { return m.capped }
 //
 // A closure ends it too, because that is the ending this arithmetic cannot see.
 func (m *Mirror) Over() bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.over()
+}
+
+// over is Over with the lock already held, so that Read can answer it without
+// taking the read lock a second time.
+//
+// ⚠️ **A second RLock inside one is not free in Go**, and that is why every
+// reading here comes in a locked and an unlocked spelling: sync.RWMutex blocks a
+// read that arrives while a writer is waiting, so a reader that re-entered could
+// sit behind a writer that is sitting behind the reader.
+func (m *Mirror) over() bool {
 	if m.closure.Closes() {
 		return true
 	}
@@ -212,6 +303,13 @@ func (m *Mirror) Over() bool {
 // It is false past the turn cap, because the room stops asking on the turn this
 // client stops at.
 func (m *Mirror) Asking() (*battle.Prompt, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.asking()
+}
+
+// asking is Asking with the lock already held. → over, for why the pair exists.
+func (m *Mirror) asking() (*battle.Prompt, bool) {
 	if m.fight == nil || m.prompt == nil || m.capped {
 		return nil, false
 	}
@@ -220,6 +318,87 @@ func (m *Mirror) Asking() (*battle.Prompt, bool) {
 		return nil, false
 	}
 	return m.prompt, true
+}
+
+// Sight is a consistent reading of this mirror, valid only for the duration of
+// the call it is handed to.
+//
+// It is one struct rather than a dozen accessors because a screen needs several
+// of them to agree: a renderer that asked for the battle, then the prompt, then
+// the side would get three readings taken at three different moments, and the
+// prompt would name a unit on a board that had moved under it.
+type Sight struct {
+	// Fight is the battle in progress, nil between battles and before the first.
+	Fight *battle.Battle
+	// Asking is the open prompt when it is this client's to answer, and nil
+	// otherwise — which is the whole of how a client knows its turn has come.
+	Asking *battle.Prompt
+	// Side is the half of the board this client plays in the battle in progress,
+	// and Seed and Index which battle of the series it is.
+	Side  hex.Side
+	Seed  uint64
+	Index int
+	// Seated is the room's configuration having arrived, Over the match being
+	// finished by this client's own arithmetic.
+	Seated bool
+	Over   bool
+	// Welcome is the room's configuration, meaningful only when Seated.
+	Welcome wire.Welcome
+	// Closure is why the match stopped for a reason the board cannot show, and
+	// is ClosureNone when nothing did.
+	Closure wire.Closure
+	// Fought is the series as this client's own engine settled it, and Refusals
+	// every code the room has sent, in order.
+	Fought   []Fought
+	Refusals []wire.Code
+}
+
+// Read runs fn under this mirror's read lock, which is the only safe way for a
+// renderer on another goroutine to look at a battle Play is stepping.
+//
+// ⚠️ **Nothing fn is handed may outlive fn.** That is the rule Registry.Read is
+// written under, and here it is held by this comment and by nothing else: a
+// *battle.Battle is handed over on purpose — a renderer computes the board by
+// computing the battle, which is the whole design — so no type walk and no race
+// detector can refuse one. A caller that keeps the pointer and reads it after fn
+// returns is reading a battle the Play goroutine may be stepping, and the
+// detector only fires if it actually does.
+//
+// Several readers may be inside this at once, which is what makes an Update and
+// a View both able to take it in a bubbletea client.
+func (m *Mirror) Read(fn func(Sight)) {
+	if fn == nil {
+		return
+	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	prompt, _ := m.asking()
+	fn(Sight{
+		Fight:    m.fight,
+		Asking:   prompt,
+		Side:     m.side,
+		Seed:     m.seed,
+		Index:    m.index,
+		Seated:   m.seated,
+		Over:     m.over(),
+		Welcome:  m.welcome,
+		Closure:  m.closure,
+		Fought:   m.fought[:len(m.fought):len(m.fought)],
+		Refusals: m.refusals[:len(m.refusals):len(m.refusals)],
+	})
+}
+
+// takeSeat records the seat the room handed out, which the handshake reads off
+// the welcome before the mirror has been told anything else.
+//
+// It is a method with the lock rather than a field write for the reason every
+// accessor above takes one: a rule that holds for "the fields that matter" needs
+// somebody to classify each new field, and the classification is what goes
+// wrong.
+func (m *Mirror) takeSeat(seat wire.Seat) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.seat = seat
 }
 
 // Decide is the message this client sends for the open prompt, read off its own
@@ -232,8 +411,32 @@ func (m *Mirror) Asking() (*battle.Prompt, bool) {
 // applying locally would be two paths into one battle.
 //
 // It reports false when there is no prompt to answer.
+//
+// ⚠️ **The read lock is taken to find the prompt and RELEASED before the chooser
+// is called, and that ordering is load-bearing rather than tidy.** In a
+// full-screen client the chooser *is the player*: it blocks until a keystroke
+// arrives, and the keystroke is handled by a goroutine that needs the read lock
+// in order to draw.
+//
+// ⚠️ **Why a held lock is fatal is NOT "two readers cannot both be in", and that
+// was measured after being got wrong.** sync.RWMutex admits several readers, so
+// a chooser that only ever reads would sit happily beside a renderer that only
+// ever reads, and holding the lock across choose passes a test built on that
+// prediction. What actually breaks is a **writer arriving while the chooser
+// waits**: Go queues a waiting writer ahead of new readers, so the next Receive
+// blocks behind the held read lock and the renderer then blocks behind the
+// writer — and the renderer is what the player is waiting to see before they can
+// answer. TestDecideDoesNotHoldTheLockAcrossTheChooser builds exactly that three
+// way and is what says so; the failure it catches is a hang, bounded so it
+// reports rather than hangs the suite.
+//
+// The prompt handed to the chooser outlives the lock, which is safe for the one
+// reason Play is what calls this: nothing steps the battle between the read and
+// the answer, because the goroutine that would is the one waiting here.
 func (m *Mirror) Decide(choose battle.Chooser) (wire.Body, bool) {
-	prompt, asking := m.Asking()
+	m.mu.RLock()
+	prompt, asking := m.asking()
+	m.mu.RUnlock()
 	if !asking || choose == nil {
 		return nil, false
 	}
@@ -256,7 +459,15 @@ func (m *Mirror) Decide(choose battle.Chooser) (wire.Body, bool) {
 // this repository hand over different things: room.Outbound carries values, and
 // wire.Decode hands back pointers so that an unknown kind never reaches a
 // struct. Room.Deliver takes both for the same reason.
+//
+// ⚠️ **It takes the write lock for the whole of one message**, so a renderer on
+// another goroutine never sees a battle half stepped: the events, the prompt,
+// the cursor and the fought list all move together or not at all. Every private
+// step below therefore runs with the lock already held and must not take it
+// again.
 func (m *Mirror) Receive(body wire.Body) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	switch message := body.(type) {
 	case *wire.Welcome:
 		return m.welcomed(*message)

@@ -322,7 +322,66 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"a scrolled battle log":    aScrolledBattleLog(t, c),
 		"a saved battle":           aSavedBattle(t, c),
 		"a battle with no pairing": aBattleWithNoPairing(t, c),
+		// The two states live mode adds, which differ from every entry above in
+		// a footer and in a body line — exactly the class this golden sees. It
+		// is what caught #205 (a status column a cell wider, whole package
+		// green) and #222 (a squad id column, whole client suite green), and a
+		// live battle is drawn by no other golden in the repository: the lobby
+		// screens live in cmd/hexarena-tui, so this is the only record of the
+		// PvP drawing itself.
+		"a live battle":         aLiveBattle(t, c),
+		"a live battle waiting": aLiveBattleWaiting(t, c),
 	}
+}
+
+// aLiveBattle is the turn in front on a battle **somebody else is driving**: the
+// same board, the same roster and the same option list, under a footer that
+// names neither u, n nor the save key because a live screen answers to none of
+// them.
+//
+// Its own battle, like every other entry here — a live screen holds the same
+// *battle.Battle pointer a local one does, so sharing one would step them all.
+func aLiveBattle(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	local := withAFullLog(t, c, atABattleOf(t, c, 3))
+	p := NewPlayScreen().Attach(c, PlayLive{
+		Fight: local.Fight, Asking: local.Pending, Side: local.Side, Seed: local.Seed,
+	})
+	if !p.Live || p.Pending == nil {
+		t.Fatal("the live battle attached to no turn, so this records a waiting screen twice")
+	}
+	drawn, footer := p.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.PlayHeading)) {
+		t.Fatalf("the live battle draws no heading of its own:\n%s", drawn)
+	}
+	if footer != c.Text(i18n.PlayLiveFooter) {
+		t.Fatalf("the live battle draws the local footer, so this records an ordinary "+
+			"battle twice:\n%s", footer)
+	}
+	return p
+}
+
+// aLiveBattleWaiting is the same screen with the turn on the other side of the
+// wire, which is the one line live mode adds to the drawing.
+//
+// ⚠️ It is a separate entry rather than a variation because the tail is the
+// section the whole budget is arranged around: where a local battle between
+// turns draws nothing there and resolves in microseconds, this draws a row and
+// can hold it for a whole allowance.
+func aLiveBattleWaiting(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	local := withAFullLog(t, c, atABattleOf(t, c, 3))
+	p := NewPlayScreen().Attach(c, PlayLive{
+		Fight: local.Fight, Side: local.Side, Seed: local.Seed,
+	})
+	if p.Pending != nil {
+		t.Fatal("the waiting live battle still holds a turn of its own")
+	}
+	drawn, _ := p.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.PlayLiveWaiting)) {
+		t.Fatalf("the waiting live battle says nothing about waiting:\n%s", drawn)
+	}
+	return p
 }
 
 // # The played battle's six entries

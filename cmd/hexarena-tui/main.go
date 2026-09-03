@@ -34,11 +34,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
+	"github.com/vukyn/hexarena/internal/wire"
 )
 
 // programName is what this binary is called, in every language.
@@ -106,9 +108,46 @@ func run(chosen options) error {
 	}
 	// No alternate-screen option here: bubbletea v2 asks for it on the view the
 	// model returns, so it is model.View that says so.
-	program := tea.NewProgram(newModel(lib, chosen.lang))
+	//
+	// ⚠️ **The three lines below are one guarantee and have to stay together.**
+	// A session's chooser blocks on a channel that Update feeds, and the only
+	// other thing that can unblock it is its own context being cancelled — so
+	// "a player who quits mid-turn leaves the Play goroutine blocked for ever"
+	// is closed by this defer rather than by anybody remembering to leave a
+	// match. It fires however Run returns: a clean quit, ctrl+c, or an error.
+	// The process cannot leave this function without cancelling.
+	//
+	// The order is the knot the sender interface exists to untie: the program
+	// cannot be built until the model is, and the model cannot be built until
+	// the session is, so the session learns where to send **after** both exist.
+	sess := newSession()
+	program := tea.NewProgram(newModel(lib, chosen.lang, sess))
+	sess.attach(program)
+	defer sess.leave()
 	_, err = program.Run()
 	return err
+}
+
+// build is the version string this binary announces, stamped by a release:
+//
+//	go build -ldflags "-X main.build=v0.4.0" ./cmd/hexarena-tui
+//
+// It is one of the three numbers a peer is told at a room's gate and the only
+// one with nothing to decide — printed by a host and read by a person working
+// out which of two machines to update. → wire.Version.Build.
+var build string
+
+// buildString is wire.BuildOf over this process, which is the one impure line of
+// it. The derivation lives in internal/wire because two binaries need the same
+// three-step fallback and a second spelling of one is how two peers come to
+// disagree about what they are; the **stamp** stays here, because a linker
+// writes into a binary's own variable.
+func buildString() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		info = nil
+	}
+	return wire.BuildOf(build, info)
 }
 
 // stdoutIsTerminal reports whether there is a screen to take over.
