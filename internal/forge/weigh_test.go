@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -48,6 +49,68 @@ func aSupportSkill() skill.Skill {
 func weighRequest(field WeighField, values ...int) WeighRequest {
 	return WeighRequest{
 		Character: weighCarrier, Skill: weighSkill, Field: field,
+		Values: values, Level: progression.LevelCap, Seeds: weighSeeds,
+	}
+}
+
+// gradientCarrier and gradientSkill are the carrier a gradient is priced on and
+// the skill that carries it.
+//
+// They are a pair rather than one name because neither exists without the other:
+// `desperate` is the only gradient the bench declares and no fixture character
+// fields it, so a carrier has to be asked for before the field has a subject.
+const (
+	gradientCarrier = "fixture-anime.gradient"
+	gradientSkill   = "desperate"
+)
+
+// bringsTheGradient saves a copy of the weighing's carrier that fields the
+// fixture's gradient.
+//
+// It is asked for here rather than added to the fixture cast, for the reason
+// forkedTwin exists one file over: a weighing needs carriers the fixture does
+// not have, and the fixture cast is what a hundred goldens draw — putting
+// `desperate` in the adept's fielded kit displaces `purify`, which changes every
+// battle those goldens record. The shipped book is in the same state as the
+// bench, `comeback` with nobody to cast it, so a gradient is priced on a carrier
+// a test builds either way.
+//
+// ⚠️ It replaces the last learnset entry rather than appending a fifth. A kit is
+// the first cast.SkillSlots entries the level allows, so an appended one is a
+// skill the carrier knows and never brings — which is a row Weigh refuses rather
+// than the carrier this needs.
+func bringsTheGradient(t *testing.T, lib *Library) {
+	t.Helper()
+	character, known := lib.Characters().Get(weighCarrier)
+	if !known {
+		t.Fatalf("no character is called %q", weighCarrier)
+	}
+	character.ID = gradientCarrier
+	character.Skills = slices.Clone(character.Skills)
+	character.Skills[len(character.Skills)-1] = cast.Unlock{ID: gradientSkill}
+	if err := lib.SaveCharacter(character); err != nil {
+		t.Fatalf("save %s as %s: %v", weighCarrier, gradientCarrier, err)
+	}
+	// Saved is not fielded, and the difference is the whole point of the helper:
+	// a learnset entry past the fourth is known and never brought.
+	saved, known := lib.Characters().Get(gradientCarrier)
+	if !known {
+		t.Fatalf("%s was saved and is not in the book", gradientCarrier)
+	}
+	fielded, err := lib.duellist(saved, progression.LevelCap, "")
+	if err != nil {
+		t.Fatalf("field %s at the cap: %v", gradientCarrier, err)
+	}
+	if !slices.Contains(fielded.Skills, gradientSkill) {
+		t.Fatalf("%s brings %v at the cap, which does not include %s, so nothing here would be weighed",
+			gradientCarrier, fielded.Skills, gradientSkill)
+	}
+}
+
+// gradientRequest is a sweep of the one number a gradient has.
+func gradientRequest(values ...int) WeighRequest {
+	return WeighRequest{
+		Character: gradientCarrier, Skill: gradientSkill, Field: WeighSelfGradient,
 		Values: values, Level: progression.LevelCap, Seeds: weighSeeds,
 	}
 }
@@ -136,26 +199,32 @@ func TestAWeighingRefusesAReportWhoseControlIsNotEven(t *testing.T) {
 func TestASynthesisedVariantDiffersInExactlyOneField(t *testing.T) {
 	lib := sparLibrary(t)
 	for _, test := range []struct {
+		// skill is which skill the field is moved on, because one of them can
+		// only be moved on a skill that declares it: a self_gradient set on a
+		// skill without one is a gradient the parser refuses, so the variant
+		// this asserts about would never be built. See WeighField's doc.
+		skill string
 		field WeighField
 		value int
 	}{
-		{WeighPower, 1234},
-		{WeighAccuracy, 700},
-		{WeighCrit, 250},
-		{WeighCooldown, 3},
+		{weighSkill, WeighPower, 1234},
+		{weighSkill, WeighAccuracy, 700},
+		{weighSkill, WeighCrit, 250},
+		{weighSkill, WeighCooldown, 3},
+		{gradientSkill, WeighSelfGradient, 1500},
 	} {
-		shipped, err := lib.Skills().Lookup(weighSkill)
+		shipped, err := lib.Skills().Lookup(test.skill)
 		if err != nil {
-			t.Fatalf("look %s up: %v", weighSkill, err)
+			t.Fatalf("look %s up: %v", test.skill, err)
 		}
 		_, book, err := lib.variantOf(shipped, test.field, test.value)
 		if err != nil {
-			t.Fatalf("synthesise %s at %s %d: %v", weighSkill, test.field, test.value, err)
+			t.Fatalf("synthesise %s at %s %d: %v", test.skill, test.field, test.value, err)
 		}
 		// Read it back out of the book rather than trusting the struct handed in:
 		// the variant only counts once it has been through the parser, which is
 		// what the battle will read.
-		built, err := book.Lookup(variantID(weighSkill, test.field, test.value))
+		built, err := book.Lookup(variantID(test.skill, test.field, test.value))
 		if err != nil {
 			t.Fatalf("the variant is not in the book it came back in: %v", err)
 		}
@@ -376,6 +445,147 @@ func TestAValueTheParserRefusesComesBackInTheParsersOwnWords(t *testing.T) {
 		if strings.Contains(err.Error(), "cannot be measured") {
 			t.Errorf("%s %d came back reworded: %q", test.field, test.value, err)
 		}
+	}
+}
+
+// TestAGradientIsPricedOnTheCarrierThatBringsIt is self_gradient end to end.
+//
+// It is the ninth field and the only one whose off state is not a number, so
+// what is worth asserting is that the ordinary machinery holds for it anyway:
+// the control row is even to the last part in a thousand, and the swept value
+// reaches the battle. The second half is the one that can fail quietly — a `set`
+// that assigned nothing would give two rows fought with the same skill under two
+// ids, which is an even row and a plausible-looking price of nought.
+func TestAGradientIsPricedOnTheCarrierThatBringsIt(t *testing.T) {
+	lib := sparLibrary(t)
+	bringsTheGradient(t, lib)
+	shipped, err := lib.Skills().Lookup(gradientSkill)
+	if err != nil {
+		t.Fatalf("look %s up: %v", gradientSkill, err)
+	}
+	declared := WeighSelfGradient.of(shipped)
+	if declared < 1 {
+		t.Fatalf("%s declares a gradient of %d, so this test sweeps nothing", gradientSkill, declared)
+	}
+	steeper := declared * 2
+
+	report, err := lib.Weigh(gradientRequest(steeper))
+	if err != nil {
+		t.Fatalf("weigh %s: %v", gradientSkill, err)
+	}
+	if report.Shipped != declared {
+		t.Errorf("the report says the book declares %d, and it declares %d", report.Shipped, declared)
+	}
+	control := controlRow(t, report)
+	if control.Value != declared {
+		t.Errorf("the control row is %d rather than the declared %d", control.Value, declared)
+	}
+	if control.Rate != scale.Base/2 {
+		t.Errorf("the control came to %d rather than an even %d: %+v",
+			control.Rate, scale.Base/2, control.Tally)
+	}
+	// A gradient scales power, so the mechanism a row has to have shown is the
+	// strike — and the header says so rather than a reader assuming it.
+	if !reflect.DeepEqual(report.Mechanisms, []Mechanism{Striking}) {
+		t.Errorf("a gradient sweep reports the mechanisms %v, and a gradient is a share of power",
+			report.Mechanisms)
+	}
+	raised, found := rowAt(report, steeper)
+	if !found {
+		t.Fatalf("the sweep has no row at %d: %+v", steeper, report.Rows)
+	}
+	if raised.Strikes.Damage == control.Strikes.Damage {
+		t.Errorf("doubling the gradient to %d dealt the control's %d damage exactly, "+
+			"so the number never reached the battle", steeper, control.Strikes.Damage)
+	}
+	// And it reached one side only. A gradient is the one field held behind a
+	// pointer, so an assignment made through the shipped skill's own would move
+	// the OPPONENT's copy as well — a row in which both sides changed is even,
+	// prints as an ordinary price of nought, and leaves the book edited.
+	after, err := lib.Skills().Lookup(gradientSkill)
+	if err != nil {
+		t.Fatalf("look %s up after the sweep: %v", gradientSkill, err)
+	}
+	if got := WeighSelfGradient.of(after); got != declared {
+		t.Errorf("%s declares a gradient of %d after the sweep and declared %d before it, "+
+			"so the weighing edited the skill both sides bring", gradientSkill, got, declared)
+	}
+}
+
+// rowAt is the sweep's row for one value.
+func rowAt(report WeighReport, value int) (Weighing, bool) {
+	for _, row := range report.Rows {
+		if row.Value == value {
+			return row, true
+		}
+	}
+	return Weighing{}, false
+}
+
+// TestASweptGradientOfNoughtComesBackInTheParsersOwnWords.
+//
+// A gradient of nought is the value skill.resolve refuses, and this package does
+// not hold a second copy of that bound — so the sweep's refusal has to be the
+// parser's sentence and nothing else. Asserted as an equality against the
+// parser's own refusal rather than as a substring, because a lead-in of this
+// package's invention is exactly what a substring check cannot see.
+func TestASweptGradientOfNoughtComesBackInTheParsersOwnWords(t *testing.T) {
+	lib := sparLibrary(t)
+	bringsTheGradient(t, lib)
+	shipped, err := lib.Skills().Lookup(gradientSkill)
+	if err != nil {
+		t.Fatalf("look %s up: %v", gradientSkill, err)
+	}
+	_, _, refused := lib.variantOf(shipped, WeighSelfGradient, 0)
+	if refused == nil {
+		t.Fatal("a gradient of nought was accepted, and skill.resolve refuses a share below one")
+	}
+	swept, err := lib.Weigh(gradientRequest(0))
+	if err == nil {
+		t.Fatalf("a sweep through nought was priced: %+v", swept.Rows)
+	}
+	if err.Error() != refused.Error() {
+		t.Errorf("the sweep refused with\n  %q\nand the parser refuses with\n  %q", err, refused)
+	}
+	for _, wanted := range []string{"self_gradient", "want a share in parts per thousand"} {
+		if !strings.Contains(err.Error(), wanted) {
+			t.Errorf("the refusal never says %q: %v", wanted, err)
+		}
+	}
+}
+
+// TestAGradientPricesHowMuchAndNeverWhether is the field's limit, pinned so that
+// nobody reads a report for an answer it does not contain.
+//
+// `of` reads a skill with no gradient as nought, because that is what such a
+// skill adds; `set` hands that nought back to the parser, which refuses it. So
+// the control row of a sweep on a skill declaring no gradient is a refusal, and
+// there is no report anywhere with a row for "this skill without a gradient at
+// all". The field prices how much a gradient is worth and never whether to have
+// one. Mapping the nought to nil inside `set` is what would buy that row, and is
+// this package holding a bound skill.resolve owns.
+func TestAGradientPricesHowMuchAndNeverWhether(t *testing.T) {
+	lib := sparLibrary(t)
+	plain, err := lib.Skills().Lookup(weighSkill)
+	if err != nil {
+		t.Fatalf("look %s up: %v", weighSkill, err)
+	}
+	if plain.SelfGradient != nil {
+		t.Fatalf("%s declares a gradient, so nothing here is about a skill without one", weighSkill)
+	}
+	if got := WeighSelfGradient.of(plain); got != 0 {
+		t.Errorf("a skill with no gradient reads %d rather than nought", got)
+	}
+	// And the nought is not a row. It is the control of every sweep of this
+	// field on this skill, so the whole report is refused before a battle.
+	request := weighRequest(WeighSelfGradient, 600)
+	report, err := lib.Weigh(request)
+	if err == nil {
+		t.Fatalf("%s was priced a gradient it does not declare, so a sweep has a row for having none: %+v",
+			weighSkill, report.Rows)
+	}
+	if !strings.Contains(err.Error(), "want a share in parts per thousand") {
+		t.Errorf("the refusal is not the parser's own: %v", err)
 	}
 }
 
@@ -737,10 +947,6 @@ func TestASweepAlwaysCarriesItsControlExactlyOnce(t *testing.T) {
 // table: every member names itself, parses back, and reads a value off a skill.
 func TestEveryWeighableFieldIsOneBoundedNumber(t *testing.T) {
 	lib := sparLibrary(t)
-	shipped, err := lib.Skills().Lookup(weighSkill)
-	if err != nil {
-		t.Fatalf("look %s up: %v", weighSkill, err)
-	}
 	names := FieldNames()
 	if len(names) != weighFieldCount {
 		t.Fatalf("%d names for %d fields", len(names), weighFieldCount)
@@ -759,7 +965,13 @@ func TestEveryWeighableFieldIsOneBoundedNumber(t *testing.T) {
 		if parsed != field {
 			t.Errorf("%s parsed back as %s", field, parsed)
 		}
-		// set and of are each other's inverse, and set touches nothing else.
+		// set and of are each other's inverse, and set touches nothing else —
+		// asked of a skill that DECLARES the field, which is what the inverse is
+		// a claim about. On a skill without a self_gradient there is no nought
+		// to put back, only a nil pointer, and set will not invent one: see
+		// WeighField's doc, and TestAGradientPricesHowMuchAndNeverWhether for
+		// what that costs.
+		shipped := declaringSkill(t, lib, field)
 		moved := field.set(shipped, 7)
 		if got := field.of(moved); got != 7 {
 			t.Errorf("%s set to 7 reads %d", field, got)
@@ -769,12 +981,29 @@ func TestEveryWeighableFieldIsOneBoundedNumber(t *testing.T) {
 			t.Errorf("%s does not put back what it took", field)
 		}
 	}
-	if _, err := ParseWeighField("self_gradient"); err == nil {
-		t.Error("self_gradient is weighable, and it is two numbers rather than one")
-	}
 	if _, err := ParseWeighField("applies"); err == nil {
 		t.Error("applies is weighable, and changing it authors a different skill")
 	}
+}
+
+// declaringSkill is a skill that declares the field, which is the only skill the
+// inverse above is a statement about.
+//
+// Eight of the nine are declared by every skill, because eight of the nine are
+// off at a nought — a crit of nought is a legal crit and `strike` carries one. A
+// gradient is not: absent is a nil pointer, so the bench's one gradient is what
+// self_gradient has to be asked about.
+func declaringSkill(t *testing.T, lib *Library, field WeighField) skill.Skill {
+	t.Helper()
+	id := weighSkill
+	if field == WeighSelfGradient {
+		id = gradientSkill
+	}
+	shipped, err := lib.Skills().Lookup(id)
+	if err != nil {
+		t.Fatalf("look %s up: %v", id, err)
+	}
+	return shipped
 }
 
 // TestAWeighingRefusesWhatItCannotMeasure. Each of these would otherwise produce

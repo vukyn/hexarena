@@ -4849,16 +4849,43 @@ the wrong evidence for one that deals none; a row where the mechanism never fire
 fifth of its battles; and a row with a **saturated half** (`First.Rate() >= 990`
 or `Second.Rate() <= 10`), which has no room left for the field to move.
 
-⚠️ Only **scalars** are weighable: `power`, `accuracy`, `pierce`, `crit`,
-`strikes`, `drains`, `cooldown`, `range`. `self_gradient` is excluded because
-**nothing carries it** — `comeback` is the book's only gradient and no character
-brings it at level 60, so the field would measure nothing that exists. (It was
-excluded for years as "two numbers, so a curve becomes a surface"; `skill.Gradient`
-has had exactly one field since #132, and TODO.md carries the decision that is
-actually open.) `applies`, `strips`, `summons`,
-`restriction`, `element`, `target` and `pattern` are excluded because changing one
-**authors a different skill** rather than moving a dial, and the deviation would
-be that other skill's worth.
+⚠️ Only **scalars** are weighable, and there are nine: `power`, `accuracy`,
+`pierce`, `crit`, `strikes`, `drains`, `cooldown`, `range` and `self_gradient`.
+`applies`, `strips`, `summons`, `restriction`, `element`, `target` and `pattern`
+are excluded because changing one **authors a different skill** rather than
+moving a dial, and the deviation would be that other skill's worth.
+
+⚠️ **`self_gradient` is the ninth, and the one whose *off* state is not a
+number.** It is one number, not two — `skill.Gradient` has had exactly one field
+since #132, "the top of the curve is not a choice" — so a sweep of it is a line
+and `MonotoneWorth` keeps the meaning it has everywhere else here. What is
+different is the bottom of that line: a skill declaring no gradient carries a
+**nil pointer** where every other field is off at a nought a crit is legal at.
+`of` reads that absence as nought, nil-safe the way `Gradient.Share` is, and
+`set` hands the nought straight back to the parser, which refuses a share below
+one. ⚠️ **So the field prices *how much* a gradient is worth and never *whether
+to have one***: a sweep on a skill that declares none has a control row of nought
+and the whole report is refused, in the parser's own words, before a battle — so
+no report here has a row for "this skill with no gradient at all" and none may be
+read as one. Mapping that nought back to nil inside `set` would buy the row and
+would be this package holding a second copy of a bound `skill.resolve` owns,
+which is the one thing `set` exists not to do.
+
+⚠️ **Nothing shipped carries a gradient**, so the field ships measuring nothing
+in the book: `comeback` is the only one declared and no character fields it, so
+`hexforge weigh --carriers all comeback --field self_gradient` answers *"all 11
+in the book were skipped"*. That is the state of the data, not a fault in the
+field, and the shipped book is not to be edited to make a number appear. The
+first reading was taken on a **fixture** carrier — the bench adept with
+`desperate` in its fielded four — at level 60 over 10,000 seeds, band ±0.8pp,
+against `desperate`'s declared 1000: **500 → −20.8%**, control **+0.0%**, **1500
+→ +20.0%**, **2000 → +34.6%**, at 68 / 64 / 62 / 60 median turns, ordered in both
+columns. It prices a fixture and therefore nothing in the game; what it says is
+that the field measures, and that a gradient is worth a great deal to a carrier
+that leans on one. ⚠️ The carrier is built by the test (`bringsTheGradient`,
+beside `forkedTwin`) rather than added to the fixture cast: `desperate` in the
+adept's kit displaces `purify`, and the adept fights in the goldens — measured at
+**656 golden lines** moved, none of them a design decision.
 
 ⚠️ **Do not try to seed the two twins separately.** They share one `*rng.Source`,
 so changing one side re-scrambles every draw after it — roll drift. It **biases
@@ -4927,9 +4954,12 @@ thousand.
 footer of three skips. That is the tool working rather than failing: the skips
 are the part that was previously noticed by eye.
 
-**Left at its default, deliberately:** `self_gradient` support (excluded, above).
-A second field per row is not coming either — that is a surface, and a surface is
-not something a column of figures can report.
+**Left at its default, deliberately:** a second field per row. That is a surface,
+and a surface is not something a column of figures can report — `MonotoneWorth`
+has one answer per row of a grid, one per column and none for the grid.
+(`self_gradient` is no longer on this list: it is the ninth field, above. A
+`--carriers all` on the book's only gradient is still an empty table, because no
+character brings it.)
 
 ### What the first crit chances cost, and what the readings taught
 
