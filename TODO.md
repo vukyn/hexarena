@@ -1210,7 +1210,12 @@ is only so the shape is readable.
             inside the draft, which is why the pick is two decisions and not one:
             the character leaves the pool the moment it is taken, and the loadout
             follows.
-            **(b) Three bans a side, mirrored.**
+            **(b) Bans are per format: two a side at 3v3, three a side at
+            5v5.** Mirrored, and optional — a side may leave every slot unspent.
+            ⚠️ Read as **a side**, which is what "three bans, mirrored" meant
+            when it was first settled; the totals below say what the other
+            reading would cost, because the difference decides how much cast the
+            draft needs and it is not worth discovering later.
             **(c) A pick that runs out of time cancels the whole room** — no
             auto-pick, no default. The match starts over from a new code. This is
             the one place the design does *not* follow "a timeout announces and
@@ -1231,28 +1236,31 @@ is only so the shape is readable.
             wrong.
             **Bans are optional** — a side may leave all three slots unspent.
 
-            ⚠️ **THE NUMBERS DO NOT FIT, MEASURED, AND THIS IS THE FIRST THING
-            TO SETTLE.** The pool today is **eleven**, not twelve:
-            `naruto.naruto` already carries `hidden: true`. Against eleven:
+            ⚠️ **3v3 FITS AND 5v5 DOES NOT, MEASURED.** The pool today is
+            **eleven**, not twelve: `naruto.naruto` already carries
+            `hidden: true`. Against eleven, with the counts settled above:
 
-                3v3, 6 bans (3 a side): 6 picks + 6 bans = 12 of 11 — IMPOSSIBLE
-                3v3, 4 bans:            6 + 4 = 10 of 11 — last pick sees 2
-                3v3, 2 bans:            6 + 2 =  8 of 11 — last pick sees 4
-                5v5, 0 bans:           10 + 0 = 10 of 11 — last pick sees 2
-                5v5, any bans:                            — IMPOSSIBLE
+                3v3, 2 a side:  6 picks +  4 bans = 10 of 11 — fits, last pick sees 2
+                5v5, 3 a side: 10 picks +  6 bans = 16 of 11 — needs 16 in the pool
 
-            So a 3v3 draft in which **both sides spend all three bans cannot
-            complete**, and because bans are optional that is not a
-            configuration error caught at the start but a room that runs out of
-            characters partway through. Four ways out, and it is the author's
-            call: fewer bans; **more cast** (two more characters make three bans
-            a side fit with one to spare, and unhiding naruto alone still leaves
-            the last pick with exactly one candidate, which is not a decision);
-            a per-room pool that can be larger than the shipped cast; or a rule
-            that a ban is refused once the remaining pool would not seat both
-            sides — which is the cheapest, and which turns "impossible" into "the
-            third ban is greyed out", but which also means the third ban is a
-            slot that sometimes is not there.
+            So the 3v3 draft is buildable **today**, with one character to spare,
+            and the 5v5 draft needs **five more** than the cast now holds — or
+            four more plus unhiding naruto. That is a content prerequisite and no
+            amount of code changes it, which is one of the two reasons five a
+            side is held back at `hexarena-host`'s flag.
+            For the other reading of the same sentence, bans as a **total** across
+            both sides rather than each: 3v3 becomes 8 of 11 and the last pick
+            sees four, and 5v5 becomes 13 of 11 and still needs two more
+            characters than exist. Either reading leaves 3v3 comfortable and 5v5
+            short, so the reading changes the target and not the conclusion.
+            ⚠️ **Bans being optional is what makes a shortfall a runtime failure
+            rather than a refused configuration.** A room that is legal when it
+            opens can still run out of characters partway through a draft, so
+            whatever the counts are, the draft owes a rule for the moment the
+            pool would no longer seat both sides: refuse the ban, and grey the
+            slot. That rule is cheap and it is what stops the arithmetic above
+            from having to be re-checked every time cast is added or a character
+            is hidden.
             ⚠️ **The last pick is not a decision whenever slack is nought**, and
             slack is `pool - picks - bans`. Worth drawing on the screen: a draft
             whose final pick has one candidate should say so rather than present
@@ -1279,10 +1287,10 @@ is only so the shape is readable.
             whichever is a version ahead. `TestFiveASideIsHeldBackHereAndNowhereElse`
             asserts both halves, because a test for the refusal alone would go
             green the day somebody deleted the constant.
-            The second reason is the draft: ten picks out of a pool of eleven
-            leaves room for no bans at all, so a 5v5 ban-and-pick cannot be
-            seated either. Lifting the hold-back wants both — the numbers read on
-            this board, and enough cast to draft on it.
+            The second reason is the draft: at three bans a side a 5v5 needs
+            **sixteen** in the pool and there are eleven, so a 5v5 ban-and-pick
+            cannot be seated either. Lifting the hold-back wants both — the
+            numbers read on this board, and five more characters to draft on it.
 
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
