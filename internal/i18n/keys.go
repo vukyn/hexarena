@@ -821,6 +821,45 @@ const (
 	GameMenuBattle
 	GameMenuBattleDetail
 
+	// The two protocol enums, worded. wire.Code is why a peer was turned away
+	// at the gate and wire.Closure is why a match stopped for a reason the
+	// board cannot show; both travel as an **id** precisely so the sentence
+	// lives at this end, in the reader's own language, which is why
+	// internal/wire may not import this package and these lines cannot live
+	// there. See Lang.Refusal and Lang.Closure.
+	//
+	// Held **complete**, the way the status categories are and for the same
+	// reason: a code is a Go enum rather than a data id, so a value with no
+	// wording is a gap in the catalog rather than data nobody has reached yet.
+	// TestEveryRefusalIsWorded and TestEveryClosureIsWorded walk
+	// wire.CodeCount and wire.ClosureCount to say so.
+	//
+	// ⚠️ **A bare translation of the id would be worthless**, which is the one
+	// rule these thirteen lines are written under: "dữ liệu không khớp" tells a
+	// player nothing they can do, and the player reading one of these is stuck
+	// at a lobby with no other information in front of them. Each says what
+	// happened *and* what to do about it. The three that are a client bug or a
+	// stale build rather than anything the player did — RefusalNotYourTurn,
+	// RefusalIllegalAction, RefusalUnknownMessage — say so outright, because a
+	// player told only "illegal action" will go looking for their own mistake.
+	//
+	// One wording per value and no second family, unlike the status categories:
+	// they have two because two sentences genuinely needed two shapes, and here
+	// there is one consumer and it does not exist yet. → TODO.md § The client.
+	RefusalNone
+	RefusalProtocolMismatch
+	RefusalDataMismatch
+	RefusalBadPassword
+	RefusalRoomUnknown
+	RefusalRoomFull
+	RefusalSquadRefused
+	RefusalNotYourTurn
+	RefusalIllegalAction
+	RefusalUnknownMessage
+	ClosedNone
+	ClosedLeft
+	ClosedStopped
+
 	keyCount
 )
 

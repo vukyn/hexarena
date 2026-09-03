@@ -675,4 +675,24 @@ q or ctrl+c to quit`,
 	GameMenuSquadsDetail: "the sides that have been built, and take one into a battle",
 	GameMenuBattle:       "battle",
 	GameMenuBattleDetail: "play a battle yourself, with the first side on the list",
+
+	// The thirteen lines of the two internal/wire enums. Whoever reads one is
+	// standing at a lobby with nothing else in front of them, so each says both
+	// what happened and what to do next — a bare translation of the id would be
+	// worthless. The last three refusals say outright that the fault is the
+	// program's, because a player told only "illegal action" goes looking for a
+	// mistake of their own that is not there.
+	RefusalNone:             "nothing was refused: the room let this client in",
+	RefusalProtocolMismatch: "the two sides speak different versions of the protocol and cannot talk at all; read the build line on each and install the same build",
+	RefusalDataMismatch:     "same protocol, different game data, so the two machines would fight two different battles; read the data line on each and install the same build",
+	RefusalBadPassword:      "this room has a password and the one just sent was wrong; ask the host for it and type it again",
+	RefusalRoomUnknown:      "something answered, but no room there carries that code; check the code was typed right, or ask for a new one because the old room is gone",
+	RefusalRoomFull:         "two players already have that board; wait for their match to finish, or open a room of your own",
+	RefusalSquadRefused:     "the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not take; fix it and join again",
+	RefusalNotYourTurn:      "a move went out when it was not this side's turn; that is the program's mistake and not yours, and matching builds is the fix if it happens again",
+	RefusalIllegalAction:    "the room will not take the move just sent, because it was never one of the moves on offer; the program's mistake and not yours, so pick one the screen shows",
+	RefusalUnknownMessage:   "the room could not read the last message, which is what two different builds look like; not your mistake, put the same build on both machines",
+	ClosedNone:              "nothing stopped the match",
+	ClosedLeft:              "the other side dropped out, so the match stops here; nobody wins it and nobody loses it, and a new room is where you carry on",
+	ClosedStopped:           "the machine hosting the room has shut down, so the match stops here; nobody wins it and nobody loses it, and the host's next room has a new code",
 }
