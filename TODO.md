@@ -731,22 +731,122 @@ is only so the shape is readable.
             instant the *client* returned, which it has not.
             ⚠️ **Out of scope on purpose, and each is its own item below**: any TUI
             screen, the lobby/waiting/countdown drawing, the wordings, the seat
-            token and the rejoin, and **the host binary**.
-      - [ ] **The host binary.** Small now that the transport exists, and its own
-            item because it is where the flag and output decisions live: which
-            address to listen on, what to print, whether the code is copied to the
-            clipboard, what a refusal reads as. `socket.Server` is an
-            `http.Handler` and opens nothing.
-            ⚠️ **A Server has no shutdown of its own and will need one.**
-            `http.Server.Shutdown` does not wait for **hijacked** connections, and
-            a WebSocket is hijacked — so a binary that shuts down cleanly needs
-            something like `Registry.CloseAll` + `Wait`, on the transport's side.
-            `socket.Server.Tables()` is the reading that would measure it, and
-            `internal/socket`'s own end-to-end test **polls** it for exactly this
-            reason, which is the gap made visible rather than papered over.
-            ⚠️ It is also where `wire.Version.Build` gets a real value: `wire.Local`
-            takes the build string as a parameter because a version is stamped at
-            build time and read by the binary's own main.
+            token and the rejoin, and **the host binary** — which is built now, and
+            took `Server.Shutdown` back into this package with it, because
+            `http.Server.Shutdown` does not wait for hijacked connections and only
+            this package holds the sockets that were hijacked. → the item below.
+      - [x] **The host binary.** **Done** — `cmd/hexarena-host`. It opens one
+            room, prints the code, serves the match, prints the result and exits;
+            it plays nothing, because both players are clients.
+            ⚠️ **The Server's missing shutdown is built and it is FOUR steps, not
+            two.** `http.Server.Shutdown` does not wait for **hijacked**
+            connections and a WebSocket is hijacked, so `socket.Server.Shutdown`
+            is: tell every peer (below), `Registry.CloseAll`, `Registry.Wait`
+            bounded by the context, then poll until `Tables()` **and**
+            `Running()` are both nought. The last two are separate readings on
+            purpose — a table outlives its match by however long two sockets take
+            to close — so a shutdown checking one would return with the other
+            still going.
+            ⚠️ **`CloseAll` runs even on a context that is already done.** Only
+            the *waiting* is bounded; a shutdown that skipped the closing because
+            it was out of time would leave behind exactly what it was asked to
+            stop. The refusal names both counts, because "context deadline
+            exceeded" alone tells a host nothing it can act on.
+            ⚠️ **The peers are told with a new closure, `wire.ClosureStopped`,
+            and that is the only change to `internal/wire` in this PR.**
+            `ClosureLeft` would have been a lie — a departure is a judgement about
+            a *peer*, and this is the thing that owns the connection deciding to
+            stop — and sending nothing leaves a player staring at a dead socket.
+            `ClosureCount` moved to 3, no exhaustive switch over `Closure` exists
+            anywhere to update, and **`messages.golden` did not move**: no fixture
+            carries the new value, so `make golden` had nothing to accept.
+            ⚠️ **The notify uses `drop` and not `bye`, and it is worth five
+            seconds a socket.** `bye` is the close *handshake* and waits for the
+            peer's answer, which a peer that is not reading never sends — and a
+            peer that is not reading is exactly what a shutdown has to survive.
+            The `wire.Closed` has already said why at the application level and is
+            flushed before the socket goes. Measured on the four-connection
+            shutdown test: **20.0s with `bye`, 0.01s with `drop`**.
+            ⚠️ **`socket.Options.Joined` was added**, because a join leaves no
+            other trace a caller can reach: `room.Reading` carries no seat
+            occupancy, so a host wanting a line per player could otherwise only
+            poll for the *match* starting, which is one line for two people.
+            ⚠️ **Which address goes in the code is the sharp part, and it is
+            probe → walk → refuse.** A code carries four address bytes, so it is
+            IPv4 and it has to be an address the *other* machine can dial. The
+            route probe (`net.Dial("udp4", "192.0.2.1:9")`, TEST-NET-1, no packet
+            sent — a connected UDP socket only picks a route) answers exactly the
+            right question and **fails on a machine with no default route**, which
+            a LAN behind a bare switch can be. The interface walk is the fallback
+            and is genuinely ambiguous: `docker0` is `172.17.0.1`, is up, is
+            private, and is unreachable from the other player's laptop.
+            ⚠️ **The docker tie is REFUSED rather than broken, and the reason is
+            measured.** "Prefer 192.168/16 over 172.16/12" is the tempting rule
+            and it is wrong *on this machine*, whose real LAN address is
+            **172.16.32.222** — inside the same RFC 1918 block docker's default
+            bridge sits in. "Prefer the lowest" is a coin toss with a tidy
+            implementation. The interface *name* would work and is not an address,
+            so the pure picker cannot see it. So more than one survivor is an
+            error naming every candidate and asking for `-advertise`: guessing
+            wrong prints twelve characters that simply do not work, with nothing on
+            screen to explain why. The picker is pure (`pick([]netip.Addr)`) and
+            table-tested; the two gatherers are the impure half.
+            ⚠️ **`-advertise` is deliberately MORE permissive than the picker.**
+            It allows loopback and link-local, with a note on the banner saying
+            what they mean, because the flag exists to overrule the picker and
+            `-advertise 127.0.0.1` is how somebody tries the thing out with two
+            clients on one machine. What it still refuses is an address nothing can
+            dial at all.
+            ⚠️ **The default port is 13579 and it is FIXED**, so a room is on the
+            same port every run and a firewall rule has something to name. Free in
+            IANA and `/etc/services`; below both ephemeral floors (measured:
+            darwin `net.inet.ip.portrange.first` = 49152, Linux's default range
+            starts at 32768), so the OS never hands it out underneath us. **31337
+            was a candidate and is rejected**: it is Back Orifice's port and IDS
+            rules flag it. `-port 0` is still supported and documented as "take any
+            free port".
+            ⚠️ **The cost of a fixed port is that "address already in use" becomes
+            ordinary**, so it is caught and rewritten to name the port and the
+            flag rather than passing the syscall's words through.
+            ⚠️ **Listen first, THEN open — and the test for it must use `-port 0`.**
+            A code carries the port and `Registry.Open` takes the address the code
+            will name, so the port has to be bound before the room exists. At the
+            fixed default the wrong order still produces a code carrying 13579,
+            which still works — so an ordering test run at the default passes
+            either way and measures nothing. `TestTheCodeCarriesThePortThatWasActuallyBound`
+            drives `-port 0` and asserts the decoded port equals the listener's and
+            is non-zero; reversing the two calls reddens it, verified.
+            ⚠️ **The clipboard question is ANSWERED: no.** There is no clipboard in
+            the standard library, so it means shelling out to `pbcopy`, `xclip`/
+            `xsel` or `wl-copy` — three external binaries, a per-platform branch and
+            a silent failure on a machine with none of them. The code is twelve
+            characters from an alphabet that already excludes 0, 1, 8 and 9 because
+            people mishear those; it is meant to be read out loud.
+            ⚠️ **`wire.Version.Build` gets a real value here**, from `-ldflags
+            -X main.build=…`, else `debug.ReadBuildInfo`'s `vcs.revision` (twelve
+            characters, `+dirty` when the tree was modified), else `"devel"`. The
+            ordering is a pure function so the test needs no linker.
+            ⚠️ **A password given as a flag is visible in `ps`**, which is said in
+            `-h` and in the doc comment; `HEXARENA_ROOM_PASSWORD` is read when the
+            flag is empty and is one fewer place it is written down, not a fix.
+            ⚠️ **`wire.Password`'s redaction did NOT cover this binary's own
+            settings struct, and that was measured rather than guessed.** `fmt`
+            reaches a field's `String` through `reflect.Value.Interface`, and an
+            **unexported** field cannot be interfaced — so `%v` of a struct with an
+            unexported `wire.Password` prints the password in full, while every
+            other test in the repository stays green. `main.settings` restates the
+            redaction with its own `String`/`GoString`. → the note on the type.
+            ⚠️ **`cmd/hexarena-host` is on the `-race` line of `make check`, and it
+            earned the place.** The transport calls `Options.Joined` and
+            `Options.Report` on **a connection's own goroutine** while main is
+            printing the banner and the result, so this binary prints from three
+            goroutines at once — and the detector caught exactly that on the join
+            test's first run, before `main.screen` (a lock around the writer)
+            existed. Measured: 1.3s plain, 2.0s under the detector.
+            ⚠️ **Out of scope on purpose:** it runs **one** room (the registry
+            holds 256, but naming which one finished is a tool for a different
+            job), and it writes **no battle log** — that waits on the room writing
+            one out, which is its own item.
       - [x] Room code: base32 of a four-byte address, a two-byte port and a
             **one-byte room**, twelve characters, with a round-trip test over
             addresses *and* room bytes.

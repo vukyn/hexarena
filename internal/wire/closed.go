@@ -20,9 +20,11 @@ import (
 // the *other* kind of ending: a match stopped for a reason the board cannot
 // show, which a mirror has no way to reach on its own.
 //
-// There is **one of those today** and the enum is shaped for a second: a value
-// added here is an entry in a table rather than a new message kind, which is
-// the whole reason the reason is a field and not a Kind.
+// There are **two of those** and the enum is shaped for a third: a value added
+// here is an entry in a table rather than a new message kind, which is the whole
+// reason the reason is a field and not a Kind. ClosureStopped is what the second
+// one cost — one constant, one name, and no golden — and it is the evidence for
+// the shape rather than a claim about it.
 type Closure uint8
 
 const (
@@ -45,10 +47,30 @@ const (
 	// friends the enforcement of walking away is social. → README.md § PvP over
 	// a LAN, where the cost is written down.
 	//
+	ClosureLeft
+	// ClosureStopped is the host having stopped serving: the process is going
+	// away, so the match is over wherever it had got to.
+	//
+	// ⚠️ **It is a different fact from ClosureLeft and sending that one instead
+	// would be a lie.** A departure is a judgement about a *peer* — the thing
+	// that owns the connection decided there was nobody at the other end — and
+	// this is the thing that owns the connection deciding to stop. A player told
+	// "your opponent left" while their opponent was sitting right there would go
+	// looking for a network fault that does not exist. The other way round is no
+	// better: sending nothing at all leaves a player staring at a socket that
+	// died for no stated reason, which is the one thing a Closed exists to
+	// prevent.
+	//
+	// ⚠️ Like ClosureLeft it is **not a loss for anybody**. Nothing about the
+	// host's process ending is a fact about the board, so the match has no
+	// winner and the room's own verdict for it is room.VerdictAbandoned — the
+	// same one a departure produces, because "nobody played this out" is the
+	// same statement either way.
+	//
 	// Declared last, which is the rule this enum shares with Kind, Code and
 	// battle.Kind: a closure serialises by name, so appending cannot
 	// reinterpret an ending a peer already knows how to word.
-	ClosureLeft
+	ClosureStopped
 )
 
 // ClosureCount is the number of closures, and it exists so a test can walk them
@@ -57,15 +79,16 @@ const (
 //
 // ⚠️ Nothing words these yet, the same gap CodeCount carries and for the same
 // reason: wire must not import internal/i18n, because the whole point of
-// sending an id is that the wording lives at the far end. "Opponent left" is
-// already on the wordings list. → TODO.md § The client.
-const ClosureCount = int(ClosureLeft) + 1
+// sending an id is that the wording lives at the far end. "Opponent left" and
+// "the host stopped" are both on the wordings list. → TODO.md § The client.
+const ClosureCount = int(ClosureStopped) + 1
 
 // closureNames is the wire form of every closure, and it is the format:
 // renaming an entry breaks every peer built before the rename.
 var closureNames = [ClosureCount]string{
-	ClosureNone: "none",
-	ClosureLeft: "left",
+	ClosureNone:    "none",
+	ClosureLeft:    "left",
+	ClosureStopped: "stopped",
 }
 
 func (c Closure) String() string {

@@ -8,6 +8,13 @@ import (
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
+// seatsPerTable is how many connections a table holds, and it is two because a
+// room has two seats (room's own seatCount, which is unexported there). It is
+// named so that the one place this package **walks** both — the shutdown telling
+// each peer the host stopped — walks a fixed-size array rather than a slice
+// literal whose length is a coincidence.
+const seatsPerTable = 2
+
 // table is one room's two connections, plus the timer on whichever seat is being
 // asked something.
 //

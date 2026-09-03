@@ -257,13 +257,17 @@ func (l *listener) finished(t *testing.T) ending {
 // emptied waits for the server to let go of every table and fails if it does
 // not.
 //
-// ⚠️ It **polls**, and the reason is a real gap rather than a shortcut: a client
-// returning from Play means that *client* is done, and the server's own
-// connection goroutine tears its table down a moment later when the socket
-// finishes closing. There is nothing to wait on, because a Server has no
-// shutdown of its own — http.Server.Shutdown does not wait for hijacked
-// connections, so the host binary will need one and that is where the decision
-// belongs. → TODO.md, under the host binary.
+// ⚠️ It **polls**, and it is a poll for the same reason Server.Shutdown's last
+// step is one: a table is released by the connection goroutine that held it, on
+// its way out, and nothing signals that. A client returning from Play means that
+// *client* is done; the server's own connection goroutine tears its table down a
+// moment later when the socket finishes closing.
+//
+// ⚠️ This is deliberately **not** Shutdown, and the difference is what these tests
+// measure. Shutdown makes the tables go away by closing them; this waits for a
+// match that ended **by itself** to let go of them, which is the ordinary path and
+// the one no shutdown is involved in. Calling Shutdown here would replace that
+// measurement with a measurement of Shutdown, which has its own test.
 //
 // The race detector is what found this: without it the two happen to interleave
 // the other way round on every run.

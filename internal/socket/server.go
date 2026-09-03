@@ -5,7 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/coder/websocket"
 
@@ -39,6 +42,12 @@ type Server struct {
 	// already gone — the result travels on the answer to the input that ended it,
 	// and this is where that answer is handed on. → room.Answer.
 	finished func(wire.RoomCode, room.Reading)
+	// joined is called once per seat a room hands out, with the name the peer
+	// announced. It exists because a join leaves no other trace a caller can
+	// reach: room.Reading carries no seat occupancy, so a host binary wanting to
+	// print a line as each player arrives could otherwise only poll for the
+	// *match* starting, which is one line for two people. → Options.Joined.
+	joined func(wire.RoomCode, wire.Seat, string)
 
 	mux *http.ServeMux
 
@@ -56,6 +65,20 @@ type Options struct {
 	// Finished is called once per match that ends, with the room's last reading.
 	// Nil ignores it. → the field on Server for why it is a callback.
 	Finished func(wire.RoomCode, room.Reading)
+	// Joined is called once per seat a room hands out, with the seat and the name
+	// the peer announced. Nil ignores it.
+	//
+	// ⚠️ **The name is the peer's own and is not checked for anything.** It is a
+	// string a stranger on the network chose, so a caller printing it is printing
+	// somebody else's bytes; nothing here trims, folds or bounds it, because
+	// wire.Hello is the format and this is the transport handing a field on
+	// unchanged. A caller that draws it owes it the same treatment as any other
+	// text it did not write.
+	//
+	// ⚠️ It is called **under the room's exchange lock**, like Finished, so a
+	// callback that blocks holds its own room's next message. Printing a line is
+	// what it is for.
+	Joined func(wire.RoomCode, wire.Seat, string)
 }
 
 // NewServer wraps a registry. The registry keeps owning the rooms; this owns the
@@ -66,6 +89,7 @@ func NewServer(rooms *room.Registry, options Options) *Server {
 		timings:  options.Timings.withDefaults(),
 		report:   options.Report,
 		finished: options.Finished,
+		joined:   options.Joined,
 		tables:   make(map[wire.RoomCode]*table),
 	}
 	server.mux = http.NewServeMux()
@@ -215,6 +239,14 @@ func (s *Server) join(ctx context.Context, code wire.RoomCode, entry *table, pee
 	entry.seat(answered.Seat, peer)
 	s.send(ctx, entry, peer, answered.Out)
 	s.settled(ctx, code, entry, answered)
+	// Told **after** the messages went out rather than before, so a caller
+	// printing a line for a join and a line for the match starting prints them in
+	// the order the room produced them. The seat is the room's own answer, so a
+	// refused join reaches no callback at all — the returns above are every path
+	// that hands no seat out.
+	if s.joined != nil {
+		s.joined(code, answered.Seat, hello.Name)
+	}
 	return answered.Seat, true
 }
 
@@ -480,4 +512,192 @@ func (s *Server) Tables() int {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return len(s.tables)
+}
+
+// settlingPoll is how often Shutdown asks whether the last table has gone.
+//
+// ⚠️ It is a poll and there is genuinely nothing to wait on, which is the gap
+// this whole function was filed under. A table is released by the connection
+// goroutine that held it, on its way out; nothing signals that, and a channel
+// closed by "the last connection" would be a second lifetime beside the holder
+// count that already owns one. The registry's own half of the shutdown is *not*
+// polled — Registry.Wait is a proper condition variable — so this is the one
+// approximation in the call, and it is bounded by the caller's context rather
+// than by a count.
+//
+// Ten milliseconds is what internal/socket's own end-to-end fixture already
+// polls Tables at, so a shutdown notices a settled server about as fast as a
+// test does, and a hundred of them is one second of a bound that is measured in
+// seconds.
+const settlingPoll = 10 * time.Millisecond
+
+// Shutdown stops serving: it tells every connected peer why, stops every room,
+// and returns when nothing is left running.
+//
+// ⚠️ **This exists because http.Server.Shutdown cannot do it.** That call waits
+// for connections it can see finish a *request*, and a WebSocket is
+// **hijacked** — net/http has handed the connection over and stopped counting
+// it — so shutting the http server down leaves every socket open and every room
+// goroutine alive. A caller that only closed its listener would exit with a
+// match still being played inside it.
+//
+// # It is four steps and they are in this order for reasons, not for tidiness
+//
+//  1. **Tell every connected peer**, with wire.ClosureStopped and then a close
+//     frame. The message goes first because it is the only thing that says
+//     *why*: a socket that simply dies leaves a player staring at a dead
+//     connection, and a client's mirror reads a Closed as an ending it could not
+//     have computed. The close frame goes after because a shutdown must not
+//     depend on the peer's cooperation — a wedged client that never reads the
+//     Closed still has its socket taken away, so the tables below empty on this
+//     side's own initiative.
+//  2. **room.Registry.CloseAll**, which stops the rooms.
+//  3. **room.Registry.Wait**, bounded by ctx. ⚠️ Two calls rather than one, for
+//     the reason Wait's own comment gives: Wait **closes nothing**, so it is a
+//     measurement rather than a tidy-up, and a goroutine left behind hangs it
+//     instead of being quietly collected. Merging the two would lose exactly
+//     that property.
+//  4. **Both readings at nought.** Tables and Running measure different things —
+//     a table outlives its match by however long two sockets take to close, and
+//     a room that has retired its entry but not returned is still a goroutine —
+//     so a shutdown that checked one of them would return with the other still
+//     going. They are exposed for this and are used for this.
+//
+// ⚠️ **CloseAll runs even on a context that is already done.** Only the *waiting*
+// is bounded: closing is the point of the call, and a shutdown that skipped it
+// because it was out of time would leave behind exactly what it was asked to
+// stop. So an expired context gives up on the wait, not on the work — and the
+// error names what was still running, because a caller printing "gave up" with
+// no numbers tells its user nothing.
+//
+// It is not safe for two callers at once, and it does not need to be: a binary
+// has one shutdown, reached from the match ending or from a signal, and running
+// both would only send a second Closed down a socket that had already gone.
+func (s *Server) Shutdown(ctx context.Context) error {
+	s.stopping(ctx)
+	s.rooms.CloseAll()
+	if err := s.waited(ctx); err != nil {
+		return err
+	}
+	return s.settling(ctx)
+}
+
+// stopping is step one: every peer this server is still holding is told the host
+// has stopped, and then has its socket closed.
+//
+// The table's own exchange lock is taken per room, which is what makes reading
+// the two connections safe against the goroutines that seat and free them — and
+// it is per room rather than server-wide for the reason table.exchange carries,
+// so a stuck peer delays its own room's notice and no other's.
+func (s *Server) stopping(ctx context.Context) {
+	for _, held := range s.held() {
+		entry := held.table
+		entry.exchange.Lock()
+		// Two connections in a fixed order rather than a walk over a collection:
+		// a room has exactly two seats, and the order they are told in is an
+		// output. → table, which is two fields for the same reason.
+		for _, seated := range [seatsPerTable]struct {
+			seat wire.Seat
+			peer *connection
+		}{{wire.SeatHost, entry.host}, {wire.SeatGuest, entry.guest}} {
+			if seated.peer == nil {
+				continue
+			}
+			if err := seated.peer.send(ctx, wire.Closed{Reason: wire.ClosureStopped}); err != nil && !ended(err) {
+				s.failed(fmt.Errorf("tell %s of room %s the host stopped: %w", seated.seat, held.code, err))
+			}
+			// ⚠️ **drop and not bye, and the difference is five seconds a socket.**
+			// bye is the close *handshake*: it writes a close frame and waits for
+			// the peer's answer, and the library gives that wait five seconds. A
+			// peer that is not reading — which is exactly the peer a shutdown has
+			// to be robust against — never answers, so a graceful close costs the
+			// full five seconds per connection and buys nothing: the wire.Closed
+			// above has already said why, at the application level, and it is
+			// already flushed to the socket before this line. Measured on the
+			// four-connection shutdown test: 20.0s with bye, 0.2s with drop.
+			//
+			// What it costs is that a peer which read the Closed and then sat
+			// there sees a reset rather than a close frame. A hexarena client does
+			// not: Mirror.Over goes true on a Closed and Client.Play returns
+			// before this end's socket is ever read again.
+			seated.peer.drop()
+		}
+		entry.exchange.Unlock()
+	}
+}
+
+// held is every table this server holds, with its code, taken under the server's
+// own mutex and copied out — so the notify above walks a snapshot rather than the
+// live map, which connections are adding to and deleting from as it runs.
+//
+// ⚠️ It is **sorted by code**, because a map's iteration order must not reach an
+// output and the order two rooms' players are told in is one. The engine's rule,
+// one layer out; room.Registry.Codes sorts for the same reason.
+func (s *Server) held() []codedTable {
+	s.mu.Lock()
+	out := make([]codedTable, 0, len(s.tables))
+	for code, entry := range s.tables {
+		out = append(out, codedTable{code: code, table: entry})
+	}
+	s.mu.Unlock()
+	slices.SortFunc(out, func(a, b codedTable) int { return strings.Compare(string(a.code), string(b.code)) })
+	return out
+}
+
+// codedTable is one entry of that snapshot: the map's key beside its value,
+// because a table does not know its own code.
+type codedTable struct {
+	code  wire.RoomCode
+	table *table
+}
+
+// waited is step three: room.Registry.Wait, bounded by the caller's context.
+//
+// ⚠️ Wait takes no context and cannot, because what it waits on is a
+// sync.Cond — so the bound is a select against a goroutine, and on the losing
+// path **that goroutine is still there**. It is not a leak that grows: it is
+// blocked on the same condition the rooms will broadcast when they end, so it
+// ends when they do, and CloseAll has already asked them to. What it costs is
+// that a caller giving up here does not get its memory back until the wedged
+// room does, which is the honest state of a process that is about to exit
+// anyway.
+func (s *Server) waited(ctx context.Context) error {
+	settled := make(chan struct{})
+	go func() {
+		defer close(settled)
+		s.rooms.Wait()
+	}()
+	select {
+	case <-settled:
+		return nil
+	case <-ctx.Done():
+		return s.gaveUp(ctx)
+	}
+}
+
+// settling is step four: wait for the last table to go.
+func (s *Server) settling(ctx context.Context) error {
+	for {
+		if s.Tables() == 0 && s.rooms.Running() == 0 {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return s.gaveUp(ctx)
+		case <-time.After(settlingPoll):
+		}
+	}
+}
+
+// gaveUp is the one refusal this shutdown has, and it **names both readings**
+// rather than only the context's error: "the shutdown timed out" tells a host
+// nothing it can act on, and "two rooms and one connection are still running"
+// tells it whether the match is stuck or a socket is.
+//
+// The context's own error is wrapped rather than replaced, so a caller can still
+// ask errors.Is whether it was a deadline or a cancellation — which are a bound
+// being hit and a second ctrl-c, and read very differently.
+func (s *Server) gaveUp(ctx context.Context) error {
+	return fmt.Errorf("stop serving: %d room(s) and %d connected room(s) still running: %w",
+		s.rooms.Running(), s.Tables(), ctx.Err())
 }

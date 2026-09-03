@@ -53,10 +53,15 @@
 //   - **The seat token and the rejoin.** Which is why CloseThreshold is what it
 //     is: with no rejoin, a socket closing is a match ending, so that threshold
 //     is currently guarding a whole match rather than a ping. → its own note.
-//   - **The host binary.** It is small once this package exists, and it is where
-//     the flag and output decisions live, so it is its own item. Nothing here
-//     opens a listener or picks a port: a Server is an http.Handler, and the
-//     end-to-end test is what proves the shell is wired up.
+//   - **The host binary.** Nothing here opens a listener, picks a port, decides
+//     which address a room code should carry, reads a flag or prints a word: a
+//     Server is an http.Handler, and the end-to-end test is what proves the shell
+//     is wired up. That is cmd/hexarena-host, and it is built.
+//     ⚠️ **Server.Shutdown is the one thing that crossed back**, because it could
+//     not live out there: http.Server.Shutdown does not wait for hijacked
+//     connections, and only this package holds the sockets that were hijacked.
+//     It still opens nothing — the *listener* is the binary's, and closing it is
+//     the binary's too.
 //   - **Writing a finished match out as a battle.Log.** Another cursor over the
 //     battle, which is why the room reads its own that way.
 //   - **Spectators**, and **TLS** (→ README.md § Not in the first version).
