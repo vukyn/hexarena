@@ -229,10 +229,11 @@ type drawable interface {
 // skill and a battle option are **one** kind (see Subject.SkillSubject: same id,
 // same paragraph, same footer — only At and Of differ), so a third entry would
 // record the same render under a second name; and the third kind, NoSubject, is
-// the arm a raise cannot reach, which a client's applier is what proves. The art
-// preview moved with the blurb and is deliberately **not** here: it draws
-// rasterised art, so what such an entry would assert is an open question rather
-// than an oversight — see TODO.md § Not done.
+// the arm a raise cannot reach, which a client's applier is what proves.
+//
+// ⚠️ **The art preview is the thirteenth screen and the one entry here that
+// records a drawing rather than a sentence** — see theArtPreview for what a
+// plain-text record of it can and cannot hold.
 func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]drawable {
 	t.Helper()
 	species := NewSpeciesScreen(lib)
@@ -268,6 +269,7 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"species":          species,
 		"status picker":    statusPicker(t, c, lib),
 		"statuses":         NewStatusesScreen(lib),
+		"the art preview":  theArtPreview(t, c, lib),
 		"trait blurb":      traitBlurb(t, c, lib),
 		"traitless build":  traitless,
 		"traits":           NewPassivesScreen(lib),
@@ -1160,6 +1162,139 @@ func traitBlurb(t *testing.T, c Context, lib *forge.Library) BlurbScreen {
 			"cap:\n%s", held[0].ID, characters[found].ID, drawn)
 	}
 	return blurb
+}
+
+// # The art preview's entry, and the two halves of it a golden cannot hold
+//
+// theArtPreview is the picture the cast browser raises with `p`, over the first
+// row of the shipped cast at the level cap — which is where a raise leaves it,
+// and the same state both clients register under this name.
+//
+// ## Why the record is monochrome, and why that is not a choice
+//
+// Goldens here are taken under NO_COLOR, so `Palette.Plain` is true and the
+// screen draws `rampCell`: one character a cell out of `Ramp`, and no escape
+// codes. That is also the only affordable record there is. Measured, one
+// character in one language: the plain drawing is **19 lines / 2.0 KB** at the
+// floor and **55 lines / 8.4 KB** at 160x60, while the *same* lines coloured are
+// **14 KB** and **128 KB**, because every cell carries its own truecolor
+// sequence. Two languages x two sizes is therefore about **21 KB** of record
+// here and would be about **284 KB** if the palette ever came back coloured —
+// which is why `Plain` is asserted below rather than assumed.
+//
+// ## Both windows, deliberately
+//
+// The floor is where `previewChrome` bites: `Height - 8` leaves 16 rows, so the
+// art is rasterised into a 32-pixel-tall box and the drawing is the squeezed one.
+// The roomy size is the same picture with nothing taken away. A ramp character
+// that moved in both is the rasteriser or the weights moving; one that moved only
+// at the floor is the row budget moving, which is the same reading every other
+// entry's two sizes are for.
+//
+// ## ⚠️ It is a same-machine record, and that is a narrower claim than the rest
+// of this file makes
+//
+// The rasterisation **is** reproducible here — the whole shipped cast digests
+// byte for byte identically across separate `go test` processes, in both
+// drawings, and twice in one process off two separately loaded libraries;
+// `internal/forge.rasteriseSVG` reads no clock, no map and no environment. What
+// is **not** established is another architecture: `rasterx` calls `math.Sin`,
+// `math.Cos`, `math.Atan2` and `math.Tan`, which is the family Go has had
+// per-architecture assembly for. `math.Sqrt` is an IEEE-exact instruction and the
+// shipped art is `vtracer` output — beziers and polygons — so a transcendental
+// may never be reached at all, but "same bytes on every machine" is a promise
+// `internal/core` makes and this drawing does not. So the assertions below are
+// about **structure** — that the rows are full-width, that they are drawn out of
+// the ramp and nothing else — and the exact pixel field is left to the record,
+// where a diff on another machine is a finding to read rather than a broken gate.
+//
+// ## ⚠️ What this entry cannot see at all
+//
+// `blockCell` — the coloured half of the drawing, which is what a reader actually
+// looks at. NO_COLOR means this record never reaches it, so swapping `▀` for `▄`
+// there moves nothing in this file. That is held by
+// TestEachPixelIsDrawnInItsOwnHalfOfTheCell in preview_test.go instead, and the
+// weights behind the ramp by TestTheRampWeighsGreenOverRedOverBlue beside it.
+//
+// ## What the width sweep is told about it
+//
+// Nothing, and that is the honest answer rather than a gap. `CLAUDE.md` § the
+// TUI width rule splits prose, which takes `MinWidth`, from data, which takes
+// `UsableWidth()`. The art is neither: `picture` asks for exactly
+// `UsableWidth() - 4` cells and `cellRows` writes one cell per pixel column after
+// a two-space indent, so **every row is `UsableWidth() - 2` wide by
+// construction** and a floor assertion over it would pass on nothing it could
+// ever fail. What the screen does put in front of the width sweep is its wording —
+// the heading, the art/level/stage line, the missing and unreadable lines, the
+// footer — and those take `MinWidth` like every other sentence. So the clients'
+// sweeps exempt the picture rows by their alphabet and measure the rest, and the
+// only assertion made about the drawing's width is the one below: that it fills
+// the window it was given, so the record is of a full-width drawing rather than
+// of a stub.
+func theArtPreview(t *testing.T, c Context, lib *forge.Library) PreviewScreen {
+	t.Helper()
+	if !c.Style.Plain {
+		t.Fatal("the golden's palette draws colour, so this entry would record a " +
+			"truecolor sequence per cell — about 128 KB for the roomy render alone")
+	}
+	browser := NewBrowseScreen(lib)
+	browser.Level = progression.LevelCap
+	subject := browser.Subject()
+	if subject.Of == 0 {
+		t.Fatal("the shipped cast has no rows, so there is nothing to preview")
+	}
+	preview := NewPreviewScreen()
+	preview.Subject = subject
+	drawn, _ := preview.View(c)
+	if strings.Contains(drawn, c.Text(i18n.ArtMissing)) {
+		t.Fatalf("%s has no art on disk, so this entry records the missing-art line "+
+			"rather than a drawing:\n%s", subject.ID, drawn)
+	}
+	painted, widest := 0, 0
+	for _, row := range strings.Split(drawn, "\n") {
+		if !aRampRow(row) {
+			continue
+		}
+		painted++
+		if width := lipgloss.Width(row); width > widest {
+			widest = width
+		}
+	}
+	// ⚠️ The count and the width are both asserted, and the width is the half a
+	// count cannot give: a preview that had quietly stopped filling the window
+	// would draw its rows, pass a count, and record a picture in a corner.
+	if painted < 4 {
+		t.Fatalf("the preview drew %d rows of ramp, so this entry records its heading "+
+			"and nothing else:\n%s", painted, drawn)
+	}
+	if want := c.UsableWidth() - 2; widest != want {
+		t.Errorf("the widest drawn row is %d cells rather than the %d the art is sized "+
+			"to, so this is not a record of a full-width drawing", widest, want)
+	}
+	return preview
+}
+
+// aRampRow reports whether a line is drawn art rather than wording.
+//
+// Told apart by its alphabet, which is what `Ramp` is exported for: the picture
+// is the only thing on that screen made of nothing but those ten characters,
+// while every other row carries letters. Counting rows from the bottom instead
+// would be a second copy of `previewChrome`'s arithmetic, which is the sort of
+// duplicate that constant's own comment records having got wrong once already.
+//
+// The coloured drawing's two half blocks are not in it, and need not be: this
+// package's golden is plain by construction, and the client helper that has to
+// answer for both — cmd/hexforge-tui's aPictureRow — names them.
+func aRampRow(row string) bool {
+	if strings.TrimSpace(row) == "" {
+		return false
+	}
+	for _, letter := range row {
+		if !strings.ContainsRune(Ramp, letter) {
+			return false
+		}
+	}
+	return true
 }
 
 // startOverTheShippedBooks is a Context over internal/seed/data itself.
