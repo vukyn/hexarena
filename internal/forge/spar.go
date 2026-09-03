@@ -150,8 +150,42 @@ func (s Strikes) add(other Strikes) Strikes {
 	}
 }
 
-// fold counts one battle's events into the tally, reading only the events one
-// unit produced with its own skills.
+// Effects is what one unit's skill did over a set of duels other than strike:
+// what took hold, what health came back, what was cleared off, what was called
+// in.
+//
+// It is here for the reason Strikes is, and it is the half Strikes could not
+// hold. A rate cannot say whether anything happened — but "did anything happen"
+// was asked as "did a damaging strike land", and that is the right evidence only
+// for a skill whose mechanism *is* damage. A skill of nought power lands no
+// strike however well it works, so every buff, debuff, heal, cleanse and summon
+// in the book read as a mechanism that never fired. These four counts are the
+// same question asked of the rest of the event log.
+//
+// Applied, Stripped and Summoned count one per event, so a use that put two
+// stacks on counts once. Restored counts one per heal that landed, which is not
+// one per cast: a restore aimed at a unit already at full health emits nothing
+// at all, and that is exactly a row a weighing has to be able to refuse.
+type Effects struct {
+	Applied  int
+	Restored int
+	Stripped int
+	Summoned int
+}
+
+// add folds one set of effects into another.
+func (e Effects) add(other Effects) Effects {
+	return Effects{
+		Applied: e.Applied + other.Applied, Restored: e.Restored + other.Restored,
+		Stripped: e.Stripped + other.Stripped, Summoned: e.Summoned + other.Summoned,
+	}
+}
+
+// Any reports whether anything at all was observed.
+func (e Effects) Any() bool { return e != Effects{} }
+
+// fold counts one battle's events onto the challenger, reading only the events
+// one unit produced with its own skills.
 //
 // ⚠️ The unit is named by roster id, and the roster id of the challenger is not
 // the same in both halves of a matchup — it is enlisted first in one and second
@@ -164,8 +198,30 @@ func (s Strikes) add(other Strikes) Strikes {
 // *is* rather than what its skill did, so counting it would price a trait under
 // a skill's name. A summoned unit acts under its own roster id and is left out
 // by the same test.
-func (s *Strikes) fold(events []battle.Event, actor, counting string) {
+//
+// ⚠️ **A restore is the one effect that cannot be attributed by reading its own
+// event**, so it is attributed to the cast in progress instead. The Healed a
+// skill's `restores` produces carries neither the skill nor the caster: Actor on
+// it is the unit whose health went up, which for an ally-aimed heal is somebody
+// else entirely. What the log does say is when each cast began, and a cast
+// resolves whole before the next one starts — so the SkillUsed most recently
+// walked past is the skill that healed, exactly rather than probably.
+func (m *Matchup) fold(events []battle.Event, actor, counting string) {
+	// Whose cast is resolving, and which skill it is. Updated on every
+	// SkillUsed rather than only on the challenger's, because a restore is
+	// credited by comparing against this pair and a stale one would credit the
+	// challenger with a heal the opponent cast.
+	casting, cast := "", ""
 	for _, event := range events {
+		if event.Kind == battle.SkillUsed {
+			casting, cast = event.Actor, event.Skill
+		}
+		if restored(event) {
+			if casting == actor && (counting == "" || cast == counting) {
+				m.Effects.Restored++
+			}
+			continue
+		}
 		if event.Actor != actor || event.Passive != "" {
 			continue
 		}
@@ -174,15 +230,34 @@ func (s *Strikes) fold(events []battle.Event, actor, counting string) {
 		}
 		switch event.Kind {
 		case battle.SkillUsed:
-			s.Cast++
+			m.Strikes.Cast++
 		case battle.Damaged:
-			s.Landed++
-			s.Damage += event.Amount
+			m.Strikes.Landed++
+			m.Strikes.Damage += event.Amount
 			if event.Critical {
-				s.Critical++
+				m.Strikes.Critical++
 			}
+		case battle.StatusApplied:
+			m.Effects.Applied++
+		case battle.StatusStripped:
+			m.Effects.Stripped++
+		case battle.Summoned:
+			m.Effects.Summoned++
 		}
 	}
+}
+
+// restored reports whether an event is a skill's own `restores` landing.
+//
+// Three different things raise a unit's health and all three are a Healed: a
+// status regenerating on its holder's turn, a drain giving back a share of
+// damage dealt, and a skill restoring health outright. Only the third leaves
+// both Status and Drained empty — a tick names the status that ticked, and a
+// drain always carries the share it took, because a share of nought heals
+// nothing and emits no event at all. So the two absences together are an exact
+// reading of the log rather than a guess at one.
+func restored(event battle.Event) bool {
+	return event.Kind == battle.Healed && event.Status == "" && event.Drained == 0
 }
 
 // Matchup is what happened over every seed against one opponent, both ways
@@ -216,6 +291,12 @@ type Matchup struct {
 	// half and the enemy slot for the other, so a reader — and a fold that took
 	// the wrong id — would get the opponent's attacks with no sign of it.
 	Strikes Strikes
+	// Effects is the same tally for everything that skill did which was not a
+	// strike, and is whose and counts what Strikes does. It is a second field
+	// rather than four more on Strikes because the two answer to different
+	// questions — "how hard did it hit" and "did it work at all" — and a skill of
+	// nought power has the second and not the first.
+	Effects Effects
 	// Mirror marks the row where a character meets itself. It is the control,
 	// and it reads as one only because the halves are kept apart: the combined
 	// rate of a mirror is exactly even by construction and therefore says
@@ -446,7 +527,7 @@ func duel(books battle.Books, challenger, opponent Duellist, seeds int, mirror b
 				// fighting the rest would be a slower way to be told once.
 				return Matchup{}, err
 			}
-			matchup.Strikes.fold(events, arrangement.acting, counting)
+			matchup.fold(events, arrangement.acting, counting)
 			arrangement.into.count(result)
 			if result != Endless {
 				lengths = append(lengths, turns)

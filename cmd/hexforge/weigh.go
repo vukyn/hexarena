@@ -175,24 +175,48 @@ func renderWeigh(out io.Writer, report forge.WeighReport) {
 	fmt.Fprintln(out)
 	fmt.Fprintln(out)
 
-	rendered := newTable(
-		"value", "worth", "±", "turns", "first move",
-		"won", "lost", "drawn", "endless", "cast", "landed", "crit").
-		rightAlign(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+	// The last columns are the skill's own work, one per mechanism it has, and a
+	// damaging skill therefore draws exactly the `cast landed crit` it always
+	// drew. A support skill draws what it does instead — `applied`, `healed`,
+	// `cleansed`, `summoned` — because three columns of noughts beside a priced
+	// row read as a skill that did nothing, which is the one thing a refused row
+	// is supposed to be told apart from.
+	header := []string{"value", "worth", "±", "turns", "first move",
+		"won", "lost", "drawn", "endless", "cast"}
+	for _, worked := range report.Mechanisms {
+		header = append(header, worked.String())
+		// crit belongs to striking and to nothing else, so it is drawn beside
+		// the strikes rather than in a fixed column a support skill would leave
+		// empty.
+		if worked == forge.Striking {
+			header = append(header, "crit")
+		}
+	}
+	columns := make([]int, 0, len(header))
+	for column := range header {
+		columns = append(columns, column)
+	}
+	rendered := newTable(header...).rightAlign(columns...)
 	for _, row := range report.Rows {
 		value := strconv.Itoa(row.Value)
 		if row.Control {
 			value += " (control)"
 		}
-		rendered.add(value,
+		cells := []string{value,
 			signed(row.Worth()),
-			"±"+forge.PercentInColumn(report.Band),
+			"±" + forge.PercentInColumn(report.Band),
 			strconv.Itoa(row.Turns),
 			signed(row.Edge),
 			strconv.Itoa(row.Tally.Wins), strconv.Itoa(row.Tally.Losses),
 			strconv.Itoa(row.Tally.Draws), strconv.Itoa(row.Tally.Endless),
-			strconv.Itoa(row.Strikes.Cast), strconv.Itoa(row.Strikes.Landed),
-			strconv.Itoa(row.Strikes.Critical))
+			strconv.Itoa(row.Strikes.Cast)}
+		for _, worked := range report.Mechanisms {
+			cells = append(cells, strconv.Itoa(worked.Count(row.Strikes, row.Effects)))
+			if worked == forge.Striking {
+				cells = append(cells, strconv.Itoa(row.Strikes.Critical))
+			}
+		}
+		rendered.add(cells...)
 	}
 	rendered.render(out)
 

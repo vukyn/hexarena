@@ -13,6 +13,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/scale"
+	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
 // weighSeeds is how many battles a test fights each row over.
@@ -32,6 +33,16 @@ const (
 	weighCarrier = "fixture-anime.adept"
 	weighSkill   = "strike"
 )
+
+// aDamagingSkill and aSupportSkill are the two shapes refuseUnreadable asks
+// about, built here rather than looked up because these tests fight no battle:
+// what they exercise is the guard, and the guard reads only what the skill
+// declares it does.
+func aDamagingSkill() skill.Skill { return skill.Skill{ID: weighSkill, Power: 1000} }
+
+func aSupportSkill() skill.Skill {
+	return skill.Skill{ID: "guard_wall", SelfApplies: []skill.Application{{Status: "block", Stacks: 2}}}
+}
 
 // weighRequest is the request every test starts from, with the values it wants.
 func weighRequest(field WeighField, values ...int) WeighRequest {
@@ -387,7 +398,7 @@ func TestARowThatNeverLandedTheSkillIsRefusedRatherThanReportedAsEven(t *testing
 	} {
 		row := Weighing{Value: 1100, Rate: scale.Base / 2,
 			Tally: Tally{Wins: 20, Losses: 20}, Strikes: test.strikes}
-		err := refuseUnreadable(row, request, fought)
+		err := refuseUnreadable(row, request, aDamagingSkill(), fought)
 		if err == nil {
 			t.Errorf("%s was reported as an even row", test.name)
 			continue
@@ -402,18 +413,18 @@ func TestARowThatNeverLandedTheSkillIsRefusedRatherThanReportedAsEven(t *testing
 	crit := weighRequest(WeighCrit, 200)
 	landed := Weighing{Value: 200, Rate: scale.Base / 2,
 		Tally: Tally{Wins: 20, Losses: 20}, Strikes: Strikes{Cast: 40, Landed: 38}}
-	if err := refuseUnreadable(landed, crit, fought); err == nil {
+	if err := refuseUnreadable(landed, crit, aDamagingSkill(), fought); err == nil {
 		t.Error("a crit chance that never fired was reported as a figure")
 	}
 	landed.Strikes.Critical = 1
-	if err := refuseUnreadable(landed, crit, fought); err != nil {
+	if err := refuseUnreadable(landed, crit, aDamagingSkill(), fought); err != nil {
 		t.Errorf("a crit chance that fired was refused: %v", err)
 	}
 	// A crit of nought is the control, and has nothing to fire.
 	zero := weighRequest(WeighCrit, 0)
 	none := Weighing{Value: 0, Rate: scale.Base / 2,
 		Tally: Tally{Wins: 20, Losses: 20}, Strikes: Strikes{Cast: 40, Landed: 38}}
-	if err := refuseUnreadable(none, zero, fought); err != nil {
+	if err := refuseUnreadable(none, zero, aDamagingSkill(), fought); err != nil {
 		t.Errorf("a control row with no crit to fire was refused: %v", err)
 	}
 }
@@ -438,7 +449,7 @@ func TestARowOfEndlessDuelsIsRefusedRatherThanCounted(t *testing.T) {
 	} {
 		row := Weighing{Value: 1100, Rate: scale.Base / 2, Tally: test.tally,
 			Strikes: Strikes{Cast: 40, Landed: 38}}
-		err := refuseUnreadable(row, request, fought)
+		err := refuseUnreadable(row, request, aDamagingSkill(), fought)
 		if test.refused && err == nil {
 			t.Errorf("%s was counted", test.name)
 		}
@@ -471,7 +482,7 @@ func TestASaturatedHalfIsRefusedForHavingNoRoom(t *testing.T) {
 		{"the second slot on the floor",
 			Matchup{First: Tally{Wins: 10, Losses: 10}, Second: Tally{Losses: 1000}}, true},
 	} {
-		err := refuseUnreadable(row, request, test.fought)
+		err := refuseUnreadable(row, request, aDamagingSkill(), test.fought)
 		if test.refused && err == nil {
 			t.Errorf("%s was priced", test.name)
 		}
@@ -839,4 +850,180 @@ func treeDigest(t *testing.T, dir string) map[string]string {
 		t.Fatalf("walk %s: %v", dir, err)
 	}
 	return digests
+}
+
+// weighSupportSkill is the fixture carrier's skill that deals no damage at all:
+// nought power, and a pair of block charges onto its own caster.
+//
+// It is named beside weighSkill because the two are the whole point of this
+// half of the file. weighSkill proves a landed strike is still what prices a
+// damaging skill; this one proves that a skill which can never land one is
+// priced by what it does instead.
+const weighSupportSkill = "guard_wall"
+
+// TestASupportSkillIsPricedByWhatItDoesRatherThanByAStrikeItCannotLand.
+//
+// The refusal this widens was right and its evidence was wrong. A row that
+// landed nothing must not be priced at nought — worth nothing and not rated are
+// different answers — but "landed nothing" was read as a count of damaging
+// strikes, and a skill of nought power lands none however well it works. So
+// every buff, debuff, heal, cleanse and summon in the book was unweighable, and
+// a cooldown weighing on one refused with a sentence that was true and was not
+// the question.
+//
+// The two assertions at the bottom are what stop this passing on the old path:
+// the rows have to have landed **no** strike and applied **something**, so a
+// report priced here was priced on evidence a strike count could not see.
+func TestASupportSkillIsPricedByWhatItDoesRatherThanByAStrikeItCannotLand(t *testing.T) {
+	lib := sparLibrary(t)
+	report, err := lib.Weigh(WeighRequest{
+		Character: weighCarrier, Skill: weighSupportSkill, Field: WeighCooldown,
+		Values: []int{6}, Level: progression.LevelCap, Seeds: weighSeeds,
+	})
+	if err != nil {
+		t.Fatalf("weigh %s: %v", weighSupportSkill, err)
+	}
+	if got := report.Mechanisms; len(got) != 1 || got[0] != Applying {
+		t.Errorf("%s reports its mechanisms as %v, and it applies a status and does nothing else",
+			weighSupportSkill, got)
+	}
+	control := controlRow(t, report)
+	// The instrument's own control, on a skill that never strikes. If a support
+	// weighing did not come out exactly even, that would be a finding about the
+	// duel rather than about this feature.
+	if control.Rate != scale.Base/2 {
+		t.Errorf("the control came to %d rather than an even %d: %+v",
+			control.Rate, scale.Base/2, control.Tally)
+	}
+	for _, row := range report.Rows {
+		if row.Strikes.Landed != 0 {
+			t.Errorf("%s at cooldown %d landed %d strike(s), so this row could have been "+
+				"priced the old way and proves nothing about the new one",
+				weighSupportSkill, row.Value, row.Strikes.Landed)
+		}
+		if row.Effects.Applied == 0 {
+			t.Errorf("%s at cooldown %d applied nothing across %d cast(s), so the row was "+
+				"priced with no evidence that the skill worked at all",
+				weighSupportSkill, row.Value, row.Strikes.Cast)
+		}
+	}
+}
+
+// TestARowIsRefusedByTheMechanismTheSkillHasRatherThanByStrikesAlone.
+//
+// One table, both halves of the change. The damaging rows are the refusal
+// exactly as it was — including the words, which CLAUDE.md quotes — and the
+// support rows are the refusal asking the right question of a skill whose
+// mechanism is not damage. A skill that declares no mechanism at all is its own
+// refusal and must not read like either: that one says there was nothing this
+// skill could have done, not that it failed to do it.
+func TestARowIsRefusedByTheMechanismTheSkillHasRatherThanByStrikesAlone(t *testing.T) {
+	fought := Matchup{First: Tally{Wins: 10, Losses: 10}, Second: Tally{Wins: 10, Losses: 10}}
+	cleansing := skill.Skill{ID: "purify", Strips: &skill.Cleanse{Stacks: 3}}
+	summoning := skill.Skill{ID: "echo", Summons: &skill.Summon{Count: 1}}
+	for _, test := range []struct {
+		name    string
+		fielded skill.Skill
+		strikes Strikes
+		effects Effects
+		says    string
+	}{
+		{"a damaging skill that landed nothing", aDamagingSkill(),
+			Strikes{Cast: 40}, Effects{}, "landed none"},
+		{"a damaging skill that landed", aDamagingSkill(),
+			Strikes{Cast: 40, Landed: 38}, Effects{}, ""},
+		{"a support skill that applied nothing", aSupportSkill(),
+			Strikes{Cast: 40}, Effects{}, "applied no status"},
+		{"a support skill that applied", aSupportSkill(),
+			Strikes{Cast: 40}, Effects{Applied: 38}, ""},
+		{"a cleanse that cleared nothing", cleansing,
+			Strikes{Cast: 40}, Effects{}, "cleansed nothing"},
+		{"a cleanse that cleared", cleansing,
+			Strikes{Cast: 40}, Effects{Stripped: 12}, ""},
+		{"a summon that called nothing in", summoning,
+			Strikes{Cast: 40}, Effects{}, "summoned nothing"},
+		{"a summon that called in", summoning,
+			Strikes{Cast: 40}, Effects{Summoned: 40}, ""},
+		{"a skill with no mechanism at all", skill.Skill{ID: "inert"},
+			Strikes{Cast: 40}, Effects{}, "no mechanism"},
+	} {
+		row := Weighing{Value: 4, Rate: scale.Base / 2,
+			Tally: Tally{Wins: 20, Losses: 20}, Strikes: test.strikes, Effects: test.effects}
+		err := refuseUnreadable(row, weighRequest(WeighCooldown, 4), test.fielded, fought)
+		if test.says == "" {
+			if err != nil {
+				t.Errorf("%s was refused: %v", test.name, err)
+			}
+			continue
+		}
+		if err == nil {
+			t.Errorf("%s was priced", test.name)
+			continue
+		}
+		if !strings.Contains(err.Error(), test.says) {
+			t.Errorf("%s was refused with %q, which never says %q", test.name, err, test.says)
+		}
+	}
+}
+
+// TestASkillThatDoesBothIsPricedWhenEitherHalfWorked.
+//
+// A skill that restores health and puts a charge on has two mechanisms, and
+// either one landing is the skill working. Demanding both would refuse a row
+// over a fact about the fight — a heal aimed at a unit already at full health
+// emits nothing — and that row measured a real difference.
+func TestASkillThatDoesBothIsPricedWhenEitherHalfWorked(t *testing.T) {
+	fought := Matchup{First: Tally{Wins: 10, Losses: 10}, Second: Tally{Wins: 10, Losses: 10}}
+	withdraw := skill.Skill{ID: "withdraw", Restores: 500,
+		SelfApplies: []skill.Application{{Status: "block", Stacks: 2}}}
+	if got := Mechanisms(withdraw); len(got) != 2 || got[0] != Applying || got[1] != Restoring {
+		t.Fatalf("a skill that applies and restores reports %v, so this test is not measuring both", got)
+	}
+	for _, test := range []struct {
+		name    string
+		effects Effects
+		refused bool
+	}{
+		{"neither half worked", Effects{}, true},
+		{"only the charge landed", Effects{Applied: 12}, false},
+		{"only the heal landed", Effects{Restored: 12}, false},
+		{"both landed", Effects{Applied: 12, Restored: 12}, false},
+	} {
+		row := Weighing{Value: 4, Rate: scale.Base / 2,
+			Tally: Tally{Wins: 20, Losses: 20}, Strikes: Strikes{Cast: 40}, Effects: test.effects}
+		err := refuseUnreadable(row, weighRequest(WeighCooldown, 4), withdraw, fought)
+		if test.refused && err == nil {
+			t.Errorf("%s was priced", test.name)
+		}
+		if !test.refused && err != nil {
+			t.Errorf("%s was refused: %v", test.name, err)
+		}
+	}
+}
+
+// TestAMechanismIsReadOffTheVariantAndNotOffTheShippedSkill.
+//
+// Power is the one field that can change what a skill *is*, so the mechanism a
+// row is checked against has to be the row's own. A support skill swept upwards
+// strikes for those rows and a damaging skill swept to nought strikes for none —
+// and a header taken off the control alone would leave half a sweep's work in a
+// column that is not on the page.
+func TestAMechanismIsReadOffTheVariantAndNotOffTheShippedSkill(t *testing.T) {
+	damaging, support := aDamagingSkill(), aSupportSkill()
+	if got := Mechanisms(WeighPower.set(damaging, 0)); len(got) != 0 {
+		t.Errorf("a damaging skill swept to nought power still reports %v", got)
+	}
+	if got := Mechanisms(WeighPower.set(support, 900)); len(got) != 2 ||
+		got[0] != Striking || got[1] != Applying {
+		t.Errorf("a support skill swept to 900 power reports %v, and it now strikes as well", got)
+	}
+	over := mechanismsOver(support, WeighPower, []int{0, 900})
+	if len(over) != 2 || over[0] != Striking || over[1] != Applying {
+		t.Errorf("a sweep across nought and 900 power covers %v, which is not both rows' work", over)
+	}
+	// And a sweep that never changes what the skill does covers exactly what it
+	// does, or the union would be quietly wider than any row of it.
+	if got := mechanismsOver(support, WeighCooldown, []int{2, 4, 6}); len(got) != 1 || got[0] != Applying {
+		t.Errorf("a cooldown sweep on a support skill covers %v", got)
+	}
 }

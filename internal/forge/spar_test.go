@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
@@ -589,4 +590,139 @@ func grownArms(t *testing.T, character cast.Character) []string {
 		out = append(out, form.Name)
 	}
 	return out
+}
+
+// TestARestoreIsCreditedToTheCastItCameFromAndNotToATickOrADrain.
+//
+// A restore is the one effect that cannot be attributed by reading its own
+// event: the Healed a skill's `restores` produces carries neither the skill nor
+// the caster, and Actor on it is whoever's health went up. So it is credited to
+// the cast in progress, and this is that rule stated as a table — because the
+// same kind carries two other things that are not a restore at all, and
+// crediting either would price a trait's regeneration or a strike's drain under
+// a support skill's name.
+//
+// It is built from events rather than fought, deliberately: what is asserted
+// here is how the log is READ, and a battle would only be able to produce the
+// shapes it happens to produce today. The reading of shapes the engine really
+// emits is the test below.
+func TestARestoreIsCreditedToTheCastItCameFromAndNotToATickOrADrain(t *testing.T) {
+	const healer, other = "first", "second"
+	restore := battle.Event{Kind: battle.Healed, Actor: healer, Amount: 600}
+	for _, test := range []struct {
+		name   string
+		events []battle.Event
+		want   int
+	}{
+		{"a restore inside the cast being counted", []battle.Event{
+			{Kind: battle.SkillUsed, Actor: healer, Skill: "mend"}, restore}, 1},
+		{"a regeneration ticking, which names the status that ticked", []battle.Event{
+			{Kind: battle.SkillUsed, Actor: healer, Skill: "mend"},
+			{Kind: battle.Healed, Actor: healer, Status: "regrowth", Amount: 200}}, 0},
+		{"a drain, which always carries the share it took", []battle.Event{
+			{Kind: battle.SkillUsed, Actor: healer, Skill: "mend"},
+			{Kind: battle.Healed, Actor: healer, Drained: 500, Amount: 300}}, 0},
+		{"a restore inside somebody else's cast of the same skill", []battle.Event{
+			{Kind: battle.SkillUsed, Actor: other, Skill: "mend"},
+			{Kind: battle.Healed, Actor: healer, Amount: 600}}, 0},
+		{"a restore inside a later cast of another skill", []battle.Event{
+			{Kind: battle.SkillUsed, Actor: healer, Skill: "mend"},
+			{Kind: battle.SkillUsed, Actor: healer, Skill: "strike"}, restore}, 0},
+		{"an ally-aimed heal, whose Actor is the unit healed", []battle.Event{
+			{Kind: battle.SkillUsed, Actor: healer, Skill: "mend"},
+			{Kind: battle.Healed, Actor: other, Amount: 600}}, 1},
+		{"two restores from one cast", []battle.Event{
+			{Kind: battle.SkillUsed, Actor: healer, Skill: "mend"}, restore, restore}, 2},
+	} {
+		counted := Matchup{}
+		counted.fold(test.events, healer, "mend")
+		if counted.Effects.Restored != test.want {
+			t.Errorf("%s came to %d restore(s), want %d",
+				test.name, counted.Effects.Restored, test.want)
+		}
+	}
+}
+
+// TestTheEngineEmitsTheRestoreTheFoldReads.
+//
+// The table above pins how a shape is read and could not notice the shape moving
+// underneath it — a Healed that started carrying its skill, or a restore that
+// stopped being a Healed at all, would leave that test green and every heal
+// unweighable. So one real battle is fought with a restoring skill fielded, and
+// what is asserted is that the counting saw it: casts, heals, and not one
+// strike, because the skill has no power to land one with.
+func TestTheEngineEmitsTheRestoreTheFoldReads(t *testing.T) {
+	lib := sparLibrary(t)
+	const restoring = "mend"
+	healer, err := lib.duellist(mustCharacter(t, lib, "fixture-anime.adept"),
+		progression.LevelCap, progression.Furthest)
+	if err != nil {
+		t.Fatalf("field the healer: %v", err)
+	}
+	// A kit is a decision a spar makes for a character, so a test may make one
+	// too: the fixture cast fields no restoring skill, and the fixture skill
+	// book has one.
+	healer.Skills = []string{"strike", "riptide", restoring, "guard_wall"}
+	fought, err := duel(lib.Books(), healer, healer, sparSeeds, true, restoring)
+	if err != nil {
+		t.Fatalf("duel: %v", err)
+	}
+	if fought.Strikes.Cast == 0 {
+		t.Fatalf("%s was never cast, so nothing here measured a restore at all", restoring)
+	}
+	if fought.Effects.Restored == 0 {
+		t.Errorf("%s was cast %d time(s) and no restore was counted, so either the engine has "+
+			"stopped emitting the Healed a `restores` produces or the fold has stopped reading it",
+			restoring, fought.Strikes.Cast)
+	}
+	if fought.Strikes.Landed != 0 {
+		t.Errorf("%s landed %d strike(s), and it declares no power, so the counting is "+
+			"crediting it with somebody else's blows", restoring, fought.Strikes.Landed)
+	}
+}
+
+// TestCountingOneEffectAtATimeAgreesWithCountingThemAll is the effects half of
+// the strike test above: the skill filter only ever narrows, and never drops an
+// effect or counts one twice.
+//
+// The restore is what this is really holding. Everything else is attributed by
+// the event's own Skill field, so a filter over it cannot double-count; a
+// restore is attributed by the cast it fell inside, and a rule like that is
+// exactly the kind that adds up to more or less than the whole.
+func TestCountingOneEffectAtATimeAgreesWithCountingThemAll(t *testing.T) {
+	lib := sparLibrary(t)
+	challenger, err := lib.duellist(mustCharacter(t, lib, "fixture-anime.adept"),
+		progression.LevelCap, progression.Furthest)
+	if err != nil {
+		t.Fatalf("field the challenger: %v", err)
+	}
+	challenger.Skills = []string{"strike", "mend", "guard_wall", "purify"}
+	opponent, err := lib.duellist(mustCharacter(t, lib, "fixture-game.sprout"),
+		progression.LevelCap, progression.Furthest)
+	if err != nil {
+		t.Fatalf("field the opponent: %v", err)
+	}
+	everything, err := duel(lib.Books(), challenger, opponent, sparSeeds, false, "")
+	if err != nil {
+		t.Fatalf("count them all: %v", err)
+	}
+	added := Effects{}
+	for _, held := range challenger.Skills {
+		one, err := duel(lib.Books(), challenger, opponent, sparSeeds, false, held)
+		if err != nil {
+			t.Fatalf("count %s: %v", held, err)
+		}
+		added = added.add(one.Effects)
+	}
+	if added != everything.Effects {
+		t.Errorf("the kit counted one skill at a time comes to %+v and counted at once to %+v",
+			added, everything.Effects)
+	}
+	if !everything.Effects.Any() {
+		t.Error("nothing took hold at all, so this test compared two empty tallies")
+	}
+	if everything.Effects.Restored == 0 {
+		t.Error("no restore was counted, so the one attribution rule this test exists for " +
+			"was never exercised")
+	}
 }
