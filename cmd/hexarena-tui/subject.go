@@ -187,6 +187,13 @@ func (m model) updateBlurb(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			b.Scroll = max(b.Scroll-1, 0)
 			m.blurb = b
 			return m, nil
+		// The arm of a fork, walked here for the reason the level is: this screen
+		// keeps no cursor and no level of its own, so what a key over it moves is
+		// the browser behind it. Through CycleForm rather than by writing the field,
+		// because which arms there are is the browser's own question and a second
+		// answer to it is how two screens come to disagree about what a fork is.
+		case "s":
+			m.cast = m.cast.CycleForm()
 		case "up", "k":
 			m.cast.Cursor = draw.Clamp(m.cast.Cursor-1, 0, rows-1)
 		case "down", "j":
@@ -241,6 +248,13 @@ func (m model) updatePreview(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.cast.Level = 1
 	case "end":
 		m.cast.Level = progression.LevelCap
+	// The arm of a fork, walked here for the reason the level is: this screen
+	// keeps no cursor and no level of its own, so what a key over it moves is
+	// the browser behind it. Through CycleForm rather than by writing the field,
+	// because which arms there are is the browser's own question and a second
+	// answer to it is how two screens come to disagree about what a fork is.
+	case "s":
+		m.cast = m.cast.CycleForm()
 	}
 	return m.hand(m.cast.Subject()), nil
 }

@@ -36,6 +36,16 @@ type BrowseScreen struct {
 	Filter  int
 	Cursor  int
 	Level   int
+	// Form is the arm of a forking evolution line the reader has asked for, by
+	// stage name, and empty is "whatever the level resolves to".
+	//
+	// ⚠️ **It is read through ChosenForm and never straight**, because the cursor
+	// and the level both move under it: a name chosen on one character means
+	// nothing on the next, and below the level a fork opens at it means nothing
+	// on the same one. Kept rather than settled on every key for the reason it is
+	// kept at all — a reader who chose an arm, walked away and walked back should
+	// find it still in front.
+	Form string
 }
 
 // NewBrowseScreen is the cast listing filled from a library, opened at the level
@@ -117,6 +127,12 @@ func (b BrowseScreen) Update(_ Context, message tea.KeyPressMsg) (BrowseScreen, 
 	case "f":
 		b.Filter = (b.Filter + 1) % (len(b.Origins) + 1)
 		b.Cursor = Clamp(b.Cursor, 0, len(b.Rows())-1)
+	case "s":
+		// The arm of a fork, on the character under the cursor. It does nothing
+		// on the eleven shipped characters whose lines do not fork, and the
+		// footer therefore does not name it: what names it is the row it walks,
+		// which is drawn only while there is something to walk. See FormRow.
+		return b.CycleForm(), Action{}
 	case "p":
 		// The preview keeps no cursor and no level of its own, so this screen
 		// hands both over: the character under the cursor, at the level being
@@ -155,9 +171,32 @@ func (b BrowseScreen) Subject() Subject {
 		Kind:  CharacterSubject,
 		ID:    rows[at].ID,
 		Level: b.Level,
+		// Settled here rather than in either describer, for the reason the level
+		// is carried at all: the two describers and the pane behind them must read
+		// one form, and the screen with the cursor is the only one that can say
+		// which. A describer settling its own would make walking from the picture
+		// to the traits able to change the form.
+		Stage: ChosenForm(rows[at], b.Level, b.Form),
 		At:    at + 1,
 		Of:    len(rows),
 	}
+}
+
+// CycleForm steps to the next arm of the fork the character under the cursor has
+// at the level being walked, and does nothing on a line that does not fork.
+//
+// Exported because the key that walks it is answered in three places: here, and
+// in each client while one of the two describers is in front — the same
+// arrangement the level already has, and for the same reason. A describer keeps
+// no cursor and no level, so what a key pressed over it moves is the browser
+// behind it, and the clients own that because they own which screen is in front.
+func (b BrowseScreen) CycleForm() BrowseScreen {
+	rows := b.Rows()
+	if len(rows) == 0 {
+		return b
+	}
+	b.Form = NextForm(rows[Clamp(b.Cursor, 0, len(rows)-1)], b.Level, b.Form)
+	return b
 }
 
 // The two fixed columns of the listing. Both hold ids, which are the same in
@@ -268,11 +307,20 @@ func (b BrowseScreen) Detail(c Context, character cast.Character) string {
 	}
 
 	atLevel := c.Text(i18n.LabelAtLevel, b.Level)
-	values, stage, err := character.Resolve(b.Level, progression.Furthest)
+	// The form, and not progression.Furthest: a line that forks reaches two grown
+	// forms at one level and Resolve refuses to choose between them, which used to
+	// end this pane at the row below with a refusal in it. ChosenForm is
+	// progression.Furthest on every line that does not fork, so this call is the
+	// one it always was for eleven of the twelve shipped characters.
+	form := ChosenForm(character, b.Level, b.Form)
+	values, stage, err := character.Resolve(b.Level, form)
 	if err != nil {
 		out.WriteString(c.Label(atLevel, "%s", c.Style.Bad.Render(c.Lang.Error(err))))
 		return out.String()
 	}
+	// Which arm is in front, above the three rows it decides — the picture, the
+	// traits and the stat line. Nothing at all on a line that does not fork.
+	out.WriteString(FormRow(c, character, b.Level, b.Form))
 	// The art row keeps its place in the block that says what the character is,
 	// but the picture it names is the one the level resolved to. A character
 	// whose forms have their own pictures has no single picture, so walking the
@@ -300,7 +348,7 @@ func (b BrowseScreen) Detail(c Context, character cast.Character) string {
 		out.WriteString(c.Wrapped(c.Text(i18n.LabelTraits), c.DetailLabelWidth(),
 			forge.UnlockSummaryAt(character.Passives, b.Level)))
 		if glossed := c.Lang.GlossedPassives(
-			c.Lib.KitPassives(character.PassivesAt(b.Level, progression.Furthest))); glossed != "" {
+			c.Lib.KitPassives(character.PassivesAt(b.Level, form))); glossed != "" {
 			out.WriteString(c.WrappedIn("", c.DetailLabelWidth(), c.Style.Dim, glossed))
 		}
 	}

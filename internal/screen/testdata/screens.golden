@@ -68,6 +68,93 @@ thế đứng
     [n] có người  (n) người đang sửa  . trống
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 120x24 | a forked art preview =====
+pokemon.poliwag — Poliwag
+  assets/poliwrath.svg · cấp 46 · giai đoạn Poliwrath
+  dạng  < Poliwrath >  1/2, bấm s để đổi
+
+                                                                                                                      
+                                                                                                                      
+                                                       -::::::=-:                                                     
+                                                      --+++=++==+::                                                   
+                                                    -:=*=+=+++==++=-:::::-                                            
+                                              :-===:=+*=:-====-:-*+++:::::-                                           
+                                             ----::****:-=*+++-=:**+=::::-:                                           
+                                             :---=+**+*+=--=+=-=+*+:+*-:--:                                           
+                                             -:--===.::+**++++***=: -::::                                             
+                                                     -:+*+-----**=:                                                   
+                                                  ---=++*:    --++==.:                                                
+                                                  ---===-:    --++==+--                                               
+                                                                :.-=-:                                                
+                                                                                                                      
+                                                                                                                      
+
+----- footer -----
+←/→ cấp · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | a forked cast row =====
+danh sách nhân vật  đang xem tất cả nguồn (12 trong 12 nhân vật)
+
+  naruto.naruto            naruto         wind <gió>
+  pokemon.bulbasaur        pokemon        grass <cỏ>
+  pokemon.charmander       pokemon        fire <lửa>
+  pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.gastly           pokemon        dark <bóng tối>
+  pokemon.lapras           pokemon        water/ice <nước/băng>
+  pokemon.machop           pokemon        ground <đất>
+  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
+  pokemon.mew              pokemon        neutral <trung tính>
+  pokemon.mewtwo           pokemon        dark <bóng tối>
+> pokemon.poliwag          pokemon        water <nước>
+  pokemon.squirtle         pokemon        water <nước>
+
+pokemon.poliwag — Poliwag
+  nguồn tham khảo  Pokémon (anime, pokemon)
+  lối chơi         bruiser
+                   kẻ áp sát
+  hệ               water
+                   nước
+  bộ chiêu         water_gun bubble pummel body_slam bubble_beam brine whirlpool taunt submission[Poliwrath] hydro_pump
+                   rally rinse[Politoed] chorus[Politoed] drench soak tide_break
+                   súng nước · bong bóng · đánh dồn dập · lấy thịt đè người · tia bong bóng · nước mặn · xoáy nước ·
+                   khiêu khích · khoá siết · thủy pháo · khích lệ · gột sạch · hợp xướng · dầm nước · ngấm nước · vỡ
+                   sóng
+  giai đoạn        Poliwag@1 → Poliwhirl@16 → (Poliwrath@32 | Politoed@32)
+  tiểu sử          Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu
+                   nổi điều gì — kể cả lúc sợ. Da lúc nào cũng trơn nhẫy: ai chộp được cũng chỉ giữ nổi trong chớp mắt.
+  dạng  < Poliwrath >  1/2, bấm s để đổi
+  ảnh              assets/poliwrath.svg  có
+  loài             amphibian
+                   lưỡng cư
+  nội tại          endurance swiftness blood_thirst spiteful composure[Politoed]
+                   bền bỉ · thần tốc · khát máu · nham hiểm
+  cấp 46           hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 giai đoạn Poliwrath
+  máu quy đổi      [================--------] 8048/11500, còn dư 3452
+                   xuyên hết giáp thì chỉ đỡ được 3123
+
+----- footer -----
+↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
+===== vi | 120x24 | a forked trait blurb =====
+Poliwag  cấp 46
+  dạng  < Poliwrath >  1/2, bấm s để đổi
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+
+  swiftness <thần tốc>
+    Quen chạy hơn quen đứng, ra tay xong đã ở chỗ khác.
+    Luôn mang gia tốc.
+
+  blood_thirst <khát máu>
+    Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức.
+    Mọi đòn hút lại 25% sát thương gây ra.
+
+  spiteful <nham hiểm>
+    Không đánh mạnh, chỉ đánh đúng chỗ đau, mà chỗ đau thì nhớ rất lâu.
+    Khả năng gây choáng tăng 30%.
+    Khả năng gây sa lầy tăng 30%.
+----- footer -----
+↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | a held-back member =====
 trong đội: mot
 
@@ -897,6 +984,128 @@ thế đứng
     [n] có người  (n) người đang sửa  . trống
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 160x60 | a forked art preview =====
+pokemon.poliwag — Poliwag
+  assets/poliwrath.svg · cấp 46 · giai đoạn Poliwrath
+  dạng  < Poliwrath >  1/2, bấm s để đổi
+
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                   -::......:.:                                                               
+                                                                 ::......::....:::.....==-=-....:                                                             
+                                                               :....-----:......:::.-+#++++**=....-                                                           
+                                                              :...=*====+*#*+++++++++=-=+*==+#*-...:                                                          
+                                                             :..-+++++++#===--======*=+%.....*+**....:-                                                       
+                                                           -:..:**..:*++#===========+*.:....-#++**=-....:-                                                    
+                                                         -:...:%+#....:*+========+===+++===+*++++++**=:....:  -:::...:::.:                                    
+                                                       -:...-*#*+*+++**++++++++++++++*##*****++++++++++*=........:-=--.....::                                 
+                                                      :...:**+++++*##*+++***+*#%%%##+-:....:=+#++++++++++*+-...---:...-==-....-                               
+                                            ----     :...*++++++#*-....:-=-:::::::-=+##=:.....:%*++++++++++*+:-:.:====---:-:...:                              
+                                   -:.:............:...=#==+%++#=....-=-::+#***++**+-..=#*:.....#*++++++++++++-:+-......::--+...-                             
+                                 -.....====+****==....+#==+%++#=....=#:.+*--*#####+=*%=..-%-....:%++++++++++=++-............-=..:                             
+                                -...=#+=:........=*..*#+++##++%....=#:.#+.*%-:==-:+%+:#*..-@:....%++++++++====-..............*...-                            
+                                :..*=....:*.......=##%++++%+++#....@-.:@.=@+:%#+#%:-@-:@-..#+....#++++++++===:::.......:......+..:                            
+                               -..-#......%...:::::%====+*#+++%:...@-.:@--@#:-..=@-:@+.%+..#*...-#+++##*+++#-:=::::-------:::.%..:                            
+                               :..*=......=*-:-----%*++++***+++*...*%..+%:-#%##%#=:#%::@-.:@-..:#+++***#*++**::=++:..........-#..:                            
+                              -..-=*..::::::+*+++*+=#******%*+**#:.:#*..-#*=----+#@*::#+..%*..-#+++***#-.=*+#+::*=:.........-%:..-                            
+                              :..*.-*:::::::::=#---#******+=%****#+::=#=:::=++**+=:-##-.-%+::+********+...:+#%#=-%-:::::::-==...:                             
+                              :..*.::=+=====+*=--*#****#+:..=%*****%+--+**+--:::-+**=::-*==*#*********.......:=+*#%*++++*==....:                              
+                              -...-=--------%*+*#*+===:......:##*****###+=-==++=-------=+##*********+...- :.:...............::                                
+                               -....:--=+**=...........::--:...=##*******##**##*++**###************:...:        --:::::::-                                    
+                                 -...........:.:---         -:...+#******************************#...:-                                                       
+                                     ---:---                  ...=*********####******************+...-                                                        
+                                                            -...-#*******+-:..:----::::-=#********=...-                                                       
+                                                           -...-#******#=....:::::.::.....*#*******=...-                                                      
+                                                       -:::...=*+*****%:...:           :...-#*******=...-                                                     
+                                                  -.:.......-*+++++++#...:              -...:#++++++#-..:                                                     
+                                                -:....-=+*++*++++++++#=..-               -...*+++++++*:...:.:-                                                
+                                                ...=*=--=======++++++#+..-               :..+*++++++++*==......::                                             
+                                                ...%=========++++++*+-...-               :..#+++++++====+***=:....-                                           
+                                                ...***++++++++**+=-....:-                -..-#++++======-====++-..:                                           
+                                                :.....-======-......::-                   :...=**+++==========+%..:                                           
+                                                  :.::.......::..:-                        :....:=+****++++**#*-..:                                           
+                                                                                             -.......:-=====:....:                                            
+                                                                                                 -:..::.....::.:                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+
+----- footer -----
+←/→ cấp · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | a forked cast row =====
+danh sách nhân vật  đang xem tất cả nguồn (12 trong 12 nhân vật)
+
+  naruto.naruto            naruto         wind <gió>
+  pokemon.bulbasaur        pokemon        grass <cỏ>
+  pokemon.charmander       pokemon        fire <lửa>
+  pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.gastly           pokemon        dark <bóng tối>
+  pokemon.lapras           pokemon        water/ice <nước/băng>
+  pokemon.machop           pokemon        ground <đất>
+  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
+  pokemon.mew              pokemon        neutral <trung tính>
+  pokemon.mewtwo           pokemon        dark <bóng tối>
+> pokemon.poliwag          pokemon        water <nước>
+  pokemon.squirtle         pokemon        water <nước>
+
+pokemon.poliwag — Poliwag
+  nguồn tham khảo  Pokémon (anime, pokemon)
+  lối chơi         bruiser
+                   kẻ áp sát
+  hệ               water
+                   nước
+  bộ chiêu         water_gun bubble pummel body_slam bubble_beam brine whirlpool taunt submission[Poliwrath] hydro_pump rally rinse[Politoed] chorus[Politoed]
+                   drench soak tide_break
+                   súng nước · bong bóng · đánh dồn dập · lấy thịt đè người · tia bong bóng · nước mặn · xoáy nước · khiêu khích · khoá siết · thủy pháo ·
+                   khích lệ · gột sạch · hợp xướng · dầm nước · ngấm nước · vỡ sóng
+  giai đoạn        Poliwag@1 → Poliwhirl@16 → (Poliwrath@32 | Politoed@32)
+  tiểu sử          Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu nổi điều gì — kể cả lúc sợ. Da lúc nào
+                   cũng trơn nhẫy: ai chộp được cũng chỉ giữ nổi trong chớp mắt.
+  dạng  < Poliwrath >  1/2, bấm s để đổi
+  ảnh              assets/poliwrath.svg  có
+  loài             amphibian
+                   lưỡng cư
+  nội tại          endurance swiftness blood_thirst spiteful composure[Politoed]
+                   bền bỉ · thần tốc · khát máu · nham hiểm
+  cấp 46           hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 giai đoạn Poliwrath
+  máu quy đổi      [================--------] 8048/11500, còn dư 3452
+                   xuyên hết giáp thì chỉ đỡ được 3123
+
+----- footer -----
+↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
+===== vi | 160x60 | a forked trait blurb =====
+Poliwag  cấp 46
+  dạng  < Poliwrath >  1/2, bấm s để đổi
+
+  endurance <bền bỉ>
+    Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
+    Luôn mang kiên cường.
+
+  swiftness <thần tốc>
+    Quen chạy hơn quen đứng, ra tay xong đã ở chỗ khác.
+    Luôn mang gia tốc.
+
+  blood_thirst <khát máu>
+    Mỗi đòn giáng xuống là một ngụm máu rút ngược về hồi lại sức.
+    Mọi đòn hút lại 25% sát thương gây ra.
+
+  spiteful <nham hiểm>
+    Không đánh mạnh, chỉ đánh đúng chỗ đau, mà chỗ đau thì nhớ rất lâu.
+    Khả năng gây choáng tăng 30%.
+    Khả năng gây sa lầy tăng 30%.
+----- footer -----
+↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | a held-back member =====
 trong đội: mot
 
@@ -2079,6 +2288,82 @@ the formation
     [n] stands there  (n) the one being edited  . nobody
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 120x24 | a forked art preview =====
+pokemon.poliwag — Poliwag
+  assets/poliwrath.svg · level 46 · stage Poliwrath
+  form  < Poliwrath >  1 of 2, s for the next
+
+                                                                                                                      
+                                                                                                                      
+                                                       -::::::=-:                                                     
+                                                      --+++=++==+::                                                   
+                                                    -:=*=+=+++==++=-:::::-                                            
+                                              :-===:=+*=:-====-:-*+++:::::-                                           
+                                             ----::****:-=*+++-=:**+=::::-:                                           
+                                             :---=+**+*+=--=+=-=+*+:+*-:--:                                           
+                                             -:--===.::+**++++***=: -::::                                             
+                                                     -:+*+-----**=:                                                   
+                                                  ---=++*:    --++==.:                                                
+                                                  ---===-:    --++==+--                                               
+                                                                :.-=-:                                                
+                                                                                                                      
+                                                                                                                      
+
+----- footer -----
+←/→ level · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | a forked cast row =====
+cast  showing all origins (12 of 12 characters)
+
+  naruto.naruto            naruto         wind
+  pokemon.bulbasaur        pokemon        grass
+  pokemon.charmander       pokemon        fire
+  pokemon.cleffa           pokemon        light
+  pokemon.gastly           pokemon        dark
+  pokemon.lapras           pokemon        water/ice
+  pokemon.machop           pokemon        ground
+  pokemon.magnemite        pokemon        electric/metal
+  pokemon.mew              pokemon        neutral
+  pokemon.mewtwo           pokemon        dark
+> pokemon.poliwag          pokemon        water
+  pokemon.squirtle         pokemon        water
+
+pokemon.poliwag — Poliwag
+  from          Pokémon (anime, pokemon)
+  playstyle     bruiser
+  element       water
+  kit           water_gun bubble pummel body_slam bubble_beam brine whirlpool taunt submission[Poliwrath] hydro_pump
+                rally rinse[Politoed] chorus[Politoed] drench soak tide_break
+  stages        Poliwag@1 → Poliwhirl@16 → (Poliwrath@32 | Politoed@32)
+  biography     Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu
+                nổi điều gì — kể cả lúc sợ. Da lúc nào cũng trơn nhẫy: ai chộp được cũng chỉ giữ nổi trong chớp mắt.
+  form  < Poliwrath >  1 of 2, s for the next
+  art           assets/poliwrath.svg  present
+  species       amphibian
+  traits        endurance swiftness blood_thirst spiteful composure[Politoed]
+  level 46      hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 stage Poliwrath
+  effective hp  [================--------] 8048 of 11500, 3452 to spare
+                3123 against damage that pierces its armour outright
+
+----- footer -----
+↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
+===== en | 120x24 | a forked trait blurb =====
+Poliwag  level 46
+  form  < Poliwrath >  1 of 2, s for the next
+
+  endurance
+    Always carries toughened.
+
+  swiftness
+    Always carries quickened.
+
+  blood_thirst
+    Everything it does takes back 25% of the damage dealt.
+
+  spiteful
+    The chance of inflicting stun is 30% higher.
+    The chance of inflicting mire is 30% higher.
+----- footer -----
+↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | a held-back member =====
 in the squad: mot
 
@@ -2898,6 +3183,118 @@ the formation
     [n] stands there  (n) the one being edited  . nobody
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 160x60 | a forked art preview =====
+pokemon.poliwag — Poliwag
+  assets/poliwrath.svg · level 46 · stage Poliwrath
+  form  < Poliwrath >  1 of 2, s for the next
+
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                   -::......:.:                                                               
+                                                                 ::......::....:::.....==-=-....:                                                             
+                                                               :....-----:......:::.-+#++++**=....-                                                           
+                                                              :...=*====+*#*+++++++++=-=+*==+#*-...:                                                          
+                                                             :..-+++++++#===--======*=+%.....*+**....:-                                                       
+                                                           -:..:**..:*++#===========+*.:....-#++**=-....:-                                                    
+                                                         -:...:%+#....:*+========+===+++===+*++++++**=:....:  -:::...:::.:                                    
+                                                       -:...-*#*+*+++**++++++++++++++*##*****++++++++++*=........:-=--.....::                                 
+                                                      :...:**+++++*##*+++***+*#%%%##+-:....:=+#++++++++++*+-...---:...-==-....-                               
+                                            ----     :...*++++++#*-....:-=-:::::::-=+##=:.....:%*++++++++++*+:-:.:====---:-:...:                              
+                                   -:.:............:...=#==+%++#=....-=-::+#***++**+-..=#*:.....#*++++++++++++-:+-......::--+...-                             
+                                 -.....====+****==....+#==+%++#=....=#:.+*--*#####+=*%=..-%-....:%++++++++++=++-............-=..:                             
+                                -...=#+=:........=*..*#+++##++%....=#:.#+.*%-:==-:+%+:#*..-@:....%++++++++====-..............*...-                            
+                                :..*=....:*.......=##%++++%+++#....@-.:@.=@+:%#+#%:-@-:@-..#+....#++++++++===:::.......:......+..:                            
+                               -..-#......%...:::::%====+*#+++%:...@-.:@--@#:-..=@-:@+.%+..#*...-#+++##*+++#-:=::::-------:::.%..:                            
+                               :..*=......=*-:-----%*++++***+++*...*%..+%:-#%##%#=:#%::@-.:@-..:#+++***#*++**::=++:..........-#..:                            
+                              -..-=*..::::::+*+++*+=#******%*+**#:.:#*..-#*=----+#@*::#+..%*..-#+++***#-.=*+#+::*=:.........-%:..-                            
+                              :..*.-*:::::::::=#---#******+=%****#+::=#=:::=++**+=:-##-.-%+::+********+...:+#%#=-%-:::::::-==...:                             
+                              :..*.::=+=====+*=--*#****#+:..=%*****%+--+**+--:::-+**=::-*==*#*********.......:=+*#%*++++*==....:                              
+                              -...-=--------%*+*#*+===:......:##*****###+=-==++=-------=+##*********+...- :.:...............::                                
+                               -....:--=+**=...........::--:...=##*******##**##*++**###************:...:        --:::::::-                                    
+                                 -...........:.:---         -:...+#******************************#...:-                                                       
+                                     ---:---                  ...=*********####******************+...-                                                        
+                                                            -...-#*******+-:..:----::::-=#********=...-                                                       
+                                                           -...-#******#=....:::::.::.....*#*******=...-                                                      
+                                                       -:::...=*+*****%:...:           :...-#*******=...-                                                     
+                                                  -.:.......-*+++++++#...:              -...:#++++++#-..:                                                     
+                                                -:....-=+*++*++++++++#=..-               -...*+++++++*:...:.:-                                                
+                                                ...=*=--=======++++++#+..-               :..+*++++++++*==......::                                             
+                                                ...%=========++++++*+-...-               :..#+++++++====+***=:....-                                           
+                                                ...***++++++++**+=-....:-                -..-#++++======-====++-..:                                           
+                                                :.....-======-......::-                   :...=**+++==========+%..:                                           
+                                                  :.::.......::..:-                        :....:=+****++++**#*-..:                                           
+                                                                                             -.......:-=====:....:                                            
+                                                                                                 -:..::.....::.:                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+                                                                                                                                                              
+
+----- footer -----
+←/→ level · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | a forked cast row =====
+cast  showing all origins (12 of 12 characters)
+
+  naruto.naruto            naruto         wind
+  pokemon.bulbasaur        pokemon        grass
+  pokemon.charmander       pokemon        fire
+  pokemon.cleffa           pokemon        light
+  pokemon.gastly           pokemon        dark
+  pokemon.lapras           pokemon        water/ice
+  pokemon.machop           pokemon        ground
+  pokemon.magnemite        pokemon        electric/metal
+  pokemon.mew              pokemon        neutral
+  pokemon.mewtwo           pokemon        dark
+> pokemon.poliwag          pokemon        water
+  pokemon.squirtle         pokemon        water
+
+pokemon.poliwag — Poliwag
+  from          Pokémon (anime, pokemon)
+  playstyle     bruiser
+  element       water
+  kit           water_gun bubble pummel body_slam bubble_beam brine whirlpool taunt submission[Poliwrath] hydro_pump rally rinse[Politoed] chorus[Politoed]
+                drench soak tide_break
+  stages        Poliwag@1 → Poliwhirl@16 → (Poliwrath@32 | Politoed@32)
+  biography     Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu nổi điều gì — kể cả lúc sợ. Da lúc nào
+                cũng trơn nhẫy: ai chộp được cũng chỉ giữ nổi trong chớp mắt.
+  form  < Poliwrath >  1 of 2, s for the next
+  art           assets/poliwrath.svg  present
+  species       amphibian
+  traits        endurance swiftness blood_thirst spiteful composure[Politoed]
+  level 46      hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 stage Poliwrath
+  effective hp  [================--------] 8048 of 11500, 3452 to spare
+                3123 against damage that pierces its armour outright
+
+----- footer -----
+↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
+===== en | 160x60 | a forked trait blurb =====
+Poliwag  level 46
+  form  < Poliwrath >  1 of 2, s for the next
+
+  endurance
+    Always carries toughened.
+
+  swiftness
+    Always carries quickened.
+
+  blood_thirst
+    Everything it does takes back 25% of the damage dealt.
+
+  spiteful
+    The chance of inflicting stun is 30% higher.
+    The chance of inflicting mire is 30% higher.
+----- footer -----
+↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | a held-back member =====
 in the squad: mot
 

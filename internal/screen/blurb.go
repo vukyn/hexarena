@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/passive"
-	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -178,9 +177,16 @@ func SkillLines(c Context, declared skill.Skill) []string {
 // answer without one — and a screen that described every declared trait would be
 // describing traits the character does not have yet.
 //
-// The form is progression.Furthest, which is what the detail pane resolves with.
-// Two screens asking the same question have to ask it the same way, or walking
-// from one to the other changes the answer for a reason nothing on either says.
+// The form is the raiser's, which is what the detail pane resolves with. Two
+// screens asking the same question have to ask it the same way, or walking from
+// one to the other changes the answer for a reason nothing on either says.
+//
+// ⚠️ It used to be progression.Furthest here and there, which is the same answer
+// for eleven of the twelve shipped characters and **no answer at all** for the
+// twelfth: a line that forks reaches two grown forms at one level, and
+// cast.Character.form falls back to the empty stage when it cannot name one — so
+// this screen drew the traits of neither arm and said nothing about it, which is
+// the quiet half of the same defect the art preview showed as a refusal.
 func (b BlurbScreen) viewTraits(c Context) (string, string) {
 	footer := c.Text(i18n.BlurbTraitsFooter)
 	if b.Subject.Of == 0 {
@@ -190,11 +196,18 @@ func (b BlurbScreen) viewTraits(c Context) (string, string) {
 	if !known {
 		return "  " + c.Text(i18n.BrowseNothingHere) + "\n", footer
 	}
-	held := c.Lib.KitPassives(character.PassivesAt(b.Subject.Level, progression.Furthest))
+	held := c.Lib.KitPassives(character.PassivesAt(b.Subject.Level, b.Subject.Stage))
+	// Which arm the sentences below belong to. Empty on a line that does not
+	// fork, so a linear character's screen is exactly what it was.
+	form := FormRow(c, character, b.Subject.Level, b.Subject.Stage)
 
 	var out strings.Builder
 	out.WriteString(c.Style.Heading.Render(character.Name) + "  " +
-		c.Style.Dim.Render(c.Text(i18n.LabelAtLevel, b.Subject.Level)) + "\n\n")
+		c.Style.Dim.Render(c.Text(i18n.LabelAtLevel, b.Subject.Level)) + "\n")
+	// Under the heading and above the blank, so the character, the level and the
+	// form read as one block and the sentences still start after a gap. An empty
+	// form row leaves exactly the two newlines the heading used to write.
+	out.WriteString(form + "\n")
 	if len(held) == 0 {
 		// A trait the character has not learned yet is the common case at a low
 		// level, so this is a normal answer rather than an empty screen: the same
@@ -205,6 +218,15 @@ func (b BlurbScreen) viewTraits(c Context) (string, string) {
 
 	body := traitLines(c, held)
 	room := TraitRoom(c)
+	// The fork row is paid for out of the sentences' room rather than out of
+	// TraitRoom, which the authoring tool's trait picker also reads and which
+	// draws no such row. Counted only when it is drawn — unlike the position
+	// line above it, which is counted either way — because whether it appears
+	// turns on the character rather than on the window, so there is no window
+	// height it can flicker at.
+	if form != "" {
+		room = max(room-1, 3)
+	}
 	// Clamped here rather than where it is incremented, because the key that
 	// moves it does not know how long the answer is: the answer is built from
 	// the subject the raiser last pushed, and that can have moved since.

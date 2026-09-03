@@ -679,4 +679,8 @@ q hoặc ctrl+c để thoát`,
 	ClosedNone:              "không có gì làm trận dừng cả",
 	ClosedLeft:              "bên kia mất kết nối nên trận dừng ở đây; không tính ai thắng ai thua, muốn đánh tiếp thì mở phòng mới",
 	ClosedStopped:           "máy mở phòng đã tắt nên trận dừng ở đây; không tính ai thắng ai thua, chờ chủ phòng mở lại rồi vào bằng mã mới",
+
+	// Dạng đang xem của một nhánh, có mấy dạng, và phím để đổi. Cặp ngoặc nhọn
+	// lấy đúng của ô chọn bên màn dựng đội, để ai đã gặp ở đó thì đọc ra ngay.
+	FormChoice: "dạng  < %s >  %d/%d, bấm s để đổi",
 }
