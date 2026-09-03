@@ -44,6 +44,9 @@ func runWeigh(args []string) error {
 	// grow into one. Only "all" is accepted today, and anything else is refused
 	// by name rather than ignored: a mistyped selection that silently priced the
 	// whole cast would be a table nobody asked for.
+	stage := set.String("stage", "",
+		"which form the carrier is weighed as; only a line that forks needs one, and the refusal "+
+			"that asks for it names both arms")
 	carriers := set.String("carriers", "",
 		"price the skill on every carrier that brings it: --carriers all. The character operand is "+
 			"then left off, and the default --seeds drops to "+strconv.Itoa(defaultCarrierSeeds)+
@@ -66,8 +69,8 @@ func runWeigh(args []string) error {
 	}
 	if len(operands) != wanted {
 		return fmt.Errorf("usage: hexforge weigh <character> <skill> --field F --values a,b,c " +
-			"[--level N] [--seeds N]\n   or: hexforge weigh --carriers all <skill> --field F " +
-			"--values a,b,c [--level N] [--seeds N]")
+			"[--level N] [--seeds N] [--stage NAME]\n   or: hexforge weigh --carriers all <skill> --field F " +
+			"--values a,b,c [--level N] [--seeds N] [--stage NAME]")
 	}
 	if strings.TrimSpace(*field) == "" {
 		return fmt.Errorf("--field is required: name one of %s", strings.Join(forge.FieldNames(), ", "))
@@ -99,6 +102,7 @@ func runWeigh(args []string) error {
 		table, err := lib.WeighCarriers(forge.CarriersRequest{
 			Skill: operands[0], Field: weighed,
 			Values: swept, Level: *level, Seeds: *seeds,
+			Stage: strings.TrimSpace(*stage),
 		})
 		if err != nil {
 			return err
@@ -109,6 +113,7 @@ func runWeigh(args []string) error {
 	report, err := lib.Weigh(forge.WeighRequest{
 		Character: operands[0], Skill: operands[1], Field: weighed,
 		Values: swept, Level: *level, Seeds: *seeds,
+		Stage: strings.TrimSpace(*stage),
 	})
 	if err != nil {
 		return err

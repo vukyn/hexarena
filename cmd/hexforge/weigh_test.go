@@ -350,3 +350,39 @@ func TestADamagingReportKeepsTheColumnsItAlwaysHad(t *testing.T) {
 		t.Errorf("a damaging report ends in %q, want the %q it has always ended in", got, "cast landed crit")
 	}
 }
+
+// TestTheStageFlagReachesTheWeighing.
+//
+// The flag is the only way to price a skill on a line that forks: the harness
+// refuses a forking carrier by name — "name the one being fielded" — and a
+// front-end that read the flag and dropped it would leave that refusal with no
+// answer, while every ordinary carrier went on being weighed exactly as before.
+// So it is asserted where a dropped value shows: a stage nobody in the line
+// answers to has to come back as the line's own refusal, which cannot happen
+// unless the name travelled the whole way into the request.
+func TestTheStageFlagReachesTheWeighing(t *testing.T) {
+	dir := scratchData(t)
+	const (
+		who  = "fixture-anime.adept"
+		what = "strike"
+		// Enough battles that the skill is actually cast: a sweep whose rows
+		// never landed anything is refused for that instead, and this test would
+		// then be reading a refusal with nothing to do with a stage.
+		seeds = "40"
+	)
+	err := runWeigh([]string{"--data", dir, who, what,
+		"--field", "power", "--values", "1100", "--seeds", seeds, "--stage", "Nobody"})
+	if err == nil {
+		t.Fatal("a stage nobody in the line answers to was accepted, so --stage is read " +
+			"and thrown away and a forking carrier has no way to be priced")
+	}
+	if !strings.Contains(err.Error(), "no stage of this line is called") {
+		t.Errorf("the refusal is not the line's own: %v", err)
+	}
+	// And the form the line does answer to is weighed, so the flag is a way to
+	// name a stage rather than only a way to be refused one.
+	if err := runWeigh([]string{"--data", dir, who, what, "--field", "power",
+		"--values", "1100", "--seeds", seeds, "--stage", "Example Adept"}); err != nil {
+		t.Errorf("the carrier's own form was refused by name: %v", err)
+	}
+}

@@ -263,9 +263,9 @@ Tầm 1 · 88% trúng · hồi 2 lượt.
 [one line] 120% công · choáng 25% · tầm 1 · hồi 2
 
 pummel
-Đánh dồn dập vào kẻ thù đến mức không kịp thở, 3 nhát, mỗi nhát 48% công (tổng 144%).
+Đánh dồn dập vào kẻ thù đến mức không kịp thở, 5 nhát, mỗi nhát 28% công (tổng 140%).
 Tầm 1 · 90% trúng · hồi 2 lượt.
-[one line] 144% công · tầm 1 · hồi 2
+[one line] 140% công · tầm 1 · hồi 2
 
 submission
 Khoá chặt lấy đối thủ rồi siết tới lúc nghẹt thở, 200% công.
@@ -1147,9 +1147,9 @@ Range 1 · 88% to hit · 2 turns to recharge.
 [one line] 120% attack · stun 25% · range 1 · cd 2
 
 pummel
-Hits an enemy for 3 strikes of 48% of attack each, 144% in all.
+Hits an enemy for 5 strikes of 28% of attack each, 140% in all.
 Range 1 · 90% to hit · 2 turns to recharge.
-[one line] 144% attack · range 1 · cd 2
+[one line] 140% attack · range 1 · cd 2
 
 submission
 Hits an enemy for 200% of attack.

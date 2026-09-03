@@ -1693,7 +1693,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   wide_guard     che chắn             neutral   0x1              ai cũng được
   bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
   body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
-  pummel         đánh dồn dập         neutral   480x3            vũ trụ pokemon
+  pummel         đánh dồn dập         neutral   280x5            vũ trụ pokemon
   submission     khoá siết            neutral   2000x1           vũ trụ pokemon
   rock_throw     ném đá               ground    1100x1           hệ ground, vũ trụ pokemon
   seismic_toss   quật đất             ground    2000x1           hệ ground, vũ trụ pokemon
@@ -1755,7 +1755,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   wide_guard     che chắn             neutral   0x1              ai cũng được
   bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
   body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
-  pummel         đánh dồn dập         neutral   480x3            vũ trụ pokemon
+  pummel         đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 135 chiêu · 23 chiêu ai cũng học được
@@ -1872,7 +1872,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   wide_guard     che chắn             neutral   0x1              ai cũng được
   bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
   body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
-  pummel         đánh dồn dập         neutral   480x3            vũ trụ pokemon
+  pummel         đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 135 chiêu · 23 chiêu ai cũng học được
@@ -3989,7 +3989,7 @@ skills  what each one does, and who may carry it
   wide_guard     neutral   0x1               anyone
   bubble_beam    water     900x1             water units, out of pokemon
   body_slam      neutral   1200x1            out of pokemon
-  pummel         neutral   480x3             out of pokemon
+  pummel         neutral   280x5             out of pokemon
   submission     neutral   2000x1            out of pokemon
   rock_throw     ground    1100x1            ground units, out of pokemon
   seismic_toss   ground    2000x1            ground units, out of pokemon
@@ -4051,7 +4051,7 @@ skills  what each one does, and who may carry it
   wide_guard     neutral   0x1               anyone
   bubble_beam    water     900x1             water units, out of pokemon
   body_slam      neutral   1200x1            out of pokemon
-  pummel         neutral   480x3             out of pokemon
+  pummel         neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 135 skills · 23 anyone may carry
@@ -4168,7 +4168,7 @@ skills  what each one does, and who may carry it
   wide_guard     neutral   0x1               anyone
   bubble_beam    water     900x1             water units, out of pokemon
   body_slam      neutral   1200x1            out of pokemon
-  pummel         neutral   480x3             out of pokemon
+  pummel         neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 135 skills · 23 anyone may carry
