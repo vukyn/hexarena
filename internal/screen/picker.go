@@ -555,6 +555,26 @@ func (p *PickState) Update(_ Context, message tea.KeyPressMsg) (*PickState, Pick
 	return p, PickResult{}
 }
 
+// Paste puts a pasted string into the one field a picker can have.
+//
+// Three things have to hold and each is one of Update's own: there is a field at
+// all — four pickers in five have none — it has the keyboard, and no description
+// is in front of the list. ⚠️ **Reading is the load-bearing one.** A description
+// takes every key before the switch is reached, so a paste that ignored it would
+// be the one input that reached the list from behind a screen drawn over it.
+//
+// A nil receiver does nothing, because "there is no picker up" is a state a
+// client's paste route asks this in.
+//
+// PasteDigits rather than PasteInto: that field is the chance, its typed path is
+// gated on NumberKey, and a paste is the only other way into it. → paste.go.
+func (p *PickState) Paste(_ Context, text string) tea.Cmd {
+	if p == nil || p.Reading || p.Typed == nil || !p.Typed.Focused() {
+		return nil
+	}
+	return PasteDigits(p.Typed, text)
+}
+
 // read is the picker with a description in front of the list.
 //
 // The keys are BlurbScreen's, deliberately: an author who has read a skill from

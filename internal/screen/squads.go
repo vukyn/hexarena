@@ -473,6 +473,83 @@ func (s SquadsScreen) updateEdit(c Context, message tea.KeyPressMsg) (SquadsScre
 	return s, Action{}, nil
 }
 
+// Paste puts a pasted string where a typed one would go, and nowhere when the
+// keyboard is not on a field.
+//
+// ⚠️ **The SquadList fall-through is the load-bearing half of that.** The level
+// field is a NumberField, which focuses itself at construction, and the id and
+// the name stay focused after the builder is escaped — so the **catalogue**,
+// which is the screen a game client draws and the one this screen opens on, has a
+// focused text field on it at all times. A paste routed at "whichever field is
+// focused" would go into a squad nobody is building. The switch is what says so,
+// and there is no second predicate beside it: this method has to find the field
+// anyway, so a `Pasting` restating these three facts would be the same rule
+// declared twice, and only one of the two could be wrong at a time.
+//
+// The two depths want different things of it and both are the key path's own
+// rule: the id and the name are free text and take a paste as they take a
+// keystroke, while the level is a number field, so PasteDigits refuses anything
+// else for the reason spelled out beside it. The bookkeeping either side is
+// updateEdit's and updateUnit's, on the same condition each of them uses.
+func (s SquadsScreen) Paste(_ Context, text string) (SquadsScreen, tea.Cmd) {
+	switch s.Mode {
+	case SquadEdit:
+		field := s.editField()
+		if field == nil {
+			return s, nil
+		}
+		before := field.Value()
+		command := PasteInto(field, text)
+		if field.Value() != before {
+			s.Err, s.Notes = nil, nil
+		}
+		s.Editing.ID = strings.TrimSpace(s.IDInput.Value())
+		s.Editing.Name = strings.TrimSpace(s.NameInput.Value())
+		return s, command
+	case SquadUnit:
+		if !s.LevelInput.Focused() {
+			return s, nil
+		}
+		// ⚠️ **Whether the paste landed is read off the VALUE and never off the
+		// command.** PasteInto's command is the cursor's blink, and a field on a
+		// plain terminal has no virtual cursor — NewInput turns it off under
+		// NO_COLOR — so bubbles hands back a nil command for a paste that
+		// succeeded perfectly well. Reading the nil as a refusal is exactly what
+		// this arm did first: the field took "42" and the member stayed at sixty,
+		// and every assertion about the field passed.
+		before := s.LevelInput.Value()
+		command := PasteDigits(&s.LevelInput, text)
+		if s.LevelInput.Value() == before {
+			// Refused for not being a number, so nothing about the member moved.
+			return s, nil
+		}
+		if level, err := strconv.Atoi(strings.TrimSpace(s.LevelInput.Value())); err == nil {
+			s.Unit.Level = level
+			s = s.settleStage()
+		}
+		s.Err = nil
+		return s, command
+	}
+	return s, nil
+}
+
+// editField is the one of the two the builder's keyboard is on, and nil when
+// neither has it.
+//
+// Which of them is `s.EditingID`'s answer, exactly as it is on the key path;
+// whether either of them has the keyboard at all is Focused's, which is what
+// makes the same method usable from the catalogue where neither does.
+func (s *SquadsScreen) editField() *textinput.Model {
+	field := &s.NameInput
+	if s.EditingID {
+		field = &s.IDInput
+	}
+	if !field.Focused() {
+		return nil
+	}
+	return field
+}
+
 // fresh reports whether the squad in hand is one that has never been saved,
 // which is the only time its id may still be typed.
 func (s SquadsScreen) fresh() bool {

@@ -309,6 +309,44 @@ func (f formScreen) update(m model, message tea.KeyPressMsg) (tea.Model, tea.Cmd
 	return m, command
 }
 
+// paste puts a pasted string where a typed one would go, and nowhere when the
+// cursor is on one of the five choosers and lists rather than on a field.
+//
+// There is no mode check because there is no mode: this screen exists only while
+// it is in front, so the whole of the question is whether the cursor is on a
+// field. moveTo blurs what it leaves and focuses what it lands on only when that
+// is a field, so Focused is already the exact answer and this does not restate
+// choiceField — nor is there a predicate beside it, because finding the field is
+// what this method does anyway.
+//
+// The bookkeeping is update's, on update's condition and in update's order: a
+// paste that changed the field is an edit, so it makes the form dirty, clears the
+// last save's answer, and breaks or follows the same three links a keystroke
+// does — the art path stops following the id, a curve stops following the preset.
+func (f formScreen) paste(m model, text string) (tea.Model, tea.Cmd) {
+	if f.cursor < 0 || f.cursor >= len(f.inputs) || !f.inputs[f.cursor].Focused() {
+		return m, nil
+	}
+	field := &f.inputs[f.cursor]
+	before := field.Value()
+	command := draw.PasteInto(field, text)
+	if field.Value() != before {
+		f.touched = true
+		f.err = nil
+		f.notes = nil
+		switch {
+		case f.cursor == fieldID:
+			f = f.applyArt()
+		case f.cursor == fieldImage:
+			f.imageFollowsID = false
+		case f.cursor >= fieldStatBase:
+			f.statFollowsPreset[f.cursor-fieldStatBase] = false
+		}
+	}
+	m.form = f
+	return m, command
+}
+
 // openKit raises the picker over the skill book.
 //
 // The options carry a refusal each, and it is forge.CheckSkill's: the same

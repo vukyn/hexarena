@@ -6,6 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/vukyn/hexarena/internal/clipboard"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
@@ -388,6 +389,52 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyPressMsg:
 		return m.key(typed)
+	case tea.PasteMsg:
+		return m.paste(typed.Content)
+	}
+	return m, nil
+}
+
+// paste routes one pasted string, from a terminal's own bracketed paste or from
+// the ctrl+v key handles, which converge on this message.
+//
+// ⚠️ **The order is key's own, and it is not cosmetic.** A guard is a yes/no
+// question drawn over everything and has no field, so it swallows a paste exactly
+// as it swallows a keystroke; a picker is drawn over whichever screen raised it
+// and one of the five has a field, which is why it is asked before the switch and
+// not inside it. A route that walked the screen switch first would put a paste
+// into the form **behind** the list the author is looking at.
+//
+// ⚠️ **Four arms out of eighteen screens, and the other fourteen doing nothing is
+// the feature rather than a gap.** A paste on the check screen, on a played
+// battle or on a catalogue has nowhere to go, and must therefore go nowhere.
+// Whether the named screen has a field *right now* is the screen's own Pasting to
+// answer.
+func (m model) paste(text string) (tea.Model, tea.Cmd) {
+	if m.guard != nil {
+		return m, nil
+	}
+	if m.picker != nil {
+		return m, m.picker.Paste(m.ctx(), text)
+	}
+	if m.tooSmall() {
+		return m, nil
+	}
+	switch m.screen {
+	case screenNew:
+		return m.form.paste(m, text)
+	case screenOrigins:
+		origins, command := m.origins.Paste(m.ctx(), text)
+		m.origins = origins
+		return m, command
+	case screenSkills:
+		skills, command := m.skills.Paste(m.ctx(), text)
+		m.skills = skills
+		return m, command
+	case screenSquads:
+		squad, command := m.squad.Paste(m.ctx(), text)
+		m.squad = squad
+		return m, command
 	}
 	return m, nil
 }
@@ -415,6 +462,25 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+l":
 		m.lang = m.lang.Other()
 		return m, nil
+	case "ctrl+v":
+		// ⚠️ **Answered here rather than on the screen in front, and it has to
+		// be.** bubbles' textinput binds ctrl+v itself and answers it with
+		// textinput.Paste, whose message is unexported and therefore dies in this
+		// model — so a ctrl+v allowed to reach a field would shell out to the
+		// clipboard and insert nothing, which is what it did before this arm
+		// existed. Taking it first is what stops that second read.
+		//
+		// It reads the clipboard from **every** screen and asks nothing about
+		// whether a field is focused, deliberately: what comes back is a
+		// tea.PasteMsg, and where a paste may land is decided in exactly one
+		// place — m.paste. A second predicate here would be a second declaration
+		// of the same rule and the two would drift.
+		//
+		// It is a chord and collides with nothing, which was checked rather than
+		// assumed: the chords these two clients spend are ctrl+c, ctrl+l, ctrl+s
+		// and the squad builder's ctrl+x, and no field's own map claims ctrl+v
+		// once this arm has taken it.
+		return m, clipboard.Paste
 	}
 	if m.guard != nil {
 		return m.answerGuard(message)

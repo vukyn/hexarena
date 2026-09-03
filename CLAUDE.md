@@ -446,7 +446,7 @@ comes from the package. `internal/forge` is the one part of the module allowed
 to read and write real files, and its doc comment says why: `internal/core` may
 not, and `internal/seed` only ever reads the embedded copy.
 
-### What bubbletea v2 moved, and the four things it broke silently
+### What bubbletea v2 moved, and the five things it broke silently
 
 The migration was made for one reason: **a terminal cannot deliver the Command
 key over the classic escape sequences.** There is no encoding for it, and v1's
@@ -1203,6 +1203,20 @@ element does not empty the kit, it turns those rows into marked rows and the car
 line red, which is a state an author can see and fix rather than one that happened
 behind them. Do not "tidy" that by dropping the offending skills: a silent
 mutation is how a one-way order comes back, and it makes the live check a lie.
+
+⚠️ **The fifth: pasting stopped working in both clients and nothing failed.**
+v2 enables bracketed paste by default and delivers a paste as **`tea.PasteMsg`**,
+not as a run of `tea.KeyPressMsg`. `bubbles`' `textinput` handles that message
+correctly — but a model whose `Update` switches only on `tea.KeyPressMsg` drops it
+before the field ever sees it, and `PasteMsg` appeared **nowhere** in this
+repository until #274. Every text field in both clients ignored ⌘V, and the join
+screen ignored the room code somebody had just copied.
+⚠️ **`ctrl+v` was worse than unhandled: it read the clipboard and threw it away.**
+`bubbles` binds `ctrl+v` to `textinput.Paste` by default, which shells out to
+`pbpaste` — and then delivers `textinput.pasteMsg`, which is **unexported**, so a
+model outside that package cannot name it and cannot forward it. The fix reads the
+clipboard through `internal/clipboard` and returns a `tea.PasteMsg`, so the
+terminal's own paste and the program's own key end at the same insert.
 
 ## Two full-screen clients over one `internal/screen`
 

@@ -209,6 +209,43 @@ func (o OriginsScreen) updateForm(c Context, message tea.KeyPressMsg) (OriginsSc
 	return o, Action{}, command
 }
 
+// Paste puts a pasted string where a typed one would go, and nowhere when the
+// keyboard is not on a field. → paste.go for the one rule pasteTarget is.
+//
+// The bookkeeping is updateForm's, on the same condition: a paste that changed
+// the field is an edit, so it makes the form dirty and clears the last refusal,
+// and a paste that changed nothing — refused for length, or empty — leaves both
+// alone.
+func (o OriginsScreen) Paste(_ Context, text string) (OriginsScreen, tea.Cmd) {
+	field := o.pasteTarget()
+	if field == nil {
+		return o, nil
+	}
+	before := field.Value()
+	command := PasteInto(field, text)
+	if field.Value() != before {
+		o.Touched = true
+		o.Err = nil
+	}
+	return o, command
+}
+
+// pasteTarget is the field a paste lands in, and nil when none would. It is the
+// only declaration of that: Paste has to find the field anyway, so a predicate
+// beside it would be the same rule written twice.
+//
+// ⚠️ **`o.Adding` is load-bearing and is not a mode check for tidiness.**
+// ResetForm focuses the id field and runs at construction, so a client standing
+// on the works **listing** has a focused text field it is not drawing. Without
+// this the reader's paste would fill it, and the next `a` would open a form with
+// somebody's room code already in the id.
+func (o OriginsScreen) pasteTarget() *textinput.Model {
+	if !o.Adding {
+		return nil
+	}
+	return focusedField(o.Inputs, o.Field)
+}
+
 func (o OriginsScreen) moveTo(target int) OriginsScreen {
 	o.Inputs[o.Field].Blur()
 	o.Field = (target + OriginFieldCount) % OriginFieldCount

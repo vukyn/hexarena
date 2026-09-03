@@ -668,6 +668,67 @@ func (s SkillsScreen) updateForm(c Context, message tea.KeyPressMsg) (SkillsScre
 	return s, Action{}, command
 }
 
+// Paste puts a pasted string where a typed one would go: into the form's focused
+// field, or into the filter's query, or nowhere.
+//
+// ⚠️ **This screen has two text targets and they belong to different clients.**
+// The form's fields open behind Context.Authoring; the typed filter opens on `/`
+// and is guarded by nothing, so it is the one text target a **game** client has
+// on a screen out of this package. The order below is Update's own — form, then
+// filter — so a paste cannot reach a form the keystrokes could not have opened.
+//
+// ⚠️ **`FormInFront` is load-bearing twice over.** ResetForm focuses the id field
+// and runs at construction, so a client on the bare **listing** holds a focused
+// text field nobody is looking at — a paste there would fill a form that has not
+// been opened. And it is what keeps a read-only client out of the authoring half:
+// the form can only be in front because `a` or `e` put it there, and both are
+// guarded on Context.Authoring, so a paste on cmd/hexarena-tui falls to the
+// filter or to nothing.
+//
+// There is no predicate beside this. The two arms have to find their target
+// anyway, and a `Pasting` restating them would be one rule written twice.
+func (s SkillsScreen) Paste(_ Context, text string) (SkillsScreen, tea.Cmd) {
+	if s.FormInFront() {
+		field := focusedField(s.Inputs, s.Field)
+		if field == nil {
+			return s, nil
+		}
+		before := field.Value()
+		command := PasteInto(field, text)
+		if field.Value() != before {
+			// updateForm's bookkeeping, on updateForm's condition.
+			s.Touched = true
+			s.Err = nil
+			s.Added, s.Edited = nil, nil
+		}
+		return s, command
+	}
+	if s.Filtering {
+		s = s.pasteFilter(text)
+	}
+	return s, nil
+}
+
+// pasteFilter appends a pasted string to the query, under the same two rules
+// updateFilter's own text arm is under: the field takes what it can hold and the
+// cursor is re-clamped because a narrowed listing can leave it past the end.
+//
+// ⚠️ **A paste over the limit is truncated rather than refused**, which is the
+// opposite of what a number field does and is the right answer for a different
+// reason: the query is a search rather than a value, so thirty-two letters of a
+// long paste narrow the listing exactly as thirty-two typed ones would, and a
+// refusal would leave a reader with no way to search for anything long. Nothing
+// is being written to a file here.
+func (s SkillsScreen) pasteFilter(text string) SkillsScreen {
+	letters := []rune(s.Query + PasteText(text))
+	if len(letters) > FilterLimit {
+		letters = letters[:FilterLimit]
+	}
+	s.Query = string(letters)
+	s.Cursor = Clamp(s.Cursor, 0, len(s.Rows())-1)
+	return s
+}
+
 // OpenAllowlist builds the picker for one of the five lists.
 //
 // The list is offered rather than typed for the reason the origin and the
