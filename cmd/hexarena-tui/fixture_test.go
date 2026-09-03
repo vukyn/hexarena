@@ -119,7 +119,7 @@ func startIn(t *testing.T, lang i18n.Lang, dir string) (model, *forge.Library, s
 		t.Fatalf("load %s: %v", dir, err)
 	}
 	twoSidesSaved(t, lib)
-	m := newModel(lib, lang)
+	m := newModel(lib, lang, newSession())
 	m.width, m.height = 120, 44
 	return m, lib, dir
 }
@@ -142,7 +142,7 @@ func startEmpty(t *testing.T, lang i18n.Lang) model {
 		t.Fatalf("the scratch catalogue holds %d sides, so the empty states are drawn by "+
 			"nothing", len(lib.Squads()))
 	}
-	m := newModel(lib, lang)
+	m := newModel(lib, lang, newSession())
 	m.width, m.height = 120, 44
 	return m
 }

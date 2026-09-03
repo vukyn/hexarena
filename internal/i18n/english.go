@@ -700,4 +700,50 @@ q or ctrl+c to quit`,
 	// them. The angle brackets are the squad builder's chooser decoration, so a
 	// reader who has met one there reads this as the same thing.
 	FormChoice: "form  < %s >  %d of %d, s for the next",
+	// The two seats a room hands out. → keys.go for why they are worded rather
+	// than printed as the ids they travel as.
+	SeatHost:  "host",
+	SeatGuest: "guest",
+
+	// The lobby and a match over a LAN. Whoever reads one of these is standing
+	// at a screen with nothing else on it, so each line says both what is
+	// happening and what to do next.
+	GameMenuJoin:       "join a room",
+	GameMenuJoinDetail: "paste the code a friend sent and play them over the local network",
+
+	JoinHeading:             "join a room",
+	JoinCodeLabel:           "room code",
+	JoinCodePlaceholder:     "12 letters and digits",
+	JoinPasswordLabel:       "password",
+	JoinPasswordPlaceholder: "leave empty if the room has none",
+	JoinSquadLabel:          "the squad to bring",
+	JoinHint: "The code is printed by the machine hosting the room, twelve letters and digits. It " +
+		"already carries that machine's address, so there is nothing else to ask for.",
+	JoinNoSquad:    "no squad has been built, and a room has to be joined with one; build a side under the squad catalogue",
+	JoinCodeLength: "a room code is exactly %d characters, and this one is %d",
+	JoinDataEdited: "The data in the directory this client is reading differs from the data built into this " +
+		"binary. The match is played on the built-in copy, so the edits out there do not reach it.",
+	JoinDialling: "calling room %s",
+	JoinRefused:  "the room would not let this client in:",
+	JoinFooter:   "tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back",
+
+	WaitingHeading: "waiting for the second player",
+	WaitingForPeer: "You are in. The match starts the moment the other player takes the free seat; nothing else to press.",
+	WaitingRoom:    "room %s",
+	WaitingSeat:    "seat %s",
+	WaitingFormat:  "%s, %d battles, %d seconds a turn",
+	WaitingFooter:  "ctrl+l tiếng Việt · esc leave the room",
+
+	ResultHeading:    "the match is over",
+	ResultStanding:   "standing %d - %d",
+	ResultBattleLine: "battle %d: %s",
+	ResultWon:        "won",
+	ResultLost:       "lost",
+	ResultDrawn:      "drawn",
+	ResultFooter:     "ctrl+l tiếng Việt · esc back",
+
+	PlayLiveWaiting:    "waiting on the other player",
+	PlayLiveFooter:     "↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match",
+	PlayLiveAimFooter:  "↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill",
+	PlayLiveOverFooter: "[/] scroll · esc the result",
 }

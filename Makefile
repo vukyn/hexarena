@@ -74,16 +74,37 @@ vet:
 
 # The gate: what has to be clean before a change is done.
 #
-# internal/room, internal/socket and cmd/hexarena-host are each run a second time
-# under the race detector, and those three are the whole of the concurrency in the
-# repository: the registry runs one goroutine per room, the transport runs a
-# reader and a keepalive per connection plus a timer per prompt, and the host
-# binary runs an http server, a signal handler and a bounded shutdown beside them.
-# The detector is the primary net over all three — a data race in the room is a
-# battle that stops reproducing from its seed, which takes the log format,
-# --verify and undo down with it; a race in the transport is a message delivered
-# to the wrong seat; and a race in the host is two goroutines writing one line of
-# somebody's terminal.
+# internal/room, internal/socket, cmd/hexarena-host and cmd/hexarena-tui are each
+# run a second time under the race detector, and those four are the whole of the
+# concurrency in the repository: the registry runs one goroutine per room, the
+# transport runs a reader and a keepalive per connection plus a timer per prompt,
+# the host binary runs an http server, a signal handler and a bounded shutdown
+# beside them, and the game client runs a reader, a keepalive and a Play loop
+# beside a bubbletea event loop. The detector is the primary net over all four —
+# a data race in the room is a battle that stops reproducing from its seed, which
+# takes the log format, --verify and undo down with it; a race in the transport is
+# a message delivered to the wrong seat; and a race in the host is two goroutines
+# writing one line of somebody's terminal.
+#
+# ⚠️ cmd/hexarena-tui is the newest of the four and it earned its place the way
+# cmd/hexarena-host did. It is the first thing in the repository that **draws** a
+# battle another goroutine is stepping: Play steps the mirror while bubbletea's
+# loop reads it to draw, which is what socket.Mirror grew an RWMutex for, and the
+# client answers its chooser from the goroutine handling a keystroke. A race here
+# is a board drawn half a turn into the next one.
+#
+# ⚠️ **It is by far the most expensive line here and the figure is not what it
+# looks like.** Measured: **3.6s plain, 33.1s under the detector**, so the second
+# run costs about thirty seconds — roughly doubling the whole gate. Almost none
+# of that is the concurrency: the four tests that actually run a match total
+# about 4s, and the rest is this package's five *sweeps*, each of which renders
+# every screen in both languages at two sizes and plays several battles out to do
+# it. The detector is roughly ten times slower at that arithmetic.
+#
+# It is the whole package all the same, and narrowing it to `-run` the four
+# concurrency tests was considered and refused: a filter is a list somebody has to
+# remember to add to, which is the "a race test nobody runs" failure one step
+# removed. If the gate has to get shorter, the sweeps are what to make cheaper.
 #
 # ⚠️ cmd/hexarena-host earned its place rather than being added on principle. The
 # transport calls Options.Joined and Options.Report on **a connection's own
@@ -97,7 +118,7 @@ vet:
 # ⚠️ Some of internal/socket's own time is a deliberate sleep — the timeout test
 # runs a one-second allowance against a client that thinks for three — so the
 # detector's share of it is smaller than the totals suggest. A race test nobody
-# runs is not a net, so all three are in the gate rather than in a comment.
+# runs is not a net, so all four are in the gate rather than in a comment.
 check:
 	@gofmt -l .
 	@go vet ./...
@@ -105,6 +126,7 @@ check:
 	@go test -race -count=1 ./internal/room/
 	@go test -race -count=1 ./internal/socket/
 	@go test -race -count=1 ./cmd/hexarena-host/
+	@go test -race -count=1 ./cmd/hexarena-tui/
 
 clean:
 	@rm -rf bin/

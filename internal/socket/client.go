@@ -19,9 +19,39 @@ import (
 // precisely so the sentence lives at this end, in the player's own language.
 // → the package comment on what is deliberately out of scope.
 type Client struct {
-	conn   *connection
-	mirror *Mirror
-	code   wire.RoomCode
+	conn    *connection
+	mirror  *Mirror
+	code    wire.RoomCode
+	stepped func()
+}
+
+// ClientOptions is everything a caller may say about a dialled client, and it is
+// a struct rather than a sixth positional parameter for the reason Options is
+// one on the server side: a caller that wants the hook and not the clock should
+// not have to write the clock down.
+type ClientOptions struct {
+	// Timings is the transport's clock. The zero value takes every default.
+	Timings Timings
+
+	// Stepped is called on the Play goroutine after every message this client
+	// has taken in, so a renderer knows there is something new to draw.
+	//
+	// ⚠️ **It is the other half of a client's redraw and a chooser cannot be
+	// it.** A chooser only fires on *this* client's turns, so a screen driven by
+	// one alone would sit still for the whole of the opponent's turn and then
+	// jump — and in a match that is up to a ninety-second allowance of a board
+	// that looks frozen.
+	//
+	// ⚠️ **It is handed NOTHING**, and both halves of that are deliberate.
+	// Passing the Mirror out is exactly what Mirror.Read exists to refuse, and
+	// passing the battle out would be the pointer escaping the lock. And it is
+	// called with **no lock held**: a caller that Sends into a program whose
+	// Update is inside Mirror.Read would otherwise deadlock the two against each
+	// other, which is the same ordering Mirror.Decide is written under.
+	//
+	// A nil hook is the ordinary case — a client with nothing drawing it, which
+	// is what every test that plays a match out with a rating is.
+	Stepped func()
 }
 
 // Refusal is the room turning this client away, and it carries the code and
@@ -46,7 +76,8 @@ func (r *Refusal) Error() string { return fmt.Sprintf("the room refused this cli
 // On a refusal it returns a *Refusal and closes the connection: a refused join
 // is the end of the conversation, and the code is everything the client needs in
 // order to say why.
-func Dial(ctx context.Context, code wire.RoomCode, hello wire.Hello, books battle.Books, timings Timings) (*Client, error) {
+func Dial(ctx context.Context, code wire.RoomCode, hello wire.Hello, books battle.Books,
+	options ClientOptions) (*Client, error) {
 	at, which, err := code.Decode()
 	if err != nil {
 		return nil, fmt.Errorf("read the room code: %w", err)
@@ -55,7 +86,7 @@ func Dial(ctx context.Context, code wire.RoomCode, hello wire.Hello, books battl
 	if err != nil {
 		return nil, fmt.Errorf("read the room code: %w", err)
 	}
-	settings := timings.withDefaults()
+	settings := options.Timings.withDefaults()
 	// ⚠️ Plain ws and not wss, which is a decision rather than an omission: the
 	// design record refuses TLS on a LAN, because a self-signed certificate
 	// implying security would be worse than saying there is none. → README.md
@@ -66,9 +97,10 @@ func Dial(ctx context.Context, code wire.RoomCode, hello wire.Hello, books battl
 		return nil, fmt.Errorf("dial room %s: %w", canonical, err)
 	}
 	client := &Client{
-		conn:   newConnection(raw, settings),
-		mirror: NewMirror("", books),
-		code:   canonical,
+		conn:    newConnection(raw, settings),
+		mirror:  NewMirror("", books),
+		code:    canonical,
+		stepped: options.Stepped,
 	}
 	if err := client.handshake(ctx, hello); err != nil {
 		client.conn.drop()
@@ -96,10 +128,10 @@ func (c *Client) handshake(ctx context.Context, hello wire.Hello) error {
 		// cannot know which of the two places it took — the room hands them out
 		// in the order it seats people — and it is the one fact that holds for
 		// the whole match, where the *side* changes between battles.
-		c.mirror.seat = message.Seat
+		c.mirror.takeSeat(message.Seat)
 		return c.mirror.Receive(*message)
 	case wire.Welcome:
-		c.mirror.seat = message.Seat
+		c.mirror.takeSeat(message.Seat)
 		return c.mirror.Receive(message)
 	}
 	if body == nil {
@@ -168,6 +200,13 @@ func (c *Client) Play(ctx context.Context, choose battle.Chooser) error {
 		}
 		if err := c.mirror.Receive(body); err != nil {
 			return err
+		}
+		// ⚠️ Outside Receive and therefore outside the write lock, which is what
+		// lets the hook draw: a renderer told "there is something new" goes
+		// straight to Mirror.Read, and a hook called from inside Receive would
+		// have it waiting on the lock the caller is holding.
+		if c.stepped != nil {
+			c.stepped()
 		}
 		if c.mirror.Over() {
 			c.Close()

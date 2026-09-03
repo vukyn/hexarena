@@ -985,23 +985,57 @@ is only so the shape is readable.
             own** count of its turns and not a position in the battle — a reader
             who takes it for the latter will see `A1 turn 5` before `E1 turn 4` and
             think the report is wrong.
-      - [ ] Undo **off** in PvP. ⚠️ It works by replaying a truncated script, and
-            the opponent has already seen the events it would take back.
       - [ ] A player squad file under `os.UserConfigDir()`, separate from
             `internal/seed/data/squads.json` — that one is the game's own data,
             edited by the authoring tool, and a player has no business in it.
-      - [ ] Lobby, room and waiting screens — **registered in `everyScreen` in
+      - [x] Lobby, room and waiting screens — **registered in `everyScreen` in
             the same commit that adds them**, for the reason at the top of this
-            list.
+            list. Done: `cmd/hexarena-tui/lobby.go` holds `joinScreen`,
+            `waitingScreen` and `resultScreen`, and all nine of their states went
+            into `everyScreen` and this client's golden in the same commit.
+            ⚠️ **They live in `cmd/hexarena-tui` rather than in
+            `internal/screen`**, and the reason is the import graph: a lobby
+            holding a `wire.RoomCode` or a `wire.Code` would pull the protocol
+            into the package two clients share, and `i18n.Lang.Refusal(name)`
+            takes a **name** precisely so that never has to happen. Stated cost:
+            `internal/screen`'s golden cannot see them, so a layout regression
+            there is caught by one golden rather than two.
+      - [x] Undo **off** in PvP, along with another seed, the save key and the
+            "let it pick" key — six keys guarded on `draw.PlayScreen.Live`, one
+            guard each, at the key.
+      - [x] The battle screen driven by `socket.Mirror` rather than by itself:
+            `PlayScreen.Attach` and a cursor of its own, because `Drain` writes
+            `b.drained` and a live battle is read under a lock that admits
+            several readers.
       - [ ] The countdown: a remaining duration on the wire rather than a
             deadline, because two machines on a LAN have no reason to agree what
             time it is. Both clocks drawn, so a player can see the other one
             thinking.
+            ⚠️ **It shares a clock with the one residual the lobby left open**,
+            so the two land together. A peer that dies *while this client is
+            being asked* does not unblock the chooser: `Play` is inside `Decide`
+            at that moment rather than inside `conn.read`, so neither the read
+            failing nor the keepalive giving up (which cancels `Play`'s own
+            internal context, not the session's) can reach it, and the goroutine
+            sits until the player presses `esc`. Nothing a person can see is
+            stuck — the UI stays responsive and the board is drawn. The third arm
+            that would close it is a timer of `Welcome.Allowance` plus grace,
+            which is a **clock**, and CLAUDE.md's own warning is that a countdown
+            moved into a fourth package is invisible to both existing clock bans.
+            → the head of `cmd/hexarena-tui/session.go`.
       - [ ] Re-take `playFit`'s budget. ⚠️ A 5v5 body already measures 28 rows
             against the 24 the floor gives it, and PvP adds a clock row and a
             waiting row on top.
-      - [ ] The wordings, in both books, Vietnamese composed: room, lobby,
-            waiting, timed out.
+      - [x] The wordings, in both books, Vietnamese composed: room, lobby,
+            waiting. **Done**: the menu's ninth entry, the join screen (heading,
+            two field labels and their placeholders, the squad chooser, the hint,
+            the no-squad line, the wrong-length refusal, the `--data` notice, the
+            dialling line, the refusal lead-in and the footer), the waiting
+            screen, the result screen, the two seats, and the battle screen's
+            live waiting line and three live footers.
+            ⚠️ **Still open: the timed-out pass reason**, which is the last item
+            in this group — `tui.Line` prints `event.Note` raw, so a turn lost to
+            the clock still reads `loses the turn (timeout)` in both languages.
             ✅ **The two protocol enums are done**: all ten `wire.Code`s and all
             three `wire.Closure`s are worded in both books, via
             `i18n.Lang.Refusal(name)` and `i18n.Lang.Closure(name)` in
@@ -1013,16 +1047,23 @@ is only so the shape is readable.
             imports entirely; the four walks over `wire.CodeCount` and
             `wire.ClosureCount` live in `internal/i18n/protocol_test.go`, where
             the import is test-only.
-            ⚠️ **They are worded and unread, and that is not the same as done.**
-            Nothing calls either accessor — `cmd/hexarena-tui`'s **pairing
-            screen** is what makes them visible, and it is the open item above
-            (lobby / room / waiting). Until it lands this converts *"no words
-            exist"* into *"words exist, nobody is shown them"*, which is one
-            step narrower than the "shipped dead" shape rather than closed.
-            ⚠️ **`TestNoKeyIsOrphaned` cannot see that gap and must not be quoted
-            as if it could.** It counts an identifier named anywhere in the
-            module, and each of the thirteen keys is named in `protocol.go`'s own
-            lookup, so it passes with nothing on any screen showing the words.
+            ✅ **They are worded AND read now, which they were not.** The gap
+            this paragraph recorded is closed by the lobby: the six refusals a
+            **gate** answers are drawn on the join screen, the three only
+            reachable **during** a match are drawn on the battle screen in the
+            slot a save note takes locally, and both closures are drawn on the
+            result screen. `TestEveryRefusalIsShownAndEveryClosureIsShown` in
+            `cmd/hexarena-tui` walks `wire.CodeCount` and `wire.ClosureCount` and
+            asserts the sentence is on the drawn body in both languages.
+            ⚠️ **Which of the two screens a refusal belongs to is DERIVED
+            TWICE**, out of a real `room.Room` — six from `Join` and three from
+            `Deliver` — and held disjoint and total, because both screens will
+            word any code handed to them and a declared table could be permuted
+            freely.
+            ⚠️ **`TestNoKeyIsOrphaned` could not see that gap and must not be
+            quoted as if it could.** It counts an identifier named anywhere in
+            the module, and each of the thirteen keys is named in `protocol.go`'s
+            own lookup, so it passed with nothing on any screen showing the words.
             The same blindness holds for `socket.Refusal.Error()`, which still
             prints the raw id — deliberately: it is the developer-facing error,
             and the screen is what words it in the player's language.

@@ -17,14 +17,20 @@ import (
 // name, exactly as Lang.StatusCategory takes a status.Category's, so nothing in
 // this package's production build knows the protocol exists.
 //
-// ⚠️ **What none of the four tests below can see is whether anybody draws
-// these.** No screen calls Lang.Refusal or Lang.Closure yet, and
-// TestNoKeyIsOrphaned cannot tell: it counts an identifier named anywhere in
-// the module, and each of the thirteen keys is named in protocol.go's own
-// lookup. So the whole of this file measures that the words exist, are
-// complete, are distinct and are not ids — not that a player is ever shown one.
-// That is the "shipped dead" shape one step narrower rather than closed, and it
-// is written down in TODO.md § The client rather than implied away.
+// ⚠️ **What none of the tests below can see is whether anybody draws these**,
+// and that half is now held somewhere else rather than left open. This file
+// measures that the words exist, are complete, are distinct and are not ids;
+// that a *player is shown one* is
+// cmd/hexarena-tui's TestEveryRefusalIsShownAndEveryClosureIsShown, which puts
+// every value on the screen it is reachable on and reads the sentence back off
+// the drawn body. Neither can stand in for the other: this one goes red on an
+// eleventh code with no wording, that one goes red on an eleventh code with
+// nowhere to appear.
+//
+// ⚠️ **TestNoKeyIsOrphaned cannot see either gap and must not be quoted as if
+// it could.** It counts an identifier named anywhere in the module, and every
+// one of these keys is named in protocol.go's own lookup — so it passed for as
+// long as the words had no reader at all.
 
 // TestEveryRefusalCodeIsWorded holds the codes complete the way the status
 // categories are held complete: a wire.Code is a Go enum rather than a data id,
@@ -161,5 +167,46 @@ func TestNoTwoProtocolValuesShareAWording(t *testing.T) {
 			}
 			closed[worded] = name
 		}
+	}
+}
+
+// TestEverySeatIsWorded is the same completeness claim for the two seats.
+//
+// ⚠️ **There is no wire.SeatCount to walk**, which is the difference from the
+// two tests above and is worth naming rather than working around: wire.Seat is
+// a string type with two named constants, not an iota enum, so the two are
+// listed here and the *count* is asserted against wire.Seat.Valid — the
+// declaration this package can actually reach. A third seat would be a room
+// with three players, which is a change to internal/room long before it is a
+// change here.
+//
+// ⚠️ **The "not left at its own spelling" clause the two tests above carry does
+// NOT hold here, and that is a fact about the ids rather than a gap.** The two
+// seats travel as the English words for them, so `en` words "host" as "host"
+// and is right to. The claim that is worth making is therefore the asymmetric
+// one: both languages say something, and **Vietnamese** does not say the
+// English word — which is the leak this wording exists to close.
+//
+// What it cannot see: the two swapped. Both are non-empty and neither Vietnamese
+// line is an id.
+func TestEverySeatIsWorded(t *testing.T) {
+	seats := []wire.Seat{wire.SeatHost, wire.SeatGuest}
+	for _, seat := range seats {
+		if !seat.Valid() {
+			t.Fatalf("%q is not a seat internal/wire declares, so this walks the wrong list", seat)
+		}
+		for _, lang := range Langs() {
+			if worded := lang.Seat(string(seat)); strings.TrimSpace(worded) == "" {
+				t.Errorf("%v has no wording for the %q seat", lang, seat)
+			}
+		}
+		if worded := Vi.Seat(string(seat)); worded == string(seat) {
+			t.Errorf("the Vietnamese wording of the %q seat is the English id itself", seat)
+		}
+	}
+	// A seat this build has never heard of falls through to the id, which is the
+	// same shape Refusal and Closure keep for a peer one version ahead.
+	if got := Vi.Seat("umpire"); got != "umpire" {
+		t.Errorf("an unknown seat worded as %q, want the id back", got)
 	}
 }

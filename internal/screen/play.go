@@ -118,6 +118,59 @@ type PlayScreen struct {
 	// Notes are what a write left behind, held as facts rather than as a
 	// sentence so a language toggle redraws them in the other one.
 	Notes []forge.Note
+
+	// Live says somebody else is driving this battle, and it is the whole of
+	// what a PvP battle is on this screen: the engine is a socket.Mirror's, the
+	// decisions are the server's, and this screen renders and chooses.
+	//
+	// ⚠️ **One battle exists per client and it is the mirror's.** A screen that
+	// also called Fight.Act would step the same battle twice and diverge from
+	// the room on turn one — the mirror applies on the wire.Turn that comes
+	// back, deliberately, which is why the room sends every turn to both clients
+	// including the one that asked. So every key that spends a turn is guarded
+	// on this field, at the key, once.
+	//
+	// Nought is the local reading, which is the half a forgotten declaration has
+	// to fall into: a local screen that quietly went live would stop driving its
+	// own battle and sit for ever, while a live screen that quietly went local
+	// would play the opponent's turns for them.
+	Live bool
+	// Cursor is this screen's own read position in a battle it does not own.
+	//
+	// ⚠️ **Live mode may not call Drain.** Drain is Since(b.drained) over an
+	// append-only record and it *writes* b.drained — and a live battle is read
+	// under a lock that admits several readers, so a read that moved the mirror's
+	// own cursor would be a write smuggled through one. Two consumers of one
+	// battle is exactly what the record-and-cursor work bought; this is the
+	// second cursor. Local mode keeps Drain untouched, which is what keeps the
+	// hot-seat goldens still.
+	Cursor int
+	// Answered is the decision already sent for the open prompt, so a screen
+	// that has answered stops offering the same turn again — and stops drawing
+	// an option list whose keys it would ignore.
+	//
+	// Cleared by Attach when the prompt names a different (unit, turn), which is
+	// the pair a decision is identified by everywhere else in this repository.
+	// ⚠️ Not the prompt pointer: a mirror hands back a pointer into its own
+	// battle and two prompts for one turn are the same turn however they are
+	// allocated.
+	Answered     bool
+	answeredUnit string
+	answeredTurn int
+	// LiveRefusal is the **name** of the latest protocol refusal this client has
+	// been sent mid-match, drawn where a save's note goes and empty when there
+	// has been none.
+	//
+	// ⚠️ **A name and never a typed value.** i18n.Lang.Refusal takes a string
+	// for exactly this reason: a wire.Code on a field here would pull the
+	// protocol into the package two clients share, and this package must not
+	// know a socket exists. The client turns the enum into its own id and this
+	// screen hands it to the language book.
+	//
+	// ⚠️ It is the one place three of the ten refusals can ever be read —
+	// not-your-turn, illegal-action and unknown-message are only reachable
+	// **during** a match, because a refusal does not end a connection.
+	LiveRefusal string
 }
 
 // PlayTurnLimit is where a battle is abandoned, and it is cmd/hexarena's number
@@ -148,14 +201,119 @@ func NewPlayScreen() PlayScreen {
 // built rather than reporting the refusal fielding one would give. That is a
 // reading of the value rather than a sentinel: placement.Squad.Validate already
 // refuses an empty squad, so nothing that could be fielded arrives this way.
+// ⚠️ **A live screen refuses to be opened**, and that is the guard the two risks
+// of this feature meet at: a client whose menu still offers a battle while a
+// match is running would build a second one over the mirror's, and the reader
+// would be playing a hot-seat game against a copy of themselves while a person
+// on another machine waited. Attach is the live entrance and Open is the local
+// one; neither is the other's fallback.
 func (p PlayScreen) Open(c Context, home, away placement.Squad) PlayScreen {
+	if p.Live {
+		return p
+	}
 	p.Home, p.Away = home, away
 	return p.begin(c)
+}
+
+// Attach points this screen at a battle it does not drive.
+//
+// It is the live counterpart of Open and it is called on **every** redraw, not
+// only when something changed: the client reads its mirror under a lock and
+// hands over whatever it found, so this has to be cheap and idempotent. The one
+// thing it is not idempotent about is the event cursor, which is the point — the
+// run since the last call is what a renderer has not drawn yet.
+//
+// What it resets and when:
+//
+//   - A **different battle pointer** is the next battle of the series, so the
+//     cursor, the history, the option cursor and the aim all start again, and
+//     the tags and names are read off the new board. The seed and the side come
+//     off the message rather than being kept, because both change between
+//     battles of a match.
+//   - A **different (unit, turn)** on the prompt is a new turn, so Answered is
+//     cleared and the option cursor opens on the first option the unit may
+//     actually take.
+//   - Anything else is the same turn seen again, and nothing moves.
+func (p PlayScreen) Attach(c Context, live PlayLive) PlayScreen {
+	p.Live = true
+	if live.Fight != p.Fight {
+		p.Fight = live.Fight
+		p.Cursor, p.Events = 0, nil
+		p.Option, p.Aim, p.Aiming = 0, 0, false
+		p.Answered, p.answeredUnit, p.answeredTurn = false, "", 0
+		p.LogFollow, p.LogOffset = true, 0
+		p.Pending = nil
+		p.Tags, p.Names = nil, nil
+		if live.Fight != nil {
+			p.Tags = tui.Tags(live.Fight.Units())
+			p.Names = tui.Names(live.Fight.Units())
+		}
+	}
+	p.Side, p.Seed = live.Side, live.Seed
+	p.LiveRefusal = live.Refusal
+	if p.Fight != nil {
+		// Since rather than Drain: a pure read, so this is safe under the read
+		// lock the caller is holding. → the Cursor field.
+		events, next := p.Fight.Since(p.Cursor)
+		p.Cursor = next
+		p.Events = append(p.Events, events...)
+	}
+	opened := live.Asking
+	switch {
+	case opened == nil:
+		p.Pending = nil
+		p.Aiming = false
+	case p.Answered && opened.Unit == p.answeredUnit && opened.Turn == p.answeredTurn:
+		// The same turn, already answered. The prompt is kept so the screen
+		// still knows whose turn it was, and the tail says it is waiting.
+		p.Pending = opened
+	case p.Pending == nil || opened.Unit != p.Pending.Unit || opened.Turn != p.Pending.Turn:
+		p.Pending = opened
+		p.Answered, p.answeredUnit, p.answeredTurn = false, "", 0
+		p.Option = p.firstAvailable(opened)
+		p.Aim, p.Aiming = 0, false
+	default:
+		p.Pending = opened
+	}
+	return p
+}
+
+// PlayLive is a battle somebody else is driving, as one reading of it.
+//
+// ⚠️ **It is a value taken under the mirror's read lock and it does not outlive
+// the call.** The *battle.Battle in it is the mirror's own — a client computes
+// the board by computing the battle, which is the whole design and the reason no
+// type walk can refuse the pointer — so the caller's job is to build one of
+// these inside socket.Mirror.Read and hand it straight here.
+//
+// ⚠️ **There is deliberately no index of the battle within the series.** The
+// plan this arrived under carried one; nothing on this screen reads it, the
+// heading already names the seed and a seed changes between battles of a match,
+// and a field a screen does not draw is a field the next reader wonders about.
+// The series standing is the *result* screen's, off socket.Mirror.Fought.
+type PlayLive struct {
+	// Fight is the mirror's battle, nil between battles and before the first.
+	Fight *battle.Battle
+	// Asking is the open prompt when it is this player's to answer, and nil
+	// otherwise — which is socket.Mirror.Asking exactly, because that derivation
+	// and PlayScreen.Pending are the same fact.
+	Asking *battle.Prompt
+	// Side is the half of the board this player is on in this battle, and Seed
+	// which battle it is. Both change between battles of a match, which is why
+	// they arrive on every reading rather than being set once.
+	Side hex.Side
+	Seed uint64
+	// Refusal is the name of the latest protocol refusal, empty when there has
+	// been none. → PlayScreen.LiveRefusal for why it is a name.
+	Refusal string
 }
 
 // begin builds the battle from the pairing in front and runs it up to the
 // player's first decision.
 func (p PlayScreen) begin(c Context) PlayScreen {
+	if p.Live {
+		return p
+	}
 	p.Fight, p.Tags, p.Names = nil, nil, nil
 	p.Roster = nil
 	p.Events, p.Script, p.Pending = nil, nil, nil
@@ -366,10 +524,36 @@ func (p PlayScreen) undo(c Context) PlayScreen {
 // back the field's own command — the cursor blink — which is why the skill form
 // answers with three; this screen has no field on it at all, so there is nothing
 // to carry and an Action says the whole of what it wants.
+//
+// # The live guards
+//
+// Six keys are answered differently, or not at all, when Live. Each guard is on
+// the key it turns off and there is exactly **one** of them per key, which is
+// the rule the "which guard masks" measurement in this repository asked for: a
+// second guard further down would mean deleting the first leaves every test
+// green.
+//
+//	n         another seed      ignored — a match's seeds are the room's
+//	u         undo              ignored — the opponent has already seen the
+//	                            events it would take back
+//	ctrl+s    save the log      ignored — Home and Away are empty in a match,
+//	                            and the room is what writes a match's log
+//	a         let it pick       ignored — it is a decision, and the decision is
+//	                            the player's
+//	enter/    take the turn     answered rather than taken: an Action, because
+//	space                       Mirror.Decide applies nothing and a local Act
+//	                            would step the battle twice
+//	p         pass              the same, with Acted false
+//
+// esc, ?, ↑/↓ and the log's own keys are unchanged: reading and scrolling touch
+// no turn, and a Back is still the client's to interpret.
 func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Action) {
 	// Saving is asked before the switch because it answers to more than one
 	// keystroke; IsSaveKey is the single declaration of which.
 	if IsSaveKey(message) {
+		if p.Live {
+			return p, Action{}
+		}
 		return p.save(c), Action{}
 	}
 	switch message.String() {
@@ -380,13 +564,16 @@ func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Acti
 		}
 		// One step back towards whoever raised this, which the client is what
 		// remembers: a screen may not name its own way out even while it has
-		// only one raiser.
+		// only one raiser. In a match the client turns it into leaving the
+		// match, which costs nothing by design — nobody forfeits.
 		return p, Action{Kind: Back}
 	case "n":
-		p.Seed++
-		p = p.begin(c)
+		if !p.Live {
+			p.Seed++
+			p = p.begin(c)
+		}
 	case "u":
-		if p.Fight != nil {
+		if p.Fight != nil && !p.Live {
 			p = p.undo(c)
 		}
 	// The log's own keys, and they are answered **here** rather than under the
@@ -412,7 +599,10 @@ func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Acti
 	case "pgdown", "]":
 		p = p.scrollLog(c, 1)
 	}
-	if p.Pending == nil {
+	if p.Pending == nil || (p.Live && p.Answered) {
+		// A live screen that has answered is between turns as far as the player
+		// is concerned: the decision has gone, and offering the same one again
+		// is a key the screen would have to ignore. → the Answered field.
 		return p, Action{}
 	}
 	switch message.String() {
@@ -435,11 +625,17 @@ func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Acti
 			return p, Action{Kind: Raise, Target: Blurb, Subject: p.Subject()}
 		}
 	case "enter", "space":
+		if p.Live {
+			return p.answer(c)
+		}
 		p = p.choose(c)
 	case "a":
 		// The engine's own answer, taken as the player's: somebody who wants to
 		// see what it would do here should not have to guess it, and it lands in
 		// the script as a decision like any other.
+		if p.Live {
+			break
+		}
 		if err := p.engineOrder(p.Pending); err != nil {
 			p.Err = err
 		} else {
@@ -447,6 +643,12 @@ func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Acti
 			p = p.run()
 		}
 	case "p":
+		if p.Live {
+			// A pass carries no reason across the wire and none is invented
+			// here: battle.NoActionReason is the single declaration of one and
+			// the server is what records it, because the server writes the log.
+			return p.answering(), Action{Kind: Answer, Answer: PlayAnswer{Acted: false}}
+		}
 		if err := p.skip(p.Pending, ""); err != nil {
 			p.Err = err
 		} else {
@@ -455,6 +657,45 @@ func (p PlayScreen) Update(c Context, message tea.KeyPressMsg) (PlayScreen, Acti
 		}
 	}
 	return p, Action{}
+}
+
+// answer is choose on a battle this screen does not drive: the same two
+// questions, answered with an Action instead of with a call into the engine.
+//
+// It is a second method rather than a branch inside choose because the two
+// differ in what they *do* rather than in what they ask — choose steps the
+// battle and this one may not — and a single method with the step behind a flag
+// would put the one line that must never run on a live screen inside the one
+// that always runs.
+func (p PlayScreen) answer(c Context) (PlayScreen, Action) {
+	option := p.Pending.Options[Clamp(p.Option, 0, len(p.Pending.Options)-1)]
+	if !option.Available() || len(option.Aims) == 0 {
+		return p, Action{}
+	}
+	if !p.Aiming && len(option.Aims) > 1 {
+		p.Aiming, p.Aim = true, 0
+		return p, Action{}
+	}
+	aim := option.Aims[0]
+	if p.Aiming {
+		aim = option.Aims[Clamp(p.Aim, 0, len(option.Aims)-1)]
+	}
+	return p.answering(), Action{Kind: Answer, Answer: PlayAnswer{
+		Choice: battle.Choice{Skill: option.Skill, Aim: aim}, Acted: true,
+	}}
+}
+
+// answering records that this turn has been answered, which is what stops the
+// screen offering it a second time. Both a strike and a pass go through it, for
+// the reason record is the one place every local turn goes through.
+func (p PlayScreen) answering() PlayScreen {
+	p.Answered, p.Aiming = true, false
+	p.answeredUnit, p.answeredTurn = p.Pending.Unit, p.Pending.Turn
+	// A turn taken puts the reader back on the live tail, exactly as record
+	// does locally: somebody who scrolled back to read what happened and then
+	// acted would otherwise be reading a frame from before their own decision.
+	p.LogFollow, p.LogOffset = true, 0
+	return p
 }
 
 // move walks whichever of the two lists is in front.
@@ -897,6 +1138,17 @@ func (p PlayScreen) drawings(c Context) playDrawn {
 	case p.Fight.Finished():
 		drawn.tail = []string{c.Style.Emphasis.Render(p.ending(c))}
 		drawn.over = true
+	case p.Live && (p.Pending == nil || p.Answered):
+		// ⚠️ **One drawn row that the local screen does not have, and it is not
+		// decoration.** Locally an empty tail means "the engine's own units
+		// act", which resolves in microseconds; in a match it is the other
+		// player thinking, for up to the whole allowance, and a screen with
+		// nothing where the moves go reads as frozen.
+		//
+		// It covers the answered turn as well as the empty one, because from
+		// this side of the wire they are one state: the decision has gone and
+		// the board is waiting on the other end. → the Answered field.
+		drawn.tail = []string{c.Style.Dim.Render(c.Text(i18n.PlayLiveWaiting))}
 	case p.Pending != nil:
 		drawn.tail = drawnRows(p.Choices(c))
 	}
@@ -905,7 +1157,33 @@ func (p PlayScreen) drawings(c Context) playDrawn {
 	drawn.order = c.Style.Dim.Render(tui.Order(p.Fight.Queue(), p.Tags, 6))
 	drawn.log = p.LogRows(c)
 	drawn.notes = p.Wrote(c)
+	// ⚠️ **A live battle's notes slot is the refusal**, and the two cannot both
+	// be there: a live screen never saves — Home and Away are empty in a match
+	// and the room is what writes a match's log — so Wrote is nil on that path
+	// and this is not a section being displaced. It is the notes slot rather
+	// than a reserved row because a refusal is the answer to something that just
+	// happened, exactly as a save's note is, and because the budget already
+	// knows how to drop it when the window is too short.
+	if refused := p.refusalRows(c); len(refused) > 0 {
+		drawn.notes = refused
+	}
 	return drawn
+}
+
+// refusalRows is the protocol refusal a live battle was sent, worded by the
+// language book off the name the client handed over.
+func (p PlayScreen) refusalRows(c Context) []string {
+	if !p.Live || p.LiveRefusal == "" {
+		return nil
+	}
+	var out []string
+	// Wrapped against MinWidth rather than the window in hand, for the reason
+	// Wrote is: measuring the real terminal gives one sentence two shapes and
+	// leaves the width sweep nothing to hold.
+	for _, line := range WrapWords(c.Lang.Refusal(p.LiveRefusal), MinWidth-1) {
+		out = append(out, c.Style.Bad.Render(line))
+	}
+	return out
 }
 
 // sizes is what each section would spend if it were drawn whole.
@@ -920,21 +1198,43 @@ func (d playDrawn) sizes() playSizes {
 	}
 }
 
+// ⚠️ **The three live footers are second wordings and not the local ones with
+// clauses deleted.** Context.Footer already states why for the authoring pair:
+// dropping a clause out of a rendered line leaves the separators either side of
+// it and nothing measures what is left. A live battle names neither `u`, `n` nor
+// the save key and gains nothing, so they are shorter than the local three —
+// which is a reason to measure them rather than a reason not to.
 func (p PlayScreen) View(c Context) (string, string) {
 	footer := c.Text(i18n.PlayFooter, SaveKeyLabel())
+	if p.Live {
+		footer = c.Text(i18n.PlayLiveFooter)
+	}
 	if p.Aiming {
 		footer = c.Text(i18n.PlayAimFooter)
+		if p.Live {
+			footer = c.Text(i18n.PlayLiveAimFooter)
+		}
 	}
 	if p.Err != nil {
 		return p.heading(c, "") + "\n\n  " + c.Style.Bad.Render(c.Lang.Error(p.Err)), footer
 	}
 	if p.Fight == nil {
+		// A live screen with no battle is between battles of a match, not a
+		// client with an empty catalogue: saying a side has to be built there
+		// would be this screen answering a question nobody asked.
+		if p.Live {
+			return p.heading(c, "") + "\n\n  " +
+				c.Style.Dim.Render(c.Text(i18n.PlayLiveWaiting)), footer
+		}
 		return p.heading(c, "") + "\n\n  " + c.Text(i18n.SquadsEmpty), footer
 	}
 
 	drawn := p.drawings(c)
 	if drawn.over {
 		footer = c.Text(i18n.PlayOverFooter, SaveKeyLabel())
+		if p.Live {
+			footer = c.Text(i18n.PlayLiveOverFooter)
+		}
 	}
 	sizes := drawn.sizes()
 	plan := playFit(PlayBodyRoom(c.Height), sizes)

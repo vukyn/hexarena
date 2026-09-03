@@ -683,4 +683,50 @@ q hoặc ctrl+c để thoát`,
 	// Dạng đang xem của một nhánh, có mấy dạng, và phím để đổi. Cặp ngoặc nhọn
 	// lấy đúng của ô chọn bên màn dựng đội, để ai đã gặp ở đó thì đọc ra ngay.
 	FormChoice: "dạng  < %s >  %d/%d, bấm s để đổi",
+	// Hai chỗ ngồi trong phòng. → keys.go, vì sao chúng được dịch chứ không in
+	// thẳng cái id ra.
+	SeatHost:  "chủ phòng",
+	SeatGuest: "khách",
+
+	// Phòng chờ và trận đấu qua mạng. Người đọc những dòng này đang đứng trước
+	// một màn hình không có gì khác, nên mỗi dòng nói cả chuyện gì đang xảy ra
+	// lẫn phải làm gì tiếp.
+	GameMenuJoin:       "vào phòng đấu",
+	GameMenuJoinDetail: "gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ",
+
+	JoinHeading:             "vào phòng đấu",
+	JoinCodeLabel:           "mã phòng",
+	JoinCodePlaceholder:     "12 chữ và số",
+	JoinPasswordLabel:       "mật khẩu",
+	JoinPasswordPlaceholder: "bỏ trống nếu phòng không đặt",
+	JoinSquadLabel:          "đội mang theo",
+	JoinHint: "Mã phòng do máy mở phòng in ra, gồm 12 chữ và số. Mã đã mang sẵn địa chỉ máy đó nên " +
+		"không cần hỏi gì thêm.",
+	JoinNoSquad:    "chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng",
+	JoinCodeLength: "mã phòng phải đúng %d ký tự, mã vừa gõ có %d",
+	JoinDataEdited: "Dữ liệu trong thư mục đang mở khác với dữ liệu nhúng trong bản build này. Trận sẽ " +
+		"đánh bằng bản nhúng, nên những gì vừa sửa ngoài kia không vào trận.",
+	JoinDialling: "đang gọi phòng %s",
+	JoinRefused:  "phòng không cho vào:",
+	JoinFooter:   "tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại",
+
+	WaitingHeading: "đang chờ người thứ hai",
+	WaitingForPeer: "Đã vào phòng. Trận bắt đầu ngay khi người kia ngồi vào chỗ còn lại, không phải bấm gì thêm.",
+	WaitingRoom:    "mã phòng %s",
+	WaitingSeat:    "chỗ ngồi %s",
+	WaitingFormat:  "%s, %d trận, mỗi lượt %d giây",
+	WaitingFooter:  "ctrl+l English · esc rời phòng",
+
+	ResultHeading:    "trận đấu đã xong",
+	ResultStanding:   "tỉ số %d - %d",
+	ResultBattleLine: "trận %d: %s",
+	ResultWon:        "thắng",
+	ResultLost:       "thua",
+	ResultDrawn:      "hoà",
+	ResultFooter:     "ctrl+l English · esc quay lại",
+
+	PlayLiveWaiting:    "đang chờ bên kia đi",
+	PlayLiveFooter:     "↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận",
+	PlayLiveAimFooter:  "↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác",
+	PlayLiveOverFooter: "[/] cuộn · esc xem kết quả",
 }

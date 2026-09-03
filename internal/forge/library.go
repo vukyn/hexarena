@@ -21,6 +21,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
+	"github.com/vukyn/hexarena/internal/seed"
 )
 
 // DefaultDataDir is where the game's own data lives, relative to the module
@@ -250,6 +251,39 @@ func Load(dir string) (*Library, error) {
 
 // Dir is the directory the books were read from and will be written back to.
 func (l *Library) Dir() string { return l.dir }
+
+// MatchesEmbeddedData reports whether the files in this library's directory
+// digest to the same fingerprint as the copy the binary embeds.
+//
+// ⚠️ **It exists because a PvP client is a mirror and the gate promises
+// identical data.** wire.Version's digest is over the **embedded** files, so a
+// client that built its battle from an edited --data directory would pass a gate
+// that promised the two peers would simulate the same battle and then fight a
+// different one — a divergence on turn one, reported correctly and
+// confusingly. The client therefore plays a match on seed.Books() whatever
+// --data says, and this is what lets it *tell the reader so* only when the two
+// really differ. A --data pointing at an unmodified copy is the common case, and
+// a warning there would be noise on every join.
+//
+// ⚠️ **The os.DirFS is here rather than in internal/seed**, and that is the
+// layer rule rather than convenience: this package is the one part of the module
+// allowed to touch a real file, seed reads the embedded copy and nothing else,
+// and seed.DigestOf takes an fs.FS precisely so the split can hold.
+//
+// An unreadable directory is **not** a difference: it is reported as an error,
+// because "these two disagree" and "this could not be read" are different
+// things to say to a player and only one of them is about the data.
+func (l *Library) MatchesEmbeddedData() (bool, error) {
+	embedded, err := seed.DataDigest()
+	if err != nil {
+		return false, err
+	}
+	here, err := seed.DigestOf(os.DirFS(l.dir))
+	if err != nil {
+		return false, err
+	}
+	return here == embedded, nil
+}
 
 // Rules, Limits, Chart, Skills, Origins, Archetypes and Characters hand out the
 // loaded books. They are read-only from a caller's side: the book types copy

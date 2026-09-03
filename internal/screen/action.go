@@ -3,6 +3,7 @@ package screen
 import (
 	"fmt"
 
+	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
 
@@ -112,6 +113,27 @@ type Action struct {
 	// client calls Raise, which is exactly the division the ten raise sites
 	// already had when they all lived in one binary.
 	Picker *PickState
+
+	// Answer is the decision an Answer carries, and it is the pair
+	// battle.Chooser returns rather than a vocabulary of this package's own.
+	Answer PlayAnswer
+}
+
+// PlayAnswer is a decision taken on a battle this screen does not drive: the
+// choice, and whether the turn was spent at all.
+//
+// ⚠️ **It is exactly battle.Chooser's return pair, deliberately.** A client
+// hands it to the chooser unchanged and socket.Mirror.Decide is what turns it
+// into a wire.Act or a wire.Pass — including the rule that a pass carries no
+// reason, which lives on battle.Decision and may not be restated. A second
+// vocabulary for a decision would be the two-callers-wording-one-choice mistake
+// CLAUDE.md § *Mistakes already made here* records, at the other end of the
+// wire.
+type PlayAnswer struct {
+	// Choice is the skill and the cell, and is the zero value for a pass.
+	Choice battle.Choice
+	// Acted is false for a pass, which is the same false a chooser returns.
+	Acted bool
 }
 
 // Subject is what a raise is about: the thing the screen being raised is being
@@ -295,6 +317,24 @@ const (
 	// destination the answer belongs to, and the client's only job is to keep it
 	// while it is open. There is no map from Pick to anything.
 	Pick
+	// Answer is a decision this screen has taken on a battle it does **not**
+	// drive: a live PlayScreen, whose engine belongs to a socket.Mirror and
+	// whose turns are the server's to apply.
+	//
+	// ⚠️ **It is the seventh Kind because none of the six can say it.** Nothing
+	// is navigated to (not Raise), nothing is asked (not Ask), no list is opened
+	// (not Pick), and Stay would swallow it.
+	//
+	// ⚠️ **Carrying it as a field under Stay was considered and refused**, even
+	// though that is exactly the Picker precedent one type up. The difference is
+	// what a dropped one looks like: a dropped Picker opens no list, which a
+	// reader sees at once, while a dropped Answer looks precisely like a turn
+	// nobody has got round to resolving yet — the opponent is thinking, or the
+	// engine is between turns. Swallowing the one keystroke a battle is about,
+	// invisibly, is the failure KindCount exists to make loud, so it gets a
+	// Kind and both clients owe it an arm. cmd/hexforge-tui's is one line
+	// saying it draws PlayScreen in local mode only.
+	Answer
 )
 
 // KindCount is how many Kind values are declared, Stay included.
@@ -310,15 +350,16 @@ const (
 // cannot prove it is handled *right*, which #207, #214, #216 and #218 each
 // measured again. Every kind therefore has a behaviour test that presses the
 // real key beside its entry in the walk.
-const KindCount = int(Pick) + 1
+const KindCount = int(Answer) + 1
 
 var kindNames = [KindCount]string{
-	Stay:  "stay",
-	Back:  "back",
-	Quit:  "quit",
-	Raise: "raise",
-	Ask:   "ask",
-	Pick:  "pick",
+	Stay:   "stay",
+	Back:   "back",
+	Quit:   "quit",
+	Raise:  "raise",
+	Ask:    "ask",
+	Pick:   "pick",
+	Answer: "answer",
 }
 
 // String names a Kind for a diagnostic, and nothing draws it — the same shape,

@@ -339,7 +339,7 @@ func TestBothPlayersAreAnnouncedAsTheyJoin(t *testing.T) {
 	// printing "somebody joined" for a stranger who was turned away would be
 	// printing the opposite of what happened.
 	if _, err := Dial(context.Background(), code,
-		hello(t, theGuestSquad(t, dependencies.Characters), "third", ""), dependencies.Books, Timings{}); err == nil {
+		hello(t, theGuestSquad(t, dependencies.Characters), "third", ""), dependencies.Books, ClientOptions{}); err == nil {
 		t.Fatal("a third client joined a room with two seats")
 	}
 	select {
