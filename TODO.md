@@ -1468,22 +1468,54 @@ is only so the shape is readable.
       `WrappedIn` row on the same pane — was lengthened to 198 cells as a mutation
       and both sweeps went red on *the a forked detail pane screen in vi draws a
       line 198 cells wide, over the 119 it has*.
-      **(a′)** ⚠️ **The claim this entry used to make about the form row is
-      false, and the mutation is what disproved it.** It said "the wording itself
-      is measured anyway … the preview and blurb entries put it in front of the
-      floor". They draw it, but no sweep *measures* it: the row's value is a stage
-      name (`dạng < Poliwrath > 1/2, bấm s để đổi`), every stage name is in
-      `freeText`, and `carriesFreeText` matches on a 20-byte opening — so
-      `i18n.FormChoice` lengthened to 155 cells leaves **both** clients' width
-      sweeps green in all three forked entries. The same accident exempts the
-      forked pane's 181-cell **kit-ids** row, which contains
-      `submission[Poliwrath]`. Neither is a hole in a promise — the ids row is
-      data and would be exempt on purpose — but both are exemptions **by
-      accident**, which is the shape `traitCarriers`' own comment warns about: an
-      exemption that survives only while a fork marker is spelled a certain way.
-      The fix is to narrow what a stage name may exempt (a name is a *cell*, not a
-      line), which touches every screen that draws one and is why it is filed here
-      rather than taken on the way past. **(b)** `cmd/hexforge/new.go`'s `--levels` print
+      ~~**(a′)** ⚠️ **The claim this entry used to make about the form row is
+      false, and the mutation is what disproved it.** … The fix is to narrow what
+      a stage name may exempt (a name is a *cell*, not a line).~~ **DONE.**
+      `freeText` is split in two in both clients' fixtures. **Prose** — a
+      biography, an origin's or a species' note, a build's intent, the library
+      directory — keeps the line exemption `carriesFreeText` always gave it,
+      because a paragraph really is the whole row. A **name** — `character.Name`,
+      `stage.Name`, `origin.Title`, `built.Name`, and the arena client's
+      `squad.Name`/`squad.ID` — moves to `freeNames`, and `withoutNames` takes it
+      *out of the line* so the wording either side of it is still measured.
+      Longest first, because `Mew` is a shipped form name and a substring of
+      `Mewtwo`, and stripping the short one first would leave `two` behind to be
+      measured as though the program had written it.
+      **Red-before-green, as four mutations on disk.** `i18n.FormChoice` at 155
+      cells now reddens **both** clients in all three forked entries — *the a
+      forked detail pane screen in vi draws a line 157 cells wide, over the 119 it
+      has*, printing `dạng  <  >  …` with the form name gone, which is the row the
+      old exemption swallowed whole. `BudgetPierced` lengthened is still red, at
+      197 cells, so nothing regressed. A **116-cell form name** and a **99-cell
+      character name** injected into the fixture leave both sweeps green — a name
+      has no promised length, and that is the behaviour being kept.
+      **The kit-ids row is now exempt by kind.** `kitIDs` is `kitGlosses`' twin
+      beside it, covering both of the pane's `UnlockSummaryAt` rows — the kit and
+      the traits — at every level either can change at, since the summary prints a
+      gate only while it is still ahead and `carriesFreeText` matches on an
+      opening. Dropping `kitIDs` reddens both clients in **both** languages (*156
+      cells* in vi, *153* in en), so it and not a form name is what holds that row
+      now; the traits row goes in beside it because it is the same call on the
+      other learnset, not because it fits today.
+      ⚠️ **The strip's cost is measured, not asserted.** Nothing knows *where* on
+      a row a name was drawn, so a name occurring inside ordinary wording is taken
+      out of that too — an error that only ever runs one way, since the remainder
+      is shorter than what was drawn and can therefore hide a breach but never
+      invent one. Over every line of every screen of both clients in both
+      languages: `kitIDs` newly skips **3 lines** per language in `hexarena-tui`
+      and **2** in `hexforge-tui`, every one of them an id row; the strip touches
+      70–142 measured lines; the most any one line gives up is **33 cells** — the
+      stage-summary row, four form names on one line — leaving 39 cells of program
+      wording still measured; and it takes **0** lines anywhere from over the
+      floor to under it, so it is at present hiding nothing. No minimum name
+      length is imposed: one would cost more than it bought, because `Mew` left
+      out of the strip means the Mewtwo pane is measured with its own name on the
+      row, which is a failure *invented* out of authored data. The number to watch
+      as the books grow is that rescued-line count, not a name's length.
+      **No golden moved**, in any of the eight packages `make golden` covers,
+      which is what a test-only change should cost. Nothing legitimate was hiding
+      behind a name: closing the hole caught no over-long wording.
+      **(b)** `cmd/hexforge/new.go`'s `--levels` print
       still resolves with `progression.Furthest` and prints the refusal as that
       row's value, then carries on — it is a one-shot print with nowhere to hold a
       choice, so the honest fix there is a row **per arm** rather than the
@@ -1504,7 +1536,9 @@ is only so the shape is readable.
       `cmd/hexforge-tui/tui_test.go` (`ontoTheFork`), the three
       `testdata/screens.golden`, `CLAUDE.md` § the squad builder and § the
       description screen; and for (a), `cmd/hexforge-tui/language_test.go` and
-      `cmd/hexarena-tui/{sweep,fixture}_test.go` (`kitGlosses`).
+      `cmd/hexarena-tui/{sweep,fixture}_test.go` (`kitGlosses`); and for (a′), the
+      same three files (`freeText`/`freeNames`/`withoutNames`/`kitIDs`, and the
+      width, language and gloss-leak sweeps in each).
 - [x] ⚠️ **A saturating multiplier is re-narrowed one line downstream. DONE.**
       The question this asked first — carry a saturated multiplier, or refuse it
       where it is produced — is **answered by this file's own § Decided against**:

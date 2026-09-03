@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -749,6 +750,7 @@ func TestEveryScreenRendersInBothLanguages(t *testing.T) {
 	for _, test := range cases {
 		base, lib, _ := start(t, test.lang)
 		free := freeText(lib)
+		names := freeNames(lib)
 		spoken := make(map[string]bool)
 		for name, m := range everyScreen(t, base) {
 			drawn := m.screenContent()
@@ -762,6 +764,11 @@ func TestEveryScreenRendersInBothLanguages(t *testing.T) {
 				if carriesFreeText(line, free) {
 					continue
 				}
+				// A name is taken out rather than exempting the line it sits on,
+				// which is freeNames' whole point: an English word inside an
+				// authored name is the author's, and the wording around it is
+				// still the program's to translate.
+				line = withoutNames(line, names)
 				for _, marker := range test.unwant {
 					if strings.Contains(line, marker) {
 						t.Errorf("the %s screen in %s still says %q:\n%s",
@@ -783,24 +790,29 @@ func TestEveryScreenRendersInBothLanguages(t *testing.T) {
 	}
 }
 
-// freeText is everything on screen that belongs to the data rather than to the
-// program: biographies, notes, and the directory the books were read from.
+// freeText is the authored **prose** on screen: biographies, notes, intents, and
+// the directory the books were read from — text that takes a whole line, and
+// whose line therefore has no length the program can promise.
+//
+// ⚠️ **Prose only. A name is in freeNames and exempts its own cell instead.**
+// The two used to be one list, and because carriesFreeText exempts the *line* a
+// value sits on, a row like `dạng < Poliwrath > 1/2, bấm s để đổi` was skipped
+// whole: the stage name in the middle of it bought the program's wording around
+// it an exemption it had not earned. i18n.FormChoice could be lengthened to 155
+// cells with both clients' width sweeps still green. Prose keeps the line
+// exemption because a paragraph really is the whole row; a name gives up only the
+// cells it occupies, and the wording either side of it stays measured.
 func freeText(lib *forge.Library) []string {
 	free := []string{lib.Dir()}
 	for _, character := range lib.Characters().All() {
 		if character.Bio != "" {
 			free = append(free, character.Bio)
 		}
-		free = append(free, character.Name)
-		for _, stage := range forge.StageFacts(character) {
-			free = append(free, stage.Name)
-		}
 	}
 	for _, origin := range lib.Origins().All() {
 		if origin.Note != "" {
 			free = append(free, origin.Note)
 		}
-		free = append(free, origin.Title)
 	}
 	// A species' note is authored prose like a biography or an origin's, and the
 	// species reference prints it whole in both languages.
@@ -816,13 +828,11 @@ func freeText(lib *forge.Library) []string {
 			free = append(free, kind.Note)
 		}
 	}
-	// A build's name and its intent are authored in the catalogue, and the intent
-	// is printed in both languages for the reason a species' note is: a name has an
-	// id to fall back to and prose has nothing, so dropping it would leave the row
-	// empty rather than untranslated. Both go in, because the Vietnamese screen
-	// draws the name as well.
+	// A build's intent is authored in the catalogue, and it is printed in both
+	// languages for the reason a species' note is: a name has an id to fall back
+	// to and prose has nothing, so dropping it would leave the row empty rather
+	// than untranslated. The build's *name* is a name, and is in freeNames.
 	for _, built := range lib.Builds() {
-		free = append(free, built.Name)
 		if built.Intent != "" {
 			free = append(free, built.Intent)
 		}
@@ -830,10 +840,87 @@ func freeText(lib *forge.Library) []string {
 	// A kit is a list of authored skill ids, so the rows that show one — the
 	// archetype chooser and the kit field — are as long as the data makes them.
 	// They are clipped like a biography rather than wrapped.
+	//
+	// A data row rather than prose, so by kind it belongs beside kitIDs. It is
+	// here instead because it has to be exempt in the **language** sweep as well,
+	// and the data-cell lists are added to the width sweep only: a row of English
+	// skill ids on a Vietnamese screen is the data speaking, not a wording left
+	// untranslated.
 	for _, preset := range lib.Archetypes().All() {
 		free = append(free, strings.Join(forge.PresetFacts(preset).Skills, " "))
 	}
 	return free
+}
+
+// freeNames is every authored **name** on screen: a character's, a form's, an
+// origin's title, a build's.
+//
+// freeText's other half, and the one difference that matters is what it exempts.
+// A name is a **cell inside a measured row** — `dạng < Poliwrath > 1/2, bấm s để
+// đổi` is one authored word with the program's own wording either side of it — so
+// withoutNames takes the name out and the sweep measures what is left. A row
+// carrying a long authored name then costs exactly that name's width and keeps
+// its promise about everything else on it.
+//
+// **Longest first**, which withoutNames relies on: `Mew` is a shipped stage name
+// and a substring of `Mewtwo`, and stripping the short one first would leave
+// `two` behind to be measured as though the program had written it.
+//
+// ⚠️ **A name can be a substring of ordinary wording, and that costs measuring
+// power rather than correctness.** Nothing here knows *where* on the row a name
+// was drawn, so a name that also occurs inside a sentence is taken out of the
+// sentence too. The error only ever runs one way: the remainder is shorter than
+// what was drawn, so the strip can **hide** a breach and can never invent one.
+//
+// **Measured rather than argued**, over every line of every screen of both
+// clients in both languages. The shortest shipped name is `Mew`, three cells, and
+// no name is taken out of more lines than the rows that name it. The most any one
+// line gives up is 33 cells — the stage-summary row, which is four form names on
+// one line — and 39 cells of program wording are still measured on it. And the
+// figure that decides the question: the strip takes **no** line anywhere from over
+// the floor to under it, so it is at present hiding nothing at all.
+//
+// So no minimum length is imposed, and a floor would cost more than it bought:
+// `Mew` left out of the strip means the Mewtwo pane is measured with its own name
+// on the row, which is a **failure invented** out of authored data — the one
+// direction this must not go. If a future book names a form after a common word,
+// the number to watch is that rescued-line count, not the name's length.
+func freeNames(lib *forge.Library) []string {
+	var names []string
+	for _, character := range lib.Characters().All() {
+		names = append(names, character.Name)
+		for _, stage := range forge.StageFacts(character) {
+			names = append(names, stage.Name)
+		}
+	}
+	for _, origin := range lib.Origins().All() {
+		names = append(names, origin.Title)
+	}
+	for _, built := range lib.Builds() {
+		names = append(names, built.Name)
+	}
+	slices.SortFunc(names, func(a, b string) int {
+		if len(a) != len(b) {
+			return len(b) - len(a)
+		}
+		return strings.Compare(a, b)
+	})
+	return names
+}
+
+// withoutNames is the line with the authored names taken out of it, so that what
+// is measured is the program's own wording.
+//
+// names must be longest first — freeNames is its only source and sorts there,
+// because the order is a property of the list rather than of any one call.
+func withoutNames(line string, names []string) string {
+	for _, name := range names {
+		if name == "" {
+			continue
+		}
+		line = strings.ReplaceAll(line, name, "")
+	}
+	return line
 }
 
 // whoMayCarry is the restriction column of the skills listing, for every skill
@@ -907,6 +994,54 @@ func kitGlosses(lang i18n.Lang, lib *forge.Library) []string {
 	for _, character := range lib.Characters().All() {
 		if glossed := lang.GlossedKit(lib.KitSkills(cast.LearnedIDs(character.Skills))); glossed != "" {
 			out = append(out, glossed)
+		}
+	}
+	return out
+}
+
+// kitIDs is the pair of id rows on the cast browser's detail pane — the kit and
+// the traits — for every character in the book, at every level either of them
+// changes at.
+//
+// kitGlosses' twin one row up, and exempt for the same reason: the cell is the
+// authored ids of a character's own learnset, sixteen of them on
+// pokemon.poliwag, and no length the program can promise is on the row at all. It
+// is wrapped like the glossed row under it, so the floor is the wrong question to
+// ask it for the same arithmetic reason recorded there.
+//
+// ⚠️ **It exists so that the row is exempt by kind rather than by accident.** The
+// forked pane's kit row is 181 cells and used to pass the width sweep because it
+// happens to contain `submission[Poliwrath]` and every form name used to exempt
+// its whole line — an exemption that would have gone the day a form was renamed,
+// which is exactly the failure traitCarriers records having lived through. The
+// traits row goes in beside it because it is the same call on the other
+// learnset, not because it is long today: a column exempted by length is a column
+// waiting for the next row.
+//
+// **Levels, because UnlockSummaryAt is read from one.** The summary prints a gate
+// only while it is still ahead, so the string changes as the level is walked, and
+// carriesFreeText recognises a value by its opening. It can only change at a
+// level some entry unlocks at, so those levels and level one are the whole set —
+// enumerated rather than sampled, so a fixture that walks to a new level does not
+// quietly stop matching.
+func kitIDs(lib *forge.Library) []string {
+	var out []string
+	for _, character := range lib.Characters().All() {
+		learnsets := [][]cast.Unlock{character.Skills, character.Passives}
+		levels := []int{1}
+		for _, learnset := range learnsets {
+			for _, entry := range learnset {
+				if !slices.Contains(levels, entry.AtLevel) {
+					levels = append(levels, entry.AtLevel)
+				}
+			}
+		}
+		for _, level := range levels {
+			for _, learnset := range learnsets {
+				if summary := forge.UnlockSummaryAt(learnset, level); summary != "" {
+					out = append(out, summary)
+				}
+			}
 		}
 	}
 	return out
@@ -1163,6 +1298,8 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 		free := append(freeText(lib), whoMayCarry(lang, lib)...)
 		free = append(free, traitCarriers(lib)...)
 		free = append(free, kitGlosses(lang, lib)...)
+		free = append(free, kitIDs(lib)...)
+		names := freeNames(lib)
 		for name, m := range everyScreen(t, base) {
 			m.width, m.height = 200, 60
 			// The picker's detail column is per-screen, so it joins the two
@@ -1190,9 +1327,14 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 				if strings.TrimSpace(ansi.Strip(line)) == "" {
 					continue
 				}
-				if width := lipgloss.Width(line); width > drawable {
+				// An authored name is a cell rather than a line, so it is taken
+				// out and the wording around it is still measured. What is
+				// reported is the remainder, because the remainder is what the
+				// number counts.
+				wording := withoutNames(line, names)
+				if width := lipgloss.Width(wording); width > drawable {
 					t.Errorf("the %s screen in %s draws a line %d cells wide, over the %d it has:\n%s",
-						name, lang, width, drawable, line)
+						name, lang, width, drawable, wording)
 				}
 			}
 		}
@@ -1702,6 +1844,10 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 	// could not tell the two apart, so the first Vietnamese note put on screen
 	// failed here for the wrong reason.
 	free := freeText(lib)
+	// An authored name is taken out of the line rather than exempting it: a
+	// character's or a form's name is the author's word, but the row it sits on
+	// is still a row this is hunting a leaked gloss in.
+	authored := freeNames(lib)
 	for name, screen := range everyScreen(t, english) {
 		screen.width, screen.height = 200, 60
 		drawn := screen.screenContent()
@@ -1709,6 +1855,7 @@ func TestTheScreensGlossEveryDataName(t *testing.T) {
 			if carriesFreeText(line, free) || partOfFreeText(line, free) {
 				continue
 			}
+			line = withoutNames(line, authored)
 			for _, unwanted := range names {
 				if unwanted != "" && strings.Contains(line, unwanted) {
 					t.Errorf("the %s screen in English holds the gloss %q:\n%s",

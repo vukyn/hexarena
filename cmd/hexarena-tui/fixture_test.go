@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -344,14 +345,23 @@ func quits(command tea.Cmd) bool {
 	return isQuit
 }
 
-// freeText is everything on screen that belongs to the data rather than to the
-// program: biographies, notes, names, and the directory the books were read
-// from.
+// freeText is the authored **prose** on screen: biographies, notes, and the
+// directory the books were read from — text that takes a whole line, and whose
+// line therefore has no length the program can promise.
 //
 // A width or a translation sweep may not measure any of it. A biography is
 // English in cast.json and will still be English on a Vietnamese screen — it is
 // the author's prose, not the program's — and a path is as long as whoever filed
 // the art made it, which is exactly why frame clips rather than promises.
+//
+// ⚠️ **Prose only. A name is in freeNames and exempts its own cell instead.**
+// The two used to be one list, and because carriesFreeText exempts the *line* a
+// value sits on, a row like `dạng < Poliwrath > 1/2, bấm s để đổi` was skipped
+// whole: the stage name in the middle of it bought the program's wording around
+// it an exemption it had not earned. i18n.FormChoice could be lengthened to 155
+// cells with both clients' width sweeps still green. Prose keeps the line
+// exemption because a paragraph really is the whole row; a name gives up only the
+// cells it occupies, and the wording either side of it stays measured.
 //
 // It is the authoring client's list of the same name with the entries this
 // client cannot draw taken out, and it is a copy for the reason the fixture
@@ -362,30 +372,93 @@ func freeText(lib *forge.Library) []string {
 		if character.Bio != "" {
 			free = append(free, character.Bio)
 		}
-		free = append(free, character.Name)
-		for _, stage := range forge.StageFacts(character) {
-			free = append(free, stage.Name)
-		}
 	}
 	for _, origin := range lib.Origins().All() {
 		if origin.Note != "" {
 			free = append(free, origin.Note)
 		}
-		free = append(free, origin.Title)
 	}
 	for _, kind := range lib.Species().All() {
 		if kind.Note != "" {
 			free = append(free, kind.Note)
 		}
 	}
+	return free
+}
+
+// freeNames is every authored **name** on screen: a character's, a form's, an
+// origin's title, and the name and id of a side.
+//
+// freeText's other half, and the one difference that matters is what it exempts.
+// A name is a **cell inside a measured row** — `dạng < Poliwrath > 1/2, bấm s để
+// đổi` is one authored word with the program's own wording either side of it — so
+// withoutNames takes the name out and the sweep measures what is left. A row
+// carrying a long authored name then costs exactly that name's width and keeps
+// its promise about everything else on it.
+//
+// **Longest first**, which withoutNames relies on: `Mew` is a shipped stage name
+// and a substring of `Mewtwo`, and stripping the short one first would leave
+// `two` behind to be measured as though the program had written it.
+//
+// ⚠️ **A name can be a substring of ordinary wording, and that costs measuring
+// power rather than correctness.** Nothing here knows *where* on the row a name
+// was drawn, so a name that also occurs inside a sentence is taken out of the
+// sentence too. The error only ever runs one way: the remainder is shorter than
+// what was drawn, so the strip can **hide** a breach and can never invent one.
+//
+// **Measured rather than argued**, over every line of every screen of both
+// clients in both languages. The shortest shipped name is `Mew`, three cells, and
+// no name is taken out of more lines than the rows that name it. The most any one
+// line gives up is 33 cells — the stage-summary row, which is four form names on
+// one line — and 39 cells of program wording are still measured on it. And the
+// figure that decides the question: the strip takes **no** line anywhere from over
+// the floor to under it, so it is at present hiding nothing at all.
+//
+// So no minimum length is imposed, and a floor would cost more than it bought:
+// `Mew` left out of the strip means the Mewtwo pane is measured with its own name
+// on the row, which is a **failure invented** out of authored data — the one
+// direction this must not go. If a future book names a form after a common word,
+// the number to watch is that rescued-line count, not the name's length.
+func freeNames(lib *forge.Library) []string {
+	var names []string
+	for _, character := range lib.Characters().All() {
+		names = append(names, character.Name)
+		for _, stage := range forge.StageFacts(character) {
+			names = append(names, stage.Name)
+		}
+	}
+	for _, origin := range lib.Origins().All() {
+		names = append(names, origin.Title)
+	}
 	// A side's own name and id are authored in squads.json — by the other
 	// front-end, which is the whole point of this client reading the file — so a
 	// catalogue row and a battle's own file name are as long as whoever built the
 	// side made them.
 	for _, squad := range lib.Squads() {
-		free = append(free, squad.Name, squad.ID)
+		names = append(names, squad.Name, squad.ID)
 	}
-	return free
+	slices.SortFunc(names, func(a, b string) int {
+		if len(a) != len(b) {
+			return len(b) - len(a)
+		}
+		return strings.Compare(a, b)
+	})
+	return names
+}
+
+// withoutNames is the line with the authored names taken out of it, so that what
+// is measured is the program's own wording.
+//
+// names must be longest first — freeNames is its only source and sorts there,
+// because the order is a property of the list rather than of any one call.
+func withoutNames(line string, names []string) string {
+	for _, name := range names {
+		if name == "" {
+			continue
+		}
+		line = strings.ReplaceAll(line, name, "")
+	}
+	return line
 }
 
 // whoMayCarry is the restriction column of the skills listing, for every skill
@@ -448,6 +521,54 @@ func kitGlosses(lang i18n.Lang, lib *forge.Library) []string {
 	for _, character := range lib.Characters().All() {
 		if glossed := lang.GlossedKit(lib.KitSkills(cast.LearnedIDs(character.Skills))); glossed != "" {
 			out = append(out, glossed)
+		}
+	}
+	return out
+}
+
+// kitIDs is the pair of id rows on the cast browser's detail pane — the kit and
+// the traits — for every character in the book, at every level either of them
+// changes at.
+//
+// kitGlosses' twin one row up, and exempt for the same reason: the cell is the
+// authored ids of a character's own learnset, sixteen of them on
+// pokemon.poliwag, and no length the program can promise is on the row at all. It
+// is wrapped like the glossed row under it, so the floor is the wrong question to
+// ask it for the same arithmetic reason recorded there.
+//
+// ⚠️ **It exists so that the row is exempt by kind rather than by accident.** The
+// forked pane's kit row is 181 cells and used to pass the width sweep because it
+// happens to contain `submission[Poliwrath]` and every form name used to exempt
+// its whole line — an exemption that would have gone the day a form was renamed,
+// which is exactly the failure traitCarriers records having lived through. The
+// traits row goes in beside it because it is the same call on the other
+// learnset, not because it is long today: a column exempted by length is a column
+// waiting for the next row.
+//
+// **Levels, because UnlockSummaryAt is read from one.** The summary prints a gate
+// only while it is still ahead, so the string changes as the level is walked, and
+// carriesFreeText recognises a value by its opening. It can only change at a
+// level some entry unlocks at, so those levels and level one are the whole set —
+// enumerated rather than sampled, so a fixture that walks to a new level does not
+// quietly stop matching.
+func kitIDs(lib *forge.Library) []string {
+	var out []string
+	for _, character := range lib.Characters().All() {
+		learnsets := [][]cast.Unlock{character.Skills, character.Passives}
+		levels := []int{1}
+		for _, learnset := range learnsets {
+			for _, entry := range learnset {
+				if !slices.Contains(levels, entry.AtLevel) {
+					levels = append(levels, entry.AtLevel)
+				}
+			}
+		}
+		for _, level := range levels {
+			for _, learnset := range learnsets {
+				if summary := forge.UnlockSummaryAt(learnset, level); summary != "" {
+					out = append(out, summary)
+				}
+			}
 		}
 	}
 	return out

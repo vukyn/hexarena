@@ -558,6 +558,8 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 		free := append(freeText(lib), whoMayCarry(lang, lib)...)
 		free = append(free, traitCarriers(lib)...)
 		free = append(free, kitGlosses(lang, lib)...)
+		free = append(free, kitIDs(lib)...)
+		names := freeNames(lib)
 		for name, m := range everyScreen(t, base) {
 			m.width, m.height = 200, 60
 			for _, line := range strings.Split(m.screenContent(), "\n") {
@@ -580,9 +582,14 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 				if strings.TrimSpace(ansi.Strip(line)) == "" {
 					continue
 				}
-				if width := lipgloss.Width(line); width > drawable {
+				// An authored name is a cell rather than a line, so it is taken
+				// out and the wording around it is still measured. What is
+				// reported is the remainder, because the remainder is what the
+				// number counts.
+				wording := withoutNames(line, names)
+				if width := lipgloss.Width(wording); width > drawable {
 					t.Errorf("the %s screen in %s draws a line %d cells wide, over the %d it has:\n%s",
-						name, lang, width, drawable, line)
+						name, lang, width, drawable, wording)
 				}
 			}
 		}
@@ -646,6 +653,7 @@ func TestEveryScreenRendersInBothLanguages(t *testing.T) {
 	for _, test := range cases {
 		base, lib, _ := start(t, test.lang)
 		free := freeText(lib)
+		names := freeNames(lib)
 		spoken := make(map[string]bool)
 		for name, m := range everyScreen(t, base) {
 			drawn := m.screenContent()
@@ -659,6 +667,11 @@ func TestEveryScreenRendersInBothLanguages(t *testing.T) {
 				if carriesFreeText(line, free) || partOfFreeText(line, free) {
 					continue
 				}
+				// A name is taken out rather than exempting the line it sits on,
+				// which is freeNames' whole point: an English word inside an
+				// authored name is the author's, and the wording around it is
+				// still the program's to translate.
+				line = withoutNames(line, names)
 				for _, marker := range test.unwant {
 					if strings.Contains(line, marker) {
 						t.Errorf("the %s screen in %s still says %q:\n%s",
@@ -734,6 +747,10 @@ func TestNoScreenLeaksAGlossIntoTheWrongLanguage(t *testing.T) {
 		}
 	}
 	free := freeText(lib)
+	// An authored name is taken out of the line rather than exempting it: a
+	// character's or a form's name is the author's word, but the row it sits on
+	// is still a row this is hunting a leaked gloss in.
+	authored := freeNames(lib)
 	for name, m := range everyScreen(t, english) {
 		m.width, m.height = 200, 60
 		drawn := m.screenContent()
@@ -741,6 +758,7 @@ func TestNoScreenLeaksAGlossIntoTheWrongLanguage(t *testing.T) {
 			if carriesFreeText(line, free) || partOfFreeText(line, free) {
 				continue
 			}
+			line = withoutNames(line, authored)
 			for _, unwanted := range names {
 				if unwanted != "" && strings.Contains(line, unwanted) {
 					t.Errorf("the %s screen in English holds the gloss %q:\n%s", name, unwanted, line)
