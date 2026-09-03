@@ -224,6 +224,20 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	if forkedBlurb.screen != screenBlurb {
 		t.Fatalf("? on the forked row landed on screen %v", forkedBlurb.screen)
 	}
+	// And the pane the other two were raised from, which is the third read-only
+	// view and was the one left out. It is the same screen as "browse" above and
+	// shares most of its rows, but not the ones the fork decides: the chooser row
+	// naming the arm, the stage summary with two ends on it, and the art, trait
+	// and stat rows that read the arm in front rather than a single furthest form.
+	//
+	// ⚠️ **It stayed out because of the width sweep rather than because nobody
+	// thought of it.** The row of Vietnamese skill names under the kit is wrapped
+	// to the window, and this character's sixteen glossed skills are the first
+	// value in the shipped books long enough to fill it at the sweep's 200
+	// columns. kitGlosses is the exemption that lets the pane in, and it is the
+	// row's own value rather than a length: an exemption by length is a column
+	// waiting for the next row, which is what traitCarriers above records going
+	// wrong.
 	// The affinity chart, on the element whose description is longest: the rows
 	// are all one shape, so what varies is the pane below them.
 	elements := m.enter(screenElements)
@@ -399,6 +413,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"trait blurb":              traitBlurb,
 		"a forked art preview":     forkedPreview,
 		"a forked trait blurb":     forkedBlurb,
+		"a forked detail pane":     forked,
 		"check":                    m.enter(screenCheck),
 		"elements":                 elements,
 		"chart":                    graph,
@@ -865,6 +880,38 @@ func traitCarriers(lib *forge.Library) []string {
 	return out
 }
 
+// kitGlosses is the dim row of Vietnamese skill names under the kit on the cast
+// browser's detail pane, for every character in the book.
+//
+// whoMayCarry's third twin, exempt for the same reason: the cell is the names
+// the book gave a character's own skills, so it is as long as whoever wrote the
+// kit made it — sixteen of them on pokemon.poliwag — and no wording of the
+// program's is on the row at all. It is a separate list from the other two
+// because the three cells are built by different callers, and a single list of
+// "data cells" is a list nobody would remember to add to.
+//
+// ⚠️ **This row is wrapped rather than clipped, which is why the floor is the
+// wrong question to ask it.** WrappedIn spends UsableWidth() - 1 - 2 - width - 1,
+// so at the sweep's 200 columns the row fills 199 of them by construction and a
+// floor assertion over it would fail on data doing exactly what it should.
+// What holds that arithmetic instead is internal/screen's
+// TestAWrappedRowLeavesTheWindowsLastColumnEmpty, which measures the room rather
+// than the wording. Nothing else on the pane is exempted: the neighbouring dim
+// rows — the archetype's name, the element's, the species', the traits' and the
+// pierced-floor reading — are all still measured against the floor.
+//
+// It is empty in English, where GlossedKit draws nothing at all, so the English
+// sweep gives up nothing for it.
+func kitGlosses(lang i18n.Lang, lib *forge.Library) []string {
+	out := make([]string, 0, len(lib.Characters().All()))
+	for _, character := range lib.Characters().All() {
+		if glossed := lang.GlossedKit(lib.KitSkills(cast.LearnedIDs(character.Skills))); glossed != "" {
+			out = append(out, glossed)
+		}
+	}
+	return out
+}
+
 // pickerDetails is the detail column of whichever picker a screen is holding
 // open, for every row in it.
 //
@@ -1115,6 +1162,7 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 		base.width, base.height = 200, 60
 		free := append(freeText(lib), whoMayCarry(lang, lib)...)
 		free = append(free, traitCarriers(lib)...)
+		free = append(free, kitGlosses(lang, lib)...)
 		for name, m := range everyScreen(t, base) {
 			m.width, m.height = 200, 60
 			// The picker's detail column is per-screen, so it joins the two

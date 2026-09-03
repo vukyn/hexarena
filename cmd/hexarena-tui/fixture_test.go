@@ -421,6 +421,38 @@ func traitCarriers(lib *forge.Library) []string {
 	return out
 }
 
+// kitGlosses is the dim row of Vietnamese skill names under the kit on the cast
+// browser's detail pane, for every character in the book.
+//
+// whoMayCarry's third twin, exempt for the same reason: the cell is the names
+// the book gave a character's own skills, so it is as long as whoever wrote the
+// kit made it — sixteen of them on pokemon.poliwag — and no wording of the
+// program's is on the row at all. It is a separate list from the other two
+// because the three cells are built by different callers, and a single list of
+// "data cells" is a list nobody would remember to add to.
+//
+// ⚠️ **This row is wrapped rather than clipped, which is why the floor is the
+// wrong question to ask it.** WrappedIn spends UsableWidth() - 1 - 2 - width - 1,
+// so at the sweep's 200 columns the row fills 199 of them by construction and a
+// floor assertion over it would fail on data doing exactly what it should.
+// What holds that arithmetic instead is internal/screen's
+// TestAWrappedRowLeavesTheWindowsLastColumnEmpty, which measures the room rather
+// than the wording. Nothing else on the pane is exempted: the neighbouring dim
+// rows — the archetype's name, the element's, the species', the traits' and the
+// pierced-floor reading — are all still measured against the floor.
+//
+// It is empty in English, where GlossedKit draws nothing at all, so the English
+// sweep gives up nothing for it.
+func kitGlosses(lang i18n.Lang, lib *forge.Library) []string {
+	out := make([]string, 0, len(lib.Characters().All()))
+	for _, character := range lib.Characters().All() {
+		if glossed := lang.GlossedKit(lib.KitSkills(cast.LearnedIDs(character.Skills))); glossed != "" {
+			out = append(out, glossed)
+		}
+	}
+	return out
+}
+
 // carriesFreeText reports whether a line is showing authored text, which is not
 // the program's to translate or to keep inside a column.
 func carriesFreeText(line string, free []string) bool {

@@ -1448,15 +1448,42 @@ is only so the shape is readable.
       rows the preview is cut off"*.
 
       **Still not covered, stated rather than left to be discovered.**
-      **(a)** The **detail pane** on a forking character is in `internal/screen`'s
-      golden but in **neither client's sweep**: its glossed-kit row is data wrapped
-      to the window (`WrappedIn` spends `UsableWidth() - 1 - 2 - width - 1`), and
-      `pokemon.poliwag`'s sixteen glossed skills are the first value long enough to
-      wrap at the sweep's 200 columns — so registering it needs a `kitGlosses`
-      exemption, a twin of `whoMayCarry`/`traitCarriers`, in **both** client
-      fixtures. The wording itself is measured anyway: the form row is one shared
-      key drawn by one shared `FormRow`, and the preview and blurb entries put it
-      in front of the floor. **(b)** `cmd/hexforge/new.go`'s `--levels` print
+      ~~**(a)** The **detail pane** on a forking character is in
+      `internal/screen`'s golden but in **neither client's sweep**.~~ **DONE.**
+      `a forked detail pane` is now an entry in both clients' `everyScreen`
+      (`cmd/hexforge-tui/language_test.go`, `cmd/hexarena-tui/sweep_test.go`),
+      registered off the same `theForkedBrowser` the preview and blurb entries are
+      raised from — so the pane the fork actually decides (the chooser row, the
+      two-ended stage summary, and the art, trait and stat rows that read the arm
+      in front) now has a width test, a translation test and a leak test, and a
+      record in both client goldens. What let it in is `kitGlosses`, the
+      `whoMayCarry`/`traitCarriers` twin the entry above predicted, in both
+      fixtures. **Measured golden cost: +164 lines in each client record and 0
+      removed anywhere, `internal/screen`'s golden unmoved** — a pure insertion.
+      ⚠️ **The exemption is tight, measured rather than argued.** Across the whole
+      of both sweeps it newly skips exactly **two** lines, both of them the
+      glossed-kit row itself (the forked pane's 199-cell one and the ordinary
+      browser's 64-cell one), and **none at all in English**, where `GlossedKit`
+      draws nothing. Its nearest sibling — `BudgetPierced`, the other dim
+      `WrappedIn` row on the same pane — was lengthened to 198 cells as a mutation
+      and both sweeps went red on *the a forked detail pane screen in vi draws a
+      line 198 cells wide, over the 119 it has*.
+      **(a′)** ⚠️ **The claim this entry used to make about the form row is
+      false, and the mutation is what disproved it.** It said "the wording itself
+      is measured anyway … the preview and blurb entries put it in front of the
+      floor". They draw it, but no sweep *measures* it: the row's value is a stage
+      name (`dạng < Poliwrath > 1/2, bấm s để đổi`), every stage name is in
+      `freeText`, and `carriesFreeText` matches on a 20-byte opening — so
+      `i18n.FormChoice` lengthened to 155 cells leaves **both** clients' width
+      sweeps green in all three forked entries. The same accident exempts the
+      forked pane's 181-cell **kit-ids** row, which contains
+      `submission[Poliwrath]`. Neither is a hole in a promise — the ids row is
+      data and would be exempt on purpose — but both are exemptions **by
+      accident**, which is the shape `traitCarriers`' own comment warns about: an
+      exemption that survives only while a fork marker is spelled a certain way.
+      The fix is to narrow what a stage name may exempt (a name is a *cell*, not a
+      line), which touches every screen that draws one and is why it is filed here
+      rather than taken on the way past. **(b)** `cmd/hexforge/new.go`'s `--levels` print
       still resolves with `progression.Furthest` and prints the refusal as that
       row's value, then carries on — it is a one-shot print with nowhere to hold a
       choice, so the honest fix there is a row **per arm** rather than the
@@ -1476,7 +1503,8 @@ is only so the shape is readable.
       `internal/screen/form_test.go`, both clients' `fork_test.go`,
       `cmd/hexforge-tui/tui_test.go` (`ontoTheFork`), the three
       `testdata/screens.golden`, `CLAUDE.md` § the squad builder and § the
-      description screen.
+      description screen; and for (a), `cmd/hexforge-tui/language_test.go` and
+      `cmd/hexarena-tui/{sweep,fixture}_test.go` (`kitGlosses`).
 - [x] ⚠️ **A saturating multiplier is re-narrowed one line downstream. DONE.**
       The question this asked first — carry a saturated multiplier, or refuse it
       where it is produced — is **answered by this file's own § Decided against**:
