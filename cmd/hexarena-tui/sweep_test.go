@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/x/ansi"
 
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/placement"
@@ -110,6 +111,40 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	screens["a scrolled battle log"] = scrolledBack(t, m)
 	screens["a squeezed battle"] = squeezed(t, withAFullLog(t, m.enter(screenBattle)))
 	screens["a battle with no pairing"] = unpaired(t, m)
+	// The art preview, which is the one screen this client draws that is a picture
+	// rather than a sentence. Raised with the key that raises it, and at the level
+	// cap: the level decides which stage's art is drawn, so a preview left at the
+	// browser's opening level records the first form and nothing about a character
+	// that grows.
+	//
+	// ⚠️ **What this client's golden entry records is the framing, not the
+	// picture.** The fixture's art is testfixture.Art — a 16x16 solid rectangle —
+	// so the entry is a flat block of one ramp character, and what a diff over it
+	// says is where the drawing starts, how many rows the budget gave it and how
+	// wide it is. The *shape* is recorded once, in internal/screen's golden over
+	// the shipped cast. A flat fill also carries none of that record's
+	// same-machine caveat: a rectangle is a fill rather than a curve, so no
+	// transcendental is anywhere near it. It is still not nothing — a flat colour
+	// has a luminance, so the weights behind the ramp move this entry too.
+	//
+	// ⚠️ **The picture is exempt from the width sweep and nothing else about the
+	// screen is.** Every row of art is `usableWidth() - 2` cells wide by
+	// construction — draw.PreviewScreen asks for `UsableWidth() - 4` cells and
+	// writes one a pixel column after a two-space indent — so a floor assertion
+	// over it would pass on nothing it could ever fail. What this entry puts in
+	// front of the sweep is the wording around the picture: the heading, the
+	// art/level/stage line and the footer. aPictureRow tells the two apart.
+	preview := m.enter(screenCast)
+	preview.cast.Level = progression.LevelCap
+	preview = raisedFrom(t, preview, "p", screenPreview)
+	// And this entry's own discrimination: a character whose art is not on disk
+	// draws the missing-art line, which is a perfectly well-formed screen
+	// measuring none of the drawing.
+	if drawn := drawnBody(preview); strings.Contains(drawn, preview.text(i18n.ArtMissing)) {
+		t.Fatalf("the character in front has no art at the cap, so this records the "+
+			"missing-art line rather than a picture:\n%s", drawn)
+	}
+	screens["the art preview"] = preview
 	return screens
 }
 
@@ -366,12 +401,15 @@ func unpaired(t *testing.T, m model) model {
 // the walk below able to fail: without it the walk would either pass on a screen
 // nothing measures or would have to be relaxed into something that passes on any
 // map whatsoever.
-var notSwept = map[screen]string{
-	screenPreview: "the art preview draws rasterised art, so what a sweep entry would " +
-		"assert about it is an open question rather than an oversight — the same " +
-		"decision cmd/hexforge-tui's everyScreen and internal/screen's golden both " +
-		"take, and it is filed in TODO.md rather than settled here",
-}
+//
+// It is **empty**, and it has been exactly once non-empty: the art preview sat
+// here while what a sweep entry should assert about a *drawing* was an open
+// question. The answer turned out to be that the picture is exempt and the
+// wording around it is not — the drawing is `usableWidth() - 2` wide by
+// construction, so a floor has nothing to say about it — and the screen went into
+// everyScreen above. An entry added back here needs the same shape of argument:
+// what a sweep would measure, and why the answer is nothing.
+var notSwept = map[screen]string{}
 
 // TestEveryScreenThisClientDrawsIsSwept is the net TODO.md's five slipped
 // screens asked for.
@@ -447,6 +485,13 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 				if carriesFreeText(line, free) {
 					continue
 				}
+				// A row of the art preview's picture is a drawing rather than a
+				// wording: it is sized to the window it is drawn in, so it is as
+				// wide as this fixture's 200 columns by construction and there is
+				// nothing about it a floor could constrain.
+				if aPictureRow(line) {
+					continue
+				}
 				if width := lipgloss.Width(line); width > drawable {
 					t.Errorf("the %s screen in %s draws a line %d cells wide, over the %d it has:\n%s",
 						name, lang, width, drawable, line)
@@ -463,6 +508,28 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 			}
 		}
 	}
+}
+
+// aPictureRow reports whether a row is the art preview's drawing rather than
+// wording.
+//
+// Told apart by its alphabet rather than by its position: the picture is the only
+// thing on that screen made of nothing but the ramp and the two half blocks,
+// while every other row carries letters. draw.Ramp is exported for exactly this —
+// an alphabet written down twice is two alphabets, and a character added there
+// and not here turns a picture row into a wording row and quietly stops the width
+// sweep measuring anything.
+func aPictureRow(row string) bool {
+	plain := ansi.Strip(row)
+	if strings.TrimSpace(plain) == "" {
+		return false
+	}
+	for _, letter := range plain {
+		if !strings.ContainsRune(draw.Ramp, letter) && !strings.ContainsRune("▀▄", letter) {
+			return false
+		}
+	}
+	return true
 }
 
 // TestEveryScreenRendersInBothLanguages walks the whole program twice.

@@ -4722,7 +4722,18 @@ is the constraint each piece has to respect.
       cell leaves a reader adding it up.
       ⚠️ Adding a screen (or a *state* of one) to `hexforge-tui` means adding it to
       `everyScreen` in `language_test.go`, or every width and translation test skips
-      it in silence. Both blurb shapes are in it now; `screenPreview` still is not.
+      it in silence. Both blurb shapes are in it now, and `screenPreview` is too —
+      it was the fifth and last screen outside the sweeps, and it went into both
+      clients' `everyScreen` and into `everyMovedScreen` with a golden entry of its
+      own. ⚠️ **It is the one entry whose picture is exempt from the width sweep**:
+      a drawing is `usableWidth() - 2` wide by construction, so a floor has nothing
+      to say about it, and the sweeps tell art from wording by the ramp's alphabet
+      (`aPictureRow`). The wording around it — heading, the art/level/stage line,
+      the footer — takes the floor like every other sentence. ⚠️ **A golden is taken
+      under `NO_COLOR`, so it records `rampCell` and can never see `blockCell`**;
+      the coloured half is held by `TestEachPixelIsDrawnInItsOwnHalfOfTheCell` and
+      the ramp's weights by `TestTheRampWeighsGreenOverRedOverBlue`, both in
+      `internal/screen/preview_test.go`.
       **And the `nội tại` menu**, `screenPassives`: every *declared* trait with the
       description of the one under the cursor, which is the other question — `?`
       on the browser is filtered by a level, so a trait nobody has learned yet is

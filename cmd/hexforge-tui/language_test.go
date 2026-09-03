@@ -141,6 +141,50 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	traitBlurb.raisedFrom = screenBrowse
 	traitBlurb = traitBlurb.hand(traitBlurb.browse.Subject())
 	traitBlurb.screen = screenBlurb
+	// The art preview, which is the one screen in this map that draws a picture
+	// rather than a sentence.
+	//
+	// ⚠️ **Raised with the key that raises it, and at the level cap.** Assigning
+	// `screen = screenPreview` onto a model would be this test's idea of the
+	// screen rather than the one `p` reaches, which is the mistake the species
+	// picker above records; and the level decides which stage's art is drawn, so
+	// a preview left at the browser's opening level records the first form and
+	// nothing about a character that grows.
+	//
+	// ⚠️ **What this client's golden entry records is the framing, not the
+	// picture.** The fixture's art is testfixture.Art — a 16x16 solid rectangle —
+	// so the entry is a flat block of one ramp character, and what a diff over it
+	// says is where the drawing starts, how many rows the budget gave it and how
+	// wide it is. The *shape* is recorded once, in internal/screen's golden over
+	// the shipped cast. A flat fill also carries none of that record's
+	// same-machine caveat: a rectangle is a fill rather than a curve, so no
+	// transcendental is anywhere near it. It is still not nothing — a flat colour
+	// has a luminance, so the weights behind the ramp move this entry too.
+	//
+	// ⚠️ **The picture is exempt from the width sweep and nothing else about the
+	// screen is.** Every row of art is `usableWidth() - 2` cells wide by
+	// construction — `picture` asks for `UsableWidth() - 4` and `cellRows` writes
+	// one cell a pixel column after a two-space indent — so a floor assertion over
+	// it would pass on nothing it could ever fail, and
+	// TestNoDrawingIsEverWideEnoughToBeMarked is what holds that arithmetic
+	// instead. What this entry does put in front of the sweep is the screen's
+	// wording: the heading, the art/level/stage line and the footer, which take
+	// the floor like every other sentence. TestEveryWordingFitsTheMinimumWidth
+	// tells the two apart by the picture's alphabet, through aPictureRow.
+	artPreview := m.enter(screenBrowse)
+	artPreview.browse.Level = progression.LevelCap
+	artPreview = typeText(t, artPreview, "p")
+	if artPreview.screen != screenPreview {
+		t.Fatalf("p on the browser landed on screen %v, so the art preview is drawn by "+
+			"nothing in the sweep", artPreview.screen)
+	}
+	// And the fixture's own discrimination, which no assertion downstream can
+	// see: a character whose art is not on disk draws the missing-art line, which
+	// is a perfectly well-formed screen measuring none of the drawing.
+	if drawn := artPreview.screenContent(); strings.Contains(drawn, artPreview.text(i18n.ArtMissing)) {
+		t.Fatalf("the fixture character has no art at the cap, so this entry records the "+
+			"missing-art line rather than a picture:\n%s", drawn)
+	}
 	// The affinity chart, on the element whose description is longest: the rows
 	// are all one shape, so what varies is the pane below them.
 	elements := m.enter(screenElements)
@@ -312,6 +356,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"species picker":           speciesPick,
 		"origins picker":           originsPick,
 		"skill blurb":              skillBlurb,
+		"the art preview":          artPreview,
 		"trait blurb":              traitBlurb,
 		"check":                    m.enter(screenCheck),
 		"elements":                 elements,
@@ -1002,6 +1047,14 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 			exempt := append(append([]string{}, free...), pickerDetails(m)...)
 			for _, line := range strings.Split(m.screenContent(), "\n") {
 				if carriesFreeText(line, exempt) {
+					continue
+				}
+				// A row of the art preview's picture is a drawing rather than a
+				// wording: it is sized to the window it is drawn in, so it is as
+				// wide as this fixture's 200 columns by construction and there is
+				// nothing about it a floor could constrain. What keeps it inside
+				// the window it *is* given is TestNoDrawingIsEverWideEnoughToBeMarked.
+				if aPictureRow(line) {
 					continue
 				}
 				if width := lipgloss.Width(line); width > drawable {

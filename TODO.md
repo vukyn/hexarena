@@ -1300,48 +1300,99 @@ is only so the shape is readable.
       → `internal/core/skill/skill.go` (`resolveGradient`),
       `internal/forge/weigh.go` (`WeighField`).
 
-- [ ] **The art preview is outside every sweep there is.** It is not in
-      `everyScreen` (`cmd/hexforge-tui/language_test.go`) and not in
-      `everyMovedScreen` (`internal/screen/screens_golden_test.go`), so it has
-      **no width test, no translation test, no leak test and no golden entry**.
-      ⚠️ This is the **fifth** instance of a shape `CLAUDE.md` records having been
-      made four times — after `plainTerminal`, `playScreen`, the species picker
-      and the skill filter's states — and it is the one instance that has been
-      *known* the whole time: the `CLAUDE.md` line describing the trait blurb
-      already admits it ("Both blurb shapes are in it now; `screenPreview` still
-      is not") and nobody filed it. The screen draws art, so it is also the one
-      screen where a width test would be measuring a drawing rather than a
-      sentence; decide what the entry asserts before adding it, or it will pass on
-      nothing. It moved to `screen.PreviewScreen` in the describer step and the
-      question moved with it unchanged.
+- [x] ⚠️ **The art preview was outside every sweep there is. DONE.** It is
+      registered now in **all three**: `everyScreen` in cmd/hexforge-tui
+      (`language_test.go`), `everyScreen` in cmd/hexarena-tui (`sweep_test.go`)
+      and `everyMovedScreen` in internal/screen — so the screen has the width,
+      translation, leak and read-only sweeps every other screen has, and a golden
+      entry in each of the three records. It was the **fifth and last** instance
+      of the shape `CLAUDE.md` records having been made four times, and the one
+      that had been *known* the whole time; cmd/hexarena-tui's `notSwept` is
+      **empty** now, since this was the single excuse in it.
 
-      **What is measured, so the decision has its input.** ⚠️ **The rasterised
-      art IS reproducible here**: the whole shipped cast previewed at the level
-      cap digests byte for byte identically across three separate `go test`
-      processes, in both the monochrome and the coloured drawing, and twice inside
-      one process off two separately loaded libraries. So a golden entry would be
-      **stable on this machine** — it is `internal/forge.rasteriseSVG` and nothing
-      in it reads a clock, a map or an environment.
-      ⚠️ **What is NOT measured is another architecture**, and there is a named
-      reason to doubt it rather than a general one: `rasterx` calls `math.Sin`
-      (15), `math.Cos` (10), `math.Atan2` (6), `math.Tan` (4) and `math.Sqrt`
-      (23). `Sqrt` is an IEEE-exact instruction, but the four transcendentals are
-      the family where Go's standard library has had per-architecture assembly, so
-      "same seed, same bytes, every machine" — the promise `internal/core` makes
-      and this repository's goldens rest on — is **not** established for a
-      drawing. Whether the shipped traced SVGs even reach an arc path is unknown;
-      they are `vtracer` output, which is beziers and polygons.
-      ⚠️ **And the size, measured before anybody argues about taste.** One
-      character, one language, monochrome: **19 lines / 2.0 KB** at 120x24 and
-      **55 lines / 8.4 KB** at 160x60. Coloured, the *same* 19 and 55 lines are
-      **14 KB** and **128 KB**, because every cell carries its own escape
-      sequence. So a plain-text entry is affordable and a coloured one is not —
-      which also means a golden taken under `NO_COLOR`, as both of them are,
-      would record the ramp and leave `blockCell` measured by nothing.
-      ⚠️ Today `internal/screen/preview_test.go` is the whole of what any suite
-      says about the drawing, and it only asserts *ink versus blank*: measured,
-      swapping the red and green luminance weights and swapping `▀` for `▄` each
-      left `go test ./...` **entirely green**.
+      **The decision: a plain-text golden, plus a property test for what a golden
+      cannot see.** Goldens here run under `NO_COLOR`, so the record is `rampCell`
+      — which is also the only affordable one: measured, one character in one
+      language is 19 lines / 2.0 KB at 120x24 and 55 lines / 8.4 KB at 160x60
+      plain, against **14 KB** and **128 KB** coloured, because every cell carries
+      its own truecolor sequence. Both windows are taken, for the reason every
+      other entry takes both: the floor is where `previewChrome` bites (`Height -
+      8` leaves 16 rows, so the art is rasterised into a 32-pixel box) and the
+      roomy size is the same picture with nothing taken away. **Measured cost:
+      +164 lines / ~21.2 KB in each of the three goldens, 0 lines removed** — a
+      pure insertion, nothing else moved.
+      ⚠️ **The three records do not hold the same thing, and that is the point.**
+      internal/screen's is over the **shipped** cast, so it records a shape
+      (`naruto.naruto` at the cap, `assets/naruto-sage-mode.svg`); both clients'
+      fixtures use `testfixture.Art`, a 16x16 solid rectangle, so theirs are a flat
+      block of one ramp character and what a diff over them says is the
+      **framing** — where the drawing starts, how many rows the budget gave it,
+      how wide it is. A flat fill also carries none of the shape record's
+      same-machine caveat: a rectangle is a fill rather than a curve.
+      ⚠️ **The shape record is a same-machine record, said in the test rather
+      than assumed.** The rasterisation is reproducible here — byte-identical
+      across separate `go test` processes, in both drawings, and twice in one
+      process off two separately loaded libraries — but `rasterx` calls
+      `math.Sin` (15), `Cos` (10), `Atan2` (6) and `Tan` (4), which is the family
+      Go has had per-architecture assembly for. So the entry's own **assertions**
+      are structural — that the rows are drawn out of `Ramp` and nothing else, and
+      that the widest is `UsableWidth() - 2` — and the pixel field is left to the
+      record, where a diff on another machine is a finding to read rather than a
+      gate that broke.
+
+      ⚠️ **The width question, answered: the picture is exempt and the wording is
+      not.** `CLAUDE.md` § the TUI width rule splits prose, which takes
+      `MinWidth`, from data, which takes `UsableWidth()` — and the art is neither.
+      `picture` asks for exactly `UsableWidth() - 4` cells and `cellRows` writes
+      one cell a pixel column after a two-space indent, so **every row is
+      `UsableWidth() - 2` wide by construction**, which at the sweep's own 200
+      columns is 198: an assertion against the floor there would either fail on
+      correct code or pass on nothing. So both clients' width sweeps skip the
+      picture rows by the ramp's alphabet (`aPictureRow`, which is why `Ramp` is
+      exported) and measure the heading, the art/level/stage line and the footer
+      like any other sentence. What holds the arithmetic instead is the test that
+      already existed for it, `TestNoDrawingIsEverWideEnoughToBeMarked`.
+
+      ⚠️ **What the two mutations proved, applied on disk and read back through
+      `git diff` rather than through a green run.** Both were `entirely green`
+      before this item; the whole suite was run once per mutation.
+      **Swapping `▀` for `▄`** in all three branches of `blockCell` reddens
+      **exactly one test in the repository**, `TestEachPixelIsDrawnInItsOwnHalfOfTheCell`,
+      with *"the top half alone: the cell's upper half is unpainted, want the top
+      pixel's 200;40;40"* and five more like it — **all three goldens stayed
+      green**, which is the entry's claim about `NO_COLOR` measured rather than
+      argued. The property is that the half a pixel is drawn in is the half it
+      came from: the cell is taken apart into (upper, lower) by reading the block
+      character — `▀` hangs the foreground above and the background below, `▄` the
+      other way round — so a swap moves a colour into the wrong half in every
+      branch. It needs no environment: `blockCell` builds a bare lipgloss style
+      rather than asking the Palette it is handed, so it writes truecolor whatever
+      the terminal is, and the fixture checks a cell has a sequence in it before
+      it reads one.
+      **Swapping the red and green weights** in `luminance` reddens **four**:
+      `TestTheRampWeighsGreenOverRedOverBlue` (*"the weights read green 76, red
+      149, blue 29"* and *"the ramp draws green at 7, red at 4 and blue at 8"*)
+      and all three goldens — including the flat-fill client ones, since a solid
+      colour still has a luminance and the block went from `+` to `*`. The
+      property is the ordering rather than the constants (green weighs most, blue
+      least) and it is asserted **through `rampCell` as well**, because the ramp
+      is inverted against the weight and an ordering that held on the number while
+      the inversion turned over would be a picture drawn inside out.
+
+      **Still not covered, stated rather than left to be discovered.** The
+      coloured drawing's **exact bytes**: `blockCell`'s output is measured
+      cell-by-cell as a property and by no record anywhere, so the *composition*
+      of a coloured picture — 128 KB a render — is deliberately unrecorded. And
+      **another architecture**: the shape record is same-machine, for the named
+      reason above. Whether the shipped traced SVGs even reach an arc path is
+      still unknown; they are `vtracer` output, which is beziers and polygons.
+      → `internal/screen/preview_test.go`
+      (`TestTheRampWeighsGreenOverRedOverBlue`,
+      `TestEachPixelIsDrawnInItsOwnHalfOfTheCell`, `halvesOf`),
+      `internal/screen/screens_golden_test.go` (`theArtPreview`, `aRampRow`),
+      `cmd/hexforge-tui/language_test.go`, `cmd/hexarena-tui/sweep_test.go`
+      (`aPictureRow`, `notSwept` emptied), the three `testdata/screens.golden`,
+      `CLAUDE.md` § the description screen.
 - [x] ⚠️ **A saturating multiplier is re-narrowed one line downstream. DONE.**
       The question this asked first — carry a saturated multiplier, or refuse it
       where it is produced — is **answered by this file's own § Decided against**:
