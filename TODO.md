@@ -1121,7 +1121,147 @@ is only so the shape is readable.
             both languages.
 
       **Later, deliberately**
-      - [ ] Spectators, which the cursor above makes nearly free.
+      - [ ] **Spectators**, which the cursor above makes nearly free — the
+            *reading* half is already built and the *seating* half is not.
+            **Done already, and it is the expensive half**: `battle.Since` over
+            an append-only record, so the two players, a spectator who joined
+            halfway and the log writer each read the whole battle at their own
+            pace. `Drain` used to empty the buffer, which is why only one
+            consumer could exist; replacing it was the prerequisite and it
+            landed in #236.
+            **Not built**: anything that seats one. Three twos are in the way,
+            and each is written down where it is —
+            `internal/room/series.go` `seatCount = 2`,
+            `internal/socket/table.go` `seatsPerTable = 2`, and
+            `internal/wire` offering `SeatHost` and `SeatGuest` and nothing
+            else. `internal/room/registry.go` already says which layer owns the
+            change: *"a third seat is a room change, not a registry one"*.
+            ⚠️ **A spectator must not be a third seat, and the reason is not
+            tidiness — a third seat would change who wins.** `seatCount`'s own
+            comment says why the seats are an array rather than a map: **the
+            order the two seats are visited in reaches the roster, and the
+            roster's order decides which side wins a speed tie.** So a watcher
+            threaded through the same structure as the players shifts that
+            order, and the battle it is watching is not the battle that would
+            have been fought. Nothing in the suite would catch it: the roster
+            would still be legal, the digests would still agree between two
+            peers who both had the spectator, and only a comparison against a
+            match played *without* one would show it. A spectator therefore has
+            to be a different kind of citizen — it takes `wire.Start` and every
+            `wire.Turn` through a cursor of its own, its `Deliver` is refused
+            outright, and it does not exist to `seats`, to the roster or to
+            `other()`. `internal/room/result.go` already flags the last of
+            those: `other()` stops being "the other one" the day a room holds
+            spectators.
+            ⚠️ It also needs a **decision about the room code**: the code a
+            spectator pastes is the same twelve characters a player pastes, so
+            either the room hands out a second kind of code or a joiner says
+            which it means. The second is cheaper and is a wire change, not a
+            code change.
+      - [ ] **Ban and pick, and a spectator watching it.** Before a match, the
+            two sides take turns banning a character and picking one, out of a
+            **shared pool**, so a 3v3 fields six different characters and a 5v5
+            ten. A pick carries the character **and its skills**. A spectator
+            watches the draft as well as the battle.
+            ⚠️ **The cast is too small for a 5v5 draft, measured: this is a
+            content prerequisite and no amount of code fixes it.** Twelve
+            characters ship and **ten** of them have an authored build. Ten
+            picks is the whole of the built cast, so a 5v5 draft has room for
+            **nought bans** — and two bans only if the two characters with no
+            build are drafted anyway. 3v3 is comfortable: six picks leaves room
+            for four bans on the built cast, six if the pool is the full twelve.
+            So either 5v5 drafting waits for more cast, or the draft is 3v3-only
+            and says so.
+            ⚠️ **It contradicts a decision this file records as settled, and the
+            contradiction is fine but must be written down rather than
+            discovered.** *"One squad may field the same character twice"* is
+            decided **yes** above. A shared exclusive pool forbids it by
+            construction. Both can hold — a *saved* squad may double up, a
+            *drafted* one cannot, because the pool is what a draft is — but the
+            rule then has a scope where today it has none, and
+            `squadIsFieldable` is where that scope has to be legible. Note that
+            the measurement taken in #268 weakens the case for doubling up
+            anyway: three copies of one character is the **weakest** squad
+            available, about 11% across both arrangements.
+            ⚠️ **The draft is a second state machine with the same shape as the
+            first, and the temptation is to write it differently.** It is a
+            sequence of decisions over messages, with a timeout that is an
+            **input** rather than a clock, exactly like `internal/room` — so it
+            belongs beside it under the same bans, and a draft that read a clock
+            or iterated a map would break the same contract for the same reason.
+            The good news is that the mirror trick transfers whole: a draft is a
+            pure function of the decisions taken, so a client can replay it and
+            the server needs to send only the decisions. And what a finished
+            draft produces is **two rosters**, which is what `wire.Start`
+            already carries — so nothing downstream of the draft changes.
+            ⚠️ **A spectator watching a draft needs a record the draft does not
+            have.** The battle's append-only record is what lets a late joiner
+            catch up; a draft has no `battle.Battle`, so it owes its own — the
+            same append-only-plus-cursor shape, or a spectator can only ever
+            join a draft at the start.
+            **Settled by the author, 2026-09-04:**
+            **(a) A pick takes the character, then its loadout — either a build
+            already in `builds.json` or one made on the spot.** Both paths, and
+            `cast.ChooseLoadout` stays the single loadout rule for both, so the
+            draft adds a *chooser* rather than a second legality rule. The
+            on-the-spot path is the squad builder's own screen reached from
+            inside the draft, which is why the pick is two decisions and not one:
+            the character leaves the pool the moment it is taken, and the loadout
+            follows.
+            **(b) Three bans a side, mirrored.**
+            **(c) A pick that runs out of time cancels the whole room** — no
+            auto-pick, no default. The match starts over from a new code. This is
+            the one place the design does *not* follow "a timeout announces and
+            passes"; it is a draft, and a side that never picked has no squad to
+            fight with.
+            **(d) A ban lasts the match, and the first cut is bo1 only.** Ban and
+            pick for a bo3 is its own item below, because "per match" in a series
+            is a different game: three drafts, or one draft and two rematches on
+            it, is a design decision and not a parameter.
+            **(e) The pool is every character that is not held back** —
+            `cast.Character.Hidden`, which already exists and which
+            `internal/screen/squads.go` already honours *for exactly this
+            reason*: it is choosing who fights. ⚠️ Note the flag's own comment
+            calls it "an authoring convenience rather than a design statement",
+            and a draft gate makes it a design statement; and note
+            `internal/screen/picker.go`'s warning that one other list offers held
+            back characters **on purpose**, so "filter Hidden everywhere" is
+            wrong.
+            **Bans are optional** — a side may leave all three slots unspent.
+
+            ⚠️ **THE NUMBERS DO NOT FIT, MEASURED, AND THIS IS THE FIRST THING
+            TO SETTLE.** The pool today is **eleven**, not twelve:
+            `naruto.naruto` already carries `hidden: true`. Against eleven:
+
+                3v3, 6 bans (3 a side): 6 picks + 6 bans = 12 of 11 — IMPOSSIBLE
+                3v3, 4 bans:            6 + 4 = 10 of 11 — last pick sees 2
+                3v3, 2 bans:            6 + 2 =  8 of 11 — last pick sees 4
+                5v5, 0 bans:           10 + 0 = 10 of 11 — last pick sees 2
+                5v5, any bans:                            — IMPOSSIBLE
+
+            So a 3v3 draft in which **both sides spend all three bans cannot
+            complete**, and because bans are optional that is not a
+            configuration error caught at the start but a room that runs out of
+            characters partway through. Four ways out, and it is the author's
+            call: fewer bans; **more cast** (two more characters make three bans
+            a side fit with one to spare, and unhiding naruto alone still leaves
+            the last pick with exactly one candidate, which is not a decision);
+            a per-room pool that can be larger than the shipped cast; or a rule
+            that a ban is refused once the remaining pool would not seat both
+            sides — which is the cheapest, and which turns "impossible" into "the
+            third ban is greyed out", but which also means the third ban is a
+            slot that sometimes is not there.
+            ⚠️ **The last pick is not a decision whenever slack is nought**, and
+            slack is `pool - picks - bans`. Worth drawing on the screen: a draft
+            whose final pick has one candidate should say so rather than present
+            a list of one.
+      - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
+            "a ban lasts the match" is ambiguous in a series and the ambiguity is
+            a design decision rather than a parameter: three drafts, one draft
+            carried across all three battles, or a draft per battle with the
+            previous winner banning first. Each is a different game. ⚠️ And the
+            arithmetic above gets worse per repetition if the pool does not
+            reset.
       - [ ] mDNS room browsing, so a client can list rooms with no code at all.
       - [ ] A chess clock — a budget per player rather than per turn.
       - [ ] Prove the mirror across architectures: the same seed and the same
@@ -1129,6 +1269,18 @@ is only so the shape is readable.
             this is the assumption the whole design rests on.
       - [ ] Read the balance again at 3v3. The screened formation was tuned at
             five a side, and a shorter board leaves a summon more free slots.
+            ⚠️ **Five a side is held back until this is done** — `hexarena-host`
+            refuses `-format 5`, which is the only place in the repository a
+            format is chosen. `wire.Format5v5` stays valid **on the wire** on
+            purpose: taking it out of `Format.Valid` would be a protocol change,
+            and two peers have to keep agreeing about what the field can hold
+            whichever is a version ahead. `TestFiveASideIsHeldBackHereAndNowhereElse`
+            asserts both halves, because a test for the refusal alone would go
+            green the day somebody deleted the constant.
+            The second reason is the draft: ten picks out of a pool of eleven
+            leaves room for no bans at all, so a 5v5 ban-and-pick cannot be
+            seated either. Lifting the hold-back wants both — the numbers read on
+            this board, and enough cast to draft on it.
 
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
