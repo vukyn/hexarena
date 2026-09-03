@@ -1026,7 +1026,7 @@
     {
       "id": "body_slam",
       "name": "lấy thịt đè người",
-      "flavour": "Lấy đà rồi ném trọn sức nặng vào kẻ đứng trước mặt",
+      "flavour": "Chạy lấy đà rồi húc thẳng vào kẻ thù trước mặt",
       "element": "neutral",
       "range": 1,
       "pattern": "single",
@@ -1051,7 +1051,7 @@
     {
       "id": "pummel",
       "name": "đánh dồn dập",
-      "flavour": "Đòn nối đòn dồn xuống một chỗ, không chừa lấy một nhịp hở",
+      "flavour": "Đánh dồn dập vào kẻ thù đến mức không kịp thở",
       "element": "neutral",
       "range": 1,
       "pattern": "single",
@@ -1069,7 +1069,7 @@
     {
       "id": "submission",
       "name": "khoá siết",
-      "flavour": "Khoá chặt lấy đối thủ rồi siết tới lúc thế thủ vỡ ra",
+      "flavour": "Khoá chặt lấy đối thủ rồi siết tới lúc nghẹt thở",
       "element": "neutral",
       "range": 1,
       "pattern": "single",
@@ -1130,7 +1130,7 @@
     {
       "id": "cross_chop",
       "name": "đòn chéo",
-      "flavour": "Vung hết đà theo một đường chéo, dồn cả người vào chỗ đòn rơi",
+      "flavour": "Vung tay chém chéo xuống, dồn cả sức nặng vào một nhát",
       "element": "neutral",
       "range": 1,
       "pattern": "single",
@@ -1148,7 +1148,7 @@
     {
       "id": "vital_throw",
       "name": "đòn vật",
-      "flavour": "Bắt lấy đối thủ, xoay nửa vòng, rồi quăng ngược trở lại theo đà vừa lao tới",
+      "flavour": "Bắt lấy đối thủ, xoay nửa vòng, rồi quăng ngược trở lại",
       "element": "neutral",
       "range": 1,
       "pattern": "single",
@@ -1166,7 +1166,7 @@
     {
       "id": "inner_focus",
       "name": "tụ khí",
-      "flavour": "Đứng yên một nhịp, thu hết tâm trí về một điểm trước mặt",
+      "flavour": "Đứng yên một chỗ, hít thở đều và tập trung vào một mục tiêu duy nhất",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -1313,7 +1313,7 @@
     {
       "id": "rinse",
       "name": "gột sạch",
-      "flavour": "Dội một vòng nước lên đồng đội, thứ gì bám trên người đều trôi theo",
+      "flavour": "Dội nước lên đồng đội, thứ gì bám trên người đều trôi theo",
       "element": "water",
       "range": 1,
       "pattern": "single",
@@ -1364,7 +1364,7 @@
     {
       "id": "thunder_shock",
       "name": "chích điện",
-      "flavour": "Một luồng nhỏ chạy qua người kẻ đối diện, chạy xong vẫn còn vướng lại ở đó",
+      "flavour": "Một luồng điện chạy qua người kẻ đối diện, chạy xong vẫn còn dư âm tê tê cả người",
       "element": "electric",
       "range": 2,
       "pattern": "single",
@@ -1419,7 +1419,7 @@
     {
       "id": "thunderbolt",
       "name": "sấm sét",
-      "flavour": "Cả khoảng không sáng trắng lên một nhịp rồi tối lại, chỗ vừa sáng chẳng còn gì nguyên vẹn",
+      "flavour": "Cả khoảng không sáng trắng lên một khoảnh khắc rồi tối lại, mọi thứ xung quanh chẳng còn gì nguyên vẹn",
       "element": "electric",
       "range": 2,
       "pattern": "single",
@@ -1449,8 +1449,8 @@
     },
     {
       "id": "flash_cannon",
-      "name": "pháo kim",
-      "flavour": "Gom ánh kim lại trong lòng rồi bắn ra thành một tia trắng xoá, thứ gì hứng trọn cũng vỡ ra một mảng",
+      "name": "pháo quang",
+      "flavour": "Gom ánh kim lại trong lòng rồi bắn ra thành một tia trắng xoá, thứ gì hứng trọn cũng tan tành",
       "element": "metal",
       "range": 3,
       "pattern": "single",
@@ -1504,8 +1504,8 @@
     },
     {
       "id": "metal_sound",
-      "name": "âm kim",
-      "flavour": "Cọ kim loại vào kim loại, thứ tiếng rít ra khiến kẻ nghe quên mất phải giữ mình",
+      "name": "két két",
+      "flavour": "Cọ thanh kim loại này vào thanh kim loại kia, thứ tiếng rít ra khiến kẻ nghe mất đi sự bình tĩnh",
       "element": "metal",
       "range": 2,
       "pattern": "flank_up",
@@ -1573,7 +1573,7 @@
     {
       "id": "zap_cannon",
       "name": "pháo điện",
-      "flavour": "Nén dòng lại thành một khối rồi bắn đi; khối ấy đi chậm và đi thẳng, ai né kịp thì né",
+      "flavour": "Nén dòng điện lại thành một khối rồi bắn đi; khối ấy đi chậm và đi thẳng, ai né kịp thì né",
       "element": "electric",
       "range": 3,
       "pattern": "single",
@@ -1598,7 +1598,7 @@
     {
       "id": "charge_beam",
       "name": "tia tích điện",
-      "flavour": "Một tia mảnh rọi tới rồi ở lại, ngấm vào người kẻ đối diện và không chịu tan đi",
+      "flavour": "Một tia nhỏ rọi tới rồi ở lại, ngấm vào người kẻ đối diện và không chịu tan đi",
       "element": "electric",
       "range": 2,
       "pattern": "single",
@@ -1623,7 +1623,7 @@
     {
       "id": "magnetise",
       "name": "từ hoá",
-      "flavour": "Kéo cả một dải không khí thành từ trường, ai đứng trong đó cũng dính theo",
+      "flavour": "Khiến cho một khu vực xung quanh nhiễm từ, ai đứng trong đó đều bị nhiễm điện",
       "element": "electric",
       "range": 2,
       "pattern": "column",
@@ -1648,7 +1648,7 @@
     {
       "id": "electro_ball",
       "name": "cầu điện",
-      "flavour": "Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chạm vào ai đang sẵn dòng là cả vùng sáng lên",
+      "flavour": "Vận thành một quả cầu điện rồi thả cho nó lăn tới; chạm vào ai đang nhiễm điện là cả vùng sáng lên",
       "element": "electric",
       "range": 2,
       "pattern": "single",
@@ -1674,7 +1674,7 @@
     {
       "id": "spark",
       "name": "tia chớp",
-      "flavour": "Chớp một cái vào một chỗ, rồi có khi chớp thêm cái nữa, rồi lại cái nữa",
+      "flavour": "Chớp một cái, rồi có khi chớp thêm cái nữa, rồi lại cái nữa",
       "element": "electric",
       "range": 1,
       "pattern": "single",
@@ -1702,7 +1702,7 @@
     {
       "id": "overload",
       "name": "quá tải",
-      "flavour": "Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng không còn gì đứng lại",
+      "flavour": "Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng khủng khiếp",
       "element": "electric",
       "range": 2,
       "pattern": "single",
