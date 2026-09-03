@@ -1,4 +1,4 @@
-// Package wire is the PvP protocol: the seven messages two peers exchange, the
+// Package wire is the PvP protocol: the eight messages two peers exchange, the
 // three version numbers they check before they start, and the codes a refusal is
 // reported in. It is the format and nothing else — no room, no socket, no I/O,
 // not one read of a clock.
@@ -45,11 +45,12 @@ import (
 	"fmt"
 )
 
-// Kind names which of the seven messages an envelope carries.
+// Kind names which of the eight messages an envelope carries.
 //
-// Three go from a client to a server and four come back. There are deliberately
+// Three go from a client to a server and five come back. There are deliberately
 // no others: see the note on Turn for the series-standing message that is
-// missing on purpose.
+// missing on purpose, and the note on Closed for why the one server-side ending
+// message is not one kind per way a match can end.
 type Kind uint8
 
 const (
@@ -75,12 +76,17 @@ const (
 	// KindTurn is one resolved turn: the decision that was taken and the digest
 	// of the events it produced, which is what makes a divergence loud on the
 	// turn it happens rather than a board that quietly drifts.
+	KindTurn
+	// KindClosed is the room saying the match is over for a reason the board
+	// cannot show — today a peer that went away, as a Closure and nothing else.
+	// See Closed for why an ending a client can compute for itself gets no
+	// message at all.
 	//
 	// Declared last, which is the rule this enum shares with battle.Kind: a kind
 	// serialises by name, so appending cannot reinterpret anything already
 	// written, while slotting one in beside KindAct would move KindCount and
 	// every table built from declaration order.
-	KindTurn
+	KindClosed
 )
 
 // KindCount is the number of message kinds.
@@ -90,7 +96,7 @@ const (
 // decoder or without a golden entry is then a red test rather than a message
 // nothing measures — the shape cmd/hexarena-tui's screenCount established after
 // five screens slipped into the authoring client unmeasured.
-const KindCount = int(KindTurn) + 1
+const KindCount = int(KindClosed) + 1
 
 // kindNames is the wire form of every kind. It is the format: renaming an entry
 // here breaks every peer built before the rename, which is why a rename is a
@@ -103,6 +109,7 @@ var kindNames = [KindCount]string{
 	KindRefused: "refused",
 	KindStart:   "start",
 	KindTurn:    "turn",
+	KindClosed:  "closed",
 }
 
 func (k Kind) String() string {
@@ -137,7 +144,7 @@ func (k *Kind) UnmarshalJSON(raw []byte) error {
 	return fmt.Errorf("unknown message kind %q", name)
 }
 
-// Body is one of the seven message bodies, and the interface exists for exactly
+// Body is one of the eight message bodies, and the interface exists for exactly
 // one reason: it makes the pairing of a kind with a body a property of the type
 // rather than of whoever remembered to set the field. Encode never takes a kind.
 type Body interface {
@@ -148,7 +155,7 @@ type Body interface {
 // Envelope is what actually crosses the connection: a named kind and the body,
 // still raw.
 //
-// One connection carries all seven, so the reader has to know what it is holding
+// One connection carries all eight, so the reader has to know what it is holding
 // before it can decode it — which is the same discriminant-plus-payload shape
 // battle.Event takes for the same reason, one line at a time from a single
 // stream. The body stays json.RawMessage here so that decoding is one pass over
@@ -168,7 +175,7 @@ type Envelope struct {
 // answers on purpose: a side genuinely has a "nobody" (a draw has no winner), so
 // it is represented, while an envelope with no kind is not a message this format
 // has — nothing sends one — so it is refused rather than given a name. Which
-// also keeps the enum at the seven messages the design record pins.
+// also keeps the enum at the eight messages the design record pins.
 func (e *Envelope) UnmarshalJSON(raw []byte) error {
 	var shape struct {
 		Kind *Kind           `json:"kind"`
@@ -196,6 +203,7 @@ var bodyForKind = [KindCount]func() Body{
 	KindRefused: func() Body { return new(Refused) },
 	KindStart:   func() Body { return new(Start) },
 	KindTurn:    func() Body { return new(Turn) },
+	KindClosed:  func() Body { return new(Closed) },
 }
 
 // Encode wraps a body in its own envelope and returns the bytes that travel.
@@ -222,7 +230,7 @@ func Encode(body Body) ([]byte, error) {
 	return out, nil
 }
 
-// Decode reads an envelope and its body, returning a pointer to one of the seven
+// Decode reads an envelope and its body, returning a pointer to one of the eight
 // structs. The caller switches on the type, or asks the result for its Kind.
 //
 // Every failure is an error and never a usable-looking zero value: an unknown

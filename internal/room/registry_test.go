@@ -268,8 +268,9 @@ func TestManyRoomsPlayWholeMatchesAtOnce(t *testing.T) {
 		if !result.reading.Result.Verdict.Over() {
 			t.Errorf("room %d finished with the verdict %q", index, result.reading.Result.Verdict)
 		}
-		if result.reading.Result.Forfeit != room.ForfeitNone {
-			t.Errorf("room %d reports the forfeit %q on a match played out", index, result.reading.Result.Forfeit)
+		if result.reading.Result.Departed.Valid() {
+			t.Errorf("room %d records %q as having gone away on a match played out",
+				index, result.reading.Result.Departed)
 		}
 		played := len(result.reading.Played)
 		if played == 0 || played > 3 {
@@ -444,8 +445,10 @@ func TestAFinishedRoomLeavesNoGoroutineBehind(t *testing.T) {
 // The third is what the race detector is pointed at, and the messages are chosen
 // to change nothing: a body no seated peer sends is answered
 // wire.CodeUnknownMessage, and a seat nobody holds is answered
-// wire.CodeNotYourTurn — neither resets a miss count nor takes a turn, so the
-// driver's own match is unaffected by however many arrive.
+// wire.CodeNotYourTurn — neither takes a turn, so the driver's own match is
+// unaffected by however many arrive. (It used to read "neither resets a miss
+// count nor takes a turn"; there is no miss count any more, and taking a turn is
+// the whole of what a refusal now protects.)
 func TestAMessageInFlightToAFinishedRoomIsRefused(t *testing.T) {
 	dependencies := deps(t)
 	registry := room.NewRegistry()

@@ -189,6 +189,20 @@ type mirror struct {
 	cursor   int
 	starts   []wire.Start
 	refusals []wire.Code
+	closures []wire.Closure
+	// turns is how many turns this client's own battle has opened, skipped ones
+	// included, and capped is that count having passed the cap the room told it
+	// about on wire.Welcome.
+	//
+	// ⚠️ This is the mirror doing the arithmetic the cap exists for rather than a
+	// counter for a test to read. A capped battle emits no Ended — the engine
+	// concluded nothing about it — and no further wire.Start arrives, so without
+	// the cap on the welcome a client would sit holding the prompt it stopped on
+	// for ever. Given the cap it stops on the same turn the room did, because it
+	// counts the same thing: the room counts every Advance and every Advance
+	// emits exactly one battle.TurnBegan.
+	turns  int
+	capped bool
 	// compared is how many digests this client has checked, so a test can say
 	// the check happened rather than hoping it did.
 	compared int
@@ -213,6 +227,8 @@ func (m *mirror) receive(body wire.Body) {
 		m.open(message)
 	case wire.Turn:
 		m.apply(message)
+	case wire.Closed:
+		m.closures = append(m.closures, message.Reason)
 	default:
 		m.t.Fatalf("%s was sent a %T, which no server sends", m.seat, body)
 	}
@@ -237,7 +253,28 @@ func (m *mirror) open(start wire.Start) {
 	}
 	m.fight, m.prompt, m.side = fight, prompt, start.Side
 	m.cursor, m.events = fight.Recorded(), nil
+	// ⚠️ The opening's own turns are counted from the whole record and not from
+	// the cursor. The cursor deliberately starts *after* the opening, because the
+	// first digest exchanged covers the first decision rather than the first
+	// decision plus the board — so a client counting only what arrives on a
+	// wire.Turn would sit one turn behind the cap for the whole battle.
+	opening, _ := fight.Since(0)
+	m.turns, m.capped = 0, false
+	m.count(opening)
 	m.starts = append(m.starts, start)
+}
+
+// count adds a run of events' turns to this client's own tally and stops it at
+// the cap the room named.
+func (m *mirror) count(events []battle.Event) {
+	for _, event := range events {
+		if event.Kind == battle.TurnBegan {
+			m.turns++
+		}
+	}
+	if m.welcome.TurnCap > 0 && m.turns > m.welcome.TurnCap {
+		m.capped = true
+	}
 }
 
 // apply takes one decision and checks the digest.
@@ -254,6 +291,7 @@ func (m *mirror) apply(turn wire.Turn) {
 	events, next := m.fight.Since(m.cursor)
 	m.cursor = next
 	m.events = append(m.events, events...)
+	m.count(events)
 	digest, err := wire.DigestEvents(events)
 	if err != nil {
 		m.t.Fatalf("%s digests %q's turn: %v", m.seat, turn.Decision.Unit, err)
@@ -272,6 +310,15 @@ func (m *mirror) answer() wire.Body {
 	m.t.Helper()
 	if m.prompt == nil {
 		m.t.Fatalf("%s was asked to act with no turn open", m.seat)
+	}
+	// The other half of the cap being on the welcome: the room stops asking on
+	// the turn this client stops at, so being asked past it is a divergence
+	// rather than a turn to take. The room checks the cap after the skipped test
+	// and never leaves a capped turn open, so this is reachable only if the two
+	// arithmetics disagree.
+	if m.capped {
+		m.t.Fatalf("%s was asked to act on turn %d, past the %d-turn cap it was told about",
+			m.seat, m.turns, m.welcome.TurnCap)
 	}
 	unit, known := m.fight.Unit(m.prompt.Unit)
 	if !known {

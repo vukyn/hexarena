@@ -2377,17 +2377,18 @@ the client is Vietnamese-first with an English toggle. This is the same rule the
 rest of the client already lives under — a description is derived from the data,
 and the id is the only thing that travels.
 
-### The seven messages, and what four of them deliberately do not carry
+### The eight messages, and what five of them deliberately do not carry
 
 Built: `internal/wire`, the protocol as one package with no I/O in it, no room
-and no socket. Three messages go up and four come back.
+and no socket. Three messages go up and five come back.
 
 | client → server | server → client |
 | --- | --- |
-| `hello` — the three version numbers, the squad, the room's password, a name | `welcome` — the format, `battles` N, the turn allowance, and which **seat** |
+| `hello` — the three version numbers, the squad, the room's password, a name | `welcome` — the format, `battles` N, the turn allowance, the **turn cap**, and which **seat** |
 | `act` — a skill and an aim | `refused` — a `Code` |
 | `pass` — **nothing at all** | `start` — the seed, the roster, which **side**, which battle of the series |
 | | `turn` — the decision taken, and the digest of the events it produced |
+| | `closed` — the match ended for a reason the board cannot show, as a `Closure` |
 
 Almost all of it is types that already existed, which is the design rather than
 a saving: `placement.Squad` is the squad format, `battle.Roster` already carries
@@ -2419,6 +2420,16 @@ What each message leaves out is the part worth reading:
   which side wins a speed tie — see *Which side you get is worth up to sixty
   points*. Two fields would be a second statement of an order the slice already
   holds.
+- **`closed` is sent for one ending and not for the others**, and that asymmetry
+  is the design rather than an omission. A client computes every *other* ending
+  itself: a battle's outcome from its own `Ended` event, the series from
+  `welcome`'s `battles`, and a capped battle from `welcome`'s `turn_cap` by the
+  same arithmetic the room uses. What it cannot compute is a peer walking away —
+  there is no `Ended` for the battle in progress, because the engine concluded
+  nothing about it, and no further `start` — so without a message a mirror hangs
+  on its own open prompt. It carries a `Closure` and nothing else: no prose (the
+  client words it), no outcome, no winner and no standing, because each of those
+  would be a second declaration of something the client already holds.
 
 A **seat** and a **side** are two facts and get two messages. The seat is which
 of the room's two places a client took and holds for the whole match; the side
@@ -2451,13 +2462,24 @@ this section originally asked for and turned out to be free. A timeout is an
 **input**: whoever owns the transport owns the countdown — it owns the connection
 — and *tells* the room the allowance ran out, at which point the room applies the
 pass. So `internal/room` imports `time` not at all, held mechanically by the same
-AST walk `internal/wire` uses, and "three consecutive timeouts forfeit" becomes
-pure counting rather than a thing measured against a wall clock. Two prices worth
-naming: the room cannot distinguish a genuine timeout from a transport that
-reported one wrongly, so a timeout on a seat nobody is being asked is refused and
-**not counted**; and whether a peer has really gone or is merely slow is likewise
-the transport's judgement, so a reconnect window sits in front of that report
-rather than inside the room.
+AST walk `internal/wire` uses. Two prices worth naming: the room cannot
+distinguish a genuine timeout from a transport that reported one wrongly, so a
+timeout on a seat nobody is being asked is **refused** — and with nothing
+counted, what that refusal protects is the turn itself, because a report naming
+the wrong seat would otherwise spend the other player's answer for them; and
+whether a peer has really gone or is merely slow is likewise the transport's
+judgement, so a reconnect window sits in front of that report rather than inside
+the room.
+
+⚠️ **A timeout needs no message of its own, and that is measured rather than
+assumed.** The pass carries a single constant reason, the reason is part of the
+`battle.Decision`, and the decision travels on `turn` — where `Decision.Reason`
+is tagged `json:"reason,omitempty"`. So the client is *already told* that a turn
+was lost to a clock, by the one declaration of it that crosses, and a message for
+it would be a second spelling of a fact both peers hold.
+`TestATimeoutTellsTheMirrorWithNoMessageOfItsOwn` encodes and decodes the room's
+own answer and reads the reason out of the far end, because an `omitempty` tag is
+exactly the sort of declaration a claim like that can be wrong about.
 
 Three details that follow from it:
 
@@ -2470,13 +2492,41 @@ Three details that follow from it:
   have no reason to agree about what time it is, and the client only needs to
   count down; the server is the authority on whether the ninety seconds are up.
 
-A disconnected client is not a slow one. Ninety seconds a turn over a forty-turn
-battle is an hour of somebody sitting in front of a dead opponent, so the seat is
-held for a reconnect and **three consecutive timeouts forfeit the match**.
+### Nobody forfeits
 
-A forfeit is a result of the **match** and not of the battle, so it lives in the
-server's record and adds nothing to `battle.Outcome`. That enum is a core type
-and a dropped socket is not one of the ways a battle can end.
+**⚠️ This section used to say that three consecutive timeouts forfeit the match,
+and that rule is gone along with the whole concept.** Both routes to a forfeit
+are closed: leaving and timing out both **announce** and nothing more.
+
+- **A timeout announces and passes the turn.** Nothing is counted; there is no
+  per-seat tally and no limit. The pass is what makes the match *progress* — a
+  room never told an allowance ran out waits forever on somebody who never
+  answers — and that is the whole of what the input buys.
+- **A departure announces and ends the match as `abandoned`**, which is not a
+  win, not a draw and not a forfeit. The seat that went away is recorded; neither
+  seat is charged with anything.
+
+What the counting was buying turned out to be carried by the board already, and
+that is measured rather than argued. A player who walks away from the keyboard
+**loses on the board**: the opponent keeps acting and kills units that only ever
+pass — `TestASeatThatNeverAnswersLosesOnTheBoardRatherThanByForfeit` plays a bo3
+in which one seat answers nothing, and it ends as an ordinary `won` after 56 of
+that seat's allowances ran out. And if *both* walk away there is nobody to award
+the match to, so the **turn cap** stops the battle as the draw the outcome
+already carries (`TestWhenNobodyAnswersTheTurnCapDrawsIt`, every turn of it a
+timeout). Between them, the forfeit was pricing nothing.
+
+**⚠️ The stated cost: a player who is losing can leave at no cost.** That is
+known and accepted rather than overlooked. On a LAN between friends the
+enforcement is social, which is a legitimate answer for this game and this
+network — there is no rating to protect and no ladder to defend. It is written
+down here so nobody reads it later as a gap and "fixes" it by reinstating a
+forfeit.
+
+A match's ending is a result of the **match** and not of the battle, so it lives
+in the server's record — `room.Verdict`, deliberately not called an outcome — and
+adds nothing to `battle.Outcome`. That enum is a core type and a dropped socket
+is not one of the ways a battle can end.
 
 ### Which side you get is worth up to sixty points
 
@@ -2638,10 +2688,13 @@ says no room ever sends one, so no peer could ever have been shown it.
 
 Two things the registry's shape forced, both worth knowing before writing the
 transport. A room **retires its own entry the moment its match ends**, so nothing
-sweeps and a finished room stops being joinable — but the protocol has no message
-for "the match is over and here is why", so a transport that asked afterwards what
-the result was would be asking about a room that had already gone. The result
-therefore travels on the answer to the input that ended the match. And the room
+sweeps and a finished room stops being joinable — so a transport that asked
+afterwards what the result was would be asking about a room that had already
+gone. The result therefore travels on the answer to the input that ended the
+match. ⚠️ `closed` does not change that and a reader will ask: that message is
+for the *peer*, and it is sent on one ending only, because a match played out to
+its end is one the client computes for itself. The transport's own reading of
+*any* ending still has to ride on the answer. And the room
 still reads no clock and neither does the registry: `TimedOut` is **forwarded**
 exactly as it is taken, because whoever owns the transport owns the countdown.
 
@@ -2668,7 +2721,7 @@ method is measurement.
 
 ### The room, built — and the four things building it decided
 
-`internal/room` is that state machine. It speaks the seven messages and declares
+`internal/room` is that state machine. It speaks the eight messages and declares
 none of its own, and everything above about the clock, the series, the sides and
 the cursor is now code with tests against it. Four things were open when this
 section was written and are answered here.
@@ -2725,20 +2778,58 @@ stamping `Stalemate` on a battle the engine concluded nothing about. A room
 writing an outcome the engine never produced would be a second reading of how a
 battle ends, and the log written from it would fail its own `--verify`.
 
-⚠️ **Two things the seven messages cannot say**, found by building the room
-rather than by reading the protocol, and both left as gaps rather than papered
-over:
+### The turn cap travels on `welcome`, and no message travels with it
 
-- **A forfeit has no message.** Nothing carries "the match is over and here is
-  why", so the room answers a forfeit with no message at all and the transport
-  closes the connection. The client words it from its own books — "opponent left"
-  is already on the wordings list — and a message for it is a protocol bump.
-- **A capped battle is invisible to a mirror.** The turn cap is room
-  configuration and is not on `welcome`, and a battle the cap stopped emits no
-  `Ended` event — so the rule that a client learns each battle's outcome from its
-  own `Ended` has a hole in it, and a mirror is left holding an open prompt until
-  the next `start` arrives. Either the cap travels (a protocol bump) or it becomes
-  a constant both peers read, which costs the host the setting.
+⚠️ **This used to be one of two things the protocol could not say**, and the
+answer is one field rather than a message: `welcome` carries `turn_cap` beside
+the allowance. The argument is the one already written for the field next to it —
+a cap is *room configuration*, not part of the battle. The allowance is there so
+a client can count down; the cap is there so a client can **stop on the same
+turn**.
+
+That is sufficient with **no new message and no `Ended`**. The client is a
+mirror, so given the cap it reaches the cap on the same turn by the same
+arithmetic: the room counts every turn the engine opens and stops when the count
+passes the cap, and so does the client, because every opened turn emits exactly
+one `turn_began`. Two peers agree because they compute the same thing from the
+same configuration, which is the mirror contract itself.
+`TestTheTurnCapEndsABattleAsADrawTheOutcomeAlreadyHas` asserts the two turn
+counts are equal and that each client stopped, not merely that the room did.
+
+⚠️ Skipped turns count towards it — a turn is a turn — and the client's count has
+to include the **opening**, because the event cursor deliberately starts after
+the opening board. A client counting only what arrives on `turn` would sit one
+turn behind the cap for a whole battle.
+
+After the cap fires both sides hold the same honest state: the room has
+`Undecided` plus `BattleResult.Capped`, and the mirror's own battle is stopped
+with no `Ended` and nothing decided.
+
+⚠️ **Three alternatives were considered and refused — do not re-raise them:**
+
+- **A constant both peers read.** The host loses the setting, and it is *still* a
+  number both sides must agree on — except that a version skew then desyncs
+  silently, where a configuration field is checked at the handshake.
+- **A "battle was capped" message.** A protocol bump *and* a second declaration
+  of how a battle ends, which is exactly what the mirror design bans.
+- **Letting the engine emit `Ended` at the cap.** Tempting, and wrong for the
+  same reason the room may not stamp `Stalemate`: a turn cap is a **policy**, not
+  a way a battle can end. `Stalemate` is a real ending — nothing can move; a cap
+  is somebody deciding to stop. Adding it to `battle.Outcome` makes every
+  renderer and `--verify` learn a room's policy, and `OutcomeCount`-against-a-
+  literal exists precisely to stop "just add one".
+
+⚠️ **A capped battle's log verifies, and that was measured rather than deduced.**
+It has **no `Ended` event** at all, so the question was real. Replicating the
+room's stopping rule on the shipped roster at a cap of 6: 44 events, 6 choices,
+**0** `Ended` events, the last event a `turn_began` — and `--verify`'s own
+procedure (rebuild from the log's seed and roster, `Replay` the choices with a
+nil fallback, compare every event) reproduced all 44 exactly. ⚠️ The second half
+of that measurement is a trap for the log writer: the record has to include the
+capped turn's **own** `turn_began`, because the room advanced into that turn
+before deciding not to ask about it and the re-run advances into it too. A writer
+that stopped one event earlier produces 43 events against 44 re-run, and
+`--verify` fails on the count.
 
 ### Not in the first version
 

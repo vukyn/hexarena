@@ -202,11 +202,13 @@ is only so the shape is readable.
       the ones nothing else can start without. **All four are done, and so is the
       room** — `internal/room` is a state machine over `internal/wire` messages
       with no I/O and **no clock** in it — **and so is the registry**, which is
-      one goroutine per room around it and reads no clock either. What is left of
-      *The room* is writing a finished match out as a `battle.Log` and two things
-      the protocol cannot currently say: a capped battle and a forfeit. The next
-      item to pick up is the **WebSocket** under *The wire*, which is also where
-      the one-listener-per-room question the registry could not decide lands.
+      one goroutine per room around it and reads no clock either. The two things
+      the protocol could not say are both **closed**: a departure sends
+      `wire.Closed` and a capped battle is reached off `wire.Welcome.TurnCap`. So
+      what is left of *The room* is writing a finished match out as a
+      `battle.Log`. The next item to pick up is the **WebSocket** under *The
+      wire*, which is also where the one-listener-per-room question the registry
+      could not decide lands.
 
       **Groundwork**
       - [x] Factor the reference screens out of `cmd/hexforge-tui` into a package
@@ -346,9 +348,12 @@ is only so the shape is readable.
             ⚠️ **The room reads NO clock, which the brief did not ask for and is
             the shape everything else rests on.** A timeout is an **input** —
             the transport owns the countdown and calls `TimedOut` — so `time` is
-            unimported, `TestTheRoomReadsNoClock` holds it with an AST walk over
-            the package's own directory, and "three consecutive timeouts
-            forfeit" is pure counting. `internal/wire/clock_test.go`'s comment
+            unimported and `TestTheRoomReadsNoClock` holds it with an AST walk
+            over the package's own directory. ⚠️ **Nothing is counted**: a
+            timeout announces and passes the turn, and the three-strike forfeit
+            that used to be "pure counting" is gone with the whole concept — see
+            the clock item and the abandonment item below.
+            `internal/wire/clock_test.go`'s comment
             says a room "does need a clock" and that a copy of the ban here
             "would be exactly wrong"; that expectation was wrong and the comment
             is now stale.
@@ -454,7 +459,7 @@ is only so the shape is readable.
             "tightened" later.
       - [x] The clock: the allowance a prompt gets, a timeout passing with a
             single constant reason. **Done** — `room.TimeoutReason` is that one
-            constant and `room.TimeoutLimit` is three.
+            constant, and **nothing counts**.
             ⚠️ **Never a timestamp into the battle**, and now never a *reading*
             either: the room is told. A `Skipped` prompt starts no clock because
             the room walks past one itself and never leaves it open —
@@ -462,33 +467,67 @@ is only so the shape is readable.
             holds it against `Room.Skipped()`, a count exposed precisely because
             a skipped turn produces no decision and therefore no message, so
             without it the claim would be held by nothing.
-            ⚠️ A `TimedOut` on a seat nobody is asking is **refused and not
-            counted** — otherwise a transport reporting a spurious timeout could
-            forfeit a player through the back door
-            (`TestATimeoutOnNothingIsRefusedAndCountsNothing`).
+            ⚠️ **`room.TimeoutLimit` is GONE**, with the per-seat tally and the
+            three-strike branch. A timeout announces and passes the turn; the
+            pass is what makes the match progress, and it is all the input buys.
+            ⚠️ A `TimedOut` on a seat nobody is asking is still **refused**, and
+            the refusal now protects something better: with no tally to reach
+            through the back door, what a spurious report would otherwise do is
+            **spend the other player's turn for them** — a real decision into the
+            battle and into the log
+            (`TestATimeoutOnNothingIsRefusedAndSpendsNobodysTurn`, both shapes:
+            nobody on turn, and the wrong seat).
+            ⚠️ **A timeout needs no message**, measured rather than assumed: the
+            pass carries `room.TimeoutReason`, the reason is part of the
+            `battle.Decision`, and the decision rides on `wire.Turn` where
+            `Decision.Reason` is `json:"reason,omitempty"`.
+            `TestATimeoutTellsTheMirrorWithNoMessageOfItsOwn` encodes and decodes
+            the room's own answer and reads the reason off the far end.
             ⚠️ A voluntary pass leaves `Decision.Reason` **empty** and lets
             `battle.Pass` supply "passed", so the room adds no second spelling of
-            it. An **illegal** act does not reset the miss count: a peer that
-            could clear its tally by sending nonsense would never be forfeited.
+            it. An **illegal** act leaves the turn open, because it is not an
+            answer.
             ⚠️ The timeout reason is **not glossed** — `tui.Line` prints
             `event.Note` raw, so today it reads `timeout` in both languages. That
             is the wordings item under *The client*.
-      - [x] A forfeit, a disconnect and a refused join are results of the
+      - [x] A **departure**, a disconnect and a refused join are results of the
             **match**. **Done** — `room.Verdict` (`unfinished` · `won` · `drawn` ·
-            `forfeited`) and `room.Forfeit` (`none` · `timed_out` · `left`),
-            deliberately **not** called an outcome so nobody writes
-            `battle.Outcome(result.Verdict)`. Both routes to a forfeit are
-            reached by `TestAForfeitAndADisconnectAddNothingToTheBattlesOutcomes`,
-            so neither is a dead branch, and that test holds
+            `abandoned`), deliberately **not** called an outcome so nobody writes
+            `battle.Outcome(result.Verdict)`, with `Result.Departed` naming the
+            seat that went away.
+            `TestADepartureAddsNothingToTheBattlesOutcomes` holds
             `battle.OutcomeCount` against a **literal 4** — reading the constant
             and comparing it to itself would agree with any number at all.
-            ⚠️ **The protocol has no message for a forfeit**, so the room sends
-            *nothing* and the transport closes. That is a gap rather than a
-            decision — see the wordings item, which already lists "opponent
-            left" — and a message for it is a protocol bump.
+            ⚠️ **NOBODY FORFEITS.** `room.Forfeit` (`none` · `timed_out` ·
+            `left`) and `VerdictForfeited` are gone, and so is the concept:
+            leaving and timing out both only announce. `VerdictAbandoned` is what
+            a departure leaves behind — not a win, not a draw, not a forfeit.
+            ⚠️ **The board carries what the forfeit was pricing**, measured both
+            ways: a seat that answers nothing loses on the board
+            (`TestASeatThatNeverAnswersLosesOnTheBoardRatherThanByForfeit` — a
+            bo3 ending `won` after 56 of that seat's allowances ran out), and if
+            both walk away the turn cap draws it
+            (`TestWhenNobodyAnswersTheTurnCapDrawsIt`).
+            ⚠️ **The stated cost: a losing player can leave for free.** Accepted
+            rather than overlooked — on a LAN between friends the enforcement is
+            social. → `README.md` § *Nobody forfeits*. Do not "fix" it by
+            reinstating a forfeit.
+            ⚠️ **A departure DOES need a message and now has one**:
+            `wire.Closed{Reason: wire.ClosureLeft}`, the eighth kind, to the seat
+            **still there** and to nothing else. It is the one ending a mirror
+            cannot reach — no `Ended` for the battle in progress and no further
+            `Start` — where every other ending the client computes. One closure
+            today, `ClosureNone` at zero for the reason `CodeNone` is, and a
+            second reason is an **entry** rather than a new kind
+            (`ClosureCount`, `TestEveryClosureHasANameAndTravels`).
+            ⚠️ Two good tests were **deleted** with the mechanism they measured
+            (`TestThreeConsecutiveTimeoutsForfeitAndAFourthIsNotNeeded`,
+            `TestARealActionResetsTheTimeoutCount`) and a note at the head of
+            `timeout_test.go` says so.
             ⚠️ `Left` before the first battle **frees the seat** instead of
-            forfeiting: there is nothing to give up yet. A reconnect window sits
-            in front of `Left` rather than inside it.
+            ending anything: there is no match yet. A reconnect window therefore
+            sits in front of `Left` rather than inside it. → the seat token item
+            under *The wire*.
       - [x] A **series**, not a bo2: `battles: N` plus a rule for what ends it,
             from the room's first line. **Done** — a seat holding more than
             `Battles/2` ends it, otherwise every battle is fought and a series
@@ -545,18 +584,56 @@ is only so the shape is readable.
             leave the room's event run one short of the mirror's and report a
             divergence that was not one. Skipped turns still count towards the
             cap; they just cannot be the turn it bites on.
-      - [ ] A capped battle is **invisible to a mirror**. `TurnCap` is not on the
-            wire, no `Ended` event is emitted, and the design record's rule is
-            that a client learns each battle's outcome from its own `Ended`. So a
-            client is left holding an open prompt on a battle the room has
-            stopped, and the next thing it hears is a `start` (or nothing). Two
-            ways out, both bigger than a fix: carry the cap on `wire.Welcome`
-            (a protocol bump), or make it a **constant** both peers read, which
-            costs the host the setting.
+      - [x] A capped battle **was invisible to a mirror**. **Done** — `TurnCap`
+            rides on `wire.Welcome`, beside `Allowance` and by that field's own
+            argument: a cap is *room configuration*, not part of the battle. The
+            allowance is there so a client can count down; the cap is there so a
+            client can **stop on the same turn**.
+            ⚠️ **No new message and no `Ended`**, which is the whole point. The
+            client is a mirror, so given the cap it reaches the cap by the same
+            arithmetic: every opened turn emits exactly one `battle.TurnBegan`,
+            and counting those **including the opening** — the event cursor
+            starts *after* the opening board, so a client counting only what
+            arrives on a `Turn` sits a turn behind for a whole battle — gives the
+            room's own count. `TestTheTurnCapEndsABattleAsADrawTheOutcomeAlreadyHas`
+            asserts the two counts are **equal** and that each client stopped;
+            the fixture mirror fails if the room ever asks past its own cap.
+            After the cap fires both sides hold the same honest state: the room
+            has `Undecided` + `BattleResult.Capped`, the mirror's own battle is
+            stopped with no `Ended` and nothing decided.
+            ⚠️ **Three alternatives were refused — do not re-raise them.** A
+            **constant both peers read** costs the host the setting and is still
+            a number both sides must agree on, except a version skew then desyncs
+            silently where a config field is checked at the handshake. A
+            **"battle was capped" message** is a protocol bump *and* a second
+            declaration of how a battle ends. **Letting the engine emit `Ended`
+            at the cap** is wrong for the reason the room may not stamp
+            `Stalemate`: a cap is a **policy**, not a way a battle can end, and
+            adding it to `battle.Outcome` makes every renderer and `--verify`
+            learn a room's policy.
+            ⚠️ **Measured, not deduced: a capped log verifies.** It carries no
+            `Ended` at all, so the question was real. Replicating the room's
+            stopping rule at a cap of 6 on the shipped roster: 44 events, 6
+            choices, **0** `Ended`, last event a `turn_began` — and `--verify`'s
+            own procedure reproduced all 44 exactly. ⚠️ The trap belongs to the
+            log-writer item below: the record must include the capped turn's
+            **own** `turn_began`, because the room advanced into that turn before
+            deciding not to ask about it and the re-run advances into it too. One
+            event earlier is 43 recorded against 44 re-run and `--verify` fails
+            on the count.
       - [ ] Write each finished match out as a `battle.Log`, which makes every
             PvP match `--replay --verify`-able for nothing. ⚠️ The room holds no
             second copy of the events for it — a log writer is another cursor
             over `Battle.Since`, which is exactly why the room reads it that way.
+            ⚠️ **Where it stops is load-bearing for a capped battle, and it has
+            been measured.** A capped log has **no `Ended` event** and it does
+            verify — but only when the record includes the capped turn's own
+            `turn_began`, which is where the room's own cursor already stands,
+            because `settle` advanced into that turn before deciding not to ask
+            about it and `Replay` advances into it too. Stopping one event
+            earlier reads 43 recorded against 44 re-run and fails on the count.
+            The room's cursor is therefore the right place to write from and a
+            "tidier" stop is not.
 
       **The wire**
       - [ ] WebSocket transport, the dependency confined to one boundary.
@@ -582,7 +659,26 @@ is only so the shape is readable.
       - [ ] Room password: constant-time comparison, never logged. Documented as
             what it is — a gate against strangers on the network, **not**
             security.
-      - [ ] A seat token and a rejoin, which the cursor makes cheap.
+      - [ ] A seat token and a rejoin. ⚠️ **The ground this item used to give was
+            wrong** — it was filed as cheap because the cursor makes catching up
+            cheap, which is true and is not the reason it matters. The real one:
+            **the transport cannot tell a wifi hiccup from a departure.** A socket
+            closing is a socket closing. With no rejoin, every network blip kills
+            a match, and the transport's close threshold becomes the only thing
+            standing between two seconds of lag and losing a whole bo3.
+            ⚠️ **Until rejoin exists that threshold is a real setting**, not a
+            few-second ping timeout to be picked by whoever writes the socket. It
+            is the only dial there is, and it is currently guarding a whole match.
+            Two things already known, so the next reader does not hunt for them:
+            ⚠️ **`Reading` deliberately does not hold `Pending`**
+            (`registry.go:193`), because `Room.Pending` hands back a
+            `*battle.Prompt` — a pointer into the room's own state — and passing
+            one out of the room's goroutine is exactly the sharing the registry
+            exists to prevent. What a rejoining client needs *is* the open prompt,
+            so a rejoin wants a **copy whose slices are copied too**.
+            ⚠️ **`Left` before the first battle frees the seat** rather than
+            closing the room, so the reconnect window sits **in front of** `Left`
+            and not inside it.
       - [ ] One end-to-end test over a loopback listener, two real clients.
 
       **The client**
@@ -607,6 +703,12 @@ is only so the shape is readable.
             waiting row on top.
       - [ ] The wordings, in both books, Vietnamese composed: room, lobby,
             waiting, timed out, opponent left, squad refused, version mismatch.
+            ⚠️ **`wire.ClosureCount` is a second enum with the same gap as the
+            codes**: `wire.Closed` travels an id and the wording lives at this
+            end, so "opponent left" above is now a real message a client
+            receives and still cannot word. `TestEveryClosureHasANameAndTravels`
+            holds the count and says in its own comment that it cannot hold the
+            wording.
             ⚠️ And gloss the new pass reason — `tui.Line` prints `event.Note`
             **raw**, so today a timeout would read `loses the turn (timeout)` in
             both languages.
