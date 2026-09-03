@@ -609,9 +609,9 @@ Tầm 3 · 90% trúng · hồi 3 lượt.
 
 blizzard
 Gọi cả một trận gió trắng xoá về, không còn thấy đường mà lui, 95% công.
-Gây sa lầy cho mục tiêu, 30% khả năng.
+Gây sa lầy cho mục tiêu, 50% khả năng.
 Tầm 3 · 3 ô · 72% trúng · hồi 4 lượt.
-[one line] 95% công · sa lầy 30% · tầm 3 · 3 ô · hồi 4
+[one line] 95% công · sa lầy 50% · tầm 3 · 3 ô · hồi 4
 
 ice_wall
 Dựng một vách băng dày trước mặt đồng đội, đủ để chịu thay một lúc.
@@ -1488,9 +1488,9 @@ Range 3 · 90% to hit · 3 turns to recharge.
 
 blizzard
 Hits an enemy for 95% of attack.
-Inflicts mire, 30% of the time.
+Inflicts mire, 50% of the time.
 Range 3 · 3 cells · 72% to hit · 4 turns to recharge.
-[one line] 95% attack · mire 30% · range 3 · 3 cells · cd 4
+[one line] 95% attack · mire 50% · range 3 · 3 cells · cd 4
 
 ice_wall
 Aims at an ally.

@@ -963,6 +963,40 @@ is only so the shape is readable.
       at **40.4%** on the same measurement, so it is not an outlier; and per
       § *Pricing one number* a spar rate prices nothing, it is only the gate that
       says a character is not degenerate.
+      ⚠️ **The area slow was priced on a SQUAD, because a duel cannot see one.**
+      `blizzard` (column, enemy-only) carries `mire` — speed −25%, 2 stacks, 2
+      turns. A 1v1 spar reads the chance at nothing (15.4 / 15.2 / 16.6% at 30 /
+      50 / 70%), which is the board being wrong rather than the skill being
+      worthless: one target is the case a column skill is not for. Measured
+      instead with `Library.FightSquads` over a 3v3, Lapras + Squirtle + Machop
+      against **the same squad with `water_gun` in blizzard's slot**, 500 seeds
+      each way round — the swap is the measurement, and the mirror control read
+      **50.0% exactly**:
+
+      | mire chance | home rate |
+      |---:|---:|
+      | none | 47.9% |
+      | 30% (was shipped) | 51.7% |
+      | **50% (shipped now)** | **54.4%** |
+      | 70% | 56.2% |
+      | 100% | 60.5% |
+
+      Monotone over five points, 1,000 battles a row (2σ ≈ ±3.2pp). **Without the
+      slow, blizzard is worth less than `water_gun`** — 47.9% against an even
+      50.0 — so the slow is the whole of why it is brought, and 30% left it
+      barely above the control. 50% sits under `whirlpool`'s 60% while blizzard
+      hits harder (950 against 800), which is the ladder the other five mire
+      appliers make.
+      ⚠️ **`hail` was the other candidate and it fails, measurably.** It is
+      `target: all`, so its damage lands on its own side too: weighing its power
+      saturates in BOTH directions — 800 wins 0.0% of what it decides, 450 wins
+      ~100% — which makes *cutting* its damage a buff rather than compensation.
+      And a global slow at 50% or more saturates the mirror outright (100%/0%),
+      the first mover locking the other out. Left alone.
+      ⚠️ **Neither `blizzard` nor `hail` is in the fielded four**, so both are
+      squad picks: `seedKit` takes the first four learnset entries and the duel
+      kit is what is shipped there. That is why the squad measurement above had
+      to name the kit rather than let the seed pick it.
       ⚠️ **Open, and it is an authoring judgement rather than a bug**: the ice
       half costs Lapras the water matchup outright. `pokemon.squirtle` takes
       **62.0%** off `pokemon.charmander` and Lapras takes **0.0%** of 400, because

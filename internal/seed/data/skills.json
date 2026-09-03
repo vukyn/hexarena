@@ -2506,7 +2506,7 @@
       "applies": [
         {
           "status": "mire",
-          "chance": 300,
+          "chance": 500,
           "stacks": 1
         }
       ]
