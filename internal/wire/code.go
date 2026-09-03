@@ -77,14 +77,16 @@ const (
 // CodeCount is the number of codes, and it exists so a test can walk them rather
 // than range over the table of names and ask it whether it holds what it holds.
 //
-// ⚠️ Nothing words these codes yet. The client's side of it — a line in both
-// language books — is a later item, so a code shipped here is a code no player
-// can be shown, which is the "shipped dead" shape this repository has recorded
-// several times. It cannot be tested from here: wire must not import
-// internal/i18n (the whole point of a code is that the wording lives at the far
-// end, and a protocol that imported the word book would be the server holding
-// the sentences again). So the count is held here and the gap is written down in
-// TODO.md § The client, next to the wordings item, rather than left silent.
+// ⚠️ **Every code is worded now, and no screen draws one yet.** Lang.Refusal in
+// internal/i18n carries a line per code in both books, and the walk over this
+// count against those books is internal/i18n/protocol_test.go — it could never
+// be here, because wire must not import internal/i18n (the whole point of a
+// code is that the wording lives at the far end, and a protocol that imported
+// the word book would be the server holding the sentences again). So this count
+// is what is held here. What is still open is the *reader*: the pairing screen
+// in cmd/hexarena-tui is what turns those wordings into something a player is
+// shown, so until it lands the "shipped dead" shape is one step narrower —
+// words exist, unread — rather than closed. → TODO.md § The client.
 const CodeCount = int(CodeUnknownMessage) + 1
 
 // codeNames is the wire form of every code, and it is the format: renaming an

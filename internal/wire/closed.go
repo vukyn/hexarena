@@ -77,10 +77,12 @@ const (
 // rather than range over the table of names and ask it whether it holds what it
 // holds.
 //
-// ⚠️ Nothing words these yet, the same gap CodeCount carries and for the same
-// reason: wire must not import internal/i18n, because the whole point of
-// sending an id is that the wording lives at the far end. "Opponent left" and
-// "the host stopped" are both on the wordings list. → TODO.md § The client.
+// ⚠️ **Both endings are worded now, and no screen draws one yet** — the same
+// state CodeCount is in, and worded in the same place for the same reason: wire
+// must not import internal/i18n, because the whole point of sending an id is
+// that the wording lives at the far end. Lang.Closure is that end, and
+// internal/i18n/protocol_test.go is the walk over this count against both
+// books. The reader is still missing. → TODO.md § The client.
 const ClosureCount = int(ClosureStopped) + 1
 
 // closureNames is the wire form of every closure, and it is the format:

@@ -659,4 +659,24 @@ q hoặc ctrl+c để thoát`,
 	GameMenuSquadsDetail: "các đội đã dựng, và mang một đội vào trận",
 	GameMenuBattle:       "vào trận",
 	GameMenuBattleDetail: "tự cầm quân đánh một trận với đội đầu danh sách",
+
+	// Mười ba dòng của hai enum trong internal/wire. Người đọc chúng đang đứng
+	// ở phòng chờ và không có thông tin nào khác trước mặt, nên mỗi dòng phải
+	// nói cả chuyện gì đã xảy ra lẫn phải làm gì tiếp — dịch trần cái id ra thì
+	// vô dụng. Ba dòng cuối của nhóm refusal nói thẳng rằng lỗi ở chương trình,
+	// vì người chơi chỉ được báo "nước đi không hợp lệ" sẽ đi tìm cái sai của
+	// chính mình.
+	RefusalNone:             "không có gì bị từ chối cả: phòng đã nhận máy này vào",
+	RefusalProtocolMismatch: "hai bên đang nói hai phiên bản giao thức khác nhau nên không hiểu nhau; xem dòng build ở hai máy rồi cài về cùng một bản",
+	RefusalDataMismatch:     "cùng giao thức nhưng dữ liệu game hai bên khác nhau, đánh chung thì mỗi máy ra một trận; xem dòng data ở hai máy rồi cài về cùng một bản",
+	RefusalBadPassword:      "phòng này có mật khẩu và mật khẩu vừa gửi không đúng; hỏi lại chủ phòng rồi nhập lại",
+	RefusalRoomUnknown:      "có máy trả lời nhưng không có phòng nào mang mã đó; xem lại mã đã gõ đúng chưa, hoặc xin mã mới vì phòng cũ đã đóng",
+	RefusalRoomFull:         "bàn đó đã đủ hai người ngồi; chờ họ đánh xong hoặc rủ nhau mở một phòng khác",
+	RefusalSquadRefused:     "đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép; sửa đội rồi vào lại",
+	RefusalNotYourTurn:      "nước đi được gửi lúc chưa tới lượt bên mình; đây là lỗi của chương trình chứ không phải của bạn, gặp lại thì hai bên cài về cùng một bản",
+	RefusalIllegalAction:    "phòng không nhận nước vừa gửi vì nó không nằm trong những nước đang mở; lỗi của chương trình chứ không phải của bạn, chọn lại một nước trên màn hình",
+	RefusalUnknownMessage:   "phòng không đọc được tin vừa nhận, thường là do hai bên chạy hai bản khác nhau; không phải lỗi của bạn, cài cho hai máy cùng một bản",
+	ClosedNone:              "không có gì làm trận dừng cả",
+	ClosedLeft:              "bên kia mất kết nối nên trận dừng ở đây; không tính ai thắng ai thua, muốn đánh tiếp thì mở phòng mới",
+	ClosedStopped:           "máy mở phòng đã tắt nên trận dừng ở đây; không tính ai thắng ai thua, chờ chủ phòng mở lại rồi vào bằng mã mới",
 }

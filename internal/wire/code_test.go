@@ -10,15 +10,14 @@ import (
 // and it walks CodeCount for the reason the kind walk does: ranging over
 // codeNames would ask that table whether it holds what it holds.
 //
-// ⚠️ What this test **cannot** measure is the thing that matters most, and
-// saying so is better than implying otherwise. Nothing words these codes yet —
-// the client's lines in both language books are a later item — so a code here is
-// a code no player can be shown, which is the "shipped dead" shape this
-// repository has recorded several times. wire must not import internal/i18n (the
-// whole point of a code is that the wording lives at the far end), so the count
-// is what is held here and the gap is written into TODO.md § The client rather
-// than left silent. The day those wordings land, the test that walks CodeCount
-// against both books belongs beside them, not here.
+// ⚠️ What this test **cannot** measure is the wording, and saying so is better
+// than implying otherwise. wire must not import internal/i18n — the whole point
+// of a code is that the wording lives at the far end — so the count is what is
+// held here. That wording now exists: TestEveryRefusalCodeIsWorded and its three
+// neighbours in internal/i18n/protocol_test.go walk this count against both
+// books, which is where they were always going to belong. What is still not
+// measured anywhere is whether a **player** is ever shown one — no screen calls
+// Lang.Refusal yet — so a code here is worded and unread. → TODO.md § The client.
 func TestEveryRefusalCodeHasANameAndTravels(t *testing.T) {
 	named := make(map[string]Code, CodeCount)
 	for value := range CodeCount {

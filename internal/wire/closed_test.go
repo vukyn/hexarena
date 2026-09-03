@@ -12,10 +12,11 @@ import (
 // is how a value ends up in the protocol with nothing measuring it.
 //
 // ⚠️ What this test **cannot** measure is the same thing the code walk cannot:
-// nothing words these yet. wire must not import internal/i18n, because the whole
-// point of sending an id is that the wording lives at the far end — so the count
-// is what is held here and the gap is written into TODO.md § The client, beside
-// the codes' own entry, rather than left silent.
+// the wording. wire must not import internal/i18n, because the whole point of
+// sending an id is that the wording lives at the far end — so the count is what
+// is held here, and TestEveryClosureIsWorded in internal/i18n/protocol_test.go
+// walks it against both books. Both endings are worded now and neither is drawn
+// by any screen yet. → TODO.md § The client, beside the codes' own entry.
 func TestEveryClosureHasANameAndTravels(t *testing.T) {
 	named := make(map[string]Closure, ClosureCount)
 	for value := range ClosureCount {

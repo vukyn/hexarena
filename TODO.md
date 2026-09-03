@@ -1002,29 +1002,34 @@ is only so the shape is readable.
             against the 24 the floor gives it, and PvP adds a clock row and a
             waiting row on top.
       - [ ] The wordings, in both books, Vietnamese composed: room, lobby,
-            waiting, timed out, opponent left, squad refused, version mismatch.
-            ⚠️ **`wire.ClosureCount` is a second enum with the same gap as the
-            codes**: `wire.Closed` travels an id and the wording lives at this
-            end, so "opponent left" above is now a real message a client
-            receives and still cannot word. `TestEveryClosureHasANameAndTravels`
-            holds the count and says in its own comment that it cannot hold the
-            wording.
+            waiting, timed out.
+            ✅ **The two protocol enums are done**: all ten `wire.Code`s and all
+            three `wire.Closure`s are worded in both books, via
+            `i18n.Lang.Refusal(name)` and `i18n.Lang.Closure(name)` in
+            `internal/i18n/protocol.go` — one sentence per value and no second
+            family, because the status categories have two only where two
+            sentences genuinely needed two shapes. They take the enum's **name**
+            rather than the typed value, the shape `Lang.StatusCategory` already
+            has, which keeps `internal/wire` out of `internal/i18n`'s production
+            imports entirely; the four walks over `wire.CodeCount` and
+            `wire.ClosureCount` live in `internal/i18n/protocol_test.go`, where
+            the import is test-only.
+            ⚠️ **They are worded and unread, and that is not the same as done.**
+            Nothing calls either accessor — `cmd/hexarena-tui`'s **pairing
+            screen** is what makes them visible, and it is the open item above
+            (lobby / room / waiting). Until it lands this converts *"no words
+            exist"* into *"words exist, nobody is shown them"*, which is one
+            step narrower than the "shipped dead" shape rather than closed.
+            ⚠️ **`TestNoKeyIsOrphaned` cannot see that gap and must not be quoted
+            as if it could.** It counts an identifier named anywhere in the
+            module, and each of the thirteen keys is named in `protocol.go`'s own
+            lookup, so it passes with nothing on any screen showing the words.
+            The same blindness holds for `socket.Refusal.Error()`, which still
+            prints the raw id — deliberately: it is the developer-facing error,
+            and the screen is what words it in the player's language.
             ⚠️ And gloss the new pass reason — `tui.Line` prints `event.Note`
             **raw**, so today a timeout would read `loses the turn (timeout)` in
             both languages.
-            ⚠️ **`wire.CodeCount` is TEN and no client words any of them yet**,
-            which is the "shipped dead" shape this repository has recorded
-            several times — a refusal a player cannot be shown. It could not be
-            held where the codes live: `internal/wire` must not import
-            `internal/i18n`, because the whole point of sending a code is that
-            the wording lives at the far end, so `TestEveryRefusalCodeHasANameAndTravels`
-            holds the **count** and says in its own comment that it cannot hold
-            the wording. The walk over `wire.CodeCount` against both books
-            belongs **here**, in the commit that adds these lines, in the shape
-            `TestEveryKeyIsWordedInBothLanguages` already has. The ten are
-            `none` (never sent) · `protocol_mismatch` · `data_mismatch` ·
-            `bad_password` · `room_unknown` · `room_full` · `squad_refused` ·
-            `not_your_turn` · `illegal_action` · `unknown_message`.
 
       **Later, deliberately**
       - [ ] Spectators, which the cursor above makes nearly free.
