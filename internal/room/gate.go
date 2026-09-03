@@ -54,10 +54,15 @@ func (r *Room) Join(hello wire.Hello) (wire.Seat, []Outbound, error) {
 	}
 	seat := seats[index]
 	r.seated[index] = peer{taken: true, name: hello.Name, squad: hello.Squad.Clone()}
+	// Every room setting a client needs in order to behave correctly, and the
+	// cap is one of those rather than an extra: a mirror that did not know it
+	// would sit holding an open prompt on a battle the room had stopped asking
+	// about. → wire.Welcome.TurnCap.
 	out := []Outbound{{To: seat, Body: wire.Welcome{
 		Format:    r.config.Format,
 		Battles:   r.config.Battles,
 		Allowance: r.config.Allowance,
+		TurnCap:   r.config.TurnCap,
 		Seat:      seat,
 	}}}
 	// The second peer to be seated starts the match, which is the one place a

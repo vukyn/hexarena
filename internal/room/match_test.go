@@ -93,6 +93,17 @@ func TestTwoFakeClientsFightAWholeBo3InProcess(t *testing.T) {
 			t.Errorf("%s was told the format is %s, want %s",
 				client.seat, client.welcome.Format, held.Format)
 		}
+		// ⚠️ The turn cap is a room setting a client needs in order to behave
+		// correctly, exactly as the allowance is: a capped battle emits no Ended
+		// and no further start arrives, so a mirror that did not hold the cap
+		// would sit on an open prompt for ever. It is compared against the
+		// room's own reading of its configuration for the reason the allowance
+		// is — the two have to be one number, or the two peers stop on different
+		// turns.
+		if client.welcome.TurnCap != held.TurnCap {
+			t.Errorf("%s was told the turn cap is %d, want %d",
+				client.seat, client.welcome.TurnCap, held.TurnCap)
+		}
 	}
 
 	// The match. Every step is one decision, read off the acting client's own
@@ -168,8 +179,8 @@ func TestTwoFakeClientsFightAWholeBo3InProcess(t *testing.T) {
 	default:
 		t.Errorf("a match played out to the end has the verdict %q", result.Verdict)
 	}
-	if result.Forfeit != room.ForfeitNone {
-		t.Errorf("a match played out to the end reports the forfeit %q", result.Forfeit)
+	if result.Departed.Valid() {
+		t.Errorf("a match played out to the end records %q as having gone away", result.Departed)
 	}
 
 	// Claim 4: each battle was fought from the side the alternation gives it,

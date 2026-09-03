@@ -69,10 +69,12 @@ type Config struct {
 	// TurnCap is how many turns one battle may open before the room stops
 	// asking, so a runaway cannot hold two people at a board for ever.
 	//
-	// ⚠️ It is not on the wire, and a mirror therefore cannot see a capped
-	// battle coming. → TODO.md, under the client: what a capped battle looks
-	// like to a mirror is an open question, and the answer is either a protocol
-	// bump or making this a constant both peers read.
+	// ⚠️ **It rides on wire.Welcome**, beside the allowance and for the same
+	// reason: a cap is room configuration the client needs in order to behave
+	// correctly, and the client is a mirror — given the cap it stops on the same
+	// turn by the same arithmetic, so no message and no Ended is needed to tell
+	// it a battle was capped. → wire.Welcome.TurnCap, which carries the three
+	// alternatives that were refused.
 	TurnCap int
 	// Password keeps strangers in the house off the board and is **not**
 	// security. Empty is a room with none, which accepts any hello that gets

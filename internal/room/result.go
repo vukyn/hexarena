@@ -11,11 +11,11 @@ import (
 //
 // ⚠️ Nothing here is added to battle.Outcome and nothing ever should be. That
 // enum is a core type read by --verify and by every renderer, and it answers a
-// different question: how a *battle* ended. A forfeit and a dropped socket are
-// not ways a battle can end — the battle they interrupted was in a perfectly
-// ordinary state when the room stopped asking about it — so they live here, in
-// the room's own record, and TestAForfeitAndADisconnectAddNothingToTheBattlesOutcomes
-// holds battle.OutcomeCount against the number it has always had.
+// different question: how a *battle* ended. A departure is not a way a battle
+// can end — the battle it interrupted was in a perfectly ordinary state when the
+// room stopped asking about it — so it lives here, in the room's own record, and
+// TestADepartureAddsNothingToTheBattlesOutcomes holds battle.OutcomeCount
+// against the number it has always had.
 //
 // The two words are kept apart on purpose. A reader meeting `Outcome` twice in
 // one file, once meaning the battle and once the match, is a reader one step
@@ -34,24 +34,39 @@ const (
 	// so that a tie-break is never something the room has to make up, and a
 	// series that drew every battle drew.
 	VerdictDrawn
-	// VerdictForfeited is a match given up rather than lost: three consecutive
-	// timeouts, or a peer that went away. See Forfeit for which.
+	// VerdictAbandoned is a match nobody played out, which is what a departure
+	// leaves behind.
+	//
+	// ⚠️ **It is not a win, not a draw and not a forfeit.** Nobody is charged
+	// with anything: leaving announces and nothing more, and a timeout does not
+	// even reach here — it passes the turn and the match carries on. So Winner is
+	// the zero Seat, Departed names who went away, and the standing is whatever
+	// the battles already fought had made it.
+	//
+	// ⚠️ The concept this replaced was VerdictForfeited, with a Forfeit beside it
+	// saying which of two routes had been taken. Both routes are gone: a
+	// departure costs nothing (→ README.md § PvP over a LAN, where that cost is
+	// stated) and three missed allowances cost nothing either, because a player
+	// who walks away from the keyboard loses on the board — the opponent keeps
+	// acting and kills the passing units — or, if both walk away, the turn cap
+	// draws it. The forfeit was carrying nothing the board does not already
+	// carry.
 	//
 	// Declared last, which is the rule this enum shares with the ones on the
 	// wire even though nothing serialises it yet: the day it is written to a
 	// file, appending will not reinterpret anything already written.
-	VerdictForfeited
+	VerdictAbandoned
 )
 
 // VerdictCount is the number of verdicts, so a test can walk them rather than
 // range over the table of names and ask it whether it holds what it holds.
-const VerdictCount = int(VerdictForfeited) + 1
+const VerdictCount = int(VerdictAbandoned) + 1
 
 var verdictNames = [VerdictCount]string{
 	VerdictUnfinished: "unfinished",
 	VerdictWon:        "won",
 	VerdictDrawn:      "drawn",
-	VerdictForfeited:  "forfeited",
+	VerdictAbandoned:  "abandoned",
 }
 
 func (v Verdict) String() string {
@@ -65,57 +80,22 @@ func (v Verdict) String() string {
 // zero one.
 func (v Verdict) Over() bool { return v != VerdictUnfinished && int(v) < VerdictCount }
 
-// Forfeit is why a match was given up, and it exists because a forfeit has two
-// routes and telling them apart is the whole of what a player needs to be told:
-// one of them is the opponent's connection and the other is the opponent.
-type Forfeit uint8
-
-const (
-	// ForfeitNone is a match that was not forfeited at all.
-	ForfeitNone Forfeit = iota
-	// ForfeitTimedOut is TimeoutLimit consecutive allowances run out on one
-	// seat. Pure counting: the room never reads a clock, it is *told* that an
-	// allowance ran out, so this is a tally of inputs rather than a judgement
-	// about elapsed time.
-	ForfeitTimedOut
-	// ForfeitLeft is a peer that went away. ⚠️ Whether a peer has really gone or
-	// is merely slow is the transport's judgement and not the room's — the room
-	// is told, exactly as it is told about a timeout. A reconnect window would
-	// sit in front of Left rather than inside it (→ TODO.md, the seat token).
-	ForfeitLeft
-)
-
-// ForfeitCount is the number of routes to a forfeit, and it is held against by
-// TestAForfeitAndADisconnectAddNothingToTheBattlesOutcomes so that neither is
-// the dead branch this repository has recorded several times: a rule whose only
-// real case is unreachable.
-const ForfeitCount = int(ForfeitLeft) + 1
-
-var forfeitNames = [ForfeitCount]string{
-	ForfeitNone:     "none",
-	ForfeitTimedOut: "timed_out",
-	ForfeitLeft:     "left",
-}
-
-func (f Forfeit) String() string {
-	if int(f) >= ForfeitCount {
-		return fmt.Sprintf("forfeit(%d)", uint8(f))
-	}
-	return forfeitNames[f]
-}
-
 // Result is the match, finished or not.
 type Result struct {
 	Verdict Verdict
-	// Winner is the seat that took the match, and is the zero Seat for a draw
-	// and for a match still being played. Seat.Valid is the question to ask.
+	// Winner is the seat that took the match, and is the zero Seat for a draw,
+	// for a match still being played **and for an abandoned one** — nobody wins
+	// a match nobody played out. Seat.Valid is the question to ask.
 	Winner wire.Seat
-	// Forfeit is why the match was given up, and ForfeitNone for one that was
-	// played out. Loser is the seat that gave it up, which is the fact a winner
-	// by forfeit needs and cannot derive: it is not simply "the other one" the
-	// day a room holds spectators.
-	Forfeit Forfeit
-	Loser   wire.Seat
+	// Departed is the seat that went away, and the zero Seat for a match that
+	// was played out. It is the fact an abandoned match needs and cannot derive:
+	// it is not simply "the other one" the day a room holds spectators.
+	//
+	// ⚠️ It was called Loser, beside a Forfeit saying why. Nobody loses by
+	// leaving now, so the word had to go with the concept — a field called Loser
+	// on a verdict where nobody lost is exactly the stale wording this
+	// repository keeps a list of.
+	Departed wire.Seat
 	// Wins is how many battles each seat took, indexed the way the room indexes
 	// its seats. Draws count for neither, which is why the two need not add up
 	// to the number of battles played.

@@ -198,6 +198,33 @@ type Welcome struct {
 	// of a clock. That is why it sits here beside the format and why no
 	// battle-carrying message holds a clock reading at all.
 	Allowance int `json:"allowance"`
+	// TurnCap is how many turns one battle may open before the room stops
+	// asking, so a runaway cannot hold two people at a board for ever.
+	//
+	// ⚠️ It is here for the reason the allowance is, and the argument is the one
+	// written above: a cap is **room configuration**, not part of the battle.
+	// The allowance is here so a client can count down; the cap is here so a
+	// client can **stop on the same turn**. Without it a capped battle is
+	// invisible to a mirror — the engine emits no Ended at a cap, and it must
+	// not, because a cap is somebody deciding to stop rather than a way a
+	// battle can end — so the client would sit holding an open prompt on a
+	// battle the room had already stopped asking about.
+	//
+	// That is sufficient with no new message and no Ended: the client is a
+	// mirror, so given the cap it reaches the cap on the same turn by the same
+	// arithmetic. Two peers agree because they compute the same thing from the
+	// same configuration, which is the mirror contract itself. ⚠️ Skipped turns
+	// count towards it — a turn is a turn — so a client counting only the turns
+	// that arrive on a Turn would sit behind the cap for a whole battle.
+	//
+	// ⚠️ Three alternatives were considered and refused. → README.md § PvP over
+	// a LAN: a constant both peers read (the host loses the setting, and a
+	// version skew then desyncs silently where a config field is checked at the
+	// handshake), a "battle was capped" message (a protocol bump *and* a second
+	// declaration of how a battle ends), and letting the engine emit Ended at
+	// the cap (which would make every renderer and --verify learn a room's
+	// policy).
+	TurnCap int `json:"turn_cap"`
 	// Seat is which of the room's two places this client took, for the match.
 	Seat Seat `json:"seat"`
 }
@@ -278,3 +305,31 @@ type Turn struct {
 
 // Kind is KindTurn.
 func (Turn) Kind() Kind { return KindTurn }
+
+// Closed is the room saying the match is over for a reason the board cannot
+// show. Server → client, at most once, and **not to the peer that caused it**.
+//
+// It exists because one thing genuinely needed saying and nothing said it. A
+// departure ends a match in the middle of a battle: there is no Ended for the
+// battle in progress — the engine concluded nothing about it — and no further
+// Start, so a mirror that was handed nothing would simply hang on its own open
+// prompt, waiting for a turn that is never coming.
+//
+// ⚠️ **It is not "the match ended" in general**, and a reader will want to send
+// it for every ending. A match played out to its end needs no message: the
+// client learns each battle's outcome from its own Ended event and the series
+// length from Welcome.Battles, so announcing the result would be a second
+// declaration of a fact the client computes — which is exactly what the missing
+// series-standing message is missing for. A **capped** battle needs none
+// either: Welcome.TurnCap is what lets the mirror stop on the same turn by the
+// same arithmetic.
+//
+// So the field is a Closure and the message is not one kind per reason: a
+// second thing a board cannot show is an entry in that enum rather than an
+// eighth message.
+type Closed struct {
+	Reason Closure `json:"reason"`
+}
+
+// Kind is KindClosed.
+func (Closed) Kind() Kind { return KindClosed }

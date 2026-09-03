@@ -161,12 +161,18 @@ type served struct {
 //
 // ⚠️ The Reading rides on the answer rather than being fetched afterwards, and
 // that is forced rather than convenient. A room removes its own entry the moment
-// its match ends — which is what keeps a finished room from lingering — and the
-// protocol has no message for "the match is over and here is why" (a documented
-// gap: see Room.forfeit). So a transport that asked *afterwards* what the result
-// was would be asking about a room that had already gone, and the result of
-// every match would be unreachable. The answer to the input that ended the match
-// is the only place it can be read.
+// its match ends — which is what keeps a finished room from lingering — so a
+// transport that asked *afterwards* what the result was would be asking about a
+// room that had already gone, and the result of every match would be
+// unreachable. The answer to the input that ended the match is the only place it
+// can be read.
+//
+// ⚠️ **wire.Closed does not change that**, and a reader will ask. That message
+// is for the *peer*, which needs to know its opponent went away, and it is sent
+// on one ending only: a match played out to its end sends nothing, because the
+// client computes that ending itself. So the transport's own reading of any
+// ending still has to travel here — the same division Known draws between a
+// refusal for the peer and an answer for the transport.
 type Answer struct {
 	// Seat is the seat a Join handed out, and the zero Seat everywhere else —
 	// including a refused join, exactly as Room.Join reports it.

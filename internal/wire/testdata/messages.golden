@@ -75,6 +75,7 @@
     "format": 3,
     "battles": 3,
     "allowance": 90,
+    "turn_cap": 200,
     "seat": "guest"
   }
 }
@@ -160,6 +161,14 @@
       }
     },
     "events": "2361e1e1ef3c1895ad88842c920a02dc24fa160f15124e6fd996955608ac7649"
+  }
+}
+
+[closed]
+{
+  "kind": "closed",
+  "body": {
+    "reason": "left"
   }
 }
 

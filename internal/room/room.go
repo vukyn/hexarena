@@ -2,9 +2,8 @@
 // of its own: messages and prompts in, messages and decisions out.
 //
 // It speaks internal/wire and declares no message of its own. It owns one
-// *battle.Battle at a time, the series that battle is one of, the gate a peer
-// gets past to sit down, and the counting that turns three missed allowances
-// into a forfeit. A Room opens no socket, starts no goroutine, takes no mutex,
+// *battle.Battle at a time, the series that battle is one of, and the gate a
+// peer gets past to sit down. A Room opens no socket, starts no goroutine, takes no mutex,
 // and — see below — reads no clock. Two fake clients therefore drive a whole
 // match in-process, at the speed of the engine, which is the reason it was built
 // this way round: a server with the transport in the middle of the state machine
@@ -22,10 +21,19 @@
 // ⚠️ **A timeout is an INPUT, not a reading.** The room never asks what time it
 // is. Whoever owns the transport counts the allowance down and calls TimedOut to
 // say it ran out, and the room applies a Pass with a single constant reason
-// (TimeoutReason). So `time` is not imported anywhere in this package,
+// (TimeoutReason). So `time` is not imported anywhere in this package, and
 // TestTheRoomReadsNoClock holds that mechanically with an AST walk over this
-// directory, and "three consecutive timeouts forfeit" is pure counting — a tally
-// of inputs, testable with no clock anywhere near it.
+// directory.
+//
+// ⚠️ **A timeout is announced and nothing more — it does not count towards
+// anything.** It used to: three of a seat's own allowances running out in a row
+// forfeited the match, and TimeoutLimit, the per-seat tally and that branch are
+// all gone. What passing the turn buys is that the match *progresses*, which is
+// the whole point of the input — without it a room waits forever on somebody who
+// never answers. What the counting bought was nothing the board does not already
+// carry: a player who walks away from the keyboard loses on the board, because
+// the opponent keeps acting and kills the passing units, and if both walk away
+// the turn cap draws it.
 //
 // The per-turn allowance is *configuration* the room carries and hands to
 // clients on wire.Welcome. The room does not count it down and has no opinion
@@ -100,17 +108,6 @@ import (
 // → TODO.md, under the client's wordings.
 const TimeoutReason = "timeout"
 
-// TimeoutLimit is how many of a seat's own allowances may run out in a row
-// before the match is forfeited.
-//
-// Three, because a disconnected client is not a slow one and the alternative is
-// somebody sitting in front of a dead opponent for an hour: at the ninety-second
-// default over a forty-turn battle, waiting the whole thing out is exactly that.
-// It counts a seat's *consecutive* misses and any real answer resets it (see
-// TimedOut), because a counter that never reset would forfeit a merely slow
-// player somewhere in the middle of a long match.
-const TimeoutLimit = 3
-
 // Deps is what a room is handed rather than what it decides: the parsed data, and
 // the version this binary announces.
 type Deps struct {
@@ -142,14 +139,15 @@ type Outbound struct {
 	Body wire.Body
 }
 
-// peer is one seated client: what it brought, and how many of its allowances
-// have run out in a row.
+// peer is one seated client: what it brought, and nothing else.
+//
+// ⚠️ There is no tally of missed allowances on it. There was, and the branch it
+// fed — three in a row forfeiting the match — is gone; a timeout announces and
+// passes the turn. → the package comment.
 type peer struct {
 	taken bool
 	name  string
 	squad placement.Squad
-	// missed is consecutive timeouts, reset by any real answer.
-	missed int
 }
 
 // Room is one match: a series of battles between two seats.
@@ -249,7 +247,7 @@ func (r *Room) Skipped() int { return r.skipped }
 //
 // It takes wire.Act and wire.Pass, which are the two messages a client sends
 // once it is in. Anything else — including a wire.Hello, which goes to Join,
-// and any of the four server-bound bodies, which is a peer speaking the wrong
+// and any of the five server-bound bodies, which is a peer speaking the wrong
 // direction — is answered with wire.CodeUnknownMessage, because that is what
 // this protocol's ten codes have for a message that does not belong here.
 func (r *Room) Deliver(from wire.Seat, body wire.Body) ([]Outbound, error) {
@@ -288,12 +286,10 @@ func (r *Room) answerFrom(index int, act wire.Act) ([]Outbound, error) {
 		// cooldown, an aim outside the cells it listed — so this code is the
 		// engine's no travelling back rather than a second reading of the rules.
 		//
-		// The turn stays open and the miss count is **not** reset: an illegal
-		// action is not an answer, and a peer that could clear its own timeout
-		// tally by sending nonsense would never be forfeited at all.
+		// The turn stays open: an illegal action is not an answer, so the seat is
+		// still the one being asked.
 		return r.refuse(seats[index], wire.CodeIllegalAction), nil
 	}
-	r.seated[index].missed = 0
 	return r.resolved(battle.Decision{
 		Unit: prompt.Unit, Turn: prompt.Turn, Skill: act.Skill, Aim: act.Aim,
 	})
@@ -313,7 +309,6 @@ func (r *Room) passFrom(index int) ([]Outbound, error) {
 	if err := r.fight.Pass(""); err != nil {
 		return nil, fmt.Errorf("pass %q: %w", prompt.Unit, err)
 	}
-	r.seated[index].missed = 0
 	return r.resolved(battle.Decision{Unit: prompt.Unit, Turn: prompt.Turn, Passed: true})
 }
 
@@ -326,20 +321,31 @@ func (r *Room) passFrom(index int) ([]Outbound, error) {
 // battle nobody was waiting on and --verify cannot tell a timed-out match from
 // any other.
 //
-// A timeout for a seat that is not being asked anything is refused and **not
-// counted**, which is what makes a Skipped prompt untimeoutable: the room never
-// leaves one open, so there is never an allowance to run out on one.
+// ⚠️ **It announces and nothing more: nothing is counted and nothing is
+// forfeited.** Three in a row used to end the match, and that is gone —
+// → the package comment for what the counting was buying and why the board
+// already carries it. What survives is the pass, which is what makes the match
+// progress rather than wait forever on somebody who never answers.
 //
-// The count is consecutive and per seat, and TimeoutLimit of them forfeits the
-// match at once — the third is the forfeit, and no fourth is needed or taken.
+// ⚠️ **It needs no message of its own, and that is worth being exact about.**
+// The pass carries TimeoutReason, that reason is part of the battle.Decision,
+// and the decision goes out on wire.Turn — where Decision.Reason is tagged
+// `json:"reason,omitempty"`. So the mirror is *already told* that the turn was
+// lost to a clock, by the one declaration of it that travels, and a second
+// message would be a second spelling of a fact both peers already hold.
+// TestATimeoutTellsTheMirrorWithNoMessageOfItsOwn is what measures that rather
+// than asserting it here.
+//
+// A timeout for a seat that is not being asked anything is **refused**, and the
+// refusal matters more than it did: with no tally to protect, what it protects
+// is the turn itself — a transport reporting a spurious timeout must not spend
+// the answer of a seat the room is not asking. It is also what makes a Skipped
+// prompt untimeoutable: the room never leaves one open, so there is never an
+// allowance to run out on one.
 func (r *Room) TimedOut(seat wire.Seat) ([]Outbound, error) {
 	index, seated := indexOf(seat)
 	if !seated || !r.seated[index].taken || r.onTurn != index || r.prompt == nil {
 		return r.refuse(seat, wire.CodeNotYourTurn), nil
-	}
-	r.seated[index].missed++
-	if r.seated[index].missed >= TimeoutLimit {
-		return r.forfeit(seat, ForfeitTimedOut), nil
 	}
 	prompt := r.prompt
 	if err := r.fight.Pass(TimeoutReason); err != nil {
@@ -359,8 +365,17 @@ func (r *Room) TimedOut(seat wire.Seat) ([]Outbound, error) {
 // is its own TODO.md item — so this is the terminal case: the transport has
 // decided.
 //
-// Before the match starts there is nothing to forfeit, so the seat is simply
-// freed and the room goes back to waiting for a second player.
+// ⚠️ **Leaving announces and costs nothing.** The match ends as
+// VerdictAbandoned, which is not a win, not a draw and not a forfeit: the seat
+// that went away is recorded and neither seat is charged with anything. A player
+// who is losing can therefore leave at no cost, and on a LAN between friends the
+// enforcement of that is social — a stated cost rather than a gap.
+// → README.md § PvP over a LAN.
+//
+// Before the match starts there is no match to end, so the seat is simply freed
+// and the room goes back to waiting for a second player. A reconnect window
+// therefore sits **in front of** this call and not inside it — → TODO.md, under
+// the seat token.
 func (r *Room) Left(seat wire.Seat) ([]Outbound, error) {
 	index, seated := indexOf(seat)
 	if !seated || !r.seated[index].taken || r.Finished() {
@@ -370,7 +385,7 @@ func (r *Room) Left(seat wire.Seat) ([]Outbound, error) {
 		r.seated[index] = peer{}
 		return nil, nil
 	}
-	return r.forfeit(seat, ForfeitLeft), nil
+	return r.abandon(seat), nil
 }
 
 // resolved carries the battle from a turn just spent to whatever comes next: the
@@ -548,24 +563,33 @@ func (r *Room) close() ([]Outbound, error) {
 	return nil, nil
 }
 
-// forfeit ends the match without finishing the battle it interrupted.
+// abandon ends the match without finishing the battle it interrupted, and tells
+// the seat that is still there.
 //
-// ⚠️ It sends **nothing**, and that is a gap rather than a decision: the
-// protocol's seven messages have no way to say "the match is over and here is
-// why". The transport closes the connection and the client words it from its own
-// books — "opponent left" is on the wordings list — and a message for it would
-// be a protocol bump. → TODO.md.
-func (r *Room) forfeit(loser wire.Seat, because Forfeit) []Outbound {
+// ⚠️ **This is the one ending that needs a message**, and the reason is that it
+// is the one a mirror cannot reach on its own. Every other ending a client
+// computes: it learns each battle's outcome from its own Ended event and the
+// series length from Welcome.Battles, and it stops at the turn cap by the same
+// arithmetic the room does (→ wire.Welcome.TurnCap). A departure is different —
+// there is no Ended for the battle in progress, because the engine concluded
+// nothing about it, and no further Start — so a peer handed nothing would hang on
+// its own open prompt waiting for a turn that is never coming.
+//
+// It is addressed to the **other** seat only. The transport has already decided
+// there is nobody at the seat that left, so a message to it is a message to
+// nobody; Outbound names a seat precisely so the two can be handed different
+// things. That other seat is necessarily taken: a match only starts once both
+// seats are, and nothing frees one mid-match — the pre-match departure is
+// answered in Left, above, before this is reached.
+func (r *Room) abandon(departed wire.Seat) []Outbound {
 	r.result = Result{
-		Verdict: VerdictForfeited,
-		Winner:  other(loser),
-		Forfeit: because,
-		Loser:   loser,
-		Wins:    r.standing,
-		Battles: len(r.played),
+		Verdict:  VerdictAbandoned,
+		Departed: departed,
+		Wins:     r.standing,
+		Battles:  len(r.played),
 	}
 	r.fight, r.prompt, r.onTurn = nil, nil, -1
-	return nil
+	return []Outbound{{To: other(departed), Body: wire.Closed{Reason: wire.ClosureLeft}}}
 }
 
 // refuse is one wire.Refused for one seat.

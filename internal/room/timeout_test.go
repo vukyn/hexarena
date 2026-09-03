@@ -57,124 +57,132 @@ func answerFor(t *testing.T, opened *room.Room, clients *table, timeOut wire.Sea
 	return onTurn, out
 }
 
-// TestThreeConsecutiveTimeoutsForfeitAndAFourthIsNotNeeded is the counting half
-// of the clock, and it is counting rather than timing: the room is *told* an
-// allowance ran out and never asks how long anything took.
+// ⚠️ **Two tests were deleted here rather than left to rot, and this note is
+// what they leave behind.** TestThreeConsecutiveTimeoutsForfeitAndAFourthIsNotNeeded
+// and TestARealActionResetsTheTimeoutCount were both good tests of a mechanism
+// that no longer exists: the per-seat tally of consecutive missed allowances,
+// room.TimeoutLimit, and the branch that ended the match on the third. A timeout
+// announces and passes the turn now, and nothing counts. Rewriting either would
+// have left a test whose name described a rule and whose body measured nothing —
+// the shape this repository has recorded as "shipped dead" pointed at a suite.
 //
-// A disconnected client is not a slow one, which is what the limit is for.
-// Ninety seconds a turn over a forty-turn battle is an hour of somebody sitting
-// in front of a dead opponent.
-func TestThreeConsecutiveTimeoutsForfeitAndAFourthIsNotNeeded(t *testing.T) {
+// What replaced them is not a smaller version of the same claim but the opposite
+// one, measured on the board rather than on a counter:
+// TestASeatThatNeverAnswersLosesOnTheBoardRatherThanByForfeit is what the
+// forfeit was for, and TestWhenNobodyAnswersTheTurnCapDrawsIt is the case where
+// there is nobody left to punish. Between them they say the thing the counting
+// was buying was already carried by the board.
+
+// TestASeatThatNeverAnswersLosesOnTheBoardRatherThanByForfeit is the measurement
+// that made the forfeit unnecessary, and it is the whole argument for deleting
+// it: a player who walks away from the keyboard **loses anyway**, because the
+// opponent keeps acting and kills units that only ever pass.
+//
+// So the claim is stronger than "the match does not end early". It is that the
+// match ends the ordinary way — a verdict of won, on the board, with a real
+// winner and a standing the battles produced — while one seat answered nothing
+// at all. Nobody is charged with anything and no room.Closed is sent.
+func TestASeatThatNeverAnswersLosesOnTheBoardRatherThanByForfeit(t *testing.T) {
 	opened, clients := openMatch(t, config(11, 3))
 	const victim = wire.SeatGuest
 
 	missed, steps := 0, 0
-	var last []room.Outbound
 	for !opened.Finished() {
-		onTurn, out := answerFor(t, opened, clients, victim)
+		onTurn, _ := answerFor(t, opened, clients, victim)
 		if onTurn == victim {
 			missed++
-			last = out
 		}
 		steps++
-		if steps > 200 {
+		if steps > 3*room.DefaultTurnCap {
 			t.Fatalf("after %d turns and %d timeouts the match is still running", steps, missed)
 		}
 	}
-	if missed != room.TimeoutLimit {
-		t.Fatalf("the match ended after %d timeouts, want exactly %d — a fourth is not needed",
-			missed, room.TimeoutLimit)
-	}
-	// The forfeiting timeout sends nothing at all, which is a gap in the
-	// protocol rather than a decision: the seven messages have no way to say
-	// "the match is over and here is why". → the note on Room.forfeit.
-	if len(last) != 0 {
-		t.Errorf("the forfeiting timeout produced %d messages", len(last))
+	// The vacuity guard, and it is the sharpest thing here: with no tally there
+	// is no bound on how many timeouts a match can take, so a run that happened
+	// to contain three would have measured the mechanism that was deleted.
+	if missed < 4 {
+		t.Fatalf("the victim ran out of time %d times, which is inside the limit the deleted rule "+
+			"used to have — this run cannot tell the new behaviour from the old", missed)
 	}
 
 	result := opened.Result()
-	if result.Verdict != room.VerdictForfeited {
-		t.Errorf("three timeouts gave the verdict %q, want %q", result.Verdict, room.VerdictForfeited)
-	}
-	if result.Forfeit != room.ForfeitTimedOut {
-		t.Errorf("three timeouts were recorded as %q, want %q", result.Forfeit, room.ForfeitTimedOut)
-	}
-	if result.Loser != victim {
-		t.Errorf("the forfeit was charged to %q, want %q", result.Loser, victim)
+	if result.Verdict != room.VerdictWon {
+		t.Fatalf("a match one seat never answered ended as %q, want %q on the board",
+			result.Verdict, room.VerdictWon)
 	}
 	if result.Winner != wire.SeatHost {
-		t.Errorf("the forfeit was awarded to %q, want the other seat", result.Winner)
+		t.Errorf("the match went to %q, want the seat that was answering", result.Winner)
 	}
-	// And a fourth timeout is not merely unnecessary, it is refused: the match
-	// is over, so nobody is on turn.
-	out, err := opened.TimedOut(victim)
-	if err != nil {
-		t.Fatalf("a fourth timeout: %v", err)
+	if result.Departed.Valid() {
+		t.Errorf("a timed-out match recorded %q as having gone away; a timeout is not a departure",
+			result.Departed)
 	}
-	if got := onlyCodeFor(t, out, victim); got != wire.CodeNotYourTurn {
-		t.Errorf("a timeout after the match answered %q, want %q", got, wire.CodeNotYourTurn)
+	// And the standing is battles actually fought rather than a walkover.
+	if got := len(opened.Played()); got == 0 {
+		t.Error("the match ended having played no battles")
 	}
-	t.Logf("forfeited after %d turns and %d timeouts", steps, missed)
+	for _, client := range []*mirror{clients.host, clients.guest} {
+		if len(client.closures) != 0 {
+			t.Errorf("%s was told the room closed (%v); a timeout announces through the decision it "+
+				"passes and needs no message of its own", client.seat, client.closures)
+		}
+	}
+	t.Logf("won on the board after %d turns, %d of them the victim's allowance running out; standing %v",
+		steps, missed, result.Wins)
 }
 
-// TestARealActionResetsTheTimeoutCount is the half that is easy to get wrong,
-// and getting it wrong is not a crash: a counter that never reset would forfeit
-// a merely slow player somewhere in the middle of a long match, having counted
-// three misses spread across twenty minutes as though they were consecutive.
+// TestWhenNobodyAnswersTheTurnCapDrawsIt is the other half of the same argument,
+// and it is the case a forfeit could never have handled well: with **both** seats
+// timing out there is nobody to award the match to.
 //
-// The shape is two misses, one real answer, two more misses — five in total,
-// which is well past the limit of three — and the match has to still be running.
-// Then one more miss forfeits, which is what says the counter reset rather than
-// stopped counting.
-func TestARealActionResetsTheTimeoutCount(t *testing.T) {
-	opened, clients := openMatch(t, config(11, 3))
-	const victim = wire.SeatGuest
+// The board answers it without a new rule. Neither side deals damage, so the
+// battle cannot end itself, and the turn cap stops it as the draw the outcome
+// already carries. That is what "the forfeit was carrying nothing the board does
+// not already carry" means in the one case where the board has to carry it alone.
+func TestWhenNobodyAnswersTheTurnCapDrawsIt(t *testing.T) {
+	// A cap far below any real battle, so the cap is certainly what stops it.
+	configuration := config(11, 1)
+	configuration.TurnCap = 6
+	opened, clients := openMatch(t, configuration)
 
-	// miss makes the victim's next prompt run out of time, letting the other
-	// seat answer normally in between, and reports how many turns that took.
-	miss := func(times int) {
-		t.Helper()
-		for missed := 0; missed < times; {
-			if opened.Finished() {
-				t.Fatalf("the match ended after %d of %d intended timeouts", missed, times)
-			}
-			if onTurn, _ := answerFor(t, opened, clients, victim); onTurn == victim {
-				missed++
-			}
+	timeouts, steps := 0, 0
+	for !opened.Finished() {
+		onTurn, waiting := opened.Awaiting()
+		if !waiting {
+			t.Fatalf("after %d turns nobody is on turn and the match is not over", steps)
+		}
+		out, err := opened.TimedOut(onTurn)
+		if err != nil {
+			t.Fatalf("%s's allowance running out: %v", onTurn, err)
+		}
+		clients.deliver(t, out)
+		timeouts++
+		steps++
+		if steps > 4*configuration.TurnCap {
+			t.Fatalf("the %d-turn cap did not stop a battle nobody was playing in %d turns",
+				configuration.TurnCap, steps)
 		}
 	}
-	// answer makes the victim answer its own next prompt for real.
-	answer := func() {
-		t.Helper()
-		for {
-			if opened.Finished() {
-				t.Fatal("the match ended before the victim could answer")
-			}
-			if onTurn, _ := answerFor(t, opened, clients, ""); onTurn == victim {
-				return
-			}
-		}
+	if timeouts != steps {
+		t.Fatalf("%d of %d turns were timeouts; this measures a battle nobody answered", timeouts, steps)
 	}
 
-	miss(room.TimeoutLimit - 1)
-	if opened.Finished() {
-		t.Fatalf("%d timeouts forfeited a match; the limit is %d", room.TimeoutLimit-1, room.TimeoutLimit)
+	played := opened.Played()
+	if len(played) != 1 {
+		t.Fatalf("a bo1 played %d battles", len(played))
 	}
-	answer()
-	miss(room.TimeoutLimit - 1)
-	if opened.Finished() {
-		t.Fatalf("%d timeouts either side of a real answer forfeited the match: the count did not reset",
-			2*(room.TimeoutLimit-1))
+	if !played[0].Capped {
+		t.Fatalf("the battle ended as %q rather than at the cap", played[0].Outcome)
 	}
-	// The counter still works, so the reset put it back to nought rather than
-	// switching it off.
-	miss(1)
-	if !opened.Finished() {
-		t.Fatalf("%d timeouts after a reset did not forfeit", room.TimeoutLimit)
+	result := opened.Result()
+	if result.Verdict != room.VerdictDrawn {
+		t.Errorf("a battle nobody answered ended as %q, want %q — with both seats away there is "+
+			"nobody to award it to", result.Verdict, room.VerdictDrawn)
 	}
-	if got := opened.Result().Forfeit; got != room.ForfeitTimedOut {
-		t.Errorf("the forfeit was recorded as %q, want %q", got, room.ForfeitTimedOut)
+	if result.Departed.Valid() {
+		t.Errorf("a capped match recorded %q as having gone away", result.Departed)
 	}
+	t.Logf("capped at %d turns, every one of them an allowance running out", played[0].Turns)
 }
 
 // TestASkippedPromptStartsNoClock is the third detail that follows from "the
@@ -222,40 +230,88 @@ func TestASkippedPromptStartsNoClock(t *testing.T) {
 	t.Logf("%d turns, %d prompts walked past unaskable", steps, opened.Skipped())
 }
 
-// TestATimeoutOnNothingIsRefusedAndCountsNothing is the other half of the same
-// claim, and it is the one that would let a forfeit in through the back door: a
-// room that counted every TimedOut it was handed would forfeit a player whose
-// transport reported a timeout on a turn the room was not asking about.
-func TestATimeoutOnNothingIsRefusedAndCountsNothing(t *testing.T) {
-	dependencies := deps(t)
-	opened := newRoom(t, config(11, 1))
-	squad := squadOf(t, dependencies.Characters, "one.squad",
-		"pokemon.bulbasaur", "pokemon.machop", "pokemon.gastly")
-	seat, _, err := opened.Join(hello(t, squad, "Alone"))
-	if err != nil {
-		t.Fatalf("join: %v", err)
-	}
-	if _, waiting := opened.Awaiting(); waiting {
-		t.Fatal("a room with one player is waiting on somebody to act")
-	}
-	// Well past the limit, so a room that counted these would have forfeited
-	// several times over.
-	for attempt := 0; attempt < 2*room.TimeoutLimit; attempt++ {
-		out, err := opened.TimedOut(seat)
+// TestATimeoutOnNothingIsRefusedAndSpendsNobodysTurn is the guard that used to
+// be about the tally and is now about the turn, which is a **sharper** claim
+// rather than a weaker one.
+//
+// With three-in-a-row forfeiting, the risk was a transport reporting a spurious
+// timeout ending somebody's match through the back door. With nothing counted,
+// the risk is worse in kind: a timeout the room accepted from the wrong seat
+// would **spend the other player's turn for them** — a real decision entering
+// the battle, in the log, off a report about a seat the room was not asking.
+//
+// Two shapes, because the two ways a spurious report can arrive are different:
+// nobody is on turn at all, and somebody else is.
+func TestATimeoutOnNothingIsRefusedAndSpendsNobodysTurn(t *testing.T) {
+	t.Run("a room asking nobody anything", func(t *testing.T) {
+		dependencies := deps(t)
+		opened := newRoom(t, config(11, 1))
+		squad := squadOf(t, dependencies.Characters, "one.squad",
+			"pokemon.bulbasaur", "pokemon.machop", "pokemon.gastly")
+		seat, _, err := opened.Join(hello(t, squad, "Alone"))
 		if err != nil {
-			t.Fatalf("timeout %d: %v", attempt, err)
+			t.Fatalf("join: %v", err)
 		}
-		if got := onlyCodeFor(t, out, seat); got != wire.CodeNotYourTurn {
-			t.Fatalf("timeout %d answered %q, want %q", attempt, got, wire.CodeNotYourTurn)
+		if _, waiting := opened.Awaiting(); waiting {
+			t.Fatal("a room with one player is waiting on somebody to act")
 		}
-	}
-	if opened.Finished() {
-		t.Fatalf("%d timeouts on a room that was asking nobody anything gave the verdict %q",
-			2*room.TimeoutLimit, opened.Result().Verdict)
-	}
-	if opened.Result().Forfeit != room.ForfeitNone {
-		t.Errorf("a room that asked nobody anything recorded the forfeit %q", opened.Result().Forfeit)
-	}
+		for attempt := 0; attempt < 6; attempt++ {
+			out, err := opened.TimedOut(seat)
+			if err != nil {
+				t.Fatalf("timeout %d: %v", attempt, err)
+			}
+			if got := onlyCodeFor(t, out, seat); got != wire.CodeNotYourTurn {
+				t.Fatalf("timeout %d answered %q, want %q", attempt, got, wire.CodeNotYourTurn)
+			}
+		}
+		if opened.Finished() {
+			t.Fatalf("timeouts on a room that was asking nobody anything gave the verdict %q",
+				opened.Result().Verdict)
+		}
+	})
+
+	t.Run("the seat that is not on turn", func(t *testing.T) {
+		opened, clients := openMatch(t, config(11, 3))
+		onTurn, waiting := opened.Awaiting()
+		if !waiting {
+			t.Fatal("nobody is on turn")
+		}
+		// The turn as it stands, so the refusal can be shown to have left it
+		// exactly where it was.
+		before := opened.Pending()
+		if before == nil {
+			t.Fatal("the room is waiting on a seat with no turn open")
+		}
+		other := wire.SeatHost
+		if onTurn == other {
+			other = wire.SeatGuest
+		}
+		out, err := opened.TimedOut(other)
+		if err != nil {
+			t.Fatalf("a timeout from the seat that is not on turn: %v", err)
+		}
+		if got := onlyCodeFor(t, out, other); got != wire.CodeNotYourTurn {
+			t.Errorf("it answered %q, want %q", got, wire.CodeNotYourTurn)
+		}
+		after, stillWaiting := opened.Awaiting()
+		if !stillWaiting || after != onTurn {
+			t.Fatalf("the room is now waiting on %q (%v), want %q — a spurious timeout spent a turn",
+				after, stillWaiting, onTurn)
+		}
+		if now := opened.Pending(); now == nil || now.Unit != before.Unit || now.Turn != before.Turn {
+			t.Errorf("the open turn moved from %q's turn %d; a spurious timeout entered the battle",
+				before.Unit, before.Turn)
+		}
+		// And the match is untouched: nothing went out to either client.
+		for _, client := range []*mirror{clients.host, clients.guest} {
+			if client.compared != 0 {
+				t.Errorf("%s applied %d turns off a refused timeout", client.seat, client.compared)
+			}
+		}
+		if opened.Finished() {
+			t.Errorf("a timeout from the wrong seat ended the match as %q", opened.Result().Verdict)
+		}
+	})
 }
 
 // TestATimeoutEntersTheBattleAsAPassAndNotAsATime is the reason none of this
@@ -306,6 +362,81 @@ func TestATimeoutEntersTheBattleAsAPassAndNotAsATime(t *testing.T) {
 	closing := lastEvent(t, clients.host.events, battle.TurnSkipped)
 	if closing.Note != room.TimeoutReason {
 		t.Errorf("the timed-out turn reads %q in the log, want %q", closing.Note, room.TimeoutReason)
+	}
+}
+
+// TestATimeoutTellsTheMirrorWithNoMessageOfItsOwn is the claim the departure
+// message's absence rests on, and it is checked end to end through the encoder
+// rather than read off the struct the room built.
+//
+// The reasoning is that a timeout needs no message because one already travels:
+// the pass carries room.TimeoutReason, the reason is part of the
+// battle.Decision, and the decision rides on wire.Turn. But battle.Decision
+// tags that field `json:"reason,omitempty"`, which is exactly the sort of
+// declaration a claim like this can be wrong about — so the message the room
+// produced is **encoded and decoded**, the way it would cross a socket, and the
+// reason is read out of the far end.
+//
+// Two things are asserted together, because either alone would be satisfied by
+// the wrong design: the reason arrives, and **no kind but wire.Turn is sent**. A
+// timeout that also announced itself would be a second declaration of a fact the
+// decision already carries.
+func TestATimeoutTellsTheMirrorWithNoMessageOfItsOwn(t *testing.T) {
+	opened, clients := openMatch(t, config(11, 3))
+	onTurn, waiting := opened.Awaiting()
+	if !waiting {
+		t.Fatal("nobody is on turn")
+	}
+	out, err := opened.TimedOut(onTurn)
+	if err != nil {
+		t.Fatalf("timeout: %v", err)
+	}
+	if len(out) != seatsInARoom {
+		t.Fatalf("a timeout produced %d messages, want one turn a seat", len(out))
+	}
+	told := 0
+	for _, message := range out {
+		if message.Body.Kind() != wire.KindTurn {
+			t.Fatalf("a timeout produced a %s; the decision is the whole of what it says",
+				message.Body.Kind())
+		}
+		raw, err := wire.Encode(message.Body)
+		if err != nil {
+			t.Fatalf("encode the turn for %s: %v", message.To, err)
+		}
+		decoded, err := wire.Decode(raw)
+		if err != nil {
+			t.Fatalf("decode the turn for %s: %v", message.To, err)
+		}
+		turn, ok := decoded.(*wire.Turn)
+		if !ok {
+			t.Fatalf("a turn decoded as %T", decoded)
+		}
+		if !turn.Decision.Passed {
+			t.Errorf("%s was sent a decision that took %q rather than a pass",
+				message.To, turn.Decision.Skill)
+		}
+		if turn.Decision.Reason != room.TimeoutReason {
+			t.Errorf("%s reads the reason %q off the wire, want %q — the omitempty tag dropped it, "+
+				"so a timeout is invisible to a mirror and does need a message of its own",
+				message.To, turn.Decision.Reason, room.TimeoutReason)
+			continue
+		}
+		told++
+	}
+	if told != seatsInARoom {
+		t.Errorf("%d of %d clients learn of the timeout from the decision they were handed",
+			told, seatsInARoom)
+	}
+	// And nothing else went out, now or afterwards: the match carries on.
+	clients.deliver(t, out)
+	for _, client := range []*mirror{clients.host, clients.guest} {
+		if len(client.closures) != 0 {
+			t.Errorf("%s was told the room closed (%v) on a timeout", client.seat, client.closures)
+		}
+	}
+	if opened.Finished() {
+		t.Errorf("one timeout ended the match as %q", opened.Result().Verdict)
 	}
 }
 

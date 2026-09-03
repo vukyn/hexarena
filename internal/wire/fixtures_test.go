@@ -148,7 +148,11 @@ func messageFixtures(t *testing.T) map[Kind]Body {
 			Format:    Format3v3,
 			Battles:   3,
 			Allowance: 90,
-			Seat:      SeatGuest,
+			// A cap that is nobody's default, so the golden's two numbers cannot
+			// be read for each other and neither is a copy of a constant this
+			// package does not own.
+			TurnCap: 200,
+			Seat:    SeatGuest,
 		},
 		KindRefused: &Refused{Code: CodeDataMismatch},
 		KindStart: &Start{
@@ -166,5 +170,9 @@ func messageFixtures(t *testing.T) map[Kind]Body {
 			},
 			Events: digest,
 		},
+		// The one closure there is. A Closed carrying ClosureNone would be a
+		// room declining to say why the match ended, so the fixture is the
+		// value a room may actually send.
+		KindClosed: &Closed{Reason: ClosureLeft},
 	}
 }

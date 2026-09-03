@@ -372,8 +372,13 @@ func twinUnit(t *testing.T, characters *cast.Book, name, suffix string, slot hex
 	return unit
 }
 
-// TestALeavingPeerBeforeTheMatchFreesItsSeat is the one thing Left does that is
-// not a forfeit: before the first battle there is nothing to give up.
+// TestALeavingPeerBeforeTheMatchFreesItsSeat is the one thing Left does that
+// does not end a match: before the first battle there is no match to end, so the
+// seat is freed and the room goes back to waiting.
+//
+// ⚠️ That is also why a reconnect window would sit **in front of** Left rather
+// than inside it — the pre-match case frees the seat, so a rejoin cannot be
+// something Left does. → TODO.md, under the seat token.
 func TestALeavingPeerBeforeTheMatchFreesItsSeat(t *testing.T) {
 	dependencies := deps(t)
 	legal := squadOf(t, dependencies.Characters, "legal.squad",
