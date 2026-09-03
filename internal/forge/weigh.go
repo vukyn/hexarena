@@ -22,14 +22,27 @@ import (
 //
 // Every member is one bounded integer whose bound skill.resolve already
 // enforces, so a value out of range comes back in the parser's own words and
-// this package never restates a rule the parser holds. `self_gradient` is left
-// out because it is two numbers — sweeping it turns a curve into a surface, and
-// a surface is not something a single column of figures can report. Every
-// non-scalar is left out for a different reason: `applies`, `strips`, `summons`,
-// `restriction`, `element`, `target` and `pattern` are not dials. Changing one
-// authors a *different skill*, so the deviation measured against the control
-// would be the worth of that other skill rather than the price of a value, and
-// the whole claim a weighing makes is that the two sides differ in one number.
+// this package never restates a rule the parser holds.
+//
+// ⚠️ `self_gradient` is left out, and **not** because it is two numbers, which
+// is what this comment said until it was measured. skill.Gradient has exactly
+// one field, AtEmpty, and its own doc says why there is no second one: the top
+// of the curve is not a choice. What keeps it out is that its *off* state is not
+// a number. resolveGradient refuses AtEmpty below one, so a skill without a
+// gradient has a nil pointer rather than a nought — while every field in the
+// table above is off at nought and a crit of nought is a legal crit. `of` hands
+// back an int and `set` takes one, so seating it here would mean either a sweep
+// that cannot start from nothing or this package holding a second copy of the
+// parser's bound, which is what `set` exists not to do. There is also nothing to
+// weigh it on: `comeback` is the only skill in the book that declares a
+// gradient, and no character fields it. See TODO.md.
+//
+// Every non-scalar is left out for a different reason: `applies`, `strips`,
+// `summons`, `restriction`, `element`, `target` and `pattern` are not dials.
+// Changing one authors a *different skill*, so the deviation measured against
+// the control would be the worth of that other skill rather than the price of a
+// value, and the whole claim a weighing makes is that the two sides differ in
+// one number.
 type WeighField uint8
 
 const (
