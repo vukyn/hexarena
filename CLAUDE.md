@@ -53,6 +53,10 @@ go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG
 go run ./cmd/hexarena-tui                        # play, full screen: the catalogues a reader wants, and a battle
 go run ./cmd/hexarena-tui --lang en              # ...in English; same flag, same variable, same ctrl+l
 
+go run ./cmd/hexarena-host                       # host one PvP match: prints the room code, serves it, prints the result
+go run ./cmd/hexarena-host -battles 3 -password nhaminh   # a bo3 behind a gate; -h says why that flag is visible in ps
+go run ./cmd/hexarena-host -advertise 10.0.0.7   # say which address the code carries, where autodetection refuses
+
 go test ./...
 go test ./cmd/hexarena-tui ./cmd/hexforge-tui ./internal/core/hex ./internal/i18n ./internal/screen ./internal/seed ./internal/tui ./internal/wire -update   # accept new goldens
 go test ./internal/core/battle -run TestControl                     # one test
@@ -60,10 +64,15 @@ gofmt -l . && go vet ./...
 ```
 
 The `Makefile` wraps those and nothing more — `make build install run auto
-play-tui forge forge-tui forge-tui-en test golden fmt vet check clean`. `make
-build` builds all four binaries; `make forge ARGS="show some.id"` and `make
-play-tui ARGS="--lang en"` pass arguments through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
-`go test ./... -count=1`); `make golden` is the `-update` line above. The raw
+play-tui forge forge-tui forge-tui-en host test golden fmt vet check clean`. `make
+build` builds all **five** binaries; `make forge ARGS="show some.id"`, `make
+play-tui ARGS="--lang en"` and `make host ARGS="-battles 3"` pass arguments
+through. `make check` is the gate (`gofmt -l .`, `go vet ./...`,
+`go test ./... -count=1`, then `-race` over `internal/room`, `internal/socket`
+**and `cmd/hexarena-host`** — the three places concurrency lives; the host binary
+prints from three goroutines at once, because the transport calls its Joined and
+Report callbacks on a connection's own goroutine); `make golden` is the `-update`
+line above. The raw
 commands stay listed here because they are what the targets are: reach for either.
 There is no linter config — `gofmt` and `go vet` are the whole of it.
 
@@ -1729,10 +1738,40 @@ screen, the lobby/waiting/countdown drawing, the wordings (a `wire.Code` and a
 `wire.Closure` travel as ids precisely so the sentence lives at the client's far
 end — `socket.Refusal` carries the code and words nothing), the seat token and the
 rejoin, writing a finished match out as a `battle.Log`, spectators, TLS (→
-`README.md` § *Not in the first version*), and **the host binary**.
-⚠️ **A `Server` has no shutdown of its own and the binary will need one**:
-`http.Server.Shutdown` does not wait for **hijacked** connections, and a WebSocket
-is hijacked. `Server.Tables()` is the reading that would measure it. → `TODO.md`.
+`README.md` § *Not in the first version*), and **the host binary** — which is
+`cmd/hexarena-host` and is built: nothing here opens a listener, picks a port,
+decides which address a room code carries, reads a flag or prints a word.
+
+**⚠️ `Server.Shutdown` is the one thing that crossed back, and it had to.**
+`http.Server.Shutdown` waits for connections it can still see finish a *request*,
+and a WebSocket is **hijacked** — `net/http` handed it over and stopped counting
+it — so only this package holds the sockets a clean shutdown has to wait for. It
+is **four steps**: tell every peer with `wire.ClosureStopped`, `Registry.CloseAll`,
+`Registry.Wait` bounded by the context, then wait for `Tables()` **and**
+`Running()` to reach nought.
+
+- **Two calls rather than one**, because `Registry.Wait` *closes nothing* — that
+  is what makes it a measurement rather than a tidy-up, and a goroutine left
+  behind hangs it instead of being quietly collected.
+- **Two readings rather than one**, because a table outlives its match by however
+  long two sockets take to close. They are exposed for this.
+- ⚠️ **`CloseAll` runs even on a context that is already done.** Only the
+  *waiting* is bounded; the refusal names both counts, because "context deadline
+  exceeded" alone tells a host nothing it can act on.
+- ⚠️ **The notify uses `drop`, not `bye`.** `bye` is the close handshake and waits
+  five seconds for an answer a peer that is not reading never sends — and a peer
+  that is not reading is exactly what a shutdown must survive. The `wire.Closed`
+  has already said why and is flushed first. Measured on the four-connection
+  shutdown test: **20.0s with `bye`, 0.01s with `drop`**.
+- ⚠️ **`Registry.Wait` blocking is held STRUCTURALLY, not behaviourally**, and the
+  test says so in as many words. Step four's poll converges whether or not step
+  three waited, so deleting the `Wait` leaves the behavioural test green —
+  `TestShutdownClosesEveryRoomAndThenMeasuresThem` walks the AST for the four
+  calls in order instead. ⚠️ And the behavioural test's **`CloseAll` coverage had
+  to be built**: the first version could not see it, because with no rejoin a
+  socket closing *ends a match*, so the notify's own dropped connections retired
+  every room without anybody asking. It takes a room **nobody joined** to measure
+  `CloseAll` at all.
 
 ## The event log is the contract
 

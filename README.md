@@ -2276,11 +2276,33 @@ reverse and one of them is a measurement the repository already had a tool for.
 
 ⚠️ **This section used to open "nothing here is built yet" and that is retired.**
 `internal/wire` is the protocol, `internal/room` is the match as a state machine
-with the registry of many rooms beside it, and **`internal/socket` is the
+with the registry of many rooms beside it, **`internal/socket` is the
 transport** — a WebSocket server around the registry, a dialling client, and the
-mirror that client needs in order to be a client at all. What is left is the
-host binary and the client's own screens; each subsection below says which of it
-is code and which is still the record.
+mirror that client needs in order to be a client at all — and
+**`cmd/hexarena-host` is the host binary**, which opens a room, prints the code,
+serves the match and exits. What is left is **the client's own screens**; each
+subsection below says which of it is code and which is still the record.
+
+```
+$ hexarena-host -battles 3
+
+  VQICBXRVBMAA
+
+  that code means 172.16.32.222:13579 (asked the routing table)
+  format      3v3, best of 3
+  allowance   90s a turn, 400 turns a battle at most
+  seed        11119952558419306482
+  password    none — anybody with the code can join
+  data        003ce0f713b7
+  build       v0.4.0
+
+waiting for two players. ctrl-c stops.
+```
+
+The `data` and `build` lines are on that screen because a joiner refused at the
+gate is refused with an **id** and no prose — so the two people read those two
+short strings to each other and find out which of them has to update. → *Three
+version numbers*, below.
 
 The shape is deliberately small, because most of it already exists. A squad is
 already a wire format: `placement.Squad` is a *reference* — character, level,
@@ -3016,6 +3038,101 @@ capped turn's **own** `turn_began`, because the room advanced into that turn
 before deciding not to ask about it and the re-run advances into it too. A writer
 that stopped one event earlier produces 43 events against 44 re-run, and
 `--verify` fails on the count.
+
+### The host, built — and the four things it decided
+
+**Built: `cmd/hexarena-host`.** It opens one room, prints the code, serves the
+match, prints the result and exits. It plays nothing: both players are clients,
+and this is the process that holds the board. `socket.Server` is an
+`http.Handler` that opens nothing, so the listener, the signal handling and every
+printed word are the binary's — which is exactly why this was its own item.
+
+**The shutdown that could not live out here, and does not.** `http.Server.Shutdown`
+waits for connections it can still see finish a *request*, and a WebSocket is
+**hijacked**: `net/http` handed the connection over and stopped counting it. So a
+binary that closed its listener would report a clean shutdown over a match still
+being played. `socket.Server.Shutdown` is the answer, in the package that holds
+the sockets, and it is **four steps**: tell every peer, `Registry.CloseAll`,
+`Registry.Wait` bounded by the context, then wait for `Tables()` and `Running()`
+to both reach nought. Two calls rather than one because ⚠️ **`Wait` closes
+nothing** — that is what makes it a measurement rather than a tidy-up, and a
+goroutine left behind hangs it instead of being quietly collected. Two *readings*
+rather than one because a table outlives its match by however long two sockets
+take to close. ⚠️ `CloseAll` runs even on a context that is already done: only the
+*waiting* is bounded, because a shutdown that skipped the closing for want of
+time would leave behind precisely what it was asked to stop.
+
+Telling the peers needed a value the protocol did not have. `wire.ClosureLeft` is
+a judgement about a **peer** — the thing that owns the connection decided there
+was nobody at the far end — and a host stopping is that same thing deciding to
+stop, so sending `left` would tell a player their opponent had vanished while
+their opponent sat right there. Sending nothing is worse: a socket that dies with
+no reason is the one thing `closed` exists to prevent. So **`wire.ClosureStopped`**,
+which cost one constant and one name and moved no byte of `messages.golden` —
+which is the argument for the reason being a *field* rather than a message kind,
+paid out for the first time.
+
+⚠️ **Which address goes in the code is the sharp part, and the tie is refused
+rather than broken.** A code carries four address bytes, so it is IPv4, and the
+address has to be one the *other* machine can dial: `0.0.0.0` is unusable and
+`127.0.0.1` works on the host's own machine and nowhere else. Two ways to find
+one, and the binary tries them in this order:
+
+- **Ask the routing table.** `net.Dial("udp4", "192.0.2.1:9")` and read
+  `LocalAddr()`. No packet is sent — a connected UDP socket only picks a route,
+  and 192.0.2.0/24 is TEST-NET-1, which no real host may use. It answers exactly
+  the right question, and it **fails on a machine with no default route**, which
+  a LAN behind a bare switch genuinely is.
+- **Walk the interfaces**, keeping up, non-loopback, IPv4. This is the fallback
+  and it is **genuinely ambiguous**: `docker0` is `172.17.0.1` — up, not
+  loopback, IPv4, private — and unreachable from the other player's laptop.
+
+Beside a real `192.168.1.5` there are two survivors and **nothing in an address
+distinguishes them**. Every rule that suggests itself was tried and rejected:
+"prefer 192.168/16 over 172.16/12" is wrong on the machine this was written on,
+whose real LAN address is **172.16.32.222**, inside the same RFC 1918 block
+docker's bridge sits in; "prefer the lowest" is a coin toss with a tidy
+implementation; and the interface *name*, which really would settle it, is not an
+address. So more than one survivor is an **error naming every candidate and
+asking for `-advertise`**. Guessing wrong prints twelve characters that simply do
+not work, with nothing on screen to say why; refusing prints the addresses and
+the flag that fixes it. The picker is a pure function over a slice of
+`netip.Addr` and is table-tested with no network anywhere near it — the shape the
+terminal's `GOOS` rules already use — and the two gatherers are the impure half.
+`-advertise` is deliberately **more** permissive than the picker: it allows
+loopback with a note beside it, because it exists to overrule the picker and
+`-advertise 127.0.0.1` is how somebody tries the thing out with two clients on
+one machine.
+
+⚠️ **The port is fixed at 13579, and the ordering that makes `-port 0` correct is
+a requirement rather than a nicety.** Fixed, because somebody opening a room
+should get the same port every time and a firewall rule has to name a number that
+stays still: nothing is registered on 13579, and it is below both ephemeral floors
+(measured — darwin's `net.inet.ip.portrange.first` is 49152, Linux's default range
+starts at 32768), so the OS can never hand it out underneath the process. **31337
+was a candidate and is rejected**: it is Back Orifice's port and intrusion-detection
+rules flag it. The cost of a fixed port is that *address already in use* becomes an
+ordinary failure — two hosts, or the last one still running — so it is caught and
+rewritten to name the port and the flag. And because a code carries the port and
+`Registry.Open` takes the address the code will name, the listener is **bound
+first** and the room opened second; ⚠️ the test for that has to drive `-port 0`,
+because at a fixed port the wrong order still produces a code carrying 13579,
+which still works, so a test at the default would pass either way and measure
+nothing.
+
+Two smaller answers, both of which were open questions. **The code is not copied
+to the clipboard**: there is no clipboard in the standard library, so it means
+shelling out to `pbcopy`, `xclip`/`xsel` or `wl-copy` — three external binaries, a
+per-platform branch and a silent failure on a machine with none of them — and the
+code is twelve characters from an alphabet chosen so people can read it out loud.
+And **a password given as a flag is visible in `ps`**, which the `-h` text says in
+as many words; `HEXARENA_ROOM_PASSWORD` is read when the flag is empty, and is one
+fewer place the string is written down rather than a fix. ⚠️ Writing this binary
+found that `wire.Password`'s redaction does **not** reach an unexported field —
+`fmt` gets at a field's `String` through `reflect.Value.Interface`, which an
+unexported field refuses — so the binary's own settings struct printed the
+password in full while every other test in the repository stayed green. It
+restates the redaction itself now.
 
 ### Not in the first version
 
