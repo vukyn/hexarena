@@ -24,18 +24,31 @@ import (
 // enforces, so a value out of range comes back in the parser's own words and
 // this package never restates a rule the parser holds.
 //
-// ⚠️ `self_gradient` is left out, and **not** because it is two numbers, which
-// is what this comment said until it was measured. skill.Gradient has exactly
-// one field, AtEmpty, and its own doc says why there is no second one: the top
-// of the curve is not a choice. What keeps it out is that its *off* state is not
-// a number. resolveGradient refuses AtEmpty below one, so a skill without a
-// gradient has a nil pointer rather than a nought — while every field in the
-// table above is off at nought and a crit of nought is a legal crit. `of` hands
-// back an int and `set` takes one, so seating it here would mean either a sweep
-// that cannot start from nothing or this package holding a second copy of the
-// parser's bound, which is what `set` exists not to do. There is also nothing to
-// weigh it on: `comeback` is the only skill in the book that declares a
-// gradient, and no character fields it. See TODO.md.
+// ⚠️ `self_gradient` is in the table, and it is the one member whose *off* state
+// is not a number. skill.Gradient has exactly one field, AtEmpty — its own doc
+// says why there is no second one: the top of the curve is not a choice — so a
+// sweep of it is one line rather than a surface, and MonotoneWorth keeps exactly
+// the meaning it has on every other field here: one field, one sweep, one answer
+// to whether more of this is sometimes worth less. What is different is the
+// bottom of that line. resolveGradient refuses AtEmpty below one, so a skill
+// that declares no gradient carries a nil pointer where every other field is off
+// at a nought a crit is legal at. `of` reads that absence as nought — nil-safe
+// the way Gradient.Share is — and `set` hands the nought straight back to the
+// parser rather than translating it.
+//
+// ⚠️ The honest consequence, stated here rather than worked around: this field
+// prices **how much** a gradient is worth and never **whether to have one**. A
+// sweep may not contain the control row of a skill that declares none, because
+// that control is a nought and the parser refuses it — so no report here has a
+// row for "this skill without a gradient at all", and none can be read as one.
+// Mapping the nought back to nil inside `set` would buy that row and would be
+// this package holding a second copy of a bound skill.resolve owns, which is the
+// one thing `set` exists not to do. See TODO.md.
+//
+// ⚠️ Nothing shipped carries it either: `comeback` is the only skill in the book
+// that declares a gradient and no character fields it, so `--carriers all` on it
+// is an empty table of skips. That is the state of the data rather than a fault
+// in the field, and the fix is a character bringing it, not a change here.
 //
 // Every non-scalar is left out for a different reason: `applies`, `strips`,
 // `summons`, `restriction`, `element`, `target` and `pattern` are not dials.
@@ -55,6 +68,7 @@ const (
 	WeighPierce
 	WeighPower
 	WeighRange
+	WeighSelfGradient
 	WeighStrikes
 )
 
@@ -62,14 +76,15 @@ const (
 const weighFieldCount = int(WeighStrikes) + 1
 
 var weighFieldNames = [weighFieldCount]string{
-	WeighAccuracy: "accuracy",
-	WeighCooldown: "cooldown",
-	WeighCrit:     "crit",
-	WeighDrains:   "drains",
-	WeighPierce:   "pierce",
-	WeighPower:    "power",
-	WeighRange:    "range",
-	WeighStrikes:  "strikes",
+	WeighAccuracy:     "accuracy",
+	WeighCooldown:     "cooldown",
+	WeighCrit:         "crit",
+	WeighDrains:       "drains",
+	WeighPierce:       "pierce",
+	WeighPower:        "power",
+	WeighRange:        "range",
+	WeighSelfGradient: "self_gradient",
+	WeighStrikes:      "strikes",
 }
 
 // String is the field's name as it is typed and printed.
@@ -129,6 +144,16 @@ func (f WeighField) of(declared skill.Skill) int {
 		return declared.Power
 	case WeighRange:
 		return declared.Range
+	case WeighSelfGradient:
+		// Nil-safe for the reason skill.Gradient.Share is: what a skill without
+		// a gradient adds is nought, and that is an answer rather than a state
+		// worth branching on at every call site. It is also the nought a sweep
+		// of such a skill takes as its control row and is refused for — see the
+		// type's doc.
+		if declared.SelfGradient == nil {
+			return 0
+		}
+		return declared.SelfGradient.AtEmpty
 	default:
 		return declared.Strikes
 	}
@@ -160,6 +185,17 @@ func (f WeighField) set(declared skill.Skill, value int) skill.Skill {
 		declared.Power = value
 	case WeighRange:
 		declared.Range = value
+	case WeighSelfGradient:
+		// A fresh pointer rather than an assignment through the old one:
+		// declared is a shallow copy, so writing AtEmpty in place would move the
+		// gradient of the skill the book holds — both twins at once, which is a
+		// weighing of nothing.
+		//
+		// Nought is passed through like any other value. A gradient of nought is
+		// what the parser refuses, in the parser's own words, and mapping it to
+		// nil here is the second copy of that bound this function exists not to
+		// hold.
+		declared.SelfGradient = &skill.Gradient{AtEmpty: value}
 	default:
 		declared.Strikes = value
 	}

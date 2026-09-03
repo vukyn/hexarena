@@ -210,7 +210,7 @@ func TestWeighRefusesAnArgumentListItCannotAnswer(t *testing.T) {
 			"--field", "power", "--values", "1100"}},
 		{"no field", []string{"--data", dir, who, what, "--values", "1100"}},
 		{"a field nobody declared", []string{"--data", dir, who, what,
-			"--field", "self_gradient", "--values", "1100"}},
+			"--field", "self_requires", "--values", "1100"}},
 		{"no values", []string{"--data", dir, who, what, "--field", "power"}},
 		{"an empty value list", []string{"--data", dir, who, what,
 			"--field", "power", "--values", ""}},
@@ -232,6 +232,31 @@ func TestWeighRefusesAnArgumentListItCannotAnswer(t *testing.T) {
 		if err := runWeigh(test.args); err == nil {
 			t.Errorf("%s was accepted: hexforge weigh %v", test.name, test.args)
 		}
+	}
+}
+
+// TestWeighingAGradientOnASkillWithoutOneSaysWhatTheParserSays.
+//
+// It is a test of its own rather than a row of the table above, and the reason
+// is a measurement: with the row asserting only that *something* was refused, a
+// `set` that mapped a nought gradient to nil passed it — the sweep ran, and one
+// of its two rows was refused for a reason that had nothing to do with the
+// field. So the sentence is what is asserted.
+//
+// `strike` declares no gradient, so the control row of this sweep is a gradient
+// of nought and skill.resolve refuses a share below one. That is the field's
+// limit as a command line: it prices how much a gradient is worth, never whether
+// to have one, and there is no report with a row for having none.
+func TestWeighingAGradientOnASkillWithoutOneSaysWhatTheParserSays(t *testing.T) {
+	dir := scratchData(t)
+	err := runWeigh([]string{"--data", dir, "fixture-anime.adept", "strike",
+		"--field", "self_gradient", "--values", "1100", "--seeds", "2"})
+	if err == nil {
+		t.Fatal("a skill that declares no gradient was priced one, so a sweep answers " +
+			"whether to have a gradient and it cannot")
+	}
+	if !strings.Contains(err.Error(), "want a share in parts per thousand") {
+		t.Errorf("the refusal is not the parser's own: %v", err)
 	}
 }
 

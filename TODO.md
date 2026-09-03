@@ -852,79 +852,110 @@ is only so the shape is readable.
       → `internal/forge/weigh.go` (`Mechanism`, `Mechanisms`, `mechanismsOver`,
       `refuseUnreadable`), `internal/forge/spar.go` (`Effects`, `Matchup.fold`,
       `restored`), `cmd/hexforge/weigh.go`.
-      ⚠️ **`CLAUDE.md` § *Pricing one number* is now stale in two places** and
-      was deliberately not edited here: its refusal list still says "a row that
-      **landed the skill zero times**", which is now "a row on which the skill
-      did none of its own work"; and its `⚠️ Only scalars are weighable`
-      paragraph still says `self_gradient` "is two numbers", which the entry
-      below measures as false.
-- [ ] **`self_gradient` is ONE number, and what keeps it out of the field table
-      is a presence rather than a second number. A DECISION, scoped and costed
-      below — not work waiting to be typed.** This line used to read "a bonus
-      *and* a share, so sweeping it is a surface"; that is measurably false and
-      the second report it asked for has no subject.
-      **What was measured.** `skill.Gradient` has exactly one field, `AtEmpty`,
-      and has had since `62e5558` (#132) — its own doc says why there is no
-      second one: *"One field rather than a pair, because the top of the curve is
-      not a choice."* The same false claim is in `CLAUDE.md` § *Pricing one
-      number* (`⚠️ Only scalars are weighable`); `internal/forge/weigh.go`'s copy
-      is corrected.
-      ⚠️ **The real obstacle is that its off state is not a number.**
-      `resolveGradient` refuses `at_empty` below one, so a skill without a
-      gradient carries a **nil pointer**, where every field in the table is off
-      at nought and a crit of nought is a legal crit. `WeighField.of` hands back
-      an `int` and `.set` takes one, so there are exactly two seats and both cost
-      something: **(a)** pass the nought through and let the parser refuse it in
-      its own words — free, and the field then prices *how much* a gradient is
-      worth but never *whether to have one*, because a sweep may not contain the
-      control of a skill that declares none; **(b)** map nought to nil inside
-      `.set` — which is this package holding a second copy of the parser's bound,
-      the one thing `set`'s doc says it exists not to do.
-      ⚠️ **There is nothing to weigh it on, anywhere.** `comeback` (`at_empty`
-      900) is the only skill in the shipped book that declares a gradient, and
-      `hexforge weigh --carriers all comeback` answers *"no character brings
-      comeback at level 60 … all 11 in the book were skipped"* — it is Naruto's
-      **7th** learnset entry, at level 44, and four are fielded. The fixture's
-      `desperate` is in neither fixture character's kit. So the field would ship
-      with **zero carriers** and no end-to-end test that did not first author a
-      kit for it.
-      ⚠️ **The two-number surface that does exist is a different pair, and no
-      skill can carry it.** `combat.Swung(power, bonus, share)` is the one place
-      two of these compose: the **bonus** is `self_requires`', the **share** is
+      ⚠️ **`CLAUDE.md` § *Pricing one number* was stale in two places and both
+      have since been corrected**: its refusal list now reads "a row on which the
+      skill did none of its own work" rather than "landed the skill zero times",
+      and its `⚠️ Only scalars are weighable` paragraph now seats
+      `self_gradient` rather than giving a reason for leaving it out. See the
+      entry below.
+- [x] **`self_gradient` is ONE number, and it is now the ninth `WeighField`.
+      DONE.** The line above it used to read "a bonus *and* a share, so sweeping
+      it is a surface"; that was measured false, and what actually kept it out —
+      an off state that is not a number — has been seated rather than argued
+      about any longer.
+      **The decision taken: seat (a).** `of` hands back `AtEmpty`, or nought when
+      the skill declares none — nil-safe the way `Gradient.Share` already is —
+      and `set` assigns straight through, so a nought falls to the parser, which
+      refuses `at_empty` below one in **its own words, unwrapped**. The sweep
+      stays one-dimensional, so `MonotoneWorth` keeps exactly the meaning it has
+      on the other eight fields: one field, one line, one answer. This field
+      makes no surface; the surface is the entry below, and it is a different
+      pair of numbers.
+      **Why seat (b) lost, put on disk rather than reasoned about.** Mapping the
+      nought to nil inside `set` buys the one row seat (a) cannot have, and pays
+      a second copy of a bound `skill.resolve` owns — the one thing `set`'s own
+      doc says it exists not to do. With that mapping actually in the file,
+      `TestASweptGradientOfNoughtComesBackInTheParsersOwnWords`,
+      `TestAGradientPricesHowMuchAndNeverWhether` and the CLI's
+      `TestWeighingAGradientOnASkillWithoutOneSaysWhatTheParserSays` all fail,
+      the last of them with the sweep refused for being *saturated* — an
+      unrelated sentence about a run that should never have started. That is
+      what holds the seat.
+      ⚠️ **The honest limit, written into the code comment and standing here: the
+      field prices HOW MUCH a gradient is worth and never WHETHER to have one.**
+      A sweep may not contain the control row of a skill that declares none,
+      because that control is a nought and the parser refuses the whole report
+      before a battle — so no report anywhere has a row for "this skill with no
+      gradient at all", and none may be read as one. Stated rather than worked
+      around.
+      **The reading**, on `desperate` at level 60, 10,000 seeds from each slot,
+      80,000 battles, band **±0.8pp**, carrier `fixture-anime.gradient` — the
+      bench adept with `desperate` in its fielded four, kit `strike riptide
+      guard_wall desperate`:
+
+      | `at_empty` | worth | turns |
+      |---:|---:|---:|
+      | 500 | **−20.8%** | 68 |
+      | 1000 (control, what the bench declares) | +0.0% | 64 |
+      | 1500 | **+20.0%** | 62 |
+      | 2000 | **+34.6%** | 60 |
+
+      **`MonotoneWorth` holds and so does `MonotoneTurns`** — the report says
+      "only ever moves one way" for both columns — and every swept row clears the
+      band by twenty-five times or more. It is a price on a fixture carrier
+      against a copy of itself, so it says nothing about the shipped book: what
+      it establishes is that the field measures at all, and that a gradient is
+      worth a great deal to a carrier that leans on one.
+      ⚠️ **Shipped carriers: zero, and the book was not touched to change that.**
+      `hexforge weigh --carriers all comeback --field self_gradient` still
+      answers *"no character brings comeback at level 60, so there is nothing to
+      price: all 11 in the book were skipped"*. A gradient will be priced on a
+      shipped character the day one fields `comeback`, and not before.
+      ⚠️ **The carrier is built by the test rather than added to the fixture
+      cast, and the cost of the other way was measured.** `desperate` is in
+      neither fixture character's kit; putting it in the adept's displaces
+      `purify` from the fielded four, and the adept fights in the goldens — with
+      it in the fixture, `make golden` moves **656 lines** across
+      `cmd/hexarena-tui/testdata/screens.golden` and
+      `cmd/hexforge-tui/testdata/screens.golden`. The goldens are the design
+      record, and none of that would be a design decision. `bringsTheGradient`
+      saves a copy of the carrier instead, which is what `forkedTwin` does one
+      file over and for the same stated reason: a weighing needs carriers the
+      fixture cast does not have. **No golden moved.**
+      → `internal/forge/weigh.go` (`WeighSelfGradient`, `of`, `set`),
+      `internal/forge/weigh_test.go` (`bringsTheGradient`, `declaringSkill`),
+      `cmd/hexforge/weigh_test.go`, `CLAUDE.md` § Pricing one number.
+- [ ] **The two-number surface is a different pair, and no skill in the book can
+      carry it.** `combat.Swung(power, bonus, share)` is the one place two of
+      these compose: the **bonus** is `self_requires`', the **share** is
       `self_gradient`'s. `resolveGradient` already refuses a gradient beside a
       `self_requires` that reads *health* ("two curves off one number is a skill
       nobody can price"), so the only legal pairing is a **status** threshold
       with a gradient — and the intersection is **empty**: 1 skill has a gradient
       (`comeback`), 7 have a `self_requires` (`outrage`, `flare`, `pyre`,
-      `thorn_volley`, `bloom_burst`, `tide_break`, `deluge`), none has both.
+      `thorn_volley`, `bloom_burst`, `tide_break`, `deluge`), none has both. So
+      the two-axis report has no subject and would have to be **authored before
+      it could be measured**, which is the wrong order. That is why this half is
+      still open while the field above shipped.
       **What a grid costs, measured rather than reasoned.** `Battles()` is
-      `2 × seeds × rows` and a grid squares the rows. Wall clock on this machine,
-      from the readings in the entry above: `pokemon.cleffa` at 118 median turns
-      fought **80,000 battles in 115 s** (≈1.4 ms a battle), `naruto.naruto` at
-      273 turns fought **20,000 in 135 s** (≈6.8 ms). So a **4×4** grid at the
-      tool's default 10,000 seeds is **320,000 battles ≈ 7½ min** on a short
-      pairing and **≈36 min** on a long one; a **5×5** is 500,000 ≈ 12 min and
-      **≈57 min**. At `--carriers all`'s 2,000-seed default a 4×4 is 64,000 ≈ 1½
-      and 7 min. ⚠️ **Battle length dominates the count** — the same number of
-      battles costs five times as much on Naruto as on Cleffa — so a row budget
-      stated in battles is not a row budget stated in minutes.
+      `2 × seeds × rows` and a grid squares the rows. Wall clock on this machine:
+      `pokemon.cleffa` at 118 median turns fought **80,000 battles in 115 s**
+      (≈1.4 ms a battle), `naruto.naruto` at 273 turns fought **20,000 in 135 s**
+      (≈6.8 ms). So a **4×4** grid at the tool's default 10,000 seeds is
+      **320,000 battles ≈ 7½ min** on a short pairing and **≈36 min** on a long
+      one; a **5×5** is 500,000 ≈ 12 min and **≈57 min**. At `--carriers all`'s
+      2,000-seed default a 4×4 is 64,000 ≈ 1½ and 7 min. ⚠️ **Battle length
+      dominates the count** — the same number of battles costs five times as much
+      on Naruto as on Cleffa — so a row budget stated in battles is not a row
+      budget stated in minutes.
       ⚠️ **`MonotoneWorth` has to be answered before a grid is built, not after.**
       *"Is more of this sometimes worth less"* has a direction only along a line.
       On a surface there is one answer per row, one per column and **none for the
       surface**, so a grid printing a single ordered/not-ordered footer would be
       inventing a figure with no referent — the same shape of number this file
       has already been burnt by twice.
-      **So the decision is one decision with three answers**, and it wants
-      taking rather than guessing: **(1)** a ninth `WeighField` under seat (a) —
-      cheapest, `of`/`set` gain a case each, `MonotoneWorth` keeps its meaning
-      because the sweep stays one-dimensional, and it measures nothing until a
-      carrier fields `comeback`; **(2)** the two-axis report — what this line
-      asked for, with no subject in the book, so it would have to be authored
-      before it could be measured, which is the wrong order; **(3)** leave it
-      out and correct the reason from "it is two numbers" to "its off state is
-      not a number, and nothing fields one".
-      → `internal/core/skill/skill.go` (`Gradient`, `resolveGradient`),
-      `internal/forge/weigh.go` (`WeighField`), `CLAUDE.md` § Pricing one number.
+      → `internal/core/skill/skill.go` (`resolveGradient`),
+      `internal/forge/weigh.go` (`WeighField`).
 
 - [ ] **The art preview is outside every sweep there is.** It is not in
       `everyScreen` (`cmd/hexforge-tui/language_test.go`) and not in
