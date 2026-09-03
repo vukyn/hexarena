@@ -319,6 +319,16 @@ func (b *Battle) pastAWall(target *Unit, declared skill.Skill,
 		// times a stack count is where that turns back into a wrap. What comes
 		// out here is subtracted from a non-negative damage, so a saturated wall
 		// drives the blow under nought and the guard below answers it.
+		//
+		// ⚠️ **This is the one of #236's nine narrow products that no board can
+		// see**, and the guard on the next line is why rather than the clamp in
+		// `against`: a wrap here always leaves `Repeated` pinned at math.MaxInt64,
+		// so the correct blow past the wall is nought, and the second subtraction
+		// overflows in its turn and lands under nought too. Both arithmetics
+		// return the same nought. It is held by the wall's own monotonicity —
+		// carry_wall_test.go, a deeper wall never lets more through — because
+		// *"never smaller for more power"* is false here on the CORRECT code. See
+		// TODO.md for both measurements.
 		damage -= combat.Repeated(perStrike, int(charges))
 		if damage <= 0 {
 			return 0
