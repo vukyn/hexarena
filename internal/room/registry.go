@@ -2,6 +2,7 @@ package room
 
 import (
 	"fmt"
+	"net/netip"
 	"slices"
 	"sync"
 
@@ -53,9 +54,10 @@ import (
 // So a reader does not go looking for it:
 //
 //   - **The WebSocket.** This is the concurrency and not the transport. Nothing
-//     here opens a socket, and Open is handed the code rather than deriving one
-//     — see the note on Open, which is where the design record's one collision
-//     is written down.
+//     here opens a socket — Open takes the **address** a listener will be at,
+//     which is a value, and derives the code from it. ⚠️ That is what changed
+//     when "one listener or one per room" was decided: the registry allocates
+//     the room byte now. → the note on Open.
 //   - **The clock**, per above.
 //   - **Writing a finished match out as a battle.Log.** Another cursor over the
 //     battle, and the room already reads it that way so that a second consumer
@@ -222,47 +224,61 @@ type Reading struct {
 	Skipped int
 }
 
-// Open starts a room under a code and returns nothing but an error, because
-// ⚠️ **a *Room must not leave the goroutine that will own it** — the registry
-// builds one and keeps it, and the code is the only handle on it anybody gets.
+// Open starts a room behind one address and hands back **the code a player
+// pastes** and nothing else, because ⚠️ **a *Room must not leave the goroutine
+// that will own it** — the registry builds one and keeps it, and the code is the
+// only handle on it anybody gets.
 //
-// # The code comes from the caller, and that is a decomposition
+// # The registry allocates the room byte, and that used to be the caller's job
 //
-// The design record says a room code **carries its own address** — base32 of
-// four address bytes and two port bytes, ten characters — and it also says one
-// process runs **many rooms**. With one listener those two cannot both hold:
-// every room would encode the same address and port, so the code would not
-// identify a room. The reading that satisfies both without moving the wire
-// format is **one listener per room**, so the code names that listener; the
-// alternative is changing wire.RoomCode, which moves messages.golden and breaks
-// the ten-character claim.
+// ⚠️ **Open used to take the code**, and that was a decomposition forced by an
+// open question rather than a design: the record's "a code carries its own
+// address" and "one process runs many rooms" cannot both hold with one listener,
+// the reading on the table was a **listener per room**, and allocating a port is
+// I/O the registry has none of. That question is settled the other way — one
+// listener, and the code carries a seventh byte naming the room — so the
+// awkwardness goes with it. An address is a *value*, so the registry can take
+// one, and wire.EncodeRoom is pure arithmetic over it. → wire.EncodeRoom for
+// what a port per room would have cost, and README.md § A room, and getting into
+// one.
 //
-// ⚠️ **It is not decided here, and it cannot be**: allocating a port is I/O and
-// the registry has none. So Open takes the code it is given, refuses a duplicate,
-// and refuses one that does not decode — a code nothing can decode is a code no
-// client can have typed. The decision lands with the socket. → TODO.md, under
-// the WebSocket transport, and README.md § A room, and getting into one.
-func (g *Registry) Open(code wire.RoomCode, config Config, deps Deps) error {
-	if _, err := code.AddrPort(); err != nil {
-		return fmt.Errorf("open a room: %w", err)
+// The byte is the **lowest free** one, which is deterministic so that a test can
+// name the code a room will be given, and it is picked under the same hold of
+// the mutex that enrols the room, so allocating and enrolling are one atomic act
+// rather than two with a window between them. → enrol.
+//
+// A duplicate code is therefore **impossible by construction** rather than
+// refused. What is still refused is an address a code cannot carry — an IPv6
+// one, or the zero AddrPort — and a 257th room behind one address, because the
+// room is one byte wide. That last one is an **error rather than a wire.Code**:
+// a host that cannot open another room is the host's problem, not something a
+// joiner is told about.
+func (g *Registry) Open(at netip.AddrPort, config Config, deps Deps) (wire.RoomCode, error) {
+	// The address is checked before anything is built, so an address no code can
+	// carry costs a refusal rather than a room. Room nought is as good a probe
+	// as any: EncodeRoom refuses an address and never a room, which is what
+	// makes the room byte a uint8 rather than a checked int.
+	if _, err := wire.EncodeRoom(at, 0); err != nil {
+		return "", fmt.Errorf("open a room: %w", err)
 	}
 	// The room is built — and its configuration and data validated — before the
 	// map is touched, so a room that cannot run a match never occupies a code
 	// and never starts a goroutine.
 	opened, err := New(config, deps)
 	if err != nil {
-		return err
+		return "", err
 	}
 	entry := &handle{
 		inbox: make(chan request),
 		quit:  make(chan struct{}),
 		done:  make(chan struct{}),
 	}
-	if err := g.enrol(code, entry); err != nil {
-		return err
+	code, err := g.enrol(at, entry)
+	if err != nil {
+		return "", err
 	}
 	go g.serve(code, opened, entry)
-	return nil
+	return code, nil
 }
 
 // Join is the gate, by code. → Room.Join.
@@ -476,18 +492,39 @@ func readingOf(playing *Room) Reading {
 	}
 }
 
-// enrol takes the code, and refuses a duplicate rather than replacing a running
-// room: two people are already at a board under that code, and the host that
-// asked for it can be told no.
-func (g *Registry) enrol(code wire.RoomCode, entry *handle) error {
+// enrol allocates the room byte and takes the code it makes, in **one hold of
+// the mutex**, so that picking a free byte and occupying it are one act. Two
+// calls — find a byte, then enrol it — would leave a window in which a second
+// Open picks the same one, and the loser would then be refused a code that was
+// free when it asked.
+//
+// The byte is the **lowest free** one rather than a counter, which is what makes
+// it deterministic: a closed room gives its byte back, so a test can name the
+// code the next Open will hand out. Refusing at wire.RoomsPerProcess is the room
+// byte's width and not a policy — a code has nothing left to say a 257th room
+// with.
+//
+// It touches the mutex and sends on nothing: EncodeRoom is arithmetic, and the
+// room's goroutine is started by Open **after** this returns, which is why
+// TestNoLockingFunctionSendsOnAChannel is satisfied.
+func (g *Registry) enrol(at netip.AddrPort, entry *handle) (wire.RoomCode, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	if _, running := g.rooms[code]; running {
-		return fmt.Errorf("a room is already running under the code %q", string(code))
+	for room := range wire.RoomsPerProcess {
+		// #nosec G115 -- room is a loop over 0..RoomsPerProcess-1, which is the
+		// width of the byte it becomes.
+		code, err := wire.EncodeRoom(at, uint8(room))
+		if err != nil {
+			return "", fmt.Errorf("open a room at %s: %w", at, err)
+		}
+		if _, running := g.rooms[code]; running {
+			continue
+		}
+		g.rooms[code] = entry
+		g.live++
+		return code, nil
 	}
-	g.rooms[code] = entry
-	g.live++
-	return nil
+	return "", fmt.Errorf("open a room at %s: all %d rooms one address can name are already running", at, wire.RoomsPerProcess)
 }
 
 // lookup is the **one place a request path locks**.

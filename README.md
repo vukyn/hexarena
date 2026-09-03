@@ -2646,27 +2646,65 @@ One server process, many rooms, `n` clients. Each room owns its battle **in one
 goroutine and shares it with nothing** — the registry of rooms takes a mutex, a
 battle never does.
 
-A room code carries its own address: base32 of a four-byte address and a two-byte
-port, ten characters, so pasting the code is enough to connect and nobody has to
-read an IP down a phone. A room password is a separate thing and it is **not
-security** — this is a plain WebSocket on a LAN, and the password keeps strangers
-in the house off the board rather than keeping an attacker out. It is compared in
-constant time and never logged, which is the least a password is owed regardless.
+A room code carries its own address **and its room**: base32 of a four-byte
+address, a two-byte port and a one-byte room, twelve characters, so pasting the
+code is enough to connect *and* enough to say which of the rooms behind that
+address is meant, and nobody has to read an IP down a phone. A room password is a
+separate thing and it is **not security** — this is a plain WebSocket on a LAN,
+and the password keeps strangers in the house off the board rather than keeping an
+attacker out. It is compared in constant time and never logged, which is the least
+a password is owed regardless.
 
-⚠️ **Those two paragraphs collide, and building the registry is what surfaced
+⚠️ **Those two paragraphs used to collide, and this is the decision that settled
 it.** "A code carries its own address" and "one process, many rooms" cannot both
-hold with **one listener**: every room in the process would encode the same
-address and the same port, so the ten characters would name the process rather
-than the room, and pasting one would be a coin toss between the rooms running in
-it. Two ways out, and they are not the same size. **One listener per room** — the
-process opens a port per room and the code names that listener — costs nothing
-written down here: the wire format is untouched, `messages.golden` does not move,
-and the code stays ten characters. Changing `wire.RoomCode` to carry a room id
-beside the address is the other, and it moves the format, the golden and the
-ten-character claim at once. So the reading is the first one, and it is recorded
-as a reading rather than as a decision: allocating a port is I/O, the registry has
-none, and the socket is where the answer actually lands. → `TODO.md`, under the
-WebSocket transport.
+hold with **one listener** and a code that carries only an address: every room in
+the process would encode the same characters, so the code would name the process
+rather than the room, and pasting one would be a coin toss between the rooms
+running in it. Two ways out, and it is **one listener, with the room inside the
+code**:
+
+- **One listener, seven bytes.** `wire.RoomCode` carries a room byte beside the
+  address, so one socket serves 256 rooms and the code names one of them. The
+  cost is written down and is the whole of it: **ten characters became twelve**,
+  and the ten-character claim the record used to make is **retired**.
+- **A listener per room** — the process opens a port per room and the code names
+  that listener. It leaves the code at ten characters, and that is all it leaves
+  alone. A port is a finite OS resource that wants a firewall hole; one leaks per
+  room that crashes; and it conflates a **room**, which is an application idea,
+  with a **listener**, which is an operating system's — so the registry keyed by
+  code would be shadowed by a second registry keyed by port, and socket lifetime
+  would become room lifetime in the one component that has no I/O precisely so
+  that it can be tested. A port per "room" is the shape that appears where a room
+  is a whole **process** (Quake, Counter-Strike, an Agones fleet), which is the
+  opposite architecture to this one: one process, many rooms, one goroutine each.
+
+The arithmetic is why the price is twelve and not more. Base32 spends five bits a
+character, so six bytes (48 bits) took ten characters with two bits spare and
+seven bytes (56 bits) take twelve with four spare. And `messages.golden` **did not
+move**, which was checked rather than assumed: no message carries a `RoomCode` at
+all — a peer is already connected to the room it is talking to — so widening the
+code moved no byte on the wire.
+
+⚠️ **Four spare bits are sixteen strings that decode to one room**, and that had
+to be fixed in the same breath. `encoding/base32` has no `Strict()` (unlike
+`encoding/base64`), so it ignores the trailing bits: at six bytes, two spare bits
+already meant `YCUACMRDFA`, `…FB`, `…FC` and `…FD` were four codes for one room,
+measured. The registry keys its map on the **string**, so a joiner who pasted one
+of the variants would look up a key that is not in the map and be told the room is
+unknown while the room sat right there — a correct-looking refusal, which is the
+worst shape a bug has. So `RoomCode.Decode` re-encodes what it decoded and
+**refuses a code that is not the canonical one**, naming the code that does work.
+A variant is now a clear refusal, and the code is a sound map key.
+
+`Registry.Open` therefore takes the **address** and hands back the code:
+`Open(at netip.AddrPort, …) (wire.RoomCode, error)`. It picks the lowest free room
+byte under the same hold of the mutex that enrols the room, so allocating and
+enrolling are one act, and a **duplicate code became impossible by construction**
+rather than refused — the test that used to hold that refusal was deleted, and
+what replaced it holds the half that mattered: a second room behind one address
+leaves the first untouched and still playable. A 257th room is refused as a Go
+**error** rather than a `wire.Code`, because a host that cannot open another room
+is the host's problem and there is no joiner to tell.
 
 **Built: the registry.** `room.Registry` is the many-rooms half, keyed by the
 code, and it is the concurrency around the room and nothing else — no socket, no

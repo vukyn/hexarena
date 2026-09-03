@@ -1438,7 +1438,8 @@ computes that ending from its own `Ended` and `Welcome.Battles`.
 
 `room.Registry` is the concurrency around the room and **nothing else** — no
 socket, no clock, no log writer, no spectator. Keyed by `wire.RoomCode`: `Open`,
-then `Join` · `Deliver` · `TimedOut` · `Left` each answering `(Answer, error)`,
+which takes an **address** and returns the code it allocated, then
+`Join` · `Deliver` · `TimedOut` · `Left` each answering `(Answer, error)`,
 plus `Read` (the room's own accessors, taken inside its goroutine) and
 `Close` / `CloseAll` / `Wait` / `Count` / `Running` / `Codes`.
 
@@ -1507,12 +1508,59 @@ It names **no seat**, for the reason a refusal at the gate names none.
 of about a minute). The race detector is the primary net over the only concurrency
 in the repository, and a race test nobody runs is not a net.
 
-⚠️ **`Open` takes the room code from its caller**, which is a decomposition rather
-than laziness: allocating a port is I/O and the registry has none, so it takes the
-code it is given, refuses a duplicate and refuses one that does not decode. The
-collision behind that — a code carries its own address *and* one process runs many
-rooms, which cannot both hold with one listener — is written up in `README.md` §
-*A room, and getting into one* and lands with the socket in `TODO.md`.
+⚠️ **`Open` takes the ADDRESS and hands the code back**, and that is the
+collision behind it being settled: **one listener per process, and
+`wire.RoomCode` carries a seventh byte naming the room** — twelve characters, 256
+rooms behind one socket. `Open(at netip.AddrPort, config, deps) (wire.RoomCode,
+error)`. It used to take the code, which was a decomposition forced by the open
+question (allocating a *port* is I/O and the registry has none); an address is a
+value and `wire.EncodeRoom` is arithmetic, so the awkwardness went with the
+question. A listener per room was refused: a port is a finite OS resource wanting
+a firewall hole, one leaks per crashed room, and it conflates a **room** (an
+application idea) with a **listener** (an OS one) — so a registry keyed by code
+would be shadowed by a second one keyed by port, and socket lifetime would become
+room lifetime in the one component that has no I/O so that it can be tested. The
+stated cost: **ten characters became twelve and the ten-character claim is
+retired**; `messages.golden` did not move, because no message carries a
+`RoomCode`. → `README.md` § *A room, and getting into one*.
+
+- **The byte is the LOWEST FREE one, allocated under the map's own mutex.** One
+  hold, so picking a free byte and occupying it are one act — two calls would
+  leave a window in which a second `Open` takes the same byte and the loser is
+  refused a code that was free when it asked. Lowest-free rather than a counter
+  is what makes it *nameable*: a closed room gives its byte back and a test can
+  say which code the next `Open` will return. `enrol` touches the mutex and sends
+  on nothing (the goroutine still starts in `Open`, after it returns), so
+  `TestNoLockingFunctionSendsOnAChannel` is satisfied.
+- ⚠️ **A duplicate code became impossible by construction**, so
+  `TestADuplicateCodeIsRefused` was **deleted** rather than rewritten — the same
+  judgement as the two forfeit tests. What replaced it,
+  `TestTheRegistryAllocatesTheLowestFreeRoomByte`, keeps the half that mattered:
+  a second room behind one address leaves the first **untouched and playable**.
+- **A 257th room is an error, not a `wire.Code`.** A joiner is told a room is
+  unknown; a host with 256 rooms running is not a joiner and there is no peer to
+  tell. What is still refused at the address is an IPv6 or zero `AddrPort`, which
+  is `EncodeRoom`'s refusal and not a second copy of it.
+- ⚠️ **`net/netip` is imported by `registry.go` and is deliberately NOT on the
+  clock ban's import list**, for the reason `crypto/sha256` is not: it is a
+  package of *values* — parse, compare, print, open nothing — where `net` and
+  `net/http` dial and listen. The day something here wants `net.Listen` it is
+  `net` that appears, and `TestTheRoomReadsNoClock` refuses it.
+
+⚠️ **A room code must be CANONICAL, and that is about the map key rather than
+pedantry.** Twelve characters carry sixty bits and seven bytes are fifty-six, so
+four bits are spare and **sixteen** strings decode to any one room's bytes;
+`encoding/base32` has no `Strict()` (unlike `encoding/base64`) and simply ignores
+the trailing bits. Measured before and after the widening: `192.168.1.50:9000` had
+**4** such strings at six bytes and **16** at seven. Since the registry keys its
+map on the string, a joiner pasting a variant would look up a key that is not
+there and be told the room is unknown *while the room sat right there* — a
+correct-looking refusal, the worst shape a bug has. So `RoomCode.Decode` decodes,
+re-encodes and refuses a mismatch, naming the code that does work.
+`RoomCode.AddrPort` is the address-half reader on top of it and adds no refusal of
+its own. ⚠️ Dropping that check reddens **one test only**
+(`TestANonCanonicalRoomCodeIsRefused`) — nothing else in the repository notices —
+so it is the whole net for a map key.
 
 ## The event log is the contract
 

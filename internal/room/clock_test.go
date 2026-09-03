@@ -43,6 +43,14 @@ func TestTheRoomReadsNoClock(t *testing.T) {
 		"os":          "the room is a state machine over messages: no I/O",
 		"net":         "the transport is its own item and is confined to its own boundary",
 		"net/http":    "the transport is its own item and is confined to its own boundary",
+		// ⚠️ net/netip is imported by registry.go and is deliberately not on
+		// this list, for the reason crypto/sha256 is not: it is a package of
+		// **values** — netip.AddrPort parses, compares and prints and opens
+		// nothing — where `net` and `net/http` are the ones that dial, listen and
+		// resolve. Registry.Open takes the address a listener will be at because
+		// it has to derive a room code from it, and a code is arithmetic. The day
+		// something here wants net.Listen it is `net` that appears, and this walk
+		// refuses it.
 		// ⚠️ **`sync` used to be on this list and had to come off**, and the reason
 		// is worth reading before it is put back. Its stated ground was "a room
 		// owns its battle in one goroutine and shares it with nothing; the

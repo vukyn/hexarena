@@ -12,27 +12,32 @@ import (
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
-// theHostAddress is the address every fixture code is built from, and the port
-// is what changes per room.
+// theOneListener is the address **every** room in these fixtures is opened
+// behind, and the room byte is what changes per room — allocated by the
+// registry, which is the shape the socket will actually have.
 //
-// ⚠️ **A port per room is the design record's own collision made visible.** A
-// room code carries four address bytes and two port bytes, so with one listener
-// every room in a process would encode the same ten characters and the code
-// would not identify a room. The reading that satisfies both halves is one
-// listener per room, which is what these fixtures write down. → the note on
-// Open, README.md § A room, and getting into one, and TODO.md under the
-// WebSocket, where the decision actually lands.
-var theHostAddress = netip.AddrFrom4([4]byte{127, 0, 0, 1})
+// ⚠️ **These fixtures used to be a port per room**, and that was the design
+// record's open collision written down as its likely answer: a code carried four
+// address bytes and two port bytes, so with one listener every room in a process
+// encoded the same ten characters and the code named the process rather than the
+// room. It is decided the other way — one listener, and wire.RoomCode carries a
+// seventh byte for the room — so a test opens N rooms behind one address and
+// keeps the N codes Open hands back. → the note on Registry.Open, and README.md
+// § A room, and getting into one.
+//
+// Nothing is bound: the registry has no I/O, and a code is an address in a form
+// a person can retype.
+var theOneListener = netip.AddrPortFrom(netip.AddrFrom4([4]byte{127, 0, 0, 1}), 7100)
 
-// theFirstRoomPort is where the fixture ports start. Nothing is bound: the
-// registry has no I/O, and a code is an address in a form a person can retype.
-const theFirstRoomPort = 7100
-
-func codeFor(t *testing.T, index int) wire.RoomCode {
+// codeFor is the code for one room behind theOneListener, for the two questions
+// that need a code **without** opening a room under it: the stale one no process
+// is running, and the order Open allocates in. Every test that opens a room uses
+// the code Open returned instead, because the registry is what picks the byte.
+func codeFor(t *testing.T, room uint8) wire.RoomCode {
 	t.Helper()
-	code, err := wire.EncodeRoom(netip.AddrPortFrom(theHostAddress, uint16(theFirstRoomPort+index)))
+	code, err := wire.EncodeRoom(theOneListener, room)
 	if err != nil {
-		t.Fatalf("encode the code of room %d: %v", index, err)
+		t.Fatalf("encode the code of room %d: %v", room, err)
 	}
 	return code
 }
@@ -215,11 +220,32 @@ func TestManyRoomsPlayWholeMatchesAtOnce(t *testing.T) {
 	registry := room.NewRegistry()
 	const rooms = 4
 
+	codes := make([]wire.RoomCode, rooms)
 	for index := range rooms {
 		configuration := config(uint64(11+index), 3)
-		if err := registry.Open(codeFor(t, index), configuration, dependencies); err != nil {
+		code, err := registry.Open(theOneListener, configuration, dependencies)
+		if err != nil {
 			t.Fatalf("open room %d: %v", index, err)
 		}
+		codes[index] = code
+	}
+	// The thing the seventh byte exists for, asserted before a turn is fought:
+	// four rooms behind **one** address, four distinct codes, each naming that
+	// address. Before the widening this loop could not have been written — every
+	// room behind one listener encoded the same string.
+	seen := make(map[wire.RoomCode]int, rooms)
+	for index, code := range codes {
+		at, err := code.AddrPort()
+		if err != nil {
+			t.Fatalf("room %d's code %q does not decode: %v", index, code, err)
+		}
+		if at != theOneListener {
+			t.Errorf("room %d's code names %s, want %s", index, at, theOneListener)
+		}
+		if first, taken := seen[code]; taken {
+			t.Fatalf("rooms %d and %d were both handed the code %q", first, index, code)
+		}
+		seen[code] = index
 	}
 	if got := registry.Count(); got != rooms {
 		t.Fatalf("the registry holds %d rooms, want %d", got, rooms)
@@ -234,7 +260,7 @@ func TestManyRoomsPlayWholeMatchesAtOnce(t *testing.T) {
 	// A reading of a room nobody has joined, which is also the one place Read is
 	// exercised on a live room: the transport asks this to start an allowance on
 	// a seat that was handed no answer of its own.
-	waiting, known := registry.Read(codeFor(t, 0))
+	waiting, known := registry.Read(codes[0])
 	if !known {
 		t.Fatal("the registry does not know a room it just opened")
 	}
@@ -254,7 +280,7 @@ func TestManyRoomsPlayWholeMatchesAtOnce(t *testing.T) {
 				// Distinct elements of one slice, written from distinct
 				// goroutines: race-free, and the race detector is what says so.
 				results[index] = playMatch(t,
-					throughTheRegistry{registry: registry, code: codeFor(t, index)},
+					throughTheRegistry{registry: registry, code: codes[index]},
 					dependencies, config(uint64(11+index), 3), host, guest)
 			})
 		}
@@ -292,8 +318,8 @@ func TestManyRoomsPlayWholeMatchesAtOnce(t *testing.T) {
 	// nothing — → TestAFinishedRoomLeavesNoGoroutineBehind, which is where that
 	// is the claim rather than the tidying up.
 	registry.Wait()
-	t.Logf("%d rooms played %d, %d, %d and %d decisions at once",
-		rooms, results[0].steps, results[1].steps, results[2].steps, results[3].steps)
+	t.Logf("%d rooms behind %s played %d, %d, %d and %d decisions at once, under the codes %v",
+		rooms, theOneListener, results[0].steps, results[1].steps, results[2].steps, results[3].steps, codes)
 }
 
 // TestTheRegistryDoesNotCrossWires is the claim a single-room test cannot make:
@@ -307,6 +333,13 @@ func TestManyRoomsPlayWholeMatchesAtOnce(t *testing.T) {
 // this while passing every test in which one room runs at a time, and a registry
 // that quietly shared one room between two codes would fail it too.
 //
+// ⚠️ The four rooms are behind **one address** and differ only in their room
+// byte, which is what makes the claim worth more than it used to be: base32
+// spends five bits a character, so the first six bytes fill nine characters and
+// the four codes share **their first nine characters** exactly, differing only
+// in the last three. A lookup that compared a prefix, or a byte read at the
+// wrong offset, would hand one room's answer to another.
+//
 // It is bo1 rather than bo3 to keep the eight matches cheap; what is being
 // measured is which room an answer came from, and that does not need a series.
 func TestTheRegistryDoesNotCrossWires(t *testing.T) {
@@ -314,10 +347,13 @@ func TestTheRegistryDoesNotCrossWires(t *testing.T) {
 	registry := room.NewRegistry()
 	const rooms = 4
 
+	codes := make([]wire.RoomCode, rooms)
 	for index := range rooms {
-		if err := registry.Open(codeFor(t, index), config(uint64(101+index), 1), dependencies); err != nil {
+		code, err := registry.Open(theOneListener, config(uint64(101+index), 1), dependencies)
+		if err != nil {
 			t.Fatalf("open room %d: %v", index, err)
 		}
+		codes[index] = code
 	}
 
 	together := make([]outcome, rooms)
@@ -327,7 +363,7 @@ func TestTheRegistryDoesNotCrossWires(t *testing.T) {
 				t.Parallel()
 				host, guest := squadPair(t, dependencies, index)
 				together[index] = playMatch(t,
-					throughTheRegistry{registry: registry, code: codeFor(t, index)},
+					throughTheRegistry{registry: registry, code: codes[index]},
 					dependencies, config(uint64(101+index), 1), host, guest)
 			})
 		}
@@ -383,10 +419,13 @@ func TestAFinishedRoomLeavesNoGoroutineBehind(t *testing.T) {
 	registry := room.NewRegistry()
 	const rooms = 3
 
+	codes := make([]wire.RoomCode, rooms)
 	for index := range rooms {
-		if err := registry.Open(codeFor(t, index), config(uint64(201+index), 1), dependencies); err != nil {
+		code, err := registry.Open(theOneListener, config(uint64(201+index), 1), dependencies)
+		if err != nil {
 			t.Fatalf("open room %d: %v", index, err)
 		}
+		codes[index] = code
 	}
 	// The before reading, without which "nought afterwards" would pass on a
 	// registry that never started a goroutine at all.
@@ -400,7 +439,7 @@ func TestAFinishedRoomLeavesNoGoroutineBehind(t *testing.T) {
 	for index := range rooms {
 		configuration := config(uint64(201+index), 1)
 		host, guest := squadPair(t, dependencies, index)
-		played := playMatch(t, throughTheRegistry{registry: registry, code: codeFor(t, index)},
+		played := playMatch(t, throughTheRegistry{registry: registry, code: codes[index]},
 			dependencies, configuration, host, guest)
 		if !played.reading.Finished {
 			t.Fatalf("room %d did not finish", index)
@@ -452,9 +491,28 @@ func TestAFinishedRoomLeavesNoGoroutineBehind(t *testing.T) {
 func TestAMessageInFlightToAFinishedRoomIsRefused(t *testing.T) {
 	dependencies := deps(t)
 	registry := room.NewRegistry()
-	code, closedCode := codeFor(t, 0), codeFor(t, 1)
-	if err := registry.Open(code, config(303, 1), dependencies); err != nil {
+	code, err := registry.Open(theOneListener, config(303, 1), dependencies)
+	if err != nil {
 		t.Fatalf("open the room: %v", err)
+	}
+	// (2)'s room is opened **here, beside the first**, and that is a consequence
+	// of the registry allocating the byte. It used to be opened further down, and
+	// with a caller-supplied code that was free; now the byte is the lowest one
+	// going, so a room opened after the first has retired would be handed **the
+	// first room's code back** — and whether it was would depend on how far that
+	// retirement had got, so the two codes would be equal on some runs and not
+	// others. A test whose two subjects are sometimes one subject measures
+	// something different every time it is run.
+	//
+	// Wait below is unaffected, which is the thing to check before moving it: it
+	// waits for every goroutine in the process, and this room is closed before
+	// the call.
+	closedCode, err := registry.Open(theOneListener, config(304, 1), dependencies)
+	if err != nil {
+		t.Fatalf("open the room that gets closed: %v", err)
+	}
+	if closedCode == code {
+		t.Fatalf("both rooms were opened under %q, so this test has one subject and not two", code)
 	}
 
 	// (3) the noise, running across the whole match and its ending.
@@ -506,13 +564,8 @@ func TestAMessageInFlightToAFinishedRoomIsRefused(t *testing.T) {
 		t.Error("no message landed while the match was played, so nothing was ever in flight")
 	}
 
-	// (2) a room closed under a live peer, mid-match. It is opened **here**
-	// rather than at the top, because Wait below waits for every goroutine in
-	// the process and a room nobody has finished or closed would hang it — which
-	// is Wait being the measurement it is documented as rather than a tidy-up.
-	if err := registry.Open(closedCode, config(304, 1), dependencies); err != nil {
-		t.Fatalf("open the room that gets closed: %v", err)
-	}
+	// (2) a room closed under a live peer, mid-match. → the note beside its Open
+	// for why it is opened at the top now.
 	answered, err := registry.Join(closedCode, hello(t, host, "Host"))
 	if err != nil || !answered.Known {
 		t.Fatalf("the host joins the room that gets closed: %v / known %v", err, answered.Known)
@@ -629,20 +682,29 @@ func TestAnUnknownCodeAnswersRoomUnknown(t *testing.T) {
 	t.Log("every input on an unknown code answers wire.CodeRoomUnknown, naming no seat — the first thing in the repository that sends it")
 }
 
-// TestADuplicateCodeIsRefused holds the half that matters about a duplicate: the
-// room already running under that code is **untouched**, and still playable.
+// TestTheRegistryAllocatesTheLowestFreeRoomByte is what replaced
+// TestADuplicateCodeIsRefused, and the replacement is the point rather than a
+// tidy-up: with the registry picking the byte, **a duplicate code cannot be
+// asked for**, so the refusal that test held is unreachable and a test asserting
+// it would measure nothing. Impossible by construction beats refused.
 //
-// A registry that replaced it would take two people off a board they were at, and
-// would do it silently — the second host would be told everything was fine. The
-// malformed code beside it is refused for the neighbouring reason: a code nothing
-// can decode is a code no client can have typed, so it names no listener and no
-// room should ever occupy it.
-func TestADuplicateCodeIsRefused(t *testing.T) {
+// What that test *also* held survives here, because it was the half that
+// mattered: a second room opened behind the same address leaves the first
+// **untouched and still playable**. It used to be untouched because the second
+// open was refused; it is untouched now because the second open gets a code of
+// its own.
+//
+// The lowest free byte rather than a counter is what makes the code a test can
+// name: a closed room gives its byte back, so the next open takes the gap.
+func TestTheRegistryAllocatesTheLowestFreeRoomByte(t *testing.T) {
 	dependencies := deps(t)
 	registry := room.NewRegistry()
-	code := codeFor(t, 0)
-	if err := registry.Open(code, config(401, 1), dependencies); err != nil {
+	code, err := registry.Open(theOneListener, config(401, 1), dependencies)
+	if err != nil {
 		t.Fatalf("open the room: %v", err)
+	}
+	if want := codeFor(t, 0); code != want {
+		t.Fatalf("the first room opened under %q, want %q — room nought", code, want)
 	}
 	host, guest := squadPair(t, dependencies, 0)
 
@@ -652,26 +714,31 @@ func TestADuplicateCodeIsRefused(t *testing.T) {
 		t.Fatalf("the host joins: %v / seat %q", err, answered.Seat)
 	}
 
-	// A second room under the same code, with a different configuration so that
-	// a replacement would be visible in what the room says about itself.
-	if err := registry.Open(code, config(999, 3), dependencies); err == nil {
-		t.Fatal("a second room opened under a code already running one")
+	// A second room behind the same address, with a different configuration so
+	// that a registry which had somehow replaced the first would be visible in
+	// what that room says about itself.
+	second, err := registry.Open(theOneListener, config(999, 3), dependencies)
+	if err != nil {
+		t.Fatalf("open a second room behind %s: %v", theOneListener, err)
 	}
-	if got := registry.Count(); got != 1 {
-		t.Errorf("the registry holds %d rooms after a refused open, want 1", got)
+	if want := codeFor(t, 1); second != want {
+		t.Errorf("the second room opened under %q, want %q — the lowest free byte", second, want)
 	}
-	if got := registry.Running(); got != 1 {
-		t.Errorf("%d room goroutines after a refused open, want 1", got)
+	if got := registry.Count(); got != 2 {
+		t.Errorf("the registry holds %d rooms after two opens, want 2", got)
+	}
+	if got := registry.Running(); got != 2 {
+		t.Errorf("%d room goroutines after two opens, want 2", got)
 	}
 
 	// The room that was already there is still the one that was already there,
 	// and the match it was in the middle of runs to its end.
 	reading, known := registry.Read(code)
 	if !known {
-		t.Fatal("the running room is gone after a duplicate was refused")
+		t.Fatal("the first room is gone after a second was opened behind the same address")
 	}
 	if reading.Config != config(401, 1) {
-		t.Error("the running room's configuration is not the one it was opened with")
+		t.Error("the first room's configuration is not the one it was opened with")
 	}
 	answered, err = registry.Join(code, hello(t, guest, "Guest"))
 	if err != nil || answered.Seat != wire.SeatGuest {
@@ -681,25 +748,155 @@ func TestADuplicateCodeIsRefused(t *testing.T) {
 		t.Error("the match did not start when the second peer sat down")
 	}
 
-	// A code nothing can decode: nine characters, and a character outside the
-	// alphabet a code is written in.
-	for _, malformed := range []wire.RoomCode{"", "AAAAAAAAA", "AAAAAAAAAA1", "1!8AAAAAAA"} {
-		if err := registry.Open(malformed, config(402, 1), dependencies); err == nil {
-			t.Errorf("a room opened under the code %q, which decodes to no address", string(malformed))
-		}
+	// Two more, so there is a byte in the middle to give back.
+	third, err := registry.Open(theOneListener, config(402, 1), dependencies)
+	if err != nil {
+		t.Fatalf("open a third room: %v", err)
 	}
-	if got := registry.Count(); got != 1 {
-		t.Errorf("the registry holds %d rooms after four malformed codes, want 1", got)
+	if want := codeFor(t, 2); third != want {
+		t.Errorf("the third room opened under %q, want %q", third, want)
 	}
 
-	if closed := registry.CloseAll(); closed != 1 {
-		t.Errorf("CloseAll closed %d rooms, want 1", closed)
+	// A closed room gives its byte back, and the next open takes **that** gap
+	// rather than the next number up — which is the whole of what "lowest free"
+	// buys, and the one claim a counter would fail.
+	if !registry.Close(second) {
+		t.Fatal("closing the second room reported there was none")
+	}
+	reopened, err := registry.Open(theOneListener, config(403, 1), dependencies)
+	if err != nil {
+		t.Fatalf("reopen into the gap: %v", err)
+	}
+	if reopened != second {
+		t.Errorf("the room after the gap opened under %q, want %q — the byte the closed room gave back", reopened, second)
+	}
+
+	if closed := registry.CloseAll(); closed != 3 {
+		t.Errorf("CloseAll closed %d rooms, want 3", closed)
 	}
 	registry.Wait()
 	if got := registry.Running(); got != 0 {
 		t.Errorf("%d room goroutines survived the shutdown", got)
 	}
-	t.Log("a duplicate code is refused and the room already running under it keeps its configuration and its match")
+	t.Logf("rooms behind %s took the bytes 0, 1, 2 in order and reused 1 after it was closed (%q)", theOneListener, reopened)
+}
+
+// TestA257thRoomBehindOneAddressIsRefused is the bound the room byte is: eight
+// bits, so 256 rooms behind one address and no more.
+//
+// ⚠️ It is an **error rather than a wire.Code**, and that division is the point.
+// A joiner is told a room is unknown, refused at the gate or sent away by a
+// password; a host that has 256 rooms running and asks for another is not a
+// joiner and there is nothing to tell a peer — the caller of Open is the host's
+// own process, so it takes the answer as a Go error.
+//
+// 256 rooms is far past what a LAN wants, which is why this is a shape check
+// rather than a limit anybody will meet. Each room is a struct and an idle
+// goroutine until somebody joins, so the sweep is cheap.
+func TestA257thRoomBehindOneAddressIsRefused(t *testing.T) {
+	dependencies := deps(t)
+	registry := room.NewRegistry()
+	for index := range wire.RoomsPerProcess {
+		// #nosec G115 -- index is a loop over 0..255.
+		want := codeFor(t, uint8(index))
+		code, err := registry.Open(theOneListener, config(uint64(500+index), 1), dependencies)
+		if err != nil {
+			t.Fatalf("open room %d of %d: %v", index, wire.RoomsPerProcess, err)
+		}
+		if code != want {
+			t.Fatalf("room %d opened under %q, want %q", index, code, want)
+		}
+	}
+	if got := registry.Count(); got != wire.RoomsPerProcess {
+		t.Fatalf("the registry holds %d rooms, want %d", got, wire.RoomsPerProcess)
+	}
+
+	overflowing, refusal := registry.Open(theOneListener, config(999, 1), dependencies)
+	if refusal == nil {
+		t.Fatalf("a %dth room opened behind %s, under %q", wire.RoomsPerProcess+1, theOneListener, overflowing)
+	}
+	if overflowing != "" {
+		t.Errorf("a refused open handed back the code %q as well as its error", overflowing)
+	}
+	// The refusal costs the process nothing: no entry, and no goroutine owed an
+	// end. A registry that enrolled and then refused would leak one of each.
+	if got := registry.Count(); got != wire.RoomsPerProcess {
+		t.Errorf("the registry holds %d rooms after a refused open, want %d", got, wire.RoomsPerProcess)
+	}
+	if got := registry.Running(); got != wire.RoomsPerProcess {
+		t.Errorf("%d room goroutines after a refused open, want %d", got, wire.RoomsPerProcess)
+	}
+
+	// And a room closing makes room for one, which says the refusal is about the
+	// bytes in use rather than a count that only ever goes up.
+	if !registry.Close(codeFor(t, 7)) {
+		t.Fatal("closing room 7 reported there was none")
+	}
+	reopened, reopenErr := registry.Open(theOneListener, config(998, 1), dependencies)
+	if reopenErr != nil {
+		t.Fatalf("open a room into the freed byte: %v", reopenErr)
+	}
+	if want := codeFor(t, 7); reopened != want {
+		t.Errorf("the room after the gap opened under %q, want %q", reopened, want)
+	}
+
+	if closed := registry.CloseAll(); closed != wire.RoomsPerProcess {
+		t.Errorf("CloseAll closed %d rooms, want %d", closed, wire.RoomsPerProcess)
+	}
+	registry.Wait()
+	t.Logf("%d rooms fit behind %s and the next one is refused as an error: %v",
+		wire.RoomsPerProcess, theOneListener, refusal)
+}
+
+// TestARoomOnlyOpensAtAnAddressACodeCanCarry is what is left of the malformed
+// half of the deleted duplicate test. A caller cannot hand in a malformed code
+// any more — there is no code parameter — so the refusal moved to the **address**,
+// which is the one thing about a code the caller still chooses.
+//
+// It is wire.EncodeRoom's refusal rather than a second copy of it: sixteen bytes
+// of IPv6 plus a port and a room is thirty-one base32 characters and not a code
+// anybody retypes. → the note on EncodeRoom, and the v4-mapped case, which must
+// **not** be refused because it is what a listener reports for an ordinary v4
+// socket.
+func TestARoomOnlyOpensAtAnAddressACodeCanCarry(t *testing.T) {
+	dependencies := deps(t)
+	registry := room.NewRegistry()
+	for _, refused := range []netip.AddrPort{
+		netip.MustParseAddrPort("[::1]:7777"),
+		netip.MustParseAddrPort("[fe80::1]:7777"),
+		{},
+	} {
+		code, err := registry.Open(refused, config(601, 1), dependencies)
+		if err == nil {
+			t.Errorf("a room opened at %s, under %q", refused, code)
+		}
+		if code != "" {
+			t.Errorf("opening at %s handed back the code %q alongside its error", refused, code)
+		}
+	}
+	// Refused before anything was built, so no entry and no goroutine.
+	if got := registry.Count(); got != 0 {
+		t.Errorf("%d rooms on the map after three refused addresses", got)
+	}
+	if got := registry.Running(); got != 0 {
+		t.Errorf("%d room goroutines after three refused addresses", got)
+	}
+
+	mapped := netip.AddrPortFrom(netip.MustParseAddr("::ffff:127.0.0.1"), 7100)
+	code, err := registry.Open(mapped, config(602, 1), dependencies)
+	if err != nil {
+		t.Fatalf("a v4-mapped address is an ordinary v4 socket and was refused: %v", err)
+	}
+	// Unwrapped, so it is the same code the plain v4 address would have given —
+	// a room a host reached one way and a joiner the other has to be one room.
+	if want := codeFor(t, 0); code != want {
+		t.Errorf("a room opened at %s took the code %q, want %q", mapped, code, want)
+	}
+	if closed := registry.CloseAll(); closed != 1 {
+		t.Errorf("CloseAll closed %d rooms, want 1", closed)
+	}
+	registry.Wait()
+	t.Log("an address no code can carry is refused before a room is built; a v4-mapped one is unwrapped and takes the plain address's code")
 }
 
 // assertRoomUnknown is the one refusal the registry sends, checked the same way
@@ -720,5 +917,74 @@ func assertRoomUnknown(t *testing.T, what string, out []room.Outbound) {
 	}
 	if refused.Code != wire.CodeRoomUnknown {
 		t.Errorf("%s was refused with %q, want %q", what, refused.Code, wire.CodeRoomUnknown)
+	}
+}
+
+// TestConcurrentOpensAtOneAddressNeverShareAByte is the net for the one thing
+// enrol does that reading it cannot prove: it finds a free room byte and takes
+// it under **one** hold of the mutex.
+//
+// ⚠️ This test exists because splitting that into two holds — find under the
+// first, occupy under the second — **survived the entire suite, including
+// `-race` three times over.** It is a *logic* race and not a data race: both
+// holds are properly locked, so the detector has nothing to report, and every
+// other Open in this file is sequential, so nothing ever drove two of them into
+// the window. Reading enrol tells you the hold has to be single; only this says
+// so.
+//
+// What the two-hold version does when the window is hit is exact rather than
+// vague, which is what makes the assertions sharp: two callers find the same
+// free byte, and the second `g.rooms[code] = entry` **overwrites** the first —
+// so the map holds one entry where live counted two. Count and Running
+// therefore disagree, one room's goroutine is orphaned, and two callers hold the
+// same code. Each of those is asserted.
+//
+// ⚠️ Honest about what it is: the *window* is probabilistic and the *assertion*
+// is not. With one hold this passes every time by construction, so it never
+// cries wolf; with two it fails often rather than always, which is why it opens
+// several rounds rather than one. A regression here is caught quickly, not
+// necessarily on the first run.
+func TestConcurrentOpensAtOneAddressNeverShareAByte(t *testing.T) {
+	const rounds, atOnce = 20, 8
+	dependencies := deps(t)
+	for round := range rounds {
+		registry := room.NewRegistry()
+		start := make(chan struct{})
+		codes := make([]wire.RoomCode, atOnce)
+		failures := make([]error, atOnce)
+		var racing sync.WaitGroup
+		for index := range atOnce {
+			racing.Add(1)
+			go func() {
+				defer racing.Done()
+				<-start
+				codes[index], failures[index] = registry.Open(
+					theOneListener, config(uint64(600+index), 1), dependencies)
+			}()
+		}
+		close(start)
+		racing.Wait()
+
+		seen := make(map[wire.RoomCode]int, atOnce)
+		for index, code := range codes {
+			if failures[index] != nil {
+				t.Fatalf("round %d: opening room %d at one address: %v", round, index, failures[index])
+			}
+			seen[code]++
+		}
+		if len(seen) != atOnce {
+			t.Fatalf("round %d: %d callers opened a room at %s and hold %d distinct codes, want %d — two of them were handed the same room byte",
+				round, atOnce, theOneListener, len(seen), atOnce)
+		}
+		if got := registry.Count(); got != atOnce {
+			t.Fatalf("round %d: %d rooms opened and the registry holds %d, want %d — an entry was overwritten",
+				round, atOnce, got, atOnce)
+		}
+		if got := registry.Running(); got != atOnce {
+			t.Fatalf("round %d: %d rooms opened and %d goroutines are owed an end, want %d",
+				round, atOnce, got, atOnce)
+		}
+		registry.CloseAll()
+		registry.Wait()
 	}
 }
