@@ -588,6 +588,63 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "glacier",
+      "role": "the one that wins by still being there: the largest frame in the cast behind armour that never held much, throwing from a row back and cooling the ground in front of it so that whatever is coming arrives late",
+      "column": 1,
+      "stats": {
+        "hp": {
+          "base": 1582,
+          "max": 4600
+        },
+        "attack": {
+          "base": 182,
+          "max": 530
+        },
+        "defense": {
+          "base": 124,
+          "max": 360
+        },
+        "speed": {
+          "base": 27,
+          "max": 80
+        },
+        "accuracy": {
+          "base": 55,
+          "max": 160
+        },
+        "dodge": {
+          "base": 12,
+          "max": 34
+        }
+      },
+      "skills": [
+        "ice_shard",
+        "ice_beam",
+        "blizzard",
+        "ice_wall",
+        "hail",
+        "water_gun",
+        "bubble_beam",
+        "brine",
+        "hydro_pump",
+        "water_pulse",
+        "withdraw",
+        "wide_guard",
+        "rally",
+        "body_slam"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "composure",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

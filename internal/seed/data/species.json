@@ -54,6 +54,11 @@
       "id": "shade",
       "name": "bóng ma",
       "note": "Thứ không có ký lô nào mà vẫn đứng chắn được lối: nắm không trúng, đẩy không đi, mà đêm nào cũng thấy ở đúng chỗ ấy"
+    },
+    {
+      "id": "leviathan",
+      "name": "thuỷ quái",
+      "note": "Thứ sống ở vùng nước lạnh và sâu nhất, nơi chẳng có gì khác chịu nổi: thân mình dài hơn con thuyền, mà lúc rẽ nước thì gần như không nghe thấy tiếng"
     }
   ]
 }

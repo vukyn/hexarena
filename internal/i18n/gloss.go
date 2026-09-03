@@ -180,6 +180,7 @@ var (
 		"shifter":    "kẻ vạn biến",
 		"breaker":    "kẻ phá giáp",
 		"hexer":      "kẻ phá phép",
+		"glacier":    "kẻ chịu đòn",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its

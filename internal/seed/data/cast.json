@@ -897,6 +897,127 @@
       ]
     },
     {
+      "id": "pokemon.lapras",
+      "name": "Lapras",
+      "origin": "pokemon",
+      "archetype": "glacier",
+      "image": "assets/lapras.svg",
+      "element": [
+        "water",
+        "ice"
+      ],
+      "bio": "Người ta gặp nó ở khúc biển lạnh nhất, chỗ chẳng còn ai buồn ra khơi. Lapras không đuổi theo ai và cũng không vội: cứ thủng thẳng rẽ nước mà đi, ai trèo lên lưng thì sang được tới bờ bên kia.",
+      "species": [
+        "leviathan"
+      ],
+      "stages": [
+        {
+          "name": "Lapras",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 1582,
+              "max": 4600
+            },
+            "attack": {
+              "base": 182,
+              "max": 530
+            },
+            "defense": {
+              "base": 124,
+              "max": 360
+            },
+            "speed": {
+              "base": 27,
+              "max": 80
+            },
+            "accuracy": {
+              "base": 55,
+              "max": 160
+            },
+            "dodge": {
+              "base": 12,
+              "max": 34
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "ice_shard"
+        },
+        {
+          "id": "ice_beam",
+          "at_level": 8
+        },
+        {
+          "id": "water_gun"
+        },
+        {
+          "id": "withdraw",
+          "at_level": 12
+        },
+        {
+          "id": "blizzard",
+          "at_level": 20
+        },
+        {
+          "id": "bubble_beam",
+          "at_level": 16
+        },
+        {
+          "id": "ice_wall",
+          "at_level": 24
+        },
+        {
+          "id": "water_pulse",
+          "at_level": 28
+        },
+        {
+          "id": "brine",
+          "at_level": 32
+        },
+        {
+          "id": "rally",
+          "at_level": 36
+        },
+        {
+          "id": "hail",
+          "at_level": 40
+        },
+        {
+          "id": "hydro_pump",
+          "at_level": 44
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 46
+        },
+        {
+          "id": "body_slam",
+          "at_level": 48
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 52
+        },
+        {
+          "id": "taunt",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "composure",
+          "at_level": 32
+        }
+      ]
+    },
+    {
       "id": "pokemon.machop",
       "name": "Machop",
       "origin": "pokemon",

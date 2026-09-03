@@ -947,6 +947,29 @@ is only so the shape is readable.
       `species.golden` and `origins.golden` — **not** `scenarios.golden` or
       `replay.golden`, which this line claimed until 2026-08-31. Read Squirtle
       first. → `CLAUDE.md` § Open work.
+      ⚠️ **Lapras landed after this line was written** and is the **second** dual
+      affinity (water/ice), the first `glacier`, the first `leviathan`, and the
+      first character to bring the `ice` book — five skills authored with it
+      (`ice_shard`, `ice_beam`, `blizzard`, `ice_wall`, `hail`). Budget: effHP
+      **10,132** bare and **10,926** under `endurance`, against the 11,500 bound;
+      `hexforge check` reports no problems.
+      ⚠️ **A spar reads a column carrier low, and the learnset ORDER is a lever
+      worth 6.5 points of it.** `forge.seedKit` fields the first four learnset
+      entries, so a kit led by `blizzard` (a column) and `withdraw` (self) spends
+      half of itself on a 1v1 board: **15.4%** overall at 300 seeds. Ordered
+      `ice_shard, ice_beam, water_gun, withdraw` — the duel kit first, the area
+      skills behind it — the same character reads **21.9%**, which is the order
+      shipped. Bracketed by `pokemon.cleffa` at **17.9%** and `pokemon.squirtle`
+      at **40.4%** on the same measurement, so it is not an outlier; and per
+      § *Pricing one number* a spar rate prices nothing, it is only the gate that
+      says a character is not degenerate.
+      ⚠️ **Open, and it is an authoring judgement rather than a bug**: the ice
+      half costs Lapras the water matchup outright. `pokemon.squirtle` takes
+      **62.0%** off `pokemon.charmander` and Lapras takes **0.0%** of 400, because
+      fire answers ice on the cross chain while water answers fire on the organic
+      one, and the pair reads the worse half. Whether a dual should lose a
+      favourable matchup whole is a decision for whoever authors next — it is
+      written down rather than tuned away.
 - [ ] **Thirty-one Pokemon are traced and waiting for a character.** The art
       landed first because `cast.ParseBook` refuses a character that declares no
       image, so the order is forced: trace, then author. Nothing references any

@@ -596,6 +596,34 @@ Nhận xum xuê x5.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 [one line] 80% công · tự nhận xum xuê x5 · tầm 2 · hồi 1
 
+ice_shard
+Búng ra một mảnh băng sắc lẻm, mỏng thôi mà đi rất ngọt, 75% công.
+Tầm 2 · 95% trúng · hồi 1 lượt.
+[one line] 75% công · tầm 2 · hồi 1
+
+ice_beam
+Một tia lạnh buốt kéo dài, chạm tới đâu thì chỗ ấy cứng lại, 140% công.
+Gây sa lầy cho mục tiêu, 40% khả năng.
+Tầm 3 · 90% trúng · hồi 3 lượt.
+[one line] 140% công · sa lầy 40% · tầm 3 · hồi 3
+
+blizzard
+Gọi cả một trận gió trắng xoá về, không còn thấy đường mà lui, 95% công.
+Gây sa lầy cho mục tiêu, 30% khả năng.
+Tầm 3 · 3 ô · 72% trúng · hồi 4 lượt.
+[one line] 95% công · sa lầy 30% · tầm 3 · 3 ô · hồi 4
+
+ice_wall
+Dựng một vách băng dày trước mặt đồng đội, đủ để chịu thay một lúc.
+Cho mục tiêu lá chắn, 100% khả năng.
+Tầm 1 · 100% trúng · hồi 4 lượt.
+[one line] lá chắn 100% · đồng đội · tầm 1 · hồi 4
+
+hail
+Trời đổ đá xuống một dải, không nhắm ai mà cũng chẳng chừa ai, 60% công.
+Tầm 2 · 3 ô · 100% trúng · hồi 3 lượt.
+[one line] 60% công · cả hai bên · tầm 2 · 3 ô · hồi 3
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1446,6 +1474,34 @@ Hits an enemy for 80% of attack.
 Puts verdure x5 on itself.
 Range 2 · 95% to hit · 1 turn to recharge.
 [one line] 80% attack · self verdure x5 · range 2 · cd 1
+
+ice_shard
+Hits an enemy for 75% of attack.
+Range 2 · 95% to hit · 1 turn to recharge.
+[one line] 75% attack · range 2 · cd 1
+
+ice_beam
+Hits an enemy for 140% of attack.
+Inflicts mire, 40% of the time.
+Range 3 · 90% to hit · 3 turns to recharge.
+[one line] 140% attack · mire 40% · range 3 · cd 3
+
+blizzard
+Hits an enemy for 95% of attack.
+Inflicts mire, 30% of the time.
+Range 3 · 3 cells · 72% to hit · 4 turns to recharge.
+[one line] 95% attack · mire 30% · range 3 · 3 cells · cd 4
+
+ice_wall
+Aims at an ally.
+Gives its target aegis, 100% of the time.
+Range 1 · 100% to hit · 4 turns to recharge.
+[one line] aegis 100% · an ally · range 1 · cd 4
+
+hail
+Hits both sides for 60% of attack.
+Range 2 · 3 cells · 100% to hit · 3 turns to recharge.
+[one line] 60% attack · both sides · range 2 · 3 cells · cd 3
 
 [trait] endurance
 Always carries toughened.

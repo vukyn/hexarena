@@ -366,7 +366,18 @@ func readSetup(t *testing.T, foe string) (amplified, stuns int) {
 //
 // Both mythics are one, and the fiction is the same fact twice: the original has
 // nothing before it and the clone was finished in a tank, so neither has anywhere
-// to go. Every other shipped character grows into somebody with another name.
+// to go.
+//
+// ⚠️ **The third is pokemon.lapras, and it is a decision rather than an accident**
+// — which is what this test said would have to be true before the count could
+// move. Two things forced it and both are outside this package. Its own fiction
+// gives it nowhere to go, exactly like the mythics: it is neither grown out of
+// anything nor grown into anything, so a second stage would be a form somebody
+// invented to fill a threshold. And cast.ParseBook requires art, per stage as
+// well as per character, so a second stage is a second picture — one was traced
+// and there is nothing to point a second stage at. The count is asserted rather
+// than the membership, on purpose: this is the line where a fourth gets noticed
+// too.
 func TestTheCastHasALineThatDoesNotEvolve(t *testing.T) {
 	book, err := seed.Cast()
 	if err != nil {
@@ -378,8 +389,8 @@ func TestTheCastHasALineThatDoesNotEvolve(t *testing.T) {
 			still = append(still, character.ID)
 		}
 	}
-	if len(still) != 2 {
-		t.Errorf("%v are the one-form lines; the pair is supposed to be both of them and nobody else", still)
+	if len(still) != 3 {
+		t.Errorf("%v are the one-form lines; the three are supposed to be all of them and nobody else", still)
 	}
 	mew, known := book.Get("pokemon.mew")
 	if !known {

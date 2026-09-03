@@ -105,6 +105,11 @@ soak            water     enemy    2  single          800     1    800   940    
 tide_break      water     enemy    2  single          900     1    900   880    3     0     0      308
 deluge          water     enemy    1  column          600     1    600   860    4     0     0      205
 sprout          grass     enemy    2  single          800     1    800   950    1     0     0      274
+ice_shard       ice       enemy    2  single          750     1    750   950    1     0     0      257
+ice_beam        ice       enemy    3  single         1400     1   1400   900    3     0     0      480
+blizzard        ice       enemy    3  column          950     1    950   720    4     0     0      325
+ice_wall        ice       ally     1  single            0     1      0  1000    4     0     0        0
+hail            ice       all      2  column          600     1    600  1000    3     0     0      205
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -171,6 +176,9 @@ overgrow        verdure                6     1000       1000             1000
 drench          moisture               6     1000       1000             1000
 soak            moisture (self)        5     1000        940                -
 sprout          verdure (self)         5     1000        950                -
+ice_beam        mire                   1      400        900              360
+blizzard        mire                   1      300        720              216
+ice_wall        aegis                  1     1000       1000             1000
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -269,6 +277,11 @@ soak            -          -                 -                   -         pokem
 tide_break      -          -                 -                   -         pokemon
 deluge          -          -                 -                   -         pokemon
 sprout          -          -                 -                   -         pokemon
+ice_shard       -          -                 -                   -         pokemon
+ice_beam        -          -                 -                   -         pokemon
+blizzard        -          -                 -                   -         pokemon
+ice_wall        -          -                 -                   -         pokemon
+hail            -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
