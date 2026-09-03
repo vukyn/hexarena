@@ -4838,16 +4838,24 @@ skill the carrier does not bring at that level and form (it would be *measured* 
 an even row priced at nought on a skill nobody cast); a variant id the book
 already declares; a value the parser refuses (returned in **the parser's own
 words, unwrapped**, because every bound is `skill.resolve`'s and a second copy
-would be free to disagree); a row that **landed the skill zero times** — worth
-nothing means *not rated*, never *rated at nought*, which is the `fire_fang`
-ally-0 lesson made permanent; a row where the mechanism never fired (crit is the
-only field with a mark of its own on an event); a row whose `Endless` exceeds a
+would be free to disagree); a row on which the skill **did none of its own work**
+— worth nothing means *not rated*, never *rated at nought*, which is the
+`fire_fang` ally-0 lesson made permanent, and *its own work* is whichever
+mechanism the row's own variant declares (striking, applying, restoring,
+cleansing, summoning), because a strike is the mechanism of a damaging skill and
+the wrong evidence for one that deals none; a row where the mechanism never fired
+(crit is the only field with a mark of its own on an event); a row whose
+`Endless` exceeds a
 fifth of its battles; and a row with a **saturated half** (`First.Rate() >= 990`
 or `Second.Rate() <= 10`), which has no room left for the field to move.
 
 ⚠️ Only **scalars** are weighable: `power`, `accuracy`, `pierce`, `crit`,
-`strikes`, `drains`, `cooldown`, `range`. `self_gradient` is excluded because it
-is two numbers, so a curve becomes a surface; `applies`, `strips`, `summons`,
+`strikes`, `drains`, `cooldown`, `range`. `self_gradient` is excluded because
+**nothing carries it** — `comeback` is the book's only gradient and no character
+brings it at level 60, so the field would measure nothing that exists. (It was
+excluded for years as "two numbers, so a curve becomes a surface"; `skill.Gradient`
+has had exactly one field since #132, and TODO.md carries the decision that is
+actually open.) `applies`, `strips`, `summons`,
 `restriction`, `element`, `target` and `pattern` are excluded because changing one
 **authors a different skill** rather than moving a dial, and the deviation would
 be that other skill's worth.
