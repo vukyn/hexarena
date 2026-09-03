@@ -571,6 +571,17 @@ type swing struct {
 	// Skill.SelfScale. Nought is a skill with no gradient, or a caster at full
 	// health.
 	Share int
+	// Restore is the health the caster's own condition buys with the stacks it
+	// spends, in parts per thousand, from Skill.SelfRestore. Nought is a skill
+	// whose condition pays no health, or a caster whose condition does not hold.
+	//
+	// ⚠️ **It travels here because it cannot be read where it is spent.** Act
+	// removes the stacks before it pays anything out, so a restore that asked the
+	// caster what it was carrying would be asking after the tank was empty and
+	// would heal nothing, every time, silently. This struct is already the reading
+	// taken once per use and carried to whoever needs it, so the figure rides along
+	// rather than a second reading being taken at the wrong moment.
+	Restore int
 }
 
 // applied is the power a skill lands at once the caster's own terms are in.
@@ -601,9 +612,11 @@ func (s swing) applied(power int) int {
 // same trap Battle.spend records, arriving through a field that has no status to
 // consume.
 func swingOf(declared skill.Skill, actor *Unit) swing {
+	caster := conditionCaster(declared, actor)
 	return swing{
-		Bonus: declared.SelfBonus(conditionCaster(declared, actor)),
-		Share: declared.SelfScale(actor.HP, actor.MaxHP()),
+		Bonus:   declared.SelfBonus(caster),
+		Share:   declared.SelfScale(actor.HP, actor.MaxHP()),
+		Restore: declared.SelfRestore(caster),
 	}
 }
 

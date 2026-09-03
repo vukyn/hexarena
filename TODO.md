@@ -24,7 +24,9 @@ is only so the shape is readable.
   there is one — replay, undo. Draws for a battle nobody can act in and for a
   deadlock. Piercing, healing, draining, regeneration. Conditions read the target
   *or* the caster, as a threshold or as a gradient that grows with the caster's
-  own wounds. Reach counted in ranks from the far side rather than in cells from
+  own wounds, and paying in power or in health — a reserve buys a heal as well as
+  a blow, and a caster holding no fuel heals nothing without a cast gate being
+  written. Reach counted in ranks from the far side rather than in cells from
   the caster. A resistance share may be negative, so a target can be made easier
   to afflict and not only harder. Summons. Taunt.
 - **Traits.** A character carries traits as well as a kit: permanent grants,
@@ -2152,59 +2154,6 @@ is only so the shape is readable.
       hand-kept table of every `Skill` field marked *priced* or *deliberately not,
       with the reason* — the guard that would have caught all four at once.
       → `README.md` § *Cutting the healing* for the two already known.
-- [ ] **Three reserve-paid direct heals — one per reserve, spendable only by a
-      unit of that element.** `swelter`, `verdure` and `moisture` each have
-      spenders that buy damage and nothing that buys health back. The ask is one
-      heal apiece, paid for out of the same tank, carryable only by the element
-      that banks it.
-      ⚠️ **The element half needs no new field and the payment half cannot be
-      written at all today.** `"element": "fire"` already refuses a non-fire
-      carrier — `WhyCannotCarry` returns `CarryWrongElement` on its first clause,
-      before `AllowsElement` is ever consulted — so `restrict.elements` here
-      would be dead data no test could tell from live data. It exists to restrict
-      a *neutral* skill, which its own doc says.
-      ⚠️ **`self_requires` is an amplifier, not a cost.** `Battle.spend` returns
-      early when the caster is not amplified, so a caster holding nothing is
-      charged nothing and the skill still fully resolves; `Skill.SelfBonus` pays
-      into `Power` alone; `Battle.restore` reads a flat `Restores` that nothing
-      on the condition can reach. Declared as data today, a reserve heal pays out
-      in full to a caster holding no fuel and charges one holding fuel for the
-      same heal — the reserve becomes a penalty for having reserve, which is the
-      ask inverted. So this is an engine change, not three rows of JSON.
-      The shape that fits the grammar already in the file: one new caster-side
-      currency on `skill.Condition` — `stack_restore`, the health twin of
-      `stack_power` — with base `restores: 0`, so "no fuel, no heal" falls out of
-      arithmetic and no cast gate is written. A gate would instead reach `Act`
-      legality, `Option.Available`, the option list in `internal/screen` and
-      `Suggest`, and would make `self_requires` mean two things.
-      ⚠️ **The figure has to be handed in, not read.** `spend` empties the tank
-      before either `restore` call runs, so a `restore` that reads the stacks
-      itself heals nought every time and no test that only checks for *a* heal
-      would see it. The single reading is `swingOf`, built once per use before
-      the spend and already carried to the resolution — the same seam the power
-      bonus uses.
-      ⚠️ **Three ways this passes while being wrong.** `Condition.Takes` clamps
-      only when `StackPower > 0`, and no shipped board banks deep enough to
-      expose an unclamped heal, so every measured battle would look right;
-      widening `Scales()` instead of adding a predicate makes the description
-      print *every stack adds 0% of attack* on a skill that buys none; and
-      `pricing.selfSpendable` skips a `Power == 0` skill, so a unit whose only
-      spender is a heal prices its whole tank at nought — it never banks, cashing
-      in costs nothing and a dispel against it is free, while the shipped
-      both-halves test keeps passing because it inspects data rather than play.
-      The rate to sit inside: the shipped spenders pay **56–98 permille of
-      restore per stack** once past the one-stack drip.
-      Still the author's to settle: the Vietnamese names and all three flavour
-      clauses; whether the heals aim at the caster or at an ally, which decides
-      whether the cost half can clamp against a known recipient; and whether the
-      water heal shares poliwag's tank with `tide_break` or moves to a shallower
-      rung on squirtle.
-      → No design section exists yet. The full change list — the refusals at
-      parse, the two `price.go` arms, the wording keys, the `weigh` mechanism,
-      and the tests that prove the rating and the engine read one figure — was
-      written up in the planning pass and is on the branch `feat/reserve-heals`,
-      nowhere else.
-
 
 ## Decided against — do not re-raise
 

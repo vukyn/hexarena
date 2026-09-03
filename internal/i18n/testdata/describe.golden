@@ -596,6 +596,24 @@ Nhận xum xuê x5.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 [one line] 80% công · tự nhận xum xuê x5 · tầm 2 · hồi 1
 
+cauterise
+Dồn hết chỗ nóng ủ trong người áp thẳng lên vết thương.
+Bản thân đang dính ít nhất 5 cộng dồn sóng nhiệt, mỗi cộng dồn sóng nhiệt tiêu đi hồi lại 9% công thành máu, tiêu tối đa 22 cộng dồn sóng nhiệt.
+Bản thân · hồi 4 lượt.
+[one line] tự sóng nhiệt 5+→hồi 9%/cộng · bản thân · hồi 4
+
+verdant_mend
+Vơ đám cây cối rậm quanh mình đắp lên vết thương, da non kéo lại bên dưới.
+Bản thân đang dính ít nhất 10 cộng dồn xum xuê, mỗi cộng dồn xum xuê tiêu đi hồi lại 10% công thành máu, và tiêu 10 cộng dồn xum xuê.
+Bản thân · hồi 3 lượt.
+[one line] tự xum xuê 10+→hồi 10%/cộng · bản thân · hồi 3
+
+wellspring
+Khối nước gom bấy lâu dâng lên, thấm ngược vào từng chỗ rách trên mình.
+Bản thân đang dính ít nhất 20 cộng dồn ẩm ướt, mỗi cộng dồn ẩm ướt tiêu đi hồi lại 9% công thành máu, và tiêu 20 cộng dồn ẩm ướt.
+Bản thân · hồi 4 lượt.
+[one line] tự ẩm ướt 20+→hồi 9%/cộng · bản thân · hồi 4
+
 ice_shard
 Bắn ra một mảnh băng sắc lẻm, mỏng nhưng chém rất ngọt, 75% công.
 Tầm 2 · 95% trúng · hồi 1 lượt.
@@ -1474,6 +1492,21 @@ Hits an enemy for 80% of attack.
 Puts verdure x5 on itself.
 Range 2 · 95% to hit · 1 turn to recharge.
 [one line] 80% attack · self verdure x5 · range 2 · cd 1
+
+cauterise
+While this unit is carrying at least 5 stacks of swelter, every stack of swelter it spends restores 9% of attack as health, eating up to 22 stacks of the swelter.
+Itself · 4 turns to recharge.
+[one line] self swelter 5+→heals 9%/stack · itself · cd 4
+
+verdant_mend
+While this unit is carrying at least 10 stacks of verdure, every stack of verdure it spends restores 10% of attack as health, and eats 10 stack of the verdure.
+Itself · 3 turns to recharge.
+[one line] self verdure 10+→heals 10%/stack · itself · cd 3
+
+wellspring
+While this unit is carrying at least 20 stacks of moisture, every stack of moisture it spends restores 9% of attack as health, and eats 20 stack of the moisture.
+Itself · 4 turns to recharge.
+[one line] self moisture 20+→heals 9%/stack · itself · cd 4
 
 ice_shard
 Hits an enemy for 75% of attack.

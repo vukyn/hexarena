@@ -495,11 +495,13 @@ const (
 	SummaryAmplifiedArc
 	SummarySelfAmplifiedShape
 	SummarySelfScaled
+	SummarySelfRestored
 	BlurbArcs
 	BlurbChains
 	BlurbConsumesEachStrike
 	BlurbConsumesPile
 	BlurbScalesPerStack
+	BlurbRestoresPerStack
 	BlurbConsumesUpTo
 	BlurbAtLeast
 	BlurbRepeats

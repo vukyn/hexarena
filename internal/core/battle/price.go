@@ -691,8 +691,18 @@ func (p *pricing) threat(unit *Unit) int64 {
 //
 // It also answers two cases nothing else covers, for free: an ally at full health
 // is worth nothing, and an ally nothing can reach is worth nothing.
+//
+// ⚠️ **Both halves of the figure, through swingOf rather than a reading of its
+// own.** A heal paid for out of a reserve carries no flat `restores` at all --
+// the whole payout is the condition's rate times the stacks the spend takes --
+// so a price read off that field alone would rate every such skill at nought and
+// Suggest would never cast one. swingOf is the function Battle.restore is handed
+// its half from, so the price and the payout come out of one expression rather
+// than two that agree today.
 func (p *pricing) restored(actor, target *Unit, declared skill.Skill) int64 {
-	if declared.Restores <= 0 {
+	brought := swingOf(declared, actor)
+	total := declared.Restores + brought.Restore
+	if total <= 0 {
 		return 0
 	}
 	actorStats := p.fight.Stats(actor)
@@ -701,7 +711,7 @@ func (p *pricing) restored(actor, target *Unit, declared skill.Skill) int64 {
 	restored := p.fight.books.Rules.Restore(
 		combat.PickScaling(declared.Scaling.Source,
 			actor.Base[declared.Scaling.Stat], actorStats[declared.Scaling.Stat]),
-		declared.Restores)
+		total)
 	return worthHealing(restored, target, p.threat(target))
 }
 
@@ -1421,15 +1431,42 @@ func (p *pricing) spendable(actor, holder *Unit, kind status.Kind) int64 {
 //
 // A per-stack payment needs no divisor at all: it *is* the per-stack figure, and
 // that is the shape "spend all of it" is written in.
+//
+// ⚠️ **A reserve buys health as well as damage, and this used to be blind to
+// half of it.** The loop skipped every skill of no power, which is exactly the
+// shape a reserve-paid heal has -- so a unit whose only spender was a heal valued
+// its whole tank at nought: it never thought banking was worth a turn, cashing in
+// cost it nothing, and a dispel aimed at it was free. The guard is now on the
+// damage ARM rather than on the search, because it is the damage expression that
+// needs a power: a share of a cast is meaningless when the cast is not a blow.
 func (p *pricing) selfSpendable(holder *Unit, id string) int64 {
 	best := int64(0)
 	for _, held := range holder.Skills {
 		declared, err := p.fight.books.Skills.Lookup(held)
-		if err != nil || declared.Power == 0 {
+		if err != nil {
 			continue
 		}
 		spends := declared.SelfRequires
 		if spends == nil || !spends.Consume || spends.Status != id {
+			continue
+		}
+		// The health arm, and it needs no share-of-a-cast: a per-stack restore IS
+		// the per-stack figure, in the same units every other term here counts in,
+		// through the expression restored prices a heal with. Clamped against the
+		// holder rather than against a guess, and the clamp is exact here because
+		// the skill is aimed at its caster -- the unit whose stack this is.
+		if spends.ScalesRestore() {
+			healed := p.fight.books.Rules.Restore(
+				combat.PickScaling(declared.Scaling.Source,
+					holder.Base[declared.Scaling.Stat],
+					p.fight.Stats(holder)[declared.Scaling.Stat]),
+				spends.StackRestore)
+			if value := worthHealing(healed, holder, p.threat(holder)); value > best {
+				best = value
+			}
+			continue
+		}
+		if declared.Power == 0 {
 			continue
 		}
 		gain := int64(spends.StackPower)

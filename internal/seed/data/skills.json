@@ -2444,6 +2444,81 @@
       ]
     },
     {
+      "id": "cauterise",
+      "name": "hơ lửa",
+      "flavour": "Dồn hết chỗ nóng ủ trong người áp thẳng lên vết thương",
+      "element": "fire",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "swelter",
+        "min_stacks": 5,
+        "consume": true,
+        "consume_stacks": 0,
+        "stack_restore": 90
+      }
+    },
+    {
+      "id": "verdant_mend",
+      "name": "đắp lá",
+      "flavour": "Vơ đám cây cối rậm quanh mình đắp lên vết thương, da non kéo lại bên dưới",
+      "element": "grass",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "verdure",
+        "min_stacks": 10,
+        "consume": true,
+        "consume_stacks": 10,
+        "stack_restore": 100
+      }
+    },
+    {
+      "id": "wellspring",
+      "name": "mạch nước",
+      "flavour": "Khối nước gom bấy lâu dâng lên, thấm ngược vào từng chỗ rách trên mình",
+      "element": "water",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "moisture",
+        "min_stacks": 20,
+        "consume": true,
+        "consume_stacks": 20,
+        "stack_restore": 85
+      }
+    },
+    {
       "id": "ice_shard",
       "name": "mảnh băng",
       "flavour": "Bắn ra một mảnh băng sắc lẻm, mỏng nhưng chém rất ngọt",

@@ -403,6 +403,17 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 		sentence += l.Say(BlurbScalesPerStack,
 			l.glossed(condition.Status), share(condition.StackPower))
 	}
+	// The health twin of the clause above, and a separate arm for the same reason
+	// skill.ScalesRestore is a separate predicate: a spend paid in health adds
+	// nothing to the blow, so a widened Scales would have this skill promise a
+	// per-stack bonus off a rate of nought. The flat `restores` line stays silent
+	// on such a skill, which is correct — there is no flat figure to print, and
+	// this clause is where the whole heal is written down.
+	if condition.ScalesRestore() {
+		sentence += l.Say(BlurbRestoresPerStack,
+			l.glossed(condition.Status), share(condition.StackRestore),
+			l.describeStat(declared.Scaling.Stat))
+	}
 	// What the discharge does, then what it costs — the order the bargain is
 	// made in. A reader told what was eaten and only then what that bought has to
 	// hold the first clause open until the second arrives.
@@ -428,6 +439,14 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 			// reader has to know to decide whether banking further is worth a turn.
 			sentence += l.Say(BlurbConsumesUpTo,
 				condition.Takes(skill.MaxSpendPower), l.glossed(condition.Status))
+		case condition.ScalesRestore() && condition.ConsumeStacks == 0:
+			// The health currency's own ceiling, and it needs its own arm because the
+			// two rates are bounded by different constants: reading this one against
+			// MaxSpendPower would print a count the spend never takes. Same reason as
+			// the clause above — what a deep reserve actually hands over is the fact a
+			// reader banks or spends on.
+			sentence += l.Say(BlurbConsumesUpTo,
+				condition.Takes(skill.MaxSpendRestore), l.glossed(condition.Status))
 		case condition.Arcs() && condition.ConsumeStacks == 0:
 			// A nuke, and it needs a clause of its own rather than the detonate's:
 			// "eats the charge" reads as one stack against a sentence that has just
@@ -704,6 +723,12 @@ func (l Lang) summariseCondition(
 	// condition is forbidden to do.
 	if condition.Scales() {
 		return l.Say(SummarySelfScaled, l.join(clauses), share(condition.StackPower))
+	}
+	// And the health rate, on the same reasoning and for the same reason it is
+	// checked before the silent arm: a heal-paid spender declares no bonus_power
+	// either, so the shape wording would catch it and print "spreads".
+	if condition.ScalesRestore() {
+		return l.Say(SummarySelfRestored, l.join(clauses), share(condition.StackRestore))
 	}
 	if condition.BonusPower == 0 {
 		return l.Say(shapeWording(wording, condition), l.join(clauses))

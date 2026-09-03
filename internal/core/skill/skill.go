@@ -225,6 +225,24 @@ type Condition struct {
 	// charged twice with nothing downstream able to tell which half a figure came
 	// from — the same refusal BonusPower and ArcPower already share.
 	StackPower int
+	// StackRestore is the health twin of StackPower: what one consumed stack
+	// restores to the caster, in parts per thousand of the scaling stat, which is
+	// the same unit Skill.Restores is written in.
+	//
+	// ⚠️ **It is what makes a reserve buy something other than a blow.** A skill
+	// declaring `restores` alone pays out in full to a caster holding no fuel at
+	// all — the condition is an amplifier, so failing it charges nothing and stops
+	// nothing — and a heal that is free when the tank is empty is not paid for by
+	// the tank. Written per stack instead, with the flat `restores` left at
+	// nought, "no fuel, no heal" is arithmetic rather than a gate somebody has to
+	// remember to write.
+	//
+	// ⚠️ **A condition may not carry both currencies.** Takes clamps the stacks a
+	// spend removes against the ceiling the payment can buy, and there is one
+	// Takes: a condition holding both a power rate and a health rate would have
+	// two ceilings answering one question, and whichever was applied would be
+	// wrong for the other half.
+	StackRestore int
 }
 
 // Arcs reports whether the condition discharges the status it consumes into
@@ -233,6 +251,15 @@ func (c *Condition) Arcs() bool { return c != nil && c.ArcPower > 0 }
 
 // Scales reports whether the condition pays its caster per stack it spends.
 func (c *Condition) Scales() bool { return c != nil && c.StackPower > 0 }
+
+// ScalesRestore reports whether the condition pays its caster health per stack
+// it spends.
+//
+// A second predicate rather than a widened Scales, because the two are read to
+// decide which sentence to write and which figure to quote: a heal-only spender
+// answering true to Scales would have the description promise that every stack
+// adds to the blow, off a StackPower of nought.
+func (c *Condition) ScalesRestore() bool { return c != nil && c.StackRestore > 0 }
 
 // ChainsOn reports whether the consume travels to adjacent carriers.
 func (c *Condition) ChainsOn() bool { return c != nil && c.Chains }
@@ -272,6 +299,20 @@ func (c *Condition) Takes(held int) int {
 	// of it that this skill can use".
 	if c.StackPower > 0 {
 		if most := MaxSpendPower / c.StackPower; taken > most {
+			taken = most
+		}
+	}
+	// The same rule on the health currency, and the mirror is exact: it is the
+	// STACKS that are clamped and not the health, for every word of the reason
+	// above. A spend that handed over a pile and healed a capped figure would pay
+	// most per stack at the shallowest depth, and a rating that could see that
+	// would cash the tank in the moment it opened.
+	//
+	// Two clauses rather than one, because the two ceilings are different numbers
+	// and a condition may hold only one of the two rates — see resolveCondition,
+	// which refuses the pair rather than leaving this to pick between them.
+	if c.StackRestore > 0 {
+		if most := MaxSpendRestore / c.StackRestore; taken > most {
 			taken = most
 		}
 	}
@@ -826,6 +867,36 @@ func (s Skill) SelfCeiling() int {
 	return s.SelfBonus(s.SelfRequires.Satisfying())
 }
 
+// SelfRestore is the health the caster's own condition buys with the stacks it
+// spends, in parts per thousand of the scaling stat, and nought when the
+// condition does not hold or is not declared.
+//
+// The health twin of SelfBonus, and read at the same moment for the same reason:
+// once per use, off the same Takes the spend removes, so the heal that lands and
+// the stacks that paid for it cannot disagree.
+//
+// ⚠️ **Nought when the condition does not hold, and that is the whole feature.**
+// A skill's flat `restores` pays out whatever the caster is carrying, because a
+// condition is an amplifier and a caster who fails it is charged nothing and
+// stopped by nothing. Written here instead, an empty tank buys an empty heal
+// without a single gate anywhere.
+func (s Skill) SelfRestore(caster Target) int {
+	if !s.SelfAmplified(caster) {
+		return 0
+	}
+	return s.SelfRequires.StackRestore * s.SelfRequires.Takes(caster.Stacks)
+}
+
+// SelfRestoreCeiling is the most the caster's own condition can restore in one
+// cast, and it is SelfCeiling's twin: read through Takes, because Takes is where
+// the ceiling bites, whatever depth the status book allows anybody to bank to.
+func (s Skill) SelfRestoreCeiling() int {
+	if s.SelfRequires == nil || !s.SelfRequires.ScalesRestore() {
+		return 0
+	}
+	return s.SelfRequires.StackRestore * s.SelfRequires.Takes(MaxSpendRestore)
+}
+
 // SelfScale is the share the caster's own wounds add to the skill's power, in
 // parts per thousand, and nought for a skill with no gradient.
 //
@@ -929,6 +1000,7 @@ type conditionFile struct {
 	Chains        bool   `json:"chains,omitempty"`
 	ArcPower      int    `json:"arc_power,omitempty"`
 	StackPower    int    `json:"stack_power,omitempty"`
+	StackRestore  int    `json:"stack_restore,omitempty"`
 }
 
 // gradientFile is its own shape rather than a field on conditionFile, because a
@@ -1027,6 +1099,7 @@ func (s Skill) file() skillFile {
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
 			ConsumeStacks: s.SelfRequires.ConsumeStacks, Chains: s.SelfRequires.Chains,
 			ArcPower: s.SelfRequires.ArcPower, StackPower: s.SelfRequires.StackPower,
+			StackRestore: s.SelfRequires.StackRestore,
 		}
 	}
 	if s.SelfGradient != nil {
@@ -1039,6 +1112,7 @@ func (s Skill) file() skillFile {
 			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
 			ConsumeStacks: s.Requires.ConsumeStacks, Chains: s.Requires.Chains,
 			ArcPower: s.Requires.ArcPower, StackPower: s.Requires.StackPower,
+			StackRestore: s.Requires.StackRestore,
 		}
 	}
 	if s.Strips != nil {
@@ -1149,6 +1223,23 @@ const maxRange = hex.FormationCols
 // the only one.
 const MaxSpendPower = 4 * scale.Base
 
+// MaxSpendRestore is the most one spend of a counter may restore to its caster,
+// in parts per thousand of the caster's scaling stat.
+//
+// MaxSpendPower's twin, and it exists for the same reason: Condition.StackRestore
+// is multiplied by a stack count before it is used, so it bounds a product the
+// author never writes down. Applied by Condition.Takes on the STACKS, exactly as
+// its twin is — read that comment before moving this one.
+//
+// Twice the scaling stat, derived from the shipped book rather than picked: the
+// heaviest restore anybody carries is `synthesis` at 900, so this is a little
+// over twice the biggest heal in the game. At the golden's reference 800 attack
+// it caps one spend at 1600 health, which sits just under the 1611 damage
+// `tide_break` deals for a spend of the same size — so emptying a reserve into
+// health and emptying it into a blow are worth about the same turn, which is what
+// makes the choice between them a decision rather than an answer.
+const MaxSpendRestore = 2 * scale.Base
+
 func resolve(declared skillFile, deps Deps) (Skill, error) {
 	if declared.ID == "" {
 		return Skill{}, fmt.Errorf("a skill needs an id")
@@ -1176,8 +1267,13 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 	switch {
 	case declared.Power < 0:
 		return fail("has power %d, want zero or more", declared.Power)
+	// A caster's own per-stack restore is a body of work like any other, and it is
+	// the one that carries no flat figure anywhere on the skill: the whole heal
+	// lives on the condition, so a skill spending a reserve to patch itself up
+	// reads as `restores: 0` here and would have been refused as a wasted turn.
 	case declared.Power == 0 && len(declared.Applies) == 0 && len(declared.SelfApplies) == 0 &&
-		declared.Strips == nil && declared.Restores == 0 && declared.Summons == nil:
+		declared.Strips == nil && declared.Restores == 0 && declared.Summons == nil &&
+		(declared.SelfRequires == nil || declared.SelfRequires.StackRestore == 0):
 		return fail("has no power and does nothing else, so it would be a wasted turn")
 	case declared.Restores < 0:
 		return fail("restores %d, want zero or more", declared.Restores)
@@ -1230,6 +1326,12 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return fail("crits on damage it never deals")
 	case declared.Restores > 0 && target == Enemy:
 		return fail("restores health to the enemy, which nobody means")
+	// The same sentence one currency along. A caster's own condition pays its own
+	// caster, so the aim is the caster's business rather than the payment's -- but
+	// an enemy-aimed skill reaches resolveAgainst for every cell it covers, and a
+	// heal filed there would be read as a heal for whoever is standing in them.
+	case declared.SelfRequires != nil && declared.SelfRequires.StackRestore > 0 && target == Enemy:
+		return fail("restores health per stack on a skill aimed at the enemy, which nobody means")
 	case declared.Cooldown < 0:
 		return fail("has cooldown %d, want zero or more", declared.Cooldown)
 	}
@@ -1560,6 +1662,24 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return fail("adds %d power per stack, over the %d one spend may buy: the second stack would be worth nothing",
 			declared.StackPower, MaxSpendPower)
 	}
+	// The health currency, refused on the target's side for the reason the power
+	// one is: a caster's own condition is the only side that may pay its caster,
+	// and a target's condition filed here would be the enemy's stacks buying the
+	// caster health with nothing downstream able to say whose pile paid.
+	if field == "requires" && declared.StackRestore != 0 {
+		return fail("restores %d health per stack, which only the caster's own condition may do: a target's condition never pays the caster",
+			declared.StackRestore)
+	}
+	if declared.StackRestore < 0 {
+		return fail("restores %d health per stack, want zero or more", declared.StackRestore)
+	}
+	// The mirror of the clause above, against the health ceiling. A rate already
+	// over it buys nothing on its second stack however deep the reserve, so the
+	// skill the author meant to write scales and the one they wrote does not.
+	if declared.StackRestore > MaxSpendRestore {
+		return fail("restores %d health per stack, over the %d one spend may buy: the second stack would be worth nothing",
+			declared.StackRestore, MaxSpendRestore)
+	}
 	if declared.ArcPower < 0 {
 		return fail("arcs for %d power, want zero or more", declared.ArcPower)
 	}
@@ -1576,6 +1696,12 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return fail("adds %d power per stack without consuming anything, so it would be paid for the same stack every turn",
 			declared.StackPower)
 	}
+	if !declared.Consume && declared.StackRestore != 0 {
+		// The same free shape in health: a heal that grows with a pile nothing
+		// brings down is a heal paid for once and collected every turn.
+		return fail("restores %d health per stack without consuming anything, so it would be paid for the same stack every turn",
+			declared.StackRestore)
+	}
 	if !declared.Consume && (declared.Chains || declared.ArcPower != 0) {
 		// Both describe what spending the status does. Without the consume they
 		// would be a skill that arcs and chains for ever off a status it never
@@ -1583,7 +1709,8 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		// reason.
 		return fail("chains or arcs without consuming anything, so the discharge would be free every turn the condition held")
 	}
-	if declared.Consume && declared.BonusPower == 0 && declared.ArcPower == 0 && declared.StackPower == 0 {
+	if declared.Consume && declared.BonusPower == 0 && declared.ArcPower == 0 &&
+		declared.StackPower == 0 && declared.StackRestore == 0 {
 		return fail("consumes %q for neither a bonus, a discharge nor a per-stack payment, which throws the status away for nothing", statusID)
 	}
 	if declared.BonusPower != 0 && declared.ArcPower != 0 {
@@ -1600,11 +1727,27 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return fail("is paid both %d bonus power and %d power per stack for one spend, which is the same purchase made twice",
 			declared.BonusPower, declared.StackPower)
 	}
+	if declared.StackRestore != 0 && declared.StackPower != 0 {
+		// Two rates off one spend, and the refusal is arithmetic rather than
+		// taste: Condition.Takes clamps the stacks against the ceiling the payment
+		// can buy, there is one Takes, and the two currencies have different
+		// ceilings. Whichever it applied would be the wrong one for the other half.
+		return fail("is paid both %d power per stack and %d health per stack for one spend, which is two ceilings answering one question",
+			declared.StackPower, declared.StackRestore)
+	}
+	if declared.StackRestore != 0 && declared.BonusPower != 0 {
+		// The same purchase made twice, one currency along from the clause above: a
+		// flat bonus and a per-stack heal are both paid out of one spend, and a
+		// reader comparing two skills could not say which half a figure came from.
+		return fail("is paid both %d bonus power and %d health per stack for one spend, which is the same purchase made twice",
+			declared.BonusPower, declared.StackRestore)
+	}
 	return &Condition{
 		Status: statusID, MinStacks: minStacks, BelowHealth: declared.BelowHealth,
 		BonusPower: declared.BonusPower, Consume: declared.Consume,
 		ConsumeStacks: declared.ConsumeStacks, Chains: declared.Chains,
 		ArcPower: declared.ArcPower, StackPower: declared.StackPower,
+		StackRestore: declared.StackRestore,
 	}, nil
 }
 

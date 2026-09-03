@@ -477,6 +477,33 @@ func skillReport(t *testing.T, book *skill.Book, statuses *status.Book, patterns
 			ratio(hurt, plain))
 	}
 
+	// A section of its own, for the reason the gradient has one: the two tables
+	// above are organised around power. `== skills ==` has no restores column at
+	// all, and `== conditional amplifiers ==` compares a plain blow with an
+	// amplified one — so a skill that spends a reserve for health prints as a row
+	// of noughts in both, and the design record would show three shipped skills
+	// doing nothing while `make golden` accepted it without a word.
+	//
+	// ⚠️ Two depths, because one would hide the half that matters. `restores` is
+	// the threshold cast, which is the smallest thing the skill can do and the
+	// figure an author compares against a flat heal; `spends` and `ceiling` are
+	// the deep case Condition.Takes clamps, which no board reaches and which is
+	// therefore visible nowhere else.
+	b.WriteString("\n== what a reserve buys back ==\n")
+	b.WriteString("health per stack, paid out of the caster's own counter, at the threshold and at the ceiling Takes clamps\n")
+	b.WriteString("skill           status     needs   per stack   spends   restores   health   ceiling\n")
+	for _, current := range book.Skills() {
+		spends := current.SelfRequires
+		if !spends.ScalesRestore() {
+			continue
+		}
+		atThreshold := current.SelfRestore(skill.Carrying(spends.MinStacks))
+		fmt.Fprintf(&b, "%-16s%-11s%5d%12d%9d%11d%9d%10d\n",
+			current.ID, spends.Status, spends.MinStacks, spends.StackRestore,
+			spends.Takes(skill.MaxSpendRestore), atThreshold,
+			rules.Restore(attackerAttack, atThreshold), current.SelfRestoreCeiling())
+	}
+
 	b.WriteString("\n== what a detonate gives up ==\n")
 	b.WriteString("the ticks of a damage-over-time, or the extra damage a stat debuff was letting through\n")
 	b.WriteString("skill           status   spends     forgone   a plain attack   alternative   burst    ratio\n")

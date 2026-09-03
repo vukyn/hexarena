@@ -788,7 +788,7 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 		// The restore the shape walk below would have paid out. A self-aimed
 		// skill reaches exactly one unit — the caster — and never a splashed
 		// one, so it is position nought.
-		b.restore(unit, unit, known, 0, turn)
+		b.restore(unit, unit, known, brought, 0, turn)
 		b.retuneAll(turn)
 		b.settle()
 		return nil
@@ -1003,11 +1003,21 @@ func (b *Battle) applyToSelf(unit *Unit, known skill.Skill, turn atb.Turn) {
 // up to nine hundred health and got none. That is "a price built from a second
 // reading lets the opponent prefer a skill for something the skill does not
 // do", except the second reading was the honest one.
-func (b *Battle) restore(actor, target *Unit, known skill.Skill, position int, turn atb.Turn) {
-	if known.Restores <= 0 {
+//
+// ⚠️ **The condition's half is handed in rather than read here, and it has to
+// be.** A reserve-paid heal is worth what the spend took, and Act spends before
+// it pays out: b.spend removes the stacks and this runs after it, so a reading
+// taken inside this function would ask an emptied tank and answer nought on every
+// cast. The figure comes off `swing`, which is the reading taken once per use --
+// the same struct the power bonus and the gradient travel in, and for the same
+// reason. This function is also called once per target, which is the second half
+// of why: a per-target reading of a per-cast spend is the trap swingOf and
+// Battle.spend each carry a warning about.
+func (b *Battle) restore(actor, target *Unit, known skill.Skill, brought swing, position int, turn atb.Turn) {
+	restore := known.Restores + brought.Restore
+	if restore <= 0 {
 		return
 	}
-	restore := known.Restores
 	if position > 0 {
 		restore = int(combat.Scaled(int64(restore), b.books.Patterns.SplashPower))
 	}
@@ -1266,7 +1276,7 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 			}
 		}
 	}
-	b.restore(actor, target, known, position, turn)
+	b.restore(actor, target, known, brought, position, turn)
 	// A drain takes its share of what was *dealt*, so a strike that missed or
 	// was blocked returns nothing, and one that overkilled returns only the
 	// damage that landed.
