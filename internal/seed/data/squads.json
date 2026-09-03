@@ -1,85 +1,127 @@
 {
   "squads": [
     {
-      "id": "b01",
-      "name": "test",
+      "id": "s01",
+      "name": "áp sát",
       "units": [
         {
-          "id": "bulbasaur",
-          "character": "pokemon.bulbasaur",
+          "id": "machamp",
+          "character": "pokemon.machop",
           "level": 60,
+          "stage": "Machamp",
           "slot": {
             "col": 2,
-            "row": 1
+            "row": 0
           },
           "skills": [
-            "poison_powder",
-            "synthesis",
-            "venoshock",
-            "sludge_bomb"
+            "cross_chop",
+            "submission",
+            "seismic_toss",
+            "inner_focus"
           ],
           "passives": [
-            "virulence"
+            "berserk"
           ]
         },
         {
-          "id": "charmander",
-          "character": "pokemon.charmander",
+          "id": "poliwrath",
+          "character": "pokemon.poliwag",
           "level": 60,
+          "stage": "Poliwrath",
           "slot": {
-            "col": 1,
+            "col": 2,
+            "row": 2
+          },
+          "skills": [
+            "pummel",
+            "body_slam",
+            "submission",
+            "water_gun"
+          ],
+          "passives": [
+            "blood_thirst"
+          ]
+        },
+        {
+          "id": "clefable",
+          "character": "pokemon.cleffa",
+          "level": 60,
+          "stage": "Clefable",
+          "slot": {
+            "col": 0,
             "row": 1
           },
           "skills": [
-            "flamethrower",
-            "inferno",
-            "ember",
-            "fire_spin"
+            "moonlight",
+            "wish",
+            "rally",
+            "moonblast"
           ],
           "passives": [
-            "blaze"
+            "composure"
           ]
         }
       ]
     },
     {
-      "id": "b02",
-      "name": "test2",
+      "id": "s02",
+      "name": "rải độc",
       "units": [
         {
-          "id": "squirtle",
+          "id": "blastoise",
           "character": "pokemon.squirtle",
           "level": 60,
+          "stage": "Blastoise",
           "slot": {
             "col": 2,
             "row": 1
           },
           "skills": [
+            "taunt",
             "withdraw",
-            "rapid_spin",
-            "skull_bash",
-            "wide_guard"
+            "wide_guard",
+            "aqua_ring"
           ],
           "passives": [
-            "ballast"
+            "thorns"
           ]
         },
         {
-          "id": "charmander",
-          "character": "pokemon.charmander",
+          "id": "gengar",
+          "character": "pokemon.gastly",
           "level": 60,
+          "stage": "Gengar",
           "slot": {
             "col": 1,
             "row": 1
           },
           "skills": [
-            "dragon_claw",
-            "outrage",
-            "dragon_rage",
-            "dragon_dance"
+            "poison_powder",
+            "sludge_bomb",
+            "venoshock",
+            "shadow_ball"
           ],
           "passives": [
-            "reckless"
+            "contagion"
+          ]
+        },
+        {
+          "id": "magnezone",
+          "character": "pokemon.magnemite",
+          "level": 60,
+          "stage": "Magnezone",
+          "slot": {
+            "col": 0,
+            "row": 1
+          },
+          "skills": [
+            "zap_cannon",
+            "thunderbolt",
+            "flash_cannon",
+            "discharge"
+          ],
+          "passives": [
+            "endurance"
           ]
         }
       ]
