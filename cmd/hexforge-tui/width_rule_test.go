@@ -13,6 +13,7 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -154,6 +155,14 @@ func TestTheFloorDrawsWhatTheFloorAlwaysDrew(t *testing.T) {
 // The species note replaces it — authored prose, wrapped at the floor by
 // species.go for the same stated reason, and two lines at 117 on the longest
 // kinds in the book.
+//
+// The builder's fork note is the third, and it is the sturdiest of them against
+// the loss recorded above: it is the only sentence here whose composed line
+// carries a **value** — the arms of a forking line, authored stage names of no
+// promised length — so the wording alone is not what decides whether it wraps.
+// That is also why it is wrapped rather than clipped like the held-back line it
+// sits beside: a single clip would take the consequences off the end of the
+// sentence and leave the reader with the half that is not actionable.
 func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 	for _, lang := range i18n.Langs() {
 		base, _, _ := start(t, lang)
@@ -189,12 +198,34 @@ func TestAWideWindowStillWrapsProseAtTheFloor(t *testing.T) {
 			return m.play.Wrote(m.ctx())
 		}
 
+		// The builder's fork note, which is the third sentence wrapped this way
+		// and the only one of the three carrying a value out of the data: the
+		// arms are authored stage names, so the composed line is longer than any
+		// wording in it and is what pushed this one over the floor in the first
+		// place.
+		forked := menuTo(t, base, screenSquads)
+		forked.squad = aForkingSquad(t, forked.squad).EditUnit(0)
+		var arms []progression.Stage
+		for _, character := range forked.squad.Characters {
+			if character.ID == forked.squad.Unit.Character {
+				arms = draw.FormArms(character, forked.squad.Unit.Level)
+			}
+		}
+		fork := func(width int) []string {
+			m := forked
+			m.width, m.height = width, 60
+			body, _ := m.squad.View(m.ctx())
+			return theBlockOpening(t, body, firstWords(
+				m.text(i18n.SquadForkArms, strings.Join(progression.StageNames(arms), " / "))))
+		}
+
 		for _, prose := range []struct {
 			name string
 			at   func(width int) []string
 		}{
 			{"the species note", note},
 			{"a save's note", wrote},
+			{"the builder's fork note", fork},
 		} {
 			floor, wide := prose.at(minWidth), prose.at(wideWindow)
 			if len(floor) < 2 {

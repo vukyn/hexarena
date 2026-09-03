@@ -1571,12 +1571,65 @@ is only so the shape is readable.
       on the old resolve with *"the page hands the reader the refusal where the
       stats belong"*, and asserts the **pair** — a page naming one arm and not
       the other would be the old defect wearing a stage name. No golden moved.
-      **(c)** `SquadsScreen.Form` still falls
-      back to the empty stage on a fork the placement has not named, and
-      `stageLabel`/`unitLine` still call that *furthest* — a word that names
-      nothing on a line with two ends. It is a label rather than a wrong stat line
-      (the chooser beside it is the fix a reader already has), so it is left as a
-      finding.
+      ~~**(c)** `SquadsScreen.Form` still falls back to the empty stage on a fork
+      the placement has not named, and `stageLabel`/`unitLine` still call that
+      *furthest*.~~ **DONE — named and offered.** Option (1) of the two, and it
+      was the cheap one: the form field is **already** a chooser and
+      `StageChoices` has listed both arms by name since it was written, so
+      "offer it" cost nothing and the whole of what was missing was the naming.
+      `formLabel` — one function behind both the field and the member's row in the
+      squad, because they are one fact at two depths — draws `SquadForkUnnamed`
+      where the line forks and `SquadFurthest` everywhere else, and a
+      `SquadForkArms` line under the fields names the arms and the key.
+      **It was two defects with one cause, and the second was the invisible
+      one.** `Form` returns the empty string on an unnamed fork, which
+      `cast.SkillsAt`/`PassivesAt` read as "no gate is held", so both pickers
+      silently offered only what every arm learns. Measured on `pokemon.poliwag`
+      at level 60: **unnamed 13 skills / 4 traits · Poliwrath 14 / 4 · Politoed
+      15 / 5** — `submission` missing against one arm, `rinse`, `chorus` and the
+      trait `composure` against the other. `Form` still refuses rather than
+      picking, because a picked arm is a wrong learnset written into the author's
+      own file; what changed is that the screen says so.
+      **Which bug it was, measured rather than assumed: it builds and then fails
+      to *save*.** `placement.Squad.Take` — the one call `forge.SaveSquad` and
+      `forge.FightSquads` both make — refuses the member with *level 60 reaches
+      [Poliwrath Politoed], which are alternatives: name the one being fielded*,
+      so an unnamed fork was never a wrong battle, it was a dead end whose first
+      mention of a fork arrived under the save key. `forge.Load` accepts a
+      hand-written one, so the refusal is at the two gates and not at the parse.
+      ⚠️ **The note is wrapped, not clipped like the held-back line beside it.**
+      It is the only note on the screen carrying a value out of the data — arm
+      names have no promised length — so the wording that fits the floor alone
+      does not fit it beside them, and one clip would take the consequences off
+      the end. Wrapped at `MinWidth`, which is the prose half of the width rule,
+      and registered as the **third** entry of
+      `TestAWideWindowStillWrapsProseAtTheFloor` — the sturdiest of the three
+      against that test's recorded loss of coverage, since a value is what decides
+      whether it wraps rather than a wording somebody may shorten.
+      ⚠️ **The width sweep could not have caught the clip, and did not.** A stage
+      name is stripped from the line by `freeNames`, so the sweep measured ~104
+      cells of wording where the terminal drew ~124 — the golden is what showed
+      the ellipsis. A row carrying a name is measured *around* the name; it is not
+      measured *with* it.
+      **Coverage.** `a forked squad` and `a forked member` are new entries in
+      `internal/screen`'s golden and in `cmd/hexforge-tui`'s `everyScreen` —
+      raised off an `aForkedMember`/`aForkingSquad` pair that **finds** the fork in
+      the shipped books and is fatal when there is none, which is
+      `theForkedBrowser`'s rule. Two entries because the two depths draw it
+      through different code: the field reads the member under edit, the row reads
+      a member that is not open. Nothing was added to `cmd/hexarena-tui` — `n` and
+      `enter` are gated on `Context.Authoring`, so a game client never reaches
+      either depth. **Measured golden cost: +328 lines in `cmd/hexforge-tui`'s
+      record, +148 in `internal/screen`'s, 0 removed anywhere, and
+      `cmd/hexarena-tui`'s unmoved** — a pure insertion, which is the proof a line
+      that does not fork is byte for byte what it was.
+      ⚠️ Red-before-green verified by reverting the production change alone:
+      `TestAnUnnamedForkIsNotCalledFurthest` fails with *the member's form row
+      calls [Poliwrath Politoed] "dạng xa nhất", and that word names neither end of
+      a line that forks*, `TestTheSquadRowSaysTheSameThingAsTheFormRow` and
+      `TestAnUnnamedForkNarrowsBothLists` go red with it, and
+      `TestALinearMemberIsStillCalledFurthest` stays green — which is what makes it
+      the control rather than a fourth copy of the same assertion.
       **(d)** The alternative UI shape, if `s`-cycles ever reads wrong: a
       sub-picker over the arms, like `OpenSkills`. It costs a `PickState`, a
       `Target`, an entry in each client's `raiseTargets`, and a fourth screen in
@@ -1590,7 +1643,12 @@ is only so the shape is readable.
       description screen; and for (a), `cmd/hexforge-tui/language_test.go` and
       `cmd/hexarena-tui/{sweep,fixture}_test.go` (`kitGlosses`); and for (a′), the
       same three files (`freeText`/`freeNames`/`withoutNames`/`kitIDs`, and the
-      width, language and gloss-leak sweeps in each).
+      width, language and gloss-leak sweeps in each); and for (c),
+      `internal/screen/squads.go` (`formLabel`, `unnamedArms`, `characterOf`),
+      `internal/i18n` (`SquadForkUnnamed`, `SquadForkArms`),
+      `internal/screen/squadfork_test.go`, `internal/screen/screens_golden_test.go`,
+      `cmd/hexforge-tui/{language,width_rule}_test.go`, two of the three
+      `testdata/screens.golden`, and `CLAUDE.md` § the squad builder.
 - [x] ⚠️ **A saturating multiplier is re-narrowed one line downstream. DONE.**
       The question this asked first — carry a saturated multiplier, or refuse it
       where it is produced — is **answered by this file's own § Decided against**:

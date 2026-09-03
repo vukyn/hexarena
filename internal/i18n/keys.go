@@ -680,7 +680,23 @@ const (
 	SquadFieldName
 	SquadAddMember
 	SquadFull
+	// SquadFurthest is what an empty stage on a placement means: the furthest
+	// form the level reaches. ⚠️ **It is only true on a line that does not
+	// fork** — a level that has reached two grown forms has no furthest one, so
+	// on a fork the two keys below are drawn instead.
 	SquadFurthest
+	// SquadForkUnnamed is the same empty stage read on a line that forks, and it
+	// is the word SquadFurthest cannot be there: "furthest" names nothing where
+	// there are two ends. It goes in the form chooser and in the member's row in
+	// the squad, which are one fact drawn twice.
+	SquadForkUnnamed
+	// SquadForkArms is the line under the member's fields that names the arms and
+	// what to do about them, in SquadHeldBack's place and for its reason: a value
+	// the screen refuses to guess has to say what the reader can do instead. It
+	// carries the consequences as well, because both are invisible — the two
+	// loadout lists silently offer only what every arm learns, and the save
+	// refuses the member outright.
+	SquadForkArms
 	SquadLoadoutCount
 	SquadUnitHeading
 	SquadUnitFooter
