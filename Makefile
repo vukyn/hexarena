@@ -63,18 +63,26 @@ vet:
 
 # The gate: what has to be clean before a change is done.
 #
-# internal/room is run a second time under the race detector, and that is the
-# only place in the repository where concurrency exists: the registry runs one
-# goroutine per room, and the detector is the primary net over it — a data race
-# there is a battle that stops reproducing from its seed, which takes the log
-# format, --verify and undo down with it. Measured at ~3s against a gate of about
-# a minute, which is what makes it affordable. A race test nobody runs is not a
-# net, so it is in the gate rather than in a comment.
+# internal/room and internal/socket are each run a second time under the race
+# detector, and those two are the whole of the concurrency in the repository: the
+# registry runs one goroutine per room, and the transport runs a reader and a
+# keepalive per connection plus a timer per prompt. The detector is the primary
+# net over both — a data race in the room is a battle that stops reproducing from
+# its seed, which takes the log format, --verify and undo down with it, and a race
+# in the transport is a message delivered to the wrong seat.
+#
+# Measured against a gate of about a minute: internal/room ~4s, internal/socket
+# 4.7s plain and 6.1s under the detector, so the second run costs about 1.4s.
+# ⚠️ Some of internal/socket's own time is a deliberate sleep — the timeout test
+# runs a one-second allowance against a client that thinks for three — so the
+# detector's share of it is smaller than the totals suggest. A race test nobody
+# runs is not a net, so both are in the gate rather than in a comment.
 check:
 	@gofmt -l .
 	@go vet ./...
 	@go test ./... -count=1
 	@go test -race -count=1 ./internal/room/
+	@go test -race -count=1 ./internal/socket/
 
 clean:
 	@rm -rf bin/

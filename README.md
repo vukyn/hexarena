@@ -2270,10 +2270,17 @@ Two things the axis is deliberately *not*:
 
 Two people on the same network fight each other: one of them hosts, both bring a
 squad they built and saved on their own machine, and the **server** resolves the
-battle. Nothing here is built yet. This section is the design record — what was
-decided, and what each decision was measured against — because four of the
-choices are expensive to reverse and one of them is a measurement the repository
-already had a tool for.
+battle. This section is the design record — what was decided, and what each
+decision was measured against — because four of the choices are expensive to
+reverse and one of them is a measurement the repository already had a tool for.
+
+⚠️ **This section used to open "nothing here is built yet" and that is retired.**
+`internal/wire` is the protocol, `internal/room` is the match as a state machine
+with the registry of many rooms beside it, and **`internal/socket` is the
+transport** — a WebSocket server around the registry, a dialling client, and the
+mirror that client needs in order to be a client at all. What is left is the
+host binary and the client's own screens; each subsection below says which of it
+is code and which is still the record.
 
 The shape is deliberately small, because most of it already exists. A squad is
 already a wire format: `placement.Squad` is a *reference* — character, level,
@@ -2736,6 +2743,131 @@ its end is one the client computes for itself. The transport's own reading of
 still reads no clock and neither does the registry: `TimedOut` is **forwarded**
 exactly as it is taken, because whoever owns the transport owns the countdown.
 
+### The transport, built — and the five things building it decided
+
+**Built: `internal/socket`.** A WebSocket server around `room.Registry`, a
+dialling `Client`, and the `Mirror` behind it. The dependency is
+**`github.com/coder/websocket`** and it is confined to that one package —
+`internal/room` and `internal/wire` each refuse it by name in an AST walk, so
+everything that opens, reads, writes or closes a connection is there and none of
+it leaks back.
+
+**The library was measured rather than remembered.** `gorilla/websocket` is the
+default answer and is not archived, so it reads as safe: it has **0 commits since
+2025-09**, its last release is **v1.5.3 from June 2024** — 27 months — and it
+pulls `golang.org/x/net`. `coder/websocket` has **11 commits in the last year**,
+released **v1.8.15 on 2026-06-15**, has **zero dependencies** (its `go.mod` has
+no `require` block at all), takes a `context.Context` on Read and Write, supports
+concurrent writes and passes autobahn. The module therefore gained **one line**
+in `go.mod` and two in `go.sum`, and no golden moved. ⚠️ It is the continuation
+of `nhooyr.io/websocket` and the version numbers run **backwards** across the
+rename — the old path's last release is v1.8.17 — so `nhooyr.io/websocket` is a
+dead end rather than a newer one.
+
+**1. A connection finds its room in the URL, not in a message.** `/room/{code}`,
+and `socket.RoomPath` is the one spelling of it. No message body carries a
+`RoomCode` and none should: the code is what a person *pastes to connect*, which
+is addressing rather than protocol content — and it is why widening the code to
+twelve characters moved no byte of `messages.golden`. ⚠️ The pasted characters
+are **decoded and re-encoded** before they are used as a key, and that is not
+pedantry: `Decode` upper-cases first, because the alphabet is upper-case only and
+the fold is total, so a lower-case code is a perfectly good code — but every key
+in the registry's map came out of `EncodeRoom`, so without the re-encoding a
+player who typed theirs in lower case would be told the room is unknown *while
+the room sat right there*, which is the worst shape a bug has. An **undecodable**
+code is deliberately *not* refused by the transport: it goes to the registry as
+it stands, where it is the key of no room and answers `wire.CodeRoomUnknown` —
+the registry's own refusal, and the one declaration of it.
+
+**2. The transport owns the clock, and it is the only clock in the PvP stack.**
+`internal/room` and `internal/wire` both refuse `time`, held mechanically,
+because whoever owns the transport owns the countdown. So the ban's counterpart
+is a **positive** claim: `TestTheTransportOwnsTheClockAndPrintsNothing` fails if
+no file in `internal/socket` reads a clock, because otherwise the countdown could
+move into a fourth package and both existing bans would still pass. The whole
+conversion is one function turning `welcome`'s allowance — seconds as an int —
+into a duration, and the timer is armed off the room's own reading of which seat
+it is `Awaiting`. ⚠️ A prompt that arrives `Skipped` starts no clock, and that is
+**verified rather than assumed**: a match at a one-second allowance with both
+clients answering at once loses no turn to the clock, and the room's own `Skipped`
+count says the match had skipped turns in it, so the claim is not vacuous.
+
+**3. A timer that fires while an answer is in flight is normal, not an error.**
+The answer and the fire genuinely race and no amount of stopping the timer closes
+that window. `Room.TimedOut` refuses a seat it is not asking, so the report is
+already harmless — and the transport must not read that refusal as a reason to
+close anything, because doing so **drops a player for answering quickly**. The
+refusal is not forwarded either: the transport owns the timeout, so it owns the
+answer to it, and a `refused` the client never provoked would be a refusal of a
+question it never asked. Measured: making it fatal reddens exactly one test in
+the repository, `TestALateTimeoutIsRefusedWithoutDroppingAnybody`, which is
+therefore the whole net.
+
+**4. The close threshold is a real setting, and it is currently guarding a whole
+match.** There is no rejoin, so a socket closing is a *match* ending
+(`VerdictAbandoned`) — which the design record already said in as many words. It
+is `socket.DefaultCloseThreshold` = **60 seconds**, configurable, with what it
+guards written on the constant, and two bounds picked it: **generous against a
+hiccup**, since a LAN wifi roam is seconds and TCP retransmission rides out tens
+of seconds without the socket noticing, so 60s is several times the worst
+plausible blip; and **under the 90-second turn allowance**, so a machine that
+dies mid-turn is noticed as a departure *before* its allowance runs out and the
+match ends as abandoned rather than grinding out one timeout per turn until the
+board kills the passing units. ⚠️ What it does **not** govern is most departures:
+a peer whose process exits sends a FIN and the read fails at once. The number is
+only ever spent on a peer that has gone **silent and unresponsive** — which is
+why liveness is a **ping** every 15 seconds rather than a read deadline, since a
+player thinking about a turn sends nothing for up to the whole allowance and a
+deadline would drop somebody for concentrating.
+
+**5. A hello is never printed, and the rule has no exceptions.** A hello carries
+the room's password in the clear. One that **decodes** is safe by the type —
+`fmt` calls a field's own `String` and `wire.Password` redacts itself — but one
+that **does not** decode is bytes with no type left to do the redacting, and
+`encoding/json`'s own errors quote what they choked on. So an unreadable message
+is reported as a **byte count** and never as content, and the package can reach
+no logger at all: `log`, `log/slog` and `os` are import-banned and `fmt`'s
+printing verbs are refused by selector, leaving the caller's own `Report`, which
+takes an `error`. Two tests, because neither half suffices: the AST walk cannot
+see a password handed to `Report`, and the behavioural one — a wrong password
+*and* a malformed hello whose bytes hold the password, over real connections —
+cannot see a print nothing happened to reach on the day it ran.
+
+**And the mirror is in this package, which is a decision about the protocol
+rather than about packaging.** The mirror driver is filed under *the client*, and
+it is here anyway because **nothing on the wire says whose turn it is**: `turn`
+carries a decision and a digest, and `Mirror.Asking` — the prompt this client's
+own battle stopped on, naming a unit on the side this client plays — is the only
+derivation there is. That is deliberate; a "your turn" message would be a second
+declaration of state the mirror already computes. But it means **no client can be
+thinner than a mirror**, so an end-to-end test cannot exist without one, and
+writing it as test code to promote later would be writing it twice. The same
+argument reaches the *end* of a match: with no series-standing message,
+`Mirror.Over` re-derives the series rule the room also has, and two peers
+agreeing because they compute the same thing from the same configuration **is**
+the mirror contract — the same shape `welcome`'s `turn_cap` already takes.
+
+⚠️ **Two things were wrong in the first draft and the tests are what said so.**
+The read limit was set to a megabyte on the reasoning that a 5v5 `start` carries
+the whole resolved roster and would approach the library's own 32 KiB default;
+measured, the largest start a legal room can send is **2,911 bytes** over ten
+units, so the default would have done and a megabyte was 360 times more
+allocation than a peer should be able to ask for — it is 64 KiB, with the test
+holding both ends. And the "this connection ended in the ordinary way" predicate
+did not know `net.ErrClosed`, so a client that closed its **own** connection
+reported `use of closed network connection` as a failure of the match it had just
+left; the departure test found it. `context.DeadlineExceeded` is deliberately not
+on that list — the only deadline the transport sets is the write timeout, so
+exceeding one is a peer that has stopped reading, which is exactly what the error
+sink is for.
+
+⚠️ **`internal/socket` is run a second time under `-race` in `make check`**,
+beside `internal/room`, because those two are the whole of the concurrency in the
+repository — a reader and a keepalive per connection plus a timer per prompt. It
+costs about **1.4 seconds** (4.7s plain, 6.1s with the detector), and it earned
+that immediately: it caught the end-to-end test asserting the server had let its
+tables go the instant the *client* returned, which it has not.
+
 ### The invariant the server has to respect
 
 `Drain` empties the buffer. It is a single-consumer call, and a room has two
@@ -2756,6 +2888,22 @@ the shell is wired up.
 Doing it the other way round — a server with the transport in the middle of the
 state machine — would make this the least-tested code in a repository whose whole
 method is measurement.
+
+**Both halves exist now and both paid off.** In process, two fake clients fight a
+bo3 in about 40 ms. Over a real loopback listener,
+`TestTwoRealClientsFightAWholeBo3OverALoopbackListener` fights the same bo3 with
+two real `socket.Client`s in about 30 ms — 145 turns, every one of them
+digest-checked by each client — and it asserts four things a run that merely
+finished could have got wrong: each client was told **its own seat and its own
+side** (and the sides swapped between battles, or a bo1 would satisfy the claim),
+the digests **agreed on every turn**, the **verdict** is what each client's own
+engine settled rather than the room's word for it, and the transport's error sink
+was **empty**.
+
+⚠️ **The two squads are different characters, and that is the measurement.** A
+mirror pairing makes the halves of a battle interchangeable, so nothing at all
+could see a transport that handed one client the other's side — the same trap the
+game client's `pairing.go` fixture already records.
 
 ### The room, built — and the four things building it decided
 
