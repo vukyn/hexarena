@@ -743,9 +743,12 @@ func (p *PickState) Detail(c Context, id string) string {
 			// The wording stands in for the category rather than joining it:
 			// "dot" is the category's own id and "damages every turn" is what it
 			// means, so printing both prints it twice — and the row is long
-			// enough that the second copy is what gets clipped.
-			sort := c.Lang.StatusCategory(kind.Category)
-			facts := c.Text(i18n.StatusDetail, sort, kind.Duration, kind.MaxStacks)
+			// enough that the second copy is what gets clipped. The whole phrase
+			// comes from i18n rather than being assembled here, because the
+			// singular of a turn and of a stack are decided there and a row that
+			// formatted its own count reached neither decision.
+			facts := c.Lang.StatusCosts(
+				kind.Category, kind.Duration, kind.MaxStacks, kind.Permanent)
 			if name := c.Lang.Gloss(id); name != "" {
 				facts = name + " · " + facts
 			}

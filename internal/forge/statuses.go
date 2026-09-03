@@ -34,6 +34,11 @@ type StatusFacts struct {
 	// the one thing about a status that changes what a skill applying it is
 	// worth.
 	Ticks bool
+	// Permanent is a status that never runs out, and it is carried because
+	// Duration says nothing about one: a permanent status holds a duration of
+	// nought, so a reader handed only the number prints it as a status about to
+	// expire.
+	Permanent bool
 }
 
 // StatusBook is every declared status as facts, in the book's own order, which
@@ -48,6 +53,7 @@ func (l *Library) StatusBook() []StatusFacts {
 			Duration:  kind.Duration,
 			MaxStacks: kind.MaxStacks,
 			Ticks:     kind.TickPower > 0,
+			Permanent: kind.Permanent,
 		})
 	}
 	return out

@@ -453,9 +453,13 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 			// said what every stack does, and in English it puts a second "and" in
 			// a line that already has one.
 			sentence += l.Say(BlurbConsumesPile, l.glossed(condition.Status))
+		case condition.ConsumeStacks == 1 && condition.Arcs():
+			sentence += l.Say(BlurbConsumesEachStrikeOne, l.glossed(condition.Status))
 		case condition.ConsumeStacks > 0 && condition.Arcs():
 			sentence += l.Say(BlurbConsumesEachStrike,
 				condition.ConsumeStacks, l.glossed(condition.Status))
+		case condition.ConsumeStacks == 1:
+			sentence += l.Say(BlurbConsumesStacksOne, l.glossed(condition.Status))
 		case condition.ConsumeStacks > 0:
 			sentence += l.Say(BlurbConsumesStacks,
 				condition.ConsumeStacks, l.glossed(condition.Status))
@@ -1263,9 +1267,9 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 		life := kind.TickPower * kind.Duration
 		if kind.MaxStacks > 1 {
 			out = append(out, l.Say(BlurbStatusLifeCapped,
-				l.lasts(kind), share(life), share(life*kind.MaxStacks)))
+				l.lasts(kind.Duration), share(life), share(life*kind.MaxStacks)))
 		} else {
-			out = append(out, l.Say(BlurbStatusLife, l.lasts(kind), share(life)))
+			out = append(out, l.Say(BlurbStatusLife, l.lasts(kind.Duration), share(life)))
 		}
 	case status.Control:
 		out = append(out, l.Text(BlurbStatusControls))
@@ -1359,20 +1363,39 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 // same reason — a permanent status carries no duration, and printing its zero
 // reads as one about to expire.
 func (l Lang) describeStatusCosts(kind status.Kind) string {
+	return capitalise(l.StatusCosts(
+		kind.Category.String(), kind.Duration, kind.MaxStacks, kind.Permanent) + ".")
+}
+
+// StatusFacts is what a status costs, how long it stays and how deep it stacks,
+// as a bare phrase rather than a sentence, because a row wants it beside other
+// columns and a description wants it capitalised and closed.
+//
+// ⚠️ **It is exported so that there is one of it.** The singular of a turn and
+// the singular of a stack are decided here, and a screen that formatted its own
+// count into a wording of its own reached neither test -- which is exactly what
+// happened: the status picker printed "1 turns · up to 1 stacks" for as long as
+// it had a format string to itself, and permanence read as a duration of nought.
+// The comment on lasts already said a second copy is how two lines start
+// disagreeing about what one turn is called; this is the third copy removed.
+// It takes the four figures rather than a status.Kind because the other caller
+// holds a forge view of a status and not the kind itself, and a seam only one of
+// them can reach is the seam that let them drift.
+func (l Lang) StatusCosts(category string, duration, maxStacks int, permanent bool) string {
 	parts := make([]string, 0, 3)
-	parts = append(parts, l.StatusCategory(kind.Category.String()))
+	parts = append(parts, l.StatusCategory(category))
 	switch {
-	case kind.Permanent:
+	case permanent:
 		parts = append(parts, l.Text(BlurbStatusAlways))
 	default:
-		parts = append(parts, l.lasts(kind))
+		parts = append(parts, l.lasts(duration))
 	}
-	if kind.MaxStacks == 1 {
+	if maxStacks == 1 {
 		parts = append(parts, l.Text(BlurbStatusOneStack))
 	} else {
-		parts = append(parts, l.Say(BlurbStatusStacks, kind.MaxStacks))
+		parts = append(parts, l.Say(BlurbStatusStacks, maxStacks))
 	}
-	return capitalise(strings.Join(parts, " · ") + ".")
+	return strings.Join(parts, " · ")
 }
 
 // lasts is how long a status stays, as a phrase rather than a number, because
@@ -1382,11 +1405,11 @@ func (l Lang) describeStatusCosts(kind status.Kind) string {
 //
 // Permanent is not handled here: a permanent status has no duration to print,
 // and the one caller that can meet one says so in its own words.
-func (l Lang) lasts(kind status.Kind) string {
-	if kind.Duration == 1 {
+func (l Lang) lasts(duration int) string {
+	if duration == 1 {
 		return l.Text(BlurbStatusLastsOne)
 	}
-	return l.Say(BlurbStatusLasts, kind.Duration)
+	return l.Say(BlurbStatusLasts, duration)
 }
 
 // statusAmount is how big a modifier term is, at a given number of stacks.
