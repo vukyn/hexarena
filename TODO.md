@@ -207,8 +207,9 @@ is only so the shape is readable.
       `wire.Closed` and a capped battle is reached off `wire.Welcome.TurnCap`. So
       what is left of *The room* is writing a finished match out as a
       `battle.Log`. The next item to pick up is the **WebSocket** under *The
-      wire*, which is also where the one-listener-per-room question the registry
-      could not decide lands.
+      wire*. ⚠️ The one-listener-per-room question that item used to carry is
+      **decided** — one listener per process, and the room code gained a byte for
+      the room — so what is left of it is the socket.
 
       **Groundwork**
       - [x] Factor the reference screens out of `cmd/hexforge-tui` into a package
@@ -637,25 +638,38 @@ is only so the shape is readable.
 
       **The wire**
       - [ ] WebSocket transport, the dependency confined to one boundary.
-            ⚠️ **Two settled decisions collide here, and this item is where the
-            collision has to be resolved.** The design record says a room code
-            **carries its own address** — base32 of four address bytes and two
-            port bytes, ten characters — *and* that one process runs **many
-            rooms**. With one listener those cannot both hold: every room in the
-            process would encode the same address and port, so the code would not
-            identify a room. The reading that satisfies both without touching the
-            wire format is **one listener per room** — the process opens a port
-            per room and the code names that listener; changing `wire.RoomCode`
-            instead moves `messages.golden` and breaks the ten-character claim
-            the record makes, so it is the more expensive answer.
-            It was **not decided in the registry's own commit**, and could not be:
-            allocating a port is I/O and the registry has none. `Registry.Open`
-            therefore takes the code it is given, refuses a duplicate, and
-            refuses one that does not decode. The fixtures in
-            `internal/room/registry_test.go` build a code per room off a port per
-            room, which is the likely answer written down rather than chosen.
-      - [ ] Room code: base32 of a four-byte address and a two-byte port, ten
-            characters, with a round-trip test.
+            ⚠️ **The collision this item used to carry is DECIDED and is no longer
+            a question for it: one listener per process.** The record's "a code
+            carries its own address" and "one process runs many rooms" could not
+            both hold with one listener while a code carried only an address, and
+            the answer is that `wire.RoomCode` carries a **seventh byte naming the
+            room** — twelve characters, 256 rooms behind one socket. The other way
+            out, a listener per room, was refused: a port is a finite OS resource
+            wanting a firewall hole, one leaks per crashed room, and it conflates a
+            room (an application idea) with a listener (an OS one), so the registry
+            keyed by code would be shadowed by a second one keyed by port and
+            socket lifetime would become room lifetime. What it cost is written
+            down — **ten characters became twelve, and the ten-character claim is
+            retired** — and `messages.golden` did not move, because no message
+            carries a `RoomCode`.
+            So what is left here is the socket and nothing about codes:
+            `Registry.Open(at netip.AddrPort, …) (wire.RoomCode, error)` already
+            allocates the room byte (lowest free, under the map's own mutex) and
+            hands the code back, and the fixtures in
+            `internal/room/registry_test.go` open every room behind **one**
+            address. → `README.md` § *A room, and getting into one*.
+      - [x] Room code: base32 of a four-byte address, a two-byte port and a
+            **one-byte room**, twelve characters, with a round-trip test over
+            addresses *and* room bytes.
+            ⚠️ **A non-canonical code is refused**, and that is about a map key
+            rather than pedantry: twelve characters carry sixty bits and seven
+            bytes are fifty-six, so four bits are spare and **sixteen** strings
+            decode to any one room's bytes (measured; it was four at six bytes).
+            `encoding/base32` has no `Strict()`, so it ignores the trailing bits —
+            and the registry keys its map on the string, so a joiner pasting a
+            variant would be told the room is unknown while the room sat right
+            there. `RoomCode.Decode` re-encodes and refuses a mismatch, naming the
+            code that does work.
       - [ ] Room password: constant-time comparison, never logged. Documented as
             what it is — a gate against strangers on the network, **not**
             security.
