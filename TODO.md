@@ -1630,10 +1630,21 @@ is only so the shape is readable.
       `TestAnUnnamedForkNarrowsBothLists` go red with it, and
       `TestALinearMemberIsStillCalledFurthest` stays green — which is what makes it
       the control rather than a fourth copy of the same assertion.
-      **(d)** The alternative UI shape, if `s`-cycles ever reads wrong: a
-      sub-picker over the arms, like `OpenSkills`. It costs a `PickState`, a
-      `Target`, an entry in each client's `raiseTargets`, and a fourth screen in
-      the three sweeps — against a chooser row that is two keys and no navigation.
+      ~~**(d)** The alternative UI shape, if `s`-cycles ever reads wrong~~
+      **DECIDED — the sub-picker is not built, and the two spellings are a key
+      budget rather than drift.** The trigger this was written against has not
+      fired: nothing reads wrong, and the alternative costs a `PickState`, a
+      `Target`, an entry in each client's `raiseTargets` and a fourth screen in
+      the three sweeps, against a chooser row that is two keys and no navigation.
+      ⚠️ **The question it was really holding open was why one fork is chosen two
+      ways** — `< value >` walked with ←/→ in the squad builder, `s` on browse and
+      preview — and that is answered rather than left to taste: **←/→ are already
+      the level** on both of those screens (`describe.go`, twice, plus `home` and
+      `end`), so a field walked with them cannot exist there without taking the
+      level's keys. The builder has fields and a cursor to focus one; browse and
+      preview have neither. Two spellings, one reason, written down here so the
+      next reader does not "unify" them into a screen that can no longer change
+      level. Revisit only with a reader who actually got it wrong.
       → `internal/screen/form.go`, `browse.go`, `preview.go`, `blurb.go`,
       `action.go` (`Subject.Stage`), `internal/i18n` (`FormChoice`),
       `cmd/hexforge-tui/describe.go`, `cmd/hexarena-tui/subject.go`,
