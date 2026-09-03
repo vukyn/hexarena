@@ -212,7 +212,7 @@ thế đứng
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
 ===== vi | 120x24 | a live battle =====
-trận đấu  seed 1  diễn biến 10-10/10
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 10-10/10
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
@@ -235,7 +235,7 @@ A3 Charizard, lượt 1
 ----- footer -----
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 120x24 | a live battle waiting =====
-trận đấu  seed 1  diễn biến 6-10/10
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 6-10/10
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
@@ -1246,7 +1246,7 @@ thế đứng
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
 ===== vi | 160x60 | a live battle =====
-trận đấu  seed 1
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1287,7 +1287,7 @@ A3 Charizard, lượt 1
 ----- footer -----
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 160x60 | a live battle waiting =====
-trận đấu  seed 1
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2619,7 +2619,7 @@ the formation
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
 ===== en | 120x24 | a live battle =====
-the battle  seed 1  log 10-10/10
+the battle  seed 1  your turn 1:12 · them 1:30  log 10-10/10
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
@@ -2642,7 +2642,7 @@ A3 Charizard, turn 1
 ----- footer -----
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 120x24 | a live battle waiting =====
-the battle  seed 1  log 6-10/10
+the battle  seed 1  you 1:30 · their turn 1:12  log 6-10/10
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
@@ -3633,7 +3633,7 @@ the formation
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
 ===== en | 160x60 | a live battle =====
-the battle  seed 1
+the battle  seed 1  your turn 1:12 · them 1:30
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -3674,7 +3674,7 @@ A3 Charizard, turn 1
 ----- footer -----
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 160x60 | a live battle waiting =====
-the battle  seed 1
+the battle  seed 1  you 1:30 · their turn 1:12
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK

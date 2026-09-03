@@ -386,8 +386,16 @@ func attachedTo(t *testing.T, m model, asking bool) model {
 		t.Fatalf("the battle opened on nothing to attach to: %v", m.battle.Err)
 	}
 	live := draw.PlayLive{Fight: m.battle.Fight, Side: m.battle.Side, Seed: m.battle.Seed}
+	// The countdown, as the session hands one over: the seat on turn part way
+	// through its allowance and the other holding the whole of it, so a golden
+	// can see the two put the wrong way round. → the same fixture's reasoning in
+	// internal/screen.
+	const whole, spent = 90, 72
 	if asking {
 		live.Asking = m.battle.Pending
+		live.Clock = draw.PlayClock{Waiting: draw.PlayClockYou, Yours: spent, Theirs: whole}
+	} else {
+		live.Clock = draw.PlayClock{Waiting: draw.PlayClockThem, Yours: whole, Theirs: spent}
 	}
 	m.battle = draw.NewPlayScreen().Attach(m.ctx(), live)
 	m.screen = screenBattle

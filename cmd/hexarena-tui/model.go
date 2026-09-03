@@ -276,7 +276,10 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		return m.key(typed)
 	case matchJoinedMsg:
-		return m.joined(typed.client), nil
+		// The tick is armed with the match rather than with the first turn: a
+		// countdown that started on the turn it first drew would be a clock that
+		// only runs once somebody has already waited. → clockTick.
+		return m.joined(typed.client), clockTick()
 	case matchFailedMsg:
 		m.join = m.join.Failed(typed.err)
 		// The dial is over however it went, so the session is disarmed here
@@ -290,6 +293,15 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		// — socket.Mirror.Asking is the only derivation there is, and it is read
 		// under the lock like everything else.
 		return m.stepped(), nil
+	case clockTickMsg:
+		// ⚠️ **The same redraw, and the re-arm is what makes it a clock.** A tick
+		// is one Cmd, so a tick that did not ask for the next one would move the
+		// countdown exactly once; and re-arming only while a match is live is
+		// what stops the process ticking for ever after the reader has left one.
+		if !m.session.live() {
+			return m, nil
+		}
+		return m.stepped(), clockTick()
 	case matchEndedMsg:
 		return m.ended(), nil
 	}
@@ -321,7 +333,7 @@ func (m model) joined(client *socket.Client) model {
 func (m model) stepped() model {
 	m.session.read(func(sight socket.Sight) {
 		if sight.Fight != nil {
-			m.battle = m.battle.Attach(m.ctx(), liveOf(sight))
+			m.battle = m.battle.Attach(m.ctx(), liveOf(sight, m.session.countdown(sight)))
 			if m.screen == screenWaiting {
 				m.screen = screenBattle
 			}
@@ -357,12 +369,17 @@ func (m model) ended() model {
 // protocol. The **latest** one, because a refusal does not end a connection —
 // several can arrive in a match, and what a player needs is the one that just
 // happened.
-func liveOf(sight socket.Sight) draw.PlayLive {
+// ⚠️ **The countdown is a parameter rather than something read here**, and that
+// is the same division: this turns a reading into a drawing, and what a clock
+// says is not on the reading. → clock.go, which is where every clock in this
+// package is.
+func liveOf(sight socket.Sight, clock draw.PlayClock) draw.PlayLive {
 	live := draw.PlayLive{
 		Fight:  sight.Fight,
 		Asking: sight.Asking,
 		Side:   sight.Side,
 		Seed:   sight.Seed,
+		Clock:  clock,
 	}
 	if len(sight.Refusals) > 0 {
 		live.Refusal = sight.Refusals[len(sight.Refusals)-1].String()

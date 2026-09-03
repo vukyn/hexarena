@@ -152,7 +152,7 @@ func (a *allowance) set(reading room.Reading, only wire.Seat, fire func(wire.Sea
 	if waiting && only.Valid() && seat != only {
 		waiting = false
 	}
-	length := allowanceOf(reading.Config.Allowance)
+	length := Allowance(reading.Config.Allowance)
 
 	a.mu.Lock()
 	defer a.mu.Unlock()

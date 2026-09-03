@@ -521,3 +521,111 @@ func difference(from, without map[string]bool) []string {
 	slices.Sort(out)
 	return out
 }
+
+// TestALiveBattleDrawsBothClocksAndNothingElseDoes is the countdown, which is
+// the one reading on this screen that comes from outside the battle entirely.
+//
+// The three readings of PlayClock.Waiting are walked as a table, because the
+// interesting one is **nought**: no turn is being counted, and nought is the
+// value a screen handed a zero PlayClock falls into. A clock drawn there would
+// be a countdown against a turn nobody is waiting for — between turns, before
+// the first one, and past the room's cap.
+//
+// ⚠️ **The two numbers differ in every case**, so a screen that put the reader's
+// own clock where the other player's goes is a failure rather than a coincidence
+// nothing measures.
+//
+// *Sees:* the clock dropped, the two put the wrong way round, the wrong wording
+// picked for whose turn it is, the seconds formatted differently, and a clock
+// drawn on a battle nobody else is driving.
+// *Cannot see:* whether the number handed in is the right number — that is not a
+// question this package can ask, because it reads no clock. →
+// cmd/hexarena-tui's TestTheCountdownCountsTheSeatOnTurn.
+func TestALiveBattleDrawsBothClocksAndNothingElseDoes(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		c, _ := start(t, lang)
+		// The two figures are the drawn strings' own, so the formatting is held
+		// by a literal rather than by the arithmetic that produced it.
+		const spent, whole = 72, 90
+		yours, theirs := "1:12", "1:30"
+
+		cases := []struct {
+			name    string
+			clock   PlayClock
+			wanting string
+		}{{
+			name:    "this player's turn",
+			clock:   PlayClock{Waiting: PlayClockYou, Yours: spent, Theirs: whole},
+			wanting: c.Text(i18n.PlayClockYours, yours, theirs),
+		}, {
+			name:    "the other player's turn",
+			clock:   PlayClock{Waiting: PlayClockThem, Yours: whole, Theirs: spent},
+			wanting: c.Text(i18n.PlayClockTheirs, theirs, yours),
+		}, {
+			name:  "nobody's turn",
+			clock: PlayClock{Yours: spent, Theirs: whole},
+		}}
+		for _, one := range cases {
+			fight, prompt := aBattleNobodyHereDrives(t, c, 3)
+			live := NewPlayScreen().Attach(c, PlayLive{
+				Fight: fight, Asking: prompt, Seed: 7, Clock: one.clock,
+			})
+			body, _ := live.View(c)
+			switch {
+			case one.wanting == "" && strings.Contains(body, ":"+theirs[2:]):
+				t.Errorf("in %s a live battle on %s draws a clock, and no turn is being "+
+					"counted there:\n%s", lang, one.name, body)
+			case one.wanting == "":
+			case !strings.Contains(body, one.wanting):
+				t.Errorf("in %s a live battle on %s does not draw %q:\n%s",
+					lang, one.name, one.wanting, body)
+			}
+		}
+
+		// The same clock on a battle this screen drives itself, which has no
+		// room, no allowance and nobody waiting on the other end of a wire.
+		local := atABattleOf(t, c, 3)
+		local.Clock = PlayClock{Waiting: PlayClockYou, Yours: spent, Theirs: whole}
+		if body, _ := local.View(c); strings.Contains(body, yours) {
+			t.Errorf("in %s a hot-seat battle draws a countdown, and nothing is counting "+
+				"one down for it:\n%s", lang, body)
+		}
+	}
+}
+
+// TestACountdownReadsAsAClock holds the one piece of arithmetic this package
+// does with the number it is handed.
+//
+// ⚠️ **The width is the point of the padding.** The seconds are padded and the
+// minutes are not, so the string is the same width for a whole minute — the log
+// position is drawn immediately to its right, and a number that changed width as
+// it ran would shift that along the row every second.
+func TestACountdownReadsAsAClock(t *testing.T) {
+	cases := map[int]string{
+		-5: "0:00", 0: "0:00", 7: "0:07", 59: "0:59", 60: "1:00",
+		72: "1:12", 90: "1:30", 3599: "59:59", 3600: "60:00",
+	}
+	for seconds, want := range cases {
+		if got := playClock(seconds); got != want {
+			t.Errorf("%d seconds left reads %q, want %q", seconds, got, want)
+		}
+	}
+	// Every second of an hour, gathered by the minute it is in: a minute drawn
+	// at two widths is a number that moves the row beside it while it runs.
+	widths := map[int]map[int]bool{}
+	for seconds := range 3600 {
+		minute := seconds / 60
+		if widths[minute] == nil {
+			widths[minute] = map[int]bool{}
+		}
+		widths[minute][len(playClock(seconds))] = true
+	}
+	if len(widths) != 60 {
+		t.Fatalf("the sweep gathered %d minutes, so it is not measuring an hour", len(widths))
+	}
+	for minute, seen := range widths {
+		if len(seen) != 1 {
+			t.Errorf("minute %d is drawn at %d different widths", minute, len(seen))
+		}
+	}
+}

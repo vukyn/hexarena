@@ -342,6 +342,12 @@ type Sight struct {
 	// finished by this client's own arithmetic.
 	Seated bool
 	Over   bool
+	// Capped is the battle in progress having stopped at the room's turn cap,
+	// which is the one state where the battle still holds an open prompt that
+	// **nobody is being asked about** — the room stops asking on the same turn.
+	// A renderer reading the prompt off the battle rather than off Asking needs
+	// this to tell the two apart. → Mirror.Capped.
+	Capped bool
 	// Welcome is the room's configuration, meaningful only when Seated.
 	Welcome wire.Welcome
 	// Closure is why the match stopped for a reason the board cannot show, and
@@ -381,6 +387,7 @@ func (m *Mirror) Read(fn func(Sight)) {
 		Index:    m.index,
 		Seated:   m.seated,
 		Over:     m.over(),
+		Capped:   m.capped,
 		Welcome:  m.welcome,
 		Closure:  m.closure,
 		Fought:   m.fought[:len(m.fought):len(m.fought)],
