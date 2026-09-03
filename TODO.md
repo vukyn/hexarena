@@ -758,21 +758,58 @@ is only so the shape is readable.
       rating-only and reached no golden, which is exactly why nothing reported
       them; `TestNoFigureFallsAsPowerRises` reports them now.
 
-- [ ] ⚠️ **The rating's `landed > target.HP` clamp hides overflow from every
-      board.** Eight of the nine narrow products above are measurable through a
-      consequence — a unit that did or did not take damage, a skill Suggest did or
-      did not pick. The ninth, the wall of block charges in `pastAWall`, is not:
-      a wrapped figure that stays positive is clamped to the target's health
-      exactly as a correct one is, so the choice comes out the same. The board that
-      nearly showed it wrapped **twice** and cancelled — `damage - (perStrike ×
-      charges)` overflowed on the subtraction too, landing back under nought and
-      taking the guard the correct arithmetic takes. It has an arithmetic test
-      (`TestRepeatedIsTheNarrowProductWhereverThatHeld`) and no board, which is
-      worth writing down rather than papering over with a fixture tuned to a
-      modular coincidence.
-      ⚠️ The general shape is the one this repo keeps meeting: **a clamp downstream
-      of a defect makes the defect unobservable**, and the instrument reads the
-      same either way. Same family as the blind boards in the guard sweep.
+- [x] ⚠️ **The ninth narrow product had no board, and it was not the clamp
+      hiding it. DONE.** The entry this replaces blamed `against`'s
+      `landed > target.HP` clamp. Measured, that is wrong, and the correction is
+      the useful part of the item.
+      **What the mutation says.** The saturating call in `pastAWall` was put back
+      to the raw `perStrike * charges` **on disk** (verified through `git diff`,
+      not through a green run) and the whole suite run: **0 tests red**, in every
+      package. Not one board, not one golden, not one arithmetic test — including
+      `TestRepeatedIsTheNarrowProductWhereverThatHeld`, which measures
+      `combat.Repeated` itself and never sees the call site.
+      **Why no board.** A probe on the branch counted **at least 18.9 million**
+      entries into the wall clause across one full suite run — ≥7.9M in
+      `internal/seed`, ≥7.1M in `cmd/hexforge-tui`, ≥3.9M in `internal/forge` —
+      with **0 wraps**, and the largest per-strike figure any of them put in front
+      of the wall was **1,208**. The wrap begins at 3.07 × 10¹⁸. Nothing shipped
+      is within fifteen orders of magnitude of it, which is this repository's own
+      standard for *reachable* and settles the question: there is no honest board.
+      ⚠️ **The clamp cannot hide this, and never could.** Swept over 200,431
+      per-strike figures × every charge count: `combat.Repeated` and the narrow
+      product disagree **233,105** times, and in **233,105 of 233,105** `Repeated`
+      answered `math.MaxInt64` — necessarily, since the two disagree exactly when
+      the product will not fit, which is exactly when `wide.over` pins. So the
+      correct blow past the wall is `damage − math.MaxInt64` in every disagreement,
+      which is **nought**. The clamp only ever pulls a figure DOWN to the target's
+      health; nought is never clamped. Of the **299,548** (per-strike, charges,
+      blow) triples where the two arithmetics land on different figures, the clamp
+      makes them equal again in **0**. What hides it is the `damage <= 0` guard one
+      line below the product, catching the second wrap — measured on the one board
+      that reaches it, `perStrike` 3,750,000,000,000,000,000 × 3 charges gives a
+      narrow product of **−7,196,744,073,709,551,616**, and `damage − narrow`
+      overflows in its turn and lands back under nought.
+      ⚠️ **`TestNoFigureFallsAsPowerRises` does not transfer to this site**, and
+      that was measured before it was abandoned rather than assumed. On the
+      **correct** saturating code the figure past a wall FALLS as power rises, in
+      **6 of 24** (connecting, charges) pairs on the carry ladder, **ten falls** in
+      all — the blow saturates at `math.MaxInt64` before the wall's product does,
+      so the subtraction shrinks while the power climbs. A test asserting *"never
+      smaller for more power"* here would fail on the code it protects.
+      **So the property is the wall's own axis**: *a deeper wall never lets more
+      through*. Non-increasing in charges holds for a saturating product by
+      construction and is the first thing a narrow one loses — a wrapped charge
+      product comes back smaller than the shallower wall's, so the deeper wall
+      subtracts less. It fails on the mutation at **20** places on the same ladder,
+      across four `connecting` values and four separate rungs, so it hangs on no
+      single modular coincidence and on no number in a book.
+      → `internal/core/battle/carry_wall_test.go` (`TestNoWallLetsMoreThroughAsIt
+      Deepens`), the one white-box file in `battle` and the header says why.
+      ⚠️ The general shape stays worth naming even though the diagnosis moved: **a
+      guard downstream of a defect makes the defect unobservable**, and the
+      instrument reads the same either way. Same family as the blind boards in the
+      guard sweep — and the lesson added here is that it is worth measuring WHICH
+      guard, because the obvious one was innocent.
 
 - [ ] ⚠️ **A declined turn makes a slow board slower, on a wall-heavy roster.**
       Measured 2026-09-03, before the block-charge clause landed: `forge.Bout` on a
