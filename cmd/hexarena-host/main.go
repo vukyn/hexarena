@@ -419,9 +419,9 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 	// balance was read at five a side and the room's default has been three
 	// since the host binary landed, so five is the format whose numbers are the
 	// less wrong of the two but whose board nobody has re-measured; and the
-	// ban-and-pick draft cannot seat a 5v5 at all — ten picks out of a pool of
-	// eleven leaves room for no bans. → TODO.md, "read the balance again at
-	// 3v3" and "ban and pick".
+	// ban-and-pick draft cannot seat a 5v5 at all — ten picks and three bans a
+	// side want sixteen in the pool and there are eleven. → TODO.md, "read the
+	// balance again at 3v3" and "ban and pick".
 	if wire.Format(chosen.format) == wire.Format5v5 {
 		return nil, fmt.Errorf("five a side is not offered yet: its balance has not been read on this board and a draft cannot seat it; open a 3v3")
 	}
