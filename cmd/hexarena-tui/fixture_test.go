@@ -291,6 +291,12 @@ var namedKeys = map[string]tea.KeyPressMsg{
 	"ctrl+s":    {Code: 's', Mod: tea.ModCtrl},
 	"ctrl+x":    {Code: 'x', Mod: tea.ModCtrl},
 	"ctrl+l":    {Code: 'l', Mod: tea.ModCtrl},
+	// ⚠️ ctrl+v is a key this client answers — it reads the clipboard — so it
+	// belongs in every sweep that presses everything. It carries no Text, which
+	// is what keeps it out of the fields it exists to fill: the insert happens
+	// through the tea.PasteMsg the command it returns produces, never through
+	// the keystroke.
+	"ctrl+v": {Code: 'v', Mod: tea.ModCtrl},
 }
 
 // everyKeyPressed is every keystroke this suite can send, which is what the

@@ -196,6 +196,37 @@ func (j joinScreen) Update(c draw.Context, message tea.KeyPressMsg) (joinScreen,
 	return j, draw.Action{}, command
 }
 
+// Paste puts a pasted string into whichever of the two fields has the cursor, and
+// nowhere when neither has it.
+//
+// ⚠️ **A dial in flight takes no paste, for the reason it takes no keys.** The
+// answer to a dial is a message, and a code changing under a round trip that is
+// already carrying one would leave the field disagreeing with the room being
+// called — which is the state j.At exists to keep straight.
+//
+// ⚠️ **Nothing is trimmed here, and that is submit's job rather than an
+// oversight.** A pasted room code arrives with a newline more often than not and
+// bubbles turns each one into a space, so the field really does end up holding
+// `"7QK4M2XZ9BTF "` — measured, and pinned by
+// TestATextFieldTurnsANewlineInAPasteIntoASpace one layer down. submit already
+// TrimSpaces before it measures the length, because that is where the value is
+// read and where a refusal about it is worded; trimming a second time on the way
+// in would be a second declaration of the same rule, and it would also make the
+// field refuse to hold a space somebody meant to type.
+//
+// What it costs is one invisible cell of a twenty-four-cell field: the cursor
+// sits one past the code rather than against it. Nothing else on the screen
+// moves, the length refusal counts the trimmed value, and the dial re-encodes
+// into canonical form regardless.
+func (j joinScreen) Paste(text string) (joinScreen, tea.Cmd) {
+	field := j.field()
+	if j.Dialling || !field.Focused() {
+		return j, nil
+	}
+	command := draw.PasteInto(&field, text)
+	return j.replace(field), command
+}
+
 // submit reads the code out of the field and asks for it to be dialled, or says
 // why it will not.
 //

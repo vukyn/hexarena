@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/vukyn/hexarena/internal/clipboard"
 	"github.com/vukyn/hexarena/internal/forge"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
@@ -275,6 +276,8 @@ func (m model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyPressMsg:
 		return m.key(typed)
+	case tea.PasteMsg:
+		return m.paste(typed.Content)
 	case matchJoinedMsg:
 		// The tick is armed with the match rather than with the first turn: a
 		// countdown that started on the turn it first drew would be a clock that
@@ -420,6 +423,22 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+l":
 		m.lang = m.lang.Other()
 		return m, nil
+	case "ctrl+v":
+		// ⚠️ **Answered here rather than on the screen in front, and it has to
+		// be.** bubbles' textinput binds ctrl+v itself and answers it with
+		// textinput.Paste, whose message is unexported and therefore dies in this
+		// model — so a ctrl+v allowed to reach a field would shell out to the
+		// clipboard and insert nothing, which is what it did before this arm
+		// existed. Taking it first is what stops that second read.
+		//
+		// It reads the clipboard from **every** screen and asks nothing about
+		// whether a field is focused, deliberately: what comes back is a
+		// tea.PasteMsg, and where a paste may land is decided in exactly one
+		// place — m.paste, below. A second predicate here would be a second
+		// declaration of the same rule and the two would drift. The cost is a
+		// clipboard read on a screen with nowhere to put it, which is a
+		// subprocess nobody sees and no state at all.
+		return m, clipboard.Paste
 	}
 	if m.tooSmall() {
 		if message.String() == "q" {
@@ -489,6 +508,44 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.updateWaiting(message)
 	case screenResult:
 		return m.updateResult(message)
+	}
+	return m, nil
+}
+
+// paste routes one pasted string, from a terminal's own bracketed paste or from
+// the ctrl+v above, which converge on this message.
+//
+// ⚠️ **Two arms out of fifteen screens, and the other thirteen doing nothing is
+// the feature rather than a gap.** A paste while a battle is up, or with the
+// cursor on a catalogue, must insert nothing and say nothing: there is no field
+// to put it in, and a paste that went somewhere anyway would be text arriving on
+// a screen nobody typed into. Whether the named screen has a field *right now* is
+// the screen's own Pasting to answer, which is where the two states that make it
+// a real question are written down.
+//
+// ⚠️ **The skills arm reaches the typed filter and can reach nothing else on this
+// client.** The form behind that screen opens on `a` and `e`, both guarded on
+// draw.Context.Authoring, which is nought here — so SkillsScreen.Paste falls past
+// its form arm every time, and TestNoPasteReachesAnAuthoringFieldInThisClient is
+// what says so rather than this comment. It is listed for the reason the read-only
+// footers are measured rather than reasoned about.
+//
+// tooSmall is asked for the reason key asks it: a window too short to draw a
+// screen is one where the only key is q, and a paste into a field nobody can see
+// is the same mistake as a keystroke into one.
+func (m model) paste(text string) (tea.Model, tea.Cmd) {
+	if m.tooSmall() {
+		return m, nil
+	}
+	switch m.screen {
+	case screenJoin:
+		next, command := m.join.Paste(text)
+		m.join = next
+		return m, command
+	case screenSkills:
+		next, command := m.skills.Paste(m.ctx(), text)
+		m.skills = next
+		return m, command
 	}
 	return m, nil
 }
