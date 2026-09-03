@@ -227,7 +227,6 @@ const (
 	PickerStatusHint
 	PickerStatusFooter
 	PickerChance
-	StatusDetail
 	StatusTicks
 	CategoryStatDebuff
 	CategoryControl
@@ -499,6 +498,11 @@ const (
 	BlurbArcs
 	BlurbChains
 	BlurbConsumesEachStrike
+	// The singulars. English needs them and Vietnamese does not, which is why
+	// they are keys rather than a count formatted into one wording — the same
+	// shape BlurbStripsOne and BlurbStatusLastsOne already have.
+	BlurbConsumesStacksOne
+	BlurbConsumesEachStrikeOne
 	BlurbConsumesPile
 	BlurbScalesPerStack
 	BlurbRestoresPerStack

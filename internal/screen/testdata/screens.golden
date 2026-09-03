@@ -801,8 +801,8 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        expose     phá giáp · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
        blind      mù · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
        mire       sa lầy · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
-       stun       choáng · khống chế, mất lượt · 1 lượt · tối đa 1 cộng dồn
-       taunting   bị khiêu khích · ép chọn mục tiêu · 2 lượt · tối đa 1 cộng dồn
+       stun       choáng · khống chế, mất lượt · 1 lượt · 1 cộng dồn
+       taunting   bị khiêu khích · ép chọn mục tiêu · 2 lượt · 1 cộng dồn
        fury       cuồng nộ · tăng chỉ số · 3 lượt · tối đa 3 cộng dồn
        haste      nhanh nhẹn · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
        focus      tập trung · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
@@ -2144,26 +2144,26 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        expose     phá giáp · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
        blind      mù · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
        mire       sa lầy · giảm chỉ số · 2 lượt · tối đa 2 cộng dồn
-       stun       choáng · khống chế, mất lượt · 1 lượt · tối đa 1 cộng dồn
-       taunting   bị khiêu khích · ép chọn mục tiêu · 2 lượt · tối đa 1 cộng dồn
+       stun       choáng · khống chế, mất lượt · 1 lượt · 1 cộng dồn
+       taunting   bị khiêu khích · ép chọn mục tiêu · 2 lượt · 1 cộng dồn
        fury       cuồng nộ · tăng chỉ số · 3 lượt · tối đa 3 cộng dồn
        haste      nhanh nhẹn · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
        focus      tập trung · tăng chỉ số · 3 lượt · tối đa 2 cộng dồn
-       toughened  kiên cường · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
+       toughened  kiên cường · tăng chỉ số · vĩnh viễn · 1 cộng dồn
        veil       mờ ảo · tăng chỉ số · 2 lượt · tối đa 2 cộng dồn
        block      đỡ đòn · khiên, chặn một nhát · 2 lượt · tối đa 3 cộng dồn
        regrowth   tái sinh · hồi máu mỗi lượt · 3 lượt · tối đa 3 cộng dồn
-       unleashed  bộc phát · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
-       bare       trần trụi · giảm chỉ số · 0 lượt · tối đa 1 cộng dồn
-       kindled    bùng cháy · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
-       fortified  kiên cố · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
-       quickened  gia tốc · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
-       encumber   nặng nề · giảm chỉ số · 0 lượt · tối đa 1 cộng dồn
+       unleashed  bộc phát · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       bare       trần trụi · giảm chỉ số · vĩnh viễn · 1 cộng dồn
+       kindled    bùng cháy · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       fortified  kiên cố · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       quickened  gia tốc · tăng chỉ số · vĩnh viễn · 1 cộng dồn
+       encumber   nặng nề · giảm chỉ số · vĩnh viễn · 1 cộng dồn
        fester     lở loét · giảm máu hồi vào · 2 lượt · tối đa 2 cộng dồn
-       evasive    khinh công · tăng chỉ số · 0 lượt · tối đa 1 cộng dồn
+       evasive    khinh công · tăng chỉ số · vĩnh viễn · 1 cộng dồn
        charge     nhiễm điện · tích lại để tiêu · 4 lượt · tối đa 999 cộng dồn
        aegis      lá chắn · lá chắn, thấm sát thương cho tới khi cạn · 3 lượt · tối đa 2 cộng dồn
-       bastion    thành trì · lá chắn, thấm sát thương cho tới khi cạn · 0 lượt · tối đa 1 cộng dồn
+       bastion    thành trì · lá chắn, thấm sát thương cho tới khi cạn · vĩnh viễn · 1 cộng dồn
        swelter    sóng nhiệt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        verdure    xum xuê · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        moisture   ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
@@ -3200,8 +3200,8 @@ space chooses a status · type the chance in parts per thousand
        expose     lowers a stat · 2 turns · up to 2 stacks
        blind      lowers a stat · 2 turns · up to 2 stacks
        mire       lowers a stat · 2 turns · up to 2 stacks
-       stun       costs a turn · 1 turns · up to 1 stacks
-       taunting   costs a choice of target · 2 turns · up to 1 stacks
+       stun       costs a turn · 1 turn · 1 stack
+       taunting   costs a choice of target · 2 turns · 1 stack
        fury       raises a stat · 3 turns · up to 3 stacks
        haste      raises a stat · 3 turns · up to 2 stacks
        focus      raises a stat · 3 turns · up to 2 stacks
@@ -4523,26 +4523,26 @@ space chooses a status · type the chance in parts per thousand
        expose     lowers a stat · 2 turns · up to 2 stacks
        blind      lowers a stat · 2 turns · up to 2 stacks
        mire       lowers a stat · 2 turns · up to 2 stacks
-       stun       costs a turn · 1 turns · up to 1 stacks
-       taunting   costs a choice of target · 2 turns · up to 1 stacks
+       stun       costs a turn · 1 turn · 1 stack
+       taunting   costs a choice of target · 2 turns · 1 stack
        fury       raises a stat · 3 turns · up to 3 stacks
        haste      raises a stat · 3 turns · up to 2 stacks
        focus      raises a stat · 3 turns · up to 2 stacks
-       toughened  raises a stat · 0 turns · up to 1 stacks
+       toughened  raises a stat · always in force · 1 stack
        veil       raises a stat · 2 turns · up to 2 stacks
        block      blocks one strike · 2 turns · up to 3 stacks
        regrowth   restores every turn · 3 turns · up to 3 stacks
-       unleashed  raises a stat · 0 turns · up to 1 stacks
-       bare       lowers a stat · 0 turns · up to 1 stacks
-       kindled    raises a stat · 0 turns · up to 1 stacks
-       fortified  raises a stat · 0 turns · up to 1 stacks
-       quickened  raises a stat · 0 turns · up to 1 stacks
-       encumber   lowers a stat · 0 turns · up to 1 stacks
+       unleashed  raises a stat · always in force · 1 stack
+       bare       lowers a stat · always in force · 1 stack
+       kindled    raises a stat · always in force · 1 stack
+       fortified  raises a stat · always in force · 1 stack
+       quickened  raises a stat · always in force · 1 stack
+       encumber   lowers a stat · always in force · 1 stack
        fester     cuts healing received · 2 turns · up to 2 stacks
-       evasive    raises a stat · 0 turns · up to 1 stacks
+       evasive    raises a stat · always in force · 1 stack
        charge     builds up to be spent · 4 turns · up to 999 stacks
        aegis      soaks up damage until it is used up · 3 turns · up to 2 stacks
-       bastion    soaks up damage until it is used up · 0 turns · up to 1 stacks
+       bastion    soaks up damage until it is used up · always in force · 1 stack
        swelter    builds up for its holder to spend · 5 turns · up to 999 stacks
        verdure    builds up for its holder to spend · 5 turns · up to 999 stacks
        moisture   builds up for its holder to spend · 5 turns · up to 999 stacks
