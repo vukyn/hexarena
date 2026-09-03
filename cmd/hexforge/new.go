@@ -393,15 +393,29 @@ func renderCharacter(out io.Writer, lib *forge.Library, character cast.Character
 		label("bio", "%s", character.Bio)
 	}
 	for _, level := range levels {
-		values, stage, err := character.Resolve(level, progression.Furthest)
+		// A row per arm, because a line that forks has no single furthest and
+		// Resolve refuses to pick one — which this used to print as the row's
+		// own value, so `hexforge show pokemon.poliwag` ended on a refusal
+		// where the stats belong. The screens answered the same refusal with a
+		// chooser; a one-shot print has nowhere to hold a choice, so it prints
+		// both. FurthestAt returns exactly one stage on a line that does not
+		// fork, so nothing about an ordinary character changes.
+		arms, err := character.FurthestAt(level)
 		if err != nil {
 			label(fmt.Sprintf("level %d", level), "%v", err)
 			continue
 		}
-		budget := lib.Budget(values)
-		label(fmt.Sprintf("level %d", level), "%s", values)
-		label("", "stage %q shows %s and absorbs %d of the %d effective-health budget, %d to spare",
-			stage.Name, character.StageArt(stage),
-			budget.Effective, budget.Max, budget.Headroom)
+		for _, arm := range arms {
+			values, stage, err := character.Resolve(level, arm.Name)
+			if err != nil {
+				label(fmt.Sprintf("level %d", level), "%v", err)
+				continue
+			}
+			budget := lib.Budget(values)
+			label(fmt.Sprintf("level %d", level), "%s", values)
+			label("", "stage %q shows %s and absorbs %d of the %d effective-health budget, %d to spare",
+				stage.Name, character.StageArt(stage),
+				budget.Effective, budget.Max, budget.Headroom)
+		}
 	}
 }
