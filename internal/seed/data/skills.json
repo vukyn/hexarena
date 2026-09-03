@@ -2442,6 +2442,117 @@
           "stacks": 5
         }
       ]
+    },
+    {
+      "id": "ice_shard",
+      "name": "mảnh băng",
+      "flavour": "Búng ra một mảnh băng sắc lẻm, mỏng thôi mà đi rất ngọt",
+      "element": "ice",
+      "range": 2,
+      "pattern": "single",
+      "power": 750,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "ice_beam",
+      "name": "tia băng",
+      "flavour": "Một tia lạnh buốt kéo dài, chạm tới đâu thì chỗ ấy cứng lại",
+      "element": "ice",
+      "range": 3,
+      "pattern": "single",
+      "power": 1400,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "mire",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "blizzard",
+      "name": "bão tuyết",
+      "flavour": "Gọi cả một trận gió trắng xoá về, không còn thấy đường mà lui",
+      "element": "ice",
+      "range": 3,
+      "pattern": "column",
+      "power": 950,
+      "strikes": 1,
+      "accuracy": 720,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "mire",
+          "chance": 500,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "ice_wall",
+      "name": "vách băng",
+      "flavour": "Dựng một vách băng dày trước mặt đồng đội, đủ để chịu thay một lúc",
+      "element": "ice",
+      "range": 1,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "aegis",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "hail",
+      "name": "mưa đá",
+      "flavour": "Trời đổ đá xuống một dải, không nhắm ai mà cũng chẳng chừa ai",
+      "element": "ice",
+      "range": 2,
+      "pattern": "column",
+      "power": 600,
+      "strikes": 1,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "all",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     }
   ]
 }

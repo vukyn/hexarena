@@ -133,4 +133,16 @@ hexer, formation column 1
            absorbs 6410 of the 11500 budget, 5090 to spare
   kit      shadow_claw spite night_shade curse shadow_ball dark_pulse nasty_plot poison_powder sludge_bomb venoshock smokescreen bite taunt shadow_punch
 
-11 presets
+glacier, formation column 1
+  the one that wins by still being there: the largest frame in the cast behind armour that never held much, throwing from a row back and cooling the ground in front of it so that whatever is coming arrives late
+  demands  a character built from it must carry ice and water
+  hp 1582->4600  attack 182->530  defense 124->360  speed 27->80  accuracy 55->160  dodge 12->34
+  level 1  hp 1582, atk 182, def 124, spd 27, acc 55, ddg 12
+           absorbs 2237 of the 11500 budget, 9263 to spare
+  level 30 hp 3065, atk 353, def 240, spd 53, acc 106, ddg 22
+           absorbs 5522 of the 11500 budget, 5978 to spare
+  level 60 hp 4600, atk 530, def 360, spd 80, acc 160, ddg 34
+           absorbs 10132 of the 11500 budget, 1368 to spare
+  kit      ice_shard ice_beam blizzard ice_wall hail water_gun bubble_beam brine hydro_pump water_pulse withdraw wide_guard rally body_slam
+
+12 presets
