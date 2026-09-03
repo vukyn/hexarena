@@ -257,18 +257,18 @@ Tầm 2 · 90% trúng · hồi 2 lượt.
 [one line] 90% công · sa lầy 40% · tầm 2 · hồi 2
 
 body_slam
-Lấy đà rồi ném trọn sức nặng vào kẻ đứng trước mặt, 120% công.
+Chạy lấy đà rồi húc thẳng vào kẻ thù trước mặt, 120% công.
 Gây choáng cho mục tiêu, 25% khả năng.
 Tầm 1 · 88% trúng · hồi 2 lượt.
 [one line] 120% công · choáng 25% · tầm 1 · hồi 2
 
 pummel
-Đòn nối đòn dồn xuống một chỗ, không chừa lấy một nhịp hở, 3 nhát, mỗi nhát 48% công (tổng 144%).
+Đánh dồn dập vào kẻ thù đến mức không kịp thở, 3 nhát, mỗi nhát 48% công (tổng 144%).
 Tầm 1 · 90% trúng · hồi 2 lượt.
 [one line] 144% công · tầm 1 · hồi 2
 
 submission
-Khoá chặt lấy đối thủ rồi siết tới lúc thế thủ vỡ ra, 200% công.
+Khoá chặt lấy đối thủ rồi siết tới lúc nghẹt thở, 200% công.
 Gây phá giáp cho mục tiêu, 40% khả năng.
 Tầm 1 · 85% trúng · hồi 3 lượt.
 [one line] 200% công · phá giáp 40% · tầm 1 · hồi 3
@@ -284,17 +284,17 @@ Tầm 1 · 85% trúng · hồi 3 lượt.
 [one line] 200% công · tầm 1 · hồi 3
 
 cross_chop
-Vung hết đà theo một đường chéo, dồn cả người vào chỗ đòn rơi, 280% công.
+Vung tay chém chéo xuống, dồn cả sức nặng vào một nhát, 280% công.
 Tầm 1 · 62% trúng · hồi 3 lượt.
 [one line] 280% công · tầm 1 · hồi 3
 
 vital_throw
-Bắt lấy đối thủ, xoay nửa vòng, rồi quăng ngược trở lại theo đà vừa lao tới, 180% công.
+Bắt lấy đối thủ, xoay nửa vòng, rồi quăng ngược trở lại, 180% công.
 Tầm 1 · 100% trúng · hồi 3 lượt.
 [one line] 180% công · tầm 1 · hồi 3
 
 inner_focus
-Đứng yên một nhịp, thu hết tâm trí về một điểm trước mặt.
+Đứng yên một chỗ, hít thở đều và tập trung vào một mục tiêu duy nhất.
 Nhận tập trung.
 Bản thân · hồi 3 lượt.
 [one line] tự nhận tập trung · bản thân · hồi 3
@@ -330,7 +330,7 @@ Tầm 2 · 2 ô · 100% trúng · hồi 4 lượt.
 [one line] choáng 60% · tầm 2 · 2 ô · hồi 4
 
 rinse
-Dội một vòng nước lên đồng đội, thứ gì bám trên người đều trôi theo.
+Dội nước lên đồng đội, thứ gì bám trên người đều trôi theo.
 Gỡ 2 cộng dồn hiệu ứng gây hại theo lượt, hiệu ứng giảm chỉ số và điện tích.
 Tầm 1 · hồi 3 lượt.
 [one line] gỡ 2 hiệu ứng xấu · đồng đội · tầm 1 · hồi 3
@@ -342,7 +342,7 @@ Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 [one line] nhanh nhẹn 100% · đồng đội · tầm 1 · 3 ô · hồi 4
 
 thunder_shock
-Một luồng nhỏ chạy qua người kẻ đối diện, chạy xong vẫn còn vướng lại ở đó, 70% công.
+Một luồng điện chạy qua người kẻ đối diện, chạy xong vẫn còn dư âm tê tê cả người, 70% công.
 Gây nhiễm điện cho mục tiêu, 100% khả năng.
 Gây choáng cho mục tiêu, 12% khả năng.
 Tầm 2 · 95% trúng · hồi 1 lượt.
@@ -355,14 +355,14 @@ Tầm 2 · 90% trúng · hồi 2 lượt.
 [one line] 90% công · mù 50% · tầm 2 · hồi 2
 
 thunderbolt
-Cả khoảng không sáng trắng lên một nhịp rồi tối lại, chỗ vừa sáng chẳng còn gì nguyên vẹn, 160% công, xuyên 30% giáp.
+Cả khoảng không sáng trắng lên một khoảnh khắc rồi tối lại, mọi thứ xung quanh chẳng còn gì nguyên vẹn, 160% công, xuyên 30% giáp.
 Gây nhiễm điện x2 cho mục tiêu, 100% khả năng.
 Gây choáng cho mục tiêu, 20% khả năng.
 Tầm 2 · 88% trúng · hồi 3 lượt.
 [one line] 160% công · nhiễm điện x2 100% · choáng 20% · tầm 2 · hồi 3
 
 flash_cannon
-Gom ánh kim lại trong lòng rồi bắn ra thành một tia trắng xoá, thứ gì hứng trọn cũng vỡ ra một mảng, 150% công.
+Gom ánh kim lại trong lòng rồi bắn ra thành một tia trắng xoá, thứ gì hứng trọn cũng tan tành, 150% công.
 Gây phá giáp cho mục tiêu, 35% khả năng.
 Tầm 3 · 87% trúng · hồi 3 lượt.
 [one line] 150% công · phá giáp 35% · tầm 3 · hồi 3
@@ -375,7 +375,7 @@ Tầm 2 · 3 ô · 100% trúng · hồi 3 lượt.
 [one line] sa lầy x2 100% · choáng 25% · tầm 2 · 3 ô · hồi 3
 
 metal_sound
-Cọ kim loại vào kim loại, thứ tiếng rít ra khiến kẻ nghe quên mất phải giữ mình, 80% công.
+Cọ thanh kim loại này vào thanh kim loại kia, thứ tiếng rít ra khiến kẻ nghe mất đi sự bình tĩnh, 80% công.
 Gây phá giáp x2 cho mục tiêu, 100% khả năng.
 Tầm 2 · 2 ô · 90% trúng · hồi 3 lượt.
 [one line] 80% công · phá giáp x2 100% · tầm 2 · 2 ô · hồi 3
@@ -392,37 +392,37 @@ Bản thân · hồi 3 lượt.
 [one line] tự nhận mờ ảo x2 · bản thân · hồi 3
 
 zap_cannon
-Nén dòng lại thành một khối rồi bắn đi; khối ấy đi chậm và đi thẳng, ai né kịp thì né, 270% công.
+Nén dòng điện lại thành một khối rồi bắn đi; khối ấy đi chậm và đi thẳng, ai né kịp thì né, 270% công.
 Gây choáng cho mục tiêu, 100% khả năng.
 Tầm 3 · 55% trúng · hồi 4 lượt.
 [one line] 270% công · choáng 100% · tầm 3 · hồi 4
 
 charge_beam
-Một tia mảnh rọi tới rồi ở lại, ngấm vào người kẻ đối diện và không chịu tan đi, 80% công.
+Một tia nhỏ rọi tới rồi ở lại, ngấm vào người kẻ đối diện và không chịu tan đi, 80% công.
 Gây nhiễm điện x2 cho mục tiêu, 100% khả năng.
 Tầm 2 · 95% trúng · hồi 1 lượt.
 [one line] 80% công · nhiễm điện x2 100% · tầm 2 · hồi 1
 
 magnetise
-Kéo cả một dải không khí thành từ trường, ai đứng trong đó cũng dính theo, 50% công.
+Khiến cho một khu vực xung quanh nhiễm từ, ai đứng trong đó đều bị nhiễm điện, 50% công.
 Gây nhiễm điện x3 cho mục tiêu, 100% khả năng.
 Tầm 2 · 3 ô · 92% trúng · hồi 3 lượt.
 [one line] 50% công · nhiễm điện x3 100% · tầm 2 · 3 ô · hồi 3
 
 electro_ball
-Vo dòng thành một quả cầu rồi thả cho nó lăn tới; chạm vào ai đang sẵn dòng là cả vùng sáng lên, 2 nhát, mỗi nhát 64% công (tổng 128%).
+Vận thành một quả cầu điện rồi thả cho nó lăn tới; chạm vào ai đang nhiễm điện là cả vùng sáng lên, 2 nhát, mỗi nhát 64% công (tổng 128%).
 Mục tiêu đang dính nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 43% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
 Tầm 2 · 90% trúng · hồi 2 lượt.
 [one line] 128% công · nhiễm điện→lan · tầm 2 · hồi 2
 
 spark
-Chớp một cái vào một chỗ, rồi có khi chớp thêm cái nữa, rồi lại cái nữa, 2 nhát, mỗi nhát 34% công (tổng 68%), đánh xong mỗi nhát còn 50% khả năng đánh thêm, tối đa 10.
+Chớp một cái, rồi có khi chớp thêm cái nữa, rồi lại cái nữa, 2 nhát, mỗi nhát 34% công (tổng 68%), đánh xong mỗi nhát còn 50% khả năng đánh thêm, tối đa 10.
 Mục tiêu đang dính nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 29% công, xuyên qua mọi lớp đỡ, rồi truyền tiếp sang mọi kẻ kề bên đang mang, mỗi nhát tiêu 1 cộng dồn nhiễm điện.
 Tầm 1 · 93% trúng · hồi 2 lượt.
 [one line] 68% công · nhiễm điện→lan · tầm 1 · hồi 2
 
 overload
-Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng không còn gì đứng lại, 88% công.
+Dồn hết những gì đã tích vào một chỗ rồi buông tay; càng gom lâu thì lúc buông càng khủng khiếp, 88% công.
 Mục tiêu đang dính ít nhất 2 cộng dồn nhiễm điện, mỗi cộng dồn nhiễm điện nổ ra gây 27% công, xuyên qua mọi lớp đỡ, tiêu sạch số cộng dồn nhiễm điện nó đang mang.
 Tầm 2 · 88% trúng · hồi 4 lượt.
 [one line] 88% công · nhiễm điện 2+→nổ · tầm 2 · hồi 4
