@@ -31,9 +31,9 @@ func mustSkills(t *testing.T) *skill.Book {
 	return book
 }
 
-// benchSkills parses the nineteen-skill bench, which is what a mechanism test
-// wants: every element, every shape, both conditions, multi-strike, area splash,
-// a cleanse, a dispel and a shield.
+// benchSkills parses the bench, which is what a mechanism test wants: every
+// element, every shape, every condition, multi-strike, area splash, a cleanse, a
+// dispel and a shield. Its size is testfixture's to state, so this says none.
 func benchSkills(t *testing.T) *skill.Book {
 	t.Helper()
 	patterns, err := seed.PatternBook()
@@ -69,7 +69,7 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 		multiStrike, area, amplifier, detonate bool
 		cleanse, dispel, shield, selfBuff      bool
 		guaranteed, speedScaled, longRange     bool
-		gradient                               bool
+		gradient, selfCondition, reserveHeal   bool
 	)
 	elements := make(map[element.Element]bool)
 	sides := make(map[skill.Side]bool)
@@ -90,6 +90,17 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 		}
 		if current.SelfGradient != nil {
 			gradient = true
+		}
+		// The caster's side of a condition, counted apart from the target's. They
+		// are two readings taken against two different units, and a bench holding
+		// only the target's leaves everything downstream of the caster's -- what it
+		// spends, what the spend buys, what the rating charges for it -- covered by
+		// nothing but the tests that build their own.
+		if current.SelfRequires != nil {
+			selfCondition = true
+			if current.SelfRequires.ScalesRestore() {
+				reserveHeal = true
+			}
 		}
 		if current.Strips != nil {
 			harmful := false
@@ -138,6 +149,8 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 		{"a conditional amplifier", amplifier},
 		{"a detonate", detonate},
 		{"a gradient off the caster's own health", gradient},
+		{"a condition read against the caster", selfCondition},
+		{"a spend paid back in health", reserveHeal},
 		{"a cleanse", cleanse},
 		{"a dispel", dispel},
 		{"a shield", shield},
