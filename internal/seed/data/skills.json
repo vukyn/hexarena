@@ -1094,7 +1094,7 @@
     {
       "id": "rock_throw",
       "name": "ném đá",
-      "flavour": "Nhấc tảng đá gần nhất lên rồi ném thẳng vào kẻ đứng xa",
+      "flavour": "Nhấc tảng đá gần nhất lên rồi ném thẳng vào kẻ địch",
       "element": "ground",
       "range": 2,
       "pattern": "single",
@@ -1287,7 +1287,7 @@
     },
     {
       "id": "sing",
-      "name": "lời ru",
+      "name": "ru ngủ",
       "flavour": "Cất một khúc ru khe khẽ, ai nghe được thì gục xuống ngay tại chỗ",
       "element": "light",
       "range": 2,
@@ -1419,7 +1419,7 @@
     {
       "id": "thunderbolt",
       "name": "sấm sét",
-      "flavour": "Cả khoảng không sáng trắng lên một khoảnh khắc rồi tối lại, mọi thứ xung quanh chẳng còn gì nguyên vẹn",
+      "flavour": "Cả khoảng không sáng trắng lên một khoảnh khắc rồi tối, mọi thứ xung quanh chẳng còn gì nguyên vẹn",
       "element": "electric",
       "range": 2,
       "pattern": "single",
@@ -1727,7 +1727,7 @@
     {
       "id": "psychic",
       "name": "niệm lực",
-      "flavour": "Không đưa tay ra, không bước tới — chỉ nhìn, và thứ đang đứng đó oằn xuống",
+      "flavour": "Không đưa tay ra, không bước tới — chỉ nhìn, và thứ đang đứng đó gục xuống",
       "element": "neutral",
       "range": 3,
       "pattern": "single",
@@ -1783,7 +1783,7 @@
     {
       "id": "dream_eater",
       "name": "nuốt mộng",
-      "flavour": "Kẻ đang ngủ mơ thấy gì, nó ngồi xuống bên cạnh và ăn hết chỗ đó",
+      "flavour": "Chậm rãi ngấu nghiến giấc mơ của kẻ còn đang say giấc nồng",
       "element": "neutral",
       "range": 2,
       "pattern": "single",
@@ -1810,7 +1810,7 @@
     {
       "id": "transform",
       "name": "biến hình",
-      "flavour": "Trong một nhịp thở nó đã là thứ khác, và thứ ấy đang nhìn lại bằng chính mắt bạn",
+      "flavour": "Trong chớp mắt nó đã hoá thành thứ khác, và thứ ấy đang nhìn lại bằng chính mắt bạn",
       "element": "neutral",
       "range": 0,
       "pattern": "single",
@@ -1875,7 +1875,7 @@
     {
       "id": "swift",
       "name": "mưa sao",
-      "flavour": "Một vốc sao nhỏ rời khỏi tay, tản ra rồi rơi xuống khắp chỗ trước mặt",
+      "flavour": "Những ngôi sao nhỏ rời khỏi tay, tản ra rồi rơi xuống khắp chỗ trước mặt",
       "element": "neutral",
       "range": 2,
       "pattern": "arc_up",
@@ -1896,7 +1896,7 @@
     {
       "id": "psystrike",
       "name": "kích tâm",
-      "flavour": "Đòn không rơi xuống chỗ nó đang đứng mà rơi thẳng vào bên trong, nơi chẳng có gì che",
+      "flavour": "Niệm lực nén lại thành một mũi nhọn trong suốt rồi phóng thẳng tới",
       "element": "dark",
       "range": 2,
       "pattern": "single",
@@ -1918,7 +1918,7 @@
     {
       "id": "shadow_ball",
       "name": "cầu bóng tối",
-      "flavour": "Một khối tối đặc quánh lăn tới, chạm vào đâu là chỗ đó lạnh đi",
+      "flavour": "Một khối năng lượng đen hút bay tới, chạm vào đâu là chỗ đó lạnh đi",
       "element": "dark",
       "range": 3,
       "pattern": "single",
@@ -1943,8 +1943,8 @@
     },
     {
       "id": "psycho_cut",
-      "name": "chém niệm",
-      "flavour": "Vệt cắt đi ngang không khí, tới nơi rồi mới nghe thấy tiếng",
+      "name": "tâm trảm",
+      "flavour": "Vệt cắt xuyên qua bầu không khí, tới nơi rồi mới nghe thấy tiếng",
       "element": "dark",
       "range": 2,
       "pattern": "arc_up",
@@ -1962,8 +1962,8 @@
     },
     {
       "id": "dark_pulse",
-      "name": "sóng tối",
-      "flavour": "Bóng tối dội ra thành từng đợt, ai đứng trong đó cũng thôi nhìn thấy đường",
+      "name": "hắc xung",
+      "flavour": "Bóng tối dội thành từng đợt, ai đứng trong đó là bị tước đi ánh nhìn",
       "element": "dark",
       "range": 2,
       "pattern": "column",
@@ -1989,7 +1989,7 @@
     {
       "id": "nasty_plot",
       "name": "mưu hiểm",
-      "flavour": "Đứng yên một nhịp, nghĩ tới thứ mình sắp làm, rồi cười",
+      "flavour": "Đứng yên một chỗ, nghĩ tới thứ mình sắp làm, rồi cười",
       "element": "dark",
       "range": 0,
       "pattern": "single",
@@ -2014,7 +2014,7 @@
     {
       "id": "shadow_claw",
       "name": "vuốt bóng",
-      "flavour": "Bóng dưới chân dựng lên thành móng, cào một nhát rồi nằm xuống lại",
+      "flavour": "Bóng dưới chân dựng thành móng, cào một nhát rồi thu lại",
       "element": "dark",
       "range": 1,
       "pattern": "single",
@@ -2031,8 +2031,8 @@
     },
     {
       "id": "spite",
-      "name": "phá bùa",
-      "flavour": "Thò tay vào chỗ kẻ kia đang dựa dẫm rồi rút phăng nó ra",
+      "name": "oán niệm",
+      "flavour": "Oán khí bám lấy kẻ thù rồi bóc đi từng lớp chở che còn sót lại",
       "element": "dark",
       "range": 2,
       "pattern": "single",
@@ -2081,8 +2081,8 @@
     },
     {
       "id": "curse",
-      "name": "ám hồn",
-      "flavour": "Ghim một thứ vào người kẻ kia, chỗ nào rách thì cứ để đó mà rách",
+      "name": "nguyền rủa",
+      "flavour": "Ghim lời nguyền vào người kẻ thù, vết thương không lành đi mà ngày càng tệ thêm",
       "element": "dark",
       "range": 2,
       "pattern": "single",
@@ -2106,7 +2106,7 @@
     },
     {
       "id": "light_screen",
-      "name": "màn sáng",
+      "name": "màn ánh sáng",
       "flavour": "Dựng một vách sáng mỏng trước mặt đồng đội, thứ gì tới cũng chậm lại một nhịp",
       "element": "light",
       "range": 1,
@@ -2131,8 +2131,8 @@
     },
     {
       "id": "shadow_punch",
-      "name": "quyền xuyên",
-      "flavour": "Nắm tay đi qua chỗ đáng lẽ phải chặn nó lại, rồi mới dừng ở bên trong",
+      "name": "ảnh quyền",
+      "flavour": "Nắm đấm hoá thành bóng, đi xuyên qua mọi thứ chắn đường rồi mới hiện lại",
       "element": "dark",
       "range": 1,
       "pattern": "single",
@@ -2151,8 +2151,8 @@
     },
     {
       "id": "steel_beam",
-      "name": "trụ thép",
-      "flavour": "Rút thép từ chính thân mình ra rồi bắn đi, chỗ rút vẫn còn nguyên đó",
+      "name": "thiết quang",
+      "flavour": "Rút thép từ chính cơ thể mình, nén lại thành một luồng sáng rồi bắn thẳng đi",
       "element": "metal",
       "range": 2,
       "pattern": "single",
@@ -2171,7 +2171,7 @@
     {
       "id": "bank_embers",
       "name": "ủ than",
-      "flavour": "Táp một hơi ngắn rồi giữ phần còn lại trong lồng ngực, chỗ ấy cứ nóng dần lên",
+      "flavour": "Phun một luồng lửa ngắn, phần còn lại dồn vào lồng ngực ủ cho nóng dần",
       "element": "fire",
       "range": 2,
       "pattern": "single",
@@ -2195,8 +2195,8 @@
     },
     {
       "id": "flare",
-      "name": "loé lửa",
-      "flavour": "Hé miệng một cái, chỗ hơi nóng dồn lâu nhất thoát ra trước",
+      "name": "bùng lửa",
+      "flavour": "Há miệng, đẩy một luồng hơi nóng tích tụ trong cơ thể ra ngoài",
       "element": "fire",
       "range": 2,
       "pattern": "single",
@@ -2220,8 +2220,8 @@
     },
     {
       "id": "pyre",
-      "name": "giàn hoả",
-      "flavour": "Mở hết ra một lần; giữ được bao lâu thì lúc mở ra dài bấy nhiêu",
+      "name": "giàn thiêu",
+      "flavour": "Lửa ủ bấy lâu trong người bùng lên thành một giàn thiêu ngay trước mặt",
       "element": "fire",
       "range": 2,
       "pattern": "single",
@@ -2246,7 +2246,7 @@
     {
       "id": "overgrow",
       "name": "xanh tốt",
-      "flavour": "Rải một lượt phấn xuống chân đồng đội, cỏ chỗ đó dày lên trông thấy",
+      "flavour": "Rải các mầm cây xung quanh đồng đội, cây cối chỗ đó dày lên trông thấy",
       "element": "grass",
       "range": 1,
       "pattern": "single",
@@ -2270,8 +2270,8 @@
     },
     {
       "id": "thorn_volley",
-      "name": "loạt gai",
-      "flavour": "Gai rụng khỏi thân một loạt rồi bay đi, chỗ vừa rụng liền nhú lại",
+      "name": "mưa gai",
+      "flavour": "Gai rụng khỏi cơ thể một loạt rồi bay đi",
       "element": "grass",
       "range": 2,
       "pattern": "single",
@@ -2295,8 +2295,8 @@
     },
     {
       "id": "bloom_burst",
-      "name": "bung hoa",
-      "flavour": "Nụ giữ kín suốt mấy mùa, tới lượt nó thì mở ra một lần rồi thôi",
+      "name": "bùng nở",
+      "flavour": "Nụ giữ kín suốt mấy mùa, tới lượt nó thì bộc phát rực rỡ",
       "element": "grass",
       "range": 2,
       "pattern": "arc_up",
@@ -2346,7 +2346,7 @@
     {
       "id": "soak",
       "name": "ngấm nước",
-      "flavour": "Phun một vòi vừa phải, phần chưa dùng tới thì giữ lại trong mai",
+      "flavour": "Phun ra một dòng nước vừa đủ, chỗ còn lại thì giữ trong người cho ngấm dần",
       "element": "water",
       "range": 2,
       "pattern": "single",
@@ -2370,7 +2370,7 @@
     },
     {
       "id": "tide_break",
-      "name": "vỡ sóng",
+      "name": "phá triều",
       "flavour": "Nước dồn lại một chỗ rất lâu, tới lúc không giữ nổi nữa thì đổ ập xuống",
       "element": "water",
       "range": 2,
@@ -2396,7 +2396,7 @@
     {
       "id": "deluge",
       "name": "trút nước",
-      "flavour": "Nghiêng cả mai đổ xuống một dải, đổ tới đâu thì trong người nhẹ đi tới đó",
+      "flavour": "Cả khối nước dồn bấy lâu trút xuống thành một dòng chảy xiết trước mặt",
       "element": "water",
       "range": 1,
       "pattern": "column",
@@ -2446,7 +2446,7 @@
     {
       "id": "ice_shard",
       "name": "mảnh băng",
-      "flavour": "Búng ra một mảnh băng sắc lẻm, mỏng thôi mà đi rất ngọt",
+      "flavour": "Bắn ra một mảnh băng sắc lẻm, mỏng nhưng chém rất ngọt",
       "element": "ice",
       "range": 2,
       "pattern": "single",
