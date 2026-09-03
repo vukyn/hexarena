@@ -173,6 +173,21 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	}
 	screens["a forked art preview"] = forkedPreview
 	screens["a forked trait blurb"] = raisedFrom(t, forked, "?", screenBlurb)
+	// And the pane the other two were raised from, which is the third read-only
+	// view and was the one left out. It is the same screen as the "cast" entry
+	// above and shares most of its rows, but not the ones the fork decides: the
+	// chooser row naming the arm, the stage summary with two ends on it, and the
+	// art, trait and stat rows that read the arm in front rather than a single
+	// furthest form.
+	//
+	// ⚠️ **It stayed out because of the width sweep rather than because nobody
+	// thought of it.** The row of Vietnamese skill names under the kit is wrapped
+	// to the window, and this character's sixteen glossed skills are the first
+	// value in the shipped books long enough to fill it at the sweep's 200
+	// columns. kitGlosses is the exemption that lets the pane in, and it is the
+	// row's own value rather than a length: an exemption by length is a column
+	// waiting for the next row, which is what traitCarriers records going wrong.
+	screens["a forked detail pane"] = forked
 	return screens
 }
 
@@ -542,6 +557,7 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 		base.width, base.height = 200, 60
 		free := append(freeText(lib), whoMayCarry(lang, lib)...)
 		free = append(free, traitCarriers(lib)...)
+		free = append(free, kitGlosses(lang, lib)...)
 		for name, m := range everyScreen(t, base) {
 			m.width, m.height = 200, 60
 			for _, line := range strings.Split(m.screenContent(), "\n") {
