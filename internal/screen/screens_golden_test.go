@@ -352,6 +352,7 @@ func aLiveBattle(t *testing.T, c Context) PlayScreen {
 	local := withAFullLog(t, c, atABattleOf(t, c, 3))
 	p := NewPlayScreen().Attach(c, PlayLive{
 		Fight: local.Fight, Asking: local.Pending, Side: local.Side, Seed: local.Seed,
+		Clock: aCountdown(PlayClockYou),
 	})
 	if !p.Live || p.Pending == nil {
 		t.Fatal("the live battle attached to no turn, so this records a waiting screen twice")
@@ -379,6 +380,7 @@ func aLiveBattleWaiting(t *testing.T, c Context) PlayScreen {
 	local := withAFullLog(t, c, atABattleOf(t, c, 3))
 	p := NewPlayScreen().Attach(c, PlayLive{
 		Fight: local.Fight, Side: local.Side, Seed: local.Seed,
+		Clock: aCountdown(PlayClockThem),
 	})
 	if p.Pending != nil {
 		t.Fatal("the waiting live battle still holds a turn of its own")
@@ -388,6 +390,22 @@ func aLiveBattleWaiting(t *testing.T, c Context) PlayScreen {
 		t.Fatalf("the waiting live battle says nothing about waiting:\n%s", drawn)
 	}
 	return p
+}
+
+// aCountdown is a clock part way through one side's turn, as the client hands
+// one over.
+//
+// ⚠️ **The two numbers differ**, which is what makes the golden able to see them
+// swapped: a fixture with the same figure on both sides would record a screen
+// that had put the other player's clock where the reader's own goes and read
+// exactly the same. The seat on turn is the one that has spent some of its
+// allowance; the other has the whole of it, because the allowance is per prompt.
+func aCountdown(waiting PlayClockSeat) PlayClock {
+	const whole, spent = 90, 72
+	if waiting == PlayClockThem {
+		return PlayClock{Waiting: waiting, Yours: whole, Theirs: spent}
+	}
+	return PlayClock{Waiting: waiting, Yours: spent, Theirs: whole}
 }
 
 // # The played battle's six entries

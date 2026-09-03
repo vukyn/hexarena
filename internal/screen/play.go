@@ -1,6 +1,7 @@
 package screen
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -171,7 +172,50 @@ type PlayScreen struct {
 	// not-your-turn, illegal-action and unknown-message are only reachable
 	// **during** a match, because a refusal does not end a connection.
 	LiveRefusal string
+	// Clock is what is left of the open turn's allowance on both sides, **handed
+	// in already counted**. → PlayClock.
+	Clock PlayClock
 }
+
+// PlayClock is the two countdowns a live battle draws, in **seconds**.
+//
+// ⚠️ **This package reads no clock and this type is how it stays that way.** It
+// is the same arrangement one layer down: internal/room never asks what time it
+// is either — `Allowance` is a number the room *carries* and hands to its
+// clients, and whoever owns the transport counts it down and reports what
+// happened. A screen is one layer further out and gets the same treatment. It is
+// handed two counts of seconds and draws them; it does not know what a second
+// is, when this turn opened, or which machine's clock said so.
+//
+// So there is no time.Duration here on purpose, for wire.Welcome.Allowance's own
+// reason: seconds as an int, because the number crosses a boundary and a
+// Duration is a count of nanoseconds that means nothing on the other side of
+// one.
+type PlayClock struct {
+	// Waiting is whose answer the open turn is waiting for, and **nought is
+	// nobody** — which is the reading a screen handed a zero value falls into,
+	// and the safe one: no turn is being counted, so no clock is drawn.
+	Waiting PlayClockSeat
+	// Yours and Theirs are the seconds left, this screen's reader first.
+	//
+	// ⚠️ **Only one of them is counting down.** The allowance is per prompt
+	// rather than per match — a chess clock is not what a room runs — so the
+	// player who is not being asked has the whole of it waiting for them, and
+	// that is what their number says.
+	Yours, Theirs int
+}
+
+// PlayClockSeat is which side of the wire the open turn belongs to.
+type PlayClockSeat int
+
+const (
+	// PlayClockNobody is no turn open to count: between turns, before the first
+	// one, and on a battle that is over.
+	PlayClockNobody PlayClockSeat = iota
+	// PlayClockYou is this player being asked, PlayClockThem the other one.
+	PlayClockYou
+	PlayClockThem
+)
 
 // PlayTurnLimit is where a battle is abandoned, and it is cmd/hexarena's number
 // deliberately: a battle this screen calls endless and a battle the game calls
@@ -251,6 +295,9 @@ func (p PlayScreen) Attach(c Context, live PlayLive) PlayScreen {
 	}
 	p.Side, p.Seed = live.Side, live.Seed
 	p.LiveRefusal = live.Refusal
+	// Taken on every reading like the refusal is, because it is a reading rather
+	// than a state: the client counts it down and this is called on every redraw.
+	p.Clock = live.Clock
 	if p.Fight != nil {
 		// Since rather than Drain: a pure read, so this is safe under the read
 		// lock the caller is holding. → the Cursor field.
@@ -306,6 +353,10 @@ type PlayLive struct {
 	// Refusal is the name of the latest protocol refusal, empty when there has
 	// been none. → PlayScreen.LiveRefusal for why it is a name.
 	Refusal string
+	// Clock is the two countdowns, **already computed by the client**, and a
+	// zero value is a turn nobody is being asked about. → PlayClock for why the
+	// arithmetic is not done here.
+	Clock PlayClock
 }
 
 // begin builds the battle from the pairing in front and runs it up to the
@@ -1280,10 +1331,56 @@ func (p PlayScreen) View(c Context) (string, string) {
 func (p PlayScreen) heading(c Context, position string) string {
 	row := c.Style.Heading.Render(c.Text(i18n.PlayHeading)) + "  " +
 		c.Style.Dim.Render(c.Text(i18n.PlaySeed, p.Seed))
+	if clocks := p.clocks(c); clocks != "" {
+		row += "  " + c.Style.Emphasis.Render(clocks)
+	}
 	if position == "" {
 		return row
 	}
 	return row + "  " + c.Style.Dim.Render(position)
+}
+
+// clocks is the countdown, and nothing at all when no turn is being counted.
+//
+// ⚠️ **It goes on the heading row rather than on a row of its own, and that is
+// the budget below rather than a layout preference.** A live 3v3 already asks
+// for more rows than the floor has; the log is what pays for every row anything
+// else takes, so a clock row would cost the reader a line of history *and* move
+// the frame the history is read through — three lines moved to draw one. The
+// heading is the one place on this screen a reading is free, which is the
+// argument the log's own position is already here under, and the clock is about
+// eighteen cells of the seventy-nine there are.
+//
+// ⚠️ **Live only, and a battle nobody is being asked about draws none.** The
+// countdown is the room's allowance running out; a local battle has no room, no
+// allowance and nobody waiting, and a live battle between turns has no open turn
+// to count. → PlayClock.Waiting, whose nought is that reading.
+func (p PlayScreen) clocks(c Context) string {
+	if !p.Live {
+		return ""
+	}
+	yours, theirs := playClock(p.Clock.Yours), playClock(p.Clock.Theirs)
+	switch p.Clock.Waiting {
+	case PlayClockYou:
+		return c.Text(i18n.PlayClockYours, yours, theirs)
+	case PlayClockThem:
+		return c.Text(i18n.PlayClockTheirs, yours, theirs)
+	}
+	return ""
+}
+
+// playClock is a count of seconds as a clock reads it.
+//
+// The minutes are not padded and the seconds always are, which is what makes the
+// number the same width for a whole minute — a countdown that changed width as
+// it ran would shift the log's position along the row beside it every second.
+// Nothing below nought exists: a turn whose allowance has run out has none left,
+// and the room has already been told.
+func playClock(seconds int) string {
+	if seconds < 0 {
+		seconds = 0
+	}
+	return fmt.Sprintf("%d:%02d", seconds/60, seconds%60)
 }
 
 // logPosition is where the frame sits in the whole history, and nothing when the

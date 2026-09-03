@@ -694,8 +694,18 @@ is only so the shape is readable.
             `TestTheTransportOwnsTheClockAndPrintsNothing` fails if no file in
             `internal/socket` reads a clock, because otherwise somebody could move
             the countdown into a fourth package and both existing bans would still
-            pass. The whole conversion is one function, `allowanceOf`, turning
+            pass. The whole conversion is one function, `socket.Allowance`, turning
             `Reading.Config.Allowance` (seconds as an int) into a duration.
+            ✅ **The fourth package arrived, and the answer to it is
+            `TestEveryClockInTheModuleIsOnTheAllowlist`** — a module-root walk in
+            this package holding every non-test file that can read a clock against
+            a written list with a reason each. ⚠️ It looks for the *calls* as well
+            as the import, because `internal/socket/connection.go` reads a clock
+            (`context.WithTimeout` over `Timings`) **without importing `time`**,
+            and an import-only walk called that file clockless. `socket.Allowance`
+            is on the call list for the same reason: a caller of it is doing clock
+            arithmetic by definition, which is also why it is exported rather than
+            copied into the client.
             ⚠️ **A timer that fires while an answer is in flight is NORMAL.** The
             room refuses a timeout for a seat it is not asking, so a late report is
             already harmless — and the transport must not read that refusal as a
@@ -1007,25 +1017,64 @@ is only so the shape is readable.
             `PlayScreen.Attach` and a cursor of its own, because `Drain` writes
             `b.drained` and a live battle is read under a lock that admits
             several readers.
-      - [ ] The countdown: a remaining duration on the wire rather than a
-            deadline, because two machines on a LAN have no reason to agree what
-            time it is. Both clocks drawn, so a player can see the other one
-            thinking.
-            ⚠️ **It shares a clock with the one residual the lobby left open**,
-            so the two land together. A peer that dies *while this client is
-            being asked* does not unblock the chooser: `Play` is inside `Decide`
-            at that moment rather than inside `conn.read`, so neither the read
-            failing nor the keepalive giving up (which cancels `Play`'s own
-            internal context, not the session's) can reach it, and the goroutine
-            sits until the player presses `esc`. Nothing a person can see is
-            stuck — the UI stays responsive and the board is drawn. The third arm
-            that would close it is a timer of `Welcome.Allowance` plus grace,
-            which is a **clock**, and CLAUDE.md's own warning is that a countdown
-            moved into a fourth package is invisible to both existing clock bans.
-            → the head of `cmd/hexarena-tui/session.go`.
+      - [x] The countdown: both clocks drawn on a live battle, so a player can
+            see the other one thinking. **Done** — `cmd/hexarena-tui/clock.go`
+            counts, `draw.PlayLive.Clock` carries the answer, and the battle
+            screen's heading row draws it.
+            ⚠️ **This item asked for "a remaining duration ON THE WIRE" and that
+            was wrong — nothing was added to the protocol.** It was written
+            before the mirror had the shape it has now, and the mirror makes the
+            message unnecessary: both peers apply the same `wire.Turn` and open
+            the same prompt, so **both clients already know, locally, the moment
+            a turn opened and whose it is**, and `Welcome.Allowance` is already
+            known to both. So each client counts down for whichever seat is on
+            turn — no new kind, no `KindCount` change, no golden moved in
+            `internal/wire`. The reasoning the item gave for a *duration rather
+            than a deadline* — two machines on a LAN have no reason to agree what
+            time it is — is exactly right and is **why** a count from a locally
+            observed event is the correct shape rather than a compromise.
+            The cost is that the two displays drift by the network hop and by
+            when each client processed the event: tens of milliseconds against a
+            ninety-second allowance, affordable because **the display is advisory
+            and the room's timer is authoritative** — a client whose countdown is
+            wrong still learns the real outcome, because a timeout arrives as a
+            pass event like any other.
+            ⚠️ **`internal/screen` stays clockless**: the remaining seconds are
+            **handed in already counted** on `draw.PlayLive`, which is the
+            arrangement `internal/room` is already under one layer down — the
+            room carries `Allowance` as a number and hands it to its clients
+            rather than ever reading one. The screen draws two numbers and does
+            not know what a second is.
+            ⚠️ **The clock is on the heading row and not on a row of its own**,
+            which is the budget item below rather than a layout preference: the
+            log pays for every row anything else takes, so a row of its own moves
+            three lines per render (the clock, a line of history, and the log's
+            own position) instead of one. The heading is where a free reading
+            goes on this screen, which is the argument `logPosition` is already
+            there under.
+      - [x] **The residual the lobby left open, closed with it** — they share a
+            clock, which is why they landed together. A peer that dies *while
+            this client is being asked* did not unblock the chooser: `Play` is
+            inside `Decide` at that moment rather than inside `conn.read`, so
+            neither the read failing nor the keepalive giving up (which cancels
+            `Play`'s own internal context, not the session's) could reach it, and
+            the goroutine sat until the player pressed `esc`. **Done**: a third
+            select arm, a timer of `Welcome.Allowance` plus `chooserGrace`, after
+            which the chooser passes. The grace is what makes this client the
+            *second* to give up — this client starts counting a network hop after
+            the room does, so the grace only has to cover clock-rate drift and a
+            coarse timer.
+            ⚠️ **It closes a second hole the original note did not see**: a
+            player who simply never answers stranded their own client just as
+            thoroughly, because the room's pass for that seat arrived at a socket
+            nobody was reading.
       - [ ] Re-take `playFit`'s budget. ⚠️ A 5v5 body already measures 28 rows
-            against the 24 the floor gives it, and PvP adds a clock row and a
-            waiting row on top.
+            against the 24 the floor gives it, and PvP adds a waiting row on top.
+            ⚠️ **The clock row it also predicted was never spent**: the countdown
+            went on the heading row instead, precisely because there was no row to
+            give it — measured, a row of its own moves three lines of every live
+            render rather than one. A row for it is affordable the day this item
+            is done, and not before.
       - [x] The wordings, in both books, Vietnamese composed: room, lobby,
             waiting. **Done**: the menu's ninth entry, the join screen (heading,
             two field labels and their placeholders, the squad chooser, the hint,

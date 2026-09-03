@@ -188,14 +188,23 @@ func (t Timings) withDefaults() Timings {
 	return t
 }
 
-// allowanceOf is a room's per-prompt allowance as a duration, which is the one
+// Allowance is a room's per-prompt allowance as a duration, which is the one
 // conversion in the repository from the protocol's seconds-as-an-int to a clock.
 //
 // It is a function rather than an expression at the call site because it is the
 // seam the whole "the room reads no clock" arrangement turns on: there is
 // exactly one place a wire.Welcome's number becomes a time.Duration, and it is
 // this one.
-func allowanceOf(seconds int) time.Duration {
+//
+// ⚠️ **It is exported because the countdown gave it a second caller, and that is
+// what keeps "one conversion" true.** cmd/hexarena-tui counts down the seat on
+// turn so a player can watch the other one think, and its chooser waits this
+// long plus a grace before giving up on a prompt nothing can answer — both are
+// this number becoming a duration, and a client doing that arithmetic itself
+// would be a second declaration of what a wire.Welcome's seconds mean. The
+// module-wide allowlist beside this package treats a caller of this function as
+// a clock reader for exactly that reason.
+func Allowance(seconds int) time.Duration {
 	if seconds <= 0 {
 		return 0
 	}

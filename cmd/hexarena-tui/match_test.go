@@ -115,6 +115,14 @@ type aRoom struct {
 // the gate, correctly, and this test would be measuring that instead.
 func openARoom(t *testing.T, battles int) (*aRoom, *forge.Library) {
 	t.Helper()
+	return openARoomAllowing(t, battles, room.DefaultAllowance)
+}
+
+// openARoomAllowing is the same room with the per-prompt allowance named, which
+// is what the countdown and the chooser's third arm are both measured against: a
+// test that waited out the default ninety seconds would not be run.
+func openARoomAllowing(t *testing.T, battles, allowance int) (*aRoom, *forge.Library) {
+	t.Helper()
 	t.Setenv("NO_COLOR", "1")
 	dir := scratchData(t)
 	library, err := forge.Load(dir)
@@ -152,7 +160,7 @@ func openARoom(t *testing.T, battles int) (*aRoom, *forge.Library) {
 	at = netip.AddrPortFrom(at.Addr().Unmap(), at.Port())
 	config := room.Config{
 		Format: wire.Format3v3, Battles: battles,
-		Allowance: room.DefaultAllowance, Seed: 11, TurnCap: room.DefaultTurnCap,
+		Allowance: allowance, Seed: 11, TurnCap: room.DefaultTurnCap,
 	}
 	deps := room.Deps{Books: books, Characters: characters, Version: version}
 	code, err := rooms.Open(at, config, deps)

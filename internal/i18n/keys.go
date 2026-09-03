@@ -854,10 +854,22 @@ const (
 	// rule these thirteen lines are written under: "dữ liệu không khớp" tells a
 	// player nothing they can do, and the player reading one of these is stuck
 	// at a lobby with no other information in front of them. Each says what
-	// happened *and* what to do about it. The three that are a client bug or a
-	// stale build rather than anything the player did — RefusalNotYourTurn,
-	// RefusalIllegalAction, RefusalUnknownMessage — say so outright, because a
-	// player told only "illegal action" will go looking for their own mistake.
+	// happened *and* what to do about it. The two that are a client bug or a
+	// stale build rather than anything the player did — RefusalIllegalAction and
+	// RefusalUnknownMessage — say so outright, because a player told only
+	// "illegal action" will go looking for their own mistake.
+	//
+	// ⚠️ **RefusalNotYourTurn was the third of those and is not any more.** It
+	// used to read "that is the program's mistake and not yours, and matching
+	// builds is the fix", which was true while the only way to provoke it was a
+	// peer that was wrong about whose turn it was. The game client's chooser now
+	// gives up on a prompt at the allowance plus a grace and **passes** — the
+	// third arm that stops a peer's death stranding it — so by then the room has
+	// usually passed for that seat already and answers this code on the
+	// **ordinary** timeout path. Measured on a real match over a socket: a
+	// player who let the clock run out was told their program was broken. The
+	// line now says what happened and that the board is right, which is the
+	// whole of what there is to do about it.
 	//
 	// One wording per value and no second family, unlike the status categories:
 	// they have two because two sentences genuinely needed two shapes, and here
@@ -962,6 +974,24 @@ const (
 	PlayLiveFooter
 	PlayLiveAimFooter
 	PlayLiveOverFooter
+
+	// The two countdowns on a live battle's heading row: what is left of the
+	// open turn's allowance for the player reading the screen, and for the
+	// player on the other machine.
+	//
+	// ⚠️ **Two wordings rather than one with a marker moved into it**, which is
+	// the rule the three live footers are written under. What differs between
+	// them is which of the two clocks is the one running, and that is a word in
+	// the label — `lượt bạn` / `your turn` against `lượt bên kia` / `their
+	// turn` — because Palette's own rule is that colour is decoration and never
+	// information, and an arrow would be read as one of the arrow **keys** the
+	// footers beside them name.
+	//
+	// Both take the two clocks in the same order, always the reader's own
+	// first: a number that changes position when the turn changes is a number
+	// nobody can watch.
+	PlayClockYours
+	PlayClockTheirs
 
 	keyCount
 )

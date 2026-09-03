@@ -30,10 +30,10 @@ import (
 // implementation of the protocol in a repository whose whole design is that
 // there are two.
 //
-// ## The two arms of the chooser, and what cancels each
+// ## The three arms of the chooser, and what ends each
 //
-// choose blocks on a select with two arms and no third. Arm one is the player
-// answering. Arm two is s.cancel, which has exactly two callers:
+// choose blocks on a select with three arms. Arm one is the player answering.
+// Arm two is s.cancel, which has exactly two callers:
 //
 //  1. leave, from the model, on esc in a match or on quit.
 //  2. **run's own defer** in main.go, which fires however program.Run returns —
@@ -42,18 +42,36 @@ import (
 //     construction** rather than by care: the process cannot leave run without
 //     cancelling.
 //
-// ## ⚠️ A residual, named rather than overlooked
+// ## ⚠️ The residual this file used to name is CLOSED, and arm three is how
 //
-// A peer that dies **while this client is being asked** does not unblock the
-// chooser. Play is inside Decide at that moment, not inside conn.read, so
-// neither the read failing nor the keepalive giving up (which cancels Play's own
-// internal watching context, not this one) can reach it. The goroutine sits
-// until the player presses esc. Nothing a person can see is stuck — the UI stays
-// responsive throughout and the board is drawn — and the third arm that would
-// close it is a timer of Welcome.Allowance plus grace, which is a **clock**.
-// That belongs with the countdown it shares one with, in the next step, and is
-// deliberately not built here: CLAUDE.md's own warning is that a countdown moved
-// into a fourth package is invisible to both existing clock bans.
+// It read: a peer that dies **while this client is being asked** does not
+// unblock the chooser. That diagnosis stands and is worth keeping, because it is
+// what says why the other two arms cannot cover it — Play is inside Decide at
+// that moment, not inside conn.read, so neither the read failing nor the
+// keepalive giving up (which cancels Play's own internal watching context, not
+// this one) can reach a chooser waiting on a keystroke. The goroutine sat until
+// the player pressed esc.
+//
+// Arm three is a timer of Welcome.Allowance plus chooserGrace, after which the
+// chooser **passes**. The grace is what makes this client the *second* to give
+// up rather than the first — the room's own timer is the one that matters, and
+// the argument for the number is at chooserGrace.
+//
+// ⚠️ **The race with the room's own timeout is already designed for.** An answer
+// that arrives after the room has passed for that seat is refused by
+// Room.TimedOut / Room.Deliver, which refuse a seat they are not asking, rather
+// than being mis-applied to somebody's real turn.
+//
+// ⚠️ **It closes a second hole, which the original note did not see.** A player
+// who simply never answers strands their own client just as thoroughly as a dead
+// peer does: Play is inside Decide, so the room's pass for that seat arrives at
+// a socket nobody is reading, and the board stops for the rest of the match.
+// With arm three the chooser passes, Play sends it, and the queued messages are
+// taken in behind it.
+//
+// The clock this needs is the one the countdown needs, which is why the two
+// landed together and why both live in clock.go — the file the module-wide
+// allowlist names for this package.
 
 // sender is what a session needs of a bubbletea program.
 //
@@ -120,6 +138,11 @@ type session struct {
 	// the reader holding anything.
 	done chan struct{}
 	err  error
+	// clock is when this client saw the open turn open, which is what the
+	// countdown on the battle screen is counted from and the one piece of state
+	// here that a wall clock reaches. → clock.go, which is the whole of this
+	// package's clock.
+	clock matchClock
 	// left says this match has been left, so leaving twice is free.
 	//
 	// ⚠️ **A bool under the mutex rather than a sync.Once**, and the difference
@@ -189,7 +212,15 @@ func (s *session) dial(code wire.RoomCode, hello wire.Hello, books battle.Books)
 	ctx := s.open()
 	return func() tea.Msg {
 		client, err := socket.Dial(ctx, code, hello, books, socket.ClientOptions{
-			Stepped: func() { s.send(matchSteppedMsg{}) },
+			// ⚠️ **The stamp goes ahead of the redraw**, on the same goroutine
+			// and in the same hook: this is the moment this client can honestly
+			// say a turn opened for it, and a model told to redraw before the
+			// moment was recorded would draw a countdown against the turn
+			// before. → session.observed.
+			Stepped: func() {
+				s.observed()
+				s.send(matchSteppedMsg{})
+			},
 		})
 		if err != nil {
 			return matchFailedMsg{err: err}
@@ -205,6 +236,10 @@ func (s *session) open() context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.ctx, s.cancel = ctx, cancel
 	s.client, s.err, s.left = nil, nil, false
+	// A stamp from the last match would be a countdown against a turn that is
+	// over, and it has to be cleared here for the reason left does: a player who
+	// leaves a room and joins another gets every guarantee back.
+	s.clock = matchClock{}
 	s.done = make(chan struct{})
 	s.answers = make(chan draw.PlayAnswer, 1)
 	return ctx
@@ -231,13 +266,16 @@ func (s *session) begin(client *socket.Client) {
 // choose is the chooser Play calls when the turn is this client's, and it is the
 // whole of how a keystroke becomes a decision.
 //
-// → the two arms at the head of this file for what cancels each, and for the
-// residual the second arm does not cover.
+// → the three arms at the head of this file for what ends each.
 func (s *session) choose(*battle.Prompt) (battle.Choice, bool) {
 	answers, ctx := s.turn()
 	if answers == nil || ctx == nil {
 		return battle.Choice{}, false
 	}
+	// Armed before the drain and the message rather than after them, so the
+	// allowance covers the whole of the wait a player can see.
+	expired, stop := s.waitOut()
+	defer stop()
 	// ⚠️ **Drain first.** An answer buffered for a turn that has already gone —
 	// the player answered, the server timed the seat out and passed for it — must
 	// not be spent on the next one. Without this the keystroke pressed for the
@@ -254,6 +292,13 @@ func (s *session) choose(*battle.Prompt) (battle.Choice, bool) {
 		// Pass, and nothing is spent by it. Mirror.Decide reads the false as a
 		// wire.Pass, Play sends it on a cancelled context, conn.send fails,
 		// ended() covers context.Canceled, and Play returns nil.
+		return battle.Choice{}, false
+	case <-expired:
+		// The same pass, on a live connection this time, so it is really sent.
+		// The room has almost certainly passed for this seat already and will
+		// refuse it with wire.CodeNotYourTurn — which is drawn, and is the
+		// honest thing to tell somebody whose answer was too late. What matters
+		// is that Play is out of Decide and reading the socket again.
 		return battle.Choice{}, false
 	}
 }

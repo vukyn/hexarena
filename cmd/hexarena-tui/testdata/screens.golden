@@ -230,7 +230,7 @@ vào phòng đấu
 tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 120x24 | a live battle =====
 
-trận đấu  seed 1  diễn biến 56-56/56
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 56-56/56
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
@@ -253,7 +253,7 @@ A2 Example Adept, lượt 1
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 120x24 | a live battle waiting on the other player =====
 
-trận đấu  seed 1  diễn biến 52-56/56
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 52-56/56
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
@@ -460,7 +460,7 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | aiming in a live battle =====
 
-trận đấu  seed 1
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
@@ -1441,7 +1441,7 @@ vào phòng đấu
 tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 160x60 | a live battle =====
 
-trận đấu  seed 1  diễn biến 29-56/56
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 29-56/56
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1500,7 +1500,7 @@ A2 Example Adept, lượt 1
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 160x60 | a live battle waiting on the other player =====
 
-trận đấu  seed 1  diễn biến 25-56/56
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 25-56/56
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2031,7 +2031,7 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | aiming in a live battle =====
 
-trận đấu  seed 1  diễn biến 34-56/56
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 34-56/56
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -3264,7 +3264,7 @@ join a room
 tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 120x24 | a live battle =====
 
-the battle  seed 1  log 56-56/56
+the battle  seed 1  your turn 1:12 · them 1:30  log 56-56/56
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
@@ -3287,7 +3287,7 @@ A2 Example Adept, turn 1
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 120x24 | a live battle waiting on the other player =====
 
-the battle  seed 1  log 52-56/56
+the battle  seed 1  you 1:30 · their turn 1:12  log 52-56/56
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
@@ -3494,7 +3494,7 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | aiming in a live battle =====
 
-the battle  seed 1
+the battle  seed 1  your turn 1:12 · them 1:30
 the window is too short for: board, 1 unit, turn order, log
 
 tag  unit                 hp                        spd   effects
@@ -4475,7 +4475,7 @@ join a room
 tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 160x60 | a live battle =====
 
-the battle  seed 1  log 29-56/56
+the battle  seed 1  your turn 1:12 · them 1:30  log 29-56/56
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -4534,7 +4534,7 @@ A2 Example Adept, turn 1
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 160x60 | a live battle waiting on the other player =====
 
-the battle  seed 1  log 25-56/56
+the battle  seed 1  you 1:30 · their turn 1:12  log 25-56/56
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -5065,7 +5065,7 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | aiming in a live battle =====
 
-the battle  seed 1  log 34-56/56
+the battle  seed 1  your turn 1:12 · them 1:30  log 34-56/56
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK

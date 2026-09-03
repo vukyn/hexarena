@@ -1298,6 +1298,61 @@ two sides around **different characters**, and
 names both halves, because home alone is satisfied by a client that fields the
 named side twice and a cursor on the last row cannot tell `+1` from correct.
 
+### The countdown, and the chooser's third arm: one clock, two features
+
+**⚠️ The countdown needed no message, and the item that asked for one was
+wrong.** `TODO.md` called for "a remaining duration **on the wire**"; it was
+written before the mirror had its present shape, and the mirror makes it
+unnecessary — both peers apply the same `wire.Turn` and open the same prompt, so
+**both clients already know, locally, the moment a turn opened and whose it is**,
+and `Welcome.Allowance` is already known to both. So each client counts down for
+whichever seat is on turn: no new kind, no `KindCount` change, no byte of
+`messages.golden` moved. The reason that item gave for a *duration rather than a
+deadline* — two machines on a LAN have no reason to agree what time it is — is
+exactly right, and it is **why** counting from a locally observed event is the
+correct shape rather than a compromise. The two displays drift by the network hop
+and by when each client processed the event, which is affordable because **the
+display is advisory and the room's timer is authoritative**: a client whose
+countdown is wrong still learns the real outcome, because a timeout arrives as a
+pass event like any other.
+
+- **`internal/screen` stays clockless and the seconds are handed in already
+  counted** (`draw.PlayLive.Clock`, a `PlayClock` of two `int`s). That is the
+  arrangement the room is already under one layer down — `Allowance` is a number
+  the room *carries* and hands to its clients, and the transport counts it down —
+  applied one layer further out. Seconds rather than a `time.Duration` for
+  `wire.Welcome.Allowance`'s own reason.
+- **`PlayClock.Waiting`'s nought is nobody**, so a screen handed a zero value
+  draws no clock: between turns, before the first one, past the cap, and on every
+  hot-seat battle there is.
+- ⚠️ **It is drawn on the heading row rather than on a row of its own**, and that
+  is the budget rather than taste. The log takes every row nothing above it
+  claimed, so a new row costs a line of history *and* moves the frame the history
+  is read through: measured, three lines of every live render instead of one. The
+  heading is where a free reading goes on this screen, which is what
+  `logPosition` is already there under. → `TODO.md`, *re-take `playFit`'s budget*.
+- ⚠️ **`socket.Sight` gained `Capped`** because the countdown reads the open
+  prompt off the battle rather than off `Asking` — `Asking` is nil on the other
+  player's turn, which is the turn this feature exists to draw — and a capped
+  battle is the one state where the battle still holds a prompt **nobody is being
+  asked about**.
+
+**The chooser's third arm is the same clock, which is why they landed together.**
+A peer that dies while this client is being asked cannot unblock the chooser:
+`Play` is inside `Decide` at that moment rather than inside `conn.read`. The arm
+is a timer of `Welcome.Allowance` plus `chooserGrace`, after which the chooser
+**passes**.
+- ⚠️ **The grace exists so this client is the SECOND to give up.** It starts
+  counting a hop after the room does, so the grace only covers clock-rate drift
+  and a coarse timer; two seconds is three orders of magnitude over the drift and
+  ~2% of the default allowance. The race is already designed for — `Room.TimedOut`
+  and `Room.Deliver` refuse a seat they are not asking.
+- ⚠️ **It closes a second hole nobody had written down**: a player who simply
+  never answers stranded their own client, because the room's pass for that seat
+  arrived at a socket nobody was reading.
+- **The whole of this client's clock is `cmd/hexarena-tui/clock.go`**, one file,
+  which is the entry the module-wide allowlist names.
+
 ## The room: a state machine with no I/O, and no clock either
 
 `internal/room` is a PvP match as a state machine over `internal/wire`: messages
@@ -1635,13 +1690,37 @@ one.
 unbuilt: a ban on a library the module does not depend on can never fire. They
 name the library actually used now.
 
-**⚠️ This package owns the clock and is the only place `time` appears in the PvP
-stack**, which is the counterpart of the two bans rather than an exemption from
-them. `TestTheTransportOwnsTheClockAndPrintsNothing` therefore makes a **positive**
+**⚠️ This package owns the clock the room's allowance is enforced by**, which is
+the counterpart of the two bans rather than an exemption from them.
+`TestTheTransportOwnsTheClockAndPrintsNothing` therefore makes a **positive**
 claim — it fails if no file here reads a clock — because a per-package ban cannot
 see the countdown being moved into a *fourth* package, and both existing bans
-would still pass. `allowanceOf` is the whole conversion: `Reading.Config.Allowance`
-(seconds as an int) into a `time.Duration`, in one place.
+would still pass. `Allowance` is the whole conversion: `Reading.Config.Allowance`
+(seconds as an int) into a `time.Duration`, in one place. It is **exported**
+because the game client's countdown and its chooser's third arm are the same
+number becoming a duration, and a client repeating that arithmetic would be a
+second declaration of what the protocol's seconds mean.
+
+**⚠️ The fourth package arrived, and `TestEveryClockInTheModuleIsOnTheAllowlist`
+is what that positive claim grew into.** It is here for the reason the other one
+is — this is the package that owns the clock, so "and here is everywhere else
+that may have one" reads correctly beside it — and it walks the **whole module**
+(the shape `internal/i18n`'s `TestNoKeyIsOrphaned` set, dot-directory skip
+included, because `.claude/worktrees` holds other checkouts of this repository)
+holding every non-test file that can read a clock against a written allowlist
+with a reason each. Six entries today: this package's `socket.go`, `table.go`,
+`connection.go` and `server.go`, `cmd/hexarena-host/main.go`, and
+`cmd/hexarena-tui/clock.go`.
+- ⚠️ **It looks for the calls as well as the import, because a file here reads a
+  clock without importing one.** `connection.go` takes its write deadline and its
+  close handshake through `context.WithTimeout` over a `Timings` somebody else
+  built — an import-only walk calls that file clockless. `context.WithDeadline`,
+  `tea.Tick`, `tea.Every` and `socket.Allowance` are on the same list.
+- **The count is asserted as well as the set**, because a walk that found nothing
+  agrees with any allowlist there is.
+- `TestTheClocklessPackagesAreStillClockless` names the packages the list is kept
+  *for* — `internal/screen` and `internal/core` above all — so a failure says what
+  was lost rather than only that a number moved.
 - The timer is armed off `room.Reading` and nothing else — the seat is
   `Reading.Awaiting`, the length is the config's — so there is no state here about
   *whose* turn it is that could disagree with the room's.
@@ -1807,8 +1886,10 @@ timeout** is a race, so driving it from outside means sleeping and hoping, and
 listener through the exported surface. → the two fixture rules above.
 
 **What is deliberately NOT in here**, so a reader does not go looking: any TUI
-screen — the lobby, waiting and result screens are `cmd/hexarena-tui`'s own and
-the countdown is unbuilt — the wordings (a `wire.Code` and a
+screen — the lobby, waiting and result screens are `cmd/hexarena-tui`'s own, and
+so is the **countdown**, which is that client counting for itself off the moment
+its own mirror opened the turn rather than anything this package tells it — the
+wordings (a `wire.Code` and a
 `wire.Closure` travel as ids precisely so the sentence lives at the client's far
 end — `socket.Refusal` carries the code and words nothing), the seat token and the
 rejoin, writing a finished match out as a `battle.Log`, spectators, TLS (→
