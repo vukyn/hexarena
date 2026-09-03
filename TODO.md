@@ -1515,11 +1515,22 @@ is only so the shape is readable.
       **No golden moved**, in any of the eight packages `make golden` covers,
       which is what a test-only change should cost. Nothing legitimate was hiding
       behind a name: closing the hole caught no over-long wording.
-      **(b)** `cmd/hexforge/new.go`'s `--levels` print
-      still resolves with `progression.Furthest` and prints the refusal as that
-      row's value, then carries on — it is a one-shot print with nowhere to hold a
-      choice, so the honest fix there is a row **per arm** rather than the
-      one-line change the screens took. **(c)** `SquadsScreen.Form` still falls
+      ~~**(b)** `cmd/hexforge/new.go`'s `--levels` print~~ **DONE — a row per
+      arm.** `renderCharacter` reads `FurthestAt(level)` and draws the stat line
+      and the stage row **once per arm**; a one-shot print has nowhere to hold a
+      choice, so it prints both rather than choosing. Measured before: `hexforge
+      show pokemon.poliwag` ended on *"level 60 reaches [Poliwrath Politoed],
+      which are alternatives"* where the stats belong, so **neither** arm's
+      numbers were reachable from the command. After: Poliwrath 10,632 and
+      Politoed 11,176 of the 11,500 budget, each with its own picture.
+      `FurthestAt` answers exactly one stage on a line that does not fork, so an
+      ordinary character costs nothing — held by
+      `TestAnOrdinaryLineIsStillOneRow`, which counts the stage rows of every
+      unforked shipped character. `TestAForkingLineIsShownAsARowPerArm` goes red
+      on the old resolve with *"the page hands the reader the refusal where the
+      stats belong"*, and asserts the **pair** — a page naming one arm and not
+      the other would be the old defect wearing a stage name. No golden moved.
+      **(c)** `SquadsScreen.Form` still falls
       back to the empty stage on a fork the placement has not named, and
       `stageLabel`/`unitLine` still call that *furthest* — a word that names
       nothing on a line with two ends. It is a label rather than a wrong stat line
