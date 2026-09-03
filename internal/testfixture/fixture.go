@@ -22,14 +22,17 @@ import (
 	"github.com/vukyn/hexarena/internal/core/skill"
 )
 
-// Skills is the bench the authoring tests exercise: twenty skills covering every
-// element, every shape, both kinds of condition, a gradient off the caster's own
-// health, multi-strike, area splash, cleansing and a shield.
+// Skills is the bench the authoring tests exercise: twenty-nine skills covering
+// every element, every shape, every kind of condition, a gradient off the
+// caster's own health, multi-strike, area splash, cleansing and a shield.
 //
-// ⚠️ "Both kinds of condition" means status and health, not target and caster.
-// No bench skill declares a `self_requires` — the only one anywhere is `outrage`
-// in the shipped book — so a test that needs the caster side has to build it,
-// and `desperate` covers only the gradient.
+// `rekindle` is the caster side, and it is here because the bench used to have
+// no `self_requires` at all: a test that needed one had to build it, `desperate`
+// covered only the gradient, and a mechanic the bench cannot see is a mechanic
+// nothing downstream really covers. It spends in the health currency rather than
+// the power one because that is the arm with the least standing behind it — the
+// shipped book has spenders of both, and the bench has to hold the shape a
+// TestTheBenchCoversTheMechanics row can ask about.
 //
 // They used to be the shipped skill book, and the tests named them directly.
 // That coupled a hundred assertions to content the author is free to delete --
@@ -479,6 +482,24 @@ const Skills = `[
       "skills": ["strike"],
       "lasts": 1,
       "bound": true
+    }
+  },
+  {
+    "id": "rekindle",
+    "element": "neutral",
+    "range": 0,
+    "pattern": "single",
+    "power": 0,
+    "strikes": 0,
+    "accuracy": 1000,
+    "cooldown": 4,
+    "target": "self",
+    "self_requires": {
+      "status": "charge",
+      "min_stacks": 3,
+      "consume": true,
+      "consume_stacks": 0,
+      "stack_restore": 120
     }
   }
 ]`
