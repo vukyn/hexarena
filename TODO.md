@@ -798,9 +798,11 @@ is only so the shape is readable.
       idiom (the window less its final column, less the marker, less the label
       column, less the gap after it), and the `room < 8` clip is measured off the
       corrected number too, so the narrow branch gives up the same cell.
-      ⚠️ **Three golden lines moved and they are all the same row**: `browse`'s
-      biography for `naruto.naruto`, in Vietnamese at both windows and in English
-      at the floor, each losing a word off a line and taking it up on the next.
+      ⚠️ **Seven golden lines moved and they are three renderings of one row**:
+      `browse`'s biography for `naruto.naruto`, in Vietnamese at both windows and
+      in English at the floor, each losing a word off a line and taking it up on
+      the next — three lines in the first rendering and two in each of the others,
+      which is the whole of it.
       **No row count changed**, so no screen's vertical budget moved, and the
       other sixteen golden files are byte for byte what they were — including
       both clients', whose own `browse` entries draw a character whose bio does
@@ -819,6 +821,12 @@ is only so the shape is readable.
       came back **byte for byte identical, all seventeen files**. The same fix,
       the same suite, the same screens — and one data commit is the whole
       difference between a golden that reports it and a golden that cannot.
+      → **The same root has an open entry below**, "a `hexforge new` still churns
+      `screens.golden`": `aSquadOfSide` picks its squad as `characters[index %
+      len(characters)]`, so the cast file's order decides which character every
+      one of these records draws. That entry reads the churn half of it and this
+      one the blindness half — one fixture, two symptoms, and the third option it
+      lists (pick by a property the screen measures) answers both.
       ⚠️ **Nothing is newly cut by #186 either**, which is the reason this was
       left alone rather than folded in. A word longer than the room still takes a
       line of its own and overflows it — `WrapWords` says so on purpose — so
@@ -866,6 +874,12 @@ is only so the shape is readable.
       Both rules are about not churning on an unrelated edit and they point
       opposite ways here, so this is a decision to take rather than a bug to fix —
       and it was deliberately not taken inside a commit about file formatting.
+      ⚠️ **The churn is the loud half; the quiet half is measured.** See the
+      `m.wrapped` entry above: the identical fix moved **no golden at all** on the
+      tree before #242 and seven lines after it, because sorting the cast moved
+      the browse cursor onto a character whose biography sits on the boundary.
+      A record holding one character can only ever see that character, so this
+      fixture decides what every detail pane's golden is able to report.
       A third option exists and is untried: pick the squad by a property that is
       neither the name nor the position — the first n that satisfy something the
       screen is actually measuring (a unit with a trait, a unit at an evolved
