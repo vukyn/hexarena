@@ -8,7 +8,6 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
 
@@ -62,16 +61,28 @@ func (p PreviewScreen) View(c Context) (string, string) {
 	if !known {
 		return "  " + c.Text(i18n.BrowseNothingHere) + "\n", footer
 	}
-	_, stage, err := character.Resolve(p.Subject.Level, progression.Furthest)
+	// The form the raiser named, and not progression.Furthest: a line that forks
+	// reaches two grown forms at one level and Resolve refuses to choose between
+	// them, which is what this screen used to draw in red and stop on — the whole
+	// of what a reader saw when they asked for the picture of the one shipped
+	// forking character at any level from 32 up. Subject.Stage is empty on every
+	// line that does not fork, so this is the call it always was for them.
+	_, stage, err := character.Resolve(p.Subject.Level, p.Subject.Stage)
 	if err != nil {
 		return "  " + c.Style.Bad.Render(c.Lang.Error(err)) + "\n", footer
 	}
 	art := character.StageArt(stage)
+	// Which arm the picture below belongs to, and the key that changes it. Empty
+	// on a line that does not fork, and the row it costs is given back to the
+	// drawing — see previewChrome.
+	form := FormRow(c, character, p.Subject.Level, p.Subject.Stage)
 
 	var out strings.Builder
 	out.WriteString(c.Style.Heading.Render(character.ID+" — "+character.Name) + "\n")
 	out.WriteString("  " + c.Style.Label.Render(c.Text(i18n.PreviewTitle,
-		art, p.Subject.Level, stage.Name)) + "\n\n")
+		art, p.Subject.Level, stage.Name)) + "\n")
+	out.WriteString(form)
+	out.WriteString("\n")
 	// A file that is simply not there is said the way the browser and the check
 	// screen say it, rather than as a decode error carrying an absolute path: a
 	// missing picture is the ordinary case while art is still being drawn, and
@@ -81,7 +92,7 @@ func (p PreviewScreen) View(c Context) (string, string) {
 		out.WriteString("  " + c.Style.Bad.Render(c.Text(i18n.ArtMissing)) + "\n")
 		return out.String(), footer
 	}
-	picture, err := p.picture(c, art, stamp)
+	picture, err := p.picture(c, art, stamp, previewChrome+strings.Count(form, "\n"))
 	if err != nil {
 		out.WriteString("  " + c.Style.Bad.Render(
 			c.Text(i18n.PreviewArtUnreadable, c.Lang.Error(err))) + "\n")
@@ -109,6 +120,13 @@ func (p PreviewScreen) View(c Context) (string, string) {
 // The last three are the ones a guess misses, because none of them is a row this
 // file writes on purpose.
 //
+// ⚠️ **It is a floor rather than the whole cost now.** A character whose line
+// forks draws a fourteenth row — the one naming which arm is in front — and a
+// constant that did not know about it would make the picture one row too tall on
+// exactly the character the fork row was added for, which is the same defect
+// this comment already records once. So View counts the row it actually wrote
+// and adds it, rather than a second constant here being kept in step by hand.
+//
 // ⚠️ Five of those eight are a **mirror** of a client's frame rather than its
 // declaration — a screen package cannot see what wraps it, exactly as the
 // `- 4` every Room helper here spends cannot. What holds the real frame is
@@ -121,9 +139,12 @@ const previewChrome = 8
 // The stamp is what the file was when the caller looked, so redrawing the art
 // outside the program invalidates the drawing rather than being ignored until a
 // restart.
-func (p PreviewScreen) picture(c Context, art, stamp string) (string, error) {
+//
+// The chrome is passed in rather than read off the constant, because View is
+// what knows whether the fork row was written.
+func (p PreviewScreen) picture(c Context, art, stamp string, chrome int) (string, error) {
 	cells := c.UsableWidth() - 4
-	rows := c.Height - previewChrome
+	rows := c.Height - chrome
 	if cells < 8 || rows < 4 {
 		return "", fmt.Errorf("%dx%d", cells, rows)
 	}

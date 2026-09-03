@@ -695,4 +695,9 @@ q or ctrl+c to quit`,
 	ClosedNone:              "nothing stopped the match",
 	ClosedLeft:              "the other side dropped out, so the match stops here; nobody wins it and nobody loses it, and a new room is where you carry on",
 	ClosedStopped:           "the machine hosting the room has shut down, so the match stops here; nobody wins it and nobody loses it, and the host's next room has a new code",
+
+	// The arm of a fork in force, how many there are, and the key that walks
+	// them. The angle brackets are the squad builder's chooser decoration, so a
+	// reader who has met one there reads this as the same thing.
+	FormChoice: "form  < %s >  %d of %d, s for the next",
 }

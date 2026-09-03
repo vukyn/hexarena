@@ -860,6 +860,18 @@ const (
 	ClosedLeft
 	ClosedStopped
 
+	// FormChoice is the row the three read-only views draw when the character in
+	// front has more than one grown form at the level being read — a line that
+	// forks, where progression.Line.StageAt refuses on purpose rather than pick an
+	// arm for somebody.
+	//
+	// It carries the key that changes it rather than leaving that to a footer,
+	// which is BlurbMore's own shape and is here for a sharper reason: a fork is a
+	// fact about the character under the cursor, so a footer that named the key
+	// would have to name it on every character the key does nothing on. Drawn only
+	// while there is a choice, so a line that does not fork is exactly what it was.
+	FormChoice
+
 	keyCount
 )
 

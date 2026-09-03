@@ -143,6 +143,21 @@ type Subject struct {
 	// unit carrying" has no answer without one.
 	Level int
 
+	// Stage is the form a character is being read as, and only a
+	// CharacterSubject spends it. Empty is progression.Furthest, which is what a
+	// line that does not fork resolves with and what every subject carried
+	// before this field existed.
+	//
+	// ⚠️ **It is here because a level is not enough to name a form.** A line that
+	// forks reaches two grown forms at one level, and progression.Line.StageAt
+	// refuses to choose between them rather than hand a reader the wrong one's
+	// stat line — so the raiser, which is the only screen with a cursor, says
+	// which arm and the two describers read the same one. Without it the art
+	// preview and the traits blurb would each settle a fork of their own, and
+	// walking from one to the other could change the form for a reason nothing
+	// on either screen said. See screen.ChosenForm.
+	Stage string
+
 	// At and Of are where the subject sat in the list it was chosen out of, At
 	// counting from one.
 	//

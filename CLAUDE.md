@@ -679,6 +679,16 @@ answers rather than screen logic:
     offers *furthest* plus every form by name, which is what a **forking** line
     needs; the slot chooser **steps over** an occupied cell rather than letting
     the save refuse it later.
+    ⚠️ **This chooser is the prior art the three read-only views were given a
+    smaller copy of.** They describe a character rather than field one, so their
+    question is narrower — which grown form does this level resolve to — and their
+    arms come from `cast.Character.FurthestAt` rather than `StagesAt`: one form on
+    a line that does not fork, one per arm on a line that does. The choice lives on
+    `BrowseScreen.Form`, is settled on every read by `screen.ChosenForm` (the
+    cursor and the level both move under a chosen name), rides to the two
+    describers on `Subject.Stage`, and is walked with `s`. ⚠️ **A line that does
+    not fork draws no row and answers no key**, which is what keeps every other
+    character's record byte for byte what it was.
   - **A character can be held back: `cast.Character.Hidden`, and the squad
     builder is the ONLY thing that reads it.** `"hidden": true` in `cast.json`,
     absent meaning offered, so the flag is written only where it is set. It is an
@@ -2956,14 +2966,21 @@ regenerated on autopilot:
   `cmd/hexforge-tui` still, and the skill form's five are raised here now — so the
   two records are the drawing and the raising of it, which is this pair of
   goldens' whole arrangement.
-  ⚠️ **The blurb gets two entries for three subject kinds, and the art preview
-  gets none.** A listed skill and a battle option are one `SubjectKind` — same id,
-  same paragraph, same footer, only `At`/`Of` differ — so a third entry would
-  record the same render twice; `NoSubject` is the arm a raise cannot reach, and
-  a client's applier is what proves that. The preview is left out **deliberately**
-  and not by omission: it draws rasterised art, so what such an entry would assert
-  is an open question — → `TODO.md`, which now carries the reproducibility
-  measurement that question was waiting on.
+  ⚠️ **The blurb gets two entries for three subject kinds.** A listed skill and a
+  battle option are one `SubjectKind` — same id, same paragraph, same footer, only
+  `At`/`Of` differ — so a third entry would record the same render twice;
+  `NoSubject` is the arm a raise cannot reach, and a client's applier is what
+  proves that. The **art preview** has an entry here as well now, and it is the
+  one that records a *drawing* rather than a sentence.
+  ⚠️ **Three more entries record a line that FORKS** — `a forked cast row`,
+  `a forked art preview`, `a forked trait blurb`, over `pokemon.poliwag` at level
+  46. Every other entry in all three records is a line that does not fork, which
+  is what let a user meet `level 46 reaches [Poliwrath Politoed], which are
+  alternatives: name the one being fielded` drawn in red where a picture should
+  be. The three views fail differently and that is why there are three: the
+  preview drew the refusal, the detail pane stopped at the row with it in, and the
+  blurb drew **neither arm's traits and said nothing at all**, which is the shape a
+  record is the only thing that can catch.
   ⚠️ **Neither golden is a subset of the other and neither may be dropped**, which
   was measured both ways rather than assumed. A trailing newline left on
   `SpeciesScreen.View`'s body reddens this one and is **absorbed by the frame's
@@ -3004,9 +3021,14 @@ regenerated on autopilot:
   a saved battle's own note names the file it wrote, both of which would
   otherwise be a machine in a committed file. The drop is **asserted** rather
   than scrubbed, and `noAbsolutePath` walks every recorded line.
-  ⚠️ The **art preview** is in no sweep and therefore in no golden, deliberately
-  and in all three records: it draws rasterised art, so what such an entry would
-  assert is an open question — → `TODO.md`.
+  ⚠️ The **art preview** is in every sweep and in all three goldens now. Its
+  picture is exempt from the width sweep and nothing else about it is — see the
+  `hexforge-tui` entry below for the arithmetic. Both clients also carry
+  `a forked art preview` and `a forked trait blurb`; those two are the only
+  entries in either client's record drawn from **shipped** art rather than the
+  fixture's flat rectangle, so they inherit `internal/screen`'s same-machine
+  caveat and are worth reading as a finding rather than a gate if they ever move
+  on another architecture.
 - `internal/wire/testdata/messages.golden` is the **PvP protocol**: one entry per
   message kind — the exact bytes `wire.Encode` produces, indented so a diff points
   at a field rather than at a four-hundred-character line — so a **wire change
@@ -4734,6 +4756,18 @@ is the constraint each piece has to respect.
       the coloured half is held by `TestEachPixelIsDrawnInItsOwnHalfOfTheCell` and
       the ramp's weights by `TestTheRampWeighsGreenOverRedOverBlue`, both in
       `internal/screen/preview_test.go`.
+      ⚠️ **A screen registered on a linear character measures nothing about a
+      fork, and for a while that was the whole of the coverage.** The preview went
+      into the sweeps pointed at the first row of the cast, which does not fork, so
+      the one shipped character that could not be drawn at all stayed invisible to
+      every record. Both clients now register `a forked art preview` and
+      `a forked trait blurb` through `theForkedBrowser`, which **finds** the fork
+      in the shipped books and is fatal when there is none — a helper that quietly
+      settled for a linear character would turn "the data changed" into "these
+      entries measure nothing". ⚠️ Their pictures also made the width sweeps skip
+      **blank** rows: a drawing's transparent margin is a full-width run of spaces,
+      and `aPictureRow` refuses a blank row on purpose because a count of painted
+      rows reads the same predicate.
       **And the `nội tại` menu**, `screenPassives`: every *declared* trait with the
       description of the one under the cursor, which is the other question — `?`
       on the browser is filtered by a level, so a trait nobody has learned yet is

@@ -271,9 +271,15 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"statuses":         NewStatusesScreen(lib),
 		"the art preview":  theArtPreview(t, c, lib),
 		"trait blurb":      traitBlurb(t, c, lib),
-		"traitless build":  traitless,
-		"traits":           NewPassivesScreen(lib),
-		"unclaimed kind":   unclaimed,
+		// ⚠️ **The three read-only views over the one shipped character whose
+		// evolution line forks**, which is the case every entry above walks past.
+		// See theForkedRaise for what they hold that the linear ones cannot.
+		"a forked cast row":    theForkedCastRow(t, c, lib),
+		"a forked art preview": theForkedArtPreview(t, c, lib),
+		"a forked trait blurb": theForkedTraitBlurb(t, c, lib),
+		"traitless build":      traitless,
+		"traits":               NewPassivesScreen(lib),
+		"unclaimed kind":       unclaimed,
 		// The skill listing and the seven states of it the client's own sweep
 		// registers, under the same names, for the reason every other entry
 		// here carries the client's name: a reader holding both diffs is
@@ -1295,6 +1301,114 @@ func aRampRow(row string) bool {
 		}
 	}
 	return true
+}
+
+// # The fork, and why three more entries rather than one
+//
+// theForkedRaise is the cast browser sitting on the one shipped character whose
+// evolution line forks, at a level the fork is open at, with the arm a chooser
+// opens on in front — which is the state a raise leaves, exactly as the linear
+// entries above are.
+//
+// ⚠️ **Every entry above this one is a line that does not fork, and that is what
+// let the defect ship.** progression.Line.StageAt refuses to name a form when a
+// level has reached two grown ones, on purpose — handing a reader whichever arm
+// the file lists last is a wrong stat line, a wrong picture and a wrong trait
+// list with nothing saying so. All three read-only views asked it anyway, so the
+// art preview drew that refusal in red instead of a picture and the detail pane
+// ended at the row with it in. Nothing in this record could see it: the browse
+// entry opens on the first row of the cast and the preview and the blurb are
+// raised from there, and the first row is linear.
+//
+// Three entries and not one because the three views fail differently. The
+// preview drew the refusal, the detail pane stopped at it, and the blurb drew
+// **neither arm's traits and said nothing at all** — the quiet form of the same
+// fault, and the one a screenshot would not have caught. What each records now is
+// the form row, which is the whole of what "the reader chose this arm" looks like
+// on screen.
+//
+// The level is forkLevel rather than the cap for the reason form_test.go gives:
+// the cap is where every other entry sits, and a fork that only worked there
+// would be a fork nothing walked into.
+func theForkedRaise(t *testing.T, lib *forge.Library) BrowseScreen {
+	t.Helper()
+	character, level := theShippedFork(t, lib)
+	return browserOn(t, lib, character.ID, level)
+}
+
+// theForkedCastRow is the detail pane over that character: the form row, and the
+// picture, traits and stat line under it that the form decides.
+func theForkedCastRow(t *testing.T, c Context, lib *forge.Library) BrowseScreen {
+	t.Helper()
+	browser := theForkedRaise(t, lib)
+	drawn, _ := browser.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.FormChoice,
+		browser.Subject().Stage, 1, len(FormArms(rowUnder(t, browser), browser.Level)))) {
+		t.Fatalf("the forked cast row draws no form row, so this entry records an "+
+			"ordinary detail pane twice:\n%s", drawn)
+	}
+	return browser
+}
+
+// theForkedArtPreview is the picture of the arm in front.
+//
+// It carries theArtPreview's whole argument — monochrome because a golden is
+// taken under NO_COLOR, structural rather than exact because rasterx reaches for
+// transcendentals and this is therefore a same-machine record — and adds one
+// thing that entry cannot hold: that there is a drawing here at all. Before this
+// change the same keystroke over this character produced one red line.
+func theForkedArtPreview(t *testing.T, c Context, lib *forge.Library) PreviewScreen {
+	t.Helper()
+	if !c.Style.Plain {
+		t.Fatal("the golden's palette draws colour, so this entry would record a " +
+			"truecolor sequence per cell")
+	}
+	preview := NewPreviewScreen()
+	preview.Subject = theForkedRaise(t, lib).Subject()
+	drawn, _ := preview.View(c)
+	if strings.Contains(drawn, c.Text(i18n.ArtMissing)) {
+		t.Fatalf("%s has no art on disk for the arm in front, so this entry records "+
+			"the missing-art line rather than a drawing:\n%s", preview.Subject.ID, drawn)
+	}
+	painted := 0
+	for _, row := range strings.Split(drawn, "\n") {
+		if aRampRow(row) {
+			painted++
+		}
+	}
+	if painted < 4 {
+		t.Fatalf("the forked preview draws %d rows of art, which is a stub rather than "+
+			"a picture:\n%s", painted, drawn)
+	}
+	return preview
+}
+
+// theForkedTraitBlurb is what that character carries as the arm in front.
+//
+// ⚠️ This is the entry that records a **silent** wrong answer having been fixed.
+// The screen never refused: cast.Character.form falls back to the empty stage
+// when a level names no single one, so a trait gated on either arm simply did not
+// match and the reader was shown a list belonging to neither. A record of it is
+// the only thing that can tell that state from a right one.
+func theForkedTraitBlurb(t *testing.T, c Context, lib *forge.Library) BlurbScreen {
+	t.Helper()
+	blurb := BlurbScreen{Subject: theForkedRaise(t, lib).Subject()}
+	drawn, _ := blurb.View(c)
+	if strings.Contains(drawn, c.Text(i18n.BlurbTraitNone)) {
+		t.Fatalf("%s carries no traits at level %d, so this entry records the empty "+
+			"reading rather than a fork:\n%s", blurb.Subject.ID, blurb.Subject.Level, drawn)
+	}
+	return blurb
+}
+
+// rowUnder is the character the browser's cursor is on.
+func rowUnder(t *testing.T, browser BrowseScreen) cast.Character {
+	t.Helper()
+	rows := browser.Rows()
+	if len(rows) == 0 {
+		t.Fatal("the browser lists nothing")
+	}
+	return rows[Clamp(browser.Cursor, 0, len(rows)-1)]
 }
 
 // startOverTheShippedBooks is a Context over internal/seed/data itself.

@@ -231,12 +231,11 @@ is only so the shape is readable.
             had — `screenCount`, a **count** the sweep is held against, so a view
             added without an entry or a written exclusion is a red test rather
             than a screen nothing measures.
-            ⚠️ Two catalogues are left out on purpose and both are gaps rather
-            than half-finished screens: **`BuildsScreen`** is the eighth listing
+            ⚠️ One catalogue is left out on purpose and it is a gap rather than a
+            half-finished screen: **`BuildsScreen`** is the eighth listing
             `internal/screen` owns and this client's menu is the seven the step
-            asked for, and the **art preview** is registered in no sweep because
-            it draws rasterised art and what an entry would assert about it is
-            still open (the same decision the other two records take).
+            asked for. (The **art preview** was the other one and is registered in
+            every sweep now, on a linear character *and* on a forking one.)
       - [x] `internal/wire`: the protocol as one stdlib-only package. The
             envelope, the three version numbers, and error **codes** rather than
             prose. A golden per message, so a wire change shows up in a diff.
@@ -1398,6 +1397,86 @@ is only so the shape is readable.
       `cmd/hexforge-tui/language_test.go`, `cmd/hexarena-tui/sweep_test.go`
       (`aPictureRow`, `notSwept` emptied), the three `testdata/screens.golden`,
       `CLAUDE.md` § the description screen.
+
+- [x] ⚠️ **The three read-only views were a dead end on a line that FORKS, and
+      the sweeps could not see it. DONE.** Reported by a user: `p` on
+      `pokemon.poliwag` at any level from 32 up drew
+      `level 46 reaches [Poliwrath Politoed], which are alternatives: name the one
+      being fielded` in red and no picture at all.
+
+      **The refusal is right and was not touched.** `progression.Line.StageAt`
+      refuses on purpose — taking whichever arm the file lists last hands a reader
+      a wrong stat line, a wrong picture and a wrong trait list with nothing on
+      screen saying so. What was missing was a way to *name* an arm, so a shipped
+      character was unreachable in every read-only view.
+
+      **The shape, which is the squad builder's own, one size smaller.** A
+      placement may deliberately field an earlier form, so the builder's chooser
+      is over `StagesAt`; these views ask the narrower question — which grown form
+      does this level resolve to — so their arms come from `FurthestAt`, which is
+      **one** stage on a line that does not fork. The choice lives on
+      `BrowseScreen.Form`, is **settled on every read** by `screen.ChosenForm`
+      (the cursor and the level both move under a chosen name), rides to the two
+      describers on `Subject.Stage`, and is walked with `s` — answered in the
+      browser and in each client's `updatePreview`/`updateBlurb`, exactly as the
+      level already is, because a describer keeps no cursor of its own.
+      ⚠️ **The arm a chooser opens on is a pick, and what makes it not the silent
+      pick `StageAt` refuses is that `FormRow` draws it** — on all three views, in
+      both languages, before anybody has pressed anything. `TestAForkIsNeverPicked-
+      Silently` is that property.
+      ⚠️ **`previewChrome` became a floor.** The fork row is a fourteenth line, so
+      `View` counts what it wrote and the drawing gives the row back; a constant
+      that did not would put the picture one row over budget on exactly the
+      character the row was added for, which is that comment's own defect a second
+      time. Measured in the record: the forked preview entry is the **same total
+      height** as the linear one in all three goldens at both sizes.
+
+      **Coverage, which was half the work.** The preview had only just entered the
+      sweeps and was pointed at a **linear** fixture, so the forked case was
+      covered by nothing. Added: `a forked art preview` and `a forked trait blurb`
+      to both clients' `everyScreen`, plus `a forked cast row` in
+      `everyMovedScreen`, all through a `theForkedBrowser` that **finds** the fork
+      in the shipped books and is fatal when there is none.
+      **Measured golden cost: +328 lines in each client record, +397 in
+      internal/screen's, and 0 lines removed anywhere** — a pure insertion, which
+      is the proof that a line that does not fork is byte for byte what it was.
+      ⚠️ Red-before-green was verified by reverting the production change alone:
+      `TestAForkingLineIsPreviewedRatherThanRefused` fails with *"the art preview
+      of pokemon.poliwag at level 46 draws the refusal instead of a picture"*, and
+      reverting the chrome arithmetic alone reddens
+      `TestThePreviewFitsTheWindowItWasGiven` with *"on a line that forks at 24
+      rows the preview is cut off"*.
+
+      **Still not covered, stated rather than left to be discovered.**
+      **(a)** The **detail pane** on a forking character is in `internal/screen`'s
+      golden but in **neither client's sweep**: its glossed-kit row is data wrapped
+      to the window (`WrappedIn` spends `UsableWidth() - 1 - 2 - width - 1`), and
+      `pokemon.poliwag`'s sixteen glossed skills are the first value long enough to
+      wrap at the sweep's 200 columns — so registering it needs a `kitGlosses`
+      exemption, a twin of `whoMayCarry`/`traitCarriers`, in **both** client
+      fixtures. The wording itself is measured anyway: the form row is one shared
+      key drawn by one shared `FormRow`, and the preview and blurb entries put it
+      in front of the floor. **(b)** `cmd/hexforge/new.go`'s `--levels` print
+      still resolves with `progression.Furthest` and prints the refusal as that
+      row's value, then carries on — it is a one-shot print with nowhere to hold a
+      choice, so the honest fix there is a row **per arm** rather than the
+      one-line change the screens took. **(c)** `SquadsScreen.Form` still falls
+      back to the empty stage on a fork the placement has not named, and
+      `stageLabel`/`unitLine` still call that *furthest* — a word that names
+      nothing on a line with two ends. It is a label rather than a wrong stat line
+      (the chooser beside it is the fix a reader already has), so it is left as a
+      finding.
+      **(d)** The alternative UI shape, if `s`-cycles ever reads wrong: a
+      sub-picker over the arms, like `OpenSkills`. It costs a `PickState`, a
+      `Target`, an entry in each client's `raiseTargets`, and a fourth screen in
+      the three sweeps — against a chooser row that is two keys and no navigation.
+      → `internal/screen/form.go`, `browse.go`, `preview.go`, `blurb.go`,
+      `action.go` (`Subject.Stage`), `internal/i18n` (`FormChoice`),
+      `cmd/hexforge-tui/describe.go`, `cmd/hexarena-tui/subject.go`,
+      `internal/screen/form_test.go`, both clients' `fork_test.go`,
+      `cmd/hexforge-tui/tui_test.go` (`ontoTheFork`), the three
+      `testdata/screens.golden`, `CLAUDE.md` § the squad builder and § the
+      description screen.
 - [x] ⚠️ **A saturating multiplier is re-narrowed one line downstream. DONE.**
       The question this asked first — carry a saturated multiplier, or refuse it
       where it is produced — is **answered by this file's own § Decided against**:

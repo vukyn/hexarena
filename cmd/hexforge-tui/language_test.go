@@ -185,6 +185,45 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		t.Fatalf("the fixture character has no art at the cap, so this entry records the "+
 			"missing-art line rather than a picture:\n%s", drawn)
 	}
+	// # The one shipped character whose evolution line forks, in all three
+	// read-only views
+	//
+	// ⚠️ **Everything above this is a line that does not fork, and that is what
+	// let the defect ship.** A level that has reached two grown forms has no
+	// single furthest one, and progression.Line.StageAt refuses to name one
+	// rather than hand a reader whichever arm the file lists last. All three
+	// read-only views asked it anyway: `p` over pokemon.poliwag at any level from
+	// 32 up drew that refusal in red and no picture at all, which is what a user
+	// reported. This client's own fixture cast is two linear characters and the
+	// entry above opens on the first row, so nothing in this sweep or in this
+	// record could see it.
+	//
+	// So the fork is walked to by **id**, out of the shipped books the fixture
+	// copies, and at a level short of the cap — the cap is where every other
+	// entry sits, and a fork that only worked there would be a fork nothing
+	// walked into.
+	//
+	// ⚠️ **This client's preview entry is the only one here drawn from shipped
+	// art rather than the fixture's rectangle**, so it inherits internal/screen's
+	// same-machine caveat: rasterx reaches for Sin, Cos, Atan2 and Tan, so a diff
+	// on another architecture is a finding to read rather than a broken gate. It
+	// is registered anyway because the framing this record holds is what the
+	// fixture's flat fill cannot say about a fork: that the drawing is one row
+	// shorter than a linear character's, because the row naming the arm is paid
+	// for out of the picture.
+	forked := theForkedBrowser(t, m)
+	forkedPreview := typeText(t, forked, "p")
+	if forkedPreview.screen != screenPreview {
+		t.Fatalf("p on the forked row landed on screen %v", forkedPreview.screen)
+	}
+	if drawn := forkedPreview.screenContent(); strings.Contains(drawn, forkedPreview.text(i18n.ArtMissing)) {
+		t.Fatalf("the forked character's arm has no art, so this entry records the "+
+			"missing-art line rather than a picture:\n%s", drawn)
+	}
+	forkedBlurb := typeText(t, forked, "?")
+	if forkedBlurb.screen != screenBlurb {
+		t.Fatalf("? on the forked row landed on screen %v", forkedBlurb.screen)
+	}
 	// The affinity chart, on the element whose description is longest: the rows
 	// are all one shape, so what varies is the pane below them.
 	elements := m.enter(screenElements)
@@ -358,6 +397,8 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"skill blurb":              skillBlurb,
 		"the art preview":          artPreview,
 		"trait blurb":              traitBlurb,
+		"a forked art preview":     forkedPreview,
+		"a forked trait blurb":     forkedBlurb,
 		"check":                    m.enter(screenCheck),
 		"elements":                 elements,
 		"chart":                    graph,
@@ -596,6 +637,41 @@ func withNoTraitTaken(t *testing.T, b buildsScreen) buildsScreen {
 	}
 	b.Rows = rows
 	return b
+}
+
+// theForkedBrowser is the cast browser sitting on the one shipped character
+// whose evolution line forks, at a level the fork is open at.
+//
+// ⚠️ **Found rather than named, and fatal when there is none.** A fork is a fact
+// about the shipped data this fixture copies, so a helper that quietly settled
+// for a linear character would turn "the data changed" into "three entries in
+// this sweep measure nothing" without a word — which is the exact shape of the
+// gap these entries were added to close.
+//
+// The level is deliberately short of the cap: every other entry in this map sits
+// at the cap, and a fork that only worked there would be a fork nothing walked
+// into.
+func theForkedBrowser(t *testing.T, m model) model {
+	t.Helper()
+	const forkLevel = 46
+	browser := m.enter(screenBrowse)
+	browser.browse.Level = forkLevel
+	for index, character := range browser.browse.Rows() {
+		arms, err := character.FurthestAt(forkLevel)
+		if err != nil || len(arms) < 2 {
+			continue
+		}
+		browser.browse.Cursor = index
+		if drawn := browser.screenContent(); !strings.Contains(drawn,
+			browser.text(i18n.FormChoice, arms[0].Name, 1, len(arms))) {
+			t.Fatalf("the detail pane of %s draws no form row, so these entries record "+
+				"an ordinary character:\n%s", character.ID, drawn)
+		}
+		return browser
+	}
+	t.Fatalf("no character in the cast forks at level %d, so nothing in this sweep "+
+		"measures the case the art preview refused to draw", forkLevel)
+	return m
 }
 
 // widestTraitRow is the browser row carrying the most traits, which is the
@@ -1055,6 +1131,15 @@ func TestEveryWordingFitsTheMinimumWidth(t *testing.T) {
 				// nothing about it a floor could constrain. What keeps it inside
 				// the window it *is* given is TestNoDrawingIsEverWideEnoughToBeMarked.
 				if aPictureRow(line) {
+					continue
+				}
+				// A row with no ink on it is not a wording either, and the
+				// forked preview draws several: a drawing's transparent margin is
+				// a full-width run of spaces, which aPictureRow refuses on purpose
+				// — a blank row is not a picture row anywhere else — so it is
+				// skipped here rather than by widening that predicate, which a
+				// count of painted rows also reads.
+				if strings.TrimSpace(ansi.Strip(line)) == "" {
 					continue
 				}
 				if width := lipgloss.Width(line); width > drawable {

@@ -967,43 +967,95 @@ func TestThePreviewRasterisesOncePerFileAndSize(t *testing.T) {
 // Two things are asserted, because either alone has a cheap wrong answer. The
 // notice must never appear — and a picture pinned to a small constant would also
 // never trigger it, so the drawing must grow with the window too.
+//
+// ⚠️ **Walked over a forking line as well as a straight one**, because a fork
+// draws a row this arithmetic has to know about. The screen writes one more line
+// on a character whose level has reached two grown forms — the one naming which
+// arm is in front — so `previewChrome` is a floor and the drawing gives that row
+// back. A constant that did not would put the picture one row over the budget on
+// exactly the character the row was added for, which is this comment's own defect
+// a second time; the first row of the shipped cast does not fork, so walking it
+// alone would never have found out.
 func TestThePreviewFitsTheWindowItWasGiven(t *testing.T) {
 	t.Setenv("NO_COLOR", "1")
 	lib, err := forge.Load(shippedDataDir)
 	if err != nil {
 		t.Fatalf("load the shipped data: %v", err)
 	}
-	previous := 0
-	for _, height := range []int{minHeight, 27, 30, 33, 40, 44, 60} {
-		m := newModel(lib, i18n.Vi)
-		// The floor rather than a width picked by hand: 92 was chosen while the
-		// floor was 80 and became a window m.tooSmall refuses, so every height
-		// below drew the too-small message and the footer assertion was reading
-		// that screen's last line instead of this one's.
-		m.width, m.height = minWidth, height
-		m = m.enter(screenBrowse)
-		m = m.hand(m.browse.Subject())
-		m.screen = screenPreview
+	for _, subject := range []struct {
+		name string
+		onto func(model) model
+	}{
+		{"a line that does not fork", func(m model) model { return m }},
+		{"a line that forks", ontoTheFork(t, lib)},
+	} {
+		previous := 0
+		for _, height := range []int{minHeight, 27, 30, 33, 40, 44, 60} {
+			m := newModel(lib, i18n.Vi)
+			// The floor rather than a width picked by hand: 92 was chosen while the
+			// floor was 80 and became a window m.tooSmall refuses, so every height
+			// below drew the too-small message and the footer assertion was reading
+			// that screen's last line instead of this one's.
+			m.width, m.height = minWidth, height
+			m = subject.onto(m.enter(screenBrowse))
+			m = m.hand(m.browse.Subject())
+			m.screen = screenPreview
 
-		framed := m.screenContent()
-		if notice := m.text(i18n.Truncated); strings.Contains(framed, notice) {
-			t.Errorf("at %d rows the preview is cut off:\n%s", height, framed)
-		}
-		// The footer has to be the last line, which is the reason the frame cuts
-		// at all: a screen whose keys have scrolled away is one nobody can leave.
-		lines := strings.Split(framed, "\n")
-		if want := m.text(i18n.PreviewFooter); !strings.Contains(lines[len(lines)-1], want) {
-			t.Errorf("at %d rows the last line is %q, want the footer", height, lines[len(lines)-1])
-		}
+			framed := m.screenContent()
+			if notice := m.text(i18n.Truncated); strings.Contains(framed, notice) {
+				t.Errorf("on %s at %d rows the preview is cut off:\n%s",
+					subject.name, height, framed)
+			}
+			// The footer has to be the last line, which is the reason the frame cuts
+			// at all: a screen whose keys have scrolled away is one nobody can leave.
+			lines := strings.Split(framed, "\n")
+			if want := m.text(i18n.PreviewFooter); !strings.Contains(lines[len(lines)-1], want) {
+				t.Errorf("on %s at %d rows the last line is %q, want the footer",
+					subject.name, height, lines[len(lines)-1])
+			}
 
-		body, _ := m.preview.View(m.ctx())
-		drawn := strings.Count(body, "\n")
-		if drawn <= previous {
-			t.Errorf("at %d rows the picture is %d lines, no more than the %d it had in a shorter window",
-				height, drawn, previous)
+			body, _ := m.preview.View(m.ctx())
+			drawn := strings.Count(body, "\n")
+			if drawn <= previous {
+				t.Errorf("on %s at %d rows the picture is %d lines, no more than the %d "+
+					"it had in a shorter window", subject.name, height, drawn, previous)
+			}
+			previous = drawn
 		}
-		previous = drawn
 	}
+}
+
+// ontoTheFork puts the browser's cursor on the one shipped character whose
+// evolution line forks, at a level the fork is open at.
+//
+// ⚠️ Fatal when the shipped cast holds no fork, rather than leaving the browser
+// where it was: a helper that quietly handed back a linear character would turn
+// "the data changed" into "half of the walk above measures the same thing twice"
+// without a word.
+func ontoTheFork(t *testing.T, lib *forge.Library) func(model) model {
+	t.Helper()
+	const forkLevel = 46
+	for _, character := range lib.Characters().All() {
+		arms, err := character.FurthestAt(forkLevel)
+		if err != nil || len(arms) < 2 {
+			continue
+		}
+		id := character.ID
+		return func(m model) model {
+			m.browse.Level = forkLevel
+			for index, row := range m.browse.Rows() {
+				if row.ID == id {
+					m.browse.Cursor = index
+					return m
+				}
+			}
+			t.Fatalf("the cast browser lists no %s", id)
+			return m
+		}
+	}
+	t.Fatalf("no shipped character forks at level %d, so the preview's row budget is "+
+		"never measured against the row a fork draws", forkLevel)
+	return nil
 }
 
 // TestQuitKeysWorkFromEveryScreen covers the promise the footers make. ctrl+c
