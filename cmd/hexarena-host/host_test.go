@@ -456,6 +456,39 @@ func TestTheConfigurationIsRefusedInTheRoomsOwnWords(t *testing.T) {
 	}
 }
 
+// TestFiveASideIsHeldBackHereAndNowhereElse holds both halves of a decision that
+// is easy to half-do: the format is refused at the flag, and it is still a
+// format the protocol knows.
+//
+// ⚠️ Taking Format5v5 out of wire.Format.Valid would be the tempting "finish the
+// job", and it is a **protocol change** — two peers have to keep agreeing about
+// what the format field can hold whichever of them is a version ahead. So the
+// refusal lives at the only place in this repository where a format is chosen,
+// and the wire is left alone. Both clauses are asserted, because a test for the
+// refusal alone would go green on the day somebody deleted the constant.
+func TestFiveASideIsHeldBackHereAndNowhereElse(t *testing.T) {
+	out, errs := newPaper(), newPaper()
+	err := run([]string{"-format", "5", "-advertise", documented}, out.on, errs.on)
+	if err == nil {
+		t.Fatal("a 5v5 room was opened, and five a side is meant to be held back")
+	}
+	if !strings.Contains(err.Error(), "five a side is not offered yet") {
+		t.Errorf("the refusal does not say what was refused: %v", err)
+	}
+	// ⚠️ The other half. The wire still knows the format, and a refusal that
+	// worked because the constant had been deleted would be a different change
+	// wearing this one's test.
+	if !wire.Format5v5.Valid() {
+		t.Error("wire.Format5v5 is no longer valid on the wire, which is a protocol change this refusal was chosen to avoid")
+	}
+	// And three a side is still opened, so the guard is a guard and not an off
+	// switch for the flag.
+	if err := run([]string{"-format", "3", "-battles", "9", "-advertise", documented}, out.on, errs.on); err == nil ||
+		strings.Contains(err.Error(), "five a side") {
+		t.Errorf("a 3v3 was refused by the five-a-side guard: %v", err)
+	}
+}
+
 // TestABadFlagIsReportedOnceAndHelpIsNotAFailure holds two things about the
 // command line that are easy to get wrong in opposite directions.
 //

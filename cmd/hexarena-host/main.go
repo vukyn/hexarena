@@ -220,7 +220,7 @@ func flags(chosen *settings) *flag.FlagSet {
 	set := flag.NewFlagSet("hexarena-host", flag.ContinueOnError)
 	set.IntVar(&chosen.port, "port", DefaultPort, "listen on this port; 0 takes any free one")
 	set.StringVar(&chosen.advertise, "advertise", "", "the IPv4 address to put in the room code; empty works it out")
-	set.IntVar(&chosen.format, "format", int(wire.Format3v3), "units a side: 3 or 5")
+	set.IntVar(&chosen.format, "format", int(wire.Format3v3), "units a side; only 3 is offered today")
 	set.IntVar(&chosen.battles, "battles", 1, "battles in the series: 1 or 3")
 	set.IntVar(&chosen.allowance, "allowance", room.DefaultAllowance, "seconds a player has to answer one prompt")
 	set.IntVar(&chosen.turns, "turns", room.DefaultTurnCap, "turns one battle may open before the room stops asking")
@@ -407,6 +407,23 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 		Seed:      chosen.seed,
 		TurnCap:   chosen.turns,
 		Password:  chosen.password,
+	}
+	// ⚠️ **Five a side is held back at this flag and nowhere else.**
+	// wire.Format5v5 stays valid on the wire on purpose: taking it out of
+	// Format.Valid would be a protocol change, and a peer one version either way
+	// has to keep agreeing about what the format field can hold. What is held
+	// back is the ability to *open* such a room, which is the only place a
+	// format is chosen in this repository.
+	//
+	// Two reasons, both written down elsewhere and both still open. The shipped
+	// balance was read at five a side and the room's default has been three
+	// since the host binary landed, so five is the format whose numbers are the
+	// less wrong of the two but whose board nobody has re-measured; and the
+	// ban-and-pick draft cannot seat a 5v5 at all — ten picks out of a pool of
+	// eleven leaves room for no bans. → TODO.md, "read the balance again at
+	// 3v3" and "ban and pick".
+	if wire.Format(chosen.format) == wire.Format5v5 {
+		return nil, fmt.Errorf("five a side is not offered yet: its balance has not been read on this board and a draft cannot seat it; open a 3v3")
 	}
 	// The room's own refusals are surfaced word for word rather than reworded.
 	// "a series of 2 battles is even, and an even series has to invent a rule for

@@ -1199,17 +1199,69 @@ is only so the shape is readable.
             catch up; a draft has no `battle.Battle`, so it owes its own — the
             same append-only-plus-cursor shape, or a spectator can only ever
             join a draft at the start.
-            **Open, for the author to settle before any of this is built:**
-            (a) does a pick choose four skills one at a time, or one **build**
-            out of `builds.json`? The second reuses authored intent and is far
-            cheaper, and `cast.ChooseLoadout` stays the single loadout rule
-            either way; (b) how many bans, and does the ban order alternate or
-            mirror (A-B-B-A); (c) what a pick timeout does — pass to a default,
-            or auto-pick; (d) whether a banned character is banned for the
-            **match** or for the **series**, which for a bo3 is a different game;
-            (e) is the pool the whole cast or a per-room list, because a room
-            that could offer a subset is how a 5v5 draft becomes possible
-            without more cast.
+            **Settled by the author, 2026-09-04:**
+            **(a) A pick takes the character, then its loadout — either a build
+            already in `builds.json` or one made on the spot.** Both paths, and
+            `cast.ChooseLoadout` stays the single loadout rule for both, so the
+            draft adds a *chooser* rather than a second legality rule. The
+            on-the-spot path is the squad builder's own screen reached from
+            inside the draft, which is why the pick is two decisions and not one:
+            the character leaves the pool the moment it is taken, and the loadout
+            follows.
+            **(b) Three bans a side, mirrored.**
+            **(c) A pick that runs out of time cancels the whole room** — no
+            auto-pick, no default. The match starts over from a new code. This is
+            the one place the design does *not* follow "a timeout announces and
+            passes"; it is a draft, and a side that never picked has no squad to
+            fight with.
+            **(d) A ban lasts the match, and the first cut is bo1 only.** Ban and
+            pick for a bo3 is its own item below, because "per match" in a series
+            is a different game: three drafts, or one draft and two rematches on
+            it, is a design decision and not a parameter.
+            **(e) The pool is every character that is not held back** —
+            `cast.Character.Hidden`, which already exists and which
+            `internal/screen/squads.go` already honours *for exactly this
+            reason*: it is choosing who fights. ⚠️ Note the flag's own comment
+            calls it "an authoring convenience rather than a design statement",
+            and a draft gate makes it a design statement; and note
+            `internal/screen/picker.go`'s warning that one other list offers held
+            back characters **on purpose**, so "filter Hidden everywhere" is
+            wrong.
+            **Bans are optional** — a side may leave all three slots unspent.
+
+            ⚠️ **THE NUMBERS DO NOT FIT, MEASURED, AND THIS IS THE FIRST THING
+            TO SETTLE.** The pool today is **eleven**, not twelve:
+            `naruto.naruto` already carries `hidden: true`. Against eleven:
+
+                3v3, 6 bans (3 a side): 6 picks + 6 bans = 12 of 11 — IMPOSSIBLE
+                3v3, 4 bans:            6 + 4 = 10 of 11 — last pick sees 2
+                3v3, 2 bans:            6 + 2 =  8 of 11 — last pick sees 4
+                5v5, 0 bans:           10 + 0 = 10 of 11 — last pick sees 2
+                5v5, any bans:                            — IMPOSSIBLE
+
+            So a 3v3 draft in which **both sides spend all three bans cannot
+            complete**, and because bans are optional that is not a
+            configuration error caught at the start but a room that runs out of
+            characters partway through. Four ways out, and it is the author's
+            call: fewer bans; **more cast** (two more characters make three bans
+            a side fit with one to spare, and unhiding naruto alone still leaves
+            the last pick with exactly one candidate, which is not a decision);
+            a per-room pool that can be larger than the shipped cast; or a rule
+            that a ban is refused once the remaining pool would not seat both
+            sides — which is the cheapest, and which turns "impossible" into "the
+            third ban is greyed out", but which also means the third ban is a
+            slot that sometimes is not there.
+            ⚠️ **The last pick is not a decision whenever slack is nought**, and
+            slack is `pool - picks - bans`. Worth drawing on the screen: a draft
+            whose final pick has one candidate should say so rather than present
+            a list of one.
+      - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
+            "a ban lasts the match" is ambiguous in a series and the ambiguity is
+            a design decision rather than a parameter: three drafts, one draft
+            carried across all three battles, or a draft per battle with the
+            previous winner banning first. Each is a different game. ⚠️ And the
+            arithmetic above gets worse per repetition if the pool does not
+            reset.
       - [ ] mDNS room browsing, so a client can list rooms with no code at all.
       - [ ] A chess clock — a budget per player rather than per turn.
       - [ ] Prove the mirror across architectures: the same seed and the same
@@ -1217,6 +1269,18 @@ is only so the shape is readable.
             this is the assumption the whole design rests on.
       - [ ] Read the balance again at 3v3. The screened formation was tuned at
             five a side, and a shorter board leaves a summon more free slots.
+            ⚠️ **Five a side is held back until this is done** — `hexarena-host`
+            refuses `-format 5`, which is the only place in the repository a
+            format is chosen. `wire.Format5v5` stays valid **on the wire** on
+            purpose: taking it out of `Format.Valid` would be a protocol change,
+            and two peers have to keep agreeing about what the field can hold
+            whichever is a version ahead. `TestFiveASideIsHeldBackHereAndNowhereElse`
+            asserts both halves, because a test for the refusal alone would go
+            green the day somebody deleted the constant.
+            The second reason is the draft: ten picks out of a pool of eleven
+            leaves room for no bans at all, so a 5v5 ban-and-pick cannot be
+            seated either. Lifting the hold-back wants both — the numbers read on
+            this board, and enough cast to draft on it.
 
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
