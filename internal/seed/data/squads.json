@@ -125,6 +125,69 @@
           ]
         }
       ]
+    },
+    {
+      "id": "s03",
+      "name": "nhiễm điện",
+      "units": [
+        {
+          "id": "venusaur",
+          "character": "pokemon.bulbasaur",
+          "level": 60,
+          "stage": "Venusaur",
+          "slot": {
+            "col": 2,
+            "row": 1
+          },
+          "skills": [
+            "leech_seed",
+            "synthesis",
+            "ingrain",
+            "razor_leaf"
+          ],
+          "passives": [
+            "blood_thirst"
+          ]
+        },
+        {
+          "id": "magnezone",
+          "character": "pokemon.magnemite",
+          "level": 60,
+          "stage": "Magnezone",
+          "slot": {
+            "col": 1,
+            "row": 1
+          },
+          "skills": [
+            "charge_beam",
+            "magnetise",
+            "electro_ball",
+            "spark"
+          ],
+          "passives": [
+            "swiftness"
+          ]
+        },
+        {
+          "id": "charizard",
+          "character": "pokemon.charmander",
+          "level": 60,
+          "stage": "Charizard",
+          "slot": {
+            "col": 0,
+            "row": 1
+          },
+          "skills": [
+            "flamethrower",
+            "inferno",
+            "ember",
+            "fire_spin"
+          ],
+          "passives": [
+            "blaze"
+          ]
+        }
+      ]
     }
   ]
 }
