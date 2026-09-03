@@ -789,16 +789,80 @@ is only so the shape is readable.
       `progression.Limits`' joint health-and-defence bound. **A new skill also has
       to say which story it is out of.** Authoring one is the *Grow the cast* item
       above, not a separate task — this entry is the queue, not the work.
-- [ ] **`weigh` prices neither a field that is two numbers nor a skill that
-      deals none.** `self_gradient` is a bonus *and* a share, so sweeping it is a
+- [x] **`weigh` can price a skill that deals none. DONE.** The refusal was
+      right and its **evidence** was mis-specified. *Worth nothing* and *not
+      rated* are still different answers and a row that did nothing is still
+      refused — but the proof that the mechanism fired was a count of landed
+      *damaging* strikes, which is no proof at all about a skill whose mechanism
+      is not damage. `forge.Mechanism` is that evidence now: **striking,
+      applying, restoring, cleansing, summoning**, read off the skill **as the
+      row fought it** (a `power` sweep can add or remove striking) and counted
+      off `[]battle.Event`, which stays the only contract a reader may use.
+      `Weighing.Worth` never needed the change — the challenger's balanced share
+      over a duel against its own twin does not read damage — so the ruler was
+      always there and only the guard in front of it moved.
+      **Measured, all at level 60, `--seeds 10000` (20,000 battles a row, band
+      **±0.8%**), each carrier against a copy of itself.** ⚠️ A weigh figure is
+      not a win rate and does not carry across a data change; quote it with its
+      carrier and level or do not quote it.
+
+      | carrier | skill (mechanism) | field | 2 | 3 = shipped | 4 | 5 | ordered? |
+      |---|---|---|---:|---:|---:|---:|---|
+      | `pokemon.cleffa` | `charm` — nought power, applies `weaken`×2 | `cooldown` | **+7.8%** | **+0.0%** | **−18.7%** | **−23.4%** | worth ✅ · turns ❌ |
+      | `pokemon.cleffa` | `moonlight` — nought power, restores 400 | `cooldown` | **+25.5%** | **+0.0%** | −0.1% | **−14.3%** | worth ✅ · turns ✅ |
+
+      Median turns beside them: charm 120 / 118 / 119 / 109, moonlight 127 / 118
+      / 117 / 109. Both **controls read 10,000–10,000 exactly** — the whole
+      instrument still rests on `refuseUnevenControl`, and it holds on a skill
+      that never strikes.
+      A third shape, `naruto.naruto` `shadow_clone` (a **summon**), `cooldown`,
+      `--seeds 2000` (band ±1.6%): 3 → **−8.6%**, 4 → −5.2%, **5 = shipped →
+      +0.0%**, 6 → −4.5%, 7 → **−28.5%**, at 272 / 276 / 273 / 246 / 223 turns
+      and 94,589 clones off 49,887 casts on the control row. ⚠️ **That sweep is
+      NOT monotone in worth and the report refuses to price it**, which is the
+      honest outcome rather than a failure: the shipped cooldown of 5 is a local
+      *maximum*, so a shorter one makes Naruto worse — the `kunai` lesson again,
+      a cheaper skill gets reached for more and crowds out the one that should
+      have been cast. Nothing was tuned.
+      ⚠️ **This entry's own example does not work, and not for the reason stated
+      here.** A `cooldown` weighing on `poison_powder` still refuses after the
+      widening, and the refusal now says why: *cast **0** time(s) and applied no
+      status*. `pokemon.bulbasaur` is its only carrier (`--carriers all` is one
+      row and ten skips), its fielded trait at the cap is **`venom_blood`, which
+      resists `poison` at 1000‰ — totally** — and a weighing fights a carrier
+      against a copy of *itself*, so the only target on the board is immune to
+      the skill's only mechanism and `Suggest` never picks it. Power 0 was never
+      the obstacle. A skill can be unweighable because **its carrier's twin is
+      its counter**, and no widening reaches that.
+      ⚠️ **A restore is the one effect the log cannot attribute by itself.** The
+      `Healed` a skill's `restores` produces carries neither the skill nor the
+      caster — `Actor` on it is whoever's health went up — so it is credited to
+      **the cast in progress**, which is exact because a cast resolves whole
+      before the next begins. The other two `Healed` are told apart by what they
+      *do* carry: a regeneration names the status that ticked, and a drain always
+      carries the share it took, because a share of nought heals nothing and
+      emits no event at all. If a `Skill` field is ever added to that event, this
+      rule becomes a second reading of one fact and should be deleted.
+      ⚠️ **The two-mechanism case has no shipped instance that can be priced.**
+      `pokemon.squirtle` `withdraw` restores 500 *and* puts two `block` charges
+      on, which is the row that would show two mechanism columns at once — and
+      the squirtle mirror leaves **200 of 200** battles undecided at 100 seeds,
+      so the endless refusal takes it first. The columns are exercised by the
+      fixture instead.
+      → `internal/forge/weigh.go` (`Mechanism`, `Mechanisms`, `mechanismsOver`,
+      `refuseUnreadable`), `internal/forge/spar.go` (`Effects`, `Matchup.fold`,
+      `restored`), `cmd/hexforge/weigh.go`.
+      ⚠️ **`CLAUDE.md` § *Pricing one number* is now stale in two places** and
+      was deliberately not edited here: its refusal list still says "a row that
+      **landed the skill zero times**", which is now "a row on which the skill
+      did none of its own work"; and its `⚠️ Only scalars are weighable`
+      paragraph still says `self_gradient` "is two numbers", which the entry
+      below measures as false.
+- [ ] **`weigh` prices no field that is two numbers, and `self_gradient` is not
+      one.** `self_gradient` is a bonus *and* a share, so sweeping it is a
       surface where the tool answers curves — it is out of the field table for
       that reason rather than for being hard, and a second report is what it
-      wants, not a ninth constant. Separately, a row that lands nothing is
-      refused rather than reported as even, which is right — *worth nothing* and
-      *not rated* are different answers — but it leaves every **support** skill
-      unweighable: a `cooldown` weighing on `poison_powder` refuses, because
-      power 0 lands nothing at all. Pricing a buff's cooldown needs a reading
-      that is not a count of landings. → `CLAUDE.md` § Pricing one number.
+      wants, not a ninth constant. → `CLAUDE.md` § Pricing one number.
 
 - [ ] **The art preview is outside every sweep there is.** It is not in
       `everyScreen` (`cmd/hexforge-tui/language_test.go`) and not in

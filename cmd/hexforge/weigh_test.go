@@ -25,6 +25,11 @@ func drawnReport() forge.WeighReport {
 		},
 		Skill: "strike", Field: forge.WeighCrit, Shipped: 0,
 		Seeds: 10000, Band: 8,
+		// What the skill does, which is what the last columns are. It is on the
+		// report rather than worked out here because only the measurement has
+		// the skill to ask, and a page that guessed would draw a support skill
+		// three columns of noughts under damaging headings.
+		Mechanisms: []forge.Mechanism{forge.Striking},
 		Rows: []forge.Weighing{
 			{Value: 0, Control: true, Rate: 500, Turns: 37, Edge: 327,
 				Tally:   forge.Tally{Wins: 10000, Losses: 10000},
@@ -245,5 +250,78 @@ func TestAValueListIsReadAsWrittenOrRefused(t *testing.T) {
 	}
 	if _, err := parseValues("100,two"); err == nil {
 		t.Error("a word was read as a number")
+	}
+}
+
+// drawnSupportReport is the same page for a skill that deals no damage at all.
+//
+// Nought power, so it lands no strike ever, and what it does instead is put a
+// charge on its own caster. The figures are made up for the reason drawnReport's
+// are; what is real is the shape.
+func drawnSupportReport() forge.WeighReport {
+	affinity, _ := element.Single(element.Water)
+	return forge.WeighReport{
+		Carrier: forge.Duellist{
+			ID: "fixture-anime.adept", Name: "Example Adept", Level: 60,
+			Stage: "Example Adept", Affinity: affinity,
+			Skills: []string{"strike", "riptide", "guard_wall", "purify"},
+		},
+		Skill: "guard_wall", Field: forge.WeighCooldown, Shipped: 4,
+		Seeds: 10000, Band: 8,
+		Mechanisms: []forge.Mechanism{forge.Applying},
+		Rows: []forge.Weighing{
+			{Value: 4, Control: true, Rate: 500, Turns: 61, Edge: 118,
+				Tally:   forge.Tally{Wins: 10000, Losses: 10000},
+				Effects: forge.Effects{Applied: 71204}},
+			{Value: 6, Rate: 431, Turns: 58, Edge: 104,
+				Tally:   forge.Tally{Wins: 8620, Losses: 11380},
+				Effects: forge.Effects{Applied: 52117}},
+		},
+	}
+}
+
+// TestASupportReportDrawsWhatTheSkillDidRatherThanColumnsOfNoughts.
+//
+// A skill of nought power lands nothing and crits nothing, so `landed` and
+// `crit` on its page would be two columns of noughts under a priced row — which
+// is the page saying the skill did nothing beside a figure claiming it was worth
+// something, and the one distinction this whole instrument keeps is between a
+// price of nought and the absence of one. The columns follow the mechanism
+// instead: what the skill does, counted.
+func TestASupportReportDrawsWhatTheSkillDidRatherThanColumnsOfNoughts(t *testing.T) {
+	var drawn strings.Builder
+	renderWeigh(&drawn, drawnSupportReport())
+	page := drawn.String()
+	header := strings.SplitN(page, "\n", 6)[4]
+	if !strings.Contains(header, "applied") {
+		t.Errorf("the header %q has no column for the only thing this skill does", header)
+	}
+	for _, absent := range []string{"landed", "crit"} {
+		if strings.Contains(header, absent) {
+			t.Errorf("the header %q keeps a %q column for a skill that has no power to land "+
+				"or crit with, so a priced row prints a nought there", header, absent)
+		}
+	}
+	// And the counts reach the page, or the column is a heading over nothing.
+	if !strings.Contains(page, "71204") || !strings.Contains(page, "52117") {
+		t.Errorf("the applied counts are not on the page:\n%s", page)
+	}
+}
+
+// TestADamagingReportKeepsTheColumnsItAlwaysHad.
+//
+// The mechanism columns are a widening, and a widening that moved the damaging
+// page would be a change to every figure already quoted against it. Same three
+// columns, same order, still last.
+func TestADamagingReportKeepsTheColumnsItAlwaysHad(t *testing.T) {
+	var drawn strings.Builder
+	renderWeigh(&drawn, drawnReport())
+	header := strings.SplitN(drawn.String(), "\n", 6)[4]
+	tail := strings.Fields(header)
+	if len(tail) < 3 {
+		t.Fatalf("the header %q has too few columns to check", header)
+	}
+	if got := strings.Join(tail[len(tail)-3:], " "); got != "cast landed crit" {
+		t.Errorf("a damaging report ends in %q, want the %q it has always ended in", got, "cast landed crit")
 	}
 }

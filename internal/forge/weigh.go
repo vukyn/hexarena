@@ -153,16 +153,170 @@ func (f WeighField) set(declared skill.Skill, value int) skill.Skill {
 	return declared
 }
 
-// fired reports whether the mechanism this field turns on was observed at all.
+// Mechanism is one thing a skill does when it works, and therefore one kind of
+// evidence that the skill was in the fight at all.
 //
-// Only crit has an answer worth asking for, and that is a fact about the event
-// log rather than a shortcut. A critical strike is the one thing on this list
-// with a mark of its own on an event, so it is the one thing that can be absent
-// while every strike still lands — a crit chance of two hundred that never once
-// came up would price the chance at whatever the noise happened to be. For every
-// other field a landed strike *is* the mechanism: a power, a pierce or a drain
-// that resolved has already been applied by the time the log says Damaged, and
-// there is no second thing left to have failed to happen.
+// It is a closed table for the reason WeighField is, and it exists because that
+// evidence used to be one thing: a count of landed damaging strikes. That is the
+// right proof for a skill whose mechanism *is* damage and no proof at all for
+// one whose power is nought — poison_powder lands nothing however well it works,
+// so every buff, debuff, heal, cleanse and summon in the book came back "cast N
+// time(s) and landed none", which was true and was not the question. The refusal
+// was right and its evidence was mis-specified; this is the evidence.
+//
+// ⚠️ A mechanism is not a WeighField and the two must not be read as a pair.
+// A field is a dial an author moves; a mechanism is what the skill does when the
+// dial is where it is. `cooldown` moves no mechanism of its own — it decides how
+// often the skill is cast at all — and what proves a cooldown weighing measured
+// anything is whatever that skill does taking hold at least once.
+type Mechanism uint8
+
+const (
+	// Striking through Summoning are declared in the order they are drawn, so a
+	// report's columns are declaration order and the two cannot drift apart.
+	Striking Mechanism = iota
+	Applying
+	Restoring
+	Cleansing
+	Summoning
+)
+
+// mechanismCount is how many mechanisms a skill can have.
+const mechanismCount = int(Summoning) + 1
+
+// mechanismNames is the column each mechanism is drawn under: what happened,
+// counted.
+var mechanismNames = [mechanismCount]string{
+	Striking:  "landed",
+	Applying:  "applied",
+	Restoring: "healed",
+	Cleansing: "cleansed",
+	Summoning: "summoned",
+}
+
+// mechanismNothings is how a refusal says this mechanism was never observed.
+//
+// ⚠️ Striking's is "landed none" rather than "landed no strike", and the exact
+// words are load-bearing: that is the sentence a damaging skill has always been
+// refused with, it is quoted in CLAUDE.md, and widening the guard must not
+// reword the refusal it already gave.
+var mechanismNothings = [mechanismCount]string{
+	Striking:  "landed none",
+	Applying:  "applied no status",
+	Restoring: "restored no health",
+	Cleansing: "cleansed nothing",
+	Summoning: "summoned nothing",
+}
+
+// String is the mechanism's name as it is printed.
+func (m Mechanism) String() string {
+	if int(m) >= mechanismCount {
+		return fmt.Sprintf("mechanism(%d)", uint8(m))
+	}
+	return mechanismNames[m]
+}
+
+// Nothing is how this mechanism reads when the log recorded none of it.
+func (m Mechanism) Nothing() string {
+	if int(m) >= mechanismCount {
+		return fmt.Sprintf("did no mechanism(%d)", uint8(m))
+	}
+	return mechanismNothings[m]
+}
+
+// Count is how often the log recorded this mechanism over a row.
+func (m Mechanism) Count(strikes Strikes, effects Effects) int {
+	switch m {
+	case Striking:
+		return strikes.Landed
+	case Applying:
+		return effects.Applied
+	case Restoring:
+		return effects.Restored
+	case Cleansing:
+		return effects.Stripped
+	default:
+		return effects.Summoned
+	}
+}
+
+// Mechanisms is what a skill declares it does, in declaration order.
+//
+// ⚠️ It reads the skill **as fought** rather than as shipped, and that matters
+// on the one field that can change what a skill is: a power swept up from nought
+// makes a support skill damaging for those rows, and a power swept down to
+// nought takes the damage away. A row checked against the shipped skill's
+// mechanism would be checked against a mechanism that row did not have.
+//
+// A skill that declares none at all comes back empty, and Weigh refuses such a
+// row in so many words. That is not a gap to be filled with a default: a skill
+// which strikes for nothing, applies nothing, restores nothing, cleanses nothing
+// and summons nothing does nothing, and there is no field on it whose worth
+// could be anything but the noise.
+func Mechanisms(declared skill.Skill) []Mechanism {
+	found := make([]Mechanism, 0, mechanismCount)
+	if declared.Power > 0 {
+		found = append(found, Striking)
+	}
+	if len(declared.Applies) > 0 || len(declared.SelfApplies) > 0 {
+		found = append(found, Applying)
+	}
+	if declared.Restores > 0 {
+		found = append(found, Restoring)
+	}
+	if declared.Strips != nil {
+		found = append(found, Cleansing)
+	}
+	if declared.Summons != nil {
+		found = append(found, Summoning)
+	}
+	return found
+}
+
+// mechanismsOver is every mechanism any row of one sweep could show.
+//
+// The union across the swept variants rather than the shipped skill's own, for
+// the reason Mechanisms reads the variant: one field can change what a skill is,
+// so a header taken off the control alone would leave the other rows' work in a
+// column that is not on the page.
+func mechanismsOver(shipped skill.Skill, field WeighField, values []int) []Mechanism {
+	var seen [mechanismCount]bool
+	for _, value := range values {
+		for _, worked := range Mechanisms(field.set(shipped, value)) {
+			seen[worked] = true
+		}
+	}
+	all := make([]Mechanism, 0, mechanismCount)
+	for worked := 0; worked < mechanismCount; worked++ {
+		if seen[worked] {
+			all = append(all, Mechanism(worked))
+		}
+	}
+	return all
+}
+
+// fired reports whether the mechanism this FIELD turns on was observed at all.
+//
+// It is a narrower question than whether the skill worked, which is what
+// Mechanisms answers, and the two are asked separately because they fail
+// separately: a crit chance can go unrolled across a battle in which every
+// strike landed.
+//
+// Only crit has an answer worth asking for here, and that is a fact about the
+// event log rather than a shortcut. A critical strike is the one thing on the
+// field list with a mark of its own on an event, so it is the one thing that can
+// be absent while the skill is plainly working — a crit chance of two hundred
+// that never once came up would price the chance at whatever the noise happened
+// to be.
+//
+// For every other field the skill's own mechanism is the whole of the answer. A
+// power, a pierce or a drain that resolved has already been applied by the time
+// the log says Damaged, and there is no second thing left to have failed to
+// happen; a cooldown, an accuracy or a range is spent on getting the skill cast
+// at all, so what proves it measured something is that the skill did its own
+// work — which for a damaging skill is a landed strike and for a support skill
+// is a status taking hold, a heal landing, a cleanse or a summon. That list is
+// Mechanisms, and refuseUnreadable is where it is checked.
 func (f WeighField) fired(value int, strikes Strikes) bool {
 	if f != WeighCrit || value == 0 {
 		return true
@@ -219,6 +373,9 @@ type Weighing struct {
 	Edge    int
 	Tally   Tally
 	Strikes Strikes
+	// Effects is everything the skill did that was not a strike, which for a
+	// skill of nought power is everything it did at all.
+	Effects Effects
 }
 
 // Worth is the deviation from an even split, signed, in parts per thousand.
@@ -241,7 +398,12 @@ type WeighReport struct {
 	// Band is the two-sigma width of a row's rate in parts per thousand: the
 	// figure a difference has to clear before it is a finding rather than noise.
 	Band int
-	Rows []Weighing
+	// Mechanisms is what the swept skill does, which is what a row has to have
+	// done to be believed and what the drawing gives a column each. It is the
+	// union over the swept values rather than the control's own: see
+	// mechanismsOver.
+	Mechanisms []Mechanism
+	Rows       []Weighing
 }
 
 // Battles is how many duels the whole report was taken from.
@@ -422,9 +584,11 @@ func (l *Library) Weigh(request WeighRequest) (WeighReport, error) {
 	}
 
 	control := request.Field.of(shipped)
+	values := sweep(request.Values, control)
 	report := WeighReport{
 		Carrier: carrier, Skill: request.Skill, Field: request.Field,
 		Shipped: control, Seeds: request.Seeds, Band: band(request.Seeds),
+		Mechanisms: mechanismsOver(shipped, request.Field, values),
 	}
 
 	// The control is fought first and checked before anything else is believed.
@@ -440,7 +604,7 @@ func (l *Library) Weigh(request WeighRequest) (WeighReport, error) {
 		return WeighReport{}, err
 	}
 
-	for _, value := range sweep(request.Values, control) {
+	for _, value := range values {
 		if value == control {
 			report.Rows = append(report.Rows, controlRow)
 			continue
@@ -547,8 +711,13 @@ func (l *Library) weighOne(carrier Duellist, shipped skill.Skill, request WeighR
 	row := Weighing{
 		Value: value, Rate: fought.Rate(), Turns: fought.Turns,
 		Edge: fought.Edge(), Tally: fought.Total(), Strikes: fought.Strikes,
+		Effects: fought.Effects,
 	}
-	return row, refuseUnreadable(row, request, fought)
+	// The VARIANT rather than the shipped skill, because the variant is what was
+	// fought: a power swept to nought is a skill that lands nothing by design,
+	// and checking it against the shipped skill's mechanism would refuse it for
+	// failing to do something this row had taken away from it.
+	return row, refuseUnreadable(row, request, variant, fought)
 }
 
 // refuseUnreadable is every way a row can look like a figure and be none.
@@ -556,20 +725,35 @@ func (l *Library) weighOne(carrier Duellist, shipped skill.Skill, request WeighR
 // Each of these would otherwise print as an ordinary number in an ordinary
 // column. That is the whole danger: a price of nought and the absence of a price
 // are the same glyph, and only the row itself knows which it is.
-func refuseUnreadable(row Weighing, request WeighRequest, fought Matchup) error {
+//
+// fielded is the skill **as this row fought it**, and it is here rather than
+// derived because the first refusal below asks what the skill does. See
+// Mechanisms.
+func refuseUnreadable(row Weighing, request WeighRequest, fielded skill.Skill, fought Matchup) error {
 	at := fmt.Sprintf("%s at %s %d", request.Skill, request.Field, row.Value)
+	worked := Mechanisms(fielded)
 	switch {
-	case row.Strikes.Landed == 0:
-		// Worth nothing means *not rated*, never rated at nought. A skill the
-		// carrier never landed has an even row beside it and prices nothing at
-		// all.
-		return fmt.Errorf("nothing here prices %s: it was cast %d time(s) and landed none, "+
+	case len(worked) == 0:
+		// A skill with no mechanism at all is refused before any counting,
+		// because there is nothing to count. It is not the same refusal as the
+		// one below and must not read like it: that one says the skill did not
+		// work, and this one says there is nothing this skill could have done.
+		return fmt.Errorf("nothing here prices %s: it strikes for nothing, applies nothing, "+
+			"restores nothing, cleanses nothing and summons nothing, so there is no mechanism "+
+			"for %s to be the price of",
+			at, request.Field)
+	case !anyFired(worked, row):
+		// Worth nothing means *not rated*, never rated at nought. A skill that
+		// never did the thing it does has an even row beside it and prices
+		// nothing at all.
+		return fmt.Errorf("nothing here prices %s: it was cast %d time(s) and %s, "+
 			"so the row is the absence of a measurement rather than a measurement of nothing",
-			at, row.Strikes.Cast)
+			at, row.Strikes.Cast, nothingHappened(worked))
 	case !request.Field.fired(row.Value, row.Strikes):
 		return fmt.Errorf("nothing here prices %s: the mechanism never fired across %d landed strike(s), "+
 			"so what the row reports is the noise and not the field",
 			at, row.Strikes.Landed)
+
 	case row.Tally.Endless*endlessShare > row.Tally.Battles():
 		return fmt.Errorf("%s left %d of %d battle(s) undecided, which is more than a fifth: "+
 			"the rate is taken over what finished, and whether this pairing finishes is itself moving",
@@ -580,6 +764,36 @@ func refuseUnreadable(row Weighing, request WeighRequest, fought Matchup) error 
 			at, PercentInColumn(fought.First.Rate()), PercentInColumn(fought.Second.Rate()))
 	}
 	return nil
+}
+
+// anyFired reports whether the log recorded the skill doing any one of the
+// things it declares it does.
+//
+// Any rather than all, and the difference is a design. A skill that both applies
+// a status and restores health did something when either landed — the one that
+// did not land is a fact about the fight rather than about the instrument, and
+// demanding both would refuse a row that measured a real difference.
+func anyFired(worked []Mechanism, row Weighing) bool {
+	for _, mechanism := range worked {
+		if mechanism.Count(row.Strikes, row.Effects) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// nothingHappened is how a refusal says the skill did none of its own work,
+// naming every mechanism it has rather than only the first.
+//
+// Every one of them, because the reader's next question is which of the things
+// this skill does failed to happen, and a sentence naming one of three would
+// send them to look at the wrong half of the skill.
+func nothingHappened(worked []Mechanism) string {
+	said := make([]string, 0, len(worked))
+	for _, mechanism := range worked {
+		said = append(said, mechanism.Nothing())
+	}
+	return strings.Join(said, " and ")
 }
 
 // band is the two-sigma width of a rate measured over one row, in parts per
