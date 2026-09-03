@@ -310,8 +310,14 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"a squad member":           member,
 		"a deep member":            deepMember(t, c, member),
 		"a held-back member":       heldBackMember(t, c, member),
-		"a squad kit":              squadKitPicker(t, c, member),
-		"a squad trait":            squadTraitPicker(t, c, member),
+		// ⚠️ **The builder on the one shipped character whose line forks**, at
+		// both depths, which is the case every squad entry above walks past: the
+		// fixture squad is built over the cast's most-traited character and every
+		// one of those lines has a single end. See theForkedMember.
+		"a forked squad":  theForkedSquad(t, c, lib),
+		"a forked member": theForkedMember(t, c, lib),
+		"a squad kit":     squadKitPicker(t, c, member),
+		"a squad trait":   squadTraitPicker(t, c, member),
 		// The played battle in the six states of it that share no line, under
 		// the client's own names where it has one. Each builds its own battle —
 		// see the note over these builders for the pointer that makes that a
@@ -786,6 +792,55 @@ func heldBackMember(t *testing.T, c Context, member SquadsScreen) SquadsScreen {
 			"ordinary member twice:\n%s", drawn)
 	}
 	return member
+}
+
+// theForkedMember is the member form on the shipped character whose evolution
+// line forks, at a level the fork is open at, naming no arm — and theForkedSquad
+// is the squad behind it, whose member row draws the same fact in a row rather
+// than in a field.
+//
+// ⚠️ **Every squad entry above these is a line that does not fork, and that is
+// what let the defect ship.** aSquadOverTheShippedCast picks the character with
+// the most traits and fields it at the cap with an empty stage, so the form row
+// read "furthest" and was right. On a fork "furthest" names neither end, and the
+// two loadout lists silently drop every arm-gated skill and trait — neither of
+// which any record in this file could see.
+//
+// Two entries because the two depths draw it differently: the member has the
+// chooser value and the line naming the arms under the fields, and the squad has
+// only the member's row, which is clipped to the window and reads an empty stage
+// through a *different* lookup — a member that is not the one under edit.
+//
+// The state is built by aForkedMember in squadfork_test.go rather than here, for
+// the reason every other builder is shared: it is the same value those tests
+// assert against, so a record and a test cannot come to be about two different
+// screens.
+func theForkedMember(t *testing.T, c Context, lib *forge.Library) SquadsScreen {
+	t.Helper()
+	s := aForkedMember(t, c, lib)
+	drawn, _ := s.View(c)
+	if !strings.Contains(drawn, c.Text(i18n.SquadForkUnnamed)) {
+		t.Fatalf("the forked member draws no fork in its form row, so this entry "+
+			"records an ordinary member twice:\n%s", drawn)
+	}
+	for _, line := range forkNote(c, s.unnamedArms(s.Unit)) {
+		if !strings.Contains(drawn, line) {
+			t.Fatalf("the forked member does not draw %q, so the line this entry "+
+				"exists for is recorded by nothing:\n%s", line, drawn)
+		}
+	}
+	return s
+}
+
+func theForkedSquad(t *testing.T, c Context, lib *forge.Library) SquadsScreen {
+	t.Helper()
+	s := aForkedMember(t, c, lib).Commit()
+	s.Mode = SquadEdit
+	if drawn, _ := s.View(c); !strings.Contains(drawn, c.Text(i18n.SquadForkUnnamed)) {
+		t.Fatalf("the forked squad's member row draws no fork, so this entry records "+
+			"an ordinary squad twice:\n%s", drawn)
+	}
+	return s
 }
 
 // squadKitPicker and squadTraitPicker are the two lists the member raises,

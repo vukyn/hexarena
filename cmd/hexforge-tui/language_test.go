@@ -297,6 +297,30 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		t.Fatalf("the held-back member state draws no held-back line, so every sweep over it measures nothing:\n%s",
 			heldBack.screenContent())
 	}
+	// And the builder at both depths on a line that FORKS, with no arm named.
+	//
+	// ⚠️ **Every squad state above this one is a line with a single end**, which
+	// is what let the second half of the fork defect ship here as well: the
+	// fixture cast is linear, so an empty stage really was the furthest form and
+	// the form row saying so was right. On a fork it names neither end, the two
+	// loadout lists silently drop every arm-gated entry, and the save refuses the
+	// member — so the member now draws a line naming the arms, and none of that
+	// wording was rendered anywhere in this sweep.
+	//
+	// The fork is found in the shipped books the fixture copies rather than
+	// named, exactly as theForkedBrowser finds it for the three read-only views.
+	forkedSquad := squadEmpty
+	forkedSquad.squad = aForkingSquad(t, forkedSquad.squad)
+	forkedMember := forkedSquad
+	forkedMember.squad = forkedMember.squad.EditUnit(0)
+	if !strings.Contains(forkedMember.screenContent(), forkedMember.text(i18n.SquadForkUnnamed)) {
+		t.Fatalf("the forked member state draws no fork in its form row, so every sweep over it measures nothing:\n%s",
+			forkedMember.screenContent())
+	}
+	if !strings.Contains(forkedSquad.screenContent(), forkedSquad.text(i18n.SquadForkUnnamed)) {
+		t.Fatalf("the forked squad's member row draws no fork, so every sweep over it measures nothing:\n%s",
+			forkedSquad.screenContent())
+	}
 	skillPick := member.pick(member.squad.OpenSkills())
 	traitPick := member.pick(member.squad.OpenPassives())
 	// And each picker with a description in front of its list, which is the
@@ -426,6 +450,8 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"a squad member":           member,
 		"a deep member":            deepest,
 		"a held-back member":       heldBack,
+		"a forked squad":           forkedSquad,
+		"a forked member":          forkedMember,
 		"a squad kit":              skillPick,
 		"a squad trait":            traitPick,
 		"reading a skill":          skillReading,
@@ -448,6 +474,55 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		screens["reading a trait"] = traitReading
 	}
 	return screens
+}
+
+// aForkingSquad is someSquad's twin over a character whose evolution line FORKS
+// at the level it is fielded at, naming no arm — which is the state the form row
+// used to call "furthest" and the two loadout lists used to shorten in silence.
+//
+// ⚠️ **Found rather than named, and fatal when there is none**, which is
+// theForkedBrowser's rule and for its reason: a fork is a fact about the shipped
+// books this fixture copies, so a helper that quietly settled for a linear
+// character would leave two entries of this sweep measuring an ordinary member
+// without a word. The level is forkLevel, short of the cap where every other
+// squad state sits, because a fork that only worked at the cap would be one
+// nothing walked into.
+//
+// The kit is read at progression.Furthest, which is the narrowed list the
+// builder itself offers in this state: the member is the one an author would
+// have built, rather than one assembled out of an arm nobody has chosen.
+func aForkingSquad(t *testing.T, s squadsScreen) squadsScreen {
+	t.Helper()
+	const forkLevel = 46
+	for _, character := range s.Characters {
+		if len(draw.FormArms(character, forkLevel)) < 2 {
+			continue
+		}
+		s = s.Begin()
+		s.Editing.ID, s.Editing.Name = "re-nhanh", "đội rẽ nhánh"
+		s.IDInput.SetValue(s.Editing.ID)
+		s.NameInput.SetValue(s.Editing.Name)
+		unit := placement.Placement{
+			ID:        "mot",
+			Character: character.ID,
+			Level:     forkLevel,
+			Slot:      hex.Offset{Col: hex.FormationCols - 1, Row: 1},
+		}
+		kit := character.SkillsAt(unit.Level, progression.Furthest)
+		if len(kit) > cast.SkillSlots {
+			kit = kit[:cast.SkillSlots]
+		}
+		unit.Skills = kit
+		if traits := character.PassivesAt(unit.Level, progression.Furthest); len(traits) > 0 {
+			unit.Passives = traits[:cast.TraitSlots]
+		}
+		s.Editing.Units = []placement.Placement{unit}
+		s.Unit = unit
+		return s
+	}
+	t.Fatalf("no character in the cast forks at level %d, so nothing in this sweep "+
+		"measures the member the builder cannot field", forkLevel)
+	return s
 }
 
 // withAHeldBackMember takes the character the member under edit already holds

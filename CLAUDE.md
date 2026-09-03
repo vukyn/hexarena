@@ -683,9 +683,24 @@ answers rather than screen logic:
   - A member is **character, level, form, cell, four skills, one trait** — the
     same six facts a roster entry carries. Everything under the character is read
     against it, so changing the character **empties the kit**; the form chooser
-    offers *furthest* plus every form by name, which is what a **forking** line
-    needs; the slot chooser **steps over** an occupied cell rather than letting
-    the save refuse it later.
+    offers the empty stage plus every form by name, which is what a **forking**
+    line needs; the slot chooser **steps over** an occupied cell rather than
+    letting the save refuse it later.
+    ⚠️ **The empty stage is two different things, and the screen says which.** On
+    a line that does not fork it is the furthest form the level reaches, worded
+    `SquadFurthest` — unchanged, in the field and in the member's row in the
+    squad. On a line that **forks** it names nothing: the level has two ends,
+    `StageAt` refuses to choose, and the placement is not fieldable at all —
+    `placement.Squad.Take`, which is the one call `SaveSquad` and `FightSquads`
+    both make, refuses the member. So it is worded `SquadForkUnnamed` instead, and
+    a line under the fields (`SquadForkArms`, prose, wrapped at the floor because
+    it carries authored stage names) names the arms, the key that picks one, and
+    the two costs of not picking: the save, and the **silently shortened
+    loadout lists**. `SquadsScreen.Form` hands `cast.SkillsAt`/`PassivesAt` an
+    empty form in that state, which holds no gate, so both pickers offer only what
+    every arm learns — measured on the one shipped fork at level 60: **13 skills
+    and 4 traits unnamed, against 14 and 4 as Poliwrath and 15 and 5 as
+    Politoed**. A list cannot say why a row is not on it, so the screen has to.
     ⚠️ **This chooser is the prior art the three read-only views were given a
     smaller copy of.** They describe a character rather than field one, so their
     question is narrower — which grown form does this level resolve to — and their

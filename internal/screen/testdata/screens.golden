@@ -133,6 +133,43 @@ pokemon.poliwag — Poliwag
 
 ----- footer -----
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
+===== vi | 120x24 | a forked member =====
+trong đội: mot
+
+>   nhân vật   < pokemon.poliwag >
+    cấp        46     
+    dạng       < ngã rẽ chưa chọn nhánh >
+    đứng ở     < 2,1  hàng đầu >
+    mang theo  water_gun bubble pummel body_slam 4/4
+    nội tại    endurance 1/1
+  dòng này rẽ nhánh: Poliwrath / Politoed — bấm ←/→ chọn một; chưa chọn thì danh sách chỉ có phần chung và lưu sẽ bị từ
+  chối
+
+thế đứng
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 120x24 | a forked squad =====
+đội hình
+
+  mã           re-nhanh                           
+  tên          đội rẽ nhánh                             
+
+> 1 mot pokemon.poliwag@46 ngã rẽ chưa chọn nhánh 2,1 4/4 chiêu, 1/1 nội tại
+  thêm người
+
+thế đứng
+     .   .   .  
+    [1]  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ chọn · enter mở · tab mã/tên · ctrl+x bỏ ra · ctrl+s lưu · esc quay lại
 ===== vi | 120x24 | a forked trait blurb =====
 Poliwag  cấp 46
   dạng  < Poliwrath >  1/2, bấm s để đổi
@@ -1130,6 +1167,43 @@ pokemon.poliwag — Poliwag
 
 ----- footer -----
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
+===== vi | 160x60 | a forked member =====
+trong đội: mot
+
+>   nhân vật   < pokemon.poliwag >
+    cấp        46     
+    dạng       < ngã rẽ chưa chọn nhánh >
+    đứng ở     < 2,1  hàng đầu >
+    mang theo  water_gun bubble pummel body_slam 4/4
+    nội tại    endurance 1/1
+  dòng này rẽ nhánh: Poliwrath / Politoed — bấm ←/→ chọn một; chưa chọn thì danh sách chỉ có phần chung và lưu sẽ bị từ
+  chối
+
+thế đứng
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 160x60 | a forked squad =====
+đội hình
+
+  mã           re-nhanh                           
+  tên          đội rẽ nhánh                             
+
+> 1 mot pokemon.poliwag@46 ngã rẽ chưa chọn nhánh 2,1 4/4 chiêu, 1/1 nội tại
+  thêm người
+
+thế đứng
+     .   .   .  
+    [1]  .   .  
+     .   .   .  
+    ^^^ hàng này chạm địch trước
+    [n] có người  (n) người đang sửa  . trống
+----- footer -----
+↑/↓ chọn · enter mở · tab mã/tên · ctrl+x bỏ ra · ctrl+s lưu · esc quay lại
 ===== vi | 160x60 | a forked trait blurb =====
 Poliwag  cấp 46
   dạng  < Poliwrath >  1/2, bấm s để đổi
@@ -2470,6 +2544,43 @@ pokemon.poliwag — Poliwag
 
 ----- footer -----
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
+===== en | 120x24 | a forked member =====
+in the squad: mot
+
+>   character  < pokemon.poliwag >
+    level      46     
+    form       < a fork with no arm named >
+    stands at  < 2,1  front rank >
+    brings     water_gun bubble pummel body_slam 4 of 4
+    trait      endurance 1 of 1
+  this line forks: Poliwrath / Politoed — ←/→ names one; unnamed, the lists show only the shared part and the save
+  refuses
+
+the formation
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 120x24 | a forked squad =====
+the squad
+
+  id           re-nhanh                           
+  name         đội rẽ nhánh                             
+
+> 1 mot pokemon.poliwag@46 a fork with no arm named 2,1 4/4 skills, 1/1 traits
+  add somebody
+
+the formation
+     .   .   .  
+    [1]  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ move · enter open · tab id/name · ctrl+x remove · ctrl+s save · esc back
 ===== en | 120x24 | a forked trait blurb =====
 Poliwag  level 46
   form  < Poliwrath >  1 of 2, s for the next
@@ -3447,6 +3558,43 @@ pokemon.poliwag — Poliwag
 
 ----- footer -----
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
+===== en | 160x60 | a forked member =====
+in the squad: mot
+
+>   character  < pokemon.poliwag >
+    level      46     
+    form       < a fork with no arm named >
+    stands at  < 2,1  front rank >
+    brings     water_gun bubble pummel body_slam 4 of 4
+    trait      endurance 1 of 1
+  this line forks: Poliwrath / Politoed — ←/→ names one; unnamed, the lists show only the shared part and the save
+  refuses
+
+the formation
+     .   .   .  
+    (1)  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 160x60 | a forked squad =====
+the squad
+
+  id           re-nhanh                           
+  name         đội rẽ nhánh                             
+
+> 1 mot pokemon.poliwag@46 a fork with no arm named 2,1 4/4 skills, 1/1 traits
+  add somebody
+
+the formation
+     .   .   .  
+    [1]  .   .  
+     .   .   .  
+    ^^^ this rank meets the enemy first
+    [n] stands there  (n) the one being edited  . nobody
+----- footer -----
+↑/↓ move · enter open · tab id/name · ctrl+x remove · ctrl+s save · esc back
 ===== en | 160x60 | a forked trait blurb =====
 Poliwag  level 46
   form  < Poliwrath >  1 of 2, s for the next

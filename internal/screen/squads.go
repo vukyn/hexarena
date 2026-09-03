@@ -822,16 +822,60 @@ func (s SquadsScreen) holdsAHiddenCharacter() bool {
 // Character is the member under edit's own character, looked up in the whole
 // cast this screen holds.
 func (s SquadsScreen) Character() (cast.Character, bool) {
+	return s.characterOf(s.Unit.Character)
+}
+
+// characterOf is the same lookup for a member that is not the one under edit,
+// which is what the squad's own rows are: viewEdit draws every member and only
+// one of them is open.
+func (s SquadsScreen) characterOf(id string) (cast.Character, bool) {
 	for _, character := range s.Characters {
-		if character.ID == s.Unit.Character {
+		if character.ID == id {
 			return character, true
 		}
 	}
 	return cast.Character{}, false
 }
 
+// unnamedArms is the arms of a member's line when the placement has named none
+// of them: empty on a line that does not fork, empty on a member that has
+// chosen, and both ends otherwise.
+//
+// It is FormArms — the read-only views' own helper — rather than a second
+// reading of a fork, because "which grown forms does this level reach" is one
+// question and two answers to it is how two screens come to disagree about what
+// a fork is. What is different here is only what the emptiness means: those
+// views field the first arm, and a placement may not be fielded at all until its
+// author names one.
+func (s SquadsScreen) unnamedArms(unit placement.Placement) []progression.Stage {
+	if unit.Stage != "" {
+		return nil
+	}
+	character, known := s.characterOf(unit.Character)
+	if !known {
+		return nil
+	}
+	arms := FormArms(character, unit.Level)
+	if len(arms) < 2 {
+		return nil
+	}
+	return arms
+}
+
 // Form is the stage name the unit's learnset is read against: the one chosen, or
 // the furthest the level reaches when nothing is.
+//
+// ⚠️ **On a fork the placement has not named it is the empty string, and that is
+// a refusal rather than an answer.** progression.Line.StageAt will not pick an
+// arm — a wrong arm is a wrong learnset written into the author's own file — so
+// there is nothing to resolve to, and cast.SkillsAt/PassivesAt read an empty
+// form as "no gate is held", which leaves the two pickers offering only what
+// every arm learns. That narrowing is silent by construction: a list cannot say
+// why a row is not on it. What says so is the screen — stageLabel stops calling
+// this state *furthest*, a word with no meaning on a line with two ends, and the
+// SquadForkArms line under the fields names the arms, the key that chooses one,
+// and both consequences. The choice itself needs nothing new: the form field is
+// already a chooser and StageChoices already lists both arms by name.
 func (s SquadsScreen) Form() string {
 	if s.Unit.Stage != "" {
 		return s.Unit.Stage
@@ -1067,10 +1111,7 @@ func (s SquadsScreen) viewEdit(c Context) string {
 // unitLine is one member of the squad as a row: who it is, how grown, where it
 // stands and what it brings.
 func (s SquadsScreen) unitLine(c Context, index int, unit placement.Placement) string {
-	form := unit.Stage
-	if form == "" {
-		form = c.Text(i18n.SquadFurthest)
-	}
+	form := s.formLabel(c, unit)
 	return fmt.Sprintf("%d %s %s@%d %s %s %s",
 		index+1, unit.ID, unit.Character, unit.Level, form, unit.Slot,
 		c.Text(i18n.SquadLoadoutCount, len(unit.Skills), cast.SkillSlots,
@@ -1108,6 +1149,34 @@ func (s SquadsScreen) viewUnit(c Context) string {
 	if s.holdsAHiddenCharacter() {
 		out.WriteString("  " + c.Style.Dim.Render(c.Text(i18n.SquadHeldBack)) + "\n")
 	}
+	// Drawn only while the member's line forks at its level and the placement has
+	// named no arm, which is the one state the form row above cannot say enough
+	// about by itself: the chooser has room for a value and this needs three
+	// facts — which arms there are, that ←/→ picks one, and what not picking one
+	// already costs. Both costs are otherwise invisible. The two loadout lists
+	// quietly drop every arm-gated entry (see Form), and a list has no way to
+	// mention a row it is not showing; and the save refuses the member with a
+	// sentence about a fork that nothing before it had mentioned.
+	//
+	// Unaligned and under the rows for the reason the held-back line above is:
+	// the label column is for facts about the unit, and this is a note about the
+	// state of the form the row above it draws.
+	//
+	// ⚠️ **Wrapped at MinWidth rather than clipped like the held-back line**, and
+	// that is the width rule rather than a preference: this is the only note on
+	// the screen carrying a value out of the data — the arms, which are authored
+	// stage names with no promised length — so a wording that fits the floor on
+	// its own does not fit it beside them, and the held-back line's single clip
+	// would take the consequences off the end. Wrapped at the floor and not at
+	// the window because it is prose: a sentence measured against the terminal in
+	// hand has one shape per window and TestEveryWordingFitsTheMinimumWidth has
+	// nothing to hold.
+	if arms := s.unnamedArms(s.Unit); len(arms) > 1 {
+		note := c.Text(i18n.SquadForkArms, strings.Join(progression.StageNames(arms), " / "))
+		for _, line := range WrapWords(note, MinWidth-3) {
+			out.WriteString("  " + c.Style.Dim.Render(line) + "\n")
+		}
+	}
 	out.WriteString("\n" + s.formation(c, s.UnitIndex))
 	out.WriteString(s.report(c))
 	return strings.TrimRight(out.String(), "\n")
@@ -1135,11 +1204,29 @@ func (s SquadsScreen) slotLabel(c Context) string {
 	return fmt.Sprintf("%s  %s", s.Unit.Slot, rank)
 }
 
+// stageLabel is the value in the form chooser, and formLabel is the same value
+// for any member of the squad — the row in viewEdit is the field in viewUnit for
+// a member that is not open, so they are one wording read twice rather than two.
+//
+// ⚠️ **An empty stage is two different things and used to be worded as one.** On
+// a line that does not fork it is the furthest form the level reaches, which is
+// what SquadFurthest says and what it goes on saying — that reading is unchanged
+// here, and so is every record of it. On a line that forks it is a form nobody
+// has named, and calling *that* furthest names nothing: the level has two ends,
+// StageAt refuses to choose between them, and the placement is not fieldable
+// until its author does. See Form for what else that state costs.
 func (s SquadsScreen) stageLabel(c Context) string {
-	if s.Unit.Stage == "" {
-		return c.Text(i18n.SquadFurthest)
+	return s.formLabel(c, s.Unit)
+}
+
+func (s SquadsScreen) formLabel(c Context, unit placement.Placement) string {
+	if unit.Stage != "" {
+		return unit.Stage
 	}
-	return s.Unit.Stage
+	if len(s.unnamedArms(unit)) > 1 {
+		return c.Text(i18n.SquadForkUnnamed)
+	}
+	return c.Text(i18n.SquadFurthest)
 }
 
 // listValue is a chosen list with how full its slots are, so an unfinished kit
