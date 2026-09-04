@@ -713,6 +713,7 @@ q hoặc ctrl+c để thoát`,
 		"đánh bằng bản nhúng, nên những gì vừa sửa ngoài kia không vào trận.",
 	JoinDialling: "đang gọi phòng %s",
 	JoinRefused:  "phòng không cho vào:",
+	JoinVersion:  "máy này — data %s · build %s",
 	JoinFooter:   "tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại",
 
 	WaitingHeading: "đang chờ người thứ hai",

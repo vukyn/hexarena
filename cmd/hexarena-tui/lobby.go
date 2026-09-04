@@ -87,6 +87,30 @@ type joinScreen struct {
 	// the copy the binary embeds, which is a thing the reader has to be told
 	// once and only when it is true. → i18n.JoinDataEdited.
 	Edited bool
+
+	// Local is what this binary is — the digest of the data it embeds and the
+	// build string it announces — which is the pair cmd/hexarena-host prints on
+	// its banner and the pair a refused player has to read against it.
+	// → i18n.JoinVersion for why the client draws its own and never the host's.
+	//
+	// ⚠️ **A wire.Version rather than two strings, so this cannot drift from
+	// the value the gate actually compares.** model.dialling announces
+	// wire.Local(buildString()) and this holds wire.Local(buildString()); a
+	// screen keeping two strings of its own would be a second answer to "what
+	// is this binary", which is the single question a data_mismatch is an
+	// argument about. That is the same rule internal/wire states about
+	// BuildOf — a second spelling of a fallback is how two peers come to
+	// disagree about what they are — one layer up.
+	//
+	// ⚠️ **An empty Build means it could not be read, and that is not a
+	// sentinel hiding in a legal value.** wire.BuildOf never answers with a
+	// blank: wire.Unstamped is a word precisely because a blank beside a digest
+	// reads as a bug in the printing rather than as a fact about the binary. So
+	// View draws the line on Build being set, and a zero Version — which is
+	// what wire.Local returns beside its error — draws nothing at all rather
+	// than a digest of thirty-two zero bytes, which is a well-formed twelve
+	// characters and a lie.
+	Local wire.Version
 }
 
 // The two fields, in the order tab walks them.
@@ -127,19 +151,34 @@ func newJoinScreen() joinScreen {
 }
 
 // Refresh is the screen as a reader finds it on the way in: the catalogue
-// re-read, the last attempt's refusal cleared, and the data notice measured.
+// re-read, the last attempt's refusal cleared, the data notice measured, and
+// this binary's own two numbers read.
 //
 // ⚠️ **The notice is measured rather than assumed.** A --data directory whose
 // files are byte-identical to the embedded copy is the common case, and telling
 // a player their edits will not reach the battle when they have made none is
 // noise on every join. An unreadable directory is not a difference either — it
 // is a library that would not have loaded.
+//
+// ⚠️ **The version is read here rather than once at startup**, which costs a
+// sha256 over the embedded books on the keystroke that opens this screen and
+// buys the property that the number drawn is a number just read. It is also
+// where the two failures differ: a directory that cannot be compared is *not a
+// difference* and stays quiet, while a binary that cannot digest its own
+// embedded data cannot join anything at all, so that one is said.
 func (j joinScreen) Refresh(c draw.Context, saved []placement.Squad) joinScreen {
 	j.Squads = saved
 	j.Squad = draw.Clamp(j.Squad, 0, max(len(saved)-1, 0))
 	j.Dialling, j.At = false, ""
 	j.Refused, j.Err = "", nil
 	j.BadLength, j.Mistyped = false, 0
+	local, versionErr := wire.Local(buildString())
+	if versionErr != nil {
+		j.Err = versionErr
+	}
+	// Assigned either way: wire.Local answers its error with a zero Version,
+	// whose empty Build is what keeps the line off the screen. → the field.
+	j.Local = local
 	same, err := c.Lib.MatchesEmbeddedData()
 	j.Edited = err == nil && !same
 	return j
@@ -345,6 +384,22 @@ func (j joinScreen) View(c draw.Context) (string, string) {
 		for _, line := range draw.WrapWords(c.Lang.Error(j.Err), draw.MinWidth-3) {
 			out.WriteString("  " + c.Style.Bad.Render(line) + "\n")
 		}
+	}
+	// ⚠️ **Last, and drawn in every state rather than only in a refusal.** The
+	// refused state is where the number is *needed* — a data_mismatch refusal
+	// sits directly above this line and its own wording says to read the data
+	// line on each machine — but a line that appeared only on a refusal is a
+	// line a player cannot check *before* dialling, when they are already
+	// holding the code and looking at the host's terminal. Drawing it always
+	// costs one dim row and makes the refusal's instruction true either way.
+	//
+	// Unwrapped, like the dialling line above it: this is a pair of short
+	// values in a label, which is a data row rather than prose, and it is
+	// forty-odd cells against a floor of a hundred and twenty.
+	if j.Local.Build != "" {
+		out.WriteString("\n")
+		out.WriteString("  " + c.Style.Dim.Render(
+			c.Text(i18n.JoinVersion, j.Local.Data.Short(), j.Local.Build)) + "\n")
 	}
 	return out.String(), c.Text(i18n.JoinFooter)
 }
