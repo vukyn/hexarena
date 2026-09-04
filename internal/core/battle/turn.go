@@ -1058,10 +1058,16 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 	// bigger blow, and a conduit damps its own blow and then fires the charge off
 	// strike by strike, along the chain, past any shield in the way.
 	conduit := false
+	// Whether the target's own condition held, kept because the riders it may
+	// carry are paid out with the skill's own -- far below, after the strikes --
+	// and re-reading the status there would ask a set the consume above may
+	// already have emptied. The same reason swing carries the caster's half.
+	amplified := false
 	if known.Requires != nil && position == 0 {
 		against := conditionTarget(known, target)
 		stacks := against.Stacks
 		if known.Amplified(against) {
+			amplified = true
 			conduit = known.Requires.Arcs()
 			power = known.PowerAgainst(against)
 			// Only when the power went up. A conduit moves it not at all — its own
@@ -1252,6 +1258,18 @@ func (b *Battle) resolveAgainst(actor, target *Unit, known skill.Skill, shape st
 				continue
 			}
 			b.inflict(actor, target, fromSkill(known), application, turn)
+		}
+		// The condition's own riders, on the same terms as the skill's: they are a
+		// third thing a condition can buy beside a bonus and a discharge, and they
+		// are paid only where it held. Nothing here asks whether it held -- the
+		// reading was taken before the consume, above.
+		if amplified {
+			for _, application := range known.Requires.Applies {
+				if throughAShield && !b.outlastsAShield(application) {
+					continue
+				}
+				b.inflict(actor, target, fromSkill(known), application, turn)
+			}
 		}
 		// The actor's traits contribute to the same list rather than to a second
 		// pass of their own, so a trait's rider goes through the same roll, the

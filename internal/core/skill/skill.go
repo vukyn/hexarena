@@ -243,7 +243,24 @@ type Condition struct {
 	// two ceilings answering one question, and whichever was applied would be
 	// wrong for the other half.
 	StackRestore int
+	// Applies are riders the condition pays out only when it holds, on the same
+	// target it read. They are the condition's third currency: a bonus buys
+	// damage, a restore buys health, and these buy a status the skill does not
+	// otherwise inflict.
+	//
+	// ⚠️ **A target's condition only.** The caster's own reads the caster, so a
+	// rider here would land on whoever cast it, which is what `self_applies`
+	// already says plainly and without a condition in the way.
+	//
+	// They go out through the same inflict, the same roll and the same shield
+	// filter as the skill's own `applies`, because a rider that survived a block
+	// on a different rule from its neighbour would be a difference no reader
+	// could find on either.
+	Applies []Application
 }
+
+// AppliesOnHold reports whether the condition carries riders of its own.
+func (c *Condition) AppliesOnHold() bool { return c != nil && len(c.Applies) > 0 }
 
 // Arcs reports whether the condition discharges the status it consumes into
 // damage of its own.
@@ -991,16 +1008,17 @@ type scalingFile struct {
 }
 
 type conditionFile struct {
-	Status        string `json:"status,omitempty"`
-	MinStacks     int    `json:"min_stacks,omitempty"`
-	BelowHealth   int    `json:"below_health,omitempty"`
-	BonusPower    int    `json:"bonus_power"`
-	Consume       bool   `json:"consume,omitempty"`
-	ConsumeStacks int    `json:"consume_stacks,omitempty"`
-	Chains        bool   `json:"chains,omitempty"`
-	ArcPower      int    `json:"arc_power,omitempty"`
-	StackPower    int    `json:"stack_power,omitempty"`
-	StackRestore  int    `json:"stack_restore,omitempty"`
+	Status        string            `json:"status,omitempty"`
+	MinStacks     int               `json:"min_stacks,omitempty"`
+	BelowHealth   int               `json:"below_health,omitempty"`
+	BonusPower    int               `json:"bonus_power"`
+	Consume       bool              `json:"consume,omitempty"`
+	ConsumeStacks int               `json:"consume_stacks,omitempty"`
+	Chains        bool              `json:"chains,omitempty"`
+	ArcPower      int               `json:"arc_power,omitempty"`
+	StackPower    int               `json:"stack_power,omitempty"`
+	StackRestore  int               `json:"stack_restore,omitempty"`
+	Applies       []applicationFile `json:"applies,omitempty"`
 }
 
 // gradientFile is its own shape rather than a field on conditionFile, because a
@@ -1099,6 +1117,7 @@ func (s Skill) file() skillFile {
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
 			ConsumeStacks: s.SelfRequires.ConsumeStacks, Chains: s.SelfRequires.Chains,
 			ArcPower: s.SelfRequires.ArcPower, StackPower: s.SelfRequires.StackPower,
+			Applies:      applicationFiles(s.SelfRequires.Applies),
 			StackRestore: s.SelfRequires.StackRestore,
 		}
 	}
@@ -1112,6 +1131,7 @@ func (s Skill) file() skillFile {
 			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
 			ConsumeStacks: s.Requires.ConsumeStacks, Chains: s.Requires.Chains,
 			ArcPower: s.Requires.ArcPower, StackPower: s.Requires.StackPower,
+			Applies:      applicationFiles(s.Requires.Applies),
 			StackRestore: s.Requires.StackRestore,
 		}
 	}
@@ -1646,6 +1666,14 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 	// ceiling charged twice with nothing downstream able to say which half a
 	// figure came from — which is the refusal bonus_power and arc_power already
 	// share two clauses below.
+	if field != "requires" && len(declared.Applies) != 0 {
+		// The caster's own condition reads the caster, so a rider here would land
+		// on whoever cast the skill -- which self_applies already says without a
+		// condition standing in front of it, and says unconditionally. Two ways to
+		// write one thing is a reader asking which of them a status came from.
+		return fail("carries %d rider(s) on the caster's own condition, which self_applies already writes without one",
+			len(declared.Applies))
+	}
 	if field == "requires" && declared.StackPower != 0 {
 		return fail("adds %d power per stack, which only the caster's own condition may do: a target's condition is paid per stack through arc_power",
 			declared.StackPower)
@@ -1710,8 +1738,8 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return fail("chains or arcs without consuming anything, so the discharge would be free every turn the condition held")
 	}
 	if declared.Consume && declared.BonusPower == 0 && declared.ArcPower == 0 &&
-		declared.StackPower == 0 && declared.StackRestore == 0 {
-		return fail("consumes %q for neither a bonus, a discharge nor a per-stack payment, which throws the status away for nothing", statusID)
+		declared.StackPower == 0 && declared.StackRestore == 0 && len(declared.Applies) == 0 {
+		return fail("consumes %q for neither a bonus, a discharge, a per-stack payment nor a rider, which throws the status away for nothing", statusID)
 	}
 	if declared.BonusPower != 0 && declared.ArcPower != 0 {
 		// Two payments for one stack. A detonate is paid in its own power and a
@@ -1742,12 +1770,16 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return fail("is paid both %d bonus power and %d health per stack for one spend, which is the same purchase made twice",
 			declared.BonusPower, declared.StackRestore)
 	}
+	applies, err := resolveApplications(skillID, field+".applies", declared.Applies, deps)
+	if err != nil {
+		return nil, err
+	}
 	return &Condition{
 		Status: statusID, MinStacks: minStacks, BelowHealth: declared.BelowHealth,
 		BonusPower: declared.BonusPower, Consume: declared.Consume,
 		ConsumeStacks: declared.ConsumeStacks, Chains: declared.Chains,
 		ArcPower: declared.ArcPower, StackPower: declared.StackPower,
-		StackRestore: declared.StackRestore,
+		StackRestore: declared.StackRestore, Applies: applies,
 	}, nil
 }
 

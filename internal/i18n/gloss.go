@@ -182,6 +182,7 @@ var (
 		"hexer":      "kẻ phá phép",
 		"glacier":    "kẻ chịu đòn",
 		"diehard":    "kẻ tử chiến",
+		"sapper":     "kẻ bào mòn",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its

@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -26,7 +27,7 @@ func TestBothConditionsAreRefusedTheSameWay(t *testing.T) {
 		{"a share outside the scale", `{"below_health":1400,"bonus_power":900}`, "parts per thousand"},
 		{"negative power", `{"below_health":500,"bonus_power":-1}`, "zero or more"},
 		{"consumes what it never names", `{"below_health":500,"bonus_power":900,"consume":true}`, "names none"},
-		{"consumes for nothing", `{"status":"poison","consume":true}`, "for neither a bonus, a discharge nor a per-stack payment"},
+		{"consumes for nothing", `{"status":"poison","consume":true}`, "for neither a bonus, a discharge, a per-stack payment nor a rider"},
 		{"more stacks than exist", `{"status":"poison","min_stacks":9,"bonus_power":900}`, "caps at"},
 		{"a status nobody declared", `{"status":"nonesuch","bonus_power":900}`, "nonesuch"},
 	} {
@@ -94,10 +95,12 @@ func TestASelfConditionSurvivesBeingWrittenBack(t *testing.T) {
 	if back.SelfRequires == nil {
 		t.Fatal("the caster's own condition did not survive being written back")
 	}
-	if *back.SelfRequires != (skill.Condition{
+	// Compared through reflect rather than with ==, because a Condition carries
+	// a rider list and a struct holding a slice is not comparable.
+	if want := (skill.Condition{
 		Status: "poison", MinStacks: 2, BonusPower: 900, Consume: true,
-	}) {
-		t.Errorf("it came back as %+v", *back.SelfRequires)
+	}); !reflect.DeepEqual(*back.SelfRequires, want) {
+		t.Errorf("it came back as %+v, want %+v", *back.SelfRequires, want)
 	}
 	if back.Requires != nil {
 		t.Error("a target condition appeared out of nowhere, so the two fields are crossed")

@@ -699,6 +699,61 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "sapper",
+      "role": "the one that takes the answer away: rot that will not close, armour opened, and a clock slowed until somebody else's poison has time to finish the job",
+      "column": 2,
+      "stats": {
+        "hp": {
+          "base": 1180,
+          "max": 3400
+        },
+        "attack": {
+          "base": 200,
+          "max": 560
+        },
+        "defense": {
+          "base": 148,
+          "max": 420
+        },
+        "speed": {
+          "base": 38,
+          "max": 105
+        },
+        "accuracy": {
+          "base": 58,
+          "max": 165
+        },
+        "dodge": {
+          "base": 16,
+          "max": 45
+        }
+      },
+      "skills": [
+        "acid",
+        "toxic",
+        "acid_spray",
+        "stun_spore",
+        "mega_drain",
+        "petal_dance",
+        "poison_powder",
+        "venoshock"
+      ],
+      "passives": [
+        {
+          "id": "virulence",
+          "at_level": 16
+        },
+        {
+          "id": "venom_blood",
+          "at_level": 24
+        },
+        {
+          "id": "endurance",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

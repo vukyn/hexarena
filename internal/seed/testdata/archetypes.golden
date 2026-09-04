@@ -157,4 +157,16 @@ diehard, formation column 0
            absorbs 6607 of the 11500 budget, 4893 to spare
   kit      metal_claw reversal aura_sphere force_palm close_combat metal_sound flash_cannon
 
-13 presets
+sapper, formation column 2
+  the one that takes the answer away: rot that will not close, armour opened, and a clock slowed until somebody else's poison has time to finish the job
+  demands  a character built from it must carry grass
+  hp 1180->3400  attack 200->560  defense 148->420  speed 38->105  accuracy 58->165  dodge 16->45
+  level 1  hp 1180, atk 200, def 148, spd 38, acc 58, ddg 16
+           absorbs 1763 of the 11500 budget, 9737 to spare
+  level 30 hp 2271, atk 376, def 281, spd 70, acc 110, ddg 30
+           absorbs 4401 of the 11500 budget, 7099 to spare
+  level 60 hp 3400, atk 560, def 420, spd 105, acc 165, ddg 45
+           absorbs 8173 of the 11500 budget, 3327 to spare
+  kit      acid toxic acid_spray stun_spore mega_drain petal_dance poison_powder venoshock
+
+14 presets

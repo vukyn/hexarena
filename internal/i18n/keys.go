@@ -501,6 +501,10 @@ const (
 	// The singulars. English needs them and Vietnamese does not, which is why
 	// they are keys rather than a count formatted into one wording — the same
 	// shape BlurbStripsOne and BlurbStatusLastsOne already have.
+	// The rider a condition pays only where it holds. It is its own key rather
+	// than BlurbInflicts reused, because the sentence it joins has already said
+	// what the condition is, so repeating the condition would say it twice.
+	BlurbConditionInflicts
 	BlurbConsumesStacksOne
 	BlurbConsumesEachStrikeOne
 	BlurbConsumesPile

@@ -151,18 +151,29 @@ func (p *pricing) rate(actor *Unit, declared skill.Skill, aim hex.Offset) int64 
 		if declared.Target != skill.All && (declared.Target == skill.Enemy) == friendly {
 			continue
 		}
+		// A condition's own riders are paid only where it holds, and the rating
+		// has the target in hand -- so this asks the same question the resolution
+		// asks rather than an estimate of it. Folded into one list because every
+		// arm below wants the same answer about all of them, and a second pass
+		// would be a second place for the friendly and the hostile readings to
+		// part company.
+		riders := declared.Applies
+		if declared.Requires.AppliesOnHold() &&
+			declared.Amplified(conditionTarget(declared, target)) {
+			riders = append(append([]skill.Application(nil), riders...), declared.Requires.Applies...)
+		}
 		if friendly {
 			total += p.restored(actor, target, declared)
-			total += p.granted(actor, target, from, declared.Applies)
+			total += p.granted(actor, target, from, riders)
 			total += p.cleansed(target, declared)
 			// Symmetry with the caster's own cost above: a harmful status landing
 			// on one's own side is a price, not a benefit, wherever it comes from.
-			total -= p.inflictedOn(actor, target, from, declared.Applies)
+			total -= p.inflictedOn(actor, target, from, riders)
 		} else {
-			total += p.inflictedOn(actor, target, from, declared.Applies)
+			total += p.inflictedOn(actor, target, from, riders)
 			total += p.dispelled(target, declared)
 			// And a benefit landing on an enemy is a price for the same reason.
-			total -= p.granted(actor, target, from, declared.Applies)
+			total -= p.granted(actor, target, from, riders)
 		}
 	}
 	return total

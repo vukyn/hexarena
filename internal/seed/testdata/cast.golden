@@ -201,6 +201,29 @@ pokemon.mewtwo — Mewtwo
     level 60 hp 3000, atk 520, def 280, spd 140, acc 200, ddg 68
              absorbs 5802 of the 11500 budget, 5698 to spare
 
+pokemon.oddish — Oddish
+  from     Pokémon (anime)
+  preset   sapper
+  element  grass
+  species  plant
+  art      assets/oddish.svg
+  kit      acid mega_drain toxic@8 acid_spray@10 stun_spore@12 petal_dance@16 poison_powder@20 sludge_bomb@24 venoshock@28 synthesis@32 ingrain@36 rally@40 wide_guard@44
+  stage "Oddish" owns levels 1 to 15, showing assets/oddish.svg
+    level 1  hp 820, atk 140, def 103, spd 24, acc 40, ddg 11
+             absorbs 1102 of the 11500 budget, 10398 to spare
+    level 15 hp 1183, atk 199, def 147, spd 33, acc 57, ddg 15
+             absorbs 1763 of the 11500 budget, 9737 to spare
+  stage "Gloom" owns levels 16 to 31, showing assets/gloom.svg
+    level 16 hp 1462, atk 244, def 181, spd 41, acc 71, ddg 19
+             absorbs 2346 of the 11500 budget, 9154 to spare
+    level 31 hp 1935, atk 321, def 239, spd 54, acc 94, ddg 25
+             absorbs 3480 of the 11500 budget, 8020 to spare
+  stage "Vileplume" owns levels 32 to 60, showing assets/vileplume.svg
+    level 32 hp 2346, atk 389, def 290, spd 73, acc 114, ddg 31
+             absorbs 4618 of the 11500 budget, 6882 to spare
+    level 60 hp 3400, atk 560, def 420, spd 105, acc 165, ddg 45
+             absorbs 8173 of the 11500 budget, 3327 to spare
+
 pokemon.poliwag — Poliwag
   from     Pokémon (anime)
   preset   bruiser
@@ -270,4 +293,4 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-13 characters
+14 characters

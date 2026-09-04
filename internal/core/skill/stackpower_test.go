@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -173,9 +174,11 @@ func TestAPerStackPaymentSurvivesBeingWrittenBack(t *testing.T) {
 	if back.SelfRequires == nil {
 		t.Fatal("the caster's own condition did not survive being written back")
 	}
-	if *back.SelfRequires != (skill.Condition{
+	// Compared through reflect rather than with ==, because a Condition carries
+	// a rider list and a struct holding a slice is not comparable.
+	if want := (skill.Condition{
 		Status: "fuel", MinStacks: 3, Consume: true, ConsumeStacks: 5, StackPower: 200,
-	}) {
-		t.Errorf("it came back as %+v", *back.SelfRequires)
+	}); !reflect.DeepEqual(*back.SelfRequires, want) {
+		t.Errorf("it came back as %+v, want %+v", *back.SelfRequires, want)
 	}
 }

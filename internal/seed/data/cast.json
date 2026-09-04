@@ -1708,6 +1708,190 @@
       ]
     },
     {
+      "id": "pokemon.oddish",
+      "name": "Oddish",
+      "origin": "pokemon",
+      "archetype": "sapper",
+      "image": "assets/oddish.svg",
+      "element": "grass",
+      "bio": "Ban ngày vùi mình dưới đất, tối mới lôi cả thân lên đi tìm chỗ đất ẩm hơn, và chỗ nào nó đứng lại một đêm thì sáng ra cỏ quanh đấy vàng hết. Oddish không đuổi theo ai, chỉ cần kẻ kia đứng đủ lâu.",
+      "species": [
+        "plant"
+      ],
+      "stages": [
+        {
+          "name": "Oddish",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 820,
+              "max": 2350
+            },
+            "attack": {
+              "base": 140,
+              "max": 390
+            },
+            "defense": {
+              "base": 103,
+              "max": 292
+            },
+            "speed": {
+              "base": 24,
+              "max": 66
+            },
+            "accuracy": {
+              "base": 40,
+              "max": 115
+            },
+            "dodge": {
+              "base": 11,
+              "max": 31
+            }
+          }
+        },
+        {
+          "name": "Gloom",
+          "min_level": 16,
+          "image": "assets/gloom.svg",
+          "stats": {
+            "hp": {
+              "base": 990,
+              "max": 2850
+            },
+            "attack": {
+              "base": 168,
+              "max": 470
+            },
+            "defense": {
+              "base": 124,
+              "max": 352
+            },
+            "speed": {
+              "base": 29,
+              "max": 80
+            },
+            "accuracy": {
+              "base": 49,
+              "max": 138
+            },
+            "dodge": {
+              "base": 13,
+              "max": 37
+            }
+          }
+        },
+        {
+          "name": "Vileplume",
+          "min_level": 32,
+          "image": "assets/vileplume.svg",
+          "stats": {
+            "hp": {
+              "base": 1180,
+              "max": 3400
+            },
+            "attack": {
+              "base": 200,
+              "max": 560
+            },
+            "defense": {
+              "base": 148,
+              "max": 420
+            },
+            "speed": {
+              "base": 38,
+              "max": 105
+            },
+            "accuracy": {
+              "base": 58,
+              "max": 165
+            },
+            "dodge": {
+              "base": 16,
+              "max": 45
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "acid"
+        },
+        {
+          "id": "mega_drain"
+        },
+        {
+          "id": "toxic",
+          "at_level": 8
+        },
+        {
+          "id": "acid_spray",
+          "at_level": 10
+        },
+        {
+          "id": "stun_spore",
+          "at_level": 12
+        },
+        {
+          "id": "petal_dance",
+          "at_level": 16
+        },
+        {
+          "id": "poison_powder",
+          "at_level": 20
+        },
+        {
+          "id": "sludge_bomb",
+          "at_level": 24
+        },
+        {
+          "id": "venoshock",
+          "at_level": 28
+        },
+        {
+          "id": "synthesis",
+          "at_level": 32
+        },
+        {
+          "id": "ingrain",
+          "at_level": 36
+        },
+        {
+          "id": "rally",
+          "at_level": 40
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 44
+        }
+      ],
+      "passives": [
+        {
+          "id": "virulence",
+          "at_level": 16
+        },
+        {
+          "id": "venom_blood",
+          "at_level": 24
+        },
+        {
+          "id": "contagion",
+          "at_level": 28
+        },
+        {
+          "id": "endurance",
+          "at_level": 32
+        },
+        {
+          "id": "elusive",
+          "at_level": 40
+        },
+        {
+          "id": "composure",
+          "at_level": 44
+        }
+      ]
+    },
+    {
       "id": "pokemon.poliwag",
       "name": "Poliwag",
       "origin": "pokemon",

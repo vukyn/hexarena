@@ -118,6 +118,12 @@ reversal        metal     enemy    1  single          500     1    500   930    
 aura_sphere     metal     enemy    2  single         1400     1   1400   960    3     0     0      480
 force_palm      metal     enemy    1  single          900     1    900   940    2     0     0      308
 close_combat    metal     enemy    1  single         1900     1   1900   900    3     0     0      651
+acid            neutral   enemy    2  single          700     1    700   940    2     0     0      240
+toxic           neutral   enemy    2  single            0     1      0   900    4     0     0        0
+stun_spore      neutral   enemy    2  flank_up          0     1      0  1000    3     0     0        0
+mega_drain      grass     enemy    2  single          800     1    800   950    2     0     0      274
+petal_dance     grass     enemy    1  single         1500     1   1500   870    3     0     0      514
+acid_spray      neutral   enemy    2  single          600     1    600   940    2     0     0      205
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -189,6 +195,10 @@ blizzard        mire                   1      500        720              360
 ice_wall        aegis                  1     1000       1000             1000
 force_palm      stun                   1      300        940              282
 close_combat    bare (self)            1     1000        900                -
+acid            expose                 1      500        940              470
+toxic           poison                 2     1000        900              900
+toxic           fester                 1      700        900              630
+stun_spore      mire                   1      800       1000              800
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -300,6 +310,12 @@ reversal        -          -                 -                   -         pokem
 aura_sphere     -          -                 -                   -         pokemon
 force_palm      -          -                 -                   -         pokemon
 close_combat    -          -                 -                   -         pokemon
+acid            -          -                 -                   -         pokemon
+toxic           -          -                 -                   -         pokemon
+stun_spore      -          -                 -                   -         pokemon
+mega_drain      -          -                 -                   -         pokemon
+petal_dance     -          -                 -                   -         pokemon
+acid_spray      -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -321,6 +337,7 @@ deluge          caster   moisture                          3     600         600
 cauterise       caster   swelter                           5       0           0        0           0      - (consumes)
 verdant_mend    caster   verdure                          10       0           0        0           0      - (consumes)
 wellspring      caster   moisture                         20       0           0        0           0      - (consumes)
+acid_spray      target   poison                            2     600        1100      205         377  1.83x
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar

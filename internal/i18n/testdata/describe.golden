@@ -670,6 +670,42 @@ Nhận trần trụi.
 Tầm 1 · 90% trúng · hồi 3 lượt.
 [one line] 190% công · tự nhận trần trụi · tầm 1 · hồi 3
 
+acid
+Nhổ ra một thứ nước sánh, chỗ nào dính thì sủi lên rồi mỏng dần đi, 70% công.
+Gây phá giáp cho mục tiêu, 50% khả năng.
+Tầm 2 · 94% trúng · hồi 2 lượt.
+[one line] 70% công · phá giáp 50% · tầm 2 · hồi 2
+
+toxic
+Thứ độc ngấm chậm mà không chịu tan, vết nào đã mở ra thì cứ để mở.
+Gây trúng độc x2 cho mục tiêu, 100% khả năng.
+Gây lở loét cho mục tiêu, 70% khả năng.
+Tầm 2 · 90% trúng · hồi 4 lượt.
+[one line] trúng độc x2 100% · lở loét 70% · tầm 2 · hồi 4
+
+stun_spore
+Rải một lớp phấn mịn, hít vào thì chân tay nặng dần rồi chậm hẳn lại.
+Gây sa lầy cho mục tiêu, 80% khả năng.
+Tầm 2 · 2 ô · 100% trúng · hồi 3 lượt.
+[one line] sa lầy 80% · tầm 2 · 2 ô · hồi 3
+
+mega_drain
+Cắm rễ nhỏ vào kẻ đứng trước mặt rồi kéo ngược thứ đang chảy trong đó về, 80% công.
+Hút lại 60% sát thương gây ra.
+Tầm 2 · 95% trúng · hồi 2 lượt.
+[one line] 80% công · hút 60% · tầm 2 · hồi 2
+
+petal_dance
+Cánh hoa bung ra xoay quanh mình rồi cuốn thẳng vào kẻ đứng gần nhất, 150% công.
+Tầm 1 · 87% trúng · hồi 3 lượt.
+[one line] 150% công · tầm 1 · hồi 3
+
+acid_spray
+Phun một tia mảnh vào đúng chỗ đã mục sẵn, chỗ ấy toác ra rộng thêm, 60% công.
+Mục tiêu đang dính ít nhất 2 cộng dồn trúng độc: 110% công, và gây thêm suy yếu, 80% khả năng.
+Tầm 2 · 94% trúng · hồi 2 lượt.
+[one line] 60% công · trúng độc 2+→110% · tầm 2 · hồi 2
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1591,6 +1627,42 @@ Hits an enemy for 190% of attack.
 Puts bare on itself.
 Range 1 · 90% to hit · 3 turns to recharge.
 [one line] 190% attack · self bare · range 1 · cd 3
+
+acid
+Hits an enemy for 70% of attack.
+Inflicts expose, 50% of the time.
+Range 2 · 94% to hit · 2 turns to recharge.
+[one line] 70% attack · expose 50% · range 2 · cd 2
+
+toxic
+Aims at an enemy.
+Inflicts poison x2, 100% of the time.
+Inflicts fester, 70% of the time.
+Range 2 · 90% to hit · 4 turns to recharge.
+[one line] poison x2 100% · fester 70% · range 2 · cd 4
+
+stun_spore
+Aims at an enemy.
+Inflicts mire, 80% of the time.
+Range 2 · 2 cells · 100% to hit · 3 turns to recharge.
+[one line] mire 80% · range 2 · 2 cells · cd 3
+
+mega_drain
+Hits an enemy for 80% of attack.
+Takes back 60% of the damage it deals.
+Range 2 · 95% to hit · 2 turns to recharge.
+[one line] 80% attack · drains 60% · range 2 · cd 2
+
+petal_dance
+Hits an enemy for 150% of attack.
+Range 1 · 87% to hit · 3 turns to recharge.
+[one line] 150% attack · range 1 · cd 3
+
+acid_spray
+Hits an enemy for 60% of attack.
+While the target is carrying at least 2 stacks of poison: 110% of attack, and also inflicts weaken, 80% of the time.
+Range 2 · 94% to hit · 2 turns to recharge.
+[one line] 60% attack · poison 2+→110% · range 2 · cd 2
 
 [trait] endurance
 Always carries toughened.
