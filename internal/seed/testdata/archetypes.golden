@@ -193,4 +193,16 @@ tempest, formation column 2
            absorbs 8878 of the 11500 budget, 2622 to spare
   kit      gust air_slash twister hurricane slipstream updraft body_slam hyper_voice safeguard taunt
 
-16 presets
+predator, formation column 0
+  the fastest thing on the board: it takes a turn and a third for every turn the front row takes, spends every one of them closing, and is built so thin that the first blow to catch it is usually the last
+  demands  a character built from it must carry ground
+  hp 1030->3100  attack 226->680  defense 110->330  speed 61->185  accuracy 60->180  dodge 22->66
+  level 1  hp 1030, atk 226, def 110, spd 61, acc 60, ddg 22
+           absorbs 1409 of the 11500 budget, 10091 to spare
+  level 30 hp 2047, atk 449, def 218, spd 121, acc 118, ddg 43
+           absorbs 3535 of the 11500 budget, 7965 to spare
+  level 60 hp 3100, atk 680, def 330, spd 185, acc 180, ddg 66
+           absorbs 6512 of the 11500 budget, 4988 to spare
+  kit      dig stone_edge earthquake sand_tomb sandstorm rock_throw seismic_toss body_slam taunt
+
+17 presets

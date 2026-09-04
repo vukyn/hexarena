@@ -3184,6 +3184,111 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "dig",
+      "name": "độn thổ",
+      "flavour": "Lặn xuống dưới chân đối phương rồi trồi lên ngay dưới người họ",
+      "element": "ground",
+      "range": 1,
+      "pattern": "single",
+      "power": 1050,
+      "strikes": 1,
+      "accuracy": 940,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "stone_edge",
+      "name": "đá dựng",
+      "flavour": "Đất nứt ra, một hàng đá nhọn dựng đứng lên đúng chỗ vừa đứng",
+      "element": "ground",
+      "range": 2,
+      "pattern": "single",
+      "power": 1700,
+      "strikes": 1,
+      "accuracy": 820,
+      "crit": 250,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "earthquake",
+      "name": "địa chấn",
+      "flavour": "Giậm một cái cho cả mặt đất chuyển, ai đứng trên đất thì chịu chung",
+      "element": "ground",
+      "range": 1,
+      "pattern": "column",
+      "power": 1450,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "sand_tomb",
+      "name": "bẫy cát",
+      "flavour": "Cát dưới chân mềm ra rồi siết lại, rút chân lên được thì cũng chậm mất",
+      "element": "ground",
+      "range": 2,
+      "pattern": "single",
+      "power": 850,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "mire",
+          "chance": 700,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "sandstorm",
+      "name": "bão cát",
+      "flavour": "Cuốn cát lên thành một bức tường mù, bên trong ấy nhìn gì cũng ra hình đó",
+      "element": "ground",
+      "range": 2,
+      "pattern": "column",
+      "power": 600,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "blind",
+          "chance": 600,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

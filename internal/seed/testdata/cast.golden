@@ -139,6 +139,29 @@ pokemon.gastly — Gastly
     level 60 hp 3000, atk 620, def 340, spd 130, acc 175, ddg 80
              absorbs 6410 of the 11500 budget, 5090 to spare
 
+pokemon.gible — Gible
+  from     Pokémon (anime)
+  preset   predator
+  element  ground
+  species  dragon
+  art      assets/gible.svg
+  kit      dig sand_tomb@8 rock_throw@12 dragon_rage@16 earthquake@20 dragon_dance@24 sandstorm@28 stone_edge@32 dragon_claw@36 seismic_toss@40 body_slam@44 dragon_drive@46 outrage@48 taunt@52 rapid_spin@56
+  stage "Gible" owns levels 1 to 23, showing assets/gible.svg
+    level 1  hp 640, atk 140, def 68, spd 38, acc 37, ddg 13
+             absorbs 785 of the 11500 budget, 10715 to spare
+    level 23 hp 1117, atk 244, def 118, spd 66, acc 64, ddg 23
+             absorbs 1557 of the 11500 budget, 9943 to spare
+  stage "Gabite" owns levels 24 to 47, showing assets/gabite.svg
+    level 24 hp 1470, atk 322, def 156, spd 87, acc 85, ddg 31
+             absorbs 2237 of the 11500 budget, 9263 to spare
+    level 47 hp 2115, atk 464, def 225, spd 126, acc 122, ddg 45
+             absorbs 3704 of the 11500 budget, 7796 to spare
+  stage "Garchomp" owns levels 48 to 60, showing assets/garchomp.svg
+    level 48 hp 2678, atk 587, def 285, spd 159, acc 155, ddg 57
+             absorbs 5230 of the 11500 budget, 6270 to spare
+    level 60 hp 3100, atk 680, def 330, spd 185, acc 180, ddg 66
+             absorbs 6512 of the 11500 budget, 4988 to spare
+
 pokemon.happiny — Happiny
   from     Pokémon (anime)
   preset   cleanser
@@ -339,4 +362,4 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-16 characters
+17 characters

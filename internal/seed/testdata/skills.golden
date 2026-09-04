@@ -137,6 +137,11 @@ twister         wind      enemy    2  column         1050     1   1050   900    
 hurricane       wind      enemy    3  column         2100     1   2100   750    4     0     0      720
 slipstream      wind      ally     1  column            0     1      0  1000    4     0     0        0
 updraft         wind      self     0  single            0     1      0  1000    4     0     0        0
+dig             ground    enemy    1  single         1050     1   1050   940    1     0     0      360
+stone_edge      ground    enemy    2  single         1700     1   1700   820    3     0   250      582
+earthquake      ground    enemy    1  column         1450     1   1450   900    3     0     0      497
+sand_tomb       ground    enemy    2  single          850     1    850   900    3     0     0      291
+sandstorm       ground    enemy    2  column          600     1    600   950    4     0     0      205
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -220,6 +225,8 @@ hurricane       blind                  1      500        750              375
 slipstream      haste                  1     1000       1000             1000
 updraft         veil (self)            1     1000       1000                -
 updraft         focus (self)           1     1000       1000                -
+sand_tomb       mire                   1      700        900              630
+sandstorm       blind                  1      600        950              570
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -350,6 +357,11 @@ twister         -          -                 -                   -         pokem
 hurricane       -          -                 -                   -         pokemon
 slipstream      -          -                 -                   -         pokemon
 updraft         -          -                 -                   -         pokemon
+dig             -          -                 -                   -         pokemon
+stone_edge      -          -                 -                   -         pokemon
+earthquake      -          -                 -                   -         pokemon
+sand_tomb       -          -                 -                   -         pokemon
+sandstorm       -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
