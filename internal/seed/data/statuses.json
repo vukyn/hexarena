@@ -308,6 +308,12 @@
       "category": "reserve",
       "max_stacks": 999,
       "duration": 5
+    },
+    {
+      "id": "heft",
+      "category": "reserve",
+      "max_stacks": 5,
+      "duration": 4
     }
   ]
 }

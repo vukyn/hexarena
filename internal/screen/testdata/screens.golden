@@ -588,22 +588,22 @@ sửa chiêu  sát thương tính ngay khi gõ, đúng bằng công thức lúc 
 ===== vi | 120x24 | edited a skill =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 
-  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
-> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
-  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
-  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
-  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
-  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
-  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
-  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
-  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
-  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  id              tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf      phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam      quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder    phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder   phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb     độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock       độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed      hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis       quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong ../seed/data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
 ===== vi | 120x24 | elements =====
@@ -639,56 +639,56 @@ space để chọn · để trống thì ai cũng học được chiêu này
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | filtered skills =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 126 chiêu)
+  đang lọc long (5 trong 128 chiêu)
 
-  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
-> dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
-  dragon_dance   long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
-  dragon_claw    long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
-  outrage        cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
-  dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
+  id              tên tiếng Việt       hệ        hệ số sát thương ai học được
+> dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
+  dragon_dance    long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
+  dragon_claw     long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
+  outrage         cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
+  dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 120x24 | filtering skills =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   gõ tên hay mã chiêu để lọc
 
-  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
-> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
-  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
-  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
-  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
-  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
-  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
-  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
-  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
-  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  id              tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf      phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam      quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder    phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder   phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb     độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock       độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed      hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis       quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 120x24 | kit picker =====
-bộ chiêu  0/126
+bộ chiêu  0/128
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
->    ! vine_whip      hệ grass, vũ trụ pokemon
-     ! razor_leaf     hệ grass, vũ trụ pokemon
-     ! solar_beam     hệ light, vũ trụ pokemon
-     ! sleep_powder   hệ grass, vũ trụ pokemon
-     ! poison_powder  vũ trụ pokemon
-     ! sludge_bomb    vũ trụ pokemon
-     ! venoshock      vũ trụ pokemon
-     ! leech_seed     hệ grass, vũ trụ pokemon
-     ! synthesis      hệ grass, chủng loài plant, vũ trụ pokemon
-     ! ingrain        hệ grass, chủng loài plant, vũ trụ pokemon
-     ! ember          hệ fire, vũ trụ pokemon
-     ! flamethrower   hệ fire, vũ trụ pokemon
-     ! fire_fang      hệ fire, vũ trụ pokemon
+>    ! vine_whip       hệ grass, vũ trụ pokemon
+     ! razor_leaf      hệ grass, vũ trụ pokemon
+     ! solar_beam      hệ light, vũ trụ pokemon
+     ! sleep_powder    hệ grass, vũ trụ pokemon
+     ! poison_powder   vũ trụ pokemon
+     ! sludge_bomb     vũ trụ pokemon
+     ! venoshock       vũ trụ pokemon
+     ! leech_seed      hệ grass, vũ trụ pokemon
+     ! synthesis       hệ grass, chủng loài plant, vũ trụ pokemon
+     ! ingrain         hệ grass, chủng loài plant, vũ trụ pokemon
+     ! ember           hệ fire, vũ trụ pokemon
+     ! flamethrower    hệ fire, vũ trụ pokemon
+     ! fire_fang       hệ fire, vũ trụ pokemon
 
   chưa chọn gì
   hệ wind không mang được chiêu "vine_whip" (hệ grass)
@@ -705,7 +705,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 ----- footer -----
 ↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | reading a skill =====
-withdraw <thủ thế>  26/126
+withdraw <thủ thế>  26/128
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -731,7 +731,7 @@ chiêu trúng những ô nào  4/9
 ----- footer -----
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 120x24 | skill blurb =====
-withdraw <thủ thế>  26/126
+withdraw <thủ thế>  26/128
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -743,29 +743,29 @@ withdraw <thủ thế>  26/126
 ===== vi | 120x24 | skills =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 
-  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
-> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
-  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
-  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
-  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
-  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
-  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
-  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
-  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
-  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  id              tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf      phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam      quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder    phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder   phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb     độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock       độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed      hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis       quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
 ===== vi | 120x24 | skills filtered to none =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 126 chiêu)
+  đang lọc zzzz (0 trong 128 chiêu)
 
   không có chiêu nào khớp.
 
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 120x24 | species =====
@@ -799,7 +799,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
-chiêu này gây hiệu ứng gì  1/29
+chiêu này gây hiệu ứng gì  1/30
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -1719,6 +1719,7 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.machop
     machop.gamble       đánh cược
     machop.sure         chắc đòn
+    machop.charge       dồn sức
   pokemon.magnemite
     magnemite.trickle   nhỏ giọt
     magnemite.surge     sấm dội
@@ -1801,58 +1802,58 @@ sửa chiêu  sát thương tính ngay khi gõ, đúng bằng công thức lúc 
 ===== vi | 160x60 | edited a skill =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 
-  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
-> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
-  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
-  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
-  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
-  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
-  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
-  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
-  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
-  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ember          than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
-  flamethrower   phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
-  fire_fang      nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
-  fire_spin      xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
-  heat_wave      luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
-  inferno        hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
-  dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
-  smokescreen    màn khói             neutral   0x1              ai cũng được
-  dragon_dance   long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
-  water_gun      súng nước            water     1000x1           hệ water, vũ trụ pokemon
-  bubble         bong bóng            water     700x1            hệ water, vũ trụ pokemon
-  whirlpool      xoáy nước            water     800x1            hệ water, vũ trụ pokemon
-  bite           cắn                  neutral   1200x1           ai cũng được
-  brine          nước mặn             water     1000x1           hệ water, vũ trụ pokemon
-  hydro_pump     thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
-  withdraw       thủ thế              neutral   0x1              ai cũng được
-  aqua_ring      vòng nước            water     0x1              hệ water, vũ trụ pokemon
-  rapid_spin     xoay nhanh           neutral   0x1              ai cũng được
-  rally          khích lệ             neutral   0x1              ai cũng được
-  dragon_claw    long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
-  outrage        cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
-  dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
-  taunt          khiêu khích          neutral   0x1              ai cũng được
-  kunai          phi đao              neutral   700x1            vũ trụ naruto
-  wind_shuriken  phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
-  rasengan       xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
-  substitution   thế thân             neutral   0x1              vũ trụ naruto
-  shadow_clone   phân thân            neutral   0x1              vũ trụ naruto
-  comeback       vùng lên             neutral   900x1            vũ trụ naruto
-  summon_toad    triệu hồi cóc        neutral   0x1              vũ trụ naruto
-  water_pulse    sóng nước            water     600x1            hệ water, vũ trụ pokemon
-  skull_bash     húc đầu              neutral   850x1            vũ trụ pokemon
-  wide_guard     che chắn             neutral   0x1              ai cũng được
-  bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
-  body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
-  pummel         đánh dồn dập         neutral   280x5            vũ trụ pokemon
+  id              tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf      phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam      quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder    phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder   phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb     độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock       độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed      hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis       quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ember           than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
+  flamethrower    phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
+  fire_fang       nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
+  fire_spin       xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
+  heat_wave       luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
+  inferno         hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
+  dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
+  smokescreen     màn khói             neutral   0x1              ai cũng được
+  dragon_dance    long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
+  water_gun       súng nước            water     1000x1           hệ water, vũ trụ pokemon
+  bubble          bong bóng            water     700x1            hệ water, vũ trụ pokemon
+  whirlpool       xoáy nước            water     800x1            hệ water, vũ trụ pokemon
+  bite            cắn                  neutral   1200x1           ai cũng được
+  brine           nước mặn             water     1000x1           hệ water, vũ trụ pokemon
+  hydro_pump      thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
+  withdraw        thủ thế              neutral   0x1              ai cũng được
+  aqua_ring       vòng nước            water     0x1              hệ water, vũ trụ pokemon
+  rapid_spin      xoay nhanh           neutral   0x1              ai cũng được
+  rally           khích lệ             neutral   0x1              ai cũng được
+  dragon_claw     long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
+  outrage         cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
+  dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
+  taunt           khiêu khích          neutral   0x1              ai cũng được
+  kunai           phi đao              neutral   700x1            vũ trụ naruto
+  wind_shuriken   phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
+  rasengan        xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
+  substitution    thế thân             neutral   0x1              vũ trụ naruto
+  shadow_clone    phân thân            neutral   0x1              vũ trụ naruto
+  comeback        vùng lên             neutral   900x1            vũ trụ naruto
+  summon_toad     triệu hồi cóc        neutral   0x1              vũ trụ naruto
+  water_pulse     sóng nước            water     600x1            hệ water, vũ trụ pokemon
+  skull_bash      húc đầu              neutral   850x1            vũ trụ pokemon
+  wide_guard      che chắn             neutral   0x1              ai cũng được
+  bubble_beam     tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
+  body_slam       lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
+  pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong ../seed/data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
 ===== vi | 160x60 | elements =====
@@ -1888,128 +1889,128 @@ space để chọn · để trống thì ai cũng học được chiêu này
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | filtered skills =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 126 chiêu)
+  đang lọc long (5 trong 128 chiêu)
 
-  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
-> dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
-  dragon_dance   long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
-  dragon_claw    long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
-  outrage        cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
-  dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
+  id              tên tiếng Việt       hệ        hệ số sát thương ai học được
+> dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
+  dragon_dance    long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
+  dragon_claw     long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
+  outrage         cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
+  dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 160x60 | filtering skills =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   gõ tên hay mã chiêu để lọc
 
-  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
-> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
-  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
-  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
-  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
-  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
-  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
-  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
-  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
-  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ember          than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
-  flamethrower   phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
-  fire_fang      nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
-  fire_spin      xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
-  heat_wave      luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
-  inferno        hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
-  dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
-  smokescreen    màn khói             neutral   0x1              ai cũng được
-  dragon_dance   long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
-  water_gun      súng nước            water     1000x1           hệ water, vũ trụ pokemon
-  bubble         bong bóng            water     700x1            hệ water, vũ trụ pokemon
-  whirlpool      xoáy nước            water     800x1            hệ water, vũ trụ pokemon
-  bite           cắn                  neutral   1200x1           ai cũng được
-  brine          nước mặn             water     1000x1           hệ water, vũ trụ pokemon
-  hydro_pump     thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
-  withdraw       thủ thế              neutral   0x1              ai cũng được
-  aqua_ring      vòng nước            water     0x1              hệ water, vũ trụ pokemon
-  rapid_spin     xoay nhanh           neutral   0x1              ai cũng được
-  rally          khích lệ             neutral   0x1              ai cũng được
-  dragon_claw    long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
-  outrage        cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
-  dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
-  taunt          khiêu khích          neutral   0x1              ai cũng được
-  kunai          phi đao              neutral   700x1            vũ trụ naruto
-  wind_shuriken  phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
-  rasengan       xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
-  substitution   thế thân             neutral   0x1              vũ trụ naruto
-  shadow_clone   phân thân            neutral   0x1              vũ trụ naruto
-  comeback       vùng lên             neutral   900x1            vũ trụ naruto
-  summon_toad    triệu hồi cóc        neutral   0x1              vũ trụ naruto
-  water_pulse    sóng nước            water     600x1            hệ water, vũ trụ pokemon
-  skull_bash     húc đầu              neutral   850x1            vũ trụ pokemon
-  wide_guard     che chắn             neutral   0x1              ai cũng được
-  bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
-  body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
-  pummel         đánh dồn dập         neutral   280x5            vũ trụ pokemon
+  id              tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf      phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam      quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder    phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder   phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb     độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock       độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed      hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis       quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ember           than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
+  flamethrower    phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
+  fire_fang       nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
+  fire_spin       xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
+  heat_wave       luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
+  inferno         hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
+  dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
+  smokescreen     màn khói             neutral   0x1              ai cũng được
+  dragon_dance    long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
+  water_gun       súng nước            water     1000x1           hệ water, vũ trụ pokemon
+  bubble          bong bóng            water     700x1            hệ water, vũ trụ pokemon
+  whirlpool       xoáy nước            water     800x1            hệ water, vũ trụ pokemon
+  bite            cắn                  neutral   1200x1           ai cũng được
+  brine           nước mặn             water     1000x1           hệ water, vũ trụ pokemon
+  hydro_pump      thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
+  withdraw        thủ thế              neutral   0x1              ai cũng được
+  aqua_ring       vòng nước            water     0x1              hệ water, vũ trụ pokemon
+  rapid_spin      xoay nhanh           neutral   0x1              ai cũng được
+  rally           khích lệ             neutral   0x1              ai cũng được
+  dragon_claw     long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
+  outrage         cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
+  dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
+  taunt           khiêu khích          neutral   0x1              ai cũng được
+  kunai           phi đao              neutral   700x1            vũ trụ naruto
+  wind_shuriken   phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
+  rasengan        xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
+  substitution    thế thân             neutral   0x1              vũ trụ naruto
+  shadow_clone    phân thân            neutral   0x1              vũ trụ naruto
+  comeback        vùng lên             neutral   900x1            vũ trụ naruto
+  summon_toad     triệu hồi cóc        neutral   0x1              vũ trụ naruto
+  water_pulse     sóng nước            water     600x1            hệ water, vũ trụ pokemon
+  skull_bash      húc đầu              neutral   850x1            vũ trụ pokemon
+  wide_guard      che chắn             neutral   0x1              ai cũng được
+  bubble_beam     tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
+  body_slam       lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
+  pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 160x60 | kit picker =====
-bộ chiêu  0/126
+bộ chiêu  0/128
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
->    ! vine_whip      hệ grass, vũ trụ pokemon
-     ! razor_leaf     hệ grass, vũ trụ pokemon
-     ! solar_beam     hệ light, vũ trụ pokemon
-     ! sleep_powder   hệ grass, vũ trụ pokemon
-     ! poison_powder  vũ trụ pokemon
-     ! sludge_bomb    vũ trụ pokemon
-     ! venoshock      vũ trụ pokemon
-     ! leech_seed     hệ grass, vũ trụ pokemon
-     ! synthesis      hệ grass, chủng loài plant, vũ trụ pokemon
-     ! ingrain        hệ grass, chủng loài plant, vũ trụ pokemon
-     ! ember          hệ fire, vũ trụ pokemon
-     ! flamethrower   hệ fire, vũ trụ pokemon
-     ! fire_fang      hệ fire, vũ trụ pokemon
-     ! fire_spin      hệ fire, vũ trụ pokemon
-     ! heat_wave      hệ fire, vũ trụ pokemon
-     ! inferno        hệ fire, vũ trụ pokemon
-     ! dragon_rage    chủng loài dragon, vũ trụ pokemon
-       smokescreen    ai cũng được
-     ! dragon_dance   chủng loài dragon, vũ trụ pokemon
-     ! water_gun      hệ water, vũ trụ pokemon
-     ! bubble         hệ water, vũ trụ pokemon
-     ! whirlpool      hệ water, vũ trụ pokemon
-       bite           ai cũng được
-     ! brine          hệ water, vũ trụ pokemon
-     ! hydro_pump     hệ water, vũ trụ pokemon
-       withdraw       ai cũng được
-     ! aqua_ring      hệ water, vũ trụ pokemon
-       rapid_spin     ai cũng được
-       rally          ai cũng được
-     ! dragon_claw    chủng loài dragon, vũ trụ pokemon
-     ! outrage        chủng loài dragon, vũ trụ pokemon
-     ! dragon_drive   chủng loài dragon, vũ trụ pokemon
-       taunt          ai cũng được
-       kunai          vũ trụ naruto
-       wind_shuriken  hệ wind, vũ trụ naruto
-       rasengan       hệ wind, vũ trụ naruto
-       substitution   vũ trụ naruto
-       shadow_clone   vũ trụ naruto
-       comeback       vũ trụ naruto
-       summon_toad    vũ trụ naruto
-     ! water_pulse    hệ water, vũ trụ pokemon
-     ! skull_bash     vũ trụ pokemon
-       wide_guard     ai cũng được
-     ! bubble_beam    hệ water, vũ trụ pokemon
-     ! body_slam      vũ trụ pokemon
-     ! pummel         vũ trụ pokemon
-     ! submission     vũ trụ pokemon
-     ! rock_throw     hệ ground, vũ trụ pokemon
-     ! seismic_toss   hệ ground, vũ trụ pokemon
+>    ! vine_whip       hệ grass, vũ trụ pokemon
+     ! razor_leaf      hệ grass, vũ trụ pokemon
+     ! solar_beam      hệ light, vũ trụ pokemon
+     ! sleep_powder    hệ grass, vũ trụ pokemon
+     ! poison_powder   vũ trụ pokemon
+     ! sludge_bomb     vũ trụ pokemon
+     ! venoshock       vũ trụ pokemon
+     ! leech_seed      hệ grass, vũ trụ pokemon
+     ! synthesis       hệ grass, chủng loài plant, vũ trụ pokemon
+     ! ingrain         hệ grass, chủng loài plant, vũ trụ pokemon
+     ! ember           hệ fire, vũ trụ pokemon
+     ! flamethrower    hệ fire, vũ trụ pokemon
+     ! fire_fang       hệ fire, vũ trụ pokemon
+     ! fire_spin       hệ fire, vũ trụ pokemon
+     ! heat_wave       hệ fire, vũ trụ pokemon
+     ! inferno         hệ fire, vũ trụ pokemon
+     ! dragon_rage     chủng loài dragon, vũ trụ pokemon
+       smokescreen     ai cũng được
+     ! dragon_dance    chủng loài dragon, vũ trụ pokemon
+     ! water_gun       hệ water, vũ trụ pokemon
+     ! bubble          hệ water, vũ trụ pokemon
+     ! whirlpool       hệ water, vũ trụ pokemon
+       bite            ai cũng được
+     ! brine           hệ water, vũ trụ pokemon
+     ! hydro_pump      hệ water, vũ trụ pokemon
+       withdraw        ai cũng được
+     ! aqua_ring       hệ water, vũ trụ pokemon
+       rapid_spin      ai cũng được
+       rally           ai cũng được
+     ! dragon_claw     chủng loài dragon, vũ trụ pokemon
+     ! outrage         chủng loài dragon, vũ trụ pokemon
+     ! dragon_drive    chủng loài dragon, vũ trụ pokemon
+       taunt           ai cũng được
+       kunai           vũ trụ naruto
+       wind_shuriken   hệ wind, vũ trụ naruto
+       rasengan        hệ wind, vũ trụ naruto
+       substitution    vũ trụ naruto
+       shadow_clone    vũ trụ naruto
+       comeback        vũ trụ naruto
+       summon_toad     vũ trụ naruto
+     ! water_pulse     hệ water, vũ trụ pokemon
+     ! skull_bash      vũ trụ pokemon
+       wide_guard      ai cũng được
+     ! bubble_beam     hệ water, vũ trụ pokemon
+     ! body_slam       vũ trụ pokemon
+     ! pummel          vũ trụ pokemon
+     ! submission      vũ trụ pokemon
+     ! rock_throw      hệ ground, vũ trụ pokemon
+     ! seismic_toss    hệ ground, vũ trụ pokemon
 
   chưa chọn gì
   hệ wind không mang được chiêu "vine_whip" (hệ grass)
@@ -2026,7 +2027,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 ----- footer -----
 ↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | reading a skill =====
-withdraw <thủ thế>  26/126
+withdraw <thủ thế>  26/128
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -2052,7 +2053,7 @@ chiêu trúng những ô nào  4/9
 ----- footer -----
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 160x60 | skill blurb =====
-withdraw <thủ thế>  26/126
+withdraw <thủ thế>  26/128
 
   Thu mình lại, thở chậm, chờ cho đợt tấn công đi qua.
   Hồi máu bằng 50% công.
@@ -2064,65 +2065,65 @@ withdraw <thủ thế>  26/126
 ===== vi | 160x60 | skills =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 
-  id             tên tiếng Việt       hệ        hệ số sát thương ai học được
-> vine_whip      roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
-  razor_leaf     phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
-  solar_beam     quang kích           light     2400x1           hệ light, vũ trụ pokemon
-  sleep_powder   phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
-  poison_powder  phấn độc             neutral   0x1              vũ trụ pokemon
-  sludge_bomb    độc bùn              neutral   1300x1           vũ trụ pokemon
-  venoshock      độc kích             neutral   900x1            vũ trụ pokemon
-  leech_seed     hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
-  synthesis      quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ingrain        cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
-  ember          than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
-  flamethrower   phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
-  fire_fang      nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
-  fire_spin      xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
-  heat_wave      luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
-  inferno        hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
-  dragon_rage    long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
-  smokescreen    màn khói             neutral   0x1              ai cũng được
-  dragon_dance   long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
-  water_gun      súng nước            water     1000x1           hệ water, vũ trụ pokemon
-  bubble         bong bóng            water     700x1            hệ water, vũ trụ pokemon
-  whirlpool      xoáy nước            water     800x1            hệ water, vũ trụ pokemon
-  bite           cắn                  neutral   1200x1           ai cũng được
-  brine          nước mặn             water     1000x1           hệ water, vũ trụ pokemon
-  hydro_pump     thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
-  withdraw       thủ thế              neutral   0x1              ai cũng được
-  aqua_ring      vòng nước            water     0x1              hệ water, vũ trụ pokemon
-  rapid_spin     xoay nhanh           neutral   0x1              ai cũng được
-  rally          khích lệ             neutral   0x1              ai cũng được
-  dragon_claw    long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
-  outrage        cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
-  dragon_drive   long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
-  taunt          khiêu khích          neutral   0x1              ai cũng được
-  kunai          phi đao              neutral   700x1            vũ trụ naruto
-  wind_shuriken  phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
-  rasengan       xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
-  substitution   thế thân             neutral   0x1              vũ trụ naruto
-  shadow_clone   phân thân            neutral   0x1              vũ trụ naruto
-  comeback       vùng lên             neutral   900x1            vũ trụ naruto
-  summon_toad    triệu hồi cóc        neutral   0x1              vũ trụ naruto
-  water_pulse    sóng nước            water     600x1            hệ water, vũ trụ pokemon
-  skull_bash     húc đầu              neutral   850x1            vũ trụ pokemon
-  wide_guard     che chắn             neutral   0x1              ai cũng được
-  bubble_beam    tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
-  body_slam      lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
-  pummel         đánh dồn dập         neutral   280x5            vũ trụ pokemon
+  id              tên tiếng Việt       hệ        hệ số sát thương ai học được
+> vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
+  razor_leaf      phi diệp             grass     600x2            hệ grass, vũ trụ pokemon
+  solar_beam      quang kích           light     2400x1           hệ light, vũ trụ pokemon
+  sleep_powder    phấn ngủ             grass     0x1              hệ grass, vũ trụ pokemon
+  poison_powder   phấn độc             neutral   0x1              vũ trụ pokemon
+  sludge_bomb     độc bùn              neutral   1300x1           vũ trụ pokemon
+  venoshock       độc kích             neutral   900x1            vũ trụ pokemon
+  leech_seed      hạt ký sinh          grass     700x1            hệ grass, vũ trụ pokemon
+  synthesis       quang hợp            grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
+  ember           than hồng            fire      1000x1           hệ fire, vũ trụ pokemon
+  flamethrower    phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
+  fire_fang       nanh lửa             fire      650x2            hệ fire, vũ trụ pokemon
+  fire_spin       xoáy lửa             fire      850x1            hệ fire, vũ trụ pokemon
+  heat_wave       luồng nhiệt          fire      1100x1           hệ fire, vũ trụ pokemon
+  inferno         hỏa ngục             fire      1000x1           hệ fire, vũ trụ pokemon
+  dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
+  smokescreen     màn khói             neutral   0x1              ai cũng được
+  dragon_dance    long vũ              neutral   0x1              chủng loài dragon, vũ trụ pokemon
+  water_gun       súng nước            water     1000x1           hệ water, vũ trụ pokemon
+  bubble          bong bóng            water     700x1            hệ water, vũ trụ pokemon
+  whirlpool       xoáy nước            water     800x1            hệ water, vũ trụ pokemon
+  bite            cắn                  neutral   1200x1           ai cũng được
+  brine           nước mặn             water     1000x1           hệ water, vũ trụ pokemon
+  hydro_pump      thủy pháo            water     2200x1           hệ water, vũ trụ pokemon
+  withdraw        thủ thế              neutral   0x1              ai cũng được
+  aqua_ring       vòng nước            water     0x1              hệ water, vũ trụ pokemon
+  rapid_spin      xoay nhanh           neutral   0x1              ai cũng được
+  rally           khích lệ             neutral   0x1              ai cũng được
+  dragon_claw     long trảo            neutral   1100x1           chủng loài dragon, vũ trụ pokemon
+  outrage         cuồng nộ long        neutral   2200x1           chủng loài dragon, vũ trụ pokemon
+  dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
+  taunt           khiêu khích          neutral   0x1              ai cũng được
+  kunai           phi đao              neutral   700x1            vũ trụ naruto
+  wind_shuriken   phong ma thủ lý kiếm wind      620x2            hệ wind, vũ trụ naruto
+  rasengan        xoáy cầu             wind      2200x1           hệ wind, vũ trụ naruto
+  substitution    thế thân             neutral   0x1              vũ trụ naruto
+  shadow_clone    phân thân            neutral   0x1              vũ trụ naruto
+  comeback        vùng lên             neutral   900x1            vũ trụ naruto
+  summon_toad     triệu hồi cóc        neutral   0x1              vũ trụ naruto
+  water_pulse     sóng nước            water     600x1            hệ water, vũ trụ pokemon
+  skull_bash      húc đầu              neutral   850x1            vũ trụ pokemon
+  wide_guard      che chắn             neutral   0x1              ai cũng được
+  bubble_beam     tia bong bóng        water     900x1            hệ water, vũ trụ pokemon
+  body_slam       lấy thịt đè người    neutral   1200x1           vũ trụ pokemon
+  pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
 ===== vi | 160x60 | skills filtered to none =====
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 126 chiêu)
+  đang lọc zzzz (0 trong 128 chiêu)
 
   không có chiêu nào khớp.
 
-126 chiêu · 7 chiêu ai cũng học được
+128 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
 gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l English
 ===== vi | 160x60 | species =====
@@ -2157,7 +2158,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
-chiêu này gây hiệu ứng gì  1/29
+chiêu này gây hiệu ứng gì  1/30
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -2189,6 +2190,7 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        swelter    sóng nhiệt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        verdure    xum xuê · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        moisture   ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
+       heft       sức nặng · dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn
 
   poison
 
@@ -2238,6 +2240,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   swelter      sóng nhiệt
   verdure      xum xuê
   moisture     ẩm ướt
+  heft         sức nặng
 
   Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
   Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -2360,6 +2363,7 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.machop
     machop.gamble       đánh cược
     machop.sure         chắc đòn
+    machop.charge       dồn sức
   pokemon.magnemite
     magnemite.trickle   nhỏ giọt
     magnemite.surge     sấm dội
@@ -3016,22 +3020,22 @@ edit skill  the damage is the engine's own, worked out as you type
 ===== en | 120x24 | edited a skill =====
 skills  what each one does, and who may carry it
 
-  id             element   damage multiplier who may carry it
-> vine_whip      grass     1100x1            grass units, out of pokemon
-  razor_leaf     grass     600x2             grass units, out of pokemon
-  solar_beam     light     2400x1            light units, out of pokemon
-  sleep_powder   grass     0x1               grass units, out of pokemon
-  poison_powder  neutral   0x1               out of pokemon
-  sludge_bomb    neutral   1300x1            out of pokemon
-  venoshock      neutral   900x1             out of pokemon
-  leech_seed     grass     700x1             grass units, out of pokemon
-  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
-  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+  id              element   damage multiplier who may carry it
+> vine_whip       grass     1100x1            grass units, out of pokemon
+  razor_leaf      grass     600x2             grass units, out of pokemon
+  solar_beam      light     2400x1            light units, out of pokemon
+  sleep_powder    grass     0x1               grass units, out of pokemon
+  poison_powder   neutral   0x1               out of pokemon
+  sludge_bomb     neutral   1300x1            out of pokemon
+  venoshock       neutral   900x1             out of pokemon
+  leech_seed      grass     700x1             grass units, out of pokemon
+  synthesis       grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in ../seed/data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | elements =====
@@ -3067,56 +3071,56 @@ showing naruto (1 of 15)
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | filtered skills =====
 skills  what each one does, and who may carry it
-  filtering long (5 of 126 skills)
+  filtering long (5 of 128 skills)
 
-  id             element   damage multiplier who may carry it
-> dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
-  dragon_dance   neutral   0x1               kept for a dragon, out of pokemon
-  dragon_claw    neutral   1100x1            kept for a dragon, out of pokemon
-  outrage        neutral   2200x1            kept for a dragon, out of pokemon
-  dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
+  id              element   damage multiplier who may carry it
+> dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
+  dragon_dance    neutral   0x1               kept for a dragon, out of pokemon
+  dragon_claw     neutral   1100x1            kept for a dragon, out of pokemon
+  outrage         neutral   2200x1            kept for a dragon, out of pokemon
+  dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 120x24 | filtering skills =====
 skills  what each one does, and who may carry it
   type a name or an id to filter
 
-  id             element   damage multiplier who may carry it
-> vine_whip      grass     1100x1            grass units, out of pokemon
-  razor_leaf     grass     600x2             grass units, out of pokemon
-  solar_beam     light     2400x1            light units, out of pokemon
-  sleep_powder   grass     0x1               grass units, out of pokemon
-  poison_powder  neutral   0x1               out of pokemon
-  sludge_bomb    neutral   1300x1            out of pokemon
-  venoshock      neutral   900x1             out of pokemon
-  leech_seed     grass     700x1             grass units, out of pokemon
-  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
-  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+  id              element   damage multiplier who may carry it
+> vine_whip       grass     1100x1            grass units, out of pokemon
+  razor_leaf      grass     600x2             grass units, out of pokemon
+  solar_beam      light     2400x1            light units, out of pokemon
+  sleep_powder    grass     0x1               grass units, out of pokemon
+  poison_powder   neutral   0x1               out of pokemon
+  sludge_bomb     neutral   1300x1            out of pokemon
+  venoshock       neutral   900x1             out of pokemon
+  leech_seed      grass     700x1             grass units, out of pokemon
+  synthesis       grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 120x24 | kit picker =====
-kit  0 of 126
+kit  0 of 128
 space chooses · the number is the order · ! is one this character cannot take
 
->    ! vine_whip      grass units, out of pokemon
-     ! razor_leaf     grass units, out of pokemon
-     ! solar_beam     light units, out of pokemon
-     ! sleep_powder   grass units, out of pokemon
-     ! poison_powder  out of pokemon
-     ! sludge_bomb    out of pokemon
-     ! venoshock      out of pokemon
-     ! leech_seed     grass units, out of pokemon
-     ! synthesis      grass units, kept for a plant, out of pokemon
-     ! ingrain        grass units, kept for a plant, out of pokemon
-     ! ember          fire units, out of pokemon
-     ! flamethrower   fire units, out of pokemon
-     ! fire_fang      fire units, out of pokemon
+>    ! vine_whip       grass units, out of pokemon
+     ! razor_leaf      grass units, out of pokemon
+     ! solar_beam      light units, out of pokemon
+     ! sleep_powder    grass units, out of pokemon
+     ! poison_powder   out of pokemon
+     ! sludge_bomb     out of pokemon
+     ! venoshock       out of pokemon
+     ! leech_seed      grass units, out of pokemon
+     ! synthesis       grass units, kept for a plant, out of pokemon
+     ! ingrain         grass units, kept for a plant, out of pokemon
+     ! ember           fire units, out of pokemon
+     ! flamethrower    fire units, out of pokemon
+     ! fire_fang       fire units, out of pokemon
 
   nothing chosen yet
   wind cannot carry the skill "vine_whip", which is grass
@@ -3133,7 +3137,7 @@ origins  the works the cast is borrowed from
 ----- footer -----
 ↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | reading a skill =====
-outrage  31 of 126
+outrage  31 of 128
 
   Hits an enemy for 220% of attack.
   Puts mire on itself.
@@ -3159,7 +3163,7 @@ which cells the skill catches  4 of 9
 ----- footer -----
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 120x24 | skill blurb =====
-withdraw  26 of 126
+withdraw  26 of 128
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -3170,29 +3174,29 @@ withdraw  26 of 126
 ===== en | 120x24 | skills =====
 skills  what each one does, and who may carry it
 
-  id             element   damage multiplier who may carry it
-> vine_whip      grass     1100x1            grass units, out of pokemon
-  razor_leaf     grass     600x2             grass units, out of pokemon
-  solar_beam     light     2400x1            light units, out of pokemon
-  sleep_powder   grass     0x1               grass units, out of pokemon
-  poison_powder  neutral   0x1               out of pokemon
-  sludge_bomb    neutral   1300x1            out of pokemon
-  venoshock      neutral   900x1             out of pokemon
-  leech_seed     grass     700x1             grass units, out of pokemon
-  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
-  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
+  id              element   damage multiplier who may carry it
+> vine_whip       grass     1100x1            grass units, out of pokemon
+  razor_leaf      grass     600x2             grass units, out of pokemon
+  solar_beam      light     2400x1            light units, out of pokemon
+  sleep_powder    grass     0x1               grass units, out of pokemon
+  poison_powder   neutral   0x1               out of pokemon
+  sludge_bomb     neutral   1300x1            out of pokemon
+  venoshock       neutral   900x1             out of pokemon
+  leech_seed      grass     700x1             grass units, out of pokemon
+  synthesis       grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | skills filtered to none =====
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 126 skills)
+  filtering zzzz (0 of 128 skills)
 
   nothing matches that.
 
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 120x24 | species =====
@@ -3226,7 +3230,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
-the statuses this skill inflicts  1 of 29
+the statuses this skill inflicts  1 of 30
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -4129,6 +4133,7 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.machop
     machop.gamble
     machop.sure
+    machop.charge
   pokemon.magnemite
     magnemite.trickle
     magnemite.surge
@@ -4209,58 +4214,58 @@ edit skill  the damage is the engine's own, worked out as you type
 ===== en | 160x60 | edited a skill =====
 skills  what each one does, and who may carry it
 
-  id             element   damage multiplier who may carry it
-> vine_whip      grass     1100x1            grass units, out of pokemon
-  razor_leaf     grass     600x2             grass units, out of pokemon
-  solar_beam     light     2400x1            light units, out of pokemon
-  sleep_powder   grass     0x1               grass units, out of pokemon
-  poison_powder  neutral   0x1               out of pokemon
-  sludge_bomb    neutral   1300x1            out of pokemon
-  venoshock      neutral   900x1             out of pokemon
-  leech_seed     grass     700x1             grass units, out of pokemon
-  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
-  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
-  ember          fire      1000x1            fire units, out of pokemon
-  flamethrower   fire      1600x1            fire units, out of pokemon
-  fire_fang      fire      650x2             fire units, out of pokemon
-  fire_spin      fire      850x1             fire units, out of pokemon
-  heat_wave      fire      1100x1            fire units, out of pokemon
-  inferno        fire      1000x1            fire units, out of pokemon
-  dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
-  smokescreen    neutral   0x1               anyone
-  dragon_dance   neutral   0x1               kept for a dragon, out of pokemon
-  water_gun      water     1000x1            water units, out of pokemon
-  bubble         water     700x1             water units, out of pokemon
-  whirlpool      water     800x1             water units, out of pokemon
-  bite           neutral   1200x1            anyone
-  brine          water     1000x1            water units, out of pokemon
-  hydro_pump     water     2200x1            water units, out of pokemon
-  withdraw       neutral   0x1               anyone
-  aqua_ring      water     0x1               water units, out of pokemon
-  rapid_spin     neutral   0x1               anyone
-  rally          neutral   0x1               anyone
-  dragon_claw    neutral   1100x1            kept for a dragon, out of pokemon
-  outrage        neutral   2200x1            kept for a dragon, out of pokemon
-  dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
-  taunt          neutral   0x1               anyone
-  kunai          neutral   700x1             out of naruto
-  wind_shuriken  wind      620x2             wind units, out of naruto
-  rasengan       wind      2200x1            wind units, out of naruto
-  substitution   neutral   0x1               out of naruto
-  shadow_clone   neutral   0x1               out of naruto
-  comeback       neutral   900x1             out of naruto
-  summon_toad    neutral   0x1               out of naruto
-  water_pulse    water     600x1             water units, out of pokemon
-  skull_bash     neutral   850x1             out of pokemon
-  wide_guard     neutral   0x1               anyone
-  bubble_beam    water     900x1             water units, out of pokemon
-  body_slam      neutral   1200x1            out of pokemon
-  pummel         neutral   280x5             out of pokemon
+  id              element   damage multiplier who may carry it
+> vine_whip       grass     1100x1            grass units, out of pokemon
+  razor_leaf      grass     600x2             grass units, out of pokemon
+  solar_beam      light     2400x1            light units, out of pokemon
+  sleep_powder    grass     0x1               grass units, out of pokemon
+  poison_powder   neutral   0x1               out of pokemon
+  sludge_bomb     neutral   1300x1            out of pokemon
+  venoshock       neutral   900x1             out of pokemon
+  leech_seed      grass     700x1             grass units, out of pokemon
+  synthesis       grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
+  ember           fire      1000x1            fire units, out of pokemon
+  flamethrower    fire      1600x1            fire units, out of pokemon
+  fire_fang       fire      650x2             fire units, out of pokemon
+  fire_spin       fire      850x1             fire units, out of pokemon
+  heat_wave       fire      1100x1            fire units, out of pokemon
+  inferno         fire      1000x1            fire units, out of pokemon
+  dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
+  smokescreen     neutral   0x1               anyone
+  dragon_dance    neutral   0x1               kept for a dragon, out of pokemon
+  water_gun       water     1000x1            water units, out of pokemon
+  bubble          water     700x1             water units, out of pokemon
+  whirlpool       water     800x1             water units, out of pokemon
+  bite            neutral   1200x1            anyone
+  brine           water     1000x1            water units, out of pokemon
+  hydro_pump      water     2200x1            water units, out of pokemon
+  withdraw        neutral   0x1               anyone
+  aqua_ring       water     0x1               water units, out of pokemon
+  rapid_spin      neutral   0x1               anyone
+  rally           neutral   0x1               anyone
+  dragon_claw     neutral   1100x1            kept for a dragon, out of pokemon
+  outrage         neutral   2200x1            kept for a dragon, out of pokemon
+  dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
+  taunt           neutral   0x1               anyone
+  kunai           neutral   700x1             out of naruto
+  wind_shuriken   wind      620x2             wind units, out of naruto
+  rasengan        wind      2200x1            wind units, out of naruto
+  substitution    neutral   0x1               out of naruto
+  shadow_clone    neutral   0x1               out of naruto
+  comeback        neutral   900x1             out of naruto
+  summon_toad     neutral   0x1               out of naruto
+  water_pulse     water     600x1             water units, out of pokemon
+  skull_bash      neutral   850x1             out of pokemon
+  wide_guard      neutral   0x1               anyone
+  bubble_beam     water     900x1             water units, out of pokemon
+  body_slam       neutral   1200x1            out of pokemon
+  pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in ../seed/data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
 ===== en | 160x60 | elements =====
@@ -4296,128 +4301,128 @@ showing naruto (1 of 15)
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | filtered skills =====
 skills  what each one does, and who may carry it
-  filtering long (5 of 126 skills)
+  filtering long (5 of 128 skills)
 
-  id             element   damage multiplier who may carry it
-> dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
-  dragon_dance   neutral   0x1               kept for a dragon, out of pokemon
-  dragon_claw    neutral   1100x1            kept for a dragon, out of pokemon
-  outrage        neutral   2200x1            kept for a dragon, out of pokemon
-  dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
+  id              element   damage multiplier who may carry it
+> dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
+  dragon_dance    neutral   0x1               kept for a dragon, out of pokemon
+  dragon_claw     neutral   1100x1            kept for a dragon, out of pokemon
+  outrage         neutral   2200x1            kept for a dragon, out of pokemon
+  dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 160x60 | filtering skills =====
 skills  what each one does, and who may carry it
   type a name or an id to filter
 
-  id             element   damage multiplier who may carry it
-> vine_whip      grass     1100x1            grass units, out of pokemon
-  razor_leaf     grass     600x2             grass units, out of pokemon
-  solar_beam     light     2400x1            light units, out of pokemon
-  sleep_powder   grass     0x1               grass units, out of pokemon
-  poison_powder  neutral   0x1               out of pokemon
-  sludge_bomb    neutral   1300x1            out of pokemon
-  venoshock      neutral   900x1             out of pokemon
-  leech_seed     grass     700x1             grass units, out of pokemon
-  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
-  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
-  ember          fire      1000x1            fire units, out of pokemon
-  flamethrower   fire      1600x1            fire units, out of pokemon
-  fire_fang      fire      650x2             fire units, out of pokemon
-  fire_spin      fire      850x1             fire units, out of pokemon
-  heat_wave      fire      1100x1            fire units, out of pokemon
-  inferno        fire      1000x1            fire units, out of pokemon
-  dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
-  smokescreen    neutral   0x1               anyone
-  dragon_dance   neutral   0x1               kept for a dragon, out of pokemon
-  water_gun      water     1000x1            water units, out of pokemon
-  bubble         water     700x1             water units, out of pokemon
-  whirlpool      water     800x1             water units, out of pokemon
-  bite           neutral   1200x1            anyone
-  brine          water     1000x1            water units, out of pokemon
-  hydro_pump     water     2200x1            water units, out of pokemon
-  withdraw       neutral   0x1               anyone
-  aqua_ring      water     0x1               water units, out of pokemon
-  rapid_spin     neutral   0x1               anyone
-  rally          neutral   0x1               anyone
-  dragon_claw    neutral   1100x1            kept for a dragon, out of pokemon
-  outrage        neutral   2200x1            kept for a dragon, out of pokemon
-  dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
-  taunt          neutral   0x1               anyone
-  kunai          neutral   700x1             out of naruto
-  wind_shuriken  wind      620x2             wind units, out of naruto
-  rasengan       wind      2200x1            wind units, out of naruto
-  substitution   neutral   0x1               out of naruto
-  shadow_clone   neutral   0x1               out of naruto
-  comeback       neutral   900x1             out of naruto
-  summon_toad    neutral   0x1               out of naruto
-  water_pulse    water     600x1             water units, out of pokemon
-  skull_bash     neutral   850x1             out of pokemon
-  wide_guard     neutral   0x1               anyone
-  bubble_beam    water     900x1             water units, out of pokemon
-  body_slam      neutral   1200x1            out of pokemon
-  pummel         neutral   280x5             out of pokemon
+  id              element   damage multiplier who may carry it
+> vine_whip       grass     1100x1            grass units, out of pokemon
+  razor_leaf      grass     600x2             grass units, out of pokemon
+  solar_beam      light     2400x1            light units, out of pokemon
+  sleep_powder    grass     0x1               grass units, out of pokemon
+  poison_powder   neutral   0x1               out of pokemon
+  sludge_bomb     neutral   1300x1            out of pokemon
+  venoshock       neutral   900x1             out of pokemon
+  leech_seed      grass     700x1             grass units, out of pokemon
+  synthesis       grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
+  ember           fire      1000x1            fire units, out of pokemon
+  flamethrower    fire      1600x1            fire units, out of pokemon
+  fire_fang       fire      650x2             fire units, out of pokemon
+  fire_spin       fire      850x1             fire units, out of pokemon
+  heat_wave       fire      1100x1            fire units, out of pokemon
+  inferno         fire      1000x1            fire units, out of pokemon
+  dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
+  smokescreen     neutral   0x1               anyone
+  dragon_dance    neutral   0x1               kept for a dragon, out of pokemon
+  water_gun       water     1000x1            water units, out of pokemon
+  bubble          water     700x1             water units, out of pokemon
+  whirlpool       water     800x1             water units, out of pokemon
+  bite            neutral   1200x1            anyone
+  brine           water     1000x1            water units, out of pokemon
+  hydro_pump      water     2200x1            water units, out of pokemon
+  withdraw        neutral   0x1               anyone
+  aqua_ring       water     0x1               water units, out of pokemon
+  rapid_spin      neutral   0x1               anyone
+  rally           neutral   0x1               anyone
+  dragon_claw     neutral   1100x1            kept for a dragon, out of pokemon
+  outrage         neutral   2200x1            kept for a dragon, out of pokemon
+  dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
+  taunt           neutral   0x1               anyone
+  kunai           neutral   700x1             out of naruto
+  wind_shuriken   wind      620x2             wind units, out of naruto
+  rasengan        wind      2200x1            wind units, out of naruto
+  substitution    neutral   0x1               out of naruto
+  shadow_clone    neutral   0x1               out of naruto
+  comeback        neutral   900x1             out of naruto
+  summon_toad     neutral   0x1               out of naruto
+  water_pulse     water     600x1             water units, out of pokemon
+  skull_bash      neutral   850x1             out of pokemon
+  wide_guard      neutral   0x1               anyone
+  bubble_beam     water     900x1             water units, out of pokemon
+  body_slam       neutral   1200x1            out of pokemon
+  pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 160x60 | kit picker =====
-kit  0 of 126
+kit  0 of 128
 space chooses · the number is the order · ! is one this character cannot take
 
->    ! vine_whip      grass units, out of pokemon
-     ! razor_leaf     grass units, out of pokemon
-     ! solar_beam     light units, out of pokemon
-     ! sleep_powder   grass units, out of pokemon
-     ! poison_powder  out of pokemon
-     ! sludge_bomb    out of pokemon
-     ! venoshock      out of pokemon
-     ! leech_seed     grass units, out of pokemon
-     ! synthesis      grass units, kept for a plant, out of pokemon
-     ! ingrain        grass units, kept for a plant, out of pokemon
-     ! ember          fire units, out of pokemon
-     ! flamethrower   fire units, out of pokemon
-     ! fire_fang      fire units, out of pokemon
-     ! fire_spin      fire units, out of pokemon
-     ! heat_wave      fire units, out of pokemon
-     ! inferno        fire units, out of pokemon
-     ! dragon_rage    kept for a dragon, out of pokemon
-       smokescreen    anyone
-     ! dragon_dance   kept for a dragon, out of pokemon
-     ! water_gun      water units, out of pokemon
-     ! bubble         water units, out of pokemon
-     ! whirlpool      water units, out of pokemon
-       bite           anyone
-     ! brine          water units, out of pokemon
-     ! hydro_pump     water units, out of pokemon
-       withdraw       anyone
-     ! aqua_ring      water units, out of pokemon
-       rapid_spin     anyone
-       rally          anyone
-     ! dragon_claw    kept for a dragon, out of pokemon
-     ! outrage        kept for a dragon, out of pokemon
-     ! dragon_drive   kept for a dragon, out of pokemon
-       taunt          anyone
-       kunai          out of naruto
-       wind_shuriken  wind units, out of naruto
-       rasengan       wind units, out of naruto
-       substitution   out of naruto
-       shadow_clone   out of naruto
-       comeback       out of naruto
-       summon_toad    out of naruto
-     ! water_pulse    water units, out of pokemon
-     ! skull_bash     out of pokemon
-       wide_guard     anyone
-     ! bubble_beam    water units, out of pokemon
-     ! body_slam      out of pokemon
-     ! pummel         out of pokemon
-     ! submission     out of pokemon
-     ! rock_throw     ground units, out of pokemon
-     ! seismic_toss   ground units, out of pokemon
+>    ! vine_whip       grass units, out of pokemon
+     ! razor_leaf      grass units, out of pokemon
+     ! solar_beam      light units, out of pokemon
+     ! sleep_powder    grass units, out of pokemon
+     ! poison_powder   out of pokemon
+     ! sludge_bomb     out of pokemon
+     ! venoshock       out of pokemon
+     ! leech_seed      grass units, out of pokemon
+     ! synthesis       grass units, kept for a plant, out of pokemon
+     ! ingrain         grass units, kept for a plant, out of pokemon
+     ! ember           fire units, out of pokemon
+     ! flamethrower    fire units, out of pokemon
+     ! fire_fang       fire units, out of pokemon
+     ! fire_spin       fire units, out of pokemon
+     ! heat_wave       fire units, out of pokemon
+     ! inferno         fire units, out of pokemon
+     ! dragon_rage     kept for a dragon, out of pokemon
+       smokescreen     anyone
+     ! dragon_dance    kept for a dragon, out of pokemon
+     ! water_gun       water units, out of pokemon
+     ! bubble          water units, out of pokemon
+     ! whirlpool       water units, out of pokemon
+       bite            anyone
+     ! brine           water units, out of pokemon
+     ! hydro_pump      water units, out of pokemon
+       withdraw        anyone
+     ! aqua_ring       water units, out of pokemon
+       rapid_spin      anyone
+       rally           anyone
+     ! dragon_claw     kept for a dragon, out of pokemon
+     ! outrage         kept for a dragon, out of pokemon
+     ! dragon_drive    kept for a dragon, out of pokemon
+       taunt           anyone
+       kunai           out of naruto
+       wind_shuriken   wind units, out of naruto
+       rasengan        wind units, out of naruto
+       substitution    out of naruto
+       shadow_clone    out of naruto
+       comeback        out of naruto
+       summon_toad     out of naruto
+     ! water_pulse     water units, out of pokemon
+     ! skull_bash      out of pokemon
+       wide_guard      anyone
+     ! bubble_beam     water units, out of pokemon
+     ! body_slam       out of pokemon
+     ! pummel          out of pokemon
+     ! submission      out of pokemon
+     ! rock_throw      ground units, out of pokemon
+     ! seismic_toss    ground units, out of pokemon
 
   nothing chosen yet
   wind cannot carry the skill "vine_whip", which is grass
@@ -4434,7 +4439,7 @@ origins  the works the cast is borrowed from
 ----- footer -----
 ↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | reading a skill =====
-outrage  31 of 126
+outrage  31 of 128
 
   Hits an enemy for 220% of attack.
   Puts mire on itself.
@@ -4460,7 +4465,7 @@ which cells the skill catches  4 of 9
 ----- footer -----
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 160x60 | skill blurb =====
-withdraw  26 of 126
+withdraw  26 of 128
 
   Heals for 50% of attack.
   Puts block x2 on itself.
@@ -4471,65 +4476,65 @@ withdraw  26 of 126
 ===== en | 160x60 | skills =====
 skills  what each one does, and who may carry it
 
-  id             element   damage multiplier who may carry it
-> vine_whip      grass     1100x1            grass units, out of pokemon
-  razor_leaf     grass     600x2             grass units, out of pokemon
-  solar_beam     light     2400x1            light units, out of pokemon
-  sleep_powder   grass     0x1               grass units, out of pokemon
-  poison_powder  neutral   0x1               out of pokemon
-  sludge_bomb    neutral   1300x1            out of pokemon
-  venoshock      neutral   900x1             out of pokemon
-  leech_seed     grass     700x1             grass units, out of pokemon
-  synthesis      grass     0x1               grass units, kept for a plant, out of pokemon
-  ingrain        grass     0x1               grass units, kept for a plant, out of pokemon
-  ember          fire      1000x1            fire units, out of pokemon
-  flamethrower   fire      1600x1            fire units, out of pokemon
-  fire_fang      fire      650x2             fire units, out of pokemon
-  fire_spin      fire      850x1             fire units, out of pokemon
-  heat_wave      fire      1100x1            fire units, out of pokemon
-  inferno        fire      1000x1            fire units, out of pokemon
-  dragon_rage    neutral   1300x1            kept for a dragon, out of pokemon
-  smokescreen    neutral   0x1               anyone
-  dragon_dance   neutral   0x1               kept for a dragon, out of pokemon
-  water_gun      water     1000x1            water units, out of pokemon
-  bubble         water     700x1             water units, out of pokemon
-  whirlpool      water     800x1             water units, out of pokemon
-  bite           neutral   1200x1            anyone
-  brine          water     1000x1            water units, out of pokemon
-  hydro_pump     water     2200x1            water units, out of pokemon
-  withdraw       neutral   0x1               anyone
-  aqua_ring      water     0x1               water units, out of pokemon
-  rapid_spin     neutral   0x1               anyone
-  rally          neutral   0x1               anyone
-  dragon_claw    neutral   1100x1            kept for a dragon, out of pokemon
-  outrage        neutral   2200x1            kept for a dragon, out of pokemon
-  dragon_drive   neutral   900x1             kept for a dragon, out of pokemon
-  taunt          neutral   0x1               anyone
-  kunai          neutral   700x1             out of naruto
-  wind_shuriken  wind      620x2             wind units, out of naruto
-  rasengan       wind      2200x1            wind units, out of naruto
-  substitution   neutral   0x1               out of naruto
-  shadow_clone   neutral   0x1               out of naruto
-  comeback       neutral   900x1             out of naruto
-  summon_toad    neutral   0x1               out of naruto
-  water_pulse    water     600x1             water units, out of pokemon
-  skull_bash     neutral   850x1             out of pokemon
-  wide_guard     neutral   0x1               anyone
-  bubble_beam    water     900x1             water units, out of pokemon
-  body_slam      neutral   1200x1            out of pokemon
-  pummel         neutral   280x5             out of pokemon
+  id              element   damage multiplier who may carry it
+> vine_whip       grass     1100x1            grass units, out of pokemon
+  razor_leaf      grass     600x2             grass units, out of pokemon
+  solar_beam      light     2400x1            light units, out of pokemon
+  sleep_powder    grass     0x1               grass units, out of pokemon
+  poison_powder   neutral   0x1               out of pokemon
+  sludge_bomb     neutral   1300x1            out of pokemon
+  venoshock       neutral   900x1             out of pokemon
+  leech_seed      grass     700x1             grass units, out of pokemon
+  synthesis       grass     0x1               grass units, kept for a plant, out of pokemon
+  ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
+  ember           fire      1000x1            fire units, out of pokemon
+  flamethrower    fire      1600x1            fire units, out of pokemon
+  fire_fang       fire      650x2             fire units, out of pokemon
+  fire_spin       fire      850x1             fire units, out of pokemon
+  heat_wave       fire      1100x1            fire units, out of pokemon
+  inferno         fire      1000x1            fire units, out of pokemon
+  dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
+  smokescreen     neutral   0x1               anyone
+  dragon_dance    neutral   0x1               kept for a dragon, out of pokemon
+  water_gun       water     1000x1            water units, out of pokemon
+  bubble          water     700x1             water units, out of pokemon
+  whirlpool       water     800x1             water units, out of pokemon
+  bite            neutral   1200x1            anyone
+  brine           water     1000x1            water units, out of pokemon
+  hydro_pump      water     2200x1            water units, out of pokemon
+  withdraw        neutral   0x1               anyone
+  aqua_ring       water     0x1               water units, out of pokemon
+  rapid_spin      neutral   0x1               anyone
+  rally           neutral   0x1               anyone
+  dragon_claw     neutral   1100x1            kept for a dragon, out of pokemon
+  outrage         neutral   2200x1            kept for a dragon, out of pokemon
+  dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
+  taunt           neutral   0x1               anyone
+  kunai           neutral   700x1             out of naruto
+  wind_shuriken   wind      620x2             wind units, out of naruto
+  rasengan        wind      2200x1            wind units, out of naruto
+  substitution    neutral   0x1               out of naruto
+  shadow_clone    neutral   0x1               out of naruto
+  comeback        neutral   900x1             out of naruto
+  summon_toad     neutral   0x1               out of naruto
+  water_pulse     water     600x1             water units, out of pokemon
+  skull_bash      neutral   850x1             out of pokemon
+  wide_guard      neutral   0x1               anyone
+  bubble_beam     water     900x1             water units, out of pokemon
+  body_slam       neutral   1200x1            out of pokemon
+  pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
 ===== en | 160x60 | skills filtered to none =====
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 126 skills)
+  filtering zzzz (0 of 128 skills)
 
   nothing matches that.
 
-126 skills · 7 anyone may carry
+128 skills · 7 anyone may carry
 ----- footer -----
 type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Việt
 ===== en | 160x60 | species =====
@@ -4564,7 +4569,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
-the statuses this skill inflicts  1 of 29
+the statuses this skill inflicts  1 of 30
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -4596,6 +4601,7 @@ space chooses a status · type the chance in parts per thousand
        swelter    builds up for its holder to spend · 5 turns · up to 999 stacks
        verdure    builds up for its holder to spend · 5 turns · up to 999 stacks
        moisture   builds up for its holder to spend · 5 turns · up to 999 stacks
+       heft       builds up for its holder to spend · 4 turns · up to 5 stacks
 
   poison
 
@@ -4645,6 +4651,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   swelter      
   verdure      
   moisture     
+  heft         
 
   At the holder's turn, each stack costs 50% of the applier's stat.
   Over its 3 turns, one stack is 150%, and 450% at its cap.
@@ -4760,6 +4767,7 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.machop
     machop.gamble
     machop.sure
+    machop.charge
   pokemon.magnemite
     magnemite.trickle
     magnemite.surge
