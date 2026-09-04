@@ -245,9 +245,20 @@ func (s SquadsScreen) Refresh(c Context) SquadsScreen {
 // That is a second vocabulary for "the cast" that no caller could use unaided,
 // while Book.All() stays the honest answer to "the cast" for the browser, the
 // builds screen, `hexforge list`, the spar, the roster and the restriction
-// picker, none of which are choosing a side to fight with. The day a second
-// screen wants the offered list, the argument reverses and the accessor is the
-// change to make.
+// picker, none of which are choosing a side to fight with.
+//
+// ⚠️ **The second consumer arrived and the argument did not reverse**, which is
+// what this paragraph used to predict it would. `internal/draft.NewPool` applies
+// the same Hidden rule and still writes its own three-line loop, because the two
+// callers want *different* rules rather than one rule twice: a draft wants plain
+// Hidden with nobody kept, and this screen wants Hidden-minus-a-`keep`. A
+// `cast.Book.Offered()` would answer half of each — the draft would have to
+// ignore the keep it cannot express and this screen would still union its own
+// back in — so it would be a second vocabulary for "the cast" that neither
+// caller could use unaided, in place of two loops each sitting beside the rule it
+// applies. So the accessor is **considered and refused**, not still open; the
+// thing that would reopen it is a third caller wanting the same rule as one of
+// these two, not merely a third caller.
 func offeredCharacters(all []cast.Character, keep string) []cast.Character {
 	out := make([]cast.Character, 0, len(all))
 	for _, character := range all {

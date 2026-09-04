@@ -11,7 +11,7 @@
 - [A fixture golden cannot see its producer](feedback_fixture_golden_cannot_see_producer.md) — messages.golden pins the FORMAT; the room dropping a field left internal/wire green
 - [Three screens.golden, not one](feedback_two_screen_goldens.md) — screen=the drawing, each client=its framing; blind spots are the cast under the cursor AND the palette (all run NO_COLOR)
 - [A stripped name hides a clip](feedback_name_strip_hides_a_clip.md) — the width sweep measures the line WITHOUT its names; a row carrying a value overflows green — read the golden for `…`
-- [The fixture decides what a suite can see](feedback_fixture_decides_what_is_visible.md) — hand-set flag, mirror fixture, unobservable capacity, sweep aimed at the row with no fork
+- [The fixture decides what a suite can see](feedback_fixture_decides_what_is_visible.md) — hand-set flag, mirror fixture, unobservable capacity, sweep at the fork-less row, shipped data already sorted
 - [Measure WHICH guard masks](feedback_measure_which_guard_masks.md) — the blamed clamp was innocent; saturation kills monotonicity-in-power past a subtraction
 - [A scripted revert can restore the wrong line](feedback_scripted_revert_wrong_occurrence.md) — green tests do not prove an undo; read git diff on the file
 - [A fixture-cast edit costs goldens](feedback_fixture_cast_edit_costs_goldens.md) — one skill into a fixture kit moved 656 golden lines; build the carrier in the test (twinOf/forkedTwin)

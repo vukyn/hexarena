@@ -15,13 +15,14 @@ import (
 
 // # Where a clock may be read, for the whole module
 //
-// ⚠️ **The three clock bans in this repository are directory-scoped, so a fourth
-// package is invisible to all three.** internal/room's TestTheRoomReadsNoClock,
-// internal/wire's TestTheProtocolCannotReadAClock and this package's own
+// ⚠️ **Every clock ban in this repository is directory-scoped, so a package none
+// of them sits in is invisible to all of them.** internal/room's
+// TestTheRoomReadsNoClock, internal/wire's TestTheProtocolCannotReadAClock,
+// internal/draft's TestTheDraftReadsNoClock and this package's own
 // TestTheTransportOwnsTheClockAndPrintsNothing each read os.ReadDir(".") — their
 // own package directory and nothing else — which is exactly right for what each
 // of them claims and says nothing at all about anywhere else. The countdown in
-// cmd/hexarena-tui is the fourth package, and it landed with all three of them
+// cmd/hexarena-tui is the package that proved it: it landed with all of them
 // green.
 //
 // So this is the module's **positive** claim, the same shape the transport's own
@@ -198,8 +199,10 @@ func TestTheClocklessPackagesAreStillClockless(t *testing.T) {
 	clockless := map[string]string{
 		"internal/screen": "a screen is a pure function of what it is handed, and the " +
 			"countdown is handed in as seconds",
-		"internal/core":  "the layer rule: no clock, no randomness but an rng.Source, no floats",
-		"internal/room":  "a timeout is an INPUT to the room, never a reading it takes",
+		"internal/core": "the layer rule: no clock, no randomness but an rng.Source, no floats",
+		"internal/room": "a timeout is an INPUT to the room, never a reading it takes",
+		"internal/draft": "the same rule one layer over: a draft is a pure function of the " +
+			"decisions taken, so a clock here would break the mirror it rests on",
 		"internal/wire":  "the protocol carries an allowance, never a moment",
 		"internal/tui":   "a renderer reads the event log and nothing else",
 		"internal/i18n":  "a language book is a table",

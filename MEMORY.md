@@ -40,7 +40,7 @@ that owns the subject wins and the note is the thing to fix.
 - [⚠️ mirror một chiều ≠ phép đo](memory/one-way-mirror-not-a-measurement.md) — bù nhau CHỈ đúng ở 1 unit/phe; phụ thuộc KIT
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
-- [ban/pick + spectator (CHƯA LÀM)](memory/hexarena-draft-and-spectator-plan.md) — ban 2/bên 3v3 vừa; 5v5 ⚠️ thiếu nhân vật; spectator đổi ai thắng
+- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1 xong (pool + Fits); ⚠️ pool KHÔNG cạn được giữa draft; 5v5 thiếu 1; spectator đổi ai thắng
 - [v0.1.0 đã release](memory/hexarena-v0-1-0-released.md) — go install @v0.1.0 khai đúng tag; ⚠️ path không /vN nên CHỈ tag được v0/v1; tag trên proxy BẤT BIẾN
 - [3 đội starter](memory/hexarena-starter-squads.md) — ⚠️ 3 bản cùng nhân vật là đội YẾU NHẤT (~11%), ngược TODO
 - [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ danh sách import ≠ danh sách đồng hồ (context.WithTimeout)
