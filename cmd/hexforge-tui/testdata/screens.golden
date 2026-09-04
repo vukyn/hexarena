@@ -765,7 +765,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
   tên                                                   
   nguồn        < fixture-anime — Example Anime >  1/5
   mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass…
-  ảnh          < assets/abra.svg >  1/59
+  ảnh          < assets/abra.svg >  1/64
   loài         không thuộc loài nào  space để chọn
   bộ chiêu     vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space để chọn
   hệ                                                    
@@ -3241,7 +3241,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
   tên                                                   
   nguồn        < fixture-anime — Example Anime >  1/5
   mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass) >  1/19
-  ảnh          < assets/abra.svg >  1/59
+  ảnh          < assets/abra.svg >  1/64
   loài         không thuộc loài nào  space để chọn
   bộ chiêu     vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space để chọn
   hệ                                                    
@@ -5357,7 +5357,7 @@ new character  every check here is the write's own, at level 60
   name                                                
   origin     < fixture-anime — Example Anime >  1 of 5
   archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass…
-  art        < assets/abra.svg >  1 of 59
+  art        < assets/abra.svg >  1 of 64
   species    nothing in particular  space to choose
   kit        vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space to choose
   element                                             
@@ -7833,7 +7833,7 @@ new character  every check here is the write's own, at level 60
   name                                                
   origin     < fixture-anime — Example Anime >  1 of 5
   archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass) >  1 of 19
-  art        < assets/abra.svg >  1 of 59
+  art        < assets/abra.svg >  1 of 64
   species    nothing in particular  space to choose
   kit        vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space to choose
   element                                             
