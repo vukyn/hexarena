@@ -1662,6 +1662,11 @@ func OptionRefusal(c Context, option battle.Option) string {
 	case battle.BlockUnknownSkill:
 		return c.Text(i18n.PlayBlockedUnknown)
 	case battle.BlockCooldown:
+		if option.Turns == 1 {
+			// One turn is its own wording rather than a plural rule: English
+			// needs the singular and Vietnamese does not.
+			return c.Text(i18n.PlayBlockedCooldownOne)
+		}
 		return c.Text(i18n.PlayBlockedCooldown, option.Turns)
 	case battle.BlockFuel:
 		// The gloss alone, not the id with the gloss beside it: this row's own

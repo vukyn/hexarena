@@ -175,6 +175,48 @@ func TestARefusedCooldownStillReadsAsACountdown(t *testing.T) {
 	}
 }
 
+// TestOneTurnOfCooldownIsItsOwnWording is the count English cannot spell with a
+// plural rule, and it is the row a reader meets most often of the four: a skill
+// is one turn from ready on more turns than it is three.
+//
+// ⚠️ **Both languages, and not because Vietnamese needs it.** Vietnamese has no
+// plural, so "còn hồi 1 lượt" is what the general wording would have printed
+// anyway — but the key exists in both because every key does, and asserting it
+// here is what stops a later reader "simplifying" the Vietnamese half away and
+// leaving a format verb with no argument.
+func TestOneTurnOfCooldownIsItsOwnWording(t *testing.T) {
+	for _, lang := range i18n.Langs() {
+		c, _ := start(t, lang)
+		p := atTheBattle(t, c)
+		option := p.Pending.Options[0]
+		option.Aims = nil
+		option.Blocked, option.Turns = battle.BlockCooldown, 1
+		tail := aRefusedRow(t, c, option)
+		if want := c.Text(i18n.PlayBlockedCooldownOne); tail != want {
+			t.Errorf("%s: one turn of cooldown draws %q, want %q", lang, tail, want)
+		}
+		// The defect this closes, named so the assertion cannot be read as taste:
+		// the counted wording spells the number into a plural noun and drew
+		// "1 turns of cooldown left".
+		//
+		// ⚠️ **Asserted only where the two wordings differ, which is English
+		// alone.** Vietnamese has no plural, so its two keys are byte-identical
+		// and "the singular is not the plural" is unaskable there — asking it
+		// anyway reddens a correct screen, which is what a first draft of this
+		// test did. That the question has no Vietnamese half is the whole reason
+		// this is two keys instead of a plural rule.
+		counted := c.Text(i18n.PlayBlockedCooldown, 1)
+		if counted != c.Text(i18n.PlayBlockedCooldownOne) && tail == counted {
+			t.Errorf("%s: one turn of cooldown draws the counted wording %q", lang, counted)
+		}
+		// And the count above one is untouched.
+		option.Turns = 2
+		if tail := aRefusedRow(t, c, option); tail != c.Text(i18n.PlayBlockedCooldown, 2) {
+			t.Errorf("%s: two turns of cooldown draws %q, which is not the counted wording", lang, tail)
+		}
+	}
+}
+
 // TestEveryRefusalDrawsAWordingOfItsOwn is the sweep behind the three above: one
 // wording per battle.Block, each row drawing its own, no two of them the same
 // sentence, and none of them the engine's English on a Vietnamese screen.
