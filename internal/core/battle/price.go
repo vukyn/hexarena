@@ -1316,6 +1316,12 @@ func (p *pricing) pile(actor, target *Unit, kind status.Kind, under, count int) 
 // ceiling a scaling payment stops at. A spender that takes "all of them" for a
 // flat bonus has no ceiling of its own, and the status's cap is what bounds it
 // there, which is the honest answer: what it could spend really is everything.
+//
+// A GATED spender is the sharpest case and needs no special arm: it names an
+// exact consume_stacks, so Takes returns that count whatever the tank holds, and
+// the capacity of a kit carrying two of them is the deeper one's price. That is
+// the same figure selfSpendable divides by, read through the same function, which
+// is what keeps the flat region of a pile and the worth of one stack in step.
 func (p *pricing) capacity(holder *Unit, id string) int {
 	most := 0
 	for _, held := range holder.Skills {
@@ -1473,6 +1479,45 @@ func (p *pricing) selfSpendable(holder *Unit, id string) int64 {
 					p.fight.Stats(holder)[declared.Scaling.Stat]),
 				spends.StackRestore)
 			if value := worthHealing(healed, holder, p.threat(holder)); value > best {
+				best = value
+			}
+			continue
+		}
+		// The gated arm, and it is the one payment here that is not a share of a
+		// cast. Every other arm prices a stack as the SHARE of a cast the condition
+		// bought -- strike * gain/(power+gain), where gain is what holding the fuel
+		// added to a blow that was going to land anyway. A gate's share is the
+		// WHOLE cast: the skill does not exist without the fuel, and the flat power
+		// on its own face is its entire figure rather than a bonus on top of one.
+		// So the numerator is the cast and the divisor is what the cast costs.
+		//
+		// ⚠️ **Without this arm the term is nought, and nothing else notices.** A
+		// gated spender carries neither StackPower nor BonusPower -- that is the
+		// shape, not an omission -- so `gain` below comes out nought, the loop moves
+		// on, and the grant that fills the tank is priced at exactly nothing.
+		// Measured at 0 on the tree carrying the parser change and not this one.
+		// Suggest would never spend a turn charging, so the gate would never open
+		// and the spender would ship unreachable: the same dead-branch shape as the
+		// heal arm above, one currency along.
+		//
+		// ⚠️ **It reads p.strike(holder) rather than this skill's own expected
+		// damage**, because that is the aim-free approximation every arm in this
+		// function already makes -- there is no aim here to read one against, and
+		// asking for one would make a stack's worth depend on who happens to be
+		// standing where. It therefore OVER-prices the fuel whenever the holder
+		// carries a filler heavier than the gated blow, and what checks that is a
+		// battle rather than an assertion here: TestTheRatingChargesUntilTheGateOpens
+		// holds the loop closing against a filler worth taking, and the auto-battle
+		// counts on a shipped kit are what would show it charging too eagerly.
+		if spends.GatesCast() {
+			// The stacks one cast hands over. A gated spender names its price
+			// exactly -- see capacity, which reads the same figure through the same
+			// function -- and the floor is there for the "all of them" spelling.
+			takes := spends.Takes(spends.MinStacks)
+			if takes < 1 {
+				takes = 1
+			}
+			if value := p.strike(holder) / int64(takes); value > best {
 				best = value
 			}
 			continue

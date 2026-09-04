@@ -152,6 +152,27 @@ type Condition struct {
 	// their type, because passive imports this package and the language refuses
 	// the shortcut anyway.
 	BelowHealth int
+	// Gates makes this a condition on **casting** rather than on the payoff.
+	//
+	// Every other condition in this engine is an amplifier: it is read while the
+	// skill resolves, and a caster that fails it simply casts for its own figure.
+	// A gating condition is read *before* the skill is offered, so a caster short
+	// of what it names does not have the option at all -- which is the only shape
+	// a cooldownless spender can take. Without it the spender is cast every turn
+	// for the unamplified blow, and the design is a suggestion.
+	//
+	// ⚠️ **Opt-in, and it has to be.** Nine shipped skills carry min_stacks
+	// across four characters -- flare, deluge, pyre, thorn_volley, cauterise,
+	// bloom_burst, verdant_mend, tide_break and wellspring -- and every one was
+	// authored as an amplifier that pays more when it holds. Reading min_stacks as
+	// a gate globally would rebalance four characters at once, inside a change
+	// whose subject is a tenth skill.
+	//
+	// ⚠️ **The caster's own condition only, it must read a status, and it must
+	// spend one.** resolveCondition refuses the other three shapes and says why at
+	// each: what they have in common is that the reading would have to be taken
+	// per aim, and battle.aims is required to stay blind to a gate.
+	Gates bool
 	// BonusPower is added to the skill's power when the condition holds.
 	BonusPower int
 	// Consume removes the status, which is what a detonate does: the burst is
@@ -277,6 +298,10 @@ func (c *Condition) Scales() bool { return c != nil && c.StackPower > 0 }
 // answering true to Scales would have the description promise that every stack
 // adds to the blow, off a StackPower of nought.
 func (c *Condition) ScalesRestore() bool { return c != nil && c.StackRestore > 0 }
+
+// GatesCast reports whether the condition decides that the skill may be cast at
+// all, rather than what the cast pays out.
+func (c *Condition) GatesCast() bool { return c != nil && c.Gates }
 
 // ChainsOn reports whether the consume travels to adjacent carriers.
 func (c *Condition) ChainsOn() bool { return c != nil && c.Chains }
@@ -1010,6 +1035,7 @@ type scalingFile struct {
 type conditionFile struct {
 	Status        string            `json:"status,omitempty"`
 	MinStacks     int               `json:"min_stacks,omitempty"`
+	Gates         bool              `json:"gates,omitempty"`
 	BelowHealth   int               `json:"below_health,omitempty"`
 	BonusPower    int               `json:"bonus_power"`
 	Consume       bool              `json:"consume,omitempty"`
@@ -1113,6 +1139,7 @@ func (s Skill) file() skillFile {
 	if s.SelfRequires != nil {
 		out.SelfRequires = &conditionFile{
 			Status: s.SelfRequires.Status, MinStacks: s.SelfRequires.MinStacks,
+			Gates:       s.SelfRequires.Gates,
 			BelowHealth: s.SelfRequires.BelowHealth,
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
 			ConsumeStacks: s.SelfRequires.ConsumeStacks, Chains: s.SelfRequires.Chains,
@@ -1127,6 +1154,7 @@ func (s Skill) file() skillFile {
 	if s.Requires != nil {
 		out.Requires = &conditionFile{
 			Status: s.Requires.Status, MinStacks: s.Requires.MinStacks,
+			Gates:       s.Requires.Gates,
 			BelowHealth: s.Requires.BelowHealth,
 			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
 			ConsumeStacks: s.Requires.ConsumeStacks, Chains: s.Requires.Chains,
@@ -1653,6 +1681,30 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 	if declared.BonusPower < 0 {
 		return fail("adds %d power, want zero or more", declared.BonusPower)
 	}
+	// A gate is a condition on CASTING, and the three refusals below are each a
+	// place where that reading would have to be taken somewhere it cannot be.
+	//
+	// It has to read a status, because a gate on health alone is a different
+	// mechanic wearing this field's name. Health is read off a unit, so "may this
+	// be cast" would become a question with one answer per cell -- which is
+	// battle.aims, and aims is required to stay blind to a gate: four callers ask
+	// it hypothetically, one of them while the tank is empty and precisely so that
+	// filling the tank can be priced.
+	if declared.Gates && !readsStatus {
+		return fail("gates its cast but names no status, and a gate on health alone is a reading taken per target rather than per cast")
+	}
+	// The target's condition is read once per aim; battle.options builds one
+	// reason per SKILL. A target-side gate would therefore have to live in aims(),
+	// which is the one place it may not -- see above, and battle/turn.go.
+	if declared.Gates && field == "requires" {
+		return fail("gates its cast on the target's condition, which is read per aim: only the caster's own condition may gate a cast")
+	}
+	// A gate that spends nothing is a permanent unlock rather than a cost: the
+	// caster crosses the threshold once and the skill is free from that turn on.
+	// What makes a gate a price is that casting empties what opened it.
+	if declared.Gates && !declared.Consume {
+		return fail("gates its cast without consuming anything, so the threshold would be crossed once and never paid again")
+	}
 	// Consuming is a status rule, so a condition that reads only health has
 	// nothing to consume and saying so is a mistake rather than a no-op.
 	if declared.Consume && !readsStatus {
@@ -1746,7 +1798,19 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		// reason.
 		return fail("chains or arcs without consuming anything, so the discharge would be free every turn the condition held")
 	}
-	if declared.Consume && declared.BonusPower == 0 && declared.ArcPower == 0 &&
+	// ⚠️ **A gating condition is exempt, because the gate is the fourth currency.**
+	// Every payment named below is one the condition makes ON TOP of the skill:
+	// the cast happens either way, so a consume buying none of them really is a
+	// status handed over for nothing. A gate is not on top of anything. The
+	// consume buys the CAST -- the skill does not exist without the fuel -- so the
+	// flat `power` on the skill's own face is the whole figure, rather than a
+	// figure the condition failed to move.
+	//
+	// It is the same argument one currency along from the StackRestore exemption
+	// in resolve, on the "has no power and does nothing else" clause: there the
+	// whole heal lives on the condition so the skill reads `restores: 0`, here the
+	// whole purchase is the cast so the condition reads as paying nothing.
+	if declared.Consume && !declared.Gates && declared.BonusPower == 0 && declared.ArcPower == 0 &&
 		declared.StackPower == 0 && declared.StackRestore == 0 && len(declared.Applies) == 0 {
 		return fail("consumes %q for neither a bonus, a discharge, a per-stack payment nor a rider, which throws the status away for nothing", statusID)
 	}
@@ -1784,8 +1848,9 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return nil, err
 	}
 	return &Condition{
-		Status: statusID, MinStacks: minStacks, BelowHealth: declared.BelowHealth,
-		BonusPower: declared.BonusPower, Consume: declared.Consume,
+		Status: statusID, MinStacks: minStacks, Gates: declared.Gates,
+		BelowHealth: declared.BelowHealth,
+		BonusPower:  declared.BonusPower, Consume: declared.Consume,
 		ConsumeStacks: declared.ConsumeStacks, Chains: declared.Chains,
 		ArcPower: declared.ArcPower, StackPower: declared.StackPower,
 		StackRestore: declared.StackRestore, Applies: applies,

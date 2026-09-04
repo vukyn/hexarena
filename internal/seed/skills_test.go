@@ -70,6 +70,7 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 		cleanse, dispel, shield, selfBuff      bool
 		guaranteed, speedScaled, longRange     bool
 		gradient, selfCondition, reserveHeal   bool
+		gatedSpend                             bool
 	)
 	elements := make(map[element.Element]bool)
 	sides := make(map[skill.Side]bool)
@@ -100,6 +101,14 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 			selfCondition = true
 			if current.SelfRequires.ScalesRestore() {
 				reserveHeal = true
+			}
+			// And the shape beside it, counted apart for the same reason: a gating
+			// condition decides whether the skill is OFFERED rather than what it
+			// pays out, so every reader downstream of it -- the offer, the refusal
+			// Act returns, the price a stack of the fuel is worth -- is a branch a
+			// bench holding only amplifiers never reaches.
+			if current.SelfRequires.GatesCast() {
+				gatedSpend = true
 			}
 		}
 		if current.Strips != nil {
@@ -151,6 +160,7 @@ func TestTheBenchCoversTheMechanics(t *testing.T) {
 		{"a gradient off the caster's own health", gradient},
 		{"a condition read against the caster", selfCondition},
 		{"a spend paid back in health", reserveHeal},
+		{"a spend gated by its fuel", gatedSpend},
 		{"a cleanse", cleanse},
 		{"a dispel", dispel},
 		{"a shield", shield},

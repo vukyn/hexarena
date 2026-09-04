@@ -34,6 +34,13 @@ import (
 // shipped book has spenders of both, and the bench has to hold the shape a
 // TestTheBenchCoversTheMechanics row can ask about.
 //
+// `vent` is the same argument for the shape beside it: a spend that buys the CAST
+// rather than a bonus on top of one. Its condition carries no payment at all —
+// the flat power on its face is the whole figure — so it is the one condition
+// here that decides whether the skill is offered, and a bench without it leaves
+// every reader of skill.Condition.GatesCast covered by nothing but the tests that
+// build their own.
+//
 // They used to be the shipped skill book, and the tests named them directly.
 // That coupled a hundred assertions to content the author is free to delete --
 // which is exactly what happened. They live here now, so what the game ships and
@@ -482,6 +489,24 @@ const Skills = `[
       "skills": ["strike"],
       "lasts": 1,
       "bound": true
+    }
+  },
+  {
+    "id": "vent",
+    "element": "fire",
+    "range": 2,
+    "pattern": "single",
+    "power": 2400,
+    "strikes": 1,
+    "accuracy": 950,
+    "cooldown": 0,
+    "target": "enemy",
+    "self_requires": {
+      "status": "swelter",
+      "min_stacks": 3,
+      "gates": true,
+      "consume": true,
+      "consume_stacks": 3
     }
   },
   {
