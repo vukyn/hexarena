@@ -123,11 +123,10 @@ type (
 // second set of channels; and three goroutines touch these fields — the model's,
 // the Play loop's, and whichever one bubbletea runs a tea.Cmd on.
 type session struct {
-	// out is where a message goes. Written once, by attach, before anything can
-	// send.
-	out sender
-
 	mu sync.Mutex
+	// out is where a message goes, and it is under the mutex like everything
+	// else here. → attach, for the two race sightings that moved it in.
+	out sender
 	// ctx is the match's own context and cancel is the ONLY thing that unblocks
 	// a waiting chooser. → the two arms, above.
 	ctx    context.Context
@@ -184,18 +183,42 @@ func newSession() *session { return &session{} }
 // nothing reading it until Run begins, so a Send *before* Run blocks until it
 // does. Nothing here sends before Run: the only senders are Stepped and the
 // chooser, and both exist only after a Dial that an Update started.
-func (s *session) attach(out sender) { s.out = out }
+//
+// ⚠️ **It takes the mutex, and the comment on the field used to be the whole of
+// the guarantee.** `out` was written here and read in `send` with no
+// synchronisation at all, on the strength of "written once, before anything can
+// send" — which is true of `run`, where the attach precedes `program.Run()`, and
+// is **not** true of a test that attaches a sender to a session a Play goroutine
+// is already running against. `cmd/hexarena-tui`'s `-race` line caught it twice,
+// days apart, on `TestTheCountdownReachesTheScreenOverASocket`, and neither
+// sighting reproduced: about one run in ten of the whole package under the
+// detector. A field guarded by an ordering claim rather than by the mutex every
+// other field on this struct uses is the one field that could do that.
+func (s *session) attach(out sender) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.out = out
+}
 
 // send is one message to the model, and a session with nothing attached drops
 // it.
 //
 // The nil check is for a test that is about the chooser rather than about the
 // messages; every real path goes through attach in run.
+//
+// ⚠️ **The lock is released before the Send**, and that ordering is the point
+// rather than an optimisation: `tea.Program.Send` blocks until the update loop
+// takes the message, an `Update` reaching this session takes the same mutex, and
+// holding it across the Send would deadlock the two against each other. This is
+// the same rule `Mirror.Decide` follows for the chooser, one layer out.
 func (s *session) send(message tea.Msg) {
-	if s.out == nil {
+	s.mu.Lock()
+	out := s.out
+	s.mu.Unlock()
+	if out == nil {
 		return
 	}
-	s.out.Send(message)
+	out.Send(message)
 }
 
 // dial is the command that joins a room.
