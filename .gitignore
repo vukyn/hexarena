@@ -1,6 +1,9 @@
 bin/
 .code-review-graph/
-.claude/
+# Machine-local Claude state — worktrees and caches — EXCEPT agent-memory,
+# which is knowledge about this repo and has to travel with it.
+.claude/*
+!.claude/agent-memory/
 .env
 .DS_Store
 
