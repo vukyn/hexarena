@@ -362,6 +362,36 @@
       "passives": [
         "contagion"
       ]
+    },
+    {
+      "id": "dratini.gale",
+      "character": "pokemon.dratini",
+      "name": "cưỡi gió",
+      "intent": "Đứng ở hàng sâu nhất mà với tới cả hàng bên kia, không cho ai lại gần",
+      "skills": [
+        "gust",
+        "air_slash",
+        "hurricane",
+        "twister"
+      ],
+      "passives": [
+        "swiftness"
+      ]
+    },
+    {
+      "id": "dratini.dragon",
+      "character": "pokemon.dratini",
+      "name": "máu rồng",
+      "intent": "Bỏ gió mà lao vào tận nơi, đổi khoảng cách lấy sức nặng của dòng máu",
+      "skills": [
+        "dragon_dance",
+        "dragon_claw",
+        "dragon_drive",
+        "outrage"
+      ],
+      "passives": [
+        "blood_thirst"
+      ]
     }
   ]
 }

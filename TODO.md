@@ -1175,14 +1175,13 @@ is only so the shape is readable.
             watches the draft as well as the battle.
             ⚠️ **The cast is too small for a 5v5 draft, measured: this is a
             content prerequisite and no amount of code fixes it.** **Re-measured
-            2026-09-04: fifteen characters ship** (this said twelve) and **ten**
-            of them have an authored build (`builds.json`, unchanged) — the four
-            without one inside the draftable pool are Happiny, Lapras, Oddish and
-            Riolu. Ten picks is still the whole of the **built** cast, so a 5v5
-            draft on builds alone has room for **nought bans**, and the build
-            coverage rather than the cast size is now what binds. 3v3 is
-            comfortable: six picks leaves four bans on the built cast, eight if
-            the pool is the full fourteen.
+            2026-09-05: sixteen characters ship** (this said twelve, then
+            fifteen) and **eleven** of them have an authored build
+            (`builds.json`) — the four without one inside the draftable pool are
+            Happiny, Lapras, Oddish and Riolu. Eleven picks leaves **one** ban on
+            the built cast at 5v5, so build coverage rather than cast size is
+            still what binds. 3v3 is comfortable: six picks leaves five bans on
+            the built cast, nine if the pool is the full fifteen.
             So either 5v5 drafting waits for more builds, or the draft is 3v3-only
             and says so.
             ⚠️ **It contradicts a decision this file records as settled, and the
@@ -1265,7 +1264,7 @@ is only so the shape is readable.
             is derived rather than remembered:
             `jq '[.characters[]|select(.hidden|not)]|length'
             internal/seed/data/cast.json`. The gap that is left is now **two
-            characters**, and § *Twenty-two traced Pokemon* holds eight lines of
+            characters**, and § *Nineteen traced Pokemon* holds seven lines of
             art already waiting for them.
             For the other reading of the same sentence, bans as a **total** across
             both sides rather than each: 3v3 becomes 8 of 11 and the last pick
@@ -1315,12 +1314,17 @@ is only so the shape is readable.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
       at build time or rasterised at load, because ebiten draws neither.
-- [ ] **Grow the cast.** **Fifteen** ship across two origins (fourteen Pokemon,
-      one Naruto) over **thirty-nine** authored stages, and **every one of the
+- [ ] **Grow the cast.** **Sixteen** ship across two origins (fifteen Pokemon,
+      one Naruto) over **forty-two** authored stages, and **every one of the
       eleven elements is carried**: water ×3 (Lapras, Poliwag, Squirtle), grass ×2
       (Bulbasaur, Oddish), metal ×2 (Magnemite, Riolu), dark ×2 (Gastly, Mewtwo),
-      neutral ×2 (Happiny, Mew), and one each of fire, ground, ice, wind, electric
-      and light. Two duals: Magnemite (electric/metal) and Lapras (water/ice).
+      neutral ×2 (Happiny, Mew), wind ×2 (Dratini, Naruto), and one each of fire,
+      ground, ice, electric and light. Two duals: Magnemite (electric/metal) and
+      Lapras (water/ice). ⚠️ **Wind was carried only by the hidden Naruto until
+      Dratini**, so both of the book's wind skills were `restrict.origins:
+      [naruto]` and no draftable unit could field one: an element being "carried"
+      is not the same as its pool being reachable — see
+      `memory/hexarena-pricing-a-new-element-pool.md`.
       This is content, and the constraints that bound it are written down.
       ⚠️ **This entry existed TWICE until 2026-09-05** — once here and once in
       `CLAUDE.md` § *Open work*, both current, both maintained, worded
@@ -1338,9 +1342,9 @@ is only so the shape is readable.
       by hand.
       ⚠️ **No element is left to claim, so "one per element" is finished as a
       guide.** What a new character is bought for now is a **way of playing**, and
-      § *Twenty-two traced Pokemon* below is the art waiting for one.
+      § *Nineteen traced Pokemon* below is the art waiting for one.
       ⚠️ **On the archetype, which is the closest thing to a way of playing this
-      data has a field for.** Fifteen characters against fifteen archetypes, one
+      data has a field for.** Sixteen characters against sixteen archetypes, one
       each — but that is where the counting has landed, **not a rule, and nothing
       enforces it**: `cast.ParseArchetypes` refuses an archetype *declared* twice
       and says nothing about two characters *tuned from* one, and no test in
@@ -1437,7 +1441,7 @@ is only so the shape is readable.
       one, and the pair reads the worse half. Whether a dual should lose a
       favourable matchup whole is a decision for whoever authors next — it is
       written down rather than tuned away.
-- [ ] **Twenty-two traced Pokemon are waiting for a character — eight complete
+- [ ] **Nineteen traced Pokemon are waiting for a character — seven complete
       lines.** The art lands first because `cast.ParseBook` refuses a character
       that declares no image, so the order is forced: trace, then author.
       ⚠️ **This entry said "thirty-one" and was stale in BOTH directions**, which
@@ -1452,17 +1456,20 @@ is only so the shape is readable.
             <(grep -o '"assets/[^"]*\.svg"' internal/seed/data/cast.json \
                 | sed 's|"assets/||; s|\.svg"||' | sort -u)
 
-      Twenty-two files, eight lines, **no orphan form** — every line below is
+      Nineteen files, seven lines, **no orphan form** — every line below is
       complete, and nothing `cast.json` names is missing from `assets/`.
       By line, as they would be authored:
       **pichu → pikachu → raichu** · **igglybuff → jigglypuff → wigglytuff** ·
-      **mareep → flaaffy → ampharos** · **dratini → dragonair → dragonite** ·
-      **abra → kadabra → alakazam** · **gible → gabite → garchomp** ·
+      **mareep → flaaffy → ampharos** · **abra → kadabra → alakazam** ·
+      **gible → gabite → garchomp** ·
       **magikarp → gyarados** · **onix → steelix**.
       ⚠️ **Nothing references any of these**, which is why they moved no golden
       and why `TestTheShippedArtIsCutOutRatherThanFramed` does **not** cover them —
       that test walks the art shipped characters name, so the day one of these is
-      authored is the day its picture is first measured. The sources were checked
+      authored is the day its picture is first measured. **That day came for the
+      dratini line on 2026-09-05** and all three passed first time, which is one
+      piece of evidence for the hand-check below rather than a guarantee for the
+      rest. The sources were checked
       by hand instead: real `tRNS` transparency, 46–71% of the canvas clear, the
       inked box well inside the frame — no baked chequer, so no `--decheck` was
       needed.
@@ -1485,19 +1492,19 @@ is only so the shape is readable.
       taste.
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
-      four obvious axes outright.** Multiplicity across the fifteen shipped
+      four obvious axes outright.** Multiplicity across the sixteen shipped
       characters:
 
       | axis | most units that can share one value | rungs reachable |
       |---|---:|---|
       | element | 3 (water: Lapras, Poliwag, Squirtle) | 2, 3 |
-      | origin | **14** (`pokemon`) | 2, 3, 4, 5 — but see below |
-      | species | 2 (`plant`, `mythic`; every other species is 1) | 2, and only on two species |
-      | archetype | 1 (fifteen characters, fifteen presets) | **none** |
-      | archetype `column` | 6 / 5 / 4 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
+      | origin | **15** (`pokemon`) | 2, 3, 4, 5 — but see below |
+      | species | 2 (`plant`, `mythic`, `dragon`; every other species is 1) | 2, and only on three species |
+      | archetype | 1 (sixteen characters, sixteen presets) | **none** |
+      | archetype `column` | 6 / 5 / 5 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
 
       ⚠️ **An origin threshold is FREE at every rung today**, and that is the
-      sharpest thing here: fourteen of fifteen characters are `pokemon`, so *any*
+      sharpest thing here: fifteen of sixteen characters are `pokemon`, so *any*
       squad that is not built around Naruto satisfies a 5-of-one-origin bonus by
       accident. A bonus nobody has to build for is not a bonus, it is a stat
       change with extra words. The same trap sits one step further out if traits

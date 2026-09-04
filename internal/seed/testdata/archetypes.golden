@@ -181,4 +181,16 @@ cleanser, formation column 2
            absorbs 8333 of the 11500 budget, 3167 to spare
   kit      egg_bomb safeguard hyper_voice heal_bell soft_boiled rally wide_guard taunt
 
-15 presets
+tempest, formation column 2
+  the one that never has to close the gap: the longest reach in the cast thrown from the deepest row, on a frame heavy enough to survive whatever crosses that gap — bought with the speed to run away from it
+  demands  a character built from it must carry wind
+  hp 1265->3800  attack 226->680  defense 133->400  speed 42->125  accuracy 55->165  dodge 14->42
+  level 1  hp 1265, atk 226, def 133, spd 42, acc 55, ddg 14
+           absorbs 1828 of the 11500 budget, 9672 to spare
+  level 30 hp 2511, atk 449, def 264, spd 82, acc 109, ddg 27
+           absorbs 4728 of the 11500 budget, 6772 to spare
+  level 60 hp 3800, atk 680, def 400, spd 125, acc 165, ddg 42
+           absorbs 8878 of the 11500 budget, 2622 to spare
+  kit      gust air_slash twister hurricane slipstream updraft body_slam hyper_voice safeguard taunt
+
+16 presets

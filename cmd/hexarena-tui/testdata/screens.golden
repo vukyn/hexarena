@@ -138,7 +138,7 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (18 trong 18 nhân vật)
 
   fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -146,6 +146,7 @@ danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
   pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
   pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.dratini          pokemon        wind <gió>
   pokemon.gastly           pokemon        dark <bóng tối>
   pokemon.happiny          pokemon        neutral <trung tính>
   pokemon.lapras           pokemon        water/ice <nước/băng>
@@ -156,7 +157,6 @@ danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
   pokemon.oddish           pokemon        grass <cỏ>
 > pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
-  pokemon.squirtle         pokemon        water <nước>
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | a forked trait blurb =====
@@ -196,7 +196,7 @@ vào phòng đấu
   đội mang theo < đội thử 0 >  phe-0
 
 
-  máy này — data 4792c12397c5 · build 0123456789ab+dirty
+  máy này — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -220,7 +220,7 @@ vào phòng đấu
 
   chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng
 
-  máy này — data 4792c12397c5 · build 0123456789ab+dirty
+  máy này — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -314,7 +314,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data 4792c12397c5 · build 0123456789ab+dirty
+  máy này — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -368,7 +368,7 @@ A3 Example Adept, lượt 3
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a skill blurb =====
 
-vine_whip <roi dây leo>  1/158
+vine_whip <roi dây leo>  1/164
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -506,7 +506,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại
 ===== vi | 120x24 | cast =====
 
-danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (18 trong 18 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -514,6 +514,7 @@ danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
   pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
   pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.dratini          pokemon        wind <gió>
   pokemon.gastly           pokemon        dark <bóng tối>
   pokemon.happiny          pokemon        neutral <trung tính>
   pokemon.lapras           pokemon        water/ice <nước/băng>
@@ -524,7 +525,6 @@ danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
   pokemon.oddish           pokemon        grass <cỏ>
   pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
-  pokemon.squirtle         pokemon        water <nước>
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | chart =====
@@ -576,7 +576,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ===== vi | 120x24 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc a (133 trong 158 chiêu)
+  đang lọc a (138 trong 164 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
@@ -591,7 +591,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   flamethrower    phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-158 chiêu · 24 chiêu ai cũng học được
+164 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -614,7 +614,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-158 chiêu · 24 chiêu ai cũng học được
+164 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -659,7 +659,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-158 chiêu · 24 chiêu ai cũng học được
+164 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -668,11 +668,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 120x24 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzqx (0 trong 158 chiêu)
+  đang lọc zzqx (0 trong 164 chiêu)
 
   không có chiêu nào khớp.
 
-158 chiêu · 24 chiêu ai cũng học được
+164 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -785,16 +785,16 @@ fixture-anime.adept — Example Adept
 nội tại  các nội tại đã khai báo, và ai mang
 
   id             tên tiếng Việt ai mang
-> endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lap…
+> endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.dratini@16 pokemon.hap…
   blaze          bùng lửa       pokemon.charmander@16
   heatproof      chịu nhiệt     pokemon.charmander@16
   virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon…
+  blood_thirst   khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemo…
   last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu…
   reckless       liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns         phản đòn       pokemon.squirtle@32
-  swiftness      thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@…
+  swiftness      thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.magnem…
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -834,7 +834,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  14 nhân vật  Pokémon
+  pokemon          anime   1997  15 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -1205,7 +1205,7 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (18 trong 18 nhân vật)
 
   fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -1213,6 +1213,7 @@ danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
   pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
   pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.dratini          pokemon        wind <gió>
   pokemon.gastly           pokemon        dark <bóng tối>
   pokemon.happiny          pokemon        neutral <trung tính>
   pokemon.lapras           pokemon        water/ice <nước/băng>
@@ -1247,7 +1248,6 @@ pokemon.poliwag — Poliwag
   cấp 46           hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 giai đoạn Poliwrath
   máu quy đổi      [================--------] 8048/11500, còn dư 3452
                    xuyên hết giáp thì chỉ đỡ được 3123
-
 
 
 
@@ -1335,7 +1335,7 @@ vào phòng đấu
   đội mang theo < đội thử 0 >  phe-0
 
 
-  máy này — data 4792c12397c5 · build 0123456789ab+dirty
+  máy này — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -1395,7 +1395,7 @@ vào phòng đấu
 
   chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng
 
-  máy này — data 4792c12397c5 · build 0123456789ab+dirty
+  máy này — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -1633,7 +1633,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data 4792c12397c5 · build 0123456789ab+dirty
+  máy này — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -1795,7 +1795,7 @@ A3 Example Adept, lượt 3
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a skill blurb =====
 
-vine_whip <roi dây leo>  1/158
+vine_whip <roi dây leo>  1/164
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -2149,7 +2149,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại
 ===== vi | 160x60 | cast =====
 
-danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (18 trong 18 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -2157,6 +2157,7 @@ danh sách nhân vật  đang xem tất cả nguồn (17 trong 17 nhân vật)
   pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
   pokemon.cleffa           pokemon        light <ánh sáng>
+  pokemon.dratini          pokemon        wind <gió>
   pokemon.gastly           pokemon        dark <bóng tối>
   pokemon.happiny          pokemon        neutral <trung tính>
   pokemon.lapras           pokemon        water/ice <nước/băng>
@@ -2183,7 +2184,6 @@ fixture-anime.adept — Example Adept
   cấp 60           hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 giai đoạn Example Adept
   máu quy đổi      [=======================-] 11397/11500, còn dư 103
                    xuyên hết giáp thì chỉ đỡ được 3100
-
 
 
 
@@ -2327,7 +2327,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ===== vi | 160x60 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc a (133 trong 158 chiêu)
+  đang lọc a (138 trong 164 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
@@ -2378,7 +2378,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   seismic_toss    quật đất             ground    2000x1           hệ ground, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-158 chiêu · 24 chiêu ai cũng học được
+164 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -2437,7 +2437,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-158 chiêu · 24 chiêu ai cũng học được
+164 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -2554,7 +2554,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-158 chiêu · 24 chiêu ai cũng học được
+164 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -2563,11 +2563,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 160x60 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzqx (0 trong 158 chiêu)
+  đang lọc zzqx (0 trong 164 chiêu)
 
   không có chiêu nào khớp.
 
-158 chiêu · 24 chiêu ai cũng học được
+164 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -2860,18 +2860,18 @@ fixture-anime.adept — Example Adept
 nội tại  các nội tại đã khai báo, và ai mang
 
   id             tên tiếng Việt ai mang
-> endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop@32 pokemon.magnemi…
+> endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.dratini@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop…
   blaze          bùng lửa       pokemon.charmander@16
   heatproof      chịu nhiệt     pokemon.charmander@16
   virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwa…
+  blood_thirst   khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtw…
   last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns         phản đòn       pokemon.squirtle@32
-  swiftness      thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32 …
+  swiftness      thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 …
   ballast        trụ vững       pokemon.happiny@16 pokemon.squirtle@44
-  composure      vững tâm       pokemon.cleffa@24 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliwag@4…
+  composure      vững tâm       pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@4…
   elusive        huyền ảo       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40
   contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
@@ -2981,7 +2981,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  14 nhân vật  Pokémon
+  pokemon          anime   1997  15 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -3172,7 +3172,7 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | a forked detail pane =====
 
-cast  showing all origins (17 of 17 characters)
+cast  showing all origins (18 of 18 characters)
 
   fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -3180,6 +3180,7 @@ cast  showing all origins (17 of 17 characters)
   pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
   pokemon.cleffa           pokemon        light
+  pokemon.dratini          pokemon        wind
   pokemon.gastly           pokemon        dark
   pokemon.happiny          pokemon        neutral
   pokemon.lapras           pokemon        water/ice
@@ -3190,7 +3191,6 @@ cast  showing all origins (17 of 17 characters)
   pokemon.oddish           pokemon        grass
 > pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
-  pokemon.squirtle         pokemon        water
 … cut off; a taller window shows the rest
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | a forked trait blurb =====
@@ -3231,7 +3231,7 @@ join a room
   the squad to bring < đội thử 0 >  phe-0
 
 
-  this machine — data 4792c12397c5 · build 0123456789ab+dirty
+  this machine — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -3255,7 +3255,7 @@ join a room
 
   no squad has been built, and a room has to be joined with one; build a side under the squad catalogue
 
-  this machine — data 4792c12397c5 · build 0123456789ab+dirty
+  this machine — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -3349,7 +3349,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data 4792c12397c5 · build 0123456789ab+dirty
+  this machine — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -3402,7 +3402,7 @@ A3 Example Adept, turn 3
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a skill blurb =====
 
-vine_whip  1 of 158
+vine_whip  1 of 164
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -3540,7 +3540,7 @@ nothing built yet; n starts one
 ↑/↓ move · f fight · ctrl+l tiếng Việt · esc back
 ===== en | 120x24 | cast =====
 
-cast  showing all origins (17 of 17 characters)
+cast  showing all origins (18 of 18 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -3548,6 +3548,7 @@ cast  showing all origins (17 of 17 characters)
   pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
   pokemon.cleffa           pokemon        light
+  pokemon.dratini          pokemon        wind
   pokemon.gastly           pokemon        dark
   pokemon.happiny          pokemon        neutral
   pokemon.lapras           pokemon        water/ice
@@ -3558,7 +3559,6 @@ cast  showing all origins (17 of 17 characters)
   pokemon.oddish           pokemon        grass
   pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
-  pokemon.squirtle         pokemon        water
 … cut off; a taller window shows the rest
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | chart =====
@@ -3610,7 +3610,7 @@ elements  the affinity chart: what beats what, and by how much
 ===== en | 120x24 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering a (133 of 158 skills)
+  filtering a (138 of 164 skills)
 
   id              element   damage multiplier who may carry it
 > vine_whip       grass     1100x1            grass units, out of pokemon
@@ -3625,7 +3625,7 @@ skills  what each one does, and who may carry it
   flamethrower    fire      1600x1            fire units, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-158 skills · 24 anyone may carry
+164 skills · 24 anyone may carry
 
 
 
@@ -3648,7 +3648,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-158 skills · 24 anyone may carry
+164 skills · 24 anyone may carry
 
 
 
@@ -3693,7 +3693,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-158 skills · 24 anyone may carry
+164 skills · 24 anyone may carry
 
 
 
@@ -3702,11 +3702,11 @@ skills  what each one does, and who may carry it
 ===== en | 120x24 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzqx (0 of 158 skills)
+  filtering zzqx (0 of 164 skills)
 
   nothing matches that.
 
-158 skills · 24 anyone may carry
+164 skills · 24 anyone may carry
 
 
 
@@ -3819,16 +3819,16 @@ fixture-anime.adept — Example Adept
 traits  the declared traits, and who carries each
 
   id             carried by
-> endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.…
+> endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.dratini@16 pokemon.happiny@32 pokemon…
   blaze          pokemon.charmander@16
   heatproof      pokemon.charmander@16
   virulence      pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon…
+  blood_thirst   pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemon.machop@16 pok…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns         pokemon.squirtle@32
-  swiftness      naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewt…
+  swiftness      naruto.naruto@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.…
 
   endurance
     Always carries toughened.
@@ -3868,7 +3868,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  14 cast  Pokémon
+  pokemon          anime   1997  15 cast  Pokémon
 
   note          A test fixture, not shipped.
 
@@ -4239,7 +4239,7 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a forked detail pane =====
 
-cast  showing all origins (17 of 17 characters)
+cast  showing all origins (18 of 18 characters)
 
   fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -4247,6 +4247,7 @@ cast  showing all origins (17 of 17 characters)
   pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
   pokemon.cleffa           pokemon        light
+  pokemon.dratini          pokemon        wind
   pokemon.gastly           pokemon        dark
   pokemon.happiny          pokemon        neutral
   pokemon.lapras           pokemon        water/ice
@@ -4275,7 +4276,6 @@ pokemon.poliwag — Poliwag
   level 46      hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 stage Poliwrath
   effective hp  [================--------] 8048 of 11500, 3452 to spare
                 3123 against damage that pierces its armour outright
-
 
 
 
@@ -4370,7 +4370,7 @@ join a room
   the squad to bring < đội thử 0 >  phe-0
 
 
-  this machine — data 4792c12397c5 · build 0123456789ab+dirty
+  this machine — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -4430,7 +4430,7 @@ join a room
 
   no squad has been built, and a room has to be joined with one; build a side under the squad catalogue
 
-  this machine — data 4792c12397c5 · build 0123456789ab+dirty
+  this machine — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -4668,7 +4668,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data 4792c12397c5 · build 0123456789ab+dirty
+  this machine — data ba450c37b450 · build 0123456789ab+dirty
 
 
 
@@ -4829,7 +4829,7 @@ A3 Example Adept, turn 3
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a skill blurb =====
 
-vine_whip  1 of 158
+vine_whip  1 of 164
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -5183,7 +5183,7 @@ nothing built yet; n starts one
 ↑/↓ move · f fight · ctrl+l tiếng Việt · esc back
 ===== en | 160x60 | cast =====
 
-cast  showing all origins (17 of 17 characters)
+cast  showing all origins (18 of 18 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -5191,6 +5191,7 @@ cast  showing all origins (17 of 17 characters)
   pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
   pokemon.cleffa           pokemon        light
+  pokemon.dratini          pokemon        wind
   pokemon.gastly           pokemon        dark
   pokemon.happiny          pokemon        neutral
   pokemon.lapras           pokemon        water/ice
@@ -5214,7 +5215,6 @@ fixture-anime.adept — Example Adept
   level 60      hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 stage Example Adept
   effective hp  [=======================-] 11397 of 11500, 103 to spare
                 3100 against damage that pierces its armour outright
-
 
 
 
@@ -5361,7 +5361,7 @@ elements  the affinity chart: what beats what, and by how much
 ===== en | 160x60 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering a (133 of 158 skills)
+  filtering a (138 of 164 skills)
 
   id              element   damage multiplier who may carry it
 > vine_whip       grass     1100x1            grass units, out of pokemon
@@ -5412,7 +5412,7 @@ skills  what each one does, and who may carry it
   seismic_toss    ground    2000x1            ground units, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-158 skills · 24 anyone may carry
+164 skills · 24 anyone may carry
 
 
 
@@ -5471,7 +5471,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-158 skills · 24 anyone may carry
+164 skills · 24 anyone may carry
 
 
 
@@ -5588,7 +5588,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-158 skills · 24 anyone may carry
+164 skills · 24 anyone may carry
 
 
 
@@ -5597,11 +5597,11 @@ skills  what each one does, and who may carry it
 ===== en | 160x60 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzqx (0 of 158 skills)
+  filtering zzqx (0 of 164 skills)
 
   nothing matches that.
 
-158 skills · 24 anyone may carry
+164 skills · 24 anyone may carry
 
 
 
@@ -5894,18 +5894,18 @@ fixture-anime.adept — Example Adept
 traits  the declared traits, and who carries each
 
   id             carried by
-> endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop@32 pokemon.magnemite@24 pokemon.m…
+> endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.dratini@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop@32 pokemon.mag…
   blaze          pokemon.charmander@16
   heatproof      pokemon.charmander@16
   virulence      pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwag@44
+  blood_thirst   pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.po…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
   thorns         pokemon.squirtle@32
-  swiftness      naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32 pokemon.riolu@32
+  swiftness      naruto.naruto@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag…
   ballast        pokemon.happiny@16 pokemon.squirtle@44
-  composure      pokemon.cleffa@24 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliwag@40[Politoed] pok…
+  composure      pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliw…
   elusive        pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40
   contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       pokemon.gastly@32 pokemon.poliwag@36
@@ -6015,7 +6015,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  14 cast  Pokémon
+  pokemon          anime   1997  15 cast  Pokémon
 
   note          A test fixture, not shipped.
 

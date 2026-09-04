@@ -93,6 +93,29 @@ pokemon.cleffa — Cleffa
     level 60 hp 4200, atk 420, def 380, spd 115, acc 155, ddg 55
              absorbs 9523 of the 11500 budget, 1977 to spare
 
+pokemon.dratini — Dratini
+  from     Pokémon (anime)
+  preset   tempest
+  element  wind
+  species  dragon
+  art      assets/dratini.svg
+  kit      gust twister@8 dragon_rage@12 air_slash@16 slipstream@20 dragon_dance@24 updraft@28 body_slam@32 hurricane@36 dragon_claw@40 safeguard@44 dragon_drive@46 outrage@48 hyper_voice@52 taunt@56
+  stage "Dratini" owns levels 1 to 23, showing assets/dratini.svg
+    level 1  hp 790, atk 141, def 84, spd 30, acc 40, ddg 12
+             absorbs 1011 of the 11500 budget, 10489 to spare
+    level 23 hp 1371, atk 245, def 145, spd 51, acc 69, ddg 20
+             absorbs 2034 of the 11500 budget, 9466 to spare
+  stage "Dragonair" owns levels 24 to 43, showing assets/dragonair.svg
+    level 24 hp 1807, atk 323, def 190, spd 63, acc 83, ddg 22
+             absorbs 2952 of the 11500 budget, 8548 to spare
+    level 43 hp 2457, atk 439, def 258, spd 85, acc 113, ddg 30
+             absorbs 4575 of the 11500 budget, 6925 to spare
+  stage "Dragonite" owns levels 44 to 60, showing assets/dragonite.svg
+    level 44 hp 3112, atk 556, def 327, spd 102, acc 135, ddg 34
+             absorbs 6510 of the 11500 budget, 4990 to spare
+    level 60 hp 3800, atk 680, def 400, spd 125, acc 165, ddg 42
+             absorbs 8878 of the 11500 budget, 2622 to spare
+
 pokemon.gastly — Gastly
   from     Pokémon (anime)
   preset   hexer
@@ -316,4 +339,4 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-15 characters
+16 characters
