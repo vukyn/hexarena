@@ -79,11 +79,12 @@ func newRoom(t *testing.T, cfg room.Config) *room.Room {
 var theThreeSlots = []hex.Offset{{Col: 0, Row: 1}, {Col: 1, Row: 1}, {Col: 2, Row: 1}}
 
 // squadOf builds a legal squad out of shipped characters, and it builds every
-// part of "legal" itself rather than borrowing a shipped squad, for two reasons.
-// The shipped squads are **two** units and this room is a 3v3, and a fixture
-// that came out of internal/seed/data would move with the balance — the leaf
-// rule and the level rule would then be measured against whatever an author had
-// most recently saved.
+// part of "legal" itself rather than borrowing a shipped squad: a fixture that
+// came out of internal/seed/data would move with the balance — the leaf rule and
+// the level rule would then be measured against whatever an author had most
+// recently saved. (It used to have a second reason, that the shipped squads were
+// **two** units against this room's 3v3; they are three a side since #268, so
+// the size no longer says anything and the drift argument is the whole of it.)
 //
 // The stage is named explicitly, off progression.Line.Leaves, rather than left
 // absent: an absent stage means "the furthest the level reaches", and on a line
