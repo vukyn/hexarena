@@ -62,7 +62,7 @@ subject matter — read it when you are in that subject:
 |---|---|
 | `docs/architecture.md` | the runtime pieces: the two clients over one `internal/screen`, `internal/room` (a state machine with no I/O and no clock), `internal/socket` (the one boundary the WebSocket crosses), **the event log as the contract**, and how a battle ends |
 | `docs/balance.md` | how the game is priced and tuned: `Suggest`'s rating, species and origins, the inert element, the strip/guard/grant/summon/amplify/detonate/`charge` categories, `hexforge weigh`, and `forge.Bout` |
-| `TODO.md` § *From CLAUDE.md § Open work* | the twenty-eight-item log that lived here — three open, twenty-five done. It is bookkeeping, which is `TODO.md`'s job |
+| `TODO.md` and `docs/decisions.md` | the twenty-eight-item log that lived here: its three open items joined `TODO.md` § *Not done* and its twenty-five finished ones joined `docs/decisions.md`, which is where finished work and its reasoning live |
 
 ⚠️ **The one-line rules those sections rest on did NOT move**, and that is the
 point of the split rather than a happy accident. *The layer rule* below still
