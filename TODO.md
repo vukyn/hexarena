@@ -1166,13 +1166,16 @@ is only so the shape is readable.
             ten. A pick carries the character **and its skills**. A spectator
             watches the draft as well as the battle.
             ⚠️ **The cast is too small for a 5v5 draft, measured: this is a
-            content prerequisite and no amount of code fixes it.** Twelve
-            characters ship and **ten** of them have an authored build. Ten
-            picks is the whole of the built cast, so a 5v5 draft has room for
-            **nought bans** — and two bans only if the two characters with no
-            build are drafted anyway. 3v3 is comfortable: six picks leaves room
-            for four bans on the built cast, six if the pool is the full twelve.
-            So either 5v5 drafting waits for more cast, or the draft is 3v3-only
+            content prerequisite and no amount of code fixes it.** **Re-measured
+            2026-09-04: fifteen characters ship** (this said twelve) and **ten**
+            of them have an authored build (`builds.json`, unchanged) — the four
+            without one inside the draftable pool are Happiny, Lapras, Oddish and
+            Riolu. Ten picks is still the whole of the **built** cast, so a 5v5
+            draft on builds alone has room for **nought bans**, and the build
+            coverage rather than the cast size is now what binds. 3v3 is
+            comfortable: six picks leaves four bans on the built cast, eight if
+            the pool is the full fourteen.
+            So either 5v5 drafting waits for more builds, or the draft is 3v3-only
             and says so.
             ⚠️ **It contradicts a decision this file records as settled, and the
             contradiction is fine but must be written down rather than
@@ -1236,18 +1239,26 @@ is only so the shape is readable.
             wrong.
             **Bans are optional** — a side may leave all three slots unspent.
 
-            ⚠️ **3v3 FITS AND 5v5 DOES NOT, MEASURED.** The pool today is
-            **eleven**, not twelve: `naruto.naruto` already carries
-            `hidden: true`. Against eleven, with the counts settled above:
+            ⚠️ **3v3 FITS AND 5v5 DOES NOT, MEASURED.** The pool is the cast
+            minus the hidden: **fourteen** today, because `naruto.naruto` is the
+            only character carrying `hidden: true`. Against fourteen, with the
+            counts settled above:
 
-                3v3, 2 a side:  6 picks +  4 bans = 10 of 11 — fits, last pick sees 2
-                5v5, 3 a side: 10 picks +  6 bans = 16 of 11 — needs 16 in the pool
+                3v3, 2 a side:  6 picks +  4 bans = 10 of 14 — fits, four to spare
+                5v5, 3 a side: 10 picks +  6 bans = 16 of 14 — needs 16 in the pool
 
-            So the 3v3 draft is buildable **today**, with one character to spare,
-            and the 5v5 draft needs **five more** than the cast now holds — or
-            four more plus unhiding naruto. That is a content prerequisite and no
-            amount of code changes it, which is one of the two reasons five a
-            side is held back at `hexarena-host`'s flag.
+            So the 3v3 draft is buildable **today** with four characters to spare,
+            and the 5v5 draft needs **two more** than the cast now holds — or one
+            more plus unhiding naruto. That is a content prerequisite and no
+            amount of code changes it, which is one of the two reasons five a side
+            is held back at `hexarena-host`'s flag.
+            ⚠️ **This arithmetic said "eleven, not twelve" and "needs five more"
+            until 2026-09-04**, and it moves every time a character ships, so it
+            is derived rather than remembered:
+            `jq '[.characters[]|select(.hidden|not)]|length'
+            internal/seed/data/cast.json`. The gap that is left is now **two
+            characters**, and § *Twenty-two traced Pokemon* holds eight lines of
+            art already waiting for them.
             For the other reading of the same sentence, bans as a **total** across
             both sides rather than each: 3v3 becomes 8 of 11 and the last pick
             sees four, and 5v5 becomes 13 of 11 and still needs two more
@@ -1295,14 +1306,36 @@ is only so the shape is readable.
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event` and nothing
       more — it must not read `*Battle`. Asset pipeline undecided.
       → `CLAUDE.md` § Open work.
-- [ ] **Grow the cast.** Eight ship across two origins, covering eight elements
-      (grass, fire, water twice, wind, ground, light, and electric/metal on one
-      character — Magnemite is the first dual affinity shipped). This is content,
-      and the constraints that bound it are written down. A character moves
-      `cast.golden`,
-      `species.golden` and `origins.golden` — **not** `scenarios.golden` or
-      `replay.golden`, which this line claimed until 2026-08-31. Read Squirtle
-      first. → `CLAUDE.md` § Open work.
+- [ ] **Grow the cast.** **Fifteen** ship across two origins (fourteen Pokemon,
+      one Naruto) over **thirty-nine** authored stages, and **every one of the
+      eleven elements is carried**: water ×3 (Lapras, Poliwag, Squirtle), grass ×2
+      (Bulbasaur, Oddish), metal ×2 (Magnemite, Riolu), dark ×2 (Gastly, Mewtwo),
+      neutral ×2 (Happiny, Mew), and one each of fire, ground, ice, wind, electric
+      and light. Two duals: Magnemite (electric/metal) and Lapras (water/ice).
+      This is content, and the constraints that bound it are written down. A
+      character moves `cast.golden`, `species.golden` and `origins.golden` —
+      **not** `scenarios.golden` or `replay.golden`, which this line claimed until
+      2026-08-31. Read Squirtle first. → `CLAUDE.md` § Open work.
+      ⚠️ **The count in this line has been wrong four times** — it said three,
+      then four, then five, then eight — so it is now derived rather than
+      remembered: `jq '.characters|length' internal/seed/data/cast.json` and the
+      element sweep below it. Do not hand-edit the number without re-running it.
+      ⚠️ **No element is left to claim, so "one per element" is finished as a
+      guide.** What a new character is bought for now is a **way of playing**, and
+      the queue below is the art waiting for one.
+      ⚠️ **On the archetype, which is the closest thing to a way of playing this
+      data has a field for.** Fifteen characters against fifteen archetypes, one
+      each — but that is where the counting has landed, **not a rule, and nothing
+      enforces it**: `cast.ParseArchetypes` refuses an archetype *declared* twice
+      and says nothing about two characters *tuned from* one, and no test in
+      `internal/seed` asks. So a second character on a shipped archetype is
+      **fine** and needs no permission. The aim is only that each character ends
+      up unique in how it plays, and the archetype is one lever of several — the
+      kit, the element, the stat table and the traits are the rest, and two
+      characters off one preset with different kits are two ways of playing. The
+      thing to avoid is a *duplicate*, not a shared preset. → § *Pricing one
+      number*: what says two characters play differently is a measurement, not
+      the field they were tuned from.
       ⚠️ **Lapras landed after this line was written** and is the **second** dual
       affinity (water/ice), the first `glacier`, the first `leviathan`, and the
       first character to bring the `ice` book — five skills authored with it
@@ -1360,34 +1393,44 @@ is only so the shape is readable.
       one, and the pair reads the worse half. Whether a dual should lose a
       favourable matchup whole is a decision for whoever authors next — it is
       written down rather than tuned away.
-- [ ] **Thirty-one Pokemon are traced and waiting for a character.** The art
-      landed first because `cast.ParseBook` refuses a character that declares no
-      image, so the order is forced: trace, then author. Nothing references any
-      of these yet, which is why they moved no golden and why
-      `TestTheShippedArtIsCutOutRatherThanFramed` does **not** cover them — that
-      test walks the art shipped characters name, so the day one of these is
-      authored is the day its picture is first measured. The sources were checked
-      by hand instead: every one carries real `tRNS` transparency, 46–71% of the
-      canvas clear, the inked box well inside the frame — no baked chequer, so no
-      `--decheck` was needed.
+- [ ] **Twenty-two traced Pokemon are waiting for a character — eight complete
+      lines.** The art lands first because `cast.ParseBook` refuses a character
+      that declares no image, so the order is forced: trace, then author.
+      ⚠️ **This entry said "thirty-one" and was stale in BOTH directions**, which
+      is why the number is now measured rather than carried: seven of the lines it
+      listed have **shipped** since (Cleffa, Happiny, Gastly, Magnemite, Riolu,
+      Mew, Mewtwo), and three lines it never mentioned have been **traced** since
+      (Abra `7df76e6`, and Gible + Magikarp in `190768e`). A hand-kept list of
+      what is waiting goes wrong every time either end moves. The measurement:
+
+          comm -23 \
+            <(ls internal/seed/data/assets/*.svg | xargs -n1 basename | sed 's/\.svg$//' | sort) \
+            <(grep -o '"assets/[^"]*\.svg"' internal/seed/data/cast.json \
+                | sed 's|"assets/||; s|\.svg"||' | sort -u)
+
+      Twenty-two files, eight lines, **no orphan form** — every line below is
+      complete, and nothing `cast.json` names is missing from `assets/`.
       By line, as they would be authored:
-      **pichu → pikachu → raichu** · **cleffa → clefairy → clefable** ·
-      **igglybuff → jigglypuff → wigglytuff** · **happiny → chansey → blissey** ·
+      **pichu → pikachu → raichu** · **igglybuff → jigglypuff → wigglytuff** ·
       **mareep → flaaffy → ampharos** · **dratini → dragonair → dragonite** ·
-      **gastly → haunter → gengar** · **magnemite → magneton → magnezone** ·
-      **onix → steelix** · **riolu → lucario** · **mew** and **mewtwo**, which
-      have no line at all.
-      ⚠️ **`politoed` has SHIPPED and is off this list.** It landed in `ed79a28`
-      as the forking mechanism's first user — `poliwag → poliwhirl →
-      (poliwrath | politoed)` — so `CLAUDE.md` § Open work's "nothing shipped
-      forks yet" is **stale**, and the PvP gate's leaf rule measures both arms
-      and the interior stage on real data because of it.
+      **abra → kadabra → alakazam** · **gible → gabite → garchomp** ·
+      **magikarp → gyarados** · **onix → steelix**.
+      ⚠️ **Nothing references any of these**, which is why they moved no golden
+      and why `TestTheShippedArtIsCutOutRatherThanFramed` does **not** cover them —
+      that test walks the art shipped characters name, so the day one of these is
+      authored is the day its picture is first measured. The sources were checked
+      by hand instead: real `tRNS` transparency, 46–71% of the canvas clear, the
+      inked box well inside the frame — no baked chequer, so no `--decheck` was
+      needed.
       ⚠️ Each of these needs more than a picture: an origin (`pokemon` exists), a
       species claim if any skill it wants is a lineage skill, an archetype whose
-      kit its affinity can carry, and a stat table inside
-      `progression.Limits`' joint health-and-defence bound. **A new skill also has
-      to say which story it is out of.** Authoring one is the *Grow the cast* item
-      above, not a separate task — this entry is the queue, not the work.
+      kit its affinity can carry, and a stat table inside `progression.Limits`'
+      joint health-and-defence bound. **A new skill also has to say which story it
+      is out of.** ⚠️ And **no element is left to claim** — all eleven are carried
+      — so what a new one is bought for is a way of playing; a shipped archetype
+      may be reused, and § *Grow the cast* above says why that is not a problem.
+      Authoring one is the *Grow the cast* item above, not a separate task — this
+      entry is the queue, not the work.
 - [x] **`weigh` can price a skill that deals none. DONE.** The refusal was
       right and its **evidence** was mis-specified. *Worth nothing* and *not
       rated* are still different answers and a row that did nothing is still
