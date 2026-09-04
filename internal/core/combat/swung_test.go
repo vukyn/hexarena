@@ -98,7 +98,7 @@ func largestPowerHeld(bonus, share int, holds func(power int) bool) int {
 // the book rather than of a ceiling.
 const (
 	worstShippedBonus = 4000 // deluge's self_requires, emptied to the spend ceiling
-	worstShippedShare = 900  // comeback's self_gradient at_empty
+	worstShippedShare = 1500 // reversal's self_gradient at_empty
 )
 
 // TestTheWorstShippedSwingIsTheOneMeasuredAgainst reads the two figures the

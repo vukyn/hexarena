@@ -229,6 +229,24 @@ pokemon.poliwag — Poliwag
     level 60 hp 3800, atk 580, def 580, spd 80, acc 150, ddg 45
              absorbs 11176 of the 11500 budget, 324 to spare
 
+pokemon.riolu — Riolu
+  from     Pokémon (anime)
+  preset   diehard
+  element  metal
+  species  canine
+  art      assets/riolu.svg
+  kit      metal_claw reversal aura_sphere@8 force_palm@12 close_combat@16 metal_sound@20 flash_cannon@24 mirror_shot@28 magnet_rise@32 taunt@36 rally@40 wide_guard@44
+  stage "Riolu" owns levels 1 to 19, showing assets/riolu.svg
+    level 1  hp 700, atk 180, def 90, spd 40, acc 58, ddg 20
+             absorbs 910 of the 11500 budget, 10590 to spare
+    level 19 hp 1096, atk 277, def 138, spd 56, acc 83, ddg 27
+             absorbs 1602 of the 11500 budget, 9898 to spare
+  stage "Lucario" owns levels 20 to 60, showing assets/lucario.svg
+    level 20 hp 1677, atk 411, def 207, spd 82, acc 105, ddg 36
+             absorbs 2837 of the 11500 budget, 8663 to spare
+    level 60 hp 3000, atk 720, def 360, spd 135, acc 175, ddg 60
+             absorbs 6607 of the 11500 budget, 4893 to spare
+
 pokemon.squirtle — Squirtle
   from     Pokémon (anime)
   preset   warden
@@ -252,4 +270,4 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-12 characters
+13 characters

@@ -645,6 +645,60 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "diehard",
+      "role": "the fast one that trades on purpose: thin armour, a heavy opening, and a blow that lands harder for every wound already taken",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1050,
+          "max": 3000
+        },
+        "attack": {
+          "base": 265,
+          "max": 720
+        },
+        "defense": {
+          "base": 135,
+          "max": 360
+        },
+        "speed": {
+          "base": 58,
+          "max": 135
+        },
+        "accuracy": {
+          "base": 72,
+          "max": 175
+        },
+        "dodge": {
+          "base": 25,
+          "max": 60
+        }
+      },
+      "skills": [
+        "metal_claw",
+        "reversal",
+        "aura_sphere",
+        "force_palm",
+        "close_combat",
+        "metal_sound",
+        "flash_cannon"
+      ],
+      "passives": [
+        {
+          "id": "last_gasp",
+          "at_level": 16
+        },
+        {
+          "id": "berserk",
+          "at_level": 24
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

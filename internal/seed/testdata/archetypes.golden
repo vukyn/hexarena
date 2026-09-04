@@ -145,4 +145,16 @@ glacier, formation column 1
            absorbs 10132 of the 11500 budget, 1368 to spare
   kit      ice_shard ice_beam blizzard ice_wall hail water_gun bubble_beam brine hydro_pump water_pulse withdraw wide_guard rally body_slam
 
-12 presets
+diehard, formation column 0
+  the fast one that trades on purpose: thin armour, a heavy opening, and a blow that lands harder for every wound already taken
+  demands  a character built from it must carry metal
+  hp 1050->3000  attack 265->720  defense 135->360  speed 58->135  accuracy 72->175  dodge 25->60
+  level 1  hp 1050, atk 265, def 135, spd 58, acc 72, ddg 25
+           absorbs 1523 of the 11500 budget, 9977 to spare
+  level 30 hp 2008, atk 488, def 245, spd 95, acc 122, ddg 42
+           absorbs 3650 of the 11500 budget, 7850 to spare
+  level 60 hp 3000, atk 720, def 360, spd 135, acc 175, ddg 60
+           absorbs 6607 of the 11500 budget, 4893 to spare
+  kit      metal_claw reversal aura_sphere force_palm close_combat metal_sound flash_cannon
+
+13 presets

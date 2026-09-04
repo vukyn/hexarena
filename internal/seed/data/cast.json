@@ -1950,6 +1950,155 @@
       ]
     },
     {
+      "id": "pokemon.riolu",
+      "name": "Riolu",
+      "origin": "pokemon",
+      "archetype": "diehard",
+      "image": "assets/riolu.svg",
+      "element": "metal",
+      "bio": "Nghe được cái thứ mà người khác chỉ đoán: ai đang sợ, ai sắp bỏ chạy, ai còn định đánh tiếp. Riolu không nói ra, chỉ đứng lại đúng chỗ ấy và đợi, và càng bị dồn thì cái đợi ấy càng ngắn.",
+      "species": [
+        "canine"
+      ],
+      "stages": [
+        {
+          "name": "Riolu",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 700,
+              "max": 2000
+            },
+            "attack": {
+              "base": 180,
+              "max": 500
+            },
+            "defense": {
+              "base": 90,
+              "max": 250
+            },
+            "speed": {
+              "base": 40,
+              "max": 95
+            },
+            "accuracy": {
+              "base": 58,
+              "max": 140
+            },
+            "dodge": {
+              "base": 20,
+              "max": 45
+            }
+          }
+        },
+        {
+          "name": "Lucario",
+          "min_level": 20,
+          "image": "assets/lucario.svg",
+          "stats": {
+            "hp": {
+              "base": 1050,
+              "max": 3000
+            },
+            "attack": {
+              "base": 265,
+              "max": 720
+            },
+            "defense": {
+              "base": 135,
+              "max": 360
+            },
+            "speed": {
+              "base": 58,
+              "max": 135
+            },
+            "accuracy": {
+              "base": 72,
+              "max": 175
+            },
+            "dodge": {
+              "base": 25,
+              "max": 60
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "metal_claw"
+        },
+        {
+          "id": "reversal"
+        },
+        {
+          "id": "aura_sphere",
+          "at_level": 8
+        },
+        {
+          "id": "force_palm",
+          "at_level": 12
+        },
+        {
+          "id": "close_combat",
+          "at_level": 16
+        },
+        {
+          "id": "metal_sound",
+          "at_level": 20
+        },
+        {
+          "id": "flash_cannon",
+          "at_level": 24
+        },
+        {
+          "id": "mirror_shot",
+          "at_level": 28
+        },
+        {
+          "id": "magnet_rise",
+          "at_level": 32
+        },
+        {
+          "id": "taunt",
+          "at_level": 36
+        },
+        {
+          "id": "rally",
+          "at_level": 40
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 44
+        }
+      ],
+      "passives": [
+        {
+          "id": "last_gasp",
+          "at_level": 16
+        },
+        {
+          "id": "berserk",
+          "at_level": 24
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        },
+        {
+          "id": "composure",
+          "at_level": 40
+        },
+        {
+          "id": "rending",
+          "at_level": 44
+        },
+        {
+          "id": "endurance",
+          "at_level": 48
+        }
+      ]
+    },
+    {
       "id": "pokemon.squirtle",
       "name": "Squirtle",
       "origin": "pokemon",

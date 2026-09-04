@@ -642,6 +642,34 @@ Trời đổ đá xuống một dải, không nhắm ai mà cũng chẳng chừa
 Tầm 2 · 3 ô · 100% trúng · hồi 3 lượt.
 [one line] 60% công · cả hai bên · tầm 2 · 3 ô · hồi 3
 
+metal_claw
+Móng thép mọc dài ra rồi bổ xuống trước khi tay kịp hạ, 80% công.
+Tầm 1 · 95% trúng · hồi 1 lượt.
+[one line] 80% công · tầm 1 · hồi 1
+
+reversal
+Càng bị dồn ép, càng không dễ khuất phục, 50% công.
+Càng mất máu càng nặng đòn: cạn máu là 125% công.
+Tầm 1 · 93% trúng · hồi 2 lượt.
+[one line] 50% công · cạn máu→125% · tầm 1 · hồi 2
+
+aura_sphere
+Gom khí trong lòng bàn tay thành một khối tròn rồi đẩy đi, không tiếng động nào báo trước, 140% công.
+Tầm 2 · 96% trúng · hồi 3 lượt.
+[one line] 140% công · tầm 2 · hồi 3
+
+force_palm
+Chạm vào rồi mới phát kình, đến khi âm thanh vang lên, đối thủ đã gục, 90% công.
+Gây choáng cho mục tiêu, 30% khả năng.
+Tầm 1 · 94% trúng · hồi 2 lượt.
+[one line] 90% công · choáng 30% · tầm 1 · hồi 2
+
+close_combat
+Gạt bỏ thế thủ, áp sát đối thủ và lấy thương tích đổi lấy cơ hội tung đòn, 190% công.
+Nhận trần trụi.
+Tầm 1 · 90% trúng · hồi 3 lượt.
+[one line] 190% công · tự nhận trần trụi · tầm 1 · hồi 3
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1535,6 +1563,34 @@ hail
 Hits both sides for 60% of attack.
 Range 2 · 3 cells · 100% to hit · 3 turns to recharge.
 [one line] 60% attack · both sides · range 2 · 3 cells · cd 3
+
+metal_claw
+Hits an enemy for 80% of attack.
+Range 1 · 95% to hit · 1 turn to recharge.
+[one line] 80% attack · range 1 · cd 1
+
+reversal
+Hits an enemy for 50% of attack.
+The more hurt the caster, the harder it lands: 125% of attack at no health.
+Range 1 · 93% to hit · 2 turns to recharge.
+[one line] 50% attack · empty→125% · range 1 · cd 2
+
+aura_sphere
+Hits an enemy for 140% of attack.
+Range 2 · 96% to hit · 3 turns to recharge.
+[one line] 140% attack · range 2 · cd 3
+
+force_palm
+Hits an enemy for 90% of attack.
+Inflicts stun, 30% of the time.
+Range 1 · 94% to hit · 2 turns to recharge.
+[one line] 90% attack · stun 30% · range 1 · cd 2
+
+close_combat
+Hits an enemy for 190% of attack.
+Puts bare on itself.
+Range 1 · 90% to hit · 3 turns to recharge.
+[one line] 190% attack · self bare · range 1 · cd 3
 
 [trait] endurance
 Always carries toughened.
