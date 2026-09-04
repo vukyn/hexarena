@@ -100,7 +100,7 @@ func TestTheShippedSpendersCoverTheLadder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load the statuses: %v", err)
 	}
-	sizes, scaling := map[int]string{}, 0
+	sizes, scaling, gated := map[int]string{}, 0, 0
 	for _, declared := range skills.Skills() {
 		spends := declared.SelfRequires
 		if spends == nil || !spends.Consume {
@@ -123,6 +123,18 @@ func TestTheShippedSpendersCoverTheLadder(t *testing.T) {
 			scaling++
 			continue
 		}
+		// A GATED spender is not on this ladder either, and the reason is the
+		// sentence the ladder is built on: "a flat bonus paid for emptying a tank
+		// pays the same for two stacks as for twenty". A gated spender pays no
+		// bonus at all. Its consume buys the CAST -- the skill is not offered
+		// without the fuel -- so its figure is the flat power on its own face,
+		// which does not vary with the depth it was bought at and was never
+		// supposed to. Counted apart rather than skipped silently, so a book that
+		// stopped shipping one would be a change somebody has to make on purpose.
+		if spends.GatesCast() {
+			gated++
+			continue
+		}
 		if seen, clash := sizes[spends.ConsumeStacks]; clash {
 			t.Errorf("%s and %s both spend %d stacks flat, which is one rung written twice",
 				seen, declared.ID, spends.ConsumeStacks)
@@ -135,7 +147,7 @@ func TestTheShippedSpendersCoverTheLadder(t *testing.T) {
 	if scaling == 0 {
 		t.Error("nothing in the book pays per stack, so `spend everything` is unwritable and a deep reserve buys what a shallow one does")
 	}
-	t.Logf("fixed rungs %v, and %d skill(s) paid per stack", sizes, scaling)
+	t.Logf("fixed rungs %v, %d skill(s) paid per stack, %d gated on their fuel", sizes, scaling, gated)
 }
 
 // TestTheShippedFireLoopBanksAndSpendsInARealBattle is the half a data change

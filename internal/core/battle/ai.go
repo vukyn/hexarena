@@ -81,6 +81,23 @@ type Choice struct {
 // tie is where the whole of the waste is: an option worth strictly more is worth
 // more *now*, which is the only tense a one-turn-deep rating has.
 //
+// ⚠️ **Both tie-breaks are inert across a kit whose cooldowns are all nought**,
+// and a charge-and-release kit is exactly that. `take` compares
+// `declared.Cooldown` and the fallback arm compares it again, so with every
+// cooldown at nought the first comparison never fires and ties fall to kit order,
+// while a cooldownless fallback is always taken. Nothing in the engine or in the
+// rating asks a damaging skill to sit on a cooldown -- the shipped `kunai` is at
+// nought -- but a cooldownless skill carrying a CONSUME is new, and what changes
+// with it is that the scarcity these tie-breaks were written for has moved: it is
+// no longer in the turns the skill is gone for, it is in the fuel, and neither
+// comparison can see fuel.
+//
+// It is a known gap rather than something patched here. The fuel's scarcity is
+// already charged, one layer down and on the value rather than on the tie:
+// pricing.spentCounter prices what cashing a reserve in gives up, off the same
+// per-stack series the grant is priced from. A tie-break reading the fuel as well
+// would be that price counted twice.
+//
 // It reads no randomness and mutates nothing, so a client may call it to offer a
 // hint without disturbing the battle's own sequence. Every price obeys that too:
 // the chance an application would be rolled against is read as a weight, and a

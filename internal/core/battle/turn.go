@@ -15,6 +15,31 @@ import (
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
+// Block is why an option cannot be taken this turn, and it is the machine-readable
+// half of Option.Reason.
+//
+// It exists because Reason is a sentence: a client wanting to draw a blocked
+// option differently, or count them, or translate one, had nothing to switch on
+// and would have had to read English. The sentence stays exactly as it was --
+// every renderer in this repository still prints it, and the goldens are written
+// off it -- so this is a second reading of one fact rather than a replacement.
+type Block int
+
+const (
+	// BlockNone is an option that can be taken.
+	BlockNone Block = iota
+	// BlockUnknownSkill is a kit naming a skill the book does not hold.
+	BlockUnknownSkill
+	// BlockCooldown is a skill still cooling down. Option.Turns says how long.
+	BlockCooldown
+	// BlockFuel is a skill gated on the caster's own reserve, held back because
+	// the caster is short of it. Option.Status, Need and Held say which and how
+	// far.
+	BlockFuel
+	// BlockNoReach is a skill with nobody it could be pointed at.
+	BlockNoReach
+)
+
 // Option is one action a unit may take this turn, with the cells it may aim at.
 type Option struct {
 	Skill string
@@ -22,6 +47,23 @@ type Option struct {
 	// known but cannot be used right now, and Reason says why.
 	Aims   []hex.Offset
 	Reason string
+	// Blocked is why, when Aims is empty.
+	Blocked Block
+	// Turns is the cooldown a BlockCooldown has left.
+	//
+	// ⚠️ **Five fields, each meaning exactly one thing.** The obvious shape is one
+	// count and a flag saying whether it is turns or stacks, and this repository
+	// has a written rule against it -- skill.Condition says why it is two fields
+	// rather than one field with a "whose" flag, and the reasoning transfers
+	// whole: a reader already knows what Turns means, while a shared count is a
+	// third thing to get wrong at every site that reads it.
+	Turns int
+	// Status is the reserve a BlockFuel is short of.
+	Status string
+	// Need is how many stacks of it the skill asks for.
+	Need int
+	// Held is how many the caster is actually carrying.
+	Held int
 }
 
 // Available reports whether the option can actually be chosen.
@@ -426,20 +468,41 @@ func (b *Battle) options(unit *Unit) []Option {
 	for index, id := range unit.Skills {
 		known, err := b.books.Skills.Lookup(id)
 		if err != nil {
-			out = append(out, Option{Skill: id, Reason: "unknown skill"})
+			out = append(out, Option{Skill: id, Reason: "unknown skill", Blocked: BlockUnknownSkill})
 			continue
 		}
 		if unit.Cooldowns[index] > 0 {
 			out = append(out, Option{
-				Skill:  id,
-				Reason: fmt.Sprintf("%d turns of cooldown left", unit.Cooldowns[index]),
+				Skill:   id,
+				Reason:  fmt.Sprintf("%d turns of cooldown left", unit.Cooldowns[index]),
+				Blocked: BlockCooldown, Turns: unit.Cooldowns[index],
 			})
 			continue
+		}
+		// A cast gate on the caster's own fuel, and the cooldown above is its
+		// precedent in every respect: it is a reason the skill is not on offer at
+		// all rather than a reason it would be weaker, so the option goes out with
+		// no aims and Suggest passes over it.
+		//
+		// ⚠️ **Before aims, and deliberately not inside it.** See the warning on
+		// aims itself: four callers ask that function hypothetically, one of them
+		// with this very tank empty on purpose, and a gate there would price
+		// filling the tank at nothing.
+		if spends := known.SelfRequires; spends.GatesCast() {
+			if held := unit.Statuses.Stacks(spends.Status); held < spends.MinStacks {
+				out = append(out, Option{
+					Skill: id, Blocked: BlockFuel, Status: spends.Status,
+					Need: spends.MinStacks, Held: held,
+					Reason: fmt.Sprintf("needs %d stacks of %s, holding %d",
+						spends.MinStacks, spends.Status, held),
+				})
+				continue
+			}
 		}
 		aims := b.aims(unit, known)
 		option := Option{Skill: id, Aims: aims}
 		if len(aims) == 0 {
-			option.Reason = "nothing in reach"
+			option.Reason, option.Blocked = "nothing in reach", BlockNoReach
 		}
 		out = append(out, option)
 	}
@@ -455,6 +518,19 @@ func (b *Battle) options(unit *Unit) []Option {
 // as the side's own cells — hex.SideCells is Cells filtered — and the order is
 // load-bearing: battle.Suggest keeps the first of two equally good aims, so
 // reordering this would move the choices in a golden log without changing a rule.
+//
+// ⚠️ **A cast gate is NOT read here, and that is load-bearing rather than tidy.**
+// This function is asked hypothetically by four callers -- bestStrike,
+// pricing.turnWorth, pricing.bestAgainst and canAimAtAnEnemy -- and none of them
+// is about to cast anything. One of them asks it with the caster's tank EMPTY on
+// purpose: pricing.selfSpendable reads bestStrike off a unit holding no fuel at
+// all, because what it is deciding is whether *charging* is worth a turn. A gate
+// here would answer nought at exactly the moment that price has to be positive,
+// so the rating would never charge, the tank would never fill, and the gated
+// skill would be shipped unreachable.
+//
+// The gate lives in options() and in Act instead, which are the two places a real
+// cast passes through and the only two.
 func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 	if known.Target == skill.Self {
 		return []hex.Offset{unit.Cell}
@@ -743,6 +819,17 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	known, err := b.books.Skills.Lookup(skillID)
 	if err != nil {
 		return err
+	}
+	// The gate's second site, and it is the cooldown's second site one clause up
+	// for exactly the same reason: options() builds a PROMPT, and a client is free
+	// never to read one. internal/room drives a PvP turn straight through Act off
+	// a decision that arrived over the wire, so a gate written only into the offer
+	// is a gate a peer walks past.
+	if spends := known.SelfRequires; spends.GatesCast() {
+		if held := unit.Statuses.Stacks(spends.Status); held < spends.MinStacks {
+			return fmt.Errorf("%q needs %d stacks of %s and its caster holds %d",
+				skillID, spends.MinStacks, spends.Status, held)
+		}
 	}
 	legal := false
 	for _, cell := range b.aims(unit, known) {
