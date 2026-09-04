@@ -2882,6 +2882,112 @@
           }
         ]
       }
+    },
+    {
+      "id": "egg_bomb",
+      "name": "bom trứng",
+      "flavour": "Ném quả trứng đang ôm đi, và thứ vỡ ra không phải lòng đỏ",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "single",
+      "power": 1400,
+      "strikes": 1,
+      "accuracy": 850,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "safeguard",
+      "name": "màn chở che",
+      "flavour": "Căng một lớp mỏng trước cả hàng, thứ gì tới cũng phải qua nó trước",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "column",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "aegis",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "soft_boiled",
+      "name": "sẻ máu",
+      "flavour": "Ủ ấm một lúc rồi trao sang, chỗ rách bên kia khép lại theo",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "restores": 900,
+      "cooldown": 4,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "heal_bell",
+      "name": "chuông lành",
+      "flavour": "Rung một tiếng chuông trong, nghe được thì thứ đang bám trên người rơi ra",
+      "element": "neutral",
+      "range": 1,
+      "pattern": "column",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "strips": {
+        "categories": [
+          "dot",
+          "stat_debuff",
+          "heal_cut"
+        ],
+        "stacks": 2
+      }
+    },
+    {
+      "id": "hyper_voice",
+      "name": "thanh chấn",
+      "flavour": "Mở miệng hét một tiếng dài, tiếng ấy đi thẳng qua người chứ không vòng quanh",
+      "element": "neutral",
+      "range": 2,
+      "pattern": "arc_up",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     }
   ]
 }

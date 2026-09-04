@@ -754,6 +754,61 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "cleanser",
+      "role": "the one nothing finishes quickly and nothing bounces off: health at the ceiling with almost no armour under it, spent on taking the afflictions off everybody else",
+      "column": 2,
+      "stats": {
+        "hp": {
+          "base": 1660,
+          "max": 4800
+        },
+        "attack": {
+          "base": 132,
+          "max": 380
+        },
+        "defense": {
+          "base": 76,
+          "max": 220
+        },
+        "speed": {
+          "base": 31,
+          "max": 90
+        },
+        "accuracy": {
+          "base": 52,
+          "max": 150
+        },
+        "dodge": {
+          "base": 14,
+          "max": 40
+        }
+      },
+      "skills": [
+        "egg_bomb",
+        "safeguard",
+        "hyper_voice",
+        "heal_bell",
+        "soft_boiled",
+        "rally",
+        "wide_guard",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "ballast",
+          "at_level": 16
+        },
+        {
+          "id": "composure",
+          "at_level": 24
+        },
+        {
+          "id": "endurance",
+          "at_level": 32
+        }
+      ]
     }
   ]
 }

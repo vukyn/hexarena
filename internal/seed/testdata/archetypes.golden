@@ -169,4 +169,16 @@ sapper, formation column 2
            absorbs 8173 of the 11500 budget, 3327 to spare
   kit      acid toxic acid_spray stun_spore mega_drain petal_dance poison_powder venoshock
 
-14 presets
+cleanser, formation column 2
+  the one nothing finishes quickly and nothing bounces off: health at the ceiling with almost no armour under it, spent on taking the afflictions off everybody else
+  demands  any element carries this kit
+  hp 1660->4800  attack 132->380  defense 76->220  speed 31->90  accuracy 52->150  dodge 14->40
+  level 1  hp 1660, atk 132, def 76, spd 31, acc 52, ddg 14
+           absorbs 2082 of the 11500 budget, 9418 to spare
+  level 30 hp 3203, atk 253, def 146, spd 60, acc 100, ddg 26
+           absorbs 4766 of the 11500 budget, 6734 to spare
+  level 60 hp 4800, atk 380, def 220, spd 90, acc 150, ddg 40
+           absorbs 8333 of the 11500 budget, 3167 to spare
+  kit      egg_bomb safeguard hyper_voice heal_bell soft_boiled rally wide_guard taunt
+
+15 presets

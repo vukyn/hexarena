@@ -706,6 +706,34 @@ Mục tiêu đang dính ít nhất 2 cộng dồn trúng độc: 110% công, và
 Tầm 2 · 94% trúng · hồi 2 lượt.
 [one line] 60% công · trúng độc 2+→110% · tầm 2 · hồi 2
 
+egg_bomb
+Ném quả trứng đang ôm đi, và thứ vỡ ra không phải lòng đỏ, 140% công.
+Tầm 2 · 85% trúng · hồi 3 lượt.
+[one line] 140% công · tầm 2 · hồi 3
+
+safeguard
+Căng một lớp mỏng trước cả hàng, thứ gì tới cũng phải qua nó trước.
+Cho mục tiêu lá chắn, 100% khả năng.
+Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
+[one line] lá chắn 100% · đồng đội · tầm 1 · 3 ô · hồi 4
+
+soft_boiled
+Ủ ấm một lúc rồi trao sang, chỗ rách bên kia khép lại theo.
+Hồi máu bằng 90% công.
+Tầm 1 · hồi 4 lượt.
+[one line] hồi 90% công · đồng đội · tầm 1 · hồi 4
+
+heal_bell
+Rung một tiếng chuông trong, nghe được thì thứ đang bám trên người rơi ra.
+Gỡ 2 cộng dồn hiệu ứng gây hại theo lượt, hiệu ứng giảm chỉ số và hiệu ứng giảm máu hồi.
+Tầm 1 · 3 ô · hồi 4 lượt.
+[one line] gỡ 2 hiệu ứng xấu · đồng đội · tầm 1 · 3 ô · hồi 4
+
+hyper_voice
+Mở miệng hét một tiếng dài, tiếng ấy đi thẳng qua người chứ không vòng quanh, 90% công.
+Tầm 2 · 3 ô · 95% trúng · hồi 2 lượt.
+[one line] 90% công · tầm 2 · 3 ô · hồi 2
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1663,6 +1691,34 @@ Hits an enemy for 60% of attack.
 While the target is carrying at least 2 stacks of poison: 110% of attack, and also inflicts weaken, 80% of the time.
 Range 2 · 94% to hit · 2 turns to recharge.
 [one line] 60% attack · poison 2+→110% · range 2 · cd 2
+
+egg_bomb
+Hits an enemy for 140% of attack.
+Range 2 · 85% to hit · 3 turns to recharge.
+[one line] 140% attack · range 2 · cd 3
+
+safeguard
+Aims at an ally.
+Gives its target aegis, 100% of the time.
+Range 1 · 3 cells · 100% to hit · 4 turns to recharge.
+[one line] aegis 100% · an ally · range 1 · 3 cells · cd 4
+
+soft_boiled
+Aims at an ally.
+Heals for 90% of attack.
+Range 1 · 4 turns to recharge.
+[one line] heals 90% attack · an ally · range 1 · cd 4
+
+heal_bell
+Aims at an ally.
+Strips 2 stacks of damage over time, stat reduction and healing reduction.
+Range 1 · 3 cells · 4 turns to recharge.
+[one line] strips 2 harmful · an ally · range 1 · 3 cells · cd 4
+
+hyper_voice
+Hits an enemy for 90% of attack.
+Range 2 · 3 cells · 95% to hit · 2 turns to recharge.
+[one line] 90% attack · range 2 · 3 cells · cd 2
 
 [trait] endurance
 Always carries toughened.

@@ -64,6 +64,11 @@
       "id": "canine",
       "name": "loài khuyển",
       "note": "Thứ đứng bằng hai chân nhưng vẫn nghe bằng tai của một con thú: biết kẻ kia định làm gì trước khi kẻ ấy nhấc chân, và không bao giờ hỏi vì sao mình biết"
+    },
+    {
+      "id": "brood",
+      "name": "loài ấp trứng",
+      "note": "Thứ lúc nào cũng ôm một quả trứng trước bụng, và cái trứng ấy quan trọng hơn chính nó: gặp chuyện thì nó lấy thân che, chứ không bỏ chạy"
     }
   ]
 }

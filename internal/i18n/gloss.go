@@ -183,6 +183,7 @@ var (
 		"glacier":    "kẻ chịu đòn",
 		"diehard":    "kẻ tử chiến",
 		"sapper":     "kẻ bào mòn",
+		"cleanser":   "người gột rửa",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its
