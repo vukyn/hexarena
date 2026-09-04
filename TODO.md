@@ -1173,17 +1173,30 @@ is only so the shape is readable.
             **shared pool**, so a 3v3 fields six different characters and a 5v5
             ten. A pick carries the character **and its skills**. A spectator
             watches the draft as well as the battle.
-            ⚠️ **The cast is too small for a 5v5 draft, measured: this is a
-            content prerequisite and no amount of code fixes it.** **Re-measured
-            2026-09-05: seventeen characters ship** (this said twelve, then
-            fifteen, then sixteen) and **twelve** of them have an authored build
-            (`builds.json`) — the four without one inside the draftable pool are
-            Happiny, Lapras, Oddish and Riolu. Ten picks leaves **two** bans on
-            the built cast at 5v5, so build coverage rather than cast size is
-            still what binds. 3v3 is comfortable: six picks leaves six bans on
-            the built cast, ten if the pool is the full sixteen.
-            So either 5v5 drafting waits for more builds, or the draft is 3v3-only
-            and says so.
+            ⚠️ **The cast is big enough for a 5v5 draft now, and the build
+            catalogue is the thinner half. Re-measured 2026-09-05.** This heading
+            read *"the cast is too small for a 5v5 draft, measured: this is a
+            content prerequisite and no amount of code fixes it"* until the pool
+            reached sixteen; the arithmetic block below is where that closed and
+            it carries the figures. **Seventeen characters ship** (this said
+            twelve, then fifteen, then sixteen), sixteen are draftable, and
+            **twelve** of those have an authored build (`builds.json`) — the four
+            without one are Happiny, Lapras, Oddish and Riolu. Ten picks leaves
+            **two** bans on the built cast at 5v5; 3v3 is comfortable, six picks
+            leaving six bans on the built cast and ten against the full sixteen.
+            ⚠️ **Build coverage does not bind the draft, and this paragraph said
+            it did** (*"build coverage rather than cast size is still what
+            binds"*, and *"either 5v5 drafting waits for more builds, or the draft
+            is 3v3-only and says so"*). Decision (a) below settles that a pick
+            takes a build already in `builds.json` **or one made on the spot**,
+            and a kit built out of the learnset at the cap is exactly as legal —
+            `cast.ChooseLoadout` is the one rule for both paths and it never asks
+            whether a build exists. Measured: `internal/draft`'s 3v3 walk fields
+            Happiny and Lapras, two of the four uncatalogued characters, each
+            with a loadout made on the spot. What thin coverage costs is a
+            *player's* convenience — a pick with no authored direction means
+            building a kit inside the draft instead of choosing between two named
+            ones — so it is worth closing and it is not a prerequisite.
             ⚠️ **It contradicts a decision this file records as settled, and the
             contradiction is fine but must be written down rather than
             discovered.** *"One squad may field the same character twice"* is
@@ -1273,33 +1286,86 @@ is only so the shape is readable.
             removals-first order, holding the same invariant under all three. So
             settling the order costs the pool nothing and cannot be got wrong by
             step 2 without a red test.
+            **(g) The slot is not a draft decision. Settled by the author,
+            2026-09-05.** A pick is the character and its loadout, and **where
+            each unit stands is decided after the draft closes** — both sides
+            arrange their own three (or five) **privately and simultaneously**,
+            which is step 2b below. Three reasons, and they are the reasons
+            rather than a preference.
+            It keeps a pick to **two decisions**. The cell would be a third, and
+            it is the only one of the three worth hiding — so carrying it here
+            would drag secrecy into a stage whose whole value is that both
+            players can read one pool on one screen.
+            **Placement is a real decision and a measured one.** Moving the
+            shipped roster's two aces from the front column to the back read
+            **27.6% → 47.3%** ally over 4000 seeds, and splitting the screening
+            pair from adjacent to spaced read **47.3% → 31.1%** over the same
+            seeds — with nothing else changed in either, not a level and not a
+            loadout. A draft that handed out a fixed formation would throw away
+            the half of the game those two figures are about.
+            **Simultaneous and secret is what stops the second arranger reading
+            the first's board.** Taking turns at it is not a symmetrical game:
+            whoever goes second sees which column the other's ace is in and
+            answers it, and the swing above is the size of what that is worth.
+            → CLAUDE.md § *`roster.json` is an instrument, not a scenario*.
+            The cost is a **fourth phase** — bans, picks, arrange, fight —
+            accepted.
+            ⚠️ **`internal/draft` therefore hands back `Picks()` and deliberately
+            has no `Squads()`.** A `placement.Squad` with `Slot` left at its zero
+            value would look authored: `hex.Offset`'s zero is a real cell (the
+            ally back corner, exactly the trap `wire.Act` documents for its
+            `Aim`), so nothing about the value says it was never chosen — and
+            `placement.Squad.Validate` then refuses the second unit for standing
+            where the first already is, so the squad is turned away at the moment
+            it is fought, naming a cell nobody picked. `draft.Pick`'s own comment
+            says what turning picks into squads still needs.
+            ⚠️ **A timeout in the arrange phase follows decision (c) and cancels
+            the room — this is my assumption and not the author's**, marked as
+            one. The reasoning is the same as (c)'s: a defaulted arrangement would
+            hand a decision worth **nineteen points of win rate** (27.6 → 47.3)
+            to somebody who did not make it, and there is no honest default to
+            reach for anyway — "the ace at the back" *is* the measured answer, so
+            handing it out for free is exactly the fixed formation this decision
+            refuses.
 
-            ⚠️ **3v3 FITS AND 5v5 DOES NOT, MEASURED.** The pool is the cast
-            minus the hidden: **fifteen** today — sixteen characters ship and
-            `naruto.naruto` is the only one carrying `hidden: true`. Against
-            fifteen, with the counts settled above:
+            ⚠️ **BOTH FORMATS FIT, AND 5v5 FITS EXACTLY, MEASURED.** The pool is
+            the cast minus the hidden: **sixteen** today — **seventeen**
+            characters ship and `naruto.naruto` is the only one carrying
+            `hidden: true`. Against sixteen, with the counts settled above:
 
-                3v3, 2 a side:  6 picks +  4 bans = 10 of 15 — fits, five to spare
-                5v5, 3 a side: 10 picks +  6 bans = 16 of 15 — needs 16 in the pool
+                3v3, 2 a side:  6 picks +  4 bans = 10 of 16 — fits, six to spare
+                5v5, 3 a side: 10 picks +  6 bans = 16 of 16 — fits, nothing to spare
 
-            So the 3v3 draft is buildable **today** with five characters to spare,
-            and the 5v5 draft needs **one more** than the cast now holds — or
-            none at all if `naruto.naruto` is unhidden, which brings the pool to
-            exactly sixteen and therefore to a slack of nought, so the last pick
-            would be a list of one (see the slack note at the end of this item).
-            That is a content prerequisite and no amount of code changes it, which
-            is one of the two reasons five a side is held back at
-            `hexarena-host`'s flag.
-            ⚠️ **This arithmetic said "eleven, not twelve" and "needs five more"
-            until 2026-09-04, and "fourteen" and "needs two more" until
-            2026-09-05**, and it moves every time a character ships, so it is
-            derived rather than remembered:
+            So the 3v3 draft is buildable with six characters to spare and the
+            5v5 draft with **none**. Slack is nought at 5v5, so with every ban
+            spent the final picker sees exactly one candidate — a pick that is
+            not a decision (see the slack note at the end of this item).
+            Unhiding `naruto.naruto` is now precisely the *seventeenth draftable
+            character* that would make that last pick a decision again; it is no
+            longer needed to seat the format at all. That leaves **one** reason
+            five a side is held back at `hexarena-host`'s flag rather than two —
+            the balance read at 3v3 — which is what the ⚠️ further down records.
+            ⚠️ **This heading and this table went on saying the opposite after
+            the gap closed, and #306 left them saying it.** The heading read
+            *"3v3 FITS AND 5v5 DOES NOT, MEASURED"*, the pool was written
+            **fifteen** ("sixteen characters ship"), the 5v5 row read
+            `= 16 of 15 — needs 16 in the pool`, and the paragraph under it
+            called the shortfall *"a content
+            prerequisite no amount of code changes"* and *"one of the two reasons
+            five a side is held back"* — while the ⚠️ notes directly below it
+            already recorded the gap as closed. #306 moved half the block and
+            left the other half; both halves are re-derived above.
+            ⚠️ **The arithmetic moves every time a character ships or is hidden,
+            so it is derived rather than remembered**:
             `jq '[.characters[]|select(.hidden|not)]|length'
-            internal/seed/data/cast.json`. **The gap is now closed**: `pokemon.dratini`
-            took it to one in #301 and `pokemon.gible` took it to nought in #306,
-            so the pool seats a 5v5 draft exactly — see the ⚠️ below on what that
-            does and does not settle. § *Sixteen traced Pokemon* holds the art
-            still waiting.
+            internal/seed/data/cast.json` → 16, and `[.characters[]]|length`
+            → 17. It said "eleven, not twelve" and "needs five more" until
+            2026-09-04, and "fourteen" and "needs two more" until 2026-09-05.
+            **The gap closed on 2026-09-05**: `pokemon.dratini` took it to one
+            short in #301 and `pokemon.gible` took it to nought in #306, so the
+            pool seats a 5v5 draft exactly — see the ⚠️ below on what that does
+            and does not settle. § *Sixteen traced Pokemon* holds the art still
+            waiting.
             ⚠️ For the other reading of the same sentence, bans as a **total**
             across both sides rather than each: 3v3 becomes 8 of 16 and the last
             pick sees nine, and 5v5 becomes 13 of 16 — which **fits, with three to
@@ -1359,6 +1425,44 @@ is only so the shape is readable.
             present a list of one. The exhaustive walk asserts the tight form of
             it: with every ban spent the final pick sees exactly `slack + 1`
             candidates.
+      - [ ] **The arrange phase — step 2b.** Once the draft closes, each side
+            puts its three (or five) picks on its own 3x3 formation, **privately
+            and simultaneously**, and the match starts when both arrangements are
+            in. It is settled decision **(g)** of the item above — the slot is not
+            a draft decision — and this is the phase that decision creates. What
+            it takes: a `hex.Offset` per `draft.Pick`, unique within the side; an
+            id per unit, which `placement.Placement` needs and a draft has nothing
+            to invent for; and then `placement.Squad.Take` fields it, so nothing
+            downstream of it changes. `draft.Pick`'s doc comment carries the same
+            list from the other end.
+            ⚠️ **It is deliberately not part of the draft's state machine, and
+            the reason is its shape rather than its size.** Two things about it
+            are unlike everything in step 2a:
+            **Two decisions are pending at once**, so it is not the alternating
+            shape at all: `Turn()` answers *one* seat and *one* step, and the
+            whole of `internal/draft` is built on there being exactly one open
+            decision — the loadout refusal ("nothing else can be decided until
+            the form, the skills and the trait are chosen") is that assumption
+            stated. Widening `Turn` to answer a set would change every refusal in
+            the package for the sake of one phase.
+            **Each side's arrangement is secret until both are in**, which the
+            append-only record cannot express as it stands: an entry is public
+            the moment it is appended, and a mirror that replays the record
+            computes the state — so appending the first arrangement when it
+            arrives *is* showing it to the other player, which is the one thing
+            this phase exists to prevent.
+            ⚠️ **The cheap answer keeps the record public and needs no new kind
+            of entry**: hold each arrangement **off the record** as it arrives and
+            append **both together** once both have. A mirror replaying the record
+            then never sees a half-open arrange — it sees the phase open, and then
+            two arrangements at once — so the record stays exactly as replayable
+            as it is today and secrecy costs a buffer rather than a mechanism.
+            The alternative, a private entry per seat, would make the record mean
+            different things to different readers, which is what makes two peers
+            able to disagree.
+            ⚠️ A timeout here **cancels the room**, per decision (c) — and that
+            half is an assumption rather than the author's decision; see the ⚠️ on
+            (g).
       - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
             "a ban lasts the match" is ambiguous in a series and the ambiguity is
             a design decision rather than a parameter: three drafts, one draft
@@ -1720,13 +1824,26 @@ is only so the shape is readable.
          and with no column axis there is nothing to bundle.
          ⚠️ **But stacking makes the ORIGIN axis worse, not better, and this is
          the one thing to read before authoring one.** With rungs 2 and 3 at 3v3,
-         **no 3v3 squad can fail the origin axis at all**: fourteen of the fifteen
-         shipped characters are `pokemon`, and the fifteenth is one character, so
-         the worst case a squad can reach is Naruto plus two Pokemon — which is
-         still **2 of one origin**, still a rung. (`Hidden` does not save it:
-         `cast.Character.Hidden` is an authoring convenience by its own doc — a
-         hidden character still ships, still loads, still fights, and a squad
-         naming one is as valid as any other.) So an origin bonus shipped today
+         **no 3v3 squad can fail the origin axis at all**: **sixteen of the
+         seventeen** shipped characters are `pokemon`, and the seventeenth is one
+         character, so the worst case a squad can reach is Naruto plus two
+         Pokemon — which is still **2 of one origin**, still a rung.
+         ⚠️ **These figures said "fourteen of the fifteen" until 2026-09-05**, and
+         they move every time a character ships, so they are derived rather than
+         remembered: `jq '[.characters[]|select(.id|startswith("pokemon."))]|length'
+         internal/seed/data/cast.json`. Every one that ships makes this objection
+         **stronger**, never weaker — the axis was already unfailable and more
+         Pokemon only widen the margin — so the conclusion below needs no
+         re-measurement when the cast grows, only the count does.
+         (`Hidden` does not save it, and it saves it **less** than this used to
+         say. This cited `cast.Character.Hidden` as "an authoring convenience by
+         its own doc"; ⚠️ that half of the doc is gone — `internal/draft.NewPool`
+         gates the ban-and-pick pool on the flag, so it is a rule of the game for
+         a drafted squad and only a convenience for a saved one. Either way it
+         cannot rescue the axis: naruto is both the only hidden character *and*
+         the only non-`pokemon` one, so honouring the flag removes the one
+         character a squad could have failed the axis with and makes an origin
+         bonus **more** unconditional, not less.) So an origin bonus shipped today
          would fire for **every squad in the game, unconditionally** — that is not
          a bonus, it is a change to the base numbers wearing a threshold. Under
          the *one-at-a-time* rule it would at least have competed for a slot and
