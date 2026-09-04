@@ -3036,6 +3036,154 @@
         "consume_stacks": 5,
         "gates": true
       }
+    },
+    {
+      "id": "gust",
+      "name": "gió giật",
+      "flavour": "Thổi một hơi dài từ xa, gió tới nơi trước cả khi thấy nó đi",
+      "element": "wind",
+      "range": 3,
+      "pattern": "single",
+      "power": 850,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "air_slash",
+      "name": "chém gió",
+      "flavour": "Bổ một nhát vào khoảng không, khoảng không mang nhát ấy đi tiếp",
+      "element": "wind",
+      "range": 2,
+      "pattern": "arc_up",
+      "power": 1400,
+      "strikes": 1,
+      "accuracy": 920,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "blind",
+          "chance": 350,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "twister",
+      "name": "vòi rồng",
+      "flavour": "Xoáy không khí thành một cột đứng, thứ gì đứng gần cột thì bị cuốn theo",
+      "element": "wind",
+      "range": 2,
+      "pattern": "column",
+      "power": 1050,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "mire",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "hurricane",
+      "name": "cuồng phong",
+      "flavour": "Cả vùng trời tối lại rồi đổ xuống cùng lúc, trúng ai thì người ấy không còn đứng nguyên chỗ cũ",
+      "element": "wind",
+      "range": 3,
+      "pattern": "column",
+      "power": 2100,
+      "strikes": 1,
+      "accuracy": 750,
+      "cooldown": 4,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "blind",
+          "chance": 500,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "slipstream",
+      "name": "thuận gió",
+      "flavour": "Kéo một dòng khí chạy dọc hàng, ai đi trong dòng ấy thì đi nhanh hơn hẳn",
+      "element": "wind",
+      "range": 1,
+      "pattern": "column",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "ally",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "haste",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "updraft",
+      "name": "nương gió",
+      "flavour": "Bắt lấy luồng khí đang bốc lên mà lên cao thêm, ở trên ấy nhìn xuống rõ và với tới thì khó",
+      "element": "wind",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "veil",
+          "chance": 1000,
+          "stacks": 1
+        },
+        {
+          "status": "focus",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

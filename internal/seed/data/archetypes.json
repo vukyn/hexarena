@@ -809,6 +809,63 @@
           "at_level": 32
         }
       ]
+    },
+    {
+      "id": "tempest",
+      "role": "the one that never has to close the gap: the longest reach in the cast thrown from the deepest row, on a frame heavy enough to survive whatever crosses that gap — bought with the speed to run away from it",
+      "column": 2,
+      "stats": {
+        "hp": {
+          "base": 1265,
+          "max": 3800
+        },
+        "attack": {
+          "base": 226,
+          "max": 680
+        },
+        "defense": {
+          "base": 133,
+          "max": 400
+        },
+        "speed": {
+          "base": 42,
+          "max": 125
+        },
+        "accuracy": {
+          "base": 55,
+          "max": 165
+        },
+        "dodge": {
+          "base": 14,
+          "max": 42
+        }
+      },
+      "skills": [
+        "gust",
+        "air_slash",
+        "twister",
+        "hurricane",
+        "slipstream",
+        "updraft",
+        "body_slam",
+        "hyper_voice",
+        "safeguard",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 48
+        }
+      ]
     }
   ]
 }

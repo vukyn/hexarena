@@ -5739,8 +5739,13 @@ rather than a Vietnamese word sitting in an English sentence.
 ### Growing the cast
 
 The tooling for this exists — see *Authoring a cast* above — and so does the
-thing it was blocking: five characters ship across four elements, water twice,
-and the seed roster is no longer a mirror, so balance is measurable. What remains
+thing it was blocking: the cast ships across every one of the eleven elements
+and the seed roster is no longer a mirror, so balance is measurable. ⚠️ **This
+sentence used to carry a count** — "five characters ship across four elements" —
+and was four characters and seven elements out of date by the time anybody read
+it. The count belongs in one place, `jq '.characters|length'
+internal/seed/data/cast.json`, and TODO.md § *Grow the cast* is where it is
+tracked. What remains
 is content rather than a design question, and two constraints shape it.
 
 - **An archetype's kit constrains a character's affinity.** `battle.New` refuses

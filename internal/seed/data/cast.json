@@ -712,6 +712,191 @@
       ]
     },
     {
+      "id": "pokemon.dratini",
+      "name": "Dratini",
+      "origin": "pokemon",
+      "archetype": "tempest",
+      "image": "assets/dratini.svg",
+      "element": "wind",
+      "bio": "Cả đời nằm dưới đáy hồ sâu, chỗ nước lạnh và tối đến mức chẳng ai lặn xuống tới. Nó chỉ nổi lên vào những lần lột xác, mà mỗi lần lột xác là một lần lớn thêm — nên người quanh hồ kể về nó như kể một chuyện chưa ai kiểm chứng được.",
+      "species": [
+        "dragon"
+      ],
+      "stages": [
+        {
+          "name": "Dratini",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 790,
+              "max": 2350
+            },
+            "attack": {
+              "base": 141,
+              "max": 420
+            },
+            "defense": {
+              "base": 84,
+              "max": 250
+            },
+            "speed": {
+              "base": 30,
+              "max": 88
+            },
+            "accuracy": {
+              "base": 40,
+              "max": 120
+            },
+            "dodge": {
+              "base": 12,
+              "max": 34
+            }
+          }
+        },
+        {
+          "name": "Dragonair",
+          "min_level": 24,
+          "image": "assets/dragonair.svg",
+          "stats": {
+            "hp": {
+              "base": 1020,
+              "max": 3040
+            },
+            "attack": {
+              "base": 183,
+              "max": 544
+            },
+            "defense": {
+              "base": 108,
+              "max": 320
+            },
+            "speed": {
+              "base": 36,
+              "max": 106
+            },
+            "accuracy": {
+              "base": 47,
+              "max": 140
+            },
+            "dodge": {
+              "base": 13,
+              "max": 38
+            }
+          }
+        },
+        {
+          "name": "Dragonite",
+          "min_level": 44,
+          "image": "assets/dragonite.svg",
+          "stats": {
+            "hp": {
+              "base": 1265,
+              "max": 3800
+            },
+            "attack": {
+              "base": 226,
+              "max": 680
+            },
+            "defense": {
+              "base": 133,
+              "max": 400
+            },
+            "speed": {
+              "base": 42,
+              "max": 125
+            },
+            "accuracy": {
+              "base": 55,
+              "max": 165
+            },
+            "dodge": {
+              "base": 14,
+              "max": 42
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "gust"
+        },
+        {
+          "id": "twister",
+          "at_level": 8
+        },
+        {
+          "id": "dragon_rage",
+          "at_level": 12
+        },
+        {
+          "id": "air_slash",
+          "at_level": 16
+        },
+        {
+          "id": "slipstream",
+          "at_level": 20
+        },
+        {
+          "id": "dragon_dance",
+          "at_level": 24
+        },
+        {
+          "id": "updraft",
+          "at_level": 28
+        },
+        {
+          "id": "body_slam",
+          "at_level": 32
+        },
+        {
+          "id": "hurricane",
+          "at_level": 36
+        },
+        {
+          "id": "dragon_claw",
+          "at_level": 40
+        },
+        {
+          "id": "safeguard",
+          "at_level": 44
+        },
+        {
+          "id": "dragon_drive",
+          "at_level": 46
+        },
+        {
+          "id": "outrage",
+          "at_level": 48
+        },
+        {
+          "id": "hyper_voice",
+          "at_level": 52
+        },
+        {
+          "id": "taunt",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "endurance",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 32
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 44
+        },
+        {
+          "id": "composure",
+          "at_level": 52
+        }
+      ]
+    },
+    {
       "id": "pokemon.gastly",
       "name": "Gastly",
       "origin": "pokemon",

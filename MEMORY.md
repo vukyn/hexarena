@@ -72,6 +72,8 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena TUI width rule](memory/hexarena-tui-width-rule.md) — prose→minWidth, data→usableWidth(); floor 120; footers only floor can widen
 - [hexarena shipping chars #182/#187/#189](memory/hexarena-poliwag-bruiser.md) — ⚠️ spar KHÔNG đo được support (dùng squad); hạ GIÁP mới kết mirror
 - [hexarena shipping a character](memory/hexarena-shipping-a-character.md) — 5 json + cast_test.go design table (hardcoded!); effHP<=11500
+- [pricing a new element pool](memory/hexarena-pricing-a-new-element-pool.md) — đo, đừng đoán; dpt = pw×hits×acc÷(cd+1); ⚠️ cần control cùng wrapper
+- [cast.json phải đúng form tool](memory/hexarena-cast-json-must-be-in-tool-form.md) — Marshal sort theo id; chỉ cast+origins bị ràng
 - [hexarena archetype must be glossed](memory/hexarena-archetype-must-be-glossed.md) — lối chơi NEVER bare id
 - [hexarena descriptions derived](memory/hexarena-descriptions-are-derived.md) — 3 describers; only `flavour` authored; tables exact
 - [hexarena flavour voice](memory/hexarena-flavour-voice.md) — write the fiction not the engine; never promise a mechanic
