@@ -1065,6 +1065,10 @@
         {
           "id": "last_gasp",
           "at_level": 44
+        },
+        {
+          "id": "convalescence",
+          "at_level": 48
         }
       ]
     },

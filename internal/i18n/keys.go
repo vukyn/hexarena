@@ -545,6 +545,10 @@ const (
 	BlurbStatDodge
 	BlurbTraitGrants
 	BlurbTraitGrantsGated
+	// The renewal, worded apart from the grant because the two differ in the one
+	// thing a reader needs: a grant is simply carried, and this arrives again
+	// every turn and can be taken off in between.
+	BlurbTraitRenews
 	BlurbTraitApplies
 	BlurbTraitImmune
 	BlurbTraitResists

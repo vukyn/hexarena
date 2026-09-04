@@ -80,6 +80,10 @@ func (b *Battle) Advance() (*Prompt, error) {
 	}
 	controlled := unit.Statuses.Has(stunStatus)
 	b.tickStatuses(unit, turn)
+	// After the tick and before the retune. Ahead of the tick a renewed buff
+	// would lose its first turn to the very tick meant to leave it standing, and
+	// after the retune a stat it changed would not be read until the next one.
+	b.renew(unit, turn)
 	b.retuneAll(turn)
 	if unit.Dead {
 		b.emit(Event{Kind: TurnSkipped, At: turn.At, Turn: turn.Number, Actor: unit.ID, Note: "died"})
@@ -1634,6 +1638,39 @@ func (b *Battle) riders(actor *Unit) []skill.Application {
 		out = append(out, held.Applies...)
 	}
 	return out
+}
+
+// renew puts a trait's timed statuses back on its holder, once at the start of
+// each of the holder's own turns.
+//
+// It is what makes a timed grant writable at all: passive.Grants takes permanent
+// statuses only, because a timed one there would wear off with nothing to put it
+// back, and this is the thing that puts it back.
+//
+// ⚠️ **A unit the tick has just killed renews nothing.** The tick runs first and
+// can take the last of a holder's health with it, and a corpse handed a buff
+// would carry it into the death the same turn resolves -- a status on a unit the
+// board is about to stop drawing.
+//
+// The applications go out through inflict, the same as a skill's own and a
+// trait's riders: one roll, one resistance check, one event. A second path would
+// be a second place for all three to be got wrong.
+func (b *Battle) renew(unit *Unit, turn atb.Turn) {
+	if unit.Dead || len(unit.Passives) == 0 || b.books.Passives == nil {
+		return
+	}
+	for _, id := range unit.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			continue
+		}
+		if !b.inForce(unit, held) {
+			continue
+		}
+		for _, application := range held.Renews {
+			b.inflict(unit, unit, fromTrait(held), application, turn)
+		}
+	}
 }
 
 // outlastsAShield reports whether an application would still land on a target

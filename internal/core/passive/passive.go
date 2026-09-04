@@ -128,6 +128,21 @@ type Passive struct {
 	// and it is the honest one — a damaging skill aimed across the midline is
 	// already an attack on whoever is standing there.
 	Applies []skill.Application
+	// Renews are the statuses the holder puts back on itself at the start of
+	// every turn of its own.
+	//
+	// ⚠️ **It is the answer to the rule above rather than a hole in it.** Grants
+	// take permanent statuses only, because a timed one would wear off on the
+	// holder's own turns with nothing to put it back. This field is the nothing
+	// to put it back: a trait that renews says so once and the turn does the
+	// rest, so a timed status is exactly what belongs here and a permanent one is
+	// refused as a grant written in the wrong place.
+	//
+	// They land on the holder, which is why a permanent status here would be a
+	// grant and not a renewal, and they land after the tick that spends
+	// durations -- ahead of it the buff would lose its first turn to the very
+	// tick that was meant to leave it standing.
+	Renews []skill.Application
 	// Replies is what the trait costs an attacker, or nil when it answers
 	// nothing.
 	Replies *Reply
@@ -424,6 +439,7 @@ type passiveFile struct {
 	Flavour   string              `json:"flavour,omitempty"`
 	Grants    []grantFile         `json:"grants"`
 	Applies   []applicationFile   `json:"applies,omitempty"`
+	Renews    []applicationFile   `json:"renews,omitempty"`
 	Replies   *replyFile          `json:"replies,omitempty"`
 	While     *conditionFile      `json:"while,omitempty"`
 	Resists   []resistanceFile    `json:"resists,omitempty"`
@@ -502,9 +518,9 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			append([]any{declared.ID}, args...)...)
 	}
 	if len(declared.Grants) == 0 && len(declared.Resists) == 0 &&
-		len(declared.Applies) == 0 && declared.Replies == nil &&
+		len(declared.Applies) == 0 && len(declared.Renews) == 0 && declared.Replies == nil &&
 		declared.Drains == 0 && declared.Converts == 0 && len(declared.Amplifies) == 0 {
-		return fail("grants nothing, resists nothing, adds nothing, answers nothing, drains nothing, converts nothing and amplifies nothing, so holding it would change nothing")
+		return fail("grants nothing, renews nothing, resists nothing, adds nothing, answers nothing, drains nothing, converts nothing and amplifies nothing, so holding it would change nothing")
 	}
 	// The one authored clause, and the one rule that makes it safe. A figure in
 	// it is refused rather than trusted, because every number in a description is
@@ -673,6 +689,10 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 			Amplification{Status: kind.ID, Effect: raise.Effect, Chance: raise.Chance})
 	}
 
+	renews, err := readApplications(declared.Renews, deps, "renews")
+	if err != nil {
+		return fail("%w", err)
+	}
 	applies, err := readApplications(declared.Applies, deps, "adds")
 	if err != nil {
 		return fail("%w", err)
@@ -738,7 +758,7 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 
 	return Passive{
 		ID: declared.ID, Name: strings.TrimSpace(declared.Name), Flavour: flavour,
-		Grants: grants, Applies: applies, Replies: replies,
+		Grants: grants, Applies: applies, Renews: renews, Replies: replies,
 		While: while, Resists: resists, Drains: declared.Drains,
 		Converts: declared.Converts, Amplifies: amplifies,
 	}, nil
@@ -886,6 +906,12 @@ func (b *Book) Marshal() ([]byte, error) {
 				Status: add.Status, Chance: add.Chance, Stacks: add.Stacks,
 			})
 		}
+		var renewed []applicationFile
+		for _, add := range current.Renews {
+			renewed = append(renewed, applicationFile{
+				Status: add.Status, Chance: add.Chance, Stacks: add.Stacks,
+			})
+		}
 		var replies *replyFile
 		if current.Replies != nil {
 			var answers []applicationFile
@@ -914,7 +940,7 @@ func (b *Book) Marshal() ([]byte, error) {
 		}
 		file.Passives = append(file.Passives, passiveFile{
 			ID: current.ID, Name: current.Name, Flavour: current.Flavour, Grants: grants,
-			Applies: applies, Replies: replies, While: while, Resists: resists,
+			Applies: applies, Renews: renewed, Replies: replies, While: while, Resists: resists,
 			Drains: current.Drains, Converts: current.Converts, Amplifies: amplifies,
 		})
 	}
