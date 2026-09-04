@@ -5253,12 +5253,33 @@ is the constraint each piece has to respect.
       Its six skills are now `restrict.origins: [naruto]` — see **Origins**
       above; the `summoner` preset keeps them, which is why that ban does not
       exist.
-- [ ] **Grow the cast.** Eight characters ship across two origins — Bulbasaur,
-      Charmander, Squirtle, Poliwag, Machop, Cleffa and Magnemite out of Pokémon,
-      Naruto out of his own — covering eight elements, water twice. This item said
-      "three, one per element" until 2026-08-28, "four, one per element" until
-      2026-08-31 and "five" until Magnemite; #98 landed Naruto and #182 landed
-      Poliwag, which is where one-per-element stopped being true.
+- [ ] **Grow the cast.** **Fifteen** characters ship across two origins —
+      fourteen out of Pokémon and Naruto out of his own — over **thirty-nine**
+      authored stages, and **all eleven elements are carried**: water ×3 (Lapras,
+      Poliwag, Squirtle), grass ×2 (Bulbasaur, Oddish), metal ×2 (Magnemite,
+      Riolu), dark ×2 (Gastly, Mewtwo), neutral ×2 (Happiny, Mew), and one each of
+      fire, ground, ice, wind, electric and light.
+      ⚠️ **The count in this line has been wrong five times.** It said "three, one
+      per element" until 2026-08-28, "four, one per element" until 2026-08-31,
+      "five" until Magnemite, and "eight" until 2026-09-04; #98 landed Naruto and
+      #182 landed Poliwag, which is where one-per-element stopped being true, and
+      **every element has been claimed since**, which is where it stopped being a
+      guide at all. Derive the number rather than remember it —
+      `jq '.characters|length' internal/seed/data/cast.json` — and do not edit it
+      by hand.
+      ⚠️ **What a new character is bought for is now a WAY OF PLAYING**, since
+      there is no element left to be first at. The closest field to that is the
+      archetype, and the count there is fifteen characters on fifteen presets, one
+      each — but that is where the counting landed, **not a rule, and nothing
+      enforces it**: `cast.ParseArchetypes` refuses a preset *declared* twice and
+      says nothing about two characters *tuned from* one, and no test in
+      `internal/seed` asks. **A second character on a shipped archetype is fine.**
+      The aim is that each character ends up unique in how it plays, and the
+      preset is one lever of several — the kit, the affinity, the stat table and
+      the traits are the rest, and two characters off one preset with different
+      kits are two ways of playing. Avoid a duplicate, not a shared preset; and
+      per § *Pricing one number*, what says two characters play differently is a
+      measurement rather than the field they were tuned from.
       ⚠️ **Magnemite is the first character to declare two elements**
       (`"element": ["electric", "metal"]`), and the field has accepted an array
       since the chart was written — `element.Dual`, `ValidateAffinity` and
