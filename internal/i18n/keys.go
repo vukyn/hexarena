@@ -503,6 +503,31 @@ const (
 	BlurbConsumesStacks
 	BlurbAmplifiedShape
 	BlurbSelfAmplifiedShape
+	// The openings a **gating** condition takes instead, in the sentence and in
+	// the compact line.
+	//
+	// A gate is not an amplifier and the two cannot share an opening. Every other
+	// condition here is read while the skill resolves, so "while this unit is
+	// carrying five stacks" is the truth about it: the skill is cast either way
+	// and the clause decides what it pays. A gate is read *before* the skill is
+	// offered — skill.Condition.Gates says so, and battle.options acts on it — so
+	// the same words are a plain lie: without the fuel there is no cast to be
+	// carrying anything during. The compact line said something worse still,
+	// because a shape-paid condition with no figure fell to the wording ending in
+	// "spreads", which is the one thing a caster's own condition is forbidden to
+	// do.
+	//
+	// Self-facing only, and that is a refusal rather than an omission:
+	// resolveCondition rejects a gate on the target's condition outright, since
+	// that reading would have to be taken per aim.
+	//
+	// Two of them for the reason the amplified pair is two — a gate may still be
+	// paid a flat bonus on top, and the sentence quotes a figure exactly when
+	// there is one to quote.
+	BlurbSelfGated
+	BlurbSelfGatedShape
+	SummarySelfGated
+	SummarySelfGatedShape
 	SummaryAmplifiedShape
 	SummaryAmplifiedArc
 	SummarySelfAmplifiedShape
@@ -809,6 +834,28 @@ const (
 	PlayLogRange
 	PlayYourTurn
 	PlayAimAt
+	// Why an option on the turn in front cannot be taken, one wording per
+	// battle.Block that can reach a screen.
+	//
+	// The engine builds an English sentence of its own — Option.Reason — and it is
+	// still what a client with no Lang in hand prints. These are the same four
+	// facts said in the reader's language, off the enum and the three counts the
+	// option carries, because internal/core may not import this package: a
+	// sentence assembled there could only ever be assembled in one language.
+	//
+	// ⚠️ **The fuel one is the reason this family exists at all.** A cooldown
+	// explains itself — the row says three and the reader waits three — so a
+	// greyed row was survivable while every refusal was one. A skill whose
+	// cooldown is nought and which is greyed out anyway explains itself with
+	// nothing, so this has to carry all three facts: how much fuel, of what, and
+	// how much the caster is actually holding. The status is named through its
+	// gloss for the reason every data id on a Vietnamese screen is, and the count
+	// held is read off the caster rather than restating what is needed — "needs 5,
+	// holding 5" is the one pair of numbers this row can never draw.
+	PlayBlockedUnknown
+	PlayBlockedCooldown
+	PlayBlockedFuel
+	PlayBlockedNoReach
 	PlayWon
 	PlayLost
 	PlayDrawn

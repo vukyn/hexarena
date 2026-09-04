@@ -742,9 +742,9 @@ Bản thân · dùng mọi lượt.
 
 wrecking_swing
 Sức nặng nén trong người tới lúc không giữ nổi nữa thì đổ hết xuống cùng lúc, 800% công.
-Bản thân đang dính ít nhất 5 cộng dồn sức nặng, và tiêu 5 cộng dồn sức nặng.
+Chỉ dùng được khi bản thân đang dính ít nhất 5 cộng dồn sức nặng, và tiêu 5 cộng dồn sức nặng.
 Tầm 1 · 88% trúng · dùng mọi lượt.
-[one line] 800% công · tự sức nặng 5+→lan · tầm 1
+[one line] 800% công · cần tự sức nặng 5+ · tầm 1
 
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -1747,9 +1747,9 @@ Itself · usable every turn.
 
 wrecking_swing
 Hits an enemy for 800% of attack.
-While this unit is carrying at least 5 stacks of heft, and eats 5 stacks of the heft.
+Castable only while this unit is carrying at least 5 stacks of heft, and eats 5 stacks of the heft.
 Range 1 · 88% to hit · usable every turn.
-[one line] 800% attack · self heft 5+→spreads · range 1
+[one line] 800% attack · needs self heft 5+ · range 1
 
 [trait] endurance
 Always carries toughened.

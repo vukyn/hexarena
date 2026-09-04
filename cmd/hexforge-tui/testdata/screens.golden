@@ -270,9 +270,9 @@ E3   Sennin               [####......]  1639/3400    134   toughened (always), p
 
 A2 Bloom, lượt 5
 > bolt          80% công · tầm 3
-  venom_fang    1 turns of cooldown left
+  venom_fang    còn hồi 1 lượt
   creeping_rot  70% công · trúng độc 65% · tầm 3 · 3 ô · hồi 3
-  arc_bolt      2 turns of cooldown left
+  arc_bolt      còn hồi 2 lượt
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a squad =====
 
@@ -1990,9 +1990,9 @@ next: E2 ally.2,2#1 ally.2,2#2 A3 E3 A2
 
 A2 Bloom, lượt 5
 > bolt          80% công · tầm 3
-  venom_fang    1 turns of cooldown left
+  venom_fang    còn hồi 1 lượt
   creeping_rot  70% công · trúng độc 65% · tầm 3 · 3 ô · hồi 3
-  arc_bolt      2 turns of cooldown left
+  arc_bolt      còn hồi 2 lượt
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a squad =====
 

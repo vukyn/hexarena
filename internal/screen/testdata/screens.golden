@@ -317,8 +317,8 @@ E3   Charizard            [########..]  2493/3100    140   -
 A1 Sennin, lượt 3
 > kunai          70% công · tầm 2
   substitution   tự nhận mờ ảo x2 · bản thân · hồi 4
-  shadow_clone   4 turns of cooldown left
-  wind_shuriken  2 turns of cooldown left
+  shadow_clone   còn hồi 4 lượt
+  wind_shuriken  còn hồi 2 lượt
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a squad =====
@@ -1449,8 +1449,8 @@ next: E1 ally.2,0#1 ally.2,0#2 enemy.2,0#1 enemy.2,0#2 A3
 A1 Sennin, lượt 3
 > kunai          70% công · tầm 2
   substitution   tự nhận mờ ảo x2 · bản thân · hồi 4
-  shadow_clone   4 turns of cooldown left
-  wind_shuriken  2 turns of cooldown left
+  shadow_clone   còn hồi 4 lượt
+  wind_shuriken  còn hồi 2 lượt
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a squad =====

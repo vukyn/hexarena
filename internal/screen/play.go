@@ -1555,7 +1555,7 @@ func (p PlayScreen) Choices(c Context) string {
 		// clipped.
 		tail := p.summarise(c, option.Skill)
 		if !option.Available() {
-			tail = option.Reason
+			tail = OptionRefusal(c, option)
 		}
 		line := option.Skill
 		if tail != "" {
@@ -1627,6 +1627,55 @@ func (p PlayScreen) summarise(c Context, id string) string {
 		return ""
 	}
 	return c.Lang.SummariseSkill(declared, c.Lib.Patterns())
+}
+
+// OptionRefusal is why an option cannot be taken, in the reader's own language.
+//
+// **One place, and it is exported so that it stays one.** battle.Option carries a
+// Reason of its own and every renderer in this repository used to print it, but
+// that sentence is built inside internal/core, which may not import internal/i18n
+// — so it is English wherever it is drawn, including on a Vietnamese screen. What
+// the engine hands over instead is the enum and the three counts behind the
+// sentence, and turning those back into words is a switch: a switch copied into
+// the next client is the second answer that drifts, so there is one here and
+// callers ask it.
+//
+// ⚠️ **A greyed row with a cooldown of nought is what this is really for.** While
+// every refusal was a cooldown the row explained itself — it said three and the
+// reader waited three — and an untranslated countdown is a small thing. A skill
+// gated on the caster's own reserve has no cooldown to count down, so the row was
+// a skill the reader could see, could not use, and was told nothing about. The
+// fuel wording carries all three of its facts for that reason: how much is
+// wanted, of what, and how much is actually held.
+//
+// The status is named through its **gloss** — the Vietnamese name the reference
+// screens and the battle log put beside a data id — falling back to the id, which
+// is what English gets and what an unglossed status gets in either language. That
+// fallback is this package's rule for every data id it draws and not a special
+// case here.
+//
+// An option blocked for a reason this does not know keeps the engine's own
+// sentence. That is the honest degrade: English is worse than Vietnamese and both
+// are better than a blank column where the reason was.
+func OptionRefusal(c Context, option battle.Option) string {
+	switch option.Blocked {
+	case battle.BlockUnknownSkill:
+		return c.Text(i18n.PlayBlockedUnknown)
+	case battle.BlockCooldown:
+		return c.Text(i18n.PlayBlockedCooldown, option.Turns)
+	case battle.BlockFuel:
+		// The gloss alone, not the id with the gloss beside it: this row's own
+		// first column is already a bare id, and a second one inside the sentence
+		// would spend the width that carries the two counts.
+		name := c.Lang.Gloss(option.Status)
+		if name == "" {
+			name = option.Status
+		}
+		return c.Text(i18n.PlayBlockedFuel, option.Need, name, option.Held)
+	case battle.BlockNoReach:
+		return c.Text(i18n.PlayBlockedNoReach)
+	}
+	return option.Reason
 }
 
 // occupant is the tag and name standing on a cell, so an aim reads as somebody

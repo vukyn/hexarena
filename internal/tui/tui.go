@@ -156,6 +156,13 @@ func Menu(fight *battle.Battle, prompt *battle.Prompt, tags map[string]string) s
 			fmt.Fprintf(&b, "  %s", extra)
 		}
 		if !option.Available() {
+			// ⚠️ **The engine's English sentence on purpose, not an oversight.**
+			// screen.OptionRefusal says the same four facts in the reader's own
+			// language, off battle.Block and the counts beside it — and it needs a
+			// Lang to do it. This function is handed an event and a book and
+			// nothing else, which is the property that lets a replay be drawn with
+			// no library at all, so there is no language here to ask. Every other
+			// column on this line is a bare id or a number for the same reason.
 			fmt.Fprintf(&b, "  <%s>", option.Reason)
 		}
 		b.WriteString("\n")
