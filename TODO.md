@@ -2197,6 +2197,38 @@ is only so the shape is readable.
       fixture that casts a single-aim skill. That is the change being visible
       rather than a fixture problem, but it is the bulk of the diff.
 
+- [ ] **Two LAN tests fail under a loaded suite and pass alone, for two
+      different reasons.** Both were seen red inside `make check` and green on
+      their own in the same working tree, so neither is a change to the code they
+      cover. They are recorded together because they were found together, not
+      because they share a cause — and the difference is the useful part.
+      ⚠️ **`TestShutdownGivesUpAndNamesWhatItWasWaitingFor` is not a timing flake
+      at all**, which is what it looks like from the summary line. It failed in
+      **0.00s** with *a shutdown on a context that was already done reported no
+      error* — `Shutdown` finished the work before it ever reached the giving-up
+      path, because there was nothing left to wait on. Its own doc calls the
+      already-done context the thing that leaves it "none of the timing that would
+      make the test flaky", and that is the claim that is wrong: the context being
+      done guarantees the bound is *available*, not that anything is *waiting*.
+      The guard above it asks `Tables() == 1` and reports "nothing connected" when
+      it fails — but tables are rooms, not connections, so it establishes that a
+      room is open and not that a peer is still being waited for. The comment four
+      lines down already concedes the race in as many words: *the connected count
+      is whichever of the two the shutdown had got to*. The fix is to make the
+      test hold a connection open across the call rather than to widen a bound.
+      ⚠️ **`TestAJoinedMatchPlaysToItsEndOverALoopbackListener` is the timing
+      one**, and its bound is not tight: `theWholeMatch` is a minute for work its
+      own comment measures at *well under a second in process*, with the margin
+      spent deliberately "for a loaded machine". It still failed at **61.22s** —
+      *the match did not reach the result inside 1m0s; the client is on screen 8*
+      — and passed 3/3 alone in **0.9s**. So a sixty-fold margin is not enough on
+      a machine running the rest of the suite beside it, which says the client
+      stops making progress rather than merely running slowly. Raising the bound
+      would hide that; what it is waiting on at screen 8 is the thing to find.
+      Neither is watched by anything: a suite that goes green on the re-run
+      teaches the next person to re-run it, which is how a real failure in this
+      area would get spent.
+
 
 ## Decided against — do not re-raise
 
