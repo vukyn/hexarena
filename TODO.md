@@ -2162,6 +2162,41 @@ is only so the shape is readable.
       hand-kept table of every `Skill` field marked *priced* or *deliberately not,
       with the reason* — the guard that would have caught all four at once.
       → `README.md` § *Cutting the healing* for the two already known.
+- [ ] **The battle screen says how many cells a shape catches and never which.**
+      A skill's blurb reaches the aim list, but the list prints one cell and its
+      occupant, and the summary beside it prints a count — `3 ô`. Neither says who
+      an area skill is about to reach, so the one thing worth knowing before
+      spending a turn is the one thing a player has to hold in their head.
+      ⚠️ **The drawing already exists and cannot be reused as it stands.**
+      `shapeBoard` in `internal/screen/skills.go` renders a footprint from
+      `forge.ShapeCoverage`, and it is anchored to `ShapeDiagramCell` — the fixed
+      `{4, 1}` chosen so eight of the nine shipped shapes draw in full. That is
+      right for the authoring screen, which is describing a *shape*, and wrong for
+      a battle screen, which is asking about *this aim on this board*: coverage has
+      to be resolved through `pattern.Targets` from the cell under the cursor, then
+      the units standing in the result named. A footprint drawn from the diagram
+      cell would be a picture of a different board.
+      Worth doing with the item below — they are one complaint, that the screen
+      will not show what a turn is about to do before it is spent.
+
+- [ ] **A skill with one legal target fires without asking.** The picker opens
+      only on `len(option.Aims) > 1`, so a single-target skill with one enemy left
+      commits the turn on the keystroke that chose the skill. The author wants the
+      picker every time.
+      ⚠️ **This is a decision being reversed, not a bug being fixed**, and the
+      reasoning is written down at `cmd/hexarena/main.go` — *a question with one
+      answer is not a decision*. It reads well until the answer is the one thing
+      the player wanted to look at before committing, which is why it belongs with
+      the coverage item: with a footprint on screen, the single-aim stop is where
+      it gets read.
+      Three sites hold the rule, and a change to one of them is a change to the
+      keystroke count of the other two: `internal/screen/play.go` twice — the
+      answer path and the live-take path — and the CLI's `chooseAim` once. Whether
+      the CLI follows is the author's call; it is a different kind of screen.
+      ⚠️ The screens are golden-held, so the extra keystroke moves every play
+      fixture that casts a single-aim skill. That is the change being visible
+      rather than a fixture problem, but it is the bulk of the diff.
+
 
 ## Decided against — do not re-raise
 
