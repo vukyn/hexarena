@@ -1553,35 +1553,123 @@ is only so the shape is readable.
       join what the data digest gates, so two peers on different balance data stop
       being able to play, which is already the contract.
 
-      **What still has to be decided — these are the questions, not the answers:**
-      1. **When is the count taken?** At battle start once, or recomputed as units
-         die? The two feel completely different — a start-of-battle count is a
-         drafting decision, a live count makes focusing the odd unit out a
-         *tactic*. ⚠️ And a live count has to answer summons: `summonAffinity`
-         gives a summon the caster's affinity by default, so Naruto's clones would
-         push an element count up mid-battle.
-      2. **Does a dual affinity count toward both halves?** Lapras is water/ice and
-         Magnemite electric/metal. Counting both makes the two duals the best glue
-         in the cast; counting neither makes a dual strictly worse in a squad than
-         a single, which cuts against § *the defensive half of a dual is close to
-         nothing* already being true.
-      3. **Who receives it — the whole squad, or only the units that share the
-         thing?** The second is the more interesting decision and the harder one to
-         draw.
-      4. **Do axes stack?** One bonus at a time, or element **and** column
-         together. Stacking is where a composition system stops being priceable one
-         axis at a time.
-      5. **Is the grant a stat, a status, a trait, or something with no precedent**
-         (a free skill, an extra slot, a turn-order effect)? Per § *Three new axes*
-         a genuinely new category costs a full round of describers, wordings,
-         goldens and a rating branch — that is the real price of the ambitious
-         answer.
-      6. **One rung table per format, or one table with unreachable rungs?** → the
-         3v3 note above.
-      7. **Does it belong in `squads.json`/`roster.json` as data, or in
-         `archetypes.json` beside the presets?** Balance lives in embedded JSON by
-         rule, so "a bonus" is a data file either way — but which file decides
-         whether an authoring screen can show it.
+      **Settled 2026-09-04 (author's call), and each one closes a branch:**
+      1. **The count is taken once, on entering the battle. It is NOT recounted,
+         and a summon does NOT count.** So a composition bonus is a **drafting**
+         decision and never a tactic: focusing the odd unit out cannot take it
+         away, and `summonAffinity` handing a summon the caster's affinity is now
+         irrelevant to it. ⚠️ This is the cheap answer in the right way — it needs
+         no hook in `tickStatuses`, no recount on a death, and nothing in
+         `internal/core/battle` has to know a unit left. It also means the grant
+         can be resolved **before the first turn**, where the roster is still a
+         slice and no map walk is needed at all.
+      2. **A dual affinity counts toward BOTH halves.** Lapras is water/ice and
+         Magnemite electric/metal, so each of them is glue on two axes. ⚠️ Worth
+         knowing why this is not free: `CLAUDE.md` § *Grow the cast* measures the
+         **defensive** half of a dual as close to nothing — a pair whose halves
+         are unrelated mostly cancels — so counting both halves here is the first
+         thing in the game that pays a dual for being one. That is a reason to
+         watch the two duals in the first measurements, not a reason to change it.
+      3. **There are TWO KINDS of bonus: one the whole squad receives, and one
+         only the units that share the thing receive.** Both ship; a bonus
+         declares which kind it is. ⚠️ The second kind is the one that needs a
+         drawing decision — a screen has to be able to say *whose* bonus it is,
+         and a per-unit grant on some units and not others is a thing no existing
+         status display shows.
+      5. **Bonuses are built ONE AT A TIME, and each must do something no other
+         bonus does.** Not a batch of them behind one mechanism: the kind of grant
+         is settled per bonus when that bonus is built, and the rule is
+         **distinctness** — two bonuses that come to the same thing with different
+         words are the *"two callers wording one choice"* mistake
+         `CLAUDE.md` § *Mistakes already made here* already records, at the level
+         of a feature instead of a string. ⚠️ So a new bonus's PR has to state
+         **what no shipped bonus already does**, the way a new character states
+         which archetype and which element it is first at. When the answer is
+         "nothing", the bonus does not ship.
+
+      **Still open, and the two that were unclear are explained here rather than
+      restated:**
+
+      4. **Do axes stack?** — the question is what happens when one squad meets
+         **two** thresholds at once. It is not hypothetical; it happens on the
+         shipped cast the moment two axes exist. Field Lapras + Poliwag +
+         Squirtle: that is **3 water** (an element rung) *and* **2 of column 0**
+         (Poliwag and Squirtle are both `bruiser`/`warden`, column 0) — one squad,
+         two thresholds, no extra effort.
+         - **(A) Stack — take every rung you meet**, the way an auto-battler
+           does. ⚠️ **Measured objection**: the axes are **correlated**, so
+           stacking pays some elements for a lineup nobody authored. Water comes
+           bundled with a free column rung (above); **grass does not** — Bulbasaur
+           is `blighter` (column 1) and Oddish is `sapper` (column 2), so "2
+           grass" catches nothing else. Same rung, different real value, for a
+           reason no author chose. Stacking also makes each axis unpriceable
+           alone: the value of "element 3" then depends on which *other* rungs the
+           test squad happened to catch, and the combinations multiply.
+         - **(B) One at a time — only the best rung fires.** Priceable one axis at
+           a time, which is exactly what `forge.FightSquads` can do. Costs the
+           feeling: a squad that lines up two ways is told one of them does not
+           count, and the second axis becomes nearly pointless once a stronger
+           one exists.
+         - **(C) One of each KIND** — and this falls out of decision 3 above: at
+           most one *whole-squad* bonus and at most one *sharers-only* bonus, best
+           rung in each. Two slots, so two axes can matter at once without the
+           combinations multiplying, and each slot is priceable on its own.
+           **Recommended**, because the slot count is then a design statement
+           rather than a consequence of arithmetic.
+      6. **One rung table per format, or one table with dead rungs?** — the
+         question is that rungs are counts (2/3/4/5) and a **3v3 squad has three
+         units**, so rungs 4 and 5 can never fire in the only format that is
+         playable today; 5v5 is behind `hexarena-host`'s flag and its draft still
+         needs two more characters.
+         - **(A) One table, 2/3/4/5, top rungs simply never fire at 3v3.** One data
+           file, no format branch — but ⚠️ **half the table would ship
+           unmeasured**, and no test can tell "rung 4 is right" from "rung 4 is
+           never evaluated". That is the *fixture hides a branch* shape this
+           repository has paid for five times.
+         - **(B) A table per format**: 2/3 at 3v3, 2/3/4/5 at 5v5. Every shipped
+           rung is reachable, therefore measurable — at the cost of two sets of
+           numbers per bonus, and the same bonus name meaning two things.
+         - **(C) Rungs as a share rather than a count** — "half the squad", "the
+           whole squad" — which reads 2/3 at 3v3 and 3/5 at 5v5 off one authoring.
+           Costs a rounding rule, and a player counting heads has to do arithmetic.
+         - **Recommended**: ship **3v3 rungs only (2 and 3)** and treat 4 and 5 as
+           an explicit unlock the day 5v5 does, because a rung that cannot be
+           reached cannot be measured, and unmeasured balance does not ship here.
+      7. **Which JSON file?** Still open. Balance lives in embedded data by rule,
+         so a bonus is a data file either way — the choice is whether it sits in
+         `archetypes.json` beside the presets (an axis of how a unit fights) or in
+         its own file (a rule about squads, which is what it actually is). ⚠️ Note
+         the data digest gates the **fifteen** embedded files by name in three
+         independent places (the `go:embed` directive, the `ReadFile` calls,
+         `dataFiles`), so a *new file* is a sixteenth name in all three.
+
+      - [ ] **A reference screen for the bonuses, on the menu.** A player has to
+            be able to look up what a threshold gives before building a squad, the
+            way `screenStatuses`, `screenElements`, `screenTraits` and
+            `screenSpecies` already work — read-only, drawn by `internal/screen`,
+            wording out of `internal/i18n`, golden-held, and offered by **both**
+            clients because a reference screen is not authoring.
+            ⚠️ **It is the TENTH menu entry.** `menuItems` holds nine today (seven
+            catalogues, a battle and the join), and the entry belongs after
+            Origins where the other catalogues are.
+            ⚠️ **The sweep is the thing that gets forgotten**, and `model.go`
+            records **five separate occasions** where a screen slipped the
+            authoring tool's sweep and silently lost its width, translation and
+            leak tests. `screenCount` plus `TestEveryScreenThisClientDrawsIsSwept`
+            is what catches it — a new screen either goes in the sweep or carries a
+            written reason for staying out.
+            ⚠️ **It is a DATA screen, not prose**, so it spends
+            `Context.UsableWidth()` rather than `draw.MinWidth`, against the
+            **120x24** floor — and its **footer** is the exception to that split:
+            a key-chord row is catalog wording, so it is measured against the
+            floor and **the floor is the only lever it has**
+            (`internal/screen/screen.go`, the note on `MinWidth`, measured: 35
+            pairs packed against the ceiling before #173/#175 and 34 after).
+            `TestEveryWordingFitsTheMinimumWidth` is what holds it.
+            ⚠️ **Nothing to draw yet.** This screen cannot be built before the
+            first bonus exists, because a catalogue of nothing is a screen no test
+            can hold — the same reason `TestTheShippedArtIsCutOutRatherThanFramed`
+            does not reach unused art.
 
 - [x] **`weigh` can price a skill that deals none. DONE.** The refusal was
       right and its **evidence** was mis-specified. *Worth nothing* and *not
