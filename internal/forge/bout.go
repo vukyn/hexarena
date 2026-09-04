@@ -114,7 +114,7 @@ func (r BoutReport) Rate() int { return r.Challenger.Rate() }
 // first decision the two ratings disagree on re-scrambles every draw after it. It
 // **biases nothing** — both arrangements fight the same seeds — and fixing it would
 // mean an internal/core change to make a measurement prettier. This is the same
-// note Weigh carries; see CLAUDE.md § Pricing one number.
+// note Weigh carries; see docs/balance.md § Pricing one number.
 //
 // The roster is a parameter rather than read from internal/seed, so that this
 // package keeps not importing that one: a tool that measured the embedded copy

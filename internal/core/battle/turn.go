@@ -1570,7 +1570,7 @@ func (o origin) stat(b *Battle, unit *Unit) int64 {
 // rather than about this battle.
 //
 // It is a function of its own because the rating has to charge an option for the
-// reply it provokes, and CLAUDE.md § Rating an action allows exactly one reading
+// reply it provokes, and docs/balance.md § Rating an action allows exactly one reading
 // of any figure the resolution uses. reply lands this number and
 // pricing.replied charges for it; a second expression in price.go would let the
 // opponent decline an attack over a blow the trait does not actually strike.
