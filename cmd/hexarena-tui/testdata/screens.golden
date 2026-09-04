@@ -362,8 +362,8 @@ next: E1 E2 E3 E1 E2 E3
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
-  riptide     3 turns of cooldown left
-  guard_wall  3 turns of cooldown left
+  riptide     còn hồi 3 lượt
+  guard_wall  còn hồi 3 lượt
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a skill blurb =====
@@ -1789,8 +1789,8 @@ next: E1 E2 E3 E1 E2 E3
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
-  riptide     3 turns of cooldown left
-  guard_wall  3 turns of cooldown left
+  riptide     còn hồi 3 lượt
+  guard_wall  còn hồi 3 lượt
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a skill blurb =====

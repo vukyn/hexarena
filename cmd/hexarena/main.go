@@ -482,6 +482,11 @@ func choose(current *session, prompt *battle.Prompt, input *bufio.Scanner) (outc
 		}
 		option := prompt.Options[index-1]
 		if !option.Available() {
+			// ⚠️ **English on purpose.** screen.OptionRefusal is the translated
+			// reading of the same refusal, and this client has no i18n.Lang to hand
+			// it: cmd/hexarena takes no --lang, prints every prompt around this one
+			// in English, and exists to be driven from a script or a pipe. The
+			// full-screen client is where a player reads a refusal.
 			fmt.Printf("  %s cannot be used: %s\n", option.Skill, option.Reason)
 			continue
 		}

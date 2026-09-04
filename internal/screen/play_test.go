@@ -566,9 +566,15 @@ func TestAnUnavailableOptionKeepsItsReasonAndNotItsSummary(t *testing.T) {
 	option := p.Pending.Options[found]
 	rows := strings.Split(strings.TrimRight(p.Choices(c), "\n"), "\n")
 	_, tail := optionColumns(p, rows[found+1])
-	if tail == "" || !strings.HasPrefix(option.Reason, tail) {
+	// The screen's own wording for the refusal rather than the engine's Reason.
+	// The two are the same sentence in English today and the row is drawn from
+	// this one, so comparing against Reason would pin an English wording to a
+	// string built inside internal/core — see refusal_test.go, where what the row
+	// says is the subject rather than what it is not.
+	refusal := OptionRefusal(c, option)
+	if tail == "" || !strings.HasPrefix(refusal, tail) {
 		t.Errorf("the refused option draws %q beside it, which is no part of its "+
-			"reason %q", tail, option.Reason)
+			"reason %q", tail, refusal)
 	}
 	summary := c.Lang.SummariseSkill(mustSkill(t, c, option.Skill), c.Lib.Patterns())
 	if strings.TrimSpace(summary) == "" {
@@ -576,7 +582,7 @@ func TestAnUnavailableOptionKeepsItsReasonAndNotItsSummary(t *testing.T) {
 	}
 	if strings.HasPrefix(summary, tail) {
 		t.Errorf("the refused option draws %q, which is its summary rather than "+
-			"its reason %q", tail, option.Reason)
+			"its reason %q", tail, refusal)
 	}
 }
 

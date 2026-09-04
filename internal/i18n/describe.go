@@ -383,6 +383,14 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 	if condition.ReadsHealth() {
 		clauses = append(clauses, l.Say(BlurbWhenHurt, share(condition.BelowHealth)))
 	}
+	// A gate opens the sentence differently, and it is decided here — before any
+	// of the payments below — because it is not one of them. Everything under this
+	// line is something the condition buys ON TOP of a cast that happens either
+	// way; a gate buys the cast. So the amplifier's opening is not a shade off for
+	// it, it is untrue: "while this unit is carrying five stacks" describes a
+	// moment that does not exist, since a caster short of the five has no cast to
+	// be carrying anything during.
+	opening = gatedOpening(opening, condition)
 	// A condition paid for in shape moves no figure, so the opening does not quote
 	// one. Restating the power the skill already opened with — "160% of attack" a
 	// second time, identical — reads as a bonus a reader then hunts for, which is
@@ -704,6 +712,20 @@ func (l Lang) summariseCondition(
 	if condition == nil {
 		return ""
 	}
+	// The gate, before the payments, exactly as conditionSentence takes it: the
+	// long sentence and the compact line abbreviate one fact, and a summary that
+	// went on calling a gate an amplifier would be the drift a fourth describer is
+	// on probation for. It mattered more here than there, because the arrow this
+	// line ends in had no gated reading at all: a shape-paid caster condition fell
+	// to the wording that ends in "spreads", the one thing a caster's own
+	// condition is forbidden to do.
+	//
+	// ⚠️ **The two rate arms below still answer first, and that is the compact
+	// line's own bargain.** A gate paid per stack has two facts and room for one,
+	// and the rate is the one that changes with every stack banked; the gate is
+	// written out in full two lines up, in the sentence. What this ordering may
+	// not do is print "spreads", and it cannot: both arms quote their rate.
+	wording = gatedWording(wording, condition)
 	clauses := make([]string, 0, 2)
 	if condition.ReadsStatus() {
 		// The compact line has no room for a clause, so the floor is a suffix —
@@ -754,16 +776,50 @@ func (l Lang) summariseCondition(
 // out, paired here rather than at the call sites so a caller cannot pick the
 // self-facing wording for the target's condition by mistake.
 func shapeOpening(opening Key) Key {
-	if opening == BlurbSelfAmplified {
+	switch opening {
+	case BlurbSelfGated:
+		return BlurbSelfGatedShape
+	case BlurbSelfAmplified:
 		return BlurbSelfAmplifiedShape
 	}
 	return BlurbAmplifiedShape
+}
+
+// gatedOpening and gatedWording swap in the gate's opening, in the sentence and
+// in the compact line respectively.
+//
+// Paired here for the reason shapeOpening and shapeWording are paired: the
+// mapping is the caller's only way to reach the gated wordings, so a caller
+// cannot pick a self-facing sentence for a condition read against the target by
+// mistake.
+//
+// ⚠️ **The self-facing wording is the only one, and the guard is what says so.**
+// skill.resolveCondition refuses a gate on `requires` outright — a target-side
+// reading would have to be taken per aim — so a gate reaches this only through
+// SelfRequires. A condition arriving under the target's opening is therefore data
+// that could not load, and it keeps that opening rather than being told it is
+// about the caster.
+func gatedOpening(opening Key, condition *skill.Condition) Key {
+	if opening == BlurbSelfAmplified && condition.GatesCast() {
+		return BlurbSelfGated
+	}
+	return opening
+}
+
+func gatedWording(wording Key, condition *skill.Condition) Key {
+	if wording == SummarySelfAmplified && condition.GatesCast() {
+		return SummarySelfGated
+	}
+	return wording
 }
 
 // shapeWording is the compact reading of a condition that moves no figure, and
 // it has to say WHICH of the two things it does instead — a chain travels and a
 // nuke does not, and one word is all the room there is to tell them apart.
 func shapeWording(wording Key, condition *skill.Condition) Key {
+	if wording == SummarySelfGated {
+		return SummarySelfGatedShape
+	}
 	if wording == SummarySelfAmplified {
 		return SummarySelfAmplifiedShape
 	}
