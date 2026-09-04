@@ -124,6 +124,11 @@ stun_spore      neutral   enemy    2  flank_up          0     1      0  1000    
 mega_drain      grass     enemy    2  single          800     1    800   950    2     0     0      274
 petal_dance     grass     enemy    1  single         1500     1   1500   870    3     0     0      514
 acid_spray      neutral   enemy    2  single          600     1    600   940    2     0     0      205
+egg_bomb        neutral   enemy    2  single         1400     1   1400   850    3     0     0      480
+safeguard       neutral   ally     1  column            0     1      0  1000    4     0     0        0
+soft_boiled     neutral   ally     1  single            0     1      0  1000    4     0     0        0
+heal_bell       neutral   ally     1  column            0     1      0  1000    4     0     0        0
+hyper_voice     neutral   enemy    2  arc_up          900     1    900   950    2     0     0      308
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -199,6 +204,7 @@ acid            expose                 1      500        940              470
 toxic           poison                 2     1000        900              900
 toxic           fester                 1      700        900              630
 stun_spore      mire                   1      800       1000              800
+safeguard       aegis                  1     1000       1000             1000
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -316,6 +322,11 @@ stun_spore      -          -                 -                   -         pokem
 mega_drain      -          -                 -                   -         pokemon
 petal_dance     -          -                 -                   -         pokemon
 acid_spray      -          -                 -                   -         pokemon
+egg_bomb        -          -                 -                   -         pokemon
+safeguard       -          -                 -                   -         pokemon
+soft_boiled     -          -                 -                   -         pokemon
+heal_bell       -          -                 -                   -         pokemon
+hyper_voice     -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -366,6 +377,7 @@ skill           categories                    stacks
 rapid_spin      stat_debuff, dot, heal_cut         1
 rinse           dot, stat_debuff, charge           2
 spite           shield, regen                      3
+heal_bell       dot, stat_debuff, heal_cut         2
 
 == timed effects ==
 status      category      stacks   turns   tick power   tick   over its life   heal cut   modifiers

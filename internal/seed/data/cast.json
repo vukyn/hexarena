@@ -905,6 +905,170 @@
       ]
     },
     {
+      "id": "pokemon.happiny",
+      "name": "Happiny",
+      "origin": "pokemon",
+      "archetype": "cleanser",
+      "image": "assets/happiny.svg",
+      "element": "neutral",
+      "bio": "Ôm khư khư một hòn đá tròn nhặt được, tưởng là trứng của mình, và ai lại gần thì nó quay lưng che đi. Cái thói che chắn ấy lớn lên cùng nó, chỉ có thứ được che là đổi.",
+      "species": [
+        "brood"
+      ],
+      "stages": [
+        {
+          "name": "Happiny",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 1180,
+              "max": 3400
+            },
+            "attack": {
+              "base": 94,
+              "max": 270
+            },
+            "defense": {
+              "base": 55,
+              "max": 158
+            },
+            "speed": {
+              "base": 22,
+              "max": 64
+            },
+            "accuracy": {
+              "base": 37,
+              "max": 107
+            },
+            "dodge": {
+              "base": 10,
+              "max": 28
+            }
+          }
+        },
+        {
+          "name": "Chansey",
+          "min_level": 16,
+          "image": "assets/chansey.svg",
+          "stats": {
+            "hp": {
+              "base": 1420,
+              "max": 4100
+            },
+            "attack": {
+              "base": 113,
+              "max": 325
+            },
+            "defense": {
+              "base": 66,
+              "max": 188
+            },
+            "speed": {
+              "base": 26,
+              "max": 77
+            },
+            "accuracy": {
+              "base": 45,
+              "max": 128
+            },
+            "dodge": {
+              "base": 12,
+              "max": 34
+            }
+          }
+        },
+        {
+          "name": "Blissey",
+          "min_level": 32,
+          "image": "assets/blissey.svg",
+          "stats": {
+            "hp": {
+              "base": 1660,
+              "max": 4800
+            },
+            "attack": {
+              "base": 132,
+              "max": 380
+            },
+            "defense": {
+              "base": 76,
+              "max": 220
+            },
+            "speed": {
+              "base": 31,
+              "max": 90
+            },
+            "accuracy": {
+              "base": 52,
+              "max": 150
+            },
+            "dodge": {
+              "base": 14,
+              "max": 40
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "egg_bomb"
+        },
+        {
+          "id": "hyper_voice"
+        },
+        {
+          "id": "safeguard",
+          "at_level": 8
+        },
+        {
+          "id": "heal_bell",
+          "at_level": 12
+        },
+        {
+          "id": "soft_boiled",
+          "at_level": 16
+        },
+        {
+          "id": "rally",
+          "at_level": 20
+        },
+        {
+          "id": "wide_guard",
+          "at_level": 24
+        },
+        {
+          "id": "taunt",
+          "at_level": 28
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 32
+        }
+      ],
+      "passives": [
+        {
+          "id": "ballast",
+          "at_level": 16
+        },
+        {
+          "id": "composure",
+          "at_level": 24
+        },
+        {
+          "id": "endurance",
+          "at_level": 32
+        },
+        {
+          "id": "carapace",
+          "at_level": 40
+        },
+        {
+          "id": "last_gasp",
+          "at_level": 44
+        }
+      ]
+    },
+    {
       "id": "pokemon.lapras",
       "name": "Lapras",
       "origin": "pokemon",
