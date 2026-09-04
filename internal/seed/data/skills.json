@@ -2628,6 +2628,113 @@
           "pokemon"
         ]
       }
+    },
+    {
+      "id": "metal_claw",
+      "name": "thiết trảo",
+      "flavour": "Móng thép mọc dài ra rồi bổ xuống trước khi tay kịp hạ",
+      "element": "metal",
+      "range": 1,
+      "pattern": "single",
+      "power": 800,
+      "strikes": 1,
+      "accuracy": 950,
+      "cooldown": 1,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "reversal",
+      "name": "nghịch chuyển",
+      "flavour": "Càng bị dồn ép, càng không dễ khuất phục",
+      "element": "metal",
+      "range": 1,
+      "pattern": "single",
+      "power": 500,
+      "strikes": 1,
+      "accuracy": 930,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_gradient": {
+        "at_empty": 1500
+      }
+    },
+    {
+      "id": "aura_sphere",
+      "name": "khí cầu",
+      "flavour": "Gom khí trong lòng bàn tay thành một khối tròn rồi đẩy đi, không tiếng động nào báo trước",
+      "element": "metal",
+      "range": 2,
+      "pattern": "single",
+      "power": 1400,
+      "strikes": 1,
+      "accuracy": 960,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "force_palm",
+      "name": "phát kình",
+      "flavour": "Chạm vào rồi mới phát kình, đến khi âm thanh vang lên, đối thủ đã gục",
+      "element": "metal",
+      "range": 1,
+      "pattern": "single",
+      "power": 900,
+      "strikes": 1,
+      "accuracy": 940,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 300,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "close_combat",
+      "name": "cận chiến",
+      "flavour": "Gạt bỏ thế thủ, áp sát đối thủ và lấy thương tích đổi lấy cơ hội tung đòn",
+      "element": "metal",
+      "range": 1,
+      "pattern": "single",
+      "power": 1900,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "bare",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

@@ -113,6 +113,11 @@ ice_beam        ice       enemy    3  single         1400     1   1400   900    
 blizzard        ice       enemy    3  column          950     1    950   720    4     0     0      325
 ice_wall        ice       ally     1  single            0     1      0  1000    4     0     0        0
 hail            ice       all      2  column          600     1    600  1000    3     0     0      205
+metal_claw      metal     enemy    1  single          800     1    800   950    1     0     0      274
+reversal        metal     enemy    1  single          500     1    500   930    2     0     0      171
+aura_sphere     metal     enemy    2  single         1400     1   1400   960    3     0     0      480
+force_palm      metal     enemy    1  single          900     1    900   940    2     0     0      308
+close_combat    metal     enemy    1  single         1900     1   1900   900    3     0     0      651
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -182,6 +187,8 @@ sprout          verdure (self)         5     1000        950                -
 ice_beam        mire                   1      400        900              360
 blizzard        mire                   1      500        720              360
 ice_wall        aegis                  1     1000       1000             1000
+force_palm      stun                   1      300        940              282
+close_combat    bare (self)            1     1000        900                -
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -288,6 +295,11 @@ ice_beam        -          -                 -                   -         pokem
 blizzard        -          -                 -                   -         pokemon
 ice_wall        -          -                 -                   -         pokemon
 hail            -          -                 -                   -         pokemon
+metal_claw      -          -                 -                   -         pokemon
+reversal        -          -                 -                   -         pokemon
+aura_sphere     -          -                 -                   -         pokemon
+force_palm      -          -                 -                   -         pokemon
+close_combat    -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -314,6 +326,7 @@ wellspring      caster   moisture                         20       0           0
 what the caster's own wounds add, at the bottom of the bar
 skill           at empty   power   at the bottom   damage   at the bottom    gain
 comeback              900     900            1710      308             586   1.90x
+reversal             1500     500            1250      171             428   2.50x
 
 == what a reserve buys back ==
 health per stack, paid out of the caster's own counter, at the threshold and at the ceiling Takes clamps
