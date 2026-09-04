@@ -1335,8 +1335,17 @@ func resolve(declared skillFile, deps Deps) (Skill, error) {
 		return fail("declares itself unblockable and throws no strike for anything to stop")
 	case declared.Cost < 0 || declared.Cost >= scale.Base:
 		return fail("costs %d of its caster's health, want a share under the whole of it", declared.Cost)
-	case declared.Cost > 0 && declared.Power == 0:
-		return fail("costs its caster health and throws no strike to buy with it")
+	case declared.Cost > 0 && declared.Power == 0 && declared.Restores == 0 &&
+		len(declared.Applies) == 0 && len(declared.SelfApplies) == 0 &&
+		declared.Strips == nil && declared.Summons == nil:
+		// ⚠️ **This asked for a strike until the book had more than one thing to
+		// buy.** When it was written a skill spent its power and nothing else, so
+		// "no strike" and "nothing bought" were the same sentence. A skill now buys
+		// health, statuses, a cleanse and a summon as well, and a heal that pays
+		// its caster's own health for somebody else's is a trade the old wording
+		// refused for a reason that had stopped being true. What is refused is a
+		// cost that buys NOTHING, which is what the reason always was.
+		return fail("costs its caster health and buys nothing with it")
 	case declared.Crit < 0 || declared.Crit > scale.Base:
 		return fail("crits %d, want a share in parts per thousand", declared.Crit)
 	// Not tidiness: turn.go's power <= 0 branch never reaches combat.Roll, so a

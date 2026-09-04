@@ -267,6 +267,18 @@
       "flavour": "Đòn của nó tìm được chỗ hở mà lớp che nào cũng có",
       "grants": [],
       "converts": 250
+    },
+    {
+      "id": "convalescence",
+      "name": "ẩn thân",
+      "flavour": "Đứng dậy là lại khuất đi một lớp, nên đòn nhắm vào lúc nãy giờ trượt chỗ",
+      "renews": [
+        {
+          "status": "veil",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

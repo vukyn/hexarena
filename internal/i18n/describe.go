@@ -973,6 +973,10 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 		lines = append(lines, l.Say(BlurbTraitResists,
 			share(resistance.Amount), l.glossed(resistance.Status)))
 	}
+	for _, application := range held.Renews {
+		lines = append(lines, l.Say(BlurbTraitRenews,
+			l.stacked(application.Status, application.Stacks), share(application.Chance)))
+	}
 	for _, application := range held.Applies {
 		lines = append(lines, l.Say(BlurbTraitApplies,
 			l.stacked(application.Status, application.Stacks), share(application.Chance)))

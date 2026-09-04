@@ -718,7 +718,7 @@ Tầm 1 · 3 ô · 100% trúng · hồi 4 lượt.
 [one line] lá chắn 100% · đồng đội · tầm 1 · 3 ô · hồi 4
 
 soft_boiled
-Ủ ấm một lúc rồi trao sang, chỗ rách bên kia khép lại theo.
+Rót bớt cái đang chảy trong người mình sang cho kẻ đứng cạnh.
 Hồi máu bằng 90% công.
 Tầm 1 · hồi 4 lượt.
 [one line] hồi 90% công · đồng đội · tầm 1 · hồi 4
@@ -824,6 +824,10 @@ Luôn mang thành trì.
 [trait] rending
 Đòn của nó tìm được chỗ hở mà lớp che nào cũng có.
 25% mỗi đòn nó đánh trúng đi thẳng, không qua giáp.
+
+[trait] convalescence
+Đứng dậy là lại khuất đi một lớp, nên đòn nhắm vào lúc nãy giờ trượt chỗ.
+Đầu mỗi lượt của mình lại nhận mờ ảo, 100% khả năng.
 
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
@@ -1790,6 +1794,9 @@ Always carries bastion.
 
 [trait] rending
 25% of every blow it lands meets no defence at all.
+
+[trait] convalescence
+Takes veil again at the start of each of its own turns, 100% of the time.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.

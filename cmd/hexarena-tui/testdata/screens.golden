@@ -196,7 +196,7 @@ vào phòng đấu
   đội mang theo < đội thử 0 >  phe-0
 
 
-  máy này — data 3d94ebb2439d · build 0123456789ab+dirty
+  máy này — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -220,7 +220,7 @@ vào phòng đấu
 
   chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng
 
-  máy này — data 3d94ebb2439d · build 0123456789ab+dirty
+  máy này — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -314,7 +314,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data 3d94ebb2439d · build 0123456789ab+dirty
+  máy này — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -784,17 +784,17 @@ fixture-anime.adept — Example Adept
 
 nội tại  các nội tại đã khai báo, và ai mang
 
-  id            tên tiếng Việt ai mang
-> endurance     bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapr…
-  blaze         bùng lửa       pokemon.charmander@16
-  heatproof     chịu nhiệt     pokemon.charmander@16
-  virulence     độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
-  venom_blood   máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.…
-  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@…
-  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
-  thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@3…
+  id             tên tiếng Việt ai mang
+> endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lap…
+  blaze          bùng lửa       pokemon.charmander@16
+  heatproof      chịu nhiệt     pokemon.charmander@16
+  virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
+  venom_blood    máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
+  blood_thirst   khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon…
+  last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu…
+  reckless       liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
+  thorns         phản đòn       pokemon.squirtle@32
+  swiftness      thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@…
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -1335,7 +1335,7 @@ vào phòng đấu
   đội mang theo < đội thử 0 >  phe-0
 
 
-  máy này — data 3d94ebb2439d · build 0123456789ab+dirty
+  máy này — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -1395,7 +1395,7 @@ vào phòng đấu
 
   chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng
 
-  máy này — data 3d94ebb2439d · build 0123456789ab+dirty
+  máy này — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -1633,7 +1633,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data 3d94ebb2439d · build 0123456789ab+dirty
+  máy này — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -2859,32 +2859,32 @@ fixture-anime.adept — Example Adept
 
 nội tại  các nội tại đã khai báo, và ai mang
 
-  id            tên tiếng Việt ai mang
-> endurance     bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop@32 pokemon.magnemit…
-  blaze         bùng lửa       pokemon.charmander@16
-  heatproof     chịu nhiệt     pokemon.charmander@16
-  virulence     độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
-  venom_blood   máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst  khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwag…
-  last_gasp     hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
-  reckless      liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
-  thorns        phản đòn       pokemon.squirtle@32
-  swiftness     thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32 p…
-  ballast       trụ vững       pokemon.happiny@16 pokemon.squirtle@44
-  composure     vững tâm       pokemon.cleffa@24 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliwag@40…
-  elusive       huyền ảo       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40
-  contagion     lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
-  spiteful      nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
-  berserk       cuồng chiến    pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24
-  unyielding    bất khuất      pokemon.machop@24
-  carapace      vỏ cứng        pokemon.happiny@40 pokemon.squirtle@48
-  projection    hộ thể         pokemon.charmander@48
-  rending       xé giáp        pokemon.machop@48 pokemon.riolu@44
+  id             tên tiếng Việt ai mang
+> endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop@32 pokemon.magnemi…
+  blaze          bùng lửa       pokemon.charmander@16
+  heatproof      chịu nhiệt     pokemon.charmander@16
+  virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
+  venom_blood    máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
+  blood_thirst   khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwa…
+  last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
+  reckless       liều mạng      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
+  thorns         phản đòn       pokemon.squirtle@32
+  swiftness      thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32 …
+  ballast        trụ vững       pokemon.happiny@16 pokemon.squirtle@44
+  composure      vững tâm       pokemon.cleffa@24 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliwag@4…
+  elusive        huyền ảo       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40
+  contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
+  spiteful       nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
+  berserk        cuồng chiến    pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24
+  unyielding     bất khuất      pokemon.machop@24
+  carapace       vỏ cứng        pokemon.happiny@40 pokemon.squirtle@48
+  projection     hộ thể         pokemon.charmander@48
+  rending        xé giáp        pokemon.machop@48 pokemon.riolu@44
+  convalescence  ẩn thân        pokemon.happiny@48
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
     Luôn mang kiên cường.
-
 
 
 
@@ -3231,7 +3231,7 @@ join a room
   the squad to bring < đội thử 0 >  phe-0
 
 
-  this machine — data 3d94ebb2439d · build 0123456789ab+dirty
+  this machine — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -3255,7 +3255,7 @@ join a room
 
   no squad has been built, and a room has to be joined with one; build a side under the squad catalogue
 
-  this machine — data 3d94ebb2439d · build 0123456789ab+dirty
+  this machine — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -3349,7 +3349,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data 3d94ebb2439d · build 0123456789ab+dirty
+  this machine — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -3818,17 +3818,17 @@ fixture-anime.adept — Example Adept
 
 traits  the declared traits, and who carries each
 
-  id            carried by
-> endurance     naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.m…
-  blaze         pokemon.charmander@16
-  heatproof     pokemon.charmander@16
-  virulence     pokemon.bulbasaur@32 pokemon.oddish@16
-  venom_blood   pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.…
-  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
-  reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
-  thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtw…
+  id             carried by
+> endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.…
+  blaze          pokemon.charmander@16
+  heatproof      pokemon.charmander@16
+  virulence      pokemon.bulbasaur@32 pokemon.oddish@16
+  venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
+  blood_thirst   pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon…
+  last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
+  reckless       pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
+  thorns         pokemon.squirtle@32
+  swiftness      naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewt…
 
   endurance
     Always carries toughened.
@@ -4370,7 +4370,7 @@ join a room
   the squad to bring < đội thử 0 >  phe-0
 
 
-  this machine — data 3d94ebb2439d · build 0123456789ab+dirty
+  this machine — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -4430,7 +4430,7 @@ join a room
 
   no squad has been built, and a room has to be joined with one; build a side under the squad catalogue
 
-  this machine — data 3d94ebb2439d · build 0123456789ab+dirty
+  this machine — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -4668,7 +4668,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data 3d94ebb2439d · build 0123456789ab+dirty
+  this machine — data f257565d3461 · build 0123456789ab+dirty
 
 
 
@@ -5893,31 +5893,31 @@ fixture-anime.adept — Example Adept
 
 traits  the declared traits, and who carries each
 
-  id            carried by
-> endurance     naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop@32 pokemon.magnemite@24 pokemon.me…
-  blaze         pokemon.charmander@16
-  heatproof     pokemon.charmander@16
-  virulence     pokemon.bulbasaur@32 pokemon.oddish@16
-  venom_blood   pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst  pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwag@44
-  last_gasp     pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
-  reckless      pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
-  thorns        pokemon.squirtle@32
-  swiftness     naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32 pokemon.riolu@32
-  ballast       pokemon.happiny@16 pokemon.squirtle@44
-  composure     pokemon.cleffa@24 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliwag@40[Politoed] poke…
-  elusive       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40
-  contagion     pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
-  spiteful      pokemon.gastly@32 pokemon.poliwag@36
-  berserk       pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24
-  unyielding    pokemon.machop@24
-  carapace      pokemon.happiny@40 pokemon.squirtle@48
-  projection    pokemon.charmander@48
-  rending       pokemon.machop@48 pokemon.riolu@44
+  id             carried by
+> endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop@32 pokemon.magnemite@24 pokemon.m…
+  blaze          pokemon.charmander@16
+  heatproof      pokemon.charmander@16
+  virulence      pokemon.bulbasaur@32 pokemon.oddish@16
+  venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
+  blood_thirst   pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.gastly@16 pokemon.machop@16 pokemon.mew@44 pokemon.mewtwo@24 pokemon.poliwag@44
+  last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
+  reckless       pokemon.charmander@44 pokemon.machop@44 pokemon.mewtwo@44
+  thorns         pokemon.squirtle@32
+  swiftness      naruto.naruto@24 pokemon.cleffa@32 pokemon.gastly@44 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@16 pokemon.poliwag@32 pokemon.riolu@32
+  ballast        pokemon.happiny@16 pokemon.squirtle@44
+  composure      pokemon.cleffa@24 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliwag@40[Politoed] pok…
+  elusive        pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40
+  contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
+  spiteful       pokemon.gastly@32 pokemon.poliwag@36
+  berserk        pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24
+  unyielding     pokemon.machop@24
+  carapace       pokemon.happiny@40 pokemon.squirtle@48
+  projection     pokemon.charmander@48
+  rending        pokemon.machop@48 pokemon.riolu@44
+  convalescence  pokemon.happiny@48
 
   endurance
     Always carries toughened.
-
 
 
 
