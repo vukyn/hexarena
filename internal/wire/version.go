@@ -127,3 +127,35 @@ func Local(build string) (Version, error) {
 	}
 	return Version{Protocol: Protocol, Build: build, Data: Digest{Digest: digest}}, nil
 }
+
+// Report is the three numbers written out for a person to read to a friend and
+// for a script to cut a field out of, and it is what both binaries answer
+// `-version` with:
+//
+//	hexarena-host v0.1.0
+//	  protocol 1
+//	  data     9034c8522586
+//
+// ⚠️ **One function rather than one per binary, and that is the whole reason it
+// is here.** These three numbers are what two people compare when a room refuses
+// one of them, so two spellings of the output would be two people comparing two
+// different things — the same argument that moved BuildOf into this package. The
+// first line is what the binary *is*; the two indented ones are the numbers a
+// gate actually turns on, in the order Check tests them.
+//
+// ⚠️ **The labels stay in English in every language**, for the reason
+// i18n.JoinVersion's do: `protocol` and `data` are what cmd/hexarena-host prints
+// on its banner and what both version refusals tell a player to read, so a
+// translated copy on one end would break the one instruction those refusals
+// give. Being a wording with nothing to translate is also why it can live here
+// rather than in internal/i18n, which is what keeps cmd/hexarena-tui holding no
+// sentence of its own — → its TestNoScreenHoldsItsOwnWording.
+//
+// ⚠️ **The digest is the short form**, so that all three places a person can
+// read this number — this report, the host's banner and the client's join
+// screen — print the same twelve characters. The full sixty-four are what the
+// wire carries and what Check compares; nobody reads those aloud.
+func (v Version) Report(program string) string {
+	return fmt.Sprintf("%s %s\n  protocol %d\n  data     %s\n",
+		program, v.Build, v.Protocol, v.Data.Short())
+}

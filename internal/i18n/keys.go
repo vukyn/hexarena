@@ -22,6 +22,19 @@ const (
 	NotATerminal
 	DataFlagUsage
 	LanguageFlagUsage
+	// VersionFlagUsage describes the flag that prints what the binary is and
+	// exits: the build string it announces, the protocol number it speaks and
+	// the digest of the data it embeds — the three a room's gate turns on.
+	//
+	// ⚠️ **Only the description is worded here; the output is not, and that is
+	// deliberate rather than an omission.** What -version prints is
+	// wire.Version.Report, whose two labels are `protocol` and `data` — the same
+	// labels cmd/hexarena-host prints on its banner and the same ones both
+	// version refusals tell a player to read, which is why JoinVersion leaves
+	// them in English in both languages too. Translating them on one end would
+	// break the one instruction those refusals give, and it would also give the
+	// two binaries two spellings of one output.
+	VersionFlagUsage
 
 	// The menu.
 	MenuHeading

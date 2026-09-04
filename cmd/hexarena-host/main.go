@@ -8,6 +8,7 @@
 //	hexarena-host -battles 3            a best of three
 //	hexarena-host -password nhaminh     a gate against strangers on the network
 //	hexarena-host -advertise 10.0.0.7   say exactly which address the code carries
+//	hexarena-host -version              say what this binary is, and host nothing
 //
 // Everything it decides is here, because internal/socket decides none of it: a
 // socket.Server is an http.Handler that opens nothing, so the listener, the
@@ -143,13 +144,17 @@ type settings struct {
 	turns     int
 	password  wire.Password
 	seed      uint64
+	// version is the ask that is answered instead of hosting anything: print
+	// what this binary is and exit. Everything else in this struct configures a
+	// room, and this one says no room is wanted.
+	version bool
 }
 
 // String is the settings as a line, with the password redacted through the type
 // that owns the redaction. → the note on the struct, for why this exists at all.
 func (s settings) String() string {
-	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d",
-		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed)
+	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, version %t",
+		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.version)
 }
 
 // GoString is the same for %#v, which does not go through String.
@@ -202,6 +207,12 @@ func (s *screen) withLock(read func(io.Writer)) {
 // second wording is dropped.
 var errSaid = errors.New("already reported")
 
+// programName is what this binary is called, and it is what -version puts on the
+// first line of its report. It is a constant rather than a literal per call site
+// because cmd/hexarena-tui keeps one too and the two reports have to name their
+// own binaries with the same certainty they name the same three numbers.
+const programName = "hexarena-host"
+
 func main() {
 	err := run(os.Args[1:], os.Stdout, os.Stderr)
 	switch {
@@ -209,7 +220,7 @@ func main() {
 		return
 	case errors.Is(err, errSaid):
 	default:
-		fmt.Fprintf(os.Stderr, "hexarena-host: %v\n", err)
+		fmt.Fprintf(os.Stderr, "%s: %v\n", programName, err)
 	}
 	os.Exit(1)
 }
@@ -217,7 +228,7 @@ func main() {
 // flags is the command line, as a set rather than as globals, so the usage text
 // is one value a test can render.
 func flags(chosen *settings) *flag.FlagSet {
-	set := flag.NewFlagSet("hexarena-host", flag.ContinueOnError)
+	set := flag.NewFlagSet(programName, flag.ContinueOnError)
 	set.IntVar(&chosen.port, "port", DefaultPort, "listen on this port; 0 takes any free one")
 	set.StringVar(&chosen.advertise, "advertise", "", "the IPv4 address to put in the room code; empty works it out")
 	set.IntVar(&chosen.format, "format", int(wire.Format3v3), "units a side; only 3 is offered today")
@@ -229,6 +240,12 @@ func flags(chosen *settings) *flag.FlagSet {
 		return nil
 	})
 	set.Uint64Var(&chosen.seed, "seed", 0, "the match's seed; 0 draws one and prints it")
+	// The same sentence cmd/hexarena-tui's flag shows in English, and the same
+	// three numbers. That client takes its descriptions from internal/i18n
+	// because it has two languages to keep honest; this binary has one and reads
+	// its wording off the page, so the two are worded alike by hand and the
+	// *output* is the thing neither of them spells twice. → wire.Version.Report.
+	set.BoolVar(&chosen.version, "version", false, "print the build, protocol and data, then exit")
 	set.Usage = func() {
 		out := set.Output()
 		fmt.Fprintf(out, "hexarena-host serves one PvP match over a LAN.\n\n")
@@ -259,6 +276,23 @@ func run(arguments []string, out, errs io.Writer) error {
 			return nil
 		}
 		return fmt.Errorf("%w: %w", errSaid, err)
+	}
+	// ⚠️ **Answered here, ahead of everything, and the position is the feature.**
+	// Somebody asking what this binary is has asked for none of what follows: a
+	// seed is drawn out of crypto/rand, an address is worked out by walking this
+	// machine's interfaces, the embedded books are loaded and a listener is bound
+	// on a port somebody else may want. So -version prints and returns before the
+	// first of those, and it is deliberately ahead of the *configuration checks*
+	// too — `-version -battles 2` says what this binary is rather than refusing a
+	// series of two, because a question about the binary is not a request to host
+	// a match. TestVersionSaysWhatThisBinaryIsAndHostsNothing drives exactly that.
+	if chosen.version {
+		version, err := wire.Local(buildString())
+		if err != nil {
+			return err
+		}
+		fmt.Fprint(out, version.Report(programName))
+		return nil
 	}
 	if !chosen.password.Set() {
 		chosen.password = wire.Password(os.Getenv(passwordEnv))

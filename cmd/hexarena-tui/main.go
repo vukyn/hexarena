@@ -23,6 +23,14 @@
 // of that walker because the one in internal/screen reads its own directory
 // only.
 //
+// ⚠️ **-version is the one thing it prints that is not in either language, and
+// it is not an exception to the rule above.** What it writes is
+// wire.Version.Report — one function both binaries answer that flag with, whose
+// two labels are `protocol` and `data`, the same ones cmd/hexarena-host prints
+// and the same ones both version refusals tell a player to read. So there is no
+// sentence here to translate; the flag's own *description* is a sentence and
+// comes from internal/i18n like every other. → i18n.VersionFlagUsage.
+//
 // The screen is bubbletea, styled with lipgloss. None of that reaches the
 // engine: what has to replay identically in a year is internal/core, and it
 // holds no state a terminal library could reach.
@@ -46,10 +54,14 @@ import (
 // programName is what this binary is called, in every language.
 const programName = "hexarena-tui"
 
-// options is one invocation: which data directory, and which language.
+// options is one invocation: which data directory, which language, and whether
+// the ask is for a screen at all.
 type options struct {
 	dir  string
 	lang i18n.Lang
+	// version is the ask that is answered instead of taking over the screen:
+	// print what this binary is and exit.
+	version bool
 }
 
 func main() {
@@ -61,7 +73,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", programName, err)
 		os.Exit(2)
 	}
-	if err := run(chosen); err != nil {
+	if err := run(chosen, os.Stdout); err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", programName, err)
 		os.Exit(1)
 	}
@@ -85,6 +97,7 @@ func parseOptions(arguments []string, environment string, out io.Writer) (option
 	set.SetOutput(out)
 	dir := set.String("data", forge.DefaultDataDir, described.Text(i18n.DataFlagUsage))
 	chosen := set.String(i18n.FlagName, "", described.Text(i18n.LanguageFlagUsage))
+	version := set.Bool("version", false, described.Text(i18n.VersionFlagUsage))
 	if err := set.Parse(arguments); err != nil {
 		return options{}, err
 	}
@@ -95,10 +108,34 @@ func parseOptions(arguments []string, environment string, out io.Writer) (option
 	if operands := set.Args(); len(operands) > 0 {
 		return options{}, errors.New(lang.Say(i18n.NoArguments, operands))
 	}
-	return options{dir: *dir, lang: lang}, nil
+	return options{dir: *dir, lang: lang, version: *version}, nil
 }
 
-func run(chosen options) error {
+// run is the invocation, with the writer -version answers through handed in —
+// which is what makes that one path testable, since everything below it takes
+// over a terminal instead of writing to anything.
+func run(chosen options, out io.Writer) error {
+	// ⚠️ **Ahead of the terminal check, and that is the whole placement
+	// decision.** The check below refuses a pipe because a full-screen program
+	// would pour control codes into one; -version writes three plain lines and
+	// takes over nothing, so it is not what that check is about. A version a
+	// script cannot read because the answer was "stdout is not a terminal" would
+	// be a machine-readable version with the machines left out, which is half of
+	// what it is for. It is also ahead of forge.Load, so a --data directory that
+	// does not exist is not a reason a binary cannot say what it is.
+	//
+	// It is not in parseOptions, where flag.ErrHelp is answered, for two
+	// reasons: that function writes to **stderr** and a version is output rather
+	// than a diagnostic, and it is the one part of this file with no side
+	// effects at all — printing from it would be the first.
+	if chosen.version {
+		version, err := wire.Local(buildString())
+		if err != nil {
+			return err
+		}
+		fmt.Fprint(out, version.Report(programName))
+		return nil
+	}
 	if !stdoutIsTerminal() {
 		return errors.New(chosen.lang.Text(i18n.GameNotATerminal))
 	}
