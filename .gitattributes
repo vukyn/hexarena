@@ -1,0 +1,62 @@
+# Line endings: LF in the repository and LF in the working tree, on every
+# platform.
+#
+# This is not tidiness. internal/seed embeds fifteen JSON data files and
+# seed.DataDigest() hashes their BYTES — deliberately, because hashing parsed
+# values would need a canonical form of every book — and internal/room compares
+# that digest at a room's gate. So a checkout that rewrote LF to CRLF announces
+# a different digest from every other machine and is refused with
+# `data_mismatch`.
+#
+# It really happened, and the numbers are worth keeping: a Mac hosting, a
+# Windows machine joining, git's own `core.autocrlf=true` default on that
+# machine, and no .gitattributes here to override it. Measured over the shipped
+# fifteen:
+#
+#     as LF    df3bed25a5c5      (what hexarena-host prints)
+#     as CRLF  f0ea65c2abb0
+#
+# ⚠️ And the data was not different. All fifteen files parse to identical
+# values under CRLF — JSON allows \r between tokens, and a `\n` inside a string
+# is the two characters `\` and `n`, which the rewrite never touches. The two
+# machines would have fought the same battle; the gate refused a difference with
+# no consequence. The defect is that the repository let the bytes differ for a
+# reason that has nothing to do with the data, so it is fixed here rather than
+# in the digest, which was doing exactly its job.
+#
+# Why both halves of the rule:
+#
+#   - `text=auto` lets git decide from the content, so a binary file added later
+#     is left alone rather than corrupted. Nothing tracked today is binary — 471
+#     files, all Go, SVG, golden, JSON, markdown and the module files, none of
+#     them holding a NUL byte and none of them holding a CR — so this half buys
+#     nothing yet and costs nothing.
+#   - `eol=lf` is what actually pins the WORKING TREE. `text` alone leaves the
+#     checkout to `core.autocrlf` / `core.eol`, and `native` on Windows means
+#     CRLF, so `text=auto` on its own fixes the repository and not the machine
+#     that was refused.
+#
+# Measured on git 2.55.0, cloning with `core.autocrlf=true` set: without the
+# line below a .json and a .golden arrive with CRLF; with it they arrive with
+# LF; and a file holding NUL bytes is byte-identical either way.
+#
+# The seventeen *.golden files get no rule of their own. They are byte-exact
+# fixtures and `eol=lf` is exactly what they need — and `git check-attr text eol
+# -- <a .golden>` answers `text: auto` / `eol: lf` from the single line below,
+# checked rather than assumed. A second rule saying the same thing would be a
+# second place for the two to disagree, which is the mistake CLAUDE.md records
+# under "one source for a recorded string".
+#
+# ⚠️ ADDING THIS FILE DOES NOT REPAIR A CHECKOUT THAT ALREADY HAS CRLF ON DISK.
+# Measured: pulling the commit that adds it leaves an existing Windows working
+# tree exactly as it was, so the person who reported the bug is still refused
+# after updating. That machine needs a fresh clone, or — in the clone it
+# already has, after committing or stashing anything unfinished, because the
+# second command discards uncommitted work:
+#
+#     git rm --cached -r . && git reset --hard
+#
+# which re-checks-out every file through the rule below. `hexarena-tui`'s join
+# screen prints this binary's own data digest, so the two people can read the
+# two short strings to each other and see the repair land.
+* text=auto eol=lf
