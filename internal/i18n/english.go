@@ -730,6 +730,7 @@ q or ctrl+c to quit`,
 		"binary. The match is played on the built-in copy, so the edits out there do not reach it.",
 	JoinDialling: "calling room %s",
 	JoinRefused:  "the room would not let this client in:",
+	JoinVersion:  "this machine — data %s · build %s",
 	JoinFooter:   "tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back",
 
 	WaitingHeading: "waiting for the second player",

@@ -273,7 +273,13 @@ func aJoinScreen(t *testing.T, m model) model {
 	if !strings.Contains(drawn, joining.text(i18n.JoinCodePlaceholder)) {
 		t.Fatalf("the empty code field shows no placeholder:\n%s", drawn)
 	}
-	return joining
+	// And the line saying what this binary is, which is the only place either of
+	// the two numbers a refused player has to compare is drawn on this side.
+	if !strings.Contains(drawn, joining.join.Local.Data.Short()) {
+		t.Fatalf("the join screen draws no data digest, so nothing here records the line a "+
+			"data_mismatch refusal tells a player to read:\n%s", drawn)
+	}
+	return stampedBuild(t, joining)
 }
 
 // aJoinScreenWithNothingToBring is the screen before the authoring tool has been
@@ -291,7 +297,7 @@ func aJoinScreenWithNothingToBring(t *testing.T, m model) model {
 	if pressed.join.Dialling {
 		t.Fatal("a join with no squad to bring still called a room")
 	}
-	return joining
+	return stampedBuild(t, joining)
 }
 
 // aRefusedJoin is the gate turning this client away, which is where six of the
@@ -304,7 +310,7 @@ func aRefusedJoin(t *testing.T, m model) model {
 	if !strings.Contains(drawnBody(joining), draw.WrapWords(worded, draw.MinWidth-3)[0]) {
 		t.Fatalf("the refused join draws nothing of the refusal:\n%s", drawnBody(joining))
 	}
-	return joining
+	return stampedBuild(t, joining)
 }
 
 // waitingForTheOtherPlayer is the room joined and the second seat still empty.
@@ -337,6 +343,49 @@ func waitingForTheOtherPlayer(t *testing.T, m model) model {
 // dialled — nothing in this file opens a socket — so what matters about it is
 // that it is twelve characters of the alphabet a real one uses.
 const fixtureRoomCode = wire.RoomCode("VQICBXRVBMAA")
+
+// fixtureBuild is the build string the three join entries draw instead of this
+// binary's own.
+//
+// ⚠️ **Substituted rather than recorded, and it is the one value on those
+// screens that had to be.** buildString() answers `devel` under `go test` and a
+// commit hash out of a release — which is what TestThisBinaryKnowsWhatItIs says
+// in as many words when it refuses to assert a value — so recording the real
+// one puts *how the suite was invoked* into a golden. That is the same hazard
+// the golden's own fixture already handles for the data directory by naming it
+// with a relative path.
+//
+// ⚠️ **The digest beside it is NOT substituted**, and the two are different
+// cases rather than one rule applied unevenly. A digest is over the embedded
+// data, which is committed, so it is the same twelve characters on every machine
+// and a diff over it is exactly the finding this golden should carry: the day
+// somebody's checkout starts producing another one, the record says so.
+//
+// It is eighteen characters because that is the widest wire.BuildOf's own
+// derivation produces — twelve of a revision plus `+dirty` — so the width sweep
+// measures the worst case rather than a short stand-in. A `-ldflags` stamp can
+// be any length, which is a wording nobody here controls and is not what a floor
+// is for.
+const fixtureBuild = "0123456789ab+dirty"
+
+// stampedBuild is a join screen whose build string is the fixture's.
+//
+// ⚠️ **It asserts the real one was there first.** Substituting into an empty
+// field would turn "this screen never read its version" into a perfectly
+// ordinary golden entry, which is the shape of defect this whole file exists to
+// refuse — a well-formed record of nothing.
+func stampedBuild(t *testing.T, m model) model {
+	t.Helper()
+	if m.join.Local.Build == "" {
+		t.Fatal("the join screen holds no build string, so the fixture below would be " +
+			"recording its own value over an empty field")
+	}
+	if m.join.Local.Data.Short() == "" {
+		t.Fatal("the join screen holds no data digest, so its version line records nothing")
+	}
+	m.join.Local.Build = fixtureBuild
+	return m
+}
 
 // aLiveBattle is the battle screen over a battle **somebody else is driving**.
 //

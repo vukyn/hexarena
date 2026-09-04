@@ -952,6 +952,30 @@ const (
 	JoinDataEdited
 	JoinDialling
 	JoinRefused
+	// JoinVersion is what the binary drawing this screen **is**: the digest of
+	// the data it embeds and the build string it announces — the two numbers
+	// cmd/hexarena-host already prints on its banner.
+	//
+	// ⚠️ **It exists because the client was the side that could not read them,
+	// and two refusals were already telling a player to.**
+	// RefusalDataMismatch says *read the data line on each*, in both languages,
+	// and RefusalProtocolMismatch says the same about the build line. Before
+	// this key there was no data line and no build line on this end at all, so
+	// both sentences asked for something one of the two screens did not have —
+	// which is how a real refusal ended as a question to the author rather than
+	// as two people comparing two short strings.
+	//
+	// ⚠️ **Mine, never theirs.** wire.Refused carries a Code and nothing else,
+	// Welcome carries no version, and a refused client never receives a Welcome
+	// anyway — so this end cannot learn the host's digest and this wording must
+	// not read as though it had. Hence "this machine": what is drawn is one
+	// side of a comparison a person makes.
+	//
+	// ⚠️ **`data` and `build` stay in English in both languages.** They are the
+	// labels hexarena-host prints and the labels the two refusals name, so
+	// translating them on this end would break the one instruction those
+	// refusals give. Everything around them is the reader's language.
+	JoinVersion
 	JoinFooter
 
 	WaitingHeading
