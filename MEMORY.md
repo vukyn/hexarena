@@ -106,6 +106,7 @@ that owns the subject wins and the note is the thing to fix.
 - [Pin base to worktree HEAD](memory/pin-comparison-base-to-worktree-head.md) — before/after proof: archive HEAD, not origin/main
 - [Mutate the producer](memory/mutate-the-producer-not-just-the-logic.md) — grep every write site; compile-failing mutations prove nothing
 - [Comment style generic](memory/comment-style-generic.md) — comments high-level, no specific usecase detail
+- [Test only what changed](memory/test-only-what-changed.md) — `./...` is minutes of CPU; ⚠️ `signal: killed` is a starved machine, not a red test
 - [kill test ports after smoke](memory/kill-test-ports-after-smoke.md) — go-run child outlives parent → `lsof -ti :PORT|xargs kill -9`
 - [gopls stale diagnostics multirepo](memory/gopls-stale-diagnostics-multirepo.md) — false BrokenImport; trust `go build`/`go vet`
 - [Fixture hides a branch](memory/fixture-hidden-branch.md) — 5× in hexarena; test must fail when its own branch unexercised
