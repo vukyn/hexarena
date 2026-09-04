@@ -1431,6 +1431,158 @@ is only so the shape is readable.
       may be reused, and § *Grow the cast* above says why that is not a problem.
       Authoring one is the *Grow the cast* item above, not a separate task — this
       entry is the queue, not the work.
+- [ ] **Squad composition bonuses: a threshold at 2/3/4/5 for a shared element
+      or a shared origin, plus whatever other axis is worth one.** The idea, as
+      asked for: fielding several units that share something grants the squad a
+      bonus, stronger bonuses sit at higher thresholds, and **not every bonus
+      needs four rungs** — one or two is fine where the effect is worth it.
+      Nothing is built; this entry is the idea plus what the shipped data already
+      says about it, so the design starts from measurements rather than from
+      taste.
+
+      ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
+      four obvious axes outright.** Multiplicity across the fifteen shipped
+      characters:
+
+      | axis | most units that can share one value | rungs reachable |
+      |---|---:|---|
+      | element | 3 (water: Lapras, Poliwag, Squirtle) | 2, 3 |
+      | origin | **14** (`pokemon`) | 2, 3, 4, 5 — but see below |
+      | species | 2 (`plant`, `mythic`; every other species is 1) | 2, and only on two species |
+      | archetype | 1 (fifteen characters, fifteen presets) | **none** |
+      | archetype `column` | 6 / 5 / 4 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
+
+      ⚠️ **An origin threshold is FREE at every rung today**, and that is the
+      sharpest thing here: fourteen of fifteen characters are `pokemon`, so *any*
+      squad that is not built around Naruto satisfies a 5-of-one-origin bonus by
+      accident. A bonus nobody has to build for is not a bonus, it is a stat
+      change with extra words. The same trap sits one step further out if traits
+      were the axis: `endurance` is on **nine** characters' presets. Origin only
+      becomes a real axis when a third origin ships with enough characters to
+      field, and until then the honest options are (a) don't do origin, (b) do it
+      at rungs the *smaller* origins can reach and accept that `pokemon` gets it
+      free, or (c) key it on something scarcer than the origin itself.
+
+      ⚠️ **A 4- or 5-rung bonus does not exist in the format that is playable
+      today.** 3v3 caps every count at three, and 5v5 is still behind
+      `hexarena-host`'s flag — and per § *PvP over a LAN* the 5v5 **draft** needs
+      two more characters before its pool even fits. So a four-rung table would
+      ship with its top half unreachable, which is the "fixture hides a branch"
+      shape this repository has paid for five times. Either the top rungs wait
+      for 5v5, or a bonus's rungs are chosen per format, or the tables are
+      declared with the top rungs and a test asserts they are **currently
+      unreachable on purpose** rather than silently dead.
+
+      ⚠️ **The duplicate loophole, and it is already decided in the other
+      direction.** `Squad.Validate` refuses a repeated unit **id** and a repeated
+      **slot** and says **nothing** about the same character twice — that is
+      settled above as *"it MAY"*, with `TestOneSquadMayFieldTheSameCharacterTwice`
+      holding it. So a 2-of-an-element rung is satisfiable by fielding one
+      character twice, and a 3-rung by three copies. #268 measured three copies of
+      one character as the **weakest** squad available, about 11% across both
+      arrangements — which is exactly why this matters: a composition bonus is the
+      one thing that would make the degenerate shape worth building, and the
+      measurement that currently argues against it was taken **without** one. The
+      draft is the opposite case: a shared exclusive pool forbids doubling by
+      construction, so the same bonus means two different things in the two modes,
+      and `squadIsFieldable` is where that scope has to be legible.
+
+      **Axes beyond element and origin, with what the data says about each:**
+      - **`column`** (0..2 on the archetype preset) — the best-shaped candidate:
+        every rung is reachable on all three columns, and it means *how far
+        forward this unit wants to stand*, so a threshold on it is a **formation**
+        bonus rather than a tribe bonus. It also reads as a real decision, because
+        stacking one column is a squad with a hole in it.
+      - **Stage depth** — all five at the tip of their line, or all at an interior
+        stage (an "unevolved" bonus). ⚠️ Asymmetric today: Lapras, Mew and Mewtwo
+        have exactly one stage, so they are permanently final-form and can never
+        satisfy an interior-stage rung.
+      - **Formation geometry** — all in one rank, one per rank, and so on. The
+        board already makes shape matter (`range` counts **occupied enemy ranks**,
+        not distance), so a geometry bonus stacks with a rule that is already
+        load-bearing — which is a reason to price it carefully, not a reason to
+        skip it.
+      - **The KIT's element rather than the character's affinity** — a squad whose
+        *skills* are all one element is a different claim from one whose carriers
+        are, and it is buildable today where the affinity version is not.
+      - **All-distinct ("rainbow")** — the one shape whose reachability *improves*
+        as the cast grows instead of needing the cast to grow first, and the
+        natural counterweight to every threshold above: it rewards not stacking.
+      - **Level spread** — all at the cap, or a squad deliberately carrying an
+        under-levelled unit. Cheap to read, and it interacts with `progression`
+        rather than with the chart.
+
+      ⚠️ **Where it can live, and the two core rules it walks into.** Counting a
+      roster by element or origin is a **map walk**, and `internal/core` forbids a
+      map's iteration order reaching an output — so the count is a sorted or
+      fixed-order walk, the same rule `Registry.Codes` and `Server.held` already
+      obey. And the shape of the grant decides what comes free: a **permanent
+      `status` applied at battle start** gets the log line, the drawing and the
+      describers for free — and then `dispel` becomes a question nobody has asked
+      (may a strip take a composition bonus off? if yes, the bonus is a target; if
+      no, `strips` needs a category it may not name, which § *What a dispel may
+      not name* already has a precedent for). A grant **baked into `Take`/`New`**
+      is invisible, undispellable and cheaper, and no screen can explain it.
+
+      ⚠️ **The per-character budget stops bounding what is fielded.** The gate is
+      `EffectiveHP = hp*(300+def)/300 ≤ 11500` **per character at the cap**; a
+      squad-wide defence grant breaches it collectively while every member still
+      passes. Decide whether the bound is checked before or after the bonus — and
+      note that ceilings **saturate rather than clamp**
+      (`CLAUDE.md` § *Saturate continuous values, cap discrete ones*), so a bonus
+      on a stat already near its ceiling buys much less than the number says —
+      the `reckless` sweep measured a −400‰ term on a base of 400 fighting at
+      **290** rather than 240, with the lever's whole reachable range 290..391.
+
+      ⚠️ **Nothing can be priced until `forge` can turn the bonus OFF, and that is
+      the prerequisite rather than a later step.** Both obvious controls are
+      already measured wrong: swapping a member measures **the member**
+      (`CLAUDE.md` § *Pricing one number: `hexforge weigh`, and why a roster win
+      rate could not* — ally damage up read ally win rate *down*), and
+      putting the same bonus on both squads **cancels it** (the Oddish/Bulbasaur
+      pairing read −29‰ that way, and the event log said why: `enemy.partner:
+      105`). The only control that measures the bonus is **the same squad, same
+      members, same seeds, bonus on against bonus off** — a flag through
+      `forge.FightSquads`, with the mirror control reading 500‰ exactly. Build the
+      switch first; every number quoted before it exists is about something else.
+
+      ⚠️ **PvP, and it is cheaper than it looks.** A squad crosses the wire whole
+      in `wire.Hello`, so the room and the client's mirror each derive the bonus
+      from the same bytes — no new message, and a disagreement surfaces as a
+      per-turn **digest mismatch** rather than as two different boards. It does
+      join what the data digest gates, so two peers on different balance data stop
+      being able to play, which is already the contract.
+
+      **What still has to be decided — these are the questions, not the answers:**
+      1. **When is the count taken?** At battle start once, or recomputed as units
+         die? The two feel completely different — a start-of-battle count is a
+         drafting decision, a live count makes focusing the odd unit out a
+         *tactic*. ⚠️ And a live count has to answer summons: `summonAffinity`
+         gives a summon the caster's affinity by default, so Naruto's clones would
+         push an element count up mid-battle.
+      2. **Does a dual affinity count toward both halves?** Lapras is water/ice and
+         Magnemite electric/metal. Counting both makes the two duals the best glue
+         in the cast; counting neither makes a dual strictly worse in a squad than
+         a single, which cuts against § *the defensive half of a dual is close to
+         nothing* already being true.
+      3. **Who receives it — the whole squad, or only the units that share the
+         thing?** The second is the more interesting decision and the harder one to
+         draw.
+      4. **Do axes stack?** One bonus at a time, or element **and** column
+         together. Stacking is where a composition system stops being priceable one
+         axis at a time.
+      5. **Is the grant a stat, a status, a trait, or something with no precedent**
+         (a free skill, an extra slot, a turn-order effect)? Per § *Three new axes*
+         a genuinely new category costs a full round of describers, wordings,
+         goldens and a rating branch — that is the real price of the ambitious
+         answer.
+      6. **One rung table per format, or one table with unreachable rungs?** → the
+         3v3 note above.
+      7. **Does it belong in `squads.json`/`roster.json` as data, or in
+         `archetypes.json` beside the presets?** Balance lives in embedded JSON by
+         rule, so "a bonus" is a data file either way — but which file decides
+         whether an authoring screen can show it.
+
 - [x] **`weigh` can price a skill that deals none. DONE.** The refusal was
       right and its **evidence** was mis-specified. *Worth nothing* and *not
       rated* are still different answers and a row that did nothing is still
