@@ -188,6 +188,69 @@
           ]
         }
       ]
+    },
+    {
+      "id": "s04",
+      "name": "xuyên phá",
+      "units": [
+        {
+          "id": "machamp",
+          "character": "pokemon.machop",
+          "level": 60,
+          "stage": "Machamp",
+          "slot": {
+            "col": 2,
+            "row": 1
+          },
+          "skills": [
+            "cross_chop",
+            "submission",
+            "seismic_toss",
+            "inner_focus"
+          ],
+          "passives": [
+            "berserk"
+          ]
+        },
+        {
+          "id": "mew",
+          "character": "pokemon.mew",
+          "level": 60,
+          "stage": "Mew",
+          "slot": {
+            "col": 1,
+            "row": 1
+          },
+          "skills": [
+            "poison_powder",
+            "sludge_bomb",
+            "venoshock",
+            "swift"
+          ],
+          "passives": [
+            "contagion"
+          ]
+        },
+        {
+          "id": "mewtwo",
+          "character": "pokemon.mewtwo",
+          "level": 60,
+          "stage": "Mewtwo",
+          "slot": {
+            "col": 0,
+            "row": 1
+          },
+          "skills": [
+            "psystrike",
+            "psycho_cut",
+            "shadow_ball",
+            "dark_pulse"
+          ],
+          "passives": [
+            "berserk"
+          ]
+        }
+      ]
     }
   ]
 }
