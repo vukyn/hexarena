@@ -2823,6 +2823,42 @@ prompt when it stops, and takes up an already-open turn rather than advancing pa
 one, so it is resumable. Without both, undo left the battle waiting for an action
 nobody was going to supply.
 
+**A window is not closed by the fact that you have not opened it.** The
+chooser's answer slot was drained on entry, on the premise that nothing could be
+in it for the turn now opening because the chooser had not yet sent *"it is your
+turn"*. But the screen does not learn whose turn it is from that message — it
+learns it from `socket.Mirror.Asking`, which is true the moment the room's batch
+is taken in, a message and a redraw **earlier**. So a player answering off the
+board already in front of them lands in the slot first, the drain ate a real
+decision, and the screen — which had recorded the turn as answered — would not
+offer it again. Both ends then stood still for a whole allowance. The fix is that
+the answer says **which turn it is for** and the chooser asks; the `*battle.Prompt`
+it had always been handed, and had never read, was the whole answer. When
+something buffered has to be told apart from something stale, the discriminator
+is the turn, never the moment.
+
+**A `select` over two ready arms is a coin flip, so decide on a reading.**
+`Server.Shutdown` bounded its wait with `select { case <-settled: ...; case
+<-ctx.Done(): ... }`, and both arms are ready whenever the last room ends around
+the moment the bound does — so the same shutdown of the same server returned
+success or a refusal at random, and the refusal it wrote on that path read *"0
+room(s) and 0 connected room(s) still running"*: a give-up naming nothing to act
+on. Ask the thing itself (`rooms.Running()`), not the channel — a channel can
+also be un-ready merely because its goroutine has not been scheduled. And a
+refusal that carries numbers must be **handed** the numbers that made it refuse:
+`gaveUp` takes its counts as parameters so the reading that decided and the
+reading that is reported cannot disagree.
+
+**A test that only reddens under load is a test the next person re-runs.** Both
+of the above failed inside `make check` and passed alone, which is the shape that
+teaches a reader to hit re-run. Neither was a flake and neither was fixed by
+widening a bound: one test was wrong about its own premise (an already-done
+context proves the bound is *available*, not that anything is *waiting* — so the
+test now holds a table open across the call and can assert the count by value),
+and the other was watching a real deadlock. Every end-to-end bound in this
+repository is a **hang detector**, not a performance budget: when one fires,
+what it was waiting on is the finding.
+
 **Watch the arithmetic, not the intent.** Several assertions written from a hand
 calculation were wrong while the code was right — a saturation gap taken from the
 wrong side, a drift bound of one when each of two truncations can lose one, a

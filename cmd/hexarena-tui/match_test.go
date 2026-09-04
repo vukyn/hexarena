@@ -91,6 +91,15 @@ func (f *fakeSender) awaits(within time.Duration) bool {
 // well under a second in process; the margin is for a loaded machine, and the
 // point of the bound is that a client that stops making progress fails the suite
 // rather than hanging it.
+//
+// ⚠️ **The bound has earned itself once, and the number is not what mattered.**
+// It failed at 61.22s inside a loaded suite against work it does alone in 0.9s,
+// and the temptation was to read a sixty-fold margin as too tight and widen it.
+// It was not slowness: the client had gone silent on the battle screen with a
+// prompt open and already answered, waiting out a whole allowance because the
+// chooser had thrown that answer away.
+// → TestAnAnswerPressedBeforeTheChooserAsksIsTakenRatherThanDropped, which holds
+// the same thing deterministically and in a millisecond.
 const theWholeMatch = 60 * time.Second
 
 // aRoom is a registry, a server and a loopback listener with one room open on
@@ -557,7 +566,8 @@ func TestAKeystrokeIsNeverBlockedByAChooserThatHasGone(t *testing.T) {
 	go func() {
 		defer close(returned)
 		for range 3 {
-			sess.answer(draw.PlayAnswer{Choice: battle.Choice{Skill: "razor_leaf"}, Acted: true})
+			sess.answer(draw.PlayAnswer{Choice: battle.Choice{Skill: "razor_leaf"}, Acted: true},
+				theTurnBeingAsked())
 		}
 	}()
 	select {
@@ -568,16 +578,20 @@ func TestAKeystrokeIsNeverBlockedByAChooserThatHasGone(t *testing.T) {
 	}
 }
 
-// TestAStaleAnswerIsNotSpentOnTheNextTurn is the drain at the top of the
-// chooser.
+// TestAStaleAnswerIsNotSpentOnTheNextTurn is the first half of the check at the
+// top of the chooser.
 //
 // ⚠️ **A keystroke can land in the slot with nobody asking**, which is what the
-// one-slot buffer is for and also what makes it dangerous: without the drain,
+// one-slot buffer is for and also what makes it dangerous: without the check,
 // the answer pressed for a turn that has already gone — the player answered, the
 // server timed the seat out and passed for it — would be spent on the next one,
 // with nobody looking at the board it was taken on.
 //
-// *Sees:* the drain being removed, as a chooser that returns immediately with an
+// The two turns are what makes it a measurement: the answer is pressed for
+// A1's turn 1 and the chooser is asked about A1's turn 2, so a chooser that
+// spends it is spending an answer taken on a different board.
+//
+// *Sees:* the check being removed, as a chooser that returns immediately with an
 // answer nobody meant for this turn.
 // *Cannot see:* the server's half of that story; what it drives is the client
 // state the server's timeout leaves behind.
@@ -586,9 +600,13 @@ func TestAStaleAnswerIsNotSpentOnTheNextTurn(t *testing.T) {
 	sess := newSession()
 	sess.attach(fake)
 	sess.open()
+	t.Cleanup(sess.leave)
+
+	gone := &battle.Prompt{Unit: "A1", Turn: 1}
+	open := &battle.Prompt{Unit: "A1", Turn: 2}
 
 	stale := draw.PlayAnswer{Choice: battle.Choice{Skill: "razor_leaf"}, Acted: true}
-	sess.answer(stale)
+	sess.answer(stale, gone)
 	answers, _ := sess.turn()
 	if len(answers) != 1 {
 		// ⚠️ This is also where an **unbuffered** answers channel is caught, and
@@ -598,12 +616,12 @@ func TestAStaleAnswerIsNotSpentOnTheNextTurn(t *testing.T) {
 		// decision, on a real turn, silently dropped.
 		t.Fatalf("a keystroke pressed with no chooser at the select was dropped rather "+
 			"than buffered (%d held of the one slot): a lost decision on the client, and "+
-			"the drain below is then asked to drop nothing", len(answers))
+			"the check below is then asked to drop nothing", len(answers))
 	}
 
 	taken := make(chan draw.PlayAnswer, 1)
 	go func() {
-		choice, acted := sess.choose(nil)
+		choice, acted := sess.choose(open)
 		taken <- draw.PlayAnswer{Choice: choice, Acted: acted}
 	}()
 	select {
@@ -617,7 +635,7 @@ func TestAStaleAnswerIsNotSpentOnTheNextTurn(t *testing.T) {
 	// And it is not blocked for ever — a fresh answer is taken, which is what
 	// stops this passing on a chooser that returns nothing at all.
 	fresh := draw.PlayAnswer{Choice: battle.Choice{Skill: "vine_whip"}, Acted: true}
-	sess.answer(fresh)
+	sess.answer(fresh, open)
 	select {
 	case got := <-taken:
 		if got != fresh {
@@ -638,6 +656,57 @@ func TestAStaleAnswerIsNotSpentOnTheNextTurn(t *testing.T) {
 	if asked == 0 {
 		t.Error("the chooser sent no matchAskingMsg, so nothing would tell the screen it " +
 			"was this player's turn")
+	}
+}
+
+// TestAnAnswerPressedBeforeTheChooserAsksIsTakenRatherThanDropped is the other
+// half, and it is the bug TODO.md filed as "a LAN test that fails under a loaded
+// suite and passes alone".
+//
+// ⚠️ **The window this is about was believed not to exist.** The chooser's
+// drain was written on the premise that nothing could be in the slot for the
+// turn now opening, because the chooser had not sent matchAskingMsg yet. But
+// "it is your turn" is socket.Mirror.Asking, which is true as soon as the room's
+// batch is taken in — a message and a redraw *earlier* than this call — so a
+// player answering off the board already in front of them lands in the slot
+// first. The drain then ate a real decision; PlayScreen had recorded the turn as
+// Answered and would not offer it again; and the match sat still until the
+// allowance ran out at the far end.
+//
+// It cost a minute per occurrence, which is why the loopback match test failed
+// at 61.22s against a 60s bound and passed in 0.9s alone.
+//
+// *Sees:* the check reverting to a bare drain, as a chooser that never returns.
+// *Cannot see:* which of the two ends notices first — that is the allowance, and
+// it is internal/room's.
+func TestAnAnswerPressedBeforeTheChooserAsksIsTakenRatherThanDropped(t *testing.T) {
+	fake := newFakeSender()
+	sess := newSession()
+	sess.attach(fake)
+	sess.open()
+	t.Cleanup(sess.leave)
+
+	open := &battle.Prompt{Unit: "A1", Turn: 2}
+	pressed := draw.PlayAnswer{Choice: battle.Choice{Skill: "vine_whip"}, Acted: true}
+	// The whole of the race, made deterministic: the keystroke is in the slot
+	// **before** the chooser is called at all.
+	sess.answer(pressed, open)
+
+	taken := make(chan draw.PlayAnswer, 1)
+	go func() {
+		choice, acted := sess.choose(open)
+		taken <- draw.PlayAnswer{Choice: choice, Acted: acted}
+	}()
+	select {
+	case got := <-taken:
+		if got != pressed {
+			t.Errorf("the chooser took %+v, want the answer pressed for this very turn %+v",
+				got, pressed)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("the chooser threw away an answer pressed for the turn it is asking about " +
+			"and is now waiting for one nobody will press: the screen has already recorded " +
+			"this turn as answered, so the match stands still until the allowance runs out")
 	}
 }
 

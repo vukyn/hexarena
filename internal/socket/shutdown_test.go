@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/vukyn/hexarena/internal/room"
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
@@ -161,15 +162,38 @@ func toldWhyItStopped(t *testing.T, client *Client) wire.Closure {
 // TestShutdownGivesUpAndNamesWhatItWasWaitingFor holds the bound, and holds that
 // what it reports is usable.
 //
-// A context that is **already** done is what a real bound hitting looks like
-// from inside the function, with none of the timing that would make the test
-// flaky. What it pins is the division the doc comment draws: the *waiting* is
-// bounded and the *work* is not, so the rooms are closed even on the path that
-// gives up — which the second shutdown proves by finishing immediately.
+// What it pins is the division the doc comment draws: the *waiting* is bounded
+// and the *work* is not, so the rooms are closed even on the path that gives up
+// — which the second shutdown proves by finishing immediately.
 //
 // ⚠️ It also pins the message. A shutdown that reported only "context deadline
 // exceeded" would tell a host nothing it could act on; the numbers are what say
 // whether a match is stuck or a socket is.
+//
+// # The wedge, and why the test needs one
+//
+// ⚠️ **An already-done context is not on its own enough to reach the giving-up
+// path, and the first version of this test believed it was.** Its comment said
+// the done context left "none of the timing that would make the test flaky",
+// and that is the claim that was wrong: a done context guarantees the bound is
+// *available*, not that anything is *waiting*. With one room and one socket,
+// stopping drops the peer and CloseAll retires the room, so both counts can
+// reach nought inside the call — and then the shutdown has nothing to give up
+// on and returns nil. It failed inside a loaded suite in **0.00s**, which is
+// what told the difference: not slow, wrong.
+//
+// The guard it leaned on could not see this either. `Tables() == 1` before the
+// call establishes that a room is open, and tables are rooms rather than
+// connections, so it says nothing about anything still being waited *for* at
+// the moment the bound is read.
+//
+// So this test **holds a table open across the call**, by taking a second
+// reference on it the way a connection does. That is not a stub: a table is a
+// reference count and step four polls precisely until the last holder lets go,
+// so an unreleased reference is exactly the shape of the thing being waited on
+// — a socket that has not finished closing. It makes `Tables()` **1 for the
+// whole call** on every path, which is why the connected count below can be
+// asserted by value where it could not be before.
 func TestShutdownGivesUpAndNamesWhatItWasWaitingFor(t *testing.T) {
 	held := listening(t, Timings{})
 	dependencies := deps(t)
@@ -178,26 +202,40 @@ func TestShutdownGivesUpAndNamesWhatItWasWaitingFor(t *testing.T) {
 	if tables := held.server.Tables(); tables != 1 {
 		t.Fatalf("the server holds %d tables, want 1: nothing connected, so this test measures nothing", tables)
 	}
+	// The wedge. → the note above. It is taken through the server's own claim so
+	// that what is held is a real reference and not a poked map.
+	wedge := held.server.claim(code)
 
 	expired, cancel := context.WithCancel(context.Background())
 	cancel()
 	err := held.server.Shutdown(expired)
 	if err == nil {
-		t.Fatal("a shutdown on a context that was already done reported no error")
+		t.Fatal("a shutdown that still held a connected table on a done context reported no error")
 	}
 	if !strings.Contains(err.Error(), "context canceled") {
 		t.Errorf("the refusal does not carry the context's own error, so errors.Is cannot ask which bound it was: %v", err)
 	}
-	// The one thing a host can act on. "1 room" is this room; the connected count
-	// is whichever of the two the shutdown had got to, so only the room count is
-	// asserted by value.
-	if !strings.Contains(err.Error(), "1 room(s)") && !strings.Contains(err.Error(), "0 room(s)") {
-		t.Errorf("the refusal names no room count, so it says only that a bound was hit: %v", err)
+	// The one thing a host can act on, and it is the count the wedge holds: one
+	// table, on every path through the call.
+	//
+	// ⚠️ The **room** count is deliberately not asserted by value. The room
+	// really can retire inside the call — CloseAll asked it to and nothing here
+	// stops it — so "0 room(s) and 1 connected room(s)" and "1 room(s) and 1
+	// connected room(s)" are both true readings, and pinning that number would
+	// be pinning the scheduler.
+	if !strings.Contains(err.Error(), "1 connected room(s)") {
+		t.Errorf("the refusal does not name the table still held, so it says only that a bound was hit: %v", err)
 	}
 
 	// ⚠️ The work was done anyway. This is the assertion that separates "gave up
 	// on waiting" from "gave up", and it is the whole reason CloseAll is outside
 	// the bound.
+	if count := held.rooms.Count(); count != 0 {
+		t.Errorf("%d rooms are still reachable by code after a shutdown that gave up on waiting", count)
+	}
+
+	// Let go, and the same call finishes.
+	held.server.release(code, wedge)
 	ctx, done := context.WithTimeout(context.Background(), theWholeShutdown)
 	defer done()
 	if err := held.server.Shutdown(ctx); err != nil {
@@ -205,6 +243,34 @@ func TestShutdownGivesUpAndNamesWhatItWasWaitingFor(t *testing.T) {
 	}
 	if running := held.rooms.Running(); running != 0 {
 		t.Errorf("%d room goroutines are still owed an end", running)
+	}
+}
+
+// TestAShutdownWithNothingLeftToWaitForDoesNotGiveUp is the other half of the
+// same reading, and it is the one the test above used to fail by accident.
+//
+// A done context on a server holding nothing is not a bound being hit: there is
+// no waiting to bound. Answering it with a refusal would put "0 room(s) and 0
+// connected room(s) still running" in front of a host — a give-up that names
+// nothing to act on, which is the exact message gaveUp exists to avoid — and it
+// would do so on a **coin flip**, because a select over two ready cases chooses
+// at random and both of `waited`'s are ready here.
+//
+// ⚠️ **-count is the mutation proof.** Reading the channel instead of the
+// registry passes this perhaps half the time, so it is run enough times that a
+// coin flip cannot survive it.
+func TestAShutdownWithNothingLeftToWaitForDoesNotGiveUp(t *testing.T) {
+	for attempt := range 200 {
+		// No listener: nothing dials, and what is being read is the shutdown's
+		// own two counts.
+		server := NewServer(room.NewRegistry(), Options{})
+		expired, cancel := context.WithCancel(context.Background())
+		cancel()
+		err := server.Shutdown(expired)
+		if err != nil {
+			t.Fatalf("attempt %d: a shutdown of a server holding nothing refused on a done context: %v",
+				attempt, err)
+		}
 	}
 }
 

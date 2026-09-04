@@ -192,7 +192,7 @@ func TestTheThirdArmPassesWhenTheAllowanceHasRunOut(t *testing.T) {
 	answered := make(chan answer, 1)
 	go func() {
 		began := time.Now()
-		choice, acted := sess.choose(nil)
+		choice, acted := sess.choose(theTurnBeingAsked())
 		answered <- answer{choice: choice, acted: acted, took: time.Since(began)}
 	}()
 
@@ -454,7 +454,7 @@ func chosenBy(t *testing.T, sess *session, waited time.Duration) (battle.Choice,
 	answered := make(chan answer, 1)
 	go func() {
 		began := time.Now()
-		choice, acted := sess.choose(nil)
+		choice, acted := sess.choose(theTurnBeingAsked())
 		answered <- answer{choice: choice, acted: acted, took: time.Since(began)}
 	}()
 	select {
@@ -471,10 +471,19 @@ func chosenBy(t *testing.T, sess *session, waited time.Duration) (battle.Choice,
 func senderThatAnswers(sess *session, taken draw.PlayAnswer) sender {
 	return senderFunc(func(message tea.Msg) {
 		if _, asking := message.(matchAskingMsg); asking {
-			sess.answer(taken)
+			sess.answer(taken, theTurnBeingAsked())
 		}
 	})
 }
+
+// theTurnBeingAsked is the prompt these chooser tests are about, and every one
+// of them uses this one so that an answer and the chooser waiting for it agree
+// on which turn is open. → session.pressed, which is why they have to.
+//
+// It is a fresh value per call rather than a shared pointer on purpose: what
+// routes an answer is the (unit, turn) pair, and a test that happened to hand
+// the same pointer to both halves could not tell that from identity.
+func theTurnBeingAsked() *battle.Prompt { return &battle.Prompt{Unit: "A1", Turn: 1} }
 
 // senderThatLeaves is a sender that leaves the match the moment the chooser says
 // it is this player's turn, which is esc pressed mid-prompt.
