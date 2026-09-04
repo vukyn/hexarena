@@ -854,6 +854,12 @@ const (
 	// holding 5" is the one pair of numbers this row can never draw.
 	PlayBlockedUnknown
 	PlayBlockedCooldown
+	// English needs the singular and Vietnamese does not, which is two keys
+	// rather than a plural rule — the same division BlurbCostCooldownOne,
+	// BlurbStripsOne and PlayHiddenUnitsOne are two keys for. The row is drawn on
+	// every turn a skill is cooling, so "1 turns of cooldown left" is the wording
+	// a reader meets most often out of the four.
+	PlayBlockedCooldownOne
 	PlayBlockedFuel
 	PlayBlockedNoReach
 	PlayWon

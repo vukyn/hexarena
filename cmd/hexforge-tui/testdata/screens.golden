@@ -4862,7 +4862,7 @@ E3   Sennin               [####......]  1639/3400    134   toughened (always), p
 
 A2 Bloom, turn 5
 > bolt          80% attack · range 3
-  venom_fang    1 turns of cooldown left
+  venom_fang    1 turn of cooldown left
   creeping_rot  70% attack · poison 65% · range 3 · 3 cells · cd 3
   arc_bolt      2 turns of cooldown left
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
@@ -6582,7 +6582,7 @@ next: E2 ally.2,2#1 ally.2,2#2 A3 E3 A2
 
 A2 Bloom, turn 5
 > bolt          80% attack · range 3
-  venom_fang    1 turns of cooldown left
+  venom_fang    1 turn of cooldown left
   creeping_rot  70% attack · poison 65% · range 3 · 3 cells · cd 3
   arc_bolt      2 turns of cooldown left
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
