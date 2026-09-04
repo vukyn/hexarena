@@ -155,12 +155,41 @@ type session struct {
 	// ⚠️ **The pair that makes it correct is the ordering in choose.** The
 	// chooser sends matchAskingMsg *before* it reaches its select, so a player
 	// answering inside that window would hit the default on an unbuffered
-	// channel and lose a real keystroke. One slot absorbs the window; the drain
+	// channel and lose a real keystroke. One slot absorbs the window; the check
 	// at the top of every chooser call is what stops that slot outliving its
 	// turn. A *second* press in the same turn hits the default and is dropped,
 	// which is correct — one decision per turn, and the screen has already
 	// stopped offering it.
-	answers chan draw.PlayAnswer
+	answers chan pressed
+}
+
+// pressed is one answer with the turn it was given for.
+//
+// ⚠️ **The turn is carried because the slot outlives nothing else.** A window is
+// not a turn: a keystroke can land in the slot for the turn that is open, for a
+// turn the clock has taken, or for no turn at all, and the three are only
+// distinguishable if the answer says which turn it is about. → choose, whose
+// whole top half is that question.
+//
+// ⚠️ **It is a pair beside draw.PlayAnswer rather than two more fields inside
+// it.** PlayAnswer is battle.Chooser's return pair and its own doc says so —
+// "a second vocabulary for a decision" is the mistake it was written to refuse —
+// so the routing information is this client's, kept where the routing is done.
+type pressed struct {
+	answer draw.PlayAnswer
+	// unit and turn are battle.Prompt's own two, copied rather than a pointer
+	// kept: the prompt belongs to the mirror's battle and this travels between
+	// goroutines.
+	unit string
+	turn int
+}
+
+// about reports whether this was pressed for the prompt now being asked.
+//
+// A nil prompt is answered false, which is the reading a chooser called with no
+// prompt wants: nothing pressed can be about a turn that is not there.
+func (p pressed) about(prompt *battle.Prompt) bool {
+	return prompt != nil && p.unit == prompt.Unit && p.turn == prompt.Turn
 }
 
 func newSession() *session { return &session{} }
@@ -264,7 +293,7 @@ func (s *session) open() context.Context {
 	// leaves a room and joins another gets every guarantee back.
 	s.clock = matchClock{}
 	s.done = make(chan struct{})
-	s.answers = make(chan draw.PlayAnswer, 1)
+	s.answers = make(chan pressed, 1)
 	return ctx
 }
 
@@ -290,27 +319,49 @@ func (s *session) begin(client *socket.Client) {
 // whole of how a keystroke becomes a decision.
 //
 // → the three arms at the head of this file for what ends each.
-func (s *session) choose(*battle.Prompt) (battle.Choice, bool) {
+func (s *session) choose(prompt *battle.Prompt) (battle.Choice, bool) {
 	answers, ctx := s.turn()
 	if answers == nil || ctx == nil {
 		return battle.Choice{}, false
 	}
-	// Armed before the drain and the message rather than after them, so the
-	// allowance covers the whole of the wait a player can see.
+	// Armed before the slot is read and before the message rather than after
+	// them, so the allowance covers the whole of the wait a player can see.
 	expired, stop := s.waitOut()
 	defer stop()
-	// ⚠️ **Drain first.** An answer buffered for a turn that has already gone —
-	// the player answered, the server timed the seat out and passed for it — must
-	// not be spent on the next one. Without this the keystroke pressed for the
-	// turn the clock took would silently take the turn after it.
+	// ⚠️ **Read the slot first, and ask what it is FOR.** An answer buffered for
+	// a turn that has already gone — the player answered, the server timed the
+	// seat out and passed for it — must not be spent on the next one; an answer
+	// buffered for *this* turn must not be thrown away.
+	//
+	// ⚠️ **This used to be a bare drain, and the bare drain deadlocked the
+	// client for a whole allowance.** The premise was that nothing could be in
+	// the slot for the open turn yet, because the chooser had not asked. It is
+	// wrong: "it is your turn" is socket.Mirror.Asking, which is true the moment
+	// the room's batch is taken in — one message and one screen redraw *before*
+	// Play gets round to calling this — so a player answering off the board they
+	// can already see lands in the slot ahead of the chooser. The drain then ate
+	// a real decision, the screen had already recorded the turn as Answered and
+	// would not offer it again, and both ends sat there until the allowance ran
+	// out. Measured: cmd/hexarena-tui's loopback match test failed at 61.22s
+	// against a 60s bound with the client on the battle screen, live, prompt
+	// open, answered, and nothing sent for the whole minute.
 	select {
-	case <-answers:
+	case held := <-answers:
+		if held.about(prompt) {
+			// No matchAskingMsg: the screen asked and answered before this
+			// call, so there is nobody to tell.
+			return held.answer.Choice, held.answer.Acted
+		}
 	default:
 	}
 	s.send(matchAskingMsg{})
 	select {
-	case answer := <-answers:
-		return answer.Choice, answer.Acted
+	case held := <-answers:
+		// Not matched against the prompt, and the asymmetry is deliberate: past
+		// this line the only thing that can fill the slot is a keystroke taken
+		// after matchAskingMsg went out, and the screen offers a turn it has
+		// recorded as Answered to nobody. → PlayScreen.Answered.
+		return held.answer.Choice, held.answer.Acted
 	case <-ctx.Done():
 		// Pass, and nothing is spent by it. Mirror.Decide reads the false as a
 		// wire.Pass, Play sends it on a cancelled context, conn.send fails,
@@ -332,20 +383,21 @@ func (s *session) choose(*battle.Prompt) (battle.Choice, bool) {
 // take its answer would hang the whole program whenever nobody was asking —
 // between turns, after the match, and on every keystroke that is not a decision.
 // A dropped keystroke is the right answer there, because there is no turn for it
-// to be about.
-func (s *session) answer(taken draw.PlayAnswer) {
+// to be about — which is also why a nil prompt drops: an answer that cannot say
+// which turn it is for is one the chooser could not route.
+func (s *session) answer(taken draw.PlayAnswer, about *battle.Prompt) {
 	answers, _ := s.turn()
-	if answers == nil {
+	if answers == nil || about == nil {
 		return
 	}
 	select {
-	case answers <- taken:
+	case answers <- pressed{answer: taken, unit: about.Unit, turn: about.Turn}:
 	default:
 	}
 }
 
 // turn is the current match's channel and context, read together.
-func (s *session) turn() (chan draw.PlayAnswer, context.Context) {
+func (s *session) turn() (chan pressed, context.Context) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.answers, s.ctx

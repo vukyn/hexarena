@@ -2197,58 +2197,69 @@ is only so the shape is readable.
       fixture that casts a single-aim skill. That is the change being visible
       rather than a fixture problem, but it is the bulk of the diff.
 
-- [ ] **Two LAN tests fail under a loaded suite and pass alone, for two
-      different reasons.** Both were seen red inside `make check` and green on
-      their own in the same working tree, so neither is a change to the code they
-      cover. They are recorded together because they were found together, not
-      because they share a cause — and the difference is the useful part.
-      ⚠️ **`TestShutdownGivesUpAndNamesWhatItWasWaitingFor` is not a timing flake
-      at all**, which is what it looks like from the summary line. It failed in
+- [x] **Two LAN tests fail under a loaded suite and pass alone, for two
+      different reasons.** **Done** — and neither was a flake. Both were seen red
+      inside `make check` and green on their own in the same working tree, they
+      were recorded together because they were found together, and the difference
+      between them was the useful part: one was a test wrong about its own
+      premise, the other was a **product deadlock** the test was the only thing
+      watching.
+      ⚠️ **`TestShutdownGivesUpAndNamesWhatItWasWaitingFor` was never a timing
+      flake**, which is what it looks like from the summary line: it failed in
       **0.00s** with *a shutdown on a context that was already done reported no
-      error* — `Shutdown` finished the work before it ever reached the giving-up
-      path, because there was nothing left to wait on. Its own doc calls the
-      already-done context the thing that leaves it "none of the timing that would
-      make the test flaky", and that is the claim that is wrong: the context being
-      done guarantees the bound is *available*, not that anything is *waiting*.
-      The guard above it asks `Tables() == 1` and reports "nothing connected" when
-      it fails — but tables are rooms, not connections, so it establishes that a
-      room is open and not that a peer is still being waited for. The comment four
-      lines down already concedes the race in as many words: *the connected count
-      is whichever of the two the shutdown had got to*. The fix is to make the
-      test hold a connection open across the call rather than to widen a bound.
-      ⚠️ **`TestAJoinedMatchPlaysToItsEndOverALoopbackListener` is the timing
-      one**, and its bound is not tight: `theWholeMatch` is a minute for work its
-      own comment measures at *well under a second in process*, with the margin
-      spent deliberately "for a loaded machine". It still failed at **61.22s** —
-      *the match did not reach the result inside 1m0s; the client is on screen 8*
-      — and passed 3/3 alone in **0.9s**. So a sixty-fold margin is not enough on
-      a machine running the rest of the suite beside it, which says the client
-      stops making progress rather than merely running slowly. Raising the bound
-      would hide that; what it is waiting on at screen 8 is the thing to find.
-      Neither is watched by anything: a suite that goes green on the re-run
-      teaches the next person to re-run it, which is how a real failure in this
-      area would get spent.
-
-- [ ] ⚠️ **The LAN client renders the battle while the socket is still writing
-      to it, and `-race` says so.** Reproduced on clean `main`: four reports in
-      three runs of `go test -race ./cmd/hexarena-tui -run TestTheCountdown`. The
-      two stacks name the whole of it — the write is
-      `Client.Play` → `Mirror.Receive` → `Mirror.apply` → `Battle.Replay`, on the
-      goroutine reading the socket, and the read is
-      `PlayScreen.View` → `tui.Order` → `Queue.Preview` → `Queue.clone`, on the
-      one drawing the screen. Nothing between them synchronises.
-      ⚠️ **`Preview`'s own comment is what makes it look safe**: *it works on a
-      copy, so the queue is untouched*. That is true of what it writes and says
-      nothing about what it reads — and the copying **is** the read that races.
-      A guarantee about mutation was taken for a guarantee about concurrency.
-      ⚠️ **Not a flake, and the two already recorded above are a different
-      thing.** Those are a bound and a racy premise inside tests; this is shipped
-      code, it reproduces on demand under `-race`, and what a player would see is
-      not a red suite but a screen drawn off a half-applied turn.
-      Left unfixed on purpose: #282 was landing a mutex fix in the same file while
-      this was found, so whoever holds that context should take it rather than a
-      second hand arriving from the side.
-
+      error*. Its own doc claimed an already-done context left it "none of the
+      timing that would make the test flaky", and that was the wrong claim — a
+      done context guarantees the bound is *available*, not that anything is
+      *waiting*. With one room and one socket, `stopping` drops the peer and
+      `CloseAll` retires the room, so both counts can reach nought inside the
+      call and there is nothing to give up on. The guard above it could not see
+      that either: `Tables() == 1` says a room is open, and tables are rooms
+      rather than connections.
+      **The fix is a wedge, not a wider bound**: the test now takes a second
+      reference on the table the way a connection does, so `Tables()` reads 1 for
+      the whole call on every path and the connected count can be asserted **by
+      value** — which it could not be before. Measured both ways: without the
+      wedge the test goes red inside 60 runs at `GOMAXPROCS` 2 and 8 and passes
+      at 1; with it, 60 runs green at all three.
+      ⚠️ **It also found a real coin flip in `Server.Shutdown`.** `waited`'s
+      select has two arms that are both ready whenever the last room ends around
+      the moment the bound does, so the same shutdown of the same server returned
+      nil or a refusal at random — and the refusal it wrote on that path read
+      *"0 room(s) and 0 connected room(s) still running"*, a give-up naming
+      nothing to act on, which is the exact message `gaveUp` exists to avoid.
+      Both callers now decide on a **reading** rather than on the select's
+      choice, and `gaveUp` **takes its counts as parameters** so the number that
+      refused is the number reported.
+      `TestAShutdownWithNothingLeftToWaitForDoesNotGiveUp` holds it, 200 times per
+      run because a coin flip survives one.
+      ⚠️ **`TestAJoinedMatchPlaysToItsEndOverALoopbackListener` was a DEADLOCK in
+      the client, not a slow machine**, and widening the bound would have buried
+      it. It failed at **61.22s** against a minute for work it does alone in 0.9s,
+      and the instrumented run said why: the client had gone silent on the battle
+      screen — live, prompt open, **already answered** — with nothing sent for the
+      whole minute.
+      **`session.choose` drained the answer slot before asking.** The premise was
+      that nothing could be in the slot for the turn now opening, because the
+      chooser had not sent `matchAskingMsg` yet. That is wrong: *"it is your
+      turn"* is `socket.Mirror.Asking`, true the moment the room's batch is taken
+      in — one message and one redraw **earlier** than the chooser is called — so
+      a player answering off the board already in front of them lands in the slot
+      first. The drain ate a real decision, `PlayScreen.Answered` meant the screen
+      would not offer that turn again, and both ends stood still for a whole
+      allowance. That is why it cost about a minute exactly.
+      The answer now carries the turn it was pressed for (`session.pressed`, a
+      pair beside `draw.PlayAnswer` rather than two more fields inside it — that
+      type is `battle.Chooser`'s return pair and its own doc refuses a second
+      vocabulary), and the chooser **asks what the slot is for** instead of
+      emptying it. `choose`'s prompt parameter was unnamed and unread; it is the
+      whole answer.
+      ⚠️ **The end-to-end test alone is not enough to hold this** and never was:
+      it only reddens under load, and a suite that goes green on the re-run
+      teaches the next person to re-run it. Both halves are now deterministic unit
+      tests — `TestAnAnswerPressedBeforeTheChooserAsksIsTakenRatherThanDropped`
+      (reverting to the bare drain fails it in 5s) and
+      `TestAStaleAnswerIsNotSpentOnTheNextTurn` rewritten onto two real turns
+      (taking the slot unconditionally fails it in 0.00s).
 
 ## Decided against — do not re-raise
 

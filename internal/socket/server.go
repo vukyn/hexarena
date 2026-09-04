@@ -671,19 +671,39 @@ func (s *Server) waited(ctx context.Context) error {
 	case <-settled:
 		return nil
 	case <-ctx.Done():
-		return s.gaveUp(ctx)
+		// ⚠️ **The reading decides, not the channel and not the select's own
+		// choice.** A select over two ready cases picks one at random, and both
+		// of these are ready whenever the last room ends around the moment the
+		// bound does — so the same shutdown of the same server answered nil or
+		// a refusal by coin flip, and the refusal it wrote on that path named
+		// **nought** rooms and nought connections, which is the useless message
+		// gaveUp exists to avoid. Asking the registry is also deterministic
+		// where <-settled is not: the goroutine above may not have been
+		// scheduled yet even when Wait would return at once.
+		running := s.rooms.Running()
+		if running == 0 {
+			return nil
+		}
+		return s.gaveUp(ctx, running, s.Tables())
 	}
 }
 
 // settling is step four: wait for the last table to go.
+// ⚠️ **The two counts are read once per turn of the loop, and the same pair
+// both decides and is reported.** Reading them again inside the refusal would
+// re-open the window this loop exists to close: the last table can go between
+// the test and the giving-up branch, and a refusal naming nought of everything
+// still running says only that a clock ran out. There is no branch to get
+// wrong here because there is only one reading.
 func (s *Server) settling(ctx context.Context) error {
 	for {
-		if s.Tables() == 0 && s.rooms.Running() == 0 {
+		rooms, tables := s.rooms.Running(), s.Tables()
+		if rooms == 0 && tables == 0 {
 			return nil
 		}
 		select {
 		case <-ctx.Done():
-			return s.gaveUp(ctx)
+			return s.gaveUp(ctx, rooms, tables)
 		case <-time.After(settlingPoll):
 		}
 	}
@@ -697,7 +717,15 @@ func (s *Server) settling(ctx context.Context) error {
 // The context's own error is wrapped rather than replaced, so a caller can still
 // ask errors.Is whether it was a deadline or a cancellation — which are a bound
 // being hit and a second ctrl-c, and read very differently.
-func (s *Server) gaveUp(ctx context.Context) error {
+//
+// ⚠️ **The counts are passed in rather than read here, and that is the whole
+// point of the parameters.** Both callers refuse *because of* a reading; taking
+// a second one on the way to the message would let the refusal disagree with
+// the decision that produced it, and the disagreement it produced in practice
+// was "0 room(s) and 0 connected room(s) still running" — a give-up naming
+// nothing to act on, which is the exact failure this function was written to
+// avoid.
+func (s *Server) gaveUp(ctx context.Context, rooms, tables int) error {
 	return fmt.Errorf("stop serving: %d room(s) and %d connected room(s) still running: %w",
-		s.rooms.Running(), s.Tables(), ctx.Err())
+		rooms, tables, ctx.Err())
 }

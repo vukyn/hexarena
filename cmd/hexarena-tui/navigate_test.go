@@ -139,6 +139,12 @@ func TestEveryActionKindIsAppliedByThisClient(t *testing.T) {
 			// is what says the key produces the Answer in the first place.
 			m := base
 			m.session.open()
+			// ⚠️ **The open prompt is part of the fixture now**, because an
+			// answer is routed by the turn it was taken on: a model with no
+			// Pending is a keystroke about nothing, and session.answer drops it.
+			// → session.pressed.
+			open := &battle.Prompt{Unit: "A1", Turn: 4}
+			m.battle.Pending = open
 			taken := draw.PlayAnswer{Choice: battle.Choice{Skill: "razor_leaf"}, Acted: true}
 			after, command := m.navigate(screenBattle,
 				draw.Action{Kind: draw.Answer, Answer: taken})
@@ -151,8 +157,14 @@ func TestEveryActionKindIsAppliedByThisClient(t *testing.T) {
 			answers, _ := m.session.turn()
 			select {
 			case got := <-answers:
-				if got != taken {
-					t.Errorf("the session was handed %+v, want %+v", got, taken)
+				if got.answer != taken {
+					t.Errorf("the session was handed %+v, want %+v", got.answer, taken)
+				}
+				if !got.about(open) {
+					t.Errorf("the session was handed the decision for %s turn %d, want the "+
+						"turn the screen answered, %s turn %d: an answer that cannot say "+
+						"which turn it is for is one the chooser drops",
+						got.unit, got.turn, open.Unit, open.Turn)
 				}
 			default:
 				t.Error("an Answer reached the session's channel not at all, so the one " +

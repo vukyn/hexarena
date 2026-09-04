@@ -693,7 +693,14 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		// blocked on. It **never blocks**: nobody asking means the answer is
 		// dropped, which is right, because there is no turn for it to be about.
 		// → session.answer.
-		m.session.answer(action.Answer)
+		//
+		// ⚠️ **The prompt goes with it, and it is read AFTER the screen took the
+		// keystroke** — m.battle is already the answered screen here, and
+		// PlayScreen.answering keeps Pending rather than clearing it, so this is
+		// the turn the decision was taken on. The chooser needs it because the
+		// answer can reach the slot before the chooser reaches the slot. →
+		// session.choose.
+		m.session.answer(action.Answer, m.battle.Pending)
 		return m, nil
 	case draw.Ask, draw.Pick:
 		// ⚠️ **Nothing this client draws can ask for either, and that is measured
