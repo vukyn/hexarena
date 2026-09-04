@@ -1178,7 +1178,7 @@ is only so the shape is readable.
             2026-09-05: sixteen characters ship** (this said twelve, then
             fifteen) and **eleven** of them have an authored build
             (`builds.json`) — the four without one inside the draftable pool are
-            Happiny, Lapras, Oddish and Riolu. Eleven picks leaves **one** ban on
+            Happiny, Lapras, Oddish and Riolu. Ten picks leaves **one** ban on
             the built cast at 5v5, so build coverage rather than cast size is
             still what binds. 3v3 is comfortable: six picks leaves five bans on
             the built cast, nine if the pool is the full fifteen.
@@ -1238,51 +1238,114 @@ is only so the shape is readable.
             **(e) The pool is every character that is not held back** —
             `cast.Character.Hidden`, which already exists and which
             `internal/screen/squads.go` already honours *for exactly this
-            reason*: it is choosing who fights. ⚠️ Note the flag's own comment
-            calls it "an authoring convenience rather than a design statement",
-            and a draft gate makes it a design statement; and note
+            reason*: it is choosing who fights. ⚠️ The flag's own comment used to
+            call it "an authoring convenience rather than a design statement",
+            and a draft gate makes it a design statement — **done 2026-09-05**:
+            `cast.Character.Hidden` now names `internal/draft` as its second
+            reader and says which half of the old claim survives (the engine
+            still never reads it). ⚠️ And note
             `internal/screen/picker.go`'s warning that one other list offers held
             back characters **on purpose**, so "filter Hidden everywhere" is
-            wrong.
+            still wrong.
             **Bans are optional** — a side may leave all three slots unspent.
+            **(f) All bans first, then all picks. Settled by the author,
+            2026-09-05.** Not alternating ban-and-pick, and not a snake order.
+            Host bans, guest bans, alternating until both sides have spent or
+            skipped their allowance, and only then do the picks begin,
+            alternating from the host. Three reasons, and they are the reasons
+            rather than a preference: it is what drafting games do, so it is the
+            order a player arrives expecting; it makes the pool's state legible on
+            one screen instead of changing under two different rules at once; and
+            **a ban is only worth spending while it can still deny a pick** —
+            once picking has started a ban denies an opponent nothing they were
+            going to reach.
+            ⚠️ **This section's own wording is the other candidate and will be
+            re-read as alternation, which is why this is written down.** *"the two
+            sides take turns banning a character and picking one"* reads like
+            alternation; it is read as *"each side takes turns; there is a banning
+            stage and a picking stage"*. The sentence is left as it is and this
+            decision is what it means.
+            ⚠️ **The order is step 2's state machine and step 1 sequences
+            nothing.** `internal/draft`'s arithmetic is order-independent by
+            construction — every decision removes at most one character whichever
+            order they come in — and `TestNoDraftThatFitsCanRunOutOfCharacters`
+            drives this order, the alternating reading, and an adversarial
+            removals-first order, holding the same invariant under all three. So
+            settling the order costs the pool nothing and cannot be got wrong by
+            step 2 without a red test.
 
             ⚠️ **3v3 FITS AND 5v5 DOES NOT, MEASURED.** The pool is the cast
-            minus the hidden: **fourteen** today, because `naruto.naruto` is the
-            only character carrying `hidden: true`. Against fourteen, with the
-            counts settled above:
+            minus the hidden: **fifteen** today — sixteen characters ship and
+            `naruto.naruto` is the only one carrying `hidden: true`. Against
+            fifteen, with the counts settled above:
 
-                3v3, 2 a side:  6 picks +  4 bans = 10 of 14 — fits, four to spare
-                5v5, 3 a side: 10 picks +  6 bans = 16 of 14 — needs 16 in the pool
+                3v3, 2 a side:  6 picks +  4 bans = 10 of 15 — fits, five to spare
+                5v5, 3 a side: 10 picks +  6 bans = 16 of 15 — needs 16 in the pool
 
-            So the 3v3 draft is buildable **today** with four characters to spare,
-            and the 5v5 draft needs **two more** than the cast now holds — or one
-            more plus unhiding naruto. That is a content prerequisite and no
-            amount of code changes it, which is one of the two reasons five a side
-            is held back at `hexarena-host`'s flag.
+            So the 3v3 draft is buildable **today** with five characters to spare,
+            and the 5v5 draft needs **one more** than the cast now holds — or
+            none at all if `naruto.naruto` is unhidden, which brings the pool to
+            exactly sixteen and therefore to a slack of nought, so the last pick
+            would be a list of one (see the slack note at the end of this item).
+            That is a content prerequisite and no amount of code changes it, which
+            is one of the two reasons five a side is held back at
+            `hexarena-host`'s flag.
             ⚠️ **This arithmetic said "eleven, not twelve" and "needs five more"
-            until 2026-09-04**, and it moves every time a character ships, so it
-            is derived rather than remembered:
+            until 2026-09-04, and "fourteen" and "needs two more" until
+            2026-09-05**, and it moves every time a character ships, so it is
+            derived rather than remembered:
             `jq '[.characters[]|select(.hidden|not)]|length'
-            internal/seed/data/cast.json`. The gap that is left is now **two
-            characters**, and § *Nineteen traced Pokemon* holds seven lines of
-            art already waiting for them.
-            For the other reading of the same sentence, bans as a **total** across
-            both sides rather than each: 3v3 becomes 8 of 11 and the last pick
-            sees four, and 5v5 becomes 13 of 11 and still needs two more
-            characters than exist. Either reading leaves 3v3 comfortable and 5v5
-            short, so the reading changes the target and not the conclusion.
-            ⚠️ **Bans being optional is what makes a shortfall a runtime failure
-            rather than a refused configuration.** A room that is legal when it
-            opens can still run out of characters partway through a draft, so
-            whatever the counts are, the draft owes a rule for the moment the
-            pool would no longer seat both sides: refuse the ban, and grey the
-            slot. That rule is cheap and it is what stops the arithmetic above
-            from having to be re-checked every time cast is added or a character
-            is hidden.
+            internal/seed/data/cast.json`. The gap that is left is now **one
+            character** — `pokemon.dratini` closed the previous one in #301 — and
+            § *Nineteen traced Pokemon* holds lines of art already waiting.
+            ⚠️ For the other reading of the same sentence, bans as a **total**
+            across both sides rather than each: 3v3 becomes 8 of 15 and the last
+            pick sees eight, and 5v5 becomes 13 of 15 — which **fits, with two to
+            spare**. So at fifteen the reading has stopped changing only the
+            target and now changes the **conclusion**, which it did not while the
+            pool was eleven or fourteen. That is a second reason (b) says *a
+            side* by name rather than leaving the sentence to be re-read.
+            ⚠️ **Bans being optional does NOT make a shortfall a runtime failure,
+            and this paragraph said the opposite until 2026-09-05.** It said: *"A
+            room that is legal when it opens can still run out of characters
+            partway through a draft, so whatever the counts are, the draft owes a
+            rule for the moment the pool would no longer seat both sides: refuse
+            the ban, and grey the slot."* It has the optionality backwards. Every
+            ban and every pick takes **exactly one** character out of the pool and
+            a skipped ban takes none, so optionality can only ever leave the pool
+            *fuller*; the most a whole draft can remove is `2*picks + 2*bans`,
+            with every ban spent, and that is the figure `draft.Fits` already
+            requires the pool to hold. Before the k-th of at most that many
+            decisions at most k-1 characters are gone, so one is always left for
+            the decision about to be taken, and the pool never falls below the
+            picks the two sides still owe. **A room that opened legally finishes
+            its draft**, whatever order the decisions come in and whichever bans
+            are skipped.
+            So there is **no runtime rule to write** — no ban to refuse, no slot
+            to grey — in the draft, the room or the screen. What replaces it is
+            `draft.Fits`, which measures against every ban being spent and is
+            therefore deliberately *stricter* than strictly needed (a 5v5 where
+            both sides happened to skip every ban would sit inside a pool of
+            fifteen, and is refused anyway, because a side's bans are not
+            knowable when the room opens). Proven exhaustively over both formats,
+            every pool size 0–40, every ban/skip sequence and three decision
+            orders by `TestNoDraftThatFitsCanRunOutOfCharacters`, with
+            `TestADraftThatDoesNotFitCanRunOutOfCharacters` as the half that shows
+            the walk can see the failure it says never happens.
+            ⚠️ The arithmetic above therefore **does** have to be re-checked when
+            cast is added or a character is hidden — that was the one thing the
+            deleted rule was buying — and it is re-checked mechanically now:
+            `TestFiveASideDoesNotFitTheShippedCast` reddens the day the pool grows
+            past what a 5v5 needs, which is a decision to take here rather than a
+            test to relax.
             ⚠️ **The last pick is not a decision whenever slack is nought**, and
-            slack is `pool - picks - bans`. Worth drawing on the screen: a draft
-            whose final pick has one candidate should say so rather than present
-            a list of one.
+            slack is `pool - 2*picks - 2*bans` — both sides, since both spend out
+            of one pool; `draft.Slack` is that expression and nothing else, and
+            it is the note above's surviving half. Worth drawing on the screen: a
+            draft whose final pick has one candidate should say so rather than
+            present a list of one. The exhaustive walk asserts the tight form of
+            it: with every ban spent the final pick sees exactly `slack + 1`
+            candidates.
       - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
             "a ban lasts the match" is ambiguous in a series and the ambiguity is
             a design decision rather than a parameter: three drafts, one draft
@@ -1306,9 +1369,10 @@ is only so the shape is readable.
             asserts both halves, because a test for the refusal alone would go
             green the day somebody deleted the constant.
             The second reason is the draft: at three bans a side a 5v5 needs
-            **sixteen** in the pool and there are eleven, so a 5v5 ban-and-pick
-            cannot be seated either. Lifting the hold-back wants both — the
-            numbers read on this board, and five more characters to draft on it.
+            **sixteen** in the pool and there are **fifteen** (this said eleven
+            until 2026-09-05), so a 5v5 ban-and-pick cannot be seated either.
+            Lifting the hold-back wants both — the numbers read on this board, and
+            **one** more character to draft on it.
 
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
       It must not read `*Battle`, and it must not need the engine to know how long

@@ -475,11 +475,23 @@ answers rather than screen logic:
     not fork draws no row and answers no key**, which is what keeps every other
     character's record byte for byte what it was.
   - **A character can be held back: `cast.Character.Hidden`, and the squad
-    builder is the ONLY thing that reads it.** `"hidden": true` in `cast.json`,
-    absent meaning offered, so the flag is written only where it is set. It is an
-    authoring convenience an author flips back, not a design statement — a hidden
+    builder is the only SCREEN that reads it.** `"hidden": true` in `cast.json`,
+    absent meaning offered, so the flag is written only where it is set. A hidden
     character still ships, still loads, still fights, and a squad or a roster
     naming one is as valid as any other. Naruto is the one shipped example.
+    ⚠️ **This said "the ONLY thing that reads it" and "an authoring convenience
+    an author flips back, not a design statement" until 2026-09-05, and
+    `internal/draft` made both false.** `draft.NewPool` gates the ban-and-pick
+    pool on the flag, so a held-back character cannot be banned, cannot be picked
+    and cannot be fielded in a drafted match at all — which is a rule of the game
+    rather than a convenience. What survives untouched is the half about the
+    **engine**: nothing in `internal/core` and nothing in `battle` reads it, and
+    a replay has no use for who an author was choosing between.
+    ⚠️ There are now **two** callers filtering it and they filter *different*
+    rules — plain Hidden for a draft, Hidden-minus-a-`keep` for this screen — so
+    a `cast.Book.Offered()` accessor was **considered and refused**, not left
+    open. `offeredCharacters`' own comment carries the argument; do not go and
+    write the accessor its earlier wording predicted.
     - **It round-trips or it is deleted.** `hexforge new` rewrites the whole file
       on every append, so the field is on the parse shape (`characterFile`) as
       well as on `Character`, exactly as `Skill.MarshalJSON` builds the parse

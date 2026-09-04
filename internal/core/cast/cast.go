@@ -59,11 +59,19 @@ type Character struct {
 	// build a side out of. Absent means offered, which is the ordinary case, so
 	// the flag reaches the file only where it is set.
 	//
-	// It is an authoring convenience rather than a design statement: a hidden
+	// It was an authoring convenience rather than a design statement: a hidden
 	// character still ships, still loads, still fights, and a squad or a roster
 	// naming one is as valid as any other. Nothing in this package or in the
 	// engine reads it — who an author is currently choosing between is not a
-	// fact a replay has any use for — and honouring it is one screen's job.
+	// fact a replay has any use for — and honouring it is a caller's job.
+	//
+	// ⚠️ It has a **second reader** now and that reader makes it a design
+	// statement: internal/draft.NewPool gates the ban-and-pick pool on it, so a
+	// held-back character cannot be banned, picked or fielded in a drafted match
+	// at all. The half above that still holds is the half about the engine.
+	// ⚠️ And it is still not "filter Hidden everywhere" — see
+	// internal/screen/picker.go's CharacterOptions, which offers a held-back
+	// character on purpose.
 	Hidden bool `json:"hidden,omitempty"`
 	// Species is what the character is, each by id in the species book. Absent
 	// is the ordinary case and it is a real answer rather than a gap: most

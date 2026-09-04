@@ -1,6 +1,6 @@
 ---
 name: fixture-decides-what-is-visible
-description: hexarena — four measured cases where a whole suite could not see a defect because of how its fixture was built: a mode flag set by hand, two identical squads, a slice-aliasing test whose reachability is an unobservable capacity, and every sweep entry aimed at a character with no fork
+description: hexarena — five measured cases where a whole suite could not see a defect because of how its fixture was built: a mode flag set by hand, two identical squads, a slice-aliasing test whose reachability is an unobservable capacity, every sweep entry aimed at a character with no fork, and SHIPPED DATA that already satisfies the property under test
 metadata:
   type: feedback
 ---
@@ -58,6 +58,28 @@ sweeps, all green, and a user found it the next day. The subject a sweep entry
 points at is as much a fixture decision as the fixture file is; write the
 "find the interesting row and `t.Fatal` if there is none" helper rather than
 taking cursor 0.
+
+**5. The shipped data may already satisfy the property, so the real thing is the
+wrong fixture — and "use the real data" is the instinct that gets this wrong.**
+`internal/draft.NewPool` must keep `cast.Book`'s **declaration order** and must
+not sort by id (order is a presentation choice; five other lists in the repo are
+in declaration order, and a draft screen that sorted would differ from every
+screen the player just came from). Measured: `internal/seed/data/cast.json`
+declares `naruto.naruto` then every `pokemon.*` alphabetically — which **is**
+sorted order — so a test that built a pool from `seed.Cast()` and compared it to
+the book's order passes on a `NewPool` with `slices.SortFunc(…, byID)` welded
+into it. Confirmed by mutation: both `sort by id` and `reverse` are caught only
+by the test that uses a five-character synthetic book whose declaration order is
+deliberately not its id order, and that test's **first assertion is
+`slices.IsSorted(ids) → t.Fatal`**, so a fixture drifting into sorted order takes
+itself out rather than going quietly vacuous.
+
+Note this is the opposite failure to case 4: there the fixture was too simple, so
+point it at the shipped data; here the shipped data is *coincidentally* the
+answer, so build a fixture. The question is not "real or synthetic", it is
+**"can this input distinguish the correct implementation from the wrong one"** —
+and for an *ordering* property specifically, ask whether the real collection is
+already in that order before writing anything.
 
 **Two operational traps that only appear once an entry points at a rich
 character** — both measured on this one:
