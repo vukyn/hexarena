@@ -1462,6 +1462,10 @@ is only so the shape is readable.
       field, and until then the honest options are (a) don't do origin, (b) do it
       at rungs the *smaller* origins can reach and accept that `pokemon` gets it
       free, or (c) key it on something scarcer than the origin itself.
+      ⚠️ **Decision 4 below makes this worse rather than better** — with bonuses
+      stacking, no 3v3 squad can fail the origin axis *at all*, so the settled
+      answer is: element first, origin held until a second origin can field two
+      or three.
 
       ⚠️ **A 4- or 5-rung bonus does not exist in the format that is playable
       today.** 3v3 caps every count at three, and 5v5 is still behind
@@ -1542,9 +1546,11 @@ is only so the shape is readable.
       putting the same bonus on both squads **cancels it** (the Oddish/Bulbasaur
       pairing read −29‰ that way, and the event log said why: `enemy.partner:
       105`). The only control that measures the bonus is **the same squad, same
-      members, same seeds, bonus on against bonus off** — a flag through
-      `forge.FightSquads`, with the mirror control reading 500‰ exactly. Build the
-      switch first; every number quoted before it exists is about something else.
+      members, same seeds, bonus on against bonus off** — with the mirror control
+      reading 500‰ exactly. ⚠️ **And it is a set of bonuses to disable rather than
+      a boolean**, because bonuses stack: a global off switch would measure *the
+      system* and could never price one rung. → decision 4. Build the switch
+      first; every number quoted before it exists is about something else.
 
       ⚠️ **PvP, and it is cheaper than it looks.** A squad crosses the wire whole
       in `wire.Hello`, so the room and the client's mirror each derive the bonus
@@ -1553,7 +1559,8 @@ is only so the shape is readable.
       join what the data digest gates, so two peers on different balance data stop
       being able to play, which is already the contract.
 
-      **Settled 2026-09-04 (author's call), and each one closes a branch:**
+      **All seven settled 2026-09-04 (author's call). Each one closes a branch,
+      and two of them close it by ruling something OUT rather than in:**
       1. **The count is taken once, on entering the battle. It is NOT recounted,
          and a summon does NOT count.** So a composition bonus is a **drafting**
          decision and never a tactic: focusing the odd unit out cannot take it
@@ -1576,6 +1583,36 @@ is only so the shape is readable.
          drawing decision — a screen has to be able to say *whose* bonus it is,
          and a per-unit grant on some units and not others is a thing no existing
          status display shows.
+      4. **Bonuses STACK.** Entering a battle with several squad-wide bonuses and
+         several sharers-only bonuses live at once is the ordinary case, not an
+         edge. The correlation objection this entry raised is **dead as raised**,
+         because it was an objection to a *`column`* bonus and there is no column
+         bonus: water came bundled with a free column rung where grass did not,
+         and with no column axis there is nothing to bundle.
+         ⚠️ **But stacking makes the ORIGIN axis worse, not better, and this is
+         the one thing to read before authoring one.** With rungs 2 and 3 at 3v3,
+         **no 3v3 squad can fail the origin axis at all**: fourteen of the fifteen
+         shipped characters are `pokemon`, and the fifteenth is one character, so
+         the worst case a squad can reach is Naruto plus two Pokemon — which is
+         still **2 of one origin**, still a rung. (`Hidden` does not save it:
+         `cast.Character.Hidden` is an authoring convenience by its own doc — a
+         hidden character still ships, still loads, still fights, and a squad
+         naming one is as valid as any other.) So an origin bonus shipped today
+         would fire for **every squad in the game, unconditionally** — that is not
+         a bonus, it is a change to the base numbers wearing a threshold. Under
+         the *one-at-a-time* rule it would at least have competed for a slot and
+         lost; under stacking it is simply added to everything.
+         **Therefore: element bonuses first, and hold the origin axis until a
+         second origin has two or three characters to field.** The axis is not
+         wrong, it is only empty — same finding as § *Grow the cast*'s, one layer
+         on.
+         ⚠️ **Stacking does NOT break the pricing instrument, provided the switch
+         is PER BONUS.** The control is still the same squad, same members, same
+         seeds, with **one** bonus toggled — the others may stay on, because what
+         is being measured is the difference the toggled one makes on the board it
+         is actually played on. A single global on/off would measure *the system*
+         and could never price a rung. So `forge.FightSquads` takes a set of
+         bonuses to disable, not a boolean.
       5. **Bonuses are built ONE AT A TIME, and each must do something no other
          bonus does.** Not a batch of them behind one mechanism: the kind of grant
          is settled per bonus when that bonus is built, and the rule is
@@ -1587,61 +1624,27 @@ is only so the shape is readable.
          which archetype and which element it is first at. When the answer is
          "nothing", the bonus does not ship.
 
-      **Still open, and the two that were unclear are explained here rather than
-      restated:**
-
-      4. **Do axes stack?** — the question is what happens when one squad meets
-         **two** thresholds at once. It is not hypothetical; it happens on the
-         shipped cast the moment two axes exist. Field Lapras + Poliwag +
-         Squirtle: that is **3 water** (an element rung) *and* **2 of column 0**
-         (Poliwag and Squirtle are both `bruiser`/`warden`, column 0) — one squad,
-         two thresholds, no extra effort.
-         - **(A) Stack — take every rung you meet**, the way an auto-battler
-           does. ⚠️ **Measured objection**: the axes are **correlated**, so
-           stacking pays some elements for a lineup nobody authored. Water comes
-           bundled with a free column rung (above); **grass does not** — Bulbasaur
-           is `blighter` (column 1) and Oddish is `sapper` (column 2), so "2
-           grass" catches nothing else. Same rung, different real value, for a
-           reason no author chose. Stacking also makes each axis unpriceable
-           alone: the value of "element 3" then depends on which *other* rungs the
-           test squad happened to catch, and the combinations multiply.
-         - **(B) One at a time — only the best rung fires.** Priceable one axis at
-           a time, which is exactly what `forge.FightSquads` can do. Costs the
-           feeling: a squad that lines up two ways is told one of them does not
-           count, and the second axis becomes nearly pointless once a stronger
-           one exists.
-         - **(C) One of each KIND** — and this falls out of decision 3 above: at
-           most one *whole-squad* bonus and at most one *sharers-only* bonus, best
-           rung in each. Two slots, so two axes can matter at once without the
-           combinations multiplying, and each slot is priceable on its own.
-           **Recommended**, because the slot count is then a design statement
-           rather than a consequence of arithmetic.
-      6. **One rung table per format, or one table with dead rungs?** — the
-         question is that rungs are counts (2/3/4/5) and a **3v3 squad has three
-         units**, so rungs 4 and 5 can never fire in the only format that is
-         playable today; 5v5 is behind `hexarena-host`'s flag and its draft still
-         needs two more characters.
-         - **(A) One table, 2/3/4/5, top rungs simply never fire at 3v3.** One data
-           file, no format branch — but ⚠️ **half the table would ship
-           unmeasured**, and no test can tell "rung 4 is right" from "rung 4 is
-           never evaluated". That is the *fixture hides a branch* shape this
-           repository has paid for five times.
-         - **(B) A table per format**: 2/3 at 3v3, 2/3/4/5 at 5v5. Every shipped
-           rung is reachable, therefore measurable — at the cost of two sets of
-           numbers per bonus, and the same bonus name meaning two things.
-         - **(C) Rungs as a share rather than a count** — "half the squad", "the
-           whole squad" — which reads 2/3 at 3v3 and 3/5 at 5v5 off one authoring.
-           Costs a rounding rule, and a player counting heads has to do arithmetic.
-         - **Recommended**: ship **3v3 rungs only (2 and 3)** and treat 4 and 5 as
-           an explicit unlock the day 5v5 does, because a rung that cannot be
-           reached cannot be measured, and unmeasured balance does not ship here.
-      7. **Which JSON file?** Still open. Balance lives in embedded data by rule,
-         so a bonus is a data file either way — the choice is whether it sits in
-         `archetypes.json` beside the presets (an axis of how a unit fights) or in
-         its own file (a rule about squads, which is what it actually is). ⚠️ Note
-         the data digest gates the **fifteen** embedded files by name in three
-         independent places (the `go:embed` directive, the `ReadFile` calls,
-         `dataFiles`), so a *new file* is a sixteenth name in all three.
+      6. **Rungs 2 and 3 only, for now.** 3v3 is the format that exists, so a
+         bonus ships with the rungs its format can reach and nothing else — rungs
+         **4 and 5 are authored later**, as part of opening 5v5, and are tested
+         then. ⚠️ Read the difference: this is *not* option (A) with the top rungs
+         left quiet. A rung that cannot fire is not declared at all, so there is
+         no row for a test to pass vacuously over, and the day 5v5 opens the new
+         rungs arrive **with** their measurements rather than inheriting a claim
+         nobody checked.
+      7. **Its own file.** A bonus is a rule about squads rather than an axis of
+         how one unit fights, so it does not belong beside the presets in
+         `archetypes.json`. ⚠️ **A new data file is a sixteenth name in three
+         independent places**, and they are exactly:
+         `internal/seed/seed.go`'s single-line `//go:embed` directive · the
+         `dataFiles` slice in `internal/seed/digest.go` (whose own comment says it
+         mirrors the directive, and whose count is the *fifteen* in that comment) ·
+         and one `XxxFile()` accessor beside the other fifteen. Missing the second
+         is the silent one: the file loads and the **data digest stops covering
+         it**, so two peers on different bonus data would pass the digest gate and
+         then diverge — which is the failure the digest exists to prevent.
+         It also earns a golden of its own, on the rule that each generator is
+         handed exactly what it reads.
 
       - [ ] **A reference screen for the bonuses, on the menu.** A player has to
             be able to look up what a threshold gives before building a squad, the
@@ -1666,10 +1669,18 @@ is only so the shape is readable.
             (`internal/screen/screen.go`, the note on `MinWidth`, measured: 35
             pairs packed against the ceiling before #173/#175 and 34 after).
             `TestEveryWordingFitsTheMinimumWidth` is what holds it.
+            ⚠️ **It has to draw the two KINDS apart, and draw that several fire
+            at once** (→ decisions 3 and 4): a reader building a squad needs to
+            see which grants land on everybody and which land only on the units
+            that share the thing, and that stacking is normal rather than an
+            edge. That is one more column than the existing catalogues carry, and
+            it is the part that will fight the width.
             ⚠️ **Nothing to draw yet.** This screen cannot be built before the
             first bonus exists, because a catalogue of nothing is a screen no test
             can hold — the same reason `TestTheShippedArtIsCutOutRatherThanFramed`
-            does not reach unused art.
+            does not reach unused art. Rungs 4 and 5 do not exist either
+            (decision 6), so the first version of this screen draws **two** rungs
+            and has to not look broken when it later draws four.
 
 - [x] **`weigh` can price a skill that deals none. DONE.** The refusal was
       right and its **evidence** was mis-specified. *Worth nothing* and *not
