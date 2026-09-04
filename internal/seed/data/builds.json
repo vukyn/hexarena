@@ -392,6 +392,36 @@
       "passives": [
         "blood_thirst"
       ]
+    },
+    {
+      "id": "gible.rush",
+      "character": "pokemon.gible",
+      "name": "lao vào",
+      "intent": "Tới trước khi hàng sau kịp dựng gì, rồi không cho ai đứng yên một lượt nào nữa",
+      "skills": [
+        "dig",
+        "stone_edge",
+        "earthquake",
+        "sand_tomb"
+      ],
+      "passives": [
+        "swiftness"
+      ]
+    },
+    {
+      "id": "gible.dragon",
+      "character": "pokemon.gible",
+      "name": "vuốt rồng",
+      "intent": "Bỏ đất mà đánh bằng dòng máu, nhanh tới mức đòn nào cũng tới trước",
+      "skills": [
+        "dragon_dance",
+        "dragon_claw",
+        "dragon_drive",
+        "outrage"
+      ],
+      "passives": [
+        "blood_thirst"
+      ]
     }
   ]
 }

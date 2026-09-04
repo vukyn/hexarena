@@ -866,6 +866,62 @@
           "at_level": 48
         }
       ]
+    },
+    {
+      "id": "predator",
+      "role": "the fastest thing on the board: it takes a turn and a third for every turn the front row takes, spends every one of them closing, and is built so thin that the first blow to catch it is usually the last",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1030,
+          "max": 3100
+        },
+        "attack": {
+          "base": 226,
+          "max": 680
+        },
+        "defense": {
+          "base": 110,
+          "max": 330
+        },
+        "speed": {
+          "base": 61,
+          "max": 185
+        },
+        "accuracy": {
+          "base": 60,
+          "max": 180
+        },
+        "dodge": {
+          "base": 22,
+          "max": 66
+        }
+      },
+      "skills": [
+        "dig",
+        "stone_edge",
+        "earthquake",
+        "sand_tomb",
+        "sandstorm",
+        "rock_throw",
+        "seismic_toss",
+        "body_slam",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 32
+        },
+        {
+          "id": "reckless",
+          "at_level": 52
+        }
+      ]
     }
   ]
 }

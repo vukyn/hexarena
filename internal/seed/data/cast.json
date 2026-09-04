@@ -1090,6 +1090,191 @@
       ]
     },
     {
+      "id": "pokemon.gible",
+      "name": "Gible",
+      "origin": "pokemon",
+      "archetype": "predator",
+      "image": "assets/gible.svg",
+      "element": "ground",
+      "bio": "Sống trong hang khoét dọc vách đá nóng, nằm im cả ngày với cái miệng há sẵn ngang tầm chân người đi qua. Ai bước hụt xuống đó thì biết ngay là nó không nằm im vì lười.",
+      "species": [
+        "dragon"
+      ],
+      "stages": [
+        {
+          "name": "Gible",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 640,
+              "max": 1920
+            },
+            "attack": {
+              "base": 140,
+              "max": 420
+            },
+            "defense": {
+              "base": 68,
+              "max": 204
+            },
+            "speed": {
+              "base": 38,
+              "max": 115
+            },
+            "accuracy": {
+              "base": 37,
+              "max": 112
+            },
+            "dodge": {
+              "base": 13,
+              "max": 41
+            }
+          }
+        },
+        {
+          "name": "Gabite",
+          "min_level": 24,
+          "image": "assets/gabite.svg",
+          "stats": {
+            "hp": {
+              "base": 825,
+              "max": 2480
+            },
+            "attack": {
+              "base": 181,
+              "max": 544
+            },
+            "defense": {
+              "base": 88,
+              "max": 264
+            },
+            "speed": {
+              "base": 49,
+              "max": 148
+            },
+            "accuracy": {
+              "base": 48,
+              "max": 144
+            },
+            "dodge": {
+              "base": 17,
+              "max": 53
+            }
+          }
+        },
+        {
+          "name": "Garchomp",
+          "min_level": 48,
+          "image": "assets/garchomp.svg",
+          "stats": {
+            "hp": {
+              "base": 1030,
+              "max": 3100
+            },
+            "attack": {
+              "base": 226,
+              "max": 680
+            },
+            "defense": {
+              "base": 110,
+              "max": 330
+            },
+            "speed": {
+              "base": 61,
+              "max": 185
+            },
+            "accuracy": {
+              "base": 60,
+              "max": 180
+            },
+            "dodge": {
+              "base": 22,
+              "max": 66
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "dig"
+        },
+        {
+          "id": "sand_tomb",
+          "at_level": 8
+        },
+        {
+          "id": "rock_throw",
+          "at_level": 12
+        },
+        {
+          "id": "dragon_rage",
+          "at_level": 16
+        },
+        {
+          "id": "earthquake",
+          "at_level": 20
+        },
+        {
+          "id": "dragon_dance",
+          "at_level": 24
+        },
+        {
+          "id": "sandstorm",
+          "at_level": 28
+        },
+        {
+          "id": "stone_edge",
+          "at_level": 32
+        },
+        {
+          "id": "dragon_claw",
+          "at_level": 36
+        },
+        {
+          "id": "seismic_toss",
+          "at_level": 40
+        },
+        {
+          "id": "body_slam",
+          "at_level": 44
+        },
+        {
+          "id": "dragon_drive",
+          "at_level": 46
+        },
+        {
+          "id": "outrage",
+          "at_level": 48
+        },
+        {
+          "id": "taunt",
+          "at_level": 52
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 32
+        },
+        {
+          "id": "berserk",
+          "at_level": 44
+        },
+        {
+          "id": "reckless",
+          "at_level": 52
+        }
+      ]
+    },
+    {
       "id": "pokemon.happiny",
       "name": "Happiny",
       "origin": "pokemon",

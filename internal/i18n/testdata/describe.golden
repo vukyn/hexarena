@@ -781,6 +781,33 @@ Nhận mờ ảo và tập trung.
 Bản thân · hồi 4 lượt.
 [one line] tự nhận mờ ảo và tập trung · bản thân · hồi 4
 
+dig
+Lặn xuống dưới chân đối phương rồi trồi lên ngay dưới người họ, 105% công.
+Tầm 1 · 94% trúng · hồi 1 lượt.
+[one line] 105% công · tầm 1 · hồi 1
+
+stone_edge
+Đất nứt ra, một hàng đá nhọn dựng đứng lên đúng chỗ vừa đứng, 170% công, 25% khả năng chí mạng.
+Tầm 2 · 82% trúng · hồi 3 lượt.
+[one line] 170% công · tầm 2 · hồi 3
+
+earthquake
+Giậm một cái cho cả mặt đất chuyển, ai đứng trên đất thì chịu chung, 145% công.
+Tầm 1 · 3 ô · 90% trúng · hồi 3 lượt.
+[one line] 145% công · tầm 1 · 3 ô · hồi 3
+
+sand_tomb
+Cát dưới chân mềm ra rồi siết lại, rút chân lên được thì cũng chậm mất, 85% công.
+Gây sa lầy cho mục tiêu, 70% khả năng.
+Tầm 2 · 90% trúng · hồi 3 lượt.
+[one line] 85% công · sa lầy 70% · tầm 2 · hồi 3
+
+sandstorm
+Cuốn cát lên thành một bức tường mù, bên trong ấy nhìn gì cũng ra hình đó, 60% công.
+Gây mù cho mục tiêu, 60% khả năng.
+Tầm 2 · 3 ô · 95% trúng · hồi 4 lượt.
+[one line] 60% công · mù 60% · tầm 2 · 3 ô · hồi 4
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1819,6 +1846,33 @@ updraft
 Puts veil and focus on itself.
 Itself · 4 turns to recharge.
 [one line] self veil and focus · itself · cd 4
+
+dig
+Hits an enemy for 105% of attack.
+Range 1 · 94% to hit · 1 turn to recharge.
+[one line] 105% attack · range 1 · cd 1
+
+stone_edge
+Hits an enemy for 170% of attack, critical 25% of the time.
+Range 2 · 82% to hit · 3 turns to recharge.
+[one line] 170% attack · range 2 · cd 3
+
+earthquake
+Hits an enemy for 145% of attack.
+Range 1 · 3 cells · 90% to hit · 3 turns to recharge.
+[one line] 145% attack · range 1 · 3 cells · cd 3
+
+sand_tomb
+Hits an enemy for 85% of attack.
+Inflicts mire, 70% of the time.
+Range 2 · 90% to hit · 3 turns to recharge.
+[one line] 85% attack · mire 70% · range 2 · cd 3
+
+sandstorm
+Hits an enemy for 60% of attack.
+Inflicts blind, 60% of the time.
+Range 2 · 3 cells · 95% to hit · 4 turns to recharge.
+[one line] 60% attack · blind 60% · range 2 · 3 cells · cd 4
 
 [trait] endurance
 Always carries toughened.
