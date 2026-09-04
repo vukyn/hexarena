@@ -3209,7 +3209,21 @@ restates the redaction itself now.
   found. `forge.FightSquads` sums both ways, which is right, but the
   cancellation is only *proven* at one a side.
 
-## Roadmap
+## What each question cost to answer
+
+⚠️ **This was called "Roadmap" until 2026-09-05, and it had stopped being one.**
+Of its eighteen sub-sections, six match a finished entry in `docs/decisions.md`
+by title and four match an open item in `TODO.md` — one matches both — and the
+nine that match neither say "Built" in their own first line (sampled: *Fighting
+two ratings against each other*, *A draw nobody can act in*, *Naruto's three
+forms are the three the story has*). A roadmap that is mostly a record of the
+past sends a reader looking for what is next to the wrong place.
+
+**What is still ahead is `TODO.md` § *Not done*** — twelve items, not one of them
+ticked, each carrying the measurements that settled its open questions. What is
+below is the *answer* to a question that was once ahead: what was measured, what
+it cost, and what the number turned out to be. The sub-heading names did not
+change, so every reference into them still resolves.
 
 ### Graphical client with ebiten
 
@@ -4512,6 +4526,23 @@ bound because `bare` takes more defence off than `unleashed` puts attack on.
 budget rather than closing it — the shipped worst is Squirtle under `ballast` at
 113.4%, and a new trait handing out half again as much durability as the bound
 allows would otherwise pass every test in the repository.
+
+## What each mechanic is, and what adding it cost
+
+⚠️ **Fourteen write-ups had accreted under the heading above, which describes
+2,457 bytes of the 72,800 it held — three per cent.** The sub-sections below are
+about builds, statuses, traits, thresholds, gradients, learnsets, evolution,
+regeneration, summoning and growing the cast, and not one of them is about why
+speed cannot reach nought. This is the end of the file, so it is simply where
+each new feature's write-up landed, under whatever heading happened to be last.
+
+Nothing moved and nothing was rewritten to fix it: a heading was inserted, on
+2026-09-05, so the two titles describe what they actually hold.
+
+Every one of these is **finished**. This is what each one *is*, for a reader —
+what it cost to build and what the numbers said is in `docs/decisions.md`, and
+what an edit may not break is `CLAUDE.md` § *Invariants worth knowing before
+editing*.
 
 ### Two builds out of one learnset
 

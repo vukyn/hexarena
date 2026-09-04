@@ -3,7 +3,8 @@
 A short index of what is done and what is not. It is deliberately **thin**:
 nothing here explains a design, because the explanations already live in
 `CLAUDE.md` (the constraint each piece has to respect) and
-`README.md` (§ Roadmap — the detail and the open questions). This file exists so
+`README.md` (§ *What each question cost to answer* — the detail behind each one).
+This file exists so
 that "what is left" can be read in a minute instead of found in 300KB of prose.
 
 ⚠️ **This file goes stale and the repository is built not to tolerate that.**
