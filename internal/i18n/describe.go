@@ -467,6 +467,15 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 			sentence += l.Say(BlurbConsumes, l.glossed(condition.Status))
 		}
 	}
+	// The riders the condition buys, last, because they are the smallest of the
+	// three things it can pay for and the sentence has already said what it is
+	// paying for them with. One clause each rather than a joined list: they are
+	// rolled separately, so a reader given one chance for two statuses would be
+	// reading a roll that does not happen.
+	for _, application := range condition.Applies {
+		sentence += l.Say(BlurbConditionInflicts,
+			l.stacked(application.Status, application.Stacks), share(application.Chance))
+	}
 	return sentence + "."
 }
 

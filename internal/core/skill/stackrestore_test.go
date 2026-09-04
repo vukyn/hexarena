@@ -1,6 +1,7 @@
 package skill_test
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -190,9 +191,13 @@ func TestAPerStackHealSurvivesBeingWrittenBack(t *testing.T) {
 	if back.SelfRequires == nil {
 		t.Fatal("the caster's own condition did not survive being written back")
 	}
-	if *back.SelfRequires != (skill.Condition{
+	// Compared through reflect rather than with ==, because a Condition carries a
+	// rider list and a struct holding a slice is not comparable. The whole value
+	// is still what is asserted: a field-by-field check would stop covering the
+	// next field somebody adds, which is the failure this test exists to catch.
+	if want := (skill.Condition{
 		Status: "fuel", MinStacks: 3, Consume: true, ConsumeStacks: 5, StackRestore: 200,
-	}) {
-		t.Errorf("it came back as %+v", *back.SelfRequires)
+	}); !reflect.DeepEqual(*back.SelfRequires, want) {
+		t.Errorf("it came back as %+v, want %+v", *back.SelfRequires, want)
 	}
 }

@@ -787,6 +787,21 @@ answers rather than screen logic:
     first if the swap stops cancelling. The halves are reported apart too,
     because their difference is what *standing on a side* is worth — 18 points on
     the fixture pairing.
+  - ⚠️ **The slot template cancels a synergy, and it looks like an answer.**
+    `TestAMenderEarnsItsSlotWhereASparCannotSeeIt` holds the two fixed carriers
+    constant across **both** squads, which is right for pricing a slot and wrong
+    for pricing a pairing: whatever the partner is worth to the third member, it
+    is worth to the opponent's third member too, so it nets to nought. Measured —
+    a sapper written to compound with the blighter read **−29‰** in that shape,
+    and the event log showed the synergy plainly working on both sides at once
+    (poison three deep and 338 applications with the blighter present, two deep
+    and 155 without). Two nearby designs fail the same way for their own reasons:
+    a **striker** as the control measures what the squad's other two slots were
+    short of, and **two different partners** measures the partners. What isolates
+    it is one skill — the same character in both squads, `poison_powder` against
+    `leech_seed`, both powders of no power — which read **636‰**.
+    → `internal/seed/sapper_test.go`, which carries the three failures in its own
+    comment so the next attempt does not rediscover them.
   - ⚠️ A squad rate is **not** the roster's win rate, and the screen says so in
     prose under the figure. That line is wrapped against **minWidth**, not the
     window in hand, which is the prose half of the width rule:
@@ -4068,6 +4083,24 @@ the reason `taunt` and `heal_cut` were. Full reasoning in `README.md` §
   `Skill.Cost` shipped one field along. `Skill.SelfCeiling` is the reading a bound
   must use, because `Satisfying` is the cheapest case and a scaling payment is
   worth most at the deepest.
+- **`requires` gained `applies`**, riders a target's condition pays out only
+  where it holds. It is the condition's third currency — a bonus buys damage, a
+  restore buys health, and these buy a status the skill does not otherwise
+  inflict — and it is what lets a skill say *hit harder, and also weaken, but
+  only against something already rotting*. They go out through the same
+  `inflict`, the same roll and the same shield filter as the skill's own
+  `applies`, because a rider surviving a block on a different rule from its
+  neighbour would be a difference no reader could find on either.
+  ⚠️ **The target's condition only.** The caster's own reads the caster, so a
+  rider there would land on whoever cast it, which `self_applies` already writes
+  without a condition standing in front of it.
+  ⚠️ **The reading is taken before the consume, in `resolveAgainst`, and carried
+  down to the rider block.** Asking again where the riders are paid would ask a
+  set the consume above may already have emptied.
+  ⚠️ **`Condition` stopped being comparable** the moment it carried a slice, so
+  the round-trip tests that asserted `*back.SelfRequires != Condition{…}` compare
+  through `reflect.DeepEqual` now. Whole-value still, on purpose: a field-by-field
+  check stops covering the next field somebody adds.
 - **`self_requires` also gained `stack_restore`**, the health twin of
   `stack_power`: health per stack consumed, in permille of the caster's scaling
   stat, which is the unit `restores` already counts in. It is what lets a reserve

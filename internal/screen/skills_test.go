@@ -194,7 +194,7 @@ func TestTheSkillFilterNarrowsByIDAndByName(t *testing.T) {
 		// đ is not a d with a mark on it, so this is the entry an NFD-and-strip
 		// implementation would have needed by hand anyway.
 		{"doc", []string{
-			"poison_powder", "sludge_bomb", "venoshock", "venom_fang",
+			"poison_powder", "sludge_bomb", "venoshock", "toxic", "venom_fang",
 		}, "đ folded to d"},
 		{noSkillQuery, nil, "a query nothing answers to"},
 	} {
