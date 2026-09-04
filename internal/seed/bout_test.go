@@ -116,7 +116,7 @@ func TestATurnIsGivenUpOnlyForAReasonThatIsWrittenDown(t *testing.T) {
 			if !written[event.Note] {
 				t.Fatalf("seed %d: %s skipped a turn for %q, which is not one of the "+
 					"reasons this engine records: a pass nobody can name is a rating "+
-					"quietly getting worse — see CLAUDE.md § Rating an action",
+					"quietly getting worse — see docs/balance.md § Rating an action",
 					seedValue, event.Actor, event.Note)
 			}
 		}
