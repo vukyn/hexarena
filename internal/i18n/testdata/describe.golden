@@ -734,6 +734,18 @@ Mở miệng hét một tiếng dài, tiếng ấy đi thẳng qua người ch�
 Tầm 2 · 3 ô · 95% trúng · hồi 2 lượt.
 [one line] 90% công · tầm 2 · 3 ô · hồi 2
 
+brace
+Gồng cứng cả người, ghìm hơi lại rồi đứng im chờ, sức nặng dồn xuống dưới.
+Nhận sức nặng.
+Bản thân · dùng mọi lượt.
+[one line] tự nhận sức nặng · bản thân
+
+wrecking_swing
+Sức nặng nén trong người tới lúc không giữ nổi nữa thì đổ hết xuống cùng lúc, 800% công.
+Bản thân đang dính ít nhất 5 cộng dồn sức nặng, và tiêu 5 cộng dồn sức nặng.
+Tầm 1 · 88% trúng · dùng mọi lượt.
+[one line] 800% công · tự sức nặng 5+→lan · tầm 1
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -962,6 +974,10 @@ Dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng 
 [status] moisture
 Tự nó không làm gì cả. Nó dồn lại trên người mang, và chính chiêu của người đó tiêu nó đi — dồn được càng nhiều thì một chiêu tiêu được càng nhiều.
 Dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn.
+
+[status] heft
+Tự nó không làm gì cả. Nó dồn lại trên người mang, và chính chiêu của người đó tiêu nó đi — dồn được càng nhiều thì một chiêu tiêu được càng nhiều.
+Dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn.
 
 [element] neutral
 Trơ: không khắc hệ nào, cũng không bị hệ nào khắc; mọi đòn đều 100%.
@@ -1724,6 +1740,17 @@ Hits an enemy for 90% of attack.
 Range 2 · 3 cells · 95% to hit · 2 turns to recharge.
 [one line] 90% attack · range 2 · 3 cells · cd 2
 
+brace
+Puts heft on itself.
+Itself · usable every turn.
+[one line] self heft · itself
+
+wrecking_swing
+Hits an enemy for 800% of attack.
+While this unit is carrying at least 5 stacks of heft, and eats 5 stacks of the heft.
+Range 1 · 88% to hit · usable every turn.
+[one line] 800% attack · self heft 5+→spreads · range 1
+
 [trait] endurance
 Always carries toughened.
 
@@ -1931,6 +1958,10 @@ Builds up for its holder to spend · 5 turns · up to 999 stacks.
 [status] moisture
 Does nothing at all on its own. It builds up on whoever holds it, and that unit's own skills spend it — the more there is, the more one of them can spend at once.
 Builds up for its holder to spend · 5 turns · up to 999 stacks.
+
+[status] heft
+Does nothing at all on its own. It builds up on whoever holds it, and that unit's own skills spend it — the more there is, the more one of them can spend at once.
+Builds up for its holder to spend · 4 turns · up to 5 stacks.
 
 [element] neutral
 Inert: it beats nothing and nothing beats it; every trade is 100%.

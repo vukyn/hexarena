@@ -91,7 +91,16 @@ func readGuard(t *testing.T, trait, foe, stage string) guardReading {
 	if err != nil {
 		t.Fatalf("load the shipped books: %v", err)
 	}
-	stats, affinity, kit, _ := fielded(t, "pokemon.machop")
+	stats, affinity, _, _ := fielded(t, "pokemon.machop")
+	// ⚠️ **The kit is named here rather than read off the learnset**, and that is
+	// what keeps this test measuring the thing it is about. The claim is a
+	// comparison of two TRAITS; the carrier is incidental to it. Taking the
+	// fielded four instead made the reading move the day machop's learnset was
+	// reordered for the charge kit — four attacks became two attacks and a skill
+	// that stands still, the turns changed, and a claim about rending against
+	// armour went red for a reason that had nothing to do with either trait.
+	// These four are the ones the table above was measured on.
+	kit := []string{"rock_throw", "body_slam", "cross_chop", "vital_throw"}
 	theirStats, theirAffinity, theirKit, theirTraits := fieldedAs(t, foe, stage)
 	var total guardReading
 	for seedValue := 1; seedValue <= guardSeeds; seedValue++ {

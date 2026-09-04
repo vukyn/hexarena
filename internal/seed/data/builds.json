@@ -169,6 +169,21 @@
       ]
     },
     {
+      "id": "machop.charge",
+      "character": "pokemon.machop",
+      "name": "dồn sức",
+      "intent": "Đứng gồng cho tới lúc đủ nặng rồi trả lại tất cả trong cùng một nhát",
+      "skills": [
+        "brace",
+        "wrecking_swing",
+        "cross_chop",
+        "rock_throw"
+      ],
+      "passives": [
+        "endurance"
+      ]
+    },
+    {
       "id": "cleffa.mend",
       "character": "pokemon.cleffa",
       "name": "chở che",

@@ -129,6 +129,8 @@ safeguard       neutral   ally     1  column            0     1      0  1000    
 soft_boiled     neutral   ally     1  single            0     1      0  1000    4     0     0        0
 heal_bell       neutral   ally     1  column            0     1      0  1000    4     0     0        0
 hyper_voice     neutral   enemy    2  arc_up          900     1    900   950    2     0     0      308
+brace           ground    self     0  single            0     1      0  1000    0     0     0        0
+wrecking_swing  ground    enemy    1  single         8000     1   8000   880    0     0     0     2742
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -205,6 +207,7 @@ toxic           poison                 2     1000        900              900
 toxic           fester                 1      700        900              630
 stun_spore      mire                   1      800       1000              800
 safeguard       aegis                  1     1000       1000             1000
+brace           heft (self)            1     1000       1000                -
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -327,6 +330,8 @@ safeguard       -          -                 -                   -         pokem
 soft_boiled     -          -                 -                   -         pokemon
 heal_bell       -          -                 -                   -         pokemon
 hyper_voice     -          -                 -                   -         pokemon
+brace           -          -                 -                   -         pokemon
+wrecking_swing  -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -349,6 +354,7 @@ cauterise       caster   swelter                           5       0           0
 verdant_mend    caster   verdure                          10       0           0        0           0      - (consumes)
 wellspring      caster   moisture                         20       0           0        0           0      - (consumes)
 acid_spray      target   poison                            2     600        1100      205         377  1.83x
+wrecking_swing  caster   heft                              5    8000        8000     2742        2742  1.00x (consumes)
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar
@@ -410,6 +416,7 @@ bastion     absorb              1       0            0      0               0   
 swelter     reserve           999       5            0      0               0          0   -
 verdure     reserve           999       5            0      0               0          0   -
 moisture    reserve           999       5            0      0               0          0   -
+heft        reserve             5       4            0      0               0          0   -
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

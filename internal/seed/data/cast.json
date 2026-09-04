@@ -1300,14 +1300,20 @@
       ],
       "skills": [
         {
-          "id": "rock_throw"
+          "id": "brace"
         },
         {
-          "id": "body_slam"
+          "id": "wrecking_swing"
         },
         {
           "id": "cross_chop",
           "at_level": 8
+        },
+        {
+          "id": "rock_throw"
+        },
+        {
+          "id": "body_slam"
         },
         {
           "id": "vital_throw",

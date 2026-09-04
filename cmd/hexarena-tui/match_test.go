@@ -153,7 +153,12 @@ func openARoomAllowing(t *testing.T, battles, allowance int) (*aRoom, *forge.Lib
 	// Two sides out of the shipped cast, around **different** characters: two
 	// identical squads make the halves of a battle interchangeable, so nothing
 	// could see a client drawing the wrong one.
-	ours := aShippedSide(t, characters, "phe-ta", "pokemon.bulbasaur", "pokemon.machop", "pokemon.gastly")
+	// ⚠️ **Not pokemon.machop.** Its learnset now opens on a cooldownless builder
+	// banking a gated five-stack blow, so a side carrying it stands still for five
+	// turns at a time and the match runs far longer — measured on a 3v3, a battle
+	// went from about 200 turns to over 400. This test has a one-minute budget for
+	// a whole match over a loopback listener, and machop spends it.
+	ours := aShippedSide(t, characters, "phe-ta", "pokemon.bulbasaur", "pokemon.poliwag", "pokemon.gastly")
 	theirs := aShippedSide(t, characters, "phe-ho", "pokemon.charmander", "pokemon.squirtle", "pokemon.cleffa")
 	if err := library.SaveSquad(ours); err != nil {
 		t.Fatalf("save the side this client brings: %v", err)

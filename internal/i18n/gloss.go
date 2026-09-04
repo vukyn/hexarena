@@ -142,6 +142,13 @@ var (
 		"swelter":  "sóng nhiệt",
 		"verdure":  "xum xuê",
 		"moisture": "ẩm ướt",
+		// The fourth, and the one whose element has no weather. Ground leaves
+		// behind what it always leaves behind: mass, sitting where it was put. A
+		// noun like its three neighbours, and a plain one on purpose — a reader
+		// meeting "sức nặng ×3" on a row is told the holder is carrying weight
+		// and nothing about what it will do with it, which is exactly what a
+		// counter is.
+		"heft": "sức nặng",
 	}
 
 	// The status categories were glossed here and are not any more. A gloss

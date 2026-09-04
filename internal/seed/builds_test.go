@@ -49,6 +49,10 @@ func TestTheShippedBuildsAreTheOnesTheTestsMeasure(t *testing.T) {
 		{"poliwag.chorus", chorusBuild, "composure"},
 		{"machop.gamble", gambleBuild, "berserk"},
 		{"machop.sure", sureBuild, "unyielding"},
+		// The third direction, and the only one in this table whose kit is also
+		// Machop's FIELDED four — see chargeBuild in machop_test.go for why it has
+		// to be.
+		{"machop.charge", chargeBuild, "endurance"},
 		{"cleffa.mend", mendBuild, "composure"},
 		{"cleffa.hex", hexBuild, "elusive"},
 		{"magnemite.trickle", trickleBuild, "swiftness"},

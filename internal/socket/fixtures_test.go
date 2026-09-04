@@ -148,8 +148,14 @@ func upTo(available []string, slots int) []string {
 // battle interchangeable, so nothing could see a transport that handed one
 // client the other's side.
 func theHostSquad(t *testing.T, characters *cast.Book) placement.Squad {
+	// ⚠️ **Not pokemon.machop, and the reason is a property this squad is read
+	// for.** TestASkippedPromptStartsNoClockOverASocket needs a match with skipped
+	// prompts in it and fatals when there are none. Machop's learnset now opens on
+	// a cooldownless self-aimed builder, so it is never out of options and never
+	// skips — measured: the match came back with Skipped == 0 the day that kit
+	// landed. Poliwag stands in as a unit whose kit can still run dry.
 	return squadOf(t, characters, "host.squad",
-		"pokemon.bulbasaur", "pokemon.machop", "pokemon.gastly")
+		"pokemon.bulbasaur", "pokemon.poliwag", "pokemon.gastly")
 }
 
 func theGuestSquad(t *testing.T, characters *cast.Book) placement.Squad {

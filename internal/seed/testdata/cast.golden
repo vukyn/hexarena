@@ -158,7 +158,7 @@ pokemon.machop — Machop
   element  ground
   species  titan
   art      assets/machop.svg
-  kit      rock_throw body_slam cross_chop@8 vital_throw@12 seismic_toss@16 inner_focus@20 submission@24 taunt@32 skull_bash@36 rally@40 wide_guard@44
+  kit      brace wrecking_swing cross_chop@8 rock_throw body_slam vital_throw@12 seismic_toss@16 inner_focus@20 submission@24 taunt@32 skull_bash@36 rally@40 wide_guard@44
   stage "Machop" owns levels 1 to 15, showing assets/machop.svg
     level 1  hp 860, atk 196, def 120, spd 23, acc 55, ddg 8
              absorbs 1204 of the 11500 budget, 10296 to spare

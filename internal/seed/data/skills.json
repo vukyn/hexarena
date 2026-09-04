@@ -2988,6 +2988,54 @@
           "pokemon"
         ]
       }
+    },
+    {
+      "id": "brace",
+      "name": "gồng người",
+      "flavour": "Gồng cứng cả người, ghìm hơi lại rồi đứng im chờ, sức nặng dồn xuống dưới",
+      "element": "ground",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "heft",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "wrecking_swing",
+      "name": "đòn trời giáng",
+      "flavour": "Sức nặng nén trong người tới lúc không giữ nổi nữa thì đổ hết xuống cùng lúc",
+      "element": "ground",
+      "range": 1,
+      "pattern": "single",
+      "power": 8000,
+      "strikes": 1,
+      "accuracy": 880,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_requires": {
+        "status": "heft",
+        "min_stacks": 5,
+        "consume": true,
+        "consume_stacks": 5,
+        "gates": true
+      }
     }
   ]
 }
