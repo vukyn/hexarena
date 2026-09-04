@@ -35,6 +35,7 @@ q hoặc ctrl+c để thoát`,
 		"và đọc được pipe; `hexforge check` in ra đúng những gì màn hình kiểm tra ở đây hiển thị",
 	DataFlagUsage:     "thư mục dữ liệu để đọc và ghi",
 	LanguageFlagUsage: "ngôn ngữ hiển thị: vi hoặc en",
+	VersionFlagUsage:  "in build, protocol và data rồi thoát",
 
 	MenuHeading:            "bạn muốn làm gì?",
 	MenuCast:               "danh sách nhân vật",

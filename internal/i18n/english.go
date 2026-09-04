@@ -31,6 +31,7 @@ q or ctrl+c to quit`,
 		"and reads a pipe, and `hexforge check` prints what this program's check screen shows",
 	DataFlagUsage:     "the data directory to read and write",
 	LanguageFlagUsage: "the language to read the screens in: vi or en",
+	VersionFlagUsage:  "print the build, protocol and data, then exit",
 
 	MenuHeading:            "what would you like to do?",
 	MenuCast:               "cast",

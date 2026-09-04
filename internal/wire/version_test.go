@@ -173,3 +173,62 @@ func TestADataDigestSurvivesTheWireAsHex(t *testing.T) {
 		}
 	}
 }
+
+// TestTheVersionReportIsOneShapeForBothBinaries pins the exact three lines
+// -version prints, because both binaries print them from here and a person
+// comparing two machines is comparing two of these.
+//
+// ⚠️ **It asserts the whole rendering rather than the three values separately**,
+// which is what makes it a shape test: a report that put the digest where the
+// protocol goes would satisfy three Contains and fail this. And the digest it is
+// handed is **fabricated** — a value the embedded data cannot produce — so a
+// report that printed the shipped digest instead of the one it was given would
+// fail, which is the one thing a report built from the real version cannot see.
+//
+// What it can see: the order of the three, the labels, the indentation, that the
+// digest is the short form rather than the sixty-four characters that ride the
+// wire, that the program name is the caller's, and that the whole thing ends in
+// a newline so a shell prompt lands on its own line.
+//
+// What it cannot see: that the two binaries call it with their own names rather
+// than with each other's. That is one assertion in each binary's own suite,
+// because a program name is a fact about a program.
+func TestTheVersionReportIsOneShapeForBothBinaries(t *testing.T) {
+	var fabricated seed.Digest
+	for index := range fabricated {
+		fabricated[index] = 0xab
+	}
+	shipped, err := seed.DataDigest()
+	if err != nil {
+		t.Fatalf("digest the embedded data: %v", err)
+	}
+	// The guard that makes the assertion below a measurement: a fabricated
+	// digest equal to the shipped one could not tell a report reading its own
+	// field from one printing a literal.
+	if fabricated == shipped {
+		t.Fatalf("the fabricated digest is the shipped one (%s), so this test cannot tell "+
+			"a report that reads its version from one that hardcodes a number", shipped.Short())
+	}
+	version := Version{Protocol: 7, Build: "v9.9.9", Data: Digest{Digest: fabricated}}
+	const want = "hexarena-host v9.9.9\n" +
+		"  protocol 7\n" +
+		"  data     abababababab\n"
+	if got := version.Report("hexarena-host"); got != want {
+		t.Errorf("the version report reads\n%q\nand the one shape both binaries print is\n%q", got, want)
+	}
+	// The protocol is the *value* rather than the constant, so a report that
+	// read Protocol off the package instead of off the version it was handed
+	// would fail. 7 is not Protocol, and this says so rather than leaving it to
+	// the reader of the literal above.
+	if version.Protocol == Protocol {
+		t.Errorf("the fixture's protocol is this build's (%d), so the line above could be "+
+			"reading the constant rather than the field", Protocol)
+	}
+	// And the digest on it is the short form, not the wire form. Asserted as a
+	// length rather than left to the literal, because the difference between the
+	// two is a substring and Contains would be true of either.
+	if length := len(fabricated.Short()); length != 12 {
+		t.Errorf("a short digest is %d characters here, so the literal above is over the "+
+			"wrong form of it", length)
+	}
+}
