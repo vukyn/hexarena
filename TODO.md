@@ -2229,6 +2229,26 @@ is only so the shape is readable.
       teaches the next person to re-run it, which is how a real failure in this
       area would get spent.
 
+- [ ] ⚠️ **The LAN client renders the battle while the socket is still writing
+      to it, and `-race` says so.** Reproduced on clean `main`: four reports in
+      three runs of `go test -race ./cmd/hexarena-tui -run TestTheCountdown`. The
+      two stacks name the whole of it — the write is
+      `Client.Play` → `Mirror.Receive` → `Mirror.apply` → `Battle.Replay`, on the
+      goroutine reading the socket, and the read is
+      `PlayScreen.View` → `tui.Order` → `Queue.Preview` → `Queue.clone`, on the
+      one drawing the screen. Nothing between them synchronises.
+      ⚠️ **`Preview`'s own comment is what makes it look safe**: *it works on a
+      copy, so the queue is untouched*. That is true of what it writes and says
+      nothing about what it reads — and the copying **is** the read that races.
+      A guarantee about mutation was taken for a guarantee about concurrency.
+      ⚠️ **Not a flake, and the two already recorded above are a different
+      thing.** Those are a bound and a racy premise inside tests; this is shipped
+      code, it reproduces on demand under `-race`, and what a player would see is
+      not a red suite but a screen drawn off a half-applied turn.
+      Left unfixed on purpose: #282 was landing a mutex fix in the same file while
+      this was found, so whoever holds that context should take it rather than a
+      second hand arriving from the side.
+
 
 ## Decided against — do not re-raise
 
