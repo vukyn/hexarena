@@ -23,9 +23,11 @@
 - [bubbles paste + nil commands](feedback_bubbles_paste_and_nil_commands.md) — textinput.Paste's msg is UNEXPORTED; a nil cmd is not "refused"; pinning a sanitiser ≠ pinning its caller
 - [Unstable values in a record](feedback_unstable_values_in_a_record.md) — buildString() is "devel" under go test so hardcoding it is unmeasurable; the digest stays real; renormalize BEFORE editing
 - [Measuring an installed binary](feedback_measuring_an_installed_binary.md) — a file GOPROXY prices the go-install path with no network; the module cache SHADOWS GOPROXY and re-installs the old code
+- [Normalised upstream cannot discriminate](feedback_normalised_upstream_cannot_discriminate.md) — Build.Stage is resolved by the parser (28/28) and every form is reached at LevelCap, so both guards count everything
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
+- [The ban/pick draft machine](project_draft_state_machine.md) — step 2a: Picks() not Squads(); ⚠️ a slot-less squad is REFUSED late by Squad.Validate, it does not stack
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
 
 ## Moved in from the platform-level store (2026-09-05)
