@@ -3,6 +3,7 @@ package draft
 import (
 	"fmt"
 
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
@@ -19,7 +20,8 @@ import (
 //
 // The record is replayed by taking each entry back through the decision it
 // names: a StepBan with a character is Ban and one without is SkipBan, a
-// StepPick is Pick, a StepLoadout is Loadout and a StepTimeout is TimedOut.
+// StepPick is Pick, a StepLoadout is Loadout, a StepArrange is Arrange and a
+// StepTimeout is TimedOut.
 // TestARecordReplaysIntoTheSameDraft is what does that today; the day a **second**
 // caller needs it — a client mirroring a draft, which is step 3 — that switch
 // belongs in this package rather than beside each caller, for the reason
@@ -50,6 +52,22 @@ type Entry struct {
 	// cast.ChooseLoadout was asked about it. Empty on every other step.
 	Skills   []string
 	Passives []string
+	// Slots is one side's whole arrangement: the cell each of its picks stands
+	// on, in pick order. Empty on every other step.
+	//
+	// ⚠️ **A StepArrange entry is never appended on its own.** The two arrive
+	// together, in seats order, at the moment the second side arranges — because
+	// an entry is public the moment it is appended, so a record holding one
+	// arrangement would be showing it to the other player, which is the one
+	// thing that phase exists to prevent. The cost is stated rather than hidden:
+	// the record cannot say which side arranged first, so a mirror replaying it
+	// reproduces the phase's *end* and not its middle. Arrival order is a race,
+	// so it is not a fact two peers could agree about anyway. → Draft.Arrange.
+	//
+	// ⚠️ And a **timeout during the phase appends nothing but the timeout** — a
+	// buffered arrangement is discarded rather than recorded, since appending it
+	// on the way out would leak exactly what the buffer was for. → Draft.abandon.
+	Slots []hex.Offset
 }
 
 // Since returns the entries recorded from cursor onward, and the cursor to pass

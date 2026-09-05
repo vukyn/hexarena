@@ -263,11 +263,23 @@ func TestTheSettledSequenceIsEveryBanThenEveryPick(t *testing.T) {
 		t.Errorf("a 3v3 draft from the host asks for\n  %v\nand the settled sequence is\n  %v",
 			got, want)
 	}
-	if !drafting.Done() {
-		t.Error("the whole sequence was played and the draft is not done")
+	if !drafting.Picked() {
+		t.Error("the whole sequence was played and the picking is not over")
 	}
 	if drafting.Cancelled() {
 		t.Error("a draft that was played out reports itself cancelled")
+	}
+	// ⚠️ The sequence Turn asks for ends at the picking, and the draft is **not**
+	// Done there: what is open is the arrange phase, which Turn deliberately does
+	// not answer for. This is the assertion that keeps the two names apart.
+	if drafting.Done() {
+		t.Error("the picking is over and the draft calls itself done, with neither side arranged")
+	}
+	if !drafting.Arranging() {
+		t.Error("the picking is over and the arrange phase is not open")
+	}
+	if got := drafting.AwaitingArrangement(); len(got) != seatCount() {
+		t.Errorf("both sides have still to arrange and the draft is waiting on %v", got)
 	}
 	t.Logf("%d decisions: %s", len(got), strings.Join(got, ", "))
 }
@@ -505,13 +517,87 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 			},
 			"host has just picked pokemon.bulbasaur and owes it a loadout, so nothing else can " +
 				"be decided until the form, the skills and the trait are chosen"},
-		{"a decision arrives after the draft is done",
+		// ⚠️ These two used to be one case. Playing the picking out no longer
+		// finishes a draft — the arrange phase is open at that point — so the
+		// state the old sentence described is now reached only by arranging both
+		// sides, and the state the old case *drove* has a sentence of its own.
+		{"a decision arrives once the picking is over and the arranging is open",
 			func(t *testing.T, drafting *draft.Draft) error {
 				playOut(t, drafting, all, spendEvery(wire.Format3v3))
 				return drafting.Pick(wire.SeatHost, "pokemon.mew")
 			},
-			"this draft is finished — every ban is spent or skipped and every pick has its " +
-				"loadout — so \"host\" cannot pick"},
+			"the picking is over — every ban is spent or skipped and every pick has its loadout " +
+				"— and what is open now is the arrangement, so \"host\" cannot pick: the two " +
+				"sides arrange at once, which Arrange takes and Turn does not answer for"},
+		{"a decision arrives after the whole draft is done",
+			func(t *testing.T, drafting *draft.Draft) error {
+				playOut(t, drafting, all, spendEvery(wire.Format3v3))
+				arrangeBothSides(t, drafting)
+				return drafting.Pick(wire.SeatHost, "pokemon.mew")
+			},
+			"this draft is finished — every ban is spent or skipped, every pick has its loadout " +
+				"and both sides have arranged — so \"host\" cannot pick"},
+		{"an arrangement arrives before the picking is over",
+			func(t *testing.T, drafting *draft.Draft) error {
+				return drafting.Arrange(wire.SeatHost, formationCells(3))
+			},
+			"the draft is waiting on host to ban, so \"host\" cannot arrange yet: both sides " +
+				"arrange once every ban is spent and every pick has its loadout, and not before"},
+		{"a seat arranges twice",
+			func(t *testing.T, drafting *draft.Draft) error {
+				playOut(t, drafting, all, spendEvery(wire.Format3v3))
+				arrangeSide(t, drafting, wire.SeatHost)
+				return drafting.Arrange(wire.SeatHost, formationCells(3))
+			},
+			"host has already arranged, and an arrangement is made once: this draft is waiting " +
+				"on guest"},
+		{"an arrangement one cell short of the side's picks",
+			func(t *testing.T, drafting *draft.Draft) error {
+				playOut(t, drafting, all, spendEvery(wire.Format3v3))
+				return drafting.Arrange(wire.SeatHost, formationCells(2))
+			},
+			"host drafted 3 units and this arrangement names 2 cells: a side arranges its whole " +
+				"squad in one call, and slots[i] is the cell for its i-th pick"},
+		{"a seat a room does not hand out arranges",
+			func(t *testing.T, drafting *draft.Draft) error {
+				playOut(t, drafting, all, spendEvery(wire.Format3v3))
+				return drafting.Arrange(wire.Seat("spectator"), formationCells(3))
+			},
+			"\"spectator\" is not one of the two seats a room hands out, so it has no " +
+				"arrangement to make in this draft"},
+		{"a third arrangement once both are in",
+			func(t *testing.T, drafting *draft.Draft) error {
+				playOut(t, drafting, all, spendEvery(wire.Format3v3))
+				arrangeBothSides(t, drafting)
+				return drafting.Arrange(wire.SeatHost, formationCells(3))
+			},
+			"both sides have arranged and this draft is finished, so \"host\" cannot arrange " +
+				"again"},
+		{"an arrangement arrives after the draft was cancelled",
+			func(t *testing.T, drafting *draft.Draft) error {
+				if err := drafting.TimedOut(wire.SeatHost); err != nil {
+					t.Fatalf("the host's allowance runs out: %v", err)
+				}
+				return drafting.Arrange(wire.SeatHost, formationCells(3))
+			},
+			"this draft was cancelled when host ran out of time, so \"host\" cannot arrange: a " +
+				"draft that runs out of time is not resumed, it is played again from a new " +
+				"room code"},
+		{"a timeout is reported for a seat that has already arranged",
+			func(t *testing.T, drafting *draft.Draft) error {
+				playOut(t, drafting, all, spendEvery(wire.Format3v3))
+				arrangeSide(t, drafting, wire.SeatHost)
+				return drafting.TimedOut(wire.SeatHost)
+			},
+			"host has already arranged, so it has no allowance left to run out: this draft is " +
+				"waiting on guest"},
+		{"a timeout is reported for a seat a room does not hand out while the arranging is open",
+			func(t *testing.T, drafting *draft.Draft) error {
+				playOut(t, drafting, all, spendEvery(wire.Format3v3))
+				return drafting.TimedOut(wire.Seat("spectator"))
+			},
+			"\"spectator\" is not one of the two seats a room hands out, so it has no " +
+				"arrangement to be waited on and that timeout cancels nothing"},
 		{"a decision arrives after the draft was cancelled",
 			func(t *testing.T, drafting *draft.Draft) error {
 				if err := drafting.TimedOut(wire.SeatHost); err != nil {
@@ -540,6 +626,7 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 		{"a timeout on a draft that is finished",
 			func(t *testing.T, drafting *draft.Draft) error {
 				playOut(t, drafting, all, spendEvery(wire.Format3v3))
+				arrangeBothSides(t, drafting)
 				return drafting.TimedOut(wire.SeatHost)
 			},
 			"this draft is finished, so there is no open decision for an allowance to run out on"},
@@ -1018,6 +1105,12 @@ func TestATimeoutCancelsTheWholeDraft(t *testing.T) {
 		t.Error("a cancelled draft reports itself done, and a done draft has two sides to " +
 			"field where this one has none")
 	}
+	if drafting.Picked() {
+		t.Error("a cancelled draft reports its picking as played out, and it stopped mid-pick")
+	}
+	if drafting.Arranging() {
+		t.Error("a cancelled draft has the arrange phase open, and there is nothing to arrange")
+	}
 	if seat, step, due := drafting.Turn(); due {
 		t.Errorf("a cancelled draft is still asking %s for a %s", seat, step)
 	}
@@ -1047,8 +1140,8 @@ func TestPicksAreWhatAFinishedDraftProduces(t *testing.T) {
 		t.Fatalf("set up a 3v3 draft: %v", err)
 	}
 	playOut(t, drafting, all, spendEvery(wire.Format3v3))
-	if !drafting.Done() {
-		t.Fatal("the draft was played out and is not done")
+	if !drafting.Picked() {
+		t.Fatal("the draft was played out and the picking is not over")
 	}
 
 	picks := drafting.Picks()

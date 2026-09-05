@@ -1311,15 +1311,22 @@ is only so the shape is readable.
             → CLAUDE.md § *`roster.json` is an instrument, not a scenario*.
             The cost is a **fourth phase** — bans, picks, arrange, fight —
             accepted.
-            ⚠️ **`internal/draft` therefore hands back `Picks()` and deliberately
-            has no `Squads()`.** A `placement.Squad` with `Slot` left at its zero
-            value would look authored: `hex.Offset`'s zero is a real cell (the
-            ally back corner, exactly the trap `wire.Act` documents for its
-            `Aim`), so nothing about the value says it was never chosen — and
-            `placement.Squad.Validate` then refuses the second unit for standing
-            where the first already is, so the squad is turned away at the moment
-            it is fought, naming a cell nobody picked. `draft.Pick`'s own comment
-            says what turning picks into squads still needs.
+            ⚠️ **`internal/draft` therefore hands back `Picks()`, and a
+            `Squads()` answers only once the arrange phase has closed.** A
+            `placement.Squad` with `Slot` left at its zero value would look
+            authored: `hex.Offset`'s zero is a real cell (the ally back corner,
+            exactly the trap `wire.Act` documents for its `Aim`), so nothing about
+            the value says it was never chosen — and `placement.Squad.Validate`
+            then refuses the second unit for standing where the first already is,
+            so the squad is turned away at the moment it is fought, naming a cell
+            nobody picked. `draft.Pick`'s own comment says what turning picks into
+            squads takes. ⚠️ **This paragraph said "deliberately has no
+            `Squads()`" until step 2b landed on 2026-09-05**, which was right while
+            the slot did not exist yet; `Squads()` exists now and answers two
+            squads with **nobody in them** until `Done()`, which is the same
+            argument arriving at a different shape — an output that cannot be used
+            is worse than one that is honestly incomplete, and a squad with no
+            units is refused by `Validate`'s own first line, by name.
             ⚠️ **A timeout in the arrange phase follows decision (c) and cancels
             the room — this is my assumption and not the author's**, marked as
             one. The reasoning is the same as (c)'s: a defaulted arrangement would
@@ -1329,23 +1336,38 @@ is only so the shape is readable.
             handing it out for free is exactly the fixed formation this decision
             refuses.
 
-            ⚠️ **BOTH FORMATS FIT, AND 5v5 FITS EXACTLY, MEASURED.** The pool is
-            the cast minus the hidden: **sixteen** today — **seventeen**
-            characters ship and `naruto.naruto` is the only one carrying
-            `hidden: true`. Against sixteen, with the counts settled above:
+            ⚠️ **BOTH FORMATS FIT, AND 5v5 NOW FITS WITH ONE TO SPARE,
+            MEASURED.** The pool is the cast minus the hidden: **seventeen**
+            today — **eighteen** characters ship and `naruto.naruto` is the only
+            one carrying `hidden: true`. Against seventeen, with the counts
+            settled above:
 
-                3v3, 2 a side:  6 picks +  4 bans = 10 of 16 — fits, six to spare
-                5v5, 3 a side: 10 picks +  6 bans = 16 of 16 — fits, nothing to spare
+                3v3, 2 a side:  6 picks +  4 bans = 10 of 17 — fits, seven to spare
+                5v5, 3 a side: 10 picks +  6 bans = 16 of 17 — fits, one to spare
 
-            So the 3v3 draft is buildable with six characters to spare and the
-            5v5 draft with **none**. Slack is nought at 5v5, so with every ban
-            spent the final picker sees exactly one candidate — a pick that is
-            not a decision (see the slack note at the end of this item).
-            Unhiding `naruto.naruto` is now precisely the *seventeenth draftable
-            character* that would make that last pick a decision again; it is no
-            longer needed to seat the format at all. That leaves **one** reason
-            five a side is held back at `hexarena-host`'s flag rather than two —
-            the balance read at 3v3 — which is what the ⚠️ further down records.
+            So the 3v3 draft is buildable with seven characters to spare and the
+            5v5 draft with **one**. Slack is **one** at 5v5, so with every ban
+            spent the final picker sees two candidates — a pick that **is** a
+            decision, which it was not for the few hours the pool stood at
+            sixteen (see the slack note at the end of this item).
+            Unhiding `naruto.naruto` would make it an *eighteenth draftable
+            character* and slack two; it is no longer needed to seat the format
+            at all, and no longer needed to make the last pick a decision either.
+            That leaves **one** reason five a side is held back at
+            `hexarena-host`'s flag rather than two — the balance read at 3v3 —
+            which is what the ⚠️ further down records.
+            ⚠️ **This table went stale a THIRD time, and #309 left it stale.**
+            It read *"BOTH FORMATS FIT, AND 5v5 FITS EXACTLY"*, the pool
+            **sixteen**, the 5v5 row `= 16 of 16 — fits, nothing to spare`, and
+            *"Slack is nought at 5v5 … a pick that is not a decision"* — while
+            the two ⚠️ notes #309 itself added below already recorded the pool as
+            seventeen and slack as one. That is the same half-moved block the
+            note directly beneath this one records against #306, for the third
+            time in one day, which is the argument for deriving the figure at
+            the point of reading rather than restating it in prose:
+            `jq '[.characters[]|select(.hidden|not)]|length'
+            internal/seed/data/cast.json` → 17, `[.characters[]]|length` → 18.
+            Re-derived on 2026-09-05 while merging step 2b.
             ⚠️ **This heading and this table went on saying the opposite after
             the gap closed, and #306 left them saying it.** The heading read
             *"3v3 FITS AND 5v5 DOES NOT, MEASURED"*, the pool was written
@@ -1438,26 +1460,29 @@ is only so the shape is readable.
             present a list of one. The exhaustive walk asserts the tight form of
             it: with every ban spent the final pick sees exactly `slack + 1`
             candidates.
-      - [ ] **The arrange phase — step 2b.** Once the draft closes, each side
-            puts its three (or five) picks on its own 3x3 formation, **privately
-            and simultaneously**, and the match starts when both arrangements are
-            in. It is settled decision **(g)** of the item above — the slot is not
-            a draft decision — and this is the phase that decision creates. What
-            it takes: a `hex.Offset` per `draft.Pick`, unique within the side; an
-            id per unit, which `placement.Placement` needs and a draft has nothing
-            to invent for; and then `placement.Squad.Take` fields it, so nothing
-            downstream of it changes. `draft.Pick`'s doc comment carries the same
-            list from the other end.
+      - [x] **The arrange phase — step 2b. Done 2026-09-05.** Once picking
+            closes, each side puts its three (or five) picks on its own 3x3
+            formation, **privately and simultaneously**, and the draft finishes
+            when both arrangements are in. It is settled decision **(g)** of the
+            item above — the slot is not a pick's decision — and this is the phase
+            that decision creates. Built as `internal/draft/arrange.go`:
+            `Arrange(seat, slots)`, `Arranging()`, `AwaitingArrangement()`,
+            `Squads()`, plus `StepArrange` and `Entry.Slots` on the record, and
+            `TimedOut` extended to cover the phase. Still **no wire message, no
+            room change and no screen** — those are steps 3–5.
             ⚠️ **It is deliberately not part of the draft's state machine, and
             the reason is its shape rather than its size.** Two things about it
-            are unlike everything in step 2a:
+            are unlike everything in step 2a, and both arguments survive the
+            building rather than being replaced by its status:
             **Two decisions are pending at once**, so it is not the alternating
             shape at all: `Turn()` answers *one* seat and *one* step, and the
             whole of `internal/draft` is built on there being exactly one open
             decision — the loadout refusal ("nothing else can be decided until
             the form, the skills and the trait are chosen") is that assumption
             stated. Widening `Turn` to answer a set would change every refusal in
-            the package for the sake of one phase.
+            the package for the sake of one phase. **`Turn` did not widen**: it
+            answers nothing at all once the picking closes, and
+            `TestBothSidesArrangeAtOnceAndTurnNeverSaysSo` asserts that directly.
             **Each side's arrangement is secret until both are in**, which the
             append-only record cannot express as it stands: an entry is public
             the moment it is appended, and a mirror that replays the record
@@ -1472,10 +1497,107 @@ is only so the shape is readable.
             as it is today and secrecy costs a buffer rather than a mechanism.
             The alternative, a private entry per seat, would make the record mean
             different things to different readers, which is what makes two peers
-            able to disagree.
+            able to disagree. Built exactly so: `Draft.arranged` is the buffer and
+            `Arrange` records both entries, in **`seats` order**, at the moment the
+            second side arranges. Arrival order is a race, so recording it would
+            make two peers' records differ for a draft in which the same decisions
+            were taken.
+            ⚠️ **The price of seats order is that the record cannot say who
+            arranged first, and that turned out to reach a test.**
+            `TestARecordReplaysIntoTheSameDraft` compares the mirror's state after
+            **every** decision, and after the *first* of the two arrange entries
+            the mirror has the host's arrangement whatever really arrived first —
+            so in a guest-first draft the original was waiting on the host at that
+            point and the mirror is waiting on the guest. One comparison is
+            therefore deferred, the deferral is **counted** (at most one, and none
+            for a case that never arranged), and the end is compared by value. The
+            phase's *end* replays exactly; its middle is not a fact two peers could
+            agree about. `TestTheRecordDoesNotSayWhoArrangedFirst` states the same
+            thing from the other side: two drafts with the same decisions in
+            opposite arrival order leave byte-identical records.
             ⚠️ A timeout here **cancels the room**, per decision (c) — and that
             half is an assumption rather than the author's decision; see the ⚠️ on
-            (g).
+            (g). **The buffered arrangement is discarded rather than recorded**:
+            appending it on the way out would leak exactly what the buffer exists
+            to hide, to a draft that is being thrown away anyway, so the record
+            gets the timeout and nothing else. ⚠️ Note the *clearing* of the buffer
+            is measured **unobservable** — deleting it leaves the whole suite green,
+            because every accessor gates on `Cancelled`/`Picked` first — so it is a
+            release rather than a guard and `Draft.abandon`'s comment says so.
+            What is behavioural, and tested, is that no `StepArrange` entry ever
+            reaches the record of a cancelled draft.
+            ⚠️ **`Done()` was REDEFINED and the old meaning renamed: the decision,
+            and every site it moved.** `Done()` now means the whole draft — picking
+            *and* arrangement, the state in which `Squads()` answers — and the old
+            meaning ("every ban spent or skipped, every pick taken, every loadout
+            chosen") is **`Picked()`**. The reason is which reading is dangerous: a
+            caller asking `Done()` before fielding a squad wants the whole thing,
+            so the name a caller reaches for has to be the safe one. The
+            alternative — leave `Done()` alone and add `Fielded()` — was less churn
+            and left `Done()` naming a draft nothing can field. Sites moved, all of
+            them: `Turn()`'s guard and its doc comment, `Done`'s own doc comment
+            (split in two), `due()`'s "this draft is finished" refusal (**split
+            into two sentences**, because the picking being over is now two
+            different states — one with the arrangement open and one with nothing
+            open), `TimedOut`'s "finished" arm, `Picks()`' contract, `Pick`'s
+            "there is deliberately no `Squads()`" paragraph, three assertions in
+            `draft_test.go`, `stateOf` and the replay premise in `record_test.go`,
+            and two entries of the pinned refusal table whose *state* moved (a
+            played-out draft is now arranging, not finished). No comment anywhere
+            in the package still describes the other reading.
+            ⚠️ **`Squad.Units` is ordered by SLOT, row-major — the Row is the
+            outer loop and the Col the inner — and that decides who wins a speed
+            tie.** `atb.Queue.Add` assigns `seq` in the order it is handed the
+            roster and `seq` is the last tie-break in the turn order, so the slice
+            order is worth up to sixty points of win rate in a mirror. Pick order
+            was the alternative and it is refused: the arrangement is the last
+            decision taken and the only one that is *about the board*, so letting
+            the board decide board order is the least surprising thing available,
+            whereas pick order would hand a speed tie-break to a decision made for
+            entirely different reasons, invisibly. Of the two axes the **Row** is
+            the one the engine ignores everywhere else — reach is counted in ranks,
+            so the Col already decides who is reached first — which is why the
+            tie-break keys on it: it does not compound the advantage the depth
+            already carries. ⚠️ It is a **third** grid order in the repository, and
+            that is worth knowing rather than hiding: `hex.Cells`/`hex.SideCells`
+            are documented **column-major**, and the four shipped squads in
+            `squads.json` are authored front-column-first. Nothing reads those as a
+            rule, and `TestADraftedSquadIsOrderedByItsSlots` holds this one so it
+            cannot drift; if the author would rather it matched `hex.Cells`, the
+            change is the comparator in `squadAt` and that test's table.
+            ⚠️ **A unit's id is the CHARACTER id, and the pool is what licenses
+            it.** `placement.Placement.ID` must be unique within the squad; every
+            ban and every pick takes a character out of one shared **exclusive**
+            pool, so a side's picks are different characters by construction — and
+            so are both sides' together, since they spend out of the same pool. It
+            also makes a log readable (`ally.pokemon.gible`) where `a1`/`a2` would
+            not. The side prefix `Squad.Take` adds still earns its keep for its own
+            reason (a squad fought against a copy of itself) and is untouched.
+            CLAUDE.md's *"one squad may field the same character twice"* is about a
+            **saved** squad; both hold, and this is where the scope became
+            load-bearing rather than descriptive.
+            ⚠️ **The test that is the point of the step is a whole battle**, not a
+            shape assertion: everything before this produced values nothing could
+            fight with. `TestADraftedPairFightsAWholeBattle` drives a 3v3 and a 5v5
+            draft, arranges both sides, fields each squad through
+            `placement.Squad.Take` and hands the pair to `battle.New` in the same
+            order `internal/room`'s `begin` appends in, then plays it out with
+            `RunToEndWith(4000, Suggest)`. Measured on seed 11 with first-candidate
+            picks, **re-measured after #309**: the **3v3 ends in victory for the
+            ally in 124 turns** (unmoved — `pokemon.pichu` sorts past the six
+            characters a 3v3 reaches) and the **5v5 in victory for the enemy in
+            140 turns** (was 139 against the sixteen-character pool; pichu enters
+            the roster and displaces a pick, so the fight is a different fight).
+            ⚠️ **Those figures are logged and not asserted, and #309 is the
+            evidence that was the right call**: an assertion on "139" would have
+            reddened on a content change with nothing behaviourally wrong, which
+            is `memory/hexarena-pin-the-assertion-not-the-premise.md` exactly.
+            What is asserted is general — that it finished, before the backstop,
+            with an outcome. Two vacuity guards,
+            because "it finished" is a claim a battle that never started also
+            satisfies: the roster has to hold every unit both sides drafted, and the
+            battle has to end **before** the backstop — reaching a 4000-turn limit
+            is a hang detector firing, not an ending.
       - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
             "a ban lasts the match" is ambiguous in a series and the ambiguity is
             a design decision rather than a parameter: three drafts, one draft
@@ -1852,11 +1974,12 @@ is only so the shape is readable.
          and with no column axis there is nothing to bundle.
          ⚠️ **But stacking makes the ORIGIN axis worse, not better, and this is
          the one thing to read before authoring one.** With rungs 2 and 3 at 3v3,
-         **no 3v3 squad can fail the origin axis at all**: **sixteen of the
-         seventeen** shipped characters are `pokemon`, and the seventeenth is one
+         **no 3v3 squad can fail the origin axis at all**: **seventeen of the
+         eighteen** shipped characters are `pokemon`, and the eighteenth is one
          character, so the worst case a squad can reach is Naruto plus two
          Pokemon — which is still **2 of one origin**, still a rung.
-         ⚠️ **These figures said "fourteen of the fifteen" until 2026-09-05**, and
+         ⚠️ **These figures said "fourteen of the fifteen", then "sixteen of the
+         seventeen", both on 2026-09-05** — three characters shipped that day — and
          they move every time a character ships, so they are derived rather than
          remembered: `jq '[.characters[]|select(.id|startswith("pokemon."))]|length'
          internal/seed/data/cast.json`. Every one that ships makes this objection
