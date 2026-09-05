@@ -122,6 +122,7 @@ that owns the subject wins and the note is the thing to fix.
 - [kill test ports after smoke](memory/kill-test-ports-after-smoke.md) — go-run child outlives parent → `lsof -ti :PORT|xargs kill -9`
 - [gopls stale diagnostics multirepo](memory/gopls-stale-diagnostics-multirepo.md) — false BrokenImport; trust `go build`/`go vet`
 - [Fixture hides a branch](memory/fixture-hidden-branch.md) — 5× in hexarena; test must fail when its own branch unexercised
+- [⚠️ test tự hoàn thành ko thấy đồng hồ tắt](memory/a-test-that-finishes-itself-cannot-see-a-stopped-clock.md) — allowance.set tắt clock ghế đang hỏi; treo, ship v0.1.0, suite xanh
 - [⚠️ dữ liệu thật có thể thoả sẵn](memory/real-data-can-satisfy-the-property.md) — cast.json vốn sắp theo id → test thứ tự pass cả khi hàm sort
 - [bubbletea v2 silent breaks](memory/bubbletea-v2-silent-breaks.md) — charm.land/…/v2; space="space"; NO_COLOR now yours
 - [Windows sets no $TERM](memory/windows-sets-no-term.md) — `TERM==""` is dumb only off Windows; hand GOOS in as a param
