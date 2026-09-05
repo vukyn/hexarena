@@ -10,10 +10,10 @@
    \__/  \__/  \__/
 
 tag  unit                 hp                        spd   effects
-A1   Bulwark              [##########]  4800/4800     80   toughened (always)
-A2   Vanguard             [##########]  3600/3600    110   -
-A3   Sentinel             [##########]  3100/3100     90   -
-A4   Duelist              [##########]  2600/2600    150   -
+A1   Bulwark              [##########]  4800/4800     80   toughened (always), kinship (always)
+A2   Vanguard             [##########]  3600/3600    110   kinship (always)
+A3   Sentinel             [##########]  3100/3100     90   kinship (always)
+A4   Duelist              [##########]  2600/2600    150   kinship (always)
 A5   Skirmisher           [##########]  2200/2200    200   -
 E1   Warden               [##########]  4800/4800     80   -
 E2   Bramble              [##########]  3600/3600    110   -
@@ -25,9 +25,13 @@ next: A5 E5 A4 E4 A2 E2 A5 E5
 
   A1  Bulwark enters at 2,1 on the ally side with 4800 health, ground/metal
   A1   holds endurance: toughened x1
+  A1   2 of metal: kinship x1 (same_element)
   A2  Vanguard enters at 2,0 on the ally side with 3600 health, fire/metal
+  A2   2 of metal: kinship x1 (same_element)
   A3  Sentinel enters at 2,2 on the ally side with 3100 health, water/ice
+  A3   2 of ice: kinship x1 (same_element)
   A4  Duelist enters at 1,1 on the ally side with 2600 health, wind/ice
+  A4   2 of ice: kinship x1 (same_element)
   A5  Skirmisher enters at 0,1 on the ally side with 2200 health, grass/electric
   E1  Warden enters at 3,1 on the enemy side with 4800 health, fire/ground
   E2  Bramble enters at 3,2 on the enemy side with 3600 health, grass/ice

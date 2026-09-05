@@ -2,6 +2,7 @@ package forge
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
@@ -24,6 +25,12 @@ type SquadReport struct {
 	AsAlly, AsEnemy Tally
 	// Turns is the median length of a battle that finished, in turns.
 	Turns int
+	// Without names the composition bonuses that were switched off for this run,
+	// and it is on the report rather than only in the call because a rate
+	// measured with a bonus disabled is a rate about a different game. A figure
+	// quoted without its condition is the shape this repository has had to
+	// re-measure before.
+	Without []string
 }
 
 // Total is the home squad's record across both halves.
@@ -53,7 +60,12 @@ func (r SquadReport) Mirror() bool { return r.Home.ID == r.Away.ID }
 // A refusal comes back as an error rather than as a report with a hole in it.
 // Every seed would refuse for the same reason — a roster is checked before a die
 // is rolled — so fighting the rest would be a slower way to be told once.
-func (l *Library) FightSquads(home, away string, seeds int) (SquadReport, error) {
+// The bonuses named in without are taken out of the book for the whole run,
+// which is the only instrument that can price one: the same squads, the same
+// members and the same seeds, with one rung gone. A set rather than a switch,
+// because bonuses stack and a global off would measure the system instead of the
+// rung — see composition.Book.Without.
+func (l *Library) FightSquads(home, away string, seeds int, without ...string) (SquadReport, error) {
 	if seeds < 1 {
 		return SquadReport{}, fmt.Errorf("a run over %d battles measures nothing", seeds)
 	}
@@ -65,8 +77,11 @@ func (l *Library) FightSquads(home, away string, seeds int) (SquadReport, error)
 	if err != nil {
 		return SquadReport{}, err
 	}
-	report := SquadReport{Home: first, Away: second, Seeds: seeds}
+	report := SquadReport{Home: first, Away: second, Seeds: seeds, Without: slices.Clone(without)}
 	books := l.Books()
+	if len(without) > 0 {
+		books.Bonuses = books.Bonuses.Without(without...)
+	}
 	lengths := make([]int, 0, 2*seeds)
 	for _, arrangement := range []struct {
 		ally, enemy placement.Squad

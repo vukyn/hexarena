@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/composition"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/skill"
@@ -125,6 +126,11 @@ var (
 		// rather than the mechanism: what the holder has is a sore that will not
 		// close, and "less healing received" is the arithmetic under it.
 		"fester": "lở loét",
+		// A buff, so a noun. It is what a squad gets for standing with its own:
+		// not "nhanh nhẹn" or "cuồng nộ", which are things done to a unit for a
+		// few turns, but the standing fact of having kin of the same element on
+		// the board beside it.
+		"kinship": "đồng khí",
 		// A buff, so a noun. It is not haste ("nhanh nhẹn") and not veil
 		// ("mờ ảo"): those two are speed and a timed blur, and this is the
 		// standing quality of being hard to land a blow on.
@@ -353,6 +359,19 @@ func (l Lang) GlossedSkill(carried skill.Skill) string {
 // only, the same trade every authored name here makes — an English reader gets
 // the id, which in English *is* the name.
 func (l Lang) PassiveName(held passive.Passive) string {
+	if l != Vi {
+		return ""
+	}
+	return strings.TrimSpace(held.Name)
+}
+
+// BonusName is a composition bonus's authored name in this language, or nothing.
+//
+// The same trade PassiveName makes, and for the same reason: the name is
+// authored once, in Vietnamese, in the data file beside the rule it names, so
+// there is no table here to drift from it and an English screen gets the id the
+// data writes.
+func (l Lang) BonusName(held composition.Bonus) string {
 	if l != Vi {
 		return ""
 	}

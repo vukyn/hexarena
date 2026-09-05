@@ -2195,14 +2195,39 @@ is only so the shape is readable.
       may be reused, and § *Grow the cast* above says why that is not a problem.
       Authoring one is the *Grow the cast* item above, not a separate task — this
       entry is the queue, not the work.
-- [ ] **Squad composition bonuses: a threshold at 2/3/4/5 for a shared element
-      or a shared origin, plus whatever other axis is worth one.** The idea, as
+- [ ] **Squad composition bonuses: the mechanism and the first bonus are BUILT;
+      what is left is the second axis and the reference screen.** The idea, as
       asked for: fielding several units that share something grants the squad a
       bonus, stronger bonuses sit at higher thresholds, and **not every bonus
       needs four rungs** — one or two is fine where the effect is worth it.
-      Nothing is built; this entry is the idea plus what the shipped data already
-      says about it, so the design starts from measurements rather than from
-      taste.
+
+      **Shipped:** `internal/core/composition` (the count, the ladder, the two
+      scopes, `Book.Without`), `data/bonuses.json` as the sixteenth data file,
+      `battle.Books.Bonuses` awarding before `queue.Add`, the `bonus_held` event
+      with the value and the count on it, and `same_element` — sharers-only,
+      rungs 2 and 3, granting the permanent `kinship` buff at one and two stacks.
+      **Measured** (the same squads, the same seeds, `FightSquads(..., "same_element")`
+      against the same run with it on): at the shipped 100‰ a stack, rung two is
+      worth **+111‰** and rung three **+448‰** on the pairings that are not already
+      saturated — the second one *flips* a matchup, 177‰ → 625‰ — and a squad
+      against a copy of itself reads 500‰ with the bonus on, which is the control.
+      ⚠️ **Half that size was measured and is not available.** At 50‰ a stack the
+      same two readings are **+54‰** and **+203‰**, which is the gentler shape, and
+      `TestASpeedTraitIsPricedBelowTheOtherPermanentBuffs` refuses it: every
+      permanent buff must be priced **above** `quickened`'s 80, because a point of
+      speed is worth more than a point of anything else and pricing another buff
+      level with it makes that one a trap. So the floor for any permanent grant is
+      81, the house figure is 150, and 100 is what a bonus can sit at.
+      ⚠️ Saturated pairings price **nothing** — a rate already at 1000‰ or 0‰ moves
+      by +0 whatever the bonus does — so only the two readings above are quotable
+      out of the eight that were run.
+      ⚠️ **No shipped squad fires it**: s01–s04 carry three different elements
+      each, so the bonus is something a player builds *towards* rather than
+      something already in the starter sides.
+
+      **Still open, and each keeps its reasoning below:** a second axis (the
+      origin one is still empty — decision 4), the rungs at 4 and 5 (decision 6,
+      they wait for 5v5), and the reference screen (the nested item at the end).
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
       four obvious axes outright.** Multiplicity across the nineteen shipped

@@ -809,7 +809,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
-chiêu này gây hiệu ứng gì  1/31
+chiêu này gây hiệu ứng gì  1/32
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -2190,7 +2190,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ----- footer -----
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
-chiêu này gây hiệu ứng gì  1/31
+chiêu này gây hiệu ứng gì  1/32
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -2224,6 +2224,7 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        moisture   ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        heft       sức nặng · dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn
        stoked     nóng máy · tăng chỉ số · 2 lượt · tối đa 5 cộng dồn
+       kinship    đồng khí · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
 
   poison
 
@@ -2257,6 +2258,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   quickened    gia tốc
   evasive      khinh công
   stoked       nóng máy
+  kinship      đồng khí
   shield       khiên, chặn một nhát
   block        đỡ đòn
   regen        hồi máu mỗi lượt
@@ -3284,7 +3286,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
-the statuses this skill inflicts  1 of 31
+the statuses this skill inflicts  1 of 32
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -4645,7 +4647,7 @@ squads  2 built, at most 5 to a side
 ----- footer -----
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
-the statuses this skill inflicts  1 of 31
+the statuses this skill inflicts  1 of 32
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -4679,6 +4681,7 @@ space chooses a status · type the chance in parts per thousand
        moisture   builds up for its holder to spend · 5 turns · up to 999 stacks
        heft       builds up for its holder to spend · 4 turns · up to 5 stacks
        stoked     raises a stat · 2 turns · up to 5 stacks
+       kinship    raises a stat · always in force · up to 2 stacks
 
   poison
 
@@ -4712,6 +4715,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   quickened    
   evasive      
   stoked       
+  kinship      
   shield       blocks one strike
   block        
   regen        restores every turn

@@ -3,6 +3,7 @@ package i18n
 import (
 	"sort"
 
+	"github.com/vukyn/hexarena/internal/core/composition"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/skill"
 	"github.com/vukyn/hexarena/internal/core/status"
@@ -38,7 +39,8 @@ import (
 // table). Statuses are the one kind the id tables cover completely — 22 shipped,
 // 22 glossed, none carrying a name field — which is why the three kinds are read
 // through three different accessors rather than one.
-func (l Lang) LogGlosses(carried []skill.Skill, kinds []status.Kind, held []passive.Passive) map[string]string {
+func (l Lang) LogGlosses(carried []skill.Skill, kinds []status.Kind, held []passive.Passive,
+	awarded []composition.Bonus) map[string]string {
 	if l != Vi {
 		return nil
 	}
@@ -58,10 +60,10 @@ func (l Lang) LogGlosses(carried []skill.Skill, kinds []status.Kind, held []pass
 	// shared with a kind that has no name today would start answering for the wrong
 	// thing the day somebody authors one. LogGlossCollisions is the loud half.
 	collided := make(map[string]bool)
-	for _, id := range LogGlossCollisions(carried, kinds, held) {
+	for _, id := range LogGlossCollisions(carried, kinds, held, awarded) {
 		collided[id] = true
 	}
-	out := make(map[string]string, len(carried)+len(kinds)+len(held))
+	out := make(map[string]string, len(carried)+len(kinds)+len(held)+len(awarded))
 	put := func(id, name string) {
 		if id == "" || name == "" || name == id || collided[id] {
 			return
@@ -77,10 +79,13 @@ func (l Lang) LogGlosses(carried []skill.Skill, kinds []status.Kind, held []pass
 	for _, one := range held {
 		put(one.ID, l.PassiveName(one))
 	}
+	for _, one := range awarded {
+		put(one.ID, l.BonusName(one))
+	}
 	return out
 }
 
-// LogGlossCollisions is every id declared by more than one of the three kinds,
+// LogGlossCollisions is every id declared by more than one of the four kinds,
 // sorted.
 //
 // It exists because LogGlosses cannot be loud on its own: it is asked while a
@@ -93,8 +98,9 @@ func (l Lang) LogGlosses(carried []skill.Skill, kinds []status.Kind, held []pass
 //
 // Sorted rather than ranged out of the map, the same discipline internal/core
 // holds: an order that reaches an output may not come from a map.
-func LogGlossCollisions(carried []skill.Skill, kinds []status.Kind, held []passive.Passive) []string {
-	claimed := make(map[string]int, len(carried)+len(kinds)+len(held))
+func LogGlossCollisions(carried []skill.Skill, kinds []status.Kind, held []passive.Passive,
+	awarded []composition.Bonus) []string {
+	claimed := make(map[string]int, len(carried)+len(kinds)+len(held)+len(awarded))
 	for _, one := range carried {
 		claimed[one.ID]++
 	}
@@ -102,6 +108,9 @@ func LogGlossCollisions(carried []skill.Skill, kinds []status.Kind, held []passi
 		claimed[kind.ID]++
 	}
 	for _, one := range held {
+		claimed[one.ID]++
+	}
+	for _, one := range awarded {
 		claimed[one.ID]++
 	}
 	var out []string

@@ -40,13 +40,13 @@ func (d Digest) String() string {
 // something a person can read out loud.
 func (d Digest) Short() string { return d.String()[:12] }
 
-// dataFiles names the fifteen embedded data files in the order the go:embed
+// dataFiles names the sixteen embedded data files in the order the go:embed
 // directive in seed.go declares them.
 //
 // The order is part of the digest (see digest), so this list is not sorted and
 // must not be: it mirrors the directive, and the directive is what the design
 // record names as the order. It is also the third independent copy of these
-// fifteen names in the package — the directive is the first, the fifteen
+// sixteen names in the package — the directive is the first, the sixteen
 // ReadFile calls are the second — which is why digest_test.go walks the embedded
 // FS in both directions rather than trusting any one of the three.
 var dataFiles = []string{
@@ -65,9 +65,10 @@ var dataFiles = []string{
 	"data/roster.json",
 	"data/builds.json",
 	"data/squads.json",
+	"data/bonuses.json",
 }
 
-// DataDigest is the digest of the fifteen embedded data files.
+// DataDigest is the digest of the sixteen embedded data files.
 //
 // Art is not in it. assets/ cannot reach the simulation, so a peer with a newer
 // picture is not a peer that fights a different battle, and refusing it at the
@@ -137,7 +138,7 @@ func digest(fsys fs.FS, names []string) (Digest, error) {
 	return out, nil
 }
 
-// DigestOf is the digest of the same fifteen files read out of a filesystem the
+// DigestOf is the digest of the same sixteen files read out of a filesystem the
 // caller hands in, so a directory somebody has been editing can be compared
 // against the embedded copy.
 //

@@ -1070,6 +1070,40 @@ the one that caused it, and the only place the source is recorded is the
 `status_applied` event. Two units poisoning the same target leave two stacks that
 the state cannot tell apart.
 
+## What a squad shares
+
+A squad that fields several units of one element is paid for it. Two of a kind is
+a threshold, three is a heavier one, and what arrives is a permanent buff on the
+units that share the element — `kinship`, attack up a tenth at two and a fifth at
+three. It is declared in `bonuses.json` beside the other data, so what a
+threshold is worth is a number an author edits rather than a rule in Go.
+
+Four things about it decide how it plays:
+
+- **It is a drafting decision, not a tactic.** The count is taken from the roster
+  the battle opens with and never taken again. Killing the odd unit out cannot
+  strip it, and a summoned copy never earns one — so it is settled the moment two
+  people agree to fight, and nothing on the board can argue with it.
+- **A dual affinity counts on both sides of itself.** Lapras is water and ice, so
+  it is kin to a Squirtle and kin to nobody else in the same squad at once. This
+  is the first thing in the game that pays a dual for being one.
+- **The unaligned share nothing.** The inert element has no strengths and no
+  weaknesses, and two characters that carry it are not a tribe — they are two
+  characters with no element. Whether an element is inert is read off the chart,
+  so it is the same answer the damage multiplier gives.
+- **The log says which threshold paid.** A `bonus_held` line opens the battle for
+  each unit that received one, naming the bonus, the element shared and how many
+  shared it. A permanent buff with nothing to account for it is a buff a reader
+  has to take on trust, and the log is the only contract a renderer has.
+
+None of the four squads that ship fires it: each carries three different
+elements, so this is something to build towards rather than something already in
+the box. What it is worth was measured the only way a bonus can be — the same
+squad, the same opponent and the same seeds, once with the bonus and once with it
+switched off. Two of a kind is worth about eleven points in a hundred; three, on a
+pairing thin enough to show it, turned a squad that lost four fights in five into
+one that won five in eight.
+
 ## How a battle ends
 
 Three endings, and the closing event names which one it was rather than leaving a

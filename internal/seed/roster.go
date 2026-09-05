@@ -230,9 +230,14 @@ func Books() (battle.Books, error) {
 	if err != nil {
 		return battle.Books{}, err
 	}
+	bonuses, err := BonusBook()
+	if err != nil {
+		return battle.Books{}, err
+	}
 	return battle.Books{
 		Rules: rules, Chart: chart, Bounds: bounds, Limits: limits,
 		Patterns: patterns, Statuses: statuses, Skills: skills, Passives: passives,
+		Bonuses: bonuses,
 	}, nil
 }
 

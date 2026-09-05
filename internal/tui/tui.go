@@ -434,6 +434,13 @@ func Line(event battle.Event, tags, glosses map[string]string) string {
 		// nothing about what it does, and the status appearing on its own has
 		// nothing to account for it.
 		return head + fmt.Sprintf("  holds %s: %s x%d", gloss(event.Passive), gloss(event.Status), event.Stacks)
+	case battle.BonusHeld:
+		// What the squad shared, how many shared it, and what that paid for. The
+		// count is on the line rather than left to a reader to count off the
+		// board, because the board shows who is standing and not which rung was
+		// reached — and the two differ the moment a bonus is sharers-only.
+		return head + fmt.Sprintf("  %d of %s: %s x%d (%s)",
+			event.Count, gloss(event.Shared), gloss(event.Status), event.Stacks, gloss(event.Bonus))
 	case battle.PassiveReleased:
 		// The same line the other way round. A gated trait letting go takes a
 		// visible number down with it, so it reads beside the heal that caused

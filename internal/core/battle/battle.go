@@ -27,6 +27,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/atb"
 	"github.com/vukyn/hexarena/internal/core/combat"
+	"github.com/vukyn/hexarena/internal/core/composition"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/modifier"
@@ -104,6 +105,14 @@ type Books struct {
 	// units hold no traits runs without it, which is what let the field arrive
 	// without every existing caller having to be found.
 	Passives *passive.Book
+	// Bonuses is what a side receives for what it brought, and a battle without
+	// it is every battle fought before composition bonuses existed: the count is
+	// taken, nothing is declared, and nothing is awarded.
+	//
+	// It is optional for the reason Passives is, and it is the field a pricing
+	// run replaces with Book.Without so the same squads can be fought with one
+	// bonus taken out.
+	Bonuses *composition.Book
 }
 
 func (b Books) validate() error {
@@ -207,8 +216,13 @@ type Battle struct {
 	// kept for the battle's whole life, and drained is how far Drain has read
 	// into it. A cursor rather than a truncation is what lets a room hand the
 	// same battle to two players, a spectator and a log at once — see Since.
-	events   []Event
-	drained  int
+	events  []Event
+	drained int
+	// awarded is what the composition bonuses handed out, in the order they were
+	// resolved. It is kept because Begin reports it: the grants themselves went
+	// on at enlistment, and a permanent buff on the opening board with nothing
+	// anywhere to account for it is the trap PassiveHeld was added to close.
+	awarded  []composition.Award
 	acting   *Unit
 	prompt   *Prompt
 	awaiting bool
@@ -233,6 +247,14 @@ func New(books Books, seed uint64, roster []Roster) (*Battle, error) {
 		queue:  atb.New(),
 		byID:   make(map[string]*Unit, len(roster)),
 	}
+	// ⚠️ The bonuses are counted **before** anybody is enlisted, and that order
+	// is load-bearing twice over. A count needs the whole side, and a grant has
+	// to be on the unit before queue.Add reads its speed — a wait is
+	// 1_000_000/speed, so a bonus touching speed applied after the queue was
+	// built would leave turn one wrong for the rest of the battle, which is the
+	// mistake retuneAll exists because of. Here the roster is still a slice of
+	// facts, which is also the only shape this counting rule may be handed.
+	fight.awarded = awards(books.Bonuses, books.Chart, roster)
 	perSide := map[hex.Side]int{}
 	occupied := map[hex.Offset]string{}
 	for _, entry := range roster {
@@ -354,6 +376,9 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 	if err := b.grant(unit, entry.Passives); err != nil {
 		return nil, err
 	}
+	if err := b.award(unit); err != nil {
+		return nil, err
+	}
 	// The buffed speed, and the traits are on by the line above. That ordering is
 	// the whole of this: a wait is 1_000_000/speed, so a trait touching speed has
 	// to be in force before the first one is computed, or turn one is already
@@ -365,6 +390,57 @@ func (b *Battle) enlist(entry Roster, perSide map[hex.Side]int, occupied map[hex
 		return nil, err
 	}
 	return unit, nil
+}
+
+// awards is what the declared bonuses hand this roster, both sides at once.
+//
+// Each side is counted on its own — a bonus is a fact about a squad, and counting
+// across the board would hand a side a threshold its opponent paid for — and the
+// sides are walked in a fixed order rather than by ranging a map, so the awards
+// come back in the same order for the same roster every time. A battle that
+// replays from its seed depends on nothing less.
+func awards(bonuses *composition.Book, chart *element.Chart, roster []Roster) []composition.Award {
+	if bonuses == nil {
+		return nil
+	}
+	var out []composition.Award
+	for _, side := range []hex.Side{hex.SideAlly, hex.SideEnemy} {
+		members := make([]composition.Member, 0, len(roster))
+		for _, entry := range roster {
+			if entry.Side != side {
+				continue
+			}
+			members = append(members, composition.Member{ID: entry.ID, Affinity: entry.Affinity})
+		}
+		out = append(out, bonuses.Awards(chart, members)...)
+	}
+	return out
+}
+
+// award puts one unit's share of its side's bonuses on it.
+//
+// Through Set.Hold, which is the same door a trait's grant goes through, so a
+// bonus saturates alongside every other term on the same stat rather than
+// composing with it, and nothing in the game can dispel one: Remove refuses a
+// permanent status, and the parser refuses a bonus granting anything else.
+//
+// Nothing is emitted here, for the reason grant emits nothing: the log opens at
+// Begin, and a line naming a unit the log has not introduced is one a renderer
+// cannot place.
+func (b *Battle) award(unit *Unit) error {
+	for _, held := range b.awarded {
+		if held.Unit != unit.ID {
+			continue
+		}
+		for _, grant := range held.Grants {
+			kind, err := b.books.Statuses.Lookup(grant.Status)
+			if err != nil {
+				return fmt.Errorf("unit %q: bonus %q: %w", unit.ID, held.Bonus, err)
+			}
+			unit.Statuses.Hold(kind, 0, grant.Stacks)
+		}
+	}
+	return nil
 }
 
 // grant puts a unit's traits on it, before it has a place in the queue.
@@ -480,6 +556,23 @@ func (b *Battle) Begin() {
 			for _, grant := range held.Grants {
 				b.emit(Event{
 					Kind: PassiveHeld, Actor: unit.ID, Passive: held.ID,
+					Status: grant.Status, Stacks: grant.Stacks,
+				})
+			}
+		}
+		// Then what the side brought, after what the unit is. The order is the
+		// reading order: a trait belongs to the character and a bonus to the
+		// squad it was put in, so a reader meets the unit, then the unit's own
+		// properties, then the reason it is standing with these two in
+		// particular.
+		for _, held := range b.awarded {
+			if held.Unit != unit.ID {
+				continue
+			}
+			for _, grant := range held.Grants {
+				b.emit(Event{
+					Kind: BonusHeld, Actor: unit.ID, Bonus: held.Bonus,
+					Shared: held.Value, Count: held.Count,
 					Status: grant.Status, Stacks: grant.Stacks,
 				})
 			}

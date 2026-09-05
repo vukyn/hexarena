@@ -12,6 +12,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
+	"github.com/vukyn/hexarena/internal/core/composition"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/modifier"
@@ -46,6 +47,7 @@ const (
 	castFile       = "cast.json"
 	buildsFile     = "builds.json"
 	squadsFile     = "squads.json"
+	bonusesFile    = "bonuses.json"
 )
 
 // emptyCatalogue is what a data directory with no build catalogue reads as.
@@ -113,6 +115,11 @@ type Library struct {
 	// read *through* another: a build is checked against the cast, so it is
 	// parsed last and cannot be held without the characters beside it.
 	builds *cast.BuildBook
+	// bonuses is what a squad is paid for what it shares. It is held rather than
+	// consumed because this package both fights with it and prices it: a
+	// measurement fights the same squads with one bonus taken out, which is a
+	// filtered copy of this book rather than a second parse of the file.
+	bonuses *composition.Book
 	// squads is the sides an author has built to fight each other. It is the one
 	// book this package *writes for its own sake*: every other file here is the
 	// game's, and a squad is the tool's — which is why it is held as a plain
@@ -179,6 +186,13 @@ func Load(dir string) (*Library, error) {
 		return nil, err
 	}
 	if lib.passives, err = passive.ParseBook(raw, passive.Deps{Statuses: lib.statuses}); err != nil {
+		return nil, err
+	}
+	if raw, err = read(bonusesFile); err != nil {
+		return nil, err
+	}
+	if lib.bonuses, err = composition.ParseBook(raw,
+		composition.Deps{Statuses: lib.statuses, Chart: lib.chart}); err != nil {
 		return nil, err
 	}
 	if raw, err = read(skillsFile); err != nil {
@@ -296,6 +310,7 @@ func (l *Library) Patterns() *pattern.Book         { return l.patterns }
 func (l *Library) Statuses() *status.Book          { return l.statuses }
 func (l *Library) Skills() *skill.Book             { return l.skills }
 func (l *Library) Passives() *passive.Book         { return l.passives }
+func (l *Library) Bonuses() *composition.Book      { return l.bonuses }
 func (l *Library) Origins() *cast.OriginBook       { return l.origins }
 func (l *Library) Species() *cast.SpeciesBook      { return l.species }
 func (l *Library) Archetypes() *cast.ArchetypeBook { return l.archetypes }

@@ -33,11 +33,15 @@ func TestNoLogGlossCollidesAcrossKinds(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load passives: %v", err)
 	}
+	bonusBook, err := seed.BonusBook()
+	if err != nil {
+		t.Fatalf("load bonuses: %v", err)
+	}
 	collisions := LogGlossCollisions(
-		skillBook.Skills(), statusBook.Kinds(), passiveBook.All())
+		skillBook.Skills(), statusBook.Kinds(), passiveBook.All(), bonusBook.All())
 	if len(collisions) != 0 {
-		t.Errorf("these ids are declared by more than one of skills.json, statuses.json "+
-			"and passives.json, so the battle log cannot say which one it means and drops "+
+		t.Errorf("these ids are declared by more than one of skills.json, statuses.json, "+
+			"passives.json and bonuses.json, so the battle log cannot say which one it means and drops "+
 			"the name entirely: %s", strings.Join(collisions, ", "))
 	}
 }
@@ -69,7 +73,7 @@ func TestACollidingIDIsLeftOutRatherThanPickedBetween(t *testing.T) {
 	// a data file that did would be a change to the game rather than to this test.
 	twin := statusBook.Kinds()[0]
 	twin.ID = shared
-	glosses := Vi.LogGlosses(skillBook.Skills(), append(statusBook.Kinds(), twin), nil)
+	glosses := Vi.LogGlosses(skillBook.Skills(), append(statusBook.Kinds(), twin), nil, nil)
 	if name, named := glosses[shared]; named {
 		t.Errorf("a colliding id was glossed as %q; it must be left out, because "+
 			"nothing here can tell which kind the event printing it meant", name)
@@ -78,7 +82,7 @@ func TestACollidingIDIsLeftOutRatherThanPickedBetween(t *testing.T) {
 	if glosses["poison"] == "" {
 		t.Error("a collision took the rest of the map with it")
 	}
-	collisions := LogGlossCollisions(skillBook.Skills(), append(statusBook.Kinds(), twin), nil)
+	collisions := LogGlossCollisions(skillBook.Skills(), append(statusBook.Kinds(), twin), nil, nil)
 	if len(collisions) != 1 || collisions[0] != shared {
 		t.Errorf("the collisions came back as %v, want [%s]", collisions, shared)
 	}
@@ -99,7 +103,7 @@ func TestEnglishGetsNoLogGlossesAtAll(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load passives: %v", err)
 	}
-	if got := En.LogGlosses(skillBook.Skills(), statusBook.Kinds(), passiveBook.All()); got != nil {
+	if got := En.LogGlosses(skillBook.Skills(), statusBook.Kinds(), passiveBook.All(), nil); got != nil {
 		t.Errorf("English came back with %d names, want nil", len(got))
 	}
 }
@@ -126,7 +130,11 @@ func TestTheLogGlossesNameEveryShippedID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load passives: %v", err)
 	}
-	glosses := Vi.LogGlosses(skillBook.Skills(), statusBook.Kinds(), passiveBook.All())
+	bonusBook, err := seed.BonusBook()
+	if err != nil {
+		t.Fatalf("load bonuses: %v", err)
+	}
+	glosses := Vi.LogGlosses(skillBook.Skills(), statusBook.Kinds(), passiveBook.All(), bonusBook.All())
 
 	inTable := 0
 	for _, one := range skillBook.Skills() {

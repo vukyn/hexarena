@@ -1,13 +1,23 @@
 ---
 name: hexarena-composition-bonuses
-description: "hexarena — squad composition bonus (thresholds on a shared element/origin); 7 decisions settled 2026-09-04, NOTHING built"
+description: "hexarena — squad composition bonus: MECHANISM + first bonus SHIPPED 2026-09-06 (same_element, rungs 2/3); ⚠️ buff vĩnh viễn phải > quickened 80‰ nên 50‰ bị luật từ chối"
 metadata: 
   node_type: memory
   type: project
-  modified: 2026-09-04T11:29:22.229Z
+  modified: 2026-09-06T00:00:00.000Z
 ---
 
-Squad **composition bonuses**: fielding several units that share something grants a bonus at a threshold (rung). User's idea, filed in `TODO.md` across PRs #289/#290/#291. **Nothing is built** — the entry is idea + measurements + settled decisions. See [[hexarena-shipping-a-character]], [[hexarena-roster-cannot-price-damage]], [[hexarena-tui-references]].
+Squad **composition bonuses**: fielding several units that share something grants a bonus at a threshold (rung). User's idea, filed in `TODO.md` across PRs #289/#290/#291, **built 2026-09-06**.
+
+**Đã ship:** `internal/core/composition` (đếm, ladder, 2 scope, `Book.Without`) · `data/bonuses.json` (file data thứ **16**) · `battle.Books.Bonuses` award **trước `queue.Add`** · event `bonus_held` (mang bonus + giá trị chia + số người) · bonus `same_element` sharers-only, bậc 2/3, cấp status vĩnh viễn `kinship` 1 và 2 stack (attack +100‰/stack).
+
+⚠️ **`kinship` 50‰/stack đo êm hơn (+54‰ / +203‰) nhưng KHÔNG hợp lệ.** `TestASpeedTraitIsPricedBelowTheOtherPermanentBuffs` bắt mọi buff vĩnh viễn phải **lớn hơn** `quickened` = 80‰: một điểm tốc độ đáng hơn một điểm bất cứ gì, đặt ngang là biến trait kia thành bẫy. Sàn cho mọi grant vĩnh viễn là **81**, giá nhà là 150, nên bonus ngồi ở **100**.
+
+**Số đo ở 100‰/stack** (cùng đội, cùng seed, `FightSquads(..., "same_element")` so với bật): bậc 2 **+111‰**, bậc 3 **+448‰** (lật hẳn một cặp 177→625‰); mirror 500‰ đúng chằn. ⚠️ **Cặp bão hoà định giá bằng KHÔNG** — rate đã 1000‰ hay 0‰ thì bonus đo ra +0, nên chỉ 2 trong 8 cặp chạy là trích được.
+
+⚠️ **Không đội ship nào bắn bonus**: s01–s04 mỗi đội 3 hệ khác nhau. Đây là thứ người chơi *dựng đội để lấy*, không phải thứ có sẵn.
+
+⚠️ **Hệ trơ KHÔNG thành bộ tộc**, và luật đọc từ `element.Chart.Inert()` chứ không viết chữ `neutral`: chia nhau cái hệ không khắc chế ai là chia nhau sự vắng mặt của một hệ. See [[hexarena-shipping-a-character]], [[hexarena-roster-cannot-price-damage]], [[hexarena-tui-references]].
 
 **Why:** the design was settled *before* code, and four of the decisions were made against measurements off the shipped data rather than taste. Rebuilding that reasoning from the JSON costs a full session.
 

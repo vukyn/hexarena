@@ -1122,6 +1122,47 @@ counting map entries (a cacheless preview writes the same key every time) and
 deleting the file (which froze the wrong behaviour) — so it is measured by making
 the bytes unreadable while size and mtime stay put.
 
+**A composition bonus is what a SIDE brought, and it is settled before the first
+turn.** `internal/core/composition` counts one axis over a side's roster — the
+elements its units carry, today — and says which rung a count reaches and who
+receives the grant. Five things about it are decisions rather than details:
+
+- **Counted once, from the roster, before anybody is enlisted.** `battle.New`
+  resolves the awards while the roster is still a slice of facts, which is both
+  the only shape this counting rule may be handed and the only moment early
+  enough: a grant has to be on the unit before `queue.Add` reads its speed, for
+  the reason a trait does — a wait is `1_000_000/speed` and the first one is
+  served before anything could retune it. Nothing recounts, so focusing the odd
+  unit out cannot take a bonus away and a summon never earns one.
+- **Granted as permanent statuses, through `Set.Hold`**, exactly as a trait's
+  grant is. That is what makes a bonus saturate alongside every other term on the
+  same stat rather than composing with it, and what answers the dispel question
+  without a new rule: `Remove` already refuses a permanent status, and
+  `composition.ParseBook` refuses a bonus granting anything else — a timed grant
+  would count down and leave a squad that built for a threshold with nothing.
+- **A side is counted on its own, and an inert element forms no tribe.** Counting
+  across the board would hand a side a threshold its opponent paid for. The
+  inert exclusion is read off `element.Chart.Inert()` rather than naming
+  `neutral` here, so a chart that gives the inert element a matchup makes it
+  count without this rule being edited: sharing the element with no strengths and
+  no weaknesses is sharing the absence of one.
+- **Rungs are a ladder, not a set** — `Bonus.Reached` returns the highest rung a
+  count satisfies and that one only. Read cumulatively the top rung would be
+  worth the sum of a table nobody wrote down, and it would read as working
+  because the figure only ever goes up.
+- ⚠️ **`Book.Without` is the pricing instrument and it is a SET, not a switch.**
+  Nothing about a bonus can be measured until it can be turned off: swapping a
+  member measures the member, and putting the same bonus on both sides cancels
+  it exactly. What is left is the same squad, the same members and the same seeds
+  with one bonus gone — `forge.FightSquads(home, away, seeds, "same_element")` —
+  and because bonuses stack, a global off would measure the system rather than
+  the rung. `SquadReport.Without` carries what was disabled, so a rate cannot be
+  quoted without its condition.
+- The log says so: `bonus_held`, on the opening board only, carrying the bonus,
+  the value shared and the count. It is not a `passive_held` — a trait is what a
+  unit **is** and a bonus is what its side **brought**, and the same unit in
+  another squad would not have it.
+
 **A passive is statuses, and permanent means four things.** `passive.Passive`
 grants `status` ids and nothing else — the terms belong to the status, so a trait
 saturates *alongside* a temporary buff through `modifier.Set` rather than
@@ -1609,6 +1650,13 @@ code.
 
 Balance lives in `internal/seed/data`, embedded with `go:embed`. Changing a number
 there changes the game without touching Go.
+
+⚠️ **There are SIXTEEN of them since `bonuses.json`, and the name is spelled in
+three independent places** — the `//go:embed` directive in `internal/seed/seed.go`,
+the `dataFiles` slice in `internal/seed/digest.go`, and a `XxxFile()` accessor
+beside the other fifteen. Missing the second is the silent one: the file loads and
+the **data digest stops covering it**, so two peers on different bonus data would
+pass the gate and then diverge, which is the failure the digest exists to prevent.
 
 **Two goldens grew with the lobby, and both are named here so the next `make
 golden` reader knows what moved.** `internal/screen/testdata/screens.golden`
