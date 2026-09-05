@@ -454,6 +454,7 @@ func TestEveryEventKindIsReachable(t *testing.T) {
 	}
 	record(aHandPlayedGateCrossing(t))
 	record(aHandPlayedSummon(t))
+	record(aHandPlayedSplit(t))
 	record(aHandPlayedSpread(t))
 	record(aHandPlayedBarrier(t))
 	for kind := 0; kind < battle.KindCount; kind++ {
@@ -1201,4 +1202,68 @@ func TestUndoRebuildsTheExactPosition(t *testing.T) {
 		t.Errorf("undoing then redoing did not return to the original position:\n%s\n%s",
 			snapshot(before), snapshot(full))
 	}
+}
+
+// aHandPlayedSplit is the one kind autopilot cannot reach, and the reason is
+// worth stating: the rating has no term for a unit that trades its own maximum
+// health for a second body, so Suggest never casts a split however good the trade
+// is. Left to the bench alone the Split event would be declared, rendered, and
+// never emitted.
+//
+// ⚠️ It is the same hole the hiding has — see TODO.md § "The rating cannot price
+// hiding" — and both are recorded rather than papered over. A hand-played battle
+// says the mechanic works and says nothing at all about whether anybody would
+// choose it.
+func aHandPlayedSplit(t *testing.T) []battle.Event {
+	t.Helper()
+	fight, err := battle.New(benchBooks(t), 9, []battle.Roster{
+		{ID: "whole", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "fire"), Stats: benchStats(3000, 700, 300, 200),
+			Skills: []string{"halve", "strike"}},
+		{ID: "sparring", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+			Affinity: mustAffinity(t, "metal"), Stats: benchStats(4800, 300, 300, 100),
+			Skills: []string{"strike"}},
+	})
+	if err != nil {
+		t.Fatalf("new battle: %v", err)
+	}
+	fight.Begin()
+	var events []battle.Event
+	for turn := 0; turn < 200; turn++ {
+		prompt, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("advance: %v", err)
+		}
+		if prompt == nil {
+			break
+		}
+		if !prompt.Skipped {
+			// The caster splits while its own gate still allows it; everybody
+			// else, the copy included, takes whatever the engine would.
+			splitting := false
+			if prompt.Unit == "whole" {
+				for _, option := range prompt.Options {
+					if option.Skill == "halve" && option.Blocked == battle.BlockNone {
+						splitting = true
+					}
+				}
+			}
+			if splitting {
+				if err := fight.Act("halve", unitCell(t, fight, "whole")); err != nil {
+					t.Fatalf("halve: %v", err)
+				}
+			} else if choice, ok := fight.Suggest(prompt); ok {
+				if err := fight.Act(choice.Skill, choice.Aim); err != nil {
+					t.Fatalf("act %s: %v", choice.Skill, err)
+				}
+			} else if err := fight.Pass("nothing to do"); err != nil {
+				t.Fatalf("pass: %v", err)
+			}
+		}
+		events = append(events, fight.Drain()...)
+		if fight.Finished() {
+			break
+		}
+	}
+	return events
 }

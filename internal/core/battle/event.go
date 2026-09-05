@@ -145,12 +145,26 @@ const (
 	// before anything is rolled, so a Damaged there would report a strike
 	// landing on a turn that may end in nothing but misses.
 	//
-	// Declared last, which is the rule for this enum.
 	Paid
+	// Split is a caster giving part of its maximum health to a unit it has just
+	// put on the board, and it carries how much moved and what the caster's
+	// maximum is now.
+	//
+	// Its own kind rather than a Paid, and the two are different facts. A cost is
+	// health spent, so a heal puts it back and the caster is the same creature
+	// afterwards; this moves the maximum, so nothing puts it back and the caster
+	// is smaller for the rest of the battle. A reader told they were the same
+	// would have no way to explain a mender failing to restore somebody to full.
+	//
+	// It is emitted beside the Summoned it belongs to rather than instead of it:
+	// one says a body arrived and the other says where the body came from.
+	//
+	// Declared last, which is the rule for this enum.
+	Split
 )
 
 // KindCount is the number of event kinds.
-const KindCount = int(Paid) + 1
+const KindCount = int(Split) + 1
 
 var kindNames = [KindCount]string{
 	Started:         "started",
@@ -178,6 +192,7 @@ var kindNames = [KindCount]string{
 	Spread:          "spread",
 	Absorbed:        "absorbed",
 	Paid:            "paid",
+	Split:           "split",
 }
 
 func (k Kind) String() string {

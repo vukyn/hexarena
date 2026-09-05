@@ -353,6 +353,14 @@ func Line(event battle.Event, tags, glosses map[string]string) string {
 		// this is the caster handing something over, not somebody taking it.
 		return head + fmt.Sprintf(" pays %d for %s, %d hp left",
 			event.Amount, gloss(event.Skill), event.Remaining)
+	case battle.Split:
+		// Worded so it cannot be read as the price above it. A payment leaves the
+		// caster the same creature and a heal puts it back; this says the maximum
+		// itself moved, and the figure after it is what the caster is now — not
+		// what it has left, which is the number `pays` prints and the one a reader
+		// would otherwise assume.
+		return head + fmt.Sprintf("  gives %d of itself to %s, %d hp at most now",
+			event.Amount, tag(event.Target), event.Remaining)
 	case battle.Absorbed:
 		// A line of its own beside the block above, and the two words are chosen
 		// to be unmistakable: a blocked strike is stopped and this one is eaten.

@@ -2619,6 +2619,37 @@ is only so the shape is readable.
       listing, which is most of them; that is the change being visible rather than
       a fixture problem.
 
+- [ ] **The rating cannot price hiding, so nothing will ever cast it.** The
+      burrow mechanic shipped 2026-09-05 — a status that takes its holder off
+      `aims` and refuses every application somebody else throws — and `Suggest`
+      has no term for any of it.
+
+      What a turn is worth to the rating is damage done, health restored and
+      statuses landed. Hiding does **none** of those: it is worth the damage that
+      *does not arrive*, which is a quantity the rating never computes because
+      nothing else in the engine has ever needed it. So a burrow priced today
+      reads as nought, and an AI holding it casts anything else instead.
+
+      ⚠️ **This is the shape `brace` was in**, and that is the precedent to copy
+      rather than a warning: a cooldownless self-buff that buys a later turn was
+      also worth nought until `pricing.selfSpendable` grew an arm that priced the
+      fuel by what the gated spender would do with it. The equivalent here is to
+      price a hidden turn by what the other side would otherwise have thrown at
+      the holder — `b.expected` already computes exactly that figure from the
+      other direction, once per enemy option.
+
+      ⚠️ **A cheap wrong answer to avoid:** pricing it as "the damage I would take
+      this turn" makes it best when the holder is about to die, which is when the
+      turn is worth least — the holder is on one point either way and the turn
+      would have been better spent killing something. `spentHealth`'s note records
+      the same trap for a health cost and the same fix: read what the skill
+      *asks*, not what the moment happens to make it worth.
+
+      Until this is done, burrow is a **human-only** skill: it works, it is
+      measured (TestABurrowedUnitCannotBeAimedAtButIsStillSplashed), and the
+      auto-battle simply never chooses it — which also means every squad
+      measurement that includes it is measuring a unit one skill short.
+
 - [ ] **Four ways of playing the board that the engine cannot express yet.**
       Raised 2026-09-05 while authoring `pokemon.abra`, when three of the four
       canonical Alakazam mechanics turned out to have no home. They are listed
