@@ -217,4 +217,16 @@ livewire, formation column 1
            absorbs 5609 of the 11500 budget, 5891 to spare
   kit      thunder_shock charge_beam spark electro_ball thunderbolt thunder_wave discharge overload magnetise zap_cannon taunt body_slam
 
-18 presets
+spendthrift, formation column 2
+  the one that throws blows nobody else could afford: the most expensive skills in the book on the thinnest frame that could hold them, and a trait that quietly refuses the bill — take the trait away and it kills itself in four turns
+  demands  a character built from it must carry dark
+  hp 930->2800  attack 203->610  defense 86->260  speed 52->158  accuracy 63->190  dodge 24->74
+  level 1  hp 930, atk 203, def 86, spd 52, acc 63, ddg 24
+           absorbs 1196 of the 11500 budget, 10304 to spare
+  level 30 hp 1849, atk 403, def 171, spd 104, acc 125, ddg 48
+           absorbs 2907 of the 11500 budget, 8593 to spare
+  level 60 hp 2800, atk 610, def 260, spd 158, acc 190, ddg 74
+           absorbs 5233 of the 11500 budget, 6267 to spare
+  kit      psycho_cut shadow_ball dark_pulse night_shade nasty_plot mind_burn mind_crush shadow_punch spite taunt
+
+19 presets

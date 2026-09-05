@@ -183,3 +183,106 @@ func cast(t *testing.T, fight *battle.Battle, id string, aim hex.Offset) {
 		t.Fatalf("act %s: %v", id, err)
 	}
 }
+
+// TestATraitSparesAHealthCostAtBothSites is the whole of what passive.Spares is
+// for, and it is written as one test on purpose: the two halves are the two
+// places a cost is read, and a trait applied to one of them is worse than a trait
+// applied to neither.
+//
+// ⚠️ **Applied only at Battle.spendHealth, the trait makes a unit that never
+// casts the skill it holds the trait for.** The rating still prices the full ask,
+// so Suggest keeps declining `bloodprice` for its free twin — the holder pays
+// nothing for a cast it never makes. That failure is invisible to a test that
+// only reads health, which is what the second subtest exists to stop.
+//
+// ⚠️ **Applied only at pricing.spentHealth, the unit bleeds while believing it
+// does not**, which is the same defect wearing the other face and is what the
+// first subtest reads.
+//
+// The fixture is the one TestAPriceIsChargedForEverySkillAndNotOnlyAnAllSidedOne
+// already stands on — `bloodprice` costs a fifth of maximum health, `clout` is
+// its free twin — so "the rating prefers clout" is a claim this file has already
+// measured without the trait.
+func TestATraitSparesAHealthCostAtBothSites(t *testing.T) {
+	priceWith := func(t *testing.T, traits ...string) *battle.Battle {
+		t.Helper()
+		fight, err := battle.New(books(t), 5, []battle.Roster{
+			{ID: "me", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("neutral"), Stats: stats(4000, 500, 300, 200),
+				Skills: []string{"bloodprice", "clout"}, Passives: traits},
+			{ID: "them", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 1},
+				Affinity: single("neutral"), Stats: stats(4000, 500, 300, 1),
+				Skills: []string{"clout"}},
+		})
+		if err != nil {
+			t.Fatalf("new battle: %v", err)
+		}
+		fight.Begin()
+		fight.Drain()
+		return fight
+	}
+	// What the caster actually hands over, read off the log rather than the
+	// health so that a cast which paid nothing is told apart from one that never
+	// paid at all.
+	paidFor := func(t *testing.T, fight *battle.Battle) (paid int64, charged bool) {
+		t.Helper()
+		them, _ := fight.Unit("them")
+		cast(t, fight, "bloodprice", them.Cell)
+		for _, event := range fight.Drain() {
+			if event.Kind == battle.Paid {
+				return event.Amount, true
+			}
+		}
+		return 0, false
+	}
+
+	t.Run("the charge", func(t *testing.T) {
+		// The control, and it is the reason the figures below mean anything: the
+		// same skill on the same frame with no trait at all.
+		full, charged := paidFor(t, priceWith(t))
+		if !charged || full <= 0 {
+			t.Fatalf("the untrained caster paid %d (charged %v), so there is no price to spare",
+				full, charged)
+		}
+		half, charged := paidFor(t, priceWith(t, "halfbilled"))
+		if !charged {
+			t.Fatal("a half-spared cast was not charged at all, so the share was not applied")
+		}
+		if want := full / 2; half != want {
+			t.Errorf("a trait sparing half a cost left a price of %d, want %d of %d",
+				half, want, full)
+		}
+		// A trait sparing the whole of it charges nothing, which reaches
+		// spendHealth's own `paid <= 0` return and emits no event — the absence
+		// is the assertion.
+		if paid, charged := paidFor(t, priceWith(t, "unbilled")); charged || paid != 0 {
+			t.Errorf("a fully spared cast still charged %d (charged %v)", paid, charged)
+		}
+	})
+
+	t.Run("the rating", func(t *testing.T) {
+		chosen := func(t *testing.T, fight *battle.Battle) string {
+			t.Helper()
+			prompt, err := fight.Advance()
+			if err != nil {
+				t.Fatalf("advance: %v", err)
+			}
+			choice, found := fight.Suggest(prompt)
+			if !found {
+				t.Fatal("nothing was suggested, so there is no preference to read")
+			}
+			return choice.Skill
+		}
+		// The premise, held rather than assumed: without the trait the rating
+		// declines the costly skill. If it stopped doing that the subtest below
+		// would pass on a rating that never read a price at all.
+		if got := chosen(t, priceWith(t)); got != "clout" {
+			t.Fatalf("with no trait the rating chose %q, and this subtest is about a rating "+
+				"that declines a price", got)
+		}
+		if got := chosen(t, priceWith(t, "unbilled")); got != "bloodprice" {
+			t.Errorf("the caster pays nothing for %q and the rating still chose %q: the sparing "+
+				"reached the charge and not the price", "bloodprice", got)
+		}
+	})
+}

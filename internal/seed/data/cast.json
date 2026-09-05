@@ -147,6 +147,187 @@
       ]
     },
     {
+      "id": "pokemon.abra",
+      "name": "Abra",
+      "origin": "pokemon",
+      "archetype": "spendthrift",
+      "image": "assets/abra.svg",
+      "element": "dark",
+      "bio": "Ngủ gần hết ngày và vẫn biết chính xác lúc nào có người lại gần. Chưa ai kể được chuyện mình bắt gặp nó tỉnh: hễ thấy động là chỗ nó nằm trống trơn, còn nó thì đã ở một chỗ khác, vẫn đang ngủ.",
+      "species": [
+        "esper"
+      ],
+      "stages": [
+        {
+          "name": "Abra",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 560,
+              "max": 1680
+            },
+            "attack": {
+              "base": 122,
+              "max": 366
+            },
+            "defense": {
+              "base": 52,
+              "max": 156
+            },
+            "speed": {
+              "base": 31,
+              "max": 95
+            },
+            "accuracy": {
+              "base": 38,
+              "max": 114
+            },
+            "dodge": {
+              "base": 14,
+              "max": 44
+            }
+          }
+        },
+        {
+          "name": "Kadabra",
+          "min_level": 16,
+          "image": "assets/kadabra.svg",
+          "stats": {
+            "hp": {
+              "base": 745,
+              "max": 2240
+            },
+            "attack": {
+              "base": 162,
+              "max": 488
+            },
+            "defense": {
+              "base": 69,
+              "max": 208
+            },
+            "speed": {
+              "base": 42,
+              "max": 126
+            },
+            "accuracy": {
+              "base": 50,
+              "max": 152
+            },
+            "dodge": {
+              "base": 19,
+              "max": 59
+            }
+          }
+        },
+        {
+          "name": "Alakazam",
+          "min_level": 36,
+          "image": "assets/alakazam.svg",
+          "stats": {
+            "hp": {
+              "base": 930,
+              "max": 2800
+            },
+            "attack": {
+              "base": 203,
+              "max": 610
+            },
+            "defense": {
+              "base": 86,
+              "max": 260
+            },
+            "speed": {
+              "base": 52,
+              "max": 158
+            },
+            "accuracy": {
+              "base": 63,
+              "max": 190
+            },
+            "dodge": {
+              "base": 24,
+              "max": 74
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "psycho_cut"
+        },
+        {
+          "id": "shadow_ball",
+          "at_level": 8
+        },
+        {
+          "id": "nasty_plot",
+          "at_level": 12
+        },
+        {
+          "id": "dark_pulse",
+          "at_level": 16
+        },
+        {
+          "id": "mind_crush",
+          "at_level": 20
+        },
+        {
+          "id": "night_shade",
+          "at_level": 24
+        },
+        {
+          "id": "mind_burn",
+          "at_level": 28
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 32
+        },
+        {
+          "id": "shadow_punch",
+          "at_level": 36
+        },
+        {
+          "id": "taunt",
+          "at_level": 40
+        },
+        {
+          "id": "spite",
+          "at_level": 44
+        },
+        {
+          "id": "curse",
+          "at_level": 48
+        },
+        {
+          "id": "body_slam",
+          "at_level": 52
+        },
+        {
+          "id": "shadow_claw",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "magic_guard",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 48
+        }
+      ]
+    },
+    {
       "id": "pokemon.bulbasaur",
       "name": "Bulbasaur",
       "origin": "pokemon",

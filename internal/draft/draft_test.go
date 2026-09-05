@@ -396,6 +396,18 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 		}
 		return drafting
 	}
+	// named is the character a case actually took, recorded by the case and read
+	// back by the comparison at the bottom.
+	//
+	// ⚠️ **Four of the wordings below name a character and it used to be spelled
+	// out.** They said `pokemon.bulbasaur`, which was never the claim — the claim
+	// is *whichever character the pool offers first*, and bulbasaur was only that
+	// until `pokemon.abra` shipped and sorted ahead of it. Four correct refusals
+	// went red for a content change that had nothing to do with them. So the
+	// wording carries a %s and the case fills it in, on the same reasoning as
+	// heldBack below: looked up rather than named, so it stays true as the cast
+	// moves.
+	var named string
 	// intoThePickingStage skips every ban, which is the cheapest way to the
 	// picking stage and exercises the skip on the way.
 	intoThePickingStage := func(t *testing.T, drafting *draft.Draft) {
@@ -460,6 +472,7 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 		{"a banned character is picked",
 			func(t *testing.T, drafting *draft.Draft) error {
 				banned := first(t, drafting)
+				named = banned
 				if err := drafting.Ban(wire.SeatHost, banned); err != nil {
 					t.Fatalf("the host bans %s: %v", banned, err)
 				}
@@ -471,11 +484,12 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 				}
 				return drafting.Pick(wire.SeatHost, banned)
 			},
-			"\"pokemon.bulbasaur\" is out of this draft already: host took it with a ban"},
+			"\"%s\" is out of this draft already: host took it with a ban"},
 		{"a character the other side has picked is picked",
 			func(t *testing.T, drafting *draft.Draft) error {
 				intoThePickingStage(t, drafting)
 				taken := first(t, drafting)
+				named = taken
 				if err := drafting.Pick(wire.SeatHost, taken); err != nil {
 					t.Fatalf("the host picks %s: %v", taken, err)
 				}
@@ -485,7 +499,7 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 				}
 				return drafting.Pick(wire.SeatGuest, taken)
 			},
-			"\"pokemon.bulbasaur\" is out of this draft already: host took it with a pick"},
+			"\"%s\" is out of this draft already: host took it with a pick"},
 		{"a loadout arrives with no pick open",
 			func(t *testing.T, drafting *draft.Draft) error {
 				return drafting.Loadout(wire.SeatHost, "", []string{"strike"}, nil)
@@ -495,6 +509,7 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 			func(t *testing.T, drafting *draft.Draft) error {
 				intoThePickingStage(t, drafting)
 				taken := first(t, drafting)
+				named = taken
 				if err := drafting.Pick(wire.SeatHost, taken); err != nil {
 					t.Fatalf("the host picks %s: %v", taken, err)
 				}
@@ -504,18 +519,19 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 				}
 				return drafting.Loadout(wire.SeatHost, form, skills, passives)
 			},
-			"host's pick of pokemon.bulbasaur already has its loadout, and a pick's loadout is " +
+			"host's pick of %s already has its loadout, and a pick's loadout is " +
 				"chosen once: it is guest's turn to pick now"},
 		{"anything at all is decided while a loadout is owed",
 			func(t *testing.T, drafting *draft.Draft) error {
 				intoThePickingStage(t, drafting)
 				taken := first(t, drafting)
+				named = taken
 				if err := drafting.Pick(wire.SeatHost, taken); err != nil {
 					t.Fatalf("the host picks %s: %v", taken, err)
 				}
 				return drafting.Pick(wire.SeatHost, "pokemon.mew")
 			},
-			"host has just picked pokemon.bulbasaur and owes it a loadout, so nothing else can " +
+			"host has just picked %s and owes it a loadout, so nothing else can " +
 				"be decided until the form, the skills and the trait are chosen"},
 		// ⚠️ These two used to be one case. Playing the picking out no longer
 		// finishes a draft — the arrange phase is open at that point — so the
@@ -631,12 +647,22 @@ func TestEveryRefusalThisStateMachineOwes(t *testing.T) {
 			},
 			"this draft is finished, so there is no open decision for an allowance to run out on"},
 	} {
+		named = ""
 		err := one.refuse(t, fresh(t))
+		want := one.want
+		if strings.Contains(want, "%s") {
+			if named == "" {
+				t.Errorf("%s names a character in its wording and recorded none, so there is "+
+					"nothing to compare against", one.what)
+				continue
+			}
+			want = fmt.Sprintf(want, named)
+		}
 		switch {
 		case err == nil:
-			t.Errorf("%s was allowed, and it should be refused with\n  %q", one.what, one.want)
-		case err.Error() != one.want:
-			t.Errorf("%s refuses with\n  %q\nand the wording is\n  %q", one.what, err.Error(), one.want)
+			t.Errorf("%s was allowed, and it should be refused with\n  %q", one.what, want)
+		case err.Error() != want:
+			t.Errorf("%s refuses with\n  %q\nand the wording is\n  %q", one.what, err.Error(), want)
 		}
 	}
 }

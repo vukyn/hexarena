@@ -138,11 +138,12 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (20 trong 20 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
 
   fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
   naruto.naruto            naruto         wind <gió>
+  pokemon.abra             pokemon        dark <bóng tối>
   pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
   pokemon.cleffa           pokemon        light <ánh sáng>
@@ -156,7 +157,6 @@ danh sách nhân vật  đang xem tất cả nguồn (20 trong 20 nhân vật)
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
   pokemon.oddish           pokemon        grass <cỏ>
-  pokemon.pichu            pokemon        electric <điện>
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | a forked member =====
@@ -398,13 +398,13 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
 A2   Bloom                [##########]  2200/2200    200   -
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
-A5   Charizard            [##########]  3100/3100    140   -
+A4   Alakazam             [##########]  2800/2800    158   -
+A5   Venusaur             [##########]  3800/3800    100   -
 E1   Example Adept        [##########]  3100/3100     90   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
-E5   Charizard            [##########]  3100/3100    140   -
+E4   Alakazam             [##########]  2800/2800    158   -
+E5   Venusaur             [##########]  3800/3800    100   -
 
 A2 Bloom, lượt 1
 > bolt          80% công · tầm 3
@@ -432,8 +432,8 @@ nhắm bolt vào
 > 3,0  E3 Sennin
   3,1  E2 Bloom
   3,2  E1 Example Adept
-  4,1  E5 Charizard
-  4,2  E4 Venusaur
+  4,1  E5 Venusaur
+  4,2  E4 Alakazam
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | add a skill =====
 
@@ -506,13 +506,14 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | allowlist picker =====
 
-nhân vật nào được học chiêu này  0/20
+nhân vật nào được học chiêu này  0/21
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (20 trong 20)
+đang xem tất cả nguồn (21 trong 21)
 
 >      fixture-anime.adept
        fixture-game.sprout
        naruto.naruto
+       pokemon.abra
        pokemon.bulbasaur
        pokemon.charmander
        pokemon.cleffa
@@ -521,7 +522,6 @@ space để chọn · để trống thì ai cũng học được chiêu này
        pokemon.gible
        pokemon.happiny
        pokemon.lapras
-       pokemon.machop
 
   chưa chọn gì
 
@@ -529,11 +529,12 @@ space để chọn · để trống thì ai cũng học được chiêu này
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | browse =====
 
-danh sách nhân vật  đang xem tất cả nguồn (20 trong 20 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
   naruto.naruto            naruto         wind <gió>
+  pokemon.abra             pokemon        dark <bóng tối>
   pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
   pokemon.cleffa           pokemon        light <ánh sáng>
@@ -547,7 +548,6 @@ danh sách nhân vật  đang xem tất cả nguồn (20 trong 20 nhân vật)
   pokemon.mew              pokemon        neutral <trung tính>
   pokemon.mewtwo           pokemon        dark <bóng tối>
   pokemon.oddish           pokemon        grass <cỏ>
-  pokemon.pichu            pokemon        electric <điện>
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | builds =====
@@ -557,18 +557,18 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   fixture-anime.adept   chưa viết bản dựng nào cho nhân vật này
   fixture-game.sprout   chưa viết bản dựng nào cho nhân vật này
   naruto.naruto         chưa viết bản dựng nào cho nhân vật này
+  pokemon.abra
+>   abra.unbilled       quỵt giá
+    abra.shade          bóng đêm
   pokemon.bulbasaur
->   bulbasaur.poison    rải độc
-    bulbasaur.parasite  ký sinh
-  pokemon.charmander
-    charmander.scorch   thiêu đốt
+    bulbasaur.poison    rải độc
 
-  bulbasaur.poison <rải độc>
-  ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
-  bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
-                   phấn độc · độc bùn · độc kích · phi diệp
-  nội tại          virulence
-                   độc lực
+  abra.unbilled <quỵt giá>
+  ý đồ             Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
+  bộ chiêu         mind_burn mind_crush psycho_cut nasty_plot
+                   thiêu tâm · nghiền tâm · tâm trảm · mưu hiểm
+  nội tại          magic_guard
+                   tường tâm
 
 
 
@@ -599,12 +599,13 @@ ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | check =====
 
 kiểm tra  ĐẠT — không có vấn đề gì
-data: 5 nguồn, 23 mẫu vai trò, 21 nhân vật
+data: 5 nguồn, 24 mẫu vai trò, 22 nhân vật
 
   nhân vật                 ảnh      máu quy đổi so với hạn mức, ở trần cấp
 > fixture-anime.adept      có       [===========-] 11397/11500
   fixture-game.sprout      có       [====--------] 4036/11500
   naruto.naruto            có       [========----] 7943/11500
+  pokemon.abra             có       [=====-------] 5233/11500
   pokemon.bulbasaur        có       [==========--] 10410/11500
   pokemon.charmander       có       [=======-----] 7242/11500
   pokemon.cleffa           có       [=========---] 9523/11500
@@ -616,7 +617,6 @@ data: 5 nguồn, 23 mẫu vai trò, 21 nhân vật
   pokemon.machop           có       [========----] 8375/11500
   pokemon.magnemite        có       [======------] 6410/11500
   pokemon.mew              có       [=========---] 9498/11500
-  pokemon.mewtwo           có       [======------] 5802/11500
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · s thử trận · r đọc lại · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | edit a skill =====
@@ -661,7 +661,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
@@ -690,9 +690,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | filtered picker =====
 
-nhân vật nào được học chiêu này  0/20
+nhân vật nào được học chiêu này  0/21
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem fixture-anime (1 trong 20)
+đang xem fixture-anime (1 trong 21)
 
 >      fixture-anime.adept
 
@@ -714,7 +714,7 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 ===== vi | 120x24 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 171 chiêu)
+  đang lọc long (5 trong 173 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
@@ -724,7 +724,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -752,7 +752,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -782,7 +782,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 ↑/↓ ô · ←/→ chọn · ctrl+s ghi · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 120x24 | kit picker =====
 
-bộ chiêu  7/171
+bộ chiêu  7/173
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >  1 ! vine_whip       hệ grass, vũ trụ pokemon
@@ -857,7 +857,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  17 nhân vật  Pokémon
+  pokemon          anime   1997  18 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -966,7 +966,7 @@ chiêu trúng những ô nào  7/9
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 120x24 | skill blurb =====
 
-vine_whip <roi dây leo>  1/171
+vine_whip <roi dây leo>  1/173
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -1004,7 +1004,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -1013,11 +1013,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 120x24 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 171 chiêu)
+  đang lọc zzzz (0 trong 173 chiêu)
 
   không có chiêu nào khớp.
 
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -1037,23 +1037,23 @@ gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l Engl
 
 thử trận  fixture-anime.adept — Example Adept
   cấp 60, dạng Example Adept
-  21 hàng · 100 hạt giống mỗi chỗ · 4200 trận tất cả
+  22 hàng · 100 hạt giống mỗi chỗ · 4400 trận tất cả
 
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [=-----------] 16.3%
+  tỉ lệ chung      [=-----------] 16.5%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
   naruto.naruto                   0.0%    0-200-0         55     +0.0%
+  pokemon.abra                    21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur               5.0%    10-190-0        46     +0.0%
   pokemon.charmander              4.0%    8-192-0         25     +0.0%
   pokemon.cleffa                  5.0%    10-190-0        88     +0.0%
   pokemon.dratini                 0.0%    0-200-0         43     +0.0%
   pokemon.gastly                  8.0%    16-184-0        37     +0.0%
-  pokemon.gible                   0.0%    0-200-0         36     +0.0%
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · ←/→ cấp · +/- số trận · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | species =====
@@ -1081,7 +1081,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | species picker =====
 
-loài nào được học chiêu này  0/15
+loài nào được học chiêu này  0/16
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >      dragon     rồng
@@ -1224,16 +1224,16 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   fixture-anime.adept   chưa viết bản dựng nào cho nhân vật này
   fixture-game.sprout   chưa viết bản dựng nào cho nhân vật này
   naruto.naruto         chưa viết bản dựng nào cho nhân vật này
+  pokemon.abra
+>   abra.unbilled       quỵt giá
+    abra.shade          bóng đêm
   pokemon.bulbasaur
->   bulbasaur.poison    rải độc
-    bulbasaur.parasite  ký sinh
-  pokemon.charmander
-    charmander.scorch   thiêu đốt
+    bulbasaur.poison    rải độc
 
-  bulbasaur.poison <rải độc>
-  ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
-  bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
-                   phấn độc · độc bùn · độc kích · phi diệp
+  abra.unbilled <quỵt giá>
+  ý đồ             Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
+  bộ chiêu         mind_burn mind_crush psycho_cut nasty_plot
+                   thiêu tâm · nghiền tâm · tâm trảm · mưu hiểm
   nội tại          không lấy nội tại nào
 
 
@@ -1250,11 +1250,11 @@ nội tại  các nội tại đã khai báo, và ai mang
   heatproof      chịu nhiệt     pokemon.charmander@16
   virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemo…
+  blood_thirst   khát máu       pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.…
   last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu…
   reckless       liều mạng      pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
   thorns         phản đòn       pokemon.squirtle@32
-  swiftness      thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@…
+  swiftness      thần tốc       naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@4…
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
@@ -1642,11 +1642,12 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (20 trong 20 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
 
   fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
   naruto.naruto            naruto         wind <gió>
+  pokemon.abra             pokemon        dark <bóng tối>
   pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
   pokemon.cleffa           pokemon        light <ánh sáng>
@@ -1687,7 +1688,6 @@ pokemon.poliwag — Poliwag
   cấp 46           hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 giai đoạn Poliwrath
   máu quy đổi      [================--------] 8048/11500, còn dư 3452
                    xuyên hết giáp thì chỉ đỡ được 3123
-
 
 
 
@@ -2307,28 +2307,28 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
 A2   Bloom                [##########]  2200/2200    200   -
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
-A5   Charizard            [##########]  3100/3100    140   -
+A4   Alakazam             [##########]  2800/2800    158   -
+A5   Venusaur             [##########]  3800/3800    100   -
 E1   Example Adept        [##########]  3100/3100     90   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
-E5   Charizard            [##########]  3100/3100    140   -
+E4   Alakazam             [##########]  2800/2800    158   -
+E5   Venusaur             [##########]  3800/3800    100   -
 
-next: E2 A5 E5 A3 E3 A2
+next: E2 A4 E4 A3 E3 A2
 
     A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
-    A4  Venusaur enters at 1,0 on the ally side with 3800 health, grass
-    A5  Charizard enters at 1,1 on the ally side with 3100 health, fire
+    A4  Alakazam enters at 1,0 on the ally side with 2800 health, dark
+    A5  Venusaur enters at 1,1 on the ally side with 3800 health, grass
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
-    E4  Venusaur enters at 4,2 on the enemy side with 3800 health, grass
-    E5  Charizard enters at 4,1 on the enemy side with 3100 health, fire
+    E4  Alakazam enters at 4,2 on the enemy side with 2800 health, dark
+    E5  Venusaur enters at 4,1 on the enemy side with 3800 health, grass
   
   A2  turn 1
 
@@ -2366,28 +2366,28 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
 A2   Bloom                [##########]  2200/2200    200   -
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
-A5   Charizard            [##########]  3100/3100    140   -
+A4   Alakazam             [##########]  2800/2800    158   -
+A5   Venusaur             [##########]  3800/3800    100   -
 E1   Example Adept        [##########]  3100/3100     90   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
-E5   Charizard            [##########]  3100/3100    140   -
+E4   Alakazam             [##########]  2800/2800    158   -
+E5   Venusaur             [##########]  3800/3800    100   -
 
-next: E2 A5 E5 A3 E3 A2
+next: E2 A4 E4 A3 E3 A2
 
     A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
-    A4  Venusaur enters at 1,0 on the ally side with 3800 health, grass
-    A5  Charizard enters at 1,1 on the ally side with 3100 health, fire
+    A4  Alakazam enters at 1,0 on the ally side with 2800 health, dark
+    A5  Venusaur enters at 1,1 on the ally side with 3800 health, grass
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
-    E4  Venusaur enters at 4,2 on the enemy side with 3800 health, grass
-    E5  Charizard enters at 4,1 on the enemy side with 3100 health, fire
+    E4  Alakazam enters at 4,2 on the enemy side with 2800 health, dark
+    E5  Venusaur enters at 4,1 on the enemy side with 3800 health, grass
   
   A2  turn 1
 
@@ -2401,8 +2401,8 @@ nhắm bolt vào
 > 3,0  E3 Sennin
   3,1  E2 Bloom
   3,2  E1 Example Adept
-  4,1  E5 Charizard
-  4,2  E4 Venusaur
+  4,1  E5 Venusaur
+  4,2  E4 Alakazam
 
 
 
@@ -2586,13 +2586,14 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | allowlist picker =====
 
-nhân vật nào được học chiêu này  0/20
+nhân vật nào được học chiêu này  0/21
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (20 trong 20)
+đang xem tất cả nguồn (21 trong 21)
 
 >      fixture-anime.adept
        fixture-game.sprout
        naruto.naruto
+       pokemon.abra
        pokemon.bulbasaur
        pokemon.charmander
        pokemon.cleffa
@@ -2641,15 +2642,15 @@ space để chọn · để trống thì ai cũng học được chiêu này
 
 
 
-
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | browse =====
 
-danh sách nhân vật  đang xem tất cả nguồn (20 trong 20 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
   naruto.naruto            naruto         wind <gió>
+  pokemon.abra             pokemon        dark <bóng tối>
   pokemon.bulbasaur        pokemon        grass <cỏ>
   pokemon.charmander       pokemon        fire <lửa>
   pokemon.cleffa           pokemon        light <ánh sáng>
@@ -2700,7 +2701,6 @@ fixture-anime.adept — Example Adept
 
 
 
-
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 160x60 | builds =====
 
@@ -2709,8 +2709,11 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   fixture-anime.adept   chưa viết bản dựng nào cho nhân vật này
   fixture-game.sprout   chưa viết bản dựng nào cho nhân vật này
   naruto.naruto         chưa viết bản dựng nào cho nhân vật này
+  pokemon.abra
+>   abra.unbilled       quỵt giá
+    abra.shade          bóng đêm
   pokemon.bulbasaur
->   bulbasaur.poison    rải độc
+    bulbasaur.poison    rải độc
     bulbasaur.parasite  ký sinh
   pokemon.charmander
     charmander.scorch   thiêu đốt
@@ -2747,16 +2750,13 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.oddish        chưa viết bản dựng nào cho nhân vật này
   pokemon.pichu
     pichu.burn          đốt mình
-    pichu.lock          ghim chân
-  pokemon.poliwag
-    poliwag.flurry      liên hoàn
 
-  bulbasaur.poison <rải độc>
-  ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
-  bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
-                   phấn độc · độc bùn · độc kích · phi diệp
-  nội tại          virulence
-                   độc lực
+  abra.unbilled <quỵt giá>
+  ý đồ             Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
+  bộ chiêu         mind_burn mind_crush psycho_cut nasty_plot
+                   thiêu tâm · nghiền tâm · tâm trảm · mưu hiểm
+  nội tại          magic_guard
+                   tường tâm
 
 
 
@@ -2823,12 +2823,13 @@ ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | check =====
 
 kiểm tra  ĐẠT — không có vấn đề gì
-data: 5 nguồn, 23 mẫu vai trò, 21 nhân vật
+data: 5 nguồn, 24 mẫu vai trò, 22 nhân vật
 
   nhân vật                 ảnh      máu quy đổi so với hạn mức, ở trần cấp
 > fixture-anime.adept      có       [===========-] 11397/11500
   fixture-game.sprout      có       [====--------] 4036/11500
   naruto.naruto            có       [========----] 7943/11500
+  pokemon.abra             có       [=====-------] 5233/11500
   pokemon.bulbasaur        có       [==========--] 10410/11500
   pokemon.charmander       có       [=======-----] 7242/11500
   pokemon.cleffa           có       [=========---] 9523/11500
@@ -2850,7 +2851,6 @@ data: 5 nguồn, 23 mẫu vai trò, 21 nhân vật
 
 phần này đọc file trên đĩa; game chạy từ bản nhúng sẵn, nên sửa xong phải
 build lại thì mới vào được trận
-
 
 
 
@@ -2993,7 +2993,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
@@ -3058,9 +3058,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | filtered picker =====
 
-nhân vật nào được học chiêu này  0/20
+nhân vật nào được học chiêu này  0/21
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem fixture-anime (1 trong 20)
+đang xem fixture-anime (1 trong 21)
 
 >      fixture-anime.adept
 
@@ -3118,7 +3118,7 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 ===== vi | 160x60 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 171 chiêu)
+  đang lọc long (5 trong 173 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
@@ -3128,7 +3128,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -3228,7 +3228,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -3240,7 +3240,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 > id                                                    
   tên                                                   
   nguồn        < fixture-anime — Example Anime >  1/5
-  mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass) >  1/23
+  mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass) >  1/24
   ảnh          < assets/abra.svg >  1/64
   loài         không thuộc loài nào  space để chọn
   bộ chiêu     vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space để chọn
@@ -3294,7 +3294,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 ↑/↓ ô · ←/→ chọn · ctrl+s ghi · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 160x60 | kit picker =====
 
-bộ chiêu  7/171
+bộ chiêu  7/173
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >  1 ! vine_whip       hệ grass, vũ trụ pokemon
@@ -3477,7 +3477,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  17 nhân vật  Pokémon
+  pokemon          anime   1997  18 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -3766,7 +3766,7 @@ chiêu trúng những ô nào  7/9
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 160x60 | skill blurb =====
 
-vine_whip <roi dây leo>  1/171
+vine_whip <roi dây leo>  1/173
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -3876,7 +3876,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -3885,11 +3885,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 160x60 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 171 chiêu)
+  đang lọc zzzz (0 trong 173 chiêu)
 
   không có chiêu nào khớp.
 
-171 chiêu · 24 chiêu ai cũng học được
+173 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -3945,17 +3945,18 @@ gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l Engl
 
 thử trận  fixture-anime.adept — Example Adept
   cấp 60, dạng Example Adept
-  21 hàng · 100 hạt giống mỗi chỗ · 4200 trận tất cả
+  22 hàng · 100 hạt giống mỗi chỗ · 4400 trận tất cả
 
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [=-----------] 16.3%
+  tỉ lệ chung      [=-----------] 16.5%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout             0.0%    0-200-0         13     +0.0%
   naruto.naruto                   0.0%    0-200-0         55     +0.0%
+  pokemon.abra                    21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur               5.0%    10-190-0        46     +0.0%
   pokemon.charmander              4.0%    8-192-0         25     +0.0%
   pokemon.cleffa                  5.0%    10-190-0        88     +0.0%
@@ -3998,7 +3999,6 @@ nên số đi trước ở hàng đối chứng chính là giá trị riêng c�
 
 
 
-
 ↑/↓ chọn · ←/→ cấp · +/- số trận · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | species =====
 
@@ -4020,6 +4020,7 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   canine     loài khuyển
   brood      loài ấp trứng
   rodent     gặm nhấm
+  esper      ngoại cảm
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -4057,11 +4058,10 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
 
 
 
-
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | species picker =====
 
-loài nào được học chiêu này  0/15
+loài nào được học chiêu này  0/16
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >      dragon     rồng
@@ -4079,9 +4079,9 @@ space để chọn · số là thứ tự trong bộ · dấu ! là chiêu khôn
        canine     loài khuyển
        brood      loài ấp trứng
        rodent     gặm nhấm
+       esper      ngoại cảm
 
   chưa chọn gì
-
 
 
 
@@ -4420,8 +4420,11 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   fixture-anime.adept   chưa viết bản dựng nào cho nhân vật này
   fixture-game.sprout   chưa viết bản dựng nào cho nhân vật này
   naruto.naruto         chưa viết bản dựng nào cho nhân vật này
+  pokemon.abra
+>   abra.unbilled       quỵt giá
+    abra.shade          bóng đêm
   pokemon.bulbasaur
->   bulbasaur.poison    rải độc
+    bulbasaur.poison    rải độc
     bulbasaur.parasite  ký sinh
   pokemon.charmander
     charmander.scorch   thiêu đốt
@@ -4458,14 +4461,11 @@ bản dựng  bộ chiêu và nội tại một nhân vật ra trận ở cấp 
   pokemon.oddish        chưa viết bản dựng nào cho nhân vật này
   pokemon.pichu
     pichu.burn          đốt mình
-    pichu.lock          ghim chân
-  pokemon.poliwag
-    poliwag.flurry      liên hoàn
 
-  bulbasaur.poison <rải độc>
-  ý đồ             Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
-  bộ chiêu         poison_powder sludge_bomb venoshock razor_leaf
-                   phấn độc · độc bùn · độc kích · phi diệp
+  abra.unbilled <quỵt giá>
+  ý đồ             Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
+  bộ chiêu         mind_burn mind_crush psycho_cut nasty_plot
+                   thiêu tâm · nghiền tâm · tâm trảm · mưu hiểm
   nội tại          không lấy nội tại nào
 
 
@@ -4482,14 +4482,14 @@ nội tại  các nội tại đã khai báo, và ai mang
   heatproof      chịu nhiệt     pokemon.charmander@16
   virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   khát máu       pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 pokemon.machop@16 pokemon.mew…
+  blood_thirst   khát máu       pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 pokemon.macho…
   last_gasp      hấp hối        pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       liều mạng      pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
   thorns         phản đòn       pokemon.squirtle@32
-  swiftness      thần tốc       naruto.naruto@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 pokemon.magnemite@16 pokemon.mew@32 p…
+  swiftness      thần tốc       naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 pokemon.magnemite@16 …
   ballast        trụ vững       pokemon.happiny@16 pokemon.squirtle@44
   composure      vững tâm       pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@4…
-  elusive        huyền ảo       pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40 pokemon.pichu@36
+  elusive        huyền ảo       pokemon.abra@36 pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40 po…
   contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
   berserk        cuồng chiến    pokemon.gible@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24
@@ -4499,11 +4499,11 @@ nội tại  các nội tại đã khai báo, và ai mang
   rending        xé giáp        pokemon.machop@48 pokemon.riolu@44
   convalescence  ẩn thân        pokemon.happiny@48
   static         tê điện        pokemon.pichu@16
+  magic_guard    tường tâm      pokemon.abra@16
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
     Luôn mang kiên cường.
-
 
 
 
@@ -4551,12 +4551,12 @@ chủng loài  các loài đã khai báo, và ranh giới của từng loài
   canine     loài khuyển
   brood      loài ấp trứng
   rodent     gặm nhấm
+  esper      ngoại cảm
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
 
   chưa nhân vật nào thuộc loài này
-
 
 
 
@@ -4730,11 +4730,12 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | a forked detail pane =====
 
-cast  showing all origins (20 of 20 characters)
+cast  showing all origins (21 of 21 characters)
 
   fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
   naruto.naruto            naruto         wind
+  pokemon.abra             pokemon        dark
   pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
   pokemon.cleffa           pokemon        light
@@ -4748,7 +4749,6 @@ cast  showing all origins (20 of 20 characters)
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
   pokemon.oddish           pokemon        grass
-  pokemon.pichu            pokemon        electric
 … cut off; a taller window shows the rest
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | a forked member =====
@@ -4990,13 +4990,13 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
 A2   Bloom                [##########]  2200/2200    200   -
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
-A5   Charizard            [##########]  3100/3100    140   -
+A4   Alakazam             [##########]  2800/2800    158   -
+A5   Venusaur             [##########]  3800/3800    100   -
 E1   Example Adept        [##########]  3100/3100     90   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
-E5   Charizard            [##########]  3100/3100    140   -
+E4   Alakazam             [##########]  2800/2800    158   -
+E5   Venusaur             [##########]  3800/3800    100   -
 
 A2 Bloom, turn 1
 > bolt          80% attack · range 3
@@ -5024,8 +5024,8 @@ point bolt at
 > 3,0  E3 Sennin
   3,1  E2 Bloom
   3,2  E1 Example Adept
-  4,1  E5 Charizard
-  4,2  E4 Venusaur
+  4,1  E5 Venusaur
+  4,2  E4 Alakazam
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | add a skill =====
 
@@ -5098,13 +5098,14 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | allowlist picker =====
 
-characters allowed to carry it  0 of 20
+characters allowed to carry it  0 of 21
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (20 of 20)
+showing all origins (21 of 21)
 
 >      fixture-anime.adept
        fixture-game.sprout
        naruto.naruto
+       pokemon.abra
        pokemon.bulbasaur
        pokemon.charmander
        pokemon.cleffa
@@ -5113,7 +5114,6 @@ showing all origins (20 of 20)
        pokemon.gible
        pokemon.happiny
        pokemon.lapras
-       pokemon.machop
 
   nothing chosen yet
 
@@ -5121,11 +5121,12 @@ showing all origins (20 of 20)
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | browse =====
 
-cast  showing all origins (20 of 20 characters)
+cast  showing all origins (21 of 21 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
   naruto.naruto            naruto         wind
+  pokemon.abra             pokemon        dark
   pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
   pokemon.cleffa           pokemon        light
@@ -5139,7 +5140,6 @@ cast  showing all origins (20 of 20 characters)
   pokemon.mew              pokemon        neutral
   pokemon.mewtwo           pokemon        dark
   pokemon.oddish           pokemon        grass
-  pokemon.pichu            pokemon        electric
 … cut off; a taller window shows the rest
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | builds =====
@@ -5149,16 +5149,16 @@ builds  the kit and the trait a character fields at level 60, furthest form
   fixture-anime.adept   no build written for this one yet
   fixture-game.sprout   no build written for this one yet
   naruto.naruto         no build written for this one yet
+  pokemon.abra
+>   abra.unbilled
+    abra.shade
   pokemon.bulbasaur
->   bulbasaur.poison
-    bulbasaur.parasite
-  pokemon.charmander
-    charmander.scorch
+    bulbasaur.poison
 
-  bulbasaur.poison
-  intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
-  kit           poison_powder sludge_bomb venoshock razor_leaf
-  traits        virulence
+  abra.unbilled
+  intent        Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
+  kit           mind_burn mind_crush psycho_cut nasty_plot
+  traits        magic_guard
 
 
 
@@ -5191,12 +5191,13 @@ ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | check =====
 
 check  PASSED — no problems found
-data: 5 origins, 23 archetypes, 21 characters
+data: 5 origins, 24 archetypes, 22 characters
 
   character                art      effective hp of the budget, at the cap
 > fixture-anime.adept      present  [===========-] 11397/11500
   fixture-game.sprout      present  [====--------] 4036/11500
   naruto.naruto            present  [========----] 7943/11500
+  pokemon.abra             present  [=====-------] 5233/11500
   pokemon.bulbasaur        present  [==========--] 10410/11500
   pokemon.charmander       present  [=======-----] 7242/11500
   pokemon.cleffa           present  [=========---] 9523/11500
@@ -5208,7 +5209,6 @@ data: 5 origins, 23 archetypes, 21 characters
   pokemon.machop           present  [========----] 8375/11500
   pokemon.magnemite        present  [======------] 6410/11500
   pokemon.mew              present  [=========---] 9498/11500
-  pokemon.mewtwo           present  [======------] 5802/11500
 … cut off; a taller window shows the rest
 ↑/↓ move · s spar · r re-read the files · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | edit a skill =====
@@ -5253,7 +5253,7 @@ skills  what each one does, and who may carry it
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
@@ -5282,9 +5282,9 @@ elements  the affinity chart: what beats what, and by how much
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | filtered picker =====
 
-characters allowed to carry it  0 of 20
+characters allowed to carry it  0 of 21
 space chooses · leaving it empty lets anyone carry the skill
-showing fixture-anime (1 of 20)
+showing fixture-anime (1 of 21)
 
 >      fixture-anime.adept
 
@@ -5306,7 +5306,7 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 ===== en | 120x24 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering long (5 of 171 skills)
+  filtering long (5 of 173 skills)
 
   id              element   damage multiplier who may carry it
 > dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
@@ -5316,7 +5316,7 @@ skills  what each one does, and who may carry it
   dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 
@@ -5344,7 +5344,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 
@@ -5374,7 +5374,7 @@ new character  every check here is the write's own, at level 60
 ↑/↓ field · ←/→ pick · ctrl+s save · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 120x24 | kit picker =====
 
-kit  7 of 171
+kit  7 of 173
 space chooses · the number is the order · ! is one this character cannot take
 
 >  1 ! vine_whip       grass units, out of pokemon
@@ -5449,7 +5449,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  17 cast  Pokémon
+  pokemon          anime   1997  18 cast  Pokémon
 
   note          A test fixture, not shipped.
 
@@ -5558,7 +5558,7 @@ which cells the skill catches  7 of 9
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 120x24 | skill blurb =====
 
-vine_whip  1 of 171
+vine_whip  1 of 173
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -5596,7 +5596,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 
@@ -5605,11 +5605,11 @@ skills  what each one does, and who may carry it
 ===== en | 120x24 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 171 skills)
+  filtering zzzz (0 of 173 skills)
 
   nothing matches that.
 
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 
@@ -5629,23 +5629,23 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 spar  fixture-anime.adept — Example Adept
   level 60 as Example Adept
-  21 rows · 100 seeds from each slot · 4200 battles in all
+  22 rows · 100 seeds from each slot · 4400 battles in all
 
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [=-----------] 16.3%
+  overall       [=-----------] 16.5%
 
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
   naruto.naruto                 0.0%    0-200-0         55     +0.0%
+  pokemon.abra                  21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur             5.0%    10-190-0        46     +0.0%
   pokemon.charmander            4.0%    8-192-0         25     +0.0%
   pokemon.cleffa                5.0%    10-190-0        88     +0.0%
   pokemon.dratini               0.0%    0-200-0         43     +0.0%
   pokemon.gastly                8.0%    16-184-0        37     +0.0%
-  pokemon.gible                 0.0%    0-200-0         36     +0.0%
 … cut off; a taller window shows the rest
 ↑/↓ move · ←/→ level · +/- battles · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | species =====
@@ -5673,7 +5673,7 @@ species  the declared kinds, and where each line is drawn
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | species picker =====
 
-kinds of creature allowed to carry it  0 of 15
+kinds of creature allowed to carry it  0 of 16
 space chooses · the number is the order · ! is one this character cannot take
 
 >      dragon
@@ -5816,15 +5816,15 @@ builds  the kit and the trait a character fields at level 60, furthest form
   fixture-anime.adept   no build written for this one yet
   fixture-game.sprout   no build written for this one yet
   naruto.naruto         no build written for this one yet
+  pokemon.abra
+>   abra.unbilled
+    abra.shade
   pokemon.bulbasaur
->   bulbasaur.poison
-    bulbasaur.parasite
-  pokemon.charmander
-    charmander.scorch
+    bulbasaur.poison
 
-  bulbasaur.poison
-  intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
-  kit           poison_powder sludge_bomb venoshock razor_leaf
+  abra.unbilled
+  intent        Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
+  kit           mind_burn mind_crush psycho_cut nasty_plot
   traits        takes no trait
 
 
@@ -5842,11 +5842,11 @@ traits  the declared traits, and who carries each
   heatproof      pokemon.charmander@16
   virulence      pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 poke…
+  blood_thirst   pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokem…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
   thorns         pokemon.squirtle@32
-  swiftness      naruto.naruto@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 pokemon.magn…
+  swiftness      naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible…
 
   endurance
     Always carries toughened.
@@ -6234,11 +6234,12 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a forked detail pane =====
 
-cast  showing all origins (20 of 20 characters)
+cast  showing all origins (21 of 21 characters)
 
   fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
   naruto.naruto            naruto         wind
+  pokemon.abra             pokemon        dark
   pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
   pokemon.cleffa           pokemon        light
@@ -6273,7 +6274,6 @@ pokemon.poliwag — Poliwag
   level 46      hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 stage Poliwrath
   effective hp  [================--------] 8048 of 11500, 3452 to spare
                 3123 against damage that pierces its armour outright
-
 
 
 
@@ -6899,28 +6899,28 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
 A2   Bloom                [##########]  2200/2200    200   -
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
-A5   Charizard            [##########]  3100/3100    140   -
+A4   Alakazam             [##########]  2800/2800    158   -
+A5   Venusaur             [##########]  3800/3800    100   -
 E1   Example Adept        [##########]  3100/3100     90   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
-E5   Charizard            [##########]  3100/3100    140   -
+E4   Alakazam             [##########]  2800/2800    158   -
+E5   Venusaur             [##########]  3800/3800    100   -
 
-next: E2 A5 E5 A3 E3 A2
+next: E2 A4 E4 A3 E3 A2
 
     A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance: toughened x1
-    A4  Venusaur enters at 1,0 on the ally side with 3800 health, grass
-    A5  Charizard enters at 1,1 on the ally side with 3100 health, fire
+    A4  Alakazam enters at 1,0 on the ally side with 2800 health, dark
+    A5  Venusaur enters at 1,1 on the ally side with 3800 health, grass
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance: toughened x1
-    E4  Venusaur enters at 4,2 on the enemy side with 3800 health, grass
-    E5  Charizard enters at 4,1 on the enemy side with 3100 health, fire
+    E4  Alakazam enters at 4,2 on the enemy side with 2800 health, dark
+    E5  Venusaur enters at 4,1 on the enemy side with 3800 health, grass
   
   A2  turn 1
 
@@ -6958,28 +6958,28 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
 A2   Bloom                [##########]  2200/2200    200   -
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
-A5   Charizard            [##########]  3100/3100    140   -
+A4   Alakazam             [##########]  2800/2800    158   -
+A5   Venusaur             [##########]  3800/3800    100   -
 E1   Example Adept        [##########]  3100/3100     90   -
 E2   Bloom                [##########]  2200/2200    200   -
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
-E5   Charizard            [##########]  3100/3100    140   -
+E4   Alakazam             [##########]  2800/2800    158   -
+E5   Venusaur             [##########]  3800/3800    100   -
 
-next: E2 A5 E5 A3 E3 A2
+next: E2 A4 E4 A3 E3 A2
 
     A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance: toughened x1
-    A4  Venusaur enters at 1,0 on the ally side with 3800 health, grass
-    A5  Charizard enters at 1,1 on the ally side with 3100 health, fire
+    A4  Alakazam enters at 1,0 on the ally side with 2800 health, dark
+    A5  Venusaur enters at 1,1 on the ally side with 3800 health, grass
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance: toughened x1
-    E4  Venusaur enters at 4,2 on the enemy side with 3800 health, grass
-    E5  Charizard enters at 4,1 on the enemy side with 3100 health, fire
+    E4  Alakazam enters at 4,2 on the enemy side with 2800 health, dark
+    E5  Venusaur enters at 4,1 on the enemy side with 3800 health, grass
   
   A2  turn 1
 
@@ -6993,8 +6993,8 @@ point bolt at
 > 3,0  E3 Sennin
   3,1  E2 Bloom
   3,2  E1 Example Adept
-  4,1  E5 Charizard
-  4,2  E4 Venusaur
+  4,1  E5 Venusaur
+  4,2  E4 Alakazam
 
 
 
@@ -7178,13 +7178,14 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | allowlist picker =====
 
-characters allowed to carry it  0 of 20
+characters allowed to carry it  0 of 21
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (20 of 20)
+showing all origins (21 of 21)
 
 >      fixture-anime.adept
        fixture-game.sprout
        naruto.naruto
+       pokemon.abra
        pokemon.bulbasaur
        pokemon.charmander
        pokemon.cleffa
@@ -7233,15 +7234,15 @@ showing all origins (20 of 20)
 
 
 
-
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | browse =====
 
-cast  showing all origins (20 of 20 characters)
+cast  showing all origins (21 of 21 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
   naruto.naruto            naruto         wind
+  pokemon.abra             pokemon        dark
   pokemon.bulbasaur        pokemon        grass
   pokemon.charmander       pokemon        fire
   pokemon.cleffa           pokemon        light
@@ -7292,7 +7293,6 @@ fixture-anime.adept — Example Adept
 
 
 
-
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 160x60 | builds =====
 
@@ -7301,8 +7301,11 @@ builds  the kit and the trait a character fields at level 60, furthest form
   fixture-anime.adept   no build written for this one yet
   fixture-game.sprout   no build written for this one yet
   naruto.naruto         no build written for this one yet
+  pokemon.abra
+>   abra.unbilled
+    abra.shade
   pokemon.bulbasaur
->   bulbasaur.poison
+    bulbasaur.poison
     bulbasaur.parasite
   pokemon.charmander
     charmander.scorch
@@ -7339,14 +7342,11 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.oddish        no build written for this one yet
   pokemon.pichu
     pichu.burn
-    pichu.lock
-  pokemon.poliwag
-    poliwag.flurry
 
-  bulbasaur.poison
-  intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
-  kit           poison_powder sludge_bomb venoshock razor_leaf
-  traits        virulence
+  abra.unbilled
+  intent        Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
+  kit           mind_burn mind_crush psycho_cut nasty_plot
+  traits        magic_guard
 
 
 
@@ -7415,12 +7415,13 @@ ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | check =====
 
 check  PASSED — no problems found
-data: 5 origins, 23 archetypes, 21 characters
+data: 5 origins, 24 archetypes, 22 characters
 
   character                art      effective hp of the budget, at the cap
 > fixture-anime.adept      present  [===========-] 11397/11500
   fixture-game.sprout      present  [====--------] 4036/11500
   naruto.naruto            present  [========----] 7943/11500
+  pokemon.abra             present  [=====-------] 5233/11500
   pokemon.bulbasaur        present  [==========--] 10410/11500
   pokemon.charmander       present  [=======-----] 7242/11500
   pokemon.cleffa           present  [=========---] 9523/11500
@@ -7442,7 +7443,6 @@ data: 5 origins, 23 archetypes, 21 characters
 
 this reads the files from disk; the game boots from the embedded copy, so an
 edit needs a rebuild before it reaches a battle
-
 
 
 
@@ -7585,7 +7585,7 @@ skills  what each one does, and who may carry it
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
@@ -7650,9 +7650,9 @@ elements  the affinity chart: what beats what, and by how much
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | filtered picker =====
 
-characters allowed to carry it  0 of 20
+characters allowed to carry it  0 of 21
 space chooses · leaving it empty lets anyone carry the skill
-showing fixture-anime (1 of 20)
+showing fixture-anime (1 of 21)
 
 >      fixture-anime.adept
 
@@ -7710,7 +7710,7 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 ===== en | 160x60 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering long (5 of 171 skills)
+  filtering long (5 of 173 skills)
 
   id              element   damage multiplier who may carry it
 > dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
@@ -7720,7 +7720,7 @@ skills  what each one does, and who may carry it
   dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 
@@ -7820,7 +7820,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 
@@ -7832,7 +7832,7 @@ new character  every check here is the write's own, at level 60
 > id                                                  
   name                                                
   origin     < fixture-anime — Example Anime >  1 of 5
-  archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass) >  1 of 23
+  archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass) >  1 of 24
   art        < assets/abra.svg >  1 of 64
   species    nothing in particular  space to choose
   kit        vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space to choose
@@ -7886,7 +7886,7 @@ new character  every check here is the write's own, at level 60
 ↑/↓ field · ←/→ pick · ctrl+s save · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 160x60 | kit picker =====
 
-kit  7 of 171
+kit  7 of 173
 space chooses · the number is the order · ! is one this character cannot take
 
 >  1 ! vine_whip       grass units, out of pokemon
@@ -8069,7 +8069,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  17 cast  Pokémon
+  pokemon          anime   1997  18 cast  Pokémon
 
   note          A test fixture, not shipped.
 
@@ -8358,7 +8358,7 @@ which cells the skill catches  7 of 9
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 160x60 | skill blurb =====
 
-vine_whip  1 of 171
+vine_whip  1 of 173
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -8468,7 +8468,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 
@@ -8477,11 +8477,11 @@ skills  what each one does, and who may carry it
 ===== en | 160x60 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 171 skills)
+  filtering zzzz (0 of 173 skills)
 
   nothing matches that.
 
-171 skills · 24 anyone may carry
+173 skills · 24 anyone may carry
 
 
 
@@ -8537,17 +8537,18 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 spar  fixture-anime.adept — Example Adept
   level 60 as Example Adept
-  21 rows · 100 seeds from each slot · 4200 battles in all
+  22 rows · 100 seeds from each slot · 4400 battles in all
 
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [=-----------] 16.3%
+  overall       [=-----------] 16.5%
 
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
   fixture-game.sprout           0.0%    0-200-0         13     +0.0%
   naruto.naruto                 0.0%    0-200-0         55     +0.0%
+  pokemon.abra                  21.0%   42-158-0        28     +0.0%
   pokemon.bulbasaur             5.0%    10-190-0        46     +0.0%
   pokemon.charmander            4.0%    8-192-0         25     +0.0%
   pokemon.cleffa                5.0%    10-190-0        88     +0.0%
@@ -8590,7 +8591,6 @@ tie by placement, so the control row shows what a slot alone is worth.
 
 
 
-
 ↑/↓ move · ←/→ level · +/- battles · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | species =====
 
@@ -8612,6 +8612,7 @@ species  the declared kinds, and where each line is drawn
   canine
   brood
   rodent
+  esper
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
@@ -8649,11 +8650,10 @@ species  the declared kinds, and where each line is drawn
 
 
 
-
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | species picker =====
 
-kinds of creature allowed to carry it  0 of 15
+kinds of creature allowed to carry it  0 of 16
 space chooses · the number is the order · ! is one this character cannot take
 
 >      dragon
@@ -8671,9 +8671,9 @@ space chooses · the number is the order · ! is one this character cannot take
        canine
        brood
        rodent
+       esper
 
   nothing chosen yet
-
 
 
 
@@ -9012,8 +9012,11 @@ builds  the kit and the trait a character fields at level 60, furthest form
   fixture-anime.adept   no build written for this one yet
   fixture-game.sprout   no build written for this one yet
   naruto.naruto         no build written for this one yet
+  pokemon.abra
+>   abra.unbilled
+    abra.shade
   pokemon.bulbasaur
->   bulbasaur.poison
+    bulbasaur.poison
     bulbasaur.parasite
   pokemon.charmander
     charmander.scorch
@@ -9050,13 +9053,10 @@ builds  the kit and the trait a character fields at level 60, furthest form
   pokemon.oddish        no build written for this one yet
   pokemon.pichu
     pichu.burn
-    pichu.lock
-  pokemon.poliwag
-    poliwag.flurry
 
-  bulbasaur.poison
-  intent        Gieo nọc lên khắp chỗ đối phương đứng rồi dội lên vết độc đã có
-  kit           poison_powder sludge_bomb venoshock razor_leaf
+  abra.unbilled
+  intent        Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt
+  kit           mind_burn mind_crush psycho_cut nasty_plot
   traits        takes no trait
 
 
@@ -9074,14 +9074,14 @@ traits  the declared traits, and who carries each
   heatproof      pokemon.charmander@16
   virulence      pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
-  blood_thirst   pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 pokemon.machop@16 pokemon.mew@44 pokemon.mew…
+  blood_thirst   pokemon.abra@48 pokemon.bulbasaur@20 pokemon.charmander@40 pokemon.dratini@44 pokemon.gastly@16 pokemon.gible@32 pokemon.machop@16 pokemon.me…
   last_gasp      pokemon.bulbasaur@40 pokemon.cleffa@44 pokemon.happiny@44 pokemon.mew@48 pokemon.riolu@16
   reckless       pokemon.charmander@44 pokemon.gible@52 pokemon.machop@44 pokemon.mewtwo@44
   thorns         pokemon.squirtle@32
-  swiftness      naruto.naruto@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 pokemon.magnemite@16 pokemon.mew@32 pokemon.mewtwo@1…
+  swiftness      naruto.naruto@24 pokemon.abra@24 pokemon.cleffa@32 pokemon.dratini@32 pokemon.gastly@44 pokemon.gible@16 pokemon.magnemite@16 pokemon.mew@32 …
   ballast        pokemon.happiny@16 pokemon.squirtle@44
   composure      pokemon.cleffa@24 pokemon.dratini@52 pokemon.happiny@24 pokemon.lapras@32 pokemon.magnemite@40 pokemon.mew@24 pokemon.oddish@44 pokemon.poliw…
-  elusive        pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40 pokemon.pichu@36
+  elusive        pokemon.abra@36 pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40 pokemon.pichu@36
   contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       pokemon.gastly@32 pokemon.poliwag@36
   berserk        pokemon.gible@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24
@@ -9091,10 +9091,10 @@ traits  the declared traits, and who carries each
   rending        pokemon.machop@48 pokemon.riolu@44
   convalescence  pokemon.happiny@48
   static         pokemon.pichu@16
+  magic_guard    pokemon.abra@16
 
   endurance
     Always carries toughened.
-
 
 
 
@@ -9143,12 +9143,12 @@ species  the declared kinds, and where each line is drawn
   canine
   brood
   rodent
+  esper
 
   Dòng máu chứ không phải hình hài: thứ chảy suốt mấy trăm đời, có khi ngủ yên trọn một kiếp trong kẻ trông chẳng giống
   rồng chút nào
 
   no character is one
-
 
 
 

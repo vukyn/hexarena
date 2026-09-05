@@ -3339,6 +3339,44 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "mind_burn",
+      "name": "thiêu tâm",
+      "flavour": "Đốt sạch những gì còn lại trong đầu để lấy một đòn, đốt của mình chứ không của ai",
+      "element": "dark",
+      "range": 2,
+      "pattern": "single",
+      "power": 2300,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "cost": 180,
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "mind_crush",
+      "name": "nghiền tâm",
+      "flavour": "Bóp cả một khoảng trước mặt cho hẹp lại, và trả bằng chỗ trống trong đầu mình",
+      "element": "dark",
+      "range": 2,
+      "pattern": "column",
+      "power": 1400,
+      "strikes": 1,
+      "accuracy": 850,
+      "cooldown": 3,
+      "target": "enemy",
+      "cost": 120,
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
     }
   ]
 }

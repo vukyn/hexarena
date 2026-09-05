@@ -144,6 +144,8 @@ sand_tomb       ground    enemy    2  single          850     1    850   900    
 sandstorm       ground    enemy    2  column          600     1    600   950    4     0     0      205
 volt_tackle     electric  enemy    1  single         2400     1   2400   900    3     0     0      822
 nuzzle          electric  enemy    1  single          300     1    300  1000    3     0     0      102
+mind_burn       dark      enemy    2  single         2300     1   2300   900    3     0     0      788
+mind_crush      dark      enemy    2  column         1400     1   1400   850    3     0     0      480
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -367,6 +369,8 @@ sand_tomb       -          -                 -                   -         pokem
 sandstorm       -          -                 -                   -         pokemon
 volt_tackle     -          -                 -                   rodent    pokemon
 nuzzle          -          -                 -                   rodent    pokemon
+mind_burn       -          -                 -                   -         pokemon
+mind_crush      -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
