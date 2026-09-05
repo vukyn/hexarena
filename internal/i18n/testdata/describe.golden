@@ -819,6 +819,16 @@ Gây choáng cho mục tiêu, 45% khả năng.
 Tầm 1 · 100% trúng · hồi 3 lượt.
 [one line] 30% công · choáng 45% · tầm 1 · hồi 3
 
+mind_burn
+Đốt sạch những gì còn lại trong đầu để lấy một đòn, đốt của mình chứ không của ai, 230% công, tốn 18% máu tối đa của người dùng dù trúng hay trượt.
+Tầm 2 · 90% trúng · hồi 3 lượt.
+[one line] 230% công · tốn 18% máu · tầm 2 · hồi 3
+
+mind_crush
+Bóp cả một khoảng trước mặt cho hẹp lại, và trả bằng chỗ trống trong đầu mình, 140% công, tốn 12% máu tối đa của người dùng dù trúng hay trượt.
+Tầm 2 · 3 ô · 85% trúng · hồi 3 lượt.
+[one line] 140% công · tốn 12% máu · tầm 2 · 3 ô · hồi 3
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -917,6 +927,11 @@ Luôn mang thành trì.
 [trait] static
 Cả người lúc nào cũng tích sẵn; ai chạm vào thì tay tê đi một lúc.
 Ai đánh trúng thì có 6% khả năng dính choáng.
+
+[trait] magic_guard
+Cái giá phải trả đi đâu mất giữa đường, không ai thấy nó tới nơi.
+Miễn nhiễm trúng độc.
+Miễn nhiễm bỏng.
 
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
@@ -1900,6 +1915,16 @@ Inflicts stun, 45% of the time.
 Range 1 · 100% to hit · 3 turns to recharge.
 [one line] 30% attack · stun 45% · range 1 · cd 3
 
+mind_burn
+Hits an enemy for 230% of attack, costing its caster 18% of full health whether it lands or not.
+Range 2 · 90% to hit · 3 turns to recharge.
+[one line] 230% attack · costs 18% health · range 2 · cd 3
+
+mind_crush
+Hits an enemy for 140% of attack, costing its caster 12% of full health whether it lands or not.
+Range 2 · 3 cells · 85% to hit · 3 turns to recharge.
+[one line] 140% attack · costs 12% health · range 2 · 3 cells · cd 3
+
 [trait] endurance
 Always carries toughened.
 
@@ -1976,6 +2001,10 @@ Takes veil again at the start of each of its own turns, 100% of the time.
 
 [trait] static
 Whatever damages it has a 6% chance of catching stun.
+
+[trait] magic_guard
+Refuses poison outright.
+Refuses burn outright.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.

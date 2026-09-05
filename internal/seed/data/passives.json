@@ -293,6 +293,23 @@
           }
         ]
       }
+    },
+    {
+      "id": "magic_guard",
+      "name": "tường tâm",
+      "flavour": "Cái giá phải trả đi đâu mất giữa đường, không ai thấy nó tới nơi",
+      "grants": [],
+      "spares": 1000,
+      "resists": [
+        {
+          "status": "poison",
+          "amount": 1000
+        },
+        {
+          "status": "burn",
+          "amount": 1000
+        }
+      ]
     }
   ]
 }

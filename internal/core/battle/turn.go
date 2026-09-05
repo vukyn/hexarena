@@ -413,7 +413,7 @@ func (b *Battle) spendHealth(unit *Unit, known skill.Skill, turn atb.Turn) {
 	if known.Cost <= 0 {
 		return
 	}
-	paid := unit.MaxHP() * int64(known.Cost) / scale.Base
+	paid := healthCost(unit.MaxHP(), known, b.spared(unit))
 	if room := unit.HP - 1; paid > room {
 		paid = room
 	}
@@ -1430,6 +1430,55 @@ func (b *Battle) lifesteal(actor *Unit) int {
 		total += held.Drains
 	}
 	return total
+}
+
+// spared is the share of a skill's health cost the actor's traits let it keep,
+// added across the traits in force and bounded at the base.
+//
+// Added rather than composed, exactly as converts and lifesteal are: a share of a
+// price is not a chance, so two traits that each forgive a fifth forgive two
+// fifths. Bounded because a cost spared beyond the whole of it would pay the
+// caster for casting, which is a different design question — see
+// passive.Passive.Spares.
+//
+// ⚠️ **It has a second caller and that is the point.** pricing.spentHealth reads
+// it too, because a rating that still sees the full price declines the skill the
+// trait exists to make castable. The two sites share healthCost so the sparing
+// cannot be applied to one and forgotten at the other.
+func (b *Battle) spared(actor *Unit) int {
+	if len(actor.Passives) == 0 || b.books.Passives == nil {
+		return 0
+	}
+	total := 0
+	for _, id := range actor.Passives {
+		held, err := b.books.Passives.Lookup(id)
+		if err != nil {
+			continue
+		}
+		if held.Spares == 0 || !b.inForce(actor, held) {
+			continue
+		}
+		total += held.Spares
+	}
+	if total > scale.Base {
+		return scale.Base
+	}
+	return total
+}
+
+// healthCost is what a skill asks of a caster with that caster's traits taken
+// off, and it is shared by the two places that need the figure: the charge in
+// Battle.spendHealth and the price in pricing.spentHealth.
+//
+// The clamp to what a unit can actually afford is deliberately NOT here — only
+// spendHealth applies that, and the note on spentHealth says why the rating must
+// keep charging the full ask.
+func healthCost(maxHP int64, known skill.Skill, spared int) int64 {
+	asked := maxHP * int64(known.Cost) / scale.Base
+	if spared <= 0 {
+		return asked
+	}
+	return asked * int64(scale.Base-spared) / scale.Base
 }
 
 // converts is the share of the actor's blows that meets no defence at all, added

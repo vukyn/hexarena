@@ -452,6 +452,36 @@
       "passives": [
         "static"
       ]
+    },
+    {
+      "id": "abra.unbilled",
+      "character": "pokemon.abra",
+      "name": "quỵt giá",
+      "intent": "Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt",
+      "skills": [
+        "mind_burn",
+        "mind_crush",
+        "psycho_cut",
+        "nasty_plot"
+      ],
+      "passives": [
+        "magic_guard"
+      ]
+    },
+    {
+      "id": "abra.shade",
+      "character": "pokemon.abra",
+      "name": "bóng đêm",
+      "intent": "Bộ rẻ tiền: đánh xuyên giáp từ xa và làm bên kia nhìn không ra",
+      "skills": [
+        "shadow_ball",
+        "dark_pulse",
+        "night_shade",
+        "psycho_cut"
+      ],
+      "passives": [
+        "swiftness"
+      ]
     }
   ]
 }

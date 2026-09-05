@@ -1178,13 +1178,13 @@ is only so the shape is readable.
             read *"the cast is too small for a 5v5 draft, measured: this is a
             content prerequisite and no amount of code fixes it"* until the pool
             reached sixteen; the arithmetic block below is where that closed and
-            it carries the figures. **Eighteen characters ship** (this said
-            twelve, then fifteen, sixteen, seventeen), seventeen are draftable, and
-            **thirteen** of those have an authored build (`builds.json`) — the four
-            without one are Happiny, Lapras, Oddish and Riolu. Ten picks leaves
-            **three** bans on the built cast at 5v5; 3v3 is comfortable, six picks
-            leaving seven bans on the built cast and eleven against the full
-            seventeen.
+            it carries the figures. **Nineteen characters ship** (this said
+            twelve, then fifteen, sixteen, seventeen, eighteen), eighteen are
+            draftable, and **fourteen** of those have an authored build
+            (`builds.json`) — the four without one are Happiny, Lapras, Oddish and
+            Riolu. Ten picks leaves **four** bans on the built cast at 5v5; 3v3 is
+            comfortable, six picks leaving eight bans on the built cast and twelve
+            against the full eighteen.
             ⚠️ **Build coverage does not bind the draft, and this paragraph said
             it did** (*"build coverage rather than cast size is still what
             binds"*, and *"either 5v5 drafting waits for more builds, or the draft
@@ -1359,18 +1359,18 @@ is only so the shape is readable.
             ⚠️ **The arithmetic moves every time a character ships or is hidden,
             so it is derived rather than remembered**:
             `jq '[.characters[]|select(.hidden|not)]|length'
-            internal/seed/data/cast.json` → 17, and `[.characters[]]|length`
-            → 18. It said "eleven, not twelve" and "needs five more" until
+            internal/seed/data/cast.json` → 18, and `[.characters[]]|length`
+            → 19. It said "eleven, not twelve" and "needs five more" until
             2026-09-04, and "fourteen" and "needs two more" until 2026-09-05.
             **The gap closed on 2026-09-05 and was then cleared**: `pokemon.dratini`
             took it to one short in #301, `pokemon.gible` to nought in #306, and
-            `pokemon.pichu` past it — the pool is seventeen against the sixteen a
-            5v5 needs, so slack is **one**. See the ⚠️ below for why nought and one
+            `pokemon.pichu` past it — the pool is **eighteen** against the sixteen
+            a 5v5 needs, so slack is **two**. See the ⚠️ below for why nought and one
             are different answers rather than the same one twice. § *Thirteen
             traced Pokemon* holds the art still waiting.
             ⚠️ For the other reading of the same sentence, bans as a **total**
-            across both sides rather than each: 3v3 becomes 8 of 17 and the last
-            pick sees ten, and 5v5 becomes 13 of 17 — which **fits, with four to
+            across both sides rather than each: 3v3 becomes 8 of 18 and the last
+            pick sees eleven, and 5v5 becomes 13 of 18 — which **fits, with five to
             spare**. So the reading has stopped changing only the target and now
             changes the **conclusion**, which it did not while the pool was eleven
             or fourteen. That is a second reason (b) says *a
@@ -1413,8 +1413,8 @@ is only so the shape is readable.
             longer holds 5v5 back, and the balance read still does.**
             `pokemon.gible` took the pool to sixteen, which seats a 5v5 *exactly*
             — `draft.Slack` nought — and `pokemon.pichu` took it to **seventeen**
-            the same day, so slack is **one**. Both figures mattered and they
-            mattered differently: at nought the arithmetic reason below was
+            the same day, so slack is **one** (**two** since `pokemon.abra`). Both
+            figures mattered and they mattered differently: at nought the arithmetic reason below was
             satisfied while **the last pick of a 5v5 was still not a decision**,
             the final picker seeing exactly one candidate; at one it is a choice,
             and every further character only widens it.
@@ -1499,10 +1499,11 @@ is only so the shape is readable.
             asserts both halves, because a test for the refusal alone would go
             green the day somebody deleted the constant.
             The second reason **was** the draft: at three bans a side a 5v5 needs
-            **sixteen** in the pool, and there are now **seventeen** (this said
-            eleven, then fifteen, then sixteen, all on 2026-09-05) since
-            `pokemon.gible` and `pokemon.pichu` shipped, so a 5v5 ban-and-pick can
-            be seated with one to spare and its last pick is a real choice. Lifting
+            **sixteen** in the pool, and there are now **eighteen** (this said
+            eleven, then fifteen, sixteen, seventeen, all on 2026-09-05) since
+            `pokemon.gible`, `pokemon.pichu` and `pokemon.abra` shipped, so a 5v5
+            ban-and-pick can be seated with two to spare and its last pick is a
+            real choice. Lifting
             the hold-back therefore wants one thing rather than two: **the numbers
             read on this board**.
 
@@ -1510,13 +1511,21 @@ is only so the shape is readable.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
       at build time or rasterised at load, because ebiten draws neither.
-- [ ] **Grow the cast.** **Eighteen** ship across two origins (seventeen Pokemon,
-      one Naruto) over **forty-eight** authored stages, and **every one of the
-      eleven elements is carried**: water ×3 (Lapras, Poliwag, Squirtle), and ×2
-      each of grass (Bulbasaur, Oddish), ground (Gible, Machop), metal (Magnemite,
-      Riolu), dark (Gastly, Mewtwo), neutral (Happiny, Mew), wind (Dratini,
-      Naruto) and electric (Magnemite, Pichu), with one each of fire, ice and
-      light. ⚠️ **Magnemite is counted twice on purpose** — it is electric/metal,
+- [ ] **Grow the cast.** **Nineteen** ship across two origins (eighteen Pokemon,
+      one Naruto) over **fifty-one** authored stages, and **every one of the
+      eleven elements is carried**: ×3 each of dark (Abra, Gastly, Mewtwo) and
+      water (Lapras, Poliwag, Squirtle), ×2 each of grass (Bulbasaur, Oddish),
+      ground (Gible, Machop), metal (Magnemite, Riolu), neutral (Happiny, Mew),
+      wind (Dratini, Naruto) and electric (Magnemite, Pichu), with one each of
+      fire, ice and light.
+      ⚠️ **Dark is the widest element and that is not a coincidence — it is off
+      the matchup chart.** `elements.json` puts dark in no cycle at all, only in
+      `mutual` with light, so a dark kit has no advantage to seek and no counter
+      to fear. Measured 2026-09-05: Alakazam reads 391‰ / 241‰ / 512‰ / 93‰ across
+      four opponents, a flat profile, where every elemental character in the cast
+      swings from near-nought to near-total on the same four. It is a real design
+      axis rather than a gap — see
+      `memory/hexarena-dark-is-off-the-chart.md`. ⚠️ **Magnemite is counted twice on purpose** — it is electric/metal,
       and `pokemon.pichu` is the first character to carry electric **on its own**.
       A pool being full is not the same as an element being played: electric
       shipped ten skills and one carrier, and every one of those ten was built
@@ -1543,9 +1552,9 @@ is only so the shape is readable.
       by hand.
       ⚠️ **No element is left to claim, so "one per element" is finished as a
       guide.** What a new character is bought for now is a **way of playing**, and
-      § *Thirteen traced Pokemon* below is the art waiting for one.
+      § *Ten traced Pokemon* below is the art waiting for one.
       ⚠️ **On the archetype, which is the closest thing to a way of playing this
-      data has a field for.** Eighteen characters against eighteen archetypes, one
+      data has a field for.** Nineteen characters against nineteen archetypes, one
       each — but that is where the counting has landed, **not a rule, and nothing
       enforces it**: `cast.ParseArchetypes` refuses an archetype *declared* twice
       and says nothing about two characters *tuned from* one, and no test in
@@ -1642,7 +1651,7 @@ is only so the shape is readable.
       one, and the pair reads the worse half. Whether a dual should lose a
       favourable matchup whole is a decision for whoever authors next — it is
       written down rather than tuned away.
-- [ ] **Thirteen traced Pokemon are waiting for a character — five complete
+- [ ] **Ten traced Pokemon are waiting for a character — four complete
       lines.** The art lands first because `cast.ParseBook` refuses a character
       that declares no image, so the order is forced: trace, then author.
       ⚠️ **This entry said "thirty-one" and was stale in BOTH directions**, which
@@ -1657,17 +1666,17 @@ is only so the shape is readable.
             <(grep -o '"assets/[^"]*\.svg"' internal/seed/data/cast.json \
                 | sed 's|"assets/||; s|\.svg"||' | sort -u)
 
-      Thirteen files, five lines, **no orphan form** — every line below is
+      Ten files, four lines, **no orphan form** — every line below is
       complete, and nothing `cast.json` names is missing from `assets/`.
       By line, as they would be authored:
       **igglybuff → jigglypuff → wigglytuff** · **mareep → flaaffy → ampharos** ·
-      **abra → kadabra → alakazam** ·
       **magikarp → gyarados** · **onix → steelix**.
       ⚠️ **Nothing references any of these**, which is why they moved no golden
       and why `TestTheShippedArtIsCutOutRatherThanFramed` does **not** cover them —
       that test walks the art shipped characters name, so the day one of these is
       authored is the day its picture is first measured. **That day came for the
-      dratini line on 2026-09-05**, and for the gible and pichu lines the same day.
+      dratini line on 2026-09-05**, and for the gible, pichu and abra lines the
+      same day.
       ⚠️ **Eight of the nine passed and `assets/pichu.svg` did not, and the test
       was wrong rather than the picture.** Its stated rule was that a silhouette
       does not reach *all four* corners of its tightest rectangle; its code
@@ -1702,19 +1711,19 @@ is only so the shape is readable.
       taste.
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
-      four obvious axes outright.** Multiplicity across the eighteen shipped
+      four obvious axes outright.** Multiplicity across the nineteen shipped
       characters:
 
       | axis | most units that can share one value | rungs reachable |
       |---|---:|---|
       | element | 3 (water: Lapras, Poliwag, Squirtle) | 2, 3 |
-      | origin | **17** (`pokemon`) | 2, 3, 4, 5 — but see below |
+      | origin | **18** (`pokemon`) | 2, 3, 4, 5 — but see below |
       | species | **3** (`dragon`: Charmander, Dratini, Gible) | 2, 3 |
-      | archetype | 1 (eighteen characters, eighteen presets) | **none** |
-      | archetype `column` | 7 / 6 / 5 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
+      | archetype | 1 (nineteen characters, nineteen presets) | **none** |
+      | archetype `column` | 7 / 6 / 6 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
 
       ⚠️ **An origin threshold is FREE at every rung today**, and that is the
-      sharpest thing here: seventeen of eighteen characters are `pokemon`, so *any*
+      sharpest thing here: eighteen of nineteen characters are `pokemon`, so *any*
       squad that is not built around Naruto satisfies a 5-of-one-origin bonus by
       accident. A bonus nobody has to build for is not a bonus, it is a stat
       change with extra words. The same trap sits one step further out if traits
@@ -2060,6 +2069,67 @@ is only so the shape is readable.
       ⚠️ The screens are golden-held, so the extra keystroke moves every play
       fixture that casts a single-aim skill. That is the change being visible
       rather than a fixture problem, but it is the bulk of the diff.
+
+- [ ] **Four ways of playing the board that the engine cannot express yet.**
+      Raised 2026-09-05 while authoring `pokemon.abra`, when three of the four
+      canonical Alakazam mechanics turned out to have no home. They are listed
+      together because the first three share one prerequisite and the fourth is
+      the odd one out.
+
+      ⚠️ **The shared prerequisite: nothing on this board ever moves.** `unit.Cell`
+      is assigned once, at enlist, and never again — grep'd 2026-09-05, the only
+      other mention in `internal/core/battle` is a read. So a *position* is
+      currently a fact about a roster rather than a state of a battle, and all
+      three teleport shapes below need that to stop being true before any of them
+      is a skill. Consequences to settle **once**, not per skill: what an `[]Event`
+      says when a unit moves (a renderer has to be able to animate it); whether the
+      turn queue notices (it does not read position today); and whether `aims`,
+      `bestStrike` and the whole of `price.go` re-read range after a move inside
+      the same turn. ⚠️ Also: a move is the first thing that could make a **legal
+      aim illegal mid-turn**, which is the one place the option list and `Act`
+      re-checking each other actually matters.
+
+      1. **Teleport yourself to another hex.** Abra's whole identity in the
+         original — it only knows Teleport and it runs. Wants **both** a permanent
+         form (you moved, and you stay moved) and a by-turn form (you return after
+         n turns), because they are different skills: the first is repositioning
+         and the second is a dodge with a cost. The permanent one is the cheaper
+         to build and the one to do first.
+      2. **Teleport an ENEMY to another hex.** **By-turn only** — a permanent form
+         is a free re-draft of the other side's formation, and formation is what a
+         squad is. Pulling a back-row unit into reach for three turns is the
+         interesting version.
+      3. **Swap two units' positions.** **By-turn only**, same reasoning. Reads on
+         either side of the board: pull an ally out of trouble, or drag an enemy
+         wall out of the way of what is behind it. ⚠️ Two units move at once, so
+         whatever the event shape from the prerequisite is, it has to carry a pair
+         rather than be emitted twice — a renderer drawing two separate moves
+         cannot show the swap.
+
+      4. **Lock a skill.** The odd one out: **no movement needed, and the data
+         shape already exists.** `Unit.Cooldowns []int` runs in step with
+         `Unit.Skills` (`battle.go:142`) and is spent once per turn by
+         `spendCooldowns`; a parallel `Locked []int` is the same loop and the same
+         lifetime.
+         The design, as asked for: lock **one random skill** of the target for n
+         turns, **each locked skill counting down on its own**, and a lock that
+         lands while another is still running picks a **different** skill. So the
+         locks stack up rather than replace each other, and a caster that keeps
+         landing them can reach **all four** — at which point the target's only
+         legal action is to pass.
+         ⚠️ **That end state is the design question, not a side effect.** The
+         engine already has a skipped turn as an ordinary thing
+         (`battle.go:686`), so it will not break; what needs deciding is whether
+         being locked out completely is a *win condition* somebody can build for
+         or a floor the lock should stop short of. Both are defensible; pick one
+         before authoring the skill, because the answer changes the duration and
+         the chance rather than the code.
+         ⚠️ Random selection means `*rng.Source`, which puts this in the replay
+         contract: the roll has to happen at a fixed point in the turn or the same
+         seed stops reproducing. See the note on determinism in `CLAUDE.md`.
+         ⚠️ It also needs a **wording** — the play screen already says why an
+         option is refused (`Block`/`OptionRefusal`), and a locked skill is a
+         fifth reason beside cooldown, fuel and reach.
 
 - [ ] **`reckless` is the dragon build's 22.1%.** The roadmap said the gap was the
       missing detonate. It was tested: the line was given one (`dragon_drive`, off

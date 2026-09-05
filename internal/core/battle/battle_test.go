@@ -275,6 +275,8 @@ func books(t *testing.T) battle.Books {
 	  {"id":"projecting","grants":[{"status":"bastion","stacks":1,"power":500,"scaling":"attack"}]},
 	  {"id":"carapaced","grants":[{"status":"bastion","stacks":1,"power":500,"scaling":"defense"}]},
 	  {"id":"rending","grants":[],"converts":250},
+	  {"id":"unbilled","grants":[],"spares":1000},
+	  {"id":"halfbilled","grants":[],"spares":500},
 	  {"id":"clean_blood","grants":[],"resists":[{"status":"poison","amount":1000}]},
 	  {"id":"thick_blood","grants":[],"resists":[{"status":"poison","amount":600}]},
 	  {"id":"cold_blood","grants":[],"resists":[{"status":"poison","amount":600}]},

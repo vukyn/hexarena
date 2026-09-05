@@ -24,6 +24,29 @@ naruto.naruto — Naruto
     level 60 hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
              absorbs 7943 of the 11500 budget, 3557 to spare
 
+pokemon.abra — Abra
+  from     Pokémon (anime)
+  preset   spendthrift
+  element  dark
+  species  esper
+  art      assets/abra.svg
+  kit      psycho_cut shadow_ball@8 nasty_plot@12 dark_pulse@16 mind_crush@20 night_shade@24 mind_burn@28 inner_focus@32 shadow_punch@36 taunt@40 spite@44 curse@48 body_slam@52 shadow_claw@56
+  stage "Abra" owns levels 1 to 15, showing assets/abra.svg
+    level 1  hp 560, atk 122, def 52, spd 31, acc 38, ddg 14
+             absorbs 657 of the 11500 budget, 10843 to spare
+    level 15 hp 825, atk 179, def 76, spd 46, acc 56, ddg 21
+             absorbs 1035 of the 11500 budget, 10465 to spare
+  stage "Kadabra" owns levels 16 to 35, showing assets/kadabra.svg
+    level 16 hp 1125, atk 244, def 104, spd 63, acc 75, ddg 29
+             absorbs 1516 of the 11500 budget, 9984 to spare
+    level 35 hp 1606, atk 349, def 149, spd 90, acc 108, ddg 42
+             absorbs 2404 of the 11500 budget, 9096 to spare
+  stage "Alakazam" owns levels 36 to 60, showing assets/alakazam.svg
+    level 36 hp 2039, atk 444, def 189, spd 114, acc 138, ddg 53
+             absorbs 3326 of the 11500 budget, 8174 to spare
+    level 60 hp 2800, atk 610, def 260, spd 158, acc 190, ddg 74
+             absorbs 5233 of the 11500 budget, 6267 to spare
+
 pokemon.bulbasaur — Bulbasaur
   from     Pokémon (anime)
   preset   blighter
@@ -385,4 +408,4 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-18 characters
+19 characters

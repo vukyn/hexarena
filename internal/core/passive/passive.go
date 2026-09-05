@@ -203,6 +203,32 @@ type Passive struct {
 	//
 	// Read fresh on every strike like Drains, so a gate on it works as written.
 	Converts int
+	// Spares is the share of a skill's health cost its holder does not pay, in
+	// parts per thousand.
+	//
+	// # Why a share rather than a flag
+	//
+	// "Pays nothing" is the whole of what the first trait wanting this does, and a
+	// bool would have said it — but a cost is a quantity and the interesting
+	// designs are the partial ones: a trait that halves the price is a different
+	// unit from one that removes it, and neither is expressible if the field can
+	// only be on. Resists is the same shape for the same reason, and the base
+	// means immunity in both.
+	//
+	// # What it does NOT spare
+	//
+	// Only skill.Cost — the health a caster hands over up front, whether or not
+	// anything lands. It is not damage resistance, not a heal, and not a refusal
+	// of a status; a trait that should blunt a poison tick says so with Resists.
+	// The separation matters because the two read at opposite ends of a turn: a
+	// cost is paid before a strike is rolled and a tick lands on somebody else's.
+	//
+	// ⚠️ **It has to be read where the RATING prices a cost as well as where the
+	// battle charges it.** Battle.spendHealth is what a caster pays and
+	// pricing.spentHealth is what Suggest thinks it will pay; a trait applied to
+	// only the first makes a unit that never casts the skill it holds the trait
+	// for, because the rating still sees the full price and declines.
+	Spares int
 	// Amplifies is what the holder is better at inflicting, which is the one
 	// field here that reads the *other* unit's side of an application: every
 	// other job a trait has is about its holder, and this one is about what its
@@ -445,6 +471,7 @@ type passiveFile struct {
 	Resists   []resistanceFile    `json:"resists,omitempty"`
 	Drains    int                 `json:"drains,omitempty"`
 	Converts  int                 `json:"converts,omitempty"`
+	Spares    int                 `json:"spares,omitempty"`
 	Amplifies []amplificationFile `json:"amplifies,omitempty"`
 }
 
@@ -519,8 +546,9 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 	}
 	if len(declared.Grants) == 0 && len(declared.Resists) == 0 &&
 		len(declared.Applies) == 0 && len(declared.Renews) == 0 && declared.Replies == nil &&
-		declared.Drains == 0 && declared.Converts == 0 && len(declared.Amplifies) == 0 {
-		return fail("grants nothing, renews nothing, resists nothing, adds nothing, answers nothing, drains nothing, converts nothing and amplifies nothing, so holding it would change nothing")
+		declared.Drains == 0 && declared.Converts == 0 && declared.Spares == 0 &&
+		len(declared.Amplifies) == 0 {
+		return fail("grants nothing, renews nothing, resists nothing, adds nothing, answers nothing, drains nothing, converts nothing, spares nothing and amplifies nothing, so holding it would change nothing")
 	}
 	// The one authored clause, and the one rule that makes it safe. A figure in
 	// it is refused rather than trusted, because every number in a description is
@@ -755,12 +783,20 @@ func resolve(declared passiveFile, deps Deps) (Passive, error) {
 	if declared.Converts < 0 || declared.Converts > scale.Base {
 		return fail("converts %d, want a share in parts per thousand", declared.Converts)
 	}
+	// Bounded on both sides for the reason the two above are. Under nought is a
+	// trait that makes its holder pay MORE through a field named for paying less,
+	// which is a vulnerability wearing the wrong name; over the base is a cost
+	// that pays the caster, and a skill that heals its user for using it is a
+	// different design question than this field answers.
+	if declared.Spares < 0 || declared.Spares > scale.Base {
+		return fail("spares %d of a skill's cost, want a share in parts per thousand", declared.Spares)
+	}
 
 	return Passive{
 		ID: declared.ID, Name: strings.TrimSpace(declared.Name), Flavour: flavour,
 		Grants: grants, Applies: applies, Renews: renews, Replies: replies,
 		While: while, Resists: resists, Drains: declared.Drains,
-		Converts: declared.Converts, Amplifies: amplifies,
+		Converts: declared.Converts, Spares: declared.Spares, Amplifies: amplifies,
 	}, nil
 }
 
@@ -941,7 +977,8 @@ func (b *Book) Marshal() ([]byte, error) {
 		file.Passives = append(file.Passives, passiveFile{
 			ID: current.ID, Name: current.Name, Flavour: current.Flavour, Grants: grants,
 			Applies: applies, Renews: renewed, Replies: replies, While: while, Resists: resists,
-			Drains: current.Drains, Converts: current.Converts, Amplifies: amplifies,
+			Drains: current.Drains, Converts: current.Converts, Spares: current.Spares,
+			Amplifies: amplifies,
 		})
 	}
 	out, err := json.MarshalIndent(file, "", "  ")

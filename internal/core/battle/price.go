@@ -312,7 +312,13 @@ func (p *pricing) spentHealth(actor *Unit, declared skill.Skill) int64 {
 	if declared.Cost <= 0 {
 		return 0
 	}
-	return actor.MaxHP() * int64(declared.Cost) / scale.Base
+	// The trait share IS read here, unlike the clamp above it, and the difference
+	// is which question each answers. The clamp is what the caster can afford,
+	// which is a fact about the moment; the sparing is what the skill costs THIS
+	// caster, which is a fact about the skill and its holder and so belongs in the
+	// price. A rating blind to it charges a trait-holder full price and declines
+	// the one cast the trait was bought for.
+	return healthCost(actor.MaxHP(), declared, p.fight.spared(actor))
 }
 
 // discharged is what the charge already sitting on the board deals when this cast
