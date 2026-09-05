@@ -527,6 +527,29 @@ space để chọn · để trống thì ai cũng học được chiêu này
 
 
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
+===== vi | 120x24 | bonuses =====
+
+bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
+
+> same_element  đồng hệ  sharers
+
+  đếm hệ mà các thành viên mang
+  trao cho chỉ những người cùng chia
+  2 người cùng có: kinship <đồng khí> x1
+  3 người cùng có: kinship <đồng khí> x2
+
+  đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
+
+
+
+
+
+
+
+
+
+
+↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | browse =====
 
 danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
@@ -813,6 +836,7 @@ bạn muốn làm gì?
   danh sách chiêu     xem các chiêu, ai học được chiêu nào, thêm hoặc sửa chiêu
   hiệu ứng            tra cứu buff, debuff: làm gì, mấy lượt, mấy cộng dồn
   nội tại             tra cứu nội tại: mỗi loại làm gì, ai học được
+  bonus xếp đội       các mốc một đội được thưởng, và mỗi mốc cho gì
   hệ                  tra cứu bảng khắc chế: khắc gì, bị gì khắc, bao nhiêu
   chủng loài          tra cứu chủng loài: mỗi loài nghĩa là gì
   bản dựng            tra cứu bản dựng: lấy chiêu gì, nội tại gì
@@ -824,7 +848,6 @@ Mọi thứ ghi ở đây đều qua đúng các bước kiểm tra của hexfor
 chạy từ bản dữ liệu nhúng sẵn — build lại thì sửa đổi mới vào được trận.
 Các form ghi bằng ctrl+s; trên Mac cmd+S cũng ghi được, miễn là terminal chịu
 truyền phím đó qua thay vì tự mở hộp thoại lưu của nó.
-
 ↑/↓ chọn · enter mở · ctrl+l English · q thoát
 ===== vi | 120x24 | nothing to fight =====
 
@@ -2643,6 +2666,65 @@ space để chọn · để trống thì ai cũng học được chiêu này
 
 
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
+===== vi | 160x60 | bonuses =====
+
+bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
+
+> same_element  đồng hệ  sharers
+
+  đếm hệ mà các thành viên mang
+  trao cho chỉ những người cùng chia
+  2 người cùng có: kinship <đồng khí> x1
+  3 người cùng có: kinship <đồng khí> x2
+
+  đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | browse =====
 
 danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
@@ -3361,6 +3443,7 @@ bạn muốn làm gì?
   danh sách chiêu     xem các chiêu, ai học được chiêu nào, thêm hoặc sửa chiêu
   hiệu ứng            tra cứu buff, debuff: làm gì, mấy lượt, mấy cộng dồn
   nội tại             tra cứu nội tại: mỗi loại làm gì, ai học được
+  bonus xếp đội       các mốc một đội được thưởng, và mỗi mốc cho gì
   hệ                  tra cứu bảng khắc chế: khắc gì, bị gì khắc, bao nhiêu
   chủng loài          tra cứu chủng loài: mỗi loài nghĩa là gì
   bản dựng            tra cứu bản dựng: lấy chiêu gì, nội tại gì
@@ -3372,7 +3455,6 @@ Mọi thứ ghi ở đây đều qua đúng các bước kiểm tra của hexfor
 chạy từ bản dữ liệu nhúng sẵn — build lại thì sửa đổi mới vào được trận.
 Các form ghi bằng ctrl+s; trên Mac cmd+S cũng ghi được, miễn là terminal chịu
 truyền phím đó qua thay vì tự mở hộp thoại lưu của nó.
-
 
 
 
@@ -5119,6 +5201,29 @@ showing all origins (22 of 22)
 
 
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | bonuses =====
+
+squad bonuses  what a side is paid for what its units share
+
+> same_element    sharers
+
+  counts the elements the units carry
+  goes to only the units that share it
+  2 sharing it: kinship x1
+  3 sharing it: kinship x2
+
+  counted once from the squad that walks in, never again — and several may be in force at once
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | browse =====
 
 cast  showing all origins (22 of 22 characters)
@@ -5405,6 +5510,7 @@ what would you like to do?
   skills         the declared skills, who may carry each, add or edit one
   statuses       look a buff or debuff up: what each does, how long, how many
   traits         look a trait up: what each does, and who learns it
+  squad bonuses  the thresholds a squad is paid for, and what each one grants
   elements       look the chart up: what it beats, what beats it, at what rate
   species        look a kind up: what each one means
   builds         look a build up: which skills and which trait it takes
@@ -5416,7 +5522,6 @@ Everything written here goes through the same checks as hexforge, and the
 game boots from the embedded copy — rebuild before an edit reaches a battle.
 A form writes on ctrl+s, and on a Mac cmd+S does it too where the terminal
 passes the chord through instead of opening its own Save dialog.
-
 ↑/↓ move · enter open · ctrl+l tiếng Việt · q quit
 ===== en | 120x24 | nothing to fight =====
 
@@ -7235,6 +7340,65 @@ showing all origins (22 of 22)
 
 
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | bonuses =====
+
+squad bonuses  what a side is paid for what its units share
+
+> same_element    sharers
+
+  counts the elements the units carry
+  goes to only the units that share it
+  2 sharing it: kinship x1
+  3 sharing it: kinship x2
+
+  counted once from the squad that walks in, never again — and several may be in force at once
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | browse =====
 
 cast  showing all origins (22 of 22 characters)
@@ -7953,6 +8117,7 @@ what would you like to do?
   skills         the declared skills, who may carry each, add or edit one
   statuses       look a buff or debuff up: what each does, how long, how many
   traits         look a trait up: what each does, and who learns it
+  squad bonuses  the thresholds a squad is paid for, and what each one grants
   elements       look the chart up: what it beats, what beats it, at what rate
   species        look a kind up: what each one means
   builds         look a build up: which skills and which trait it takes
@@ -7964,7 +8129,6 @@ Everything written here goes through the same checks as hexforge, and the
 game boots from the embedded copy — rebuild before an edit reaches a battle.
 A form writes on ctrl+s, and on a Mac cmd+S does it too where the terminal
 passes the chord through instead of opening its own Save dialog.
-
 
 
 

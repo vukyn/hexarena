@@ -269,6 +269,7 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"species":          species,
 		"status picker":    statusPicker(t, c, lib),
 		"statuses":         NewStatusesScreen(lib),
+		"bonuses":          NewBonusesScreen(lib),
 		"the art preview":  theArtPreview(t, c, lib),
 		"trait blurb":      traitBlurb(t, c, lib),
 		// ⚠️ **The three read-only views over the one shipped character whose

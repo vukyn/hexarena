@@ -2449,15 +2449,32 @@ is only so the shape is readable.
          It also earns a golden of its own, on the rule that each generator is
          handed exactly what it reads.
 
-      - [ ] **A reference screen for the bonuses, on the menu.** A player has to
-            be able to look up what a threshold gives before building a squad, the
+      - [x] **A reference screen for the bonuses, on the menu — DONE.**
+            `internal/screen/bonuses.go`, read-only, on **both** clients' menus
+            after Origins, registered in both sweeps and in all three goldens. The
+            listing carries the scope in the **data's own word** (`sharers`) and
+            the description says the sentence, which is the split the statuses
+            listing already uses for a category; the caveat that is true of every
+            bonus — counted once, never recounted, several at a time — sits once
+            at the foot. ⚠️ The room reserves the description at the height of the
+            **widest bonus in the book**, counted off its grants rather than
+            written down, because rungs are the part expected to grow from two to
+            four and a constant there is a number that stops being right in
+            silence; `TestTheBonusRoomLeavesTheWidestDescriptionItsRows` fails a
+            four-rung book against a one-rung one. ⚠️ It is the **tenth** menu
+            entry on the game client and the **thirteenth** on the authoring one,
+            which is why the two counts in that file's comments moved. What
+            follows is the reasoning it was built from, kept because the next
+            reference screen answers the same questions:
+
+            A player has to be able to look up what a threshold gives before building a squad, the
             way `screenStatuses`, `screenElements`, `screenTraits` and
             `screenSpecies` already work — read-only, drawn by `internal/screen`,
             wording out of `internal/i18n`, golden-held, and offered by **both**
             clients because a reference screen is not authoring.
-            ⚠️ **It is the TENTH menu entry.** `menuItems` holds nine today (seven
-            catalogues, a battle and the join), and the entry belongs after
-            Origins where the other catalogues are.
+            ⚠️ **It is the TENTH menu entry**, and it is: `menuItems` held nine
+            (seven catalogues, a battle and the join) and holds ten, after Origins
+            where the other catalogues are.
             ⚠️ **The sweep is the thing that gets forgotten**, and `model.go`
             records **five separate occasions** where a screen slipped the
             authoring tool's sweep and silently lost its width, translation and

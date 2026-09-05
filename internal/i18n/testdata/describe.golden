@@ -1041,6 +1041,11 @@ Tăng tốc 12% mỗi cộng dồn.
 Tối đa là 60%.
 Tăng chỉ số · 2 lượt · tối đa 5 cộng dồn.
 
+[status] kinship
+Tăng công 10% mỗi cộng dồn.
+Tối đa là 20%.
+Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
+
 [status] block
 Mỗi cộng dồn triệt tiêu một nhát; đòn hai nhát tiêu hai cộng dồn.
 Chặn cú đánh, không chặn thứ dính lại: đòn bị chặn vẫn để lại hiệu ứng gây hại theo lượt.
@@ -2133,6 +2138,11 @@ Raises a stat · always in force · 1 stack.
 Raises speed by 12% per stack.
 At its cap that is 60%.
 Raises a stat · 2 turns · up to 5 stacks.
+
+[status] kinship
+Raises attack by 10% per stack.
+At its cap that is 20%.
+Raises a stat · always in force · up to 2 stacks.
 
 [status] block
 Each stack swallows one strike whole; a two-strike skill spends two.

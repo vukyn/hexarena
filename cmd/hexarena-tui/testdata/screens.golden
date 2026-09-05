@@ -504,6 +504,29 @@ chưa dựng đội nào; bấm n để bắt đầu
 
 
 ↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại
+===== vi | 120x24 | bonuses =====
+
+bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
+
+> same_element  đồng hệ  sharers
+
+  đếm hệ mà các thành viên mang
+  trao cho chỉ những người cùng chia
+  2 người cùng có: kinship <đồng khí> x1
+  3 người cùng có: kinship <đồng khí> x2
+
+  đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
+
+
+
+
+
+
+
+
+
+
+↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | cast =====
 
 danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
@@ -629,6 +652,7 @@ bạn muốn làm gì?
   nội tại             tra cứu nội tại: mỗi loại làm gì, ai học được
   chủng loài          tra cứu chủng loài: mỗi loài nghĩa là gì
   nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
+  bonus xếp đội       các mốc một đội được thưởng, và mỗi mốc cho gì
   đội hình            các đội đã dựng, và mang một đội vào trận
   vào trận            tự cầm quân đánh một trận với đội đầu danh sách
   vào phòng đấu       gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ
@@ -636,7 +660,6 @@ bạn muốn làm gì?
 Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
 sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại
 diễn biến để hexarena --replay vẽ lại đúng trận đó.
-
 
 
 
@@ -2147,6 +2170,65 @@ chưa dựng đội nào; bấm n để bắt đầu
 
 
 ↑/↓ chọn · f vào trận · ctrl+l English · esc quay lại
+===== vi | 160x60 | bonuses =====
+
+bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
+
+> same_element  đồng hệ  sharers
+
+  đếm hệ mà các thành viên mang
+  trao cho chỉ những người cùng chia
+  2 người cùng có: kinship <đồng khí> x1
+  3 người cùng có: kinship <đồng khí> x2
+
+  đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | cast =====
 
 danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
@@ -2452,6 +2534,7 @@ bạn muốn làm gì?
   nội tại             tra cứu nội tại: mỗi loại làm gì, ai học được
   chủng loài          tra cứu chủng loài: mỗi loài nghĩa là gì
   nguồn               tra cứu nguồn: các tác phẩm nhân vật được mượn từ
+  bonus xếp đội       các mốc một đội được thưởng, và mỗi mốc cho gì
   đội hình            các đội đã dựng, và mang một đội vào trận
   vào trận            tự cầm quân đánh một trận với đội đầu danh sách
   vào phòng đấu       gõ mã phòng bạn gửi rồi đánh với người đó qua mạng nội bộ
@@ -2459,7 +2542,6 @@ bạn muốn làm gì?
 Trận đánh ở đây lấy dữ liệu từ thư mục trên, còn game thì chạy từ bản nhúng
 sẵn — build lại thì sửa đổi mới vào được trận. Trong trận, ctrl+s ghi lại
 diễn biến để hexarena --replay vẽ lại đúng trận đó.
-
 
 
 
@@ -3538,6 +3620,29 @@ nothing built yet; n starts one
 
 
 ↑/↓ move · f fight · ctrl+l tiếng Việt · esc back
+===== en | 120x24 | bonuses =====
+
+squad bonuses  what a side is paid for what its units share
+
+> same_element    sharers
+
+  counts the elements the units carry
+  goes to only the units that share it
+  2 sharing it: kinship x1
+  3 sharing it: kinship x2
+
+  counted once from the squad that walks in, never again — and several may be in force at once
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | cast =====
 
 cast  showing all origins (22 of 22 characters)
@@ -3657,20 +3762,20 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 what would you like to do?
 
-> cast         browse the authored characters, at any level
-  skills       look a skill up: what each does, and who may carry it
-  elements     look the chart up: what it beats, what beats it, at what rate
-  traits       look a trait up: what each does, and who learns it
-  species      look a kind up: what each one means
-  origins      look a work up: the fictions the cast is borrowed from
-  squads       the sides that have been built, and take one into a battle
-  battle       play a battle yourself, with the first side on the list
-  join a room  paste the code a friend sent and play them over the local network
+> cast           browse the authored characters, at any level
+  skills         look a skill up: what each does, and who may carry it
+  elements       look the chart up: what it beats, what beats it, at what rate
+  traits         look a trait up: what each does, and who learns it
+  species        look a kind up: what each one means
+  origins        look a work up: the fictions the cast is borrowed from
+  squad bonuses  the thresholds a squad is paid for, and what each one grants
+  squads         the sides that have been built, and take one into a battle
+  battle         play a battle yourself, with the first side on the list
+  join a room    paste the code a friend sent and play them over the local network
 
 A battle here is fought out of the directory above, while the game boots from
 the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s
 writes the log that hexarena --replay draws that same battle back from.
-
 
 
 
@@ -5181,6 +5286,65 @@ nothing built yet; n starts one
 
 
 ↑/↓ move · f fight · ctrl+l tiếng Việt · esc back
+===== en | 160x60 | bonuses =====
+
+squad bonuses  what a side is paid for what its units share
+
+> same_element    sharers
+
+  counts the elements the units carry
+  goes to only the units that share it
+  2 sharing it: kinship x1
+  3 sharing it: kinship x2
+
+  counted once from the squad that walks in, never again — and several may be in force at once
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | cast =====
 
 cast  showing all origins (22 of 22 characters)
@@ -5480,20 +5644,20 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 what would you like to do?
 
-> cast         browse the authored characters, at any level
-  skills       look a skill up: what each does, and who may carry it
-  elements     look the chart up: what it beats, what beats it, at what rate
-  traits       look a trait up: what each does, and who learns it
-  species      look a kind up: what each one means
-  origins      look a work up: the fictions the cast is borrowed from
-  squads       the sides that have been built, and take one into a battle
-  battle       play a battle yourself, with the first side on the list
-  join a room  paste the code a friend sent and play them over the local network
+> cast           browse the authored characters, at any level
+  skills         look a skill up: what each does, and who may carry it
+  elements       look the chart up: what it beats, what beats it, at what rate
+  traits         look a trait up: what each does, and who learns it
+  species        look a kind up: what each one means
+  origins        look a work up: the fictions the cast is borrowed from
+  squad bonuses  the thresholds a squad is paid for, and what each one grants
+  squads         the sides that have been built, and take one into a battle
+  battle         play a battle yourself, with the first side on the list
+  join a room    paste the code a friend sent and play them over the local network
 
 A battle here is fought out of the directory above, while the game boots from
 the embedded copy — rebuild before an edit reaches one. In a battle, ctrl+s
 writes the log that hexarena --replay draws that same battle back from.
-
 
 
 
