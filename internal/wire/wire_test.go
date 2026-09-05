@@ -116,6 +116,10 @@ func TestAnUnknownKindIsARefusalRatherThanAZeroValue(t *testing.T) {
 		"trailing bytes":              `{"kind":"pass"}{"kind":"pass"}`,
 		"a body that is not one":      `{"kind":"welcome","body":7}`,
 		"a body-less welcome":         `{"kind":"welcome"}`,
+		// The two draft kinds, because Pass is the only message whose emptiness is
+		// the design and a decision with no step is not a decision at all.
+		"a body-less decide":  `{"kind":"decide"}`,
+		"a body-less drafted": `{"kind":"drafted"}`,
 	}
 	for name, raw := range cases {
 		t.Run(name, func(t *testing.T) {

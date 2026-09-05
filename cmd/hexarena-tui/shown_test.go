@@ -15,18 +15,18 @@ import (
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
-// # The ten refusals and the three closures, read by a person
+// # Every refusal and every closure, read by a person
 //
 // ⚠️ **They were worded and unread**, which TODO.md records as one step narrower
-// than "shipped dead" rather than closed: internal/i18n has held all thirteen
-// sentences in both languages since #255, and nothing drew any of them. This is
-// the far end of that, and it is the only test in the repository that can see
-// the gap.
+// than "shipped dead" rather than closed: internal/i18n has held a sentence per
+// value in both languages since #255, and nothing drew any of them. This is the
+// far end of that, and it is the only test in the repository that can see the
+// gap.
 //
 // ⚠️ **TestNoKeyIsOrphaned cannot see it and must not be quoted as if it
 // could.** It counts an identifier named anywhere in the module, and
-// internal/i18n/protocol.go's own lookup names all thirteen — so it passed for
-// as long as the words had no reader at all. Nor can internal/i18n's four
+// internal/i18n/protocol.go's own lookup names every one of them — so it passed
+// for as long as the words had no reader at all. Nor can internal/i18n's four
 // protocol tests: they hold the catalog complete, distinct and free of enum
 // spellings, which says nothing about a screen.
 
@@ -43,8 +43,20 @@ import (
 // default arm — so a code moved from one set to the other lands in neither and
 // this goes red naming it.
 //
+// ⚠️ **One code is OWED a producer rather than having one, and the debt is
+// declared here by name.** wire.CodeSquadUnwanted is the answer a room that
+// **drafts** gives a hello that brought a squad, and no room drafts yet — the
+// room half of the ban-and-pick is the next step. So it sits in `owed` below,
+// that set is held at exactly the size it is, and the arithmetic still adds up
+// to wire.CodeCount: a code that lost its producer would land in `owed` and
+// redden the size check, and the day a room answers this one, its entry here has
+// to be deleted or the same check goes red from the other direction. What is
+// **not** available is leaving the code out of the walk, which is how a value
+// ships with nothing measuring it.
+//
 // What it sees: a wording nobody draws, a new enum value with nowhere to appear,
-// a code no room produces at all, and a code moved between the two sets.
+// a code no room produces at all, a code moved between the two sets, and an owed
+// code whose debt was paid or acquired without this comment being read.
 // ⚠️ What it cannot see: the two *arms of this test* swapped over — both screens
 // word whatever they are handed, and no assertion here can tell them apart once
 // the sets themselves are right. What stands in for that is that neither screen
@@ -56,9 +68,23 @@ import (
 func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 	gate := theGateAnswers(t)
 	inMatch := theRoomRefusesInAMatch(t)
+	// The codes no room can answer yet, each with the step that owes it one. A
+	// refusal in here is not drawn by anything and this test says so out loud
+	// rather than passing over it.
+	owed := map[wire.Code]string{
+		wire.CodeSquadUnwanted: "no room drafts yet, so nothing rejects a squad for being " +
+			"unwanted; the room half of the ban-and-pick owes this one a producer",
+	}
 	if len(gate) == 0 || len(inMatch) == 0 {
 		t.Fatal("a real room produced no refusals, so every code below would be checked " +
 			"on the same screen and this measures nothing")
+	}
+	for code, because := range owed {
+		if gate[code] || inMatch[code] {
+			t.Errorf("a real room now produces the %q refusal, so it is drawn on a screen and "+
+				"its entry in `owed` is a stale note (%s) — delete the entry and let the walk "+
+				"below check it like every other code", code, because)
+		}
 	}
 	// Disjoint and total, which is what makes the default arm below able to fire:
 	// a refusal is answered either at the gate or in a match and never both, so a
@@ -69,9 +95,10 @@ func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 				"neither set says which screen reads it", code)
 		}
 	}
-	if got, want := len(gate)+len(inMatch), wire.CodeCount-1; got != want {
-		t.Errorf("a real room produces %d of the %d refusals; the rest are drawn by "+
-			"nothing and reachable from nothing", got, want)
+	if got, want := len(gate)+len(inMatch)+len(owed), wire.CodeCount-1; got != want {
+		t.Errorf("a real room produces %d of the %d refusals and %d are declared owed a "+
+			"producer; the remaining %d are drawn by nothing and reachable from nothing",
+			len(gate)+len(inMatch), want, len(owed), want-len(gate)-len(inMatch)-len(owed))
 	}
 	for _, lang := range i18n.Langs() {
 		base, _, _ := start(t, lang)
@@ -88,6 +115,13 @@ func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 			drawn := ""
 			where := ""
 			switch {
+			case owed[code] != "":
+				// Declared above, with the step that owes it. The wording is still
+				// held complete and distinct by internal/i18n; what is missing is a
+				// producer, and this is the one place that gap is written down.
+				t.Logf("the %q refusal is worded in %v and drawn by nothing: %s",
+					code, lang, owed[code])
+				continue
 			case gate[code]:
 				where = "the join screen"
 				drawn = drawnBody(aJoinRefusedWith(t, base, code))
@@ -131,8 +165,8 @@ func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 			}
 		}
 	}
-	t.Logf("%d of the %d refusals are answers at the gate; the other %d are only reachable "+
-		"during a match", len(gate), wire.CodeCount-1, len(inMatch))
+	t.Logf("%d of the %d refusals are answers at the gate, %d are only reachable during a "+
+		"match, and %d is owed a producer", len(gate), wire.CodeCount-1, len(inMatch), len(owed))
 }
 
 // theRoomRefusesInAMatch is every wire.Code a **seated** peer can be answered

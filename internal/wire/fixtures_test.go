@@ -152,7 +152,11 @@ func messageFixtures(t *testing.T) map[Kind]Body {
 			// be read for each other and neither is a copy of a constant this
 			// package does not own.
 			TurnCap: 200,
-			Seat:    SeatGuest,
+			// A room that drafts, so the field is in the record rather than
+			// omitted by its own zero value — a field that never appears in the
+			// golden is a field the record cannot say travels.
+			Drafts: true,
+			Seat:   SeatGuest,
 		},
 		KindRefused: &Refused{Code: CodeDataMismatch},
 		KindStart: &Start{
@@ -174,5 +178,45 @@ func messageFixtures(t *testing.T) map[Kind]Body {
 		// room declining to say why the match ended, so the fixture is the
 		// value a room may actually send.
 		KindClosed: &Closed{Reason: ClosureLeft},
+		// A loadout, which is the step that fills in the most of a decision: a
+		// named form and both lists. A ban would leave four fields empty and
+		// record almost nothing of the shape.
+		KindDecide: &Decide{DraftDecision: fixtureLoadout()},
+		// The batch the arrange phase forces, which is the case a single-decision
+		// message could not express — plus the two decisions in front of it, so
+		// the record shows a run rather than a pair and shows a skip's absent
+		// character beside a ban's present one.
+		KindDrafted: &Drafted{Decisions: []DraftEntry{
+			{Seat: SeatHost, Step: StepBan, Character: "fixture.character.three"},
+			// A skipped ban: the absence of a character IS the decision, so this
+			// entry is a step and a seat and nothing else.
+			{Seat: SeatGuest, Step: StepBan},
+			{Seat: SeatHost, Step: StepPick, Character: "fixture.character.one"},
+			{Seat: SeatHost, DraftDecision: fixtureLoadout()},
+			{Seat: SeatHost, Step: StepArrange, Slots: []hex.Offset{
+				{Col: 1, Row: 1}, {Col: 0, Row: 2},
+			}},
+			{Seat: SeatGuest, Step: StepArrange, Slots: []hex.Offset{
+				// The ally back corner, which is a real cell and the reason
+				// hex.Offset's zero cannot stand for "unarranged" anywhere.
+				{Col: 0, Row: 0}, {Col: 2, Row: 1},
+			}},
+		}},
+	}
+}
+
+// fixtureLoadout is a loadout decision, shared by the two draft fixtures so the
+// golden shows the same decision travelling on its own and inside a record —
+// which is the whole of what the two kinds are: one shape, two directions.
+//
+// It names a **form**, because that is the field whose absence is a real answer
+// (progression.Furthest) rather than a missing one, so a fixture leaving it out
+// would record the one case the golden cannot tell from a dropped field.
+func fixtureLoadout() DraftDecision {
+	return DraftDecision{
+		Step:     StepLoadout,
+		Stage:    "fixture.stage.two",
+		Skills:   []string{"fixture.strike", "fixture.guard", "fixture.mend", "fixture.hex"},
+		Passives: []string{"fixture.trait"},
 	}
 }

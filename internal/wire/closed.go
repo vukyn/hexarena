@@ -20,11 +20,12 @@ import (
 // the *other* kind of ending: a match stopped for a reason the board cannot
 // show, which a mirror has no way to reach on its own.
 //
-// There are **two of those** and the enum is shaped for a third: a value added
-// here is an entry in a table rather than a new message kind, which is the whole
-// reason the reason is a field and not a Kind. ClosureStopped is what the second
-// one cost — one constant, one name, and no golden — and it is the evidence for
-// the shape rather than a claim about it.
+// There are **three of those** and the enum is shaped for a fourth: a value
+// added here is an entry in a table rather than a new message kind, which is the
+// whole reason the reason is a field and not a Kind. ClosureStopped and
+// ClosureDraftExpired are what the second and third cost — one constant and one
+// name each, and no new message either time — which is the evidence for the
+// shape rather than a claim about it.
 type Closure uint8
 
 const (
@@ -66,31 +67,62 @@ const (
 	// winner and the room's own verdict for it is room.VerdictAbandoned — the
 	// same one a departure produces, because "nobody played this out" is the
 	// same statement either way.
+	ClosureStopped
+	// ClosureDraftExpired is an allowance running out during the ban and pick:
+	// **a draft that runs out of time is not resumed**, the room closes, and the
+	// match is played again from a new code.
+	//
+	// ⚠️ **That is the one place the design does not follow "a timeout announces
+	// and passes"**, and the reason is that there is nothing honest to pass with:
+	// a side that never picked has no squad to fight with, and a defaulted pick
+	// or a defaulted formation would hand somebody a side they did not choose and
+	// call it theirs — where placement alone is worth nineteen points of win rate
+	// (27.6% → 47.3% ally on the shipped roster). → TODO.md § "Ban and pick" (c).
+	//
+	// ⚠️ **It is a closure and not a refusal, which is what makes it belong
+	// here.** A Refused answers one message and the match carries on; this ends
+	// the match, and a mirror that was only refused would sit holding an open
+	// draft decision waiting for a decision nobody is coming to take — the exact
+	// hang Closed exists to prevent.
+	//
+	// ⚠️ Like both closures above it is **not a loss for anybody**. Nobody
+	// drafted a squad, so there is no board to have a verdict about.
 	//
 	// Declared last, which is the rule this enum shares with Kind, Code and
 	// battle.Kind: a closure serialises by name, so appending cannot
-	// reinterpret an ending a peer already knows how to word.
-	ClosureStopped
+	// reinterpret an ending a peer already knows how to word. ⚠️ **The comment
+	// moves with the last constant** — left on ClosureStopped it would say
+	// something false about this file.
+	ClosureDraftExpired
 )
 
 // ClosureCount is the number of closures, and it exists so a test can walk them
 // rather than range over the table of names and ask it whether it holds what it
 // holds.
 //
-// ⚠️ **Both endings are worded now, and no screen draws one yet** — the same
-// state CodeCount is in, and worded in the same place for the same reason: wire
-// must not import internal/i18n, because the whole point of sending an id is
-// that the wording lives at the far end. Lang.Closure is that end, and
-// internal/i18n/protocol_test.go is the walk over this count against both
-// books. The reader is still missing. → TODO.md § The client.
-const ClosureCount = int(ClosureStopped) + 1
+// ⚠️ **Every ending is worded and every ending is drawn** — the same state
+// CodeCount is in, and worded in the same place for the same reason: wire must
+// not import internal/i18n, because the whole point of sending an id is that the
+// wording lives at the far end. Lang.Closure is that end,
+// internal/i18n/protocol_test.go is the walk over this count against both books,
+// and cmd/hexarena-tui's TestEveryRefusalIsShownAndEveryClosureIsShown is what
+// reads each sentence back off the result screen.
+//
+// ⚠️ Note the asymmetry with CodeCount, which is worth knowing rather than
+// smoothing over: a closure needs no producer to be *drawable*, because the
+// result screen words whatever closure it is handed — so ClosureDraftExpired is
+// read by a player from the day it exists, while CodeSquadUnwanted is owed a
+// room. What neither test can see is whether a room ever *sends* this one. →
+// TODO.md § *The draft on the wire*.
+const ClosureCount = int(ClosureDraftExpired) + 1
 
 // closureNames is the wire form of every closure, and it is the format:
 // renaming an entry breaks every peer built before the rename.
 var closureNames = [ClosureCount]string{
-	ClosureNone:    "none",
-	ClosureLeft:    "left",
-	ClosureStopped: "stopped",
+	ClosureNone:         "none",
+	ClosureLeft:         "left",
+	ClosureStopped:      "stopped",
+	ClosureDraftExpired: "draft_expired",
 }
 
 func (c Closure) String() string {

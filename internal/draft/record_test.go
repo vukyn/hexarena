@@ -16,7 +16,7 @@ import (
 // or failing to find it in the caller's own slice — names an aliasing fault
 // exactly rather than reporting two entries that merely differ. It is the same
 // fixture internal/core/battle's cursor test uses, for the same reading.
-var callersOwnRow = draft.Entry{Seat: wire.Seat("the-callers-own-row"), Step: draft.StepBan}
+var callersOwnRow = wire.DraftEntry{Seat: wire.Seat("the-callers-own-row"), Step: wire.StepBan}
 
 // stateOf is everything a draft says about itself, as one line.
 //
@@ -109,13 +109,13 @@ func TestTheRecordHoldsTheDecisionAndNothingDerived(t *testing.T) {
 	if cursor != len(record) {
 		t.Errorf("Since(0) answered %d entries and a cursor of %d", len(record), cursor)
 	}
-	want := []draft.Entry{
-		{Seat: wire.SeatHost, Step: draft.StepBan},
-		{Seat: wire.SeatGuest, Step: draft.StepBan},
-		{Seat: wire.SeatHost, Step: draft.StepBan},
-		{Seat: wire.SeatGuest, Step: draft.StepBan},
-		{Seat: wire.SeatHost, Step: draft.StepPick, Character: taken.ID},
-		{Seat: wire.SeatHost, Step: draft.StepLoadout, Skills: kit},
+	want := []wire.DraftEntry{
+		{Seat: wire.SeatHost, Step: wire.StepBan},
+		{Seat: wire.SeatGuest, Step: wire.StepBan},
+		{Seat: wire.SeatHost, Step: wire.StepBan},
+		{Seat: wire.SeatGuest, Step: wire.StepBan},
+		{Seat: wire.SeatHost, Step: wire.StepPick, Character: taken.ID},
+		{Seat: wire.SeatHost, Step: wire.StepLoadout, Skills: kit},
 	}
 	if len(record) != len(want) {
 		t.Fatalf("four skipped bans, a pick and a loadout are six decisions and the record "+
@@ -236,15 +236,15 @@ func takeOneDecision(t *testing.T, drafting *draft.Draft, all []cast.Character) 
 		t.Fatal("the draft has nothing due, so there is no decision to take")
 	}
 	switch step {
-	case draft.StepBan:
+	case wire.StepBan:
 		if err := drafting.Ban(seat, firstCandidate(t, drafting).ID); err != nil {
 			t.Fatalf("%s bans: %v", seat, err)
 		}
-	case draft.StepPick:
+	case wire.StepPick:
 		if err := drafting.Pick(seat, firstCandidate(t, drafting).ID); err != nil {
 			t.Fatalf("%s picks: %v", seat, err)
 		}
-	case draft.StepLoadout:
+	case wire.StepLoadout:
 		side := drafting.Picks()[seatIndex(t, seat)]
 		open := side[len(side)-1]
 		form, skills, passives := legalLoadout(t, characterNamed(t, all, open.Character))
@@ -448,7 +448,7 @@ func TestARecordReplaysIntoTheSameDraft(t *testing.T) {
 		}
 		applied, halfArranged := 0, 0
 		for at, entry := range record {
-			if err := apply(mirror, entry); err != nil {
+			if err := mirror.Apply(entry); err != nil {
 				t.Fatalf("%s: replaying entry %d (%+v): %v", one.what, at, entry, err)
 			}
 			applied++
@@ -457,7 +457,7 @@ func TestARecordReplaysIntoTheSameDraft(t *testing.T) {
 			}
 			// ⚠️ The one relaxation, and it is exactly one entry wide: the first of
 			// the two arrangements. See this test's own comment.
-			if entry.Step == draft.StepArrange && mirror.Arranging() {
+			if entry.Step == wire.StepArrange && mirror.Arranging() {
 				halfArranged++
 				continue
 			}
@@ -487,32 +487,4 @@ func TestARecordReplaysIntoTheSameDraft(t *testing.T) {
 		t.Logf("%s: %d decisions, %d entries, %d replayed, %d comparison deferred",
 			one.what, len(states)-1, len(record), applied, halfArranged)
 	}
-}
-
-// apply takes one entry back through the decision it names, which is the whole
-// of how a record is replayed.
-//
-// ⚠️ **It is the test's switch and not the package's, deliberately** — see
-// Entry's own comment. Today there is one caller; the day a client mirrors a
-// draft (step 3) there are two, and that is when it belongs in internal/draft
-// rather than beside each caller, for the reason cast.ChooseLoadout was pulled
-// together out of three copies.
-func apply(mirror *draft.Draft, entry draft.Entry) error {
-	switch entry.Step {
-	case draft.StepBan:
-		// A ban that names nobody is a skip, and the absence is the decision.
-		if entry.Character == "" {
-			return mirror.SkipBan(entry.Seat)
-		}
-		return mirror.Ban(entry.Seat, entry.Character)
-	case draft.StepPick:
-		return mirror.Pick(entry.Seat, entry.Character)
-	case draft.StepLoadout:
-		return mirror.Loadout(entry.Seat, entry.Stage, entry.Skills, entry.Passives)
-	case draft.StepArrange:
-		return mirror.Arrange(entry.Seat, entry.Slots)
-	case draft.StepTimeout:
-		return mirror.TimedOut(entry.Seat)
-	}
-	return fmt.Errorf("the record holds a %q, which is not something a draft can be told", entry.Step)
 }

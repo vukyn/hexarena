@@ -1,6 +1,6 @@
 ---
 name: draft-state-machine
-description: hexarena internal/draft — steps 2a and 2b built; the Done()/Picked() split, the arrange phase's own accessors, and the correction that a slot-less squad is REFUSED by Squad.Validate rather than silently stacking
+description: hexarena internal/draft — steps 2a, 2b and 3 built; the Done()/Picked() split, the arrange phase's own accessors, and the step-3 decision that the record's SHAPE now lives in internal/wire
 metadata:
   type: project
 ---
@@ -52,3 +52,16 @@ the mechanism against the code before repeating it in a comment. See
 [[a-refusal-can-be-right-for-the-wrong-reason]]. What a `Pick` needs to become a
 `placement.Placement` is a `Slot` and an `ID` — and the `ID` is the **character
 id**, licensed by the pool being exclusive.
+
+**Step 3** (branch `feat/draft-wire`, 2026-09-05) put the record on the wire, and
+the one thing to know before editing this package: ⚠️ **`draft.Entry` and
+`draft.Step` no longer exist.** The record's shape is `wire.DraftEntry` (a
+`Seat` plus an embedded `wire.DraftDecision`) and the vocabulary is
+`wire.DraftStep` with `wire.StepBan`… — declared **once, in `internal/wire`**,
+with no local alias, because `internal/draft` imports `internal/wire` (for
+`Format` and `Seat`) so wire may not import back. `Since`'s answer is therefore
+already what `wire.Drafted` carries. The mirror's apply loop is
+`Draft.Apply(wire.DraftEntry)`, moved out of `record_test.go`'s local `apply`
+exactly as that function's comment predicted. Nothing about the state machine
+moved — `Turn` still answers one seat and one step, `Done()` is still the whole
+draft.

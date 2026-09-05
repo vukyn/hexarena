@@ -76,6 +76,7 @@
     "battles": 3,
     "allowance": 90,
     "turn_cap": 200,
+    "drafts": true,
     "seat": "guest"
   }
 }
@@ -169,6 +170,89 @@
   "kind": "closed",
   "body": {
     "reason": "left"
+  }
+}
+
+[decide]
+{
+  "kind": "decide",
+  "body": {
+    "step": "loadout",
+    "stage": "fixture.stage.two",
+    "skills": [
+      "fixture.strike",
+      "fixture.guard",
+      "fixture.mend",
+      "fixture.hex"
+    ],
+    "passives": [
+      "fixture.trait"
+    ]
+  }
+}
+
+[drafted]
+{
+  "kind": "drafted",
+  "body": {
+    "decisions": [
+      {
+        "seat": "host",
+        "step": "ban",
+        "character": "fixture.character.three"
+      },
+      {
+        "seat": "guest",
+        "step": "ban"
+      },
+      {
+        "seat": "host",
+        "step": "pick",
+        "character": "fixture.character.one"
+      },
+      {
+        "seat": "host",
+        "step": "loadout",
+        "stage": "fixture.stage.two",
+        "skills": [
+          "fixture.strike",
+          "fixture.guard",
+          "fixture.mend",
+          "fixture.hex"
+        ],
+        "passives": [
+          "fixture.trait"
+        ]
+      },
+      {
+        "seat": "host",
+        "step": "arrange",
+        "slots": [
+          {
+            "col": 1,
+            "row": 1
+          },
+          {
+            "col": 0,
+            "row": 2
+          }
+        ]
+      },
+      {
+        "seat": "guest",
+        "step": "arrange",
+        "slots": [
+          {
+            "col": 0,
+            "row": 0
+          },
+          {
+            "col": 2,
+            "row": 1
+          }
+        ]
+      }
+    ]
   }
 }
 

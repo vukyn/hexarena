@@ -28,7 +28,8 @@ import (
 // player — the one thing this phase exists to prevent. Arrival order is a race, so
 // recording it would make two peers' records differ for a draft in which the same
 // decisions were taken; the price is that the record cannot say who arranged
-// first, which is a fact a mirror has no use for. → Draft.arranged, Entry.Slots.
+// first, which is a fact a mirror has no use for. → Draft.arranged, and
+// wire.DraftDecision.Slots.
 //
 // ⚠️ **The legality of the arrangement is placement.Squad.Validate's answer and
 // its words are kept**, behind a lead-in naming the seat. That function already
@@ -54,7 +55,9 @@ func (d *Draft) Arrange(seat wire.Seat, slots []hex.Offset) error {
 	}
 	// Both in: the record catches up in one step, in seats order.
 	for at, recording := range seats {
-		d.record(Entry{Seat: recording, Step: StepArrange, Slots: slices.Clone(d.arranged[at])})
+		d.record(wire.DraftEntry{
+			Seat: recording, Step: wire.StepArrange, Slots: slices.Clone(d.arranged[at]),
+		})
 	}
 	return nil
 }
@@ -62,7 +65,7 @@ func (d *Draft) Arrange(seat wire.Seat, slots []hex.Offset) error {
 // Arranging reports whether the arrange phase is open: the picking is over and
 // at least one side has still to arrange.
 //
-// It is the phase's own accessor rather than a Step out of Turn, because two
+// It is the phase's own accessor rather than a step out of Turn, because two
 // decisions are pending at once and Turn answers one. → Turn.
 func (d *Draft) Arranging() bool { return d.Picked() && !d.arrangedBoth() }
 

@@ -55,39 +55,80 @@ const (
 	// same validator, so it can say precisely what is wrong with a squad it
 	// built, in the player's own language, without the server spelling it.
 	CodeSquadRefused
-	// CodeNotYourTurn is an act or a pass arriving from the seat that is not on
-	// turn. The server knows whose turn it is — which is also why Act carries no
-	// unit.
+	// CodeNotYourTurn is an act, a pass **or a draft decision** arriving from the
+	// seat that is not being asked. The server knows whose turn it is — which is
+	// also why Act carries no unit and why Decide carries no seat.
+	//
+	// ⚠️ **The draft reuses this rather than getting a code of its own**, and the
+	// reason is the discipline at the top of this file: it is the same fact about
+	// the same thing, and what a player does about it is the same either way —
+	// nothing, the screen already says whose decision is due. Two codes for one
+	// situation is worth less than one.
 	CodeNotYourTurn
 	// CodeIllegalAction is an act the prompt does not offer: a skill the unit
 	// does not hold, one on cooldown, or an aim outside the cells the engine
 	// listed. Act already refuses it, so this code is the engine's no travelling
 	// back rather than a second reading of the rules.
+	//
+	// ⚠️ **It covers the draft's four legality refusals too, and that is a
+	// decision rather than laziness** — the same decision CodeSquadRefused makes
+	// for the four ways a squad can be turned away, for the same reason. A draft
+	// decision of the wrong step, one naming a character out of the pool or
+	// already taken, an illegal loadout and a refused arrangement are all
+	// decisions the open prompt did not offer, and the client holds the pool,
+	// cast.ChooseLoadout and placement.Squad.Validate itself — so it can say
+	// precisely which, in the player's own language, where a code could only ever
+	// say "one of four". A client that offered any of the four was wrong about
+	// rules it holds, which is what this code's wording says.
 	CodeIllegalAction
 	// CodeUnknownMessage is a kind this peer does not know, which is what a
 	// client one version ahead looks like. It is the answer Kind.UnmarshalJSON's
 	// refusal turns into.
+	CodeUnknownMessage
+	// CodeSquadUnwanted is a squad brought to a room that **drafts**: the two
+	// sides ban and pick here, so the side a client built at home is not the side
+	// it will field. → Welcome.Drafts.
+	//
+	// ⚠️ **No existing code can say this, which is why it is a new one.** Every
+	// other refusal about a squad is CodeSquadRefused, and that code means one
+	// thing — the squad is not *legal* — which this squad may perfectly well be.
+	// Answering it would send a player to check the levels, forms and skills of a
+	// squad with nothing wrong with it, and its wording says in as many words to
+	// fix the squad and join again; the fix here is to bring **none**. A refusal
+	// that misdirects is worse than a refusal that is merely blunt.
+	//
+	// ⚠️ It is a refusal rather than a silent drop for the reason Welcome.Drafts
+	// gives: a squad quietly ignored is a player watching their side fail to
+	// appear with nothing saying why. And it is answerable at the *gate*,
+	// unlike the draft's own refusals, because it is a fact about the hello.
 	//
 	// Declared last, which is the rule this enum shares with Kind and with
 	// battle.Kind: a code serialises by name, so appending cannot reinterpret a
-	// refusal a peer already knows how to word.
-	CodeUnknownMessage
+	// refusal a peer already knows how to word. ⚠️ **The comment moves with the
+	// last constant** — left on CodeUnknownMessage it would say something false
+	// about this file.
+	CodeSquadUnwanted
 )
 
 // CodeCount is the number of codes, and it exists so a test can walk them rather
 // than range over the table of names and ask it whether it holds what it holds.
 //
-// ⚠️ **Every code is worded now, and no screen draws one yet.** Lang.Refusal in
+// ⚠️ **Every code is worded and every code but one is drawn.** Lang.Refusal in
 // internal/i18n carries a line per code in both books, and the walk over this
 // count against those books is internal/i18n/protocol_test.go — it could never
 // be here, because wire must not import internal/i18n (the whole point of a
 // code is that the wording lives at the far end, and a protocol that imported
 // the word book would be the server holding the sentences again). So this count
-// is what is held here. What is still open is the *reader*: the pairing screen
-// in cmd/hexarena-tui is what turns those wordings into something a player is
-// shown, so until it lands the "shipped dead" shape is one step narrower —
-// words exist, unread — rather than closed. → TODO.md § The client.
-const CodeCount = int(CodeUnknownMessage) + 1
+// is what is held here. cmd/hexarena-tui's
+// TestEveryRefusalIsShownAndEveryClosureIsShown is the other half: it produces
+// every code out of a real room and reads its sentence back off a drawn screen.
+//
+// ⚠️ **The one exception is CodeSquadUnwanted, and it is a stated debt rather
+// than an omission.** No room answers it yet, because a room that drafts is the
+// next step — so that test names it as owed and holds the owed set at exactly
+// one, which is what stops the exception growing quietly. → TODO.md § *The
+// draft on the wire*.
+const CodeCount = int(CodeSquadUnwanted) + 1
 
 // codeNames is the wire form of every code, and it is the format: renaming an
 // entry breaks every peer built before the rename.
@@ -102,6 +143,7 @@ var codeNames = [CodeCount]string{
 	CodeNotYourTurn:      "not_your_turn",
 	CodeIllegalAction:    "illegal_action",
 	CodeUnknownMessage:   "unknown_message",
+	CodeSquadUnwanted:    "squad_unwanted",
 }
 
 func (c Code) String() string {
