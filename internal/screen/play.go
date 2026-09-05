@@ -1677,6 +1677,12 @@ func OptionRefusal(c Context, option battle.Option) string {
 			name = option.Status
 		}
 		return c.Text(i18n.PlayBlockedFuel, option.Need, name, option.Held)
+	case battle.BlockSpent:
+		// The allowance alone, without the status behind it. The counter is
+		// bookkeeping — a reader never chose to hold it and cannot spend it on
+		// anything else — so naming it would spend the row's width on a word that
+		// answers no question.
+		return c.Text(i18n.PlayBlockedSpent, option.Need)
 	case battle.BlockNoReach:
 		return c.Text(i18n.PlayBlockedNoReach)
 	}

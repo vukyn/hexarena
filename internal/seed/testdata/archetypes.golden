@@ -205,4 +205,40 @@ predator, formation column 0
            absorbs 6512 of the 11500 budget, 4988 to spare
   kit      dig stone_edge earthquake sand_tomb sandstorm rock_throw seismic_toss body_slam taunt
 
-17 presets
+livewire, formation column 1
+  the one whose own body is the battery: the thinnest frame in the cast behind the best odds of not being hit at all, blows that are paid for in its own health, and a charge sitting close enough to the skin that touching it costs a turn
+  demands  a character built from it must carry electric
+  hp 965->2900  attack 200->600  defense 93->280  speed 53->160  accuracy 56->170  dodge 30->90
+  level 1  hp 965, atk 200, def 93, spd 53, acc 56, ddg 30
+           absorbs 1264 of the 11500 budget, 10236 to spare
+  level 30 hp 1916, atk 396, def 184, spd 105, acc 112, ddg 59
+           absorbs 3095 of the 11500 budget, 8405 to spare
+  level 60 hp 2900, atk 600, def 280, spd 160, acc 170, ddg 90
+           absorbs 5609 of the 11500 budget, 5891 to spare
+  kit      thunder_shock charge_beam spark electro_ball thunderbolt thunder_wave discharge overload magnetise zap_cannon taunt body_slam
+
+spendthrift, formation column 2
+  the one that throws blows nobody else could afford: the most expensive skills in the book on the thinnest frame that could hold them, and a trait that quietly refuses the bill — take the trait away and it kills itself in four turns
+  demands  a character built from it must carry dark
+  hp 930->2800  attack 203->610  defense 86->260  speed 52->158  accuracy 63->190  dodge 24->74
+  level 1  hp 930, atk 203, def 86, spd 52, acc 63, ddg 24
+           absorbs 1196 of the 11500 budget, 10304 to spare
+  level 30 hp 1849, atk 403, def 171, spd 104, acc 125, ddg 48
+           absorbs 2907 of the 11500 budget, 8593 to spare
+  level 60 hp 2800, atk 610, def 260, spd 158, acc 190, ddg 74
+           absorbs 5233 of the 11500 budget, 6267 to spare
+  kit      psycho_cut shadow_ball dark_pulse night_shade nasty_plot mind_burn mind_crush shadow_punch spite taunt
+
+stoker, formation column 0
+  the one that has not arrived yet: it opens slower than anything else in its row and takes a little of the gap back every turn it survives, until it is acting twice for everyone else's once — so the way to beat it is to not let it have the turns
+  demands  a character built from it must carry fire
+  hp 1000->3000  attack 233->700  defense 113->340  speed 40->120  accuracy 55->165  dodge 20->62
+  level 1  hp 1000, atk 233, def 113, spd 40, acc 55, ddg 20
+           absorbs 1377 of the 11500 budget, 10123 to spare
+  level 30 hp 1983, atk 462, def 224, spd 79, acc 109, ddg 40
+           absorbs 3466 of the 11500 budget, 8034 to spare
+  level 60 hp 3000, atk 700, def 340, spd 120, acc 165, ddg 62
+           absorbs 6410 of the 11500 budget, 5090 to spare
+  kit      ember blaze_kick fire_fang flamethrower flare_blitz inferno heat_wave fire_spin body_slam taunt
+
+20 presets

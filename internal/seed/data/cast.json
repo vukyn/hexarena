@@ -147,6 +147,187 @@
       ]
     },
     {
+      "id": "pokemon.abra",
+      "name": "Abra",
+      "origin": "pokemon",
+      "archetype": "spendthrift",
+      "image": "assets/abra.svg",
+      "element": "dark",
+      "bio": "Ngủ gần hết ngày và vẫn biết chính xác lúc nào có người lại gần. Chưa ai kể được chuyện mình bắt gặp nó tỉnh: hễ thấy động là chỗ nó nằm trống trơn, còn nó thì đã ở một chỗ khác, vẫn đang ngủ.",
+      "species": [
+        "esper"
+      ],
+      "stages": [
+        {
+          "name": "Abra",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 560,
+              "max": 1680
+            },
+            "attack": {
+              "base": 122,
+              "max": 366
+            },
+            "defense": {
+              "base": 52,
+              "max": 156
+            },
+            "speed": {
+              "base": 31,
+              "max": 95
+            },
+            "accuracy": {
+              "base": 38,
+              "max": 114
+            },
+            "dodge": {
+              "base": 14,
+              "max": 44
+            }
+          }
+        },
+        {
+          "name": "Kadabra",
+          "min_level": 16,
+          "image": "assets/kadabra.svg",
+          "stats": {
+            "hp": {
+              "base": 745,
+              "max": 2240
+            },
+            "attack": {
+              "base": 162,
+              "max": 488
+            },
+            "defense": {
+              "base": 69,
+              "max": 208
+            },
+            "speed": {
+              "base": 42,
+              "max": 126
+            },
+            "accuracy": {
+              "base": 50,
+              "max": 152
+            },
+            "dodge": {
+              "base": 19,
+              "max": 59
+            }
+          }
+        },
+        {
+          "name": "Alakazam",
+          "min_level": 36,
+          "image": "assets/alakazam.svg",
+          "stats": {
+            "hp": {
+              "base": 930,
+              "max": 2800
+            },
+            "attack": {
+              "base": 203,
+              "max": 610
+            },
+            "defense": {
+              "base": 86,
+              "max": 260
+            },
+            "speed": {
+              "base": 52,
+              "max": 158
+            },
+            "accuracy": {
+              "base": 63,
+              "max": 190
+            },
+            "dodge": {
+              "base": 24,
+              "max": 74
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "psycho_cut"
+        },
+        {
+          "id": "shadow_ball",
+          "at_level": 8
+        },
+        {
+          "id": "nasty_plot",
+          "at_level": 12
+        },
+        {
+          "id": "dark_pulse",
+          "at_level": 16
+        },
+        {
+          "id": "mind_crush",
+          "at_level": 20
+        },
+        {
+          "id": "night_shade",
+          "at_level": 24
+        },
+        {
+          "id": "mind_burn",
+          "at_level": 28
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 32
+        },
+        {
+          "id": "shadow_punch",
+          "at_level": 36
+        },
+        {
+          "id": "taunt",
+          "at_level": 40
+        },
+        {
+          "id": "spite",
+          "at_level": 44
+        },
+        {
+          "id": "curse",
+          "at_level": 48
+        },
+        {
+          "id": "body_slam",
+          "at_level": 52
+        },
+        {
+          "id": "shadow_claw",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "magic_guard",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 48
+        }
+      ]
+    },
+    {
       "id": "pokemon.bulbasaur",
       "name": "Bulbasaur",
       "origin": "pokemon",
@@ -2436,6 +2617,191 @@
       ]
     },
     {
+      "id": "pokemon.pichu",
+      "name": "Pichu",
+      "origin": "pokemon",
+      "archetype": "livewire",
+      "image": "assets/pichu.svg",
+      "element": "electric",
+      "bio": "Chưa giữ nổi thứ mình mang: hễ giật mình, hễ mừng quá, là cả người phóng ra một cái, và cái ấy làm chính nó đau trước khi làm ai đau. Người nuôi nó học cách đừng vỗ vai từ phía sau.",
+      "species": [
+        "rodent"
+      ],
+      "stages": [
+        {
+          "name": "Pichu",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 580,
+              "max": 1740
+            },
+            "attack": {
+              "base": 120,
+              "max": 360
+            },
+            "defense": {
+              "base": 56,
+              "max": 168
+            },
+            "speed": {
+              "base": 32,
+              "max": 96
+            },
+            "accuracy": {
+              "base": 34,
+              "max": 102
+            },
+            "dodge": {
+              "base": 18,
+              "max": 54
+            }
+          }
+        },
+        {
+          "name": "Pikachu",
+          "min_level": 16,
+          "image": "assets/pikachu.svg",
+          "stats": {
+            "hp": {
+              "base": 772,
+              "max": 2320
+            },
+            "attack": {
+              "base": 160,
+              "max": 480
+            },
+            "defense": {
+              "base": 74,
+              "max": 224
+            },
+            "speed": {
+              "base": 42,
+              "max": 128
+            },
+            "accuracy": {
+              "base": 45,
+              "max": 136
+            },
+            "dodge": {
+              "base": 24,
+              "max": 72
+            }
+          }
+        },
+        {
+          "name": "Raichu",
+          "min_level": 36,
+          "image": "assets/raichu.svg",
+          "stats": {
+            "hp": {
+              "base": 965,
+              "max": 2900
+            },
+            "attack": {
+              "base": 200,
+              "max": 600
+            },
+            "defense": {
+              "base": 93,
+              "max": 280
+            },
+            "speed": {
+              "base": 53,
+              "max": 160
+            },
+            "accuracy": {
+              "base": 56,
+              "max": 170
+            },
+            "dodge": {
+              "base": 30,
+              "max": 90
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "thunder_shock"
+        },
+        {
+          "id": "nuzzle",
+          "at_level": 8
+        },
+        {
+          "id": "charge_beam",
+          "at_level": 12
+        },
+        {
+          "id": "spark",
+          "at_level": 16
+        },
+        {
+          "id": "electro_ball",
+          "at_level": 20
+        },
+        {
+          "id": "thunder_wave",
+          "at_level": 24
+        },
+        {
+          "id": "taunt",
+          "at_level": 28
+        },
+        {
+          "id": "discharge",
+          "at_level": 32
+        },
+        {
+          "id": "thunderbolt",
+          "at_level": 36
+        },
+        {
+          "id": "volt_tackle",
+          "at_level": 40
+        },
+        {
+          "id": "overload",
+          "at_level": 44
+        },
+        {
+          "id": "magnetise",
+          "at_level": 46
+        },
+        {
+          "id": "body_slam",
+          "at_level": 48
+        },
+        {
+          "id": "zap_cannon",
+          "at_level": 52
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "static",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 48
+        }
+      ]
+    },
+    {
       "id": "pokemon.poliwag",
       "name": "Poliwag",
       "origin": "pokemon",
@@ -3007,6 +3373,191 @@
         {
           "id": "carapace",
           "at_level": 48
+        }
+      ]
+    },
+    {
+      "id": "pokemon.torchic",
+      "name": "Torchic",
+      "origin": "pokemon",
+      "archetype": "stoker",
+      "image": "assets/torchic.svg",
+      "element": "fire",
+      "bio": "Trong bụng lúc nào cũng có một chỗ âm ỉ, nên ôm nó thì ấm tay mà nó thì chẳng thấy nóng. Chạy vài bước đầu vụng về hết sức, chạy thêm một lúc nữa thì không ai đuổi kịp.",
+      "species": [
+        "brood"
+      ],
+      "stages": [
+        {
+          "name": "Torchic",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 600,
+              "max": 1800
+            },
+            "attack": {
+              "base": 140,
+              "max": 420
+            },
+            "defense": {
+              "base": 68,
+              "max": 204
+            },
+            "speed": {
+              "base": 24,
+              "max": 72
+            },
+            "accuracy": {
+              "base": 33,
+              "max": 99
+            },
+            "dodge": {
+              "base": 12,
+              "max": 37
+            }
+          }
+        },
+        {
+          "name": "Combusken",
+          "min_level": 16,
+          "image": "assets/combusken.svg",
+          "stats": {
+            "hp": {
+              "base": 800,
+              "max": 2400
+            },
+            "attack": {
+              "base": 186,
+              "max": 560
+            },
+            "defense": {
+              "base": 90,
+              "max": 272
+            },
+            "speed": {
+              "base": 32,
+              "max": 96
+            },
+            "accuracy": {
+              "base": 44,
+              "max": 132
+            },
+            "dodge": {
+              "base": 16,
+              "max": 50
+            }
+          }
+        },
+        {
+          "name": "Blaziken",
+          "min_level": 36,
+          "image": "assets/blaziken.svg",
+          "stats": {
+            "hp": {
+              "base": 1000,
+              "max": 3000
+            },
+            "attack": {
+              "base": 233,
+              "max": 700
+            },
+            "defense": {
+              "base": 113,
+              "max": 340
+            },
+            "speed": {
+              "base": 40,
+              "max": 120
+            },
+            "accuracy": {
+              "base": 55,
+              "max": 165
+            },
+            "dodge": {
+              "base": 20,
+              "max": 62
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "ember"
+        },
+        {
+          "id": "blaze_kick",
+          "at_level": 8
+        },
+        {
+          "id": "fire_fang",
+          "at_level": 12
+        },
+        {
+          "id": "flamethrower",
+          "at_level": 16
+        },
+        {
+          "id": "inferno",
+          "at_level": 20
+        },
+        {
+          "id": "body_slam",
+          "at_level": 24
+        },
+        {
+          "id": "flare_blitz",
+          "at_level": 28
+        },
+        {
+          "id": "heat_wave",
+          "at_level": 32
+        },
+        {
+          "id": "taunt",
+          "at_level": 36
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 40
+        },
+        {
+          "id": "fire_spin",
+          "at_level": 44
+        },
+        {
+          "id": "skull_bash",
+          "at_level": 48
+        },
+        {
+          "id": "submission",
+          "at_level": 52
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "quickening",
+          "at_level": 16
+        },
+        {
+          "id": "blaze",
+          "at_level": 24
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 32
+        },
+        {
+          "id": "berserk",
+          "at_level": 44
+        },
+        {
+          "id": "endurance",
+          "at_level": 52
         }
       ]
     }

@@ -1173,17 +1173,33 @@ is only so the shape is readable.
             **shared pool**, so a 3v3 fields six different characters and a 5v5
             ten. A pick carries the character **and its skills**. A spectator
             watches the draft as well as the battle.
-            ⚠️ **The cast is too small for a 5v5 draft, measured: this is a
-            content prerequisite and no amount of code fixes it.** **Re-measured
-            2026-09-05: seventeen characters ship** (this said twelve, then
-            fifteen, then sixteen) and **twelve** of them have an authored build
-            (`builds.json`) — the four without one inside the draftable pool are
-            Happiny, Lapras, Oddish and Riolu. Ten picks leaves **two** bans on
-            the built cast at 5v5, so build coverage rather than cast size is
-            still what binds. 3v3 is comfortable: six picks leaves six bans on
-            the built cast, ten if the pool is the full sixteen.
-            So either 5v5 drafting waits for more builds, or the draft is 3v3-only
-            and says so.
+            ⚠️ **The cast is big enough for a 5v5 draft now, and the build
+            catalogue is the thinner half. Re-measured 2026-09-05.** This heading
+            read *"the cast is too small for a 5v5 draft, measured: this is a
+            content prerequisite and no amount of code fixes it"* until the pool
+            reached sixteen; the arithmetic block below is where that closed and
+            it carries the figures. **Twenty characters ship** (this said twelve,
+            then fifteen, sixteen, seventeen, eighteen, nineteen), **nineteen** are
+            draftable, and **fifteen** of those have an authored build
+            (`builds.json`) — the four without one are Happiny, Lapras, Oddish and
+            Riolu. Ten picks leaves **five** bans on the built cast at 5v5; 3v3 is
+            comfortable, six picks leaving nine bans on the built cast and thirteen
+            against the full nineteen. ⚠️ Re-measured 2026-09-06 while step 4
+            landed, where the pool is what `room.New` checks the format against:
+            `draft.Slack` is **9** at 3v3 and **3** at 5v5.
+            ⚠️ **Build coverage does not bind the draft, and this paragraph said
+            it did** (*"build coverage rather than cast size is still what
+            binds"*, and *"either 5v5 drafting waits for more builds, or the draft
+            is 3v3-only and says so"*). Decision (a) below settles that a pick
+            takes a build already in `builds.json` **or one made on the spot**,
+            and a kit built out of the learnset at the cap is exactly as legal —
+            `cast.ChooseLoadout` is the one rule for both paths and it never asks
+            whether a build exists. Measured: `internal/draft`'s 3v3 walk fields
+            Happiny and Lapras, two of the four uncatalogued characters, each
+            with a loadout made on the spot. What thin coverage costs is a
+            *player's* convenience — a pick with no authored direction means
+            building a kit inside the draft instead of choosing between two named
+            ones — so it is worth closing and it is not a prerequisite.
             ⚠️ **It contradicts a decision this file records as settled, and the
             contradiction is fine but must be written down rather than
             discovered.** *"One squad may field the same character twice"* is
@@ -1273,36 +1289,112 @@ is only so the shape is readable.
             removals-first order, holding the same invariant under all three. So
             settling the order costs the pool nothing and cannot be got wrong by
             step 2 without a red test.
+            **(g) The slot is not a draft decision. Settled by the author,
+            2026-09-05.** A pick is the character and its loadout, and **where
+            each unit stands is decided after the draft closes** — both sides
+            arrange their own three (or five) **privately and simultaneously**,
+            which is step 2b below. Three reasons, and they are the reasons
+            rather than a preference.
+            It keeps a pick to **two decisions**. The cell would be a third, and
+            it is the only one of the three worth hiding — so carrying it here
+            would drag secrecy into a stage whose whole value is that both
+            players can read one pool on one screen.
+            **Placement is a real decision and a measured one.** Moving the
+            shipped roster's two aces from the front column to the back read
+            **27.6% → 47.3%** ally over 4000 seeds, and splitting the screening
+            pair from adjacent to spaced read **47.3% → 31.1%** over the same
+            seeds — with nothing else changed in either, not a level and not a
+            loadout. A draft that handed out a fixed formation would throw away
+            the half of the game those two figures are about.
+            **Simultaneous and secret is what stops the second arranger reading
+            the first's board.** Taking turns at it is not a symmetrical game:
+            whoever goes second sees which column the other's ace is in and
+            answers it, and the swing above is the size of what that is worth.
+            → CLAUDE.md § *`roster.json` is an instrument, not a scenario*.
+            The cost is a **fourth phase** — bans, picks, arrange, fight —
+            accepted.
+            ⚠️ **`internal/draft` therefore hands back `Picks()`, and a
+            `Squads()` answers only once the arrange phase has closed.** A
+            `placement.Squad` with `Slot` left at its zero value would look
+            authored: `hex.Offset`'s zero is a real cell (the ally back corner,
+            exactly the trap `wire.Act` documents for its `Aim`), so nothing about
+            the value says it was never chosen — and `placement.Squad.Validate`
+            then refuses the second unit for standing where the first already is,
+            so the squad is turned away at the moment it is fought, naming a cell
+            nobody picked. `draft.Pick`'s own comment says what turning picks into
+            squads takes. ⚠️ **This paragraph said "deliberately has no
+            `Squads()`" until step 2b landed on 2026-09-05**, which was right while
+            the slot did not exist yet; `Squads()` exists now and answers two
+            squads with **nobody in them** until `Done()`, which is the same
+            argument arriving at a different shape — an output that cannot be used
+            is worse than one that is honestly incomplete, and a squad with no
+            units is refused by `Validate`'s own first line, by name.
+            ⚠️ **A timeout in the arrange phase follows decision (c) and cancels
+            the room — this is my assumption and not the author's**, marked as
+            one. The reasoning is the same as (c)'s: a defaulted arrangement would
+            hand a decision worth **nineteen points of win rate** (27.6 → 47.3)
+            to somebody who did not make it, and there is no honest default to
+            reach for anyway — "the ace at the back" *is* the measured answer, so
+            handing it out for free is exactly the fixed formation this decision
+            refuses.
 
-            ⚠️ **3v3 FITS AND 5v5 DOES NOT, MEASURED.** The pool is the cast
-            minus the hidden: **fifteen** today — sixteen characters ship and
-            `naruto.naruto` is the only one carrying `hidden: true`. Against
-            fifteen, with the counts settled above:
+            ⚠️ **BOTH FORMATS FIT, AND 5v5 NOW FITS WITH ONE TO SPARE,
+            MEASURED.** The pool is the cast minus the hidden: **seventeen**
+            today — **eighteen** characters ship and `naruto.naruto` is the only
+            one carrying `hidden: true`. Against seventeen, with the counts
+            settled above:
 
-                3v3, 2 a side:  6 picks +  4 bans = 10 of 15 — fits, five to spare
-                5v5, 3 a side: 10 picks +  6 bans = 16 of 15 — needs 16 in the pool
+                3v3, 2 a side:  6 picks +  4 bans = 10 of 17 — fits, seven to spare
+                5v5, 3 a side: 10 picks +  6 bans = 16 of 17 — fits, one to spare
 
-            So the 3v3 draft is buildable **today** with five characters to spare,
-            and the 5v5 draft needs **one more** than the cast now holds — or
-            none at all if `naruto.naruto` is unhidden, which brings the pool to
-            exactly sixteen and therefore to a slack of nought, so the last pick
-            would be a list of one (see the slack note at the end of this item).
-            That is a content prerequisite and no amount of code changes it, which
-            is one of the two reasons five a side is held back at
-            `hexarena-host`'s flag.
-            ⚠️ **This arithmetic said "eleven, not twelve" and "needs five more"
-            until 2026-09-04, and "fourteen" and "needs two more" until
-            2026-09-05**, and it moves every time a character ships, so it is
-            derived rather than remembered:
+            So the 3v3 draft is buildable with seven characters to spare and the
+            5v5 draft with **one**. Slack is **one** at 5v5, so with every ban
+            spent the final picker sees two candidates — a pick that **is** a
+            decision, which it was not for the few hours the pool stood at
+            sixteen (see the slack note at the end of this item).
+            Unhiding `naruto.naruto` would make it an *eighteenth draftable
+            character* and slack two; it is no longer needed to seat the format
+            at all, and no longer needed to make the last pick a decision either.
+            That leaves **one** reason five a side is held back at
+            `hexarena-host`'s flag rather than two — the balance read at 3v3 —
+            which is what the ⚠️ further down records.
+            ⚠️ **This table went stale a THIRD time, and #309 left it stale.**
+            It read *"BOTH FORMATS FIT, AND 5v5 FITS EXACTLY"*, the pool
+            **sixteen**, the 5v5 row `= 16 of 16 — fits, nothing to spare`, and
+            *"Slack is nought at 5v5 … a pick that is not a decision"* — while
+            the two ⚠️ notes #309 itself added below already recorded the pool as
+            seventeen and slack as one. That is the same half-moved block the
+            note directly beneath this one records against #306, for the third
+            time in one day, which is the argument for deriving the figure at
+            the point of reading rather than restating it in prose:
             `jq '[.characters[]|select(.hidden|not)]|length'
-            internal/seed/data/cast.json`. **The gap is now closed**: `pokemon.dratini`
-            took it to one in #301 and `pokemon.gible` took it to nought in #306,
-            so the pool seats a 5v5 draft exactly — see the ⚠️ below on what that
-            does and does not settle. § *Sixteen traced Pokemon* holds the art
-            still waiting.
+            internal/seed/data/cast.json` → 17, `[.characters[]]|length` → 18.
+            Re-derived on 2026-09-05 while merging step 2b.
+            ⚠️ **This heading and this table went on saying the opposite after
+            the gap closed, and #306 left them saying it.** The heading read
+            *"3v3 FITS AND 5v5 DOES NOT, MEASURED"*, the pool was written
+            **fifteen** ("sixteen characters ship"), the 5v5 row read
+            `= 16 of 15 — needs 16 in the pool`, and the paragraph under it
+            called the shortfall *"a content
+            prerequisite no amount of code changes"* and *"one of the two reasons
+            five a side is held back"* — while the ⚠️ notes directly below it
+            already recorded the gap as closed. #306 moved half the block and
+            left the other half; both halves are re-derived above.
+            ⚠️ **The arithmetic moves every time a character ships or is hidden,
+            so it is derived rather than remembered**:
+            `jq '[.characters[]|select(.hidden|not)]|length'
+            internal/seed/data/cast.json` → 18, and `[.characters[]]|length`
+            → 19. It said "eleven, not twelve" and "needs five more" until
+            2026-09-04, and "fourteen" and "needs two more" until 2026-09-05.
+            **The gap closed on 2026-09-05 and was then cleared**: `pokemon.dratini`
+            took it to one short in #301, `pokemon.gible` to nought in #306, and
+            `pokemon.pichu` past it — the pool is **eighteen** against the sixteen
+            a 5v5 needs, so slack is **two**. See the ⚠️ below for why nought and one
+            are different answers rather than the same one twice. § *Thirteen
+            traced Pokemon* holds the art still waiting.
             ⚠️ For the other reading of the same sentence, bans as a **total**
-            across both sides rather than each: 3v3 becomes 8 of 16 and the last
-            pick sees nine, and 5v5 becomes 13 of 16 — which **fits, with three to
+            across both sides rather than each: 3v3 becomes 8 of 18 and the last
+            pick sees eleven, and 5v5 becomes 13 of 18 — which **fits, with five to
             spare**. So the reading has stopped changing only the target and now
             changes the **conclusion**, which it did not while the pool was eleven
             or fourteen. That is a second reason (b) says *a
@@ -1342,15 +1434,26 @@ is only so the shape is readable.
             test to relax. (It has since been renamed for the answer it now
             carries — see the ⚠️ below.)
             ⚠️ **That day was 2026-09-05 and the decision is taken: the draft no
-            longer holds 5v5 back, and the balance read still does.** At sixteen
-            the pool seats a 5v5 exactly — `draft.Slack` is **nought** — so the
-            arithmetic reason below is satisfied and the test now says so by its
-            new name, `TestFiveASideFitsTheShippedCastExactly`, which reddens if
-            the pool ever shrinks under it. Nought slack has a consequence the
-            note below already states: **the last pick of a 5v5 is not a decision**
-            — with every ban spent the final picker sees exactly one candidate. So
-            a seventeenth draftable character is worth having even though nothing
-            now refuses the format for want of one.
+            longer holds 5v5 back, and the balance read still does.**
+            `pokemon.gible` took the pool to sixteen, which seats a 5v5 *exactly*
+            — `draft.Slack` nought — and `pokemon.pichu` took it to **seventeen**
+            the same day, so slack is **one** (**two** since `pokemon.abra`). Both
+            figures mattered and they mattered differently: at nought the arithmetic reason below was
+            satisfied while **the last pick of a 5v5 was still not a decision**,
+            the final picker seeing exactly one candidate; at one it is a choice,
+            and every further character only widens it.
+            The test carrying this is
+            `TestFiveASideFitsTheShippedCastWithRoomToChoose` (named
+            `TestFiveASideDoesNotFitTheShippedCast`, then
+            `…FitsTheShippedCastExactly`, on the way here). It now holds *at least*
+            one to spare rather than an exact figure: nought was a knife-edge worth
+            pinning exactly, but pinning the figure from here on would redden every
+            time a character shipped while nothing it guards had moved. The
+            behaviour half — `slack + 1` candidates at the last pick — is
+            `TestTheLastPickOfAFiveASideChoosesFromSlackPlusOne`, whose assertion
+            was general from the start and whose *premise* was the part pinned to
+            nought; that premise is what fired when Pichu shipped, and it is now
+            written as the claim it was always making.
             ⚠️ **The last pick is not a decision whenever slack is nought**, and
             slack is `pool - 2*picks - 2*bans` — both sides, since both spend out
             of one pool; `draft.Slack` is that expression and nothing else, and
@@ -1359,13 +1462,516 @@ is only so the shape is readable.
             present a list of one. The exhaustive walk asserts the tight form of
             it: with every ban spent the final pick sees exactly `slack + 1`
             candidates.
+      - [x] **The arrange phase — step 2b. Done 2026-09-05.** Once picking
+            closes, each side puts its three (or five) picks on its own 3x3
+            formation, **privately and simultaneously**, and the draft finishes
+            when both arrangements are in. It is settled decision **(g)** of the
+            item above — the slot is not a pick's decision — and this is the phase
+            that decision creates. Built as `internal/draft/arrange.go`:
+            `Arrange(seat, slots)`, `Arranging()`, `AwaitingArrangement()`,
+            `Squads()`, plus `StepArrange` and `Entry.Slots` on the record, and
+            `TimedOut` extended to cover the phase. Still **no wire message, no
+            room change and no screen** — those are steps 3–5.
+            ⚠️ **It is deliberately not part of the draft's state machine, and
+            the reason is its shape rather than its size.** Two things about it
+            are unlike everything in step 2a, and both arguments survive the
+            building rather than being replaced by its status:
+            **Two decisions are pending at once**, so it is not the alternating
+            shape at all: `Turn()` answers *one* seat and *one* step, and the
+            whole of `internal/draft` is built on there being exactly one open
+            decision — the loadout refusal ("nothing else can be decided until
+            the form, the skills and the trait are chosen") is that assumption
+            stated. Widening `Turn` to answer a set would change every refusal in
+            the package for the sake of one phase. **`Turn` did not widen**: it
+            answers nothing at all once the picking closes, and
+            `TestBothSidesArrangeAtOnceAndTurnNeverSaysSo` asserts that directly.
+            **Each side's arrangement is secret until both are in**, which the
+            append-only record cannot express as it stands: an entry is public
+            the moment it is appended, and a mirror that replays the record
+            computes the state — so appending the first arrangement when it
+            arrives *is* showing it to the other player, which is the one thing
+            this phase exists to prevent.
+            ⚠️ **The cheap answer keeps the record public and needs no new kind
+            of entry**: hold each arrangement **off the record** as it arrives and
+            append **both together** once both have. A mirror replaying the record
+            then never sees a half-open arrange — it sees the phase open, and then
+            two arrangements at once — so the record stays exactly as replayable
+            as it is today and secrecy costs a buffer rather than a mechanism.
+            The alternative, a private entry per seat, would make the record mean
+            different things to different readers, which is what makes two peers
+            able to disagree. Built exactly so: `Draft.arranged` is the buffer and
+            `Arrange` records both entries, in **`seats` order**, at the moment the
+            second side arranges. Arrival order is a race, so recording it would
+            make two peers' records differ for a draft in which the same decisions
+            were taken.
+            ⚠️ **The price of seats order is that the record cannot say who
+            arranged first, and that turned out to reach a test.**
+            `TestARecordReplaysIntoTheSameDraft` compares the mirror's state after
+            **every** decision, and after the *first* of the two arrange entries
+            the mirror has the host's arrangement whatever really arrived first —
+            so in a guest-first draft the original was waiting on the host at that
+            point and the mirror is waiting on the guest. One comparison is
+            therefore deferred, the deferral is **counted** (at most one, and none
+            for a case that never arranged), and the end is compared by value. The
+            phase's *end* replays exactly; its middle is not a fact two peers could
+            agree about. `TestTheRecordDoesNotSayWhoArrangedFirst` states the same
+            thing from the other side: two drafts with the same decisions in
+            opposite arrival order leave byte-identical records.
+            ⚠️ A timeout here **cancels the room**, per decision (c) — and that
+            half is an assumption rather than the author's decision; see the ⚠️ on
+            (g). **The buffered arrangement is discarded rather than recorded**:
+            appending it on the way out would leak exactly what the buffer exists
+            to hide, to a draft that is being thrown away anyway, so the record
+            gets the timeout and nothing else. ⚠️ Note the *clearing* of the buffer
+            is measured **unobservable** — deleting it leaves the whole suite green,
+            because every accessor gates on `Cancelled`/`Picked` first — so it is a
+            release rather than a guard and `Draft.abandon`'s comment says so.
+            What is behavioural, and tested, is that no `StepArrange` entry ever
+            reaches the record of a cancelled draft.
+            ⚠️ **`Done()` was REDEFINED and the old meaning renamed: the decision,
+            and every site it moved.** `Done()` now means the whole draft — picking
+            *and* arrangement, the state in which `Squads()` answers — and the old
+            meaning ("every ban spent or skipped, every pick taken, every loadout
+            chosen") is **`Picked()`**. The reason is which reading is dangerous: a
+            caller asking `Done()` before fielding a squad wants the whole thing,
+            so the name a caller reaches for has to be the safe one. The
+            alternative — leave `Done()` alone and add `Fielded()` — was less churn
+            and left `Done()` naming a draft nothing can field. Sites moved, all of
+            them: `Turn()`'s guard and its doc comment, `Done`'s own doc comment
+            (split in two), `due()`'s "this draft is finished" refusal (**split
+            into two sentences**, because the picking being over is now two
+            different states — one with the arrangement open and one with nothing
+            open), `TimedOut`'s "finished" arm, `Picks()`' contract, `Pick`'s
+            "there is deliberately no `Squads()`" paragraph, three assertions in
+            `draft_test.go`, `stateOf` and the replay premise in `record_test.go`,
+            and two entries of the pinned refusal table whose *state* moved (a
+            played-out draft is now arranging, not finished). No comment anywhere
+            in the package still describes the other reading.
+            ⚠️ **`Squad.Units` is ordered by SLOT, row-major — the Row is the
+            outer loop and the Col the inner — and that decides who wins a speed
+            tie.** `atb.Queue.Add` assigns `seq` in the order it is handed the
+            roster and `seq` is the last tie-break in the turn order, so the slice
+            order is worth up to sixty points of win rate in a mirror. Pick order
+            was the alternative and it is refused: the arrangement is the last
+            decision taken and the only one that is *about the board*, so letting
+            the board decide board order is the least surprising thing available,
+            whereas pick order would hand a speed tie-break to a decision made for
+            entirely different reasons, invisibly. Of the two axes the **Row** is
+            the one the engine ignores everywhere else — reach is counted in ranks,
+            so the Col already decides who is reached first — which is why the
+            tie-break keys on it: it does not compound the advantage the depth
+            already carries. ⚠️ It is a **third** grid order in the repository, and
+            that is worth knowing rather than hiding: `hex.Cells`/`hex.SideCells`
+            are documented **column-major**, and the four shipped squads in
+            `squads.json` are authored front-column-first. Nothing reads those as a
+            rule, and `TestADraftedSquadIsOrderedByItsSlots` holds this one so it
+            cannot drift; if the author would rather it matched `hex.Cells`, the
+            change is the comparator in `squadAt` and that test's table.
+            ⚠️ **A unit's id is the CHARACTER id, and the pool is what licenses
+            it.** `placement.Placement.ID` must be unique within the squad; every
+            ban and every pick takes a character out of one shared **exclusive**
+            pool, so a side's picks are different characters by construction — and
+            so are both sides' together, since they spend out of the same pool. It
+            also makes a log readable (`ally.pokemon.gible`) where `a1`/`a2` would
+            not. The side prefix `Squad.Take` adds still earns its keep for its own
+            reason (a squad fought against a copy of itself) and is untouched.
+            CLAUDE.md's *"one squad may field the same character twice"* is about a
+            **saved** squad; both hold, and this is where the scope became
+            load-bearing rather than descriptive.
+            ⚠️ **The test that is the point of the step is a whole battle**, not a
+            shape assertion: everything before this produced values nothing could
+            fight with. `TestADraftedPairFightsAWholeBattle` drives a 3v3 and a 5v5
+            draft, arranges both sides, fields each squad through
+            `placement.Squad.Take` and hands the pair to `battle.New` in the same
+            order `internal/room`'s `begin` appends in, then plays it out with
+            `RunToEndWith(4000, Suggest)`. Measured on seed 11 with first-candidate
+            picks, **re-measured after #309**: the **3v3 ends in victory for the
+            ally in 124 turns** (unmoved — `pokemon.pichu` sorts past the six
+            characters a 3v3 reaches) and the **5v5 in victory for the enemy in
+            140 turns** (was 139 against the sixteen-character pool; pichu enters
+            the roster and displaces a pick, so the fight is a different fight).
+            ⚠️ **Those figures are logged and not asserted, and #309 is the
+            evidence that was the right call**: an assertion on "139" would have
+            reddened on a content change with nothing behaviourally wrong, which
+            is `memory/hexarena-pin-the-assertion-not-the-premise.md` exactly.
+            What is asserted is general — that it finished, before the backstop,
+            with an outcome. Two vacuity guards,
+            because "it finished" is a claim a battle that never started also
+            satisfies: the roster has to hold every unit both sides drafted, and the
+            battle has to end **before** the backstop — reaching a 4000-turn limit
+            is a hang detector firing, not an ending.
+      - [x] **The draft on the wire — step 3. Done 2026-09-05.** The ban-and-pick
+            is a protocol now: **two message kinds**, one refusal code, one
+            closure, and a wording for each in both language books. Still **no
+            room change and no screen** — steps 4 and 5.
+            What the protocol carries:
+            `decide` (client → server) is one decision, step-tagged —
+            `wire.Decide` over `wire.DraftDecision`, which is a `step` plus a
+            character, a form, two lists and an arrangement, with the fields the
+            other steps do not use left out. `drafted` (server → client) is
+            `wire.Drafted`, a **batch** of `wire.DraftEntry` — a seat and a
+            decision — in record order. `wire.Welcome` gains **`drafts bool`**,
+            so a client knows not to bring a squad. `wire.CodeSquadUnwanted` is
+            the gate's answer to one that did anyway, and
+            `wire.ClosureDraftExpired` is a draft that ran out of time.
+            `internal/draft` gains **`Draft.Apply(wire.DraftEntry)`**, the mirror's
+            apply loop, moved out of `record_test.go`'s local `apply` exactly as
+            that function's comment said it would be the day there were two
+            callers.
+            ⚠️ **THE SHAPE HAD TO BE DECIDED, AND THE REASON IS AN IMPORT
+            DIRECTION THAT IS ALREADY BACKWARDS.** Measured with `go list`:
+            `internal/wire` imports `internal/core/battle`, which is how
+            `wire.Turn` carries a `battle.Decision` — **wire names the domain
+            type and the domain knows nothing about wire**, and
+            `internal/core/battle` imports wire **zero** times. That precedent is
+            *not available* for the draft, because `internal/draft` **imports
+            `internal/wire`** for `Format` and `Seat` (settled in step 1, on the
+            argument that a bare `units int` invites 3v3 being passed as 6). So
+            `internal/wire` may not import `internal/draft`; it is a cycle.
+            **Decided: the decision's shape is declared once, in
+            `internal/wire`**, and `internal/draft` names it — no local alias and
+            no local `Entry`/`Step` type at all, which is the same relationship
+            `Format` and `Seat` already have with that package. One spelling, and
+            it is the protocol's.
+            ⚠️ **The two directions genuinely need two bodies and the brief's
+            framing missed it.** A client must not send its own seat (the room
+            knows which connection spoke — `wire.Act` carries no unit for exactly
+            this reason, and a field a sender is asked to leave blank is a field
+            somebody fills in), while a **recorded** decision must carry one,
+            because the record is what a mirror replays and the arrange phase
+            records both seats at once. So it is `DraftDecision` (six fields, no
+            seat) **embedded** in both `Decide` and `DraftEntry` — anonymous, so
+            both bodies serialise flat and the six facts are declared exactly
+            once. That makes the "two shapes and nothing holds them in step"
+            objection moot rather than answered: there is one struct, so the
+            field-by-field test the brief would have owed does not exist.
+            ⚠️ **The precedent quoted for that test does not hold, measured.**
+            CLAUDE.md says of `Skill.MarshalJSON`/`skillFile` that *"a field
+            added to one struct is a compile error in the other until it is added
+            there too, which is the point"*. `skill.Skill.file()` is a **keyed**
+            composite literal, so a field added to either side is a compile error
+            **nowhere**; what actually catches it is
+            `TestTheShippedSkillBookSurvivesBeingWritten`, a round trip over the
+            real data. → the ⚠️ under § *Data and golden files*, which is where
+            that sentence lives.
+            ⚠️ **Moving `Format`/`Seat` down into a package both could import was
+            measured and DEFERRED, not overlooked.** Blast radius:
+            `internal/draft` 8 files, `internal/socket` 11, `internal/room` 11,
+            `cmd/hexarena-tui` 3, `cmd/hexarena-host` 2, plus three comments in
+            `internal/i18n`. That is a refactor of its own and doing it here
+            would bury the protocol change inside it. Whoever picks it up does
+            not need to re-measure.
+            ⚠️ **One kind each way and not five, and `draft.Entry` already made
+            that choice.** A ban, a skip, a pick, a loadout, an arrangement and a
+            timeout are the six things one record holds and a draft's record is a
+            single sequence, so five bodies would be two different answers to one
+            question — and the switch turning one into the other would be a second
+            declaration of the draft's own sequence. The server side is a
+            **batch** for two independent reasons: the arrange phase records two
+            entries at once by design, and a spectator joining at cursor nought
+            is handed the whole record in one message.
+            ⚠️ **No per-decision digest, and the argument is written on
+            `wire.Drafted` where a reader who knows `wire.Turn` will ask for
+            it.** `Turn` carries one because a battle's state is a large
+            computation that can drift silently. A draft's state is a pure
+            function of the decisions **and the pool**, the pool is the cast minus
+            every character held back, and the **data digest already gates that at
+            the join** (`CodeDataMismatch` refuses a peer whose cast is not this
+            cast before it is seated), so a draft digest could catch nothing the
+            join does not already refuse.
+            ⚠️ **Codes: one new, two reused, and the sentences are the argument.**
+            `CodeNotYourTurn` is **reused** for a decision from the seat nobody is
+            asking — same fact, same thing for a player to do about it, and two
+            codes for one situation is worth less than one. `CodeIllegalAction` is
+            **reused** for all four legality refusals (wrong step, a character out
+            of the pool or already taken, an illegal loadout, a refused
+            arrangement), which is the decision `CodeSquadRefused` already takes
+            for the four ways a squad is turned away: the client holds the pool,
+            `cast.ChooseLoadout` and `placement.Squad.Validate` itself, so it can
+            say precisely which, where a code could only say "one of four".
+            `CodeSquadUnwanted` is the **one** new code, because every other
+            squad refusal means the squad is *illegal* and this one may be
+            perfectly legal — `RefusalSquadRefused`'s own wording tells a player
+            to fix it and join again, which would send them to check levels and
+            forms that are all fine.
+            ⚠️ **One EXISTING wording was widened, which the brief did not ask
+            for.** `RefusalNotYourTurn` read *"…usually the clock ran out and the
+            room passed for this side; the board is right either way"*, and both
+            clauses are false on the draft path: a draft timeout **cancels** (it
+            does not pass for anybody) and a draft has no board. It now names the
+            clock without asserting the mechanism, in both books. The measured
+            content that paragraph in `keys.go` defends — that a player who let
+            the clock run out must not be told their program is broken — is kept.
+            Reusing the code and leaving the sentence false was the alternative.
+            ⚠️ **`KindClosed` is no longer last and the "declared last" comment
+            MOVED to `KindDrafted`** — left behind it would make the file say
+            something false about itself. The same is true of two comments the
+            brief did not mention: `CodeUnknownMessage`'s and `ClosureStopped`'s
+            carry the identical rule and both moved to the new last constant.
+            `Kind`'s own doc also had to give up its *"three go up and five come
+            back"* grouping: appending is the rule, so declaration order no longer
+            groups by direction and the doc says to read a kind's comment instead
+            of its position.
+            ⚠️ **A field added to a message needs TWO things and the room half
+            was step 4. All five are HELD now, by name.** `messages.golden` says
+            a field *travels*; a hand-written fixture can never see the
+            **producer** (taking one line out of `gate.go` so the room stops
+            filling in `TurnCap` leaves `internal/wire` entirely green). The five
+            assertions this step owed `internal/room` all landed in
+            `internal/room/draft_test.go`, and each was **mutation-tested** —
+            → step 4 below for the mutation table:
+            `Welcome.Drafts` is really set for a drafting room and really false
+            otherwise → `TestAWelcomeSaysWhetherTheRoomDrafts`;
+            `Drafted.Decisions` is what `Draft.Since(cursor)` answered, in that
+            order, and is never sent empty →
+            `TestEveryDraftedCarriesTheRecordInOrderAndIsNeverEmpty`;
+            a `Decide` is routed with the seat taken from the **connection** and
+            never from the message →
+            `TestADecideIsRoutedByTheConnectionAndNeverByTheMessage`;
+            `CodeSquadUnwanted` answers a hello that brought a squad to a
+            drafting room → `TestADraftingRoomRefusesASquadAsUnwanted`;
+            `ClosureDraftExpired` is sent when the draft's timeout cancels →
+            `TestADraftTimeoutClosesTheRoomAsExpired`.
+            ⚠️ **`CodeSquadUnwanted` was `wire.CodeCount`'s first declared debt,
+            and it is PAID.** `cmd/hexarena-tui`'s
+            `TestEveryRefusalIsShownAndEveryClosureIsShown` derives which screen
+            draws each code out of a **real** `room.Room`, so a code no room
+            produces reddens it — correctly, while nothing drafted. It carried an
+            `owed` set naming this one code and the step that owed it, and the
+            totality arithmetic (`gate + inMatch + owed == CodeCount-1`) is what
+            stopped that set growing quietly: **step 4 had to delete the entry**,
+            or the same check went red from the other side. It did, `theGateAnswers`
+            grew a seventh producer (the same *good* squad offered to a room with
+            `Drafts` set, so the refusal is a fact about the room), and the reading
+            is now **7 at the gate + 3 in a match + 0 owed = 10**. The empty `owed`
+            map stays in the file: the mechanism is what earns its keep, and the
+            next value declared ahead of its producer belongs in it. Note the
+            asymmetry with the closure — the result screen words whatever closure
+            it is handed, so `ClosureDraftExpired` is read by a player from the day
+            it exists.
+            ⚠️ **There is no sequence number on `decide`, and the step is what
+            stands in for one.** The client's chooser answer carries the turn it
+            is for, because a buffered answer for a spent turn is otherwise
+            indistinguishable from a fresh one (CLAUDE.md § *A window is not
+            closed by the fact that you have not opened it*). A draft has exactly
+            one open decision, so the step refuses a decision stale across a
+            *stage* on its own — a ban arriving while a pick is due. What it does
+            **not** tell apart is a decision stale within one step: a second ban
+            meant for the first ban slot. That is the hazard `wire.Act` already
+            carries for a battle rather than a new one, and it is written on
+            `wire.Decide` rather than left to be discovered.
+            ⚠️ **Go 1.27 accepts promoted fields in a composite literal**, which
+            is why `wire.DraftEntry{Seat: seat, Step: …, Character: …}` compiles
+            and reads flat despite the embed. It was verified against the
+            toolchain rather than assumed; on an older toolchain every one of
+            those literals would need the embedded field spelled out.
+            **Round-trip count: 10 kinds encode and decode**, every one against a
+            hand-written fixture, and the vacuity guard is
+            `TestEveryMessageKindHasANameAndABody` — it walks `KindCount` rather
+            than the fixture map, so a kind with no fixture is a red test rather
+            than a kind the round-trip silently skips (`len(fixtures) != KindCount`
+            is the second half). The draft's own vocabulary is walked the same
+            way: `wire.DraftSteps()` is the list, `DraftStep.Valid` is derived
+            from it, `TestEveryDraftStepTravels` sends all **five** in both
+            directions, and `TestApplyRoutesEveryStepThereIs` drives all five
+            through `Draft.Apply` and holds the set against the declared list.
+      - [x] **The room hosts the draft — step 4. Done 2026-09-06.** A
+            `room.Room` runs one now: `Config.Drafts` is the flag, the draft is
+            built in `New`, `Deliver` routes a `wire.Decide` into it, every
+            recorded decision goes out as a `wire.Drafted`, and when the draft is
+            `Done()` the room seats both squads from `Draft.Squads()` and calls
+            `begin()` **unchanged**. Still **no screen** — that is step 5 — and
+            `cmd/hexarena-host`'s flag is step 6, so nothing opens a drafting
+            room outside a test yet. The room's whole draft half is
+            `internal/room/draft.go`; `internal/socket` and `room.Reading` are
+            **untouched**.
+            ⚠️ **Nothing downstream of the draft changed, which is the promise the
+            design was built on.** `begin()` took no argument and takes none; a
+            `wire.Start` is a `wire.Start`; the battle loop in
+            `TestTwoFakeClientsDraftAndFightAWholeMatchInProcess` is byte-for-byte
+            the loop in `TestTwoFakeClientsFightAWholeBo3InProcess`.
+            ⚠️ **The pool check is in `New` and NOT in `Config.Validate`, because
+            it cannot be there.** `draft.Fits` needs the pool, the pool needs the
+            cast, and `Validate` is a method on the configuration with no `Deps`.
+            So `New` builds the draft outright — which answers the whole question
+            in one call, since `draft.New` checks `Fits` *and* refuses an id-less
+            or duplicated pool entry — and a room whose draft could never finish
+            fails **before a code is handed out**.
+            `TestARoomThatCouldNotFinishItsDraftIsRefusedWhenItOpens` asserts both
+            halves: the configuration is *valid* and `New` refuses it anyway.
+            Measured: the shipped pool is **19**, so 3v3 has **9** to spare and
+            5v5 has **3** — a pool too small cannot be built from the shipped data
+            at all, which is why that test's fixture is a cast book with nobody in
+            it rather than a subset.
+            ⚠️ **A drafting series is REFUSED, and this was not in the brief.**
+            `Config.Validate` now turns away `Drafts` with `Battles != 1`, by name,
+            the way it turns away a bo2 — because settled decision **(d)** is *"a
+            ban lasts the match, and the first cut is bo1 only"* and what a draft
+            means across a series is the three different games the item below
+            lists. A room that accepted the configuration would be picking the
+            second of them silently. `TestADraftingRoomIsABo1`.
+            ⚠️ **In a drafting room a squad is UNWANTED, not illegal**, so
+            `squadIsFieldable` is **not consulted** on that path at all — the squad
+            may be perfectly legal and the fix is to bring **none**, where
+            `CodeSquadRefused`'s wording sends a player to check levels and forms
+            that were never the question. `TestADraftingRoomRefusesASquadAsUnwanted`
+            holds it with the *same good squad* an ordinary room accepts unchanged,
+            **and** with an illegal one — which is what says the five rules are not
+            being run. The gate's order is unmoved: a full drafting room still says
+            `CodeRoomFull`.
+            ⚠️ **THE SEAT COMES FROM THE CONNECTION AND THE MUTATION CANNOT BE
+            COMPILED.** `wire.Decide` embeds a `wire.DraftDecision` and that struct
+            has no seat field, so "take the seat from the message" is not an
+            expression that exists — the enforcement is structural rather than
+            remembered, which is stronger than a test. What the test holds is the
+            observable content of it, and its sharp half is only available in the
+            **arrange phase**, where both seats are asked at once: one
+            `wire.Decide` **value** sent from each connection in turn records two
+            entries differing only in a seat that came from nowhere but the
+            connection.
+            ⚠️ **`Draft.Apply` is what the room routes through, not a switch of its
+            own** — so the room and a mirroring client take the same decision
+            through the same call, which is what makes a client's computed draft
+            comparable to the room's. The one step a peer must **not** reach is
+            `StepTimeout`: `Apply` would route it and `Draft.TimedOut` cancels the
+            whole room, so a peer could close a draft it did not like by claiming
+            its own clock ran out. Refused with `CodeIllegalAction`
+            (`TestAPeerCannotCancelADraftByClaimingItsOwnClockRanOut`) — this was
+            not in the brief either.
+            ⚠️ **THE ARRANGE PHASE'S CLOCK: `Reading` holds one seat and the phase
+            has two pending, so the phase is SERIALISED.** `Reading{Awaiting,
+            Waiting}` is what an allowance is started on and
+            `internal/socket/table.go` arms exactly one timer from it; the arrange
+            phase has **both** seats pending by design. Neither `Reading` nor the
+            transport is widened — a two-timer transport is a far larger change
+            than one phase is worth — so `Awaiting` answers the **first seat in
+            `Draft.AwaitingArrangement()`**, a slice step 2b made array-derived
+            precisely so it reaches an output deterministically, with `Waiting`
+            true. `TestTheArrangePhaseSerialisesItsAllowance` drives **both
+            orders**, which is what makes it able to fail.
+            ⚠️ **Consequence 1, and the brief had this WRONG.** The brief said one
+            allowance covers both sides at once, so a side that arranged promptly
+            gets no fresh clock of its own. Measured in `internal/socket`: it is
+            the opposite. `Server.settled` re-arms off the reading after **every**
+            batch, so whichever arrangement arrives first is an *exchange*, and the
+            seat still owed is then given a **fresh full allowance** from that
+            moment. A side that arranged promptly therefore hands its opponent more
+            time and not less, and the phase's worst case is about **twice** an
+            allowance rather than one. That is a fact about the transport and not
+            about the room, and it is neither what "one allowance per decision"
+            would give nor what "one allowance for the phase" would give.
+            ⚠️ **Consequence 2, narrower than the brief said.** The brief said the
+            seat a timeout names is the first still to arrange rather than the
+            slower one. `AwaitingArrangement` holds **only** seats that have not
+            arranged, so once one side has answered the name is **exact** — it *is*
+            the slow one. The inexactness is confined to the case where **neither**
+            has arranged, where the host is named because that is seats order and
+            neither seat is more owed. Harmless for the brief's own reason: a draft
+            timeout cancels the whole room and the outcome blames nobody.
+            ⚠️ **`begin()` on `Done()` and never on `Picked()`**, which would be a
+            live bug rather than a slow one: `Draft.Squads` answers two squads with
+            **nobody in them** until both sides have arranged, deliberately, so a
+            room that began on `Picked` would field an empty roster.
+            `TestADraftingRoomStartsNoBattleUntilBothSidesHaveArranged` counts
+            rather than spot-checks, and also holds that the record and the two
+            `wire.Start`s arrive **in one batch, records first** — a client has to
+            be told the arrangements before it is started on the battle they made.
+            ⚠️ **A `wire.Drafted` is never sent empty, and the guard is REACHED.**
+            A ban, a skip, a pick and a loadout each record one entry; the **first**
+            of the two arrangements records **nothing**, because nothing reaches the
+            record until both are in. So exactly one decision of a draft is
+            answered with no message at all. Measured on a 3v3: **18 decisions, 18
+            entries, 17 messages**.
+            ⚠️ **A peer leaving mid-draft was CHECKED rather than assumed, and it
+            was wrong.** A draft runs with no battle open and nothing played, which
+            is exactly the shape `Room.Left`'s pre-match arm matched — so the seat
+            was freed and the room went back to waiting for a joiner, with the
+            departed side's bans and picks still in the draft and the peer still
+            there holding an open decision nobody was coming to take. The ending
+            itself is the existing `ClosureLeft` path, `VerdictAbandoned`, nobody
+            charged. `TestAPeerLeavingMidDraftClosesTheRoom`.
+            ⚠️ **A second bug the same test found: `draftOpen` has to ask
+            `Finished()` as well as `Cancelled()`.** A draft cancels itself only on
+            its own timeout; a *departure* ends the match through `abandon` and
+            leaves the draft neither done nor cancelled — so the room went on
+            reporting an open decision after its match was over, where `Awaiting`
+            promises to be false once it is, and a transport would have armed a
+            countdown on a finished room.
+            ⚠️ **A cancelled draft is `VerdictAbandoned` with NO `Departed`**, which
+            is the same verdict a departure and a stopped host produce (nobody
+            drafted a squad, so there is no board to have a verdict about). That
+            absence is the only thing telling the two endings apart in the room's
+            own record today. Both seats are told, unlike a departure: both are
+            holding an open decision, and in the arrange phase literally both at
+            once. The refusal for a spurious timeout is `CodeNotYourTurn`
+            **alone**, which is load-bearing rather than tasteful —
+            `internal/socket` reads exactly that as "this report was late", counts
+            it and re-arms instead of dropping anybody.
+            ⚠️ **Who bans first is the HOST, always, and it is deliberately not on
+            the wire.** A client knows its own seat from `Welcome.Seat` and knows a
+            draft is coming from `Welcome.Drafts`, so it computes the same answer
+            `New` does — where a `First` field would be a *second statement of a
+            constant*, and a second statement is the one place two peers can
+            disagree. **It is bo1's rule**: *"the previous winner bans first"* is a
+            real question for the bo3 draft below, that is a different game, and
+            `Config.Validate` refusing a drafting series means there is no previous
+            winner for this to have to be about today. `draft.Config.First` stays a
+            parameter precisely so that item can answer it differently.
+            ⚠️ **THE TEST THAT IS THE POINT: two fake clients drive a whole
+            drafting match in-process**, the draft *and* the battle after it, the
+            way `TestTwoFakeClientsFightAWholeBo3InProcess` drives a match —
+            `TestTwoFakeClientsDraftAndFightAWholeMatchInProcess`. **Both clients
+            apply what they are sent through `Draft.Apply`** and compute their own
+            draft, so the mirror is proven end to end: the two clients' `Squads()`
+            are compared against each other, and the handover is asserted **by
+            value** — the `wire.Start` roster is exactly the two drafted squads
+            resolved, home enlisted first. Measured on seed 11: a 3v3 draft in
+            **18 decisions / 17 records**; host drafted dratini, gible and lapras
+            against guest's gastly, happiny and machop; home host, **65 turns**,
+            victory, verdict `won`, winner host, 0 prompts skipped. Those figures
+            are **logged and not asserted** — the same call #309 vindicated. The
+            vacuity guards are that the battle must **not** be `Capped` (a cap is a
+            hang detector firing, not an ending), that each client checked a digest
+            on **every** turn and at least thirty of them, that the decision count
+            is the derived `2*bans + 4*picks + 2` and the record count exactly one
+            fewer, and that the twelve drafted units are **twelve distinct
+            characters** — which is the exclusive pool, not any refusal.
+            ⚠️ **Fourteen mutations, each compiling, each caught**, with the test
+            that caught it: `Welcome.Drafts` hardcoded **true**
+            (`TestAWelcomeSaysWhetherTheRoomDrafts` — and *only* that one, which is
+            why both halves are asserted) and hardcoded **false** (9 tests); the
+            seat taken from anywhere but the connection (8); the record **reversed**
+            (2 — and note a one-entry batch reverses to itself, so the **arrange
+            pair** is the only thing that can see it); the record sent **empty** (6);
+            the `CodeSquadUnwanted` refusal skipped (2, one of them
+            `TestEveryRefusalIsShownAndEveryClosureIsShown` from the client side);
+            `begin()` on `Picked()` (6); a **fixed seat** answered during the
+            arrange phase (2); `draftOpen` without its both-seats clause (2) and
+            without its `Finished()` clause (1); a peer allowed to send its own
+            timeout (1); `Left` without the draft branch (1); `New` without the pool
+            check (1); the bo1 refusal removed (1).
+            ⚠️ **No golden moved**, which is what a room-only step should do, and
+            `make golden` was run to confirm it rather than assumed.
+            ⚠️ **The knowledge graph could not review the new file, and a full
+            rebuild did not fix it.** `internal/room/draft.go` and its two test
+            files are **untracked**, and the graph enumerates from git — so
+            `detect_changes_tool` never listed them *and* `build_or_update_graph_tool`
+            with `full_rebuild` re-parsed the same 405 files and left
+            `decideFrom`/`draftAwaiting`/`draftTimedOut` unfindable by
+            `semantic_search_nodes_tool`. The self-review of the step's own
+            production file was therefore done by hand, and that is where the
+            `Finished()` bug above came from.
       - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
             "a ban lasts the match" is ambiguous in a series and the ambiguity is
             a design decision rather than a parameter: three drafts, one draft
             carried across all three battles, or a draft per battle with the
             previous winner banning first. Each is a different game. ⚠️ And the
             arithmetic above gets worse per repetition if the pool does not
-            reset.
+            reset. ⚠️ **`room.Config.Validate` refuses a drafting series today**,
+            by name and with that ambiguity as the reason, so this item is what
+            deletes that refusal — and whichever of the three games it chooses,
+            `draft.Config.First` is already the parameter that lets "the previous
+            winner bans first" be expressed.
       - [ ] mDNS room browsing, so a client can list rooms with no code at all.
       - [ ] A chess clock — a budget per player rather than per turn.
       - [ ] Prove the mirror across architectures: the same seed and the same
@@ -1382,23 +1988,37 @@ is only so the shape is readable.
             asserts both halves, because a test for the refusal alone would go
             green the day somebody deleted the constant.
             The second reason **was** the draft: at three bans a side a 5v5 needs
-            **sixteen** in the pool, and there are now **sixteen** (this said
-            eleven, then fifteen, both on 2026-09-05) since `pokemon.gible`
-            shipped, so a 5v5 ban-and-pick can be seated. Lifting the hold-back
-            therefore wants one thing rather than two: **the numbers read on this
-            board**. ⚠️ It fits *exactly*, so the last pick of a 5v5 is not a
-            decision until a seventeenth draftable character ships.
+            **sixteen** in the pool, and there are now **eighteen** (this said
+            eleven, then fifteen, sixteen, seventeen, all on 2026-09-05) since
+            `pokemon.gible`, `pokemon.pichu` and `pokemon.abra` shipped, so a 5v5
+            ban-and-pick can be seated with two to spare and its last pick is a
+            real choice. Lifting
+            the hold-back therefore wants one thing rather than two: **the numbers
+            read on this board**.
 
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
       at build time or rasterised at load, because ebiten draws neither.
-- [ ] **Grow the cast.** **Seventeen** ship across two origins (sixteen Pokemon,
-      one Naruto) over **forty-five** authored stages, and **every one of the
-      eleven elements is carried**: water ×3 (Lapras, Poliwag, Squirtle), grass ×2
-      (Bulbasaur, Oddish), ground ×2 (Gible, Machop), metal ×2 (Magnemite, Riolu),
-      dark ×2 (Gastly, Mewtwo), neutral ×2 (Happiny, Mew), wind ×2 (Dratini,
-      Naruto), and one each of fire, ice, electric and light. Two duals: Magnemite (electric/metal) and
+- [ ] **Grow the cast.** **Nineteen** ship across two origins (eighteen Pokemon,
+      one Naruto) over **fifty-one** authored stages, and **every one of the
+      eleven elements is carried**: ×3 each of dark (Abra, Gastly, Mewtwo) and
+      water (Lapras, Poliwag, Squirtle), ×2 each of grass (Bulbasaur, Oddish),
+      ground (Gible, Machop), metal (Magnemite, Riolu), neutral (Happiny, Mew),
+      wind (Dratini, Naruto) and electric (Magnemite, Pichu), with one each of
+      fire, ice and light.
+      ⚠️ **Dark is the widest element and that is not a coincidence — it is off
+      the matchup chart.** `elements.json` puts dark in no cycle at all, only in
+      `mutual` with light, so a dark kit has no advantage to seek and no counter
+      to fear. Measured 2026-09-05: Alakazam reads 391‰ / 241‰ / 512‰ / 93‰ across
+      four opponents, a flat profile, where every elemental character in the cast
+      swings from near-nought to near-total on the same four. It is a real design
+      axis rather than a gap — see
+      `memory/hexarena-dark-is-off-the-chart.md`. ⚠️ **Magnemite is counted twice on purpose** — it is electric/metal,
+      and `pokemon.pichu` is the first character to carry electric **on its own**.
+      A pool being full is not the same as an element being played: electric
+      shipped ten skills and one carrier, and every one of those ten was built
+      around that carrier's `charge` mechanic. Two duals: Magnemite (electric/metal) and
       Lapras (water/ice). ⚠️ **Wind was carried only by the hidden Naruto until
       Dratini**, so both of the book's wind skills were `restrict.origins:
       [naruto]` and no draftable unit could field one: an element being "carried"
@@ -1421,11 +2041,16 @@ is only so the shape is readable.
       by hand.
       ⚠️ **No element is left to claim, so "one per element" is finished as a
       guide.** What a new character is bought for now is a **way of playing**, and
-      § *Sixteen traced Pokemon* below is the art waiting for one.
+      § *Ten traced Pokemon* below is the art waiting for one.
       ⚠️ **On the archetype, which is the closest thing to a way of playing this
-      data has a field for.** Seventeen characters against seventeen archetypes, one
-      each — but that is where the counting has landed, **not a rule, and nothing
-      enforces it**: `cast.ParseArchetypes` refuses an archetype *declared* twice
+      data has a field for.** **Twenty** characters against **twenty** archetypes,
+      one each — but that is where the counting has landed, **not a rule, and
+      nothing enforces it**:
+      ⚠️ The pair is derived rather than remembered and it read "nineteen against
+      nineteen" until 2026-09-06:
+      `jq '[.characters[].archetype]|group_by(.)|map(select(length>1))' internal/seed/data/cast.json`
+      answers `[]` while the claim holds, and names the archetype the day it does
+      not. `cast.ParseArchetypes` refuses an archetype *declared* twice
       and says nothing about two characters *tuned from* one, and no test in
       `internal/seed` asks. So a second character on a shipped archetype is
       **fine** and needs no permission. The aim is only that each character ends
@@ -1520,7 +2145,7 @@ is only so the shape is readable.
       one, and the pair reads the worse half. Whether a dual should lose a
       favourable matchup whole is a decision for whoever authors next — it is
       written down rather than tuned away.
-- [ ] **Sixteen traced Pokemon are waiting for a character — six complete
+- [ ] **Ten traced Pokemon are waiting for a character — four complete
       lines.** The art lands first because `cast.ParseBook` refuses a character
       that declares no image, so the order is forced: trace, then author.
       ⚠️ **This entry said "thirty-one" and was stale in BOTH directions**, which
@@ -1535,19 +2160,29 @@ is only so the shape is readable.
             <(grep -o '"assets/[^"]*\.svg"' internal/seed/data/cast.json \
                 | sed 's|"assets/||; s|\.svg"||' | sort -u)
 
-      Sixteen files, six lines, **no orphan form** — every line below is
+      Ten files, four lines, **no orphan form** — every line below is
       complete, and nothing `cast.json` names is missing from `assets/`.
       By line, as they would be authored:
-      **pichu → pikachu → raichu** · **igglybuff → jigglypuff → wigglytuff** ·
-      **mareep → flaaffy → ampharos** · **abra → kadabra → alakazam** ·
+      **igglybuff → jigglypuff → wigglytuff** · **mareep → flaaffy → ampharos** ·
       **magikarp → gyarados** · **onix → steelix**.
       ⚠️ **Nothing references any of these**, which is why they moved no golden
       and why `TestTheShippedArtIsCutOutRatherThanFramed` does **not** cover them —
       that test walks the art shipped characters name, so the day one of these is
       authored is the day its picture is first measured. **That day came for the
-      dratini line on 2026-09-05**, and for the gible line the same day; all six
-      passed first time, which is evidence for the hand-check below rather than a
-      guarantee for the rest. The sources were checked
+      dratini line on 2026-09-05**, and for the gible, pichu and abra lines the
+      same day.
+      ⚠️ **Eight of the nine passed and `assets/pichu.svg` did not, and the test
+      was wrong rather than the picture.** Its stated rule was that a silhouette
+      does not reach *all four* corners of its tightest rectangle; its code
+      refused *any* corner. Pichu's ear is a wedge whose tip is at once the
+      leftmost and the topmost ink, so it paints the top-left corner at alpha 16
+      and the other three at nought — a feathered edge, not a backdrop. The check
+      now counts corners, and `TestAFramedPictureIsStillRefused` holds the
+      positive case on an image built in the test, because the framed asset that
+      motivated the rule no longer ships and a refusal with no example is a
+      refusal nothing measures. So: this test's first contact with unmeasured art
+      found a bug **in the test**, which is worth knowing before trusting the
+      hand-check below on the rest. The sources were checked
       by hand instead: real `tRNS` transparency, 46–71% of the canvas clear, the
       inked box well inside the frame — no baked chequer, so no `--decheck` was
       needed.
@@ -1595,19 +2230,19 @@ is only so the shape is readable.
       they wait for 5v5), and the reference screen (the nested item at the end).
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
-      four obvious axes outright.** Multiplicity across the seventeen shipped
+      four obvious axes outright.** Multiplicity across the nineteen shipped
       characters:
 
       | axis | most units that can share one value | rungs reachable |
       |---|---:|---|
       | element | 3 (water: Lapras, Poliwag, Squirtle) | 2, 3 |
-      | origin | **16** (`pokemon`) | 2, 3, 4, 5 — but see below |
+      | origin | **18** (`pokemon`) | 2, 3, 4, 5 — but see below |
       | species | **3** (`dragon`: Charmander, Dratini, Gible) | 2, 3 |
-      | archetype | 1 (seventeen characters, seventeen presets) | **none** |
-      | archetype `column` | 7 / 5 / 5 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
+      | archetype | 1 (nineteen characters, nineteen presets) | **none** |
+      | archetype `column` | 7 / 6 / 6 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
 
       ⚠️ **An origin threshold is FREE at every rung today**, and that is the
-      sharpest thing here: sixteen of seventeen characters are `pokemon`, so *any*
+      sharpest thing here: eighteen of nineteen characters are `pokemon`, so *any*
       squad that is not built around Naruto satisfies a 5-of-one-origin bonus by
       accident. A bonus nobody has to build for is not a bonus, it is a stat
       change with extra words. The same trap sits one step further out if traits
@@ -1745,13 +2380,27 @@ is only so the shape is readable.
          and with no column axis there is nothing to bundle.
          ⚠️ **But stacking makes the ORIGIN axis worse, not better, and this is
          the one thing to read before authoring one.** With rungs 2 and 3 at 3v3,
-         **no 3v3 squad can fail the origin axis at all**: fourteen of the fifteen
-         shipped characters are `pokemon`, and the fifteenth is one character, so
-         the worst case a squad can reach is Naruto plus two Pokemon — which is
-         still **2 of one origin**, still a rung. (`Hidden` does not save it:
-         `cast.Character.Hidden` is an authoring convenience by its own doc — a
-         hidden character still ships, still loads, still fights, and a squad
-         naming one is as valid as any other.) So an origin bonus shipped today
+         **no 3v3 squad can fail the origin axis at all**: **seventeen of the
+         eighteen** shipped characters are `pokemon`, and the eighteenth is one
+         character, so the worst case a squad can reach is Naruto plus two
+         Pokemon — which is still **2 of one origin**, still a rung.
+         ⚠️ **These figures said "fourteen of the fifteen", then "sixteen of the
+         seventeen", both on 2026-09-05** — three characters shipped that day — and
+         they move every time a character ships, so they are derived rather than
+         remembered: `jq '[.characters[]|select(.id|startswith("pokemon."))]|length'
+         internal/seed/data/cast.json`. Every one that ships makes this objection
+         **stronger**, never weaker — the axis was already unfailable and more
+         Pokemon only widen the margin — so the conclusion below needs no
+         re-measurement when the cast grows, only the count does.
+         (`Hidden` does not save it, and it saves it **less** than this used to
+         say. This cited `cast.Character.Hidden` as "an authoring convenience by
+         its own doc"; ⚠️ that half of the doc is gone — `internal/draft.NewPool`
+         gates the ban-and-pick pool on the flag, so it is a rule of the game for
+         a drafted squad and only a convenience for a saved one. Either way it
+         cannot rescue the axis: naruto is both the only hidden character *and*
+         the only non-`pokemon` one, so honouring the flag removes the one
+         character a squad could have failed the axis with and makes an origin
+         bonus **more** unconditional, not less.) So an origin bonus shipped today
          would fire for **every squad in the game, unconditionally** — that is not
          a bonus, it is a change to the base numbers wearing a threshold. Under
          the *one-at-a-time* rule it would at least have competed for a slot and
@@ -1940,6 +2589,152 @@ is only so the shape is readable.
       ⚠️ The screens are golden-held, so the extra keystroke moves every play
       fixture that casts a single-aim skill. That is the change being visible
       rather than a fixture problem, but it is the bulk of the diff.
+
+- [ ] **`statuses.json` accepts fields it ignores, and a Vietnamese name is one
+      of them.** Found 2026-09-05 shipping `stoked`: the status was authored with
+      `"name"` and `"flavour"` beside its numbers, exactly as a skill or a passive
+      carries them, and it **parsed clean**. Nothing said the two fields go
+      nowhere — a status's Vietnamese name lives in `i18n.statusGloss`, not in the
+      data — so the book loaded, the battle ran, and the id reached the log bare
+      until `TestEveryShippedStatusIsGlossed` caught it two steps later.
+
+      ⚠️ **The neighbouring books differ on this and that is what makes it a
+      trap.** `skills.json` and `passives.json` both take an authored `name`;
+      `statuses.json` does not. An author moving between the three has no reason
+      to expect the third to be the odd one, and the file gives no sign.
+
+      Two ways out, and the choice is a design decision rather than a fix:
+      **(a)** refuse unknown fields at parse — cheap, and it turns a silent drop
+      into a sentence in front of the author; or **(b)** let a status carry its own
+      `name` like its neighbours and have `statusGloss` fall back to it, which is
+      the direction skills already went (`skillGloss` is a frozen fallback, see
+      the note in `internal/i18n/gloss.go`). (b) removes the asymmetry rather than
+      documenting it, and is the one to prefer if the two are ever done at once.
+
+- [ ] **The cast listing draws every row, so the detail pane shrinks as the cast
+      grows.** Found 2026-09-05 while shipping `pokemon.torchic`, when a sweep
+      entry that records a **forked** detail pane stopped drawing the form row.
+
+      The skill listing already solves this: `screen.skillsRoom` measures how many
+      rows the listing gets **from the window in hand**, so the pane below it
+      keeps its rows whatever the book's length. The cast listing has no
+      equivalent — it draws all of them. At the sweep's shared 120x44 and nineteen
+      characters the browser's detail pane now runs out before the last row and
+      the screen says so: *"… bị cắt bớt; cửa sổ cao hơn sẽ thấy hết"*.
+
+      ⚠️ **The row it drops first is the one that matters most.** For a line that
+      forks, the form row is the whole decision — `(Poliwrath@32 | Politoed@32)`
+      is drawn, but the chooser under it is what says which arm is fielded. So the
+      degradation is not "a bit less prose"; it is the pane losing its point,
+      quietly, on a screen that already has a notice for it.
+
+      ⚠️ **It gets worse on a schedule.** Five characters shipped on 2026-09-05
+      alone. Nothing about the listing bounds it, so every character costs the
+      detail pane one more row, on every window size.
+
+      What was done instead, and why it is a stopgap: `theForkedBrowser` in
+      `cmd/hexarena-tui/sweep_test.go` now sets its own taller window, because
+      bounding the listing changes what **every** screen draws and belongs in its
+      own change rather than riding in with a character. The comment there says so
+      and points here.
+
+      The fix is `skillsRoom`'s twin — measure the listing's rows from the window,
+      window it around the cursor the way the skill list already is, and let the
+      detail pane keep the rest. ⚠️ It moves every golden that draws a cast
+      listing, which is most of them; that is the change being visible rather than
+      a fixture problem.
+
+- [ ] **The rating cannot price hiding, so nothing will ever cast it.** The
+      burrow mechanic shipped 2026-09-05 — a status that takes its holder off
+      `aims` and refuses every application somebody else throws — and `Suggest`
+      has no term for any of it.
+
+      What a turn is worth to the rating is damage done, health restored and
+      statuses landed. Hiding does **none** of those: it is worth the damage that
+      *does not arrive*, which is a quantity the rating never computes because
+      nothing else in the engine has ever needed it. So a burrow priced today
+      reads as nought, and an AI holding it casts anything else instead.
+
+      ⚠️ **This is the shape `brace` was in**, and that is the precedent to copy
+      rather than a warning: a cooldownless self-buff that buys a later turn was
+      also worth nought until `pricing.selfSpendable` grew an arm that priced the
+      fuel by what the gated spender would do with it. The equivalent here is to
+      price a hidden turn by what the other side would otherwise have thrown at
+      the holder — `b.expected` already computes exactly that figure from the
+      other direction, once per enemy option.
+
+      ⚠️ **A cheap wrong answer to avoid:** pricing it as "the damage I would take
+      this turn" makes it best when the holder is about to die, which is when the
+      turn is worth least — the holder is on one point either way and the turn
+      would have been better spent killing something. `spentHealth`'s note records
+      the same trap for a health cost and the same fix: read what the skill
+      *asks*, not what the moment happens to make it worth.
+
+      Until this is done, burrow is a **human-only** skill: it works, it is
+      measured (TestABurrowedUnitCannotBeAimedAtButIsStillSplashed), and the
+      auto-battle simply never chooses it — which also means every squad
+      measurement that includes it is measuring a unit one skill short.
+
+- [ ] **Four ways of playing the board that the engine cannot express yet.**
+      Raised 2026-09-05 while authoring `pokemon.abra`, when three of the four
+      canonical Alakazam mechanics turned out to have no home. They are listed
+      together because the first three share one prerequisite and the fourth is
+      the odd one out.
+
+      ⚠️ **The shared prerequisite: nothing on this board ever moves.** `unit.Cell`
+      is assigned once, at enlist, and never again — grep'd 2026-09-05, the only
+      other mention in `internal/core/battle` is a read. So a *position* is
+      currently a fact about a roster rather than a state of a battle, and all
+      three teleport shapes below need that to stop being true before any of them
+      is a skill. Consequences to settle **once**, not per skill: what an `[]Event`
+      says when a unit moves (a renderer has to be able to animate it); whether the
+      turn queue notices (it does not read position today); and whether `aims`,
+      `bestStrike` and the whole of `price.go` re-read range after a move inside
+      the same turn. ⚠️ Also: a move is the first thing that could make a **legal
+      aim illegal mid-turn**, which is the one place the option list and `Act`
+      re-checking each other actually matters.
+
+      1. **Teleport yourself to another hex.** Abra's whole identity in the
+         original — it only knows Teleport and it runs. Wants **both** a permanent
+         form (you moved, and you stay moved) and a by-turn form (you return after
+         n turns), because they are different skills: the first is repositioning
+         and the second is a dodge with a cost. The permanent one is the cheaper
+         to build and the one to do first.
+      2. **Teleport an ENEMY to another hex.** **By-turn only** — a permanent form
+         is a free re-draft of the other side's formation, and formation is what a
+         squad is. Pulling a back-row unit into reach for three turns is the
+         interesting version.
+      3. **Swap two units' positions.** **By-turn only**, same reasoning. Reads on
+         either side of the board: pull an ally out of trouble, or drag an enemy
+         wall out of the way of what is behind it. ⚠️ Two units move at once, so
+         whatever the event shape from the prerequisite is, it has to carry a pair
+         rather than be emitted twice — a renderer drawing two separate moves
+         cannot show the swap.
+
+      4. **Lock a skill.** The odd one out: **no movement needed, and the data
+         shape already exists.** `Unit.Cooldowns []int` runs in step with
+         `Unit.Skills` (`battle.go:142`) and is spent once per turn by
+         `spendCooldowns`; a parallel `Locked []int` is the same loop and the same
+         lifetime.
+         The design, as asked for: lock **one random skill** of the target for n
+         turns, **each locked skill counting down on its own**, and a lock that
+         lands while another is still running picks a **different** skill. So the
+         locks stack up rather than replace each other, and a caster that keeps
+         landing them can reach **all four** — at which point the target's only
+         legal action is to pass.
+         ⚠️ **That end state is the design question, not a side effect.** The
+         engine already has a skipped turn as an ordinary thing
+         (`battle.go:686`), so it will not break; what needs deciding is whether
+         being locked out completely is a *win condition* somebody can build for
+         or a floor the lock should stop short of. Both are defensible; pick one
+         before authoring the skill, because the answer changes the duration and
+         the chance rather than the code.
+         ⚠️ Random selection means `*rng.Source`, which puts this in the replay
+         contract: the roll has to happen at a fixed point in the turn or the same
+         seed stops reproducing. See the note on determinism in `CLAUDE.md`.
+         ⚠️ It also needs a **wording** — the play screen already says why an
+         option is refused (`Block`/`OptionRefusal`), and a locked skill is a
+         fifth reason beside cooldown, fuel and reach.
 
 - [ ] **`reckless` is the dragon build's 22.1%.** The roadmap said the gap was the
       missing detonate. It was tested: the line was given one (`dragon_drive`, off

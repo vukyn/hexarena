@@ -44,6 +44,13 @@ canine           loài khuyển
                  note: Thứ đứng bằng hai chân nhưng vẫn nghe bằng tai của một con thú: biết kẻ kia định làm gì trước khi kẻ ấy nhấc chân, và không bao giờ hỏi vì sao mình biết
 brood            loài ấp trứng
                  pokemon.happiny (Happiny)
+                 pokemon.torchic (Torchic)
                  note: Thứ lúc nào cũng ôm một quả trứng trước bụng, và cái trứng ấy quan trọng hơn chính nó: gặp chuyện thì nó lấy thân che, chứ không bỏ chạy
+rodent           gặm nhấm
+                 pokemon.pichu (Pichu)
+                 note: Thứ nhỏ tới mức ai cũng bỏ qua, sống được là nhờ nhanh hơn thứ đuổi theo mình — và cắn một phát thì nhớ đời
+esper            ngoại cảm
+                 pokemon.abra (Abra)
+                 note: Thứ đánh nhau bằng chỗ mà đối phương không với tới được: không móng, không nanh, ngồi yên một chỗ mà thứ gì đó vẫn gãy
 
-14 kinds declared
+16 kinds declared

@@ -69,6 +69,16 @@
       "id": "brood",
       "name": "loài ấp trứng",
       "note": "Thứ lúc nào cũng ôm một quả trứng trước bụng, và cái trứng ấy quan trọng hơn chính nó: gặp chuyện thì nó lấy thân che, chứ không bỏ chạy"
+    },
+    {
+      "id": "rodent",
+      "name": "gặm nhấm",
+      "note": "Thứ nhỏ tới mức ai cũng bỏ qua, sống được là nhờ nhanh hơn thứ đuổi theo mình — và cắn một phát thì nhớ đời"
+    },
+    {
+      "id": "esper",
+      "name": "ngoại cảm",
+      "note": "Thứ đánh nhau bằng chỗ mà đối phương không với tới được: không móng, không nanh, ngồi yên một chỗ mà thứ gì đó vẫn gãy"
     }
   ]
 }

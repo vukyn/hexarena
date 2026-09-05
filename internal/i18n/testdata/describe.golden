@@ -808,6 +808,39 @@ Gây mù cho mục tiêu, 60% khả năng.
 Tầm 2 · 3 ô · 95% trúng · hồi 4 lượt.
 [one line] 60% công · mù 60% · tầm 2 · 3 ô · hồi 4
 
+volt_tackle
+Dồn hết những gì đang tích trong người vào một cú lao thẳng, dồn tới mức chính mình cũng bỏng, 240% công, tốn 12% máu tối đa của người dùng dù trúng hay trượt.
+Tầm 1 · 90% trúng · hồi 3 lượt.
+[one line] 240% công · tốn 12% máu · tầm 1 · hồi 3
+
+nuzzle
+Áp sát rồi chạm nhẹ một cái, nhẹ tới mức không ai kịp coi đó là đòn, 30% công.
+Gây choáng cho mục tiêu, 45% khả năng.
+Tầm 1 · 100% trúng · hồi 3 lượt.
+[one line] 30% công · choáng 45% · tầm 1 · hồi 3
+
+mind_burn
+Đốt sạch những gì còn lại trong đầu để lấy một đòn, đốt của mình chứ không của ai, 230% công, tốn 18% máu tối đa của người dùng dù trúng hay trượt.
+Tầm 2 · 90% trúng · hồi 3 lượt.
+[one line] 230% công · tốn 18% máu · tầm 2 · hồi 3
+
+mind_crush
+Bóp cả một khoảng trước mặt cho hẹp lại, và trả bằng chỗ trống trong đầu mình, 140% công, tốn 12% máu tối đa của người dùng dù trúng hay trượt.
+Tầm 2 · 3 ô · 85% trúng · hồi 3 lượt.
+[one line] 140% công · tốn 12% máu · tầm 2 · 3 ô · hồi 3
+
+blaze_kick
+Đá một phát bắt lửa ngay giữa không trung, chỗ trúng thì cháy tiếp, 130% công, 25% khả năng chí mạng.
+Gây bỏng cho mục tiêu, 40% khả năng.
+Tầm 1 · 90% trúng · hồi 2 lượt.
+[one line] 130% công · bỏng 40% · tầm 1 · hồi 2
+
+flare_blitz
+Bọc cả người trong lửa rồi lao thẳng vào, lửa ấy không phân biệt ai đang bọc nó, 240% công, tốn 10% máu tối đa của người dùng dù trúng hay trượt.
+Gây bỏng cho mục tiêu, 50% khả năng.
+Tầm 1 · 90% trúng · hồi 3 lượt.
+[one line] 240% công · tốn 10% máu · bỏng 50% · tầm 1 · hồi 3
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -903,6 +936,19 @@ Luôn mang thành trì.
 Đứng dậy là lại khuất đi một lớp, nên đòn nhắm vào lúc nãy giờ trượt chỗ.
 Đầu mỗi lượt của mình lại nhận mờ ảo, 100% khả năng.
 
+[trait] static
+Cả người lúc nào cũng tích sẵn; ai chạm vào thì tay tê đi một lúc.
+Ai đánh trúng thì có 6% khả năng dính choáng.
+
+[trait] magic_guard
+Cái giá phải trả đi đâu mất giữa đường, không ai thấy nó tới nơi.
+Miễn nhiễm trúng độc.
+Miễn nhiễm bỏng.
+
+[trait] quickening
+Mỗi lượt đứng được là một lượt lấy lại được nhịp, và nhịp thì không tự mất đi.
+Đầu mỗi lượt của mình lại nhận nóng máy, 100% khả năng.
+
 [status] poison
 Đầu lượt bên dính, mỗi cộng dồn gây sát thương bằng 50% công của bên gây ra.
 Trọn 3 lượt, một cộng dồn là 150%, tối đa là 450%.
@@ -989,6 +1035,11 @@ Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 [status] evasive
 Tăng né 15%.
 Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
+
+[status] stoked
+Tăng tốc 12% mỗi cộng dồn.
+Tối đa là 60%.
+Tăng chỉ số · 2 lượt · tối đa 5 cộng dồn.
 
 [status] block
 Mỗi cộng dồn triệt tiêu một nhát; đòn hai nhát tiêu hai cộng dồn.
@@ -1874,6 +1925,39 @@ Inflicts blind, 60% of the time.
 Range 2 · 3 cells · 95% to hit · 4 turns to recharge.
 [one line] 60% attack · blind 60% · range 2 · 3 cells · cd 4
 
+volt_tackle
+Hits an enemy for 240% of attack, costing its caster 12% of full health whether it lands or not.
+Range 1 · 90% to hit · 3 turns to recharge.
+[one line] 240% attack · costs 12% health · range 1 · cd 3
+
+nuzzle
+Hits an enemy for 30% of attack.
+Inflicts stun, 45% of the time.
+Range 1 · 100% to hit · 3 turns to recharge.
+[one line] 30% attack · stun 45% · range 1 · cd 3
+
+mind_burn
+Hits an enemy for 230% of attack, costing its caster 18% of full health whether it lands or not.
+Range 2 · 90% to hit · 3 turns to recharge.
+[one line] 230% attack · costs 18% health · range 2 · cd 3
+
+mind_crush
+Hits an enemy for 140% of attack, costing its caster 12% of full health whether it lands or not.
+Range 2 · 3 cells · 85% to hit · 3 turns to recharge.
+[one line] 140% attack · costs 12% health · range 2 · 3 cells · cd 3
+
+blaze_kick
+Hits an enemy for 130% of attack, critical 25% of the time.
+Inflicts burn, 40% of the time.
+Range 1 · 90% to hit · 2 turns to recharge.
+[one line] 130% attack · burn 40% · range 1 · cd 2
+
+flare_blitz
+Hits an enemy for 240% of attack, costing its caster 10% of full health whether it lands or not.
+Inflicts burn, 50% of the time.
+Range 1 · 90% to hit · 3 turns to recharge.
+[one line] 240% attack · costs 10% health · burn 50% · range 1 · cd 3
+
 [trait] endurance
 Always carries toughened.
 
@@ -1947,6 +2031,16 @@ Always carries bastion.
 
 [trait] convalescence
 Takes veil again at the start of each of its own turns, 100% of the time.
+
+[trait] static
+Whatever damages it has a 6% chance of catching stun.
+
+[trait] magic_guard
+Refuses poison outright.
+Refuses burn outright.
+
+[trait] quickening
+Takes stoked again at the start of each of its own turns, 100% of the time.
 
 [status] poison
 At the holder's turn, each stack costs 50% of the applier's stat.
@@ -2034,6 +2128,11 @@ Raises a stat · always in force · 1 stack.
 [status] evasive
 Raises dodge by 15%.
 Raises a stat · always in force · 1 stack.
+
+[status] stoked
+Raises speed by 12% per stack.
+At its cap that is 60%.
+Raises a stat · 2 turns · up to 5 stacks.
 
 [status] block
 Each stack swallows one strike whole; a two-strike skill spends two.

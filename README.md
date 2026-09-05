@@ -2447,10 +2447,10 @@ the client is Vietnamese-first with an English toggle. This is the same rule the
 rest of the client already lives under — a description is derived from the data,
 and the id is the only thing that travels.
 
-### The eight messages, and what five of them deliberately do not carry
+### The ten messages, and what six of them deliberately do not carry
 
 Built: `internal/wire`, the protocol as one package with no I/O in it, no room
-and no socket. Three messages go up and five come back.
+and no socket. Four messages go up and six come back.
 
 | client → server | server → client |
 | --- | --- |
@@ -2458,7 +2458,8 @@ and no socket. Three messages go up and five come back.
 | `act` — a skill and an aim | `refused` — a `Code` |
 | `pass` — **nothing at all** | `start` — the seed, the roster, which **side**, which battle of the series |
 | | `turn` — the decision taken, and the digest of the events it produced |
-| | `closed` — the match ended for a reason the board cannot show, as a `Closure` |
+| `decide` — one ban-and-pick decision, tagged with which **step** it is | `closed` — the match ended for a reason the board cannot show, as a `Closure` |
+| | `drafted` — what the draft recorded, in order, as a batch |
 
 Almost all of it is types that already existed, which is the design rather than
 a saving: `placement.Squad` is the squad format, `battle.Roster` already carries
@@ -2970,8 +2971,8 @@ game client's `pairing.go` fixture already records.
 
 ### The room, built — and the four things building it decided
 
-`internal/room` is that state machine. It speaks the eight messages and declares
-none of its own, and everything above about the clock, the series, the sides and
+`internal/room` is that state machine. It speaks the battle's eight messages and
+declares none of its own, and everything above about the clock, the series, the sides and
 the cursor is now code with tests against it. Four things were open when this
 section was written and are answered here.
 

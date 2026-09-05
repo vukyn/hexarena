@@ -80,6 +80,23 @@ type Config struct {
 	// security. Empty is a room with none, which accepts any hello that gets
 	// past the version gate.
 	Password wire.Password
+	// Drafts says the two sides **ban and pick** before they fight, out of one
+	// shared pool, rather than each bringing a squad it built at home. It rides
+	// to both clients on wire.Welcome, which is what tells a client not to bring
+	// one.
+	//
+	// ⚠️ **Whether the pool can seat the format is NOT checked here, and cannot
+	// be.** draft.Fits measures a pool against a format, the pool is the cast
+	// minus every character held back, and Validate is a method on this struct
+	// with no Deps to read a cast book out of. So that check lives in New, which
+	// has both — and a room whose draft could never finish therefore fails when
+	// it is opened rather than when somebody joins it, which is the arrangement
+	// internal/draft's own New rests on. Measured on the shipped cast: a pool of
+	// **19**, so 3v3 has nine characters to spare and 5v5 has three.
+	//
+	// ⚠️ What Validate **can** say about it is that the series is a bo1, which is
+	// below.
+	Drafts bool
 }
 
 // DefaultTurnCap is the backstop a host has no reason to change: about eight
@@ -113,6 +130,21 @@ func (c Config) Validate() error {
 	}
 	if c.TurnCap <= 0 {
 		return fmt.Errorf("a turn cap of %d ends every battle before it starts", c.TurnCap)
+	}
+	// ⚠️ **The ban and pick is bo1's, by name, and this refusal is a design
+	// decision rather than a bounds check** — the same kind as the bo2 above.
+	// "A ban lasts the match, and the first cut is bo1 only" is what was settled;
+	// what a draft means in a *series* is three different games — three drafts,
+	// one draft carried across all three battles, or a draft per battle with the
+	// previous winner banning first — and choosing one of them by accepting the
+	// configuration would be taking that decision here. A room that accepted it
+	// would silently ship the second reading. → TODO.md § "Ban and pick for a
+	// bo3", which is its own item.
+	if c.Drafts && c.Battles != 1 {
+		return fmt.Errorf("a drafting room of %d battles has no rule to run under: a ban lasts "+
+			"the match and the first cut is bo1 only, so what a draft means across a series — "+
+			"three drafts, one draft carried, or a draft a battle with the previous winner "+
+			"banning first — is a decision nobody has taken", c.Battles)
 	}
 	return nil
 }

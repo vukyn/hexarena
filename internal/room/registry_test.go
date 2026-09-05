@@ -149,7 +149,7 @@ func squadPair(t *testing.T, dependencies room.Deps, index int) (placement.Squad
 // answer to the decision that ended it.
 func playMatch(t *testing.T, on board, dependencies room.Deps, configuration room.Config, host, guest placement.Squad) outcome {
 	t.Helper()
-	clients := newTable(t, dependencies.Books, configuration.TurnCap)
+	clients := newTable(t, dependencies, configuration.TurnCap)
 
 	answered, err := on.join(hello(t, host, "Host"))
 	if err != nil {

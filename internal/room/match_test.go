@@ -38,7 +38,7 @@ func TestTwoFakeClientsFightAWholeBo3InProcess(t *testing.T) {
 	// A replay limit generous enough for one decision plus whatever run of
 	// skipped turns follows it. It is the client's own number: nothing on the
 	// wire carries it.
-	clients := newTable(t, dependencies.Books, configuration.TurnCap)
+	clients := newTable(t, dependencies, configuration.TurnCap)
 
 	hostSquad := squadOf(t, dependencies.Characters, "host.squad",
 		"pokemon.bulbasaur", "pokemon.machop", "pokemon.gastly")

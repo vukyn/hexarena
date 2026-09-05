@@ -34,7 +34,10 @@ import (
 //     work done to reach an answer that was already decided — and because
 //     "your squad is illegal" is a worse thing to tell somebody who was never
 //     getting in than "the room is full".
-//  4. **The squad**, which is five rules under one code (see squadRefused).
+//  4. **The squad**, which is five rules under one code (see squadRefused) — or,
+//     in a room that **drafts**, the opposite question under a different code:
+//     there a squad is *unwanted* rather than illegal, and squadIsFieldable is
+//     not consulted at all. → the branch below, and squadIsFieldable's own note.
 //  5. Nothing else. wire.CodeRoomUnknown is a *registry's* refusal — a code
 //     naming no room this process is running — and the registry of many rooms
 //     is its own TODO.md item, so no room ever sends it.
@@ -49,10 +52,26 @@ func (r *Room) Join(hello wire.Hello) (wire.Seat, []Outbound, error) {
 	if !free {
 		return "", r.refuseConnection(wire.CodeRoomFull), nil
 	}
-	if !r.squadIsFieldable(hello.Squad) {
+	// ⚠️ **In a room that drafts a squad is UNWANTED, not illegal, and the two
+	// branches are exclusive rather than one after the other.** The two sides ban
+	// and pick out of a shared pool here, so the side a client built at home is
+	// not the side it will field — and the squad may be perfectly legal, which is
+	// why running squadIsFieldable on it would be answering a question nobody
+	// asked. What a player has to *do* is the whole difference: CodeSquadRefused
+	// says fix the squad and join again, and the fix here is to bring **none**. A
+	// refusal that misdirects is worse than one that is merely blunt.
+	// → wire.CodeSquadUnwanted, and Welcome.Drafts on why a hello cannot know
+	// this before it is sent.
+	if r.config.Drafts {
+		if broughtASquad(hello.Squad) {
+			return "", r.refuseConnection(wire.CodeSquadUnwanted), nil
+		}
+	} else if !r.squadIsFieldable(hello.Squad) {
 		return "", r.refuseConnection(wire.CodeSquadRefused), nil
 	}
 	seat := seats[index]
+	// The squad is the empty one in a drafting room, and the draft fills both in
+	// itself once it is Done. → draftAdvanced.
 	r.seated[index] = peer{taken: true, name: hello.Name, squad: hello.Squad.Clone()}
 	// Every room setting a client needs in order to behave correctly, and the
 	// cap is one of those rather than an extra: a mirror that did not know it
@@ -63,12 +82,13 @@ func (r *Room) Join(hello wire.Hello) (wire.Seat, []Outbound, error) {
 		Battles:   r.config.Battles,
 		Allowance: r.config.Allowance,
 		TurnCap:   r.config.TurnCap,
+		Drafts:    r.config.Drafts,
 		Seat:      seat,
 	}}}
 	// The second peer to be seated starts the match, which is the one place a
 	// join produces more than an answer to itself.
 	if _, stillFree := r.freeSeat(); !stillFree {
-		opening, err := r.begin()
+		opening, err := r.bothTaken()
 		if err != nil {
 			return seat, out, err
 		}
@@ -76,6 +96,35 @@ func (r *Room) Join(hello wire.Hello) (wire.Seat, []Outbound, error) {
 	}
 	return seat, out, nil
 }
+
+// bothTaken is what the second peer sitting down starts.
+//
+// ⚠️ **A room that drafts opens its draft here instead of calling begin(), and
+// opening one sends NOTHING AT ALL.** The draft was built in New and its first
+// ban is due the moment the second seat is taken, so there is no state to
+// announce: a wire.Drafted carries *recorded decisions*, none have been taken,
+// and a room must not send one carrying none (→ wire.Drafted.Decisions). What a
+// client needs in order to draw the opening ban it already holds — Welcome.Drafts
+// says a draft is coming and Welcome.Seat says which side it is on, and the host
+// bans first — so both peers compute the same open decision out of the same two
+// facts. → New, where that constant is stated once.
+func (r *Room) bothTaken() ([]Outbound, error) {
+	if r.config.Drafts {
+		return nil, nil
+	}
+	return r.begin()
+}
+
+// broughtASquad reports whether a hello named a side at all, which is the whole
+// of what a drafting room turns away.
+//
+// ⚠️ **It reads the units and not the id**, and that is a decision: a squad is a
+// side to field, so a client that filled in a name and no members brought
+// nobody — placement.Squad.Validate refuses that shape by its own first line, so
+// there was never a squad there to be unwanted. What CodeSquadUnwanted exists to
+// prevent is a player watching the side they spent an evening building fail to
+// appear, and an empty squad is not that side.
+func broughtASquad(squad placement.Squad) bool { return len(squad.Units) > 0 }
 
 // freeSeat is the first seat nobody holds, in the order a room hands them out,
 // so the peer that opened the room is the host.
@@ -90,6 +139,25 @@ func (r *Room) freeSeat() (int, bool) {
 
 // squadIsFieldable is the squad half of the gate: five rules, all of them under
 // wire.CodeSquadRefused, and the one code is a decision rather than laziness.
+//
+// ⚠️ **It is NOT consulted in a room that drafts, and that is the point rather
+// than a saved call.** There the question is not whether the squad is legal —
+// it may well be — but that nobody wanted one: the sides ban and pick out of a
+// shared pool, so the squad a client built at home is not the squad it will
+// field. Join answers wire.CodeSquadUnwanted before reaching here, and running
+// these five rules on the way would risk telling a player their perfectly legal
+// squad was wrong about its levels or its forms, which is the misdirection that
+// code was added to avoid. → Join.
+//
+// ⚠️ **And that room is why the doubling-up rule below has a SCOPE.** CLAUDE.md's
+// *"one squad may field the same character twice"* is decided yes and holds
+// here — a **saved** squad is what this gate sees. A **drafted** squad cannot
+// double up at all, and not because anything refuses it: every ban and every pick
+// takes a character out of one shared *exclusive* pool, so a side's picks are
+// different characters by construction, and so are both sides' together. Both
+// statements hold, and this is where the scope became load-bearing rather than
+// descriptive. → internal/draft's Squads, which says the same thing from the
+// other end.
 // The client holds the same books and the same validator, so it can say
 // precisely what is wrong with a squad it built, in the player's own language,
 // without the server spelling it — and a server that spelled it would be a

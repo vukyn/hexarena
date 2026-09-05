@@ -24,6 +24,29 @@ naruto.naruto — Naruto
     level 60 hp 3400, atk 590, def 400, spd 134, acc 165, ddg 70
              absorbs 7943 of the 11500 budget, 3557 to spare
 
+pokemon.abra — Abra
+  from     Pokémon (anime)
+  preset   spendthrift
+  element  dark
+  species  esper
+  art      assets/abra.svg
+  kit      psycho_cut shadow_ball@8 nasty_plot@12 dark_pulse@16 mind_crush@20 night_shade@24 mind_burn@28 inner_focus@32 shadow_punch@36 taunt@40 spite@44 curse@48 body_slam@52 shadow_claw@56
+  stage "Abra" owns levels 1 to 15, showing assets/abra.svg
+    level 1  hp 560, atk 122, def 52, spd 31, acc 38, ddg 14
+             absorbs 657 of the 11500 budget, 10843 to spare
+    level 15 hp 825, atk 179, def 76, spd 46, acc 56, ddg 21
+             absorbs 1035 of the 11500 budget, 10465 to spare
+  stage "Kadabra" owns levels 16 to 35, showing assets/kadabra.svg
+    level 16 hp 1125, atk 244, def 104, spd 63, acc 75, ddg 29
+             absorbs 1516 of the 11500 budget, 9984 to spare
+    level 35 hp 1606, atk 349, def 149, spd 90, acc 108, ddg 42
+             absorbs 2404 of the 11500 budget, 9096 to spare
+  stage "Alakazam" owns levels 36 to 60, showing assets/alakazam.svg
+    level 36 hp 2039, atk 444, def 189, spd 114, acc 138, ddg 53
+             absorbs 3326 of the 11500 budget, 8174 to spare
+    level 60 hp 2800, atk 610, def 260, spd 158, acc 190, ddg 74
+             absorbs 5233 of the 11500 budget, 6267 to spare
+
 pokemon.bulbasaur — Bulbasaur
   from     Pokémon (anime)
   preset   blighter
@@ -293,6 +316,29 @@ pokemon.oddish — Oddish
     level 60 hp 3400, atk 560, def 420, spd 105, acc 165, ddg 45
              absorbs 8173 of the 11500 budget, 3327 to spare
 
+pokemon.pichu — Pichu
+  from     Pokémon (anime)
+  preset   livewire
+  element  electric
+  species  rodent
+  art      assets/pichu.svg
+  kit      thunder_shock nuzzle@8 charge_beam@12 spark@16 electro_ball@20 thunder_wave@24 taunt@28 discharge@32 thunderbolt@36 volt_tackle@40 overload@44 magnetise@46 body_slam@48 zap_cannon@52 inner_focus@56
+  stage "Pichu" owns levels 1 to 15, showing assets/pichu.svg
+    level 1  hp 580, atk 120, def 56, spd 32, acc 34, ddg 18
+             absorbs 688 of the 11500 budget, 10812 to spare
+    level 15 hp 855, atk 176, def 82, spd 47, acc 50, ddg 26
+             absorbs 1089 of the 11500 budget, 10411 to spare
+  stage "Pikachu" owns levels 16 to 35, showing assets/pikachu.svg
+    level 16 hp 1165, atk 241, def 112, spd 63, acc 68, ddg 36
+             absorbs 1600 of the 11500 budget, 9900 to spare
+    level 35 hp 1664, atk 344, def 160, spd 91, acc 97, ddg 51
+             absorbs 2552 of the 11500 budget, 8948 to spare
+  stage "Raichu" owns levels 36 to 60, showing assets/raichu.svg
+    level 36 hp 2112, atk 437, def 203, spd 116, acc 123, ddg 65
+             absorbs 3543 of the 11500 budget, 7957 to spare
+    level 60 hp 2900, atk 600, def 280, spd 160, acc 170, ddg 90
+             absorbs 5609 of the 11500 budget, 5891 to spare
+
 pokemon.poliwag — Poliwag
   from     Pokémon (anime)
   preset   bruiser
@@ -362,4 +408,27 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-17 characters
+pokemon.torchic — Torchic
+  from     Pokémon (anime)
+  preset   stoker
+  element  fire
+  species  brood
+  art      assets/torchic.svg
+  kit      ember blaze_kick@8 fire_fang@12 flamethrower@16 inferno@20 body_slam@24 flare_blitz@28 heat_wave@32 taunt@36 rapid_spin@40 fire_spin@44 skull_bash@48 submission@52 inner_focus@56
+  stage "Torchic" owns levels 1 to 15, showing assets/torchic.svg
+    level 1  hp 600, atk 140, def 68, spd 24, acc 33, ddg 12
+             absorbs 736 of the 11500 budget, 10764 to spare
+    level 15 hp 884, atk 206, def 100, spd 35, acc 48, ddg 17
+             absorbs 1178 of the 11500 budget, 10322 to spare
+  stage "Combusken" owns levels 16 to 35, showing assets/combusken.svg
+    level 16 hp 1206, atk 281, def 136, spd 48, acc 66, ddg 24
+             absorbs 1752 of the 11500 budget, 9748 to spare
+    level 35 hp 1722, atk 401, def 194, spd 68, acc 94, ddg 35
+             absorbs 2836 of the 11500 budget, 8664 to spare
+  stage "Blaziken" owns levels 36 to 60, showing assets/blaziken.svg
+    level 36 hp 2186, atk 510, def 247, spd 87, acc 120, ddg 44
+             absorbs 3989 of the 11500 budget, 7511 to spare
+    level 60 hp 3000, atk 700, def 340, spd 120, acc 165, ddg 62
+             absorbs 6410 of the 11500 budget, 5090 to spare
+
+20 characters

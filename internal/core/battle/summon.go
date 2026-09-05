@@ -74,6 +74,39 @@ func (b *Battle) summon(caster *Unit, known skill.Skill, turn atb.Turn) {
 		}
 		unit.Summoner = caster.ID
 		unit.Bound = known.Summons.Bound
+		// The caster is a smaller creature now, and this is the only place in the
+		// engine that writes a unit's maximum health.
+		//
+		// ⚠️ **Taken AFTER the copy is enlisted, on purpose.** enlist can refuse —
+		// a full side, a taken cell — and it returns above when it does. Charging
+		// first would leave a caster that paid for a body the board never gave it,
+		// and the refusal is silent by design, so nothing would say so.
+		//
+		// The current health follows the maximum down by the same amount rather
+		// than being clamped to it: clamping would make a wounded caster split for
+		// free, since a unit at half health has the headroom to give away and
+		// would lose nothing it was using. The floor of one point is the rule
+		// spendHealth already applies and for the same reason — a skill may not
+		// kill its own user, because Suggest has no term for "and then I am not
+		// here".
+		if moved := splitHealth(caster.Base[progression.HP], known.Summons.Splits); moved > 0 {
+			caster.Base[progression.HP] -= moved
+			if caster.Base[progression.HP] < 1 {
+				caster.Base[progression.HP] = 1
+			}
+			caster.HP -= moved
+			if caster.HP < 1 {
+				caster.HP = 1
+			}
+			if caster.HP > caster.Base[progression.HP] {
+				caster.HP = caster.Base[progression.HP]
+			}
+			b.emit(Event{
+				Kind: Split, At: turn.At, Turn: turn.Number,
+				Actor: caster.ID, Target: unit.ID, Skill: known.ID,
+				Amount: moved, Remaining: caster.Base[progression.HP],
+			})
+		}
 		// Minus one rather than nought for a summon that stays, because nought
 		// is the zero value every roster unit already has and a count that read
 		// it as "no turns left" would dismiss the whole board.
@@ -164,6 +197,13 @@ func (b *Battle) summonStats(caster *Unit, declared *skill.Summon) (progression.
 	for _, kind := range progression.Kinds() {
 		out[kind] = from[kind] * int64(share) / int64(scale.Base)
 	}
+	// A summon that is split off its caster takes its health from the caster's
+	// maximum instead of from the spelling, which sized every other stat. Read
+	// off Base rather than off b.Stats so a buff standing on the caster cannot
+	// inflate the copy — what is being divided is the creature, not its mood.
+	if declared.Splits > 0 {
+		out[progression.HP] = splitHealth(caster.Base[progression.HP], declared.Splits)
+	}
 	// A summon with no health could not be enlisted and would be killed by the
 	// first thing that looked at it, so the floor is one rather than nought —
 	// the same floor combat.Rules puts under a damaging hit.
@@ -171,6 +211,15 @@ func (b *Battle) summonStats(caster *Unit, declared *skill.Summon) (progression.
 		out[progression.HP] = 1
 	}
 	return out, nil
+}
+
+// splitHealth is the health one copy takes off a maximum, and it is a function
+// so that the two sites reading it cannot drift: summonStats gives it to the
+// copy and Battle.summon takes it off the caster. A share that came out of one
+// arithmetic and went into another is a body that gained or lost mass on the way
+// across.
+func splitHealth(maximum int64, share int) int64 {
+	return maximum * int64(share) / int64(scale.Base)
 }
 
 // census rebuilds what New hands enlist: how many units each side holds and

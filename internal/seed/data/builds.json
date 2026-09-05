@@ -422,6 +422,96 @@
       "passives": [
         "blood_thirst"
       ]
+    },
+    {
+      "id": "pichu.burn",
+      "character": "pokemon.pichu",
+      "name": "đốt mình",
+      "intent": "Trả bằng máu mình cho những cú nặng hơn cái khung này đáng ra chịu nổi",
+      "skills": [
+        "volt_tackle",
+        "thunderbolt",
+        "nuzzle",
+        "thunder_shock"
+      ],
+      "passives": [
+        "static"
+      ]
+    },
+    {
+      "id": "pichu.lock",
+      "character": "pokemon.pichu",
+      "name": "ghim chân",
+      "intent": "Không cần đánh gục ai, chỉ cần bên kia đứng yên đủ lâu",
+      "skills": [
+        "thunder_wave",
+        "nuzzle",
+        "thunderbolt",
+        "thunder_shock"
+      ],
+      "passives": [
+        "static"
+      ]
+    },
+    {
+      "id": "abra.unbilled",
+      "character": "pokemon.abra",
+      "name": "quỵt giá",
+      "intent": "Cầm hai chiêu đắt nhất sách rồi không trả đồng nào; bỏ tường tâm ra là tự chết trong bốn lượt",
+      "skills": [
+        "mind_burn",
+        "mind_crush",
+        "psycho_cut",
+        "nasty_plot"
+      ],
+      "passives": [
+        "magic_guard"
+      ]
+    },
+    {
+      "id": "abra.shade",
+      "character": "pokemon.abra",
+      "name": "bóng đêm",
+      "intent": "Bộ rẻ tiền: đánh xuyên giáp từ xa và làm bên kia nhìn không ra",
+      "skills": [
+        "shadow_ball",
+        "dark_pulse",
+        "night_shade",
+        "psycho_cut"
+      ],
+      "passives": [
+        "swiftness"
+      ]
+    },
+    {
+      "id": "torchic.rush",
+      "character": "pokemon.torchic",
+      "name": "lên nhịp",
+      "intent": "Sống qua mấy lượt đầu, rồi mỗi lượt sau lại tới sớm hơn lượt trước",
+      "skills": [
+        "blaze_kick",
+        "flare_blitz",
+        "ember",
+        "fire_fang"
+      ],
+      "passives": [
+        "quickening"
+      ]
+    },
+    {
+      "id": "torchic.scald",
+      "character": "pokemon.torchic",
+      "name": "cháy âm ỉ",
+      "intent": "Đốt cho dính rồi thu tiền bỏng, đánh xa hơn và không phải trả bằng máu mình",
+      "skills": [
+        "flamethrower",
+        "inferno",
+        "fire_spin",
+        "ember"
+      ],
+      "passives": [
+        "blaze"
+      ]
     }
   ]
 }

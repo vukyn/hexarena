@@ -279,6 +279,50 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "static",
+      "name": "tê điện",
+      "flavour": "Cả người lúc nào cũng tích sẵn; ai chạm vào thì tay tê đi một lúc",
+      "grants": [],
+      "replies": {
+        "applies": [
+          {
+            "status": "stun",
+            "chance": 60
+          }
+        ]
+      }
+    },
+    {
+      "id": "magic_guard",
+      "name": "tường tâm",
+      "flavour": "Cái giá phải trả đi đâu mất giữa đường, không ai thấy nó tới nơi",
+      "grants": [],
+      "spares": 1000,
+      "resists": [
+        {
+          "status": "poison",
+          "amount": 1000
+        },
+        {
+          "status": "burn",
+          "amount": 1000
+        }
+      ]
+    },
+    {
+      "id": "quickening",
+      "name": "lên đà",
+      "flavour": "Mỗi lượt đứng được là một lượt lấy lại được nhịp, và nhịp thì không tự mất đi",
+      "grants": [],
+      "renews": [
+        {
+          "status": "stoked",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

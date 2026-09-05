@@ -53,18 +53,27 @@ func TestTheCountsAreTheOnesTheDesignRecordSettled(t *testing.T) {
 // command line's refusals under: a refusal a player reads is a contract, and
 // "it does not fit" with no figures is a message nobody can act on.
 //
-// ⚠️ **The singular is the case that ships, and it is the one a plural rule
-// gets wrong.** internal/i18n has already had to fix "1 turns of cooldown left"
-// once; today's shortfall at 5v5 is exactly one character, so "1 characters" is
-// the wording a reader would actually meet. Both counts are asserted, because a
-// test of the plural alone goes green on the bug.
+// ⚠️ **The singular is the case a plural rule gets wrong**, and internal/i18n has
+// already had to fix "1 turns of cooldown left" once. Both counts are asserted,
+// because a test of the plural alone goes green on the bug.
+//
+// ⚠️ **This said "the singular is the case that ships" and it no longer is.**
+// The shortfall at 5v5 was exactly one character while the pool was fifteen; the
+// pool reached **sixteen** on 2026-09-05 (`pokemon.gible`, #306) and now seats a
+// 5v5 exactly, so **no shipped pool produces this refusal at all** and every row
+// below is a hypothetical. That is the reason to keep them rather than to trim
+// them: a refusal nothing currently reaches is a refusal nothing currently
+// measures, so the table is the whole of what holds the wording — and the pool
+// only has to shrink by one, or a character only has to be hidden, for a player
+// to meet it again.
 func TestAShortfallIsNamedInCharacters(t *testing.T) {
 	for _, one := range []struct {
 		poolSize int
 		format   wire.Format
 		want     string
 	}{
-		// The measured case: the shipped pool is fifteen and a 5v5 needs sixteen.
+		// The singular: a pool one short of the sixteen a 5v5 needs. This was the
+		// shipped pool until 2026-09-05 and is now a hypothetical — see above.
 		{15, wire.Format5v5, "a 5v5 draft takes 10 picks and 6 bans out of one shared pool, " +
 			"which is 16 characters, and the pool holds 15: it is short by one character"},
 		{13, wire.Format5v5, "a 5v5 draft takes 10 picks and 6 bans out of one shared pool, " +

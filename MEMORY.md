@@ -40,7 +40,7 @@ that owns the subject wins and the note is the thing to fix.
 - [⚠️ mirror một chiều ≠ phép đo](memory/one-way-mirror-not-a-measurement.md) — bù nhau CHỈ đúng ở 1 unit/phe; phụ thuộc KIT
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
-- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1 xong (pool + Fits); ⚠️ pool KHÔNG cạn được giữa draft; 5v5 thiếu 1; spectator đổi ai thắng
+- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1+2a+2b xong; ⚠️ Turn KHÔNG nới, Done() giờ là CẢ draft; pool KHÔNG cạn được giữa draft; spectator đổi ai thắng
 - [v0.1.0 đã release](memory/hexarena-v0-1-0-released.md) — go install @v0.1.0 khai đúng tag; ⚠️ path không /vN nên CHỈ tag được v0/v1; tag trên proxy BẤT BIẾN
 - [4 đội starter, dùng được ngay](memory/hexarena-starter-squads.md) — ⚠️ Rate() BỎ trận Endless khỏi mẫu số: healer gặp healer hoà mãi mà vẫn khoe 85%
 - [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ danh sách import ≠ danh sách đồng hồ (context.WithTimeout)
@@ -74,6 +74,14 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena shipping a character](memory/hexarena-shipping-a-character.md) — 5 json + cast_test.go design table (hardcoded!); effHP<=11500
 - [pricing a new element pool](memory/hexarena-pricing-a-new-element-pool.md) — đo, đừng đoán; dpt = pw×hits×acc÷(cd+1); ⚠️ cần control cùng wrapper
 - [kit toàn hệ đu biên độ rộng](memory/hexarena-elemental-kits-swing-wider.md) — nhân hệ tính TỪNG chiêu; kit pha neutral né được khắc chế
+- [pool đầy ≠ hệ được chơi](memory/hexarena-a-full-pool-is-not-a-played-element.md) — 10 chiêu electric đều xoay quanh `charge` của Magnemite
+- [dark nằm ngoài bảng khắc](memory/hexarena-dark-is-off-the-chart.md) — không cycle nào; profile phẳng; ⚠️ Gastly/Mewtwo là control TỆ
+- [trait đổi giá có HAI chỗ đọc](memory/hexarena-a-trait-that-changes-a-price-has-two-sites.md) — thiếu ở rating → cầm trait mà không bao giờ cast
+- [clause mới cần MỌI chỗ đánh giá](memory/hexarena-a-new-clause-needs-every-site-that-evaluates-it.md) — gate có 2 chỗ: options + Act
+- [hai cửa sổ không phủ hết list](memory/hexarena-two-windows-do-not-cover-a-growing-list.md) — vỡ 3 lần; duyệt hết con trỏ
+- [mutation bị parser chặn = không chạy](memory/hexarena-a-mutation-the-parser-refuses-runs-nothing.md) — đổi ý nghĩa, đừng xoá field
+- [lấy mẫu qua Chooser](memory/hexarena-sample-through-the-chooser.md) — event.Stacks là phần THÊM, không phải tổng đang giữ
+- [ghim assertion, đừng ghim tiền đề](memory/hexarena-pin-the-assertion-not-the-premise.md) — 1 con số quyết định chỉ ghim ở ĐÚNG 1 test
 - [cast.json phải đúng form tool](memory/hexarena-cast-json-must-be-in-tool-form.md) — Marshal sort theo id; chỉ cast+origins bị ràng
 - [hexarena archetype must be glossed](memory/hexarena-archetype-must-be-glossed.md) — lối chơi NEVER bare id
 - [hexarena descriptions derived](memory/hexarena-descriptions-are-derived.md) — 3 describers; only `flavour` authored; tables exact
@@ -114,6 +122,7 @@ that owns the subject wins and the note is the thing to fix.
 - [kill test ports after smoke](memory/kill-test-ports-after-smoke.md) — go-run child outlives parent → `lsof -ti :PORT|xargs kill -9`
 - [gopls stale diagnostics multirepo](memory/gopls-stale-diagnostics-multirepo.md) — false BrokenImport; trust `go build`/`go vet`
 - [Fixture hides a branch](memory/fixture-hidden-branch.md) — 5× in hexarena; test must fail when its own branch unexercised
+- [⚠️ test tự hoàn thành ko thấy đồng hồ tắt](memory/a-test-that-finishes-itself-cannot-see-a-stopped-clock.md) — allowance.set tắt clock ghế đang hỏi; treo, ship v0.1.0, suite xanh
 - [⚠️ dữ liệu thật có thể thoả sẵn](memory/real-data-can-satisfy-the-property.md) — cast.json vốn sắp theo id → test thứ tự pass cả khi hàm sort
 - [bubbletea v2 silent breaks](memory/bubbletea-v2-silent-breaks.md) — charm.land/…/v2; space="space"; NO_COLOR now yours
 - [Windows sets no $TERM](memory/windows-sets-no-term.md) — `TERM==""` is dumb only off Windows; hand GOOS in as a param

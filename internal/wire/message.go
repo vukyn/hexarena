@@ -225,6 +225,26 @@ type Welcome struct {
 	// the cap (which would make every renderer and --verify learn a room's
 	// policy).
 	TurnCap int `json:"turn_cap"`
+	// Drafts says the two sides ban and pick before they fight, rather than each
+	// bringing a squad it built at home.
+	//
+	// ⚠️ **It is here so a client knows not to bring a squad**, and that changes
+	// what Hello.Squad means in such a room: it becomes **unwanted** rather than
+	// silently ignored, which is what CodeSquadUnwanted is for. A squad quietly
+	// dropped would be a player watching the side they spent an evening building
+	// fail to appear, with nothing anywhere saying why.
+	//
+	// ⚠️ **The ordering is the awkward half, and it is a room's problem rather
+	// than this field's.** A hello is the first thing a client says, so it is
+	// sent *before* this welcome arrives and a client cannot read this and then
+	// decide. So a room that drafts refuses the squad and the client joins again
+	// with none; this flag is what makes the second attempt informed rather than
+	// a guess, and it is what a client reads to know a draft is coming at all.
+	//
+	// It carries no omitempty, like every field above it: a room that does not
+	// draft writes `false` rather than nothing, so the configuration a match runs
+	// under reads whole in a log and in the golden.
+	Drafts bool `json:"drafts"`
 	// Seat is which of the room's two places this client took, for the match.
 	Seat Seat `json:"seat"`
 }
@@ -325,8 +345,10 @@ func (Turn) Kind() Kind { return KindTurn }
 // same arithmetic.
 //
 // So the field is a Closure and the message is not one kind per reason: a
-// second thing a board cannot show is an entry in that enum rather than an
-// eighth message.
+// further thing a board cannot show is an entry in that enum rather than a kind
+// of its own. ClosureStopped and ClosureDraftExpired are what that has cost so
+// far — two constants, two names, no new message — which is the evidence for the
+// shape rather than a claim about it.
 type Closed struct {
 	Reason Closure `json:"reason"`
 }

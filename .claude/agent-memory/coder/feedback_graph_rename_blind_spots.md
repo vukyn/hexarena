@@ -38,6 +38,25 @@ reach for the fallback without burning a round trip discovering it again:
     `search_mode: "none"`, 0 results. So for a PR whose whole subject is a new
     package there is no graph self-review available at all — do the callers/tests
     pass by hand and say in the report that the graph could not see it.
+    Re-confirmed 2026-09-06 for a **new file in an already-tracked package**
+    (`internal/room/draft.go`, the whole subject of a step): full rebuild parsed
+    **405 files before and after**, `detect_changes_tool(base="HEAD")` listed the
+    9 modified files and none of the 3 new ones, and searching
+    `decideFrom`/`draftAwaiting`/`draftTimedOut` answered 0. So the rule is the
+    file's git status and not its package's.
+  - ⚠️ **`callers_of` on a method whose name collides with a stdlib interface
+    method is UNUSABLE, and it answers `status: ok` while being wrong.** Measured
+    on `internal/draft`: `callers_of` for the fully qualified
+    `internal/draft/draft.go::Draft.Done` reported **15 callers** and named
+    `cmd/hexarena-tui/session.go::choose` and a `sender_test.go` among the first
+    five — neither of which imports `internal/draft` at all; they call
+    `context.Context.Done` and `sync.WaitGroup.Done`. `Draft.Picked` likewise
+    named three `cmd/hexforge-tui/model.go` functions. Grep found the real answer:
+    6 call sites, all inside the package. So for `Done`, `Close`, `String`,
+    `Len`, `Error`, `Slots` and friends, **the qualified name does not narrow the
+    query** — go straight to `grep -rn "\.Name()" --include="*.go"` plus a check
+    of who imports the package, and treat a nonzero result count as noise until
+    each file is confirmed to import it.
   - ⚠️ **`test_gaps` and `callers_of` read DIFFERENT edges, so they disagree.**
     Measured in the same run: `detect_changes_tool` listed two new exported
     methods as test gaps while `query_graph_tool(callers_of, …)` returned a

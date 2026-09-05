@@ -861,6 +861,12 @@ const (
 	// a reader meets most often out of the four.
 	PlayBlockedCooldownOne
 	PlayBlockedFuel
+	// A gate that has been spent out rather than one short of fuel, and it is
+	// its own wording because the two say different things to do next: short of
+	// fuel you wait and fill the tank, spent out you are finished with the skill
+	// for the rest of the battle. Reusing the fuel wording would tell a reader
+	// to wait for something that is never coming.
+	PlayBlockedSpent
 	PlayBlockedNoReach
 	PlayWon
 	PlayLost
@@ -931,7 +937,7 @@ const (
 	// wire.CodeCount and wire.ClosureCount to say so.
 	//
 	// ⚠️ **A bare translation of the id would be worthless**, which is the one
-	// rule these thirteen lines are written under: "dữ liệu không khớp" tells a
+	// rule every line here is written under: "dữ liệu không khớp" tells a
 	// player nothing they can do, and the player reading one of these is stuck
 	// at a lobby with no other information in front of them. Each says what
 	// happened *and* what to do about it. The two that are a client bug or a
@@ -953,7 +959,15 @@ const (
 	//
 	// One wording per value and no second family, unlike the status categories:
 	// they have two because two sentences genuinely needed two shapes, and here
-	// there is one consumer and it does not exist yet. → TODO.md § The client.
+	// there is one consumer — the lobby below — and one shape.
+	//
+	// ⚠️ **The ban-and-pick added one of each and every line above is unchanged.**
+	// RefusalNotYourTurn and RefusalIllegalAction are *reused* by the draft rather
+	// than twinned, because a decision out of turn and a decision the prompt did
+	// not offer are the same facts about the same thing and take the same action
+	// from a player; the two wire.Code comments carry that argument. What could
+	// not be reused is the squad refusal, whose whole sentence is advice that
+	// would be wrong here. → RefusalSquadUnwanted.
 	RefusalNone
 	RefusalProtocolMismatch
 	RefusalDataMismatch
@@ -964,9 +978,24 @@ const (
 	RefusalNotYourTurn
 	RefusalIllegalAction
 	RefusalUnknownMessage
+	// RefusalSquadUnwanted is the ban-and-pick's one refusal at the **gate**, and
+	// the reason it is worth a wording of its own rather than reusing the squad
+	// one is that the advice is the opposite: nothing is wrong with the squad, so
+	// a line telling a player to fix it would send them to check levels and forms
+	// that are all fine. It says the room drafts and to come back with no squad.
+	RefusalSquadUnwanted
 	ClosedNone
 	ClosedLeft
 	ClosedStopped
+	// ClosedDraftExpired is a draft that ran out of time.
+	//
+	// ⚠️ **It is spelled Closed* and not Closure*, like its three neighbours, and
+	// that is load-bearing rather than tidy.** TestNoKeyIsOrphaned walks bare
+	// identifier text module-wide, so a key called ClosureDraftExpired would be
+	// counted as used by internal/wire's own constant of that name and could then
+	// lose its last real reader without anything going red. Do not "fix" the
+	// spelling. → the note on that test.
+	ClosedDraftExpired
 
 	// FormChoice is the row the three read-only views draw when the character in
 	// front has more than one grown form at the level being read — a line that

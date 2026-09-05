@@ -3289,6 +3289,146 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "volt_tackle",
+      "name": "lôi kích",
+      "flavour": "Dồn hết những gì đang tích trong người vào một cú lao thẳng, dồn tới mức chính mình cũng bỏng",
+      "element": "electric",
+      "range": 1,
+      "pattern": "single",
+      "power": 2400,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "cost": 120,
+      "restrict": {
+        "species": [
+          "rodent"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "nuzzle",
+      "name": "chạm tê",
+      "flavour": "Áp sát rồi chạm nhẹ một cái, nhẹ tới mức không ai kịp coi đó là đòn",
+      "element": "electric",
+      "range": 1,
+      "pattern": "single",
+      "power": 300,
+      "strikes": 1,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "rodent"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 450,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "mind_burn",
+      "name": "thiêu tâm",
+      "flavour": "Đốt sạch những gì còn lại trong đầu để lấy một đòn, đốt của mình chứ không của ai",
+      "element": "dark",
+      "range": 2,
+      "pattern": "single",
+      "power": 2300,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "cost": 180,
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "mind_crush",
+      "name": "nghiền tâm",
+      "flavour": "Bóp cả một khoảng trước mặt cho hẹp lại, và trả bằng chỗ trống trong đầu mình",
+      "element": "dark",
+      "range": 2,
+      "pattern": "column",
+      "power": 1400,
+      "strikes": 1,
+      "accuracy": 850,
+      "cooldown": 3,
+      "target": "enemy",
+      "cost": 120,
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "blaze_kick",
+      "name": "cước hỏa",
+      "flavour": "Đá một phát bắt lửa ngay giữa không trung, chỗ trúng thì cháy tiếp",
+      "element": "fire",
+      "range": 1,
+      "pattern": "single",
+      "power": 1300,
+      "strikes": 1,
+      "accuracy": 900,
+      "crit": 250,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "burn",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "flare_blitz",
+      "name": "hỏa xung",
+      "flavour": "Bọc cả người trong lửa rồi lao thẳng vào, lửa ấy không phân biệt ai đang bọc nó",
+      "element": "fire",
+      "range": 1,
+      "pattern": "single",
+      "power": 2400,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "cost": 100,
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "burn",
+          "chance": 500,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

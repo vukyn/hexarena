@@ -93,6 +93,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
+	"github.com/vukyn/hexarena/internal/draft"
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
@@ -192,10 +193,28 @@ type Room struct {
 	// skipped turns at all. The same shape as the scan counts in the two AST
 	// walks and as cmd/hexarena-tui's screenCount.
 	skipped int
+
+	// drafting is the ban and pick this room runs before its battle, and nil in
+	// a room that does not draft. → draft.go, which is the whole of the room's
+	// draft half.
+	drafting *draft.Draft
+	// draftCursor is this room's one read position in the draft's record, the
+	// same shape cursor above is for the battle's.
+	draftCursor int
 }
 
 // New sets a room up. It validates the configuration and the data, so a room
 // that cannot run a match fails here rather than when somebody joins it.
+//
+// ⚠️ **A room that drafts builds its draft here, and that is where the pool is
+// checked against the format** — which is the one part of the configuration
+// Config.Validate cannot see, because draft.Fits needs a pool, a pool needs the
+// cast book, and Validate has no Deps. So the whole question "could this room
+// ever finish its draft" is answered by draft.New in one call: the pool seats the
+// format, every character in it has an id, and no id is in it twice. A room whose
+// draft could not finish therefore fails **before a code is handed out** rather
+// than halfway through somebody's ban and pick, which is the arrangement
+// internal/draft's package comment rests on.
 func New(config Config, deps Deps) (*Room, error) {
 	if err := config.Validate(); err != nil {
 		return nil, err
@@ -203,7 +222,34 @@ func New(config Config, deps Deps) (*Room, error) {
 	if deps.Characters == nil {
 		return nil, fmt.Errorf("a room cannot resolve a squad without the cast book")
 	}
-	return &Room{config: config, deps: deps, onTurn: -1}, nil
+	opened := &Room{config: config, deps: deps, onTurn: -1}
+	if config.Drafts {
+		drafting, err := draft.New(draft.Config{
+			Format: config.Format,
+			Pool:   draft.NewPool(deps.Characters.All()),
+			// ⚠️ **The host decides first, always, and this constant is
+			// deliberately NOT on the wire.** A client knows its own seat from
+			// wire.Welcome.Seat and knows a draft is coming from
+			// wire.Welcome.Drafts, so it computes the same answer this line
+			// does — where a `first` field would be a *second statement of a
+			// constant*, and a second statement is the one place two peers can
+			// disagree. → wire.Decide, which carries no seat for the same
+			// reason.
+			//
+			// ⚠️ **It is bo1's rule.** "The previous winner bans first" is a
+			// real question for a bo3 draft, that is deliberately a different
+			// game, and Config.Validate refuses a drafting series for exactly
+			// that reason — so today there is no previous winner for this to
+			// have to be about. draft.Config.First is a parameter rather than a
+			// constant precisely so that item can answer it differently.
+			First: seats[0],
+		})
+		if err != nil {
+			return nil, fmt.Errorf("a room that drafts: %w", err)
+		}
+		opened.drafting = drafting
+	}
+	return opened, nil
 }
 
 // Config is the room's configuration, for a caller that has to hand a client
@@ -218,7 +264,15 @@ func (r *Room) Config() Config { return r.config }
 // because the room walks past those itself, so "a Skipped prompt starts no
 // clock" is a property of this state machine rather than a rule the transport
 // has to remember. It is also false between battles and once the match is over.
+//
+// ⚠️ **In a room that drafts this answers the DRAFT's open decision first**, and
+// the arrange phase — which has two decisions pending against this one seat — is
+// serialised into it rather than widening what a reading can hold.
+// → draftAwaiting, which carries that decision and the two things it costs.
 func (r *Room) Awaiting() (wire.Seat, bool) {
+	if r.draftOpen() {
+		return r.draftAwaiting()
+	}
 	if r.onTurn < 0 || r.prompt == nil {
 		return "", false
 	}
@@ -245,11 +299,18 @@ func (r *Room) Skipped() int { return r.skipped }
 // Deliver hands the room one message from a seated peer and returns everything
 // the room says back.
 //
-// It takes wire.Act and wire.Pass, which are the two messages a client sends
-// once it is in. Anything else — including a wire.Hello, which goes to Join,
-// and any of the five server-bound bodies, which is a peer speaking the wrong
-// direction — is answered with wire.CodeUnknownMessage, because that is what
-// this protocol's ten codes have for a message that does not belong here.
+// It takes wire.Act, wire.Pass and wire.Decide, which are the three messages a
+// client sends once it is in. Anything else — including a wire.Hello, which goes
+// to Join, and any of the five server-bound bodies, which is a peer speaking the
+// wrong direction — is answered with wire.CodeUnknownMessage, because that is
+// what this protocol's ten codes have for a message that does not belong here.
+//
+// ⚠️ **`from` is where the seat comes from and it is the only place any of the
+// three read one.** wire.Act carries no unit, wire.Pass carries nothing at all
+// and wire.Decide carries no seat — all three by the same design — so the seat is
+// a fact about the connection the transport read the message off, and this
+// parameter is its one statement. → decideFrom, where that is load-bearing
+// rather than incidental.
 func (r *Room) Deliver(from wire.Seat, body wire.Body) ([]Outbound, error) {
 	index, seated := indexOf(from)
 	// A peer with no seat is not on turn, which is the closest true thing the
@@ -267,6 +328,10 @@ func (r *Room) Deliver(from wire.Seat, body wire.Body) ([]Outbound, error) {
 		return r.passFrom(index)
 	case wire.Pass:
 		return r.passFrom(index)
+	case *wire.Decide:
+		return r.decideFrom(index, message.DraftDecision)
+	case wire.Decide:
+		return r.decideFrom(index, message.DraftDecision)
 	}
 	return r.refuse(from, wire.CodeUnknownMessage), nil
 }
@@ -342,9 +407,19 @@ func (r *Room) passFrom(index int) ([]Outbound, error) {
 // the answer of a seat the room is not asking. It is also what makes a Skipped
 // prompt untimeoutable: the room never leaves one open, so there is never an
 // allowance to run out on one.
+// ⚠️ **A timeout during the ban and pick does NOT pass anything — it closes the
+// room**, which is the one place the paragraphs above do not hold, and the reason
+// is that there is nothing honest to pass with: a side that never picked has no
+// squad to fight with. → draftTimedOut, and wire.ClosureDraftExpired.
 func (r *Room) TimedOut(seat wire.Seat) ([]Outbound, error) {
 	index, seated := indexOf(seat)
-	if !seated || !r.seated[index].taken || r.onTurn != index || r.prompt == nil {
+	if !seated || !r.seated[index].taken {
+		return r.refuse(seat, wire.CodeNotYourTurn), nil
+	}
+	if r.draftOpen() {
+		return r.draftTimedOut(seat)
+	}
+	if r.onTurn != index || r.prompt == nil {
 		return r.refuse(seat, wire.CodeNotYourTurn), nil
 	}
 	prompt := r.prompt
@@ -376,10 +451,22 @@ func (r *Room) TimedOut(seat wire.Seat) ([]Outbound, error) {
 // and the room goes back to waiting for a second player. A reconnect window
 // therefore sits **in front of** this call and not inside it — → TODO.md, under
 // the seat token.
+//
+// ⚠️ **A draft in progress IS a match in progress here, and that branch had to be
+// added rather than being already right.** A draft runs with no battle open and
+// nothing played, so the pre-match arm below matched it: the seat was freed, the
+// room went back to waiting for a joiner — with the departed side's bans and
+// picks still in the draft, and the peer still there holding an open decision
+// nobody was coming to take. That is exactly the hang abandon's own comment says
+// a wire.Closed exists to prevent. The ending itself is unchanged: the existing
+// ClosureLeft path, VerdictAbandoned, nobody charged with anything.
 func (r *Room) Left(seat wire.Seat) ([]Outbound, error) {
 	index, seated := indexOf(seat)
 	if !seated || !r.seated[index].taken || r.Finished() {
 		return nil, nil
+	}
+	if r.draftOpen() {
+		return r.abandon(seat), nil
 	}
 	if r.fight == nil && len(r.played) == 0 {
 		r.seated[index] = peer{}

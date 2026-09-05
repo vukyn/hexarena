@@ -15,18 +15,18 @@ import (
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
-// # The ten refusals and the three closures, read by a person
+// # Every refusal and every closure, read by a person
 //
 // ⚠️ **They were worded and unread**, which TODO.md records as one step narrower
-// than "shipped dead" rather than closed: internal/i18n has held all thirteen
-// sentences in both languages since #255, and nothing drew any of them. This is
-// the far end of that, and it is the only test in the repository that can see
-// the gap.
+// than "shipped dead" rather than closed: internal/i18n has held a sentence per
+// value in both languages since #255, and nothing drew any of them. This is the
+// far end of that, and it is the only test in the repository that can see the
+// gap.
 //
 // ⚠️ **TestNoKeyIsOrphaned cannot see it and must not be quoted as if it
 // could.** It counts an identifier named anywhere in the module, and
-// internal/i18n/protocol.go's own lookup names all thirteen — so it passed for
-// as long as the words had no reader at all. Nor can internal/i18n's four
+// internal/i18n/protocol.go's own lookup names every one of them — so it passed
+// for as long as the words had no reader at all. Nor can internal/i18n's four
 // protocol tests: they hold the catalog complete, distinct and free of enum
 // spellings, which says nothing about a screen.
 
@@ -37,14 +37,27 @@ import (
 // that is the half that makes this able to fail. A join screen will happily word
 // any code handed to it and so will a live battle, so a table pairing codes with
 // screens could be permuted freely and every drawing assertion would still pass.
-// So both sets are **produced out of a real room.Room**: six refusals a gate can
-// answer a *join* with, and three a room can answer a seated peer with. The two
-// are then held **disjoint and total** against wire.CodeCount, and the walk has a
-// default arm — so a code moved from one set to the other lands in neither and
-// this goes red naming it.
+// So both sets are **produced out of a real room.Room**: seven refusals a gate
+// can answer a *join* with, and three a room can answer a seated peer with. The
+// two are then held **disjoint and total** against wire.CodeCount, and the walk
+// has a default arm — so a code moved from one set to the other lands in neither
+// and this goes red naming it.
+//
+// ⚠️ **The `owed` set is EMPTY now, and it stays here rather than being deleted
+// with its one entry.** wire.CodeSquadUnwanted sat in it while no room drafted:
+// the set named the code and the step that owed it a producer, the arithmetic
+// (`gate + inMatch + owed == CodeCount-1`) held its size, and the loop below
+// refused a stale entry — so the day a room answered the code, that entry had to
+// go or this test went red **from the other side**. A room drafts now
+// (room.Config.Drafts) and theGateAnswers produces the refusal, so the entry is
+// gone and the code is checked like every other one. The mechanism is what is
+// being kept: the next value declared ahead of its producer belongs in here with
+// the step that owes it, and leaving one out of the walk is how a value ships
+// with nothing measuring it.
 //
 // What it sees: a wording nobody draws, a new enum value with nowhere to appear,
-// a code no room produces at all, and a code moved between the two sets.
+// a code no room produces at all, a code moved between the two sets, and an owed
+// code whose debt was paid or acquired without this comment being read.
 // ⚠️ What it cannot see: the two *arms of this test* swapped over — both screens
 // word whatever they are handed, and no assertion here can tell them apart once
 // the sets themselves are right. What stands in for that is that neither screen
@@ -56,9 +69,23 @@ import (
 func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 	gate := theGateAnswers(t)
 	inMatch := theRoomRefusesInAMatch(t)
+	// The codes no room can answer yet, each with the step that owes it one. A
+	// refusal in here is not drawn by anything and this test says so out loud
+	// rather than passing over it.
+	//
+	// ⚠️ Empty, and deliberately still here — → the note above for what its one
+	// entry was and why deleting the map with it would throw away the mechanism.
+	owed := map[wire.Code]string{}
 	if len(gate) == 0 || len(inMatch) == 0 {
 		t.Fatal("a real room produced no refusals, so every code below would be checked " +
 			"on the same screen and this measures nothing")
+	}
+	for code, because := range owed {
+		if gate[code] || inMatch[code] {
+			t.Errorf("a real room now produces the %q refusal, so it is drawn on a screen and "+
+				"its entry in `owed` is a stale note (%s) — delete the entry and let the walk "+
+				"below check it like every other code", code, because)
+		}
 	}
 	// Disjoint and total, which is what makes the default arm below able to fire:
 	// a refusal is answered either at the gate or in a match and never both, so a
@@ -69,9 +96,10 @@ func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 				"neither set says which screen reads it", code)
 		}
 	}
-	if got, want := len(gate)+len(inMatch), wire.CodeCount-1; got != want {
-		t.Errorf("a real room produces %d of the %d refusals; the rest are drawn by "+
-			"nothing and reachable from nothing", got, want)
+	if got, want := len(gate)+len(inMatch)+len(owed), wire.CodeCount-1; got != want {
+		t.Errorf("a real room produces %d of the %d refusals and %d are declared owed a "+
+			"producer; the remaining %d are drawn by nothing and reachable from nothing",
+			len(gate)+len(inMatch), want, len(owed), want-len(gate)-len(inMatch)-len(owed))
 	}
 	for _, lang := range i18n.Langs() {
 		base, _, _ := start(t, lang)
@@ -88,6 +116,13 @@ func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 			drawn := ""
 			where := ""
 			switch {
+			case owed[code] != "":
+				// Declared above, with the step that owes it. The wording is still
+				// held complete and distinct by internal/i18n; what is missing is a
+				// producer, and this is the one place that gap is written down.
+				t.Logf("the %q refusal is worded in %v and drawn by nothing: %s",
+					code, lang, owed[code])
+				continue
 			case gate[code]:
 				where = "the join screen"
 				drawn = drawnBody(aJoinRefusedWith(t, base, code))
@@ -131,8 +166,8 @@ func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 			}
 		}
 	}
-	t.Logf("%d of the %d refusals are answers at the gate; the other %d are only reachable "+
-		"during a match", len(gate), wire.CodeCount-1, len(inMatch))
+	t.Logf("%d of the %d refusals are answers at the gate, %d are only reachable during a "+
+		"match, and %d are owed a producer", len(gate), wire.CodeCount-1, len(inMatch), len(owed))
 }
 
 // theRoomRefusesInAMatch is every wire.Code a **seated** peer can be answered
@@ -295,7 +330,7 @@ func aMatchClosedBy(m model, closure wire.Closure) model {
 //
 // ⚠️ **This is the whole reason the test above can fail.** Both screens will
 // word any code handed to them, so a declared table pairing codes with screens
-// could be permuted freely and nothing would notice. Six real refusals out of a
+// could be permuted freely and nothing would notice. Seven real refusals out of a
 // real room.Room and a real room.Registry is a set nobody wrote down.
 //
 // What it cannot see: a seventh way the gate could refuse that this file does
@@ -372,15 +407,23 @@ func theGateAnswers(t *testing.T) map[wire.Code]bool {
 		t.Fatalf("joining an unknown room reported an error rather than a refusal: %v", err)
 	}
 	answers[refusalIn(t, unknown.Out)] = true
+	// 7. A squad brought to a room that **drafts**, where the two sides ban and
+	//    pick out of a shared pool — so the squad is *unwanted* rather than
+	//    illegal, and the one above is the refusal that says it is illegal. The
+	//    squad here is the same good one, deliberately: this refusal is a fact
+	//    about the room and not about what the player built.
+	drafting := config()
+	drafting.Drafts = true
+	answers[refusedBy(t, drafting, deps, hello())] = true
 
 	delete(answers, wire.CodeNone)
-	if len(answers) != 6 {
+	if len(answers) != 7 {
 		named := make([]string, 0, len(answers))
 		for code := range answers {
 			named = append(named, code.String())
 		}
 		slices.Sort(named)
-		t.Fatalf("six ways of being turned away at a gate produced %d distinct codes (%v), "+
+		t.Fatalf("seven ways of being turned away at a gate produced %d distinct codes (%v), "+
 			"so two of the cases above are answering with the same refusal and one code is "+
 			"being checked on the wrong screen", len(answers), named)
 	}

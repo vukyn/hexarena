@@ -40,6 +40,32 @@ per-file lines are already on stdout. Running it a second time worked. **Check
 work in sibling worktrees of the same repository; a patch file in the scratchpad
 is nobody else's business.
 
+⚠️ **Patch only the files the incoming commits ALSO touch, not everything.**
+Step 2's `git checkout -- .` throws away every modified file and makes the patch
+load-bearing for all of them. `git diff --stat <base>..origin/main` names the
+real overlap — on step 2b it was 4 files of the 9 I had modified, so I diffed
+and reverted only those four and left the other five dirty in place.
+`git merge --ff-only` does not object to a dirty file the merge does not touch,
+so the blast radius of a bad patch shrinks to the files that genuinely conflict.
+
+⚠️ **"Merge origin/main" and "do not commit" only conflict if the branch has
+commits of its own — check before believing they do.**
+`git rev-list --count origin/main..HEAD` answering **0** means the merge is a
+pure fast-forward: `git merge --ff-only` moves the branch pointer and creates no
+commit, so the instruction is satisfiable exactly as given. Measured on step 2b,
+where a coordinator asked for a merge on a branch that had never been committed
+to.
+
+⚠️ **Textually clean is not merged.** All four overlapping files applied
+"cleanly" and there were **zero** conflict markers — their edits and mine were
+in different regions — and yet the merge was not done: the incoming PR had
+changed the shipped pool from 16 to 17, so *prose figures* in `TODO.md` and in a
+memory note now contradicted each other with no marker anywhere, and one logged
+battle figure had genuinely moved (139 → 140 turns). After a clean apply, grep
+the merged files for every **number** the incoming commits could have moved and
+re-derive it. This is the same lesson as the note's opening line about goldens,
+one layer up: the conflict detector reads lines, not claims.
+
 ⚠️ **It also moves DURING a task, without anybody telling you.** Measured
 2026-09-03: the worktree was fast-forwarded by a background `pull` twice inside
 one session (`c98d218` → `eeee515`, the cast-file reformat), and the symptom was

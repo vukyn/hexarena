@@ -922,6 +922,183 @@
           "at_level": 52
         }
       ]
+    },
+    {
+      "id": "livewire",
+      "role": "the one whose own body is the battery: the thinnest frame in the cast behind the best odds of not being hit at all, blows that are paid for in its own health, and a charge sitting close enough to the skin that touching it costs a turn",
+      "column": 1,
+      "stats": {
+        "hp": {
+          "base": 965,
+          "max": 2900
+        },
+        "attack": {
+          "base": 200,
+          "max": 600
+        },
+        "defense": {
+          "base": 93,
+          "max": 280
+        },
+        "speed": {
+          "base": 53,
+          "max": 160
+        },
+        "accuracy": {
+          "base": 56,
+          "max": 170
+        },
+        "dodge": {
+          "base": 30,
+          "max": 90
+        }
+      },
+      "skills": [
+        "thunder_shock",
+        "charge_beam",
+        "spark",
+        "electro_ball",
+        "thunderbolt",
+        "thunder_wave",
+        "discharge",
+        "overload",
+        "magnetise",
+        "zap_cannon",
+        "taunt",
+        "body_slam"
+      ],
+      "passives": [
+        {
+          "id": "static",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        }
+      ]
+    },
+    {
+      "id": "spendthrift",
+      "role": "the one that throws blows nobody else could afford: the most expensive skills in the book on the thinnest frame that could hold them, and a trait that quietly refuses the bill — take the trait away and it kills itself in four turns",
+      "column": 2,
+      "stats": {
+        "hp": {
+          "base": 930,
+          "max": 2800
+        },
+        "attack": {
+          "base": 203,
+          "max": 610
+        },
+        "defense": {
+          "base": 86,
+          "max": 260
+        },
+        "speed": {
+          "base": 52,
+          "max": 158
+        },
+        "accuracy": {
+          "base": 63,
+          "max": 190
+        },
+        "dodge": {
+          "base": 24,
+          "max": 74
+        }
+      },
+      "skills": [
+        "psycho_cut",
+        "shadow_ball",
+        "dark_pulse",
+        "night_shade",
+        "nasty_plot",
+        "mind_burn",
+        "mind_crush",
+        "shadow_punch",
+        "spite",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "magic_guard",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        }
+      ]
+    },
+    {
+      "id": "stoker",
+      "role": "the one that has not arrived yet: it opens slower than anything else in its row and takes a little of the gap back every turn it survives, until it is acting twice for everyone else's once — so the way to beat it is to not let it have the turns",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1000,
+          "max": 3000
+        },
+        "attack": {
+          "base": 233,
+          "max": 700
+        },
+        "defense": {
+          "base": 113,
+          "max": 340
+        },
+        "speed": {
+          "base": 40,
+          "max": 120
+        },
+        "accuracy": {
+          "base": 55,
+          "max": 165
+        },
+        "dodge": {
+          "base": 20,
+          "max": 62
+        }
+      },
+      "skills": [
+        "ember",
+        "blaze_kick",
+        "fire_fang",
+        "flamethrower",
+        "flare_blitz",
+        "inferno",
+        "heat_wave",
+        "fire_spin",
+        "body_slam",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "quickening",
+          "at_level": 16
+        },
+        {
+          "id": "blaze",
+          "at_level": 24
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 32
+        },
+        {
+          "id": "berserk",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }
