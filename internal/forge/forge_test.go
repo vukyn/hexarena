@@ -6,6 +6,7 @@ import (
 	"errors"
 	"image"
 	"image/color"
+	"image/draw"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -2605,6 +2606,21 @@ func TestArtImageDrawsARaster(t *testing.T) {
 // the source's proportions and separates the two cases exactly — a frame's own
 // corners are painted, while a creature's silhouette does not reach all four
 // corners of its tightest rectangle.
+//
+// ⚠️ **That last sentence says ALL FOUR and the code said ANY, and the gap was a
+// false positive on correct art.** `assets/pichu.svg` was refused on 2026-09-05
+// for one corner at alpha 16: the ear is a wedge whose tip is simultaneously the
+// leftmost and the topmost ink in the picture, so the silhouette genuinely
+// touches the top-left corner of its own tightest rectangle — a feathered edge,
+// not a backdrop. The other three corners were alpha 0. A frame paints four; a
+// creature may paint one, and occasionally two. The check now counts them, which
+// is what the sentence above claimed all along.
+//
+// It is not weaker for it. The defect it was written against inked the whole
+// canvas, so the inked rectangle *was* the canvas and all four corners were
+// solid. TestAFramedPictureIsStillRefused holds that, on an image built here
+// rather than on an asset that no longer ships — a positive case that depends on
+// nobody having deleted the evidence.
 func TestTheShippedArtIsCutOutRatherThanFramed(t *testing.T) {
 	lib, err := Load(shippedDataDir)
 	if err != nil {
@@ -2629,22 +2645,100 @@ func TestTheShippedArtIsCutOutRatherThanFramed(t *testing.T) {
 				continue
 			}
 			seen++
-			for _, corner := range []image.Point{
-				{X: inked.Min.X, Y: inked.Min.Y},
-				{X: inked.Max.X - 1, Y: inked.Min.Y},
-				{X: inked.Min.X, Y: inked.Max.Y - 1},
-				{X: inked.Max.X - 1, Y: inked.Max.Y - 1},
-			} {
-				if alpha := drawn.RGBAAt(corner.X, corner.Y).A; alpha > 8 {
-					t.Errorf("%s has paint in the corner of what it drew, at %v (alpha %d): it carries a background rather than being cut out",
-						art.Image, corner, alpha)
-				}
+			painted := paintedCorners(drawn, inked)
+			if len(painted) == 4 {
+				t.Errorf("%s paints every corner of what it drew (%v): it carries a background "+
+					"rather than being cut out", art.Image, painted)
 			}
 		}
 	}
 	if seen == 0 {
 		t.Error("no picture was measured, so this asserts nothing")
 	}
+}
+
+// TestAFramedPictureIsStillRefused is the positive case the test above cannot
+// hold on its own once the framed asset stopped shipping.
+//
+// ⚠️ **Without it, relaxing "any corner" to "all four" is a change nothing
+// measures.** The refusal would still be *written*, and a later edit that broke
+// it — a corner index off by one, a threshold raised — would leave every shipped
+// picture green because every shipped picture is a cut-out. The image is built
+// here for the same reason a fixture cast exists: evidence that cannot be deleted
+// by shipping different data.
+func TestAFramedPictureIsStillRefused(t *testing.T) {
+	const side = 64
+	framed := image.NewRGBA(image.Rect(0, 0, side, side))
+	// A backdrop across the whole canvas, which is what the defect looked like:
+	// the tightest inked rectangle is then the canvas itself.
+	draw.Draw(framed, framed.Bounds(), &image.Uniform{color.RGBA{R: 40, G: 40, B: 60, A: 255}},
+		image.Point{}, draw.Src)
+
+	inked, any := inkBounds(framed)
+	if !any {
+		t.Fatal("the framed fixture drew nothing, so it cannot stand in for the defect")
+	}
+	if inked != framed.Bounds() {
+		t.Fatalf("a backdrop across the canvas should ink all of it; the inked box is %v of %v",
+			inked, framed.Bounds())
+	}
+	if painted := paintedCorners(framed, inked); len(painted) != 4 {
+		t.Errorf("a full backdrop paints %d corners of its inked box, want all four: the rule "+
+			"TestTheShippedArtIsCutOutRatherThanFramed applies would let this through", len(painted))
+	}
+
+	// The other half of the claim, and the one the false positive turned on: a
+	// silhouette touching ONE corner is not a frame.
+	//
+	// The shape is pichu's, reduced to what matters: a wedge whose tip is both the
+	// leftmost and the topmost ink, plus a body reaching the far edges so that the
+	// inked rectangle really is the whole canvas — a wedge alone would sit in a
+	// small box of its own and prove nothing about corners.
+	//
+	// ⚠️ The obvious fixture is wrong and was written first: filling `x+y < side`
+	// makes a triangle whose top row and left column run the full way, so it paints
+	// three corners, not one.
+	yellow := color.RGBA{R: 200, G: 200, B: 40, A: 255}
+	wedge := image.NewRGBA(image.Rect(0, 0, side, side))
+	for y := range 8 {
+		for x := range 8 - y {
+			wedge.SetRGBA(x, y, yellow)
+		}
+	}
+	// Reaches the right edge without touching a corner, then the bottom edge.
+	draw.Draw(wedge, image.Rect(40, 20, side, 40), &image.Uniform{yellow}, image.Point{}, draw.Src)
+	draw.Draw(wedge, image.Rect(20, 40, 40, side), &image.Uniform{yellow}, image.Point{}, draw.Src)
+
+	inked, any = inkBounds(wedge)
+	if !any {
+		t.Fatal("the wedge fixture drew nothing")
+	}
+	if inked != wedge.Bounds() {
+		t.Fatalf("the wedge fixture should ink out to every edge, or its corners are not the "+
+			"canvas corners; the inked box is %v of %v", inked, wedge.Bounds())
+	}
+	if painted := paintedCorners(wedge, inked); len(painted) != 1 {
+		t.Errorf("a wedge anchored at one corner paints %v of its inked box, want exactly the "+
+			"one: this is the shape that was refused as a background", painted)
+	}
+}
+
+// paintedCorners names the corners of an inked rectangle that carry paint, and it
+// is a count rather than a yes/no because one corner and four corners mean
+// different things — see TestTheShippedArtIsCutOutRatherThanFramed.
+func paintedCorners(drawn *image.RGBA, inked image.Rectangle) []image.Point {
+	painted := make([]image.Point, 0, 4)
+	for _, corner := range []image.Point{
+		{X: inked.Min.X, Y: inked.Min.Y},
+		{X: inked.Max.X - 1, Y: inked.Min.Y},
+		{X: inked.Min.X, Y: inked.Max.Y - 1},
+		{X: inked.Max.X - 1, Y: inked.Max.Y - 1},
+	} {
+		if drawn.RGBAAt(corner.X, corner.Y).A > 8 {
+			painted = append(painted, corner)
+		}
+	}
+	return painted
 }
 
 // inkBounds is the tightest rectangle holding every pixel with paint in it.

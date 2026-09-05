@@ -422,6 +422,36 @@
       "passives": [
         "blood_thirst"
       ]
+    },
+    {
+      "id": "pichu.burn",
+      "character": "pokemon.pichu",
+      "name": "đốt mình",
+      "intent": "Trả bằng máu mình cho những cú nặng hơn cái khung này đáng ra chịu nổi",
+      "skills": [
+        "volt_tackle",
+        "thunderbolt",
+        "nuzzle",
+        "thunder_shock"
+      ],
+      "passives": [
+        "static"
+      ]
+    },
+    {
+      "id": "pichu.lock",
+      "character": "pokemon.pichu",
+      "name": "ghim chân",
+      "intent": "Không cần đánh gục ai, chỉ cần bên kia đứng yên đủ lâu",
+      "skills": [
+        "thunder_wave",
+        "nuzzle",
+        "thunderbolt",
+        "thunder_shock"
+      ],
+      "passives": [
+        "static"
+      ]
     }
   ]
 }

@@ -279,6 +279,20 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "static",
+      "name": "tê điện",
+      "flavour": "Cả người lúc nào cũng tích sẵn; ai chạm vào thì tay tê đi một lúc",
+      "grants": [],
+      "replies": {
+        "applies": [
+          {
+            "status": "stun",
+            "chance": 60
+          }
+        ]
+      }
     }
   ]
 }

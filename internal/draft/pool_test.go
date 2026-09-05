@@ -30,12 +30,12 @@ func shippedCast(t *testing.T) []cast.Character {
 //
 // ⚠️ **The figures are derived and logged, not asserted as literals.** The pool
 // moves every time a character is added or hidden — it has been twelve, then
-// fourteen, then fifteen, then sixteen inside the life of TODO.md's own
-// arithmetic block — so an assertion of "sixteen" would be a line that reddens on
+// fourteen, then fifteen, then sixteen, then seventeen inside the life of TODO.md's own
+// arithmetic block — so an assertion of "seventeen" would be a line that reddens on
 // every content change and teaches its reader to edit the number. What is
 // asserted is the *relation*: the pool is exactly the not-hidden characters, and
-// nothing else. TestFiveASideFitsTheShippedCastExactly is where a moved figure is
-// allowed to redden, because there the number changes a design decision.
+// nothing else. TestFiveASideFitsTheShippedCastWithRoomToChoose is where a moved
+// figure is allowed to redden, because there the number changes a design decision.
 func TestThePoolIsTheCastMinusTheHeldBack(t *testing.T) {
 	all := shippedCast(t)
 	pool := draft.NewPool(all)
@@ -72,26 +72,29 @@ func TestThePoolIsTheCastMinusTheHeldBack(t *testing.T) {
 		len(all), held, pool.Len())
 }
 
-// TestFiveASideFitsTheShippedCastExactly is the content prerequisite held
-// mechanically, and it is the one place a moved cast figure is *meant* to
+// TestFiveASideFitsTheShippedCastWithRoomToChoose is the content prerequisite
+// held mechanically, and it is the one place a moved cast figure is *meant* to
 // redden.
 //
-// ⚠️ **This test used to assert the opposite** — it was
-// TestFiveASideDoesNotFitTheShippedCast, and its own instruction for the day it
-// reddened was to re-run the measurement, write the new figures into TODO.md
-// § "Ban and pick", and decide whether the hold-back comes off rather than relax
-// the test. That day was 2026-09-05: `pokemon.gible` took the pool to sixteen,
-// which is exactly `2*picks + 2*bans` at 5v5, so `draft.Fits` stopped refusing.
-// The decision taken there: the **draft** no longer holds 5v5 back, and the
-// balance read still does, so `hexarena-host` keeps refusing `-format 5` for its
-// other reason.
+// ⚠️ **This test has now said three different things, and each change was a
+// decision rather than a relaxation.** It began as
+// TestFiveASideDoesNotFitTheShippedCast, asserting that the pool was too small to
+// draft a 5v5 at all. `pokemon.gible` took the pool to sixteen — exactly
+// `2*picks + 2*bans` — so it became TestFiveASideFitsTheShippedCastExactly and
+// pinned slack at nought. `pokemon.pichu` took it to seventeen the same day.
 //
-// ⚠️ **Exactly is not comfortably, and the test says which.** Slack is nought, so
-// with every ban spent the final picker of a 5v5 sees exactly one candidate — a
-// pick that is not a decision. That is why the assertion below pins the slack
-// rather than only the fit: a pool that grew would move this figure and is worth
-// noticing, and a pool that shrank would take 5v5 away again.
-func TestFiveASideFitsTheShippedCastExactly(t *testing.T) {
+// **What the third change settles:** nought slack was a knife-edge worth pinning
+// exactly, because at nought the final picker of a 5v5 sees one candidate and a
+// pick with one candidate is not a decision. At one and above it is, and every
+// further character only widens it. So the figure worth holding stopped being
+// "exactly this many" and became "at least enough to choose from" — pinning the
+// exact slack from here would redden on every character shipped while nothing it
+// guards had changed.
+//
+// A failure is still not a bug in this package: it means the draftable pool
+// shrank under a format the game offers, which is a decision to take in TODO.md
+// § "Ban and pick" and at hexarena-host's format flag.
+func TestFiveASideFitsTheShippedCastWithRoomToChoose(t *testing.T) {
 	pool := draft.NewPool(shippedCast(t))
 
 	if err := draft.Fits(pool.Len(), wire.Format3v3); err != nil {
@@ -102,14 +105,13 @@ func TestFiveASideFitsTheShippedCastExactly(t *testing.T) {
 			"TODO.md § \"Ban and pick\" and at hexarena-host's format flag, not a test to relax",
 			pool.Len(), err)
 	}
-	// Named apart from the fit above, which would also catch a pool that grew but
-	// would report it as nothing at all: growing is the case where 5v5 stops being
-	// a draft whose last pick is forced, and that is a decision, not an accident.
-	if slack := draft.Slack(pool.Len(), wire.Format5v5); slack != 0 {
-		t.Errorf("a pool of %d seats a 5v5 with %d to spare, and it seated it with nought to "+
-			"spare when that was measured. If the cast grew, say so in TODO.md § \"Ban and pick\" — "+
-			"the last pick of a 5v5 is a real decision from one to spare onward",
-			pool.Len(), slack)
+	// Named apart from the fit above, which would pass at nought slack and report
+	// nothing: a 5v5 that fits exactly is a draft whose last pick is forced, and
+	// going back to that is a change worth being told about.
+	if slack := draft.Slack(pool.Len(), wire.Format5v5); slack < 1 {
+		t.Errorf("a pool of %d seats a 5v5 with %d to spare, so its last pick chooses from %d. "+
+			"A pick with one candidate is not a decision — say so in TODO.md § \"Ban and pick\"",
+			pool.Len(), slack, slack+1)
 	}
 	t.Logf("pool %d: 3v3 fits with %d to spare, 5v5 with %d",
 		pool.Len(), draft.Slack(pool.Len(), wire.Format3v3), draft.Slack(pool.Len(), wire.Format5v5))

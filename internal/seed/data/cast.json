@@ -2436,6 +2436,191 @@
       ]
     },
     {
+      "id": "pokemon.pichu",
+      "name": "Pichu",
+      "origin": "pokemon",
+      "archetype": "livewire",
+      "image": "assets/pichu.svg",
+      "element": "electric",
+      "bio": "Chưa giữ nổi thứ mình mang: hễ giật mình, hễ mừng quá, là cả người phóng ra một cái, và cái ấy làm chính nó đau trước khi làm ai đau. Người nuôi nó học cách đừng vỗ vai từ phía sau.",
+      "species": [
+        "rodent"
+      ],
+      "stages": [
+        {
+          "name": "Pichu",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 580,
+              "max": 1740
+            },
+            "attack": {
+              "base": 120,
+              "max": 360
+            },
+            "defense": {
+              "base": 56,
+              "max": 168
+            },
+            "speed": {
+              "base": 32,
+              "max": 96
+            },
+            "accuracy": {
+              "base": 34,
+              "max": 102
+            },
+            "dodge": {
+              "base": 18,
+              "max": 54
+            }
+          }
+        },
+        {
+          "name": "Pikachu",
+          "min_level": 16,
+          "image": "assets/pikachu.svg",
+          "stats": {
+            "hp": {
+              "base": 772,
+              "max": 2320
+            },
+            "attack": {
+              "base": 160,
+              "max": 480
+            },
+            "defense": {
+              "base": 74,
+              "max": 224
+            },
+            "speed": {
+              "base": 42,
+              "max": 128
+            },
+            "accuracy": {
+              "base": 45,
+              "max": 136
+            },
+            "dodge": {
+              "base": 24,
+              "max": 72
+            }
+          }
+        },
+        {
+          "name": "Raichu",
+          "min_level": 36,
+          "image": "assets/raichu.svg",
+          "stats": {
+            "hp": {
+              "base": 965,
+              "max": 2900
+            },
+            "attack": {
+              "base": 200,
+              "max": 600
+            },
+            "defense": {
+              "base": 93,
+              "max": 280
+            },
+            "speed": {
+              "base": 53,
+              "max": 160
+            },
+            "accuracy": {
+              "base": 56,
+              "max": 170
+            },
+            "dodge": {
+              "base": 30,
+              "max": 90
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "thunder_shock"
+        },
+        {
+          "id": "nuzzle",
+          "at_level": 8
+        },
+        {
+          "id": "charge_beam",
+          "at_level": 12
+        },
+        {
+          "id": "spark",
+          "at_level": 16
+        },
+        {
+          "id": "electro_ball",
+          "at_level": 20
+        },
+        {
+          "id": "thunder_wave",
+          "at_level": 24
+        },
+        {
+          "id": "taunt",
+          "at_level": 28
+        },
+        {
+          "id": "discharge",
+          "at_level": 32
+        },
+        {
+          "id": "thunderbolt",
+          "at_level": 36
+        },
+        {
+          "id": "volt_tackle",
+          "at_level": 40
+        },
+        {
+          "id": "overload",
+          "at_level": 44
+        },
+        {
+          "id": "magnetise",
+          "at_level": 46
+        },
+        {
+          "id": "body_slam",
+          "at_level": 48
+        },
+        {
+          "id": "zap_cannon",
+          "at_level": 52
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 56
+        }
+      ],
+      "passives": [
+        {
+          "id": "static",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 48
+        }
+      ]
+    },
+    {
       "id": "pokemon.poliwag",
       "name": "Poliwag",
       "origin": "pokemon",

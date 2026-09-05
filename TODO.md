@@ -1178,12 +1178,13 @@ is only so the shape is readable.
             read *"the cast is too small for a 5v5 draft, measured: this is a
             content prerequisite and no amount of code fixes it"* until the pool
             reached sixteen; the arithmetic block below is where that closed and
-            it carries the figures. **Seventeen characters ship** (this said
-            twelve, then fifteen, then sixteen), sixteen are draftable, and
-            **twelve** of those have an authored build (`builds.json`) — the four
+            it carries the figures. **Eighteen characters ship** (this said
+            twelve, then fifteen, sixteen, seventeen), seventeen are draftable, and
+            **thirteen** of those have an authored build (`builds.json`) — the four
             without one are Happiny, Lapras, Oddish and Riolu. Ten picks leaves
-            **two** bans on the built cast at 5v5; 3v3 is comfortable, six picks
-            leaving six bans on the built cast and ten against the full sixteen.
+            **three** bans on the built cast at 5v5; 3v3 is comfortable, six picks
+            leaving seven bans on the built cast and eleven against the full
+            seventeen.
             ⚠️ **Build coverage does not bind the draft, and this paragraph said
             it did** (*"build coverage rather than cast size is still what
             binds"*, and *"either 5v5 drafting waits for more builds, or the draft
@@ -1358,17 +1359,18 @@ is only so the shape is readable.
             ⚠️ **The arithmetic moves every time a character ships or is hidden,
             so it is derived rather than remembered**:
             `jq '[.characters[]|select(.hidden|not)]|length'
-            internal/seed/data/cast.json` → 16, and `[.characters[]]|length`
-            → 17. It said "eleven, not twelve" and "needs five more" until
+            internal/seed/data/cast.json` → 17, and `[.characters[]]|length`
+            → 18. It said "eleven, not twelve" and "needs five more" until
             2026-09-04, and "fourteen" and "needs two more" until 2026-09-05.
-            **The gap closed on 2026-09-05**: `pokemon.dratini` took it to one
-            short in #301 and `pokemon.gible` took it to nought in #306, so the
-            pool seats a 5v5 draft exactly — see the ⚠️ below on what that does
-            and does not settle. § *Sixteen traced Pokemon* holds the art still
-            waiting.
+            **The gap closed on 2026-09-05 and was then cleared**: `pokemon.dratini`
+            took it to one short in #301, `pokemon.gible` to nought in #306, and
+            `pokemon.pichu` past it — the pool is seventeen against the sixteen a
+            5v5 needs, so slack is **one**. See the ⚠️ below for why nought and one
+            are different answers rather than the same one twice. § *Thirteen
+            traced Pokemon* holds the art still waiting.
             ⚠️ For the other reading of the same sentence, bans as a **total**
-            across both sides rather than each: 3v3 becomes 8 of 16 and the last
-            pick sees nine, and 5v5 becomes 13 of 16 — which **fits, with three to
+            across both sides rather than each: 3v3 becomes 8 of 17 and the last
+            pick sees ten, and 5v5 becomes 13 of 17 — which **fits, with four to
             spare**. So the reading has stopped changing only the target and now
             changes the **conclusion**, which it did not while the pool was eleven
             or fourteen. That is a second reason (b) says *a
@@ -1408,15 +1410,26 @@ is only so the shape is readable.
             test to relax. (It has since been renamed for the answer it now
             carries — see the ⚠️ below.)
             ⚠️ **That day was 2026-09-05 and the decision is taken: the draft no
-            longer holds 5v5 back, and the balance read still does.** At sixteen
-            the pool seats a 5v5 exactly — `draft.Slack` is **nought** — so the
-            arithmetic reason below is satisfied and the test now says so by its
-            new name, `TestFiveASideFitsTheShippedCastExactly`, which reddens if
-            the pool ever shrinks under it. Nought slack has a consequence the
-            note below already states: **the last pick of a 5v5 is not a decision**
-            — with every ban spent the final picker sees exactly one candidate. So
-            a seventeenth draftable character is worth having even though nothing
-            now refuses the format for want of one.
+            longer holds 5v5 back, and the balance read still does.**
+            `pokemon.gible` took the pool to sixteen, which seats a 5v5 *exactly*
+            — `draft.Slack` nought — and `pokemon.pichu` took it to **seventeen**
+            the same day, so slack is **one**. Both figures mattered and they
+            mattered differently: at nought the arithmetic reason below was
+            satisfied while **the last pick of a 5v5 was still not a decision**,
+            the final picker seeing exactly one candidate; at one it is a choice,
+            and every further character only widens it.
+            The test carrying this is
+            `TestFiveASideFitsTheShippedCastWithRoomToChoose` (named
+            `TestFiveASideDoesNotFitTheShippedCast`, then
+            `…FitsTheShippedCastExactly`, on the way here). It now holds *at least*
+            one to spare rather than an exact figure: nought was a knife-edge worth
+            pinning exactly, but pinning the figure from here on would redden every
+            time a character shipped while nothing it guards had moved. The
+            behaviour half — `slack + 1` candidates at the last pick — is
+            `TestTheLastPickOfAFiveASideChoosesFromSlackPlusOne`, whose assertion
+            was general from the start and whose *premise* was the part pinned to
+            nought; that premise is what fired when Pichu shipped, and it is now
+            written as the claim it was always making.
             ⚠️ **The last pick is not a decision whenever slack is nought**, and
             slack is `pool - 2*picks - 2*bans` — both sides, since both spend out
             of one pool; `draft.Slack` is that expression and nothing else, and
@@ -1486,23 +1499,28 @@ is only so the shape is readable.
             asserts both halves, because a test for the refusal alone would go
             green the day somebody deleted the constant.
             The second reason **was** the draft: at three bans a side a 5v5 needs
-            **sixteen** in the pool, and there are now **sixteen** (this said
-            eleven, then fifteen, both on 2026-09-05) since `pokemon.gible`
-            shipped, so a 5v5 ban-and-pick can be seated. Lifting the hold-back
-            therefore wants one thing rather than two: **the numbers read on this
-            board**. ⚠️ It fits *exactly*, so the last pick of a 5v5 is not a
-            decision until a seventeenth draftable character ships.
+            **sixteen** in the pool, and there are now **seventeen** (this said
+            eleven, then fifteen, then sixteen, all on 2026-09-05) since
+            `pokemon.gible` and `pokemon.pichu` shipped, so a 5v5 ban-and-pick can
+            be seated with one to spare and its last pick is a real choice. Lifting
+            the hold-back therefore wants one thing rather than two: **the numbers
+            read on this board**.
 
 - [ ] **Graphical client with ebiten.** A renderer over `[]Event`, nothing more.
       It must not read `*Battle`, and it must not need the engine to know how long
       an animation takes. Asset pipeline is undecided: SVG has to be baked to PNG
       at build time or rasterised at load, because ebiten draws neither.
-- [ ] **Grow the cast.** **Seventeen** ship across two origins (sixteen Pokemon,
-      one Naruto) over **forty-five** authored stages, and **every one of the
-      eleven elements is carried**: water ×3 (Lapras, Poliwag, Squirtle), grass ×2
-      (Bulbasaur, Oddish), ground ×2 (Gible, Machop), metal ×2 (Magnemite, Riolu),
-      dark ×2 (Gastly, Mewtwo), neutral ×2 (Happiny, Mew), wind ×2 (Dratini,
-      Naruto), and one each of fire, ice, electric and light. Two duals: Magnemite (electric/metal) and
+- [ ] **Grow the cast.** **Eighteen** ship across two origins (seventeen Pokemon,
+      one Naruto) over **forty-eight** authored stages, and **every one of the
+      eleven elements is carried**: water ×3 (Lapras, Poliwag, Squirtle), and ×2
+      each of grass (Bulbasaur, Oddish), ground (Gible, Machop), metal (Magnemite,
+      Riolu), dark (Gastly, Mewtwo), neutral (Happiny, Mew), wind (Dratini,
+      Naruto) and electric (Magnemite, Pichu), with one each of fire, ice and
+      light. ⚠️ **Magnemite is counted twice on purpose** — it is electric/metal,
+      and `pokemon.pichu` is the first character to carry electric **on its own**.
+      A pool being full is not the same as an element being played: electric
+      shipped ten skills and one carrier, and every one of those ten was built
+      around that carrier's `charge` mechanic. Two duals: Magnemite (electric/metal) and
       Lapras (water/ice). ⚠️ **Wind was carried only by the hidden Naruto until
       Dratini**, so both of the book's wind skills were `restrict.origins:
       [naruto]` and no draftable unit could field one: an element being "carried"
@@ -1525,9 +1543,9 @@ is only so the shape is readable.
       by hand.
       ⚠️ **No element is left to claim, so "one per element" is finished as a
       guide.** What a new character is bought for now is a **way of playing**, and
-      § *Sixteen traced Pokemon* below is the art waiting for one.
+      § *Thirteen traced Pokemon* below is the art waiting for one.
       ⚠️ **On the archetype, which is the closest thing to a way of playing this
-      data has a field for.** Seventeen characters against seventeen archetypes, one
+      data has a field for.** Eighteen characters against eighteen archetypes, one
       each — but that is where the counting has landed, **not a rule, and nothing
       enforces it**: `cast.ParseArchetypes` refuses an archetype *declared* twice
       and says nothing about two characters *tuned from* one, and no test in
@@ -1624,7 +1642,7 @@ is only so the shape is readable.
       one, and the pair reads the worse half. Whether a dual should lose a
       favourable matchup whole is a decision for whoever authors next — it is
       written down rather than tuned away.
-- [ ] **Sixteen traced Pokemon are waiting for a character — six complete
+- [ ] **Thirteen traced Pokemon are waiting for a character — five complete
       lines.** The art lands first because `cast.ParseBook` refuses a character
       that declares no image, so the order is forced: trace, then author.
       ⚠️ **This entry said "thirty-one" and was stale in BOTH directions**, which
@@ -1639,19 +1657,29 @@ is only so the shape is readable.
             <(grep -o '"assets/[^"]*\.svg"' internal/seed/data/cast.json \
                 | sed 's|"assets/||; s|\.svg"||' | sort -u)
 
-      Sixteen files, six lines, **no orphan form** — every line below is
+      Thirteen files, five lines, **no orphan form** — every line below is
       complete, and nothing `cast.json` names is missing from `assets/`.
       By line, as they would be authored:
-      **pichu → pikachu → raichu** · **igglybuff → jigglypuff → wigglytuff** ·
-      **mareep → flaaffy → ampharos** · **abra → kadabra → alakazam** ·
+      **igglybuff → jigglypuff → wigglytuff** · **mareep → flaaffy → ampharos** ·
+      **abra → kadabra → alakazam** ·
       **magikarp → gyarados** · **onix → steelix**.
       ⚠️ **Nothing references any of these**, which is why they moved no golden
       and why `TestTheShippedArtIsCutOutRatherThanFramed` does **not** cover them —
       that test walks the art shipped characters name, so the day one of these is
       authored is the day its picture is first measured. **That day came for the
-      dratini line on 2026-09-05**, and for the gible line the same day; all six
-      passed first time, which is evidence for the hand-check below rather than a
-      guarantee for the rest. The sources were checked
+      dratini line on 2026-09-05**, and for the gible and pichu lines the same day.
+      ⚠️ **Eight of the nine passed and `assets/pichu.svg` did not, and the test
+      was wrong rather than the picture.** Its stated rule was that a silhouette
+      does not reach *all four* corners of its tightest rectangle; its code
+      refused *any* corner. Pichu's ear is a wedge whose tip is at once the
+      leftmost and the topmost ink, so it paints the top-left corner at alpha 16
+      and the other three at nought — a feathered edge, not a backdrop. The check
+      now counts corners, and `TestAFramedPictureIsStillRefused` holds the
+      positive case on an image built in the test, because the framed asset that
+      motivated the rule no longer ships and a refusal with no example is a
+      refusal nothing measures. So: this test's first contact with unmeasured art
+      found a bug **in the test**, which is worth knowing before trusting the
+      hand-check below on the rest. The sources were checked
       by hand instead: real `tRNS` transparency, 46–71% of the canvas clear, the
       inked box well inside the frame — no baked chequer, so no `--decheck` was
       needed.
@@ -1674,19 +1702,19 @@ is only so the shape is readable.
       taste.
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
-      four obvious axes outright.** Multiplicity across the seventeen shipped
+      four obvious axes outright.** Multiplicity across the eighteen shipped
       characters:
 
       | axis | most units that can share one value | rungs reachable |
       |---|---:|---|
       | element | 3 (water: Lapras, Poliwag, Squirtle) | 2, 3 |
-      | origin | **16** (`pokemon`) | 2, 3, 4, 5 — but see below |
+      | origin | **17** (`pokemon`) | 2, 3, 4, 5 — but see below |
       | species | **3** (`dragon`: Charmander, Dratini, Gible) | 2, 3 |
-      | archetype | 1 (seventeen characters, seventeen presets) | **none** |
-      | archetype `column` | 7 / 5 / 5 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
+      | archetype | 1 (eighteen characters, eighteen presets) | **none** |
+      | archetype `column` | 7 / 6 / 5 for columns 0 / 1 / 2 | 2, 3, 4, 5 on all three |
 
       ⚠️ **An origin threshold is FREE at every rung today**, and that is the
-      sharpest thing here: sixteen of seventeen characters are `pokemon`, so *any*
+      sharpest thing here: seventeen of eighteen characters are `pokemon`, so *any*
       squad that is not built around Naruto satisfies a 5-of-one-origin bonus by
       accident. A bonus nobody has to build for is not a bonus, it is a stat
       change with extra words. The same trap sits one step further out if traits

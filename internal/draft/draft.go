@@ -309,11 +309,14 @@ func (d *Draft) Cancelled() bool { return d.abandoned != "" }
 // Candidates is what the open decision may choose from: the pool minus every
 // character already banned or picked, in the pool's own order.
 //
-// ⚠️ **It is not a convenience.** Slack is nought at 5v5 on the shipped cast, so
-// with every ban spent the final pick of a 5v5 sees exactly **one** candidate —
-// live behaviour rather than a hypothetical — and a screen owes a player the
-// difference between choosing and being told. → TODO.md's slack note, and
-// TestTheLastPickOfAFiveASideChoosesFromOne.
+// ⚠️ **It is not a convenience.** With every ban spent the final pick of a 5v5
+// sees exactly `slack + 1` candidates, and slack was **nought** on the shipped
+// cast when this was written — a list of one, live behaviour rather than a
+// hypothetical. `pokemon.pichu` took it to one on 2026-09-05, so the last pick is
+// a decision again; the shape stays because the next format or the next hidden
+// character puts it back, and a screen owes a player the difference between
+// choosing and being told either way. → TODO.md's slack note, and
+// TestTheLastPickOfAFiveASideChoosesFromSlackPlusOne.
 //
 // A loadout chooses a form and a kit rather than a character, so it has no
 // candidates and the answer is **nil**. Nil is also the answer when nothing is
