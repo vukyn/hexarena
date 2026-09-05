@@ -1126,6 +1126,34 @@ const (
 	PlayClockYours
 	PlayClockTheirs
 
+	// The composition-bonus reference: what a squad is paid for what it shares.
+	//
+	// The listing carries the scope in a column of its own rather than only in
+	// the description, because the two kinds are the one thing a reader cannot
+	// work out from the grants: a squad-wide rung and a sharers-only rung put
+	// the same status on a unit, and only the row says which of them a unit is
+	// carrying it for.
+	BonusesHeading
+	BonusesSubtitle
+	BonusesEmpty
+	BonusesFooter
+	MenuBonuses
+	MenuBonusesDetail
+	// BlurbBonusCounts and BlurbBonusGoesTo are the two questions a bonus
+	// answers before its rungs mean anything: what is being counted, and who
+	// receives what the count buys.
+	BlurbBonusCounts
+	BlurbBonusGoesTo
+	// BlurbBonusRung is one rung: how many have to share, and what each unit
+	// that receives it is held. One line per rung rather than a table, so a
+	// bonus that grows from two rungs to four grows the block by two lines
+	// instead of needing a column nobody has measured.
+	BlurbBonusRung
+	BlurbBonusCaveat
+	BonusAxisElement
+	BonusScopeSquad
+	BonusScopeSharers
+
 	keyCount
 )
 

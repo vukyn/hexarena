@@ -54,4 +54,12 @@ Squad **composition bonuses**: fielding several units that share something grant
 - PvP is cheap: the squad crosses the wire whole in `wire.Hello`, both ends derive it, a disagreement shows as a **per-turn digest mismatch**.
 - ⚠️ A new data file = a **16th name in 3 independent places**: the `//go:embed` line in `internal/seed/seed.go`, the `dataFiles` slice in `internal/seed/digest.go`, and one `XxxFile()` accessor. **Missing `dataFiles` is silent** — the file loads and the data digest stops covering it, so two peers on different bonus data pass the gate then diverge.
 
+**Màn tra cứu — ĐÃ LÀM (2026-09-06):** `internal/screen/bonuses.go`, read-only, vào menu **cả hai client** ngay sau Origins (entry thứ **10** ở client game, thứ **13** ở client authoring), đăng ký ở cả hai sweep và cả **ba** golden.
+
+⚠️ **Cột scope in TỪ CỦA DATA (`sharers`/`squad`), câu giải thích để ở phần mô tả.** Bản đầu in câu tiếng Việt ở cả hai chỗ → đúng một dòng lặp lại chính nó trên màn chỉ có một bonus. Đây là cách màn statuses vẫn làm với category: hàng in `stat_debuff`, mô tả mới nói nghĩa.
+
+⚠️ **`bonusesRoom` đếm grant thay vì hằng số.** Rung là thứ *chắc chắn sẽ mọc* (2 nay, 4 khi mở 5v5), nên room tính từ bonus rộng nhất **trong sách**; hằng số ở đây là con số lặng lẽ hết đúng, và listing sẽ vẽ đè lên mô tả. `TestTheBonusRoomLeavesTheWidestDescriptionItsRows` so sách 4 rung với sách 1 rung.
+
+**Cũ — ý định của sub-item, giữ lại vì màn tra cứu sau sẽ hỏi lại đúng mấy câu này:**
+
 **Sub-item — a reference screen on the menu** (user asked for it): read-only catalogue like statuses/elements/traits/species, both clients. ⚠️ It is the **10th** `menuItems` entry (9 today). ⚠️ Must go in the sweep — `model.go` records **five** screens that slipped it and silently lost width/translation/leak tests (`screenCount` + `TestEveryScreenThisClientDrawsIsSwept`). ⚠️ Data screen → `UsableWidth()`, but its **footer** is measured against the 120-col floor and the floor is a footer's only lever. Must draw the two *kinds* apart and show that several fire at once, and not look broken when 2 rungs become 4. **Cannot be built before the first bonus exists.**

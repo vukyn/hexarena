@@ -23,6 +23,10 @@ const (
 	screenSkills
 	screenStatuses
 	screenPassives
+	// screenBonuses is the composition-bonus reference. It is read-only like the
+	// statuses one and for the same reason: a rung is balance rather than
+	// content, so authoring one is a diff rather than a form.
+	screenBonuses
 	screenElements
 	screenSpecies
 	screenCheck
@@ -112,6 +116,7 @@ type (
 	speciesScreen  = draw.SpeciesScreen
 	buildsScreen   = draw.BuildsScreen
 	passivesScreen = draw.PassivesScreen
+	bonusesScreen  = draw.BonusesScreen
 	// buildRow is one line of the build catalogue, named here because this
 	// client's own width fixture builds a catalogue state by hand.
 	buildRow = draw.BuildRow
@@ -226,6 +231,7 @@ type model struct {
 	skills   skillsScreen
 	statuses statusesScreen
 	passives passivesScreen
+	bonuses  bonusesScreen
 	elements elementsScreen
 	species  speciesScreen
 	builds   buildsScreen
@@ -318,6 +324,7 @@ func newModel(lib *forge.Library, lang i18n.Lang) model {
 		skills:   draw.NewSkillsScreen(ctx),
 		statuses: draw.NewStatusesScreen(lib),
 		passives: draw.NewPassivesScreen(lib),
+		bonuses:  draw.NewBonusesScreen(lib),
 		species:  draw.NewSpeciesScreen(lib),
 		builds:   draw.NewBuildsScreen(lib),
 		squad:    draw.NewSquadsScreen(ctx),
@@ -374,6 +381,7 @@ var menuItems = []menuItem{
 	{i18n.MenuSkills, i18n.MenuSkillsDetail, screenSkills},
 	{i18n.MenuStatuses, i18n.MenuStatusesDetail, screenStatuses},
 	{i18n.MenuPassives, i18n.MenuPassivesDetail, screenPassives},
+	{i18n.MenuBonuses, i18n.MenuBonusesDetail, screenBonuses},
 	{i18n.MenuElements, i18n.MenuElementsDetail, screenElements},
 	{i18n.MenuSpecies, i18n.MenuSpeciesDetail, screenSpecies},
 	{i18n.MenuBuilds, i18n.MenuBuildsDetail, screenBuilds},
@@ -526,6 +534,10 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		passives, action := m.passives.Update(m.ctx(), message)
 		m.passives = passives
 		return m.navigate(screenPassives, action)
+	case screenBonuses:
+		bonuses, action := m.bonuses.Update(m.ctx(), message)
+		m.bonuses = bonuses
+		return m.navigate(screenBonuses, action)
 	case screenElements:
 		elements, action := m.elements.Update(m.ctx(), message)
 		m.elements = elements
@@ -1006,6 +1018,8 @@ func (m model) enter(target screen) model {
 		m.statuses = m.statuses.Refresh(m.lib)
 	case screenPassives:
 		m.passives = m.passives.Refresh(m.lib)
+	case screenBonuses:
+		m.bonuses = m.bonuses.Refresh(m.lib)
 	case screenSpecies:
 		m.species = m.species.Refresh(m.lib)
 	case screenBuilds:
@@ -1091,6 +1105,8 @@ func (m model) screenContent() string {
 		body, footer = m.statuses.View(m.ctx())
 	case screenPassives:
 		body, footer = m.passives.View(m.ctx())
+	case screenBonuses:
+		body, footer = m.bonuses.View(m.ctx())
 	case screenElements:
 		body, footer = m.elements.View(m.ctx())
 	case screenSpecies:

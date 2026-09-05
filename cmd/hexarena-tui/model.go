@@ -27,7 +27,7 @@ type screen int
 
 const (
 	screenMenu screen = iota
-	// The seven catalogues, in the order the menu offers them. Every one of them
+	// The eight catalogues, in the order the menu offers them. Every one of them
 	// is a screen internal/screen owns, drawn here exactly as the authoring tool
 	// draws it — with the three that can author offering none of it.
 	screenCast
@@ -36,6 +36,12 @@ const (
 	screenTraits
 	screenSpecies
 	screenWorks
+	// screenBonuses is the composition-bonus reference: which thresholds a squad
+	// is paid for, and what each grants. It sits with the other catalogues
+	// because it is one — the only listing whose subject is the **squad** rather
+	// than a unit, which is also why nothing on a board can be read instead of
+	// it.
+	screenBonuses
 	screenSquads
 	// screenBattle is on the menu and is also raised from the squad catalogue
 	// with `f`. See pairing.go for which two squads it opens on and why that is
@@ -101,7 +107,7 @@ type menuItem struct {
 	target screen
 }
 
-// menuItems is the seven catalogues a player reads, and a battle.
+// menuItems is the eight catalogues a player reads, and a battle.
 //
 // ⚠️ **Most of the wordings are the authoring tool's own and three are not**,
 // and which three is the whole shape of this client: a listing of the cast is a
@@ -123,6 +129,7 @@ var menuItems = []menuItem{
 	{i18n.MenuPassives, i18n.MenuPassivesDetail, screenTraits},
 	{i18n.MenuSpecies, i18n.MenuSpeciesDetail, screenSpecies},
 	{i18n.MenuOrigins, i18n.GameMenuWorksDetail, screenWorks},
+	{i18n.MenuBonuses, i18n.MenuBonusesDetail, screenBonuses},
 	{i18n.MenuSquads, i18n.GameMenuSquadsDetail, screenSquads},
 	{i18n.GameMenuBattle, i18n.GameMenuBattleDetail, screenBattle},
 	{i18n.GameMenuJoin, i18n.GameMenuJoinDetail, screenJoin},
@@ -187,6 +194,7 @@ type model struct {
 	traits   draw.PassivesScreen
 	species  draw.SpeciesScreen
 	works    draw.OriginsScreen
+	bonuses  draw.BonusesScreen
 	squads   draw.SquadsScreen
 	battle   draw.PlayScreen
 	statuses draw.StatusesScreen
@@ -238,6 +246,7 @@ func newModel(lib *forge.Library, lang i18n.Lang, sess *session) model {
 		cast:     draw.NewBrowseScreen(lib),
 		skills:   draw.NewSkillsScreen(ctx),
 		traits:   draw.NewPassivesScreen(lib),
+		bonuses:  draw.NewBonusesScreen(lib),
 		species:  draw.NewSpeciesScreen(lib),
 		works:    draw.NewOriginsScreen(ctx),
 		squads:   draw.NewSquadsScreen(ctx),
@@ -469,6 +478,10 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		next, action := m.species.Update(m.ctx(), message)
 		m.species = next
 		return m.navigate(screenSpecies, action)
+	case screenBonuses:
+		next, action := m.bonuses.Update(m.ctx(), message)
+		m.bonuses = next
+		return m.navigate(screenBonuses, action)
 	case screenWorks:
 		next, action, command := m.works.Update(m.ctx(), message)
 		m.works = next
@@ -837,6 +850,8 @@ func (m model) enter(target screen) model {
 		m.skills = m.skills.Refresh(m.ctx())
 	case screenTraits:
 		m.traits = m.traits.Refresh(m.lib)
+	case screenBonuses:
+		m.bonuses = m.bonuses.Refresh(m.lib)
 	case screenSpecies:
 		m.species = m.species.Refresh(m.lib)
 	case screenWorks:
@@ -920,6 +935,8 @@ func (m model) parts() (body, footer string) {
 		return m.elements.View(m.ctx())
 	case screenTraits:
 		return m.traits.View(m.ctx())
+	case screenBonuses:
+		return m.bonuses.View(m.ctx())
 	case screenSpecies:
 		return m.species.View(m.ctx())
 	case screenWorks:

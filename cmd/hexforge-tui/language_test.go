@@ -421,6 +421,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"skills":                   m.enter(screenSkills),
 		"statuses":                 m.enter(screenStatuses),
 		"traits":                   m.enter(screenPassives),
+		"bonuses":                  m.enter(screenBonuses),
 		"add a skill":              addSkill,
 		"edit a skill":             editSkill,
 		"edited a skill":           editedSkill,

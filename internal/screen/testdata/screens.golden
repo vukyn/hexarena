@@ -486,6 +486,19 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 
 ----- footer -----
 ↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
+===== vi | 120x24 | bonuses =====
+bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
+
+> same_element  đồng hệ  sharers
+
+  đếm hệ mà các thành viên mang
+  trao cho chỉ những người cùng chia
+  2 người cùng có: kinship <đồng khí> x1
+  3 người cùng có: kinship <đồng khí> x2
+
+  đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
+----- footer -----
+↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | browse =====
 danh sách nhân vật  đang xem tất cả nguồn (20 trong 20 nhân vật)
 
@@ -611,7 +624,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-đã sửa vine_whip trong ../seed/data/skills.json
+đã sửa vine_whip trong ..\seed\data\skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
 145 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
@@ -1677,6 +1690,19 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 
 ----- footer -----
 ↑/↓ chọn · a thêm tác phẩm · ctrl+l English · esc quay lại · q thoát
+===== vi | 160x60 | bonuses =====
+bonus xếp đội  một phe được trả gì cho thứ các thành viên chia nhau
+
+> same_element  đồng hệ  sharers
+
+  đếm hệ mà các thành viên mang
+  trao cho chỉ những người cùng chia
+  2 người cùng có: kinship <đồng khí> x1
+  3 người cùng có: kinship <đồng khí> x2
+
+  đếm một lần lúc vào trận, không đếm lại — và nhiều bonus có thể cùng hiệu lực
+----- footer -----
+↑/↓ di chuyển · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | browse =====
 danh sách nhân vật  đang xem tất cả nguồn (20 trong 20 nhân vật)
 
@@ -1881,7 +1907,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-đã sửa vine_whip trong ../seed/data/skills.json
+đã sửa vine_whip trong ..\seed\data\skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
 145 chiêu · 7 chiêu ai cũng học được
 ----- footer -----
@@ -2971,6 +2997,19 @@ origins  the works the cast is borrowed from
 
 ----- footer -----
 ↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
+===== en | 120x24 | bonuses =====
+squad bonuses  what a side is paid for what its units share
+
+> same_element    sharers
+
+  counts the elements the units carry
+  goes to only the units that share it
+  2 sharing it: kinship x1
+  3 sharing it: kinship x2
+
+  counted once from the squad that walks in, never again — and several may be in force at once
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | browse =====
 cast  showing all origins (20 of 20 characters)
 
@@ -3089,7 +3128,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-edited vine_whip in ../seed/data/skills.json
+edited vine_whip in ..\seed\data\skills.json
 377 → 1097 per strike, 377 → 1097 in all
 145 skills · 7 anyone may carry
 ----- footer -----
@@ -4142,6 +4181,19 @@ origins  the works the cast is borrowed from
 
 ----- footer -----
 ↑/↓ move · a add a work · ctrl+l tiếng Việt · esc back · q quit
+===== en | 160x60 | bonuses =====
+squad bonuses  what a side is paid for what its units share
+
+> same_element    sharers
+
+  counts the elements the units carry
+  goes to only the units that share it
+  2 sharing it: kinship x1
+  3 sharing it: kinship x2
+
+  counted once from the squad that walks in, never again — and several may be in force at once
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | browse =====
 cast  showing all origins (20 of 20 characters)
 
@@ -4339,7 +4391,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-edited vine_whip in ../seed/data/skills.json
+edited vine_whip in ..\seed\data\skills.json
 377 → 1097 per strike, 377 → 1097 in all
 145 skills · 7 anyone may carry
 ----- footer -----

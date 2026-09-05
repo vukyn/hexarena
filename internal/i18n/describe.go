@@ -3,6 +3,7 @@ package i18n
 import (
 	"strings"
 
+	"github.com/vukyn/hexarena/internal/core/composition"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/modifier"
 	"github.com/vukyn/hexarena/internal/core/passive"
@@ -1309,6 +1310,53 @@ func itoa(value int) string {
 // stacked stat term saturates rather than adding up — so the figures here are
 // the book's and not the log's. Saying so is the screen's job rather than this
 // one's: BlurbStatusCaveat is printed once per reference, not fifteen times.
+// DescribeBonus is what a composition bonus counts, who receives it, and what
+// each rung is worth — one line for each, in that order.
+//
+// The rungs are lines rather than a table for the reason the rest of this file
+// derives its sentences: a bonus may declare two rungs today and four when 5v5
+// opens, and a block that grows by two lines needs no column to be re-measured
+// against the floor. The status is glossed the way every other id here is, so a
+// reader who has just met `kinship` on a unit meets the same words on both
+// screens.
+//
+// ⚠️ The scope is said outright rather than left to be inferred from who is
+// carrying the grant on the board. A squad-wide rung and a sharers-only rung put
+// the same status on the same unit, so nothing a reader can see distinguishes
+// them — which is the one fact about a bonus that has to be written down.
+func (l Lang) DescribeBonus(bonus composition.Bonus, glosses map[string]string) string {
+	axis := BonusAxisElement
+	scope := BonusScopeSharers
+	if bonus.Scope == composition.ScopeSquad {
+		scope = BonusScopeSquad
+	}
+	lines := []string{
+		l.Say(BlurbBonusCounts, l.Text(axis)),
+		l.Say(BlurbBonusGoesTo, l.Text(scope)),
+	}
+	for _, rung := range bonus.Rungs {
+		for _, grant := range rung.Grants {
+			lines = append(lines, l.Say(BlurbBonusRung, rung.At,
+				GlossBracket(grant.Status, glosses[grant.Status]), grant.Stacks))
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+// BonusScopeName is the enum's own word, for a listing that prints the scope in
+// a column beside the id. It is the reading `StatusCategory` gives a category:
+// the data's word, and the reader's language beside it rather than instead of
+// it.
+func (l Lang) BonusScopeName(scope composition.Scope) string {
+	switch scope {
+	case composition.ScopeSquad:
+		return l.Text(BonusScopeSquad)
+	case composition.ScopeSharers:
+		return l.Text(BonusScopeSharers)
+	}
+	return ""
+}
+
 func (l Lang) DescribeStatus(kind status.Kind) string {
 	lines := l.describeStatusEffect(kind)
 	lines = append(lines, l.describeStatusCosts(kind))

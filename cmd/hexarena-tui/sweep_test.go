@@ -60,6 +60,7 @@ func everyScreen(t *testing.T, m model) map[string]model {
 		"species":  m.enter(screenSpecies),
 		"works":    m.enter(screenWorks),
 		"squads":   m.enter(screenSquads),
+		"bonuses":  m.enter(screenBonuses),
 		"elements": widestElement(m.enter(screenElements)),
 	}
 	// The chart and the statuses reference are the two screens reached by a

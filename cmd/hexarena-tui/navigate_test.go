@@ -387,11 +387,17 @@ func TestTheMenuOpensEveryCatalogueItOffers(t *testing.T) {
 			t.Errorf("entry %d drew nothing", index)
 		}
 	}
-	// Seven catalogues, a battle and a room to join, which is what this client
+	// Eight catalogues, a battle and a room to join, which is what this client
 	// offers. A count rather than a spot check: an entry quietly dropped is a
 	// catalogue nothing reaches, and the sweep would still pass because the
 	// screen is registered there directly.
-	if got, want := len(menuItems), 9; got != want {
+	//
+	// The eighth catalogue is the composition-bonus reference, and it is on this
+	// client's menu rather than only the authoring tool's for the reason every
+	// other reference here is: what a squad is paid for what it shares is a rule
+	// a *player* builds towards, and it is the one rule with no trace on the
+	// board to read instead.
+	if got, want := len(menuItems), 10; got != want {
 		t.Errorf("the menu offers %d entries, want the %d this client was built to offer",
 			got, want)
 	}
