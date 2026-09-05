@@ -149,8 +149,27 @@ type allowance struct {
 func (a *allowance) set(reading room.Reading, only wire.Seat, fire func(wire.Seat)) {
 	seat := reading.Awaiting
 	waiting := reading.Waiting && seat.Valid()
+	// ⚠️ **Leave whatever is armed alone, and return before touching it.** This
+	// used to set `waiting = false` and fall through — which then bumped the
+	// generation and stopped the live timer on its way to the "nothing to arm"
+	// return. So a late timeout for a seat that had already answered **disarmed
+	// the clock on the seat now being asked**: the only caller that passes a
+	// narrowing seat is timedOut's refused path, and it does not go on to call
+	// settled, so nothing armed one again. The seat on turn then had no
+	// allowance at all, and a player who walked away from that turn hung the
+	// match — which is the exact failure the timeout input exists to prevent.
+	//
+	// Returning early is what the doc above always claimed: `only` is here so a
+	// report that raced with the next prompt **cannot restart** the clock on
+	// somebody else's turn. It never meant "cannot leave it running".
+	//
+	// ⚠️ It has to return above the lock rather than inside it, because the
+	// generation is what makes an armed callback live: bumping it and returning
+	// would leave the timer in place and turn its fire into a no-op, which is
+	// the same hang wearing a different shape and is what
+	// TestALateTimeoutLeavesTheLiveAllowanceArmed checks by value.
 	if waiting && only.Valid() && seat != only {
-		waiting = false
+		return
 	}
 	length := Allowance(reading.Config.Allowance)
 
@@ -174,6 +193,23 @@ func (a *allowance) set(reading room.Reading, only wire.Seat, fire func(wire.Sea
 		}
 		fire(seat)
 	})
+}
+
+// armed is whether a timer is in place and the generation it would fire under,
+// which together are what "the clock on the seat being asked is live" means.
+//
+// ⚠️ It exists for a test and it takes **both**, because either alone can be
+// true of a dead clock: a timer with a stale generation fires and returns
+// without reporting anything, and a moved generation with no timer behind it is
+// simply nothing armed. → set's own comment, and
+// TestALateTimeoutLeavesTheLiveAllowanceArmed, which is the only thing in this
+// package that can tell an armed clock from a disarmed one — a test that lets
+// its clients answer never needs the clock at all, which is why the late-timeout
+// test that already existed passed while this was broken.
+func (a *allowance) armed() (bool, uint64) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.timer != nil, a.generation
 }
 
 // stop disarms whatever is armed, for a table that is going away.

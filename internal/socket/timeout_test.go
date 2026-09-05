@@ -162,6 +162,100 @@ func TestALateTimeoutIsRefusedWithoutDroppingAnybody(t *testing.T) {
 		late, reading.Awaiting, done.reading.Result.Verdict, len(done.reading.Played))
 }
 
+// TestALateTimeoutLeavesTheLiveAllowanceArmed is the half the test above cannot
+// see, and what it holds was broken from the day the narrowing was written.
+//
+// ⚠️ **The bug it caught was a hang, and it shipped in v0.1.0.** allowance.set
+// stopped the live timer and bumped the generation *before* the branch that
+// decided there was nothing to arm — so a late timeout for a seat that had
+// already answered took the clock off **the seat the room was now asking**.
+// timedOut's refused path is the only caller that narrows, and it does not go on
+// to call settled, so nothing armed one again: that seat played on with no
+// allowance, and a player who then walked away left the match waiting forever,
+// which is the single thing handing the timeout in as an input exists to
+// prevent. → set's own comment for the fix and why it returns above the lock.
+//
+// ⚠️ **The whole package was green either way**, which is the part worth keeping.
+// The test above fires the same late timeout and then does `close(resume)`, so
+// its clients answer on their own and the clock is never asked for anything —
+// a test that lets its subjects finish by themselves cannot see a clock that
+// stopped. Every other test in this package is the same shape. So the claim
+// needs the *state* read directly, and it needs **both halves** of it: an armed
+// timer under a moved generation fires and reports nothing, which is the same
+// hang with the evidence one line further on.
+func TestALateTimeoutLeavesTheLiveAllowanceArmed(t *testing.T) {
+	dependencies := deps(t)
+	configuration := config(11, 1, room.DefaultAllowance)
+	held := listening(t, Timings{})
+	code := held.open(t, configuration, dependencies)
+
+	ctx := context.Background()
+	resume := make(chan struct{})
+	host := held.dial(t, code, hello(t, theHostSquad(t, dependencies.Characters), "Host", ""), dependencies.Books)
+	hostChoose, hostPaused := paused(rating(host), resume)
+	hostPlay := play(ctx, host, hostChoose)
+	guest := held.dial(t, code, hello(t, theGuestSquad(t, dependencies.Characters), "Guest", ""), dependencies.Books)
+	guestChoose, guestPaused := paused(rating(guest), resume)
+	guestPlay := play(ctx, guest, guestChoose)
+
+	// The board is held still at a prompt, so the seat the room is *not* asking
+	// is certain — the same input the test above constructs, for the same reason.
+	select {
+	case <-hostPaused:
+	case <-guestPaused:
+	case <-time.After(theWholeMatch):
+		t.Fatalf("neither client was asked to act inside %s", theWholeMatch)
+	}
+	reading, running := held.rooms.Read(code)
+	if !running || !reading.Waiting {
+		t.Fatalf("the room is not waiting on anybody with a client paused at its prompt")
+	}
+	entry := held.tableFor(t, code)
+
+	// ⚠️ The vacuity guard, and it is the whole reason this test can claim
+	// anything: a clock has to be **live** before a late report could take it
+	// away. Without this the assertions below pass on a table that never armed
+	// one at all.
+	live, generation := entry.allowance.armed()
+	if !live {
+		t.Fatalf("no allowance is armed while the room waits on %s, so this test cannot tell "+
+			"a clock that survived from one that was never there", reading.Awaiting)
+	}
+
+	late := otherSeat(reading.Awaiting)
+	held.server.timedOut(ctx, code, entry, late)
+
+	stillLive, now := entry.allowance.armed()
+	if !stillLive {
+		t.Errorf("a late timeout for %s disarmed the allowance on %s, which is the seat the room "+
+			"is asking: that seat is left with no clock at all, and a player who walks away from "+
+			"it hangs the match", late, reading.Awaiting)
+	}
+	if now != generation {
+		t.Errorf("a late timeout for %s moved the allowance's generation %d → %d while the room "+
+			"waits on %s, so whatever is armed fires into nothing — an armed timer under a moved "+
+			"generation is the same hang one line later", late, generation, now, reading.Awaiting)
+	}
+
+	// And the match still ends, so the clock that survived is a live one rather
+	// than a leak this test then walks away from.
+	close(resume)
+	if err := hostPlay.wait(t, "the host"); err != nil {
+		t.Fatalf("the host's match after a late timeout: %v", err)
+	}
+	if err := guestPlay.wait(t, "the guest"); err != nil {
+		t.Fatalf("the guest's match after a late timeout: %v", err)
+	}
+	done := held.finished(t)
+	switch done.reading.Result.Verdict {
+	case room.VerdictWon, room.VerdictDrawn:
+	default:
+		t.Errorf("a late timeout left the match ending %q", done.reading.Result.Verdict)
+	}
+	t.Logf("a late timeout for %s left %s's allowance armed at generation %d, and the match ended %q",
+		late, reading.Awaiting, now, done.reading.Result.Verdict)
+}
+
 // TestASkippedPromptStartsNoClockOverASocket is the room's own property seen
 // from the transport, and it is here because the transport is what would break
 // it: an allowance is started on room.Reading.Awaiting, so "a Skipped prompt
