@@ -152,6 +152,31 @@ type Condition struct {
 	// their type, because passive imports this package and the language refuses
 	// the shortcut anyway.
 	BelowHealth int
+	// BelowStacks is how many stacks of Status the unit must be holding FEWER
+	// than, and nought is "does not ask" — the same spelling BelowHealth uses,
+	// and for the same reason: a bound written as "below n" has no meaningful
+	// zero, so the zero value can mean unasked without a pointer or a second
+	// flag.
+	//
+	// # Why a cap exists at all, when MinStacks is a floor
+	//
+	// The two are not opposites of one another; they answer different questions.
+	// MinStacks is *have you saved enough to pay for this*, which is what every
+	// reserve in the book asks. BelowStacks is *how many times may you do this at
+	// all*, which nothing could ask before: a cooldown counts a caster's turns and
+	// so bounds the rate, never the total, and a permanent status cannot be spent
+	// (status.Set.Remove refuses one on purpose, so a cleanse can never dispel a
+	// trait) so a budget cannot be granted and drawn down either.
+	//
+	// The shape a lifetime cap takes with it: the skill self-applies a counter and
+	// gates on holding fewer than the cap. Two casts, spelled `below_stacks: 2` —
+	// the first sees nought, the second sees one, the third sees two and is not
+	// offered.
+	//
+	// ⚠️ **It composes with MinStacks rather than replacing it**, and both clauses
+	// read the same status. "At least one and fewer than three" is a legal and
+	// useful window; a condition naming only BelowStacks is a pure cap.
+	BelowStacks int
 	// Gates makes this a condition on **casting** rather than on the payoff.
 	//
 	// Every other condition in this engine is an amplifier: it is read while the
@@ -380,11 +405,19 @@ func (c *Condition) Holds(against Target) bool {
 	if c.ReadsStatus() && against.Stacks < c.MinStacks {
 		return false
 	}
+	if c.CapsStacks() && against.Stacks >= c.BelowStacks {
+		return false
+	}
 	if c.ReadsHealth() && !scale.AtOrBelowShare(against.Health, against.Maximum, c.BelowHealth) {
 		return false
 	}
 	return true
 }
+
+// CapsStacks reports whether the condition names an upper bound on stacks, which
+// is the same shape ReadsHealth has and answers the same question about the zero
+// value: nought stacks is not a bound anybody could mean.
+func (c *Condition) CapsStacks() bool { return c != nil && c.BelowStacks > 0 }
 
 // Gradient is how much harder a skill hits as its caster falls, declared by the
 // one number an author has to choose: what it is worth at the very bottom.
@@ -1025,6 +1058,7 @@ type summonFile struct {
 	Skills      []string            `json:"skills"`
 	Lasts       int                 `json:"lasts,omitempty"`
 	Bound       bool                `json:"bound,omitempty"`
+	Splits      int                 `json:"splits,omitempty"`
 }
 
 type scalingFile struct {
@@ -1035,6 +1069,7 @@ type scalingFile struct {
 type conditionFile struct {
 	Status        string            `json:"status,omitempty"`
 	MinStacks     int               `json:"min_stacks,omitempty"`
+	BelowStacks   int               `json:"below_stacks,omitempty"`
 	Gates         bool              `json:"gates,omitempty"`
 	BelowHealth   int               `json:"below_health,omitempty"`
 	BonusPower    int               `json:"bonus_power"`
@@ -1139,6 +1174,7 @@ func (s Skill) file() skillFile {
 	if s.SelfRequires != nil {
 		out.SelfRequires = &conditionFile{
 			Status: s.SelfRequires.Status, MinStacks: s.SelfRequires.MinStacks,
+			BelowStacks: s.SelfRequires.BelowStacks,
 			Gates:       s.SelfRequires.Gates,
 			BelowHealth: s.SelfRequires.BelowHealth,
 			BonusPower:  s.SelfRequires.BonusPower, Consume: s.SelfRequires.Consume,
@@ -1154,6 +1190,7 @@ func (s Skill) file() skillFile {
 	if s.Requires != nil {
 		out.Requires = &conditionFile{
 			Status: s.Requires.Status, MinStacks: s.Requires.MinStacks,
+			BelowStacks: s.Requires.BelowStacks,
 			Gates:       s.Requires.Gates,
 			BelowHealth: s.Requires.BelowHealth,
 			BonusPower:  s.Requires.BonusPower, Consume: s.Requires.Consume,
@@ -1177,6 +1214,7 @@ func (s Skill) file() skillFile {
 			Stats: s.Summons.Stats, Affinity: s.Summons.Affinity,
 			Skills: append([]string(nil), s.Summons.Skills...),
 			Lasts:  s.Summons.Lasts, Bound: s.Summons.Bound,
+			Splits: s.Summons.Splits,
 		}
 	}
 	return out
@@ -1661,18 +1699,37 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 			return fail("%v", err)
 		}
 		minStacks = declared.MinStacks
-		if minStacks < 1 {
+		// ⚠️ **The floor of one is a default and not a rule, and a cap is the case
+		// that shows the difference.** A condition naming a status has always meant
+		// "while holding it", so an author leaving min_stacks out means one — but a
+		// condition whose whole job is *how many times may I do this* is asked on
+		// the first cast, when the counter is at nought, and a silent floor of one
+		// would refuse the very cast it exists to allow. So a pure cap floors at
+		// nought, and an author wanting both writes both.
+		if minStacks < 1 && declared.BelowStacks == 0 {
 			minStacks = 1
 		}
 		if minStacks > kind.MaxStacks {
 			return fail("needs %d stacks of %q, which caps at %d", minStacks, kind.ID, kind.MaxStacks)
 		}
+		if declared.BelowStacks != 0 {
+			if declared.BelowStacks < 1 || declared.BelowStacks > kind.MaxStacks {
+				return fail("holds below %d stacks of %q, which caps at %d: a bound outside that "+
+					"range is either never reached or never passed",
+					declared.BelowStacks, kind.ID, kind.MaxStacks)
+			}
+			if minStacks >= declared.BelowStacks {
+				return fail("needs at least %d stacks of %q and fewer than %d, which is a window "+
+					"nothing can be inside", minStacks, kind.ID, declared.BelowStacks)
+			}
+		}
 		statusID = kind.ID
-	} else if declared.MinStacks != 0 {
+	} else if declared.MinStacks != 0 || declared.BelowStacks != 0 {
 		// Stated stacks with nothing to count them of is a half-written
 		// condition, and reading it as "no status" would silently drop the half
 		// the author did write.
-		return fail("asks for %d stacks but names no status", declared.MinStacks)
+		return fail("asks for %d stacks and a bound below %d but names no status",
+			declared.MinStacks, declared.BelowStacks)
 	}
 
 	if readsHealth && (declared.BelowHealth < 1 || declared.BelowHealth > scale.Base) {
@@ -1702,7 +1759,15 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 	// A gate that spends nothing is a permanent unlock rather than a cost: the
 	// caster crosses the threshold once and the skill is free from that turn on.
 	// What makes a gate a price is that casting empties what opened it.
-	if declared.Gates && !declared.Consume {
+	//
+	// ⚠️ **A CAP is exempt, and it is the exact opposite shape.** This clause was
+	// written when a gate could only be a floor — hold enough fuel to cast — where
+	// not spending it means the tank fills once and the skill is free ever after.
+	// A gate that names `below_stacks` runs the other way: the counter only ever
+	// goes up, casting is what raises it, and consuming would be the caster
+	// undoing its own limit. Requiring a spend there would refuse the only shape a
+	// lifetime cap can take.
+	if declared.Gates && !declared.Consume && declared.BelowStacks == 0 {
 		return fail("gates its cast without consuming anything, so the threshold would be crossed once and never paid again")
 	}
 	// Consuming is a status rule, so a condition that reads only health has
@@ -1848,7 +1913,8 @@ func resolveCondition(skillID, field string, declared *conditionFile, deps Deps)
 		return nil, err
 	}
 	return &Condition{
-		Status: statusID, MinStacks: minStacks, Gates: declared.Gates,
+		Status: statusID, MinStacks: minStacks, BelowStacks: declared.BelowStacks,
+		Gates:       declared.Gates,
 		BelowHealth: declared.BelowHealth,
 		BonusPower:  declared.BonusPower, Consume: declared.Consume,
 		ConsumeStacks: declared.ConsumeStacks, Chains: declared.Chains,

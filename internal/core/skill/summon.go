@@ -65,6 +65,32 @@ type Summon struct {
 	// goes when the caster goes, while a creature that was called up is its own
 	// and stays to finish the fight.
 	Bound bool
+	// Splits is the share of the caster's MAXIMUM health that is moved into each
+	// summoned unit, in parts per thousand, and nought is a summon that costs the
+	// caster nothing.
+	//
+	// # It is not a cost, and the difference is the whole of the mechanic
+	//
+	// skill.Cost takes health out of a caster and leaves its maximum alone, so a
+	// heal puts it back and the price is temporary. This moves the maximum: the
+	// caster is a smaller creature afterwards, permanently, and what came off it
+	// is standing next to it. Two bodies out of one is a different bargain from a
+	// blow that hurt to throw, and reading it as a cost would let a mender undo
+	// it.
+	//
+	// # It sizes the health only, and the other stats keep their spelling
+	//
+	// So it composes with Share, ShareOfBase or Stats rather than replacing one:
+	// the spelling says what the copy is made of and this says how much of the
+	// original went into it. A copy at nine tenths of its maker's attack holding
+	// three tenths of its health is a legal and deliberate shape, and neither
+	// half could say that alone.
+	//
+	// ⚠️ **The health is taken per copy.** A skill putting down two at three
+	// tenths each takes six tenths off its caster, which is what "count" means
+	// everywhere else and is why the refusal below is written against the product
+	// rather than the field.
+	Splits int
 }
 
 // Summons reports whether the skill puts anything on the board. A nil receiver
@@ -134,12 +160,26 @@ func resolveSummon(declared *summonFile, fail func(string, ...any) error) (*Summ
 	if declared.Lasts < 0 {
 		return nil, fail("summons a unit for %d turns, want nought or more", declared.Lasts)
 	}
+	if declared.Splits < 0 {
+		return nil, fail("splits off %d of its caster, want a share in parts per thousand",
+			declared.Splits)
+	}
+	// The product rather than the field, because the health comes off once per
+	// copy. Bounded below the whole so a caster is still a creature afterwards:
+	// splitting away everything is not a stronger version of this, it is a unit
+	// that stops existing by a route nothing else in the engine takes, and the
+	// floor Battle.spendHealth puts under a price would be the only thing
+	// standing between it and a maximum of nought.
+	if total := declared.Splits * count; total >= scale.Base {
+		return nil, fail("splits off %d of its caster's maximum health across %d copies, "+
+			"which is all of it or more", total, count)
+	}
 	return &Summon{
 		Count: count, Name: declared.Name,
 		Share: declared.Share, ShareOfBase: declared.ShareOfBase, Stats: declared.Stats,
 		Affinity: declared.Affinity,
 		Skills:   append([]string(nil), declared.Skills...),
-		Lasts:    declared.Lasts, Bound: declared.Bound,
+		Lasts:    declared.Lasts, Bound: declared.Bound, Splits: declared.Splits,
 	}, nil
 }
 

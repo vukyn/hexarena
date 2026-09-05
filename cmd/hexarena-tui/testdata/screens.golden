@@ -368,7 +368,7 @@ A3 Example Adept, lượt 3
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a skill blurb =====
 
-vine_whip <roi dây leo>  1/175
+vine_whip <roi dây leo>  1/176
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -576,7 +576,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ===== vi | 120x24 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc a (148 trong 175 chiêu)
+  đang lọc a (149 trong 176 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
@@ -591,7 +591,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   flamethrower    phun lửa             fire      1600x1           hệ fire, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-175 chiêu · 24 chiêu ai cũng học được
+176 chiêu · 25 chiêu ai cũng học được
 
 
 
@@ -614,7 +614,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-175 chiêu · 24 chiêu ai cũng học được
+176 chiêu · 25 chiêu ai cũng học được
 
 
 
@@ -659,7 +659,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-175 chiêu · 24 chiêu ai cũng học được
+176 chiêu · 25 chiêu ai cũng học được
 
 
 
@@ -668,11 +668,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 120x24 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzqx (0 trong 175 chiêu)
+  đang lọc zzqx (0 trong 176 chiêu)
 
   không có chiêu nào khớp.
 
-175 chiêu · 24 chiêu ai cũng học được
+176 chiêu · 25 chiêu ai cũng học được
 
 
 
@@ -1795,7 +1795,7 @@ A3 Example Adept, lượt 3
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a skill blurb =====
 
-vine_whip <roi dây leo>  1/175
+vine_whip <roi dây leo>  1/176
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -2327,7 +2327,7 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ===== vi | 160x60 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc a (148 trong 175 chiêu)
+  đang lọc a (149 trong 176 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > vine_whip       roi dây leo          grass     1100x1           hệ grass, vũ trụ pokemon
@@ -2378,7 +2378,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   seismic_toss    quật đất             ground    2000x1           hệ ground, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-175 chiêu · 24 chiêu ai cũng học được
+176 chiêu · 25 chiêu ai cũng học được
 
 
 
@@ -2437,7 +2437,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-175 chiêu · 24 chiêu ai cũng học được
+176 chiêu · 25 chiêu ai cũng học được
 
 
 
@@ -2554,7 +2554,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-175 chiêu · 24 chiêu ai cũng học được
+176 chiêu · 25 chiêu ai cũng học được
 
 
 
@@ -2563,11 +2563,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 160x60 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzqx (0 trong 175 chiêu)
+  đang lọc zzqx (0 trong 176 chiêu)
 
   không có chiêu nào khớp.
 
-175 chiêu · 24 chiêu ai cũng học được
+176 chiêu · 25 chiêu ai cũng học được
 
 
 
@@ -3402,7 +3402,7 @@ A3 Example Adept, turn 3
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a skill blurb =====
 
-vine_whip  1 of 175
+vine_whip  1 of 176
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -3610,7 +3610,7 @@ elements  the affinity chart: what beats what, and by how much
 ===== en | 120x24 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering a (148 of 175 skills)
+  filtering a (149 of 176 skills)
 
   id              element   damage multiplier who may carry it
 > vine_whip       grass     1100x1            grass units, out of pokemon
@@ -3625,7 +3625,7 @@ skills  what each one does, and who may carry it
   flamethrower    fire      1600x1            fire units, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-175 skills · 24 anyone may carry
+176 skills · 25 anyone may carry
 
 
 
@@ -3648,7 +3648,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-175 skills · 24 anyone may carry
+176 skills · 25 anyone may carry
 
 
 
@@ -3693,7 +3693,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-175 skills · 24 anyone may carry
+176 skills · 25 anyone may carry
 
 
 
@@ -3702,11 +3702,11 @@ skills  what each one does, and who may carry it
 ===== en | 120x24 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzqx (0 of 175 skills)
+  filtering zzqx (0 of 176 skills)
 
   nothing matches that.
 
-175 skills · 24 anyone may carry
+176 skills · 25 anyone may carry
 
 
 
@@ -4829,7 +4829,7 @@ A3 Example Adept, turn 3
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a skill blurb =====
 
-vine_whip  1 of 175
+vine_whip  1 of 176
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -5361,7 +5361,7 @@ elements  the affinity chart: what beats what, and by how much
 ===== en | 160x60 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering a (148 of 175 skills)
+  filtering a (149 of 176 skills)
 
   id              element   damage multiplier who may carry it
 > vine_whip       grass     1100x1            grass units, out of pokemon
@@ -5412,7 +5412,7 @@ skills  what each one does, and who may carry it
   seismic_toss    ground    2000x1            ground units, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-175 skills · 24 anyone may carry
+176 skills · 25 anyone may carry
 
 
 
@@ -5471,7 +5471,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-175 skills · 24 anyone may carry
+176 skills · 25 anyone may carry
 
 
 
@@ -5588,7 +5588,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-175 skills · 24 anyone may carry
+176 skills · 25 anyone may carry
 
 
 
@@ -5597,11 +5597,11 @@ skills  what each one does, and who may carry it
 ===== en | 160x60 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzqx (0 of 175 skills)
+  filtering zzqx (0 of 176 skills)
 
   nothing matches that.
 
-175 skills · 24 anyone may carry
+176 skills · 25 anyone may carry
 
 
 
