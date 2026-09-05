@@ -310,6 +310,19 @@
           "amount": 1000
         }
       ]
+    },
+    {
+      "id": "quickening",
+      "name": "lên đà",
+      "flavour": "Mỗi lượt đứng được là một lượt lấy lại được nhịp, và nhịp thì không tự mất đi",
+      "grants": [],
+      "renews": [
+        {
+          "status": "stoked",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

@@ -146,6 +146,8 @@ volt_tackle     electric  enemy    1  single         2400     1   2400   900    
 nuzzle          electric  enemy    1  single          300     1    300  1000    3     0     0      102
 mind_burn       dark      enemy    2  single         2300     1   2300   900    3     0     0      788
 mind_crush      dark      enemy    2  column         1400     1   1400   850    3     0     0      480
+blaze_kick      fire      enemy    1  single         1300     1   1300   900    2     0   250      445
+flare_blitz     fire      enemy    1  single         2400     1   2400   900    3     0     0      822
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -232,6 +234,8 @@ updraft         focus (self)           1     1000       1000                -
 sand_tomb       mire                   1      700        900              630
 sandstorm       blind                  1      600        950              570
 nuzzle          stun                   1      450       1000              450
+blaze_kick      burn                   1      400        900              360
+flare_blitz     burn                   1      500        900              450
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -371,6 +375,8 @@ volt_tackle     -          -                 -                   rodent    pokem
 nuzzle          -          -                 -                   rodent    pokemon
 mind_burn       -          -                 -                   -         pokemon
 mind_crush      -          -                 -                   -         pokemon
+blaze_kick      -          -                 -                   -         pokemon
+flare_blitz     -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -456,6 +462,7 @@ swelter     reserve           999       5            0      0               0   
 verdure     reserve           999       5            0      0               0          0   -
 moisture    reserve           999       5            0      0               0          0   -
 heft        reserve             5       4            0      0               0          0   -
+stoked      buff                5       2            0      0               0          0   speed +12.0%
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

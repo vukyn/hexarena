@@ -138,7 +138,7 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
 
   fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -506,9 +506,9 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | allowlist picker =====
 
-nhân vật nào được học chiêu này  0/21
+nhân vật nào được học chiêu này  0/22
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (21 trong 21)
+đang xem tất cả nguồn (22 trong 22)
 
 >      fixture-anime.adept
        fixture-game.sprout
@@ -529,7 +529,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 120x24 | browse =====
 
-danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -599,7 +599,7 @@ ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | check =====
 
 kiểm tra  ĐẠT — không có vấn đề gì
-data: 5 nguồn, 24 mẫu vai trò, 22 nhân vật
+data: 5 nguồn, 25 mẫu vai trò, 23 nhân vật
 
   nhân vật                 ảnh      máu quy đổi so với hạn mức, ở trần cấp
 > fixture-anime.adept      có       [===========-] 11397/11500
@@ -661,7 +661,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
@@ -690,9 +690,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 120x24 | filtered picker =====
 
-nhân vật nào được học chiêu này  0/21
+nhân vật nào được học chiêu này  0/22
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem fixture-anime (1 trong 21)
+đang xem fixture-anime (1 trong 22)
 
 >      fixture-anime.adept
 
@@ -714,7 +714,7 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 ===== vi | 120x24 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 173 chiêu)
+  đang lọc long (5 trong 175 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
@@ -724,7 +724,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -752,7 +752,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -765,7 +765,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
   tên                                                   
   nguồn        < fixture-anime — Example Anime >  1/5
   mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass…
-  ảnh          < assets/abra.svg >  1/64
+  ảnh          < assets/abra.svg >  1/67
   loài         không thuộc loài nào  space để chọn
   bộ chiêu     vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space để chọn
   hệ                                                    
@@ -782,7 +782,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 ↑/↓ ô · ←/→ chọn · ctrl+s ghi · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 120x24 | kit picker =====
 
-bộ chiêu  7/173
+bộ chiêu  7/175
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >  1 ! vine_whip       hệ grass, vũ trụ pokemon
@@ -857,7 +857,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  18 nhân vật  Pokémon
+  pokemon          anime   1997  19 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -966,7 +966,7 @@ chiêu trúng những ô nào  7/9
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 120x24 | skill blurb =====
 
-vine_whip <roi dây leo>  1/173
+vine_whip <roi dây leo>  1/175
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -1004,7 +1004,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   ingrain         cắm rễ               grass     0x1              hệ grass, chủng loài plant, vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -1013,11 +1013,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 120x24 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 173 chiêu)
+  đang lọc zzzz (0 trong 175 chiêu)
 
   không có chiêu nào khớp.
 
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -1037,12 +1037,12 @@ gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l Engl
 
 thử trận  fixture-anime.adept — Example Adept
   cấp 60, dạng Example Adept
-  22 hàng · 100 hạt giống mỗi chỗ · 4400 trận tất cả
+  23 hàng · 100 hạt giống mỗi chỗ · 4600 trận tất cả
 
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [=-----------] 16.5%
+  tỉ lệ chung      [=-----------] 15.7%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
@@ -1127,7 +1127,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/30
+chiêu này gây hiệu ứng gì  1/31
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -1246,7 +1246,7 @@ nội tại  các nội tại đã khai báo, và ai mang
 
   id             tên tiếng Việt ai mang
 > endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.dratini@16 pokemon.hap…
-  blaze          bùng lửa       pokemon.charmander@16
+  blaze          bùng lửa       pokemon.charmander@16 pokemon.torchic@24
   heatproof      chịu nhiệt     pokemon.charmander@16
   virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
@@ -1642,7 +1642,7 @@ pokemon.poliwag — Poliwag
 ←/→ cấp · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a forked detail pane =====
 
-danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
 
   fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -1665,6 +1665,7 @@ danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
 > pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
   pokemon.squirtle         pokemon        water <nước>
+  pokemon.torchic          pokemon        fire <lửa>
 
 pokemon.poliwag — Poliwag
   nguồn tham khảo  Pokémon (anime, pokemon)
@@ -1688,7 +1689,6 @@ pokemon.poliwag — Poliwag
   cấp 46           hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 giai đoạn Poliwrath
   máu quy đổi      [================--------] 8048/11500, còn dư 3452
                    xuyên hết giáp thì chỉ đỡ được 3123
-
 
 
 
@@ -2586,9 +2586,9 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | allowlist picker =====
 
-nhân vật nào được học chiêu này  0/21
+nhân vật nào được học chiêu này  0/22
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem tất cả nguồn (21 trong 21)
+đang xem tất cả nguồn (22 trong 22)
 
 >      fixture-anime.adept
        fixture-game.sprout
@@ -2611,9 +2611,9 @@ space để chọn · để trống thì ai cũng học được chiêu này
        pokemon.poliwag
        pokemon.riolu
        pokemon.squirtle
+       pokemon.torchic
 
   chưa chọn gì
-
 
 
 
@@ -2645,7 +2645,7 @@ space để chọn · để trống thì ai cũng học được chiêu này
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
 ===== vi | 160x60 | browse =====
 
-danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
+danh sách nhân vật  đang xem tất cả nguồn (22 trong 22 nhân vật)
 
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
@@ -2668,6 +2668,7 @@ danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
   pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
   pokemon.squirtle         pokemon        water <nước>
+  pokemon.torchic          pokemon        fire <lửa>
 
 fixture-anime.adept — Example Adept
   nguồn tham khảo  Example Anime (anime, fixture-anime)
@@ -2683,7 +2684,6 @@ fixture-anime.adept — Example Adept
   cấp 60           hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 giai đoạn Example Adept
   máu quy đổi      [=======================-] 11397/11500, còn dư 103
                    xuyên hết giáp thì chỉ đỡ được 3100
-
 
 
 
@@ -2823,7 +2823,7 @@ ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | check =====
 
 kiểm tra  ĐẠT — không có vấn đề gì
-data: 5 nguồn, 24 mẫu vai trò, 22 nhân vật
+data: 5 nguồn, 25 mẫu vai trò, 23 nhân vật
 
   nhân vật                 ảnh      máu quy đổi so với hạn mức, ở trần cấp
 > fixture-anime.adept      có       [===========-] 11397/11500
@@ -2848,10 +2848,10 @@ data: 5 nguồn, 24 mẫu vai trò, 22 nhân vật
   pokemon.poliwag          có       [===========-] 11176/11500
   pokemon.riolu            có       [======------] 6607/11500
   pokemon.squirtle         có       [===========-] 11285/11500
+  pokemon.torchic          có       [======------] 6410/11500
 
 phần này đọc file trên đĩa; game chạy từ bản nhúng sẵn, nên sửa xong phải
 build lại thì mới vào được trận
-
 
 
 
@@ -2993,7 +2993,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
 đã sửa vine_whip trong data/skills.json
 377 → 1097 mỗi đòn, 377 → 1097 cả chiêu
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 ↑/↓ · / lọc · a thêm · e sửa · ? mô tả · ctrl+l English · esc · q
@@ -3058,9 +3058,9 @@ hệ  bảng khắc chế: hệ nào khắc hệ nào, và ăn bao nhiêu
 ↑/↓ chọn · g đồ thị · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | filtered picker =====
 
-nhân vật nào được học chiêu này  0/21
+nhân vật nào được học chiêu này  0/22
 space để chọn · để trống thì ai cũng học được chiêu này
-đang xem fixture-anime (1 trong 21)
+đang xem fixture-anime (1 trong 22)
 
 >      fixture-anime.adept
 
@@ -3118,7 +3118,7 @@ space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl
 ===== vi | 160x60 | filtered skills =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc long (5 trong 173 chiêu)
+  đang lọc long (5 trong 175 chiêu)
 
   id              tên tiếng Việt       hệ        hệ số sát thương ai học được
 > dragon_rage     long nộ              neutral   1300x1           chủng loài dragon, vũ trụ pokemon
@@ -3128,7 +3128,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   dragon_drive    long xung            neutral   900x1            chủng loài dragon, vũ trụ pokemon
 
   sát thương       445 mỗi đòn, 445 cả chiêu, đánh vào 800 công và 400 phòng
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -3228,7 +3228,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -3240,8 +3240,8 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 > id                                                    
   tên                                                   
   nguồn        < fixture-anime — Example Anime >  1/5
-  mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass) >  1/24
-  ảnh          < assets/abra.svg >  1/64
+  mẫu vai trò  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (cần grass) >  1/25
+  ảnh          < assets/abra.svg >  1/67
   loài         không thuộc loài nào  space để chọn
   bộ chiêu     vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space để chọn
   hệ                                                    
@@ -3294,7 +3294,7 @@ nhân vật mới  mọi thứ kiểm tra ở đây đúng bằng lúc ghi, tín
 ↑/↓ ô · ←/→ chọn · ctrl+s ghi · esc quay lại · ctrl+l English · ctrl+c thoát
 ===== vi | 160x60 | kit picker =====
 
-bộ chiêu  7/173
+bộ chiêu  7/175
 space để chọn · số là thứ tự trong bộ · dấu ! là chiêu không học được
 
 >  1 ! vine_whip       hệ grass, vũ trụ pokemon
@@ -3477,7 +3477,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
   fixture-film     film    1999   0 nhân vật  Example Film
   fixture-game     game    2011   1 nhân vật  Example Game
   naruto           anime   2002   1 nhân vật  Naruto
-  pokemon          anime   1997  18 nhân vật  Pokémon
+  pokemon          anime   1997  19 nhân vật  Pokémon
 
   ghi chú          A test fixture, not shipped.
 
@@ -3766,7 +3766,7 @@ chiêu trúng những ô nào  7/9
 ←/→ đổi vùng · enter hoặc esc xong · ctrl+l English
 ===== vi | 160x60 | skill blurb =====
 
-vine_whip <roi dây leo>  1/173
+vine_whip <roi dây leo>  1/175
 
   Vung dây leo quật ngang, mũi roi rít lên trước khi kịp chạm, 110% công.
   Tầm 1 · 95% trúng · hồi 1 lượt.
@@ -3876,7 +3876,7 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
   pummel          đánh dồn dập         neutral   280x5            vũ trụ pokemon
 
   sát thương       377 mỗi đòn, 377 cả chiêu, đánh vào 800 công và 400 phòng
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -3885,11 +3885,11 @@ danh sách chiêu  mỗi chiêu làm được gì, và ai học được
 ===== vi | 160x60 | skills filtered to none =====
 
 danh sách chiêu  mỗi chiêu làm được gì, và ai học được
-  đang lọc zzzz (0 trong 173 chiêu)
+  đang lọc zzzz (0 trong 175 chiêu)
 
   không có chiêu nào khớp.
 
-173 chiêu · 24 chiêu ai cũng học được
+175 chiêu · 24 chiêu ai cũng học được
 
 
 
@@ -3945,12 +3945,12 @@ gõ để lọc · ↑/↓ chọn · enter xong · esc bỏ lọc · ctrl+l Engl
 
 thử trận  fixture-anime.adept — Example Adept
   cấp 60, dạng Example Adept
-  22 hàng · 100 hạt giống mỗi chỗ · 4400 trận tất cả
+  23 hàng · 100 hạt giống mỗi chỗ · 4600 trận tất cả
 
   bộ chiêu         strike riptide guard_wall purify
   nội tại          
 
-  tỉ lệ chung      [=-----------] 16.5%
+  tỉ lệ chung      [=-----------] 15.7%
 
   đối thủ                         tỉ lệ   thắng-thua-hòa  lượt   đi trước
 > fixture-anime.adept (đối chứng) 50.0%   100-100-0       73     +16.0%
@@ -3975,11 +3975,11 @@ thử trận  fixture-anime.adept — Example Adept
   pokemon.poliwag                 16.0%   32-168-0        40     +0.0%
   pokemon.riolu                   100.0%  200-0-0         34     +0.0%
   pokemon.squirtle                0.0%    0-200-0         122    +0.0%
+  pokemon.torchic                 0.0%    0-200-0         17     +0.0%
 
 hai bên đều mang 4 kỹ năng và 1 nội tại đầu tiên mà nhân vật khai báo.
 mỗi cặp đấu ở cả hai chỗ rồi cộng lại: hàng đợi lượt phá hòa bằng thứ tự xếp,
 nên số đi trước ở hàng đối chứng chính là giá trị riêng của chỗ đứng.
-
 
 
 
@@ -4179,7 +4179,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/30
+chiêu này gây hiệu ứng gì  1/31
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -4212,11 +4212,11 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        verdure    xum xuê · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        moisture   ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        heft       sức nặng · dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn
+       stoked     nóng máy · tăng chỉ số · 2 lượt · tối đa 5 cộng dồn
 
   poison
 
   cơ hội trúng  300      30%
-
 
 
 
@@ -4263,6 +4263,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   fortified    kiên cố
   quickened    gia tốc
   evasive      khinh công
+  stoked       nóng máy
   shield       khiên, chặn một nhát
   block        đỡ đòn
   regen        hồi máu mỗi lượt
@@ -4287,7 +4288,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   Sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
-
 
 
 
@@ -4478,7 +4478,7 @@ nội tại  các nội tại đã khai báo, và ai mang
 
   id             tên tiếng Việt ai mang
 > endurance      bền bỉ         naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.dratini@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop…
-  blaze          bùng lửa       pokemon.charmander@16
+  blaze          bùng lửa       pokemon.charmander@16 pokemon.torchic@24
   heatproof      chịu nhiệt     pokemon.charmander@16
   virulence      độc lực        pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    máu độc        pokemon.bulbasaur@24 pokemon.oddish@24
@@ -4492,7 +4492,7 @@ nội tại  các nội tại đã khai báo, và ai mang
   elusive        huyền ảo       pokemon.abra@36 pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40 po…
   contagion      lây lan        pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       nham hiểm      pokemon.gastly@32 pokemon.poliwag@36
-  berserk        cuồng chiến    pokemon.gible@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24
+  berserk        cuồng chiến    pokemon.gible@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
   unyielding     bất khuất      pokemon.machop@24
   carapace       vỏ cứng        pokemon.happiny@40 pokemon.squirtle@48
   projection     hộ thể         pokemon.charmander@48
@@ -4500,11 +4500,11 @@ nội tại  các nội tại đã khai báo, và ai mang
   convalescence  ẩn thân        pokemon.happiny@48
   static         tê điện        pokemon.pichu@16
   magic_guard    tường tâm      pokemon.abra@16
+  quickening     lên đà         pokemon.torchic@16
 
   endurance <bền bỉ>
     Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
     Luôn mang kiên cường.
-
 
 
 
@@ -4730,7 +4730,7 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | a forked detail pane =====
 
-cast  showing all origins (21 of 21 characters)
+cast  showing all origins (22 of 22 characters)
 
   fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -5098,9 +5098,9 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | allowlist picker =====
 
-characters allowed to carry it  0 of 21
+characters allowed to carry it  0 of 22
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (21 of 21)
+showing all origins (22 of 22)
 
 >      fixture-anime.adept
        fixture-game.sprout
@@ -5121,7 +5121,7 @@ showing all origins (21 of 21)
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 120x24 | browse =====
 
-cast  showing all origins (21 of 21 characters)
+cast  showing all origins (22 of 22 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -5191,7 +5191,7 @@ ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | check =====
 
 check  PASSED — no problems found
-data: 5 origins, 24 archetypes, 22 characters
+data: 5 origins, 25 archetypes, 23 characters
 
   character                art      effective hp of the budget, at the cap
 > fixture-anime.adept      present  [===========-] 11397/11500
@@ -5253,7 +5253,7 @@ skills  what each one does, and who may carry it
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
@@ -5282,9 +5282,9 @@ elements  the affinity chart: what beats what, and by how much
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 120x24 | filtered picker =====
 
-characters allowed to carry it  0 of 21
+characters allowed to carry it  0 of 22
 space chooses · leaving it empty lets anyone carry the skill
-showing fixture-anime (1 of 21)
+showing fixture-anime (1 of 22)
 
 >      fixture-anime.adept
 
@@ -5306,7 +5306,7 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 ===== en | 120x24 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering long (5 of 173 skills)
+  filtering long (5 of 175 skills)
 
   id              element   damage multiplier who may carry it
 > dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
@@ -5316,7 +5316,7 @@ skills  what each one does, and who may carry it
   dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 
@@ -5344,7 +5344,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 
@@ -5357,7 +5357,7 @@ new character  every check here is the write's own, at level 60
   name                                                
   origin     < fixture-anime — Example Anime >  1 of 5
   archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass…
-  art        < assets/abra.svg >  1 of 64
+  art        < assets/abra.svg >  1 of 67
   species    nothing in particular  space to choose
   kit        vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space to choose
   element                                             
@@ -5374,7 +5374,7 @@ new character  every check here is the write's own, at level 60
 ↑/↓ field · ←/→ pick · ctrl+s save · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 120x24 | kit picker =====
 
-kit  7 of 173
+kit  7 of 175
 space chooses · the number is the order · ! is one this character cannot take
 
 >  1 ! vine_whip       grass units, out of pokemon
@@ -5449,7 +5449,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  18 cast  Pokémon
+  pokemon          anime   1997  19 cast  Pokémon
 
   note          A test fixture, not shipped.
 
@@ -5558,7 +5558,7 @@ which cells the skill catches  7 of 9
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 120x24 | skill blurb =====
 
-vine_whip  1 of 173
+vine_whip  1 of 175
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -5596,7 +5596,7 @@ skills  what each one does, and who may carry it
   ingrain         grass     0x1               grass units, kept for a plant, out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 
@@ -5605,11 +5605,11 @@ skills  what each one does, and who may carry it
 ===== en | 120x24 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 173 skills)
+  filtering zzzz (0 of 175 skills)
 
   nothing matches that.
 
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 
@@ -5629,12 +5629,12 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 spar  fixture-anime.adept — Example Adept
   level 60 as Example Adept
-  22 rows · 100 seeds from each slot · 4400 battles in all
+  23 rows · 100 seeds from each slot · 4600 battles in all
 
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [=-----------] 16.5%
+  overall       [=-----------] 15.7%
 
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
@@ -5719,7 +5719,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
 
-the statuses this skill inflicts  1 of 30
+the statuses this skill inflicts  1 of 31
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -5838,7 +5838,7 @@ traits  the declared traits, and who carries each
 
   id             carried by
 > endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.dratini@16 pokemon.happiny@32 pokemon…
-  blaze          pokemon.charmander@16
+  blaze          pokemon.charmander@16 pokemon.torchic@24
   heatproof      pokemon.charmander@16
   virulence      pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
@@ -6234,7 +6234,7 @@ pokemon.poliwag — Poliwag
 ←/→ level · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a forked detail pane =====
 
-cast  showing all origins (21 of 21 characters)
+cast  showing all origins (22 of 22 characters)
 
   fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -6257,6 +6257,7 @@ cast  showing all origins (21 of 21 characters)
 > pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
   pokemon.squirtle         pokemon        water
+  pokemon.torchic          pokemon        fire
 
 pokemon.poliwag — Poliwag
   from          Pokémon (anime, pokemon)
@@ -6274,7 +6275,6 @@ pokemon.poliwag — Poliwag
   level 46      hp 3123, atk 557, def 472, spd 76, acc 118, ddg 33 stage Poliwrath
   effective hp  [================--------] 8048 of 11500, 3452 to spare
                 3123 against damage that pierces its armour outright
-
 
 
 
@@ -7178,9 +7178,9 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | allowlist picker =====
 
-characters allowed to carry it  0 of 21
+characters allowed to carry it  0 of 22
 space chooses · leaving it empty lets anyone carry the skill
-showing all origins (21 of 21)
+showing all origins (22 of 22)
 
 >      fixture-anime.adept
        fixture-game.sprout
@@ -7203,9 +7203,9 @@ showing all origins (21 of 21)
        pokemon.poliwag
        pokemon.riolu
        pokemon.squirtle
+       pokemon.torchic
 
   nothing chosen yet
-
 
 
 
@@ -7237,7 +7237,7 @@ showing all origins (21 of 21)
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
 ===== en | 160x60 | browse =====
 
-cast  showing all origins (21 of 21 characters)
+cast  showing all origins (22 of 22 characters)
 
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
@@ -7260,6 +7260,7 @@ cast  showing all origins (21 of 21 characters)
   pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
   pokemon.squirtle         pokemon        water
+  pokemon.torchic          pokemon        fire
 
 fixture-anime.adept — Example Adept
   from          Example Anime (anime, fixture-anime)
@@ -7272,7 +7273,6 @@ fixture-anime.adept — Example Adept
   level 60      hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 stage Example Adept
   effective hp  [=======================-] 11397 of 11500, 103 to spare
                 3100 against damage that pierces its armour outright
-
 
 
 
@@ -7415,7 +7415,7 @@ ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | check =====
 
 check  PASSED — no problems found
-data: 5 origins, 24 archetypes, 22 characters
+data: 5 origins, 25 archetypes, 23 characters
 
   character                art      effective hp of the budget, at the cap
 > fixture-anime.adept      present  [===========-] 11397/11500
@@ -7440,10 +7440,10 @@ data: 5 origins, 24 archetypes, 22 characters
   pokemon.poliwag          present  [===========-] 11176/11500
   pokemon.riolu            present  [======------] 6607/11500
   pokemon.squirtle         present  [===========-] 11285/11500
+  pokemon.torchic          present  [======------] 6410/11500
 
 this reads the files from disk; the game boots from the embedded copy, so an
 edit needs a rebuild before it reaches a battle
-
 
 
 
@@ -7585,7 +7585,7 @@ skills  what each one does, and who may carry it
   damage        377 per strike, 377 in all, against 800 atk and 400 def
 edited vine_whip in data/skills.json
 377 → 1097 per strike, 377 → 1097 in all
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 ↑/↓ · / filter · a add · e edit · ? describe · ctrl+l tiếng Việt · esc · q
@@ -7650,9 +7650,9 @@ elements  the affinity chart: what beats what, and by how much
 ↑/↓ move · g the chart · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | filtered picker =====
 
-characters allowed to carry it  0 of 21
+characters allowed to carry it  0 of 22
 space chooses · leaving it empty lets anyone carry the skill
-showing fixture-anime (1 of 21)
+showing fixture-anime (1 of 22)
 
 >      fixture-anime.adept
 
@@ -7710,7 +7710,7 @@ space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l ti�
 ===== en | 160x60 | filtered skills =====
 
 skills  what each one does, and who may carry it
-  filtering long (5 of 173 skills)
+  filtering long (5 of 175 skills)
 
   id              element   damage multiplier who may carry it
 > dragon_rage     neutral   1300x1            kept for a dragon, out of pokemon
@@ -7720,7 +7720,7 @@ skills  what each one does, and who may carry it
   dragon_drive    neutral   900x1             kept for a dragon, out of pokemon
 
   damage        445 per strike, 445 in all, against 800 atk and 400 def
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 
@@ -7820,7 +7820,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 
@@ -7832,8 +7832,8 @@ new character  every check here is the write's own, at level 60
 > id                                                  
   name                                                
   origin     < fixture-anime — Example Anime >  1 of 5
-  archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass) >  1 of 24
-  art        < assets/abra.svg >  1 of 64
+  archetype  < blighter — vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed (needs grass) >  1 of 25
+  art        < assets/abra.svg >  1 of 67
   species    nothing in particular  space to choose
   kit        vine_whip razor_leaf sleep_powder poison_powder sludge_bomb venoshock leech_seed  space to choose
   element                                             
@@ -7886,7 +7886,7 @@ new character  every check here is the write's own, at level 60
 ↑/↓ field · ←/→ pick · ctrl+s save · esc back · ctrl+l tiếng Việt · ctrl+c quit
 ===== en | 160x60 | kit picker =====
 
-kit  7 of 173
+kit  7 of 175
 space chooses · the number is the order · ! is one this character cannot take
 
 >  1 ! vine_whip       grass units, out of pokemon
@@ -8069,7 +8069,7 @@ origins  the works the cast is borrowed from
   fixture-film     film    1999   0 cast  Example Film
   fixture-game     game    2011   1 cast  Example Game
   naruto           anime   2002   1 cast  Naruto
-  pokemon          anime   1997  18 cast  Pokémon
+  pokemon          anime   1997  19 cast  Pokémon
 
   note          A test fixture, not shipped.
 
@@ -8358,7 +8358,7 @@ which cells the skill catches  7 of 9
 ←/→ shape · enter or esc done · ctrl+l tiếng Việt
 ===== en | 160x60 | skill blurb =====
 
-vine_whip  1 of 173
+vine_whip  1 of 175
 
   Hits an enemy for 110% of attack.
   Range 1 · 95% to hit · 1 turn to recharge.
@@ -8468,7 +8468,7 @@ skills  what each one does, and who may carry it
   pummel          neutral   280x5             out of pokemon
 
   damage        377 per strike, 377 in all, against 800 atk and 400 def
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 
@@ -8477,11 +8477,11 @@ skills  what each one does, and who may carry it
 ===== en | 160x60 | skills filtered to none =====
 
 skills  what each one does, and who may carry it
-  filtering zzzz (0 of 173 skills)
+  filtering zzzz (0 of 175 skills)
 
   nothing matches that.
 
-173 skills · 24 anyone may carry
+175 skills · 24 anyone may carry
 
 
 
@@ -8537,12 +8537,12 @@ type to filter · ↑/↓ move · enter done · esc clear · ctrl+l tiếng Vi�
 
 spar  fixture-anime.adept — Example Adept
   level 60 as Example Adept
-  22 rows · 100 seeds from each slot · 4400 battles in all
+  23 rows · 100 seeds from each slot · 4600 battles in all
 
   kit           strike riptide guard_wall purify
   traits        
 
-  overall       [=-----------] 16.5%
+  overall       [=-----------] 15.7%
 
   opponent                      rate    won-lost-drawn  turns  first move
 > fixture-anime.adept (control) 50.0%   100-100-0       73     +16.0%
@@ -8567,11 +8567,11 @@ spar  fixture-anime.adept — Example Adept
   pokemon.poliwag               16.0%   32-168-0        40     +0.0%
   pokemon.riolu                 100.0%  200-0-0         34     +0.0%
   pokemon.squirtle              0.0%    0-200-0         122    +0.0%
+  pokemon.torchic               0.0%    0-200-0         17     +0.0%
 
 both sides bring the first 4 skills and 1 trait their learnset declares.
 every pairing is fought from both slots and added up: the turn queue breaks a
 tie by placement, so the control row shows what a slot alone is worth.
-
 
 
 
@@ -8771,7 +8771,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
 
-the statuses this skill inflicts  1 of 30
+the statuses this skill inflicts  1 of 31
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -8804,11 +8804,11 @@ space chooses a status · type the chance in parts per thousand
        verdure    builds up for its holder to spend · 5 turns · up to 999 stacks
        moisture   builds up for its holder to spend · 5 turns · up to 999 stacks
        heft       builds up for its holder to spend · 4 turns · up to 5 stacks
+       stoked     raises a stat · 2 turns · up to 5 stacks
 
   poison
 
   chance  300      30%
-
 
 
 
@@ -8855,6 +8855,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   fortified    
   quickened    
   evasive      
+  stoked       
   shield       blocks one strike
   block        
   regen        restores every turn
@@ -8879,7 +8880,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   Damages every turn · 3 turns · up to 3 stacks.
 
   Declared figures: a trait amplifying or resisting changes what lands.
-
 
 
 
@@ -9070,7 +9070,7 @@ traits  the declared traits, and who carries each
 
   id             carried by
 > endurance      naruto.naruto@16 pokemon.bulbasaur@16 pokemon.cleffa@16 pokemon.dratini@16 pokemon.happiny@32 pokemon.lapras@16 pokemon.machop@32 pokemon.mag…
-  blaze          pokemon.charmander@16
+  blaze          pokemon.charmander@16 pokemon.torchic@24
   heatproof      pokemon.charmander@16
   virulence      pokemon.bulbasaur@32 pokemon.oddish@16
   venom_blood    pokemon.bulbasaur@24 pokemon.oddish@24
@@ -9084,7 +9084,7 @@ traits  the declared traits, and who carries each
   elusive        pokemon.abra@36 pokemon.cleffa@40 pokemon.gastly@24 pokemon.magnemite@32 pokemon.mew@16 pokemon.mewtwo@40 pokemon.oddish@40 pokemon.pichu@36
   contagion      pokemon.bulbasaur@28 pokemon.gastly@40 pokemon.mew@40 pokemon.oddish@28
   spiteful       pokemon.gastly@32 pokemon.poliwag@36
-  berserk        pokemon.gible@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24
+  berserk        pokemon.gible@44 pokemon.machop@40 pokemon.mewtwo@32 pokemon.riolu@24 pokemon.torchic@44
   unyielding     pokemon.machop@24
   carapace       pokemon.happiny@40 pokemon.squirtle@48
   projection     pokemon.charmander@48
@@ -9092,10 +9092,10 @@ traits  the declared traits, and who carries each
   convalescence  pokemon.happiny@48
   static         pokemon.pichu@16
   magic_guard    pokemon.abra@16
+  quickening     pokemon.torchic@16
 
   endurance
     Always carries toughened.
-
 
 
 
