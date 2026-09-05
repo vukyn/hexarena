@@ -22,11 +22,18 @@ var callersOwnRow = draft.Entry{Seat: wire.Seat("the-callers-own-row"), Step: dr
 //
 // It is the whole observable state on purpose, because it is what a replay has
 // to reproduce: whose turn it is and which decision, what the pool has left,
-// what each side has taken and in what loadout, and whether the draft is
-// finished or abandoned. One string rather than a field-by-field comparison so
-// that a divergence prints as a readable diff — and so that a field added to
-// Pick without being added here is the only way this can quietly stop measuring,
-// which is cheaper to notice than a comparison that silently skipped one.
+// what each side has taken and in what loadout, who has still to arrange, the
+// squads a finished draft fields, and whether it is done or abandoned. One
+// string rather than a field-by-field comparison so that a divergence prints as
+// a readable diff — and so that a field added to Pick without being added here
+// is the only way this can quietly stop measuring, which is cheaper to notice
+// than a comparison that silently skipped one.
+//
+// ⚠️ **It reads Squads as well as Picks, and that is the half the arrange phase
+// added.** A comparison that stopped at the picks would call two drafts equal
+// while their units stood in different cells — and the cells are worth nineteen
+// points of win rate (TODO.md § "Ban and pick" (g)), so they are the last thing
+// a mirror may be allowed to differ on.
 func stateOf(drafting *draft.Draft) string {
 	turn := "nothing due"
 	if seat, step, due := drafting.Turn(); due {
@@ -42,9 +49,22 @@ func stateOf(drafting *draft.Draft) string {
 		}
 		sides = append(sides, strings.Join(taken, ", "))
 	}
-	return fmt.Sprintf("turn %s | done %v | cancelled %v | pool %v | host %s | guest %s",
-		turn, drafting.Done(), drafting.Cancelled(),
-		candidateIDs(drafting), sides[0], sides[1])
+	awaiting := []string{}
+	for _, seat := range drafting.AwaitingArrangement() {
+		awaiting = append(awaiting, string(seat))
+	}
+	fielded := []string{}
+	for _, squad := range drafting.Squads() {
+		standing := []string{}
+		for _, unit := range squad.Units {
+			standing = append(standing, fmt.Sprintf("%s@%s", unit.ID, unit.Slot))
+		}
+		fielded = append(fielded, fmt.Sprintf("%s(%s)", squad.ID, strings.Join(standing, " ")))
+	}
+	return fmt.Sprintf("turn %s | picked %v | done %v | cancelled %v | awaiting %v | pool %v | "+
+		"host %s | guest %s | squads %s",
+		turn, drafting.Picked(), drafting.Done(), drafting.Cancelled(), awaiting,
+		candidateIDs(drafting), sides[0], sides[1], strings.Join(fielded, " vs "))
 }
 
 // TestTheRecordHoldsTheDecisionAndNothingDerived walks a whole draft and holds
@@ -291,6 +311,12 @@ type replayCase struct {
 	// draft has to replay as cancelled or a mirror would show a lobby that is
 	// still waiting for a pick.
 	timeoutAfter int
+	// arrange is the order the two sides arrange in once the picking closes, and
+	// is empty for a case that stops at the picking. ⚠️ It is a **case
+	// parameter** because arrival order is the one thing the record deliberately
+	// does not carry — the entries go in seats order — so a case arranging
+	// guest-first is what proves the replay converges without it.
+	arrange []wire.Seat
 }
 
 // TestARecordReplaysIntoTheSameDraft is the property the whole record exists
@@ -307,6 +333,18 @@ type replayCase struct {
 // Two vacuity guards, because a walk that ran nothing passes every assertion in
 // here: the record must not be empty, and the replay must have applied at least
 // one decision. Both are fatal and both log their figure.
+//
+// ⚠️ **One comparison is deliberately relaxed, and it is the arrange phase's
+// price.** The two arrangements are recorded in seats order rather than arrival
+// order, so replaying the first entry puts the *host's* arrangement into the
+// mirror however the two really arrived — and in a draft the guest arranged
+// first, the original's state at that point says it was waiting on the host. The
+// two states are equal again the moment the second entry is applied. So the
+// comparison is skipped for a StepArrange that leaves the phase open, that skip
+// is counted, and the states are compared by value at the end. That is the
+// design being measured rather than an exception carved out of it: arrival order
+// is a race, so a record carrying it would make two peers' records differ for a
+// draft in which the same decisions were taken.
 func TestARecordReplaysIntoTheSameDraft(t *testing.T) {
 	all := shippedCast(t)
 	for _, one := range []replayCase{
@@ -321,6 +359,15 @@ func TestARecordReplaysIntoTheSameDraft(t *testing.T) {
 		{what: "a 3v3 abandoned by a timeout in the middle of the picking",
 			format: wire.Format3v3, first: wire.SeatHost, bans: []bool{true, false, true, false},
 			timeoutAfter: 7},
+		{what: "a 3v3 played out and arranged, the host first",
+			format: wire.Format3v3, first: wire.SeatHost, bans: []bool{true, false, true, false},
+			arrange: []wire.Seat{wire.SeatHost, wire.SeatGuest}},
+		{what: "a 3v3 played out and arranged, the GUEST first, which the record cannot say",
+			format: wire.Format3v3, first: wire.SeatHost, bans: []bool{true, true, true, true},
+			arrange: []wire.Seat{wire.SeatGuest, wire.SeatHost}},
+		{what: "a 5v5 played out and arranged, five units on nine cells",
+			format: wire.Format5v5, first: wire.SeatGuest, bans: spendEvery(wire.Format5v5),
+			arrange: []wire.Seat{wire.SeatGuest, wire.SeatHost}},
 	} {
 		config := draft.Config{
 			Format: one.format, Pool: draft.NewPool(all), First: one.first,
@@ -349,15 +396,33 @@ func TestARecordReplaysIntoTheSameDraft(t *testing.T) {
 			takeOneDecision(t, played, all)
 			states = append(states, stateOf(played))
 		}
-		// The case's own premise: a played-out draft finishes and an abandoned
-		// one is abandoned. Without this a walk that stopped early would be
-		// replayed faithfully and prove nothing about a whole draft.
-		if one.timeoutAfter > 0 {
+		// The arrange phase, which Turn does not answer for, so it is driven from
+		// outside the loop above rather than inside it.
+		for _, seat := range one.arrange {
+			arrangeSide(t, played, seat)
+			states = append(states, stateOf(played))
+		}
+		// The case's own premise: a played-out draft closes its picking, one that
+		// arranged is done, and an abandoned one is abandoned. Without this a walk
+		// that stopped early would be replayed faithfully and prove nothing about
+		// a whole draft.
+		switch {
+		case one.timeoutAfter > 0:
 			if !played.Cancelled() {
 				t.Fatalf("%s: the draft was meant to be abandoned and is not", one.what)
 			}
-		} else if !played.Done() {
-			t.Fatalf("%s: the draft was meant to be played out and is not done", one.what)
+		case len(one.arrange) > 0:
+			if !played.Done() {
+				t.Fatalf("%s: the draft was meant to be arranged and is not done", one.what)
+			}
+		default:
+			if !played.Picked() {
+				t.Fatalf("%s: the draft was meant to be played out and its picking is not over",
+					one.what)
+			}
+			if played.Done() {
+				t.Fatalf("%s: nobody arranged and the draft calls itself done", one.what)
+			}
 		}
 
 		record, _ := played.Since(0)
@@ -381,13 +446,19 @@ func TestARecordReplaysIntoTheSameDraft(t *testing.T) {
 			t.Fatalf("%s: a fresh draft from the same Config is\n  %s\nand the original began\n"+
 				"  %s", one.what, got, states[0])
 		}
-		applied := 0
+		applied, halfArranged := 0, 0
 		for at, entry := range record {
 			if err := apply(mirror, entry); err != nil {
 				t.Fatalf("%s: replaying entry %d (%+v): %v", one.what, at, entry, err)
 			}
 			applied++
 			if at+1 >= len(states) {
+				continue
+			}
+			// ⚠️ The one relaxation, and it is exactly one entry wide: the first of
+			// the two arrangements. See this test's own comment.
+			if entry.Step == draft.StepArrange && mirror.Arranging() {
+				halfArranged++
 				continue
 			}
 			if got := stateOf(mirror); got != states[at+1] {
@@ -400,8 +471,21 @@ func TestARecordReplaysIntoTheSameDraft(t *testing.T) {
 			t.Fatalf("%s: the replay applied no decisions, so a walk that ran nothing would "+
 				"have passed every comparison above", one.what)
 		}
-		t.Logf("%s: %d decisions, %d entries, %d replayed",
-			one.what, len(states)-1, len(record), applied)
+		// The relaxation is bounded rather than open: at most the first of the two
+		// arrangements may be skipped, and a case with no arrangement skips none.
+		// Without this the `continue` above could grow to swallow a real
+		// divergence and nothing would say so.
+		if want := min(len(one.arrange), 1); halfArranged != want {
+			t.Errorf("%s: %d comparisons were skipped for a half-open arrange phase and %d is "+
+				"the whole of what may be", one.what, halfArranged, want)
+		}
+		// And the end compared by value, which is what the skip above defers to.
+		if got, want := stateOf(mirror), states[len(states)-1]; got != want {
+			t.Errorf("%s: the whole record replayed to\n  %s\nand the original ended\n  %s",
+				one.what, got, want)
+		}
+		t.Logf("%s: %d decisions, %d entries, %d replayed, %d comparison deferred",
+			one.what, len(states)-1, len(record), applied, halfArranged)
 	}
 }
 
@@ -425,6 +509,8 @@ func apply(mirror *draft.Draft, entry draft.Entry) error {
 		return mirror.Pick(entry.Seat, entry.Character)
 	case draft.StepLoadout:
 		return mirror.Loadout(entry.Seat, entry.Stage, entry.Skills, entry.Passives)
+	case draft.StepArrange:
+		return mirror.Arrange(entry.Seat, entry.Slots)
 	case draft.StepTimeout:
 		return mirror.TimedOut(entry.Seat)
 	}

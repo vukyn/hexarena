@@ -40,7 +40,7 @@ that owns the subject wins and the note is the thing to fix.
 - [⚠️ mirror một chiều ≠ phép đo](memory/one-way-mirror-not-a-measurement.md) — bù nhau CHỈ đúng ở 1 unit/phe; phụ thuộc KIT
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
-- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1 xong (pool + Fits); ⚠️ pool KHÔNG cạn được giữa draft; 5v5 thiếu 1; spectator đổi ai thắng
+- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1+2a+2b xong; ⚠️ Turn KHÔNG nới, Done() giờ là CẢ draft; pool KHÔNG cạn được giữa draft; spectator đổi ai thắng
 - [v0.1.0 đã release](memory/hexarena-v0-1-0-released.md) — go install @v0.1.0 khai đúng tag; ⚠️ path không /vN nên CHỈ tag được v0/v1; tag trên proxy BẤT BIẾN
 - [4 đội starter, dùng được ngay](memory/hexarena-starter-squads.md) — ⚠️ Rate() BỎ trận Endless khỏi mẫu số: healer gặp healer hoà mãi mà vẫn khoe 85%
 - [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ danh sách import ≠ danh sách đồng hồ (context.WithTimeout)
@@ -63,7 +63,7 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena TUI i18n + glosses](memory/hexarena-tui-i18n.md) — vi default; data glosses may miss; label widths MEASURED
 - [hexarena log gloss](memory/hexarena-log-gloss.md) — #171 glosses skill/status/trait; ⚠️ skillGloss 0/43 shipped, names live in JSON
 - [hexarena log turn numbers](memory/hexarena-log-turn-numbers.md) — ⚠️ `A1 turn 5` then `E1 turn 4` is NOT a bug; Turn = unit's OWN count
-- [bonus xếp đội (CHƯA LÀM)](memory/hexarena-composition-bonuses.md) — 7 quyết định chốt; ⚠️ origin miễn phí 14/15; đếm 1 lần vào trận
+- [bonus xếp đội (CHƯA LÀM)](memory/hexarena-composition-bonuses.md) — 7 quyết định chốt; ⚠️ origin miễn phí 17/18; đếm 1 lần vào trận
 - [hexarena squad builder](memory/hexarena-squad-builder.md) — TUI dựng đội→squads.json; ĐỔI PHE mới là phép đo (mirror=500‰)
 - [hexarena battle-screen budget](memory/hexarena-battle-screen-budget.md) — #162 can't fit 80x24; drop board whole; #169 follow=state not offset
 - [hexarena battle-screen summaries](memory/hexarena-battle-screen-summaries.md) — #160 1-line derived summary + ?; screen needs h>=32

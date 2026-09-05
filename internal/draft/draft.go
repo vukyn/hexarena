@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/wire"
 )
@@ -54,6 +55,14 @@ func indexOf(seat wire.Seat) (int, bool) {
 //
 // The zero Step is not a step. Turn reports whether anything is due with a bool
 // rather than with a zero value, so an absent step means what it says.
+//
+// ⚠️ **The vocabulary is wider than what Turn answers, and two of the five are
+// deliberately outside it.** Turn answers a ban, a pick and a loadout — one seat
+// and one step — because every refusal in this package is written on there being
+// exactly one open decision. StepTimeout is a thing that happened to a draft
+// rather than a decision anybody is due, and StepArrange is **two** decisions
+// pending at once, which is the reason the arrange phase has accessors of its
+// own. → Arranging, AwaitingArrangement.
 type Step string
 
 const (
@@ -67,6 +76,18 @@ const (
 	// character just picked will field. It belongs to whoever took that pick and
 	// nothing else can be decided until it is in.
 	StepLoadout Step = "loadout"
+	// StepArrange is a side putting its picks on its own 3x3 formation, which is
+	// the phase that runs once picking closes — privately and simultaneously, so
+	// **Turn never answers it either**: two arrangements are pending at once and
+	// Turn answers one seat and one step. → Arrange, Arranging,
+	// AwaitingArrangement.
+	//
+	// ⚠️ **Two of these entries are recorded together and neither is recorded
+	// when it arrives**, which is the one place this vocabulary is not one entry
+	// per decision as it is taken. An entry is public the moment it is appended,
+	// so appending the first arrangement would show it to the other player. →
+	// Arrange, and Entry.Slots.
+	StepArrange Step = "arrange"
 	// StepTimeout is not a decision anybody is due to make and **Turn never
 	// answers it**: it is the transport reporting that an allowance ran out,
 	// which per TODO.md § "Ban and pick" (c) cancels the whole draft.
@@ -80,24 +101,28 @@ const (
 // Pick is one character a side took, with the loadout it took it in: a
 // placement.Placement **minus its Slot and its ID**.
 //
-// ⚠️ **The slot is not a draft decision, and this type is that decision made.**
-// TODO.md § "Ban and pick" (g): once the draft closes both sides arrange their
-// own three (or five) **privately and simultaneously**, which is a different
-// shape from this one — two decisions pending at once, and each side's secret
-// until both are in — and it is step 2b. So there is deliberately no
-// `Squads() [2]placement.Squad` here: hex.Offset's zero value is a real cell
-// (the ally back corner, exactly the trap wire.Act documents for its Aim), so a
-// squad handed out with Slot left at its zero would *look* authored, and what
-// happens to it is worse than a visible gap — placement.Squad.Validate refuses
-// the second unit standing where the first already is, so the squad is turned
-// away at the moment it is fought, naming a cell nobody chose. An output that
-// cannot be used is worse than an output that is honestly incomplete.
+// ⚠️ **The slot is not a pick's decision, and this type is that decision made.**
+// TODO.md § "Ban and pick" (g): once picking closes both sides arrange their own
+// three (or five) **privately and simultaneously**, which is a different shape
+// from this one — two decisions pending at once, and each side's secret until
+// both are in. That is the arrange phase, and Arrange is where a Slot arrives.
 //
-// **What turning these into squads still needs**, so a reader does not have to
-// work it out: a Slot per pick from the arrange phase, and an ID unique within
-// the side (placement.Placement.ID is per squad, and Squad.Take prefixes the
-// side, so a draft has nothing to invent there). Level and Stage are already
-// resolved here, so nothing else is owed.
+// ⚠️ **So a Pick is deliberately not a placement, and Squads answers only once
+// the phase has closed.** hex.Offset's zero value is a real cell (the ally back
+// corner, exactly the trap wire.Act documents for its Aim), so a squad handed
+// out with Slot left at its zero would *look* authored, and what happens to it
+// is worse than a visible gap — placement.Squad.Validate refuses the second unit
+// standing where the first already is, so the squad is turned away at the moment
+// it is fought, naming a cell nobody chose. An output that cannot be used is
+// worse than an output that is honestly incomplete, which is why Squads answers
+// two squads with nobody in them until Done.
+//
+// **What turning these into squads takes**, from this end: a Slot per pick from
+// the arrange phase, and an ID unique within the side, which is the **character
+// id** — a drafted side cannot double up, because the pool is exclusive.
+// placement.Placement.ID is per squad and Squad.Take prefixes the side, so a
+// draft has nothing to invent there. Level and Stage are already resolved here,
+// so nothing else is owed.
 //
 // ⚠️ **A drafted squad cannot double up, and that does not contradict the
 // design record — it scopes it.** CLAUDE.md records "one squad may field the
@@ -199,6 +224,23 @@ type Draft struct {
 	awaiting bool
 	pending  int
 
+	// arranged is each side's arrangement, indexed by seats: the cell for each of
+	// that side's picks, in pick order.
+	//
+	// ⚠️ **It is held here rather than recorded as it arrives, and that buffer is
+	// the whole mechanism the arrange phase's secrecy costs.** An entry is public
+	// the moment it is appended and a mirror replaying the record computes the
+	// state, so appending the first arrangement when it arrives *is* showing it
+	// to the other player. Both go in together, in seats order. → Arrange.
+	//
+	// ⚠️ Absence is the **empty slice** here and needs no flag beside it, which
+	// is the opposite call from awaiting/pending above and for a stated reason:
+	// Arrange refuses a slice whose length is not that side's pick count, and no
+	// format fields nought units, so a stored arrangement always holds at least
+	// three cells and an empty one cannot be one. A flag would be Entry.Character's
+	// mistake — two fields that could disagree about one fact.
+	arranged [seatCount][]hex.Offset
+
 	// abandoned is the seat whose allowance ran out, and empty for a draft that
 	// was not cancelled. The zero wire.Seat already means "no seat", so this is
 	// one statement rather than a bool beside a name that could disagree with it.
@@ -262,18 +304,28 @@ func New(config Config) (*Draft, error) {
 }
 
 // Turn is whose decision is due and which kind, and false when nothing is: a
-// draft that has finished, and one that was cancelled.
+// draft whose picking is over, and one that was cancelled.
 //
-// ⚠️ **The false does not tell those two apart and is not meant to** — Done and
-// Cancelled are what a caller asks, and they exist as two questions because a
-// finished draft has two rosters to field and an abandoned one has none.
+// ⚠️ **Turn answers one seat and one step, and it never widened for the arrange
+// phase.** Every refusal in this package is written on there being exactly one
+// open decision — the loadout refusal ("nothing else can be decided until the
+// form, the skills and the trait are chosen") is that assumption spoken aloud —
+// and two arrangements are pending at once. Widening this to answer a *set*
+// would change every one of those refusals for the sake of one phase, so the
+// phase is asked about through Arranging and AwaitingArrangement and this keeps
+// answering ban / pick / loadout and nothing else. → TODO.md § "The arrange
+// phase".
+//
+// ⚠️ **The false does not tell three states apart and is not meant to** — Picked,
+// Arranging, Done and Cancelled are what a caller asks, and they exist as
+// separate questions because only one of them has two squads to field.
 //
 // A loadout's owner is derived rather than stored: it is whoever took the pick
 // the draft is waiting on, and storing the seat beside the pick would be a
 // second statement of one fact.
 func (d *Draft) Turn() (wire.Seat, Step, bool) {
 	switch {
-	case d.Cancelled() || d.Done():
+	case d.Cancelled() || d.Picked():
 		return "", "", false
 	case d.awaiting:
 		return d.seatAt(d.picks - 1), StepLoadout, true
@@ -291,16 +343,33 @@ func (d *Draft) seatAt(n int) wire.Seat {
 	return seats[(d.first+n)%seatCount]
 }
 
-// Done reports whether the draft was played out: every ban spent or skipped,
-// every pick taken and every pick's loadout chosen.
+// Picked reports whether the ban-and-pick was played out: every ban spent or
+// skipped, every pick taken and every pick's loadout chosen.
 //
-// A cancelled draft is **not** done. It has no rosters, so a caller that treated
-// the two as one would field a side nobody picked.
-func (d *Draft) Done() bool {
+// ⚠️ **This is what Done used to mean, and the rename was taken rather than
+// left.** Adding the arrange phase gave "is this draft over" two answers, and
+// the dangerous one is the one a caller reaches for before fielding a squad — so
+// Done is the whole thing now (picking *and* arrangement, the state in which
+// Squads answers) and this is the narrower half it was split from. What is
+// written against Picked is exactly what was written against the old Done: Turn
+// closes on it, Arranging opens on it, and Picks is what it produces. The
+// alternative — leaving Done alone and adding a third name for the whole — was
+// less churn and left Done naming a draft nothing can field.
+//
+// A cancelled draft is **not** picked and not done. It has no rosters, so a
+// caller that treated them as one would field a side nobody picked.
+func (d *Draft) Picked() bool {
 	return !d.Cancelled() && !d.awaiting &&
 		d.bans == 2*BansPerSide(d.format) &&
 		d.picks == 2*PicksPerSide(d.format)
 }
+
+// Done reports whether the **whole** draft is over: the ban-and-pick played out
+// and both sides arranged. It is the state in which Squads answers, which is the
+// question a caller asking this is about to ask next.
+//
+// A cancelled draft is not done, for the reason Picked gives.
+func (d *Draft) Done() bool { return d.Picked() && d.arrangedBoth() }
 
 // Cancelled reports whether the draft was abandoned, which today happens for
 // exactly one reason: an allowance ran out. → TimedOut.
@@ -479,12 +548,32 @@ func (d *Draft) Loadout(seat wire.Seat, form string, skills, passives []string) 
 // A timeout for a seat the draft is not asking is **refused**, and what the
 // refusal protects is the decision: a transport reporting a spurious timeout
 // must not cancel a draft on behalf of a seat nobody is waiting on.
+//
+// ⚠️ **It covers the arrange phase too, where the seat it may name is any seat
+// that has not arranged rather than the one on turn** — both are being asked at
+// once, so both have an allowance running. A seat that has already arranged is
+// refused for the reason above: it has answered, so there is nothing of its own
+// left to run out.
 func (d *Draft) TimedOut(seat wire.Seat) error {
-	onTurn, open, due := d.Turn()
-	switch {
-	case d.Cancelled():
+	if d.Cancelled() {
 		return fmt.Errorf("this draft was already cancelled when %s ran out of time, so a "+
 			"second timeout has nothing to end", d.abandoned)
+	}
+	if d.Arranging() {
+		index, seated := indexOf(seat)
+		switch {
+		case !seated:
+			return fmt.Errorf("%q is not one of the two seats a room hands out, so it has no "+
+				"arrangement to be waited on and that timeout cancels nothing", seat)
+		case len(d.arranged[index]) > 0:
+			return fmt.Errorf("%s has already arranged, so it has no allowance left to run out: "+
+				"this draft is waiting on %s", seat, wordSeats(d.AwaitingArrangement()))
+		}
+		d.abandon(seat)
+		return nil
+	}
+	onTurn, open, due := d.Turn()
+	switch {
 	case !due:
 		return fmt.Errorf("this draft is finished, so there is no open decision for an " +
 			"allowance to run out on")
@@ -492,13 +581,40 @@ func (d *Draft) TimedOut(seat wire.Seat) error {
 		return fmt.Errorf("the draft is waiting on %s to %s and not on %q, so that timeout "+
 			"cancels nothing", onTurn, open, seat)
 	}
-	d.abandoned = seat
-	d.record(Entry{Seat: seat, Step: StepTimeout})
+	d.abandon(seat)
 	return nil
 }
 
-// Picks is what a finished draft produces: each side's characters and the
-// loadouts they were taken in.
+// abandon cancels the draft and records the timeout that did it, which is the
+// one way a draft ends without being played out.
+//
+// ⚠️ **The behavioural claim is that the record gets the timeout and nothing
+// else** — a buffered arrangement is not appended on the way out, because doing
+// so would leak exactly what the buffer exists to hide, to a draft that is being
+// thrown away anyway. That claim is held by this function only ever recording
+// one entry, and TestATimeoutInTheArrangePhaseDiscardsWhatItHeld reads the
+// record for it.
+//
+// ⚠️ **Clearing the buffer is a release rather than a guard, and it is measured
+// as unobservable** — deleting the loop below leaves the whole suite green, and
+// nothing here is relying on it: every accessor that could answer from the
+// buffer gates on Cancelled or Picked first, so a cancelled draft reports
+// nothing to arrange, nothing awaited and no squads whether the cells are still
+// held or not. It stays because "the arrangement is discarded" should be true of
+// the state and not only of the record — an accessor added later must not be able
+// to answer out of a draft that was thrown away — and it is written down as
+// unobservable so the next reader does not go looking for the test that holds it.
+func (d *Draft) abandon(seat wire.Seat) {
+	d.abandoned = seat
+	for index := range d.arranged {
+		d.arranged[index] = nil
+	}
+	d.record(Entry{Seat: seat, Step: StepTimeout})
+}
+
+// Picks is what the ban-and-pick produces: each side's characters and the
+// loadouts they were taken in. → Picked, which is the state in which it is
+// complete, and Squads, which is these picks with a cell each.
 //
 // Indexed by seat in the order a room hands seats out — **[0] is wire.SeatHost
 // and [1] is wire.SeatGuest**, whichever of the two decided first. It is an
@@ -506,7 +622,10 @@ func (d *Draft) TimedOut(seat wire.Seat) error {
 // `[2][]Pick` because seatCount is two.
 //
 // ⚠️ **This is deliberately not a pair of squads**, and Pick's own comment says
-// why and what the missing half is: the slot is step 2b's decision.
+// why and what the missing half is: the slot is the arrange phase's decision and
+// Squads is where the two meet. Picks stays the shape it is because the *order*
+// here is the order the picks were taken, which is what Arrange's slice is
+// indexed by — `slots[i]` is the cell for `Picks()[seat][i]`.
 //
 // It is safe to read mid-draft and answers what has been taken so far, including
 // a pick whose loadout is still open — a pick with no skills, which Turn is what
@@ -531,9 +650,15 @@ func (d *Draft) due(seat wire.Seat, step Step) error {
 		return fmt.Errorf("this draft was cancelled when %s ran out of time, so %q cannot %s: "+
 			"a draft that runs out of time is not resumed, it is played again from a new room "+
 			"code", d.abandoned, seat, step)
+	// The picking being over is two different states now, and they get two
+	// different sentences: one has a decision open and the other has none.
+	case d.Arranging():
+		return fmt.Errorf("the picking is over — every ban is spent or skipped and every pick "+
+			"has its loadout — and what is open now is the arrangement, so %q cannot %s: the two "+
+			"sides arrange at once, which Arrange takes and Turn does not answer for", seat, step)
 	case !anyDue:
-		return fmt.Errorf("this draft is finished — every ban is spent or skipped and every "+
-			"pick has its loadout — so %q cannot %s", seat, step)
+		return fmt.Errorf("this draft is finished — every ban is spent or skipped, every pick "+
+			"has its loadout and both sides have arranged — so %q cannot %s", seat, step)
 	case !seat.Valid():
 		return fmt.Errorf("%q is not one of the two seats a room hands out, so it has no "+
 			"decision to make in this draft", seat)
