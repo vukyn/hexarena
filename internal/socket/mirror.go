@@ -5,17 +5,26 @@ import (
 	"sync"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/hex"
+	"github.com/vukyn/hexarena/internal/draft"
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
-// Mirror is a client's own battle, driven by the five messages a server sends.
+// Mirror is a client's own battle, driven by the six messages a server sends.
 //
 // It is a **mirror** in the sense the design record means: it builds its own
 // *battle.Battle from the seed and roster on wire.Start and steps it with the
 // decisions on wire.Turn, so it computes the state by computing the battle
 // rather than by being told it. Nothing about the board, the health, the
 // statuses or the queue ever crosses the wire, because none of it has to.
+//
+// ⚠️ **It mirrors the DRAFT the same way**, in a room that has one: it builds its
+// own *draft.Draft from Welcome.Drafts and steps it with the decisions on
+// wire.Drafted, so the pool, both sides' picks and whose decision is due are
+// computed rather than told. → draft.go, which is the whole of the client's draft
+// half, and which carries the measurement of what a client could not do before
+// it existed.
 //
 // # ⚠️ Why this is production code and not a test fixture
 //
@@ -75,9 +84,24 @@ type Mirror struct {
 
 	seat  wire.Seat
 	books battle.Books
+	// characters is the cast a draft's pool is drawn from, and nil is the
+	// ordinary case: a client in a room that does not draft needs none. A welcome
+	// saying the room drafts refuses a mirror without one rather than sitting
+	// there unable to compute the pool. → openDraft.
+	characters *cast.Book
 
 	welcome wire.Welcome
 	seated  bool
+
+	// drafting is this client's own mirror of the ban and pick, built the moment
+	// a welcome says the room drafts, and nil in a room that does not. →
+	// draft.go, which holds everything about it.
+	drafting *draft.Draft
+	// replayed is how many recorded decisions have been taken back through it,
+	// and stale how many answers were refused for naming another decision. Both
+	// are counts for the reason compared is one. → DraftSight.Replayed, Stale.
+	replayed int
+	stale    int
 
 	// The battle in progress, and this client's own cursor into its record.
 	fight  *battle.Battle
@@ -142,10 +166,17 @@ type Fought struct {
 // Mine reports whether this client won the battle.
 func (f Fought) Mine() bool { return f.Decided && f.Winner == f.Side }
 
-// NewMirror is a client's battle-to-be: it holds the books and knows which seat
-// it is, and everything else arrives on a message.
-func NewMirror(seat wire.Seat, books battle.Books) *Mirror {
-	return &Mirror{seat: seat, books: books}
+// NewMirror is a client's battle-to-be: it holds the books, holds the cast a
+// draft would be drawn from, and knows which seat it is — and everything else
+// arrives on a message.
+//
+// ⚠️ The cast is a **third book** rather than something read off a message,
+// because it is the same kind of thing as the other two: a draft's pool is
+// draft.NewPool over it, and what makes this client's pool the room's pool is the
+// data digest at the gate refusing a peer whose cast is not this cast. A nil one
+// is legal and is what a client that never drafts passes. → openDraft.
+func NewMirror(seat wire.Seat, books battle.Books, characters *cast.Book) *Mirror {
+	return &Mirror{seat: seat, books: books, characters: characters}
 }
 
 // Seat is which of the room's two places this client took.
@@ -357,6 +388,12 @@ type Sight struct {
 	// every code the room has sent, in order.
 	Fought   []Fought
 	Refusals []wire.Code
+	// Draft is this client's own mirror of the ban and pick, and it is the zero
+	// DraftSight in a room that does not draft.
+	//
+	// ⚠️ **A snapshot, never the *draft.Draft** — → DraftSight, which carries the
+	// argument and the reason Fight beside it is the one deliberate exception.
+	Draft DraftSight
 }
 
 // Read runs fn under this mirror's read lock, which is the only safe way for a
@@ -392,6 +429,7 @@ func (m *Mirror) Read(fn func(Sight)) {
 		Closure:  m.closure,
 		Fought:   m.fought[:len(m.fought):len(m.fought)],
 		Refusals: m.refusals[:len(m.refusals):len(m.refusals)],
+		Draft:    m.draftSight(),
 	})
 }
 
@@ -458,9 +496,14 @@ func (m *Mirror) Decide(choose battle.Chooser) (wire.Body, bool) {
 	return wire.Act{Skill: choice.Skill, Aim: hex.At(choice.Aim)}, true
 }
 
-// Receive is the client's whole message loop: one of the five server-bound
-// messages in, and an error out when this client can no longer claim to be
+// Receive is the client's whole message loop: one of the **six** messages a
+// server sends in, and an error out when this client can no longer claim to be
 // fighting the same battle.
+//
+// ⚠️ **It was five until the draft, and the missing arm was not a gap in a
+// screen — it was a drafting room being unjoinable by any real client.** The
+// default below answers *"was sent a X, which no server sends"*, so a
+// wire.Drafted errored the client and closed the connection. → draft.go.
 //
 // ⚠️ It takes both a body and a pointer to one, because the two producers in
 // this repository hand over different things: room.Outbound carries values, and
@@ -494,6 +537,10 @@ func (m *Mirror) Receive(body wire.Body) error {
 		return m.apply(*message)
 	case wire.Turn:
 		return m.apply(message)
+	case *wire.Drafted:
+		return m.drafted(*message)
+	case wire.Drafted:
+		return m.drafted(message)
 	case *wire.Closed:
 		return m.closed(*message)
 	case wire.Closed:
@@ -508,6 +555,13 @@ func (m *Mirror) Receive(body wire.Body) error {
 // welcomed takes the room's configuration, and refuses a welcome addressed to
 // another seat: a client that read one for the other would count somebody
 // else's allowance down.
+//
+// ⚠️ **A welcome saying the room drafts is where this client's own draft is
+// built**, because it is the first and only moment a client learns there is one.
+// The hello goes first and cannot know — which is why a player joining a drafting
+// room with a squad selected is refused with wire.CodeSquadUnwanted and joins
+// again with none. → openDraft, and TODO.md § *the handshake wrinkle*, which
+// names the two-phase handshake that would not need the refusal.
 func (m *Mirror) welcomed(welcome wire.Welcome) error {
 	if welcome.Seat != m.seat {
 		return fmt.Errorf("%s was welcomed into the %q seat", m.seat, welcome.Seat)
@@ -519,6 +573,9 @@ func (m *Mirror) welcomed(welcome wire.Welcome) error {
 			m.seat, welcome.TurnCap)
 	}
 	m.welcome, m.seated = welcome, true
+	if welcome.Drafts {
+		return m.openDraft(welcome)
+	}
 	return nil
 }
 

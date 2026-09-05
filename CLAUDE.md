@@ -11,8 +11,13 @@ what the game is; this file is about how the code is allowed to behave.
 matters — and they live **in the repository** because a machine's own Claude
 memory directory is workspace-scoped and machine-local: this repo opened on
 another machine, or outside the workspace the notes were written in, arrived with
-none of them. `.claude/` here is gitignored (worktrees and per-agent scratch), so
-tracked is the only place that travels.
+none of them. Almost all of `.claude/` here is gitignored (worktrees and
+per-agent scratch), so tracked is the only place that travels.
+⚠️ **"`.claude/` is gitignored" was written flat and is not quite true** — the
+`.gitignore` reads `/.claude/*` with `!/.claude/agent-memory`, so the root
+agent-memory subtree **is tracked** while every nested `.claude/` a session
+creates in a sub-directory is not. Worth knowing before a commit: a change under
+`.claude/agent-memory/` is a change that goes into the PR.
 
 It is a **distillation, not the record.** This file, `TODO.md` and `README.md`
 stay the authority; where a note disagrees with the file that owns the subject,

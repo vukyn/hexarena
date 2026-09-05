@@ -1961,6 +1961,221 @@ is only so the shape is readable.
             `semantic_search_nodes_tool`. The self-review of the step's own
             production file was therefore done by hand, and that is where the
             `Finished()` bug above came from.
+      - [x] **The client mirrors the draft — step 5a. Done 2026-09-06.** A real
+            `socket.Client` can join a drafting room now, draft a side and fight
+            with it: `Mirror` builds its own `*draft.Draft` from `Welcome.Drafts`,
+            steps it through `draft.Draft.Apply` on every `wire.Drafted`, offers
+            the open decision through `DraftAsking`, and sends the answer as a
+            `wire.Decide`. The client's whole draft half is
+            `internal/socket/draft.go`; `internal/room`, `internal/wire` and
+            `internal/draft` are **untouched**. Still **no screen** — that is 5b
+            (the draft screen) and 5c (the arrange screen) — and no language book
+            was touched, so nothing draws a ban yet.
+            ⚠️ **A DRAFTING ROOM WAS UNJOINABLE BY ANY REAL CLIENT UNTIL THIS
+            STEP, and how that was possible is the transferable half.**
+            `Mirror.Receive` had arms for five messages and a default answering
+            *"was sent a X, which no server sends"* — so a `wire.Drafted` **errored
+            the client and tore the connection down**, and `internal/socket`
+            imported `internal/draft` zero times. Step 4's tests all passed
+            because they drive the room with **in-process fakes** rather than
+            through `socket.Client`: a fake that mirrors a draft measures
+            `internal/draft` and `internal/room` and says nothing whatsoever about
+            whether the transport can carry one. Same shape as the two fixtures
+            `CLAUDE.md` already records (`plainTerminal`, `everyScreen`'s shared
+            battle) at the level of a **package boundary** rather than a branch.
+            ⚠️ **THE TWO `ClientOptions` DECISIONS, and both were right.** The cast
+            book (`ClientOptions.Characters`) and the draft chooser
+            (`ClientOptions.Draft`) go on the options struct rather than onto
+            `Dial` or `Play`. `Dial`'s and `Play`'s signatures are byte-for-byte
+            what they were, `cmd/hexarena-tui` and `cmd/hexarena-host` needed no
+            change at all, and a caller that never drafts writes neither field —
+            which is the argument `ClientOptions`' own doc comment already makes
+            for `Timings` and `Stepped`. Two refinements the brief did not name:
+            the cast is the **book** and not a `draft.Pool`, because `draft.NewPool`
+            is the single declaration of *"the cast minus every character held
+            back"* and a caller handing a pool in could hand one built from the
+            whole book; and `NewMirror` **did** grow a third parameter (5 call
+            sites, 4 of them tests) rather than the cast arriving on a message —
+            it is the same kind of thing as `battle.Books`, and a mirror welcomed
+            into a drafting room without one is refused **at the welcome**, so a
+            client that could never take part never joins.
+            ⚠️ **A nil draft chooser fails at the point of being ASKED and not at
+            the join**, which is the one place the brief left a choice. Refusing
+            at `Dial` would be louder and would also refuse a caller with nothing
+            to decide — a spectator, when there is one — so the failure is in
+            `Client.answer`, naming what is missing.
+            `TestAClientWithNoDraftChooserFailsRatherThanWaiting`.
+            ⚠️ **`Sight` carries a SNAPSHOT and the type-level mutation does not
+            compile**, which is worth writing down because it is stronger than the
+            test that was asked for. `Sight.Draft` is a `DraftSight` — every field
+            a value, and `internal/draft` clones everything it hands out
+            (`Picks`, `Squads`, `Candidates`, `AwaitingArrangement` each build a
+            fresh slice), so nothing in a snapshot can alias the draft the `Play`
+            goroutine is stepping. Putting a `*draft.Draft` there **instead**
+            builds fine and leaves the *test* package unable to compile, so the
+            mutation cannot be run; putting one there **beside** the snapshot
+            compiles and passes everything, which is the honest gap and is caught
+            by review alone. What a test can see is the aliasing half —
+            `TestASightsDraftIsASnapshotAndNotTheDraft` keeps a reading past the
+            callback, bans a character, and holds that the kept reading still
+            names it while the live one does not.
+            ⚠️ **The answer says which decision it is for, and the step alone is
+            not enough.** `DraftAnswer.For` is a `DraftDue` — seat, step, the
+            character a loadout is owed for, and **how many decisions the record
+            held when the decision was raised** — and `DecideDraft`'s whole check
+            is `answer.For == prompt.Due`. The count is what closes the hazard
+            `wire.Decide` documents and declines to solve: a seat's two ban slots
+            have the other seat's between them, so an answer given for the first
+            and delivered while the second is open carries the *same* step and the
+            same absent character, which is everything the wire has. It is
+            deliberately **local** and never travels — the room holds its own
+            record and has no use for a client's count of it — so this is routing
+            between a screen and its own chooser rather than protocol content.
+            `TestDecideDraftRefusesAnAnswerForAnotherDecision` asserts the premise
+            (the two decisions are indistinguishable by step and subject) before
+            it asserts the refusal, and `Mirror.Stale()` counts it for the reason
+            `table.late` is counted: the refusal sends nothing and closes nothing,
+            so it leaves no other trace.
+            ⚠️ **The lock ordering is `Decide`'s, unchanged and for the measured
+            reason.** `DecideDraft` releases the read lock **before** calling the
+            chooser. `TestDecideDraftDoesNotHoldTheLockAcrossTheChooser` builds the
+            same three-way the battle's test does, and the mutation confirms the
+            mechanism: with the lock held the **renderer still gets in** (an
+            RWMutex admits several readers) and the **writer** is what blocks —
+            *"a message could not be taken in within 5s while a draft chooser was
+            waiting"* — so a version built on "two readers cannot both be in" would
+            measure nothing.
+            ⚠️ **`Play` now answers BEFORE its first read, and that is what makes a
+            drafting room joinable at all.** A room that drafts sends **nothing**
+            when its draft opens (`bothTaken` returns `nil, nil`; a `wire.Drafted`
+            must not carry no decisions), so the host's first ban has no message to
+            trigger it and a loop that read first sat there for ever. Measured:
+            deleting the pre-read answer hangs
+            `TestTwoRealClientsDraftAndFightOverALoopbackListener` at its 60s
+            bound. The answering half of the loop moved into `Client.answer` so it
+            has one spelling for both calls rather than two.
+            ⚠️ **AND THAT EXPOSES A REAL PROTOCOL GAP THE BRIEF DID NOT NAME:
+            nothing tells the host that the room is full.** A client's own draft is
+            due its first decision the moment its welcome arrives, and a welcome
+            arrives when *this* seat is seated rather than when the room fills — but
+            the room refuses a decision until **both** seats are taken
+            (`draftOpen`). So the host sends its first ban into a one-player room,
+            is refused `CodeNotYourTurn`, and — because a refusal leaves the
+            decision open — sends it again. **Measured: five refusals** before the
+            second client arrived, with the host's loop started first as the
+            undrafted end-to-end test starts it. The headline test therefore dials
+            **both** clients before starting either loop, and says so in as many
+            words. Three things worth knowing before this is picked up:
+            **(1)** a *real* client does not spin, because its chooser blocks on a
+            player — what a real player gets instead is a ban made before an
+            opponent arrived being **thrown away**, which is 5b's to draw;
+            **(2)** the retry-on-refusal loop is currently the *only* mechanism
+            that would ever get the host's first ban through, so a memo of
+            "already answered this decision" would turn the spin into a **stall**
+            and must not be added on its own; and
+            **(3)** the same loop is an unbounded hot loop whenever a decision is
+            genuinely illegal rather than merely early — the pool mutation below
+            demonstrates it, and the battle path has carried the identical shape
+            since `wire.Refused` existed (a refused `wire.Act` is re-sent at once,
+            for ever).
+            ⚠️ **Two candidate fixes, and neither is a client fix.** Either the
+            room **announces** that its draft is open when the second seat is taken
+            (a new server→client kind, since an empty `wire.Drafted` is refused by
+            design and a second `wire.Welcome` would re-run `openDraft`), or the
+            **first decision belongs to the seat that filled the room** — which is
+            the guest, always, and is the only event a client can hang "the draft
+            has begun" on today. The second is a one-word change in `room.New` and
+            in `Mirror.openDraft`; it is **not** taken here because *"who bans
+            first is the host"* is settled decision (f) and a game rule, and
+            because `Config.First` exists precisely so that question can be
+            reopened deliberately. Note the mutation table below shows guest-first
+            in the mirror **alone** hangs, which is the half that says the two ends
+            have to move together.
+            ⚠️ **THE HANDSHAKE WRINKLE, recorded rather than solved.** A client
+            cannot know the room drafts until it is **welcomed**, and the hello —
+            which carries its squad — goes first. So a player joining a drafting
+            room with a squad selected gets `CodeSquadUnwanted` and joins again
+            with none, and the shipped Vietnamese wording already tells them to do
+            exactly that (*"vào lại mà đừng chọn đội"*): the **refusal is the
+            discovery mechanism**. The better shape is a **two-phase handshake**
+            where the room welcomes before the client commits a squad, which would
+            close this *and* the gap above in one — and it is a protocol change
+            rather than a client fix. Naming it is what stops the next reader
+            treating the refusal as a bug.
+            ⚠️ **THE TEST THAT IS THE POINT: two real `socket.Client`s draft and
+            then fight over a real socket, headless** —
+            `TestTwoRealClientsDraftAndFightOverALoopbackListener`, in **0.04s**.
+            It asserts by value that both clients replayed the record into the
+            **same** two squads, that the roster each client's own engine opened
+            the battle on **is** that drafted pair resolved with home enlisted
+            first, and that the twelve — six — drafted units are that many distinct
+            characters (the exclusive pool, not any refusal). Measured on seed 11
+            and **identical to step 4's in-process figures**, which is itself the
+            claim that the socket path computes the same draft: an 18-decision 3v3
+            draft, host `dratini`/`gible`/`lapras` against guest
+            `gastly`/`happiny`/`machop`, home host, 65 turns, victory, verdict
+            `won`. Those figures are logged and not asserted.
+            ⚠️ **The vacuity guards**, since *"it finished"* means nothing on its
+            own: the battle must **not** be `Capped` (a cap is a hang detector
+            firing rather than an ending — the engine concluded nothing about it);
+            each client compared a digest on every turn and at least **thirty** of
+            them; the replayed-decision count is the derived
+            `2*bans + 4*picks + 2`; `Mirror.Stale()` is nought; and the error sink
+            and both refusal lists are empty — which is sharper for a draft than
+            for a battle, because every draft legality refusal travels as
+            `CodeIllegalAction`, so a pool or a sequence that had parted company
+            shows up as a **code** rather than as a wrong board.
+            ⚠️ **The opening roster is captured on the redraw hook**, not read at
+            the end: a finished battle's `Units()` may hold summons the roster
+            never placed, so the reading a handover claim needs is the one taken
+            the moment the battle arrived. No production state was added for it.
+            ⚠️ **Eight mutations, each measured, with the test that caught it.**
+            The `Drafted` arm deleted (4 tests, the headline one among them); the
+            record applied **in reverse** (2 — and ⚠️ **the headline test cannot
+            see it**, because every batch a room sends holds one entry except the
+            arrange pair and that reverses to a legal state, which is why
+            `TestADraftedIsAppliedInTheOrderItCarries` builds the synthetic
+            two-seat batch a spectator at cursor nought would be handed); the
+            `*draft.Draft` on `Sight` (**does not compile** — see above); the read
+            lock **held across** the draft chooser (1, bounded at 5s, naming the
+            writer as what stuck); a **stale answer** applied to the open decision
+            (1, and it fails three ways: sent, uncounted, and the honest answer
+            uncounted too); the pool built from the **whole cast** rather than
+            `NewPool` (3, and the headline test **hangs** rather than failing —
+            the client bans the one held-back character, the room refuses it as
+            illegal, and the client re-sends for ever, which is finding (3)
+            above); the mirror's first seat made the **guest** (7, headline test
+            hangs); and `Play` reading **before** it answers (1, headline test
+            hangs). Every one of the three hangs is a 60s bound reporting rather
+            than the suite hanging, which is the rule `CLAUDE.md` states about
+            every end-to-end bound in this repository.
+            ⚠️ **No golden moved**, which is what a step with no screen should do,
+            and `make check` was run to confirm it rather than assumed.
+            ⚠️ **The knowledge graph could not review the new file, exactly as in
+            step 4.** `internal/socket/draft.go` and `drafted_test.go` are
+            **untracked**, the graph enumerates from git, and a full rebuild
+            (408 files) left them out — so `detect_changes_tool` reported the six
+            *modified* files and named `Client`/`Dial`/`Play`/`answer` as untested
+            while every socket end-to-end test drives them. The lock discipline of
+            the new file was therefore audited by hand: one acquisition per public
+            entry, none in any of the five private helpers, and no re-entrant
+            `RLock` anywhere.
+      - [ ] **The draft screen — step 5b.** The client can draft now and cannot
+            **draw** one. What is owed: a screen over `socket.DraftSight` (the
+            pool with what is gone struck out, both sides' picks, whose decision
+            is due and an allowance counting down), a `DraftChooser` in
+            `cmd/hexarena-tui`'s session that fills `DraftAnswer.For` off the
+            prompt it was handed, an `everyScreen` entry per state, and the
+            wordings in both language books. ⚠️ It also owns the two wrinkles
+            above as *user-visible* problems: a ban made before an opponent has
+            arrived is thrown away, and a squad brought to a drafting room is
+            refused before the client knows the room drafts.
+      - [ ] **The arrange screen — step 5c.** The 3x3 formation, both sides at
+            once and neither shown the other's, over
+            `DraftSight.Arranging`/`Awaiting`. ⚠️ The clock is **not** one
+            allowance for the phase: `Server.settled` re-arms off the reading
+            after every batch, so whichever side arranges first hands its opponent
+            a fresh full allowance and the phase's worst case is about twice one.
       - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
             "a ban lasts the match" is ambiguous in a series and the ambiguity is
             a design decision rather than a parameter: three drafts, one draft

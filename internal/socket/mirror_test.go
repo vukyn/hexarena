@@ -50,8 +50,8 @@ func TestADivergenceIsLoudOnTheTurnItHappens(t *testing.T) {
 		t.Fatalf("open a room: %v", err)
 	}
 
-	host := NewMirror(wire.SeatHost, dependencies.Books)
-	guest := NewMirror(wire.SeatGuest, dependencies.Books)
+	host := NewMirror(wire.SeatHost, dependencies.Books, dependencies.Characters)
+	guest := NewMirror(wire.SeatGuest, dependencies.Books, dependencies.Characters)
 	mirrors := map[wire.Seat]*Mirror{wire.SeatHost: host, wire.SeatGuest: guest}
 
 	// Both clients join, and the second join is what opens the first battle.

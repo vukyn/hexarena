@@ -8,6 +8,7 @@ import (
 	"github.com/coder/websocket"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
@@ -23,6 +24,10 @@ type Client struct {
 	mirror  *Mirror
 	code    wire.RoomCode
 	stepped func()
+	// drafting answers a draft decision, and is nil for a client that was never
+	// meant to be in a room that drafts. → ClientOptions.Draft, and answer, which
+	// is where a nil one becomes a loud failure rather than a wait.
+	drafting DraftChooser
 }
 
 // ClientOptions is everything a caller may say about a dialled client, and it is
@@ -52,6 +57,41 @@ type ClientOptions struct {
 	// A nil hook is the ordinary case — a client with nothing drawing it, which
 	// is what every test that plays a match out with a rating is.
 	Stepped func()
+
+	// Characters is the cast a draft's pool is drawn from, and it is here rather
+	// than a sixth positional parameter on Dial for the argument this struct's own
+	// comment makes: a caller with no interest in drafting should not have to
+	// write it down, and Dial's signature stays put.
+	//
+	// ⚠️ **It is the book and not a draft.Pool**, deliberately. draft.NewPool is
+	// this repository's single declaration of "the cast minus every character held
+	// back", so a caller handing a pool in could hand one built from the whole
+	// book — which would offer a held-back character the room refuses. →
+	// Mirror.openDraft.
+	//
+	// A nil book is the ordinary case, and a welcome saying the room drafts
+	// refuses a client without one rather than joining and then failing to compute
+	// its pool.
+	Characters *cast.Book
+
+	// Draft is what answers a draft decision, and it is on this struct for the
+	// same reason Characters is: Play's signature is untouched, and a client that
+	// never drafts needs no change at all.
+	//
+	// ⚠️ **It is not battle.Chooser and could not be.** Play's chooser answers a
+	// *battle* prompt — a skill and a cell off a board — and a draft decision is a
+	// different question in a different vocabulary: a character out of a pool, a
+	// form and a kit, a formation. → DraftChooser.
+	//
+	// ⚠️ **A nil one is not a client that quietly answers nothing.** A client
+	// dialled without this that lands in a drafting room fails loudly the moment
+	// it is asked, because a chooser that answered nothing would be a client
+	// sitting for ever on a decision — the hang the whole timeout mechanism exists
+	// to prevent, and the one #316 just fixed an instance of. The failure is at
+	// the point of being **asked** rather than at the point of joining, so that a
+	// caller with nothing to decide — a spectator, when there is one — can still
+	// dial a room that drafts. → Client.answer.
+	Draft DraftChooser
 }
 
 // Refusal is the room turning this client away, and it carries the code and
@@ -97,10 +137,11 @@ func Dial(ctx context.Context, code wire.RoomCode, hello wire.Hello, books battl
 		return nil, fmt.Errorf("dial room %s: %w", canonical, err)
 	}
 	client := &Client{
-		conn:    newConnection(raw, settings),
-		mirror:  NewMirror("", books),
-		code:    canonical,
-		stepped: options.Stepped,
+		conn:     newConnection(raw, settings),
+		mirror:   NewMirror("", books, options.Characters),
+		code:     canonical,
+		stepped:  options.Stepped,
+		drafting: options.Draft,
 	}
 	if err := client.handshake(ctx, hello); err != nil {
 		client.conn.drop()
@@ -165,7 +206,16 @@ func (c *Client) Close() { c.conn.bye(websocket.StatusNormalClosure, "leaving") 
 //
 // The chooser is what decides a turn. `(*battle.Battle).Suggest` is the shipped
 // rating and satisfies it, which is what lets a whole match play out with nobody
-// typing; a real client hands in the player's keystrokes instead.
+// typing; a real client hands in the player's keystrokes instead. A **draft**
+// decision is answered by ClientOptions.Draft, which is a different question and
+// is why this signature did not have to grow one.
+//
+// ⚠️ **It answers before the first read as well as after every message, and that
+// is what makes a drafting room joinable at all.** A room that drafts announces
+// nothing when its draft opens — a wire.Drafted carries recorded decisions, none
+// have been taken, and a room must not send one carrying none — so the host's
+// first ban is due with no message on its way to prompt it. A loop that read
+// first would sit there for ever, and it did.
 func (c *Client) Play(ctx context.Context, choose battle.Chooser) error {
 	watching, gone := context.WithCancel(ctx)
 	defer gone()
@@ -174,6 +224,11 @@ func (c *Client) Play(ctx context.Context, choose battle.Chooser) error {
 	// fault. A closed channel beside the cancel is what says which.
 	silent := make(chan struct{})
 	go c.keepalive(watching, func() { close(silent); gone() })
+	// The opening decision, which in a battle is nobody's — no wire.Start has
+	// arrived, so nothing is being asked and this is a no-op. → the ⚠️ above.
+	if done, err := c.answer(watching, choose); done || err != nil {
+		return err
+	}
 	for {
 		body, err := c.conn.read(watching)
 		switch {
@@ -212,20 +267,59 @@ func (c *Client) Play(ctx context.Context, choose battle.Chooser) error {
 			c.Close()
 			return nil
 		}
-		if _, asking := c.mirror.Asking(); !asking {
-			continue
-		}
-		answer, decided := c.mirror.Decide(choose)
-		if !decided {
-			return fmt.Errorf("%s was asked to act and decided nothing", c.Seat())
-		}
-		if err := c.conn.send(watching, answer); err != nil {
-			if ended(err) {
-				return nil
-			}
-			return fmt.Errorf("answer for %s: %w", c.Seat(), err)
+		if done, err := c.answer(watching, choose); done || err != nil {
+			return err
 		}
 	}
+}
+
+// answer is one decision, when this client is the one being asked for one, and
+// it reports whether the loop should stop.
+//
+// ⚠️ **The draft is asked first, and the two are mutually exclusive rather than
+// ordered.** A draft runs before the battle and the room begins one only when
+// the draft is Done, so at most one of the two is ever open — the order is what
+// reads naturally rather than a precedence rule.
+//
+// ⚠️ **A missing chooser fails here rather than at the join.** A nil one that
+// quietly answered nothing would be a client sitting for ever on a decision, and
+// the failure is placed at the point of being *asked* so that a caller with
+// nothing to decide can still dial a room that drafts. → ClientOptions.Draft.
+func (c *Client) answer(ctx context.Context, choose battle.Chooser) (bool, error) {
+	if prompt, asking := c.mirror.DraftAsking(); asking {
+		if c.drafting == nil {
+			return false, fmt.Errorf("%s is being asked to %s and this client was dialled with "+
+				"no draft chooser, so nothing here can answer it: a client that landed in a room "+
+				"which drafts without one would sit on the decision for ever",
+				c.Seat(), prompt.Due.Step)
+		}
+		decision, decided := c.mirror.DecideDraft(c.drafting)
+		if !decided {
+			return false, fmt.Errorf("%s was asked to %s and decided nothing: a draft has no "+
+				"pass, so there is nothing to send in its place", c.Seat(), prompt.Due.Step)
+		}
+		return c.sending(ctx, decision)
+	}
+	if _, asking := c.mirror.Asking(); !asking {
+		return false, nil
+	}
+	decision, decided := c.mirror.Decide(choose)
+	if !decided {
+		return false, fmt.Errorf("%s was asked to act and decided nothing", c.Seat())
+	}
+	return c.sending(ctx, decision)
+}
+
+// sending puts one decision on the wire, and reads the far end having gone as
+// the ordinary ending it is rather than as a fault.
+func (c *Client) sending(ctx context.Context, decision wire.Body) (bool, error) {
+	if err := c.conn.send(ctx, decision); err != nil {
+		if ended(err) {
+			return true, nil
+		}
+		return false, fmt.Errorf("answer for %s: %w", c.Seat(), err)
+	}
+	return false, nil
 }
 
 // keepalive is the client's half of the close threshold, and it exists for the
