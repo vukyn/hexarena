@@ -1038,6 +1038,67 @@
           "at_level": 36
         }
       ]
+    },
+    {
+      "id": "stoker",
+      "role": "the one that has not arrived yet: it opens slower than anything else in its row and takes a little of the gap back every turn it survives, until it is acting twice for everyone else's once — so the way to beat it is to not let it have the turns",
+      "column": 0,
+      "stats": {
+        "hp": {
+          "base": 1000,
+          "max": 3000
+        },
+        "attack": {
+          "base": 233,
+          "max": 700
+        },
+        "defense": {
+          "base": 113,
+          "max": 340
+        },
+        "speed": {
+          "base": 40,
+          "max": 120
+        },
+        "accuracy": {
+          "base": 55,
+          "max": 165
+        },
+        "dodge": {
+          "base": 20,
+          "max": 62
+        }
+      },
+      "skills": [
+        "ember",
+        "blaze_kick",
+        "fire_fang",
+        "flamethrower",
+        "flare_blitz",
+        "inferno",
+        "heat_wave",
+        "fire_spin",
+        "body_slam",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "quickening",
+          "at_level": 16
+        },
+        {
+          "id": "blaze",
+          "at_level": 24
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 32
+        },
+        {
+          "id": "berserk",
+          "at_level": 44
+        }
+      ]
     }
   ]
 }

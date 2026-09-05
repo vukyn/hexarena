@@ -482,6 +482,36 @@
       "passives": [
         "swiftness"
       ]
+    },
+    {
+      "id": "torchic.rush",
+      "character": "pokemon.torchic",
+      "name": "lên nhịp",
+      "intent": "Sống qua mấy lượt đầu, rồi mỗi lượt sau lại tới sớm hơn lượt trước",
+      "skills": [
+        "blaze_kick",
+        "flare_blitz",
+        "ember",
+        "fire_fang"
+      ],
+      "passives": [
+        "quickening"
+      ]
+    },
+    {
+      "id": "torchic.scald",
+      "character": "pokemon.torchic",
+      "name": "cháy âm ỉ",
+      "intent": "Đốt cho dính rồi thu tiền bỏng, đánh xa hơn và không phải trả bằng máu mình",
+      "skills": [
+        "flamethrower",
+        "inferno",
+        "fire_spin",
+        "ember"
+      ],
+      "passives": [
+        "blaze"
+      ]
     }
   ]
 }

@@ -3377,6 +3377,58 @@
           "pokemon"
         ]
       }
+    },
+    {
+      "id": "blaze_kick",
+      "name": "cước hỏa",
+      "flavour": "Đá một phát bắt lửa ngay giữa không trung, chỗ trúng thì cháy tiếp",
+      "element": "fire",
+      "range": 1,
+      "pattern": "single",
+      "power": 1300,
+      "strikes": 1,
+      "accuracy": 900,
+      "crit": 250,
+      "cooldown": 2,
+      "target": "enemy",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "burn",
+          "chance": 400,
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "flare_blitz",
+      "name": "hỏa xung",
+      "flavour": "Bọc cả người trong lửa rồi lao thẳng vào, lửa ấy không phân biệt ai đang bọc nó",
+      "element": "fire",
+      "range": 1,
+      "pattern": "single",
+      "power": 2400,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "cost": 100,
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "burn",
+          "chance": 500,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

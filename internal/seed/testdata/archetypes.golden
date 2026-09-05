@@ -229,4 +229,16 @@ spendthrift, formation column 2
            absorbs 5233 of the 11500 budget, 6267 to spare
   kit      psycho_cut shadow_ball dark_pulse night_shade nasty_plot mind_burn mind_crush shadow_punch spite taunt
 
-19 presets
+stoker, formation column 0
+  the one that has not arrived yet: it opens slower than anything else in its row and takes a little of the gap back every turn it survives, until it is acting twice for everyone else's once — so the way to beat it is to not let it have the turns
+  demands  a character built from it must carry fire
+  hp 1000->3000  attack 233->700  defense 113->340  speed 40->120  accuracy 55->165  dodge 20->62
+  level 1  hp 1000, atk 233, def 113, spd 40, acc 55, ddg 20
+           absorbs 1377 of the 11500 budget, 10123 to spare
+  level 30 hp 1983, atk 462, def 224, spd 79, acc 109, ddg 40
+           absorbs 3466 of the 11500 budget, 8034 to spare
+  level 60 hp 3000, atk 700, def 340, spd 120, acc 165, ddg 62
+           absorbs 6410 of the 11500 budget, 5090 to spare
+  kit      ember blaze_kick fire_fang flamethrower flare_blitz inferno heat_wave fire_spin body_slam taunt
+
+20 presets

@@ -2354,6 +2354,60 @@ is only so the shape is readable.
       fixture that casts a single-aim skill. That is the change being visible
       rather than a fixture problem, but it is the bulk of the diff.
 
+- [ ] **`statuses.json` accepts fields it ignores, and a Vietnamese name is one
+      of them.** Found 2026-09-05 shipping `stoked`: the status was authored with
+      `"name"` and `"flavour"` beside its numbers, exactly as a skill or a passive
+      carries them, and it **parsed clean**. Nothing said the two fields go
+      nowhere — a status's Vietnamese name lives in `i18n.statusGloss`, not in the
+      data — so the book loaded, the battle ran, and the id reached the log bare
+      until `TestEveryShippedStatusIsGlossed` caught it two steps later.
+
+      ⚠️ **The neighbouring books differ on this and that is what makes it a
+      trap.** `skills.json` and `passives.json` both take an authored `name`;
+      `statuses.json` does not. An author moving between the three has no reason
+      to expect the third to be the odd one, and the file gives no sign.
+
+      Two ways out, and the choice is a design decision rather than a fix:
+      **(a)** refuse unknown fields at parse — cheap, and it turns a silent drop
+      into a sentence in front of the author; or **(b)** let a status carry its own
+      `name` like its neighbours and have `statusGloss` fall back to it, which is
+      the direction skills already went (`skillGloss` is a frozen fallback, see
+      the note in `internal/i18n/gloss.go`). (b) removes the asymmetry rather than
+      documenting it, and is the one to prefer if the two are ever done at once.
+
+- [ ] **The cast listing draws every row, so the detail pane shrinks as the cast
+      grows.** Found 2026-09-05 while shipping `pokemon.torchic`, when a sweep
+      entry that records a **forked** detail pane stopped drawing the form row.
+
+      The skill listing already solves this: `screen.skillsRoom` measures how many
+      rows the listing gets **from the window in hand**, so the pane below it
+      keeps its rows whatever the book's length. The cast listing has no
+      equivalent — it draws all of them. At the sweep's shared 120x44 and nineteen
+      characters the browser's detail pane now runs out before the last row and
+      the screen says so: *"… bị cắt bớt; cửa sổ cao hơn sẽ thấy hết"*.
+
+      ⚠️ **The row it drops first is the one that matters most.** For a line that
+      forks, the form row is the whole decision — `(Poliwrath@32 | Politoed@32)`
+      is drawn, but the chooser under it is what says which arm is fielded. So the
+      degradation is not "a bit less prose"; it is the pane losing its point,
+      quietly, on a screen that already has a notice for it.
+
+      ⚠️ **It gets worse on a schedule.** Five characters shipped on 2026-09-05
+      alone. Nothing about the listing bounds it, so every character costs the
+      detail pane one more row, on every window size.
+
+      What was done instead, and why it is a stopgap: `theForkedBrowser` in
+      `cmd/hexarena-tui/sweep_test.go` now sets its own taller window, because
+      bounding the listing changes what **every** screen draws and belongs in its
+      own change rather than riding in with a character. The comment there says so
+      and points here.
+
+      The fix is `skillsRoom`'s twin — measure the listing's rows from the window,
+      window it around the cursor the way the skill list already is, and let the
+      detail pane keep the rest. ⚠️ It moves every golden that draws a cast
+      listing, which is most of them; that is the change being visible rather than
+      a fixture problem.
+
 - [ ] **Four ways of playing the board that the engine cannot express yet.**
       Raised 2026-09-05 while authoring `pokemon.abra`, when three of the four
       canonical Alakazam mechanics turned out to have no home. They are listed

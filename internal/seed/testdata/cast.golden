@@ -408,4 +408,27 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-19 characters
+pokemon.torchic — Torchic
+  from     Pokémon (anime)
+  preset   stoker
+  element  fire
+  species  brood
+  art      assets/torchic.svg
+  kit      ember blaze_kick@8 fire_fang@12 flamethrower@16 inferno@20 body_slam@24 flare_blitz@28 heat_wave@32 taunt@36 rapid_spin@40 fire_spin@44 skull_bash@48 submission@52 inner_focus@56
+  stage "Torchic" owns levels 1 to 15, showing assets/torchic.svg
+    level 1  hp 600, atk 140, def 68, spd 24, acc 33, ddg 12
+             absorbs 736 of the 11500 budget, 10764 to spare
+    level 15 hp 884, atk 206, def 100, spd 35, acc 48, ddg 17
+             absorbs 1178 of the 11500 budget, 10322 to spare
+  stage "Combusken" owns levels 16 to 35, showing assets/combusken.svg
+    level 16 hp 1206, atk 281, def 136, spd 48, acc 66, ddg 24
+             absorbs 1752 of the 11500 budget, 9748 to spare
+    level 35 hp 1722, atk 401, def 194, spd 68, acc 94, ddg 35
+             absorbs 2836 of the 11500 budget, 8664 to spare
+  stage "Blaziken" owns levels 36 to 60, showing assets/blaziken.svg
+    level 36 hp 2186, atk 510, def 247, spd 87, acc 120, ddg 44
+             absorbs 3989 of the 11500 budget, 7511 to spare
+    level 60 hp 3000, atk 700, def 340, spd 120, acc 165, ddg 62
+             absorbs 6410 of the 11500 budget, 5090 to spare
+
+20 characters

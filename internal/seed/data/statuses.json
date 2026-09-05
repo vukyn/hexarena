@@ -314,6 +314,19 @@
       "category": "reserve",
       "max_stacks": 5,
       "duration": 4
+    },
+    {
+      "id": "stoked",
+      "category": "buff",
+      "max_stacks": 5,
+      "duration": 2,
+      "modifiers": [
+        {
+          "target": "speed",
+          "mode": "percent",
+          "amount": 120
+        }
+      ]
     }
   ]
 }
