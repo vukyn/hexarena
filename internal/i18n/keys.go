@@ -861,6 +861,12 @@ const (
 	// a reader meets most often out of the four.
 	PlayBlockedCooldownOne
 	PlayBlockedFuel
+	// A gate that has been spent out rather than one short of fuel, and it is
+	// its own wording because the two say different things to do next: short of
+	// fuel you wait and fill the tank, spent out you are finished with the skill
+	// for the rest of the battle. Reusing the fuel wording would tell a reader
+	// to wait for something that is never coming.
+	PlayBlockedSpent
 	PlayBlockedNoReach
 	PlayWon
 	PlayLost

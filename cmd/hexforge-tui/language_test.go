@@ -2110,21 +2110,32 @@ func TestTheRenamedLabelsSayTheNewThing(t *testing.T) {
 	}
 }
 
-// wholeSkillList is the listing rendered from the top and from the bottom.
+// wholeSkillList is the listing rendered from every cursor position, joined.
 //
-// The view is a window around the cursor, so a single render only ever shows
-// the skills near it. The glossed skills this test names are fixture ones,
-// which sort after every shipped skill: reading one render made the assertion
-// depend on how many skills happened to ship above them, and it broke the day
-// another character's kit landed. What is being measured is the gloss column,
-// not the length of the book.
+// The view is a window around the cursor, so a single render only ever shows the
+// skills near it. The glossed skills this test names are fixture ones, which sort
+// after every shipped skill: reading one render made the assertion depend on how
+// many skills happened to ship above them. What is being measured is the gloss
+// column, not the length of the book.
+//
+// ⚠️ **Top and bottom was the first fix and it was not enough.** It broke the day
+// another character's kit landed, was widened to two renders, and then broke
+// again the day the bench grew by one skill — because two windows only cover the
+// whole book while the book is shorter than two windows, which is a condition
+// nothing states and nothing checks. Walking every cursor position has no such
+// bound: it is O(book) renders of a listing that is already cheap to draw, and it
+// stops being a test that reddens whenever somebody adds a skill.
 func wholeSkillList(m model) string {
 	entered := m.enter(screenSkills)
-	top, _ := entered.skills.View(entered.ctx())
-	tail := entered.skills
-	tail.Cursor = len(tail.Skills) - 1
-	bottom, _ := tail.View(entered.ctx())
-	return top + "\n" + bottom
+	var whole strings.Builder
+	for index := range entered.skills.Skills {
+		at := entered.skills
+		at.Cursor = index
+		drawn, _ := at.View(entered.ctx())
+		whole.WriteString(drawn)
+		whole.WriteByte('\n')
+	}
+	return whole.String()
 }
 
 // TestTheSkillListNamesSkillsInVietnamese covers the translated-name column and,

@@ -64,6 +64,33 @@ const stunStatus = "stun"
 // answer with it on the same turn, with nothing to clean up.
 const tauntStatus = "taunting"
 
+// burrowStatus is the status that takes a unit off the list of things anything
+// else may aim at, and refuses every status somebody else tries to put on it.
+//
+// # Why the engine knows this one by name
+//
+// It is the second status the engine reads by id rather than by category, after
+// the taunt above, and for the same reason: both change *who may be aimed at*,
+// which is a question `aims` answers before any category is consulted. A taunt
+// narrows the list to the units holding it; this removes the units holding it
+// from the list. They are mirror images and they belong in one place.
+//
+// # What it does NOT stop
+//
+// Splash. `aims` is the cells a skill may be pointed at and `covers` is the
+// cells the shape then catches, and only the first is touched — so a unit
+// underground is caught by a blast aimed at somebody standing next to it, which
+// is the whole of what makes the hiding a decision rather than a wall. It also
+// does not stop the holder acting, healing itself or being finished off by a
+// status already on it when it went under.
+//
+// ⚠️ **A board where every survivor is hidden ends as a Stalemate rather than
+// hanging.** Battle.settle asks whether anybody can act at all and calls it when
+// nobody can, so a hiding that leaves the other side nothing to aim at is a draw
+// and not a hung turn limit. That is why this needs no rule of its own about
+// being the last one standing.
+const burrowStatus = "burrowed"
+
 // Books are the parsed data a battle reads. They are never modified.
 type Books struct {
 	Rules    combat.Rules

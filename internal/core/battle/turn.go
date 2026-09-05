@@ -38,6 +38,16 @@ const (
 	BlockFuel
 	// BlockNoReach is a skill with nobody it could be pointed at.
 	BlockNoReach
+	// BlockSpent is a skill that has been used as many times as its own gate
+	// allows. Option.Need says the allowance and Option.Held how much of it is
+	// gone.
+	//
+	// Its own value rather than a second BlockFuel, and the difference is what a
+	// player does next: a caster short of fuel waits and fills the tank, while a
+	// caster that has spent its allowance is finished with the skill for the rest
+	// of the battle. One wording for both would tell somebody to wait for
+	// something that is never coming.
+	BlockSpent
 )
 
 // Option is one action a unit may take this turn, with the cells it may aim at.
@@ -427,6 +437,38 @@ func (b *Battle) spendHealth(unit *Unit, known skill.Skill, turn atb.Turn) {
 	})
 }
 
+// gateCloses is why a gating condition refuses a caster holding this many
+// stacks, or that it does not refuse at all.
+//
+// ⚠️ **One function because there are TWO sites that ask, and they may not
+// disagree.** internal/battle offers the option and internal/room drives Act
+// straight off a decision that arrived over the wire, so a gate written into one
+// is a gate the other walks past — and a clause added to the condition after the
+// fact is read by whichever site the author remembered. `below_stacks` was added
+// with both sites still comparing MinStacks by hand and neither noticed; the test
+// that caught it is TestASplitIsCappedForTheWholeBattle.
+//
+// It builds the whole Option rather than a string so the two counts a screen
+// draws travel with the reason that needs them.
+func gateCloses(spends *skill.Condition, held int) (Option, bool) {
+	if held < spends.MinStacks {
+		return Option{
+			Blocked: BlockFuel, Status: spends.Status,
+			Need: spends.MinStacks, Held: held,
+			Reason: fmt.Sprintf("needs %d stacks of %s, holding %d",
+				spends.MinStacks, spends.Status, held),
+		}, true
+	}
+	if spends.CapsStacks() && held >= spends.BelowStacks {
+		return Option{
+			Blocked: BlockSpent, Status: spends.Status,
+			Need: spends.BelowStacks, Held: held,
+			Reason: fmt.Sprintf("has spent all %d uses", spends.BelowStacks),
+		}, true
+	}
+	return Option{}, false
+}
+
 // spendCooldowns brings a unit's cooldowns down by the turn it just served.
 //
 // It runs when a turn ends rather than when one begins, so that the options a
@@ -489,13 +531,9 @@ func (b *Battle) options(unit *Unit) []Option {
 		// with this very tank empty on purpose, and a gate there would price
 		// filling the tank at nothing.
 		if spends := known.SelfRequires; spends.GatesCast() {
-			if held := unit.Statuses.Stacks(spends.Status); held < spends.MinStacks {
-				out = append(out, Option{
-					Skill: id, Blocked: BlockFuel, Status: spends.Status,
-					Need: spends.MinStacks, Held: held,
-					Reason: fmt.Sprintf("needs %d stacks of %s, holding %d",
-						spends.MinStacks, spends.Status, held),
-				})
+			if refusal, closed := gateCloses(spends, unit.Statuses.Stacks(spends.Status)); closed {
+				refusal.Skill = id
+				out = append(out, refusal)
 				continue
 			}
 		}
@@ -551,7 +589,15 @@ func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 		if !known.Target.Reaches(unit.Side, cell.Side()) {
 			continue
 		}
-		if b.occupant(cell) == nil {
+		other := b.occupant(cell)
+		if other == nil {
+			continue
+		}
+		// Hidden from everybody but itself. A unit underground can still shield
+		// or cleanse itself — what it gave up is being reached, not its turn —
+		// and a self-aimed skill has already returned above, so this only ever
+		// removes somebody else's cell.
+		if other != unit && other.Statuses.Stacks(burrowStatus) > 0 {
 			continue
 		}
 		// A cell on the caster's own half costs no range at all: helping the
@@ -826,9 +872,8 @@ func (b *Battle) Act(skillID string, aim hex.Offset) error {
 	// a decision that arrived over the wire, so a gate written only into the offer
 	// is a gate a peer walks past.
 	if spends := known.SelfRequires; spends.GatesCast() {
-		if held := unit.Statuses.Stacks(spends.Status); held < spends.MinStacks {
-			return fmt.Errorf("%q needs %d stacks of %s and its caster holds %d",
-				skillID, spends.MinStacks, spends.Status, held)
+		if refusal, closed := gateCloses(spends, unit.Statuses.Stacks(spends.Status)); closed {
+			return fmt.Errorf("%q %s", skillID, refusal.Reason)
 		}
 	}
 	legal := false
@@ -1653,6 +1698,19 @@ func (b *Battle) inflict(actor, target *Unit, from origin, application skill.App
 	// the fiction does — a trait sharpens what is thrown, armour refuses what
 	// arrives — and is arithmetically the same either way round, which is the
 	// point of both composing by multiplication.
+	// Nothing somebody else throws sticks to a unit that is underground, and it
+	// is refused here rather than as a resistance of a thousand because a
+	// resistance is per-status and this is every status there is. Its own
+	// applications still land: a hidden unit may still buff itself, and a trait
+	// that renews a status on its holder is the holder's own doing.
+	if actor != target && target.Statuses.Stacks(burrowStatus) > 0 {
+		b.emit(Event{
+			Kind: StatusResisted, At: turn.At, Turn: turn.Number, Actor: actor.ID,
+			Target: target.ID, Skill: from.Skill, Passive: from.Passive,
+			Status: kind.ID, Chance: 0, Refused: scale.Base,
+		})
+		return
+	}
 	amplifiedEffect, amplifiedChance := b.amplify(actor, kind.ID)
 	chance, refused := b.resist(target, kind.ID,
 		int(raise(int64(application.Chance), amplifiedChance)))
