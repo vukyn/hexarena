@@ -283,7 +283,9 @@ func aLiveBattleRefusedWith(t *testing.T, m model, code wire.Code) model {
 	if err != nil {
 		t.Fatalf("load the embedded books: %v", err)
 	}
-	mirror := socket.NewMirror(wire.SeatHost, books)
+	// No cast book: this mirror is never welcomed into a room that drafts, which
+	// is the one thing one is needed for.
+	mirror := socket.NewMirror(wire.SeatHost, books, nil)
 	// An earlier refusal as well, so "the latest" is a claim with two candidates
 	// rather than one.
 	if err := mirror.Receive(wire.Refused{Code: wire.CodeIllegalAction}); err != nil {
