@@ -142,6 +142,8 @@ stone_edge      ground    enemy    2  single         1700     1   1700   820    
 earthquake      ground    enemy    1  column         1450     1   1450   900    3     0     0      497
 sand_tomb       ground    enemy    2  single          850     1    850   900    3     0     0      291
 sandstorm       ground    enemy    2  column          600     1    600   950    4     0     0      205
+volt_tackle     electric  enemy    1  single         2400     1   2400   900    3     0     0      822
+nuzzle          electric  enemy    1  single          300     1    300  1000    3     0     0      102
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -227,6 +229,7 @@ updraft         veil (self)            1     1000       1000                -
 updraft         focus (self)           1     1000       1000                -
 sand_tomb       mire                   1      700        900              630
 sandstorm       blind                  1      600        950              570
+nuzzle          stun                   1      450       1000              450
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -362,6 +365,8 @@ stone_edge      -          -                 -                   -         pokem
 earthquake      -          -                 -                   -         pokemon
 sand_tomb       -          -                 -                   -         pokemon
 sandstorm       -          -                 -                   -         pokemon
+volt_tackle     -          -                 -                   rodent    pokemon
+nuzzle          -          -                 -                   rodent    pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain

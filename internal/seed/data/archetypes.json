@@ -922,6 +922,65 @@
           "at_level": 52
         }
       ]
+    },
+    {
+      "id": "livewire",
+      "role": "the one whose own body is the battery: the thinnest frame in the cast behind the best odds of not being hit at all, blows that are paid for in its own health, and a charge sitting close enough to the skin that touching it costs a turn",
+      "column": 1,
+      "stats": {
+        "hp": {
+          "base": 965,
+          "max": 2900
+        },
+        "attack": {
+          "base": 200,
+          "max": 600
+        },
+        "defense": {
+          "base": 93,
+          "max": 280
+        },
+        "speed": {
+          "base": 53,
+          "max": 160
+        },
+        "accuracy": {
+          "base": 56,
+          "max": 170
+        },
+        "dodge": {
+          "base": 30,
+          "max": 90
+        }
+      },
+      "skills": [
+        "thunder_shock",
+        "charge_beam",
+        "spark",
+        "electro_ball",
+        "thunderbolt",
+        "thunder_wave",
+        "discharge",
+        "overload",
+        "magnetise",
+        "zap_cannon",
+        "taunt",
+        "body_slam"
+      ],
+      "passives": [
+        {
+          "id": "static",
+          "at_level": 16
+        },
+        {
+          "id": "swiftness",
+          "at_level": 24
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        }
+      ]
     }
   ]
 }

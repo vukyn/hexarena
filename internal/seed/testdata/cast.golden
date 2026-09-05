@@ -293,6 +293,29 @@ pokemon.oddish — Oddish
     level 60 hp 3400, atk 560, def 420, spd 105, acc 165, ddg 45
              absorbs 8173 of the 11500 budget, 3327 to spare
 
+pokemon.pichu — Pichu
+  from     Pokémon (anime)
+  preset   livewire
+  element  electric
+  species  rodent
+  art      assets/pichu.svg
+  kit      thunder_shock nuzzle@8 charge_beam@12 spark@16 electro_ball@20 thunder_wave@24 taunt@28 discharge@32 thunderbolt@36 volt_tackle@40 overload@44 magnetise@46 body_slam@48 zap_cannon@52 inner_focus@56
+  stage "Pichu" owns levels 1 to 15, showing assets/pichu.svg
+    level 1  hp 580, atk 120, def 56, spd 32, acc 34, ddg 18
+             absorbs 688 of the 11500 budget, 10812 to spare
+    level 15 hp 855, atk 176, def 82, spd 47, acc 50, ddg 26
+             absorbs 1089 of the 11500 budget, 10411 to spare
+  stage "Pikachu" owns levels 16 to 35, showing assets/pikachu.svg
+    level 16 hp 1165, atk 241, def 112, spd 63, acc 68, ddg 36
+             absorbs 1600 of the 11500 budget, 9900 to spare
+    level 35 hp 1664, atk 344, def 160, spd 91, acc 97, ddg 51
+             absorbs 2552 of the 11500 budget, 8948 to spare
+  stage "Raichu" owns levels 36 to 60, showing assets/raichu.svg
+    level 36 hp 2112, atk 437, def 203, spd 116, acc 123, ddg 65
+             absorbs 3543 of the 11500 budget, 7957 to spare
+    level 60 hp 2900, atk 600, def 280, spd 160, acc 170, ddg 90
+             absorbs 5609 of the 11500 budget, 5891 to spare
+
 pokemon.poliwag — Poliwag
   from     Pokémon (anime)
   preset   bruiser
@@ -362,4 +385,4 @@ pokemon.squirtle — Squirtle
     level 60 hp 3600, atk 460, def 640, spd 85, acc 135, ddg 38
              absorbs 11285 of the 11500 budget, 215 to spare
 
-17 characters
+18 characters

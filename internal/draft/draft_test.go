@@ -684,23 +684,30 @@ func TestCandidatesAreThePoolMinusWhatEitherSideTook(t *testing.T) {
 	}
 }
 
-// TestTheLastPickOfAFiveASideChoosesFromOne is the shipped consequence of slack
-// being nought, and it is a **behaviour** test of what TODO.md's slack note
-// states as arithmetic: with every ban spent the final picker of a 5v5 sees
-// exactly `slack + 1` candidates, which today is one.
+// TestTheLastPickOfAFiveASideChoosesFromSlackPlusOne is a **behaviour** test of
+// what TODO.md's slack note states as arithmetic: with every ban spent the final
+// picker of a 5v5 sees exactly `slack + 1` candidates.
 //
 // ⚠️ It is why Candidates exists at all. A screen drawing a list of one has to be
 // able to say the pick is not a decision, and it cannot know that without asking.
-func TestTheLastPickOfAFiveASideChoosesFromOne(t *testing.T) {
+//
+// ⚠️ **It was TestTheLastPickOfAFiveASideChoosesFromOne and refused to run at any
+// other slack**, which made it a test that reddened on a content change while its
+// own assertion — `slack + 1`, written that way from the start — never needed to.
+// `pokemon.pichu` took slack from nought to one on 2026-09-05 and the premise
+// fired where nothing was wrong. The figure that *is* worth pinning is the slack
+// itself, because that is what decides whether the last pick is a decision at
+// all, and it is pinned once, in TestFiveASideFitsTheShippedCastWithRoomToChoose.
+// Holding it in two places is what made this one churn.
+func TestTheLastPickOfAFiveASideChoosesFromSlackPlusOne(t *testing.T) {
 	all := shippedCast(t)
 	pool := draft.NewPool(all)
 	slack := draft.Slack(pool.Len(), wire.Format5v5)
-	// The premise, held rather than assumed: if the cast grew, this test is
-	// measuring a different claim and TODO.md § "Ban and pick" is where the
-	// decision about it lives.
-	if slack != 0 {
-		t.Fatalf("a pool of %d seats a 5v5 with %d to spare, and this test is about the pool "+
-			"that seats one exactly — see TODO.md § \"Ban and pick\"", pool.Len(), slack)
+	// The premise, held rather than assumed: a pool that cannot seat the format
+	// never reaches a last pick, so the walk below would prove nothing.
+	if slack < 0 {
+		t.Fatalf("a pool of %d cannot seat a 5v5 at all (slack %d), so there is no last pick "+
+			"to measure — see TODO.md § \"Ban and pick\"", pool.Len(), slack)
 	}
 	drafting, err := draft.New(draft.Config{
 		Format: wire.Format5v5, Pool: pool, First: wire.SeatHost,

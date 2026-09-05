@@ -3289,6 +3289,56 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "volt_tackle",
+      "name": "lôi kích",
+      "flavour": "Dồn hết những gì đang tích trong người vào một cú lao thẳng, dồn tới mức chính mình cũng bỏng",
+      "element": "electric",
+      "range": 1,
+      "pattern": "single",
+      "power": 2400,
+      "strikes": 1,
+      "accuracy": 900,
+      "cooldown": 3,
+      "target": "enemy",
+      "cost": 120,
+      "restrict": {
+        "species": [
+          "rodent"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      }
+    },
+    {
+      "id": "nuzzle",
+      "name": "chạm tê",
+      "flavour": "Áp sát rồi chạm nhẹ một cái, nhẹ tới mức không ai kịp coi đó là đòn",
+      "element": "electric",
+      "range": 1,
+      "pattern": "single",
+      "power": 300,
+      "strikes": 1,
+      "accuracy": 1000,
+      "cooldown": 3,
+      "target": "enemy",
+      "restrict": {
+        "species": [
+          "rodent"
+        ],
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "applies": [
+        {
+          "status": "stun",
+          "chance": 450,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

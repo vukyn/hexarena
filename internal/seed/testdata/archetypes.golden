@@ -205,4 +205,16 @@ predator, formation column 0
            absorbs 6512 of the 11500 budget, 4988 to spare
   kit      dig stone_edge earthquake sand_tomb sandstorm rock_throw seismic_toss body_slam taunt
 
-17 presets
+livewire, formation column 1
+  the one whose own body is the battery: the thinnest frame in the cast behind the best odds of not being hit at all, blows that are paid for in its own health, and a charge sitting close enough to the skin that touching it costs a turn
+  demands  a character built from it must carry electric
+  hp 965->2900  attack 200->600  defense 93->280  speed 53->160  accuracy 56->170  dodge 30->90
+  level 1  hp 965, atk 200, def 93, spd 53, acc 56, ddg 30
+           absorbs 1264 of the 11500 budget, 10236 to spare
+  level 30 hp 1916, atk 396, def 184, spd 105, acc 112, ddg 59
+           absorbs 3095 of the 11500 budget, 8405 to spare
+  level 60 hp 2900, atk 600, def 280, spd 160, acc 170, ddg 90
+           absorbs 5609 of the 11500 budget, 5891 to spare
+  kit      thunder_shock charge_beam spark electro_ball thunderbolt thunder_wave discharge overload magnetise zap_cannon taunt body_slam
+
+18 presets
