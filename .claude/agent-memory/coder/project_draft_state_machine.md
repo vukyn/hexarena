@@ -1,6 +1,6 @@
 ---
 name: draft-state-machine
-description: hexarena internal/draft — steps 2a, 2b and 3 built; the Done()/Picked() split, the arrange phase's own accessors, and the step-3 decision that the record's SHAPE now lives in internal/wire
+description: hexarena internal/draft — steps 2a, 2b, 3 and 4 built; the Done()/Picked() split, the arrange phase's own accessors, the record's SHAPE living in internal/wire, and the room-side arrange-phase clock (which is NOT one allowance)
 metadata:
   type: project
 ---
@@ -65,3 +65,44 @@ already what `wire.Drafted` carries. The mirror's apply loop is
 exactly as that function's comment predicted. Nothing about the state machine
 moved — `Turn` still answers one seat and one step, `Done()` is still the whole
 draft.
+
+**Step 4** (branch `feat/draft-room`, 2026-09-06) made a `room.Room` host one:
+`Config.Drafts`, the draft built in `room.New`, `internal/room/draft.go` for the
+whole room side, `begin()` called **unchanged** on `Done()`. Three things worth
+holding before touching it:
+
+- ⚠️ **THE ARRANGE PHASE'S CLOCK IS NOT "ONE ALLOWANCE", AND THE BRIEF SAID IT
+  WAS.** `room.Reading{Awaiting, Waiting}` holds **one** seat, `internal/socket`
+  arms one timer off it, and the phase has **both** seats pending. It is
+  serialised — `Awaiting` answers `AwaitingArrangement()[0]` — and the brief's
+  stated consequence was "one allowance covers both sides, so a side that
+  arranged promptly gets no fresh clock". **Measured in the consumer: the
+  opposite.** `socket.Server.settled` re-arms off the reading after **every**
+  batch, so the first arrangement to arrive *is* an exchange and the seat still
+  owed gets a **fresh full allowance** from that moment. Worst case ≈ **2×** the
+  allowance; a prompt side hands its opponent *more* time. And the brief's second
+  consequence ("the seat blamed is the first still to arrange, not the slower
+  one") is narrower than stated: `AwaitingArrangement` holds only seats that have
+  **not** arranged, so once one side answers the name is exact — the inexactness
+  is only the both-silent case, where the host is named by seats order.
+- ⚠️ **`draftOpen()` must ask `Finished()` as well as `Cancelled()`.** A draft
+  cancels itself only on its own timeout; a **departure** ends the match through
+  `abandon` and leaves the draft neither done nor cancelled, so a
+  Done-or-Cancelled test alone keeps reporting an open decision after the match
+  is over — and `Awaiting` is documented false once it is, with a transport
+  arming a countdown on it. It must also ask **both seats taken**: the draft
+  exists from `New` and is already due its first ban while the room holds one
+  player.
+- ⚠️ **`Config.Validate` refuses `Drafts` with `Battles != 1`.** Not in the
+  brief: decision (d) is "a ban lasts the match, the first cut is bo1 only", and
+  accepting a drafting bo3 would silently pick one of the three games the bo3
+  item lists.
+
+**Why:** the clock paragraph is the one a reader will re-derive from the producer
+and get backwards, and the two `draftOpen()` clauses are branches whose absence
+leaves the suite green in every test that does not end a draft the odd way.
+
+**How to apply:** before writing down what a room value *costs*, read the
+consumer that acts on it (`internal/socket/table.go`'s `allowance.set` and
+`server.go`'s `settled`) rather than reasoning from the room. See
+[[measure-the-thing-a-bound-bounds]].
