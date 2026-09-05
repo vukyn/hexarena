@@ -1,0 +1,30 @@
+{
+  "bonuses": [
+    {
+      "id": "same_element",
+      "name": "đồng hệ",
+      "axis": "element",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "kinship",
+              "stacks": 1
+            }
+          ]
+        },
+        {
+          "at": 3,
+          "grants": [
+            {
+              "status": "kinship",
+              "stacks": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

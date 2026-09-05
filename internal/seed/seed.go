@@ -8,6 +8,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/combat"
+	"github.com/vukyn/hexarena/internal/core/composition"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/modifier"
 	"github.com/vukyn/hexarena/internal/core/passive"
@@ -17,7 +18,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
-//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/species.json data/archetypes.json data/cast.json data/roster.json data/builds.json data/squads.json
+//go:embed data/elements.json data/combat.json data/progression.json data/modifiers.json data/patterns.json data/statuses.json data/passives.json data/skills.json data/origins.json data/species.json data/archetypes.json data/cast.json data/roster.json data/builds.json data/squads.json data/bonuses.json
 var files embed.FS
 
 // ElementsFile is the raw affinity chart declaration.
@@ -107,6 +108,27 @@ func PassiveBook() (*passive.Book, error) {
 		return nil, err
 	}
 	return passive.ParseBook(raw, passive.Deps{Statuses: statuses})
+}
+
+// BonusesFile is the raw composition-bonus declaration.
+func BonusesFile() ([]byte, error) { return files.ReadFile("data/bonuses.json") }
+
+// BonusBook parses the embedded composition bonuses against the two books a
+// bonus is checked with: the statuses it grants and the chart it counts.
+func BonusBook() (*composition.Book, error) {
+	raw, err := BonusesFile()
+	if err != nil {
+		return nil, err
+	}
+	statuses, err := StatusBook()
+	if err != nil {
+		return nil, err
+	}
+	chart, err := ElementChart()
+	if err != nil {
+		return nil, err
+	}
+	return composition.ParseBook(raw, composition.Deps{Statuses: statuses, Chart: chart})
 }
 
 // SkillsFile is the raw skill declaration.

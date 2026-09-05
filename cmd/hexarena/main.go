@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/composition"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/i18n"
@@ -165,7 +166,13 @@ func logGlosses(books battle.Books) map[string]string {
 	if books.Passives != nil {
 		held = books.Passives.All()
 	}
-	return i18n.Vi.LogGlosses(books.Skills.Skills(), books.Statuses.Kinds(), held)
+	// The bonus book is optional on battle.Books for the reason the trait book
+	// is, so it is read through the same nil check rather than assumed present.
+	var awarded []composition.Bonus
+	if books.Bonuses != nil {
+		awarded = books.Bonuses.All()
+	}
+	return i18n.Vi.LogGlosses(books.Skills.Skills(), books.Statuses.Kinds(), held, awarded)
 }
 
 // rewind rebuilds the battle from its seed and replays a shortened script. It is

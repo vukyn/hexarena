@@ -396,14 +396,14 @@ cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   -
+A2   Bloom                [##########]  2200/2200    200   kinship (always)
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
+A4   Venusaur             [##########]  3800/3800    100   kinship (always)
 A5   Charizard            [##########]  3100/3100    140   -
 E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   kinship (always)
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
+E4   Venusaur             [##########]  3800/3800    100   kinship (always)
 E5   Charizard            [##########]  3100/3100    140   -
 
 A2 Bloom, lượt 1
@@ -419,7 +419,7 @@ cửa sổ quá ngắn cho: bàn cờ, 7 đơn vị, thứ tự lượt, diễn 
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   -
+A2   Bloom                [##########]  2200/2200    200   kinship (always)
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
 
 A2 Bloom, lượt 1
@@ -1127,7 +1127,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 120x24 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/30
+chiêu này gây hiệu ứng gì  1/31
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -2305,29 +2305,33 @@ trận đấu  seed 1
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   -
+A2   Bloom                [##########]  2200/2200    200   kinship (always)
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
+A4   Venusaur             [##########]  3800/3800    100   kinship (always)
 A5   Charizard            [##########]  3100/3100    140   -
 E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   kinship (always)
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
+E4   Venusaur             [##########]  3800/3800    100   kinship (always)
 E5   Charizard            [##########]  3100/3100    140   -
 
 next: E2 A5 E5 A3 E3 A2
 
     A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
+    A2   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
     A4  Venusaur enters at 1,0 on the ally side with 3800 health, grass
+    A4   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     A5  Charizard enters at 1,1 on the ally side with 3100 health, fire
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
+    E2   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
     E4  Venusaur enters at 4,2 on the enemy side with 3800 health, grass
+    E4   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     E5  Charizard enters at 4,1 on the enemy side with 3100 health, fire
   
   A2  turn 1
@@ -2343,14 +2347,10 @@ A2 Bloom, lượt 1
 
 
 
-
-
-
-
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a squeezed battle aiming =====
 
-trận đấu  seed 1
+trận đấu  seed 1  diễn biến 2-18/18
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2364,29 +2364,32 @@ trận đấu  seed 1
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   -
+A2   Bloom                [##########]  2200/2200    200   kinship (always)
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
+A4   Venusaur             [##########]  3800/3800    100   kinship (always)
 A5   Charizard            [##########]  3100/3100    140   -
 E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   kinship (always)
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
+E4   Venusaur             [##########]  3800/3800    100   kinship (always)
 E5   Charizard            [##########]  3100/3100    140   -
 
 next: E2 A5 E5 A3 E3 A2
 
-    A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
+    A2   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
     A4  Venusaur enters at 1,0 on the ally side with 3800 health, grass
+    A4   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     A5  Charizard enters at 1,1 on the ally side with 3100 health, fire
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
+    E2   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
     E4  Venusaur enters at 4,2 on the enemy side with 3800 health, grass
+    E4   2 of grass: kinship <đồng khí> x1 (same_element <đồng hệ>)
     E5  Charizard enters at 4,1 on the enemy side with 3100 health, fire
   
   A2  turn 1
@@ -2403,9 +2406,6 @@ nhắm bolt vào
   3,2  E1 Example Adept
   4,1  E5 Charizard
   4,2  E4 Venusaur
-
-
-
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | add a skill =====
 
@@ -4179,7 +4179,7 @@ chưa dựng đội nào; bấm n để bắt đầu
 ↑/↓ chọn · n mới · enter sửa · f vào trận · d xoá · esc quay lại
 ===== vi | 160x60 | status picker =====
 
-chiêu này gây hiệu ứng gì  1/30
+chiêu này gây hiệu ứng gì  1/31
 space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
 
 >  1   poison     trúng độc · sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn
@@ -4212,11 +4212,11 @@ space chọn hiệu ứng · gõ số là cơ hội theo phần nghìn
        verdure    xum xuê · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        moisture   ẩm ướt · dồn lại cho chính người mang tiêu · 5 lượt · tối đa 999 cộng dồn
        heft       sức nặng · dồn lại cho chính người mang tiêu · 4 lượt · tối đa 5 cộng dồn
+       kinship    đồng khí · tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn
 
   poison
 
   cơ hội trúng  300      30%
-
 
 
 
@@ -4263,6 +4263,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   fortified    kiên cố
   quickened    gia tốc
   evasive      khinh công
+  kinship      đồng khí
   shield       khiên, chặn một nhát
   block        đỡ đòn
   regen        hồi máu mỗi lượt
@@ -4287,7 +4288,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   Sát thương mỗi lượt · 3 lượt · tối đa 3 cộng dồn.
 
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
-
 
 
 
@@ -4988,14 +4988,14 @@ the window is too short for: board, turn order, log
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   -
+A2   Bloom                [##########]  2200/2200    200   kinship (always)
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
+A4   Venusaur             [##########]  3800/3800    100   kinship (always)
 A5   Charizard            [##########]  3100/3100    140   -
 E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   kinship (always)
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
+E4   Venusaur             [##########]  3800/3800    100   kinship (always)
 E5   Charizard            [##########]  3100/3100    140   -
 
 A2 Bloom, turn 1
@@ -5011,7 +5011,7 @@ the window is too short for: board, 7 units, turn order, log
 
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   -
+A2   Bloom                [##########]  2200/2200    200   kinship (always)
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
 
 A2 Bloom, turn 1
@@ -5719,7 +5719,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 120x24 | status picker =====
 
-the statuses this skill inflicts  1 of 30
+the statuses this skill inflicts  1 of 31
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -6897,29 +6897,33 @@ the battle  seed 1
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   -
+A2   Bloom                [##########]  2200/2200    200   kinship (always)
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
+A4   Venusaur             [##########]  3800/3800    100   kinship (always)
 A5   Charizard            [##########]  3100/3100    140   -
 E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   kinship (always)
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
+E4   Venusaur             [##########]  3800/3800    100   kinship (always)
 E5   Charizard            [##########]  3100/3100    140   -
 
 next: E2 A5 E5 A3 E3 A2
 
     A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
+    A2   2 of grass: kinship x1 (same_element)
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance: toughened x1
     A4  Venusaur enters at 1,0 on the ally side with 3800 health, grass
+    A4   2 of grass: kinship x1 (same_element)
     A5  Charizard enters at 1,1 on the ally side with 3100 health, fire
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
+    E2   2 of grass: kinship x1 (same_element)
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance: toughened x1
     E4  Venusaur enters at 4,2 on the enemy side with 3800 health, grass
+    E4   2 of grass: kinship x1 (same_element)
     E5  Charizard enters at 4,1 on the enemy side with 3100 health, fire
   
   A2  turn 1
@@ -6935,14 +6939,10 @@ A2 Bloom, turn 1
 
 
 
-
-
-
-
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a squeezed battle aiming =====
 
-the battle  seed 1
+the battle  seed 1  log 2-18/18
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -6956,29 +6956,32 @@ the battle  seed 1
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
 A1   Example Adept        [##########]  3100/3100     90   -
-A2   Bloom                [##########]  2200/2200    200   -
+A2   Bloom                [##########]  2200/2200    200   kinship (always)
 A3   Sennin               [##########]  3400/3400    134   toughened (always)
-A4   Venusaur             [##########]  3800/3800    100   -
+A4   Venusaur             [##########]  3800/3800    100   kinship (always)
 A5   Charizard            [##########]  3100/3100    140   -
 E1   Example Adept        [##########]  3100/3100     90   -
-E2   Bloom                [##########]  2200/2200    200   -
+E2   Bloom                [##########]  2200/2200    200   kinship (always)
 E3   Sennin               [##########]  3400/3400    134   toughened (always)
-E4   Venusaur             [##########]  3800/3800    100   -
+E4   Venusaur             [##########]  3800/3800    100   kinship (always)
 E5   Charizard            [##########]  3100/3100    140   -
 
 next: E2 A5 E5 A3 E3 A2
 
-    A1  Example Adept enters at 2,0 on the ally side with 3100 health, water/ice
     A2  Bloom enters at 2,1 on the ally side with 2200 health, grass/electric
+    A2   2 of grass: kinship x1 (same_element)
     A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
     A3   holds endurance: toughened x1
     A4  Venusaur enters at 1,0 on the ally side with 3800 health, grass
+    A4   2 of grass: kinship x1 (same_element)
     A5  Charizard enters at 1,1 on the ally side with 3100 health, fire
     E1  Example Adept enters at 3,2 on the enemy side with 3100 health, water/ice
     E2  Bloom enters at 3,1 on the enemy side with 2200 health, grass/electric
+    E2   2 of grass: kinship x1 (same_element)
     E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
     E3   holds endurance: toughened x1
     E4  Venusaur enters at 4,2 on the enemy side with 3800 health, grass
+    E4   2 of grass: kinship x1 (same_element)
     E5  Charizard enters at 4,1 on the enemy side with 3100 health, fire
   
   A2  turn 1
@@ -6995,9 +6998,6 @@ point bolt at
   3,2  E1 Example Adept
   4,1  E5 Charizard
   4,2  E4 Venusaur
-
-
-
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | add a skill =====
 
@@ -8771,7 +8771,7 @@ nothing built yet; n starts one
 ↑/↓ move · n new · enter edit · f fight · d delete · esc back
 ===== en | 160x60 | status picker =====
 
-the statuses this skill inflicts  1 of 30
+the statuses this skill inflicts  1 of 31
 space chooses a status · type the chance in parts per thousand
 
 >  1   poison     damages every turn · 3 turns · up to 3 stacks
@@ -8804,11 +8804,11 @@ space chooses a status · type the chance in parts per thousand
        verdure    builds up for its holder to spend · 5 turns · up to 999 stacks
        moisture   builds up for its holder to spend · 5 turns · up to 999 stacks
        heft       builds up for its holder to spend · 4 turns · up to 5 stacks
+       kinship    raises a stat · always in force · up to 2 stacks
 
   poison
 
   chance  300      30%
-
 
 
 
@@ -8855,6 +8855,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   fortified    
   quickened    
   evasive      
+  kinship      
   shield       blocks one strike
   block        
   regen        restores every turn
@@ -8879,7 +8880,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   Damages every turn · 3 turns · up to 3 stacks.
 
   Declared figures: a trait amplifying or resisting changes what lands.
-
 
 
 

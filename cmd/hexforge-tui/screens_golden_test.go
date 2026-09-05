@@ -220,7 +220,20 @@ func noAbsolutePath(t *testing.T, body string) {
 			// what tells a rooted path from the footer key `/` — the skill
 			// listing's filter is bound to it, so a bare separator is ordinary
 			// wording on several of these screens.
-			if !strings.HasPrefix(word, separator) || !strings.Contains(word[len(separator):], separator) {
+			// filepath.IsAbs as well as the two-separator test, and the pair is what
+			// makes this walk mean the same thing on every platform.
+			//
+			// The separator test alone is a Windows false positive: the separator
+			// there is a backslash and these screens draw hex art out of them, so a
+			// cell like \__/..\__ reads as rooted and fails a golden nobody has
+			// broken — and because this runs before the -update branch writes, it
+			// also made the golden impossible to regenerate on that platform at
+			// all. IsAbs answers no to it, since a rooted path with no volume is
+			// not absolute on Windows, and yes to C:\Users\..., which is the thing
+			// being kept out of a committed file. The two-separator half stays
+			// because IsAbs alone would flag a bare /, one cell of the same drawing
+			// on a Unix machine.
+			if !filepath.IsAbs(word) || !strings.Contains(word[len(separator):], separator) {
 				continue
 			}
 			t.Fatalf("line %d of the golden names a filesystem path, which cannot be "+

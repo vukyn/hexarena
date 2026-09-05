@@ -1480,7 +1480,7 @@ func (p PlayScreen) LogRows(c Context) []string {
 	// not on the screen beside p.Tags either, for one reason: ctrl+l toggles the
 	// language and this is read every draw, while p.Tags is written once a battle.
 	glosses := c.Lang.LogGlosses(
-		c.Lib.Skills().Skills(), c.Lib.Statuses().Kinds(), c.Lib.Passives().All())
+		c.Lib.Skills().Skills(), c.Lib.Statuses().Kinds(), c.Lib.Passives().All(), c.Lib.Bonuses().All())
 	var lines []string
 	for _, event := range p.Events {
 		line := tui.Line(event, p.Tags, glosses)

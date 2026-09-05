@@ -447,6 +447,7 @@ swelter     reserve           999       5            0      0               0   
 verdure     reserve           999       5            0      0               0          0   -
 moisture    reserve           999       5            0      0               0          0   -
 heft        reserve             5       4            0      0               0          0   -
+kinship     buff                2       0            0      0               0          0   attack +5.0%
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

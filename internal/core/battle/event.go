@@ -147,10 +147,30 @@ const (
 	//
 	// Declared last, which is the rule for this enum.
 	Paid
+	// BonusHeld is a composition bonus taking hold, and the permanent status it
+	// put on. One per granted status, on the opening board and nowhere else: the
+	// count is taken from the roster before the first turn and never retaken, so
+	// there is no second moment for one to arrive at.
+	//
+	// Its own kind rather than a PassiveHeld with a different name in it, and
+	// the two are different facts about a unit: a trait is what this unit *is*,
+	// carried whoever it stands beside, and a bonus is what its side *brought* —
+	// the same unit in another squad would not have it. A renderer drawing them
+	// the same way would tell a reader a squad-wide grant was a property of the
+	// character.
+	//
+	// Bonus, Shared and Count are what make it legible: without them a reader
+	// sees a permanent buff on the opening board with nothing to say which
+	// threshold paid for it, which is the gap Pierce, Refused and Reduced were
+	// each added to close.
+	//
+	// Declared last, which is the rule for this enum: the kind serialises by
+	// name, so appending cannot reinterpret a saved log.
+	BonusHeld
 )
 
 // KindCount is the number of event kinds.
-const KindCount = int(Paid) + 1
+const KindCount = int(BonusHeld) + 1
 
 var kindNames = [KindCount]string{
 	Started:         "started",
@@ -178,6 +198,7 @@ var kindNames = [KindCount]string{
 	Spread:          "spread",
 	Absorbed:        "absorbed",
 	Paid:            "paid",
+	BonusHeld:       "bonus_held",
 }
 
 func (k Kind) String() string {
@@ -368,6 +389,21 @@ type Event struct {
 	// use: a column that catches three units swings once, not three times, and an
 	// event per target would say otherwise.
 	Gradient int `json:"gradient,omitempty"`
+	// Bonus, Shared and Count say which composition bonus fired, what the side
+	// shared, and how many units shared it, on BonusHeld and nowhere else.
+	//
+	// Three fields rather than a sentence in Note, because each answers a
+	// different question a reader has: which rule this came from, what the squad
+	// was built around, and which rung of that rule was reached. A log that said
+	// only "a bonus" would leave a reader unable to reproduce the buff from the
+	// data files, which is the one thing the log has to make possible.
+	//
+	// ⚠️ Shared is deliberately not Status: the counted value is what the units
+	// have in common — an element today — and the status is what they were given
+	// for it. Two meanings on one field is the mistake this file keeps a list of.
+	Bonus  string `json:"bonus,omitempty"`
+	Shared string `json:"shared,omitempty"`
+	Count  int    `json:"count,omitempty"`
 	// Note is a short reason, used only where a kind has one to give.
 	Note string `json:"note,omitempty"`
 }

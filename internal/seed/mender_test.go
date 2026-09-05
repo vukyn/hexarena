@@ -130,9 +130,26 @@ func TestAMenderEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 // breaks a tie by enlistment order, so one arrangement reports the first slot's
 // advantage as the squad's. Both halves run the **same** seeds, because halves
 // fought over different seeds cancel nothing.
+// ⚠️ **Composition bonuses are switched off for every measurement that goes
+// through here, and that is the control rather than a convenience.** Each of
+// these fixtures prices ONE slot or ONE skill by holding the other two members
+// constant across both squads — and a shared element is not held constant by
+// that arrangement: `aSquadOf` fields a fire unit and a water one, so a third
+// member that happens to be water earns its squad a rung the other squad has no
+// way to match, and the reading stops being about the slot. Measured, the mender
+// against a Poliwrath bruiser: **413‰ with the bonus live, 698‰ without** — the
+// live figure is under this file's own floor of 450, so the confound reads as
+// "a mender is not worth the slot" while what it actually says is that the
+// bruiser's squad shares an element and the mender's does not.
+//
+// A bonus is a real part of the game and pricing one is a different measurement —
+// same squad, same seeds, the bonus toggled, which is what `composition.Book.Without`
+// and `forge.FightSquads`'s last argument are for. What may not happen is a slot
+// measurement quietly reporting a squad-composition effect under a mender's name.
 func fightSquads(t *testing.T, books battle.Books, characters *cast.Book,
 	home, away placement.Squad) (wins, losses, endless int) {
 	t.Helper()
+	books.Bonuses = nil
 	for n := 1; n <= menderSeeds; n++ {
 		for _, swapped := range []bool{false, true} {
 			first, second := home, away

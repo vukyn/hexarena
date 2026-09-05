@@ -1,19 +1,19 @@
 ===== vi | 120x24 | a battle =====
 
-trận đấu  seed 1  diễn biến 56-56/56
+trận đấu  seed 1  diễn biến 68-68/68
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -46,21 +46,21 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | a battle over =====
 
-trận đấu  seed 1  diễn biến 187-191/191
+trận đấu  seed 1  diễn biến 181-185/185
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x3 (3t)
-A2   Example Adept        fallen                      90   poison x3 (2t)
-A3   Example Adept        fallen                      90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [########..]  1765/2200    200   -
+A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
+A3   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 
-next: E3 E1 E2 E3 E1 E2
+next: E1 E2 E3 E1 E2 E3
 
-    E2   hits A3 for 248, 0 left
-    E2   poison <trúng độc> x1 on A3, now 2
+    E3   hits A3 for 294, 0 left
+    E3   poison <trúng độc> x0 on A3, now 3, 1 wasted at the cap
     A3  falls at 2,2
   
   the enemy side wins
@@ -196,7 +196,7 @@ vào phòng đấu
   đội mang theo < đội thử 0 >  phe-0
 
 
-  máy này — data e0abb2ffadb0 · build 0123456789ab+dirty
+  máy này — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -220,7 +220,7 @@ vào phòng đấu
 
   chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng
 
-  máy này — data e0abb2ffadb0 · build 0123456789ab+dirty
+  máy này — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -230,20 +230,20 @@ vào phòng đấu
 tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 120x24 | a live battle =====
 
-trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 56-56/56
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 68-68/68
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -253,16 +253,16 @@ A2 Example Adept, lượt 1
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 120x24 | a live battle waiting on the other player =====
 
-trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 52-56/56
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 64-68/68
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -270,7 +270,7 @@ next: A3 E1 E2 E3 E1 E2
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 đang chờ bên kia đi
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
@@ -314,7 +314,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data e0abb2ffadb0 · build 0123456789ab+dirty
+  máy này — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -326,12 +326,12 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -339,26 +339,26 @@ A2 Example Adept, lượt 1
   guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 
-đã ghi phe-0-vs-phe-1-seed1.json vào data/battles/phe-0-vs-phe-1-seed1.json
-phát lại bằng: hexarena --replay battles/phe-0-vs-phe-1-seed1.json --verify — build lại trước, vì game đọc bản dữ liệu
+đã ghi phe-0-vs-phe-1-seed1.json vào data\battles\phe-0-vs-phe-1-seed1.json
+phát lại bằng: hexarena --replay battles\phe-0-vs-phe-1-seed1.json --verify — build lại trước, vì game đọc bản dữ liệu
 nhúng trong nó chứ không đọc mấy file này
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 105-105/144
+trận đấu  seed 1  diễn biến 112-112/151
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x3 (3t)
-A2   Example Adept        fallen                      90   poison x3 (2t)
-A3   Example Adept        [######....]  1876/3100     90   poison (2t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [#########.]  2037/2200    200   -
+A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
+A3   Example Adept        [######....]  1978/3100     90   kinship x2 (always), poison x2 (2t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
-    E1  uses venom_fang <nanh độc> at 2,1
+    A3   hits E3 for 194 (resisted), 2006 left
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
@@ -391,20 +391,20 @@ vine_whip <roi dây leo>  1/169
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 120x24 | a squeezed battle =====
 
-trận đấu  seed 1  diễn biến 56-56/56
+trận đấu  seed 1  diễn biến 68-68/68
 cửa sổ quá ngắn cho: bàn cờ
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -441,11 +441,11 @@ trận đấu  seed 1
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 A2 Example Adept, lượt 1
   strike      100% công · tầm 1
@@ -464,11 +464,11 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30
 cửa sổ quá ngắn cho: bàn cờ, 1 đơn vị, thứ tự lượt, diễn biến
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 A2 Example Adept, lượt 1
   strike      100% công · tầm 1
@@ -851,7 +851,7 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== vi | 160x60 | a battle =====
 
-trận đấu  seed 1  diễn biến 29-56/56
+trận đấu  seed 1  diễn biến 41-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -864,43 +864,43 @@ trận đấu  seed 1  diễn biến 29-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 72, 2884 left
+    E3   hits A1 for 85, 2845 left
     E3   A1 resists poison <trúng độc> (65%)
-    E3   hits A3 for 72, 2884 left
+    E3   hits A3 for 85, 2845 left
     E3   poison <trúng độc> x1 on A3, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun <choáng> x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt <hồ quang> at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun <choáng> (25%)
   
   E3  turn 2
     E3  uses arc_bolt <hồ quang> at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 103 from poison <trúng độc> x1
+    A1  takes 122 from poison <trúng độc> x1
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -969,7 +969,7 @@ strike <đòn đánh>  1/4
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | a battle over =====
 
-trận đấu  seed 1  diễn biến 160-191/191
+trận đấu  seed 1  diễn biến 154-185/185
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -982,44 +982,44 @@ trận đấu  seed 1  diễn biến 160-191/191
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x3 (3t)
-A2   Example Adept        fallen                      90   poison x3 (2t)
-A3   Example Adept        fallen                      90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [########..]  1765/2200    200   -
+A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
+A3   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 
-next: E3 E1 E2 E3 E1 E2
+next: E1 E2 E3 E1 E2 E3
 
-    E3   hits A3 for 248, 1132 left
-    E3   poison <trúng độc> x0 on A3, now 3, 1 wasted at the cap
+  
+  E1  turn 7
+    E1  uses venom_fang <nanh độc> at 2,2
+    E1   hits A3 for 294, 1684 left
+    E1   poison <trúng độc> x1 on A3, now 1
+  
+  E2  turn 7
+    E2  uses venom_fang <nanh độc> at 2,2
+    E2   hits A3 for 294, 1390 left
+    E2   poison <trúng độc> x1 on A3, now 2
+  
+  E3  turn 7
+    E3  uses arc_bolt <hồ quang> at 2,2
+    E3   hits A3 for 827 (doubly weak!), 563 left
+    E3   A3 resists stun <choáng> (25%)
   
   E1  turn 8
-    E1  uses bolt <tia bắn> at 2,2
-    E1   hits A3 for 165, 967 left
+    E1  uses creeping_rot <mục rữa> at 2,2
+    E1   hits A3 for 171, 392 left
+    E1   poison <trúng độc> x1 on A3, now 3
   
   E2  turn 8
     E2  uses bolt <tia bắn> at 2,2
-    E2   hits A3 for 165, 802 left
+    E2   hits A3 for 196, 196 left
   
   E3  turn 8
-    E3  uses bolt <tia bắn> at 2,2
-    E3   hits A3 for 165, 637 left
-  
-  A3  turn 4
-    A3  takes 309 from poison <trúng độc> x3
-    A3  uses purify <thanh tẩy> at 2,2
-    A3   strips 3 off A3
-  
-  E1  turn 9
-    E1  uses venom_fang <nanh độc> at 2,2
-    E1   hits A3 for 248, 80 left
-    E1   poison <trúng độc> x1 on A3, now 1
-  
-  E2  turn 9
-    E2  uses venom_fang <nanh độc> at 2,2
-    E2   hits A3 for 248, 0 left
-    E2   poison <trúng độc> x1 on A3, now 2
+    E3  uses venom_fang <nanh độc> at 2,2
+    E3   hits A3 for 294, 0 left
+    E3   poison <trúng độc> x0 on A3, now 3, 1 wasted at the cap
     A3  falls at 2,2
   
   the enemy side wins
@@ -1335,7 +1335,7 @@ vào phòng đấu
   đội mang theo < đội thử 0 >  phe-0
 
 
-  máy này — data e0abb2ffadb0 · build 0123456789ab+dirty
+  máy này — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -1395,7 +1395,7 @@ vào phòng đấu
 
   chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng
 
-  máy này — data e0abb2ffadb0 · build 0123456789ab+dirty
+  máy này — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -1441,7 +1441,7 @@ vào phòng đấu
 tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 160x60 | a live battle =====
 
-trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 29-56/56
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 41-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1454,43 +1454,43 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 29-56/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 72, 2884 left
+    E3   hits A1 for 85, 2845 left
     E3   A1 resists poison <trúng độc> (65%)
-    E3   hits A3 for 72, 2884 left
+    E3   hits A3 for 85, 2845 left
     E3   poison <trúng độc> x1 on A3, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun <choáng> x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt <hồ quang> at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun <choáng> (25%)
   
   E3  turn 2
     E3  uses arc_bolt <hồ quang> at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 103 from poison <trúng độc> x1
+    A1  takes 122 from poison <trúng độc> x1
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -1500,7 +1500,7 @@ A2 Example Adept, lượt 1
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 160x60 | a live battle waiting on the other player =====
 
-trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 25-56/56
+trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 37-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1513,47 +1513,47 @@ trận đấu  seed 1  bạn 1:30 · lượt bên kia 1:12  diễn biến 25-56/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
   
   E3  turn 1
     E3  uses creeping_rot <mục rữa> at 2,1
-    E3   hits A2 for 145, 2665 left
+    E3   hits A2 for 171, 2587 left
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 72, 2884 left
+    E3   hits A1 for 85, 2845 left
     E3   A1 resists poison <trúng độc> (65%)
-    E3   hits A3 for 72, 2884 left
+    E3   hits A3 for 85, 2845 left
     E3   poison <trúng độc> x1 on A3, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun <choáng> x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt <hồ quang> at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun <choáng> (25%)
   
   E3  turn 2
     E3  uses arc_bolt <hồ quang> at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 103 from poison <trúng độc> x1
+    A1  takes 122 from poison <trúng độc> x1
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 đang chờ bên kia đi
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
@@ -1633,7 +1633,7 @@ vào phòng đấu
   đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép;
   sửa đội rồi vào lại
 
-  máy này — data e0abb2ffadb0 · build 0123456789ab+dirty
+  máy này — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -1677,7 +1677,7 @@ vào phòng đấu
 tab đổi ô · ←/→ chọn đội · enter vào phòng · ctrl+l English · esc quay lại
 ===== vi | 160x60 | a saved battle =====
 
-trận đấu  seed 1  diễn biến 33-56/56
+trận đấu  seed 1  diễn biến 45-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1690,12 +1690,12 @@ trận đấu  seed 1  diễn biến 33-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -1703,26 +1703,26 @@ next: A3 E1 E2 E3 E1 E2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun <choáng> x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt <hồ quang> at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun <choáng> (25%)
   
   E3  turn 2
     E3  uses arc_bolt <hồ quang> at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 103 from poison <trúng độc> x1
+    A1  takes 122 from poison <trúng độc> x1
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -1730,13 +1730,13 @@ A2 Example Adept, lượt 1
   guard_wall  tự nhận đỡ đòn x2 · bản thân · hồi 4
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 
-đã ghi phe-0-vs-phe-1-seed1.json vào data/battles/phe-0-vs-phe-1-seed1.json
-phát lại bằng: hexarena --replay battles/phe-0-vs-phe-1-seed1.json --verify — build lại trước, vì game đọc bản dữ liệu
+đã ghi phe-0-vs-phe-1-seed1.json vào data\battles\phe-0-vs-phe-1-seed1.json
+phát lại bằng: hexarena --replay battles\phe-0-vs-phe-1-seed1.json --verify — build lại trước, vì game đọc bản dữ liệu
 nhúng trong nó chứ không đọc mấy file này
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a scrolled battle log =====
 
-trận đấu  seed 1  diễn biến 105-132/144
+trận đấu  seed 1  diễn biến 112-139/151
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1749,43 +1749,43 @@ trận đấu  seed 1  diễn biến 105-132/144
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x3 (3t)
-A2   Example Adept        fallen                      90   poison x3 (2t)
-A3   Example Adept        [######....]  1876/3100     90   poison (2t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [#########.]  2037/2200    200   -
+A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
+A3   Example Adept        [######....]  1978/3100     90   kinship x2 (always), poison x2 (2t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
+    A3   hits E3 for 194 (resisted), 2006 left
+    A3   misses E3 (77%)
+    A3   E3 resists mire <sa lầy> (55%)
+  
+  E1  turn 5
     E1  uses venom_fang <nanh độc> at 2,1
-    E1   hits A2 for 248, 1634 left
+    E1   hits A2 for 294, 1169 left
     E1   poison <trúng độc> x0 on A2, now 3, 1 wasted at the cap
   
   E2  turn 5
     E2  uses creeping_rot <mục rữa> at 2,1
-    E2   hits A2 for 145, 1489 left
+    E2   hits A2 for 171, 998 left
     E2   A2 resists poison <trúng độc> (65%)
-    E2   is blocked by A3, 1 charges left
+    E2   is blocked by A3, 0 charges left
     E2   poison <trúng độc> x1 on A3, now 1
   
   E3  turn 5
-    E3  uses creeping_rot <mục rữa> at 2,1
-    E3   misses A2 (93%)
-    E3   is blocked by A3, 0 charges left
-    E3   A3 resists poison <trúng độc> (65%)
+    E3  uses venom_fang <nanh độc> at 2,2
+    E3   hits A3 for 294, 2307 left
+    E3   poison <trúng độc> x1 on A3, now 2
   
   E1  turn 6
     E1  uses arc_bolt <hồ quang> at 2,1
-    E1   hits A2 for 699 (doubly weak!), 790 left
-    E1   stun <choáng> x1 on A2, now 1
+    E1   misses A2 (90%)
   
   E2  turn 6
     E2  uses arc_bolt <hồ quang> at 2,1
-    E2   hits A2 for 699 (doubly weak!), 91 left
-    E2   A2 resists stun <choáng> (25%)
-  
-  E3  turn 6
+    E2   hits A2 for 827 (doubly weak!), 171 left
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
@@ -1854,7 +1854,7 @@ vine_whip <roi dây leo>  1/169
 ↑/↓ chọn · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | a squeezed battle =====
 
-trận đấu  seed 1  diễn biến 29-56/56
+trận đấu  seed 1  diễn biến 41-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1867,43 +1867,43 @@ trận đấu  seed 1  diễn biến 29-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison <trúng độc> x1 on A2, now 3
-    E3   hits A1 for 72, 2884 left
+    E3   hits A1 for 85, 2845 left
     E3   A1 resists poison <trúng độc> (65%)
-    E3   hits A3 for 72, 2884 left
+    E3   hits A3 for 85, 2845 left
     E3   poison <trúng độc> x1 on A3, now 2
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun <choáng> x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt <hồ quang> at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun <choáng> (25%)
   
   E3  turn 2
     E3  uses arc_bolt <hồ quang> at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 103 from poison <trúng độc> x1
+    A1  takes 122 from poison <trúng độc> x1
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
 > strike      100% công · tầm 1
@@ -1972,7 +1972,7 @@ Mew  cấp 60
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
 ===== vi | 160x60 | aiming =====
 
-trận đấu  seed 1  diễn biến 34-56/56
+trận đấu  seed 1  diễn biến 46-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -1985,38 +1985,38 @@ trận đấu  seed 1  diễn biến 34-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun <choáng> x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt <hồ quang> at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun <choáng> (25%)
   
   E3  turn 2
     E3  uses arc_bolt <hồ quang> at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 103 from poison <trúng độc> x1
+    A1  takes 122 from poison <trúng độc> x1
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
   strike      100% công · tầm 1
@@ -2031,7 +2031,7 @@ nhắm strike vào
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | aiming in a live battle =====
 
-trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 34-56/56
+trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 46-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -2044,38 +2044,38 @@ trận đấu  seed 1  lượt bạn 1:12 · bên kia 1:30  diễn biến 34-56/
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
   
   E1  turn 2
     E1  uses arc_bolt <hồ quang> at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun <choáng> x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt <hồ quang> at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun <choáng> (25%)
   
   E3  turn 2
     E3  uses arc_bolt <hồ quang> at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun <choáng> (25%)
   
   A1  turn 1
-    A1  takes 103 from poison <trúng độc> x1
+    A1  takes 122 from poison <trúng độc> x1
     A1  stun <choáng> wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison <trúng độc> x3
+    A2  takes 366 from poison <trúng độc> x3
 
 A2 Example Adept, lượt 1
   strike      100% công · tầm 1
@@ -2764,6 +2764,7 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   fortified    kiên cố
   quickened    gia tốc
   evasive      khinh công
+  kinship      đồng khí
   shield       khiên, chặn một nhát
   block        đỡ đòn
   regen        hồi máu mỗi lượt
@@ -2787,7 +2788,6 @@ hiệu ứng  các buff và debuff mà một chiêu hay nội tại gây ra
   Tăng chỉ số · vĩnh viễn · 1 cộng dồn.
 
   Đây là số khai báo: nội tại khuếch đại hay kháng cự đổi thứ thật sự dính.
-
 
 
 
@@ -3034,20 +3034,20 @@ nguồn  các tác phẩm mà nhân vật được mượn từ
 ↑/↓ chọn · ctrl+l English · esc quay lại · q thoát
 ===== en | 120x24 | a battle =====
 
-the battle  seed 1  log 56-56/56
+the battle  seed 1  log 68-68/68
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -3080,21 +3080,21 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | a battle over =====
 
-the battle  seed 1  log 187-191/191
+the battle  seed 1  log 181-185/185
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x3 (3t)
-A2   Example Adept        fallen                      90   poison x3 (2t)
-A3   Example Adept        fallen                      90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [########..]  1765/2200    200   -
+A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
+A3   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 
-next: E3 E1 E2 E3 E1 E2
+next: E1 E2 E3 E1 E2 E3
 
-    E2   hits A3 for 248, 0 left
-    E2   poison x1 on A3, now 2
+    E3   hits A3 for 294, 0 left
+    E3   poison x0 on A3, now 3, 1 wasted at the cap
     A3  falls at 2,2
   
   the enemy side wins
@@ -3231,7 +3231,7 @@ join a room
   the squad to bring < đội thử 0 >  phe-0
 
 
-  this machine — data e0abb2ffadb0 · build 0123456789ab+dirty
+  this machine — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -3255,7 +3255,7 @@ join a room
 
   no squad has been built, and a room has to be joined with one; build a side under the squad catalogue
 
-  this machine — data e0abb2ffadb0 · build 0123456789ab+dirty
+  this machine — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -3264,20 +3264,20 @@ join a room
 tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 120x24 | a live battle =====
 
-the battle  seed 1  your turn 1:12 · them 1:30  log 56-56/56
+the battle  seed 1  your turn 1:12 · them 1:30  log 68-68/68
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -3287,16 +3287,16 @@ A2 Example Adept, turn 1
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 120x24 | a live battle waiting on the other player =====
 
-the battle  seed 1  you 1:30 · their turn 1:12  log 52-56/56
+the battle  seed 1  you 1:30 · their turn 1:12  log 64-68/68
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -3304,7 +3304,7 @@ next: A3 E1 E2 E3 E1 E2
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 waiting on the other player
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
@@ -3349,7 +3349,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data e0abb2ffadb0 · build 0123456789ab+dirty
+  this machine — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -3360,12 +3360,12 @@ the battle  seed 1
 the window is too short for: board, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -3373,26 +3373,26 @@ A2 Example Adept, turn 1
   guard_wall  self block x2 · itself · cd 4
   purify      strips 3 harmful · an ally · range 2 · cd 3
 
-wrote phe-0-vs-phe-1-seed1.json to data/battles/phe-0-vs-phe-1-seed1.json
-replay it with: hexarena --replay battles/phe-0-vs-phe-1-seed1.json --verify — rebuild first, because the game reads
+wrote phe-0-vs-phe-1-seed1.json to data\battles\phe-0-vs-phe-1-seed1.json
+replay it with: hexarena --replay battles\phe-0-vs-phe-1-seed1.json --verify — rebuild first, because the game reads
 the copy baked into it rather than these files
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a scrolled battle log =====
 
-the battle  seed 1  log 105-105/144
+the battle  seed 1  log 112-112/151
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x3 (3t)
-A2   Example Adept        fallen                      90   poison x3 (2t)
-A3   Example Adept        [######....]  1876/3100     90   poison (2t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [#########.]  2037/2200    200   -
+A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
+A3   Example Adept        [######....]  1978/3100     90   kinship x2 (always), poison x2 (2t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
-    E1  uses venom_fang at 2,1
+    A3   hits E3 for 194 (resisted), 2006 left
 
 A3 Example Adept, turn 3
 > strike      100% attack · range 1
@@ -3425,20 +3425,20 @@ vine_whip  1 of 169
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 120x24 | a squeezed battle =====
 
-the battle  seed 1  log 56-56/56
+the battle  seed 1  log 68-68/68
 the window is too short for: board
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -3475,11 +3475,11 @@ the battle  seed 1
 the window is too short for: board, 1 unit, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 A2 Example Adept, turn 1
   strike      100% attack · range 1
@@ -3498,11 +3498,11 @@ the battle  seed 1  your turn 1:12 · them 1:30
 the window is too short for: board, 1 unit, turn order, log
 
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 A2 Example Adept, turn 1
   strike      100% attack · range 1
@@ -3885,7 +3885,7 @@ origins  the works the cast is borrowed from
 ↑/↓ move · ctrl+l tiếng Việt · esc back · q quit
 ===== en | 160x60 | a battle =====
 
-the battle  seed 1  log 29-56/56
+the battle  seed 1  log 41-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -3898,43 +3898,43 @@ the battle  seed 1  log 29-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 72, 2884 left
+    E3   hits A1 for 85, 2845 left
     E3   A1 resists poison (65%)
-    E3   hits A3 for 72, 2884 left
+    E3   hits A3 for 85, 2845 left
     E3   poison x1 on A3, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun (25%)
   
   E3  turn 2
     E3  uses arc_bolt at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 103 from poison x1
+    A1  takes 122 from poison x1
     A1  stun wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -4003,7 +4003,7 @@ strike  1 of 4
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | a battle over =====
 
-the battle  seed 1  log 160-191/191
+the battle  seed 1  log 154-185/185
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -4016,44 +4016,44 @@ the battle  seed 1  log 160-191/191
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x3 (3t)
-A2   Example Adept        fallen                      90   poison x3 (2t)
-A3   Example Adept        fallen                      90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [########..]  1765/2200    200   -
+A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
+A3   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 
-next: E3 E1 E2 E3 E1 E2
+next: E1 E2 E3 E1 E2 E3
 
-    E3   hits A3 for 248, 1132 left
-    E3   poison x0 on A3, now 3, 1 wasted at the cap
+  
+  E1  turn 7
+    E1  uses venom_fang at 2,2
+    E1   hits A3 for 294, 1684 left
+    E1   poison x1 on A3, now 1
+  
+  E2  turn 7
+    E2  uses venom_fang at 2,2
+    E2   hits A3 for 294, 1390 left
+    E2   poison x1 on A3, now 2
+  
+  E3  turn 7
+    E3  uses arc_bolt at 2,2
+    E3   hits A3 for 827 (doubly weak!), 563 left
+    E3   A3 resists stun (25%)
   
   E1  turn 8
-    E1  uses bolt at 2,2
-    E1   hits A3 for 165, 967 left
+    E1  uses creeping_rot at 2,2
+    E1   hits A3 for 171, 392 left
+    E1   poison x1 on A3, now 3
   
   E2  turn 8
     E2  uses bolt at 2,2
-    E2   hits A3 for 165, 802 left
+    E2   hits A3 for 196, 196 left
   
   E3  turn 8
-    E3  uses bolt at 2,2
-    E3   hits A3 for 165, 637 left
-  
-  A3  turn 4
-    A3  takes 309 from poison x3
-    A3  uses purify at 2,2
-    A3   strips 3 off A3
-  
-  E1  turn 9
-    E1  uses venom_fang at 2,2
-    E1   hits A3 for 248, 80 left
-    E1   poison x1 on A3, now 1
-  
-  E2  turn 9
-    E2  uses venom_fang at 2,2
-    E2   hits A3 for 248, 0 left
-    E2   poison x1 on A3, now 2
+    E3  uses venom_fang at 2,2
+    E3   hits A3 for 294, 0 left
+    E3   poison x0 on A3, now 3, 1 wasted at the cap
     A3  falls at 2,2
   
   the enemy side wins
@@ -4370,7 +4370,7 @@ join a room
   the squad to bring < đội thử 0 >  phe-0
 
 
-  this machine — data e0abb2ffadb0 · build 0123456789ab+dirty
+  this machine — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -4430,7 +4430,7 @@ join a room
 
   no squad has been built, and a room has to be joined with one; build a side under the squad catalogue
 
-  this machine — data e0abb2ffadb0 · build 0123456789ab+dirty
+  this machine — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -4475,7 +4475,7 @@ join a room
 tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 160x60 | a live battle =====
 
-the battle  seed 1  your turn 1:12 · them 1:30  log 29-56/56
+the battle  seed 1  your turn 1:12 · them 1:30  log 41-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -4488,43 +4488,43 @@ the battle  seed 1  your turn 1:12 · them 1:30  log 29-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 72, 2884 left
+    E3   hits A1 for 85, 2845 left
     E3   A1 resists poison (65%)
-    E3   hits A3 for 72, 2884 left
+    E3   hits A3 for 85, 2845 left
     E3   poison x1 on A3, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun (25%)
   
   E3  turn 2
     E3  uses arc_bolt at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 103 from poison x1
+    A1  takes 122 from poison x1
     A1  stun wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -4534,7 +4534,7 @@ A2 Example Adept, turn 1
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 160x60 | a live battle waiting on the other player =====
 
-the battle  seed 1  you 1:30 · their turn 1:12  log 25-56/56
+the battle  seed 1  you 1:30 · their turn 1:12  log 37-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -4547,47 +4547,47 @@ the battle  seed 1  you 1:30 · their turn 1:12  log 25-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
   
   E3  turn 1
     E3  uses creeping_rot at 2,1
-    E3   hits A2 for 145, 2665 left
+    E3   hits A2 for 171, 2587 left
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 72, 2884 left
+    E3   hits A1 for 85, 2845 left
     E3   A1 resists poison (65%)
-    E3   hits A3 for 72, 2884 left
+    E3   hits A3 for 85, 2845 left
     E3   poison x1 on A3, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun (25%)
   
   E3  turn 2
     E3  uses arc_bolt at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 103 from poison x1
+    A1  takes 122 from poison x1
     A1  stun wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 waiting on the other player
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
@@ -4668,7 +4668,7 @@ join a room
   the squad brought along is not legal in this room: wrong size for the format, or a level, stage or skill it may not
   take; fix it and join again
 
-  this machine — data e0abb2ffadb0 · build 0123456789ab+dirty
+  this machine — data 42d036216e53 · build 0123456789ab+dirty
 
 
 
@@ -4711,7 +4711,7 @@ join a room
 tab next field · ←/→ squad · enter join · ctrl+l tiếng Việt · esc back
 ===== en | 160x60 | a saved battle =====
 
-the battle  seed 1  log 33-56/56
+the battle  seed 1  log 45-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -4724,12 +4724,12 @@ the battle  seed 1  log 33-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
@@ -4737,26 +4737,26 @@ next: A3 E1 E2 E3 E1 E2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun (25%)
   
   E3  turn 2
     E3  uses arc_bolt at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 103 from poison x1
+    A1  takes 122 from poison x1
     A1  stun wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -4764,13 +4764,13 @@ A2 Example Adept, turn 1
   guard_wall  self block x2 · itself · cd 4
   purify      strips 3 harmful · an ally · range 2 · cd 3
 
-wrote phe-0-vs-phe-1-seed1.json to data/battles/phe-0-vs-phe-1-seed1.json
-replay it with: hexarena --replay battles/phe-0-vs-phe-1-seed1.json --verify — rebuild first, because the game reads
+wrote phe-0-vs-phe-1-seed1.json to data\battles\phe-0-vs-phe-1-seed1.json
+replay it with: hexarena --replay battles\phe-0-vs-phe-1-seed1.json --verify — rebuild first, because the game reads
 the copy baked into it rather than these files
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a scrolled battle log =====
 
-the battle  seed 1  log 105-132/144
+the battle  seed 1  log 112-139/151
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -4783,43 +4783,43 @@ the battle  seed 1  log 105-132/144
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        fallen                      90   poison x3 (3t)
-A2   Example Adept        fallen                      90   poison x3 (2t)
-A3   Example Adept        [######....]  1876/3100     90   poison (2t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [#########.]  2037/2200    200   -
+A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
+A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
+A3   Example Adept        [######....]  1978/3100     90   kinship x2 (always), poison x2 (2t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
+    A3   hits E3 for 194 (resisted), 2006 left
+    A3   misses E3 (77%)
+    A3   E3 resists mire (55%)
+  
+  E1  turn 5
     E1  uses venom_fang at 2,1
-    E1   hits A2 for 248, 1634 left
+    E1   hits A2 for 294, 1169 left
     E1   poison x0 on A2, now 3, 1 wasted at the cap
   
   E2  turn 5
     E2  uses creeping_rot at 2,1
-    E2   hits A2 for 145, 1489 left
+    E2   hits A2 for 171, 998 left
     E2   A2 resists poison (65%)
-    E2   is blocked by A3, 1 charges left
+    E2   is blocked by A3, 0 charges left
     E2   poison x1 on A3, now 1
   
   E3  turn 5
-    E3  uses creeping_rot at 2,1
-    E3   misses A2 (93%)
-    E3   is blocked by A3, 0 charges left
-    E3   A3 resists poison (65%)
+    E3  uses venom_fang at 2,2
+    E3   hits A3 for 294, 2307 left
+    E3   poison x1 on A3, now 2
   
   E1  turn 6
     E1  uses arc_bolt at 2,1
-    E1   hits A2 for 699 (doubly weak!), 790 left
-    E1   stun x1 on A2, now 1
+    E1   misses A2 (90%)
   
   E2  turn 6
     E2  uses arc_bolt at 2,1
-    E2   hits A2 for 699 (doubly weak!), 91 left
-    E2   A2 resists stun (25%)
-  
-  E3  turn 6
+    E2   hits A2 for 827 (doubly weak!), 171 left
 
 A3 Example Adept, turn 3
 > strike      100% attack · range 1
@@ -4888,7 +4888,7 @@ vine_whip  1 of 169
 ↑/↓ move · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | a squeezed battle =====
 
-the battle  seed 1  log 29-56/56
+the battle  seed 1  log 41-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -4901,43 +4901,43 @@ the battle  seed 1  log 29-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
     E3   poison x1 on A2, now 3
-    E3   hits A1 for 72, 2884 left
+    E3   hits A1 for 85, 2845 left
     E3   A1 resists poison (65%)
-    E3   hits A3 for 72, 2884 left
+    E3   hits A3 for 85, 2845 left
     E3   poison x1 on A3, now 2
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun (25%)
   
   E3  turn 2
     E3  uses arc_bolt at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 103 from poison x1
+    A1  takes 122 from poison x1
     A1  stun wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
 > strike      100% attack · range 1
@@ -5006,7 +5006,7 @@ Mew  level 60
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
 ===== en | 160x60 | aiming =====
 
-the battle  seed 1  log 34-56/56
+the battle  seed 1  log 46-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -5019,38 +5019,38 @@ the battle  seed 1  log 34-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun (25%)
   
   E3  turn 2
     E3  uses arc_bolt at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 103 from poison x1
+    A1  takes 122 from poison x1
     A1  stun wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
   strike      100% attack · range 1
@@ -5065,7 +5065,7 @@ point strike at
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | aiming in a live battle =====
 
-the battle  seed 1  your turn 1:12 · them 1:30  log 34-56/56
+the battle  seed 1  your turn 1:12 · them 1:30  log 46-68/68
 
  c0  c1  c2  c3  c4  c5
  BK  MD  FR  FR  MD  BK
@@ -5078,38 +5078,38 @@ the battle  seed 1  your turn 1:12 · them 1:30  log 34-56/56
 \__/  \__/E1\__/  \
    \__/  \__/  \__/
 tag  unit                 hp                        spd   effects
-A1   Example Adept        [##........]   684/3100     90   poison (2t)
-A2   Example Adept        [#######...]  2356/3100     90   poison x3 (2t)
-A3   Example Adept        [#########.]  2884/3100     90   poison x2 (3t)
-E1   Bloom                [##########]  2200/2200    200   -
-E2   Bloom                [##########]  2200/2200    200   -
-E3   Bloom                [##########]  2200/2200    200   -
+A1   Example Adept        [#.........]   242/3100     90   kinship x2 (always), poison (2t)
+A2   Example Adept        [#######...]  2221/3100     90   kinship x2 (always), poison x3 (2t)
+A3   Example Adept        [#########.]  2845/3100     90   kinship x2 (always), poison x2 (3t)
+E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: A3 E1 E2 E3 E1 E2
 
   
   E1  turn 2
     E1  uses arc_bolt at 2,0
-    E1   hits A1 for 699 (doubly weak!), 2185 left
+    E1   hits A1 for 827 (doubly weak!), 2018 left
     E1   stun x1 on A1, now 1
   
   E2  turn 2
     E2  uses arc_bolt at 2,0
-    E2   hits A1 for 699 (doubly weak!), 1486 left
+    E2   hits A1 for 827 (doubly weak!), 1191 left
     E2   A1 resists stun (25%)
   
   E3  turn 2
     E3  uses arc_bolt at 2,0
-    E3   hits A1 for 699 (doubly weak!), 787 left
+    E3   hits A1 for 827 (doubly weak!), 364 left
     E3   A1 resists stun (25%)
   
   A1  turn 1
-    A1  takes 103 from poison x1
+    A1  takes 122 from poison x1
     A1  stun wears off
     A1  loses the turn (stun)
   
   A2  turn 1
-    A2  takes 309 from poison x3
+    A2  takes 366 from poison x3
 
 A2 Example Adept, turn 1
   strike      100% attack · range 1
@@ -5798,6 +5798,7 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   fortified    
   quickened    
   evasive      
+  kinship      
   shield       blocks one strike
   block        
   regen        restores every turn
@@ -5821,7 +5822,6 @@ statuses  the buffs and debuffs a skill or a trait puts on a unit
   Raises a stat · always in force · 1 stack.
 
   Declared figures: a trait amplifying or resisting changes what lands.
-
 
 
 

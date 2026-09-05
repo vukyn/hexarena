@@ -314,6 +314,20 @@
       "category": "reserve",
       "max_stacks": 5,
       "duration": 4
+    },
+    {
+      "id": "kinship",
+      "category": "buff",
+      "max_stacks": 2,
+      "duration": 0,
+      "permanent": true,
+      "modifiers": [
+        {
+          "target": "attack",
+          "mode": "percent",
+          "amount": 100
+        }
+      ]
     }
   ]
 }

@@ -36,7 +36,7 @@ func TestAHealedLineSaysTheHealingWasCut(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load books: %v", err)
 	}
-	vi := i18n.Vi.LogGlosses(books.Skills.Skills(), books.Statuses.Kinds(), books.Passives.All())
+	vi := i18n.Vi.LogGlosses(books.Skills.Skills(), books.Statuses.Kinds(), books.Passives.All(), books.Bonuses.All())
 	if vi["regrowth"] == "" {
 		t.Fatal("the shipped books gloss no regrowth, so the Vietnamese arm would read a bare id")
 	}

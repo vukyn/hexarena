@@ -42,7 +42,7 @@ func sweepGlosses(t *testing.T) map[string]string {
 		t.Fatalf("load books: %v", err)
 	}
 	glosses := i18n.Vi.LogGlosses(
-		books.Skills.Skills(), books.Statuses.Kinds(), books.Passives.All())
+		books.Skills.Skills(), books.Statuses.Kinds(), books.Passives.All(), books.Bonuses.All())
 	for _, id := range []string{sweepSkill, sweepStatus, sweepPassive} {
 		if glosses[id] == "" {
 			t.Fatalf("the shipped books gloss no %q, so the sweep would measure a bare id", id)
@@ -294,7 +294,7 @@ func TestAShippedSkillIsGlossedFromItsAuthoredName(t *testing.T) {
 	}
 
 	glosses := i18n.Vi.LogGlosses(
-		books.Skills.Skills(), books.Statuses.Kinds(), books.Passives.All())
+		books.Skills.Skills(), books.Statuses.Kinds(), books.Passives.All(), books.Bonuses.All())
 	line := tui.Line(battle.Event{
 		Kind: battle.SkillUsed, Actor: "a", Skill: declared.ID,
 		Cell: hex.At(hex.Offset{Col: 3, Row: 1}),
@@ -354,7 +354,7 @@ func TestNoGlossedLogRowOutgrowsTheWindow(t *testing.T) {
 		t.Fatalf("load books: %v", err)
 	}
 	glosses := i18n.Vi.LogGlosses(
-		books.Skills.Skills(), books.Statuses.Kinds(), books.Passives.All())
+		books.Skills.Skills(), books.Statuses.Kinds(), books.Passives.All(), books.Bonuses.All())
 	tags := map[string]string{"a": "A1", "f": "E1"}
 	measure := func(label string, event battle.Event) {
 		for _, row := range strings.Split(tui.Line(event, tags, glosses), "\n") {

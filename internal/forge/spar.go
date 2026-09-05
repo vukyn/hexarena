@@ -23,7 +23,7 @@ func (l *Library) Books() battle.Books {
 	return battle.Books{
 		Rules: l.rules, Chart: l.chart, Bounds: l.bounds, Limits: l.limits,
 		Patterns: l.patterns, Statuses: l.statuses,
-		Skills: l.skills, Passives: l.passives,
+		Skills: l.skills, Passives: l.passives, Bonuses: l.bonuses,
 	}
 }
 
