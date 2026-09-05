@@ -1654,8 +1654,20 @@ Two things about that write are worth knowing before touching it:
   the parser reads. That is what makes the rewrite lossless for the four blocks
   the authoring form does not ask about — `requires`, `strips`, `scaling`,
   `self_applies` — and `TestTheShippedSkillBookSurvivesBeingWritten` measures it
-  on the real data rather than on a fixture. A field added to one struct is a
-  compile error in the other until it is added there too, which is the point.
+  on the real data rather than on a fixture.
+  ⚠️ **This said "a field added to one struct is a compile error in the other
+  until it is added there too, which is the point", and that is FALSE** —
+  measured 2026-09-05, from step 3 of the draft, which was about to be designed
+  around it. `Skill.file()` (`internal/core/skill/skill.go:1115`) is a **keyed**
+  composite literal, so a field added to either side compiles fine and is
+  silently dropped by the writer; only an *unkeyed* literal would give the
+  compile error the sentence describes. What actually catches it is the round
+  trip over real data named above, which is why that test is the load-bearing
+  half of this bullet rather than the reassurance at the end of it. **Do not
+  reach for this as the precedent for "two structs the compiler keeps in step"**
+  — there is no such precedent in this repository; the shapes that must not
+  drift are either one struct embedded in two (`wire.DraftDecision`) or held by
+  a round trip.
   Note `Scaling`'s zero value is **not** its default (the zero stat is health,
   and a skill scaling off health is refused), so a `skill.Skill` built in Go must
   set `skill.DefaultScaling()`; the refusal is loud rather than silent on purpose.

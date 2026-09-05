@@ -1598,6 +1598,167 @@ is only so the shape is readable.
             satisfies: the roster has to hold every unit both sides drafted, and the
             battle has to end **before** the backstop — reaching a 4000-turn limit
             is a hang detector firing, not an ending.
+      - [x] **The draft on the wire — step 3. Done 2026-09-05.** The ban-and-pick
+            is a protocol now: **two message kinds**, one refusal code, one
+            closure, and a wording for each in both language books. Still **no
+            room change and no screen** — steps 4 and 5.
+            What the protocol carries:
+            `decide` (client → server) is one decision, step-tagged —
+            `wire.Decide` over `wire.DraftDecision`, which is a `step` plus a
+            character, a form, two lists and an arrangement, with the fields the
+            other steps do not use left out. `drafted` (server → client) is
+            `wire.Drafted`, a **batch** of `wire.DraftEntry` — a seat and a
+            decision — in record order. `wire.Welcome` gains **`drafts bool`**,
+            so a client knows not to bring a squad. `wire.CodeSquadUnwanted` is
+            the gate's answer to one that did anyway, and
+            `wire.ClosureDraftExpired` is a draft that ran out of time.
+            `internal/draft` gains **`Draft.Apply(wire.DraftEntry)`**, the mirror's
+            apply loop, moved out of `record_test.go`'s local `apply` exactly as
+            that function's comment said it would be the day there were two
+            callers.
+            ⚠️ **THE SHAPE HAD TO BE DECIDED, AND THE REASON IS AN IMPORT
+            DIRECTION THAT IS ALREADY BACKWARDS.** Measured with `go list`:
+            `internal/wire` imports `internal/core/battle`, which is how
+            `wire.Turn` carries a `battle.Decision` — **wire names the domain
+            type and the domain knows nothing about wire**, and
+            `internal/core/battle` imports wire **zero** times. That precedent is
+            *not available* for the draft, because `internal/draft` **imports
+            `internal/wire`** for `Format` and `Seat` (settled in step 1, on the
+            argument that a bare `units int` invites 3v3 being passed as 6). So
+            `internal/wire` may not import `internal/draft`; it is a cycle.
+            **Decided: the decision's shape is declared once, in
+            `internal/wire`**, and `internal/draft` names it — no local alias and
+            no local `Entry`/`Step` type at all, which is the same relationship
+            `Format` and `Seat` already have with that package. One spelling, and
+            it is the protocol's.
+            ⚠️ **The two directions genuinely need two bodies and the brief's
+            framing missed it.** A client must not send its own seat (the room
+            knows which connection spoke — `wire.Act` carries no unit for exactly
+            this reason, and a field a sender is asked to leave blank is a field
+            somebody fills in), while a **recorded** decision must carry one,
+            because the record is what a mirror replays and the arrange phase
+            records both seats at once. So it is `DraftDecision` (six fields, no
+            seat) **embedded** in both `Decide` and `DraftEntry` — anonymous, so
+            both bodies serialise flat and the six facts are declared exactly
+            once. That makes the "two shapes and nothing holds them in step"
+            objection moot rather than answered: there is one struct, so the
+            field-by-field test the brief would have owed does not exist.
+            ⚠️ **The precedent quoted for that test does not hold, measured.**
+            CLAUDE.md says of `Skill.MarshalJSON`/`skillFile` that *"a field
+            added to one struct is a compile error in the other until it is added
+            there too, which is the point"*. `skill.Skill.file()` is a **keyed**
+            composite literal, so a field added to either side is a compile error
+            **nowhere**; what actually catches it is
+            `TestTheShippedSkillBookSurvivesBeingWritten`, a round trip over the
+            real data. → the ⚠️ under § *Data and golden files*, which is where
+            that sentence lives.
+            ⚠️ **Moving `Format`/`Seat` down into a package both could import was
+            measured and DEFERRED, not overlooked.** Blast radius:
+            `internal/draft` 8 files, `internal/socket` 11, `internal/room` 11,
+            `cmd/hexarena-tui` 3, `cmd/hexarena-host` 2, plus three comments in
+            `internal/i18n`. That is a refactor of its own and doing it here
+            would bury the protocol change inside it. Whoever picks it up does
+            not need to re-measure.
+            ⚠️ **One kind each way and not five, and `draft.Entry` already made
+            that choice.** A ban, a skip, a pick, a loadout, an arrangement and a
+            timeout are the six things one record holds and a draft's record is a
+            single sequence, so five bodies would be two different answers to one
+            question — and the switch turning one into the other would be a second
+            declaration of the draft's own sequence. The server side is a
+            **batch** for two independent reasons: the arrange phase records two
+            entries at once by design, and a spectator joining at cursor nought
+            is handed the whole record in one message.
+            ⚠️ **No per-decision digest, and the argument is written on
+            `wire.Drafted` where a reader who knows `wire.Turn` will ask for
+            it.** `Turn` carries one because a battle's state is a large
+            computation that can drift silently. A draft's state is a pure
+            function of the decisions **and the pool**, the pool is the cast minus
+            every character held back, and the **data digest already gates that at
+            the join** (`CodeDataMismatch` refuses a peer whose cast is not this
+            cast before it is seated), so a draft digest could catch nothing the
+            join does not already refuse.
+            ⚠️ **Codes: one new, two reused, and the sentences are the argument.**
+            `CodeNotYourTurn` is **reused** for a decision from the seat nobody is
+            asking — same fact, same thing for a player to do about it, and two
+            codes for one situation is worth less than one. `CodeIllegalAction` is
+            **reused** for all four legality refusals (wrong step, a character out
+            of the pool or already taken, an illegal loadout, a refused
+            arrangement), which is the decision `CodeSquadRefused` already takes
+            for the four ways a squad is turned away: the client holds the pool,
+            `cast.ChooseLoadout` and `placement.Squad.Validate` itself, so it can
+            say precisely which, where a code could only say "one of four".
+            `CodeSquadUnwanted` is the **one** new code, because every other
+            squad refusal means the squad is *illegal* and this one may be
+            perfectly legal — `RefusalSquadRefused`'s own wording tells a player
+            to fix it and join again, which would send them to check levels and
+            forms that are all fine.
+            ⚠️ **One EXISTING wording was widened, which the brief did not ask
+            for.** `RefusalNotYourTurn` read *"…usually the clock ran out and the
+            room passed for this side; the board is right either way"*, and both
+            clauses are false on the draft path: a draft timeout **cancels** (it
+            does not pass for anybody) and a draft has no board. It now names the
+            clock without asserting the mechanism, in both books. The measured
+            content that paragraph in `keys.go` defends — that a player who let
+            the clock run out must not be told their program is broken — is kept.
+            Reusing the code and leaving the sentence false was the alternative.
+            ⚠️ **`KindClosed` is no longer last and the "declared last" comment
+            MOVED to `KindDrafted`** — left behind it would make the file say
+            something false about itself. The same is true of two comments the
+            brief did not mention: `CodeUnknownMessage`'s and `ClosureStopped`'s
+            carry the identical rule and both moved to the new last constant.
+            `Kind`'s own doc also had to give up its *"three go up and five come
+            back"* grouping: appending is the rule, so declaration order no longer
+            groups by direction and the doc says to read a kind's comment instead
+            of its position.
+            ⚠️ **A field added to a message needs TWO things and the room half is
+            step 4.** `messages.golden` says a field *travels*; a hand-written
+            fixture can never see the **producer** (taking one line out of
+            `gate.go` so the room stops filling in `TurnCap` leaves
+            `internal/wire` entirely green). **What step 4 owes an assertion in
+            `internal/room`**: `Welcome.Drafts` is really set for a drafting room
+            and really false otherwise; `Drafted.Decisions` is what
+            `Draft.Since(cursor)` answered, in that order, and is never sent
+            empty; a `Decide` is routed to the draft with the seat taken from the
+            **connection** and never from the message; `CodeSquadUnwanted` is
+            answered to a hello that brought a squad to a drafting room; and
+            `ClosureDraftExpired` is sent when `Draft.TimedOut` cancels.
+            ⚠️ **`CodeSquadUnwanted` is `wire.CodeCount`'s first declared debt.**
+            `cmd/hexarena-tui`'s `TestEveryRefusalIsShownAndEveryClosureIsShown`
+            derives which screen draws each code out of a **real** `room.Room`,
+            so a code no room produces reddens it — correctly, since nothing
+            drafts yet. It now carries an `owed` set naming this one code and the
+            step that owes it, and the totality arithmetic
+            (`gate + inMatch + owed == CodeCount-1`) is what stops that set
+            growing quietly: **step 4 must delete the entry**, or the same check
+            goes red from the other side. Note the asymmetry with the closure —
+            the result screen words whatever closure it is handed, so
+            `ClosureDraftExpired` is read by a player from the day it exists.
+            ⚠️ **There is no sequence number on `decide`, and the step is what
+            stands in for one.** The client's chooser answer carries the turn it
+            is for, because a buffered answer for a spent turn is otherwise
+            indistinguishable from a fresh one (CLAUDE.md § *A window is not
+            closed by the fact that you have not opened it*). A draft has exactly
+            one open decision, so the step refuses a decision stale across a
+            *stage* on its own — a ban arriving while a pick is due. What it does
+            **not** tell apart is a decision stale within one step: a second ban
+            meant for the first ban slot. That is the hazard `wire.Act` already
+            carries for a battle rather than a new one, and it is written on
+            `wire.Decide` rather than left to be discovered.
+            ⚠️ **Go 1.27 accepts promoted fields in a composite literal**, which
+            is why `wire.DraftEntry{Seat: seat, Step: …, Character: …}` compiles
+            and reads flat despite the embed. It was verified against the
+            toolchain rather than assumed; on an older toolchain every one of
+            those literals would need the embedded field spelled out.
+            **Round-trip count: 10 kinds encode and decode**, every one against a
+            hand-written fixture, and the vacuity guard is
+            `TestEveryMessageKindHasANameAndABody` — it walks `KindCount` rather
+            than the fixture map, so a kind with no fixture is a red test rather
+            than a kind the round-trip silently skips (`len(fixtures) != KindCount`
+            is the second half). The draft's own vocabulary is walked the same
+            way: `wire.DraftSteps()` is the list, `DraftStep.Valid` is derived
+            from it, `TestEveryDraftStepTravels` sends all **five** in both
+            directions, and `TestApplyRoutesEveryStepThereIs` drives all five
+            through `Draft.Apply` and holds the set against the declared list.
       - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
             "a ban lasts the match" is ambiguous in a series and the ambiguity is
             a design decision rather than a parameter: three drafts, one draft

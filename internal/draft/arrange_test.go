@@ -159,7 +159,7 @@ func TestBothSidesArrangeAtOnceAndTurnNeverSaysSo(t *testing.T) {
 			t.Errorf("entry %d of the pair is %s's and the record goes in seats order, so it "+
 				"should be %s's", at, entry.Seat, seats()[at])
 		}
-		if entry.Step != draft.StepArrange {
+		if entry.Step != wire.StepArrange {
 			t.Errorf("entry %d of the pair is a %q", at, entry.Step)
 		}
 		if want := draft.PicksPerSide(wire.Format3v3); len(entry.Slots) != want {
@@ -346,7 +346,7 @@ func TestADraftedSquadIsNamedByTheCharactersItTook(t *testing.T) {
 // draft they both watched.
 func TestTheRecordDoesNotSayWhoArrangedFirst(t *testing.T) {
 	all := shippedCast(t)
-	records := map[string][]draft.Entry{}
+	records := map[string][]wire.DraftEntry{}
 	for _, order := range [][]wire.Seat{
 		{wire.SeatHost, wire.SeatGuest},
 		{wire.SeatGuest, wire.SeatHost},
@@ -374,7 +374,7 @@ func TestTheRecordDoesNotSayWhoArrangedFirst(t *testing.T) {
 	arrangements := 0
 	for at := range hostFirst {
 		mine, theirs := hostFirst[at], guestFirst[at]
-		if mine.Step == draft.StepArrange {
+		if mine.Step == wire.StepArrange {
 			arrangements++
 		}
 		if mine.Seat != theirs.Seat || mine.Step != theirs.Step ||
@@ -428,13 +428,13 @@ func TestATimeoutInTheArrangePhaseDiscardsWhatItHeld(t *testing.T) {
 		t.Errorf("a cancelled draft is waiting on %v to arrange", got)
 	}
 	fresh, _ := drafting.Since(before)
-	if len(fresh) != 1 || fresh[0].Step != draft.StepTimeout || fresh[0].Seat != wire.SeatGuest {
+	if len(fresh) != 1 || fresh[0].Step != wire.StepTimeout || fresh[0].Seat != wire.SeatGuest {
 		t.Fatalf("the timeout recorded %+v, and it owes exactly one entry: the guest's timeout",
 			fresh)
 	}
 	record, _ := drafting.Since(0)
 	for at, entry := range record {
-		if entry.Step == draft.StepArrange {
+		if entry.Step == wire.StepArrange {
 			t.Errorf("entry %d of %d is an arrangement (%v), and the buffered one is discarded "+
 				"rather than recorded — appending it leaks the board it was hiding",
 				at, len(record), entry.Slots)

@@ -44,59 +44,26 @@ func indexOf(seat wire.Seat) (int, bool) {
 	return 0, false
 }
 
-// Step is which kind of decision a draft is asking for, and it doubles as the
-// vocabulary of what a draft's record can hold.
+// The step vocabulary — which kind of decision a draft is asking for, and what
+// a draft's record can hold — is **wire.DraftStep**, and it is not declared here.
 //
-// It is a named string rather than an iota for the reason wire.Seat is: a string
-// type has no declaration order to reinterpret, so an insertion cannot silently
-// change what an existing value means, and it needs no names table, no
-// MarshalJSON and no count to be held against. Nothing here is dispatched on by
-// index, which is the case that forces an enum.
-//
-// The zero Step is not a step. Turn reports whether anything is due with a bool
-// rather than with a zero value, so an absent step means what it says.
+// ⚠️ **It was, until the record went on the wire, and the move is a consequence
+// of this package importing internal/wire rather than a preference.** A draft's
+// record is what a mirror replays, so it is what travels; internal/wire may not
+// import this package (it would be a cycle, since Config.Format and every seat
+// here are wire's), so the shape has to be declared over there and named from
+// here. That is the same relationship Format and Seat already have with this
+// package, which is why there is no local alias for it either: one spelling, and
+// it is the protocol's. → wire.DraftStep, and TODO.md § *The draft on the wire*
+// for the shape decision and what it cost.
 //
 // ⚠️ **The vocabulary is wider than what Turn answers, and two of the five are
 // deliberately outside it.** Turn answers a ban, a pick and a loadout — one seat
 // and one step — because every refusal in this package is written on there being
-// exactly one open decision. StepTimeout is a thing that happened to a draft
-// rather than a decision anybody is due, and StepArrange is **two** decisions
-// pending at once, which is the reason the arrange phase has accessors of its
-// own. → Arranging, AwaitingArrangement.
-type Step string
-
-const (
-	// StepBan is a side taking a character out of the pool for the match. It is
-	// **optional** — see SkipBan — and it comes before every pick.
-	StepBan Step = "ban"
-	// StepPick is a side taking a character for itself. It is the first of the
-	// two decisions a pick is made of; the character leaves the pool here.
-	StepPick Step = "pick"
-	// StepLoadout is the second: the form, four skills and one trait the
-	// character just picked will field. It belongs to whoever took that pick and
-	// nothing else can be decided until it is in.
-	StepLoadout Step = "loadout"
-	// StepArrange is a side putting its picks on its own 3x3 formation, which is
-	// the phase that runs once picking closes — privately and simultaneously, so
-	// **Turn never answers it either**: two arrangements are pending at once and
-	// Turn answers one seat and one step. → Arrange, Arranging,
-	// AwaitingArrangement.
-	//
-	// ⚠️ **Two of these entries are recorded together and neither is recorded
-	// when it arrives**, which is the one place this vocabulary is not one entry
-	// per decision as it is taken. An entry is public the moment it is appended,
-	// so appending the first arrangement would show it to the other player. →
-	// Arrange, and Entry.Slots.
-	StepArrange Step = "arrange"
-	// StepTimeout is not a decision anybody is due to make and **Turn never
-	// answers it**: it is the transport reporting that an allowance ran out,
-	// which per TODO.md § "Ban and pick" (c) cancels the whole draft.
-	//
-	// It lives in this vocabulary rather than in one of its own because it is one
-	// of the things a draft's record holds, and a second type beside Step would be
-	// two vocabularies for one idea — the mistake CLAUDE.md keeps a list of.
-	StepTimeout Step = "timeout"
-)
+// exactly one open decision. wire.StepTimeout is a thing that happened to a
+// draft rather than a decision anybody is due, and wire.StepArrange is **two**
+// decisions pending at once, which is the reason the arrange phase has accessors
+// of its own. → Turn, Arranging, AwaitingArrangement.
 
 // Pick is one character a side took, with the loadout it took it in: a
 // placement.Placement **minus its Slot and its ID**.
@@ -237,8 +204,9 @@ type Draft struct {
 	// is the opposite call from awaiting/pending above and for a stated reason:
 	// Arrange refuses a slice whose length is not that side's pick count, and no
 	// format fields nought units, so a stored arrangement always holds at least
-	// three cells and an empty one cannot be one. A flag would be Entry.Character's
-	// mistake — two fields that could disagree about one fact.
+	// three cells and an empty one cannot be one. A flag would be the mistake
+	// wire.DraftDecision.Character refuses — two fields that could disagree about
+	// one fact.
 	arranged [seatCount][]hex.Offset
 
 	// abandoned is the seat whose allowance ran out, and empty for a draft that
@@ -246,14 +214,14 @@ type Draft struct {
 	// one statement rather than a bool beside a name that could disagree with it.
 	abandoned wire.Seat
 
-	entries []Entry
+	entries []wire.DraftEntry
 }
 
 // spending is one character out of the pool: which, by whom, and as what.
 type spending struct {
 	character string
 	seat      wire.Seat
-	step      Step
+	step      wire.DraftStep
 }
 
 // New sets a draft up, or says why it could never finish.
@@ -323,16 +291,16 @@ func New(config Config) (*Draft, error) {
 // A loadout's owner is derived rather than stored: it is whoever took the pick
 // the draft is waiting on, and storing the seat beside the pick would be a
 // second statement of one fact.
-func (d *Draft) Turn() (wire.Seat, Step, bool) {
+func (d *Draft) Turn() (wire.Seat, wire.DraftStep, bool) {
 	switch {
 	case d.Cancelled() || d.Picked():
 		return "", "", false
 	case d.awaiting:
-		return d.seatAt(d.picks - 1), StepLoadout, true
+		return d.seatAt(d.picks - 1), wire.StepLoadout, true
 	case d.bans < 2*BansPerSide(d.format):
-		return d.seatAt(d.bans), StepBan, true
+		return d.seatAt(d.bans), wire.StepBan, true
 	default:
-		return d.seatAt(d.picks), StepPick, true
+		return d.seatAt(d.picks), wire.StepPick, true
 	}
 }
 
@@ -394,7 +362,7 @@ func (d *Draft) Cancelled() bool { return d.abandoned != "" }
 // unreachable for a draft that Fits allowed.
 func (d *Draft) Candidates() []cast.Character {
 	_, step, due := d.Turn()
-	if !due || step == StepLoadout {
+	if !due || step == wire.StepLoadout {
 		return nil
 	}
 	out := make([]cast.Character, 0, len(d.pool.characters))
@@ -412,15 +380,16 @@ func (d *Draft) Candidates() []cast.Character {
 // A ban lasts the match and the first cut is bo1 only — TODO.md § "Ban and pick"
 // (d) — so nothing here has a series in it.
 func (d *Draft) Ban(seat wire.Seat, characterID string) error {
-	if err := d.due(seat, StepBan); err != nil {
+	if err := d.due(seat, wire.StepBan); err != nil {
 		return err
 	}
-	if _, err := d.offered(characterID, StepBan); err != nil {
+	if _, err := d.offered(characterID, wire.StepBan); err != nil {
 		return err
 	}
-	d.spent = append(d.spent, spending{character: characterID, seat: seat, step: StepBan})
+	d.spent = append(d.spent,
+		spending{character: characterID, seat: seat, step: wire.StepBan})
 	d.bans++
-	d.record(Entry{Seat: seat, Step: StepBan, Character: characterID})
+	d.record(wire.DraftEntry{Seat: seat, Step: wire.StepBan, Character: characterID})
 	return nil
 }
 
@@ -432,13 +401,13 @@ func (d *Draft) Ban(seat wire.Seat, characterID string) error {
 // leave the pool fuller than Fits measured, which is why it cannot turn a legal
 // room into a draft that runs dry.
 func (d *Draft) SkipBan(seat wire.Seat) error {
-	if err := d.due(seat, StepBan); err != nil {
+	if err := d.due(seat, wire.StepBan); err != nil {
 		return err
 	}
 	d.bans++
 	// No character, which is what a skip is. The record says the slot was spent
 	// and names nobody, and a replay reads the absence as the decision.
-	d.record(Entry{Seat: seat, Step: StepBan})
+	d.record(wire.DraftEntry{Seat: seat, Step: wire.StepBan})
 	return nil
 }
 
@@ -452,15 +421,16 @@ func (d *Draft) SkipBan(seat wire.Seat) error {
 // path in decision (a) is a whole screen's worth of choosing, which cannot be a
 // single call.
 func (d *Draft) Pick(seat wire.Seat, characterID string) error {
-	if err := d.due(seat, StepPick); err != nil {
+	if err := d.due(seat, wire.StepPick); err != nil {
 		return err
 	}
-	at, err := d.offered(characterID, StepPick)
+	at, err := d.offered(characterID, wire.StepPick)
 	if err != nil {
 		return err
 	}
 	index, _ := indexOf(seat)
-	d.spent = append(d.spent, spending{character: characterID, seat: seat, step: StepPick})
+	d.spent = append(d.spent,
+		spending{character: characterID, seat: seat, step: wire.StepPick})
 	d.taken[index] = append(d.taken[index], Pick{
 		Character: characterID,
 		Level:     progression.LevelCap,
@@ -468,7 +438,7 @@ func (d *Draft) Pick(seat wire.Seat, characterID string) error {
 	d.picks++
 	d.awaiting = true
 	d.pending = at
-	d.record(Entry{Seat: seat, Step: StepPick, Character: characterID})
+	d.record(wire.DraftEntry{Seat: seat, Step: wire.StepPick, Character: characterID})
 	return nil
 }
 
@@ -492,7 +462,7 @@ func (d *Draft) Pick(seat wire.Seat, characterID string) error {
 // progression's own words behind it, which is exactly what cast.resolveBuild
 // does with the same call.
 func (d *Draft) Loadout(seat wire.Seat, form string, skills, passives []string) error {
-	if err := d.due(seat, StepLoadout); err != nil {
+	if err := d.due(seat, wire.StepLoadout); err != nil {
 		return err
 	}
 	// The pool position rather than a second lookup by id, so there is no "the
@@ -520,10 +490,10 @@ func (d *Draft) Loadout(seat wire.Seat, form string, skills, passives []string) 
 	// ⚠️ The record keeps what was **named**, not what it resolved to: `form` and
 	// not stage.Name. An entry holding the resolved form would be a second
 	// statement of something the replay computes, and the one place two peers
-	// could disagree. → Entry.
-	d.record(Entry{
+	// could disagree. → wire.DraftDecision.Stage.
+	d.record(wire.DraftEntry{
 		Seat:     seat,
-		Step:     StepLoadout,
+		Step:     wire.StepLoadout,
 		Stage:    form,
 		Skills:   slices.Clone(skills),
 		Passives: slices.Clone(passives),
@@ -609,7 +579,7 @@ func (d *Draft) abandon(seat wire.Seat) {
 	for index := range d.arranged {
 		d.arranged[index] = nil
 	}
-	d.record(Entry{Seat: seat, Step: StepTimeout})
+	d.record(wire.DraftEntry{Seat: seat, Step: wire.StepTimeout})
 }
 
 // Picks is what the ban-and-pick produces: each side's characters and the
@@ -643,7 +613,7 @@ func (d *Draft) Picks() [seatCount][]Pick {
 
 // due is the whole of "may this seat make this decision now", and every refusal
 // it hands back is a sentence saying what cannot happen and why.
-func (d *Draft) due(seat wire.Seat, step Step) error {
+func (d *Draft) due(seat wire.Seat, step wire.DraftStep) error {
 	onTurn, open, anyDue := d.Turn()
 	switch {
 	case d.Cancelled():
@@ -666,7 +636,7 @@ func (d *Draft) due(seat wire.Seat, step Step) error {
 	// because the two are different mistakes: this one is a caller answering a
 	// question it has already answered, and the advice is that a loadout is
 	// chosen once.
-	case step == StepLoadout && d.settled(seat):
+	case step == wire.StepLoadout && d.settled(seat):
 		return fmt.Errorf("%s's pick of %s already has its loadout, and a pick's loadout is "+
 			"chosen once: it is %s's turn to %s now", seat, d.lastOf(seat).Character, onTurn, open)
 	case seat != onTurn:
@@ -679,17 +649,17 @@ func (d *Draft) due(seat wire.Seat, step Step) error {
 
 // wrongStep refuses a decision of the wrong kind from the seat whose turn it
 // genuinely is, and each arm carries the reason the sequence is what it is.
-func (d *Draft) wrongStep(seat wire.Seat, open, wanted Step) error {
+func (d *Draft) wrongStep(seat wire.Seat, open, wanted wire.DraftStep) error {
 	switch {
-	case open == StepBan && wanted == StepPick:
+	case open == wire.StepBan && wanted == wire.StepPick:
 		return fmt.Errorf("%s is due to ban and not to pick: every ban is taken before any "+
 			"pick, so that a ban can still deny one (TODO.md § \"Ban and pick\" (f)), and %d of "+
 			"the %d ban slots are still open",
 			seat, 2*BansPerSide(d.format)-d.bans, 2*BansPerSide(d.format))
-	case open == StepPick && wanted == StepBan:
+	case open == wire.StepPick && wanted == wire.StepBan:
 		return fmt.Errorf("the banning stage is over, so %s cannot ban: a ban is only worth "+
 			"spending while it can still deny a pick, and picking has begun", seat)
-	case open == StepLoadout:
+	case open == wire.StepLoadout:
 		return fmt.Errorf("%s has just picked %s and owes it a loadout, so nothing else can "+
 			"be decided until the form, the skills and the trait are chosen",
 			seat, d.lastOf(seat).Character)
@@ -707,7 +677,7 @@ func (d *Draft) wrongStep(seat wire.Seat, open, wanted Step) error {
 // of one shared pool, so a drafted side is six or ten *different* characters by
 // construction. CLAUDE.md's "one squad may field the same character twice" is
 // about a **saved** squad and both statements hold — see Pick.
-func (d *Draft) offered(characterID string, step Step) (int, error) {
+func (d *Draft) offered(characterID string, step wire.DraftStep) (int, error) {
 	at := slices.IndexFunc(d.pool.characters, func(character cast.Character) bool {
 		return character.ID == characterID
 	})

@@ -3,11 +3,22 @@ package draft
 import (
 	"fmt"
 
-	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/wire"
 )
 
-// Entry is one thing that happened to a draft, as it was decided.
+// A draft's record is a run of **wire.DraftEntry**, and that type is not
+// declared here.
+//
+// ⚠️ **It was, until the record went on the wire.** The record is exactly what a
+// mirror is handed — a draft is a pure function of the decisions taken, so the
+// decisions are the whole of what a room owes a client — which makes the record
+// a protocol shape. internal/wire may not import this package (Config.Format and
+// every seat here are wire's, so it would be a cycle), so the shape is declared
+// there and named from here, and there is no local alias for the reason there is
+// none for Seat: one spelling, and it is the protocol's. The payoff is that
+// Since's answer is *already* what wire.Drafted carries, with nothing to convert
+// and nothing to hold in step. → wire.DraftEntry, wire.DraftDecision, and
+// TODO.md § *The draft on the wire*.
 //
 // ⚠️ **An entry carries the decision and nothing derived from it, and that is
 // what makes the mirror work.** A client replays the decisions and computes the
@@ -16,59 +27,8 @@ import (
 // loadout *resolved* to rather than the form it *named*, would be a second
 // statement of something the replay already computes, and therefore the one
 // place two peers could come to disagree. There is no snapshot in here for the
-// same reason there is no clock in this package.
-//
-// The record is replayed by taking each entry back through the decision it
-// names: a StepBan with a character is Ban and one without is SkipBan, a
-// StepPick is Pick, a StepLoadout is Loadout, a StepArrange is Arrange and a
-// StepTimeout is TimedOut.
-// TestARecordReplaysIntoTheSameDraft is what does that today; the day a **second**
-// caller needs it — a client mirroring a draft, which is step 3 — that switch
-// belongs in this package rather than beside each caller, for the reason
-// cast.ChooseLoadout was pulled together.
-type Entry struct {
-	// Seat is who decided. On a StepTimeout it is the seat whose allowance ran
-	// out, which is the seat that was being asked.
-	Seat wire.Seat
-	// Step is which of the four things this entry is.
-	Step Step
-	// Character is the id banned or picked.
-	//
-	// ⚠️ **Empty on a StepBan is the skip**, and it is the whole of how a skip is
-	// recorded: a ban that names nobody is a ban slot spent on nobody, and there
-	// is no third state, so a `Skipped` flag beside this would be a second
-	// statement of one fact and two fields that could disagree. Empty on a
-	// StepLoadout and a StepTimeout because neither names a character — the
-	// loadout's is the pick's, one entry earlier.
-	Character string
-	// Stage is the form a loadout **named**, which is progression.Furthest — the
-	// empty string — for "the furthest the cap reaches" and a form's name on a
-	// line that forks.
-	//
-	// ⚠️ It is what was named and never what it resolved to. Pick.Stage is the
-	// resolved one, and it is resolved again by the replay from this.
-	Stage string
-	// Skills and Passives are the loadout as it was named, before
-	// cast.ChooseLoadout was asked about it. Empty on every other step.
-	Skills   []string
-	Passives []string
-	// Slots is one side's whole arrangement: the cell each of its picks stands
-	// on, in pick order. Empty on every other step.
-	//
-	// ⚠️ **A StepArrange entry is never appended on its own.** The two arrive
-	// together, in seats order, at the moment the second side arranges — because
-	// an entry is public the moment it is appended, so a record holding one
-	// arrangement would be showing it to the other player, which is the one
-	// thing that phase exists to prevent. The cost is stated rather than hidden:
-	// the record cannot say which side arranged first, so a mirror replaying it
-	// reproduces the phase's *end* and not its middle. Arrival order is a race,
-	// so it is not a fact two peers could agree about anyway. → Draft.Arrange.
-	//
-	// ⚠️ And a **timeout during the phase appends nothing but the timeout** — a
-	// buffered arrangement is discarded rather than recorded, since appending it
-	// on the way out would leak exactly what the buffer was for. → Draft.abandon.
-	Slots []hex.Offset
-}
+// same reason there is no clock in this package. → Apply, which is the switch
+// that takes a record back through the decisions it names.
 
 // Since returns the entries recorded from cursor onward, and the cursor to pass
 // next time.
@@ -88,12 +48,12 @@ type Entry struct {
 // caller itself, so a bad one is a programming error rather than a runtime
 // condition.
 //
-// ⚠️ **The copy is of the slice, not of the entries.** An Entry carries two
+// ⚠️ **The copy is of the slice, not of the entries.** An entry carries two
 // slices of its own and they stay shared, which is the depth Pool.All hands out
 // at as well; what this stops is a caller changing the record's shape. Recording
 // clones what a caller named (→ Loadout), so what is shared here is a list
 // nobody outside this package still holds a reference to.
-func (d *Draft) Since(cursor int) ([]Entry, int) {
+func (d *Draft) Since(cursor int) ([]wire.DraftEntry, int) {
 	recorded := len(d.entries)
 	if cursor < 0 || cursor > recorded {
 		panic(fmt.Sprintf("draft: Since called with a cursor of %d against a record of %d entries",
@@ -114,6 +74,6 @@ func (d *Draft) Since(cursor int) ([]Entry, int) {
 }
 
 // record appends one entry, which is the only way anything gets into the record.
-func (d *Draft) record(entry Entry) {
+func (d *Draft) record(entry wire.DraftEntry) {
 	d.entries = append(d.entries, entry)
 }

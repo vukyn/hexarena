@@ -690,12 +690,14 @@ q hoặc ctrl+c để thoát`,
 	RefusalRoomUnknown:      "có máy trả lời nhưng không có phòng nào mang mã đó; xem lại mã đã gõ đúng chưa, hoặc xin mã mới vì phòng cũ đã đóng",
 	RefusalRoomFull:         "bàn đó đã đủ hai người ngồi; chờ họ đánh xong hoặc rủ nhau mở một phòng khác",
 	RefusalSquadRefused:     "đội mang theo không hợp lệ ở phòng này: sai số người cho thể thức, hoặc có cấp, dạng tiến hoá, chiêu không được phép; sửa đội rồi vào lại",
-	RefusalNotYourTurn:      "nước đi tới nơi khi lượt đã qua — thường là hết giờ và phòng đã bỏ lượt hộ; bàn cờ vẫn đúng",
+	RefusalNotYourTurn:      "nước đi, hoặc một lượt chọn tướng, tới nơi khi lượt đã qua — thường là do hết giờ; bạn không mất gì cả, những gì đang hiện trên màn hình mới là đúng",
 	RefusalIllegalAction:    "phòng không nhận nước vừa gửi vì nó không nằm trong những nước đang mở; lỗi của chương trình chứ không phải của bạn, chọn lại một nước trên màn hình",
 	RefusalUnknownMessage:   "phòng không đọc được tin vừa nhận, thường là do hai bên chạy hai bản khác nhau; không phải lỗi của bạn, cài cho hai máy cùng một bản",
+	RefusalSquadUnwanted:    "phòng này chọn tướng ngay tại chỗ: hai bên lần lượt cấm rồi chọn, nên đội mang từ nhà sang không dùng tới; vào lại mà đừng chọn đội, đủ hai người là bắt đầu cấm tướng",
 	ClosedNone:              "không có gì làm trận dừng cả",
 	ClosedLeft:              "bên kia mất kết nối nên trận dừng ở đây; không tính ai thắng ai thua, muốn đánh tiếp thì mở phòng mới",
 	ClosedStopped:           "máy mở phòng đã tắt nên trận dừng ở đây; không tính ai thắng ai thua, chờ chủ phòng mở lại rồi vào bằng mã mới",
+	ClosedDraftExpired:      "có người hết giờ khi hai bên còn đang cấm và chọn tướng nên chưa có trận nào để đánh: lượt chọn không đánh dở rồi tiếp, phải mở phòng mới và chọn lại từ đầu",
 
 	// Dạng đang xem của một nhánh, có mấy dạng, và phím để đổi. Cặp ngoặc nhọn
 	// lấy đúng của ô chọn bên màn dựng đội, để ai đã gặp ở đó thì đọc ra ngay.

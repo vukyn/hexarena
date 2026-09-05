@@ -5,6 +5,8 @@
 - [Terminal draws some Vietnamese glyphs double-width](feedback_terminal_vietnamese_glyph_width.md) — apparent column drift is their font, not the code; never work around it
 
 ## Tooling
+- [Go 1.27 takes promoted fields in a literal](feedback_go127_promoted_fields_in_literals.md) — embedding got cheap; ⚠️ the skillFile "compile error" claim is FALSE (keyed literal)
+- [An identifier regex hits field KEYS](feedback_identifier_regex_hits_field_keys.md) — and the declaration, and doc-comment grammar; snapshot the PACKAGE not the plan
 - [Graph rename/coverage blind spots](feedback_graph_rename_blind_spots.md) — no iota consts; test_gaps disagrees with callers_of; an untracked file or whole new package is never indexed
 - [i18n key names churn the gofmt diff](feedback_i18n_key_gofmt_churn.md) — a long key or a mid-literal blank line reflows ~150 lines; appending at the end is free; width is unmeasured until drawn
 - [Proving a TUI refactor is neutral](feedback_screen_neutrality_capture.md) — screens.golden holds the bytes now; a capture needs a RELATIVE data dir and a data-free commit pair
@@ -28,7 +30,7 @@
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
-- [The ban/pick draft machine](project_draft_state_machine.md) — 2a+2b done; ⚠️ Turn() must not widen, Done()=WHOLE draft & Picked()=old meaning; seats-order record cannot say who arranged first
+- [The ban/pick draft machine](project_draft_state_machine.md) — 2a+2b+3 done; ⚠️ draft.Entry/Step are GONE (wire.DraftEntry/DraftStep now); Turn() must not widen, Done()=WHOLE draft
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
 
 ## Moved in from the platform-level store (2026-09-05)

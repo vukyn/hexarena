@@ -39,6 +39,7 @@ func (l Lang) Refusal(name string) string {
 		"not_your_turn":     RefusalNotYourTurn,
 		"illegal_action":    RefusalIllegalAction,
 		"unknown_message":   RefusalUnknownMessage,
+		"squad_unwanted":    RefusalSquadUnwanted,
 	}
 	if key, known := worded[name]; known {
 		return l.Text(key)
@@ -72,19 +73,20 @@ func (l Lang) Seat(name string) string {
 // Closure words a wire.Closure — why a match stopped for a reason the board
 // cannot show.
 //
-// ⚠️ **Neither closure is a loss for anybody**, and both wordings say so,
-// because that is the decision wire.ClosureLeft and wire.ClosureStopped are
-// both written under: on a LAN between friends the enforcement of walking away
-// is social, and nothing about the host's process ending is a fact about the
-// board. A wording that read "you win" here would be this end inventing a
-// verdict the room deliberately did not send.
+// ⚠️ **No closure is a loss for anybody**, and every wording says so, because
+// that is the decision all three of them are written under: on a LAN between
+// friends the enforcement of walking away is social, nothing about the host's
+// process ending is a fact about the board, and a draft that ran out of time
+// produced no board at all. A wording that read "you win" here would be this end
+// inventing a verdict the room deliberately did not send.
 //
 // Keyed by the name wire.Closure already writes, like its neighbour above.
 func (l Lang) Closure(name string) string {
 	worded := map[string]Key{
-		"none":    ClosedNone,
-		"left":    ClosedLeft,
-		"stopped": ClosedStopped,
+		"none":          ClosedNone,
+		"left":          ClosedLeft,
+		"stopped":       ClosedStopped,
+		"draft_expired": ClosedDraftExpired,
 	}
 	if key, known := worded[name]; known {
 		return l.Text(key)

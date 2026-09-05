@@ -114,7 +114,7 @@ func playOut(t *testing.T, drafting *draft.Draft, all []cast.Character, bans []b
 				"not advancing: last was %q", len(sequence), sequence[len(sequence)-1])
 		}
 		switch step {
-		case draft.StepBan:
+		case wire.StepBan:
 			spend := banAt < len(bans) && bans[banAt]
 			banAt++
 			if !spend {
@@ -126,11 +126,11 @@ func playOut(t *testing.T, drafting *draft.Draft, all []cast.Character, bans []b
 			if err := drafting.Ban(seat, firstCandidate(t, drafting).ID); err != nil {
 				t.Fatalf("%s spends ban %d: %v", seat, banAt, err)
 			}
-		case draft.StepPick:
+		case wire.StepPick:
 			if err := drafting.Pick(seat, firstCandidate(t, drafting).ID); err != nil {
 				t.Fatalf("%s picks: %v", seat, err)
 			}
-		case draft.StepLoadout:
+		case wire.StepLoadout:
 			side := drafting.Picks()[seatIndex(t, seat)]
 			open := side[len(side)-1]
 			form, skills, passives := legalLoadout(t, characterNamed(t, all, open.Character))
@@ -310,15 +310,15 @@ func TestBothStagesAlternateFromWhoeverGoesFirst(t *testing.T) {
 				if !found {
 					t.Fatalf("%q is not a decision", row)
 				}
-				switch draft.Step(step) {
-				case draft.StepBan:
+				switch wire.DraftStep(step) {
+				case wire.StepBan:
 					if want := alternating(first, bans); wire.Seat(seat) != want {
 						t.Errorf("%s from the %s: ban %d is %s's and alternation from the %s "+
 							"makes it %s's", format, first, bans+1, seat, first, want)
 					}
 					bans++
 					lastBan = at
-				case draft.StepPick:
+				case wire.StepPick:
 					if want := alternating(first, picks); wire.Seat(seat) != want {
 						t.Errorf("%s from the %s: pick %d is %s's and alternation from the %s "+
 							"makes it %s's", format, first, picks+1, seat, first, want)
@@ -334,7 +334,7 @@ func TestBothStagesAlternateFromWhoeverGoesFirst(t *testing.T) {
 						t.Errorf("%s from the %s: %s's pick at %d is not followed by its own "+
 							"loadout", format, first, seat, at)
 					}
-				case draft.StepLoadout:
+				case wire.StepLoadout:
 					loadouts++
 				}
 			}
@@ -757,7 +757,7 @@ func TestCandidatesAreThePoolMinusWhatEitherSideTook(t *testing.T) {
 		if !due {
 			break
 		}
-		if step == draft.StepLoadout {
+		if step == wire.StepLoadout {
 			// A loadout chooses a form and a kit rather than a character, so it
 			// has no candidates at all — a different answer from an empty list.
 			if candidates := drafting.Candidates(); candidates != nil {
@@ -782,7 +782,7 @@ func TestCandidatesAreThePoolMinusWhatEitherSideTook(t *testing.T) {
 			}
 		}
 		taking := offered[len(offered)-1]
-		if step == draft.StepBan {
+		if step == wire.StepBan {
 			if err := drafting.Ban(seat, taking); err != nil {
 				t.Fatalf("%s bans %s: %v", seat, taking, err)
 			}
@@ -836,11 +836,11 @@ func TestTheLastPickOfAFiveASideChoosesFromSlackPlusOne(t *testing.T) {
 			break
 		}
 		switch step {
-		case draft.StepBan:
+		case wire.StepBan:
 			if err := drafting.Ban(seat, firstCandidate(t, drafting).ID); err != nil {
 				t.Fatalf("%s bans: %v", seat, err)
 			}
-		case draft.StepPick:
+		case wire.StepPick:
 			picks++
 			offered := len(drafting.Candidates())
 			if picks == 2*draft.PicksPerSide(wire.Format5v5) {
@@ -849,7 +849,7 @@ func TestTheLastPickOfAFiveASideChoosesFromSlackPlusOne(t *testing.T) {
 			if err := drafting.Pick(seat, firstCandidate(t, drafting).ID); err != nil {
 				t.Fatalf("%s picks: %v", seat, err)
 			}
-		case draft.StepLoadout:
+		case wire.StepLoadout:
 			side := drafting.Picks()[seatIndex(t, seat)]
 			open := side[len(side)-1]
 			form, skills, passives := legalLoadout(t, characterNamed(t, all, open.Character))
@@ -959,7 +959,7 @@ func draftAtItsFirstPick(t *testing.T, all []cast.Character) *draft.Draft {
 			t.Fatalf("%s skips a ban: %v", seat, err)
 		}
 	}
-	if _, step, _ := drafting.Turn(); step != draft.StepPick {
+	if _, step, _ := drafting.Turn(); step != wire.StepPick {
 		t.Fatalf("after every ban the draft is due a %s and not a pick", step)
 	}
 	return drafting
@@ -1010,7 +1010,7 @@ func TestAnIllegalKitKeepsChooseLoadoutsOwnWords(t *testing.T) {
 	}
 	// The pick is still open after every refusal, which is what makes a refusal
 	// a refusal rather than a spent decision.
-	if seat, step, due := drafting.Turn(); !due || seat != wire.SeatHost || step != draft.StepLoadout {
+	if seat, step, due := drafting.Turn(); !due || seat != wire.SeatHost || step != wire.StepLoadout {
 		t.Errorf("after five refused loadouts the draft is due %s %s (%v), and the host still "+
 			"owes a loadout", seat, step, due)
 	}
@@ -1116,7 +1116,7 @@ func TestATimeoutCancelsTheWholeDraft(t *testing.T) {
 	// The premise: somebody is being asked something, so there is an allowance
 	// to run out.
 	onTurn, step, due := drafting.Turn()
-	if !due || onTurn != wire.SeatGuest || step != draft.StepPick {
+	if !due || onTurn != wire.SeatGuest || step != wire.StepPick {
 		t.Fatalf("the draft is due %s %s (%v) and this test wants the guest on a pick",
 			onTurn, step, due)
 	}
