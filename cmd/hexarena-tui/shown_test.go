@@ -37,22 +37,23 @@ import (
 // that is the half that makes this able to fail. A join screen will happily word
 // any code handed to it and so will a live battle, so a table pairing codes with
 // screens could be permuted freely and every drawing assertion would still pass.
-// So both sets are **produced out of a real room.Room**: six refusals a gate can
-// answer a *join* with, and three a room can answer a seated peer with. The two
-// are then held **disjoint and total** against wire.CodeCount, and the walk has a
-// default arm — so a code moved from one set to the other lands in neither and
-// this goes red naming it.
+// So both sets are **produced out of a real room.Room**: seven refusals a gate
+// can answer a *join* with, and three a room can answer a seated peer with. The
+// two are then held **disjoint and total** against wire.CodeCount, and the walk
+// has a default arm — so a code moved from one set to the other lands in neither
+// and this goes red naming it.
 //
-// ⚠️ **One code is OWED a producer rather than having one, and the debt is
-// declared here by name.** wire.CodeSquadUnwanted is the answer a room that
-// **drafts** gives a hello that brought a squad, and no room drafts yet — the
-// room half of the ban-and-pick is the next step. So it sits in `owed` below,
-// that set is held at exactly the size it is, and the arithmetic still adds up
-// to wire.CodeCount: a code that lost its producer would land in `owed` and
-// redden the size check, and the day a room answers this one, its entry here has
-// to be deleted or the same check goes red from the other direction. What is
-// **not** available is leaving the code out of the walk, which is how a value
-// ships with nothing measuring it.
+// ⚠️ **The `owed` set is EMPTY now, and it stays here rather than being deleted
+// with its one entry.** wire.CodeSquadUnwanted sat in it while no room drafted:
+// the set named the code and the step that owed it a producer, the arithmetic
+// (`gate + inMatch + owed == CodeCount-1`) held its size, and the loop below
+// refused a stale entry — so the day a room answered the code, that entry had to
+// go or this test went red **from the other side**. A room drafts now
+// (room.Config.Drafts) and theGateAnswers produces the refusal, so the entry is
+// gone and the code is checked like every other one. The mechanism is what is
+// being kept: the next value declared ahead of its producer belongs in here with
+// the step that owes it, and leaving one out of the walk is how a value ships
+// with nothing measuring it.
 //
 // What it sees: a wording nobody draws, a new enum value with nowhere to appear,
 // a code no room produces at all, a code moved between the two sets, and an owed
@@ -71,10 +72,10 @@ func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 	// The codes no room can answer yet, each with the step that owes it one. A
 	// refusal in here is not drawn by anything and this test says so out loud
 	// rather than passing over it.
-	owed := map[wire.Code]string{
-		wire.CodeSquadUnwanted: "no room drafts yet, so nothing rejects a squad for being " +
-			"unwanted; the room half of the ban-and-pick owes this one a producer",
-	}
+	//
+	// ⚠️ Empty, and deliberately still here — → the note above for what its one
+	// entry was and why deleting the map with it would throw away the mechanism.
+	owed := map[wire.Code]string{}
 	if len(gate) == 0 || len(inMatch) == 0 {
 		t.Fatal("a real room produced no refusals, so every code below would be checked " +
 			"on the same screen and this measures nothing")
@@ -166,7 +167,7 @@ func TestEveryRefusalIsShownAndEveryClosureIsShown(t *testing.T) {
 		}
 	}
 	t.Logf("%d of the %d refusals are answers at the gate, %d are only reachable during a "+
-		"match, and %d is owed a producer", len(gate), wire.CodeCount-1, len(inMatch), len(owed))
+		"match, and %d are owed a producer", len(gate), wire.CodeCount-1, len(inMatch), len(owed))
 }
 
 // theRoomRefusesInAMatch is every wire.Code a **seated** peer can be answered
@@ -329,7 +330,7 @@ func aMatchClosedBy(m model, closure wire.Closure) model {
 //
 // ⚠️ **This is the whole reason the test above can fail.** Both screens will
 // word any code handed to them, so a declared table pairing codes with screens
-// could be permuted freely and nothing would notice. Six real refusals out of a
+// could be permuted freely and nothing would notice. Seven real refusals out of a
 // real room.Room and a real room.Registry is a set nobody wrote down.
 //
 // What it cannot see: a seventh way the gate could refuse that this file does
@@ -406,15 +407,23 @@ func theGateAnswers(t *testing.T) map[wire.Code]bool {
 		t.Fatalf("joining an unknown room reported an error rather than a refusal: %v", err)
 	}
 	answers[refusalIn(t, unknown.Out)] = true
+	// 7. A squad brought to a room that **drafts**, where the two sides ban and
+	//    pick out of a shared pool — so the squad is *unwanted* rather than
+	//    illegal, and the one above is the refusal that says it is illegal. The
+	//    squad here is the same good one, deliberately: this refusal is a fact
+	//    about the room and not about what the player built.
+	drafting := config()
+	drafting.Drafts = true
+	answers[refusedBy(t, drafting, deps, hello())] = true
 
 	delete(answers, wire.CodeNone)
-	if len(answers) != 6 {
+	if len(answers) != 7 {
 		named := make([]string, 0, len(answers))
 		for code := range answers {
 			named = append(named, code.String())
 		}
 		slices.Sort(named)
-		t.Fatalf("six ways of being turned away at a gate produced %d distinct codes (%v), "+
+		t.Fatalf("seven ways of being turned away at a gate produced %d distinct codes (%v), "+
 			"so two of the cases above are answering with the same refusal and one code is "+
 			"being checked on the wrong screen", len(answers), named)
 	}

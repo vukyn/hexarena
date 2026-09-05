@@ -1178,13 +1178,15 @@ is only so the shape is readable.
             read *"the cast is too small for a 5v5 draft, measured: this is a
             content prerequisite and no amount of code fixes it"* until the pool
             reached sixteen; the arithmetic block below is where that closed and
-            it carries the figures. **Nineteen characters ship** (this said
-            twelve, then fifteen, sixteen, seventeen, eighteen), eighteen are
-            draftable, and **fourteen** of those have an authored build
+            it carries the figures. **Twenty characters ship** (this said twelve,
+            then fifteen, sixteen, seventeen, eighteen, nineteen), **nineteen** are
+            draftable, and **fifteen** of those have an authored build
             (`builds.json`) — the four without one are Happiny, Lapras, Oddish and
-            Riolu. Ten picks leaves **four** bans on the built cast at 5v5; 3v3 is
-            comfortable, six picks leaving eight bans on the built cast and twelve
-            against the full eighteen.
+            Riolu. Ten picks leaves **five** bans on the built cast at 5v5; 3v3 is
+            comfortable, six picks leaving nine bans on the built cast and thirteen
+            against the full nineteen. ⚠️ Re-measured 2026-09-06 while step 4
+            landed, where the pool is what `room.New` checks the format against:
+            `draft.Slack` is **9** at 3v3 and **3** at 5v5.
             ⚠️ **Build coverage does not bind the draft, and this paragraph said
             it did** (*"build coverage rather than cast size is still what
             binds"*, and *"either 5v5 drafting waits for more builds, or the draft
@@ -1710,29 +1712,43 @@ is only so the shape is readable.
             back"* grouping: appending is the rule, so declaration order no longer
             groups by direction and the doc says to read a kind's comment instead
             of its position.
-            ⚠️ **A field added to a message needs TWO things and the room half is
-            step 4.** `messages.golden` says a field *travels*; a hand-written
-            fixture can never see the **producer** (taking one line out of
-            `gate.go` so the room stops filling in `TurnCap` leaves
-            `internal/wire` entirely green). **What step 4 owes an assertion in
-            `internal/room`**: `Welcome.Drafts` is really set for a drafting room
-            and really false otherwise; `Drafted.Decisions` is what
-            `Draft.Since(cursor)` answered, in that order, and is never sent
-            empty; a `Decide` is routed to the draft with the seat taken from the
-            **connection** and never from the message; `CodeSquadUnwanted` is
-            answered to a hello that brought a squad to a drafting room; and
-            `ClosureDraftExpired` is sent when `Draft.TimedOut` cancels.
-            ⚠️ **`CodeSquadUnwanted` is `wire.CodeCount`'s first declared debt.**
-            `cmd/hexarena-tui`'s `TestEveryRefusalIsShownAndEveryClosureIsShown`
-            derives which screen draws each code out of a **real** `room.Room`,
-            so a code no room produces reddens it — correctly, since nothing
-            drafts yet. It now carries an `owed` set naming this one code and the
-            step that owes it, and the totality arithmetic
-            (`gate + inMatch + owed == CodeCount-1`) is what stops that set
-            growing quietly: **step 4 must delete the entry**, or the same check
-            goes red from the other side. Note the asymmetry with the closure —
-            the result screen words whatever closure it is handed, so
-            `ClosureDraftExpired` is read by a player from the day it exists.
+            ⚠️ **A field added to a message needs TWO things and the room half
+            was step 4. All five are HELD now, by name.** `messages.golden` says
+            a field *travels*; a hand-written fixture can never see the
+            **producer** (taking one line out of `gate.go` so the room stops
+            filling in `TurnCap` leaves `internal/wire` entirely green). The five
+            assertions this step owed `internal/room` all landed in
+            `internal/room/draft_test.go`, and each was **mutation-tested** —
+            → step 4 below for the mutation table:
+            `Welcome.Drafts` is really set for a drafting room and really false
+            otherwise → `TestAWelcomeSaysWhetherTheRoomDrafts`;
+            `Drafted.Decisions` is what `Draft.Since(cursor)` answered, in that
+            order, and is never sent empty →
+            `TestEveryDraftedCarriesTheRecordInOrderAndIsNeverEmpty`;
+            a `Decide` is routed with the seat taken from the **connection** and
+            never from the message →
+            `TestADecideIsRoutedByTheConnectionAndNeverByTheMessage`;
+            `CodeSquadUnwanted` answers a hello that brought a squad to a
+            drafting room → `TestADraftingRoomRefusesASquadAsUnwanted`;
+            `ClosureDraftExpired` is sent when the draft's timeout cancels →
+            `TestADraftTimeoutClosesTheRoomAsExpired`.
+            ⚠️ **`CodeSquadUnwanted` was `wire.CodeCount`'s first declared debt,
+            and it is PAID.** `cmd/hexarena-tui`'s
+            `TestEveryRefusalIsShownAndEveryClosureIsShown` derives which screen
+            draws each code out of a **real** `room.Room`, so a code no room
+            produces reddens it — correctly, while nothing drafted. It carried an
+            `owed` set naming this one code and the step that owed it, and the
+            totality arithmetic (`gate + inMatch + owed == CodeCount-1`) is what
+            stopped that set growing quietly: **step 4 had to delete the entry**,
+            or the same check went red from the other side. It did, `theGateAnswers`
+            grew a seventh producer (the same *good* squad offered to a room with
+            `Drafts` set, so the refusal is a fact about the room), and the reading
+            is now **7 at the gate + 3 in a match + 0 owed = 10**. The empty `owed`
+            map stays in the file: the mechanism is what earns its keep, and the
+            next value declared ahead of its producer belongs in it. Note the
+            asymmetry with the closure — the result screen words whatever closure
+            it is handed, so `ClosureDraftExpired` is read by a player from the day
+            it exists.
             ⚠️ **There is no sequence number on `decide`, and the step is what
             stands in for one.** The client's chooser answer carries the turn it
             is for, because a buffered answer for a spent turn is otherwise
@@ -1759,13 +1775,203 @@ is only so the shape is readable.
             from it, `TestEveryDraftStepTravels` sends all **five** in both
             directions, and `TestApplyRoutesEveryStepThereIs` drives all five
             through `Draft.Apply` and holds the set against the declared list.
+      - [x] **The room hosts the draft — step 4. Done 2026-09-06.** A
+            `room.Room` runs one now: `Config.Drafts` is the flag, the draft is
+            built in `New`, `Deliver` routes a `wire.Decide` into it, every
+            recorded decision goes out as a `wire.Drafted`, and when the draft is
+            `Done()` the room seats both squads from `Draft.Squads()` and calls
+            `begin()` **unchanged**. Still **no screen** — that is step 5 — and
+            `cmd/hexarena-host`'s flag is step 6, so nothing opens a drafting
+            room outside a test yet. The room's whole draft half is
+            `internal/room/draft.go`; `internal/socket` and `room.Reading` are
+            **untouched**.
+            ⚠️ **Nothing downstream of the draft changed, which is the promise the
+            design was built on.** `begin()` took no argument and takes none; a
+            `wire.Start` is a `wire.Start`; the battle loop in
+            `TestTwoFakeClientsDraftAndFightAWholeMatchInProcess` is byte-for-byte
+            the loop in `TestTwoFakeClientsFightAWholeBo3InProcess`.
+            ⚠️ **The pool check is in `New` and NOT in `Config.Validate`, because
+            it cannot be there.** `draft.Fits` needs the pool, the pool needs the
+            cast, and `Validate` is a method on the configuration with no `Deps`.
+            So `New` builds the draft outright — which answers the whole question
+            in one call, since `draft.New` checks `Fits` *and* refuses an id-less
+            or duplicated pool entry — and a room whose draft could never finish
+            fails **before a code is handed out**.
+            `TestARoomThatCouldNotFinishItsDraftIsRefusedWhenItOpens` asserts both
+            halves: the configuration is *valid* and `New` refuses it anyway.
+            Measured: the shipped pool is **19**, so 3v3 has **9** to spare and
+            5v5 has **3** — a pool too small cannot be built from the shipped data
+            at all, which is why that test's fixture is a cast book with nobody in
+            it rather than a subset.
+            ⚠️ **A drafting series is REFUSED, and this was not in the brief.**
+            `Config.Validate` now turns away `Drafts` with `Battles != 1`, by name,
+            the way it turns away a bo2 — because settled decision **(d)** is *"a
+            ban lasts the match, and the first cut is bo1 only"* and what a draft
+            means across a series is the three different games the item below
+            lists. A room that accepted the configuration would be picking the
+            second of them silently. `TestADraftingRoomIsABo1`.
+            ⚠️ **In a drafting room a squad is UNWANTED, not illegal**, so
+            `squadIsFieldable` is **not consulted** on that path at all — the squad
+            may be perfectly legal and the fix is to bring **none**, where
+            `CodeSquadRefused`'s wording sends a player to check levels and forms
+            that were never the question. `TestADraftingRoomRefusesASquadAsUnwanted`
+            holds it with the *same good squad* an ordinary room accepts unchanged,
+            **and** with an illegal one — which is what says the five rules are not
+            being run. The gate's order is unmoved: a full drafting room still says
+            `CodeRoomFull`.
+            ⚠️ **THE SEAT COMES FROM THE CONNECTION AND THE MUTATION CANNOT BE
+            COMPILED.** `wire.Decide` embeds a `wire.DraftDecision` and that struct
+            has no seat field, so "take the seat from the message" is not an
+            expression that exists — the enforcement is structural rather than
+            remembered, which is stronger than a test. What the test holds is the
+            observable content of it, and its sharp half is only available in the
+            **arrange phase**, where both seats are asked at once: one
+            `wire.Decide` **value** sent from each connection in turn records two
+            entries differing only in a seat that came from nowhere but the
+            connection.
+            ⚠️ **`Draft.Apply` is what the room routes through, not a switch of its
+            own** — so the room and a mirroring client take the same decision
+            through the same call, which is what makes a client's computed draft
+            comparable to the room's. The one step a peer must **not** reach is
+            `StepTimeout`: `Apply` would route it and `Draft.TimedOut` cancels the
+            whole room, so a peer could close a draft it did not like by claiming
+            its own clock ran out. Refused with `CodeIllegalAction`
+            (`TestAPeerCannotCancelADraftByClaimingItsOwnClockRanOut`) — this was
+            not in the brief either.
+            ⚠️ **THE ARRANGE PHASE'S CLOCK: `Reading` holds one seat and the phase
+            has two pending, so the phase is SERIALISED.** `Reading{Awaiting,
+            Waiting}` is what an allowance is started on and
+            `internal/socket/table.go` arms exactly one timer from it; the arrange
+            phase has **both** seats pending by design. Neither `Reading` nor the
+            transport is widened — a two-timer transport is a far larger change
+            than one phase is worth — so `Awaiting` answers the **first seat in
+            `Draft.AwaitingArrangement()`**, a slice step 2b made array-derived
+            precisely so it reaches an output deterministically, with `Waiting`
+            true. `TestTheArrangePhaseSerialisesItsAllowance` drives **both
+            orders**, which is what makes it able to fail.
+            ⚠️ **Consequence 1, and the brief had this WRONG.** The brief said one
+            allowance covers both sides at once, so a side that arranged promptly
+            gets no fresh clock of its own. Measured in `internal/socket`: it is
+            the opposite. `Server.settled` re-arms off the reading after **every**
+            batch, so whichever arrangement arrives first is an *exchange*, and the
+            seat still owed is then given a **fresh full allowance** from that
+            moment. A side that arranged promptly therefore hands its opponent more
+            time and not less, and the phase's worst case is about **twice** an
+            allowance rather than one. That is a fact about the transport and not
+            about the room, and it is neither what "one allowance per decision"
+            would give nor what "one allowance for the phase" would give.
+            ⚠️ **Consequence 2, narrower than the brief said.** The brief said the
+            seat a timeout names is the first still to arrange rather than the
+            slower one. `AwaitingArrangement` holds **only** seats that have not
+            arranged, so once one side has answered the name is **exact** — it *is*
+            the slow one. The inexactness is confined to the case where **neither**
+            has arranged, where the host is named because that is seats order and
+            neither seat is more owed. Harmless for the brief's own reason: a draft
+            timeout cancels the whole room and the outcome blames nobody.
+            ⚠️ **`begin()` on `Done()` and never on `Picked()`**, which would be a
+            live bug rather than a slow one: `Draft.Squads` answers two squads with
+            **nobody in them** until both sides have arranged, deliberately, so a
+            room that began on `Picked` would field an empty roster.
+            `TestADraftingRoomStartsNoBattleUntilBothSidesHaveArranged` counts
+            rather than spot-checks, and also holds that the record and the two
+            `wire.Start`s arrive **in one batch, records first** — a client has to
+            be told the arrangements before it is started on the battle they made.
+            ⚠️ **A `wire.Drafted` is never sent empty, and the guard is REACHED.**
+            A ban, a skip, a pick and a loadout each record one entry; the **first**
+            of the two arrangements records **nothing**, because nothing reaches the
+            record until both are in. So exactly one decision of a draft is
+            answered with no message at all. Measured on a 3v3: **18 decisions, 18
+            entries, 17 messages**.
+            ⚠️ **A peer leaving mid-draft was CHECKED rather than assumed, and it
+            was wrong.** A draft runs with no battle open and nothing played, which
+            is exactly the shape `Room.Left`'s pre-match arm matched — so the seat
+            was freed and the room went back to waiting for a joiner, with the
+            departed side's bans and picks still in the draft and the peer still
+            there holding an open decision nobody was coming to take. The ending
+            itself is the existing `ClosureLeft` path, `VerdictAbandoned`, nobody
+            charged. `TestAPeerLeavingMidDraftClosesTheRoom`.
+            ⚠️ **A second bug the same test found: `draftOpen` has to ask
+            `Finished()` as well as `Cancelled()`.** A draft cancels itself only on
+            its own timeout; a *departure* ends the match through `abandon` and
+            leaves the draft neither done nor cancelled — so the room went on
+            reporting an open decision after its match was over, where `Awaiting`
+            promises to be false once it is, and a transport would have armed a
+            countdown on a finished room.
+            ⚠️ **A cancelled draft is `VerdictAbandoned` with NO `Departed`**, which
+            is the same verdict a departure and a stopped host produce (nobody
+            drafted a squad, so there is no board to have a verdict about). That
+            absence is the only thing telling the two endings apart in the room's
+            own record today. Both seats are told, unlike a departure: both are
+            holding an open decision, and in the arrange phase literally both at
+            once. The refusal for a spurious timeout is `CodeNotYourTurn`
+            **alone**, which is load-bearing rather than tasteful —
+            `internal/socket` reads exactly that as "this report was late", counts
+            it and re-arms instead of dropping anybody.
+            ⚠️ **Who bans first is the HOST, always, and it is deliberately not on
+            the wire.** A client knows its own seat from `Welcome.Seat` and knows a
+            draft is coming from `Welcome.Drafts`, so it computes the same answer
+            `New` does — where a `First` field would be a *second statement of a
+            constant*, and a second statement is the one place two peers can
+            disagree. **It is bo1's rule**: *"the previous winner bans first"* is a
+            real question for the bo3 draft below, that is a different game, and
+            `Config.Validate` refusing a drafting series means there is no previous
+            winner for this to have to be about today. `draft.Config.First` stays a
+            parameter precisely so that item can answer it differently.
+            ⚠️ **THE TEST THAT IS THE POINT: two fake clients drive a whole
+            drafting match in-process**, the draft *and* the battle after it, the
+            way `TestTwoFakeClientsFightAWholeBo3InProcess` drives a match —
+            `TestTwoFakeClientsDraftAndFightAWholeMatchInProcess`. **Both clients
+            apply what they are sent through `Draft.Apply`** and compute their own
+            draft, so the mirror is proven end to end: the two clients' `Squads()`
+            are compared against each other, and the handover is asserted **by
+            value** — the `wire.Start` roster is exactly the two drafted squads
+            resolved, home enlisted first. Measured on seed 11: a 3v3 draft in
+            **18 decisions / 17 records**; host drafted dratini, gible and lapras
+            against guest's gastly, happiny and machop; home host, **65 turns**,
+            victory, verdict `won`, winner host, 0 prompts skipped. Those figures
+            are **logged and not asserted** — the same call #309 vindicated. The
+            vacuity guards are that the battle must **not** be `Capped` (a cap is a
+            hang detector firing, not an ending), that each client checked a digest
+            on **every** turn and at least thirty of them, that the decision count
+            is the derived `2*bans + 4*picks + 2` and the record count exactly one
+            fewer, and that the twelve drafted units are **twelve distinct
+            characters** — which is the exclusive pool, not any refusal.
+            ⚠️ **Fourteen mutations, each compiling, each caught**, with the test
+            that caught it: `Welcome.Drafts` hardcoded **true**
+            (`TestAWelcomeSaysWhetherTheRoomDrafts` — and *only* that one, which is
+            why both halves are asserted) and hardcoded **false** (9 tests); the
+            seat taken from anywhere but the connection (8); the record **reversed**
+            (2 — and note a one-entry batch reverses to itself, so the **arrange
+            pair** is the only thing that can see it); the record sent **empty** (6);
+            the `CodeSquadUnwanted` refusal skipped (2, one of them
+            `TestEveryRefusalIsShownAndEveryClosureIsShown` from the client side);
+            `begin()` on `Picked()` (6); a **fixed seat** answered during the
+            arrange phase (2); `draftOpen` without its both-seats clause (2) and
+            without its `Finished()` clause (1); a peer allowed to send its own
+            timeout (1); `Left` without the draft branch (1); `New` without the pool
+            check (1); the bo1 refusal removed (1).
+            ⚠️ **No golden moved**, which is what a room-only step should do, and
+            `make golden` was run to confirm it rather than assumed.
+            ⚠️ **The knowledge graph could not review the new file, and a full
+            rebuild did not fix it.** `internal/room/draft.go` and its two test
+            files are **untracked**, and the graph enumerates from git — so
+            `detect_changes_tool` never listed them *and* `build_or_update_graph_tool`
+            with `full_rebuild` re-parsed the same 405 files and left
+            `decideFrom`/`draftAwaiting`/`draftTimedOut` unfindable by
+            `semantic_search_nodes_tool`. The self-review of the step's own
+            production file was therefore done by hand, and that is where the
+            `Finished()` bug above came from.
       - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
             "a ban lasts the match" is ambiguous in a series and the ambiguity is
             a design decision rather than a parameter: three drafts, one draft
             carried across all three battles, or a draft per battle with the
             previous winner banning first. Each is a different game. ⚠️ And the
             arithmetic above gets worse per repetition if the pool does not
-            reset.
+            reset. ⚠️ **`room.Config.Validate` refuses a drafting series today**,
+            by name and with that ambiguity as the reason, so this item is what
+            deletes that refusal — and whichever of the three games it chooses,
+            `draft.Config.First` is already the parameter that lets "the previous
+            winner bans first" be expressed.
       - [ ] mDNS room browsing, so a client can list rooms with no code at all.
       - [ ] A chess clock — a budget per player rather than per turn.
       - [ ] Prove the mirror across architectures: the same seed and the same
@@ -1837,9 +2043,14 @@ is only so the shape is readable.
       guide.** What a new character is bought for now is a **way of playing**, and
       § *Ten traced Pokemon* below is the art waiting for one.
       ⚠️ **On the archetype, which is the closest thing to a way of playing this
-      data has a field for.** Nineteen characters against nineteen archetypes, one
-      each — but that is where the counting has landed, **not a rule, and nothing
-      enforces it**: `cast.ParseArchetypes` refuses an archetype *declared* twice
+      data has a field for.** **Twenty** characters against **twenty** archetypes,
+      one each — but that is where the counting has landed, **not a rule, and
+      nothing enforces it**:
+      ⚠️ The pair is derived rather than remembered and it read "nineteen against
+      nineteen" until 2026-09-06:
+      `jq '[.characters[].archetype]|group_by(.)|map(select(length>1))' internal/seed/data/cast.json`
+      answers `[]` while the claim holds, and names the archetype the day it does
+      not. `cast.ParseArchetypes` refuses an archetype *declared* twice
       and says nothing about two characters *tuned from* one, and no test in
       `internal/seed` asks. So a second character on a shipped archetype is
       **fine** and needs no permission. The aim is only that each character ends

@@ -21,11 +21,19 @@ import (
 // radius), so the layer relationship stays inverted for one package and the
 // choice is only *where the shape is declared once*.
 //
-// It is declared once, here, and internal/draft's Entry is an alias of
-// DraftEntry — so there is no conversion, nothing to keep in step and no test
-// owed for keeping it. The alternative was a shape at each end plus a
-// field-by-field test holding them equal, and a test is a weaker guarantee than
-// there being one struct.
+// It is declared once, here, and internal/draft **names it** — there is no local
+// alias and no local Entry or Step type at all, which is the same relationship
+// Format and Seat already have with that package: one spelling, and it is the
+// protocol's. So there is no conversion, nothing to keep in step and no test owed
+// for keeping it. The alternative was a shape at each end plus a field-by-field
+// test holding them equal, and a test is a weaker guarantee than there being one
+// struct.
+//
+// ⚠️ **This paragraph said "internal/draft's Entry is an alias of DraftEntry"
+// and no such alias was ever written** — internal/draft/record.go's own comment
+// says in as many words that there is none, for the reason there is none for
+// Seat. The claim was written from the plan rather than from the code and is
+// corrected here rather than left as a name a reader would go looking for.
 //
 // ⚠️ **The two directions genuinely need two bodies, and only the Seat differs.**
 // A client must not send its own seat — the room knows which connection spoke,
@@ -191,7 +199,9 @@ func (Decide) Kind() Kind { return KindDecide }
 // The seat is a field of its own and the decision is embedded, so this
 // serialises flat and reads as one struct — and, more to the point, the six
 // facts a decision is are declared exactly once, in DraftDecision, for both
-// directions and for internal/draft's record. draft.Entry is an alias of this.
+// directions and for internal/draft's record — which holds a run of *these*
+// rather than of a shape of its own. → the file comment, and the ⚠️ there about
+// the alias this sentence used to claim.
 //
 // ⚠️ On a StepTimeout the seat is the one whose allowance ran out, which is the
 // seat that was being asked — and during the arrange phase that is any seat that

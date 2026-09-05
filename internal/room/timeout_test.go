@@ -14,7 +14,7 @@ func openMatch(t *testing.T, configuration room.Config) (*room.Room, *table) {
 	t.Helper()
 	dependencies := deps(t)
 	opened := newRoom(t, configuration)
-	clients := newTable(t, dependencies.Books, configuration.TurnCap)
+	clients := newTable(t, dependencies, configuration.TurnCap)
 	for _, one := range []struct {
 		name  string
 		squad []string
