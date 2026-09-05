@@ -77,6 +77,8 @@ that owns the subject wins and the note is the thing to fix.
 - [pool đầy ≠ hệ được chơi](memory/hexarena-a-full-pool-is-not-a-played-element.md) — 10 chiêu electric đều xoay quanh `charge` của Magnemite
 - [dark nằm ngoài bảng khắc](memory/hexarena-dark-is-off-the-chart.md) — không cycle nào; profile phẳng; ⚠️ Gastly/Mewtwo là control TỆ
 - [trait đổi giá có HAI chỗ đọc](memory/hexarena-a-trait-that-changes-a-price-has-two-sites.md) — thiếu ở rating → cầm trait mà không bao giờ cast
+- [mutation bị parser chặn = không chạy](memory/hexarena-a-mutation-the-parser-refuses-runs-nothing.md) — đổi ý nghĩa, đừng xoá field
+- [lấy mẫu qua Chooser](memory/hexarena-sample-through-the-chooser.md) — event.Stacks là phần THÊM, không phải tổng đang giữ
 - [ghim assertion, đừng ghim tiền đề](memory/hexarena-pin-the-assertion-not-the-premise.md) — 1 con số quyết định chỉ ghim ở ĐÚNG 1 test
 - [cast.json phải đúng form tool](memory/hexarena-cast-json-must-be-in-tool-form.md) — Marshal sort theo id; chỉ cast+origins bị ràng
 - [hexarena archetype must be glossed](memory/hexarena-archetype-must-be-glossed.md) — lối chơi NEVER bare id

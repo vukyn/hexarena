@@ -89,6 +89,7 @@ var (
 		"taunting": "bị khiêu khích",
 		"fury":     "cuồng nộ",
 		"haste":    "nhanh nhẹn",
+		"stoked":   "nóng máy",
 		"focus":    "tập trung",
 		"veil":     "mờ ảo",
 		"block":    "đỡ đòn",
@@ -195,6 +196,7 @@ var (
 		"predator":    "kẻ săn mồi",
 		"livewire":    "kẻ hở điện",
 		"spendthrift": "kẻ không trả giá",
+		"stoker":      "kẻ tăng tốc",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its
