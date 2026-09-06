@@ -744,19 +744,16 @@ func withNoTraitTaken(t *testing.T, b buildsScreen) buildsScreen {
 // at the cap, and a fork that only worked there would be a fork nothing walked
 // into.
 //
-// ⚠️ **This entry needs a taller window than the rest of the sweep**, for the
-// same reason its twin in cmd/hexarena-tui does: the cast listing draws every
-// row where the skill listing measures its room from the window
-// (screen.skillsRoom), so the detail pane loses a row per character shipped and
-// at the shared height it now runs out before the form row — which is the row
-// these entries exist to record. Written up in TODO.md § "The cast listing draws
-// every row"; the window is widened here because bounding the listing changes
-// what every screen draws.
+// ⚠️ **This entry used to need a taller window than the rest of the sweep**, for
+// the same reason its twin in cmd/hexarena-tui did: the cast listing drew every
+// row where the skill listing measured its room from the window, so the detail
+// pane lost a row per character shipped and ran out before the form row — the
+// row these entries exist to record. `screen.browseRoom` bounds the listing now,
+// so the pane keeps its rows and this entry stands in the shared window.
 func theForkedBrowser(t *testing.T, m model) model {
 	t.Helper()
 	const forkLevel = 46
 	browser := m.enter(screenBrowse)
-	browser.height = 64
 	browser.browse.Level = forkLevel
 	for index, character := range browser.browse.Rows() {
 		arms, err := character.FurthestAt(forkLevel)

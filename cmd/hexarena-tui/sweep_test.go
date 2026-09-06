@@ -489,21 +489,18 @@ func assertDraws(t *testing.T, m model, want string) {
 // at the cap, and a fork that only worked there would be a fork nothing walked
 // into.
 //
-// ⚠️ **This entry needs a taller window than the rest of the sweep, and the
-// reason is a real one rather than a fixture detail.** The cast listing draws
-// **every** row, where the skill listing measures its room from the window in
-// hand (screen.skillsRoom), so the browser's detail pane loses a row for every
-// character that ships. At the shared 120x44 and nineteen characters the pane
-// runs out before the form row — the screen says so, "… bị cắt bớt; cửa sổ cao
-// hơn sẽ thấy hết" — and the form row is exactly what these entries exist to
-// record. The window is widened here rather than the listing bounded because
-// bounding it is a change to what every screen draws; it is written up in TODO.md
-// § "The cast listing draws every row".
+// ⚠️ **This entry used to need a taller window than the rest of the sweep, and
+// no longer does.** The cast listing drew **every** row where the skill listing
+// measured its room from the window in hand, so the browser's detail pane lost a
+// row for every character that shipped, and at the shared height the pane ran
+// out before the form row — which is the row these entries exist to record. The
+// window was widened here as a stopgap. `screen.browseRoom` bounds the listing
+// now, so the pane keeps its rows and this entry stands in the same window as
+// every other one.
 func theForkedBrowser(t *testing.T, m model) model {
 	t.Helper()
 	const forkLevel = 46
 	browser := m.enter(screenCast)
-	browser.height = 64
 	browser.cast.Level = forkLevel
 	for index, character := range browser.cast.Rows() {
 		arms, err := character.FurthestAt(forkLevel)

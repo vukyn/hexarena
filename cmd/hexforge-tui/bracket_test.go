@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
@@ -172,7 +173,15 @@ func TestABracketScrollsWhereverAPageKeyDoes(t *testing.T) {
 					// And the drawn screen with it, which is the half the fields
 					// cannot claim: a frame position that agreed while the screen
 					// did not would be two different readings of one number.
-					if bracketed.screenContent() != paged.screenContent() {
+					//
+					// Below the header, for the reason the goldens drop that line too: it
+					// names the data directory, and every model here is built by its own
+					// call to start, so the three stand in three scratch directories
+					// differing in one digit. Whether that digit was on screen came down
+					// to whether the path cleared the clip at MinWidth, which the random
+					// component of a temp directory decides — so this compared the
+					// fixture rather than the keystroke, and failed on about half the runs.
+					if bodyBelowHeader(bracketed) != bodyBelowHeader(paged) {
 						t.Errorf("%s: %s and %s draw different screens for %s",
 							name, direction.bracket, direction.page, site.name)
 					}
@@ -180,4 +189,17 @@ func TestABracketScrollsWhereverAPageKeyDoes(t *testing.T) {
 			}
 		}
 	}
+}
+
+// bodyBelowHeader is a drawn screen without the line naming the data directory.
+//
+// The header is the one line here that is about the machine rather than about
+// the keystroke: cmd/hexforge-tui and cmd/hexarena-tui both leave it out of
+// their goldens for the same reason.
+func bodyBelowHeader(m model) string {
+	drawn := m.screenContent()
+	if _, rest, found := strings.Cut(drawn, "\n"); found {
+		return rest
+	}
+	return drawn
 }

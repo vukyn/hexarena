@@ -209,6 +209,62 @@ const (
 	browseOriginWidth = 14
 )
 
+// browseDetailRows is how many rows the detail pane is reserved, and it is a
+// constant for the reason skillsRoom's ten is: the reserve is for the busiest
+// state rather than for the one under the cursor. Measured over the whole book
+// in both languages at MinWidth, where the pane is tallest because every wrapped
+// row wraps hardest — the tallest shipped pane is pokemon.mew's, at exactly this.
+//
+// ⚠️ **It is one number rather than one per language, and English pays for it.**
+// The pane is seven rows shorter in English, because every glossed row — the
+// preset, the affinity, the kit, the species, the traits — draws nothing when
+// there is no name to draw. A screen may not branch on which language is in
+// front (that is what internal/i18n is for), and the measurable thing here is a
+// count of rows rather than a width a label can be asked for, so the reserve is
+// the tallest the pane ever gets and an English reader sees blank rows under it.
+// That is the same price speciesRoom already pays for its note, and for the same
+// reason: a reserve that tracked the cursor would slide the listing about under
+// a reader walking it.
+//
+// ⚠️ **It is NOT measured at draw time, and that is a cost finding rather than a
+// preference.** Rendering every character's pane to count its lines is what the
+// honest version would do — it cannot drift, the way speciesRoom's longestNote
+// cannot. Measured on the shipped book at nineteen characters it costs **13ms a
+// redraw**: os.Stat behind the art row is 53µs a character on Windows and
+// Context.Wrapped is 15µs a call against ten of them a pane. That is per
+// keystroke and it grows with the cast, which is the very thing this reserve
+// exists to stop mattering. So the number is written down and
+// TestTheDetailReserveIsTheTallestPaneInTheBook holds it against the book —
+// exactly, in both directions, so a cast that outgrows it is a red test rather
+// than a pane quietly cut again.
+const browseDetailRows = 24
+
+// browseRoom is how many rows the listing has, measured from the window in hand
+// so the detail pane below keeps its rows whatever the book's length.
+//
+// It is skillsRoom's twin and it was missing: this listing drew every character
+// it had, so each one shipped cost the pane a row on every window size, and the
+// row it lost first was the form row — the one thing on a forking line that says
+// which arm the numbers below it belong to.
+//
+// ⚠️ **At the 120x24 floor the pane is cut anyway, and no split can help.** The
+// reserve alone is twenty-four rows against the twenty the frame leaves a body,
+// so the listing could give up every row it has and still not fit — the floor of
+// three is navigation kept rather than a share of a budget that balances. What
+// this fixes is the other axis: a taller window used to lose the pane one row per
+// character shipped, and now does not lose it at all.
+func browseRoom(c Context) int {
+	const (
+		above = 2 // the heading and the blank line under it
+		below = 1 // the blank between the listing and the pane
+	)
+	room := c.Height - 4 - above - below - browseDetailRows
+	if room < 3 {
+		return 3
+	}
+	return room
+}
+
 // View draws the listing, the character under the cursor resolved at the level
 // being walked, and the footer.
 func (b BrowseScreen) View(c Context) (string, string) {
@@ -228,7 +284,9 @@ func (b BrowseScreen) View(c Context) (string, string) {
 		}
 		return out.String(), footer
 	}
-	for i, character := range rows {
+	from, to := Window(len(rows), b.Cursor, browseRoom(c))
+	for i := from; i < to; i++ {
+		character := rows[i]
 		marker := "  "
 		// The element column is glossed here as well as in the detail pane
 		// below, and it is the only list column that is: it is the last one on

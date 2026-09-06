@@ -974,6 +974,38 @@ answers rather than screen logic:
     test, no translation test and no leak test, which is a mistake this
     repository has now made four times.
 
+**Every listing measures its rows from the window, and the cast browser was the
+one that did not.** `browseRoom` is `skillsRoom`'s twin: the listing takes
+`c.Height - 4` less the two rows above it, the blank below it and
+`browseDetailRows`, and `Window` scrolls it around the cursor. It drew **every**
+row until then, so each character shipped cost the detail pane a row on every
+window size — and the row a forking line loses first is the **form row**, which
+is the only thing saying which arm the stats under it belong to.
+
+- ⚠️ **The reserve is a written-down constant and that is a COST finding, not a
+  shortcut.** `speciesRoom` measures its variable pane (`longestNote`) because it
+  can — a wrap over one authored string. Doing the same here means rendering
+  every character's pane to count its lines, which measured **13ms a redraw** at
+  twenty-three characters: `os.Stat` behind the art row is **53µs a character**
+  on Windows and `Context.Wrapped` is **15µs** a call against ten of them a pane.
+  That is per keystroke and it grows with the cast, which is the very thing the
+  reserve exists to stop mattering. So the number is written down and
+  `TestTheDetailReserveIsTheTallestPaneInTheBook` holds it **exactly, in both
+  directions** — over is a pane the frame cuts, under is rows the listing gave up
+  for nothing.
+- ⚠️ **One number rather than one per language**, measured at `MinWidth` where
+  every wrapped row wraps hardest: the tallest pane is `pokemon.mew`'s at level
+  16, **24 rows in Vietnamese and 17 in English**, because a glossed row draws
+  nothing when there is no name to draw. A screen may not branch on which
+  language is in front, and what is measured is a *count of rows* rather than a
+  width a label can be asked for — so the reserve is the tallest the pane ever
+  gets and an English reader sees blank rows under it. Same price `speciesRoom`
+  already pays.
+- ⚠️ **At the 120x24 floor the pane is cut anyway and no split can help**: the
+  reserve alone is 24 rows against the 20 the frame leaves a body. The floor of
+  three is navigation kept rather than a share of a budget that balances — the
+  axis this fixes is the cast's length, not the window's height.
+
 **`hexforge new` must work with nobody watching.** A preset-supplied value is
 not missing, so an unattended run takes every default and errors only on a field
 that has none, naming its flag. Two traps live here. `os.Stdin.Stat` cannot tell
