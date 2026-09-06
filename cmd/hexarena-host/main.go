@@ -144,6 +144,16 @@ type settings struct {
 	turns     int
 	password  wire.Password
 	seed      uint64
+	// draft says the two sides ban and pick before they fight, out of one shared
+	// pool, rather than each bringing a squad built at home.
+	//
+	// ⚠️ It is a room's whole shape rather than a preference, and it is why the
+	// banner has to say so: a drafting room **refuses a squad**, so a player who
+	// joins with one selected is turned away and has to join again with none.
+	// Until the handshake is two-phase that refusal is the only other thing that
+	// says it — a client cannot know the room drafts until it has been welcomed,
+	// and the hello carrying its squad goes first. → TODO.md.
+	draft bool
 	// version is the ask that is answered instead of hosting anything: print
 	// what this binary is and exit. Everything else in this struct configures a
 	// room, and this one says no room is wanted.
@@ -153,8 +163,8 @@ type settings struct {
 // String is the settings as a line, with the password redacted through the type
 // that owns the redaction. → the note on the struct, for why this exists at all.
 func (s settings) String() string {
-	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, version %t",
-		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.version)
+	return fmt.Sprintf("port %d, advertise %q, format %d, battles %d, allowance %d, turns %d, password %s, seed %d, draft %t, version %t",
+		s.port, s.advertise, s.format, s.battles, s.allowance, s.turns, s.password, s.seed, s.draft, s.version)
 }
 
 // GoString is the same for %#v, which does not go through String.
@@ -240,6 +250,7 @@ func flags(chosen *settings) *flag.FlagSet {
 		return nil
 	})
 	set.Uint64Var(&chosen.seed, "seed", 0, "the match's seed; 0 draws one and prints it")
+	set.BoolVar(&chosen.draft, "draft", false, "ban and pick from one shared pool instead of bringing squads; join with NO squad")
 	// The same sentence cmd/hexarena-tui's flag shows in English, and the same
 	// three numbers. That client takes its descriptions from internal/i18n
 	// because it has two languages to keep honest; this binary has one and reads
@@ -441,6 +452,19 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 		Seed:      chosen.seed,
 		TurnCap:   chosen.turns,
 		Password:  chosen.password,
+		Drafts:    chosen.draft,
+	}
+	// ⚠️ **A drafting bo3 is refused HERE, in words, rather than by Config.Validate.**
+	// The room refuses it too and its sentence is the authority on *why* — decision
+	// (d), "a ban lasts the match, and the first cut is bo1 only" — but a refusal
+	// surfaced from Open names `battles` and `drafts` as fields of a struct nobody
+	// at a terminal typed. What was typed is two flags, so the refusal names two
+	// flags. → the note below on surfacing the room's own words, which still holds
+	// for every refusal that is not about a flag pairing.
+	if chosen.draft && chosen.battles != 1 {
+		return nil, fmt.Errorf("-draft and -battles %d cannot be asked for together: a ban lasts the "+
+			"match, so drafting a series is a different game and is not built; open a bo1 with "+
+			"-draft, or a bo%d without it", chosen.battles, chosen.battles)
 	}
 	// ⚠️ **Five a side is held back at this flag and nowhere else.**
 	// wire.Format5v5 stays valid on the wire on purpose: taking it out of
@@ -449,7 +473,16 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 	// back is the ability to *open* such a room, which is the only place a
 	// format is chosen in this repository.
 	//
-	// Two reasons, both written down elsewhere and both still open. The shipped
+	// ⚠️ **There were two reasons and there is now ONE**, and this comment said
+	// otherwise until 2026-09-07. The draft half — "ten picks and three bans a
+	// side want sixteen in the pool and there are eleven" — closed while the
+	// draft was being built: `pokemon.dratini` took the pool to one short, and
+	// `pokemon.gible` closed it, and the pool has grown since. `draft.Fits`
+	// allows a 5v5 today with room to spare, and the figure is derived rather
+	// than remembered (`jq '[.characters[]|select(.hidden|not)]|length'
+	// internal/seed/data/cast.json`), which is why it is not written here.
+	//
+	// What is left is the balance. The shipped
 	// balance was read at five a side and the room's default has been three
 	// since the host binary landed, so five is the format whose numbers are the
 	// less wrong of the two but whose board nobody has re-measured; and the
@@ -457,7 +490,7 @@ func open(chosen settings, advertised netip.Addr, dependencies room.Deps, out, e
 	// side want sixteen in the pool and there are eleven. → TODO.md, "read the
 	// balance again at 3v3" and "ban and pick".
 	if wire.Format(chosen.format) == wire.Format5v5 {
-		return nil, fmt.Errorf("five a side is not offered yet: its balance has not been read on this board and a draft cannot seat it; open a 3v3")
+		return nil, fmt.Errorf("five a side is not offered yet: its balance has not been read on this board; open a 3v3")
 	}
 	// The room's own refusals are surfaced word for word rather than reworded.
 	// "a series of 2 battles is even, and an even series has to invent a rule for
@@ -565,6 +598,17 @@ func banner(held *hosted, how string, out io.Writer) {
 	fmt.Fprintf(out, "\n  %s\n\n", held.code)
 	fmt.Fprintf(out, "  that code means %s (%s)\n", held.at, how)
 	fmt.Fprintf(out, "  format      %s, best of %d\n", held.config.Format, held.config.Battles)
+	// ⚠️ **A drafting room says so, and says what to do about it.** It refuses a
+	// squad, so a player who joins with one selected is turned away — and until
+	// the handshake is two-phase that refusal is the only other thing that tells
+	// them, because a client cannot know the room drafts until it has been
+	// welcomed and the hello carrying its squad goes first. The line is drawn
+	// only when it is true: a banner that always mentioned drafting would be a
+	// line every ordinary host reads past, which is how the one that matters
+	// stops being read.
+	if held.config.Drafts {
+		fmt.Fprintf(out, "  draft       yes — both sides ban and pick here; JOIN WITH NO SQUAD\n")
+	}
 	fmt.Fprintf(out, "  allowance   %ds a turn, %d turns a battle at most\n", held.config.Allowance, held.config.TurnCap)
 	fmt.Fprintf(out, "  seed        %d\n", held.config.Seed)
 	fmt.Fprintf(out, "  password    %s\n", passwordLine(held.config.Password))

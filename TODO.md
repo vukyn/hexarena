@@ -2478,7 +2478,28 @@ is only so the shape is readable.
             package record are the states no keystroke can reach — an arrangement
             the **rule** refuses (the cursor steps over an occupied cell, so it
             has to be built by hand) and one the **room** turned down.
-      - [ ] **The host's own flag — step 6.** `cmd/hexarena-host` cannot open a
+      - [x] **The host's own flag — step 6.** Done 2026-09-07. `-draft` sets
+            `room.Config.Drafts`; the banner draws a line saying the room drafts
+            and to **join with no squad**, and only when it is true — a note every
+            ordinary host reads past is how the one that matters stops being read.
+            `-draft` with `-battles` other than 1 is refused **by the flags**, in
+            a sentence naming the two flags and which pairs are legal: the room
+            refuses it too and its sentence is the authority on *why*, but it
+            names `Drafts` and `Battles`, which are fields of a struct nobody at a
+            terminal typed. That is the one place this binary rewords a room
+            refusal, and the bound is written into the test.
+            ⚠️ The banner is the **only** thing that tells a host their room
+            refuses squads, and the refusal is the only thing that tells a
+            *joiner*. → the two-phase-handshake note under step 5a, which is what
+            closes that.
+            ⚠️ **`-format 5` lost one of its two reasons while the draft was being
+            built, and the comment beside it said otherwise until today.** The
+            draft half — "ten picks and three bans a side want sixteen in the pool
+            and there are eleven" — closed when the cast grew; `draft.Fits` allows
+            a 5v5 now with room to spare. What is left is the balance, read at
+            five a side and never re-read at three. **One reason, not two.**
+            The original item read:
+            `cmd/hexarena-host` cannot open a
             drafting room, so **nothing outside a test opens one**: `room.Config`
             has `Drafts` and the host binary has no `-draft` to set it with. Steps
             4, 5a and 5b each name this as step 6 and none of them had an item
