@@ -2340,6 +2340,22 @@ is only so the shape is readable.
             `i18n.NoteWrote`/`NoteBattleVerify` and the **path** is
             `forge.Library`'s, so the two candidate fixes land in different
             packages.
+      - [ ] **`cmd/hexarena-tui`'s golden moves on every data commit, and only
+            the join screen's digest line does it now.** Measured 2026-09-06 while
+            step 5b's draft entries were being made immune: hiding one character
+            leaves `internal/screen`'s record holding and moves this one on six
+            entries, all of them `máy này — data <digest>`. That predates the
+            draft — it arrived with the join screen — and the line is not an
+            accident: the data digest is what a player compares against a friend's
+            before blaming the game, and `-version` prints the same figure.
+            ⚠️ So this is a **cost with a reason**, not a defect, and the question
+            is only whether the record needs six copies of it. The cheap answer is
+            the one `cmd/hexforge-tui`'s golden already uses for the data
+            directory — drop the line from the recorded body and assert it
+            separately — which would leave the digest measured by a test that is
+            *about* the digest and take this golden out of the path of every
+            balance commit. Not done, because it is the join screen's to answer
+            and 5b had no business editing it.
       - [ ] **The arrange screen — step 5c.** The 3x3 formation, both sides at
             once and neither shown the other's, over
             `DraftSight.Arranging`/`Awaiting`. ⚠️ The clock is **not** one

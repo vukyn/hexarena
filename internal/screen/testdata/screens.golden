@@ -51,26 +51,26 @@ trận đấu  seed 1
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 120x24 | a cancelled draft =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   có người hết giờ khi hai bên còn đang cấm và chọn tướng nên chưa có trận nào để đánh: lượt chọn không đánh dở rồi
   tiếp, phải mở phòng mới và chọn lại từ đầu
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a deep member =====
@@ -92,53 +92,53 @@ thế đứng
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
 ===== vi | 120x24 | a draft =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-> pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a draft arranging =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a draft ban thrown away =====
-cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
 
   Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn
   lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.
@@ -147,10 +147,10 @@ cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
   nước đi, hoặc một lượt chọn tướng, tới nơi khi lượt đã qua — thường là do hết giờ; bạn không mất gì cả, những gì đang
   hiện trên màn hình mới là đúng
 
-> naruto.naruto            còn         wind <gió>
-  pokemon.abra             còn         dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
+> pokemon.bulbasaur        còn         grass <cỏ>
   pokemon.charmander       còn         fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
@@ -161,17 +161,17 @@ cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
 ----- footer -----
 ↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a draft loadout =====
-cấm và chọn tướng  còn 19 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
 
-  trang bị cho naruto.naruto  ·  lượt bạn 1:12 · bên kia 1:30
+  trang bị cho pokemon.bulbasaur  ·  lượt bạn 1:12 · bên kia 1:30
 
 > dạng      < ngã rẽ chưa chọn nhánh >  1/4
-  mang theo kunai substitution shadow_clone wind_shuriken 4/4
+  mang theo vine_whip razor_leaf poison_powder leech_seed 4/4
   nội tại   chưa chọn gì, còn 1 ô
   gửi       bấm enter để gửi trang bị này
 
   bạn — đã chọn 1 trên 3
-    naruto.naruto            chưa chọn trang bị
+    pokemon.bulbasaur        chưa chọn trang bị
     chưa cấm ai
   khách — đã chọn 0 trên 3
     chưa chọn ai
@@ -179,88 +179,88 @@ cấm và chọn tướng  còn 19 trên 20 tướng để cấm và chọn
 ----- footer -----
 ↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a draft on the other side =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   khách đang cấm  ·  bạn 1:30 · lượt bên kia 1:12
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-> pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a draft part way through =====
-cấm và chọn tướng  còn 15 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 7 trên 12 tướng để cấm và chọn
 
   lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-> pokemon.bulbasaur        của bạn     grass <cỏ>
-  pokemon.charmander       của bạn     fire <lửa>
-  pokemon.cleffa           của bên kia light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
-  pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         của bạn     water <nước>
+  pokemon.gastly           của bạn     dark <bóng tối>
+  pokemon.machop           của bên kia ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
 
   bạn — đã chọn 2 trên 3
-    pokemon.bulbasaur        one  2/4 chiêu, 1/1 nội tại
-    pokemon.charmander       chưa chọn trang bị
-    đã cấm naruto.naruto
+    pokemon.squirtle         one  2/4 chiêu, 1/1 nội tại
+    pokemon.gastly           chưa chọn trang bị
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 1 trên 3
-    pokemon.cleffa           two  1/4 chiêu, 0/1 nội tại
-    đã cấm pokemon.abra
+    pokemon.machop           two  1/4 chiêu, 0/1 nội tại
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a draft pick =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-> pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a draft waiting for a peer =====
-cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
 
   Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn
   lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.
   lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
 
-> naruto.naruto            còn         wind <gió>
-  pokemon.abra             còn         dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
+> pokemon.bulbasaur        còn         grass <cỏ>
   pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
@@ -271,26 +271,26 @@ cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
 ----- footer -----
 ↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a draft with one candidate =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
-  chỉ còn pokemon.torchic, nên ở đây không có gì để chọn.
+  chỉ còn pokemon.lapras, nên ở đây không có gì để chọn.
 
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-> pokemon.torchic          còn         fire <lửa>
+> pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a forked art preview =====
@@ -368,7 +368,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | a forked draft loadout =====
-cấm và chọn tướng  còn 19 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
 
   trang bị cho pokemon.poliwag  ·  lượt bạn 1:12 · bên kia 1:30
 
@@ -512,18 +512,18 @@ next: E2 A1 E1 A3 E3 A2
 ----- footer -----
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 120x24 | a refused draft loadout =====
-cấm và chọn tướng  còn 19 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
 
-  trang bị cho naruto.naruto  ·  lượt bạn 1:12 · bên kia 1:30
-  naruto.naruto brings 5 skills and there are 4 slot(s)
+  trang bị cho pokemon.bulbasaur  ·  lượt bạn 1:12 · bên kia 1:30
+  pokemon.bulbasaur brings 5 skills and there are 4 slot(s)
 
 > dạng      < ngã rẽ chưa chọn nhánh >  1/4
-  mang theo kunai substitution shadow_clone wind_shuriken nothing.at.all 5/4
+  mang theo vine_whip razor_leaf poison_powder leech_seed nothing.at.all 5/4
   nội tại   chưa chọn gì, còn 1 ô
   gửi       …
 
   bạn — đã chọn 1 trên 3
-    naruto.naruto            chưa chọn trang bị
+    pokemon.bulbasaur        chưa chọn trang bị
     chưa cấm ai
   khách — đã chọn 0 trên 3
     chưa chọn ai
@@ -1349,38 +1349,30 @@ trận đấu  seed 1
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
 ===== vi | 160x60 | a cancelled draft =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   có người hết giờ khi hai bên còn đang cấm và chọn tướng nên chưa có trận nào để đánh: lượt chọn không đánh dở rồi
   tiếp, phải mở phòng mới và chọn lại từ đầu
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
   pokemon.machop           còn         ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-  pokemon.torchic          còn         fire <lửa>
+  pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a deep member =====
@@ -1402,75 +1394,59 @@ thế đứng
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
 ===== vi | 160x60 | a draft =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-> pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
   pokemon.machop           còn         ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-  pokemon.torchic          còn         fire <lửa>
+  pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a draft arranging =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
   pokemon.machop           còn         ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-  pokemon.torchic          còn         fire <lửa>
+  pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a draft ban thrown away =====
-cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
 
   Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn
   lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.
@@ -1479,26 +1455,18 @@ cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
   nước đi, hoặc một lượt chọn tướng, tới nơi khi lượt đã qua — thường là do hết giờ; bạn không mất gì cả, những gì đang
   hiện trên màn hình mới là đúng
 
-> naruto.naruto            còn         wind <gió>
-  pokemon.abra             còn         dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
+> pokemon.bulbasaur        còn         grass <cỏ>
   pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
   pokemon.machop           còn         ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-  pokemon.torchic          còn         fire <lửa>
+  pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
@@ -1509,17 +1477,17 @@ cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
 ----- footer -----
 ↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a draft loadout =====
-cấm và chọn tướng  còn 19 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
 
-  trang bị cho naruto.naruto  ·  lượt bạn 1:12 · bên kia 1:30
+  trang bị cho pokemon.bulbasaur  ·  lượt bạn 1:12 · bên kia 1:30
 
 > dạng      < ngã rẽ chưa chọn nhánh >  1/4
-  mang theo kunai substitution shadow_clone wind_shuriken 4/4
+  mang theo vine_whip razor_leaf poison_powder leech_seed 4/4
   nội tại   chưa chọn gì, còn 1 ô
   gửi       bấm enter để gửi trang bị này
 
   bạn — đã chọn 1 trên 3
-    naruto.naruto            chưa chọn trang bị
+    pokemon.bulbasaur        chưa chọn trang bị
     chưa cấm ai
   khách — đã chọn 0 trên 3
     chưa chọn ai
@@ -1527,135 +1495,103 @@ cấm và chọn tướng  còn 19 trên 20 tướng để cấm và chọn
 ----- footer -----
 ↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a draft on the other side =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   khách đang cấm  ·  bạn 1:30 · lượt bên kia 1:12
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-> pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
   pokemon.machop           còn         ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-  pokemon.torchic          còn         fire <lửa>
+  pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a draft part way through =====
-cấm và chọn tướng  còn 15 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 7 trên 12 tướng để cấm và chọn
 
   lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-> pokemon.bulbasaur        của bạn     grass <cỏ>
-  pokemon.charmander       của bạn     fire <lửa>
-  pokemon.cleffa           của bên kia light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
-  pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
-  pokemon.machop           còn         ground <đất>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         của bạn     water <nước>
+  pokemon.gastly           của bạn     dark <bóng tối>
+  pokemon.machop           của bên kia ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-  pokemon.torchic          còn         fire <lửa>
+  pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 2 trên 3
-    pokemon.bulbasaur        one  2/4 chiêu, 1/1 nội tại
-    pokemon.charmander       chưa chọn trang bị
-    đã cấm naruto.naruto
+    pokemon.squirtle         one  2/4 chiêu, 1/1 nội tại
+    pokemon.gastly           chưa chọn trang bị
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 1 trên 3
-    pokemon.cleffa           two  1/4 chiêu, 0/1 nội tại
-    đã cấm pokemon.abra
+    pokemon.machop           two  1/4 chiêu, 0/1 nội tại
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a draft pick =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-> pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
   pokemon.machop           còn         ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-  pokemon.torchic          còn         fire <lửa>
+  pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a draft waiting for a peer =====
-cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
 
   Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn
   lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.
   lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
 
-> naruto.naruto            còn         wind <gió>
-  pokemon.abra             còn         dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
+> pokemon.bulbasaur        còn         grass <cỏ>
   pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
   pokemon.machop           còn         ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-  pokemon.torchic          còn         fire <lửa>
+  pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
@@ -1666,38 +1602,30 @@ cấm và chọn tướng  còn 20 trên 20 tướng để cấm và chọn
 ----- footer -----
 ↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a draft with one candidate =====
-cấm và chọn tướng  còn 18 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
 
   lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
-  chỉ còn pokemon.torchic, nên ở đây không có gì để chọn.
+  chỉ còn pokemon.lapras, nên ở đây không có gì để chọn.
 
-  naruto.naruto            bạn cấm     wind <gió>
-  pokemon.abra             bên kia cấm dark <bóng tối>
-  pokemon.bulbasaur        còn         grass <cỏ>
-  pokemon.charmander       còn         fire <lửa>
-  pokemon.cleffa           còn         light <ánh sáng>
-  pokemon.dratini          còn         wind <gió>
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
   pokemon.gastly           còn         dark <bóng tối>
-  pokemon.gible            còn         ground <đất>
-  pokemon.happiny          còn         neutral <trung tính>
-  pokemon.lapras           còn         water/ice <nước/băng>
   pokemon.machop           còn         ground <đất>
   pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
   pokemon.mew              còn         neutral <trung tính>
   pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
   pokemon.oddish           còn         grass <cỏ>
-  pokemon.pichu            còn         electric <điện>
-  pokemon.poliwag          còn         water <nước>
-  pokemon.riolu            còn         metal <kim loại>
-  pokemon.squirtle         còn         water <nước>
-> pokemon.torchic          còn         fire <lửa>
+> pokemon.lapras           còn         water/ice <nước/băng>
 
   bạn — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm naruto.naruto
+    đã cấm pokemon.bulbasaur
   khách — đã chọn 0 trên 3
     chưa chọn ai
-    đã cấm pokemon.abra
+    đã cấm pokemon.charmander
 ----- footer -----
 ↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a forked art preview =====
@@ -1810,7 +1738,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 160x60 | a forked draft loadout =====
-cấm và chọn tướng  còn 19 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
 
   trang bị cho pokemon.poliwag  ·  lượt bạn 1:12 · bên kia 1:30
 
@@ -1986,18 +1914,18 @@ next: E2 A1 E1 A3 E3 A2
 ----- footer -----
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
 ===== vi | 160x60 | a refused draft loadout =====
-cấm và chọn tướng  còn 19 trên 20 tướng để cấm và chọn
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
 
-  trang bị cho naruto.naruto  ·  lượt bạn 1:12 · bên kia 1:30
-  naruto.naruto brings 5 skills and there are 4 slot(s)
+  trang bị cho pokemon.bulbasaur  ·  lượt bạn 1:12 · bên kia 1:30
+  pokemon.bulbasaur brings 5 skills and there are 4 slot(s)
 
 > dạng      < ngã rẽ chưa chọn nhánh >  1/4
-  mang theo kunai substitution shadow_clone wind_shuriken nothing.at.all 5/4
+  mang theo vine_whip razor_leaf poison_powder leech_seed nothing.at.all 5/4
   nội tại   chưa chọn gì, còn 1 ô
   gửi       …
 
   bạn — đã chọn 1 trên 3
-    naruto.naruto            chưa chọn trang bị
+    pokemon.bulbasaur        chưa chọn trang bị
     chưa cấm ai
   khách — đã chọn 0 trên 3
     chưa chọn ai
@@ -3223,26 +3151,26 @@ the battle  seed 1
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 120x24 | a cancelled draft =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   somebody ran out of time while the sides were still banning and picking, so there is no match to play: a draft is
   never taken up where it stopped, and drafting again means a new room and a new code
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-  pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a deep member =====
@@ -3264,53 +3192,53 @@ the formation
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
 ===== en | 120x24 | a draft =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   your ban  ·  your turn 1:12 · them 1:30
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-> pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a draft arranging =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-  pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a draft ban thrown away =====
-ban and pick  20 of 20 still in the pool
+ban and pick  12 of 12 still in the pool
 
   Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the
   other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.
@@ -3319,10 +3247,10 @@ ban and pick  20 of 20 still in the pool
   a move, or a draft decision, went out after the turn had gone — usually the clock ran out; nothing of yours was lost,
   and whatever is on screen now is the right one
 
-> naruto.naruto            open        wind
-  pokemon.abra             open        dark
-  pokemon.bulbasaur        open        grass
+> pokemon.bulbasaur        open        grass
   pokemon.charmander       open        fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
 
   you — 0 of 3 picked
     nobody picked yet
@@ -3333,17 +3261,17 @@ ban and pick  20 of 20 still in the pool
 ----- footer -----
 ↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a draft loadout =====
-ban and pick  19 of 20 still in the pool
+ban and pick  11 of 12 still in the pool
 
-  your loadout for naruto.naruto  ·  your turn 1:12 · them 1:30
+  your loadout for pokemon.bulbasaur  ·  your turn 1:12 · them 1:30
 
 > form   < a fork with no arm named >  1/4
-  brings kunai substitution shadow_clone wind_shuriken 4/4
+  brings vine_whip razor_leaf poison_powder leech_seed 4/4
   trait  nothing chosen, 1 slot(s)
   send   enter sends this loadout
 
   you — 1 of 3 picked
-    naruto.naruto            loadout still to choose
+    pokemon.bulbasaur        loadout still to choose
     banned nobody yet
   guest — 0 of 3 picked
     nobody picked yet
@@ -3351,88 +3279,88 @@ ban and pick  19 of 20 still in the pool
 ----- footer -----
 ↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a draft on the other side =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   guest is banning  ·  you 1:30 · their turn 1:12
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-> pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a draft part way through =====
-ban and pick  15 of 20 still in the pool
+ban and pick  7 of 12 still in the pool
 
   your pick  ·  your turn 1:12 · them 1:30
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-> pokemon.bulbasaur        yours       grass
-  pokemon.charmander       yours       fire
-  pokemon.cleffa           theirs      light
-  pokemon.dratini          open        wind
-  pokemon.gastly           open        dark
-  pokemon.gible            open        ground
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         yours       water
+  pokemon.gastly           yours       dark
+  pokemon.machop           theirs      ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
 
   you — 2 of 3 picked
-    pokemon.bulbasaur        one  2/4 skills, 1/1 traits
-    pokemon.charmander       loadout still to choose
-    banned naruto.naruto
+    pokemon.squirtle         one  2/4 skills, 1/1 traits
+    pokemon.gastly           loadout still to choose
+    banned pokemon.bulbasaur
   guest — 1 of 3 picked
-    pokemon.cleffa           two  1/4 skills, 0/1 traits
-    banned pokemon.abra
+    pokemon.machop           two  1/4 skills, 0/1 traits
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a draft pick =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   your pick  ·  your turn 1:12 · them 1:30
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-> pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a draft waiting for a peer =====
-ban and pick  20 of 20 still in the pool
+ban and pick  12 of 12 still in the pool
 
   Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the
   other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.
   your ban  ·  your turn 1:12 · them 1:30
 
-> naruto.naruto            open        wind
-  pokemon.abra             open        dark
-  pokemon.bulbasaur        open        grass
+> pokemon.bulbasaur        open        grass
   pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.squirtle         open        water
   pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
 
   you — 0 of 3 picked
     nobody picked yet
@@ -3443,26 +3371,26 @@ ban and pick  20 of 20 still in the pool
 ----- footer -----
 ↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a draft with one candidate =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   your pick  ·  your turn 1:12 · them 1:30
-  pokemon.torchic is the only one left, so there is nothing to choose here.
+  pokemon.lapras is the only one left, so there is nothing to choose here.
 
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-> pokemon.torchic          open        fire
+> pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a forked art preview =====
@@ -3533,7 +3461,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | a forked draft loadout =====
-ban and pick  19 of 20 still in the pool
+ban and pick  11 of 12 still in the pool
 
   your loadout for pokemon.poliwag  ·  your turn 1:12 · them 1:30
 
@@ -3673,18 +3601,18 @@ waiting on the other player
 ----- footer -----
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 120x24 | a refused draft loadout =====
-ban and pick  19 of 20 still in the pool
+ban and pick  11 of 12 still in the pool
 
-  your loadout for naruto.naruto  ·  your turn 1:12 · them 1:30
-  naruto.naruto brings 5 skills and there are 4 slot(s)
+  your loadout for pokemon.bulbasaur  ·  your turn 1:12 · them 1:30
+  pokemon.bulbasaur brings 5 skills and there are 4 slot(s)
 
 > form   < a fork with no arm named >  1/4
-  brings kunai substitution shadow_clone wind_shuriken nothing.at.all 5/4
+  brings vine_whip razor_leaf poison_powder leech_seed nothing.at.all 5/4
   trait  nothing chosen, 1 slot(s)
   send   …
 
   you — 1 of 3 picked
-    naruto.naruto            loadout still to choose
+    pokemon.bulbasaur        loadout still to choose
     banned nobody yet
   guest — 0 of 3 picked
     nobody picked yet
@@ -4499,38 +4427,30 @@ the battle  seed 1
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
 ===== en | 160x60 | a cancelled draft =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   somebody ran out of time while the sides were still banning and picking, so there is no match to play: a draft is
   never taken up where it stopped, and drafting again means a new room and a new code
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-  pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
   pokemon.machop           open        ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-  pokemon.torchic          open        fire
+  pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a deep member =====
@@ -4552,75 +4472,59 @@ the formation
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
 ===== en | 160x60 | a draft =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   your ban  ·  your turn 1:12 · them 1:30
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-> pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
   pokemon.machop           open        ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-  pokemon.torchic          open        fire
+  pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a draft arranging =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-  pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
   pokemon.machop           open        ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-  pokemon.torchic          open        fire
+  pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a draft ban thrown away =====
-ban and pick  20 of 20 still in the pool
+ban and pick  12 of 12 still in the pool
 
   Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the
   other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.
@@ -4629,26 +4533,18 @@ ban and pick  20 of 20 still in the pool
   a move, or a draft decision, went out after the turn had gone — usually the clock ran out; nothing of yours was lost,
   and whatever is on screen now is the right one
 
-> naruto.naruto            open        wind
-  pokemon.abra             open        dark
-  pokemon.bulbasaur        open        grass
+> pokemon.bulbasaur        open        grass
   pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
   pokemon.machop           open        ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-  pokemon.torchic          open        fire
+  pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
@@ -4659,17 +4555,17 @@ ban and pick  20 of 20 still in the pool
 ----- footer -----
 ↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a draft loadout =====
-ban and pick  19 of 20 still in the pool
+ban and pick  11 of 12 still in the pool
 
-  your loadout for naruto.naruto  ·  your turn 1:12 · them 1:30
+  your loadout for pokemon.bulbasaur  ·  your turn 1:12 · them 1:30
 
 > form   < a fork with no arm named >  1/4
-  brings kunai substitution shadow_clone wind_shuriken 4/4
+  brings vine_whip razor_leaf poison_powder leech_seed 4/4
   trait  nothing chosen, 1 slot(s)
   send   enter sends this loadout
 
   you — 1 of 3 picked
-    naruto.naruto            loadout still to choose
+    pokemon.bulbasaur        loadout still to choose
     banned nobody yet
   guest — 0 of 3 picked
     nobody picked yet
@@ -4677,135 +4573,103 @@ ban and pick  19 of 20 still in the pool
 ----- footer -----
 ↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a draft on the other side =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   guest is banning  ·  you 1:30 · their turn 1:12
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-> pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
   pokemon.machop           open        ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-  pokemon.torchic          open        fire
+  pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a draft part way through =====
-ban and pick  15 of 20 still in the pool
+ban and pick  7 of 12 still in the pool
 
   your pick  ·  your turn 1:12 · them 1:30
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-> pokemon.bulbasaur        yours       grass
-  pokemon.charmander       yours       fire
-  pokemon.cleffa           theirs      light
-  pokemon.dratini          open        wind
-  pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
-  pokemon.machop           open        ground
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         yours       water
+  pokemon.gastly           yours       dark
+  pokemon.machop           theirs      ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-  pokemon.torchic          open        fire
+  pokemon.lapras           open        water/ice
 
   you — 2 of 3 picked
-    pokemon.bulbasaur        one  2/4 skills, 1/1 traits
-    pokemon.charmander       loadout still to choose
-    banned naruto.naruto
+    pokemon.squirtle         one  2/4 skills, 1/1 traits
+    pokemon.gastly           loadout still to choose
+    banned pokemon.bulbasaur
   guest — 1 of 3 picked
-    pokemon.cleffa           two  1/4 skills, 0/1 traits
-    banned pokemon.abra
+    pokemon.machop           two  1/4 skills, 0/1 traits
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a draft pick =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   your pick  ·  your turn 1:12 · them 1:30
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-> pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
   pokemon.machop           open        ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-  pokemon.torchic          open        fire
+  pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a draft waiting for a peer =====
-ban and pick  20 of 20 still in the pool
+ban and pick  12 of 12 still in the pool
 
   Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the
   other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.
   your ban  ·  your turn 1:12 · them 1:30
 
-> naruto.naruto            open        wind
-  pokemon.abra             open        dark
-  pokemon.bulbasaur        open        grass
+> pokemon.bulbasaur        open        grass
   pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
   pokemon.machop           open        ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-  pokemon.torchic          open        fire
+  pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
@@ -4816,38 +4680,30 @@ ban and pick  20 of 20 still in the pool
 ----- footer -----
 ↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a draft with one candidate =====
-ban and pick  18 of 20 still in the pool
+ban and pick  10 of 12 still in the pool
 
   your pick  ·  your turn 1:12 · them 1:30
-  pokemon.torchic is the only one left, so there is nothing to choose here.
+  pokemon.lapras is the only one left, so there is nothing to choose here.
 
-  naruto.naruto            you banned  wind
-  pokemon.abra             they banned dark
-  pokemon.bulbasaur        open        grass
-  pokemon.charmander       open        fire
-  pokemon.cleffa           open        light
-  pokemon.dratini          open        wind
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
   pokemon.gastly           open        dark
-  pokemon.gible            open        ground
-  pokemon.happiny          open        neutral
-  pokemon.lapras           open        water/ice
   pokemon.machop           open        ground
   pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
   pokemon.mew              open        neutral
   pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
   pokemon.oddish           open        grass
-  pokemon.pichu            open        electric
-  pokemon.poliwag          open        water
-  pokemon.riolu            open        metal
-  pokemon.squirtle         open        water
-> pokemon.torchic          open        fire
+> pokemon.lapras           open        water/ice
 
   you — 0 of 3 picked
     nobody picked yet
-    banned naruto.naruto
+    banned pokemon.bulbasaur
   guest — 0 of 3 picked
     nobody picked yet
-    banned pokemon.abra
+    banned pokemon.charmander
 ----- footer -----
 ↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a forked art preview =====
@@ -4954,7 +4810,7 @@ pokemon.poliwag — Poliwag
 ----- footer -----
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 160x60 | a forked draft loadout =====
-ban and pick  19 of 20 still in the pool
+ban and pick  11 of 12 still in the pool
 
   your loadout for pokemon.poliwag  ·  your turn 1:12 · them 1:30
 
@@ -5126,18 +4982,18 @@ waiting on the other player
 ----- footer -----
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
 ===== en | 160x60 | a refused draft loadout =====
-ban and pick  19 of 20 still in the pool
+ban and pick  11 of 12 still in the pool
 
-  your loadout for naruto.naruto  ·  your turn 1:12 · them 1:30
-  naruto.naruto brings 5 skills and there are 4 slot(s)
+  your loadout for pokemon.bulbasaur  ·  your turn 1:12 · them 1:30
+  pokemon.bulbasaur brings 5 skills and there are 4 slot(s)
 
 > form   < a fork with no arm named >  1/4
-  brings kunai substitution shadow_clone wind_shuriken nothing.at.all 5/4
+  brings vine_whip razor_leaf poison_powder leech_seed nothing.at.all 5/4
   trait  nothing chosen, 1 slot(s)
   send   …
 
   you — 1 of 3 picked
-    naruto.naruto            loadout still to choose
+    pokemon.bulbasaur        loadout still to choose
     banned nobody yet
   guest — 0 of 3 picked
     nobody picked yet

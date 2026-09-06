@@ -644,10 +644,7 @@ func TestTheDraftFitsTheFloorInEveryStateItDraws(t *testing.T) {
 // declaration that agreed with the first by having been copied from it.
 func aDraftDue(t *testing.T, lib *forge.Library, step DraftStep, yours bool) DraftScreen {
 	t.Helper()
-	pool := lib.Characters().All()
-	if len(pool) == 0 {
-		t.Fatal("the fixture cast is empty, so there is no pool to draft from")
-	}
+	pool := draftFixturePool(t, lib)
 	candidates := make([]string, 0, len(pool))
 	for _, character := range pool {
 		candidates = append(candidates, character.ID)
@@ -875,3 +872,55 @@ func everyDraftState(t *testing.T, c Context, lib *forge.Library) map[string]Dra
 // with, spelled as wire.Code spells it — a **name**, which is the whole of what
 // this package knows about a refusal. → i18n.Lang.Refusal.
 const fixtureRefusal = "not_your_turn"
+
+// draftFixturePoolIDs is the pool every draft entry in this package's golden is
+// drawn from, and it is **named** rather than taken off the shipped cast.
+//
+// ⚠️ **A golden built from the shipped cast moves on every content commit**, and
+// this one did: `pokemon.diglett` shipped while the draft screen was being
+// written, and every recorded draft heading went from "còn 18 trên 20 tướng" to
+// "còn 19 trên 21" — twenty-four entries reddening for a reason that has nothing
+// to do with what they measure. That is the merge-conflict generator
+// internal/wire's TestTheGoldenIsBuiltFromNothingShipped exists to refuse, and
+// the parallel work on this repository ships a character often enough that it is
+// a live cost rather than a theoretical one.
+//
+// So the count is fixed by naming the characters. They are still **real** — the
+// screen draws names, forms and ids, and a synthetic cast would record a drawing
+// nobody could compare against the game — but the *list* is this file's, so the
+// only thing that moves these entries is a change to the drawing.
+//
+// ⚠️ **Removing one of these from the cast fatals rather than shrinking the
+// pool**, which is the whole point: a silently shorter list would move the count
+// again and look like the screen changing its mind. `pokemon.poliwag` is on it
+// because it is the one shipped line that **forks**, and the forked-loadout entry
+// needs a character whose level cap reaches two arms.
+//
+// Twelve is chosen against the arithmetic rather than for looks: a 3v3 spends
+// `2*3 picks + 2*2 bans` = ten, so twelve leaves the draft two to spare and the
+// screen a grid worth recording.
+var draftFixturePoolIDs = []string{
+	"pokemon.bulbasaur", "pokemon.charmander", "pokemon.squirtle",
+	"pokemon.gastly", "pokemon.machop", "pokemon.magnemite",
+	"pokemon.poliwag", "pokemon.mew", "pokemon.mewtwo",
+	"pokemon.dratini", "pokemon.oddish", "pokemon.lapras",
+}
+
+// draftFixturePool is those twelve, in the order they are named, looked up in the
+// book the fixture library loaded.
+func draftFixturePool(t *testing.T, lib *forge.Library) []cast.Character {
+	t.Helper()
+	book := lib.Characters()
+	pool := make([]cast.Character, 0, len(draftFixturePoolIDs))
+	for _, id := range draftFixturePoolIDs {
+		character, known := book.Get(id)
+		if !known {
+			t.Fatalf("the draft fixture names %q and the cast no longer holds it: this pool is "+
+				"named so the golden's count cannot move on a content commit, so a character "+
+				"leaving has to be answered here rather than by the list quietly getting shorter",
+				id)
+		}
+		pool = append(pool, character)
+	}
+	return pool
+}

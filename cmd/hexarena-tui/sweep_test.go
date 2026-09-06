@@ -238,14 +238,22 @@ func everyScreen(t *testing.T, m model) map[string]model {
 // hand-built entry here does.
 func everyDraftScreen(t *testing.T, m model) map[string]model {
 	t.Helper()
-	characters, err := seed.Cast()
-	if err != nil {
-		t.Fatalf("load the embedded cast: %v", err)
-	}
-	pool := draft.NewPool(characters.All()).All()
-	if len(pool) < 6 {
-		t.Fatalf("the embedded pool holds %d characters", len(pool))
-	}
+	// ⚠️ **A NAMED pool, not the shipped one, and the reason is the golden.**
+	// These entries record a heading that counts the pool, so drawing from
+	// `draft.NewPool(seed.Cast())` moved every one of them the day
+	// `pokemon.diglett` shipped — "còn 18 trên 20 tướng" became "còn 19 trên 21",
+	// twenty-four entries reddening for a reason unrelated to what they measure.
+	// That is what internal/wire's TestTheGoldenIsBuiltFromNothingShipped refuses,
+	// and this repository ships a character often enough for it to be a live cost.
+	//
+	// The characters are real — a synthetic cast would record a drawing nobody
+	// could compare against the game — but the list is this file's, so only a
+	// change to the drawing moves these entries. → internal/screen's own
+	// draftFixturePoolIDs, which names the same twelve for the same reason; the
+	// two lists are deliberately separate because each golden is a record of what
+	// *that* package draws, and a shared fixture would be a third thing to keep in
+	// step.
+	pool := namedDraftPool(t)
 	screens := map[string]model{}
 	// The opening ban, with a decision apiece already recorded so the waiting
 	// notice is a state of its own rather than something every entry carries.
@@ -1257,4 +1265,58 @@ func TestNoScreenLeaksAGlossIntoTheWrongLanguage(t *testing.T) {
 			}
 		}
 	}
+}
+
+// namedDraftPoolIDs is the twelve characters this client's draft golden entries
+// are drawn from. → the comment at its one call site for why they are named
+// rather than taken off the shipped cast.
+//
+// ⚠️ Twelve is against the arithmetic: a 3v3 spends `2*3 picks + 2*2 bans` = ten,
+// so twelve leaves two to spare and the heading a count that is not on a boundary.
+// `pokemon.poliwag` is on the list because it is the one shipped line that forks
+// and the loadout entries need an arm to name.
+var namedDraftPoolIDs = []string{
+	"pokemon.bulbasaur", "pokemon.charmander", "pokemon.squirtle",
+	"pokemon.gastly", "pokemon.machop", "pokemon.magnemite",
+	"pokemon.poliwag", "pokemon.mew", "pokemon.mewtwo",
+	"pokemon.dratini", "pokemon.oddish", "pokemon.lapras",
+}
+
+// ⚠️ **This does not make the whole golden immune to a data commit, and the
+// remainder is deliberate.** Proved by hiding a character not on the list:
+// `internal/screen`'s record then holds, and this one still moves — on the **join
+// screen's digest line**, six entries of it, which was already there before the
+// draft arrived. That line is the data digest a player compares against a friend's
+// before blaming the game, so recording it is the point rather than an oversight.
+// What this fixture buys is that the *draft* entries no longer move; the digest is
+// a separate cost with a separate owner. → TODO.md.
+//
+// namedDraftPool is those twelve out of the embedded cast, in the order named.
+//
+// ⚠️ It goes through `draft.NewPool` rather than round the outside, so the
+// held-back rule still applies: a character on this list that was later hidden
+// would be **absent** from the result, and the length check below is what turns
+// that into a red test rather than a quietly shorter pool and a moved count.
+func namedDraftPool(t *testing.T) []cast.Character {
+	t.Helper()
+	characters, err := seed.Cast()
+	if err != nil {
+		t.Fatalf("load the embedded cast: %v", err)
+	}
+	offered := draft.NewPool(characters.All())
+	pool := make([]cast.Character, 0, len(namedDraftPoolIDs))
+	for _, id := range namedDraftPoolIDs {
+		if !offered.Has(id) {
+			t.Fatalf("the draft fixture names %q and the drafting pool no longer offers it — "+
+				"it was removed from the cast or held back. This list is named so the golden's "+
+				"count cannot move on a content commit, so answer it here rather than letting "+
+				"the pool quietly get shorter", id)
+		}
+		character, _ := characters.Get(id)
+		pool = append(pool, character)
+	}
+	if len(pool) != len(namedDraftPoolIDs) {
+		t.Fatalf("the named pool resolved %d of %d", len(pool), len(namedDraftPoolIDs))
+	}
+	return pool
 }
