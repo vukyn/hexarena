@@ -501,8 +501,8 @@ const Skills = `[
     "accuracy": 1000,
     "cooldown": 0,
     "target": "self",
-    "self_applies": [{ "status": "charge", "chance": 1000, "stacks": 1 }],
-    "self_requires": { "status": "charge", "below_stacks": 2, "gates": true },
+    "self_applies": [{ "status": "sundered", "chance": 1000, "stacks": 1 }],
+    "self_requires": { "status": "sundered", "below_stacks": 2, "gates": true },
     "summons": {
       "count": 1,
       "name": "half",

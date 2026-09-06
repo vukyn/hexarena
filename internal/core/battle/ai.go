@@ -493,13 +493,33 @@ func (b *Battle) summonWorth(caster *Unit, declared skill.Skill) int64 {
 	// lines here that did was dead, and read as though it were load-bearing.
 	perSide, occupied := b.census()
 	total := int64(0)
-	for _, slot := range b.summonPlaces(caster, declared.Summons, perSide, occupied) {
+	places := b.summonPlaces(caster, declared.Summons, perSide, occupied)
+	for _, slot := range places {
 		copied := &Unit{
 			Side: caster.Side, Cell: hex.Place(caster.Side, slot),
 			Affinity: affinity, Base: stats, HP: stats[progression.HP],
 			Skills: declared.Summons.Skills,
 		}
 		total += b.bestStrike(copied) * turns
+	}
+	// ⚠️ **What the cast costs its caster is subtracted HERE, because nowhere
+	// else sees it.** Suggest's summon branch takes this figure and `continue`s,
+	// so a summoning skill never reaches prices.rate and the `total -=
+	// p.spentHealth(...)` line there never runs for one. Before this, a skill that
+	// tore off a third of its caster's maximum health to make a copy was rated on
+	// the copy alone: measured, the rating cast it every time it was allowed to,
+	// twice a duel to the cap, and the kit holding it read 434‰ against the same
+	// character with a plain attack in that slot — always taking a trade that
+	// measures as a loss.
+	//
+	// Health against damage is the unit the rest of the file already mixes —
+	// spentHealth is subtracted from a damage total the same way — so the two are
+	// comparable here by the same convention rather than by a new one.
+	total -= healthCost(caster.MaxHP(), declared, b.spared(caster))
+	if split := declared.Summons.Splits; split > 0 {
+		// Per copy, because that is how it is charged: Battle.summon takes the
+		// share off once for each body that stands up.
+		total -= splitHealth(caster.Base[progression.HP], split) * int64(len(places))
 	}
 	return total
 }

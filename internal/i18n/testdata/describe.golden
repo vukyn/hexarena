@@ -841,6 +841,20 @@ Gây bỏng cho mục tiêu, 50% khả năng.
 Tầm 1 · 90% trúng · hồi 3 lượt.
 [one line] 240% công · tốn 10% máu · bỏng 50% · tầm 1 · hồi 3
 
+split
+Tự xé mình ra, và cái phần xé đi thì không mọc lại được nữa.
+Gọi ra một phân thân mang 90% chỉ số người gọi.
+Nhận đã tách.
+Chỉ dùng được khi bản thân chưa dùng đủ 2 lần.
+Bản thân · hồi 4 lượt.
+[one line] một phân thân · tự nhận đã tách · cần tự đã tách · bản thân · hồi 4
+
+burrow
+Lặn xuống dưới lớp đất, ở đó thì không ai với tới mà cũng chẳng thấy gì trên này.
+Nhận độn thổ.
+Bản thân · hồi 5 lượt.
+[one line] tự nhận độn thổ · bản thân · hồi 5
+
 [trait] endurance
 Chịu đòn quen rồi, đau tới đâu cũng đứng vững tới đó.
 Luôn mang kiên cường.
@@ -1045,6 +1059,14 @@ Tăng chỉ số · 2 lượt · tối đa 5 cộng dồn.
 Tăng công 10% mỗi cộng dồn.
 Tối đa là 20%.
 Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
+
+[status] sundered
+Chỉ nằm đó, không làm gì.
+Tăng chỉ số · vĩnh viễn · tối đa 2 cộng dồn.
+
+[status] burrowed
+Chỉ nằm đó, không làm gì.
+Tăng chỉ số · 2 lượt · 1 cộng dồn.
 
 [status] block
 Mỗi cộng dồn triệt tiêu một nhát; đòn hai nhát tiêu hai cộng dồn.
@@ -1963,6 +1985,18 @@ Inflicts burn, 50% of the time.
 Range 1 · 90% to hit · 3 turns to recharge.
 [one line] 240% attack · costs 10% health · burn 50% · range 1 · cd 3
 
+split
+Calls up a copy with 90% of the caster's stats.
+Puts sundered on itself.
+Castable only while this unit has cast this fewer than 2 times.
+Itself · 4 turns to recharge.
+[one line] a copy · self sundered · needs self sundered · itself · cd 4
+
+burrow
+Puts burrowed on itself.
+Itself · 5 turns to recharge.
+[one line] self burrowed · itself · cd 5
+
 [trait] endurance
 Always carries toughened.
 
@@ -2143,6 +2177,14 @@ Raises a stat · 2 turns · up to 5 stacks.
 Raises attack by 10% per stack.
 At its cap that is 20%.
 Raises a stat · always in force · up to 2 stacks.
+
+[status] sundered
+Sits there and does nothing.
+Raises a stat · always in force · up to 2 stacks.
+
+[status] burrowed
+Sits there and does nothing.
+Raises a stat · 2 turns · 1 stack.
 
 [status] block
 Each stack swallows one strike whole; a two-strike skill spends two.

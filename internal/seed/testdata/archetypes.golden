@@ -241,4 +241,16 @@ stoker, formation column 0
            absorbs 6410 of the 11500 budget, 5090 to spare
   kit      ember blaze_kick fire_fang flamethrower flare_blitz inferno heat_wave fire_spin body_slam taunt
 
-20 presets
+manifold, formation column 1
+  the one that answers being outnumbered by outnumbering back: it tears its own body in two to put a second fighter on the board, pays for it in maximum health that never comes back, and can do it twice — so a squad that kills it slowly is fighting three of it and a squad that kills it quickly is fighting one
+  demands  a character built from it must carry ground
+  hp 1133->3400  attack 220->660  defense 100->300  speed 50->150  accuracy 56->170  dodge 18->55
+  level 1  hp 1133, atk 220, def 100, spd 50, acc 56, ddg 18
+           absorbs 1510 of the 11500 budget, 9990 to spare
+  level 30 hp 2247, atk 436, def 198, spd 99, acc 112, ddg 36
+           absorbs 3732 of the 11500 budget, 7768 to spare
+  level 60 hp 3400, atk 660, def 300, spd 150, acc 170, ddg 55
+           absorbs 6800 of the 11500 budget, 4700 to spare
+  kit      dig rock_throw split sand_tomb burrow earthquake stone_edge sandstorm body_slam taunt
+
+21 presets
