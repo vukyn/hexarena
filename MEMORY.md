@@ -8,8 +8,11 @@ and nothing else.
 This exists **in the repository** rather than in a machine's own Claude memory
 directory because that directory is workspace-scoped and machine-local: opening
 this repo on another machine, or outside the workspace it was written in, arrived
-with none of it. `.claude/` here is gitignored (it holds worktrees and per-agent
-scratch), so the tracked home is this file plus `memory/`.
+with none of it. Almost all of `.claude/` here is gitignored (it holds worktrees
+and per-agent scratch), so the tracked home is this file plus `memory/`.
+⚠️ The exception is `/.claude/agent-memory`, which the `.gitignore` un-ignores by
+name and which therefore **does** travel — see `CLAUDE.md` for why that matters at
+commit time.
 
 **Rules, and they are the same rules the notes were written under:**
 

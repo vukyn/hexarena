@@ -1,6 +1,6 @@
 ---
 name: draft-state-machine
-description: hexarena internal/draft — steps 2a, 2b, 3 and 4 built; the Done()/Picked() split, the arrange phase's own accessors, the record's SHAPE living in internal/wire, and the room-side arrange-phase clock (which is NOT one allowance)
+description: hexarena internal/draft — steps 2a, 2b, 3, 4 and 5a built; the Done()/Picked() split, the arrange phase's own accessors, the record's SHAPE living in internal/wire, the room-side arrange-phase clock (NOT one allowance), and the protocol gap 5a found — NOTHING tells the host the room is full
 metadata:
   type: project
 ---
@@ -106,3 +106,49 @@ leaves the suite green in every test that does not end a draft the odd way.
 consumer that acts on it (`internal/socket/table.go`'s `allowance.set` and
 `server.go`'s `settled`) rather than reasoning from the room. See
 [[measure-the-thing-a-bound-bounds]].
+
+
+**Step 5a** (branch `feat/draft-mirror`, 2026-09-06) made a drafting room
+joinable by a real `socket.Client`: `internal/socket/draft.go` holds the client's
+own `*draft.Draft`, `Sight.Draft` is a **`DraftSight` value snapshot**, and
+`ClientOptions` gained `Characters` (the cast the pool is `NewPool`'d from) and
+`Draft` (a `DraftChooser`).
+
+- ⚠️ **NOTHING ON THE WIRE TELLS THE HOST THE ROOM IS FULL, and that is the gap
+  to know before touching this again.** A client's own draft is due its first
+  decision the moment its **welcome** arrives, and a welcome arrives when *that*
+  seat is seated — but the room refuses a decision until **both** are
+  (`draftOpen`), and a drafting room sends **nothing at all** when it fills
+  (`bothTaken` returns `nil, nil`; an empty `wire.Drafted` is refused by design).
+  So the host bans into a one-player room, is refused `CodeNotYourTurn`, and —
+  because a refusal leaves the decision open — re-sends. **Measured: five
+  refusals** before the second client arrived.
+- ⚠️ **`Play` therefore has to answer BEFORE its first read** (deleting that hangs
+  the socket draft test at its 60s bound), and **the retry-on-refusal loop is the
+  only thing that would ever get the host's first ban through** — so a memo of
+  "already answered this decision" turns the spin into a **stall** and must not be
+  added on its own. The same loop is an unbounded hot loop for a genuinely illegal
+  decision, and the battle path has carried that shape since `wire.Refused`.
+- **Two fixes, neither a client fix**: the room announces its draft opening (a new
+  server→client kind), or the first decision belongs to **the seat that filled the
+  room** — the guest, which is the only event a client can hang "the draft has
+  begun" on. Guest-first in the mirror *alone* hangs (7 tests), so both ends move
+  together. Not taken: host-first is settled decision (f).
+- ⚠️ **In-process fakes cannot see a transport.** Step 4's whole draft suite was
+  green while `Mirror.Receive` had **no `Drafted` arm** — a `wire.Drafted` errored
+  the client and closed the connection, and a drafting room was unjoinable by
+  anything real. The fixture-hides-a-branch lesson at the level of a **package
+  boundary**. See [[fixture-hidden-branch]], [[fixture-decides-what-is-visible]].
+- The stale-answer discriminator is `DraftAnswer.For` = `DraftDue{Seat, Step,
+  Character, **Recorded**}`. ⚠️ The **step alone is not enough**: a seat's two ban
+  slots have the other seat's between them, so an answer for the first delivered
+  at the second carries the same step and the same absent character — everything
+  the wire has. `Recorded` (the record length when the decision was raised) is
+  local and never travels.
+
+**Why:** the gap looks like a client bug and is a protocol one, and the obvious
+"fix" (don't re-answer a decision already answered) deadlocks the host.
+
+**How to apply:** before adding any guard to `Client.answer`, check what still
+triggers the host's first ban. → `hexarena/TODO.md` § step 5a, which carries all
+of it. Steps **5b** (draft screen) and **5c** (arrange screen) are what is left.

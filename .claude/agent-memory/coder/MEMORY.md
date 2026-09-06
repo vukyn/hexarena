@@ -30,7 +30,7 @@
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
-- [The ban/pick draft machine](project_draft_state_machine.md) — 2a+2b+3+4 done; ⚠️ the arrange clock is NOT one allowance (socket re-arms every batch); draft.Entry/Step are GONE
+- [The ban/pick draft machine](project_draft_state_machine.md) — 2a…5a done; ⚠️ NOTHING tells the host the room is full (host re-sends its first ban); arrange clock is NOT one allowance
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
 
 ## Moved in from the platform-level store (2026-09-05)

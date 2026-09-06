@@ -219,7 +219,7 @@ func aMirrorAtAnOpenTurn(t *testing.T) *Mirror {
 	}
 	roster := append(home, away...)
 	for _, side := range []hex.Side{hex.SideAlly, hex.SideEnemy} {
-		mirror := NewMirror(wire.SeatHost, dependencies.Books)
+		mirror := NewMirror(wire.SeatHost, dependencies.Books, dependencies.Characters)
 		welcome := wire.Welcome{
 			Format: wire.Format3v3, Battles: 1, Allowance: room.DefaultAllowance,
 			TurnCap: room.DefaultTurnCap, Seat: wire.SeatHost,
@@ -335,7 +335,7 @@ func TestSteppedIsCalledForEveryMessageAndHoldsNoLock(t *testing.T) {
 // — they read from one goroutine at a time in practice — and would then serialise
 // a client's Update against its own View. This is the one that fails on it.
 func TestReadRefusesNothingAndTakesNoLockTwice(t *testing.T) {
-	mirror := NewMirror(wire.SeatHost, battle.Books{})
+	mirror := NewMirror(wire.SeatHost, battle.Books{}, nil)
 	mirror.Read(nil)
 
 	inside := make(chan struct{})

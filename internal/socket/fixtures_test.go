@@ -30,6 +30,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/draft"
 	"github.com/vukyn/hexarena/internal/room"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/wire"
@@ -83,6 +84,15 @@ func config(matchSeed uint64, battles, allowance int) room.Config {
 		Seed:      matchSeed,
 		TurnCap:   room.DefaultTurnCap,
 	}
+}
+
+// draftingConfig is the same room with its ban and pick turned on, and it is a
+// **bo1** because room.Config.Validate refuses a drafting series by name: "a ban
+// lasts the match" is three different games in a series, which is its own item.
+func draftingConfig(matchSeed uint64, allowance int) room.Config {
+	out := config(matchSeed, 1, allowance)
+	out.Drafts = true
+	return out
 }
 
 // theThreeSlots are the formation cells the fixture squads stand in: one per
@@ -173,6 +183,98 @@ func hello(t *testing.T, squad placement.Squad, name string, password wire.Passw
 	return wire.Hello{Version: version, Squad: squad, Name: name, Password: password}
 }
 
+// helloWithNoSquad is a peer joining a room that **drafts**: the side it will
+// field is the side it is about to draft, so a hello that brought one is refused
+// with wire.CodeSquadUnwanted. → the handshake note in TODO.md.
+func helloWithNoSquad(t *testing.T, name string) wire.Hello {
+	t.Helper()
+	return hello(t, placement.Squad{}, name, "")
+}
+
+// pickingDecisions is how many decisions the ban and pick takes before the
+// arrange phase opens, **derived** rather than written down: every ban slot is
+// one decision, spent or skipped, and every pick is two — the character, then its
+// loadout. At 3v3 that is four and twelve.
+func pickingDecisions(format wire.Format) int {
+	return 2*draft.BansPerSide(format) + 4*draft.PicksPerSide(format)
+}
+
+// draftDecisions is the whole draft: the picking, plus one arrangement a side.
+func draftDecisions(format wire.Format) int { return pickingDecisions(format) + seatsPerTable }
+
+// drafting is a client answering its own draft decisions off the prompt its own
+// mirror of the draft raised, which is what makes a whole ban and pick play out
+// over a socket with nobody typing — the draft's twin of rating.
+//
+// ⚠️ **The answer says which decision it is for**, copied off the prompt rather
+// than assembled here: that is the whole of DraftAnswer.For, and a fixture that
+// filled it in from anywhere else would be a fixture agreeing with itself.
+func drafting(t *testing.T, characters *cast.Book) DraftChooser {
+	t.Helper()
+	return func(prompt DraftPrompt) (DraftAnswer, bool) {
+		decision := wire.DraftDecision{Step: prompt.Due.Step}
+		switch prompt.Due.Step {
+		case wire.StepBan, wire.StepPick:
+			// A draft draft.New allowed cannot run out of characters, so an empty
+			// list here is that proof failing rather than a case to handle.
+			if len(prompt.Candidates) == 0 {
+				t.Errorf("%s is due to %s and the pool offers nothing", prompt.Due.Seat, prompt.Due.Step)
+				return DraftAnswer{}, false
+			}
+			decision.Character = prompt.Candidates[0].ID
+		case wire.StepLoadout:
+			form, skills, passives := legalKit(t, characters, prompt.Due.Character)
+			decision.Stage, decision.Skills, decision.Passives = form, skills, passives
+		case wire.StepArrange:
+			decision.Slots = firstCells(len(prompt.Mine))
+		default:
+			t.Errorf("%s was asked for a %q, which is not a decision a seat can make",
+				prompt.Due.Seat, prompt.Due.Step)
+			return DraftAnswer{}, false
+		}
+		return DraftAnswer{For: prompt.Due, Decision: decision}, true
+	}
+}
+
+// legalKit is *a* legal loadout for a character at the cap: a form named
+// explicitly, the first four skills that form knows and the first trait.
+//
+// It names the form rather than leaving it absent because an absent form means
+// "the furthest the level reaches", and on a line that **forks** — poliwag is in
+// the shipped pool — there is no such thing, so a pick of one would be refused
+// for a reason that has nothing to do with what is being measured.
+func legalKit(t *testing.T, characters *cast.Book, id string) (string, []string, []string) {
+	t.Helper()
+	character, known := characters.Get(id)
+	if !known {
+		t.Fatalf("the draft picked %q, which is not a character in this cast", id)
+	}
+	arms, err := character.FurthestAt(progression.LevelCap)
+	if err != nil {
+		t.Fatalf("the forms %s reaches at level %d: %v", id, progression.LevelCap, err)
+	}
+	form := arms[0].Name
+	skills := character.SkillsAt(progression.LevelCap, form)
+	if len(skills) == 0 {
+		t.Fatalf("%s knows no skills at level %d as %s, so no loadout of it is legal",
+			id, progression.LevelCap, form)
+	}
+	return form,
+		upTo(skills, cast.SkillSlots),
+		upTo(character.PassivesAt(progression.LevelCap, form), cast.TraitSlots)
+}
+
+// firstCells is the cheapest legal arrangement of n picks: the first n cells of a
+// side's own formation, which is what every test that is not about the cells
+// themselves wants.
+func firstCells(n int) []hex.Offset {
+	out := make([]hex.Offset, 0, n)
+	for at := range n {
+		out = append(out, hex.Offset{Col: at / hex.FormationRows, Row: at % hex.FormationRows})
+	}
+	return out
+}
+
 // listener is a server over a real loopback listener, with the address its room
 // codes will carry.
 type listener struct {
@@ -246,6 +348,70 @@ func (l *listener) dial(t *testing.T, code wire.RoomCode, joining wire.Hello, bo
 	}
 	t.Cleanup(client.Close)
 	return client
+}
+
+// drafter is a client dialled into a room that **drafts**: it brings no squad,
+// it carries the cast its own pool is built from, it answers its own draft
+// decisions, and it records the board its battle opened on.
+//
+// ⚠️ **The opening roster is captured on the redraw hook rather than read at the
+// end**, because a finished battle's Units() may hold summons the roster never
+// placed — so the reading a handover claim needs is the one taken the moment the
+// battle arrived.
+type drafter struct {
+	*Client
+	// opened is the unit ids of the roster this client's own engine built, in
+	// roster order. Written on the Play goroutine and read after that loop has
+	// returned, which is the happens-before the channel close gives.
+	opened []string
+}
+
+// drafter dials one.
+func (l *listener) drafter(t *testing.T, code wire.RoomCode, name string, dependencies room.Deps) *drafter {
+	t.Helper()
+	out := &drafter{}
+	// ⚠️ The hook needs the client and the client needs the hook, which is the
+	// knot the game client's own sender is tied with and is untied the same way:
+	// nothing calls the hook until Play starts, which is after the assignment
+	// below and on a goroutine started after it.
+	client, err := Dial(context.Background(), code, helloWithNoSquad(t, name), dependencies.Books,
+		ClientOptions{
+			Timings:    l.timings,
+			Characters: dependencies.Characters,
+			Draft:      drafting(t, dependencies.Characters),
+			Stepped:    out.capture,
+		})
+	if err != nil {
+		t.Fatalf("dial drafting room %s: %v", code, err)
+	}
+	out.Client = client
+	t.Cleanup(client.Close)
+	return out
+}
+
+// capture records the opening roster, once. → the ⚠️ on drafter.
+func (d *drafter) capture() {
+	if d.opened != nil || d.Client == nil {
+		return
+	}
+	d.Mirror().Read(func(sight Sight) {
+		if sight.Fight == nil {
+			return
+		}
+		for _, unit := range sight.Fight.Units() {
+			d.opened = append(d.opened, unit.ID)
+		}
+	})
+}
+
+// squadIDs is a squad as the character ids it holds, for a log line that has to
+// name what was drafted.
+func squadIDs(squad placement.Squad) []string {
+	out := make([]string, 0, len(squad.Units))
+	for _, one := range squad.Units {
+		out = append(out, one.Character)
+	}
+	return out
 }
 
 // finished is the reading of the next match to end, or a failure if none does.
