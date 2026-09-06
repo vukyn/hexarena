@@ -76,6 +76,19 @@ func TestAGatedSkillIsNotDescribedAsAnAmplifier(t *testing.T) {
 		for _, declared := range gatedSkills(t) {
 			var gated, amplified bool
 			for _, line := range strings.Split(lang.Describe(declared, shapes), "\n") {
+				// ⚠️ **The last line is not a sentence and in Vietnamese it opens
+				// with the amplifier's own words.** It is the target-and-cooldown
+				// footer, joined with " · ", and for a SELF-aimed skill it reads
+				// "Bản thân · hồi 4 lượt" — while BlurbSelfAmplifiedShape is "Bản
+				// thân %s". Every gated skill aimed at an enemy hid the collision;
+				// the first one aimed at itself found it, and read as an amplifier
+				// on the strength of a footer.
+				//
+				// The separator is what tells them apart: a sentence never carries
+				// one, and the footer is nothing but parts joined by it.
+				if strings.Contains(line, " · ") {
+					continue
+				}
 				gated = gated || strings.HasPrefix(line, gate)
 				amplified = amplified || strings.HasPrefix(line, amplifier)
 			}
@@ -87,6 +100,25 @@ func TestAGatedSkillIsNotDescribedAsAnAmplifier(t *testing.T) {
 				t.Errorf("%s describes the gated %s with a line opening %q, which says the "+
 					"fuel makes the skill stronger rather than possible:\n%s",
 					lang, declared.ID, amplifier, lang.Describe(declared, shapes))
+			}
+			// ⚠️ **The opening alone is not enough any more, and this file's own
+			// note above says why it used to be.** It reasons that the clause after
+			// the opening is "the same string either way" — true while every
+			// condition was a floor, and false the moment a CAP arrived: a cap
+			// holds while the caster carries FEWER than the bound, so describing it
+			// as "is carrying" names the one state in which the skill cannot be
+			// cast. The shipped split said exactly that and this test was green,
+			// because the opening was right and only the clause was backwards.
+			spends := declared.SelfRequires
+			if spends == nil || !spends.CapsStacks() || spends.MinStacks > 0 {
+				continue
+			}
+			carrying := beforeTheBlank(lang.Text(BlurbWhenCarrying))
+			if carrying != "" && strings.Contains(lang.Describe(declared, shapes), carrying) {
+				t.Errorf("%s describes the capped %s with %q, which is the clause for a floor: "+
+					"a cap opens while the caster holds FEWER than its bound, so this names the "+
+					"one state the skill cannot be cast in:\n%s",
+					lang, declared.ID, carrying, lang.Describe(declared, shapes))
 			}
 		}
 	}

@@ -91,6 +91,8 @@ var (
 		"fury":     "cuồng nộ",
 		"haste":    "nhanh nhẹn",
 		"stoked":   "nóng máy",
+		"sundered": "đã tách",
+		"burrowed": "độn thổ",
 		"focus":    "tập trung",
 		"veil":     "mờ ảo",
 		"block":    "đỡ đòn",
@@ -203,6 +205,7 @@ var (
 		"livewire":    "kẻ hở điện",
 		"spendthrift": "kẻ không trả giá",
 		"stoker":      "kẻ tăng tốc",
+		"manifold":    "kẻ tách thân",
 	}
 
 	// The nineteen skills that shipped before skill.Skill carried a name of its

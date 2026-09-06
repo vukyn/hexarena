@@ -99,6 +99,7 @@ func TestShippedArchetypesMatchTheReferenceProfiles(t *testing.T) {
 		{"livewire", 1, profile(2900, 600, 280, 160, 170, 90)},
 		{"spendthrift", 2, profile(2800, 610, 260, 158, 190, 74)},
 		{"stoker", 0, profile(3000, 700, 340, 120, 165, 62)},
+		{"manifold", 1, profile(3400, 660, 300, 150, 170, 55)},
 	}
 	book := mustArchetypes(t)
 	if got, want := len(book.All()), len(design); got != want {

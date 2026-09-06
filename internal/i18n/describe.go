@@ -377,9 +377,23 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 		return ""
 	}
 	clauses := make([]string, 0, 2)
-	if condition.ReadsStatus() {
+	// ⚠️ **A pure cap reads the status field and means the opposite of the clause
+	// below**, so it is answered first and the floor clause is skipped. The shipped
+	// split described itself as "castable only while this unit is carrying
+	// sundered" — the one state in which it cannot be cast — because this arm did
+	// not exist and ReadsStatus() is true either way. A condition naming BOTH a
+	// floor and a cap is a window and still wants both clauses; only the pure cap
+	// suppresses the floor, since its MinStacks is nought and would read as
+	// "carrying" a status the caster may well not have.
+	switch {
+	case condition.CapsStacks() && condition.MinStacks == 0:
+		clauses = append(clauses, l.Say(BlurbWhenUnspent, condition.BelowStacks))
+	case condition.ReadsStatus():
 		clauses = append(clauses, l.Say(BlurbWhenCarrying,
 			l.carrying(condition.Status, condition.MinStacks)))
+	}
+	if condition.CapsStacks() && condition.MinStacks > 0 {
+		clauses = append(clauses, l.Say(BlurbWhenUnspent, condition.BelowStacks))
 	}
 	if condition.ReadsHealth() {
 		clauses = append(clauses, l.Say(BlurbWhenHurt, share(condition.BelowHealth)))

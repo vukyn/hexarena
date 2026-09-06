@@ -1099,6 +1099,63 @@
           "at_level": 44
         }
       ]
+    },
+    {
+      "id": "manifold",
+      "role": "the one that answers being outnumbered by outnumbering back: it tears its own body in two to put a second fighter on the board, pays for it in maximum health that never comes back, and can do it twice — so a squad that kills it slowly is fighting three of it and a squad that kills it quickly is fighting one",
+      "column": 1,
+      "stats": {
+        "hp": {
+          "base": 1133,
+          "max": 3400
+        },
+        "attack": {
+          "base": 220,
+          "max": 660
+        },
+        "defense": {
+          "base": 100,
+          "max": 300
+        },
+        "speed": {
+          "base": 50,
+          "max": 150
+        },
+        "accuracy": {
+          "base": 56,
+          "max": 170
+        },
+        "dodge": {
+          "base": 18,
+          "max": 55
+        }
+      },
+      "skills": [
+        "dig",
+        "rock_throw",
+        "split",
+        "sand_tomb",
+        "burrow",
+        "earthquake",
+        "stone_edge",
+        "sandstorm",
+        "body_slam",
+        "taunt"
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "endurance",
+          "at_level": 28
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        }
+      ]
     }
   ]
 }

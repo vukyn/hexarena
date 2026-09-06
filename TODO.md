@@ -2881,6 +2881,17 @@ is only so the shape is readable.
       `aims` and refuses every application somebody else throws — and `Suggest`
       has no term for any of it.
 
+      ⚠️ **This entry once said the same of the SPLIT and that half was wrong.**
+      Measured 2026-09-06: the shipped split is cast **178 times over 90 duels**,
+      because `Suggest`'s summon branch prices it through `summonWorth`. What it
+      did not price was the cost — that branch `continue`s and so never reaches
+      `prices.rate`, where `spentHealth` is subtracted — so the rating was buying
+      a body and being charged nothing. Fixed by subtracting the price inside
+      `summonWorth`; casts fell to **90 over 90 duels**, one a duel, the first
+      taken and the second declined. Hiding is still unpriced, and the difference
+      between the two is worth keeping in mind here: a summon has a branch that
+      rates it and hiding has none at all.
+
       What a turn is worth to the rating is damage done, health restored and
       statuses landed. Hiding does **none** of those: it is worth the damage that
       *does not arrive*, which is a quantity the rating never computes because
