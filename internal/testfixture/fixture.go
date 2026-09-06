@@ -220,7 +220,6 @@ const Skills = `[
       "consume": true,
       "consume_stacks": 1,
       "chains": true,
-      "damped": 400,
       "arc_power": 500
     }
   },

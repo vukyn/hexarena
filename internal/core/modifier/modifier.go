@@ -25,6 +25,7 @@
 package modifier
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -172,9 +173,24 @@ type modifierFile struct {
 }
 
 // UnmarshalJSON reads a modifier written as {"target":..,"mode":..,"amount":..}.
+//
+// ⚠️ **A field this shape does not know is refused, not ignored**, and this is
+// the level that has to do it. `DisallowUnknownFields` stops at a custom
+// unmarshaller, so a status book that sets the flag never reaches inside a
+// modifier: `{"target":"attack","mode":"add","amount":100,"amout":100}` parsed
+// clean, the typo went nowhere, and the buff was silently the one number rather
+// than two. That is the same defect the status book's own strict read was
+// written for, one level down.
+//
+// It is here rather than in any of the three readers because the type is shared:
+// statuses, traits and skills all declare modifiers, so a check written in one
+// of them would leave the other two open — and a rule declared three times is
+// the mistake this repository keeps a list of.
 func (m *Modifier) UnmarshalJSON(raw []byte) error {
 	var file modifierFile
-	if err := json.Unmarshal(raw, &file); err != nil {
+	reader := json.NewDecoder(bytes.NewReader(raw))
+	reader.DisallowUnknownFields()
+	if err := reader.Decode(&file); err != nil {
 		return fmt.Errorf("decode modifier: %w", err)
 	}
 	target, err := ParseTarget(file.Target)

@@ -1102,11 +1102,13 @@ type bookFile struct {
 // field an author deliberately wrote is the worst answer available, because the
 // file looks like it worked; a sentence naming the field is the cheapest.
 //
-// It does not reach inside a modifier: modifier.Modifier decodes itself, and a
-// custom unmarshaller is where DisallowUnknownFields stops. That is a real gap
-// and it is left alone here rather than papered over — the type is shared with
-// the skill and passive books, so the fix belongs to it and not to one of its
-// three readers.
+// It does not reach inside a modifier, and it does not have to: a custom
+// unmarshaller is where DisallowUnknownFields stops, so `modifier.Modifier`
+// closed that level itself. The type is shared with the skill and passive books,
+// which is why the fix belongs to it rather than to any one of its three
+// readers — and why those two books now set this flag at their own level too,
+// leaving one rule rather than a status that refuses a typo beside a skill that
+// swallows it.
 func ParseBook(raw []byte) (*Book, error) {
 	var file bookFile
 	reader := json.NewDecoder(bytes.NewReader(raw))

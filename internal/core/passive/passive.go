@@ -19,6 +19,7 @@
 package passive
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"slices"
@@ -513,12 +514,24 @@ type bookFile struct {
 
 // ParseBook reads a passive declaration. It never touches the filesystem; the
 // caller supplies the bytes.
+//
+// ⚠️ **A field this book does not know is refused, not ignored**, the same rule
+// the status book states for itself and for the same reason: a silent drop of a
+// field an author deliberately wrote is the worst answer available, because the
+// file looks like it worked. Leaving it open here after closing it there would
+// have been a new asymmetry in place of the one that was closed — a misspelt
+// field on a status refused while the same typo on a trait went nowhere.
+//
+// Measured before it was turned on: the shipped book decodes strictly as it
+// stands, so this refuses nothing that exists today.
 func ParseBook(raw []byte, deps Deps) (*Book, error) {
 	if deps.Statuses == nil {
 		return nil, fmt.Errorf("a passive book needs the status book to check against")
 	}
 	var file bookFile
-	if err := json.Unmarshal(raw, &file); err != nil {
+	reader := json.NewDecoder(bytes.NewReader(raw))
+	reader.DisallowUnknownFields()
+	if err := reader.Decode(&file); err != nil {
 		return nil, fmt.Errorf("decode passive book: %w", err)
 	}
 	book := &Book{byID: make(map[string]Passive, len(file.Passives))}
