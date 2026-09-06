@@ -1431,8 +1431,15 @@ func TestASkillAimedAtBothSidesReachesBoth(t *testing.T) {
 		t.Fatalf("the caster was offered %d options, want the one skill", len(prompt.Options))
 	}
 	// Both occupied cells are legal aims: the foe's, and the caster's own.
-	// hex.Cells is column-major, so the caster's own column comes first.
-	want := []hex.Offset{{Col: 2, Row: 1}, {Col: 3, Row: 1}}
+	//
+	// ⚠️ The far half comes first, and that is the order rather than an accident
+	// of the board's own. The aims used to be walked in absolute cell order,
+	// which is column-major over the whole board and therefore **reversed**
+	// between the two halves — so the same battle fought with the sides swapped
+	// resolved a tie onto a different unit and stopped being the same battle. The
+	// walk is by authoring slot now, the opposing half first, which is the half a
+	// hostile skill is offered anyway.
+	want := []hex.Offset{{Col: 3, Row: 1}, {Col: 2, Row: 1}}
 	if got := prompt.Options[0].Aims; !equalCells(got, want) {
 		t.Errorf("an all-sided skill may be aimed at %v, want %v", got, want)
 	}

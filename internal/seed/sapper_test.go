@@ -74,10 +74,7 @@ func TestASapperIsWorthMoreBesideTheRot(t *testing.T) {
 	doesNot := aSquadBesides("partner-does-not", aPartner("pokemon.bulbasaur",
 		"vine_whip", "razor_leaf", "leech_seed", "synthesis"), sapper())
 	wins, losses, endless := fightSquads(t, books, characters, poisons, doesNot)
-	if endless > 0 {
-		t.Errorf("%d of %d battles never finished, so the rest are a reading of the ones that did",
-			endless, menderSeeds*2)
-	}
+	refuseTooManyStalls(t, "the sapper pairing", endless, menderSeeds*2)
 	decided := wins + losses
 	if decided == 0 {
 		t.Fatal("no battle was decided, so there is no rate to read")

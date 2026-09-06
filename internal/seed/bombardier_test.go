@@ -141,10 +141,7 @@ func rateAgainst(t *testing.T, books battle.Books, characters *cast.Book,
 	home, away placement.Squad) int {
 	t.Helper()
 	wins, losses, endless := fightSquads(t, books, characters, home, away)
-	if endless > 0 {
-		t.Fatalf("%s: %d of %d battles never finished, so a rate over the rest is a reading of a different question",
-			home.ID, endless, menderSeeds*2)
-	}
+	refuseTooManyStalls(t, home.ID, endless, menderSeeds*2)
 	decided := wins + losses
 	if decided == 0 {
 		t.Fatalf("%s: no battle was decided, so there is no rate to read", home.ID)

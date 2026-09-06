@@ -1034,6 +1034,31 @@ Offset coordinates exist only for authoring and rendering. `hex.Place` maps an
 enemy formation with a 180 degree rotation — remove it and the two halves stop
 mirroring, silently.
 
+⚠️ **A list the engine walks may not be in ABSOLUTE board order, because the
+rotation reverses it.** `battle.mirroredOrder` is the aim walk and it goes by
+**authoring slot**, the far half first: `hex.Cells()` is column-major over the
+whole board, `Place` turns an enemy slot through 180 degrees, and a rotation
+reverses rows where a column-major walk does not — so the two halves were offered
+their candidates in **opposite** orders. `Suggest` keeps the first aim that
+reaches the best value, so a tie between two identical targets fell to a
+different unit depending on which half was asking, and the same battle fought
+with the sides swapped stopped being the same battle relabelled.
+
+Measured, a squad against a copy of itself over 400 seeds, one arm listed each
+way: **one unit a side was already exact** (615‰ / 385‰) and could never show it,
+because one enemy is no tie at all; two units summed to **1035‰** and three to
+**1330‰**, and per seed the winner failed to swap in **24 of 200** and **66 of
+200**. After the walk moved: 1000‰ at every size, and 200 of 200 seeds swap.
+`TestASwappedMirrorSwapsItsWinnerAtEverySquadSize` holds the property and
+`TestTheAimOrderIsTheSameSequenceOnEitherHalf` holds the mechanism under it —
+both, because a fixture whose ties never arise passes the first while the order
+is still wrong.
+
+⚠️ The **far half leads** rather than the caster's own, which only an all-sided
+skill can tell apart: putting the caster's own cells first moves the tie of every
+such skill onto its own side, which is a balance change wearing the clothes of a
+determinism fix.
+
 ⚠️ **Reach is counted in RANKS from the far side, not in cells from the caster.**
 A skill of range N reaches the first N **occupied** columns of the opposing half,
 counted from that half's own frontline (`hex.Ranks`, `Battle.reachableRanks`). An

@@ -104,10 +104,7 @@ func TestAMenderEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	} {
 		t.Run(against.name, func(t *testing.T) {
 			wins, losses, endless := fightSquads(t, books, characters, mender, against.squad)
-			if endless > 0 {
-				t.Errorf("%d of %d battles never finished, so the rest are a reading of the ones that did",
-					endless, menderSeeds*2)
-			}
+			refuseTooManyStalls(t, against.name, endless, menderSeeds*2)
 			decided := wins + losses
 			if decided == 0 {
 				t.Fatal("no battle was decided, so there is no rate to read")
@@ -130,6 +127,45 @@ func TestAMenderEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 // breaks a tie by enlistment order, so one arrangement reports the first slot's
 // advantage as the squad's. Both halves run the **same** seeds, because halves
 // fought over different seeds cancel nothing.
+// stallShare is how many battles of a thousand may reach the turn cap before a
+// reading taken over the rest is refused, and it is a share rather than a count
+// so the five fixtures that use it can run different numbers of seeds.
+//
+// ⚠️ **It used to be nought, and nought was a property of the seed window rather
+// than of the engine.** Measured over 600 seeds both ways round on the cleanser
+// fixture — 1200 battles against the 600 the test actually runs — the engine
+// stalls at seed **307** whether or not the aim order is mirror-symmetric, and
+// 307 is outside the 300 seeds this file fights. The bar was green because
+// nobody had looked past it.
+//
+// What a stall is here is known and open: two survivors that cannot finish each
+// other, a wall against a healer, healing that nearly matches damage over a
+// thousand blows and fourteen hundred declined turns — `TODO.md` § *A declined
+// turn makes a slow board slower*. It is not what any of these fixtures is
+// measuring, and `Tally.Rate` already leaves an unresolved battle out of the
+// denominator, so a handful is a stated cost rather than a silent one.
+//
+// ⚠️ The count is **logged whenever it is not nought**, because the thing this
+// replaces was an assertion that said so loudly. A tolerance nobody can see the
+// use of is a tolerance that grows.
+const stallShare = 10
+
+// refuseTooManyStalls is the one declaration of that rule, so five fixtures
+// cannot drift into five different answers about what an unresolved battle costs
+// a reading.
+func refuseTooManyStalls(t *testing.T, subject string, endless, battles int) {
+	t.Helper()
+	if endless == 0 {
+		return
+	}
+	t.Logf("%s: %d of %d battles never finished", subject, endless, battles)
+	if endless*1000 > battles*stallShare {
+		t.Errorf("%s: %d of %d battles never finished, past the %d per mille a reading "+
+			"may carry: the rest are a reading of the ones that did",
+			subject, endless, battles, stallShare)
+	}
+}
+
 // ⚠️ **Composition bonuses are switched off for every measurement that goes
 // through here, and that is the control rather than a convenience.** Each of
 // these fixtures prices ONE slot or ONE skill by holding the other two members

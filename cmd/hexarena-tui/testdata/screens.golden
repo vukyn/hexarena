@@ -53,9 +53,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
 A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
 A3   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t)
-E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E1   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
-E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -536,13 +536,13 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
 A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
 A3   Example Adept        [######....]  1978/3100     90   kinship x2 (always), poison x2 (2t)
-E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E1   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
-E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
-    A3   hits E3 for 194 (resisted), 2006 left
+    A3   hits E1 for 194 (resisted), 2006 left
 
 A3 Example Adept, lượt 3
 > strike      100% công · tầm 1
@@ -638,9 +638,9 @@ A2 Example Adept, lượt 1
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 
 nhắm strike vào
-> 3,0  E3 Bloom
+> 3,2  E1 Bloom
   3,1  E2 Bloom
-  3,2  E1 Bloom
+  3,0  E3 Bloom
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | aiming in a live battle =====
 
@@ -661,9 +661,9 @@ A2 Example Adept, lượt 1
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 
 nhắm strike vào
-> 3,0  E3 Bloom
+> 3,2  E1 Bloom
   3,1  E2 Bloom
-  3,2  E1 Bloom
+  3,0  E3 Bloom
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | an empty squad catalogue =====
 
@@ -1192,9 +1192,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
 A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
 A3   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t)
-E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E1   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
-E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -2431,15 +2431,15 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
 A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
 A3   Example Adept        [######....]  1978/3100     90   kinship x2 (always), poison x2 (2t)
-E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E1   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
-E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
-    A3   hits E3 for 194 (resisted), 2006 left
-    A3   misses E3 (77%)
-    A3   E3 resists mire <sa lầy> (55%)
+    A3   hits E1 for 194 (resisted), 2006 left
+    A3   misses E1 (77%)
+    A3   E1 resists mire <sa lầy> (55%)
   
   E1  turn 5
     E1  uses venom_fang <nanh độc> at 2,1
@@ -2704,9 +2704,9 @@ A2 Example Adept, lượt 1
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 
 nhắm strike vào
-> 3,0  E3 Bloom
+> 3,2  E1 Bloom
   3,1  E2 Bloom
-  3,2  E1 Bloom
+  3,0  E3 Bloom
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | aiming in a live battle =====
 
@@ -2763,9 +2763,9 @@ A2 Example Adept, lượt 1
   purify      gỡ 3 hiệu ứng xấu · đồng đội · tầm 2 · hồi 3
 
 nhắm strike vào
-> 3,0  E3 Bloom
+> 3,2  E1 Bloom
   3,1  E2 Bloom
-  3,2  E1 Bloom
+  3,0  E3 Bloom
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | an empty squad catalogue =====
 
@@ -3825,9 +3825,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
 A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
 A3   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t)
-E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E1   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
-E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -4308,13 +4308,13 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
 A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
 A3   Example Adept        [######....]  1978/3100     90   kinship x2 (always), poison x2 (2t)
-E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E1   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
-E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
-    A3   hits E3 for 194 (resisted), 2006 left
+    A3   hits E1 for 194 (resisted), 2006 left
 
 A3 Example Adept, turn 3
 > strike      100% attack · range 1
@@ -4410,9 +4410,9 @@ A2 Example Adept, turn 1
   purify      strips 3 harmful · an ally · range 2 · cd 3
 
 point strike at
-> 3,0  E3 Bloom
+> 3,2  E1 Bloom
   3,1  E2 Bloom
-  3,2  E1 Bloom
+  3,0  E3 Bloom
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | aiming in a live battle =====
 
@@ -4433,9 +4433,9 @@ A2 Example Adept, turn 1
   purify      strips 3 harmful · an ally · range 2 · cd 3
 
 point strike at
-> 3,0  E3 Bloom
+> 3,2  E1 Bloom
   3,1  E2 Bloom
-  3,2  E1 Bloom
+  3,0  E3 Bloom
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | an empty squad catalogue =====
 
@@ -4964,9 +4964,9 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
 A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
 A3   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t)
-E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E1   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
-E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
@@ -6203,15 +6203,15 @@ tag  unit                 hp                        spd   effects
 A1   Example Adept        fallen                      90   kinship x2 (always), poison x2 (3t)
 A2   Example Adept        fallen                      90   kinship x2 (always), poison x3 (3t), stun (1t)
 A3   Example Adept        [######....]  1978/3100     90   kinship x2 (always), poison x2 (2t)
-E1   Bloom                [##########]  2200/2200    200   kinship x2 (always)
+E1   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
 E2   Bloom                [##########]  2200/2200    200   kinship x2 (always)
-E3   Bloom                [#########.]  2006/2200    200   kinship x2 (always)
+E3   Bloom                [##########]  2200/2200    200   kinship x2 (always)
 
 next: E1 E2 E3 E1 E2 E3
 
-    A3   hits E3 for 194 (resisted), 2006 left
-    A3   misses E3 (77%)
-    A3   E3 resists mire (55%)
+    A3   hits E1 for 194 (resisted), 2006 left
+    A3   misses E1 (77%)
+    A3   E1 resists mire (55%)
   
   E1  turn 5
     E1  uses venom_fang at 2,1
@@ -6476,9 +6476,9 @@ A2 Example Adept, turn 1
   purify      strips 3 harmful · an ally · range 2 · cd 3
 
 point strike at
-> 3,0  E3 Bloom
+> 3,2  E1 Bloom
   3,1  E2 Bloom
-  3,2  E1 Bloom
+  3,0  E3 Bloom
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | aiming in a live battle =====
 
@@ -6535,9 +6535,9 @@ A2 Example Adept, turn 1
   purify      strips 3 harmful · an ally · range 2 · cd 3
 
 point strike at
-> 3,0  E3 Bloom
+> 3,2  E1 Bloom
   3,1  E2 Bloom
-  3,2  E1 Bloom
+  3,0  E3 Bloom
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | an empty squad catalogue =====
 
