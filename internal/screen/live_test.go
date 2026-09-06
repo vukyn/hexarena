@@ -51,6 +51,22 @@ func steppedByTheRoom(t *testing.T, fight *battle.Battle, prompt *battle.Prompt)
 	if prompt == nil {
 		t.Fatal("no turn is open, so the room has nothing to take")
 	}
+	// ⚠️ **A skipped turn is not a turn to take.** Advance hands back the prompt
+	// it stopped on, and a unit that could not act has one with `Skipped` set and
+	// nothing open behind it — so acting on it is refused with "no unit is
+	// waiting to act". A room walks past it and asks for the next.
+	//
+	// It was latent until the fixture cast changed: no character this helper had
+	// ever been handed produced a skipped turn, so the branch had never been
+	// reached. A helper that only works for the characters it happens to be given
+	// is a fixture deciding what the test can measure.
+	if prompt.Skipped {
+		opened, err := fight.Advance()
+		if err != nil {
+			t.Fatalf("the room could not open the turn after a skipped one: %v", err)
+		}
+		return opened
+	}
 	choice, acted := fight.Suggest(prompt)
 	var err error
 	if acted {

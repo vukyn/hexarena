@@ -3010,7 +3010,33 @@ is only so the shape is readable.
       and it was already refusing before the rule. **It was written down once and
       lost in a rewrite of the entry above it**, which is the only reason it is
       dated to a session that had already finished with it.
-- [ ] ⚠️ **A `hexforge new` still churns `screens.golden`, and sorting the cast
+- [x] ⚠️ **A `hexforge new` churned `screens.golden` — DONE, by the third option
+      this entry named and had not tried.** `aSquadOfSide` picks by a **property
+      the screen measures** now, not by a position and not by a name: the most
+      traits at the cap (the roster row draws statuses), the widest kit as the
+      tie-break (the option list is one row a skill), the id last. Both readings
+      are taken at the cap and the furthest form, which is what the fixture
+      fields.
+      ⚠️ **The file's order cannot reach any of that**, which is the whole point:
+      `TestTheBattleFixtureIgnoresTheCastFileOrder` reverses the cast and demands
+      the same picks — and asserts the first pick really is the property's top,
+      because "survives a reversal" is satisfied by any constant. Adding a
+      character moves this only if it is more extreme on the property than what
+      is already picked, which is an authoring event a golden should move for.
+      ⚠️ **Neither of the two obvious answers was taken**, and that was the
+      decision: keeping the index churns on every unrelated edit, and naming a
+      character breaks the rule the fixtures here are written under.
+      ⚠️ **It cost a one-time move of 588 lines** — the fixture fields different
+      characters now — and it surfaced a **latent hole in a helper**:
+      `steppedByTheRoom` acted on a prompt whose turn was `Skipped`, which the
+      engine refuses ("no unit is waiting to act"). No character the helper had
+      ever been handed produced a skipped turn, so the branch had never been
+      reached; a fixture deciding what a test can measure is the same shape as
+      the entry above. The helper walks past it now, as a room does.
+
+      The original entry:
+
+      ⚠️ **A `hexforge new` still churns `screens.golden`, and sorting the cast
       did not fix that half.** Measured while reformatting the cast: the reorder
       moved **1,292 lines** of `internal/screen/testdata/screens.golden`, because
       `aSquadOfSide` (`internal/screen/play_test.go`) builds its squad as

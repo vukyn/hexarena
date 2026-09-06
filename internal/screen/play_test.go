@@ -54,6 +54,93 @@ func squadSlots(n int) []hex.Offset {
 	return out
 }
 
+// battleCast is which characters a fixture squad is built from, and it is chosen
+// by a **property** rather than by a position or a name.
+//
+// ⚠️ **Position was the churn.** This used to take `characters[index % len]`, so
+// which characters every battle screen drew was a function of the cast file's
+// order: sorting the cast moved **1,292 lines** of this package's golden without
+// a single screen having changed. Naming characters instead would fix that and
+// break the other rule the fixtures here follow — a test that names a character
+// breaks the day somebody edits the cast for a reason that has nothing to do
+// with it — so neither of the two obvious answers is the answer.
+//
+// What is picked instead is what the screen is **measuring**: the roster row
+// shows the statuses a unit carries, so the characters that carry the most
+// traits at the cap are the ones that make those rows say something, and the
+// option list is one row a skill, so the widest kit is the tie-break. Both are
+// read at the cap and at the furthest form, which is what the fixture fields.
+//
+// The order of the file cannot reach any of that. Adding a character moves this
+// only if the character is more extreme on the property than the ones already
+// picked, which is an authoring event worth a golden moving for — and reversing
+// the cast moves nothing at all, which is what
+// TestTheBattleFixtureIgnoresTheCastFileOrder holds.
+func battleCast(all []cast.Character, wanted int) []cast.Character {
+	ranked := slices.Clone(all)
+	slices.SortStableFunc(ranked, func(a, b cast.Character) int {
+		if by := len(b.PassivesAt(progression.LevelCap, progression.Furthest)) -
+			len(a.PassivesAt(progression.LevelCap, progression.Furthest)); by != 0 {
+			return by
+		}
+		if by := len(b.SkillsAt(progression.LevelCap, progression.Furthest)) -
+			len(a.SkillsAt(progression.LevelCap, progression.Furthest)); by != 0 {
+			return by
+		}
+		return strings.Compare(a.ID, b.ID)
+	})
+	out := make([]cast.Character, 0, wanted)
+	for i := range wanted {
+		out = append(out, ranked[i%len(ranked)])
+	}
+	return out
+}
+
+// TestTheBattleFixtureIgnoresTheCastFileOrder is the churn this selection exists
+// to stop, asserted rather than hoped for.
+//
+// The cast is read in declaration order, so anything that picks by index is a
+// function of the file: sorting the cast once moved 1,292 lines of this
+// package's golden with no screen having changed. Reversing the list is the
+// cheapest reordering there is, and the picks have to survive it.
+//
+// ⚠️ It also asserts the picks are what the property says, because "survives a
+// reversal" is satisfied by any constant — a selection that always returned the
+// same character would pass the first half and measure nothing.
+func TestTheBattleFixtureIgnoresTheCastFileOrder(t *testing.T) {
+	c, lib := start(t, i18n.Vi)
+	_ = c
+	all := lib.Characters().All()
+	if len(all) < 3 {
+		t.Fatalf("the fixture cast holds %d characters, too few to reorder", len(all))
+	}
+	reversed := slices.Clone(all)
+	slices.Reverse(reversed)
+	const wanted = 3
+	forward, backward := battleCast(all, wanted), battleCast(reversed, wanted)
+	for i := range forward {
+		if forward[i].ID != backward[i].ID {
+			t.Errorf("unit %d is %q read forwards and %q read backwards: the fixture "+
+				"follows the cast file's order, so an unrelated edit moves every battle "+
+				"golden", i, forward[i].ID, backward[i].ID)
+		}
+	}
+	// And the first pick really is the one the property names, so the selection
+	// is measuring something rather than being stable at nothing.
+	best := forward[0]
+	for _, character := range all {
+		mine := len(best.PassivesAt(progression.LevelCap, progression.Furthest))
+		theirs := len(character.PassivesAt(progression.LevelCap, progression.Furthest))
+		if theirs > mine {
+			t.Errorf("%q carries %d traits at the cap and the fixture picked %q, which carries %d",
+				character.ID, theirs, best.ID, mine)
+		}
+	}
+	if len(forward) != wanted {
+		t.Errorf("the fixture asked for %d characters and got %d", wanted, len(forward))
+	}
+}
+
 // aSquadOfSide is a squad of n units built by **looking the cast up** rather than
 // by naming characters, which is the rule every fixture in this package follows:
 // a test that names a character breaks the day somebody edits the cast for a
@@ -72,9 +159,10 @@ func aSquadOfSide(t *testing.T, c Context, side int) placement.Squad {
 	if len(characters) == 0 {
 		t.Fatal("the fixture cast is empty, so no squad can be built from it")
 	}
+	chosen := battleCast(characters, side)
 	units := make([]placement.Placement, 0, side)
 	for index, slot := range squadSlots(side) {
-		character := characters[index%len(characters)]
+		character := chosen[index]
 		unit := placement.Placement{
 			// The id is the slot rather than a word, so it is unique by
 			// construction however many units the squad holds.
