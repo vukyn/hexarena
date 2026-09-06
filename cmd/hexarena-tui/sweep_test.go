@@ -8,12 +8,15 @@ import (
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/cast"
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/placement"
 	"github.com/vukyn/hexarena/internal/core/progression"
+	"github.com/vukyn/hexarena/internal/draft"
 	"github.com/vukyn/hexarena/internal/i18n"
 	draw "github.com/vukyn/hexarena/internal/screen"
+	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/socket"
 	"github.com/vukyn/hexarena/internal/wire"
 )
@@ -205,7 +208,196 @@ func everyScreen(t *testing.T, m model) map[string]model {
 	screens["aiming in a live battle"] = aimingInALiveBattle(t, m)
 	screens["a finished match"] = aFinishedMatch(t, m)
 	screens["a match the other player left"] = aMatchTheOtherPlayerLeft(t, m)
+	// The ban and pick, in the states of it this client's framing has something
+	// to say about. → lobby.go for why the draft screen is NOT one of the three
+	// this client owns: it is a data column, and a data column held by one golden
+	// rather than two is a column nothing measures on the client that stops
+	// drawing it.
+	for name, state := range everyDraftScreen(t, m) {
+		screens[name] = state
+	}
 	return screens
+}
+
+// # The draft's eight entries
+//
+// ⚠️ **The readings are built by hand and there is no other way to build one**,
+// which is what declaring draw.DraftLive bought: a DraftScreen is handed a
+// reading, so a sweep entry needs no room, no listener and no goroutine. That
+// the client really does fill one from a mirror is
+// TestADraftedRoomIsDrawnAndABanBeforeThePeerArrivesIsThrownAway, over a real
+// socket, and it is the only test here that can see it.
+//
+// ⚠️ **The pool is the EMBEDDED cast through draft.NewPool**, not the fixture
+// library's, and that is the production path rather than a shortcut: a drafting
+// room's pool is the cast the data digest at the gate promises both peers share.
+// It also keeps these entries stable, where the injected fixture cast would put
+// a test fixture's characters into a committed record.
+//
+// Each entry asserts it drew the line it exists for, for the reason every other
+// hand-built entry here does.
+func everyDraftScreen(t *testing.T, m model) map[string]model {
+	t.Helper()
+	// ⚠️ **A NAMED pool, not the shipped one, and the reason is the golden.**
+	// These entries record a heading that counts the pool, so drawing from
+	// `draft.NewPool(seed.Cast())` moved every one of them the day
+	// `pokemon.diglett` shipped — "còn 18 trên 20 tướng" became "còn 19 trên 21",
+	// twenty-four entries reddening for a reason unrelated to what they measure.
+	// That is what internal/wire's TestTheGoldenIsBuiltFromNothingShipped refuses,
+	// and this repository ships a character often enough for it to be a live cost.
+	//
+	// The characters are real — a synthetic cast would record a drawing nobody
+	// could compare against the game — but the list is this file's, so only a
+	// change to the drawing moves these entries. → internal/screen's own
+	// draftFixturePoolIDs, which names the same twelve for the same reason; the
+	// two lists are deliberately separate because each golden is a record of what
+	// *that* package draws, and a shared fixture would be a third thing to keep in
+	// step.
+	pool := namedDraftPool(t)
+	screens := map[string]model{}
+	// The opening ban, with a decision apiece already recorded so the waiting
+	// notice is a state of its own rather than something every entry carries.
+	ban := aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+		live.Step, live.Yours, live.OnTurn = draw.DraftStepBan, true, live.Seats[0]
+		live.Recorded = 2
+		live.Bans[0] = []string{pool[0].ID}
+		live.Bans[1] = []string{pool[1].ID}
+		live.Candidates = live.Candidates[2:]
+	})
+	screens["a draft"] = ban
+	assertDraws(t, ban, ban.text(i18n.DraftYourBan))
+	// Nothing recorded, and this client's own decision refused — which is the two
+	// halves of step 5a's finding: a room announces nothing when it fills, so a
+	// ban made before the second seat is taken is thrown away.
+	waiting := aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+		live.Step, live.Yours, live.OnTurn = draw.DraftStepBan, true, live.Seats[0]
+		live.Refusal = wire.CodeNotYourTurn.String()
+	})
+	screens["a draft waiting for a peer"] = waiting
+	assertDraws(t, waiting, firstLine(waiting.text(i18n.DraftNotBegun)))
+	assertDraws(t, waiting, waiting.text(i18n.DraftRefused))
+	// The other side deciding, which is the reading footer and no cursor.
+	theirs := aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+		live.Step, live.Yours, live.OnTurn = draw.DraftStepBan, false, live.Seats[1]
+		live.Recorded = 1
+		live.Clock = draw.PlayClock{Waiting: draw.PlayClockThem, Yours: 90, Theirs: 72}
+	})
+	screens["a draft on the other side"] = theirs
+	assertDraws(t, theirs, theirs.text(i18n.DraftTheirBan, theirs.lang.Seat(theirs.draft.Live.Seats[1])))
+	// A pick, with both sides part way through so the two blocks are drawn full.
+	pick := aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+		live.Step, live.Yours, live.OnTurn = draw.DraftStepPick, true, live.Seats[0]
+		live.Recorded = 8
+		live.Bans[0] = []string{pool[0].ID}
+		live.Bans[1] = []string{pool[1].ID}
+		live.Picks[0] = []draw.DraftPick{{Character: pool[2].ID, Stage: "one",
+			Skills: []string{"a", "b", "c", "d"}, Passives: []string{"e"}}}
+		live.Picks[1] = []draw.DraftPick{{Character: pool[3].ID, Stage: "two",
+			Skills: []string{"f"}}, {Character: pool[4].ID}}
+		live.Candidates = live.Candidates[5:]
+	})
+	screens["a draft pick"] = pick
+	assertDraws(t, pick, pick.text(i18n.DraftYourPick))
+	assertDraws(t, pick, pick.text(i18n.DraftLoadoutOpen))
+	// The loadout, and the two lists it raises — which are the first pickers this
+	// client can reach at all. → model.picker.
+	loadout, subject := aDraftLoadoutScreen(t, m, pool)
+	screens["a draft loadout"] = loadout
+	assertDraws(t, loadout, loadout.text(i18n.DraftSendReady))
+	assertDraws(t, loadout, subject)
+	for name, field := range map[string]draw.DraftField{
+		"a draft kit":   draw.DraftKit,
+		"a draft trait": draw.DraftTrait,
+	} {
+		opened := loadout
+		for opened.draft.Field != field {
+			opened = key(t, opened, "down")
+		}
+		opened = key(t, opened, "enter")
+		if opened.picker == nil {
+			t.Fatalf("enter on the loadout's field %d opened no picker", field)
+		}
+		screens[name] = opened
+	}
+	// Picking over, both sides arranging, which draws no listing at all.
+	arranging := aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+		live.Step, live.Arranging, live.Yours = draw.DraftStepArrange, true, true
+		live.Recorded = 16
+		live.Picks[0] = []draw.DraftPick{{Character: pool[2].ID, Stage: "one",
+			Skills: []string{"a"}, Passives: []string{"b"}}}
+		live.Picks[1] = []draw.DraftPick{{Character: pool[3].ID, Stage: "two",
+			Skills: []string{"c"}, Passives: []string{"d"}}}
+		live.Candidates = nil
+	})
+	screens["a draft arranging"] = arranging
+	assertDraws(t, arranging, firstLine(arranging.text(i18n.DraftArrangingNow)))
+	return screens
+}
+
+// aDraftScreen is the model on the draft screen over a reading the caller shapes.
+func aDraftScreen(t *testing.T, m model, pool []cast.Character,
+	shape func(*draw.DraftLive)) model {
+	t.Helper()
+	candidates := make([]string, 0, len(pool))
+	for _, character := range pool {
+		candidates = append(candidates, character.ID)
+	}
+	live := draw.DraftLive{
+		Pool:       pool,
+		Candidates: candidates,
+		Seats:      draftSeats(),
+		You:        string(wire.SeatHost),
+		Units:      draft.PicksPerSide(wire.Format3v3),
+		BanSlots:   draft.BansPerSide(wire.Format3v3),
+		Clock:      draw.PlayClock{Waiting: draw.PlayClockYou, Yours: 72, Theirs: 90},
+	}
+	shape(&live)
+	m.draft = draw.NewDraftScreen().Attach(m.ctx(), live)
+	m.screen = screenDraft
+	m.picker = nil
+	return m
+}
+
+// aDraftLoadoutScreen is the loadout editor with a legal kit already chosen
+// through the real pickers, and the character it is for.
+//
+// ⚠️ **The subject is found rather than named**, and it needs both halves of a
+// loadout: a character with a learnset and no traits opens the trait picker on an
+// empty list, which every assertion about that list then passes on for the wrong
+// reason.
+func aDraftLoadoutScreen(t *testing.T, m model, pool []cast.Character) (model, string) {
+	t.Helper()
+	for _, character := range pool {
+		skills := character.SkillsAt(progression.LevelCap, progression.Furthest)
+		traits := character.PassivesAt(progression.LevelCap, progression.Furthest)
+		if len(skills) < cast.SkillSlots || len(traits) == 0 {
+			continue
+		}
+		loadout := aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+			live.Step, live.Yours, live.OnTurn = draw.DraftStepLoadout, true, live.Seats[0]
+			live.Subject = character.ID
+			live.Recorded = 5
+			live.Picks[0] = []draw.DraftPick{{Character: character.ID}}
+			live.Candidates = nil
+		})
+		if !loadout.draft.Choosing() {
+			t.Fatalf("the loadout for %s does not open the editor", character.ID)
+		}
+		return aLoadoutChosen(t, loadout), character.ID
+	}
+	t.Fatalf("no character in the embedded pool knows %d skills and a trait at the cap, so "+
+		"nothing here measures a whole loadout", cast.SkillSlots)
+	return m, ""
+}
+
+// assertDraws is one entry's own discrimination: a registered state that renders
+// nothing passes every sweep over it.
+func assertDraws(t *testing.T, m model, want string) {
+	t.Helper()
+	if !strings.Contains(drawnBody(m), want) {
+		t.Fatalf("the screen does not draw %q, so this entry records an ordinary draft "+
+			"twice:\n%s", want, drawnBody(m))
+	}
 }
 
 // theForkedBrowser is the cast listing sitting on the one shipped character
@@ -301,14 +493,31 @@ func aJoinScreenWithNothingToBring(t *testing.T, m model) model {
 	t.Helper()
 	joining := m.enter(screenJoin)
 	joining.join.Squads = nil
-	if !strings.Contains(drawnBody(joining), joining.text(i18n.JoinNoSquad)) {
+	// The first wrapped line, because the sentence is prose and the screen breaks
+	// it at the floor — see the wrap in joinScreen.View for why it grew.
+	if want := draw.WrapWords(joining.text(i18n.JoinNoSquad), draw.MinWidth-3)[0]; !strings.Contains(
+		drawnBody(joining), want) {
 		t.Fatalf("the join screen with no squad says nothing about it, so this records an "+
 			"ordinary join screen twice:\n%s", drawnBody(joining))
 	}
-	// And the key does nothing, which is the other half of that line's promise.
-	pressed := key(t, joining, "enter")
-	if pressed.join.Dialling {
-		t.Fatal("a join with no squad to bring still called a room")
+	// ⚠️ **And the key DOES something now, which is a change of fact rather than
+	// a loosening of this entry.** It used to assert that enter did nothing,
+	// because a room had to be joined with a squad. A room that **drafts** wants
+	// none — and a client cannot know a room drafts until it has been welcomed —
+	// so the join goes out and whichever refusal is right comes back from the
+	// room. → joinScreen.Squad, and joinScreen.submit.
+	//
+	// ⚠️ **The code is typed on a COPY**, so the model this entry hands to the
+	// golden is still the screen a reader finds. It has to be typed at all
+	// because submit refuses a code of the wrong length before it looks at
+	// anything else — which is what the old assertion was really passing on once
+	// the squad stopped being refused here, and a fixture passing for the wrong
+	// reason is what this whole file is about.
+	dialled := key(t, typeText(t, joining, string(fixtureRoomCode)), "enter")
+	if !dialled.join.Dialling {
+		t.Fatalf("a join with nothing to bring called no room (%v, bad length %v); a room "+
+			"that drafts wants exactly that, and only the room can say which sort it is",
+			dialled.join.Err, dialled.join.BadLength)
 	}
 	return stampedBuild(t, joining)
 }
@@ -1056,4 +1265,58 @@ func TestNoScreenLeaksAGlossIntoTheWrongLanguage(t *testing.T) {
 			}
 		}
 	}
+}
+
+// namedDraftPoolIDs is the twelve characters this client's draft golden entries
+// are drawn from. → the comment at its one call site for why they are named
+// rather than taken off the shipped cast.
+//
+// ⚠️ Twelve is against the arithmetic: a 3v3 spends `2*3 picks + 2*2 bans` = ten,
+// so twelve leaves two to spare and the heading a count that is not on a boundary.
+// `pokemon.poliwag` is on the list because it is the one shipped line that forks
+// and the loadout entries need an arm to name.
+var namedDraftPoolIDs = []string{
+	"pokemon.bulbasaur", "pokemon.charmander", "pokemon.squirtle",
+	"pokemon.gastly", "pokemon.machop", "pokemon.magnemite",
+	"pokemon.poliwag", "pokemon.mew", "pokemon.mewtwo",
+	"pokemon.dratini", "pokemon.oddish", "pokemon.lapras",
+}
+
+// ⚠️ **This does not make the whole golden immune to a data commit, and the
+// remainder is deliberate.** Proved by hiding a character not on the list:
+// `internal/screen`'s record then holds, and this one still moves — on the **join
+// screen's digest line**, six entries of it, which was already there before the
+// draft arrived. That line is the data digest a player compares against a friend's
+// before blaming the game, so recording it is the point rather than an oversight.
+// What this fixture buys is that the *draft* entries no longer move; the digest is
+// a separate cost with a separate owner. → TODO.md.
+//
+// namedDraftPool is those twelve out of the embedded cast, in the order named.
+//
+// ⚠️ It goes through `draft.NewPool` rather than round the outside, so the
+// held-back rule still applies: a character on this list that was later hidden
+// would be **absent** from the result, and the length check below is what turns
+// that into a red test rather than a quietly shorter pool and a moved count.
+func namedDraftPool(t *testing.T) []cast.Character {
+	t.Helper()
+	characters, err := seed.Cast()
+	if err != nil {
+		t.Fatalf("load the embedded cast: %v", err)
+	}
+	offered := draft.NewPool(characters.All())
+	pool := make([]cast.Character, 0, len(namedDraftPoolIDs))
+	for _, id := range namedDraftPoolIDs {
+		if !offered.Has(id) {
+			t.Fatalf("the draft fixture names %q and the drafting pool no longer offers it — "+
+				"it was removed from the cast or held back. This list is named so the golden's "+
+				"count cannot move on a content commit, so answer it here rather than letting "+
+				"the pool quietly get shorter", id)
+		}
+		character, _ := characters.Get(id)
+		pool = append(pool, character)
+	}
+	if len(pool) != len(namedDraftPoolIDs) {
+		t.Fatalf("the named pool resolved %d of %d", len(pool), len(namedDraftPoolIDs))
+	}
+	return pool
 }

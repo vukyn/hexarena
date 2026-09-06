@@ -231,6 +231,13 @@ func TestTheKeysThisClientIgnoresAreTheOnesListed(t *testing.T) {
 // ⚠️ **If it ever fails, the arm in navigate is the thing to change and not this
 // test.** A client that swallowed a real Ask would take the question down before
 // it was drawn, which is the quietest of the failures TODO.md keeps a list of.
+// ⚠️ **The claim narrowed when the draft arrived, and the wording above is the
+// narrowed one.** It used to say a picker was drawn nowhere in this client at
+// all; the draft's loadout raises one, because choosing four skills out of a
+// learnset is a **player's** decision rather than an author's. So what this
+// holds is what it was written for: none of the three screens that can *author*
+// reaches either kind under this client's read-only Context, and an Ask is
+// reachable from nothing here whatsoever.
 func TestNoScreenInThisClientAsksOrPicks(t *testing.T) {
 	base, _, _ := start(t, i18n.Vi)
 	reading := base.ctx()

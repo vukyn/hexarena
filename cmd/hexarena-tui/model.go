@@ -76,6 +76,20 @@ const (
 	screenJoin
 	// screenWaiting is the room joined and the second seat still empty.
 	screenWaiting
+	// screenDraft is the ban and pick, in a room that drafts.
+	//
+	// ⚠️ **It is NOT one of the lobby's own** — draw.DraftScreen lives in
+	// internal/screen, unlike the three around it — and the reason is the one
+	// lobby.go states for accepting one golden instead of two: *"there is no data
+	// column and no drawing on any of the three"*. A pool of nineteen characters
+	// with a marked column is precisely a data column, and CLAUDE.md records
+	// measuring twice that a one-cell column widening is invisible to one of the
+	// two goldens and caught by the other.
+	//
+	// It is reached from screenWaiting rather than from the menu, exactly as
+	// screenBattle is reached from a match: a draft is a thing the room announced,
+	// not a screen a reader asks for. → model.stepped.
+	screenDraft
 	// screenResult is the match's end, and it is the one screen that draws a
 	// wire.Closure — the ending a mirror cannot compute for itself.
 	screenResult
@@ -204,6 +218,22 @@ type model struct {
 	chart   draw.ChartScreen
 	blurb   draw.BlurbScreen
 	preview draw.PreviewScreen
+	// draft is the ban and pick. It lives in internal/screen like every other
+	// field above — see screenDraft for why it is not one of the lobby's three —
+	// and it is pointed at the mirror by model.stepped, the way the battle is.
+	draft draw.DraftScreen
+	// picker holds the multi-select while it is open, over whichever screen
+	// raised it.
+	//
+	// ⚠️ **This client had no such field until the draft arrived, and the arm in
+	// navigate said so in as many words.** Every picker in the vocabulary was the
+	// authoring half of it — a form filling a field from a list — and every
+	// screen that raised one did it from a mode draw.Context.Authoring turns off
+	// here. A drafted loadout is the first pick this client can reach, because it
+	// is a *player's* choice out of a learnset rather than an author's out of a
+	// book. The pointer **is** the presence flag, which is draw.PickState.Raise's
+	// own arrangement.
+	picker *draw.PickState
 
 	// The three this client owns outright. → lobby.go.
 	join    joinScreen
@@ -253,6 +283,7 @@ func newModel(lib *forge.Library, lang i18n.Lang, sess *session) model {
 		battle:   draw.NewPlayScreen(),
 		statuses: draw.NewStatusesScreen(lib),
 		preview:  draw.NewPreviewScreen(),
+		draft:    draw.NewDraftScreen(),
 		join:     newJoinScreen(),
 		session:  sess,
 	}
@@ -333,6 +364,17 @@ func (m model) joined(client *socket.Client) model {
 	m.waiting.Welcome, m.waiting.Seated = client.Mirror().Welcome()
 	m.join.Dialling, m.join.At = false, ""
 	m.screen = screenWaiting
+	// ⚠️ **A drafting room's first decision is due the moment the welcome arrives,
+	// and NO message follows it.** A client computes its own draft out of the two
+	// facts the welcome gives it, so the opening ban is open immediately; and the
+	// room sends **nothing at all** when its second seat is taken —
+	// internal/room's bothTaken answers no message, and an empty wire.Drafted is
+	// refused by design. So a reader left on the waiting screen until a step
+	// arrived would be waiting for a message that only their own decision can
+	// cause. → draw.DraftLive.Waiting, which is the line that says so.
+	if m.waiting.Seated && m.waiting.Welcome.Drafts {
+		return m.stepped()
+	}
 	return m
 }
 
@@ -342,11 +384,58 @@ func (m model) joined(client *socket.Client) model {
 // whole discipline this client is under: session.read runs it under the mirror's
 // read lock, and a *battle.Battle handed out of it would be a pointer into a
 // battle the Play goroutine is stepping.
+// ⚠️ **The draft is attached before the battle and the battle wins the screen**,
+// and the order is the whole of how a drafting match moves between the two: a
+// room that drafts sends its decisions first and its first wire.Start only once
+// the draft is done, so the two are never both live — but the draft screen goes
+// on holding its last reading afterwards, and a reader left on it would be
+// looking at a finished draft while a battle waited for a turn.
+// ⚠️ **The seat and the pool are read BEFORE the callback, and that is a lock
+// hazard rather than tidiness.** session.read runs its callback inside
+// socket.Mirror.Read, which holds the mirror's **read** lock — and
+// session.seat() asks client.Seat(), which takes that same RWMutex's read lock
+// again. Go queues a waiting **writer** ahead of new readers, so a second RLock
+// on one goroutine while Receive is waiting to write is a self-deadlock: it is
+// the shape internal/socket/draft.go audits for by name ("no re-entrant RLock
+// anywhere"), and it would fire about one run in ten rather than every time.
+// Both facts are about the match rather than about this reading, so neither
+// belongs inside the lock at all.
 func (m model) stepped() model {
+	// ⚠️ **The pool is hoisted and the seat is NOT read at all** — it comes off
+	// the sight, and both halves of that are a bug this function already had.
+	//
+	// session.seat forwards to Client.Seat, which takes the **mirror's** RWMutex
+	// read lock; session.read is already inside it, holding it across this
+	// callback. A second RLock on the same mutex is fine on its own and
+	// self-deadlocks the moment a writer is queued, because Go admits a waiting
+	// writer ahead of new readers — so Receive arriving between the two locks
+	// hung the client about one run in ten, with the whole suite green and
+	// `-race` clean. → internal/socket's Mirror.Decide, written under the same
+	// ordering for the same reason.
+	//
+	// It was fixed by hoisting the seat out beside the pool, and that is not what
+	// is written here, because hoisting leaves the *temptation*: the next reader
+	// adding an Attach inside this callback reaches for session.seat again.
+	// wire.Welcome carries the seat, Sight carries the welcome, so the value is
+	// **in hand** with no lock to take — and session.pool takes only the
+	// session's own mutex, never the mirror's, so it is safe either way and stays
+	// hoisted only because there is no reason to churn it.
+	pool := m.session.pool()
 	m.session.read(func(sight socket.Sight) {
+		if sight.Draft.Mirrored {
+			m.draft = m.draft.Attach(m.ctx(),
+				draftLiveOf(sight, sight.Welcome.Seat, pool, m.session.countdown(sight)))
+			if m.screen == screenWaiting {
+				m.screen = screenDraft
+			}
+		}
 		if sight.Fight != nil {
 			m.battle = m.battle.Attach(m.ctx(), liveOf(sight, m.session.countdown(sight)))
-			if m.screen == screenWaiting {
+			if m.screen == screenWaiting || m.screen == screenDraft {
+				// The picker is taken down with the screen it was raised over: a
+				// loadout list still in front of a battle would swallow every key
+				// the turn is about.
+				m.picker = nil
 				m.screen = screenBattle
 			}
 		}
@@ -455,6 +544,14 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	}
+	// ⚠️ **The picker takes every key while it is up, ahead of the screen it was
+	// raised over**, which is the arrangement it is written under: it is drawn over
+	// that screen and answers esc, enter, space, the arrows and ? itself, so a
+	// keystroke reaching the screen behind would be a keystroke acting on a screen
+	// the reader cannot see.
+	if m.picker != nil {
+		return m.answerPicker(message)
+	}
 	switch m.screen {
 	case screenMenu:
 		return m.updateMenu(message)
@@ -519,10 +616,36 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.navigateWith(screenJoin, action, command)
 	case screenWaiting:
 		return m.updateWaiting(message)
+	case screenDraft:
+		return m.updateDraft(message)
 	case screenResult:
 		return m.updateResult(message)
 	}
 	return m, nil
+}
+
+// answerPicker hands one keystroke to the picker in front and does whatever it
+// asks for.
+//
+// It is cmd/hexforge-tui's own, one destination vocabulary rather than three: the
+// picker comes back with the list still up, or nil with nothing answered, which
+// is esc, or nil with an answer and the destination it belongs to, which is
+// enter. The picker is written back **before** the answer is landed, so a landing
+// never runs while the list it is closing is still in front.
+func (m model) answerPicker(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	picker, result := m.picker.Update(m.ctx(), message)
+	m.picker = picker
+	if !result.Answered {
+		return m, result.Cmd
+	}
+	land, known := draftPickedInto[result.Into]
+	if !known {
+		// A destination raised by something this client does not know about, which
+		// lands nowhere for the reason a draw.Target with no entry declines.
+		return m, nil
+	}
+	landed, action := land(m, result.Into, result.Answer)
+	return landed.navigate(screenDraft, action)
 }
 
 // paste routes one pasted string, from a terminal's own bracketed paste or from
@@ -550,6 +673,12 @@ func (m model) paste(text string) (tea.Model, tea.Cmd) {
 	if m.tooSmall() {
 		return m, nil
 	}
+	// The picker in front is asked ahead of the screen behind it, for the reason
+	// key asks it first — and it answers nothing on all but the one kind with a
+	// field, which the draft's two lists are not. → draw.PickState.Paste.
+	if m.picker != nil {
+		return m, m.picker.Paste(m.ctx(), text)
+	}
 	switch m.screen {
 	case screenJoin:
 		next, command := m.join.Paste(text)
@@ -574,10 +703,12 @@ func (m model) dialling(next joinScreen) tea.Cmd {
 	if m.join.Dialling || !next.Dialling {
 		return nil
 	}
-	squad, have := next.Chosen()
-	if !have {
-		return nil
-	}
+	// ⚠️ **A join with no squad goes ahead**, which is what makes a drafting room
+	// joinable at all: such a room refuses a squad outright and a client cannot
+	// know it drafts until it has been welcomed, so bringing none has to be
+	// sayable before the answer is known. The zero squad is what
+	// room.broughtASquad reads as none. → joinScreen.Squad.
+	squad, _ := next.Chosen()
 	// ⚠️ **The mirror is built from the EMBEDDED books, whatever --data says.**
 	// wire.Version's digest is over the embedded files, so a client that fought
 	// on an edited directory would pass a gate promising the two peers simulate
@@ -586,6 +717,18 @@ func (m model) dialling(next joinScreen) tea.Cmd {
 	// promise on to the battle is the whole reason the digest exists. The join
 	// screen says so when the two really differ. → i18n.JoinDataEdited.
 	books, err := seed.Books()
+	if err != nil {
+		m.join.Err = err
+		return nil
+	}
+	// ⚠️ **The cast comes off the embedded copy too, and it is not in
+	// battle.Books.** A drafting room's pool is the cast minus every character
+	// held back, and it has to be the *same* cast on both sides — which is what
+	// the data digest at the gate promises about the embedded files and about
+	// nothing else. It is read here rather than kept on the model because the
+	// model's constructor cannot fail and this can, and because the books beside
+	// it are read on this keystroke for the same reason.
+	characters, err := seed.Cast()
 	if err != nil {
 		m.join.Err = err
 		return nil
@@ -599,7 +742,7 @@ func (m model) dialling(next joinScreen) tea.Cmd {
 		Version:  version,
 		Squad:    squad,
 		Password: wire.Password(next.Password.Value()),
-	}, books)
+	}, books, characters)
 }
 
 // updateWaiting and updateResult are the two lobby screens with no keys of their
@@ -629,9 +772,14 @@ func (m model) updateResult(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 // The battle screen is replaced rather than merely marked, because a live
 // PlayScreen holds the mirror's battle: keeping it would leave this client
 // drawing a board nobody is stepping any more.
+// The draft screen is replaced for the same reason and the picker with it: a
+// DraftScreen holds a reading of a mirror nobody is stepping any more, and a
+// loadout list over a screen nobody is on is a list every keystroke goes into.
 func (m model) leaveMatch() model {
 	m.session.leave()
 	m.battle = draw.NewPlayScreen()
+	m.draft = draw.NewDraftScreen()
+	m.picker = nil
 	m.screen = screenMenu
 	m.raisedFrom, m.raisedOver = screenMenu, screenMenu
 	return m
@@ -698,6 +846,15 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		if from == screenBattle && m.battle.Live {
 			return m.leaveMatch(), nil
 		}
+		// ⚠️ **And the same for a draft, for the same reason and one step
+		// earlier.** The screen behind a draft is the room it was joined from,
+		// which no longer exists — and leaving mid-draft costs nothing by design:
+		// nobody forfeits, a departure ends the match as abandoned, and a draft is
+		// never taken up where it stopped. → i18n.ClosedDraftExpired, which says
+		// so to whoever is left.
+		if from == screenDraft && m.draft.Drafting {
+			return m.leaveMatch(), nil
+		}
 		return m.goBack(), nil
 	case draw.Raise:
 		return m.raise(from, action)
@@ -715,22 +872,33 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		// session.choose.
 		m.session.answer(action.Answer, m.battle.Pending)
 		return m, nil
-	case draw.Ask, draw.Pick:
-		// ⚠️ **Nothing this client draws can ask for either, and that is measured
-		// rather than assumed.** Both are the authoring half of the vocabulary: an
-		// Ask is what a form puts to a reader before it throws a draft away, and a
-		// Pick is the list a form fills a field from. Every screen that raises one
-		// does it from a mode this client cannot enter, because the keys that open
-		// those modes are the ones draw.Context.Authoring turns off.
-		//
-		// So the honest answer is to do nothing rather than to keep a guard field
-		// and a picker field that no keystroke can reach — a modal nobody can open
-		// is a modal nobody maintains, and it would draw over the screen in front
-		// the first time something did reach it.
-		// TestNoScreenInThisClientAsksOrPicks presses every key each of those
-		// screens answers to and asserts neither kind ever comes back, which is the
-		// claim this arm rests on; TestEveryActionKindIsAppliedByThisClient is what
-		// stops a seventh kind arriving here unnamed.
+	case draw.Pick:
+		// ⚠️ **This arm used to do nothing, on the ground that no screen this
+		// client draws could ask for a Pick — and the draft made that false.**
+		// The claim was about the *authoring* half of the vocabulary: a picker is
+		// the list a form fills a field from, and every screen that raised one did
+		// it from a mode draw.Context.Authoring turns off here. A drafted loadout
+		// is not that. It is a **player's** choice out of a learnset, on a screen
+		// with no author's file behind it, so the list is reached by a keystroke
+		// this client offers and the field to keep it in had to arrive with it.
+		// TestNoScreenInThisClientAsksOrPicks still holds the narrower claim it
+		// was written for — no *authoring* screen here raises either kind.
+		m.picker = action.Picker.Raise()
+		return m, nil
+	case draw.Ask:
+		// ⚠️ **Nothing this client draws can ask, and that is still measured
+		// rather than assumed.** An Ask is what a form puts to a reader before it
+		// throws a draft away, and every screen that raises one does it from a
+		// mode this client cannot enter. So the honest answer is to do nothing
+		// rather than to keep a guard field no keystroke can reach — a modal
+		// nobody can open is a modal nobody maintains, and it would draw over the
+		// screen in front the first time something did reach it. The draft screen
+		// asks nothing: what it would ask about is a decision, and a decision it
+		// has taken is already the room's.
+		// TestNoScreenInThisClientAsksOrPicks presses every key each authoring
+		// screen answers to and asserts an Ask never comes back;
+		// TestEveryActionKindIsAppliedByThisClient is what stops an eighth kind
+		// arriving here unnamed.
 		return m, nil
 	}
 	// draw.Stay, which is every keystroke a screen handled without leaving.
@@ -897,6 +1065,13 @@ func (m model) enterUnlessInAMatch(target screen) model {
 		m.screen = screenBattle
 		return m
 	}
+	// A draft in progress is where the reader was trying to get back to, exactly
+	// as a battle is: the match is a thing two people are in the middle of, and
+	// this one has not reached a board yet.
+	if m.draft.Drafting {
+		m.screen = screenDraft
+		return m
+	}
 	m.screen = screenWaiting
 	return m
 }
@@ -924,6 +1099,12 @@ func (m model) View() tea.View {
 // exists to catch. Framed together they are one string with the footer's own
 // line no longer identifiable.
 func (m model) parts() (body, footer string) {
+	// The picker is drawn over whichever screen raised it, which is why it is
+	// asked before the switch rather than being one of its arms: it is not a
+	// screen this client names, it is a value a screen built.
+	if m.picker != nil {
+		return m.picker.View(m.ctx())
+	}
 	switch m.screen {
 	case screenMenu:
 		return m.viewMenu(), m.text(i18n.MenuFooter)
@@ -957,6 +1138,8 @@ func (m model) parts() (body, footer string) {
 		return m.join.View(m.ctx())
 	case screenWaiting:
 		return m.waiting.View(m.ctx())
+	case screenDraft:
+		return m.draft.View(m.ctx())
 	case screenResult:
 		return m.result.View(m.ctx())
 	}

@@ -50,6 +50,29 @@ trận đấu  seed 1
   chưa dựng đội nào; bấm n để bắt đầu
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 120x24 | a cancelled draft =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  có người hết giờ khi hai bên còn đang cấm và chọn tướng nên chưa có trận nào để đánh: lượt chọn không đánh dở rồi
+  tiếp, phải mở phòng mới và chọn lại từ đầu
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a deep member =====
 trong đội: mot
 
@@ -68,6 +91,208 @@ thế đứng
     [n] có người  (n) người đang sửa  . trống
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 120x24 | a draft =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft arranging =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft ban thrown away =====
+cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
+
+  Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn
+  lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.
+  lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+  phòng không nhận quyết định đó:
+  nước đi, hoặc một lượt chọn tướng, tới nơi khi lượt đã qua — thường là do hết giờ; bạn không mất gì cả, những gì đang
+  hiện trên màn hình mới là đúng
+
+> pokemon.bulbasaur        còn         grass <cỏ>
+  pokemon.charmander       còn         fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft loadout =====
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
+
+  trang bị cho pokemon.bulbasaur  ·  lượt bạn 1:12 · bên kia 1:30
+
+> dạng      < ngã rẽ chưa chọn nhánh >  1/4
+  mang theo vine_whip razor_leaf poison_powder leech_seed 4/4
+  nội tại   chưa chọn gì, còn 1 ô
+  gửi       bấm enter để gửi trang bị này
+
+  bạn — đã chọn 1 trên 3
+    pokemon.bulbasaur        chưa chọn trang bị
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft on the other side =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  khách đang cấm  ·  bạn 1:30 · lượt bên kia 1:12
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft part way through =====
+cấm và chọn tướng  còn 7 trên 12 tướng để cấm và chọn
+
+  lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         của bạn     water <nước>
+  pokemon.gastly           của bạn     dark <bóng tối>
+  pokemon.machop           của bên kia ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+
+  bạn — đã chọn 2 trên 3
+    pokemon.squirtle         one  2/4 chiêu, 1/1 nội tại
+    pokemon.gastly           chưa chọn trang bị
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 1 trên 3
+    pokemon.machop           two  1/4 chiêu, 0/1 nội tại
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft pick =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft waiting for a peer =====
+cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
+
+  Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn
+  lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.
+  lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+
+> pokemon.bulbasaur        còn         grass <cỏ>
+  pokemon.charmander       còn         fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
+===== vi | 120x24 | a draft with one candidate =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+  chỉ còn pokemon.lapras, nên ở đây không có gì để chọn.
+
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+> pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a forked art preview =====
 pokemon.poliwag — Poliwag
   assets/poliwrath.svg · cấp 46 · giai đoạn Poliwrath
@@ -142,6 +367,26 @@ pokemon.poliwag — Poliwag
 
 ----- footer -----
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
+===== vi | 120x24 | a forked draft loadout =====
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
+
+  trang bị cho pokemon.poliwag  ·  lượt bạn 1:12 · bên kia 1:30
+
+> dạng      < ngã rẽ chưa chọn nhánh >  1/5
+  mang theo chưa chọn gì, còn 4 ô
+  nội tại   chưa chọn gì, còn 1 ô
+  gửi       …
+
+  dòng này rẽ nhánh: Poliwrath / Politoed — bấm ←/→ chọn một; chưa chọn thì danh sách chỉ có phần chung và quyết định sẽ bị từ chối
+
+  bạn — đã chọn 1 trên 3
+    pokemon.poliwag          chưa chọn trang bị
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a forked member =====
 trong đội: mot
 
@@ -266,6 +511,25 @@ next: E2 A1 E1 A3 E3 A2
 đang chờ bên kia đi
 ----- footer -----
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 120x24 | a refused draft loadout =====
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
+
+  trang bị cho pokemon.bulbasaur  ·  lượt bạn 1:12 · bên kia 1:30
+  pokemon.bulbasaur brings 5 skills and there are 4 slot(s)
+
+> dạng      < ngã rẽ chưa chọn nhánh >  1/4
+  mang theo vine_whip razor_leaf poison_powder leech_seed nothing.at.all 5/4
+  nội tại   chưa chọn gì, còn 1 ô
+  gửi       …
+
+  bạn — đã chọn 1 trên 3
+    pokemon.bulbasaur        chưa chọn trang bị
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a refused work =====
 thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có trong danh mục
 
@@ -1084,6 +1348,33 @@ trận đấu  seed 1
   chưa dựng đội nào; bấm n để bắt đầu
 ----- footer -----
 ↑/↓ · enter · ? · a máy chọn · p bỏ · u lùi · [/] cuộn · ctrl+s lưu · esc
+===== vi | 160x60 | a cancelled draft =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  có người hết giờ khi hai bên còn đang cấm và chọn tướng nên chưa có trận nào để đánh: lượt chọn không đánh dở rồi
+  tiếp, phải mở phòng mới và chọn lại từ đầu
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+  pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a deep member =====
 trong đội: mot
 
@@ -1102,6 +1393,241 @@ thế đứng
     [n] có người  (n) người đang sửa  . trống
 ----- footer -----
 ↑/↓ đổi dòng · ←/→ đổi giá trị · enter chọn · esc xong
+===== vi | 160x60 | a draft =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+  pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft arranging =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+  pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft ban thrown away =====
+cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
+
+  Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn
+  lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.
+  lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+  phòng không nhận quyết định đó:
+  nước đi, hoặc một lượt chọn tướng, tới nơi khi lượt đã qua — thường là do hết giờ; bạn không mất gì cả, những gì đang
+  hiện trên màn hình mới là đúng
+
+> pokemon.bulbasaur        còn         grass <cỏ>
+  pokemon.charmander       còn         fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+  pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft loadout =====
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
+
+  trang bị cho pokemon.bulbasaur  ·  lượt bạn 1:12 · bên kia 1:30
+
+> dạng      < ngã rẽ chưa chọn nhánh >  1/4
+  mang theo vine_whip razor_leaf poison_powder leech_seed 4/4
+  nội tại   chưa chọn gì, còn 1 ô
+  gửi       bấm enter để gửi trang bị này
+
+  bạn — đã chọn 1 trên 3
+    pokemon.bulbasaur        chưa chọn trang bị
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft on the other side =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  khách đang cấm  ·  bạn 1:30 · lượt bên kia 1:12
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+  pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft part way through =====
+cấm và chọn tướng  còn 7 trên 12 tướng để cấm và chọn
+
+  lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         của bạn     water <nước>
+  pokemon.gastly           của bạn     dark <bóng tối>
+  pokemon.machop           của bên kia ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+  pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 2 trên 3
+    pokemon.squirtle         one  2/4 chiêu, 1/1 nội tại
+    pokemon.gastly           chưa chọn trang bị
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 1 trên 3
+    pokemon.machop           two  1/4 chiêu, 0/1 nội tại
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft pick =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+> pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+  pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft waiting for a peer =====
+cấm và chọn tướng  còn 12 trên 12 tướng để cấm và chọn
+
+  Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn
+  lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.
+  lượt cấm của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+
+> pokemon.bulbasaur        còn         grass <cỏ>
+  pokemon.charmander       còn         fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+  pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận
+===== vi | 160x60 | a draft with one candidate =====
+cấm và chọn tướng  còn 10 trên 12 tướng để cấm và chọn
+
+  lượt chọn tướng của bạn  ·  lượt bạn 1:12 · bên kia 1:30
+  chỉ còn pokemon.lapras, nên ở đây không có gì để chọn.
+
+  pokemon.bulbasaur        bạn cấm     grass <cỏ>
+  pokemon.charmander       bên kia cấm fire <lửa>
+  pokemon.squirtle         còn         water <nước>
+  pokemon.gastly           còn         dark <bóng tối>
+  pokemon.machop           còn         ground <đất>
+  pokemon.magnemite        còn         electric/metal <điện/kim loại>
+  pokemon.poliwag          còn         water <nước>
+  pokemon.mew              còn         neutral <trung tính>
+  pokemon.mewtwo           còn         dark <bóng tối>
+  pokemon.dratini          còn         wind <gió>
+  pokemon.oddish           còn         grass <cỏ>
+> pokemon.lapras           còn         water/ice <nước/băng>
+
+  bạn — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.bulbasaur
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    đã cấm pokemon.charmander
+----- footer -----
+↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a forked art preview =====
 pokemon.poliwag — Poliwag
   assets/poliwrath.svg · cấp 46 · giai đoạn Poliwrath
@@ -1211,6 +1737,26 @@ pokemon.poliwag — Poliwag
 
 ----- footer -----
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
+===== vi | 160x60 | a forked draft loadout =====
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
+
+  trang bị cho pokemon.poliwag  ·  lượt bạn 1:12 · bên kia 1:30
+
+> dạng      < ngã rẽ chưa chọn nhánh >  1/5
+  mang theo chưa chọn gì, còn 4 ô
+  nội tại   chưa chọn gì, còn 1 ô
+  gửi       …
+
+  dòng này rẽ nhánh: Poliwrath / Politoed — bấm ←/→ chọn một; chưa chọn thì danh sách chỉ có phần chung và quyết định sẽ bị từ chối
+
+  bạn — đã chọn 1 trên 3
+    pokemon.poliwag          chưa chọn trang bị
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a forked member =====
 trong đội: mot
 
@@ -1367,6 +1913,25 @@ next: E2 A1 E1 A3 E3 A2
 đang chờ bên kia đi
 ----- footer -----
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 160x60 | a refused draft loadout =====
+cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
+
+  trang bị cho pokemon.bulbasaur  ·  lượt bạn 1:12 · bên kia 1:30
+  pokemon.bulbasaur brings 5 skills and there are 4 slot(s)
+
+> dạng      < ngã rẽ chưa chọn nhánh >  1/4
+  mang theo vine_whip razor_leaf poison_powder leech_seed nothing.at.all 5/4
+  nội tại   chưa chọn gì, còn 1 ô
+  gửi       …
+
+  bạn — đã chọn 1 trên 3
+    pokemon.bulbasaur        chưa chọn trang bị
+    chưa cấm ai
+  khách — đã chọn 0 trên 3
+    chưa chọn ai
+    chưa cấm ai
+----- footer -----
+↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a refused work =====
 thêm tác phẩm  nhân vật chỉ ghi được tên tác phẩm đã có trong danh mục
 
@@ -2585,6 +3150,29 @@ the battle  seed 1
   nothing built yet; n starts one
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 120x24 | a cancelled draft =====
+ban and pick  10 of 12 still in the pool
+
+  somebody ran out of time while the sides were still banning and picking, so there is no match to play: a draft is
+  never taken up where it stopped, and drafting again means a new room and a new code
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a deep member =====
 in the squad: mot
 
@@ -2603,6 +3191,208 @@ the formation
     [n] stands there  (n) the one being edited  . nobody
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 120x24 | a draft =====
+ban and pick  10 of 12 still in the pool
+
+  your ban  ·  your turn 1:12 · them 1:30
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft arranging =====
+ban and pick  10 of 12 still in the pool
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft ban thrown away =====
+ban and pick  12 of 12 still in the pool
+
+  Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the
+  other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.
+  your ban  ·  your turn 1:12 · them 1:30
+  the room would not take that decision:
+  a move, or a draft decision, went out after the turn had gone — usually the clock ran out; nothing of yours was lost,
+  and whatever is on screen now is the right one
+
+> pokemon.bulbasaur        open        grass
+  pokemon.charmander       open        fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft loadout =====
+ban and pick  11 of 12 still in the pool
+
+  your loadout for pokemon.bulbasaur  ·  your turn 1:12 · them 1:30
+
+> form   < a fork with no arm named >  1/4
+  brings vine_whip razor_leaf poison_powder leech_seed 4/4
+  trait  nothing chosen, 1 slot(s)
+  send   enter sends this loadout
+
+  you — 1 of 3 picked
+    pokemon.bulbasaur        loadout still to choose
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft on the other side =====
+ban and pick  10 of 12 still in the pool
+
+  guest is banning  ·  you 1:30 · their turn 1:12
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft part way through =====
+ban and pick  7 of 12 still in the pool
+
+  your pick  ·  your turn 1:12 · them 1:30
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         yours       water
+  pokemon.gastly           yours       dark
+  pokemon.machop           theirs      ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+
+  you — 2 of 3 picked
+    pokemon.squirtle         one  2/4 skills, 1/1 traits
+    pokemon.gastly           loadout still to choose
+    banned pokemon.bulbasaur
+  guest — 1 of 3 picked
+    pokemon.machop           two  1/4 skills, 0/1 traits
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft pick =====
+ban and pick  10 of 12 still in the pool
+
+  your pick  ·  your turn 1:12 · them 1:30
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft waiting for a peer =====
+ban and pick  12 of 12 still in the pool
+
+  Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the
+  other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.
+  your ban  ·  your turn 1:12 · them 1:30
+
+> pokemon.bulbasaur        open        grass
+  pokemon.charmander       open        fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | a draft with one candidate =====
+ban and pick  10 of 12 still in the pool
+
+  your pick  ·  your turn 1:12 · them 1:30
+  pokemon.lapras is the only one left, so there is nothing to choose here.
+
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+> pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a forked art preview =====
 pokemon.poliwag — Poliwag
   assets/poliwrath.svg · level 46 · stage Poliwrath
@@ -2670,6 +3460,26 @@ pokemon.poliwag — Poliwag
 
 ----- footer -----
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
+===== en | 120x24 | a forked draft loadout =====
+ban and pick  11 of 12 still in the pool
+
+  your loadout for pokemon.poliwag  ·  your turn 1:12 · them 1:30
+
+> form   < a fork with no arm named >  1/5
+  brings nothing chosen, 4 slot(s)
+  trait  nothing chosen, 1 slot(s)
+  send   …
+
+  this line forks: Poliwrath / Politoed — ←/→ names one; unnamed, the lists show only the shared part and the decision is refused
+
+  you — 1 of 3 picked
+    pokemon.poliwag          loadout still to choose
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a forked member =====
 in the squad: mot
 
@@ -2790,6 +3600,25 @@ next: E2 A1 E1 A3 E3 A2
 waiting on the other player
 ----- footer -----
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 120x24 | a refused draft loadout =====
+ban and pick  11 of 12 still in the pool
+
+  your loadout for pokemon.bulbasaur  ·  your turn 1:12 · them 1:30
+  pokemon.bulbasaur brings 5 skills and there are 4 slot(s)
+
+> form   < a fork with no arm named >  1/4
+  brings vine_whip razor_leaf poison_powder leech_seed nothing.at.all 5/4
+  trait  nothing chosen, 1 slot(s)
+  send   …
+
+  you — 1 of 3 picked
+    pokemon.bulbasaur        loadout still to choose
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match
 ===== en | 120x24 | a refused work =====
 add a work  a character can only name a work the catalog holds
 
@@ -3597,6 +4426,33 @@ the battle  seed 1
   nothing built yet; n starts one
 ----- footer -----
 ↑/↓ · enter · ? · a auto · p pass · u undo · [/] scroll · ctrl+s save · esc
+===== en | 160x60 | a cancelled draft =====
+ban and pick  10 of 12 still in the pool
+
+  somebody ran out of time while the sides were still banning and picking, so there is no match to play: a draft is
+  never taken up where it stopped, and drafting again means a new room and a new code
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+  pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a deep member =====
 in the squad: mot
 
@@ -3615,6 +4471,241 @@ the formation
     [n] stands there  (n) the one being edited  . nobody
 ----- footer -----
 ↑/↓ field · ←/→ change · enter choose · esc done
+===== en | 160x60 | a draft =====
+ban and pick  10 of 12 still in the pool
+
+  your ban  ·  your turn 1:12 · them 1:30
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+  pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft arranging =====
+ban and pick  10 of 12 still in the pool
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+  pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft ban thrown away =====
+ban and pick  12 of 12 still in the pool
+
+  Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the
+  other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.
+  your ban  ·  your turn 1:12 · them 1:30
+  the room would not take that decision:
+  a move, or a draft decision, went out after the turn had gone — usually the clock ran out; nothing of yours was lost,
+  and whatever is on screen now is the right one
+
+> pokemon.bulbasaur        open        grass
+  pokemon.charmander       open        fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+  pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft loadout =====
+ban and pick  11 of 12 still in the pool
+
+  your loadout for pokemon.bulbasaur  ·  your turn 1:12 · them 1:30
+
+> form   < a fork with no arm named >  1/4
+  brings vine_whip razor_leaf poison_powder leech_seed 4/4
+  trait  nothing chosen, 1 slot(s)
+  send   enter sends this loadout
+
+  you — 1 of 3 picked
+    pokemon.bulbasaur        loadout still to choose
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft on the other side =====
+ban and pick  10 of 12 still in the pool
+
+  guest is banning  ·  you 1:30 · their turn 1:12
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+  pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft part way through =====
+ban and pick  7 of 12 still in the pool
+
+  your pick  ·  your turn 1:12 · them 1:30
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         yours       water
+  pokemon.gastly           yours       dark
+  pokemon.machop           theirs      ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+  pokemon.lapras           open        water/ice
+
+  you — 2 of 3 picked
+    pokemon.squirtle         one  2/4 skills, 1/1 traits
+    pokemon.gastly           loadout still to choose
+    banned pokemon.bulbasaur
+  guest — 1 of 3 picked
+    pokemon.machop           two  1/4 skills, 0/1 traits
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft pick =====
+ban and pick  10 of 12 still in the pool
+
+  your pick  ·  your turn 1:12 · them 1:30
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+> pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+  pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft waiting for a peer =====
+ban and pick  12 of 12 still in the pool
+
+  Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the
+  other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.
+  your ban  ·  your turn 1:12 · them 1:30
+
+> pokemon.bulbasaur        open        grass
+  pokemon.charmander       open        fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+  pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | a draft with one candidate =====
+ban and pick  10 of 12 still in the pool
+
+  your pick  ·  your turn 1:12 · them 1:30
+  pokemon.lapras is the only one left, so there is nothing to choose here.
+
+  pokemon.bulbasaur        you banned  grass
+  pokemon.charmander       they banned fire
+  pokemon.squirtle         open        water
+  pokemon.gastly           open        dark
+  pokemon.machop           open        ground
+  pokemon.magnemite        open        electric/metal
+  pokemon.poliwag          open        water
+  pokemon.mew              open        neutral
+  pokemon.mewtwo           open        dark
+  pokemon.dratini          open        wind
+  pokemon.oddish           open        grass
+> pokemon.lapras           open        water/ice
+
+  you — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.bulbasaur
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned pokemon.charmander
+----- footer -----
+↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a forked art preview =====
 pokemon.poliwag — Poliwag
   assets/poliwrath.svg · level 46 · stage Poliwrath
@@ -3718,6 +4809,26 @@ pokemon.poliwag — Poliwag
 
 ----- footer -----
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
+===== en | 160x60 | a forked draft loadout =====
+ban and pick  11 of 12 still in the pool
+
+  your loadout for pokemon.poliwag  ·  your turn 1:12 · them 1:30
+
+> form   < a fork with no arm named >  1/5
+  brings nothing chosen, 4 slot(s)
+  trait  nothing chosen, 1 slot(s)
+  send   …
+
+  this line forks: Poliwrath / Politoed — ←/→ names one; unnamed, the lists show only the shared part and the decision is refused
+
+  you — 1 of 3 picked
+    pokemon.poliwag          loadout still to choose
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a forked member =====
 in the squad: mot
 
@@ -3870,6 +4981,25 @@ next: E2 A1 E1 A3 E3 A2
 waiting on the other player
 ----- footer -----
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 160x60 | a refused draft loadout =====
+ban and pick  11 of 12 still in the pool
+
+  your loadout for pokemon.bulbasaur  ·  your turn 1:12 · them 1:30
+  pokemon.bulbasaur brings 5 skills and there are 4 slot(s)
+
+> form   < a fork with no arm named >  1/4
+  brings vine_whip razor_leaf poison_powder leech_seed nothing.at.all 5/4
+  trait  nothing chosen, 1 slot(s)
+  send   …
+
+  you — 1 of 3 picked
+    pokemon.bulbasaur        loadout still to choose
+    banned nobody yet
+  guest — 0 of 3 picked
+    nobody picked yet
+    banned nobody yet
+----- footer -----
+↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match
 ===== en | 160x60 | a refused work =====
 add a work  a character can only name a work the catalog holds
 

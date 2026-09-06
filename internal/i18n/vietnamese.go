@@ -723,7 +723,7 @@ q hoặc ctrl+c để thoát`,
 	JoinSquadLabel:          "đội mang theo",
 	JoinHint: "Mã phòng do máy mở phòng in ra, gồm 12 chữ và số. Mã đã mang sẵn địa chỉ máy đó nên " +
 		"không cần hỏi gì thêm.",
-	JoinNoSquad:    "chưa dựng đội nào, mà vào phòng thì phải mang theo một đội; dựng ở mục các đội đã dựng",
+	JoinNoSquad:    "chưa dựng đội nào. Phòng cấm-chọn tướng thì vốn không cần đội — hai bên chọn ngay ở đó — nhưng phòng thường sẽ không cho vào; dựng đội ở mục các đội đã dựng",
 	JoinCodeLength: "mã phòng phải đúng %d ký tự, mã vừa gõ có %d",
 	JoinDataEdited: "Dữ liệu trong thư mục đang mở khác với dữ liệu nhúng trong bản build này. Trận sẽ " +
 		"đánh bằng bản nhúng, nên những gì vừa sửa ngoài kia không vào trận.",
@@ -767,4 +767,44 @@ q hoặc ctrl+c để thoát`,
 	BonusAxisElement:  "hệ mà các thành viên mang",
 	BonusScopeSquad:   "mọi thành viên của phe",
 	BonusScopeSharers: "chỉ những người cùng chia",
+
+	DraftHeading:  "cấm và chọn tướng",
+	DraftPoolLeft: "còn %d trên %d tướng để cấm và chọn",
+
+	DraftStateOpen:       "còn",
+	DraftStateYouBanned:  "bạn cấm",
+	DraftStateTheyBanned: "bên kia cấm",
+	DraftStateYouPicked:  "của bạn",
+	DraftStateTheyPicked: "của bên kia",
+
+	DraftYourBan:      "lượt cấm của bạn",
+	DraftYourPick:     "lượt chọn tướng của bạn",
+	DraftYourLoadout:  "trang bị cho %s",
+	DraftTheirBan:     "%s đang cấm",
+	DraftTheirPick:    "%s đang chọn tướng",
+	DraftTheirLoadout: "%s đang chọn trang bị",
+
+	DraftNotBegun: "Chưa có quyết định nào được ghi lại, nên có thể phòng vẫn đang chờ người thứ hai. Quyết định đưa ra trước khi chỗ còn lại có người sẽ bị từ chối và mất — bạn sẽ được hỏi lại, và không mất gì cả.",
+	DraftRefused:  "phòng không nhận quyết định đó:",
+	DraftOnlyOne:  "chỉ còn %s, nên ở đây không có gì để chọn.",
+
+	DraftArrangingNow: "Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.",
+
+	DraftYourSide:     "bạn — đã chọn %d trên %d",
+	DraftTheirSide:    "%s — đã chọn %d trên %d",
+	DraftNoPicks:      "chưa chọn ai",
+	DraftLoadoutOpen:  "chưa chọn trang bị",
+	DraftBanned:       "đã cấm %s",
+	DraftBannedNobody: "chưa cấm ai",
+
+	DraftFieldSend: "gửi",
+	DraftSendReady: "bấm enter để gửi trang bị này",
+	DraftForkArms:  "dòng này rẽ nhánh: %s — bấm ←/→ chọn một; chưa chọn thì danh sách chỉ có phần chung và quyết định sẽ bị từ chối",
+
+	JoinBringNone: "không mang đội — dành cho phòng cấm-chọn tướng",
+
+	DraftBanFooter:     "↑/↓ di chuyển · enter cấm · s bỏ lượt cấm · ctrl+l English · esc rời trận",
+	DraftPickFooter:    "↑/↓ di chuyển · enter chọn · ctrl+l English · esc rời trận",
+	DraftReadingFooter: "↑/↓ di chuyển · ctrl+l English · esc rời trận",
+	DraftLoadoutFooter: "↑/↓ đổi ô · ←/→ dạng · enter chọn · ctrl+l English · esc rời trận",
 }

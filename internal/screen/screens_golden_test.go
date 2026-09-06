@@ -39,12 +39,13 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 // better the moment `cmd/hexarena-tui` stood up: a screen the authoring tool
 // stops drawing would lose its only layout net **in silence**. So this file is
 // that net,
-// here, and the package holds twelve screens now that the skill listing, the
+// here, and the package holds thirteen screens now that the skill listing, the
 // squad builder, the works catalogue and the played battle have all arrived.
 //
 // ## What is recorded
 //
-// Forty-one entries over those twelve screens — the six listings, the
+// Fifty-three entries over **thirteen** screens now that the ban and pick has
+// arrived — the six listings, the
 // description screen in both of its readings, the two states nothing shipped can
 // draw (a species kind nobody claims, a build that spends no trait slot), the
 // five states of the picker, which is handed its list and so has no one shape,
@@ -56,7 +57,7 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 // that share no line, two of which are also states neither sweep could draw (a
 // save's own note, and a battle with no pairing to open on) — in **both**
 // languages at **two** sizes: the MinWidth x MinHeight floor, where the Room
-// helpers bite, and 160x60, where nothing is squeezed — **164 renders, 3851
+// helpers bite, and 160x60, where nothing is squeezed — **248 renders, 6270
 // lines**. The entry names are the client's own, so a reader holding both diffs
 // is looking at the same words.
 //
@@ -210,7 +211,7 @@ type drawable interface {
 	View(Context) (string, string)
 }
 
-// everyMovedScreen is the thirty-five entries, named as cmd/hexforge-tui's
+// everyMovedScreen is the fifty-three entries, named as cmd/hexforge-tui's
 // `everyScreen` names them — and, for the four works entries, named in that
 // convention even though two of them are states the client has no entry for.
 //
@@ -252,7 +253,7 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 	works := NewOriginsScreen(c)
 	catalogue := squadCatalogue(t, c, lib)
 	member := squadMember(t, c, catalogue)
-	return map[string]drawable{
+	screens := map[string]drawable{
 		// The cast browser as a raise leaves it: the first row, at the level
 		// cap, with no origin filter. That is the state the client's own sweep
 		// registers under this name, and a cursor moved here would be this
@@ -339,6 +340,27 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		"a live battle":         aLiveBattle(t, c),
 		"a live battle waiting": aLiveBattleWaiting(t, c),
 	}
+	// The **thirteenth screen**: the ban and pick, in each of the twelve states
+	// of it that draw a line no other state draws.
+	//
+	// ⚠️ **They are built as VALUES and there is no other way to build one**, which
+	// is what the whole where-it-lives decision bought: a DraftScreen is handed a
+	// DraftLive, and this package cannot see the socket that would otherwise have
+	// to be stood up to produce one. Two goldens over one screen and no room, no
+	// listener and no goroutine anywhere near either of them.
+	//
+	// ⚠️ **Every one of them asserts it drew the line it exists for**, inside
+	// everyDraftState, for the reason the species and build states do: a
+	// registered state that renders nothing passes every sweep over it. Three of
+	// the twelve are states **cmd/hexarena-tui's own sweep cannot reach at all** —
+	// a decision with one candidate (arithmetic the shipped pool does not produce),
+	// a refused loadout, and a fork with no arm named — and one of the twelve is
+	// the finding of step 5a: a draft with nothing recorded, where a ban is thrown
+	// away.
+	for name, state := range everyDraftState(t, c, lib) {
+		screens[name] = state
+	}
+	return screens
 }
 
 // aLiveBattle is the turn in front on a battle **somebody else is driving**: the

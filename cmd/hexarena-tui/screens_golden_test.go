@@ -39,6 +39,13 @@ var update = flag.Bool("update", false, "rewrite the golden files instead of com
 //     one-a-side board, roster, order line and option list come to exactly the
 //     twenty rows the floor leaves, so nothing is ever dropped and the notice
 //     naming what the window was too short for is drawn by nothing.
+//   - The **ban and pick** is drawn framed, and a **picker** is drawn over it.
+//     `draw.DraftScreen` lives in `internal/screen` like every other screen this
+//     client draws — see `screenDraft` for why it is not one of the lobby's
+//     three — so its drawing is recorded there as well; what is only here is the
+//     framing of it, and the two loadout lists, which are the first
+//     `draw.PickState` any golden of *this* client has ever held: every picker in
+//     the vocabulary was the authoring half of it until a drafted loadout arrived.
 //
 // ## What is recorded, and what is deliberately not
 //
