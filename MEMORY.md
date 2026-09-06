@@ -38,13 +38,13 @@ that owns the subject wins and the note is the thing to fix.
 
 - [tách màn hình XONG (12 PR)](memory/hexarena-screen-extraction.md) — hexforge-tui 10.144→3.315; chặn là 2 closure trên model
 - [3 golden thấy 3 thứ khác nhau](memory/goldens-see-different-screens.md) — ⚠️ cả 3 hình dạng mù đo được; golden≠transition
-- [⚠️ golden không xanh được ở 2 platform](memory/goldens-cannot-be-green-on-two-platforms.md) — 12 dòng `\` accept trên Windows; make check ĐỎ ở c8edde3 trên mac
+- [⚠️ golden không xanh được ở 2 platform](memory/goldens-cannot-be-green-on-two-platforms.md) — TRIỆU CHỨNG hết (accept lại trên máy `/`); NGUYÊN NHÂN còn: golden ghi filepath.Join xanh ở platform accept sau cùng
 - [hexarena PvP plan](memory/hexarena-pvp-plan.md) — mirror client; bo1|bo3 KHÔNG bo2; 3 số version, digest là cửa
 - [thế hoà = thứ tự roster](memory/hexarena-side-is-worth-60-points.md) — seq = slice order, CALLER quyết; +62% ở 1v1, +8.5pp ở 2v2
 - [⚠️ mirror một chiều ≠ phép đo](memory/one-way-mirror-not-a-measurement.md) — bù nhau CHỈ đúng ở 1 unit/phe; phụ thuộc KIT
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
-- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1…5b xong (còn 5c + cờ host); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire KHÔNG nói phòng đủ người
+- [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1…5c xong (còn cờ host); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire ko nói phòng đủ người, cũng ko báo sắp xếp đã tới
 - [v0.1.0 đã release](memory/hexarena-v0-1-0-released.md) — go install @v0.1.0 khai đúng tag; ⚠️ path không /vN nên CHỈ tag được v0/v1; tag trên proxy BẤT BIẾN
 - [4 đội starter, dùng được ngay](memory/hexarena-starter-squads.md) — ⚠️ Rate() BỎ trận Endless khỏi mẫu số: healer gặp healer hoà mãi mà vẫn khoe 85%
 - [đếm ngược + allowlist đồng hồ](memory/hexarena-countdown-clock-allowlist.md) — ⚠️ danh sách import ≠ danh sách đồng hồ (context.WithTimeout)
