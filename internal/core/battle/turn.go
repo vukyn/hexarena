@@ -585,7 +585,7 @@ func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 	}
 	reachable := b.reachableRanks(unit, known)
 	out := make([]hex.Offset, 0, hex.Cols*hex.Rows)
-	for _, cell := range hex.Cells() {
+	for _, cell := range mirroredOrder(unit.Side) {
 		if !known.Target.Reaches(unit.Side, cell.Side()) {
 			continue
 		}
@@ -608,6 +608,45 @@ func (b *Battle) aims(unit *Unit, known skill.Skill) []hex.Offset {
 			continue
 		}
 		out = append(out, cell)
+	}
+	return out
+}
+
+// mirroredOrder is every cell on the board, walked so that the sequence one side
+// sees is the mirror image of the sequence the other does.
+//
+// ⚠️ **This is the order a tie is broken on, and walking the board's own cell
+// order broke the mirror.** `hex.Cells()` is column-major over the whole 6x3
+// board and `hex.Place` puts an enemy down under a 180 degree rotation, so the
+// rotation reverses the rows and the traversal does not: two units at the
+// authoring slots {1,1} and {1,0} sit at cells {1,0} then {1,1} on the ally half
+// and at {4,1} then {4,2} on the enemy half, which the walk meets in the
+// opposite order. `Suggest` keeps the **first** aim that reaches the best value,
+// so an attacker facing one half chose the unit its opposite number would not
+// have — and the same battle fought with the sides swapped stopped being the
+// same battle relabelled.
+//
+// Measured before and after, a squad against a copy of itself over 400 seeds:
+// one unit a side was already exact (615‰ one way, 385‰ the other), two units
+// summed to **1035‰** and three to **1330‰**. Nothing about the board was wrong
+// — `Place` is a true isometry — and nothing about the structure was: what did
+// not mirror was the order the candidates were offered in.
+//
+// So the walk is by **authoring slot**, the far half first and the caster's own
+// after, each in the slot order the other side would see.
+//
+// ⚠️ The far half leads because that is the half a hostile skill is offered, and
+// an all-sided one is a hostile skill that happens to splash: putting the
+// caster's own cells first would move the tie of every such skill onto its own
+// side, which is a balance change wearing the clothes of a determinism fix. It
+// is also what the old absolute walk did for the enemy half, so the only aims
+// that move here are the ones that had to.
+func mirroredOrder(side hex.Side) []hex.Offset {
+	out := make([]hex.Offset, 0, hex.Cols*hex.Rows)
+	for _, half := range []hex.Side{side.Opposing(), side} {
+		for _, slot := range hex.SideCells(hex.SideAlly) {
+			out = append(out, hex.Place(half, slot))
+		}
 	}
 	return out
 }

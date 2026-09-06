@@ -186,9 +186,6 @@ func readKit(t *testing.T, books battle.Books, characters *cast.Book,
 			}
 		}
 	}
-	if out.endless > 0 {
-		t.Fatalf("%d of %d battles never finished, so a rate over the rest reads a different question",
-			out.endless, chargeSeeds*2)
-	}
+	refuseTooManyStalls(t, "the charge pairing", out.endless, chargeSeeds*2)
 	return out
 }

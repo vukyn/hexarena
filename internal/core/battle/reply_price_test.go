@@ -22,10 +22,17 @@ func provoking(t *testing.T, allySkills []string, allyHealth int64,
 		{ID: "a", Side: hex.SideAlly, Slot: hex.Offset{Col: 2, Row: 1},
 			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 120),
 			Skills: allySkills},
-		{ID: "first", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 2},
+		// ⚠️ The slots are what make the names true, and they moved when the aim
+		// order did. `first` is the enemy the tie falls to, and the tie falls to
+		// whichever cell is offered first — which is now the lower authoring slot
+		// on either half rather than the lower absolute row, because the walk in
+		// `aims` is by slot so that the two halves are each other's mirror. The
+		// names are the premise of every case here, so they are kept true rather
+		// than each expectation being rewritten to say "second".
+		{ID: "first", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 0},
 			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 10),
 			Skills: []string{"strike"}, Passives: firstTraits},
-		{ID: "second", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 0},
+		{ID: "second", Side: hex.SideEnemy, Slot: hex.Offset{Col: 2, Row: 2},
 			Affinity: single("neutral"), Stats: stats(3000, 800, 400, 10),
 			Skills: []string{"strike"}, Passives: secondTraits},
 	})

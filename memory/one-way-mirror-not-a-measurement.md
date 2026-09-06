@@ -1,6 +1,6 @@
 ---
 name: one-way-mirror-not-a-measurement
-description: hexarena — tỉ lệ mirror MỘT CHIỀU chỉ đo được gì ở 1 unit/phe; từ 2 người là hỏng; không phải bàn cờ, không phải cấu trúc — phụ thuộc KIT, chưa tìm ra
+description: "hexarena — ĐÃ TÌM RA VÀ VÁ 2026-09-07: aims duyệt theo thứ tự ô TUYỆT ĐỐI, mà Place xoay 180° nên hai nửa bàn nhận ứng viên NGƯỢC nhau; giờ duyệt theo slot"
 metadata:
   type: reference
 ---
@@ -22,7 +22,21 @@ metadata:
 - **KHÔNG phải bàn cờ.** `hex.Place` là isometry thật, cả chéo phe **lẫn trong cùng phe** — đo 0/81 cặp lệch. ⚠️ `TestPlaceMirrorsBothSides` chỉ kiểm profile **chéo phe**, nên nó *có* lỗ — mà lỗ đó rỗng.
 - **KHÔNG phải cấu trúc.** Đội 2 người đang ship (b01) bù nhau **đúng chằn** (1085/915 ↔ 915/1085), còn đội 2 người tự dựng **cùng nhân vật, cùng ô** thì không. Khác duy nhất: **KIT** (b01 dùng 4 chiêu đã chọn; harness dùng `seedKit` = 4 chiêu đầu).
 
-→ Có một chiêu giải quyết theo thứ tự **không mirror**. **Chưa tìm ra.** Đây là việc phải làm TRƯỚC khi trích bất kỳ số nào ở 3v3/5v5.
+## ĐÃ TÌM RA (2026-09-07) — và không phải KIT
+
+⚠️ **Thủ phạm là THỨ TỰ NHẮM.** `battle.aims` duyệt ứng viên bằng `hex.Cells()` — column-major trên **cả bàn**, toạ độ tuyệt đối — trong khi `hex.Place` đặt phe địch bằng **xoay 180°**. Xoay đảo hàng, vòng duyệt column-major thì không, nên hai nửa bàn được mời ứng viên theo thứ tự **ngược nhau**. `Suggest.take` giữ **cái đầu tiên** đạt giá trị cao nhất → hoà giá giữa hai mục tiêu y hệt rơi vào unit khác nhau tuỳ nửa nào đang hỏi.
+
+Ví dụ đo được: slot `{1,1}` và `{1,0}` → phe ta ở ô `1,0` rồi `1,1`; phe địch ở `4,1` rồi `4,2`. Duyệt gặp `1,0` trước ở nửa này và `4,1` trước ở nửa kia — tức **u1 trước** một bên, **u0 trước** bên kia.
+
+**Vá**: `battle.mirroredOrder` duyệt theo **slot tác giả**, nửa đối phương trước. ⚠️ Nửa đối phương đi trước chứ không phải nửa mình: chỉ chiêu all-sided phân biệt được, và để nửa mình trước là dời hoà giá của mọi chiêu đó về phía mình — đổi cân bằng khoác áo sửa determinism.
+
+**Sau khi vá**: 1000‰ ở **cả 1, 2 và 3 unit/phe**, và **200/200 seed lật** kết quả khi đổi thứ tự liệt kê (trước: 200/200, 176/200, 134/200).
+
+⚠️ **Giả thuyết KIT ở dưới là SAI.** Đội 2 người ship bù nhau đúng chằn không phải vì kit, mà vì kit đó không tạo hoà giá ở chỗ thứ tự khác nhau — cùng một lỗi, chỉ là fixture không chạm tới. Giữ lại đoạn dưới vì nó ghi lại hai giả thuyết đã loại đúng (bàn cờ, cấu trúc).
+
+⚠️ **Giá phải trả, đo được**: fixture định giá slot cleanser đọc 526→485‰ và 478→460‰ (sàn 450), và 1/600 trận chạm turn cap. Quét 600 seed hai chiều: engine đứng **4 lần có vá, 1 lần không vá** — và lần đó ở seed **307**, ngoài cửa sổ 300 seed test chạy. Vạch "không được đứng trận nào" là tính chất của **cửa sổ seed**, không phải của engine → giờ là `stallShare` 10‰, khai báo một chỗ cho cả 5 fixture.
+
+### Ghi chép cũ, giữ lại vì hai giả thuyết bị loại vẫn đúng
 
 ## Bài học rộng
 

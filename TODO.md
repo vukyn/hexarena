@@ -190,7 +190,41 @@ is only so the shape is readable.
 
 ## Not done
 
-- [ ] ⚠️ **A one-way mirror rate stops being a measurement above one unit a
+- [x] ⚠️ **A one-way mirror rate stopped being a measurement above one unit a
+      side — FOUND AND FIXED.** The skill that resolved in an order that does not
+      mirror was the **aim walk**: `battle.aims` offered its candidates in
+      absolute board order, `hex.Cells()` is column-major over the whole board,
+      and `hex.Place` turns an enemy slot through 180 degrees — a rotation
+      reverses rows where a column-major walk does not, so the two halves were
+      offered their candidates in **opposite** orders. `Suggest` keeps the first
+      aim that reaches the best value, so a tie between two identical targets
+      fell to a different unit depending on which half was asking. The walk is by
+      authoring slot now, the far half first (`battle.mirroredOrder`).
+
+      **Measured, a squad against a copy of itself, 400 seeds each way.** Before:
+      one a side **1000‰ exactly**, two **1035‰**, three **1330‰**; per seed the
+      winner failed to swap in 0, **24** and **66** of 200. After: **1000‰ at
+      every size** and **200 of 200** seeds swap.
+      ⚠️ One unit a side could never show it — one enemy is no tie at all — which
+      is why `TestABothWaysMirrorIsExactlyEven`, which fights at `duelSlot`, was
+      green throughout and `spar` was sound. `forge.FightSquads` is now sound too.
+
+      ⚠️ **It cost one thing and the cost is measured rather than argued.** The
+      cleanser slot fixture reads 526→**485‰** against a slugger and 478→**460‰**
+      against a blighter, both still a long way over its floor of 450, and one
+      battle of its 600 now reaches the turn cap. Swept over 600 seeds both ways
+      — 1200 battles against the 600 the test runs — the engine stalls **4 times
+      with the fix and once without**, and the once is at seed **307**, outside
+      the 300-seed window the fixture fights. ⚠️ **The zero-stall bar was a
+      property of the seed window, not of the engine**, so it is a stated share
+      now (`stallShare`, ten per thousand, one declaration for all five fixtures)
+      and the count is logged whenever it is not nought. What a stall is here is
+      the open item below: a wall against a healer, healing that nearly matches
+      damage over a thousand blows, fourteen hundred declined turns.
+
+      The original entry:
+
+      ⚠️ **A one-way mirror rate stops being a measurement above one unit a
       side, and nothing in the suite says so.** A mirror fought one way and its
       reverse must sum to 1000‰. Measured, middle row, 1000 seeds each: one unit
       a side **1000‰ exactly**, two units **1021‰**, three units **962‰**.

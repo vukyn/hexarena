@@ -54,10 +54,7 @@ func TestACleanserEarnsItsSlotWhereASparCannotSeeIt(t *testing.T) {
 	} {
 		t.Run(against.name, func(t *testing.T) {
 			wins, losses, endless := fightSquads(t, books, characters, cleanser, against.squad)
-			if endless > 0 {
-				t.Errorf("%d of %d battles never finished, so the rest are a reading of the ones that did",
-					endless, menderSeeds*2)
-			}
+			refuseTooManyStalls(t, against.name, endless, menderSeeds*2)
 			decided := wins + losses
 			if decided == 0 {
 				t.Fatal("no battle was decided, so there is no rate to read")

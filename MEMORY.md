@@ -41,7 +41,7 @@ that owns the subject wins and the note is the thing to fix.
 - [⚠️ golden không xanh được ở 2 platform](memory/goldens-cannot-be-green-on-two-platforms.md) — 12 dòng `\` accept trên Windows; make check ĐỎ ở c8edde3 trên mac
 - [hexarena PvP plan](memory/hexarena-pvp-plan.md) — mirror client; bo1|bo3 KHÔNG bo2; 3 số version, digest là cửa
 - [thế hoà = thứ tự roster](memory/hexarena-side-is-worth-60-points.md) — seq = slice order, CALLER quyết; +62% ở 1v1, +8.5pp ở 2v2
-- [⚠️ mirror một chiều ≠ phép đo](memory/one-way-mirror-not-a-measurement.md) — bù nhau CHỈ đúng ở 1 unit/phe; phụ thuộc KIT
+- [⚠️ mirror một chiều: ĐÃ VÁ](memory/one-way-mirror-not-a-measurement.md) — aims duyệt ô TUYỆT ĐỐI mà Place xoay 180° → hai nửa ngược thứ tự
 - [data digest = cửa so BẰNG](memory/hexarena-data-digest.md) — peer-equality KHÔNG phải version; concat mù BIÊN DỜI + RENAME
 - [record + cursor thay Drain](memory/hexarena-cursor-record.md) — append-only + cursor mỗi consumer; ⚠️ view KHÔNG cap = hỏng 2 chiều
 - [ban/pick + spectator](memory/hexarena-draft-and-spectator-plan.md) — bước 1…5b xong (còn 5c + cờ host); ⚠️ hai cách gọi một bước, giữ bằng HAI vòng duyệt; wire KHÔNG nói phòng đủ người
