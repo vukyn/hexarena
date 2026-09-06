@@ -893,6 +893,152 @@
       ]
     },
     {
+      "id": "pokemon.diglett",
+      "name": "Diglett",
+      "origin": "pokemon",
+      "archetype": "manifold",
+      "image": "assets/diglett.svg",
+      "element": "ground",
+      "bio": "Chưa ai kéo được nó lên khỏi đất để xem bên dưới cái đầu ấy còn những gì. Nông dân quanh vùng bảo cứ thấy một cái là quanh đó còn mấy cái nữa, mà đếm thì không bao giờ ra đủ.",
+      "species": [
+        "brood"
+      ],
+      "stages": [
+        {
+          "name": "Diglett",
+          "min_level": 1,
+          "stats": {
+            "hp": {
+              "base": 793,
+              "max": 2380
+            },
+            "attack": {
+              "base": 154,
+              "max": 462
+            },
+            "defense": {
+              "base": 70,
+              "max": 210
+            },
+            "speed": {
+              "base": 35,
+              "max": 105
+            },
+            "accuracy": {
+              "base": 39,
+              "max": 119
+            },
+            "dodge": {
+              "base": 12,
+              "max": 38
+            }
+          }
+        },
+        {
+          "name": "Dugtrio",
+          "min_level": 24,
+          "image": "assets/dugtrio.svg",
+          "stats": {
+            "hp": {
+              "base": 1133,
+              "max": 3400
+            },
+            "attack": {
+              "base": 220,
+              "max": 660
+            },
+            "defense": {
+              "base": 100,
+              "max": 300
+            },
+            "speed": {
+              "base": 50,
+              "max": 150
+            },
+            "accuracy": {
+              "base": 56,
+              "max": 170
+            },
+            "dodge": {
+              "base": 18,
+              "max": 55
+            }
+          }
+        }
+      ],
+      "skills": [
+        {
+          "id": "dig"
+        },
+        {
+          "id": "rock_throw",
+          "at_level": 8
+        },
+        {
+          "id": "split",
+          "at_level": 12
+        },
+        {
+          "id": "sand_tomb",
+          "at_level": 16
+        },
+        {
+          "id": "burrow",
+          "at_level": 20
+        },
+        {
+          "id": "earthquake",
+          "at_level": 24
+        },
+        {
+          "id": "body_slam",
+          "at_level": 28
+        },
+        {
+          "id": "stone_edge",
+          "at_level": 32
+        },
+        {
+          "id": "sandstorm",
+          "at_level": 36
+        },
+        {
+          "id": "taunt",
+          "at_level": 40
+        },
+        {
+          "id": "seismic_toss",
+          "at_level": 44
+        },
+        {
+          "id": "rapid_spin",
+          "at_level": 48
+        },
+        {
+          "id": "inner_focus",
+          "at_level": 52
+        }
+      ],
+      "passives": [
+        {
+          "id": "swiftness",
+          "at_level": 16
+        },
+        {
+          "id": "endurance",
+          "at_level": 28
+        },
+        {
+          "id": "elusive",
+          "at_level": 36
+        },
+        {
+          "id": "blood_thirst",
+          "at_level": 48
+        }
+      ]
+    },
+    {
       "id": "pokemon.dratini",
       "name": "Dratini",
       "origin": "pokemon",

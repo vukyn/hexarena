@@ -1274,7 +1274,7 @@ func skillBlurb(t *testing.T, c Context, lib *forge.Library) BlurbScreen {
 	}
 	found, most := 0, 0
 	for index, declared := range skills {
-		lines := len(strings.Split(i18n.Vi.Describe(declared, lib.Patterns()), "\n"))
+		lines := len(strings.Split(i18n.Vi.Describe(declared, lib.Patterns(), lib.Statuses()), "\n"))
 		if lines > most {
 			found, most = index, lines
 		}

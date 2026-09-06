@@ -512,6 +512,36 @@
       "passives": [
         "blaze"
       ]
+    },
+    {
+      "id": "diglett.three",
+      "character": "pokemon.diglett",
+      "name": "tách ba",
+      "intent": "Xé mình ra cho đủ ba thân rồi đánh bằng số đông, đổi máu tối đa lấy lượt đi",
+      "skills": [
+        "split",
+        "dig",
+        "earthquake",
+        "rock_throw"
+      ],
+      "passives": [
+        "swiftness"
+      ]
+    },
+    {
+      "id": "diglett.whole",
+      "character": "pokemon.diglett",
+      "name": "nguyên khối",
+      "intent": "Giữ nguyên thân mình mà đánh: ít thân hơn, nhưng thân nào cũng còn đủ máu",
+      "skills": [
+        "earthquake",
+        "stone_edge",
+        "dig",
+        "rock_throw"
+      ],
+      "passives": [
+        "elusive"
+      ]
     }
   ]
 }

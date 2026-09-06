@@ -53,7 +53,9 @@ is only so the shape is readable.
   editing, art picker, kit and allowlist pickers, budget bounds, spar, `weigh`
   and `check`. A flavour clause is authorable from the flags as well as the
   wizard, and the damage preview reads the caster's own terms rather than only
-  the target's.
+  the target's. **The three books answer an author the same way**: a status may
+  carry its own `name` beside its numbers, exactly as a skill and a trait do,
+  and `statuses.json` refuses a field it does not know rather than dropping it.
 - **Reference screens.** Statuses, traits, elements, species, and the affinity
   chart drawn as closed ASCII loops in element colour.
 - **Vietnamese.** The TUI is Vietnamese-first with an English toggle; every
@@ -142,6 +144,14 @@ is only so the shape is readable.
   raised by `commit()`, which runs on the way out of every member, so merely
   opening one claimed a change. → `README.md` § Building a squad.
 
+- **The aim list opens on every skill**, including one with a single legal cell.
+  The rule it replaces — a question with one answer is not a decision — is right
+  about the choice and wrong about the reading: the aim list is where a skill's
+  footprint is drawn, so skipping it spent the turn before the player had seen
+  where it landed. Both screen paths ask, local and live. ⚠️ `cmd/hexarena`
+  deliberately does **not** follow: it is a prompt loop driven from a script or a
+  pipe, and an extra required line per single-aim skill is a change to the input
+  format of every script written against it.
 - **The battle screen budgets its own body**, because it never could fit the
   window the tool declares. At 120x24 the body has **twenty** rows, and heading +
   board (10) + roster (1 + one a unit) + order + option list (1 + one an option)
@@ -2989,44 +2999,50 @@ is only so the shape is readable.
       Worth doing with the item below — they are one complaint, that the screen
       will not show what a turn is about to do before it is spent.
 
-- [ ] **A skill with one legal target fires without asking.** The picker opens
-      only on `len(option.Aims) > 1`, so a single-target skill with one enemy left
-      commits the turn on the keystroke that chose the skill. The author wants the
-      picker every time.
-      ⚠️ **This is a decision being reversed, not a bug being fixed**, and the
-      reasoning is written down at `cmd/hexarena/main.go` — *a question with one
-      answer is not a decision*. It reads well until the answer is the one thing
-      the player wanted to look at before committing, which is why it belongs with
-      the coverage item: with a footprint on screen, the single-aim stop is where
-      it gets read.
-      Three sites hold the rule, and a change to one of them is a change to the
-      keystroke count of the other two: `internal/screen/play.go` twice — the
-      answer path and the live-take path — and the CLI's `chooseAim` once. Whether
-      the CLI follows is the author's call; it is a different kind of screen.
-      ⚠️ The screens are golden-held, so the extra keystroke moves every play
-      fixture that casts a single-aim skill. That is the change being visible
-      rather than a fixture problem, but it is the bulk of the diff.
+- [ ] **A golden holds a state and says nothing about the path to it, and three
+      suites build the aiming state by assignment.** Found 2026-09-06 making the
+      aim list open on every skill: the entry above predicted the extra keystroke
+      would move "every play fixture that casts a single-aim skill" and called it
+      the bulk of the diff. **It moved none.** Every fixture that draws the aim
+      list reaches it with `p.Aiming = true` — `screens_golden_test.aBattleAiming`,
+      `cmd/hexforge-tui/language_test.go` twice, `cmd/hexarena-tui/sweep_test.go`
+      twice — so the goldens hold the *state* and never pressed the key that
+      opens it.
+      ⚠️ That is not a fixture problem to fix by pressing keys instead: a golden
+      is a picture and a picture of a state is what it is for. It is worth
+      writing down because it bounds what the golden suite can be trusted to
+      catch — **no keystroke rule is held by a golden**, and every one of them
+      therefore needs a behaviour test of its own or it is held by nothing.
+      ⚠️ The second half is worse and is the same shape: `live_test.go` presses
+      enter in a `for action.Kind == Stay && struck.Aiming` loop, which tolerates
+      either answer by construction. Reverting `PlayScreen.answer` alone reddened
+      **not one test in the repository** until
+      `TestALiveAimListOpensForASkillWithOneLegalCell` was written. A loop written
+      to be robust against a rule cannot measure it — and the local twin of that
+      rule *was* covered, which is exactly what makes the gap invisible.
+      What to do with it: sweep for the other `for … && screen.<flag>` loops in
+      the screen suites and ask of each whether the rule it walks past is held
+      anywhere else.
 
-- [ ] **`statuses.json` accepts fields it ignores, and a Vietnamese name is one
-      of them.** Found 2026-09-05 shipping `stoked`: the status was authored with
-      `"name"` and `"flavour"` beside its numbers, exactly as a skill or a passive
-      carries them, and it **parsed clean**. Nothing said the two fields go
-      nowhere — a status's Vietnamese name lives in `i18n.statusGloss`, not in the
-      data — so the book loaded, the battle ran, and the id reached the log bare
-      until `TestEveryShippedStatusIsGlossed` caught it two steps later.
-
-      ⚠️ **The neighbouring books differ on this and that is what makes it a
-      trap.** `skills.json` and `passives.json` both take an authored `name`;
-      `statuses.json` does not. An author moving between the three has no reason
-      to expect the third to be the odd one, and the file gives no sign.
-
-      Two ways out, and the choice is a design decision rather than a fix:
-      **(a)** refuse unknown fields at parse — cheap, and it turns a silent drop
-      into a sentence in front of the author; or **(b)** let a status carry its own
-      `name` like its neighbours and have `statusGloss` fall back to it, which is
-      the direction skills already went (`skillGloss` is a frozen fallback, see
-      the note in `internal/i18n/gloss.go`). (b) removes the asymmetry rather than
-      documenting it, and is the one to prefer if the two are ever done at once.
+- [ ] **A field inside a `modifier` is still dropped silently, in all three
+      books.** Found 2026-09-06 while closing the same hole in `statuses.json`:
+      `status.ParseBook` now decodes with `DisallowUnknownFields`, and that flag
+      **stops at a custom unmarshaller**. `modifier.Modifier` has one, so
+      `{"target":"attack","mode":"add","amount":100,"amout":100}` inside a status,
+      a trait or a skill parses clean and the typo goes nowhere — the exact defect
+      the status fix was written for, one level down.
+      ⚠️ The fix belongs to `modifier` and not to any of its three readers, which
+      is why it was not done in passing: `Modifier.UnmarshalJSON` decodes
+      `modifierFile` with `json.Unmarshal`, so the change is four lines there and
+      it lands in every book at once. What has to be checked with it is the other
+      direction — `passive.ParseBook` and `skill.ParseBook` do **not** refuse
+      unknown fields at their own level either, so a `flavour` on a status is
+      refused today while a misspelt field on a *skill* is not, which is a new
+      asymmetry in place of the one that was closed.
+      ⚠️ And a stricter decoder is the change that can refuse the data it was
+      written for. `TestShippedStatusBook` is what caught nothing this time
+      because statuses.json was already clean; the two bigger books have not been
+      through it.
 
 - [ ] **The cast listing draws every row, so the detail pane shrinks as the cast
       grows.** Found 2026-09-05 while shipping `pokemon.torchic`, when a sweep
@@ -3065,6 +3081,17 @@ is only so the shape is readable.
       burrow mechanic shipped 2026-09-05 — a status that takes its holder off
       `aims` and refuses every application somebody else throws — and `Suggest`
       has no term for any of it.
+
+      ⚠️ **This entry once said the same of the SPLIT and that half was wrong.**
+      Measured 2026-09-06: the shipped split is cast **178 times over 90 duels**,
+      because `Suggest`'s summon branch prices it through `summonWorth`. What it
+      did not price was the cost — that branch `continue`s and so never reaches
+      `prices.rate`, where `spentHealth` is subtracted — so the rating was buying
+      a body and being charged nothing. Fixed by subtracting the price inside
+      `summonWorth`; casts fell to **90 over 90 duels**, one a duel, the first
+      taken and the second declined. Hiding is still unpriced, and the difference
+      between the two is worth keeping in mind here: a summon has a branch that
+      rates it and hiding has none at all.
 
       What a turn is worth to the rating is damage done, health restored and
       statuses landed. Hiding does **none** of those: it is worth the damage that

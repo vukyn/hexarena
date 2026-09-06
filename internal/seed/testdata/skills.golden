@@ -148,6 +148,8 @@ mind_burn       dark      enemy    2  single         2300     1   2300   900    
 mind_crush      dark      enemy    2  column         1400     1   1400   850    3     0     0      480
 blaze_kick      fire      enemy    1  single         1300     1   1300   900    2     0   250      445
 flare_blitz     fire      enemy    1  single         2400     1   2400   900    3     0     0      822
+split           ground    self     0  single            0     1      0  1000    4     0     0        0
+burrow          ground    self     0  single            0     1      0  1000    5     0     0        0
 
 == statuses inflicted, chance is fixed and no stat moves it ==
 skill           status           stacks   chance   accuracy   lands per cast
@@ -236,6 +238,8 @@ sandstorm       blind                  1      600        950              570
 nuzzle          stun                   1      450       1000              450
 blaze_kick      burn                   1      400        900              360
 flare_blitz     burn                   1      500        900              450
+split           sundered (self)        1     1000       1000                -
+burrow          burrowed (self)        1     1000       1000                -
 
 == who may carry, a skill absent here is free to anybody ==
 skill           elements   archetypes        characters          species   origins
@@ -377,6 +381,8 @@ mind_burn       -          -                 -                   -         pokem
 mind_crush      -          -                 -                   -         pokemon
 blaze_kick      -          -                 -                   -         pokemon
 flare_blitz     -          -                 -                   -         pokemon
+split           -          -                 -                   -         pokemon
+burrow          -          -                 -                   -         pokemon
 
 == conditional amplifiers ==
 skill           whose    needs                       stacks   power   amplified   damage   amplified   gain
@@ -400,6 +406,7 @@ verdant_mend    caster   verdure                          10       0           0
 wellspring      caster   moisture                         20       0           0        0           0      - (consumes)
 acid_spray      target   poison                            2     600        1100      205         377  1.83x
 wrecking_swing  caster   heft                              5    8000        8000     2742        2742  1.00x (consumes)
+split           caster   sundered                          0       0           0        0           0      -
 
 == a gradient off the caster's own health ==
 what the caster's own wounds add, at the bottom of the bar
@@ -464,6 +471,8 @@ moisture    reserve           999       5            0      0               0   
 heft        reserve             5       4            0      0               0          0   -
 stoked      buff                5       2            0      0               0          0   speed +12.0%
 kinship     buff                2       0            0      0               0          0   attack +10.0%
+sundered    buff                2       0            0      0               0          0   -
+burrowed    buff                1       2            0      0               0          0   -
 
 == area shapes a skill can choose ==
 shape          width   best aim   worst aim

@@ -43,22 +43,22 @@ import (
 // vocabulary rather than two — and it gets a second language for free, which is
 // what the authoring tool needs, because that tool has a language toggle and a
 // Vietnamese-only description would ignore it.
-func (l Lang) Describe(declared skill.Skill, shapes *pattern.Book) string {
+func (l Lang) Describe(declared skill.Skill, shapes *pattern.Book, kinds *status.Book) string {
 	lines := make([]string, 0, 4)
 	if opening := l.describeOpening(declared); opening != "" {
 		lines = append(lines, opening)
 	}
-	lines = append(lines, l.describeExtras(declared)...)
-	if condition := l.describeSelfCondition(declared, shapes); condition != "" {
+	lines = append(lines, l.describeExtras(declared, kinds)...)
+	if condition := l.describeSelfCondition(declared, shapes, kinds); condition != "" {
 		lines = append(lines, condition)
 	}
 	if gradient := l.describeSelfGradient(declared); gradient != "" {
 		lines = append(lines, gradient)
 	}
-	if condition := l.describeCondition(declared, shapes); condition != "" {
+	if condition := l.describeCondition(declared, shapes, kinds); condition != "" {
 		lines = append(lines, condition)
 	}
-	lines = append(lines, l.describeCosts(declared, shapes))
+	lines = append(lines, l.describeCosts(declared, shapes, kinds))
 	return strings.Join(lines, "\n")
 }
 
@@ -189,7 +189,7 @@ func cellsCovered(declared skill.Skill, shapes *pattern.Book) int {
 
 // describeExtras is everything a skill does that is not damage, one sentence
 // each, in the order the fields are declared in.
-func (l Lang) describeExtras(declared skill.Skill) []string {
+func (l Lang) describeExtras(declared skill.Skill, kinds *status.Book) []string {
 	out := make([]string, 0, 4)
 	if declared.Restores > 0 {
 		out = append(out, l.Say(BlurbRestores,
@@ -217,7 +217,7 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 	}
 	for _, application := range declared.Applies {
 		out = append(out, l.Say(given,
-			l.stacked(application.Status, application.Stacks), share(application.Chance)))
+			l.stacked(application.Status, application.Stacks, kinds), share(application.Chance)))
 	}
 	// One sentence for all of them rather than one each: a skill granting two
 	// buffs grants them together, on the same turn, and two sentences read as two
@@ -225,7 +225,7 @@ func (l Lang) describeExtras(declared skill.Skill) []string {
 	if len(declared.SelfApplies) > 0 {
 		names := make([]string, 0, len(declared.SelfApplies))
 		for _, application := range declared.SelfApplies {
-			names = append(names, l.stacked(application.Status, application.Stacks))
+			names = append(names, l.stacked(application.Status, application.Stacks, kinds))
 		}
 		out = append(out, l.Say(BlurbSelfApplies, l.join(names)))
 	}
@@ -333,8 +333,8 @@ func (l Lang) summonSubject(declared *skill.Summon) string {
 // describeCondition is the amplifier read against the target, written as what
 // that target must be rather than as a bonus figure: a player picking a skill is
 // asking when it is worth using, and "+1000 power" answers a different question.
-func (l Lang) describeCondition(declared skill.Skill, shapes *pattern.Book) string {
-	return l.conditionSentence(declared, declared.Requires, BlurbAmplified, shapes)
+func (l Lang) describeCondition(declared skill.Skill, shapes *pattern.Book, kinds *status.Book) string {
+	return l.conditionSentence(declared, declared.Requires, BlurbAmplified, shapes, kinds)
 }
 
 // describeSelfCondition is the same sentence about the caster.
@@ -342,8 +342,8 @@ func (l Lang) describeCondition(declared skill.Skill, shapes *pattern.Book) stri
 // A separate sentence rather than a second clause on the first, because they are
 // two different bargains: one is about who is in front of you and the other is
 // about what you are spending, and a skill carrying both is offering both.
-func (l Lang) describeSelfCondition(declared skill.Skill, shapes *pattern.Book) string {
-	return l.conditionSentence(declared, declared.SelfRequires, BlurbSelfAmplified, shapes)
+func (l Lang) describeSelfCondition(declared skill.Skill, shapes *pattern.Book, kinds *status.Book) string {
+	return l.conditionSentence(declared, declared.SelfRequires, BlurbSelfAmplified, shapes, kinds)
 }
 
 // describeSelfGradient is the caster's health read as a slope rather than a
@@ -372,14 +372,28 @@ func (l Lang) describeSelfGradient(declared skill.Skill) string {
 // the opening changes between the two. That is what makes one function honest
 // here rather than a saving: the sentences really are the same sentence.
 func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition,
-	opening Key, shapes *pattern.Book) string {
+	opening Key, shapes *pattern.Book, kinds *status.Book) string {
 	if condition == nil {
 		return ""
 	}
 	clauses := make([]string, 0, 2)
-	if condition.ReadsStatus() {
+	// ⚠️ **A pure cap reads the status field and means the opposite of the clause
+	// below**, so it is answered first and the floor clause is skipped. The shipped
+	// split described itself as "castable only while this unit is carrying
+	// sundered" — the one state in which it cannot be cast — because this arm did
+	// not exist and ReadsStatus() is true either way. A condition naming BOTH a
+	// floor and a cap is a window and still wants both clauses; only the pure cap
+	// suppresses the floor, since its MinStacks is nought and would read as
+	// "carrying" a status the caster may well not have.
+	switch {
+	case condition.CapsStacks() && condition.MinStacks == 0:
+		clauses = append(clauses, l.Say(BlurbWhenUnspent, condition.BelowStacks))
+	case condition.ReadsStatus():
 		clauses = append(clauses, l.Say(BlurbWhenCarrying,
-			l.carrying(condition.Status, condition.MinStacks)))
+			l.carrying(condition.Status, condition.MinStacks, kinds)))
+	}
+	if condition.CapsStacks() && condition.MinStacks > 0 {
+		clauses = append(clauses, l.Say(BlurbWhenUnspent, condition.BelowStacks))
 	}
 	if condition.ReadsHealth() {
 		clauses = append(clauses, l.Say(BlurbWhenHurt, share(condition.BelowHealth)))
@@ -410,7 +424,7 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 	// the half of the bargain the reader is choosing between.
 	if condition.Scales() {
 		sentence += l.Say(BlurbScalesPerStack,
-			l.glossed(condition.Status), share(condition.StackPower))
+			l.glossed(condition.Status, kinds), share(condition.StackPower))
 	}
 	// The health twin of the clause above, and a separate arm for the same reason
 	// skill.ScalesRestore is a separate predicate: a spend paid in health adds
@@ -420,14 +434,14 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 	// this clause is where the whole heal is written down.
 	if condition.ScalesRestore() {
 		sentence += l.Say(BlurbRestoresPerStack,
-			l.glossed(condition.Status), share(condition.StackRestore),
+			l.glossed(condition.Status, kinds), share(condition.StackRestore),
 			l.describeStat(declared.Scaling.Stat))
 	}
 	// What the discharge does, then what it costs — the order the bargain is
 	// made in. A reader told what was eaten and only then what that bought has to
 	// hold the first clause open until the second arrives.
 	if condition.Arcs() {
-		sentence += l.Say(BlurbArcs, l.glossed(condition.Status), share(condition.ArcPower))
+		sentence += l.Say(BlurbArcs, l.glossed(condition.Status, kinds), share(condition.ArcPower))
 		if condition.ChainsOn() {
 			sentence += l.Text(BlurbChains)
 		}
@@ -447,7 +461,7 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 			// what it takes off a deep reserve is a count, and it is the count the
 			// reader has to know to decide whether banking further is worth a turn.
 			sentence += l.Say(BlurbConsumesUpTo,
-				condition.Takes(skill.MaxSpendPower), l.glossed(condition.Status))
+				condition.Takes(skill.MaxSpendPower), l.glossed(condition.Status, kinds))
 		case condition.ScalesRestore() && condition.ConsumeStacks == 0:
 			// The health currency's own ceiling, and it needs its own arm because the
 			// two rates are bounded by different constants: reading this one against
@@ -455,25 +469,25 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 			// the clause above — what a deep reserve actually hands over is the fact a
 			// reader banks or spends on.
 			sentence += l.Say(BlurbConsumesUpTo,
-				condition.Takes(skill.MaxSpendRestore), l.glossed(condition.Status))
+				condition.Takes(skill.MaxSpendRestore), l.glossed(condition.Status, kinds))
 		case condition.Arcs() && condition.ConsumeStacks == 0:
 			// A nuke, and it needs a clause of its own rather than the detonate's:
 			// "eats the charge" reads as one stack against a sentence that has just
 			// said what every stack does, and in English it puts a second "and" in
 			// a line that already has one.
-			sentence += l.Say(BlurbConsumesPile, l.glossed(condition.Status))
+			sentence += l.Say(BlurbConsumesPile, l.glossed(condition.Status, kinds))
 		case condition.ConsumeStacks == 1 && condition.Arcs():
-			sentence += l.Say(BlurbConsumesEachStrikeOne, l.glossed(condition.Status))
+			sentence += l.Say(BlurbConsumesEachStrikeOne, l.glossed(condition.Status, kinds))
 		case condition.ConsumeStacks > 0 && condition.Arcs():
 			sentence += l.Say(BlurbConsumesEachStrike,
-				condition.ConsumeStacks, l.glossed(condition.Status))
+				condition.ConsumeStacks, l.glossed(condition.Status, kinds))
 		case condition.ConsumeStacks == 1:
-			sentence += l.Say(BlurbConsumesStacksOne, l.glossed(condition.Status))
+			sentence += l.Say(BlurbConsumesStacksOne, l.glossed(condition.Status, kinds))
 		case condition.ConsumeStacks > 0:
 			sentence += l.Say(BlurbConsumesStacks,
-				condition.ConsumeStacks, l.glossed(condition.Status))
+				condition.ConsumeStacks, l.glossed(condition.Status, kinds))
 		default:
-			sentence += l.Say(BlurbConsumes, l.glossed(condition.Status))
+			sentence += l.Say(BlurbConsumes, l.glossed(condition.Status, kinds))
 		}
 	}
 	// The riders the condition buys, last, because they are the smallest of the
@@ -483,14 +497,14 @@ func (l Lang) conditionSentence(declared skill.Skill, condition *skill.Condition
 	// reading a roll that does not happen.
 	for _, application := range condition.Applies {
 		sentence += l.Say(BlurbConditionInflicts,
-			l.stacked(application.Status, application.Stacks), share(application.Chance))
+			l.stacked(application.Status, application.Stacks, kinds), share(application.Chance))
 	}
 	return sentence + "."
 }
 
 // describeCosts is the line every skill has: how far it reaches, how often it
 // connects, and how long it is gone for.
-func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
+func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book, kinds *status.Book) string {
 	parts := make([]string, 0, 3)
 	if declared.Target == skill.Self {
 		// A self-targeted skill has no range to state, and saying nothing at all
@@ -576,7 +590,7 @@ func (l Lang) describeCosts(declared skill.Skill, shapes *pattern.Book) string {
 // could only ever arrive trimmed. It also put the raw category enum spellings on
 // an English screen, because the names it enumerated come from a Vietnamese-only
 // gloss table. Describe keeps enumerating; its line has room.
-func (l Lang) SummariseSkill(declared skill.Skill, shapes *pattern.Book) string {
+func (l Lang) SummariseSkill(declared skill.Skill, shapes *pattern.Book, kinds *status.Book) string {
 	parts := make([]string, 0, 8)
 	if declared.Power > 0 {
 		// The total rather than the per-strike figure, because a row comparing
@@ -608,12 +622,12 @@ func (l Lang) SummariseSkill(declared skill.Skill, shapes *pattern.Book) string 
 	// naming the caster, which is the one place the distinction is load-bearing.
 	for _, application := range declared.Applies {
 		parts = append(parts, l.Say(SummaryStatus,
-			l.stacked(application.Status, application.Stacks), share(application.Chance)))
+			l.stacked(application.Status, application.Stacks, kinds), share(application.Chance)))
 	}
 	if len(declared.SelfApplies) > 0 {
 		names := make([]string, 0, len(declared.SelfApplies))
 		for _, application := range declared.SelfApplies {
-			names = append(names, l.stacked(application.Status, application.Stacks))
+			names = append(names, l.stacked(application.Status, application.Stacks, kinds))
 		}
 		parts = append(parts, l.Say(SummarySelfApplies, l.join(names)))
 	}
@@ -633,11 +647,11 @@ func (l Lang) SummariseSkill(declared skill.Skill, shapes *pattern.Book) string 
 		parts = append(parts, l.Say(
 			l.summariseStrips(declared.Strips), declared.Strips.Stacks))
 	}
-	if clause := l.summariseCondition(declared, declared.Requires, SummaryAmplified); clause != "" {
+	if clause := l.summariseCondition(declared, declared.Requires, SummaryAmplified, kinds); clause != "" {
 		parts = append(parts, clause)
 	}
 	if clause := l.summariseCondition(
-		declared, declared.SelfRequires, SummarySelfAmplified); clause != "" {
+		declared, declared.SelfRequires, SummarySelfAmplified, kinds); clause != "" {
 		parts = append(parts, clause)
 	}
 	if declared.SelfGradient != nil {
@@ -709,7 +723,7 @@ func (l Lang) summariseStrips(strips *skill.Cleanse) Key {
 // reason both callers exist: reading only Requires is a mistake this repository
 // has already shipped once, in forge.PreviewDamage.
 func (l Lang) summariseCondition(
-	declared skill.Skill, condition *skill.Condition, wording Key) string {
+	declared skill.Skill, condition *skill.Condition, wording Key, kinds *status.Book) string {
 	if condition == nil {
 		return ""
 	}
@@ -733,7 +747,7 @@ func (l Lang) summariseCondition(
 		// and "2+" rather than a comparison glyph, because the ones that read as a
 		// threshold are East Asian Ambiguous and are drawn two cells wide on some
 		// terminals while every width here is measured at one.
-		clauses = append(clauses, l.atLeast(condition.Status, condition.MinStacks))
+		clauses = append(clauses, l.atLeast(condition.Status, condition.MinStacks, kinds))
 	}
 	if condition.ReadsHealth() {
 		clauses = append(clauses, l.Say(SummaryHurt, share(condition.BelowHealth)))
@@ -995,7 +1009,7 @@ func StatusesNamed(held passive.Passive) []string {
 // from a skill's. A skill has one opening sentence for the clause to take over;
 // a trait has between one and six lines and no opening among them, so a clause
 // that replaced one would be replacing whichever happened to sort first.
-func (l Lang) DescribePassive(held passive.Passive) string {
+func (l Lang) DescribePassive(held passive.Passive, kinds *status.Book) string {
 	lines := make([]string, 0, 4)
 	if flavour := l.traitFlavour(held); flavour != "" {
 		lines = append(lines, flavour+".")
@@ -1010,11 +1024,11 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 		carries = BlurbTraitGrantsGated
 	}
 	for _, grant := range held.Grants {
-		lines = append(lines, l.Say(carries, l.stacked(grant.Status, grant.Stacks)))
+		lines = append(lines, l.Say(carries, l.stacked(grant.Status, grant.Stacks, kinds)))
 	}
 	for _, resistance := range held.Resists {
 		if resistance.Amount >= scale.Base {
-			lines = append(lines, l.Say(BlurbTraitImmune, l.glossed(resistance.Status)))
+			lines = append(lines, l.Say(BlurbTraitImmune, l.glossed(resistance.Status, kinds)))
 			continue
 		}
 		// A negative share is a vulnerability, and it gets its own sentence
@@ -1024,30 +1038,30 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 		// sign is carried by the verb.
 		if resistance.Amount < 0 {
 			lines = append(lines, l.Say(BlurbTraitVulnerable,
-				share(-resistance.Amount), l.glossed(resistance.Status)))
+				share(-resistance.Amount), l.glossed(resistance.Status, kinds)))
 			continue
 		}
 		lines = append(lines, l.Say(BlurbTraitResists,
-			share(resistance.Amount), l.glossed(resistance.Status)))
+			share(resistance.Amount), l.glossed(resistance.Status, kinds)))
 	}
 	for _, application := range held.Renews {
 		lines = append(lines, l.Say(BlurbTraitRenews,
-			l.stacked(application.Status, application.Stacks), share(application.Chance)))
+			l.stacked(application.Status, application.Stacks, kinds), share(application.Chance)))
 	}
 	for _, application := range held.Applies {
 		lines = append(lines, l.Say(BlurbTraitApplies,
-			l.stacked(application.Status, application.Stacks), share(application.Chance)))
+			l.stacked(application.Status, application.Stacks, kinds), share(application.Chance)))
 	}
 	// Both shares, each as its own sentence, and the status named first in both
 	// languages so one arg order serves both.
 	for _, raise := range held.Amplifies {
 		if raise.Effect > 0 {
 			lines = append(lines, l.Say(BlurbTraitAmplifiesEffect,
-				l.glossed(raise.Status), share(raise.Effect)))
+				l.glossed(raise.Status, kinds), share(raise.Effect)))
 		}
 		if raise.Chance > 0 {
 			lines = append(lines, l.Say(BlurbTraitAmplifiesChance,
-				l.glossed(raise.Status), share(raise.Chance)))
+				l.glossed(raise.Status, kinds), share(raise.Chance)))
 		}
 	}
 	if held.Drains > 0 {
@@ -1080,7 +1094,7 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 			// TestTheSameBlanksInEveryLanguage holds one arg order for the pair.
 			lines = append(lines, l.Say(BlurbTraitReplyBoth,
 				share(held.Replies.Power), l.describeStat(held.Replies.Scaling.Stat),
-				share(first.Chance), l.stacked(first.Status, first.Stacks)))
+				share(first.Chance), l.stacked(first.Status, first.Stacks, kinds)))
 		case held.Replies.Power > 0:
 			// The stat is named rather than assumed. It was "attack" in the
 			// wording itself while every reply was priced off attack, and a
@@ -1091,7 +1105,7 @@ func (l Lang) DescribePassive(held passive.Passive) string {
 		default:
 			first := held.Replies.Applies[0]
 			lines = append(lines, l.Say(BlurbTraitReplyStatus,
-				share(first.Chance), l.stacked(first.Status, first.Stacks)))
+				share(first.Chance), l.stacked(first.Status, first.Stacks, kinds)))
 		}
 	}
 	if held.While != nil {
@@ -1153,18 +1167,39 @@ func share(permille int) string {
 // glossed is a data id under its name in this language, falling back to the id.
 // A miss is a bare id rather than a blank, the same answer every other listing
 // gives, because a name nobody wrote is better read than guessed at.
-func (l Lang) glossed(id string) string {
-	if name := l.Gloss(id); name != "" {
+func (l Lang) glossed(id string, kinds *status.Book) string {
+	if name := l.statusName(id, kinds); name != "" {
 		return name
 	}
 	return id
 }
 
+// statusName is StatusName for a status known only by its id, which is how every
+// status reaches these sentences: a skill declares what it inflicts, gates on and
+// strips as ids, and a trait the same, so the name has to be looked up rather than
+// carried.
+//
+// ⚠️ **A nil book is a supported answer and falls back to the compiled table**,
+// which is what keeps the authored name from being a second way to fail. Every
+// caller that has a library passes one; a caller that does not — a replay
+// rendered without books, a test describing a hand-built skill — gets exactly what
+// it got before this field existed. The failure mode being avoided is the loud
+// one: a description that returned a bare id because the book was not threaded
+// far enough would be a regression on data that never changed.
+func (l Lang) statusName(id string, kinds *status.Book) string {
+	if kinds != nil {
+		if kind, err := kinds.Lookup(id); err == nil {
+			return l.StatusName(kind)
+		}
+	}
+	return l.Gloss(id)
+}
+
 // stacked is a status under its name with its count, when the count is worth
 // saying. One stack is the unstated default everywhere in the data, so writing
 // "x1" would make the common case look like a special one.
-func (l Lang) stacked(id string, stacks int) string {
-	name := l.glossed(id)
+func (l Lang) stacked(id string, stacks int, kinds *status.Book) string {
+	name := l.glossed(id, kinds)
 	if stacks <= 1 {
 		return name
 	}
@@ -1181,16 +1216,16 @@ func (l Lang) stacked(id string, stacks int) string {
 // is the first to ask for two, and it is also the skill where the ambiguity bites
 // hardest: it reads "carrying charge x2" and then "spends every stack it had", so
 // a reader has no way to tell whether the two was the requirement or the payment.
-func (l Lang) carrying(id string, minimum int) string {
+func (l Lang) carrying(id string, minimum int, kinds *status.Book) string {
 	if minimum <= 1 {
-		return l.glossed(id)
+		return l.glossed(id, kinds)
 	}
-	return l.Say(BlurbAtLeast, minimum, l.glossed(id))
+	return l.Say(BlurbAtLeast, minimum, l.glossed(id, kinds))
 }
 
 // atLeast is carrying's compact form, for the one-line summary.
-func (l Lang) atLeast(id string, minimum int) string {
-	name := l.glossed(id)
+func (l Lang) atLeast(id string, minimum int, kinds *status.Book) string {
+	name := l.glossed(id, kinds)
 	if minimum <= 1 {
 		return name
 	}

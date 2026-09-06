@@ -3429,6 +3429,72 @@
           "stacks": 1
         }
       ]
+    },
+    {
+      "id": "split",
+      "name": "phân thân",
+      "flavour": "Tự xé mình ra, và cái phần xé đi thì không mọc lại được nữa",
+      "element": "ground",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 4,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "sundered",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ],
+      "self_requires": {
+        "status": "sundered",
+        "below_stacks": 2,
+        "gates": true
+      },
+      "summons": {
+        "count": 1,
+        "name": "phân thân",
+        "share": 900,
+        "splits": 300,
+        "skills": [
+          "dig",
+          "rock_throw"
+        ],
+        "bound": false
+      }
+    },
+    {
+      "id": "burrow",
+      "name": "độn thổ",
+      "flavour": "Lặn xuống dưới lớp đất, ở đó thì không ai với tới mà cũng chẳng thấy gì trên này",
+      "element": "ground",
+      "range": 0,
+      "pattern": "single",
+      "power": 0,
+      "strikes": 0,
+      "accuracy": 1000,
+      "cooldown": 5,
+      "target": "self",
+      "restrict": {
+        "origins": [
+          "pokemon"
+        ]
+      },
+      "self_applies": [
+        {
+          "status": "burrowed",
+          "chance": 1000,
+          "stacks": 1
+        }
+      ]
     }
   ]
 }

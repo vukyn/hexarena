@@ -116,6 +116,24 @@ pokemon.cleffa — Cleffa
     level 60 hp 4200, atk 420, def 380, spd 115, acc 155, ddg 55
              absorbs 9523 of the 11500 budget, 1977 to spare
 
+pokemon.diglett — Diglett
+  from     Pokémon (anime)
+  preset   manifold
+  element  ground
+  species  brood
+  art      assets/diglett.svg
+  kit      dig rock_throw@8 split@12 sand_tomb@16 burrow@20 earthquake@24 body_slam@28 stone_edge@32 sandstorm@36 taunt@40 seismic_toss@44 rapid_spin@48 inner_focus@52
+  stage "Diglett" owns levels 1 to 23, showing assets/diglett.svg
+    level 1  hp 793, atk 154, def 70, spd 35, acc 39, ddg 12
+             absorbs 979 of the 11500 budget, 10521 to spare
+    level 23 hp 1384, atk 268, def 122, spd 61, acc 68, ddg 21
+             absorbs 1949 of the 11500 budget, 9551 to spare
+  stage "Dugtrio" owns levels 24 to 60, showing assets/dugtrio.svg
+    level 24 hp 2016, atk 391, def 177, spd 88, acc 100, ddg 32
+             absorbs 3210 of the 11500 budget, 8290 to spare
+    level 60 hp 3400, atk 660, def 300, spd 150, acc 170, ddg 55
+             absorbs 6800 of the 11500 budget, 4700 to spare
+
 pokemon.dratini — Dratini
   from     Pokémon (anime)
   preset   tempest
@@ -431,4 +449,4 @@ pokemon.torchic — Torchic
     level 60 hp 3000, atk 700, def 340, spd 120, acc 165, ddg 62
              absorbs 6410 of the 11500 budget, 5090 to spare
 
-20 characters
+21 characters

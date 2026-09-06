@@ -147,6 +147,25 @@ func playing(t *testing.T, c Context, p PlayScreen, keys ...string) PlayScreen {
 	return p
 }
 
+// takingATurn is the whole of one local turn from the option list: the keystroke
+// that chooses the skill, and the keystroke that answers the aim list it opens.
+//
+// It is TWO presses because the aim list opens every time now, including for a
+// skill with one legal cell — see PlayScreen.choose for why. The helper asserts
+// the first press opened it rather than assuming so, which makes this the place
+// the rule is held: a revert to "one cell does not ask" reddens every test that
+// takes a turn, and reddens it here with a sentence rather than three files down
+// with "nothing was written down".
+func takingATurn(t *testing.T, c Context, p PlayScreen) PlayScreen {
+	t.Helper()
+	chosen := playing(t, c, p, "enter")
+	if !chosen.Aiming {
+		t.Fatal("choosing a skill did not open the aim list; the picker is supposed to " +
+			"open on every skill, however few cells it may be pointed at")
+	}
+	return playing(t, c, chosen, "enter")
+}
+
 // asking is one keystroke with the action it produced, for the handful of tests
 // that are about what the screen asked for rather than about what it became.
 func asking(t *testing.T, c Context, p PlayScreen, name string) (PlayScreen, Action) {
@@ -166,7 +185,7 @@ func TestATurnTakenMovesTheBattleOn(t *testing.T) {
 	c, _ := start(t, i18n.En)
 	p := atTheBattle(t, c)
 	before, events := len(p.Script), len(p.Events)
-	p = playing(t, c, p, "enter")
+	p = takingATurn(t, c, p)
 	if len(p.Script) <= before {
 		t.Fatal("nothing was written down")
 	}
@@ -195,7 +214,7 @@ func TestUndoTakesBackYourOwnTurnAndNotTheEngines(t *testing.T) {
 	c, _ := start(t, i18n.En)
 	p := atTheBattle(t, c)
 	opening := p.Script
-	p = playing(t, c, p, "enter")
+	p = takingATurn(t, c, p)
 	if len(p.Script) <= len(opening) {
 		t.Fatal("nothing to take back")
 	}
@@ -228,7 +247,7 @@ func TestUndoTakesBackYourOwnTurnAndNotTheEngines(t *testing.T) {
 // been played once.
 func TestAnotherSeedIsAnotherBattle(t *testing.T) {
 	c, _ := start(t, i18n.En)
-	p := playing(t, c, atTheBattle(t, c), "enter")
+	p := takingATurn(t, c, atTheBattle(t, c))
 	seed, fought := p.Seed, len(p.Script)
 	p = playing(t, c, p, "n")
 	if p.Seed != seed+1 {
@@ -363,7 +382,7 @@ func TestEveryOptionIsSummarised(t *testing.T) {
 			// for a clause of its own: a test naming one here would be the wording
 			// living in two places, which is what the AST scan refuses.
 			summary := c.Lang.SummariseSkill(
-				mustSkill(t, c, option.Skill), c.Lib.Patterns())
+				mustSkill(t, c, option.Skill), c.Lib.Patterns(), c.Lib.Statuses())
 			if strings.TrimSpace(summary) == "" {
 				t.Errorf("%s: %q summarises as nothing", lang, option.Skill)
 			}
@@ -438,7 +457,7 @@ func TestAnOptionRowCarriesAsMuchOfItsSummaryAsItHasRoomFor(t *testing.T) {
 					lang, index, named, option.Skill, row)
 			}
 			summary := c.Lang.SummariseSkill(
-				mustSkill(t, c, option.Skill), c.Lib.Patterns())
+				mustSkill(t, c, option.Skill), c.Lib.Patterns(), c.Lib.Statuses())
 			if !strings.HasPrefix(summary, tail) || tail == "" {
 				t.Errorf("%s: %q draws %q beside it, which is no part of %q",
 					lang, option.Skill, tail, summary)
@@ -514,7 +533,7 @@ func TestNoSummaryIsWiderThanARowCanHold(t *testing.T) {
 		worst, worstAt := 0, ""
 		for _, declared := range skills {
 			if width := lipgloss.Width(
-				c.Lang.SummariseSkill(declared, c.Lib.Patterns())); width > worst {
+				c.Lang.SummariseSkill(declared, c.Lib.Patterns(), c.Lib.Statuses())); width > worst {
 				worst, worstAt = width, declared.ID
 			}
 		}
@@ -576,7 +595,7 @@ func TestAnUnavailableOptionKeepsItsReasonAndNotItsSummary(t *testing.T) {
 		t.Errorf("the refused option draws %q beside it, which is no part of its "+
 			"reason %q", tail, refusal)
 	}
-	summary := c.Lang.SummariseSkill(mustSkill(t, c, option.Skill), c.Lib.Patterns())
+	summary := c.Lang.SummariseSkill(mustSkill(t, c, option.Skill), c.Lib.Patterns(), c.Lib.Statuses())
 	if strings.TrimSpace(summary) == "" {
 		t.Fatalf("%q summarises as nothing, so this proves nothing", option.Skill)
 	}
@@ -1302,9 +1321,15 @@ func TestActingReturnsTheLogToItsTail(t *testing.T) {
 			t.Fatalf("%q: pgup did not scroll back, so the reset is not being measured", spent)
 		}
 		acted := playing(t, c, scrolled, spent)
-		if spent == "enter" && acted.Aiming {
-			// A skill with more than one cell asks where before it is cast, and
-			// opening that question is not spending the turn.
+		if spent == "enter" {
+			// Choosing a skill opens the aim list rather than casting, every
+			// time, so the first press spent no turn. Asserted rather than
+			// tolerated: a conditional second press would go on passing if the
+			// list stopped opening, and this loop would then be measuring three
+			// ways of spending a turn while claiming four.
+			if !acted.Aiming {
+				t.Fatalf("%q: choosing a skill did not open the aim list", spent)
+			}
 			acted = playing(t, c, acted, spent)
 		}
 		if acted.Err != nil {

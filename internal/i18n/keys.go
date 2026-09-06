@@ -495,6 +495,17 @@ const (
 	BlurbStrips
 	BlurbStripsOne
 	BlurbWhenCarrying
+	// A CAP reads the same field the clause above does and means the opposite of
+	// it, so it gets a clause of its own rather than a count inside that one.
+	// "is carrying sundered" is what the shipped split said before this existed,
+	// and it is exactly backwards: the gate opens while the caster holds FEWER
+	// than the bound, so the sentence described the one state in which the skill
+	// cannot be cast.
+	//
+	// It names no status on purpose. A cap's counter is bookkeeping — nobody chose
+	// to hold it and it cannot be spent on anything else — so naming it spends the
+	// line on a word that answers no question a reader has.
+	BlurbWhenUnspent
 	BlurbWhenHurt
 	BlurbAmplified
 	BlurbSelfAmplified

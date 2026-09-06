@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/seed"
 )
 
@@ -75,18 +76,50 @@ func TestAGatedSkillIsNotDescribedAsAnAmplifier(t *testing.T) {
 		}
 		for _, declared := range gatedSkills(t) {
 			var gated, amplified bool
-			for _, line := range strings.Split(lang.Describe(declared, shapes), "\n") {
+			for _, line := range strings.Split(lang.Describe(declared, shapes, shippedStatusKinds(t)), "\n") {
+				// ⚠️ **The last line is not a sentence and in Vietnamese it opens
+				// with the amplifier's own words.** It is the target-and-cooldown
+				// footer, joined with " · ", and for a SELF-aimed skill it reads
+				// "Bản thân · hồi 4 lượt" — while BlurbSelfAmplifiedShape is "Bản
+				// thân %s". Every gated skill aimed at an enemy hid the collision;
+				// the first one aimed at itself found it, and read as an amplifier
+				// on the strength of a footer.
+				//
+				// The separator is what tells them apart: a sentence never carries
+				// one, and the footer is nothing but parts joined by it.
+				if strings.Contains(line, " · ") {
+					continue
+				}
 				gated = gated || strings.HasPrefix(line, gate)
 				amplified = amplified || strings.HasPrefix(line, amplifier)
 			}
 			if !gated {
 				t.Errorf("%s describes the gated %s without a line opening %q:\n%s",
-					lang, declared.ID, gate, lang.Describe(declared, shapes))
+					lang, declared.ID, gate, lang.Describe(declared, shapes, shippedStatusKinds(t)))
 			}
 			if amplified {
 				t.Errorf("%s describes the gated %s with a line opening %q, which says the "+
 					"fuel makes the skill stronger rather than possible:\n%s",
-					lang, declared.ID, amplifier, lang.Describe(declared, shapes))
+					lang, declared.ID, amplifier, lang.Describe(declared, shapes, shippedStatusKinds(t)))
+			}
+			// ⚠️ **The opening alone is not enough any more, and this file's own
+			// note above says why it used to be.** It reasons that the clause after
+			// the opening is "the same string either way" — true while every
+			// condition was a floor, and false the moment a CAP arrived: a cap
+			// holds while the caster carries FEWER than the bound, so describing it
+			// as "is carrying" names the one state in which the skill cannot be
+			// cast. The shipped split said exactly that and this test was green,
+			// because the opening was right and only the clause was backwards.
+			spends := declared.SelfRequires
+			if spends == nil || !spends.CapsStacks() || spends.MinStacks > 0 {
+				continue
+			}
+			carrying := beforeTheBlank(lang.Text(BlurbWhenCarrying))
+			if carrying != "" && strings.Contains(lang.Describe(declared, shapes, shippedStatusKinds(t)), carrying) {
+				t.Errorf("%s describes the capped %s with %q, which is the clause for a floor: "+
+					"a cap opens while the caster holds FEWER than its bound, so this names the "+
+					"one state the skill cannot be cast in:\n%s",
+					lang, declared.ID, carrying, lang.Describe(declared, shapes, shippedStatusKinds(t)))
 			}
 		}
 	}
@@ -112,7 +145,7 @@ func TestAGatedSkillsCompactLineDoesNotSayItSpreads(t *testing.T) {
 				"cannot be recognised", lang, spreads)
 		}
 		for _, declared := range gatedSkills(t) {
-			line := lang.SummariseSkill(declared, shapes)
+			line := lang.SummariseSkill(declared, shapes, shippedStatusKinds(t))
 			if !strings.Contains(line, gate) {
 				t.Errorf("%s summarises the gated %s as %q, which does not say the fuel is "+
 					"what lets it be cast (want a clause opening %q)",
@@ -124,4 +157,16 @@ func TestAGatedSkillsCompactLineDoesNotSayItSpreads(t *testing.T) {
 			}
 		}
 	}
+}
+
+// shippedStatusKinds is the status book, for the in-package tests. Its twin in
+// i18n_test carries the reasoning; the two exist separately only because the
+// suite is split across two packages and a helper cannot cross that line.
+func shippedStatusKinds(t *testing.T) *status.Book {
+	t.Helper()
+	kinds, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	return kinds
 }
