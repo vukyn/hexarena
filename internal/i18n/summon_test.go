@@ -55,7 +55,7 @@ func TestASummoningSkillSaysWhatItCallsUp(t *testing.T) {
 	want := map[i18n.Lang]string{i18n.Vi: "phân thân", i18n.En: "copies"}
 	for _, lang := range i18n.Langs() {
 		described := lang.Describe(
-			summoner(t, `{"count":2,"name":"phân thân","share":500,"skills":["jab"]}`), patterns)
+			summoner(t, `{"count":2,"name":"phân thân","share":500,"skills":["jab"]}`), patterns, shippedStatuses(t))
 		if !strings.Contains(described, want[lang]) {
 			t.Errorf("%s: the description never names what arrives:\n%s", lang, described)
 		}
@@ -78,9 +78,9 @@ func TestASummonThatStaysAndOneThatDoesNotReadDifferently(t *testing.T) {
 	}
 	for _, lang := range i18n.Langs() {
 		stays := lang.Describe(summoner(t, `{"name":"cóc","stats":{"hp":900,"attack":300,`+
-			`"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns)
+			`"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns, shippedStatuses(t))
 		brief := lang.Describe(summoner(t, `{"name":"cóc","lasts":3,"stats":{"hp":900,`+
-			`"attack":300,"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns)
+			`"attack":300,"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns, shippedStatuses(t))
 		if stays == brief {
 			t.Errorf("%s: a summon that stays and one that lasts three turns read the same:\n%s",
 				lang, stays)
@@ -100,7 +100,7 @@ func TestASummonWithNoNameIsStillNamed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("shapes: %v", err)
 	}
-	described := i18n.Vi.Describe(summoner(t, `{"share":500,"skills":["jab"]}`), patterns)
+	described := i18n.Vi.Describe(summoner(t, `{"share":500,"skills":["jab"]}`), patterns, shippedStatuses(t))
 	if !strings.Contains(described, "phân thân") {
 		t.Errorf("an unnamed summon is described as %q", described)
 	}
@@ -122,7 +122,7 @@ func TestASummonSaysHowStrongItArrives(t *testing.T) {
 	}
 	for _, lang := range i18n.Langs() {
 		described := lang.Describe(
-			summoner(t, `{"count":2,"name":"phân thân","share":400,"skills":["jab"]}`), patterns)
+			summoner(t, `{"count":2,"name":"phân thân","share":400,"skills":["jab"]}`), patterns, shippedStatuses(t))
 		if !strings.Contains(described, "40%") {
 			t.Errorf("%s: a copy at 400 parts per thousand never says 40%%:\n%s", lang, described)
 		}
@@ -140,9 +140,9 @@ func TestTwoSummonsAtDifferentSharesReadDifferently(t *testing.T) {
 	}
 	for _, lang := range i18n.Langs() {
 		weak := lang.Describe(
-			summoner(t, `{"count":2,"name":"phân thân","share":200,"skills":["jab"]}`), patterns)
+			summoner(t, `{"count":2,"name":"phân thân","share":200,"skills":["jab"]}`), patterns, shippedStatuses(t))
 		strong := lang.Describe(
-			summoner(t, `{"count":2,"name":"phân thân","share":800,"skills":["jab"]}`), patterns)
+			summoner(t, `{"count":2,"name":"phân thân","share":800,"skills":["jab"]}`), patterns, shippedStatuses(t))
 		if weak == strong {
 			t.Errorf("%s: a copy at a fifth and one at four fifths read the same:\n%s",
 				lang, weak)
@@ -162,9 +162,9 @@ func TestAShareOfBaseReadsDifferentlyFromAShare(t *testing.T) {
 	}
 	for _, lang := range i18n.Langs() {
 		now := lang.Describe(
-			summoner(t, `{"name":"phân thân","share":400,"skills":["jab"]}`), patterns)
+			summoner(t, `{"name":"phân thân","share":400,"skills":["jab"]}`), patterns, shippedStatuses(t))
 		base := lang.Describe(
-			summoner(t, `{"name":"phân thân","share_of_base":400,"skills":["jab"]}`), patterns)
+			summoner(t, `{"name":"phân thân","share_of_base":400,"skills":["jab"]}`), patterns, shippedStatuses(t))
 		if now == base {
 			t.Errorf("%s: a share of the caster and a share of its base read the same:\n%s",
 				lang, now)
@@ -183,7 +183,7 @@ func TestASummonOnAFixedLineClaimsNoShare(t *testing.T) {
 	}
 	for _, lang := range i18n.Langs() {
 		described := lang.Describe(summoner(t, `{"name":"cóc","stats":{"hp":900,"attack":300,`+
-			`"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns)
+			`"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns, shippedStatuses(t))
 		if strings.Contains(described, "%") {
 			t.Errorf("%s: a summon on a fixed stat line is described with a share:\n%s",
 				lang, described)
@@ -203,9 +203,9 @@ func TestACreatureIsNotDescribedAsACopy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("shapes: %v", err)
 	}
-	clone := i18n.En.Describe(summoner(t, `{"share":400,"skills":["jab"]}`), patterns)
+	clone := i18n.En.Describe(summoner(t, `{"share":400,"skills":["jab"]}`), patterns, shippedStatuses(t))
 	beast := i18n.En.Describe(summoner(t, `{"stats":{"hp":900,"attack":300,`+
-		`"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns)
+		`"defense":200,"speed":40,"accuracy":0,"dodge":0},"skills":["jab"]}`), patterns, shippedStatuses(t))
 	if !strings.Contains(clone, "copy") {
 		t.Errorf("a summon made of a share of its caster is not called a copy: %q", clone)
 	}
@@ -252,9 +252,9 @@ func TestOneCopyAndSeveralSayTheShareDifferently(t *testing.T) {
 	}
 	for _, lang := range i18n.Langs() {
 		alone := lang.Describe(
-			summoner(t, `{"count":1,"name":"phân thân","share":400,"skills":["jab"]}`), patterns)
+			summoner(t, `{"count":1,"name":"phân thân","share":400,"skills":["jab"]}`), patterns, shippedStatuses(t))
 		pair := lang.Describe(
-			summoner(t, `{"count":2,"name":"phân thân","share":400,"skills":["jab"]}`), patterns)
+			summoner(t, `{"count":2,"name":"phân thân","share":400,"skills":["jab"]}`), patterns, shippedStatuses(t))
 		if !holds(pair, lang.Text(i18n.BlurbSummonedShareEach)) {
 			t.Errorf("%s: two copies are described with the wording written for one:\n%s",
 				lang, pair)

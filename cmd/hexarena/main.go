@@ -405,7 +405,7 @@ func describe(current *session, prompt *battle.Prompt, question string) {
 			return
 		}
 		fmt.Println()
-		fmt.Println(tui.Detail(i18n.Vi, declared, books.Patterns))
+		fmt.Println(tui.Detail(i18n.Vi, declared, books.Patterns, books.Statuses))
 		return
 	}
 	for id, tag := range current.tags {
@@ -426,14 +426,14 @@ func describe(current *session, prompt *battle.Prompt, question string) {
 			}
 		}
 		fmt.Println()
-		fmt.Println(tui.DetailPassives(i18n.Vi, fmt.Sprintf("%s %s", tag, unit.Name), held))
+		fmt.Println(tui.DetailPassives(i18n.Vi, fmt.Sprintf("%s %s", tag, unit.Name), held, books.Statuses))
 		return
 	}
 	// By id or by the name it is printed under, because the player reading a
 	// Vietnamese unit table has only ever seen the second one.
 	for _, kind := range books.Statuses.Kinds() {
 		if !strings.EqualFold(kind.ID, question) &&
-			!strings.EqualFold(i18n.Vi.Gloss(kind.ID), question) {
+			!strings.EqualFold(i18n.Vi.StatusName(kind), question) {
 			continue
 		}
 		fmt.Println()

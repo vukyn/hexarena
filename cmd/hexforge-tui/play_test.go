@@ -253,7 +253,7 @@ func aBookWithALongID(t *testing.T, lang i18n.Lang) model {
 	const clearlyInside = 10
 	plain, _, _ := start(t, lang)
 	widest := lipgloss.Width(
-		plain.lang.SummariseSkill(theWidestSummary(plain), plain.lib.Patterns()))
+		plain.lang.SummariseSkill(theWidestSummary(plain), plain.lib.Patterns(), plain.lib.Statuses()))
 
 	dir := scratchData(t)
 	length := minWidth - 1 - draw.PlayMarkerWidth - draw.PlayOptionGap - (widest - clearlyInside)
@@ -273,7 +273,7 @@ func theClippedRow(t *testing.T, lang i18n.Lang, drawable int,
 	m = atTheBattle(t, m)
 	wordiest, longest := theWidestSummary(m), theWidestID(m)
 	room := drawable - draw.PlayMarkerWidth - lipgloss.Width(longest.ID) - draw.PlayOptionGap
-	summary := m.lang.SummariseSkill(wordiest, m.lib.Patterns())
+	summary := m.lang.SummariseSkill(wordiest, m.lib.Patterns(), m.lib.Statuses())
 	if lipgloss.Width(summary) <= room {
 		if !mayNotClip {
 			t.Fatalf("%s: the constructed book does not clip either — the widest summary "+
@@ -331,7 +331,7 @@ func theWidestSummary(m model) skill.Skill {
 	most := -1
 	for _, declared := range m.lib.Skills().Skills() {
 		if width := lipgloss.Width(
-			m.lang.SummariseSkill(declared, m.lib.Patterns())); width > most {
+			m.lang.SummariseSkill(declared, m.lib.Patterns(), m.lib.Statuses())); width > most {
 			found, most = declared, width
 		}
 	}

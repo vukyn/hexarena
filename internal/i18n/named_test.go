@@ -31,7 +31,7 @@ func TestATraitNamesEveryStatusItsDescriptionNames(t *testing.T) {
 			continue
 		}
 		checked++
-		described := i18n.Vi.DescribePassive(held)
+		described := i18n.Vi.DescribePassive(held, shippedStatuses(t))
 		for _, id := range named {
 			name := i18n.Vi.Gloss(id)
 			if name == "" {
@@ -108,7 +108,7 @@ func TestAReplyNamesItsFirstStatusOnly(t *testing.T) {
 	if len(named) != 1 || named[0] != "poison" {
 		t.Errorf("a reply with two applications named %v, want only the first", named)
 	}
-	if strings.Contains(i18n.Vi.DescribePassive(twofold), i18n.Vi.Gloss("burn")) {
+	if strings.Contains(i18n.Vi.DescribePassive(twofold, shippedStatuses(t)), i18n.Vi.Gloss("burn")) {
 		t.Error("the description names the second application after all, " +
 			"so the list is now the one that is wrong")
 	}
@@ -142,7 +142,7 @@ func TestASkillNamesEveryStatusItsDescriptionNames(t *testing.T) {
 			continue
 		}
 		checked++
-		described := i18n.Vi.Describe(declared, shapes)
+		described := i18n.Vi.Describe(declared, shapes, shippedStatuses(t))
 		seen := map[string]bool{}
 		for _, id := range named {
 			if seen[id] {

@@ -36,9 +36,12 @@ import (
 // them is in skills.json any more: all 43 shipped skills carry an authored name
 // and 0 of them are in that table, so a log glossed through Gloss would name no
 // skill at all. Traits are the same shape (11 shipped, 11 authored names, no
-// table). Statuses are the one kind the id tables cover completely — 22 shipped,
-// 22 glossed, none carrying a name field — which is why the three kinds are read
-// through three different accessors rather than one.
+// table). Statuses sit between the two and are read through StatusName, which
+// tries the declaration first and the table second: all 34 shipped statuses are
+// still named out of statusGloss and none carries a name of its own, but the
+// field exists, so a log reading Gloss directly would name every status today
+// and drop the first one an author names tomorrow. That is why the four kinds
+// are read through four accessors rather than one.
 func (l Lang) LogGlosses(carried []skill.Skill, kinds []status.Kind, held []passive.Passive,
 	awarded []composition.Bonus) map[string]string {
 	if l != Vi {
@@ -74,7 +77,7 @@ func (l Lang) LogGlosses(carried []skill.Skill, kinds []status.Kind, held []pass
 		put(one.ID, l.SkillName(one))
 	}
 	for _, kind := range kinds {
-		put(kind.ID, l.Gloss(kind.ID))
+		put(kind.ID, l.StatusName(kind))
 	}
 	for _, one := range held {
 		put(one.ID, l.PassiveName(one))

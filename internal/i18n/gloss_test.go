@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"charm.land/lipgloss/v2"
+	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/seed"
 
 	"github.com/vukyn/hexarena/internal/core/element"
@@ -79,10 +80,45 @@ func TestEveryShippedStatusIsGlossed(t *testing.T) {
 		t.Fatal("the shipped data declares no status, so this asserts nothing")
 	}
 	for _, kind := range kinds {
-		if Vi.Gloss(kind.ID) == "" {
-			t.Errorf("the shipped status %q has no Vietnamese name, so every sentence naming it shows the id bare",
+		// Through StatusName rather than through Gloss, because a status may now
+		// be named where a skill and a trait are named — on its own declaration —
+		// and this check is about a status HAVING a name, not about which of the
+		// two places holds it. Reading Gloss here would make the field a name the
+		// screens honoured and the suite still called missing, which is the exact
+		// shape of trap the field was added to close.
+		if Vi.StatusName(kind) == "" {
+			t.Errorf("the shipped status %q has no Vietnamese name in statuses.json and none in statusGloss, so every sentence naming it shows the id bare",
 				kind.ID)
 		}
+	}
+}
+
+// TestAnAuthoredStatusNameWinsOverTheTable holds the order, which is the half of
+// the field that could go wrong quietly.
+//
+// A status carrying its own name and no table entry is the easy case and would
+// pass on a lookup that never consulted the data at all — the id would simply be
+// missing from statusGloss and the fallback would return nothing. So the case
+// measured here is the one where BOTH exist: the table is what thirty-four
+// shipped statuses are named out of, so an override that lost to it would be a
+// field an author could set and never see.
+func TestAnAuthoredStatusNameWinsOverTheTable(t *testing.T) {
+	tabled := status.Kind{ID: "burn"}
+	if got, want := Vi.StatusName(tabled), statusGloss["burn"]; got != want {
+		t.Fatalf("a status with no authored name is %q, want the table's %q", got, want)
+	}
+	authored := status.Kind{ID: "burn", Name: "cháy xém"}
+	if got := Vi.StatusName(authored); got != "cháy xém" {
+		t.Errorf("an authored name reads %q, want the authored %q: the table won", got, "cháy xém")
+	}
+	if En.StatusName(authored) != "" {
+		t.Errorf("English named the status %q; a data name is Vietnamese whoever asks, so English shows the id",
+			En.StatusName(authored))
+	}
+	spaces := status.Kind{ID: "burn", Name: "   "}
+	if got, want := Vi.StatusName(spaces), statusGloss["burn"]; got != want {
+		t.Errorf("a name of nothing but spaces reads %q, want the table's %q: it is the absent answer, not a name",
+			got, want)
 	}
 }
 

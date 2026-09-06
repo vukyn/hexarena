@@ -53,7 +53,9 @@ is only so the shape is readable.
   editing, art picker, kit and allowlist pickers, budget bounds, spar, `weigh`
   and `check`. A flavour clause is authorable from the flags as well as the
   wizard, and the damage preview reads the caster's own terms rather than only
-  the target's.
+  the target's. **The three books answer an author the same way**: a status may
+  carry its own `name` beside its numbers, exactly as a skill and a trait do,
+  and `statuses.json` refuses a field it does not know rather than dropping it.
 - **Reference screens.** Statuses, traits, elements, species, and the affinity
   chart drawn as closed ASCII loops in element colour.
 - **Vietnamese.** The TUI is Vietnamese-first with an English toggle; every
@@ -2822,26 +2824,25 @@ is only so the shape is readable.
       fixture that casts a single-aim skill. That is the change being visible
       rather than a fixture problem, but it is the bulk of the diff.
 
-- [ ] **`statuses.json` accepts fields it ignores, and a Vietnamese name is one
-      of them.** Found 2026-09-05 shipping `stoked`: the status was authored with
-      `"name"` and `"flavour"` beside its numbers, exactly as a skill or a passive
-      carries them, and it **parsed clean**. Nothing said the two fields go
-      nowhere — a status's Vietnamese name lives in `i18n.statusGloss`, not in the
-      data — so the book loaded, the battle ran, and the id reached the log bare
-      until `TestEveryShippedStatusIsGlossed` caught it two steps later.
-
-      ⚠️ **The neighbouring books differ on this and that is what makes it a
-      trap.** `skills.json` and `passives.json` both take an authored `name`;
-      `statuses.json` does not. An author moving between the three has no reason
-      to expect the third to be the odd one, and the file gives no sign.
-
-      Two ways out, and the choice is a design decision rather than a fix:
-      **(a)** refuse unknown fields at parse — cheap, and it turns a silent drop
-      into a sentence in front of the author; or **(b)** let a status carry its own
-      `name` like its neighbours and have `statusGloss` fall back to it, which is
-      the direction skills already went (`skillGloss` is a frozen fallback, see
-      the note in `internal/i18n/gloss.go`). (b) removes the asymmetry rather than
-      documenting it, and is the one to prefer if the two are ever done at once.
+- [ ] **A field inside a `modifier` is still dropped silently, in all three
+      books.** Found 2026-09-06 while closing the same hole in `statuses.json`:
+      `status.ParseBook` now decodes with `DisallowUnknownFields`, and that flag
+      **stops at a custom unmarshaller**. `modifier.Modifier` has one, so
+      `{"target":"attack","mode":"add","amount":100,"amout":100}` inside a status,
+      a trait or a skill parses clean and the typo goes nowhere — the exact defect
+      the status fix was written for, one level down.
+      ⚠️ The fix belongs to `modifier` and not to any of its three readers, which
+      is why it was not done in passing: `Modifier.UnmarshalJSON` decodes
+      `modifierFile` with `json.Unmarshal`, so the change is four lines there and
+      it lands in every book at once. What has to be checked with it is the other
+      direction — `passive.ParseBook` and `skill.ParseBook` do **not** refuse
+      unknown fields at their own level either, so a `flavour` on a status is
+      refused today while a misspelt field on a *skill* is not, which is a new
+      asymmetry in place of the one that was closed.
+      ⚠️ And a stricter decoder is the change that can refuse the data it was
+      written for. `TestShippedStatusBook` is what caught nothing this time
+      because statuses.json was already clean; the two bigger books have not been
+      through it.
 
 - [ ] **The cast listing draws every row, so the detail pane shrinks as the cast
       grows.** Found 2026-09-05 while shipping `pokemon.torchic`, when a sweep

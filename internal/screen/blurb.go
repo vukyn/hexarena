@@ -156,12 +156,20 @@ func SkillLines(c Context, declared skill.Skill) []string {
 	// in the glossary drops out here rather than marking a bare id.
 	names := make([]string, 0, 4)
 	for _, id := range i18n.StatusesInSkill(declared) {
-		if name := c.Lang.Gloss(id); name != "" {
+		// Through the book rather than through the compiled table, because the
+		// sentences below are named through the book: a status carrying its own
+		// name would be written one way in the paragraph and looked for another
+		// way here, and the mark would silently stop landing on it.
+		kind, err := c.Lib.Statuses().Lookup(id)
+		if err != nil {
+			continue
+		}
+		if name := c.Lang.StatusName(kind); name != "" {
 			names = append(names, name)
 		}
 	}
 	out := make([]string, 0, 4)
-	for _, line := range strings.Split(c.Lang.Describe(declared, c.Lib.Patterns()), "\n") {
+	for _, line := range strings.Split(c.Lang.Describe(declared, c.Lib.Patterns(), c.Lib.Statuses()), "\n") {
 		out = append(out, "  "+Marked(line, names, func(word string) string {
 			return c.Style.Emphasis.Render(word)
 		}))
@@ -282,7 +290,7 @@ func TraitSentences(c Context, one passive.Passive) []string {
 	// TestEveryWordingFitsTheMinimumWidth measures against the floor.
 	room := MinWidth - 1 - TraitIndent
 	out := make([]string, 0, 6)
-	for _, sentence := range strings.Split(c.Lang.DescribePassive(one), "\n") {
+	for _, sentence := range strings.Split(c.Lang.DescribePassive(one, c.Lib.Statuses()), "\n") {
 		for _, line := range WrapWords(sentence, max(room, 8)) {
 			out = append(out, strings.Repeat(" ", TraitIndent)+line)
 		}

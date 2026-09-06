@@ -196,7 +196,7 @@ func (s StatusesScreen) View(c Context) (string, string) {
 		// figure a row could carry is on the description below, and a status
 		// with a duration column and a stack column beside it would be the same
 		// two numbers twice on one screen.
-		line := Pad(row.Kind.ID, column+1) + " " + c.Lang.Gloss(row.Kind.ID)
+		line := Pad(row.Kind.ID, column+1) + " " + c.Lang.StatusName(row.Kind)
 		marker := "  "
 		if index == s.Cursor {
 			marker = "> "

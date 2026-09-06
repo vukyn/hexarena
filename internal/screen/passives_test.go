@@ -34,7 +34,7 @@ func TestTheTraitListingDescribesWhatIsUnderTheCursor(t *testing.T) {
 	for step := range 5 {
 		selected := traits.Passives[traits.Cursor]
 		drawn, _ := traits.View(c)
-		for _, line := range strings.Split(c.Lang.DescribePassive(selected), "\n") {
+		for _, line := range strings.Split(c.Lang.DescribePassive(selected, c.Lib.Statuses()), "\n") {
 			// The sentences wrap to the floor, so a long one is not on screen as
 			// one line — its opening is enough to say the right trait is being
 			// described, which is what this asserts.
@@ -90,7 +90,7 @@ func TestTheTraitListingFitsTheSmallestWindow(t *testing.T) {
 		// The busiest trait, which is the one whose description is longest.
 		busiest, most := 0, 0
 		for index, held := range traits.Passives {
-			if lines := len(strings.Split(c.Lang.DescribePassive(held), "\n")); lines > most {
+			if lines := len(strings.Split(c.Lang.DescribePassive(held, c.Lib.Statuses()), "\n")); lines > most {
 				busiest, most = index, lines
 			}
 		}
