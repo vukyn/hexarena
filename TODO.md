@@ -172,7 +172,7 @@ is only so the shape is readable.
   `tui.Line` opens a turn with a blank row of its own, so eight events measured
   **eleven rows**. ⚠️ No per-screen floor was added — `minHeight` already is one,
   and at 24 the budget still holds a 5-a-side roster whole under the option list.
-  → `CLAUDE.md` § *Where a form beats a prompt* → the played battle, *the
+  → `docs/screens.md` § *Where a form beats a prompt* → the played battle, *the
   budget*.
 
 - **A list of three reads as a sentence.** `i18n.listed` is the one place that
@@ -1354,7 +1354,7 @@ is only so the shape is readable.
             the first's board.** Taking turns at it is not a symmetrical game:
             whoever goes second sees which column the other's ace is in and
             answers it, and the swing above is the size of what that is worth.
-            → CLAUDE.md § *`roster.json` is an instrument, not a scenario*.
+            → `docs/goldens.md` § *`roster.json`, the instrument*.
             The cost is a **fourth phase** — bans, picks, arrange, fight —
             accepted.
             ⚠️ **`internal/draft` therefore hands back `Picks()`, and a
@@ -1619,7 +1619,7 @@ is only so the shape is readable.
             also makes a log readable (`ally.pokemon.gible`) where `a1`/`a2` would
             not. The side prefix `Squad.Take` adds still earns its keep for its own
             reason (a squad fought against a copy of itself) and is untouched.
-            CLAUDE.md's *"one squad may field the same character twice"* is about a
+            `docs/screens.md`'s *"one squad may field the same character twice"* is about a
             **saved** squad; both hold, and this is where the scope became
             load-bearing rather than descriptive.
             ⚠️ **The test that is the point of the step is a whole battle**, not a
@@ -1690,7 +1690,7 @@ is only so the shape is readable.
             objection moot rather than answered: there is one struct, so the
             field-by-field test the brief would have owed does not exist.
             ⚠️ **The precedent quoted for that test does not hold, measured.**
-            CLAUDE.md says of `Skill.MarshalJSON`/`skillFile` that *"a field
+            `docs/goldens.md` says of `Skill.MarshalJSON`/`skillFile` that *"a field
             added to one struct is a compile error in the other until it is added
             there too, which is the point"*. `skill.Skill.file()` is a **keyed**
             composite literal, so a field added to either side is a compile error
@@ -2025,7 +2025,7 @@ is only so the shape is readable.
             through `socket.Client`: a fake that mirrors a draft measures
             `internal/draft` and `internal/room` and says nothing whatsoever about
             whether the transport can carry one. Same shape as the two fixtures
-            `CLAUDE.md` already records (`plainTerminal`, `everyScreen`'s shared
+            `docs/screens.md` already records (`plainTerminal`, `everyScreen`'s shared
             battle) at the level of a **package boundary** rather than a branch.
             ⚠️ **THE TWO `ClientOptions` DECISIONS, and both were right.** The cast
             book (`ClientOptions.Characters`) and the draft chooser
@@ -2228,7 +2228,7 @@ is only so the shape is readable.
             `lobby.go`'s own ground for accepting one golden instead of two is
             *"there is no data column and no drawing on any of the three"*, and a
             pool of nineteen characters with a marked column is precisely a data
-            column — which `CLAUDE.md` records measuring **twice** is invisible to
+            column — which `docs/goldens.md` records measuring **twice** is invisible to
             one golden and caught by the other.
             **(iii) Deferred: move `Format`/`Seat`/`DraftStep` down.** Still a
             refactor of six packages and still not riding inside a screen PR.

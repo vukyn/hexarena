@@ -120,6 +120,7 @@ that owns the subject wins and the note is the thing to fix.
 
 ## General — engineering and workflow lessons that apply here
 
+- [heading không phải là luật](memory/a-heading-is-not-a-rule.md) — CLAUDE.md 161KB→70KB; ⚠️ đo bytes TỪNG MỤC, cắt theo câu ràng buộc
 - [Commits always via PR](memory/commits-always-via-pr.md) — never direct push to main
 - [Stage explicit paths](memory/stage-explicit-paths-parallel-sessions.md) — parallel sessions on same repo; never `git add -A`
 - [Verify committer staged files](memory/verify-committer-staged-files.md) — committer misreported 2×; verify show --stat + branch + log
