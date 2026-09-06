@@ -511,6 +511,29 @@ next: E2 A1 E1 A3 E3 A2
 đang chờ bên kia đi
 ----- footer -----
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 120x24 | a refused arrangement =====
+đội hình của bạn  đã xếp 3 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  unit "pokemon.gastly" stands at 1,1, where "pokemon.squirtle" already is
+
+   __    __    __
+  /3 \__/  \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/2 \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         1,1  hàng giữa
+  2 pokemon.gastly           1,1  hàng giữa
+  3 pokemon.machop           0,0  hàng sau
+  …
+----- footer -----
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 120x24 | a refused draft loadout =====
 cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
 
@@ -664,6 +687,28 @@ space để chọn · một nội tại, hoặc bỏ trống · ? mô tả · đ
 
 ----- footer -----
 space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
+===== vi | 120x24 | a whole arrangement =====
+đội hình của bạn  đã xếp 3 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+  bấm enter để gửi đội hình này — phòng không báo lại cho tới khi cả hai bên xếp xong
+----- footer -----
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 120x24 | add a skill =====
 chiêu mới  sát thương tính ngay khi gõ, đúng bằng công thức lúc đánh
 
@@ -744,6 +789,118 @@ space để chọn · để trống thì ai cũng học được chiêu này
 
 ----- footer -----
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
+===== vi | 120x24 | an arrangement =====
+đội hình của bạn  đã xếp 0 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/[]\__/::\__
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+> 1 pokemon.squirtle         chưa có ô
+  2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.squirtle đang chờ một ô  ·  con trỏ đang ở 2,0, hàng đầu
+----- footer -----
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 120x24 | an arrangement handed over =====
+đội hình của bạn  đã xếp 3 trên 3
+
+  Đội hình của bạn đã gửi về phòng. Bên kia vẫn đang xếp, và không bên nào thấy đội hình của bên kia cho tới khi vào
+  trận.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+----- footer -----
+ctrl+l English · esc rời trận
+===== vi | 120x24 | an arrangement part way =====
+đội hình của bạn  đã xếp 1 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+> 2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.gastly đang chờ một ô  ·  con trỏ đang ở 2,1, hàng đầu
+----- footer -----
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 120x24 | an arrangement sent =====
+đội hình của bạn  đã xếp 3 trên 3
+
+  Đội hình của bạn đã gửi về phòng. Bên kia vẫn đang xếp, và không bên nào thấy đội hình của bên kia cho tới khi vào
+  trận.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+  bấm enter để gửi đội hình này — phòng không báo lại cho tới khi cả hai bên xếp xong
+----- footer -----
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 120x24 | an arrangement the room turned down =====
+đội hình của bạn  đã xếp 1 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  phòng không nhận quyết định đó:
+  nước đi, hoặc một lượt chọn tướng, tới nơi khi lượt đã qua — thường là do hết giờ; bạn không mất gì cả, những gì đang
+  hiện trên màn hình mới là đúng
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+> 2 pokemon.gastly           chưa có ô
+  pokemon.gastly đang chờ một ô  ·  con trỏ đang ở 2,1, hàng đầu
+----- footer -----
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 120x24 | an empty works catalogue =====
 nguồn  các tác phẩm mà nhân vật được mượn từ
 
@@ -1913,6 +2070,31 @@ next: E2 A1 E1 A3 E3 A2
 đang chờ bên kia đi
 ----- footer -----
 ↑/↓ · enter · ? · p bỏ lượt · [/] cuộn · esc rời trận
+===== vi | 160x60 | a refused arrangement =====
+đội hình của bạn  đã xếp 3 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+  unit "pokemon.gastly" stands at 1,1, where "pokemon.squirtle" already is
+
+   __    __    __
+  /3 \__/  \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/2 \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         1,1  hàng giữa
+  2 pokemon.gastly           1,1  hàng giữa
+  3 pokemon.machop           0,0  hàng sau
+  …
+----- footer -----
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 160x60 | a refused draft loadout =====
 cấm và chọn tướng  còn 11 trên 12 tướng để cấm và chọn
 
@@ -2134,6 +2316,30 @@ space để chọn · một nội tại, hoặc bỏ trống · ? mô tả · đ
 
 ----- footer -----
 space chọn · ↑/↓ di chuyển · ? mô tả · enter xong · esc bỏ · ctrl+l English
+===== vi | 160x60 | a whole arrangement =====
+đội hình của bạn  đã xếp 3 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+  bấm enter để gửi đội hình này — phòng không báo lại cho tới khi cả hai bên xếp xong
+----- footer -----
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 160x60 | add a skill =====
 chiêu mới  sát thương tính ngay khi gõ, đúng bằng công thức lúc đánh
 
@@ -2254,6 +2460,130 @@ space để chọn · để trống thì ai cũng học được chiêu này
 
 ----- footer -----
 space chọn · ↑/↓ di chuyển · f lọc · enter xong · esc bỏ · ctrl+l English
+===== vi | 160x60 | an arrangement =====
+đội hình của bạn  đã xếp 0 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/[]\__/::\__
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+> 1 pokemon.squirtle         chưa có ô
+  2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.squirtle đang chờ một ô  ·  con trỏ đang ở 2,0, hàng đầu
+----- footer -----
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 160x60 | an arrangement handed over =====
+đội hình của bạn  đã xếp 3 trên 3
+
+  Đội hình của bạn đã gửi về phòng. Bên kia vẫn đang xếp, và không bên nào thấy đội hình của bên kia cho tới khi vào
+  trận.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+----- footer -----
+ctrl+l English · esc rời trận
+===== vi | 160x60 | an arrangement part way =====
+đội hình của bạn  đã xếp 1 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+> 2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.gastly đang chờ một ô  ·  con trỏ đang ở 2,1, hàng đầu
+----- footer -----
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 160x60 | an arrangement sent =====
+đội hình của bạn  đã xếp 3 trên 3
+
+  Đội hình của bạn đã gửi về phòng. Bên kia vẫn đang xếp, và không bên nào thấy đội hình của bên kia cho tới khi vào
+  trận.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+  bấm enter để gửi đội hình này — phòng không báo lại cho tới khi cả hai bên xếp xong
+----- footer -----
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 160x60 | an arrangement the room turned down =====
+đội hình của bạn  đã xếp 1 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+  phòng không nhận quyết định đó:
+  nước đi, hoặc một lượt chọn tướng, tới nơi khi lượt đã qua — thường là do hết giờ; bạn không mất gì cả, những gì đang
+  hiện trên màn hình mới là đúng
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+> 2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.gastly đang chờ một ô  ·  con trỏ đang ở 2,1, hàng đầu
+----- footer -----
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 160x60 | an empty works catalogue =====
 nguồn  các tác phẩm mà nhân vật được mượn từ
 
@@ -3600,6 +3930,29 @@ next: E2 A1 E1 A3 E3 A2
 waiting on the other player
 ----- footer -----
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 120x24 | a refused arrangement =====
+your formation  3 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  unit "pokemon.gastly" stands at 1,1, where "pokemon.squirtle" already is
+
+   __    __    __
+  /3 \__/  \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/2 \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         1,1  middle rank
+  2 pokemon.gastly           1,1  middle rank
+  3 pokemon.machop           0,0  back rank
+  …
+----- footer -----
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 120x24 | a refused draft loadout =====
 ban and pick  11 of 12 still in the pool
 
@@ -3753,6 +4106,28 @@ space chooses · one trait, or none · ? describes · these are all learned
 
 ----- footer -----
 space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | a whole arrangement =====
+your formation  3 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+  enter sends this formation — the room says nothing back until both sides have arranged
+----- footer -----
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 120x24 | add a skill =====
 new skill  the damage is the engine's own, worked out as you type
 
@@ -3833,6 +4208,118 @@ showing all origins (21 of 21)
 
 ----- footer -----
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
+===== en | 120x24 | an arrangement =====
+your formation  0 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/[]\__/::\__
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+> 1 pokemon.squirtle         no cell yet
+  2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.squirtle is waiting for a cell  ·  the cursor is on 2,0, the front rank
+----- footer -----
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 120x24 | an arrangement handed over =====
+your formation  3 of 3 placed
+
+  Your formation has gone to the room. The other side is still placing, and neither of you is shown the other's until
+  the battle opens.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+----- footer -----
+ctrl+l tiếng Việt · esc leave the match
+===== en | 120x24 | an arrangement part way =====
+your formation  1 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+> 2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.gastly is waiting for a cell  ·  the cursor is on 2,1, the front rank
+----- footer -----
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 120x24 | an arrangement sent =====
+your formation  3 of 3 placed
+
+  Your formation has gone to the room. The other side is still placing, and neither of you is shown the other's until
+  the battle opens.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+  enter sends this formation — the room says nothing back until both sides have arranged
+----- footer -----
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 120x24 | an arrangement the room turned down =====
+your formation  1 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  the room would not take that decision:
+  a move, or a draft decision, went out after the turn had gone — usually the clock ran out; nothing of yours was lost,
+  and whatever is on screen now is the right one
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+> 2 pokemon.gastly           no cell yet
+  pokemon.gastly is waiting for a cell  ·  the cursor is on 2,1, the front rank
+----- footer -----
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 120x24 | an empty works catalogue =====
 origins  the works the cast is borrowed from
 
@@ -4981,6 +5468,31 @@ next: E2 A1 E1 A3 E3 A2
 waiting on the other player
 ----- footer -----
 ↑/↓ · enter · ? · p pass · [/] scroll · esc leave the match
+===== en | 160x60 | a refused arrangement =====
+your formation  3 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+  unit "pokemon.gastly" stands at 1,1, where "pokemon.squirtle" already is
+
+   __    __    __
+  /3 \__/  \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/2 \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         1,1  middle rank
+  2 pokemon.gastly           1,1  middle rank
+  3 pokemon.machop           0,0  back rank
+  …
+----- footer -----
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 160x60 | a refused draft loadout =====
 ban and pick  11 of 12 still in the pool
 
@@ -5202,6 +5714,30 @@ space chooses · one trait, or none · ? describes · these are all learned
 
 ----- footer -----
 space pick · ↑/↓ move · ? describes · enter done · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | a whole arrangement =====
+your formation  3 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+  enter sends this formation — the room says nothing back until both sides have arranged
+----- footer -----
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 160x60 | add a skill =====
 new skill  the damage is the engine's own, worked out as you type
 
@@ -5322,6 +5858,130 @@ showing all origins (21 of 21)
 
 ----- footer -----
 space choose · ↑/↓ move · f filter · enter done · esc back · ctrl+l tiếng Việt
+===== en | 160x60 | an arrangement =====
+your formation  0 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/[]\__/::\__
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+> 1 pokemon.squirtle         no cell yet
+  2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.squirtle is waiting for a cell  ·  the cursor is on 2,0, the front rank
+----- footer -----
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 160x60 | an arrangement handed over =====
+your formation  3 of 3 placed
+
+  Your formation has gone to the room. The other side is still placing, and neither of you is shown the other's until
+  the battle opens.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+----- footer -----
+ctrl+l tiếng Việt · esc leave the match
+===== en | 160x60 | an arrangement part way =====
+your formation  1 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+> 2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.gastly is waiting for a cell  ·  the cursor is on 2,1, the front rank
+----- footer -----
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 160x60 | an arrangement sent =====
+your formation  3 of 3 placed
+
+  Your formation has gone to the room. The other side is still placing, and neither of you is shown the other's until
+  the battle opens.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+  enter sends this formation — the room says nothing back until both sides have arranged
+----- footer -----
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 160x60 | an arrangement the room turned down =====
+your formation  1 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+  the room would not take that decision:
+  a move, or a draft decision, went out after the turn had gone — usually the clock ran out; nothing of yours was lost,
+  and whatever is on screen now is the right one
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+> 2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.gastly is waiting for a cell  ·  the cursor is on 2,1, the front rank
+----- footer -----
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 160x60 | an empty works catalogue =====
 origins  the works the cast is borrowed from
 

@@ -360,6 +360,25 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 	for name, state := range everyDraftState(t, c, lib) {
 		screens[name] = state
 	}
+	// The **fourteenth screen**: the arrangement, in each of the six states of it
+	// that draw a line no other state draws.
+	//
+	// ⚠️ **It is a screen rather than a mode of the thirteenth**, which is step 5c's
+	// own decision: the draft is a cursor over a list and this is a cursor over a
+	// 3x3, and a mode would have deleted the assertion that no keystroke on the
+	// draft screen takes an arrangement. → draw.ArrangeScreen.
+	//
+	// ⚠️ **This record is the only place the board it draws is recorded at all.**
+	// The client's own sweep records the same six, framed — but a formation with the
+	// far half missing is a one-cell-column-wide class of defect, and CLAUDE.md
+	// records measuring twice that such a change is invisible to one of the two
+	// goldens and caught by the other. Two of the six are also states that client's
+	// sweep reaches only by hand: an arrangement the **rule** refuses, which the
+	// cursor cannot build because it steps over an occupied cell, and one the
+	// **room** turned down.
+	for name, state := range everyArrangeState(t, c, lib) {
+		screens[name] = state
+	}
 	return screens
 }
 

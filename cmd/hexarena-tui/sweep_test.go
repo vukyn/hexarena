@@ -331,7 +331,83 @@ func everyDraftScreen(t *testing.T, m model) map[string]model {
 	})
 	screens["a draft arranging"] = arranging
 	assertDraws(t, arranging, firstLine(arranging.text(i18n.DraftArrangingNow)))
+	// And the screen that phase is actually taken on, which is a screen of its own
+	// rather than a mode of this one. → screenArrange.
+	//
+	// ⚠️ **It is reached the way a player reaches it**, through `stepped` putting it
+	// in front rather than by writing `m.screen`: what puts a reader on this screen
+	// is the record saying the phase is open, and nothing else announces it.
+	for name, state := range everyArrangeScreen(t, m, pool) {
+		screens[name] = state
+	}
 	return screens
+}
+
+// # The arrangement's four entries
+//
+// The states of the last draft decision that draw a line no other state draws:
+// nothing placed, part way, whole and waiting to be sent, and sent with the phase
+// still open. Two more — an arrangement the **rule** refuses and one the **room**
+// turned down — are recorded in internal/screen, which is where a state that
+// cannot be reached by a keystroke belongs.
+//
+// ⚠️ **The pool is the one the draft entries use**, for the same reason: a record
+// drawn off the shipped cast moves on every content commit.
+func everyArrangeScreen(t *testing.T, m model, pool []cast.Character) map[string]model {
+	t.Helper()
+	opening := anArrangeScreen(t, m, pool)
+	assertDraws(t, opening, opening.text(i18n.ArrangeInHand, opening.arrange.Picks()[0].Character))
+	part := key(t, opening, "enter")
+	assertDraws(t, part, part.text(i18n.ArrangePlaced, 1, len(opening.arrange.Picks())))
+	whole := part
+	for range len(opening.arrange.Picks()) - 1 {
+		whole = key(t, whole, "enter")
+	}
+	assertDraws(t, whole, whole.text(i18n.ArrangeSendReady))
+	// The send, through the key that sends it. ⚠️ **There is no other way to build
+	// this state**: nothing on any reading says an arrangement landed, because the
+	// record takes both sides' in one step. → draw.ArrangeScreen.Sent.
+	sent := key(t, whole, "enter")
+	if !sent.arrange.Sent {
+		t.Fatal("enter on a whole arrangement sent nothing")
+	}
+	assertDraws(t, sent, firstLine(sent.text(i18n.ArrangeSent)))
+	return map[string]model{
+		"an arrangement":          opening,
+		"an arrangement part way": part,
+		"a whole arrangement":     whole,
+		"an arrangement sent":     sent,
+	}
+}
+
+// anArrangeScreen is the model on the arrange screen, with this side's three picks
+// in and the phase open with this seat still owing a formation — which is every
+// reading a client can take of the phase. That an arrangement has **gone** is not
+// on any of them, so the sent state above is built by pressing the key.
+func anArrangeScreen(t *testing.T, m model, pool []cast.Character) model {
+	t.Helper()
+	m = aDraftScreen(t, m, pool, func(live *draw.DraftLive) {
+		live.Step, live.Arranging, live.Yours = draw.DraftStepArrange, true, true
+		live.Recorded = 16
+		live.Candidates = nil
+		live.Picks[0] = []draw.DraftPick{
+			{Character: pool[2].ID, Stage: "one", Skills: []string{"a"}, Passives: []string{"b"}},
+			{Character: pool[3].ID, Stage: "two", Skills: []string{"c"}, Passives: []string{"d"}},
+			{Character: pool[4].ID, Stage: "three", Skills: []string{"e"}, Passives: []string{"f"}},
+		}
+		live.Picks[1] = []draw.DraftPick{{Character: pool[5].ID, Stage: "one",
+			Skills: []string{"g"}, Passives: []string{"h"}}}
+	})
+	// The reader is moved by the reading rather than by this fixture, which is the
+	// production path: aDraftScreen leaves the model on screenDraft and the phase
+	// being open is what carries it one further.
+	m.arrange = m.arrange.Attach(m.ctx(), m.draft.Live)
+	m.screen = screenArrange
+	if got := len(m.arrange.Picks()); got != draft.PicksPerSide(wire.Format3v3) {
+		t.Fatalf("the arrange fixture holds %d picks against the %d a 3v3 drafts",
+			got, draft.PicksPerSide(wire.Format3v3))
+	}
+	return m
 }
 
 // aDraftScreen is the model on the draft screen over a reading the caller shapes.

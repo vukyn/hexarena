@@ -1300,6 +1300,57 @@ const (
 	DraftReadingFooter
 	DraftLoadoutFooter
 
+	// The arrange screen: the last decision of a draft, and the only one that is
+	// about the board rather than about the pool.
+	//
+	// ArrangeHeading names it and ArrangePlaced counts what has been put down, so
+	// the one number that says how far through the decision a player is sits
+	// beside the name of it.
+	ArrangeHeading
+	ArrangePlaced
+	// ArrangeDepth is why the whole board is drawn rather than one side's nine
+	// cells, and it is the measured reason rather than a symmetry: placement in
+	// this game is **purely defensive** and its whole value is rank depth — moving
+	// a roster's aces to the back column and changing nothing else read 27.6% →
+	// 47.3% over 4000 seeds. A player choosing cells without being able to see
+	// which rank each one is cannot take the decision that is worth twenty points.
+	ArrangeDepth
+	// ⚠️ **ArrangeAllowance is the corrected reading of the clock and the screen
+	// may not imply any other.** The phase's allowance is **not** one for the
+	// phase: Server.settled re-arms off the reading after every batch, so the side
+	// that arranges first hands its opponent a fresh full allowance and the worst
+	// case is about twice one. Two readings of this were written into step 4's
+	// brief and both were wrong, which is why the fact is a wording rather than a
+	// countdown — a single number on a screen during a phase with two decisions
+	// open is the wrong reading drawn in figures.
+	ArrangeAllowance
+	// ArrangeInHand is the pick waiting for a cell and ArrangeUnplaced is a row
+	// that has not been given one, which is an absence declared rather than a
+	// blank column — the rule every absence in this program is drawn under.
+	ArrangeInHand
+	ArrangeUnplaced
+	// ArrangeSendReady is every pick placed, which is the one state enter sends
+	// in.
+	ArrangeSendReady
+	// ArrangeSent is this side having arranged with the phase still open, and it
+	// has to say **why** it is waiting: the phase is simultaneous and secret by
+	// design, so a screen that only said "waiting" would read as a match that had
+	// stalled.
+	ArrangeSent
+	// ArrangeLegend names the marks the board carries, for the reason the shape
+	// diagram's legend does: two characters in a hex is a symbol, and a symbol
+	// nothing names is a drawing a reader has to guess at.
+	ArrangeLegend
+	// ArrangeCursorAt is the cell under the cursor and the rank it stands in,
+	// said together — the coordinate is what the data writes and the rank is the
+	// half that means something, which is the squad builder's own pairing.
+	ArrangeCursorAt
+	// The three footers, one per thing this screen can be doing. The waiting one
+	// names no decision key at all, because there is no decision left to take.
+	ArrangeFooter
+	ArrangeSendFooter
+	ArrangeWaitingFooter
+
 	keyCount
 )
 

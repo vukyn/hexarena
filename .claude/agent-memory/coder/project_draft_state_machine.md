@@ -1,6 +1,6 @@
 ---
 name: draft-state-machine
-description: hexarena internal/draft — steps 2a, 2b, 3, 4 and 5a built; the Done()/Picked() split, the arrange phase's own accessors, the record's SHAPE living in internal/wire, the room-side arrange-phase clock (NOT one allowance), and the protocol gap 5a found — NOTHING tells the host the room is full
+description: hexarena internal/draft — steps 2a…5c built (only the host's -draft flag left); the Done()/Picked() split, the record's SHAPE in internal/wire, the arrange-phase clock (NOT one allowance), and the TWO protocol gaps — nothing tells the host the room is full, and nothing tells a client its own arrangement landed
 metadata:
   type: project
 ---
@@ -187,11 +187,35 @@ in `internal/screen`, the mapping and the chooser routing in
 - ⚠️ **No "already answered" memo, on the screen or in the session** — the
   retry-on-refusal loop is the only thing that gets the host's first decision
   through, so a memo stalls the match for good.
-- **What is left: 5c (the arrange screen) and step 6 (the host's `-draft` flag).**
-  ⚠️ Until 5c lands a drafting match **cannot reach a board**: both choosers are
-  asked for a `StepArrange`, answer nothing, and `Play` returns — a draft has no
-  pass. `TestADraftIsPlayedOutToTheArrangePhaseOverALoopbackListener` asserts that
-  ending **by name**, so it is the assertion to change on the day 5c lands.
-
 See [[a-fixture-the-code-can-reorder]] and
 [[reentrant-rlock-inside-a-read-callback]] for the two things 5b got wrong first.
+
+**Step 5c** (branch `feat/draft-arrange-screen`, 2026-09-06) is the arrangement,
+and it is what makes a drafting match reach a board at all:
+`draw.ArrangeScreen` in `internal/screen/arrange.go`, `screenArrange` as the
+client's fourteenth view, `model.updateArrange` beside `updateDraft`.
+
+- **A screen, not a mode of the draft screen.** The draft is a cursor over a
+  list, this is a cursor over a 3x3, and a mode would have deleted 5b's
+  assertion that no draft keystroke takes an arrangement — which now lives in
+  `internal/screen` as `TestNoKeystrokeOnTheDraftScreenTakesAnArrangement`.
+  `DraftLive` is **reused**, so 5b's two walks stay the whole cost of the split.
+- ⚠️ **NOTHING TELLS A CLIENT ITS OWN ARRANGEMENT LANDED**, and it is the twin of
+  5a's gap. `Draft.Arrange` records the first arrangement **nowhere** (appending
+  it would show it to the opponent), so the sender's own reading is unchanged and
+  the room sends nothing until both are in — the send is a keystroke after which
+  no reading moves, for up to a whole allowance. `ArrangeScreen.Sent` is **local
+  display state that gates nothing**: the keys stay live, because a refused
+  arrangement is one to send again and the retry loop is still the only thing
+  that gets a turned-away decision through.
+- ⚠️ **`session.countdown` is structurally ZERO for the whole draft** —
+  `openTurnOf` returns the zero `turnKey` when `sight.Fight == nil` — so the
+  `PlayClock` plumbed through `draftLiveOf` has never drawn anything on either
+  draft screen. The arrange screen therefore **words** the allowance
+  (`i18n.ArrangeAllowance`) rather than counting it down, which is also the only
+  honest drawing: the phase has one allowance **per side**, not one for the phase.
+- ⚠️ **`u` takes a placement back, not `backspace`** — the client's
+  both-languages sweep bans the substring `back` on a Vietnamese screen, so the
+  key's own name would fail it. `u` is the battle screen's undo key anyway.
+- **What is left: step 6 (the host's `-draft` flag).** Nothing outside a test
+  opens a drafting room.

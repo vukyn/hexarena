@@ -189,6 +189,12 @@ func draftDecisionOf(decision draw.DraftDecision) (wire.DraftDecision, bool) {
 		Stage:    decision.Stage,
 		Skills:   decision.Skills,
 		Passives: decision.Passives,
+		// ⚠️ **In pick order, and the mapping may not reorder it.** `Slots[i]` is
+		// the cell for that side's i-th pick — `draft.Arrange` reads it that way
+		// and has no other way to know who a cell is for — so anything that sorted
+		// or regrouped this would field somebody else's formation without a word.
+		// → `draw.ArrangeScreen`, which builds it, and `wire.DraftDecision.Slots`.
+		Slots: decision.Slots,
 	}, true
 }
 
@@ -237,4 +243,28 @@ func (m model) updateDraft(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	return m.navigate(screenDraft, result.Action)
+}
+
+// updateArrange is updateDraft one decision later, and it is the same three lines
+// for the same reasons: the decision goes to the session rather than to the mirror,
+// and the record length is read **after** the screen took the keystroke, because
+// that is the reading the decision was taken against.
+//
+// ⚠️ **It is a second function rather than a shared one taking a screen**, because
+// what the two share is a result type and not a screen: `m.draft` and `m.arrange`
+// are different types with different Updates, and a wrapper over both would be a
+// third vocabulary for a keystroke. What is genuinely shared — the mapping out to
+// the wire and the routing key — is `draftDecisionOf` and `session.decide`, and
+// both are called here unchanged.
+func (m model) updateArrange(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	next, result := m.arrange.Update(m.ctx(), message)
+	m.arrange = next
+	if result.Decided {
+		decision, known := draftDecisionOf(result.Decision)
+		if known {
+			m.session.decide(decision, m.arrange.Live.Recorded)
+		}
+		return m, nil
+	}
+	return m.navigate(screenArrange, result.Action)
 }

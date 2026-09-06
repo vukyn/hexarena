@@ -22,6 +22,7 @@
 - [Measure the thing a bound bounds](feedback_measure_the_thing_a_bound_bounds.md) — my 1 MiB read limit bounded 2.9 KB; hold both ends. -race's first catch is a TEST's teardown assumption
 - [A fixture the code can reorder](feedback_a_fixture_the_code_can_reorder.md) — an in-place sort also sorts the EXPECTATION; 0 tests failed
 - [Re-entrant RLock in a Read callback](feedback_reentrant_rlock_inside_a_read_callback.md) — 1 run in 10; -race clean; hoist the seat out of the lock
+- [A state the reading can never hold](feedback_a_state_the_reading_can_never_hold.md) — my own send moves NO reading; derive reachability from the producer, and a display memo is not a gate
 - [A well-formed measurement can measure nothing](feedback_a_well_formed_measurement_can_measure_nothing.md) — an RWMutex deadlock test needs a WRITER; a digest can be stable and always unequal
 - [pty smoke test for hexarena-tui](feedback_pty_smoke_test_for_hexarena_tui.md) — it refuses a pipe; pty.fork + TIOCSWINSZ, two of them plus the host play a whole match
 - [bubbles paste + nil commands](feedback_bubbles_paste_and_nil_commands.md) — textinput.Paste's msg is UNEXPORTED; a nil cmd is not "refused"; pinning a sanitiser ≠ pinning its caller

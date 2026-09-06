@@ -9,6 +9,7 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/i18n"
 )
@@ -434,6 +435,16 @@ type DraftDecision struct {
 	Stage     string
 	Skills    []string
 	Passives  []string
+	// Slots is one side's whole arrangement, in **pick order**: `Slots[i]` is the
+	// cell for that side's i-th pick, which is what draft.Arrange takes and the
+	// only order it can be read in.
+	//
+	// ⚠️ **A side arranges in one call rather than a cell at a time**, which is
+	// why this is a list on one decision and not one decision per unit: the phase
+	// is simultaneous and secret, so a cell-by-cell stream would need the same
+	// buffer and would additionally hand a peer a partial arrangement to be told
+	// about. Empty on every other step. → ArrangeScreen, and wire.DraftDecision.
+	Slots []hex.Offset
 }
 
 // DraftResult is what a keystroke did to the draft screen, beside the screen
