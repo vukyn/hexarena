@@ -140,23 +140,23 @@ pokemon.poliwag — Poliwag
 
 danh sách nhân vật  đang xem tất cả nguồn (23 trong 23 nhân vật)
 
-  fixture-anime.adept      fixture-anime  water/ice <nước/băng>
-  fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
-  naruto.naruto            naruto         wind <gió>
-  pokemon.abra             pokemon        dark <bóng tối>
-  pokemon.bulbasaur        pokemon        grass <cỏ>
-  pokemon.charmander       pokemon        fire <lửa>
-  pokemon.cleffa           pokemon        light <ánh sáng>
-  pokemon.diglett          pokemon        ground <đất>
-  pokemon.dratini          pokemon        wind <gió>
-  pokemon.gastly           pokemon        dark <bóng tối>
-  pokemon.gible            pokemon        ground <đất>
-  pokemon.happiny          pokemon        neutral <trung tính>
-  pokemon.lapras           pokemon        water/ice <nước/băng>
-  pokemon.machop           pokemon        ground <đất>
-  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
-  pokemon.mew              pokemon        neutral <trung tính>
-  pokemon.mewtwo           pokemon        dark <bóng tối>
+  pokemon.pichu            pokemon        electric <điện>
+> pokemon.poliwag          pokemon        water <nước>
+  pokemon.riolu            pokemon        metal <kim loại>
+
+pokemon.poliwag — Poliwag
+  nguồn tham khảo  Pokémon (anime, pokemon)
+  lối chơi         bruiser
+                   kẻ áp sát
+  hệ               water
+                   nước
+  bộ chiêu         water_gun bubble pummel body_slam bubble_beam brine whirlpool taunt submission[Poliwrath] hydro_pump
+                   rally rinse[Politoed] chorus[Politoed] drench soak tide_break wellspring
+                   súng nước · bong bóng · đánh dồn dập · lấy thịt đè người · tia bong bóng · nước mặn · xoáy nước ·
+                   khiêu khích · khoá siết · thủy pháo · khích lệ · gột sạch · hợp xướng · dầm nước · ngấm nước · phá
+                   triều · mạch nước
+  giai đoạn        Poliwag@1 → Poliwhirl@16 → (Poliwrath@32 | Politoed@32)
+  tiểu sử          Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | a forked member =====
@@ -557,20 +557,20 @@ danh sách nhân vật  đang xem tất cả nguồn (23 trong 23 nhân vật)
 > fixture-anime.adept      fixture-anime  water/ice <nước/băng>
   fixture-game.sprout      fixture-game   grass/electric <cỏ/điện>
   naruto.naruto            naruto         wind <gió>
-  pokemon.abra             pokemon        dark <bóng tối>
-  pokemon.bulbasaur        pokemon        grass <cỏ>
-  pokemon.charmander       pokemon        fire <lửa>
-  pokemon.cleffa           pokemon        light <ánh sáng>
-  pokemon.diglett          pokemon        ground <đất>
-  pokemon.dratini          pokemon        wind <gió>
-  pokemon.gastly           pokemon        dark <bóng tối>
-  pokemon.gible            pokemon        ground <đất>
-  pokemon.happiny          pokemon        neutral <trung tính>
-  pokemon.lapras           pokemon        water/ice <nước/băng>
-  pokemon.machop           pokemon        ground <đất>
-  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
-  pokemon.mew              pokemon        neutral <trung tính>
-  pokemon.mewtwo           pokemon        dark <bóng tối>
+
+fixture-anime.adept — Example Adept
+  nguồn tham khảo  Example Anime (anime, fixture-anime)
+  lối chơi         sentinel
+                   trấn thủ
+  hệ               water/ice
+                   nước/băng
+  bộ chiêu         strike riptide guard_wall purify
+                   đòn đánh · sóng ngầm · tường chắn · thanh tẩy
+  giai đoạn        Example Adept@1
+  tiểu sử          A test fixture, injected into a scratch data directory so a test does not depend on whatever cast
+                   the repository happens to hold.
+  ảnh              assets/fixture/adept.svg  có
+  cấp 60           hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 giai đoạn Example Adept
 … bị cắt bớt; cửa sổ cao hơn sẽ thấy hết
 ↑/↓ chọn · ←/→ cấp · f lọc · p ảnh · ? nội tại · ctrl+l English · esc · q
 ===== vi | 120x24 | builds =====
@@ -4814,23 +4814,23 @@ pokemon.poliwag — Poliwag
 
 cast  showing all origins (23 of 23 characters)
 
-  fixture-anime.adept      fixture-anime  water/ice
-  fixture-game.sprout      fixture-game   grass/electric
-  naruto.naruto            naruto         wind
-  pokemon.abra             pokemon        dark
-  pokemon.bulbasaur        pokemon        grass
-  pokemon.charmander       pokemon        fire
-  pokemon.cleffa           pokemon        light
-  pokemon.diglett          pokemon        ground
-  pokemon.dratini          pokemon        wind
-  pokemon.gastly           pokemon        dark
-  pokemon.gible            pokemon        ground
-  pokemon.happiny          pokemon        neutral
-  pokemon.lapras           pokemon        water/ice
-  pokemon.machop           pokemon        ground
-  pokemon.magnemite        pokemon        electric/metal
-  pokemon.mew              pokemon        neutral
-  pokemon.mewtwo           pokemon        dark
+  pokemon.pichu            pokemon        electric
+> pokemon.poliwag          pokemon        water
+  pokemon.riolu            pokemon        metal
+
+pokemon.poliwag — Poliwag
+  from          Pokémon (anime, pokemon)
+  playstyle     bruiser
+  element       water
+  kit           water_gun bubble pummel body_slam bubble_beam brine whirlpool taunt submission[Poliwrath] hydro_pump
+                rally rinse[Politoed] chorus[Politoed] drench soak tide_break wellspring
+  stages        Poliwag@1 → Poliwhirl@16 → (Poliwrath@32 | Politoed@32)
+  biography     Cái xoáy trên bụng là ruột gan lộ hẳn ra ngoài, mỏng tới mức nhìn xuyên được, nên Poliwag chẳng giấu
+                nổi điều gì — kể cả lúc sợ. Da lúc nào cũng trơn nhẫy: ai chộp được cũng chỉ giữ nổi trong chớp mắt.
+  form  < Poliwrath >  1 of 2, s for the next
+  art           assets/poliwrath.svg  present
+  species       amphibian
+  traits        endurance swiftness blood_thirst spiteful composure[Politoed]
 … cut off; a taller window shows the rest
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | a forked member =====
@@ -5231,21 +5231,21 @@ cast  showing all origins (23 of 23 characters)
 > fixture-anime.adept      fixture-anime  water/ice
   fixture-game.sprout      fixture-game   grass/electric
   naruto.naruto            naruto         wind
-  pokemon.abra             pokemon        dark
-  pokemon.bulbasaur        pokemon        grass
-  pokemon.charmander       pokemon        fire
-  pokemon.cleffa           pokemon        light
-  pokemon.diglett          pokemon        ground
-  pokemon.dratini          pokemon        wind
-  pokemon.gastly           pokemon        dark
-  pokemon.gible            pokemon        ground
-  pokemon.happiny          pokemon        neutral
-  pokemon.lapras           pokemon        water/ice
-  pokemon.machop           pokemon        ground
-  pokemon.magnemite        pokemon        electric/metal
-  pokemon.mew              pokemon        neutral
-  pokemon.mewtwo           pokemon        dark
-… cut off; a taller window shows the rest
+
+fixture-anime.adept — Example Adept
+  from          Example Anime (anime, fixture-anime)
+  playstyle     sentinel
+  element       water/ice
+  kit           strike riptide guard_wall purify
+  stages        Example Adept@1
+  biography     A test fixture, injected into a scratch data directory so a test does not depend on whatever cast the
+                repository happens to hold.
+  art           assets/fixture/adept.svg  present
+  level 60      hp 3100, atk 500, def 800, spd 90, acc 80, ddg 30 stage Example Adept
+  effective hp  [=======================-] 11397 of 11500, 103 to spare
+                3100 against damage that pierces its armour outright
+
+
 ↑/↓ move · ←/→ lvl · f filter · p art · ? trait · ctrl+l tiếng Việt · esc · q
 ===== en | 120x24 | builds =====
 

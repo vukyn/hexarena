@@ -3236,8 +3236,54 @@ is only so the shape is readable.
       because statuses.json was already clean; the two bigger books have not been
       through it.
 
-- [ ] **The cast listing draws every row, so the detail pane shrinks as the cast
-      grows.** Found 2026-09-05 while shipping `pokemon.torchic`, when a sweep
+- [x] **The cast listing draws every row, so the detail pane shrinks as the cast
+      grows — DONE.** `screen.browseRoom` is `skillsRoom`'s twin now: the listing
+      measures its rows from the window in hand and windows them around the cursor,
+      and the pane keeps `browseDetailRows` whatever the book's length.
+
+      ⚠️ **The reserve is a written-down constant rather than a measurement, and
+      that is a cost finding.** The honest version is `speciesRoom`'s — render every
+      row's pane and take the tallest, which cannot drift. Measured on the shipped
+      book at twenty-three characters it costs **13ms a redraw**: `os.Stat` behind
+      the art row is **53µs a character** on Windows and `Context.Wrapped` is **15µs**
+      a call against ten of them a pane. That is per keystroke and it **grows with
+      the cast**, which is the very thing the reserve exists to stop mattering. So
+      the number is written down and `TestTheDetailReserveIsTheTallestPaneInTheBook`
+      holds it against the book **exactly, in both directions** — over is a pane the
+      frame cuts, under is rows the listing gave up for nothing.
+
+      ⚠️ **One number rather than one per language, and English pays for it.** The
+      pane is **24 rows in Vietnamese and 17 in English** (`pokemon.mew`, at level 16
+      and at MinWidth, where every wrapped row wraps hardest), because every glossed
+      row draws nothing when there is no name to draw. A screen may not branch on
+      which language is in front, and what is measured here is a count of rows rather
+      than a width a label can be asked for — so the reserve is the tallest the pane
+      ever gets and an English reader sees blank rows under it. Same price
+      `speciesRoom` already pays for its note.
+
+      ⚠️ **At the 120x24 floor the pane is cut anyway and no split can help**: the
+      reserve alone is 24 rows against the 20 the frame leaves a body, so the listing
+      could give up every row it has and still not fit. The floor of three is
+      navigation kept rather than a share of a budget that balances. What this fixes
+      is the other axis — a taller window used to lose the pane one row per character
+      shipped and now loses none.
+
+      The stopgap is gone: `theForkedBrowser` in both clients' sweeps stands in the
+      shared window again rather than setting a taller one of its own.
+
+      ⚠️ **It found a flake it did not cause.** `TestABracketScrollsWhereverAPageKeyDoes`
+      compared two whole drawn screens, and every model in it is built by its own call
+      to `start`, so the three stand in three scratch directories differing in one
+      digit — which the header line names. Whether that digit was on screen came down
+      to whether the path cleared the clip at `MinWidth`, which the random component of
+      a temp directory decides, so it failed on about half the runs at whichever site
+      and language landed on the boundary. It compares below the header now, for the
+      reason both goldens already drop that line.
+
+      The original entry:
+
+      ⚠️ **The cast listing draws every row, so the detail pane shrinks as the
+      cast grows.** Found 2026-09-05 while shipping `pokemon.torchic`, when a sweep
       entry that records a **forked** detail pane stopped drawing the form row.
 
       The skill listing already solves this: `screen.skillsRoom` measures how many

@@ -73,6 +73,7 @@ that owns the subject wins and the note is the thing to fix.
 - [hexarena battle-screen summaries](memory/hexarena-battle-screen-summaries.md) — #160 1-line derived summary + ?; screen needs h>=32
 - [hexarena TUI references](memory/hexarena-tui-references.md) — statuses/traits/elements/species screens + ring-drawn affinity chart
 - [hexarena skill name filter](memory/hexarena-skill-name-filter.md) — #176 `/` filter; fold table NOT x/text; cursor indexes FILTERED view
+- [chỗ cho cast listing](memory/hexarena-cast-listing-room.md) — browseRoom = skillsRoom song sinh; ⚠️ dự trữ là HẰNG SỐ vì đo mỗi lần vẽ tốn 13ms và tăng theo cast
 - [hexarena TUI width rule](memory/hexarena-tui-width-rule.md) — prose→minWidth, data→usableWidth(); floor 120; footers only floor can widen
 - [hexarena shipping chars #182/#187/#189](memory/hexarena-poliwag-bruiser.md) — ⚠️ spar KHÔNG đo được support (dùng squad); hạ GIÁP mới kết mirror
 - [hexarena shipping a character](memory/hexarena-shipping-a-character.md) — 5 json + cast_test.go design table (hardcoded!); effHP<=11500

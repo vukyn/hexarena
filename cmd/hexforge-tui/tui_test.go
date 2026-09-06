@@ -729,10 +729,28 @@ func TestSavingWritesThroughTheLibrary(t *testing.T) {
 	if _, known := lib.Characters().Get("fixture-film.tester"); !known {
 		t.Error("the open library does not hold the character it just wrote")
 	}
+	// The browser windows its listing around the cursor, so a character just
+	// written is on the list rather than necessarily on the screen: what is
+	// asserted is that the row exists and that walking to it draws it. This
+	// listing drew every row before screen.browseRoom, so the whole cast was
+	// on screen whatever its length, which is what cost the detail pane its
+	// rows as the cast grew.
 	m = m.enter(screenBrowse)
+	written := -1
+	for index, character := range m.browse.Rows() {
+		if character.ID == "fixture-film.tester" {
+			written = index
+		}
+	}
+	if written < 0 {
+		t.Fatalf("the cast browser has no row for the new character, so the write " +
+			"did not reach the library the screen reads")
+	}
+	m.browse.Cursor = written
 	body, _ := m.browse.View(m.ctx())
 	if !strings.Contains(body, "fixture-film.tester") {
-		t.Errorf("the cast browser does not show the new character:\n%s", body)
+		t.Errorf("the cast browser does not draw the new character under its own "+
+			"cursor:\n%s", body)
 	}
 }
 

@@ -262,3 +262,127 @@ func TestEveryGlossFitsItsRow(t *testing.T) {
 		}
 	}
 }
+
+// TestTheDetailReserveIsTheTallestPaneInTheBook holds browseDetailRows against
+// the book it was measured from, in both directions.
+//
+// Over rather than under is the defect the reserve exists to stop: a pane taller
+// than its reserve is a pane the frame cuts from the bottom, and what goes first
+// on a forking line is the form row -- the one row that says which arm the stats
+// under it belong to. Under rather than over is slack: a reserve nobody reaches
+// is rows the listing gave up for nothing, so the constant is held to the
+// tallest exactly and a book that shrinks reddens this as loudly as one that
+// grows.
+//
+// Measured at MinWidth, which is where the pane is tallest: every wrapped row in
+// it -- the kit, its names, the bio, the stat line -- wraps hardest in the
+// narrowest window this program draws in.
+//
+// ⚠️ **Every stage boundary, not just the cap.** The pane names the traits and
+// the skills in force at the level being walked, so its height moves with the
+// level: the tallest shipped pane is at level 16, nowhere near either end.
+func TestTheDetailReserveIsTheTallestPaneInTheBook(t *testing.T) {
+	tallest, who, atLevel, inLang := 0, "", 0, i18n.Vi
+	for _, lang := range i18n.Langs() {
+		c, lib := start(t, lang)
+		c = atTheFloor(c)
+		// The height plays no part in the pane's own height -- nothing in Detail
+		// reads it -- so the floor here is about the width alone.
+		b := NewBrowseScreen(lib)
+		for _, character := range b.Rows() {
+			for _, level := range levelsWorthWalking(character) {
+				b.Level = level
+				drawn := len(drawnLines(strings.TrimRight(b.Detail(c, character), "\n")))
+				if drawn > browseDetailRows {
+					t.Errorf("%s at level %d in %s draws a %d-row detail pane against a "+
+						"reserve of %d, so the frame cuts the bottom of it",
+						character.ID, level, lang, drawn, browseDetailRows)
+				}
+				if drawn > tallest {
+					tallest, who, atLevel, inLang = drawn, character.ID, level, lang
+				}
+			}
+		}
+	}
+	if tallest != browseDetailRows {
+		t.Errorf("the tallest pane in the book is %s's at level %d in %s, %d rows against a "+
+			"reserve of %d: the listing is giving up %d rows nothing draws",
+			who, atLevel, inLang, tallest, browseDetailRows, browseDetailRows-tallest)
+	}
+}
+
+// levelsWorthWalking is every level a character's pane can change at: the two
+// ends, and each side of every stage boundary it declares.
+//
+// The whole range would be sixty renders a character a language, which is what
+// the reserve exists to keep off the draw path in the first place -- so the test
+// walks the levels the data says are interesting rather than all of them.
+func levelsWorthWalking(character cast.Character) []int {
+	levels := []int{1, progression.LevelCap}
+	for _, stage := range character.Stages {
+		if stage.MinLevel <= 1 {
+			continue
+		}
+		levels = append(levels, stage.MinLevel-1, stage.MinLevel)
+	}
+	return levels
+}
+
+// TestTheCastListingLeavesTheDetailPaneItsRows is the property the reserve
+// buys, and it is asserted on a book long enough to overrun the window.
+//
+// Before it, the listing drew every character it had and the pane took what was
+// left, so the pane ran out at the bottom of a window that had held it the day
+// before -- the frame said so in a line about the window being too short, and
+// the row it had dropped was the form row.
+func TestTheCastListingLeavesTheDetailPaneItsRows(t *testing.T) {
+	c, lib := start(t, i18n.Vi)
+	b := NewBrowseScreen(lib)
+	if len(b.Rows()) <= browseRoom(c) {
+		t.Fatalf("the book holds %d characters against a listing of %d rows, so nothing "+
+			"here is measured: this test needs a cast the window cannot hold",
+			len(b.Rows()), browseRoom(c))
+	}
+	body, _ := b.View(c)
+	if drawn := len(drawnLines(body)); drawn > bodyRoom(c) {
+		t.Errorf("the browser draws %d lines into the %d the frame gives it, so the frame "+
+			"cuts the bottom of the detail pane", drawn, bodyRoom(c))
+	}
+	// The last row of the pane, by name: a body that fits could still be one
+	// that stopped early.
+	if last := c.Lang.BudgetPierced(c.Lib.Budget(resolvedAtCursor(t, c, b))); last != "" &&
+		!strings.Contains(body, last) {
+		t.Errorf("the pane's last row is missing from a body that fits, so it is being " +
+			"cut somewhere this test cannot see")
+	}
+}
+
+func resolvedAtCursor(t *testing.T, c Context, b BrowseScreen) progression.Values {
+	t.Helper()
+	rows := b.Rows()
+	character := rows[Clamp(b.Cursor, 0, len(rows)-1)]
+	values, _, err := character.Resolve(b.Level, ChosenForm(character, b.Level, b.Form))
+	if err != nil {
+		t.Fatalf("resolve %s at level %d: %v", character.ID, b.Level, err)
+	}
+	return values
+}
+
+// TestTheCastListingWindowsAroundTheCursor is the other half: a listing that
+// keeps its rows is worth nothing if the row under the cursor is off it.
+func TestTheCastListingWindowsAroundTheCursor(t *testing.T) {
+	c, lib := start(t, i18n.Vi)
+	b := NewBrowseScreen(lib)
+	rows := b.Rows()
+	if len(rows) <= browseRoom(c) {
+		t.Fatalf("the book fits the listing whole, so no window is exercised")
+	}
+	for cursor := range rows {
+		b.Cursor = cursor
+		body, _ := b.View(c)
+		if !strings.Contains(body, rows[cursor].ID) {
+			t.Fatalf("the row under the cursor (%s, %d of %d) is not on the screen",
+				rows[cursor].ID, cursor+1, len(rows))
+		}
+	}
+}

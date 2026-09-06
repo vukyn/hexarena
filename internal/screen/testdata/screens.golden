@@ -319,27 +319,9 @@ pokemon.poliwag — Poliwag
 ===== vi | 120x24 | a forked cast row =====
 danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
 
-  naruto.naruto            naruto         wind <gió>
-  pokemon.abra             pokemon        dark <bóng tối>
-  pokemon.bulbasaur        pokemon        grass <cỏ>
-  pokemon.charmander       pokemon        fire <lửa>
-  pokemon.cleffa           pokemon        light <ánh sáng>
-  pokemon.diglett          pokemon        ground <đất>
-  pokemon.dratini          pokemon        wind <gió>
-  pokemon.gastly           pokemon        dark <bóng tối>
-  pokemon.gible            pokemon        ground <đất>
-  pokemon.happiny          pokemon        neutral <trung tính>
-  pokemon.lapras           pokemon        water/ice <nước/băng>
-  pokemon.machop           pokemon        ground <đất>
-  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
-  pokemon.mew              pokemon        neutral <trung tính>
-  pokemon.mewtwo           pokemon        dark <bóng tối>
-  pokemon.oddish           pokemon        grass <cỏ>
   pokemon.pichu            pokemon        electric <điện>
 > pokemon.poliwag          pokemon        water <nước>
   pokemon.riolu            pokemon        metal <kim loại>
-  pokemon.squirtle         pokemon        water <nước>
-  pokemon.torchic          pokemon        fire <lửa>
 
 pokemon.poliwag — Poliwag
   nguồn tham khảo  Pokémon (anime, pokemon)
@@ -927,24 +909,6 @@ danh sách nhân vật  đang xem tất cả nguồn (21 trong 21 nhân vật)
 > naruto.naruto            naruto         wind <gió>
   pokemon.abra             pokemon        dark <bóng tối>
   pokemon.bulbasaur        pokemon        grass <cỏ>
-  pokemon.charmander       pokemon        fire <lửa>
-  pokemon.cleffa           pokemon        light <ánh sáng>
-  pokemon.diglett          pokemon        ground <đất>
-  pokemon.dratini          pokemon        wind <gió>
-  pokemon.gastly           pokemon        dark <bóng tối>
-  pokemon.gible            pokemon        ground <đất>
-  pokemon.happiny          pokemon        neutral <trung tính>
-  pokemon.lapras           pokemon        water/ice <nước/băng>
-  pokemon.machop           pokemon        ground <đất>
-  pokemon.magnemite        pokemon        electric/metal <điện/kim loại>
-  pokemon.mew              pokemon        neutral <trung tính>
-  pokemon.mewtwo           pokemon        dark <bóng tối>
-  pokemon.oddish           pokemon        grass <cỏ>
-  pokemon.pichu            pokemon        electric <điện>
-  pokemon.poliwag          pokemon        water <nước>
-  pokemon.riolu            pokemon        metal <kim loại>
-  pokemon.squirtle         pokemon        water <nước>
-  pokemon.torchic          pokemon        fire <lửa>
 
 naruto.naruto — Naruto
   nguồn tham khảo  Naruto (anime, naruto)
@@ -3749,27 +3713,9 @@ pokemon.poliwag — Poliwag
 ===== en | 120x24 | a forked cast row =====
 cast  showing all origins (21 of 21 characters)
 
-  naruto.naruto            naruto         wind
-  pokemon.abra             pokemon        dark
-  pokemon.bulbasaur        pokemon        grass
-  pokemon.charmander       pokemon        fire
-  pokemon.cleffa           pokemon        light
-  pokemon.diglett          pokemon        ground
-  pokemon.dratini          pokemon        wind
-  pokemon.gastly           pokemon        dark
-  pokemon.gible            pokemon        ground
-  pokemon.happiny          pokemon        neutral
-  pokemon.lapras           pokemon        water/ice
-  pokemon.machop           pokemon        ground
-  pokemon.magnemite        pokemon        electric/metal
-  pokemon.mew              pokemon        neutral
-  pokemon.mewtwo           pokemon        dark
-  pokemon.oddish           pokemon        grass
   pokemon.pichu            pokemon        electric
 > pokemon.poliwag          pokemon        water
   pokemon.riolu            pokemon        metal
-  pokemon.squirtle         pokemon        water
-  pokemon.torchic          pokemon        fire
 
 pokemon.poliwag — Poliwag
   from          Pokémon (anime, pokemon)
@@ -4346,24 +4292,6 @@ cast  showing all origins (21 of 21 characters)
 > naruto.naruto            naruto         wind
   pokemon.abra             pokemon        dark
   pokemon.bulbasaur        pokemon        grass
-  pokemon.charmander       pokemon        fire
-  pokemon.cleffa           pokemon        light
-  pokemon.diglett          pokemon        ground
-  pokemon.dratini          pokemon        wind
-  pokemon.gastly           pokemon        dark
-  pokemon.gible            pokemon        ground
-  pokemon.happiny          pokemon        neutral
-  pokemon.lapras           pokemon        water/ice
-  pokemon.machop           pokemon        ground
-  pokemon.magnemite        pokemon        electric/metal
-  pokemon.mew              pokemon        neutral
-  pokemon.mewtwo           pokemon        dark
-  pokemon.oddish           pokemon        grass
-  pokemon.pichu            pokemon        electric
-  pokemon.poliwag          pokemon        water
-  pokemon.riolu            pokemon        metal
-  pokemon.squirtle         pokemon        water
-  pokemon.torchic          pokemon        fire
 
 naruto.naruto — Naruto
   from          Naruto (anime, naruto)
