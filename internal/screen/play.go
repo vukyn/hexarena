@@ -723,14 +723,11 @@ func (p PlayScreen) answer(c Context) (PlayScreen, Action) {
 	if !option.Available() || len(option.Aims) == 0 {
 		return p, Action{}
 	}
-	if !p.Aiming && len(option.Aims) > 1 {
+	if !p.Aiming {
 		p.Aiming, p.Aim = true, 0
 		return p, Action{}
 	}
-	aim := option.Aims[0]
-	if p.Aiming {
-		aim = option.Aims[Clamp(p.Aim, 0, len(option.Aims)-1)]
-	}
+	aim := option.Aims[Clamp(p.Aim, 0, len(option.Aims)-1)]
 	return p.answering(), Action{Kind: Answer, Answer: PlayAnswer{
 		Choice: battle.Choice{Skill: option.Skill, Aim: aim}, Acted: true,
 	}}
@@ -799,21 +796,35 @@ func (p PlayScreen) Move(by int) PlayScreen {
 
 // choose answers whichever question is in front: which skill, and then where.
 //
-// A skill with one legal cell does not ask the second question, because a
-// question with one answer is not a decision.
+// ⚠️ **The aim list opens every time, including for a skill with one legal
+// cell**, and that is a decision reversed rather than an oversight. The rule was
+// "a question with one answer is not a decision" — written on this screen and on
+// the CLI's chooseAim — and it reads well until the one answer is the thing the
+// player wanted to look at before committing. The aim list is where a skill's
+// footprint is drawn: which cells the shape catches, who is standing in them,
+// what the matchup does there. Skipping it because the *choice* was forced also
+// skips the *reading*, and the keystroke that picked the skill has already spent
+// the turn by the time anybody notices.
+//
+// The cost is one keystroke on a forced aim and it is paid deliberately: a turn
+// is the one thing in this game that cannot be taken back on a live board, so
+// the screen would rather ask twice than commit once unread.
+//
+// ⚠️ **cmd/hexarena deliberately does NOT follow.** Its own comment says what it
+// is — a prompt loop driven from a script or a pipe — and an extra required line
+// per single-aim skill is a change to the input format of every script written
+// against it, in exchange for a footprint a piped caller does not read. The two
+// clients disagree here on purpose, and this is the note that says so.
 func (p PlayScreen) choose(c Context) PlayScreen {
 	option := p.Pending.Options[Clamp(p.Option, 0, len(p.Pending.Options)-1)]
 	if !option.Available() {
 		return p
 	}
-	if !p.Aiming && len(option.Aims) > 1 {
+	if !p.Aiming {
 		p.Aiming, p.Aim = true, 0
 		return p
 	}
-	aim := option.Aims[0]
-	if p.Aiming {
-		aim = option.Aims[Clamp(p.Aim, 0, len(option.Aims)-1)]
-	}
+	aim := option.Aims[Clamp(p.Aim, 0, len(option.Aims)-1)]
 	if err := p.take(p.Pending, option.Skill, aim); err != nil {
 		p.Err = err
 		return p

@@ -144,6 +144,14 @@ is only so the shape is readable.
   raised by `commit()`, which runs on the way out of every member, so merely
   opening one claimed a change. → `README.md` § Building a squad.
 
+- **The aim list opens on every skill**, including one with a single legal cell.
+  The rule it replaces — a question with one answer is not a decision — is right
+  about the choice and wrong about the reading: the aim list is where a skill's
+  footprint is drawn, so skipping it spent the turn before the player had seen
+  where it landed. Both screen paths ask, local and live. ⚠️ `cmd/hexarena`
+  deliberately does **not** follow: it is a prompt loop driven from a script or a
+  pipe, and an extra required line per single-aim skill is a change to the input
+  format of every script written against it.
 - **The battle screen budgets its own body**, because it never could fit the
   window the tool declares. At 120x24 the body has **twenty** rows, and heading +
   board (10) + roster (1 + one a unit) + order + option list (1 + one an option)
@@ -2806,23 +2814,30 @@ is only so the shape is readable.
       Worth doing with the item below — they are one complaint, that the screen
       will not show what a turn is about to do before it is spent.
 
-- [ ] **A skill with one legal target fires without asking.** The picker opens
-      only on `len(option.Aims) > 1`, so a single-target skill with one enemy left
-      commits the turn on the keystroke that chose the skill. The author wants the
-      picker every time.
-      ⚠️ **This is a decision being reversed, not a bug being fixed**, and the
-      reasoning is written down at `cmd/hexarena/main.go` — *a question with one
-      answer is not a decision*. It reads well until the answer is the one thing
-      the player wanted to look at before committing, which is why it belongs with
-      the coverage item: with a footprint on screen, the single-aim stop is where
-      it gets read.
-      Three sites hold the rule, and a change to one of them is a change to the
-      keystroke count of the other two: `internal/screen/play.go` twice — the
-      answer path and the live-take path — and the CLI's `chooseAim` once. Whether
-      the CLI follows is the author's call; it is a different kind of screen.
-      ⚠️ The screens are golden-held, so the extra keystroke moves every play
-      fixture that casts a single-aim skill. That is the change being visible
-      rather than a fixture problem, but it is the bulk of the diff.
+- [ ] **A golden holds a state and says nothing about the path to it, and three
+      suites build the aiming state by assignment.** Found 2026-09-06 making the
+      aim list open on every skill: the entry above predicted the extra keystroke
+      would move "every play fixture that casts a single-aim skill" and called it
+      the bulk of the diff. **It moved none.** Every fixture that draws the aim
+      list reaches it with `p.Aiming = true` — `screens_golden_test.aBattleAiming`,
+      `cmd/hexforge-tui/language_test.go` twice, `cmd/hexarena-tui/sweep_test.go`
+      twice — so the goldens hold the *state* and never pressed the key that
+      opens it.
+      ⚠️ That is not a fixture problem to fix by pressing keys instead: a golden
+      is a picture and a picture of a state is what it is for. It is worth
+      writing down because it bounds what the golden suite can be trusted to
+      catch — **no keystroke rule is held by a golden**, and every one of them
+      therefore needs a behaviour test of its own or it is held by nothing.
+      ⚠️ The second half is worse and is the same shape: `live_test.go` presses
+      enter in a `for action.Kind == Stay && struck.Aiming` loop, which tolerates
+      either answer by construction. Reverting `PlayScreen.answer` alone reddened
+      **not one test in the repository** until
+      `TestALiveAimListOpensForASkillWithOneLegalCell` was written. A loop written
+      to be robust against a rule cannot measure it — and the local twin of that
+      rule *was* covered, which is exactly what makes the gap invisible.
+      What to do with it: sweep for the other `for … && screen.<flag>` loops in
+      the screen suites and ask of each whether the rule it walks past is held
+      anywhere else.
 
 - [ ] **A field inside a `modifier` is still dropped silently, in all three
       books.** Found 2026-09-06 while closing the same hole in `statuses.json`:
