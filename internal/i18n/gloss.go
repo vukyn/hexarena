@@ -9,6 +9,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/element"
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 )
 
 // A gloss is the Vietnamese name of something a data file names: an element, an
@@ -352,6 +353,42 @@ func (l Lang) GlossedSkill(carried skill.Skill) string {
 		return carried.ID
 	}
 	return fmt.Sprintf(glossBracket, carried.ID, name)
+}
+
+// StatusName is a status's Vietnamese name: the one authored on the kind if it
+// has one, otherwise the compiled table's, otherwise nothing.
+//
+// The same order SkillName applies, and for the same reason — an authored name
+// WINS, including over a table entry for the same id — but the balance between
+// the two halves is the other way round here and that is deliberate. All 43
+// shipped skills carry an authored name and none is left in skillGloss; all 34
+// shipped statuses are in statusGloss and none carries a name. The field exists
+// so that the third book stops being the odd one an author has to know about,
+// not to start a migration: moving thirty-four names into statuses.json would
+// edit a balance file to change nothing anybody can observe, and half of those
+// words have their reasoning written in the comments beside them, which JSON has
+// nowhere to put.
+//
+// Empty in English, exactly as Gloss and SkillName are.
+func (l Lang) StatusName(kind status.Kind) string {
+	if l != Vi {
+		return ""
+	}
+	if authored := strings.TrimSpace(kind.Name); authored != "" {
+		return authored
+	}
+	return l.Gloss(kind.ID)
+}
+
+// GlossedStatus is a status's id with its Vietnamese name beside it, or the bare
+// id when it has none — the same shape GlossedSkill and GlossedPassive give, so
+// a screen listing all three names them the same way.
+func (l Lang) GlossedStatus(kind status.Kind) string {
+	name := l.StatusName(kind)
+	if name == "" {
+		return kind.ID
+	}
+	return fmt.Sprintf(glossBracket, kind.ID, name)
 }
 
 // PassiveName is the name a trait is called by in this language, or nothing.

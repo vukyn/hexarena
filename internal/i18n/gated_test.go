@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/seed"
 )
 
@@ -75,7 +76,7 @@ func TestAGatedSkillIsNotDescribedAsAnAmplifier(t *testing.T) {
 		}
 		for _, declared := range gatedSkills(t) {
 			var gated, amplified bool
-			for _, line := range strings.Split(lang.Describe(declared, shapes), "\n") {
+			for _, line := range strings.Split(lang.Describe(declared, shapes, shippedStatusKinds(t)), "\n") {
 				// ⚠️ **The last line is not a sentence and in Vietnamese it opens
 				// with the amplifier's own words.** It is the target-and-cooldown
 				// footer, joined with " · ", and for a SELF-aimed skill it reads
@@ -94,12 +95,12 @@ func TestAGatedSkillIsNotDescribedAsAnAmplifier(t *testing.T) {
 			}
 			if !gated {
 				t.Errorf("%s describes the gated %s without a line opening %q:\n%s",
-					lang, declared.ID, gate, lang.Describe(declared, shapes))
+					lang, declared.ID, gate, lang.Describe(declared, shapes, shippedStatusKinds(t)))
 			}
 			if amplified {
 				t.Errorf("%s describes the gated %s with a line opening %q, which says the "+
 					"fuel makes the skill stronger rather than possible:\n%s",
-					lang, declared.ID, amplifier, lang.Describe(declared, shapes))
+					lang, declared.ID, amplifier, lang.Describe(declared, shapes, shippedStatusKinds(t)))
 			}
 			// ⚠️ **The opening alone is not enough any more, and this file's own
 			// note above says why it used to be.** It reasons that the clause after
@@ -114,11 +115,11 @@ func TestAGatedSkillIsNotDescribedAsAnAmplifier(t *testing.T) {
 				continue
 			}
 			carrying := beforeTheBlank(lang.Text(BlurbWhenCarrying))
-			if carrying != "" && strings.Contains(lang.Describe(declared, shapes), carrying) {
+			if carrying != "" && strings.Contains(lang.Describe(declared, shapes, shippedStatusKinds(t)), carrying) {
 				t.Errorf("%s describes the capped %s with %q, which is the clause for a floor: "+
 					"a cap opens while the caster holds FEWER than its bound, so this names the "+
 					"one state the skill cannot be cast in:\n%s",
-					lang, declared.ID, carrying, lang.Describe(declared, shapes))
+					lang, declared.ID, carrying, lang.Describe(declared, shapes, shippedStatusKinds(t)))
 			}
 		}
 	}
@@ -144,7 +145,7 @@ func TestAGatedSkillsCompactLineDoesNotSayItSpreads(t *testing.T) {
 				"cannot be recognised", lang, spreads)
 		}
 		for _, declared := range gatedSkills(t) {
-			line := lang.SummariseSkill(declared, shapes)
+			line := lang.SummariseSkill(declared, shapes, shippedStatusKinds(t))
 			if !strings.Contains(line, gate) {
 				t.Errorf("%s summarises the gated %s as %q, which does not say the fuel is "+
 					"what lets it be cast (want a clause opening %q)",
@@ -156,4 +157,16 @@ func TestAGatedSkillsCompactLineDoesNotSayItSpreads(t *testing.T) {
 			}
 		}
 	}
+}
+
+// shippedStatusKinds is the status book, for the in-package tests. Its twin in
+// i18n_test carries the reasoning; the two exist separately only because the
+// suite is split across two packages and a helper cannot cross that line.
+func shippedStatusKinds(t *testing.T) *status.Book {
+	t.Helper()
+	kinds, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("load the shipped statuses: %v", err)
+	}
+	return kinds
 }

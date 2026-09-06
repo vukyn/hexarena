@@ -29,7 +29,7 @@ func TestTheBlurbScreenDescribesTheSkillUnderTheCursor(t *testing.T) {
 
 	first := m.skills.Skills[m.skills.Cursor]
 	body, _ := m.blurb.View(m.ctx())
-	if want := i18n.Vi.Describe(first, lib.Patterns()); !strings.Contains(body, firstLine(want)) {
+	if want := i18n.Vi.Describe(first, lib.Patterns(), lib.Statuses()); !strings.Contains(body, firstLine(want)) {
 		t.Errorf("the description screen does not carry the skill's own sentences:\n%s", body)
 	}
 
@@ -101,7 +101,7 @@ func TestTheBrowserDescribesTheTraitsItIsShowing(t *testing.T) {
 			t.Errorf("the screen does not name the trait %q it is carrying:\n%s", one.ID, body)
 		}
 	}
-	if !strings.Contains(body, firstLine(i18n.Vi.DescribePassive(held[0]))) {
+	if !strings.Contains(body, firstLine(i18n.Vi.DescribePassive(held[0], lib.Statuses()))) {
 		t.Errorf("the screen does not carry the trait's own sentences:\n%s", body)
 	}
 

@@ -177,7 +177,7 @@ func (p PassivesScreen) View(c Context) (string, string) {
 		}
 	}
 	out.WriteString("\n  " + c.Style.Label.Render(c.Lang.GlossedPassive(selected)) + "\n")
-	for _, sentence := range strings.Split(c.Lang.DescribePassive(selected), "\n") {
+	for _, sentence := range strings.Split(c.Lang.DescribePassive(selected, c.Lib.Statuses()), "\n") {
 		sentence = Marked(sentence, names, func(word string) string {
 			return c.Style.Emphasis.Render(word)
 		})

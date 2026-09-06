@@ -769,8 +769,13 @@ func (p *PickState) Detail(c Context, id string) string {
 			// formatted its own count reached neither decision.
 			facts := c.Lang.StatusCosts(
 				kind.Category, kind.Duration, kind.MaxStacks, kind.Permanent)
-			if name := c.Lang.Gloss(id); name != "" {
-				facts = name + " · " + facts
+			// The name off the status book rather than off the row, because a
+			// name authored on the status lives there and the row is a
+			// projection that carries only the numbers a chooser sorts on.
+			if declared, err := c.Lib.Statuses().Lookup(id); err == nil {
+				if name := c.Lang.StatusName(declared); name != "" {
+					facts = name + " · " + facts
+				}
 			}
 			return c.Style.Dim.Render(facts)
 		}

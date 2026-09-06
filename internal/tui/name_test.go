@@ -7,6 +7,7 @@ import (
 	"github.com/vukyn/hexarena/internal/core/passive"
 	"github.com/vukyn/hexarena/internal/core/pattern"
 	"github.com/vukyn/hexarena/internal/core/skill"
+	"github.com/vukyn/hexarena/internal/core/status"
 	"github.com/vukyn/hexarena/internal/i18n"
 	"github.com/vukyn/hexarena/internal/seed"
 	"github.com/vukyn/hexarena/internal/tui"
@@ -51,6 +52,18 @@ func aNamedSkill(t *testing.T) (skill.Skill, bool) {
 	return skill.Skill{}, false
 }
 
+// statusBook is the shipped status book, which Detail and DetailPassives now
+// need: a description names the statuses a skill or a trait touches, and the
+// name may be authored on the status rather than compiled into i18n.
+func statusBook(t *testing.T) *status.Book {
+	t.Helper()
+	kinds, err := seed.StatusBook()
+	if err != nil {
+		t.Fatalf("read the shipped statuses: %v", err)
+	}
+	return kinds
+}
+
 func shapeBook(t *testing.T) *pattern.Book {
 	t.Helper()
 	shapes, err := seed.PatternBook()
@@ -65,7 +78,7 @@ func shapeBook(t *testing.T) *pattern.Book {
 // authored once and in Vietnamese was printed unchanged on an English screen.
 func TestATraitBlockDropsItsNameInEnglish(t *testing.T) {
 	one := aNamedTrait(t)
-	drawn := tui.DetailPassives(i18n.En, "tag unit", []passive.Passive{one})
+	drawn := tui.DetailPassives(i18n.En, "tag unit", []passive.Passive{one}, statusBook(t))
 	if !strings.Contains(drawn, one.ID) {
 		t.Errorf("the English block does not name the trait %q:\n%s", one.ID, drawn)
 	}
@@ -78,7 +91,7 @@ func TestATraitBlockDropsItsNameInEnglish(t *testing.T) {
 // stops the fix being "print the id and never the name".
 func TestATraitBlockKeepsItsNameInVietnamese(t *testing.T) {
 	one := aNamedTrait(t)
-	drawn := tui.DetailPassives(i18n.Vi, "tag unit", []passive.Passive{one})
+	drawn := tui.DetailPassives(i18n.Vi, "tag unit", []passive.Passive{one}, statusBook(t))
 	want := one.ID + " · " + one.Name
 	if !strings.Contains(drawn, want) {
 		t.Errorf("the Vietnamese block does not draw %q:\n%s", want, drawn)
@@ -102,14 +115,14 @@ func TestEveryDetailBlockAsksLangForTheName(t *testing.T) {
 		drawn string
 		leak  string
 	}{
-		{"trait", tui.DetailPassives(i18n.En, "tag unit", []passive.Passive{one}), one.Name},
+		{"trait", tui.DetailPassives(i18n.En, "tag unit", []passive.Passive{one}, statusBook(t)), one.Name},
 	}
 	if declared, found := aNamedSkill(t); found {
 		blocks = append(blocks, struct {
 			what  string
 			drawn string
 			leak  string
-		}{"skill", tui.Detail(i18n.En, declared, shapeBook(t)), i18n.Vi.SkillName(declared)})
+		}{"skill", tui.Detail(i18n.En, declared, shapeBook(t), statusBook(t)), i18n.Vi.SkillName(declared)})
 	}
 	for _, one := range blocks {
 		if one.leak == "" {
@@ -127,11 +140,11 @@ func TestEveryDetailBlockAsksLangForTheName(t *testing.T) {
 // unit carrying no trait is answered rather than framed blank.
 func TestATraitBlockWithNothingHeldStillSaysSo(t *testing.T) {
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
-		drawn := tui.DetailPassives(lang, "tag unit", nil)
+		drawn := tui.DetailPassives(lang, "tag unit", nil, statusBook(t))
 		if strings.TrimSpace(drawn) == "" {
 			t.Errorf("%v draws nothing for a unit with no trait", lang)
 		}
-		if !strings.Contains(drawn, lang.DescribePassive(passive.Passive{})) {
+		if !strings.Contains(drawn, lang.DescribePassive(passive.Passive{}, statusBook(t))) {
 			t.Errorf("%v does not say a unit holds no trait:\n%s", lang, drawn)
 		}
 	}

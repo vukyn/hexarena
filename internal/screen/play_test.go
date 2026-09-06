@@ -363,7 +363,7 @@ func TestEveryOptionIsSummarised(t *testing.T) {
 			// for a clause of its own: a test naming one here would be the wording
 			// living in two places, which is what the AST scan refuses.
 			summary := c.Lang.SummariseSkill(
-				mustSkill(t, c, option.Skill), c.Lib.Patterns())
+				mustSkill(t, c, option.Skill), c.Lib.Patterns(), c.Lib.Statuses())
 			if strings.TrimSpace(summary) == "" {
 				t.Errorf("%s: %q summarises as nothing", lang, option.Skill)
 			}
@@ -438,7 +438,7 @@ func TestAnOptionRowCarriesAsMuchOfItsSummaryAsItHasRoomFor(t *testing.T) {
 					lang, index, named, option.Skill, row)
 			}
 			summary := c.Lang.SummariseSkill(
-				mustSkill(t, c, option.Skill), c.Lib.Patterns())
+				mustSkill(t, c, option.Skill), c.Lib.Patterns(), c.Lib.Statuses())
 			if !strings.HasPrefix(summary, tail) || tail == "" {
 				t.Errorf("%s: %q draws %q beside it, which is no part of %q",
 					lang, option.Skill, tail, summary)
@@ -514,7 +514,7 @@ func TestNoSummaryIsWiderThanARowCanHold(t *testing.T) {
 		worst, worstAt := 0, ""
 		for _, declared := range skills {
 			if width := lipgloss.Width(
-				c.Lang.SummariseSkill(declared, c.Lib.Patterns())); width > worst {
+				c.Lang.SummariseSkill(declared, c.Lib.Patterns(), c.Lib.Statuses())); width > worst {
 				worst, worstAt = width, declared.ID
 			}
 		}
@@ -576,7 +576,7 @@ func TestAnUnavailableOptionKeepsItsReasonAndNotItsSummary(t *testing.T) {
 		t.Errorf("the refused option draws %q beside it, which is no part of its "+
 			"reason %q", tail, refusal)
 	}
-	summary := c.Lang.SummariseSkill(mustSkill(t, c, option.Skill), c.Lib.Patterns())
+	summary := c.Lang.SummariseSkill(mustSkill(t, c, option.Skill), c.Lib.Patterns(), c.Lib.Statuses())
 	if strings.TrimSpace(summary) == "" {
 		t.Fatalf("%q summarises as nothing, so this proves nothing", option.Skill)
 	}

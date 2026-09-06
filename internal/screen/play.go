@@ -1626,7 +1626,7 @@ func (p PlayScreen) summarise(c Context, id string) string {
 	if err != nil {
 		return ""
 	}
-	return c.Lang.SummariseSkill(declared, c.Lib.Patterns())
+	return c.Lang.SummariseSkill(declared, c.Lib.Patterns(), c.Lib.Statuses())
 }
 
 // OptionRefusal is why an option cannot be taken, in the reader's own language.
@@ -1672,9 +1672,11 @@ func OptionRefusal(c Context, option battle.Option) string {
 		// The gloss alone, not the id with the gloss beside it: this row's own
 		// first column is already a bare id, and a second one inside the sentence
 		// would spend the width that carries the two counts.
-		name := c.Lang.Gloss(option.Status)
-		if name == "" {
-			name = option.Status
+		name := option.Status
+		if kind, err := c.Lib.Statuses().Lookup(option.Status); err == nil {
+			if named := c.Lang.StatusName(kind); named != "" {
+				name = named
+			}
 		}
 		return c.Text(i18n.PlayBlockedFuel, option.Need, name, option.Held)
 	case battle.BlockSpent:

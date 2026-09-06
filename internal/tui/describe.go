@@ -25,12 +25,12 @@ import (
 // part read to *decide*, so it is worth being legible before the rest catches up,
 // and the mixed screen is a stated cost. Making it a parameter is what keeps that
 // a one-word decision rather than a rewrite.
-func Detail(lang i18n.Lang, declared skill.Skill, shapes *pattern.Book) string {
+func Detail(lang i18n.Lang, declared skill.Skill, shapes *pattern.Book, kinds *status.Book) string {
 	title := declared.ID
 	if name := lang.SkillName(declared); name != "" && name != declared.ID {
 		title = fmt.Sprintf("%s · %s", declared.ID, name)
 	}
-	return block(title, lang.Describe(declared, shapes))
+	return block(title, lang.Describe(declared, shapes, kinds))
 }
 
 // DetailPassives is the traits a unit is carrying, as one block. A unit with
@@ -52,9 +52,9 @@ func Detail(lang i18n.Lang, declared skill.Skill, shapes *pattern.Book) string {
 // refuses one; a heading reading "blood_thirst · blood_thirst" is the same
 // defect Detail's guard exists to prevent, and having the three agree by
 // inspection is what this whole change is about.
-func DetailPassives(lang i18n.Lang, name string, held []passive.Passive) string {
+func DetailPassives(lang i18n.Lang, name string, held []passive.Passive, kinds *status.Book) string {
 	if len(held) == 0 {
-		return block(name, lang.DescribePassive(passive.Passive{}))
+		return block(name, lang.DescribePassive(passive.Passive{}, kinds))
 	}
 	parts := make([]string, 0, len(held))
 	for _, one := range held {
@@ -62,7 +62,7 @@ func DetailPassives(lang i18n.Lang, name string, held []passive.Passive) string 
 		if authored := lang.PassiveName(one); authored != "" && authored != one.ID {
 			heading = fmt.Sprintf("%s · %s", one.ID, authored)
 		}
-		parts = append(parts, heading+"\n"+indent(lang.DescribePassive(one), "  "))
+		parts = append(parts, heading+"\n"+indent(lang.DescribePassive(one, kinds), "  "))
 	}
 	return block(name, strings.Join(parts, "\n"))
 }
@@ -75,7 +75,7 @@ func DetailPassives(lang i18n.Lang, name string, held []passive.Passive) string 
 // change this" fifteen times down a reference trains a reader to stop reading it.
 func DetailStatus(lang i18n.Lang, kind status.Kind) string {
 	title := kind.ID
-	if name := lang.Gloss(kind.ID); name != "" && name != kind.ID {
+	if name := lang.StatusName(kind); name != "" && name != kind.ID {
 		title = fmt.Sprintf("%s · %s", kind.ID, name)
 	}
 	return block(title, lang.DescribeStatus(kind)) + "\n\n" +
@@ -96,7 +96,7 @@ func DetailStatuses(lang i18n.Lang, groups []status.Group) string {
 		b.WriteString("  " + strings.Repeat("-", 46) + "\n")
 		for _, kind := range group.Kinds {
 			name := kind.ID
-			if gloss := lang.Gloss(kind.ID); gloss != "" && gloss != kind.ID {
+			if gloss := lang.StatusName(kind); gloss != "" && gloss != kind.ID {
 				name = fmt.Sprintf("%s · %s", kind.ID, gloss)
 			}
 			b.WriteString("  " + name + "\n")

@@ -64,10 +64,10 @@ func TestDescribeEveryShippedSkillGolden(t *testing.T) {
 			// where only one of them moved is the drift the containment test
 			// below cannot see (it holds the figures, not the wordings).
 			fmt.Fprintf(&b, "%s\n%s\n[one line] %s\n\n", declared.ID,
-				lang.Describe(declared, shapes), lang.SummariseSkill(declared, shapes))
+				lang.Describe(declared, shapes, shippedStatuses(t)), lang.SummariseSkill(declared, shapes, shippedStatuses(t)))
 		}
 		for _, held := range passives.All() {
-			fmt.Fprintf(&b, "[trait] %s\n%s\n\n", held.ID, lang.DescribePassive(held))
+			fmt.Fprintf(&b, "[trait] %s\n%s\n\n", held.ID, lang.DescribePassive(held, shippedStatuses(t)))
 		}
 		// Grouped, as every reference draws them: the order is the record too,
 		// because a status moving between categories changes what a cleanse
@@ -120,7 +120,7 @@ func TestEveryTraitDescriptionSaysEveryThingItDoes(t *testing.T) {
 	}
 	for _, lang := range i18n.Langs() {
 		for _, held := range passives.All() {
-			description := lang.DescribePassive(held)
+			description := lang.DescribePassive(held, shippedStatuses(t))
 			if strings.TrimSpace(description) == "" {
 				t.Errorf("%s: %q has no description at all", lang, held.ID)
 				continue
@@ -190,7 +190,7 @@ func TestAGatedTraitIsNotDescribedAsAlways(t *testing.T) {
 		}
 		gated++
 		for _, lang := range i18n.Langs() {
-			description := lang.DescribePassive(held)
+			description := lang.DescribePassive(held, shippedStatuses(t))
 			if !strings.Contains(description, opening(lang.Text(i18n.BlurbTraitWhile))) {
 				t.Errorf("%s: %q is gated and its description never says when: %q",
 					lang, held.ID, description)
@@ -221,7 +221,7 @@ func TestEverySkillDescriptionSaysWhatItDoes(t *testing.T) {
 	}
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
 		for _, declared := range skills.Skills() {
-			description := lang.Describe(declared, shapes)
+			description := lang.Describe(declared, shapes, shippedStatuses(t))
 			if strings.TrimSpace(description) == "" {
 				t.Errorf("%s: %q has no description at all", lang, declared.ID)
 				continue
@@ -304,12 +304,12 @@ func TestTheOneLineSummaryQuotesNoFigureTheDescriptionDoesNot(t *testing.T) {
 	}
 	for _, lang := range []i18n.Lang{i18n.Vi, i18n.En} {
 		for _, declared := range skills.Skills() {
-			summary := lang.SummariseSkill(declared, shapes)
+			summary := lang.SummariseSkill(declared, shapes, shippedStatuses(t))
 			if strings.TrimSpace(summary) == "" {
 				t.Errorf("%s: %q has no one-line summary at all", lang, declared.ID)
 				continue
 			}
-			described := digitRuns(lang.Describe(declared, shapes))
+			described := digitRuns(lang.Describe(declared, shapes, shippedStatuses(t)))
 			for _, run := range digitRuns(summary) {
 				if !slices.Contains(described, run) {
 					t.Errorf("%s: %q summarises as %q, whose figure %q is nowhere in "+
@@ -405,7 +405,7 @@ func TestAStripIsCalledHarmfulOnlyWhenEveryCategoryItNamesIs(t *testing.T) {
 				t.Fatalf("%s words both strip clauses %q, so they cannot be told apart",
 					lang, countWording)
 			}
-			summary := lang.SummariseSkill(declared, shapes)
+			summary := lang.SummariseSkill(declared, shapes, shippedStatuses(t))
 			// The harmful one is tested first because the counting one is a
 			// **prefix** of it in both languages — "gỡ 2 hiệu ứng" inside
 			// "gỡ 2 hiệu ứng xấu", "strips 2" inside "strips 2 harmful" — so
@@ -467,7 +467,7 @@ func TestNoEnglishStripsClauseNamesACategoryEnum(t *testing.T) {
 			t.Fatalf("%q strips nothing, so its description measures none of this",
 				declared.ID)
 		}
-		description := i18n.En.Describe(declared, shapes)
+		description := i18n.En.Describe(declared, shapes, shippedStatuses(t))
 		for category := status.Category(0); int(category) < status.CategoryCount; category++ {
 			name := category.String()
 			for _, word := range bareWords(description) {
@@ -537,7 +537,7 @@ func TestTheStripsClauseReadsInBothOfItsFrames(t *testing.T) {
 		if err != nil {
 			t.Fatalf("look up %s: %v", want.id, err)
 		}
-		if got := i18n.En.Describe(carried, shapes); !strings.Contains(got, want.sentence) {
+		if got := i18n.En.Describe(carried, shapes, shippedStatuses(t)); !strings.Contains(got, want.sentence) {
 			t.Errorf("the English %s reads %q, which does not hold %q",
 				want.id, got, want.sentence)
 		}
@@ -582,7 +582,7 @@ func TestAConditionsStackCountReadsAsAFloorRatherThanAnAmount(t *testing.T) {
 		t.Fatalf("look up the probe: %v", err)
 	}
 	for _, lang := range i18n.Langs() {
-		described := lang.Describe(carried, shapes)
+		described := lang.Describe(carried, shapes, shippedStatuses(t))
 		applied, required := "", ""
 		for _, line := range strings.Split(described, "\n") {
 			switch {
@@ -835,7 +835,7 @@ func TestATraitsSharesAreRoundedAndNotTruncated(t *testing.T) {
 			shares = append(shares, held.While.BelowHealth)
 		}
 		for _, lang := range i18n.Langs() {
-			description := lang.DescribePassive(held)
+			description := lang.DescribePassive(held, shippedStatuses(t))
 			for _, permille := range shares {
 				// The magnitude, because a share's SIGN is carried by the verb
 				// rather than by the figure: a resistance of -300 prints as
@@ -948,7 +948,7 @@ func TestNoDescriptionReadsAConjunctionTwice(t *testing.T) {
 		and, comma := lang.Text(i18n.BlurbAnd), lang.Text(i18n.ListComma)
 		lists := 0
 		for _, declared := range everySkillDeclared(t, shapes) {
-			for _, line := range strings.Split(lang.Describe(declared, shapes), "\n") {
+			for _, line := range strings.Split(lang.Describe(declared, shapes, shippedStatuses(t)), "\n") {
 				if strings.Count(line, and) > 1 {
 					t.Errorf("%v: %q reads the conjunction twice in one line:\n  %s",
 						lang, declared.ID, line)

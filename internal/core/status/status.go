@@ -28,10 +28,12 @@
 package status
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"slices"
 	"sort"
+	"strings"
 
 	"github.com/vukyn/hexarena/internal/core/modifier"
 	"github.com/vukyn/hexarena/internal/core/scale"
@@ -309,6 +311,26 @@ func Categories() []Category {
 type Kind struct {
 	ID       string
 	Category Category
+	// Name is what the status is called in the language the data is written in,
+	// and it is optional: a kind that declares none falls back to the compiled
+	// table in internal/i18n, which is where the names of the statuses that
+	// shipped before this field existed still live.
+	//
+	// It exists because the two books next door already had it. A skill and a
+	// trait each carry their own name, so an author moving to this one wrote
+	// `"name"` beside the numbers, the field went nowhere, and the status
+	// reached the log as a bare id — the file gave no sign, because nothing
+	// refused it. Both halves of that are fixed here: the field is real, and
+	// ParseBook refuses a field it does not know.
+	//
+	// The thirty-four shipped names are NOT migrated into the data, for the
+	// reason skillGloss was not: moving them would edit thirty-four lines of a
+	// balance file to change nothing anybody can observe, and the reasoning for
+	// half of those words — why a block charge and a barrier are different words
+	// — is written in Go comments that JSON has nowhere to put. So the table is
+	// the frozen fallback and this field is what a status authored from here on
+	// carries. An authored name WINS over a table entry for the same id.
+	Name string
 	// MaxStacks is how many times the status can be layered on one unit.
 	MaxStacks int
 	// Duration is how many of the holder's turns a freshly applied stack lasts.
@@ -1057,6 +1079,7 @@ type bookFile struct {
 	MaxCounterStacks int `json:"max_counter_stacks"`
 	Kinds            []struct {
 		ID        string              `json:"id"`
+		Name      string              `json:"name,omitempty"`
 		Category  string              `json:"category"`
 		MaxStacks int                 `json:"max_stacks"`
 		Duration  int                 `json:"duration"`
@@ -1069,9 +1092,26 @@ type bookFile struct {
 }
 
 // ParseBook reads a status declaration. It never touches the filesystem.
+//
+// ⚠️ **A field this book does not know is refused, not ignored**, which is the
+// one thing that separates it from the way a book is usually read. It was
+// authored the other way round and cost a debugging session: a status written
+// with `"name"` and `"flavour"` beside its numbers — exactly as a skill and a
+// trait carry them — parsed clean, the two fields went nowhere, and the id
+// reached the battle log bare. Nothing on the way said so. A silent drop of a
+// field an author deliberately wrote is the worst answer available, because the
+// file looks like it worked; a sentence naming the field is the cheapest.
+//
+// It does not reach inside a modifier: modifier.Modifier decodes itself, and a
+// custom unmarshaller is where DisallowUnknownFields stops. That is a real gap
+// and it is left alone here rather than papered over — the type is shared with
+// the skill and passive books, so the fix belongs to it and not to one of its
+// three readers.
 func ParseBook(raw []byte) (*Book, error) {
 	var file bookFile
-	if err := json.Unmarshal(raw, &file); err != nil {
+	reader := json.NewDecoder(bytes.NewReader(raw))
+	reader.DisallowUnknownFields()
+	if err := reader.Decode(&file); err != nil {
 		return nil, fmt.Errorf("decode status book: %w", err)
 	}
 	if file.MaxStacks < 1 {
@@ -1225,7 +1265,7 @@ func ParseBook(raw []byte) (*Book, error) {
 			}
 		}
 		kind := Kind{
-			ID: declared.ID, Category: category,
+			ID: declared.ID, Name: strings.TrimSpace(declared.Name), Category: category,
 			MaxStacks: declared.MaxStacks, Duration: declared.Duration,
 			Permanent: declared.Permanent,
 			TickPower: declared.TickPower, HealShare: declared.HealShare,

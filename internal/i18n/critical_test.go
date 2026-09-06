@@ -49,14 +49,14 @@ func TestASkillDescriptionNamesItsCriticalChanceAndNotTheMultiplier(t *testing.T
 			t.Fatalf("%s: the critical clause is nothing but its figure", lang)
 		}
 
-		silent := lang.Describe(base, shapes)
+		silent := lang.Describe(base, shapes, shippedStatuses(t))
 		if strings.Contains(silent, clause) {
 			t.Errorf("%s: a skill that cannot crit is described as %q: %s", lang, clause, silent)
 		}
 
 		critting := base
 		critting.Crit = 200
-		described := lang.Describe(critting, shapes)
+		described := lang.Describe(critting, shapes, shippedStatuses(t))
 		if !strings.Contains(described, clause) {
 			t.Errorf("%s: a skill that crits is not described as doing so: %s", lang, described)
 		}
@@ -76,7 +76,7 @@ func TestASkillDescriptionNamesItsCriticalChanceAndNotTheMultiplier(t *testing.T
 		both := base
 		both.Pierce = 400
 		both.Crit = 200
-		line := lang.Describe(both, shapes)
+		line := lang.Describe(both, shapes, shippedStatuses(t))
 		pierceClause, _, _ := strings.Cut(strings.TrimPrefix(lang.Say(i18n.BlurbPierces, "40%"), ", "), " ")
 		if at, to := strings.Index(line, pierceClause), strings.Index(line, clause); at < 0 || to < 0 || at > to {
 			t.Errorf("%s: the piercing clause is at %d and the critical one at %d, want them in that order: %s",
