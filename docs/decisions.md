@@ -19,7 +19,8 @@ Both survivors live in `TODO.md` § *Not done*, since both are still open; each
 kept every fact either copy had.
 
 **Read `TODO.md` for what is open, `CLAUDE.md` for what an edit may not break,
-`docs/architecture.md` and `docs/balance.md` for the subject matter, and this
+`docs/architecture.md`, `docs/balance.md`, `docs/screens.md` and
+`docs/goldens.md` for the subject matter, and this
 file for why a finished thing is the way it is.** The order below is the order
 the entries were written in, which is roughly the order they landed.
 
@@ -200,7 +201,7 @@ the entries were written in, which is roughly the order they landed.
       gate that broke.
 
       ⚠️ **The width question, answered: the picture is exempt and the wording is
-      not.** `CLAUDE.md` § the TUI width rule splits prose, which takes
+      not.** `docs/screens.md` § the TUI width rule splits prose, which takes
       `MinWidth`, from data, which takes `UsableWidth()` — and the art is neither.
       `picture` asks for exactly `UsableWidth() - 4` cells and `cellRows` writes
       one cell a pixel column after a two-space indent, so **every row is
@@ -251,7 +252,7 @@ the entries were written in, which is roughly the order they landed.
       `internal/screen/screens_golden_test.go` (`theArtPreview`, `aRampRow`),
       `cmd/hexforge-tui/language_test.go`, `cmd/hexarena-tui/sweep_test.go`
       (`aPictureRow`, `notSwept` emptied), the three `testdata/screens.golden`,
-      `CLAUDE.md` § the description screen.
+      `docs/screens.md` § the description screen.
 
 - [x] ⚠️ **The three read-only views were a dead end on a line that FORKS, and
       the sweeps could not see it. DONE.** Reported by a user: `p` on
@@ -464,7 +465,7 @@ the entries were written in, which is roughly the order they landed.
       `cmd/hexforge-tui/describe.go`, `cmd/hexarena-tui/subject.go`,
       `internal/screen/form_test.go`, both clients' `fork_test.go`,
       `cmd/hexforge-tui/tui_test.go` (`ontoTheFork`), the three
-      `testdata/screens.golden`, `CLAUDE.md` § the squad builder and § the
+      `testdata/screens.golden`, `docs/screens.md` § the squad builder and § the
       description screen; and for (a), `cmd/hexforge-tui/language_test.go` and
       `cmd/hexarena-tui/{sweep,fixture}_test.go` (`kitGlosses`); and for (a′), the
       same three files (`freeText`/`freeNames`/`withoutNames`/`kitIDs`, and the
@@ -473,7 +474,7 @@ the entries were written in, which is roughly the order they landed.
       `internal/i18n` (`SquadForkUnnamed`, `SquadForkArms`),
       `internal/screen/squadfork_test.go`, `internal/screen/screens_golden_test.go`,
       `cmd/hexforge-tui/{language,width_rule}_test.go`, two of the three
-      `testdata/screens.golden`, and `CLAUDE.md` § the squad builder.
+      `testdata/screens.golden`, and `docs/screens.md` § the squad builder.
 - [x] ⚠️ **A saturating multiplier is re-narrowed one line downstream. DONE.**
       The question this asked first — carry a saturated multiplier, or refuse it
       where it is produced — is **answered by `TODO.md` § *Decided against*:**
