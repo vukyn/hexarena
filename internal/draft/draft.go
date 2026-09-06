@@ -611,6 +611,47 @@ func (d *Draft) Picks() [seatCount][]Pick {
 	return out
 }
 
+// Bans is the characters each side took out of the pool, in the order the bans
+// were taken, indexed by seat the way Picks is — **[0] is wire.SeatHost and [1]
+// is wire.SeatGuest**.
+//
+// ⚠️ **A skipped ban is nowhere in this answer, and that is the honest shape
+// rather than a loss.** A skip names nobody, so there is no character to list;
+// what a skip spends is a *slot*, which is a count and not a name. A caller that
+// wants "how many of this seat's ban slots are gone" is asking a different
+// question from "which characters did this seat take out", and answering both
+// through one slice would need a sentinel — the empty string standing for a real
+// decision, which is the mistake this repository has paid for twice. So this
+// answers the names, `BansPerSide` is the cap, and a slot spent on nobody is the
+// difference between the two.
+//
+// ⚠️ **It exists because a mirror cannot derive it and a screen has to draw it.**
+// The remaining pool is Candidates and the picks are Picks, so "banned" is
+// already reachable as the set difference — but *by which side* is not: bans
+// alternate from Config.First, so the sequence would have to be reconstructed
+// from a count that skips also move, and a screen doing that arithmetic would be
+// a second declaration of the ban order. It is read off `spent`, which is where
+// the seat that took a character out is already recorded.
+//
+// Fresh slices, like every other list this package hands out.
+func (d *Draft) Bans() [seatCount][]string {
+	var out [seatCount][]string
+	for index := range out {
+		out[index] = []string{}
+	}
+	for _, one := range d.spent {
+		if one.step != wire.StepBan {
+			continue
+		}
+		index, seated := indexOf(one.seat)
+		if !seated {
+			continue
+		}
+		out[index] = append(out[index], one.character)
+	}
+	return out
+}
+
 // due is the whole of "may this seat make this decision now", and every refusal
 // it hands back is a sentence saying what cannot happen and why.
 func (d *Draft) due(seat wire.Seat, step wire.DraftStep) error {

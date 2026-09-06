@@ -2160,22 +2160,207 @@ is only so the shape is readable.
             the new file was therefore audited by hand: one acquisition per public
             entry, none in any of the five private helpers, and no re-entrant
             `RLock` anywhere.
-      - [ ] **The draft screen — step 5b.** The client can draft now and cannot
-            **draw** one. What is owed: a screen over `socket.DraftSight` (the
-            pool with what is gone struck out, both sides' picks, whose decision
-            is due and an allowance counting down), a `DraftChooser` in
-            `cmd/hexarena-tui`'s session that fills `DraftAnswer.For` off the
-            prompt it was handed, an `everyScreen` entry per state, and the
-            wordings in both language books. ⚠️ It also owns the two wrinkles
-            above as *user-visible* problems: a ban made before an opponent has
-            arrived is thrown away, and a squad brought to a drafting room is
-            refused before the client knows the room drafts.
+      - [x] **The draft screen — step 5b. Done 2026-09-06.** `cmd/hexarena-tui`
+            draws a ban and pick now, plays one out by keystroke, and finishes a
+            pick with a loadout. `internal/screen/draft.go` is the screen
+            (`draw.DraftScreen`), `cmd/hexarena-tui/draft.go` is the mapping and
+            the chooser's routing, and the wordings are in both books.
+            ⚠️ **WHERE IT LIVES, with the three options and what each costs.**
+            `internal/screen` **cannot** take a `socket.DraftSight` — that value
+            holds a `wire.Seat`, a `wire.DraftStep` and a `draft.Pick`, and
+            `internal/draft` imports `internal/wire`, so pulling either package in
+            would drag the protocol into the package two clients share.
+            **(i) Taken: the screen lives in `internal/screen` with a `DraftLive`
+            it declares itself**, and the client maps a reading into it — which is
+            `PlayScreen.Attach`/`liveOf`'s arrangement exactly, one domain wider.
+            The cost is a **second spelling of the step**, with no compiler trick
+            available (a keyed literal drops a field silently — measured on
+            `skillFile` at step 3), so it is held by **two walks** in
+            `cmd/hexarena-tui/draft_test.go`: every `wire.DraftSteps()` entry
+            reaches a screen arm, and every arm below `draw.DraftStepCount` is
+            produced by some protocol step. Both directions, because a one-way
+            walk passes on an arm nothing can ever draw.
+            **(ii) Refused: beside the lobby's three in `cmd/hexarena-tui`.**
+            `lobby.go`'s own ground for accepting one golden instead of two is
+            *"there is no data column and no drawing on any of the three"*, and a
+            pool of nineteen characters with a marked column is precisely a data
+            column — which `CLAUDE.md` records measuring **twice** is invisible to
+            one golden and caught by the other.
+            **(iii) Deferred: move `Format`/`Seat`/`DraftStep` down.** Still a
+            refactor of six packages and still not riding inside a screen PR.
+            ⚠️ **But the brief's claim that (iii) would "delete (i)'s cost
+            outright" is FALSE, and this is the correction worth keeping.** Moving
+            those three — and `DraftEntry`/`DraftDecision` with them, which is the
+            same move — would let a `DraftLive` carry a `draft.Pick` and the moved
+            `Seat`. It would **not** let this screen take a `socket.DraftSight`,
+            because that value is declared in `internal/socket`, which imports
+            `internal/wire` for a dozen unrelated reasons. What deletes the cost is
+            (iii) **plus** moving the *reading* — `DraftSight`, `DraftPrompt`,
+            `DraftDue` — down into `internal/draft`, which already owns `Picks`,
+            `Candidates` and `Squads` and would then be importable from a screen.
+            Two changes, not one.
+            ⚠️ **The import rule the whole decision rests on was held by PROSE
+            alone until this step.** Three separate doc comments state it from
+            three sides and nothing checked;
+            `TestNoScreenImportsTheProtocol` is now an AST walk over
+            `internal/screen`'s own directory, **test files included**, refusing
+            `internal/wire`, `internal/draft`, `internal/socket` and
+            `internal/room` — which is why the two vocabulary walks live in the
+            client rather than beside the screen.
+            ⚠️ **A `Kind` was NOT added and a result type was**, which is
+            `PickResult`'s own argument: an `Action` cannot carry an answer (a
+            decision is a step, a character, a form, four skills and a trait, and
+            `Subject` names one id), `draw.Answer` means *"a decision on a battle
+            this screen does not drive"* and reusing it would be a second
+            vocabulary inside one field, and an eighth `Kind` would bill
+            `cmd/hexforge-tui` for an arm about a screen it can never reach. So
+            `DraftScreen.Update` answers `(DraftScreen, DraftResult)` and
+            `KindCount` did not move.
+            ⚠️ **Two things the brief did not name and the screen could not be
+            reached without.** (1) `socket.DraftSight` carried no **bans**, so
+            *which side* took a character out was unreachable — the remaining pool
+            is the set difference, but the side is not, because bans alternate and
+            a skip moves the count without naming anybody. `draft.Draft.Bans()`
+            and `DraftSight.Bans` are new, additive, and read off the `spent` list
+            that already records the seat. (2) **The join screen could not join a
+            drafting room at all**: such a room refuses a squad
+            (`CodeSquadUnwanted`) and the join screen required one, so the chooser
+            grew a **"bring none"** position — the **last**, so nought is still the
+            first saved side and the ordinary join is untouched — and `submit` no
+            longer refuses on it. `i18n.JoinNoSquad` was reworded and wrapped, and
+            that entry's old assertion (*"enter does nothing"*) became *"enter
+            dials"*, because a room that drafts wants exactly that.
+            ⚠️ **`model.joined` enters the draft screen itself and has to.** A
+            client's own draft is due its first decision the moment the welcome
+            arrives, and the room announces **nothing** when its second seat is
+            taken — so a reader left on the waiting screen would be waiting for a
+            message only their own decision can cause.
+            ⚠️ **The candidate count is NOWHERE written down.** The rule the screen
+            draws off is *the list in hand has one entry*, which is right for every
+            step and every format; the arithmetic is derived in a test through
+            `draft.Slack` and `draft.NewPool`. Measured this session: **10**
+            candidates for a 3v3's last pick and **4** for a 5v5's, out of a pool
+            of 19 — the figure that was 1 at a pool of 16.
+            ⚠️ **The waiting state is 5a's finding drawn**, and it cannot mean *"the
+            room is not full"*: from a client's side an empty record is either a
+            room still waiting or a room that filled a moment ago, and the two are
+            indistinguishable on the wire. So `DraftLive.Waiting` is *nothing has
+            been recorded*, the wording says what is true of both readings and
+            warns about the one that costs something, and the room's own refusal is
+            drawn beside it. ⚠️ **There is deliberately NO "already answered this
+            decision" memo, on the screen or in the session** — the
+            retry-on-refusal loop is the only thing that ever gets a host's first
+            decision through, so a memo would stall the match for good.
+            ⚠️ **The loadout reuses `PickState`** — `draw.SquadPickSkills`,
+            `SquadKitHint`, `SquadFieldStage` and eight more of the squad builder's
+            own wordings, because a drafted loadout and a saved member's are the
+            same question asked of the same books through the same
+            `cast.ChooseLoadout`. It is the **first picker `cmd/hexarena-tui` can
+            reach**: every picker in the vocabulary was the authoring half of it
+            until now, so `navigate`'s `draw.Pick` arm stopped being a no-op and
+            `model.picker` arrived with it. The editor has **four rows for three
+            fields** — the fourth is *send* — so `enter` keeps one meaning.
+            ⚠️ **And the send is BLOCKED on the refusal**, which is not politeness:
+            a refused draft decision is left open and re-sent, so an illegal one is
+            the unbounded hot loop finding (3) of step 5a records.
+            ⚠️ **A lock hazard found by the graph review and fixed.**
+            `stepped()` read `session.seat()` **inside** `Mirror.Read`'s callback,
+            and `Client.Seat()` takes that same RWMutex's read lock — a
+            **re-entrant RLock**, which self-deadlocks whenever `Receive` is
+            waiting to write, about one run in ten rather than every time. The seat
+            and the pool are read before the callback now. It is the shape
+            `internal/socket/draft.go` audits for by name, and neither the suite nor
+            `-race` reddened on it.
+            **Nine mutations, each with the test that caught it** — and the two
+            pre-existing golden failures below are excluded from every count.
+            The arrange arm dropped from the client's mapper (**2**: both
+            vocabulary walks, and **nothing else** — the end-to-end draft is blind
+            to it, because `draftLiveOf` overrides the step off `Arranging`, which
+            is exactly why the walks exist); the pool drawn **sorted** (**1**, and
+            ⚠️ **zero on the first attempt** — see below); the waiting state
+            dropped (**8**: 2 in `internal/screen`, 6 in the client, the
+            end-to-end one among them); the candidate figure **written down** as
+            `> 4` (**4**, including the derived `TestTheLastPickChoosesFromSlackPlusOne`);
+            `DraftNotBegun` left out of the Vietnamese book (**2** plus the package
+            golden); the draft states left out of `everyScreen` (**1**, the count
+            walk, plus the client golden); the loadout allowed to send a kit
+            `ChooseLoadout` refuses (**2**); the arrange override dropped from
+            `draftLiveOf` (**1**); and `Attach` keeping the loadout across a new
+            pick (**2**, one of them the end-to-end draft).
+            ⚠️ **THE SORTED-POOL MUTATION CAUGHT NOTHING THE FIRST TIME, AND THE
+            REASON IS THE FIXTURE.** `slices.SortFunc` inside the drawing sorts the
+            slice **in place** — the same backing array the test handed in — so the
+            test compared the sorted rows against its own, now sorted, expectation
+            and passed. The shipped cast is in id order, so no golden can see it
+            either, which is what `draft.NewPool`'s own comment predicted. The
+            expected order is copied before the draw now. **A fixture the code
+            under test can reorder is a fixture that agrees with whatever it did.**
+            ⚠️ **The goldens: `internal/screen` +48 renders, ADDITIONS ONLY** (200 →
+            248 renders, 6270 lines), `cmd/hexarena-tui` **+32 renders** and
+            **four** existing blocks moved — `a join screen with no squad saved` in
+            both languages at both sizes, in exactly three lines each (the chooser
+            row, the reworded notice, one blank the frame absorbed).
+            `cmd/hexforge-tui`'s is **unmoved**, which is the check the local
+            `PlayScreen` drawing did not move.
+            ⚠️⚠️ **AND `make check` IS NOT GREEN AT `c8edde3` ON macOS OR LINUX,
+            which the brief said it was.** `internal/screen`'s and
+            `cmd/hexarena-tui`'s goldens were accepted on **Windows**: twelve lines
+            across them hold `data\battles\…` and `..\seed\data\skills.json`,
+            where `forge`'s `filepath.Join` writes `/` on every other platform. So
+            `TestEveryMovedScreenDrawsWhatTheGoldenHolds` and
+            `TestEveryScreenDrawsWhatTheGoldenHolds` are **permanently red off
+            Windows** and green on it. Introduced by #319. Those twelve lines were
+            **restored to their committed form** after `make golden`, so this step
+            carries no platform flip; deciding which platform the goldens are
+            authored on — or making the note's path separator platform-independent
+            — is its own change. → the open item below.
+      - [ ] **A golden that cannot be green on two platforms.** Twelve lines of
+            `internal/screen/testdata/screens.golden` and
+            `cmd/hexarena-tui/testdata/screens.golden` were accepted on Windows and
+            hold `\` where `filepath.Join` writes `/` everywhere else, so both
+            golden tests are red on macOS and Linux and green on Windows —
+            whichever platform accepts them next flips the other. Three ways out and
+            each is a decision rather than a fix: word the note with `path` rather
+            than `filepath` (a wording change, and the note names a real file a
+            reader is meant to be able to open), have the fixture normalise the
+            separator before recording (a scrub, which `bodyOf`'s own comment
+            argues against — a fixture that silently stops removing anything
+            silently starts recording the wrong line), or declare a platform for
+            the goldens and say so beside `make golden`. ⚠️ Note the **wording** is
+            `i18n.NoteWrote`/`NoteBattleVerify` and the **path** is
+            `forge.Library`'s, so the two candidate fixes land in different
+            packages.
       - [ ] **The arrange screen — step 5c.** The 3x3 formation, both sides at
             once and neither shown the other's, over
             `DraftSight.Arranging`/`Awaiting`. ⚠️ The clock is **not** one
             allowance for the phase: `Server.settled` re-arms off the reading
             after every batch, so whichever side arranges first hands its opponent
             a fresh full allowance and the phase's worst case is about twice one.
+            ⚠️ **Until this lands a drafting match cannot reach a board at all,
+            and step 5b measured it.** Picking closes into a phase with two
+            decisions open and no screen to take either, so both clients' choosers
+            are asked for a `StepArrange`, answer nothing, and `Play` returns —
+            *"a draft has no pass, so there is nothing to send in its place"*.
+            `TestADraftIsPlayedOutToTheArrangePhaseOverALoopbackListener` asserts
+            that ending **by name** rather than working around it, so the day this
+            item lands that assertion is the thing to change.
+            What 5b leaves ready: `draw.DraftStepArrange` is in the screen's
+            vocabulary and both mapping walks cover it, `DraftLive.Arranging` is
+            drawn (the picking-is-over notice, and no pool listing at all), and no
+            keystroke on the draft screen can take an arrangement — which is
+            asserted, so the arrange screen's own keys cannot be reached by
+            accident from the wrong screen.
+      - [ ] **The host's own flag — step 6.** `cmd/hexarena-host` cannot open a
+            drafting room, so **nothing outside a test opens one**: `room.Config`
+            has `Drafts` and the host binary has no `-draft` to set it with. Steps
+            4, 5a and 5b each name this as step 6 and none of them had an item
+            until now, which is the gap. What it owes beyond the flag: the banner
+            has to say the room drafts (a player joining is told to bring **no**
+            squad, and the refusal is currently the only thing that says so —
+            → the two-phase-handshake note under step 5a), and
+            `room.Config.Validate` refuses `Drafts` beside anything but a bo1, so
+            the flag has to refuse `-battles 3` in words rather than letting
+            `Open` do it.
       - [ ] **Ban and pick for a bo3.** Deliberately after the bo1 draft, because
             "a ban lasts the match" is ambiguous in a series and the ambiguity is
             a design decision rather than a parameter: three drafts, one draft

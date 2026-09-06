@@ -10,9 +10,20 @@
 // statuses, species, builds and traits listings) with their cursors and their
 // keystrokes, the two describers, the multi-select, the skill listing and the
 // form over it, the squad builder, the works catalogue with the add-a-work form
-// over it — the seventh and last of the catalogues the game client offers — and
-// the played battle, which is the screen it needs most and the last of them to
-// arrive.
+// over it — the seventh and last of the catalogues the game client offers — the
+// played battle, which is the screen it needs most, and the **ban and pick**,
+// which is the first screen here that only one client draws.
+//
+// ⚠️ **The ban and pick is the one screen whose vocabulary is declared twice, and
+// it is here anyway.** A drafting room's reading holds a wire.Seat, a
+// wire.DraftStep and a draft.Pick, and this package may not see any of the three
+// — so DraftLive is declared here and the client maps into it, exactly as
+// PlayLive is. What that bought is a screen with a **data column** held by two
+// goldens rather than one; what it costs is a second spelling of the step, held
+// by a walk in cmd/hexarena-tui. → draft.go's own head, which carries the three
+// options and what each costs, and TestNoScreenImportsTheProtocol, which is the
+// first mechanical statement of the import rule this package's whole shape rests
+// on.
 //
 // ⚠️ **Not every screen here is read-only any more.** The skill listing writes
 // `skills.json`, the squad builder writes `squads.json` and the works catalogue
@@ -35,6 +46,15 @@
 // two fields that grew instead of a seventh. The frame around a body, which
 // screen it is showing and where Back goes are the client's, and a screen here
 // may not ask.
+//
+// ⚠️ **And it may not see the protocol, which is now a TEST rather than three
+// doc comments.** internal/wire, internal/draft, internal/socket and
+// internal/room are refused by TestNoScreenImportsTheProtocol, an AST walk over
+// this directory including its own test files. That rule is what the whole shape
+// of this package rests on — it is why i18n.Lang.Refusal and i18n.Lang.Seat take
+// a **name**, why PlayLive and DraftLive are declared here and mapped by the
+// client, and why the lobby's three screens live in cmd/hexarena-tui — and until
+// the ban and pick arrived nothing checked it.
 //
 // It reads no environment and takes no decision from one. `Plain` answers
 // whether colour would be noise, and the **binary** is what hands it the three

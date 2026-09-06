@@ -44,10 +44,23 @@ type joinScreen struct {
 	Password textinput.Model
 	Field    int
 
-	// Squads is the catalogue as it stood on the way in, and Squad the row
+	// Squads is the catalogue as it stood on the way in, and Squad the position
 	// under the chooser. A slice rather than a reference to the catalogue
 	// screen: this one is re-read by Refresh on every entrance, for the reason
 	// enter(screenBattle) re-reads it.
+	//
+	// ⚠️ **Squad runs 0..len(Squads) and the LAST position is "bring none",
+	// which is a room that drafts.** Two sides that ban and pick out of a shared
+	// pool do not field the sides they built at home, so such a room refuses a
+	// squad outright (wire.CodeSquadUnwanted) — and a client cannot know a room
+	// drafts until it has been **welcomed**, because the hello carrying the squad
+	// goes first. So the choice has to be offerable before the answer is known.
+	//
+	// ⚠️ **It is the last position and not the first, deliberately.** Nought is
+	// still the first saved side, so the ordinary join is the ordinary default and
+	// a reader who never drafts never meets this; cycling past the end of the list
+	// is what reaches it. Making nought mean "none" would have made every join
+	// start from the answer only a drafting room wants.
 	Squads []placement.Squad
 	Squad  int
 
@@ -168,7 +181,8 @@ func newJoinScreen() joinScreen {
 // embedded data cannot join anything at all, so that one is said.
 func (j joinScreen) Refresh(c draw.Context, saved []placement.Squad) joinScreen {
 	j.Squads = saved
-	j.Squad = draw.Clamp(j.Squad, 0, max(len(saved)-1, 0))
+	// One past the last side, which is the "bring none" position. → the field.
+	j.Squad = draw.Clamp(j.Squad, 0, len(saved))
 	j.Dialling, j.At = false, ""
 	j.Refused, j.Err = "", nil
 	j.BadLength, j.Mistyped = false, 0
@@ -185,8 +199,13 @@ func (j joinScreen) Refresh(c draw.Context, saved []placement.Squad) joinScreen 
 }
 
 // Chosen is the squad this screen would bring, and whether there is one.
+//
+// ⚠️ **A false is now a real answer rather than only an empty catalogue.** It is
+// what the "bring none" position means, and a room that drafts wants exactly
+// that — so a caller may not read it as "this join cannot go ahead". → the Squad
+// field, and submit, which used to refuse on it.
 func (j joinScreen) Chosen() (placement.Squad, bool) {
-	if len(j.Squads) == 0 {
+	if len(j.Squads) == 0 || j.Squad >= len(j.Squads) {
 		return placement.Squad{}, false
 	}
 	return j.Squads[draw.Clamp(j.Squad, 0, len(j.Squads)-1)], true
@@ -217,15 +236,13 @@ func (j joinScreen) Update(c draw.Context, message tea.KeyPressMsg) (joinScreen,
 	case "shift+tab":
 		j.Field = (j.Field + joinFieldCount - 1) % joinFieldCount
 		return j.focused(), draw.Action{}, nil
+	// The positions are the saved sides **plus one**, the last being "bring
+	// none". → the Squad field.
 	case "left":
-		if len(j.Squads) > 0 {
-			j.Squad = (j.Squad + len(j.Squads) - 1) % len(j.Squads)
-		}
+		j.Squad = (j.Squad + len(j.Squads)) % (len(j.Squads) + 1)
 		return j, draw.Action{}, nil
 	case "right":
-		if len(j.Squads) > 0 {
-			j.Squad = (j.Squad + 1) % len(j.Squads)
-		}
+		j.Squad = (j.Squad + 1) % (len(j.Squads) + 1)
 		return j, draw.Action{}, nil
 	case "enter":
 		return j.submit(), draw.Action{}, nil
@@ -282,9 +299,11 @@ func (j joinScreen) Paste(text string) (joinScreen, tea.Cmd) {
 func (j joinScreen) submit() joinScreen {
 	j.Refused, j.Err = "", nil
 	j.BadLength, j.Mistyped = false, 0
-	if _, have := j.Chosen(); !have {
-		return j
-	}
+	// ⚠️ **A join with no squad is no longer refused here**, and that is a change
+	// of fact rather than a loosening: a room that drafts wants none, and a client
+	// cannot know a room drafts until it is welcomed. A room that does **not**
+	// draft answers wire.CodeSquadRefused, which is drawn — the room's own
+	// refusal, which says to fix the squad and join again. → Chosen.
 	typed := strings.TrimSpace(j.Code.Value())
 	if len(typed) != wire.RoomCodeLength {
 		j.BadLength, j.Mistyped = true, len(typed)
@@ -363,7 +382,14 @@ func (j joinScreen) View(c draw.Context) (string, string) {
 	out.WriteString("\n")
 	switch {
 	case len(j.Squads) == 0:
-		out.WriteString("  " + c.Style.Bad.Render(c.Text(i18n.JoinNoSquad)) + "\n")
+		// ⚠️ **Wrapped, like every other sentence on this screen.** It says three
+		// things now — nothing is built, a drafting room wants none anyway, and
+		// any other room will refuse this — because "a room has to be joined with
+		// one" stopped being true the day the ban and pick arrived, and a line
+		// carrying the whole of that is prose rather than a label.
+		for _, line := range draw.WrapWords(c.Text(i18n.JoinNoSquad), draw.MinWidth-3) {
+			out.WriteString("  " + c.Style.Bad.Render(line) + "\n")
+		}
 	case j.Dialling:
 		out.WriteString("  " + c.Style.Dim.Render(c.Text(i18n.JoinDialling, j.At)) + "\n")
 	}
@@ -428,7 +454,11 @@ func placeholder(field textinput.Model, hint string) string {
 func (j joinScreen) squadValue(c draw.Context) string {
 	chosen, have := j.Chosen()
 	if !have {
-		return c.Style.Dim.Render(draw.Ellipsis)
+		// The "bring none" position, which is also the only position a reader with
+		// nothing saved has. It is a **wording** rather than an ellipsis because it
+		// is a choice somebody took: a room that drafts wants no squad, and a row
+		// reading "…" would say the screen had failed to find one.
+		return c.Style.Dim.Render(c.Text(i18n.JoinBringNone))
 	}
 	return fmt.Sprintf(draw.ChoiceFormat, chosen.Name, c.Style.Dim.Render(chosen.ID))
 }

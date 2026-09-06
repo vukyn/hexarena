@@ -172,12 +172,26 @@ func TestEveryActionKindIsAppliedByThisClient(t *testing.T) {
 			}
 		},
 		draw.Pick: func(t *testing.T) {
+			// ⚠️ **This arm used to assert the opposite** — that a Pick moved
+			// nowhere and was drawn nowhere, on the ground that every picker in
+			// the vocabulary was the authoring half of it and this client cannot
+			// author. The draft's loadout made that false: it is a **player's**
+			// choice out of a learnset, so this client now keeps a picker and
+			// puts one in front. What is still true, and is what
+			// TestNoScreenInThisClientAsksOrPicks holds, is that no *authoring*
+			// screen here raises either kind.
 			listing := base.enter(screenSkills)
 			wanted := listing.skills.OpenAllowlist(listing.ctx(), draw.SkillFieldKeptForSpecies)
 			after, command := listing.navigate(screenSkills,
 				draw.Action{Kind: draw.Pick, Picker: wanted})
-			if got := after.(model); got.screen != listing.screen {
-				t.Errorf("a Pick moved to screen %v; this client draws no picker", got.screen)
+			applied := after.(model)
+			if applied.screen != listing.screen {
+				t.Errorf("a Pick moved to screen %v; a picker is drawn over whatever raised "+
+					"it rather than being a screen of its own", applied.screen)
+			}
+			if applied.picker == nil {
+				t.Error("a Pick put no picker in front, so the list a screen built was " +
+					"swallowed")
 			}
 			if command != nil {
 				t.Error("a Pick asked for a command")

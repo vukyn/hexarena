@@ -151,4 +151,47 @@ own `*draft.Draft`, `Sight.Draft` is a **`DraftSight` value snapshot**, and
 
 **How to apply:** before adding any guard to `Client.answer`, check what still
 triggers the host's first ban. → `hexarena/TODO.md` § step 5a, which carries all
-of it. Steps **5b** (draft screen) and **5c** (arrange screen) are what is left.
+of it.
+
+**Step 5b** (branch `feat/draft-screen`, 2026-09-06) drew it: `draw.DraftScreen`
+in `internal/screen`, the mapping and the chooser routing in
+`cmd/hexarena-tui/draft.go`. What to know before touching it again:
+
+- ⚠️ **`internal/screen` declares its OWN `DraftLive` and `DraftDecision`**, because
+  it cannot take a `socket.DraftSight` — that value holds a `wire.Seat`, a
+  `wire.DraftStep` and a `draft.Pick`. The cost is two spellings of the step and
+  there is **no compiler trick** (a keyed literal drops a field silently), so it is
+  held by **two walks in the client, in both directions**: every
+  `wire.DraftSteps()` entry reaches a screen arm, and every arm below
+  `draw.DraftStepCount` is produced by some wire step. Dropping one arm reddens
+  **only those two** — the end-to-end draft is blind to it, because `draftLiveOf`
+  overrides the step off `Arranging`.
+- ⚠️ **Moving `Format`/`Seat`/`DraftStep` down does NOT delete that cost**, which
+  the brief claimed. `DraftSight` lives in `internal/socket`, which imports
+  `wire` for a dozen other reasons; the change that would delete it is that
+  **plus** moving `DraftSight`/`DraftPrompt`/`DraftDue` into `internal/draft`.
+- ⚠️ **The candidate count is nowhere written down and must stay that way.** The
+  screen's rule is *the list in hand has one entry*; the arithmetic is derived in a
+  test through `draft.Slack`/`draft.NewPool`. Measured: **10** for a 3v3's last
+  pick and **4** for a 5v5's, out of 19 — it was 1 at a pool of 16.
+- ⚠️ **`socket.DraftSight` carried no BANS and now does** (`draft.Draft.Bans()`).
+  Which characters are gone is the set difference; *which side took each one* is
+  not on any reading, because bans alternate and a skip moves the count without
+  naming anybody.
+- ⚠️ **The join screen could not join a drafting room at all** — such a room refuses
+  a squad and the screen required one. The chooser has a **"bring none"** position
+  now, the **last** one so nought is still the first saved side.
+- ⚠️ **`model.joined` enters the draft screen itself**: the first decision is due
+  the moment the welcome arrives and the room announces nothing when it fills, so
+  waiting for a message waits for one only your own decision can cause.
+- ⚠️ **No "already answered" memo, on the screen or in the session** — the
+  retry-on-refusal loop is the only thing that gets the host's first decision
+  through, so a memo stalls the match for good.
+- **What is left: 5c (the arrange screen) and step 6 (the host's `-draft` flag).**
+  ⚠️ Until 5c lands a drafting match **cannot reach a board**: both choosers are
+  asked for a `StepArrange`, answer nothing, and `Play` returns — a draft has no
+  pass. `TestADraftIsPlayedOutToTheArrangePhaseOverALoopbackListener` asserts that
+  ending **by name**, so it is the assertion to change on the day 5c lands.
+
+See [[a-fixture-the-code-can-reorder]] and
+[[reentrant-rlock-inside-a-read-callback]] for the two things 5b got wrong first.

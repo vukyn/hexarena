@@ -197,6 +197,18 @@ type DraftSight struct {
 	// draft.Draft.Picks' own indexing. A pick with no skills is one whose loadout
 	// is still open.
 	Picks [2][]draft.Pick
+	// Bans is the characters each side took out of the pool, indexed the way
+	// Picks is. → draft.Draft.Bans, which is where a skipped slot's absence is
+	// argued for.
+	//
+	// ⚠️ **It is here because it is the one thing about a draft a mirror cannot
+	// derive.** Candidates minus Picks already says *which* characters are gone
+	// to a ban; which **side** took each one is not on any reading of the state,
+	// because the ban order is Config.First alternating and a skip moves the
+	// count without naming anybody. A screen owes a player the difference between
+	// their own ban having landed and the opponent's having, which is 5a's
+	// measured gap drawn rather than described.
+	Bans [2][]string
 	// Arranging is the arrange phase being open, and Awaiting which seats have
 	// still to arrange, in seats order.
 	Arranging bool
@@ -253,6 +265,7 @@ func (m *Mirror) draftSight() DraftSight {
 		Asked:      asked,
 		Candidates: candidates,
 		Picks:      m.drafting.Picks(),
+		Bans:       m.drafting.Bans(),
 		Arranging:  m.drafting.Arranging(),
 		Awaiting:   m.drafting.AwaitingArrangement(),
 		Picked:     m.drafting.Picked(),

@@ -293,11 +293,18 @@ unknown is an error), a `Key` enum and one array per language; it may import
 `internal/forge`, and **forge must never import it**.
 
 Three rules hold that shape, each with a test: no user-visible literal may live
-in `cmd/hexforge-tui` **or in `internal/screen`** (`TestNoScreenHoldsItsOwnWording`
+in `cmd/hexforge-tui`, **in `cmd/hexarena-tui`, or in `internal/screen`**
+(`TestNoScreenHoldsItsOwnWording`
 greps its own AST — ⚠️ it reads `os.ReadDir(".")`, so it is **per package** and
-there are two copies of it, one in each; a package that grows a screen and no
+there are **three** copies of it, one in each; a package that grows a screen and no
 walker silently stops being held to the two-language rule, and the golden cannot
-stand in for it, because a literal moved out of a package renders identically),
+stand in for it, because a literal moved out of a package renders identically).
+⚠️ **A fourth rule joined them at step 5b and it is about IMPORTS rather than
+wording**: `internal/screen` may not see `internal/wire`, `internal/draft`,
+`internal/socket` or `internal/room`, which is what makes `i18n.Lang.Refusal` and
+`i18n.Lang.Seat` take a *name* and what keeps the lobby's three screens in
+`cmd/hexarena-tui`. It was stated in three doc comments and checked by nothing
+until `TestNoScreenImportsTheProtocol`. Also:
 every
 key is worded in both languages and no key is orphaned, and every wording
 measures one cell per letter — write Vietnamese **composed**, or a combining mark
@@ -1973,9 +1980,22 @@ regenerated on autopilot:
   `a saved battle`, whose note measured **nought hits in both goldens** and whose
   path is a *relative* value here, and `a battle with no pairing`, which the
   client's fight guards its `p` against) — in both languages at the 120x24
-  floor and at 160x60 — **164 renders, 3851 lines**, body and footer recorded apart
+  floor and at 160x60, plus the **ban and pick** in the twelve states of it that
+  draw a line no other state draws (`a draft`, `a draft waiting for a peer`,
+  `a draft ban thrown away`, `a draft on the other side`, `a draft pick`,
+  `a draft part way through`, `a draft with one candidate`, `a draft loadout`,
+  `a forked draft loadout`, `a refused draft loadout`, `a draft arranging`,
+  `a cancelled draft`) — **248 renders, 6270 lines**, body and footer recorded apart
   because a screen here answers with the two separately and every wording squeeze
-  in this file is a footer. ⚠️ **It exists because the layout of code in
+  in this file is a footer.
+  ⚠️ **The draft's twelve are built as VALUES and there is no other way to build
+  one**, which is what declaring `draw.DraftLive` bought: a `DraftScreen` is
+  handed a reading, so no room, no listener and no goroutine goes anywhere near
+  either golden. Three of the twelve are states `cmd/hexarena-tui`'s own sweep
+  cannot reach at all — a decision with **one candidate** (arithmetic the shipped
+  pool does not produce), a **refused** loadout, and a **fork with no arm named**
+  — and a fourth is step 5a's finding: a draft with nothing recorded, where a ban
+  is thrown away. ⚠️ **It exists because the layout of code in
   `internal/screen` was held by a file in another package.** Measured after #205:
   widening the status category column by one cell
   (`Pad(row.Category.String(), column+1)` → `column+2`) left **every test in
@@ -2032,11 +2052,11 @@ regenerated on autopilot:
   anyway — a property that holds by construction is one a later change breaks
   quietly.
 - `cmd/hexarena-tui/testdata/screens.golden` is the **game client's** framing of
-  the same screens: every entry its own `everyScreen` registers — 24 over 12 of
-  its 13 views — in both languages at the 120x24 floor and at 160x60,
-  **96 renders, 3936 lines**. It is the third record of one set of screens and
+  the same screens: every entry its own `everyScreen` registers — 46 over all 18
+  of its views — in both languages at the 120x24 floor and at 160x60,
+  **184 renders, 7544 lines**. It is the third record of one set of screens and
   none of the three replaces another: `internal/screen`'s holds the drawing, the
-  authoring tool's holds *its* framing of it, and this one holds **three things
+  authoring tool's holds *its* framing of it, and this one holds **four things
   neither of the others can draw**.
   ⚠️ **The three read-only footers.** `i18n.SkillsReadFooter`,
   `i18n.OriginsReadFooter` and `i18n.SquadsReadFooter` are what a screen draws
@@ -2052,6 +2072,11 @@ regenerated on autopilot:
   ever dropped and the notice naming what the window was too short for is drawn
   by nothing; three a side is 24 rows against 20, which is where the budget
   starts deciding.
+  ⚠️ **A `draw.PickState` in front of a screen.** Every picker in the vocabulary
+  was the *authoring* half of it until a drafted loadout arrived, so this client
+  had no picker field at all and `navigate`'s `draw.Pick` arm was a no-op that
+  said so in as many words. `a draft kit` and `a draft trait` are the first two
+  ever recorded here.
   ⚠️ It drops its header line and hands `forge.Load` a **relative** directory,
   for the reason the authoring tool's does: `frame` names the data directory and
   a saved battle's own note names the file it wrote, both of which would

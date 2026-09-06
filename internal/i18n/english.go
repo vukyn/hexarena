@@ -739,7 +739,7 @@ q or ctrl+c to quit`,
 	JoinSquadLabel:          "the squad to bring",
 	JoinHint: "The code is printed by the machine hosting the room, twelve letters and digits. It " +
 		"already carries that machine's address, so there is nothing else to ask for.",
-	JoinNoSquad:    "no squad has been built, and a room has to be joined with one; build a side under the squad catalogue",
+	JoinNoSquad:    "no squad has been built. A room that drafts wants none anyway — the two of you ban and pick there — but a room that does not will turn this join away; build a side under the squad catalogue",
 	JoinCodeLength: "a room code is exactly %d characters, and this one is %d",
 	JoinDataEdited: "The data in the directory this client is reading differs from the data built into this " +
 		"binary. The match is played on the built-in copy, so the edits out there do not reach it.",
@@ -783,4 +783,44 @@ q or ctrl+c to quit`,
 	BonusAxisElement:  "the elements the units carry",
 	BonusScopeSquad:   "every unit on the side",
 	BonusScopeSharers: "only the units that share it",
+
+	DraftHeading:  "ban and pick",
+	DraftPoolLeft: "%d of %d still in the pool",
+
+	DraftStateOpen:       "open",
+	DraftStateYouBanned:  "you banned",
+	DraftStateTheyBanned: "they banned",
+	DraftStateYouPicked:  "yours",
+	DraftStateTheyPicked: "theirs",
+
+	DraftYourBan:      "your ban",
+	DraftYourPick:     "your pick",
+	DraftYourLoadout:  "your loadout for %s",
+	DraftTheirBan:     "%s is banning",
+	DraftTheirPick:    "%s is picking",
+	DraftTheirLoadout: "%s is choosing a loadout",
+
+	DraftNotBegun: "Nothing has been recorded yet, so the room may still be waiting for the second player. A decision taken before the other seat is taken is refused and thrown away — you will be asked for it again, and nothing of yours is lost.",
+	DraftRefused:  "the room would not take that decision:",
+	DraftOnlyOne:  "%s is the only one left, so there is nothing to choose here.",
+
+	DraftArrangingNow: "The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.",
+
+	DraftYourSide:     "you — %d of %d picked",
+	DraftTheirSide:    "%s — %d of %d picked",
+	DraftNoPicks:      "nobody picked yet",
+	DraftLoadoutOpen:  "loadout still to choose",
+	DraftBanned:       "banned %s",
+	DraftBannedNobody: "banned nobody yet",
+
+	DraftFieldSend: "send",
+	DraftSendReady: "enter sends this loadout",
+	DraftForkArms:  "this line forks: %s — ←/→ names one; unnamed, the lists show only the shared part and the decision is refused",
+
+	JoinBringNone: "bring none — for a room that drafts",
+
+	DraftBanFooter:     "↑/↓ move · enter ban · s skip the ban · ctrl+l tiếng Việt · esc leave the match",
+	DraftPickFooter:    "↑/↓ move · enter pick · ctrl+l tiếng Việt · esc leave the match",
+	DraftReadingFooter: "↑/↓ move · ctrl+l tiếng Việt · esc leave the match",
+	DraftLoadoutFooter: "↑/↓ row · ←/→ form · enter choose · ctrl+l tiếng Việt · esc leave the match",
 }

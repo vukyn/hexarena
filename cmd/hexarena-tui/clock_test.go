@@ -430,9 +430,15 @@ func aSeatedSession(t *testing.T, held *aRoom) *session {
 	sess := newSession()
 	sess.attach(newFakeSender())
 	// The real dial, so the real Stepped hook is the one wired up.
+	// ⚠️ **No cast book, and that is the ordinary case rather than a shortcut.**
+	// socket.ClientOptions.Characters is what a *drafting* room's pool is built
+	// from and a room that does not draft never asks for one; this room brings its
+	// squads from home, so handing a book in would be fixture nothing reads. What
+	// it does mean is that this fixture cannot reach the draft chooser at all,
+	// which is why the draft's own end-to-end test builds its own room.
 	message := sess.dial(held.code, wire.Hello{
 		Version: version, Squad: held.squads[0], Name: "Lan",
-	}, held.books)()
+	}, held.books, nil)()
 	joined, seated := message.(matchJoinedMsg)
 	if !seated {
 		t.Fatalf("the dial was turned away: %v", message)

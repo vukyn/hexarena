@@ -132,6 +132,17 @@ func openARoom(t *testing.T, battles int) (*aRoom, *forge.Library) {
 // test that waited out the default ninety seconds would not be run.
 func openARoomAllowing(t *testing.T, battles, allowance int) (*aRoom, *forge.Library) {
 	t.Helper()
+	return openARoomConfigured(t, room.Config{
+		Format: wire.Format3v3, Battles: battles,
+		Allowance: allowance, Seed: 11, TurnCap: room.DefaultTurnCap,
+	})
+}
+
+// openARoomConfigured is the same setup with the whole room.Config named, which
+// is what a *drafting* room needs: Drafts turns the ban and pick on and
+// room.Config.Validate refuses it beside anything but a bo1. → draft_test.go.
+func openARoomConfigured(t *testing.T, config room.Config) (*aRoom, *forge.Library) {
+	t.Helper()
 	t.Setenv("NO_COLOR", "1")
 	dir := scratchData(t)
 	library, err := forge.Load(dir)
@@ -172,10 +183,6 @@ func openARoomAllowing(t *testing.T, battles, allowance int) (*aRoom, *forge.Lib
 		t.Fatalf("read the listener's address: %v", err)
 	}
 	at = netip.AddrPortFrom(at.Addr().Unmap(), at.Port())
-	config := room.Config{
-		Format: wire.Format3v3, Battles: battles,
-		Allowance: allowance, Seed: 11, TurnCap: room.DefaultTurnCap,
-	}
 	deps := room.Deps{Books: books, Characters: characters, Version: version}
 	code, err := rooms.Open(at, config, deps)
 	if err != nil {

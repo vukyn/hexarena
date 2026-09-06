@@ -7,6 +7,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/vukyn/hexarena/internal/core/battle"
+	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/draft"
 	draw "github.com/vukyn/hexarena/internal/screen"
 	"github.com/vukyn/hexarena/internal/socket"
 	"github.com/vukyn/hexarena/internal/wire"
@@ -161,6 +163,42 @@ type session struct {
 	// which is correct — one decision per turn, and the screen has already
 	// stopped offering it.
 	answers chan pressed
+
+	// decisions is the draft's twin of answers, one slot and the same
+	// arrangement. A channel of its own rather than a second kind on `pressed`,
+	// because the two questions are asked by two different choosers on the same
+	// goroutine and an answer for one must never be spent on the other: a battle
+	// decision is a skill and a cell off a board, a draft decision is a character
+	// out of a pool.
+	decisions chan draftPressed
+	// characters is the cast a drafting room's pool is drawn from and pool is
+	// that pool, kept because the **screen** draws it and the mirror does not
+	// hand it back on a reading.
+	//
+	// ⚠️ **Both come off the EMBEDDED books, whatever --data says**, which is
+	// model.dialling's own rule one step further: wire.Version's digest is over
+	// the embedded files, so a client whose pool came from an edited directory
+	// would pass a gate promising the two peers draft the same cast and then ban
+	// a character the room does not have.
+	characters *cast.Book
+	pooled     []cast.Character
+}
+
+// draftPressed is one draft decision with the decision it was given for.
+//
+// ⚠️ **The record length is the routing key and the step is not enough**, which
+// is socket.DraftDue's own finding: a seat's two ban slots have the other seat's
+// between them, so a ban given for the first and delivered while the second is
+// open carries the same step and the same absent character — everything the wire
+// has. The count is local and never travels.
+type draftPressed struct {
+	decision wire.DraftDecision
+	recorded int
+}
+
+// about reports whether this was pressed for the decision now being asked.
+func (p draftPressed) about(prompt socket.DraftPrompt) bool {
+	return p.recorded == prompt.Due.Recorded && p.decision.Step == prompt.Due.Step
 }
 
 // pressed is one answer with the turn it was given for.
@@ -260,10 +298,23 @@ func (s *session) send(message tea.Msg) {
 // what a dial is cancelled by, so a player who quits while a room is being
 // called has to be able to reach it; arming afterwards would leave that window
 // covered by nothing.
-func (s *session) dial(code wire.RoomCode, hello wire.Hello, books battle.Books) tea.Cmd {
-	ctx := s.open()
+// ⚠️ **The cast book goes in as an option and the pool is kept beside it.** A
+// room that drafts refuses a client with no cast book at the **welcome** — it
+// could not compute its own pool — so a client dialled without one can never
+// take part; and draft.NewPool is this repository's single declaration of "the
+// cast minus every character held back", so the pool is built through it here
+// rather than being derived anywhere a screen can reach. → socket.ClientOptions.
+func (s *session) dial(code wire.RoomCode, hello wire.Hello, books battle.Books,
+	characters *cast.Book) tea.Cmd {
+	ctx := s.drafting(characters)
 	return func() tea.Msg {
 		client, err := socket.Dial(ctx, code, hello, books, socket.ClientOptions{
+			Characters: characters,
+			// ⚠️ **A nil chooser is refused at the point of being ASKED rather
+			// than at the join**, so this is not optional for a client that can
+			// land in a drafting room: without it, Play returns naming what is
+			// missing the moment the first ban comes round. → socket.Client.answer.
+			Draft: s.chooseDraft,
 			// ⚠️ **The stamp goes ahead of the redraw**, on the same goroutine
 			// and in the same hook: this is the moment this client can honestly
 			// say a turn opened for it, and a model told to redraw before the
@@ -294,7 +345,48 @@ func (s *session) open() context.Context {
 	s.clock = matchClock{}
 	s.done = make(chan struct{})
 	s.answers = make(chan pressed, 1)
+	s.decisions = make(chan draftPressed, 1)
+	// A pool from the last match would be the cast of a room this client has
+	// left, and it has to be cleared here for the reason the clock is: a player
+	// who leaves a room and joins another gets every guarantee back.
+	s.characters, s.pooled = nil, nil
 	return ctx
+}
+
+// drafting is open with the cast a drafting room's pool comes out of.
+//
+// Two steps rather than a parameter on open, because open is what a test with
+// nothing to draft calls and there is nothing there for it to hand over.
+func (s *session) drafting(characters *cast.Book) context.Context {
+	ctx := s.open()
+	if characters == nil {
+		return ctx
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.characters = characters
+	s.pooled = draft.NewPool(characters.All()).All()
+	return ctx
+}
+
+// pool is the cast a drafting room's decisions are taken out of, as the screen
+// draws it.
+func (s *session) pool() []cast.Character {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.pooled
+}
+
+// seat is which side of the wire this client is, and the empty Seat before a
+// welcome has arrived — which means "nobody" and must not quietly mean the host.
+func (s *session) seat() wire.Seat {
+	s.mu.Lock()
+	client := s.client
+	s.mu.Unlock()
+	if client == nil {
+		return ""
+	}
+	return client.Seat()
 }
 
 // begin takes the dialled client and starts the loop.
@@ -401,6 +493,97 @@ func (s *session) turn() (chan pressed, context.Context) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.answers, s.ctx
+}
+
+// turnDraft is the draft's pair of the same two.
+func (s *session) turnDraft() (chan draftPressed, context.Context) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.decisions, s.ctx
+}
+
+// chooseDraft is the chooser socket.Client.Play calls when a draft decision is
+// this client's, and it is the whole of how a keystroke becomes a ban.
+//
+// It is `choose`'s three arms over a different question, and the two things that
+// differ are both about a draft having **no pass**:
+//
+//   - ⚠️ **A false here ENDS THE MATCH**, where a battle's false is a pass.
+//     socket.Client.answer says so in as many words — *"a draft has no pass, so
+//     there is nothing to send in its place"* — and that is the design: a draft
+//     whose allowance runs out is cancelled outright with no auto-pick, because a
+//     defaulted pick would hand somebody a squad they did not choose and call it
+//     theirs. So the expiry arm is a **loud ending** on purpose, and the wait is
+//     deliberately the same allowance-plus-grace the battle's is.
+//   - ⚠️ **A stale decision is DROPPED and the wait goes on**, where the battle's
+//     second select takes whatever is in the slot. It has to be: returning false
+//     for one would end the match over a keystroke that arrived late, and the
+//     stale answer would otherwise be spent on the next decision — which is
+//     socket.DraftDue's whole reason for existing. Hence the loop.
+//
+// ⚠️ **`For` is filled off the PROMPT and only for a decision that matches it**,
+// which is what makes socket.Mirror.DecideDraft's own check meaningful: an answer
+// that named a decision of its own would be this client asserting rather than
+// reporting, and the refusal that check counts would never fire.
+func (s *session) chooseDraft(prompt socket.DraftPrompt) (socket.DraftAnswer, bool) {
+	decisions, ctx := s.turnDraft()
+	if decisions == nil || ctx == nil {
+		return socket.DraftAnswer{}, false
+	}
+	expired, stop := s.waitOut()
+	defer stop()
+	// ⚠️ **Read the slot first and ask what it is FOR**, which is choose's own
+	// measured ordering: a player learns a decision has come to them from their
+	// own mirror, a message and a redraw before Play gets round to asking, so a
+	// decision taken off the screen already in front of them lands here ahead of
+	// the chooser. A bare drain would eat it.
+	select {
+	case held := <-decisions:
+		if held.about(prompt) {
+			return socket.DraftAnswer{For: prompt.Due, Decision: held.decision}, true
+		}
+	default:
+	}
+	s.send(matchAskingMsg{})
+	for {
+		select {
+		case held := <-decisions:
+			if !held.about(prompt) {
+				// A decision for a decision that has gone. Dropped rather than
+				// applied and rather than reported: the reader's screen still shows
+				// what is open, so the next press is the answer.
+				continue
+			}
+			return socket.DraftAnswer{For: prompt.Due, Decision: held.decision}, true
+		case <-ctx.Done():
+			return socket.DraftAnswer{}, false
+		case <-expired:
+			return socket.DraftAnswer{}, false
+		}
+	}
+}
+
+// decide is a keystroke on its way to the draft chooser, and it **never blocks**
+// for the reason answer does not: an Update that waited for a chooser to take its
+// decision would hang the whole program whenever nobody was asking.
+//
+// ⚠️ **There is deliberately no "already decided this one" memo, here or on the
+// screen**, and that is the one guard this client may not add. A room that drafts
+// sends nothing when its second seat is taken, so the host's first ban goes into a
+// one-player room, is refused, and — because a refusal leaves the decision open —
+// has to be **taken again**. A real player's chooser blocks on a keystroke rather
+// than spinning, so the retry is a second press; a memo would make that press do
+// nothing and stall the match for good. → TODO.md § step 5a, and
+// draw.DraftLive.Waiting, which is the line that tells the player to press again.
+func (s *session) decide(decision wire.DraftDecision, recorded int) {
+	decisions, _ := s.turnDraft()
+	if decisions == nil {
+		return
+	}
+	select {
+	case decisions <- draftPressed{decision: decision, recorded: recorded}:
+	default:
+	}
 }
 
 // read runs fn under the mirror's read lock, which is the only safe way to look

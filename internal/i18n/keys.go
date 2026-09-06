@@ -1154,6 +1154,141 @@ const (
 	BonusScopeSquad
 	BonusScopeSharers
 
+	// # The ban and pick, as the game client draws it
+	//
+	// The draft screen's wording, and the one thing to know before adding to it:
+	// ⚠️ **the glossary was coined at step 3 and these follow it rather than
+	// re-coining** — `cấm` is a ban, `chọn tướng` is a pick, `lượt chọn tướng` is
+	// a pick's turn. Three shipped wordings already use those words
+	// (RefusalNotYourTurn, RefusalSquadUnwanted, ClosedDraftExpired), so a fourth
+	// spelling here would be the same idea said two ways on two screens a player
+	// sees minutes apart.
+	//
+	// ⚠️ **Six of the loadout's wordings are the squad builder's own and are
+	// reused rather than restated** — SquadFieldStage, SquadFieldSkills,
+	// SquadFieldPassives, SquadPickSkills, SquadPickPassives, SquadKitHint,
+	// SquadTraitHint, SquadNothingChosen, SquadLoadoutCount, SquadFurthest and
+	// SquadForkUnnamed. A drafted loadout and a saved member's loadout are the
+	// same question asked of the same books through the same cast.ChooseLoadout,
+	// and none of those lines says "squad" in either language. A second set would
+	// be two wordings for one row, which is the mistake the two `Footer` halves
+	// of Context already exist to avoid.
+	//
+	// ⚠️ **A cancelled draft reuses ClosedDraftExpired**, which is the closure the
+	// room sends for the same event. The draft screen is where a player is
+	// standing when the allowance runs out and the result screen is where they
+	// land afterwards; wording it twice would let the two disagree about what
+	// happened.
+
+	// DraftHeading names the screen and DraftPoolLeft says how much of the pool
+	// is still in it, which is the one number that makes the marks on the rows
+	// mean something at a glance.
+	DraftHeading
+	DraftPoolLeft
+	// The five states a row of the pool can be in. They are a **column of
+	// wording** rather than a colour, for Palette's own reason: whether the
+	// character a player is looking at is still available is the single fact this
+	// screen exists to show, and an answer carried by colour is an answer a
+	// monochrome terminal does not give.
+	//
+	// Banned and picked are told apart, and so is the side, because they are four
+	// different things to a player: a character they banned is one they chose to
+	// remove, one the opponent banned is one the opponent feared, one they picked
+	// is theirs and one the opponent picked is what they will be fighting.
+	DraftStateOpen
+	DraftStateYouBanned
+	DraftStateTheyBanned
+	DraftStateYouPicked
+	DraftStateTheyPicked
+	// Whose decision is due and which kind, in six whole sentences rather than
+	// two skeletons and a step name.
+	//
+	// ⚠️ **Six wordings and not two, deliberately.** A line assembled from "your"
+	// plus a translated step name is a line neither language can inflect: "your
+	// ban" and "your loadout for %s" have different shapes in English and
+	// different ones again in Vietnamese, and the seat's own name has to sit
+	// where each language puts a subject. The three `Their` wordings take the
+	// **worded** seat (→ Lang.Seat) rather than the protocol's spelling.
+	DraftYourBan
+	DraftYourPick
+	DraftYourLoadout
+	DraftTheirBan
+	DraftTheirPick
+	DraftTheirLoadout
+	// DraftNotBegun is the state this screen exists as much for as for the pool.
+	//
+	// ⚠️ **Nothing on the wire tells a client the room is full**, so a draft with
+	// no decision recorded is either a room still waiting for its second player
+	// or a room that filled a moment ago and has been asked nothing — and the two
+	// are indistinguishable from here. What is *not* indistinguishable is the
+	// consequence: a decision taken before the second seat is taken is refused
+	// and thrown away, and a player who cannot see that has no way to know their
+	// ban was not taken. So this says what is true of both readings and warns
+	// about the one that costs something.
+	DraftNotBegun
+	// DraftRefused is the lead-in over a refusal the room sent, which is drawn
+	// through Lang.Refusal exactly as a battle's is. → PlayScreen.LiveRefusal on
+	// why a refusal crosses as a name.
+	DraftRefused
+	// DraftOnlyOne is a decision with one candidate, which is not a decision.
+	//
+	// ⚠️ **Whether it can happen is arithmetic and it has moved three times in two
+	// days** — draft.Slack is the expression, the final pick sees `slack + 1`
+	// candidates, and that was one character when the pool was sixteen. So the
+	// line is drawn off the candidate list actually in hand rather than off any
+	// figure written down, and a screen presenting a list of one as a choice is
+	// the failure it is here to prevent.
+	DraftOnlyOne
+	// DraftArrangingNow is the ban and pick played out and both sides placing
+	// their units, which is the phase the arrange screen draws. This is the line
+	// that says the picking is over.
+	DraftArrangingNow
+	// The two sides' own blocks: how many each has picked, what each pick will
+	// field, and what each side took out of the pool.
+	//
+	// DraftBannedNobody is a side with no ban to its name, and it is a wording
+	// rather than an empty column for the reason every absence in this program is
+	// declared: a blank where a list goes reads as a drawing that failed.
+	DraftYourSide
+	DraftTheirSide
+	DraftNoPicks
+	DraftLoadoutOpen
+	DraftBanned
+	DraftBannedNobody
+	// The loadout editor's fourth row and what it says when the kit is legal.
+	//
+	// ⚠️ **A row of its own rather than a key chord, and that is the whole reason
+	// this screen has four rows for three fields.** `enter` means "do what is
+	// under the cursor" on every other screen in this program, and on a loadout
+	// there are two things it could mean — open the list on this row, or send the
+	// decision — so one of them had to become a row. What that buys is one footer
+	// naming one key rather than a footer explaining that a key means two things.
+	DraftFieldSend
+	DraftSendReady
+	// DraftForkArms is the line a forking evolution needs, and it is NOT the squad
+	// builder's SquadForkArms even though the two say almost the same thing: that
+	// one's last clause is *"the save refuses"*, and a draft has no save. What is
+	// refused here is the **decision**, which is a different consequence to a
+	// player — one loses a file they were editing, the other loses a turn of a
+	// match — so the clause is worded rather than the sentence being shared with a
+	// blank in it.
+	DraftForkArms
+	// JoinBringNone is the join screen's last squad position, and it is here rather
+	// than beside the other Join keys for the reason it exists at all: a room that
+	// **drafts** refuses a squad, so bringing none is the answer that room wants —
+	// and a client cannot know a room drafts until it has been welcomed, because
+	// the hello carrying the squad goes first. → joinScreen.Squad, and
+	// wire.CodeSquadUnwanted.
+	JoinBringNone
+	// The four footers, one per thing this screen can be doing. The reading one
+	// names no decision key at all, because the decision is not this player's to
+	// take — a footer naming a key the screen ignores is the failure
+	// Context.Footer exists to prevent, and here the difference is a whole match.
+	DraftBanFooter
+	DraftPickFooter
+	DraftReadingFooter
+	DraftLoadoutFooter
+
 	keyCount
 )
 

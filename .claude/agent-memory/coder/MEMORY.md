@@ -20,6 +20,8 @@
 - [A refusal can be right for the wrong reason](feedback_a_refusal_can_be_right_for_the_wrong_reason.md) — separate the verdict from its evidence; re-run a TODO's own example first, it may not reproduce
 - [Rebasing onto a moved origin/main](feedback_rebase_onto_a_moved_main.md) — patch-not-stash, leave the golden out; main moves MID-task too, so pin HEAD either side of a golden reading
 - [Measure the thing a bound bounds](feedback_measure_the_thing_a_bound_bounds.md) — my 1 MiB read limit bounded 2.9 KB; hold both ends. -race's first catch is a TEST's teardown assumption
+- [A fixture the code can reorder](feedback_a_fixture_the_code_can_reorder.md) — an in-place sort also sorts the EXPECTATION; 0 tests failed
+- [Re-entrant RLock in a Read callback](feedback_reentrant_rlock_inside_a_read_callback.md) — 1 run in 10; -race clean; hoist the seat out of the lock
 - [A well-formed measurement can measure nothing](feedback_a_well_formed_measurement_can_measure_nothing.md) — an RWMutex deadlock test needs a WRITER; a digest can be stable and always unequal
 - [pty smoke test for hexarena-tui](feedback_pty_smoke_test_for_hexarena_tui.md) — it refuses a pipe; pty.fork + TIOCSWINSZ, two of them plus the host play a whole match
 - [bubbles paste + nil commands](feedback_bubbles_paste_and_nil_commands.md) — textinput.Paste's msg is UNEXPORTED; a nil cmd is not "refused"; pinning a sanitiser ≠ pinning its caller
@@ -30,7 +32,7 @@
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
-- [The ban/pick draft machine](project_draft_state_machine.md) — 2a…5a done; ⚠️ NOTHING tells the host the room is full (host re-sends its first ban); arrange clock is NOT one allowance
+- [The ban/pick draft machine](project_draft_state_machine.md) — 2a…5b done (5c + host flag left); ⚠️ NOTHING tells the host the room is full; internal/screen declares its OWN DraftLive
 - [A third LAN flake](project_third_lan_flake.md) — TestTheCountdownReachesTheScreenOverASocket raced once in make check; not in TODO.md, not reproducible, not yours
 
 ## Moved in from the platform-level store (2026-09-05)
