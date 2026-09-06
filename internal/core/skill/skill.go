@@ -10,6 +10,7 @@
 package skill
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"slices"
@@ -1246,12 +1247,24 @@ type Deps struct {
 
 // ParseBook reads a skill declaration and checks every name it uses. It never
 // touches the filesystem.
+//
+// ⚠️ **A field this book does not know is refused, not ignored**, the same rule
+// the status book states for itself and for the same reason: a silent drop of a
+// field an author deliberately wrote is the worst answer available, because the
+// file looks like it worked. Leaving it open here after closing it there would
+// have been a new asymmetry in place of the one that was closed — a misspelt
+// field on a status refused while the same typo on a skill went nowhere.
+//
+// Measured before it was turned on: the shipped book decodes strictly as it
+// stands, so this refuses nothing that exists today.
 func ParseBook(raw []byte, deps Deps) (*Book, error) {
 	if deps.Patterns == nil || deps.Statuses == nil {
 		return nil, fmt.Errorf("skills cannot be validated without the pattern and status books")
 	}
 	var file bookFile
-	if err := json.Unmarshal(raw, &file); err != nil {
+	reader := json.NewDecoder(bytes.NewReader(raw))
+	reader.DisallowUnknownFields()
+	if err := reader.Decode(&file); err != nil {
 		return nil, fmt.Errorf("decode skill book: %w", err)
 	}
 	book := &Book{byID: make(map[string]Skill, len(file.Skills))}

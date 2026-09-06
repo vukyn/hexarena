@@ -2420,9 +2420,10 @@ is only so the shape is readable.
       may be reused, and § *Grow the cast* above says why that is not a problem.
       Authoring one is the *Grow the cast* item above, not a separate task — this
       entry is the queue, not the work.
-- [ ] **Squad composition bonuses: the mechanism and the first bonus are BUILT;
-      what is left is the second axis and the reference screen.** The idea, as
-      asked for: fielding several units that share something grants the squad a
+- [ ] **Squad composition bonuses: the mechanism, the first bonus and the
+      reference screen are BUILT; what is left is the second axis and the top
+      rungs.** The idea, as asked for: fielding several units that share
+      something grants the squad a
       bonus, stronger bonuses sit at higher thresholds, and **not every bonus
       needs four rungs** — one or two is fine where the effect is worth it.
 
@@ -2451,8 +2452,9 @@ is only so the shape is readable.
       something already in the starter sides.
 
       **Still open, and each keeps its reasoning below:** a second axis (the
-      origin one is still empty — decision 4), the rungs at 4 and 5 (decision 6,
-      they wait for 5v5), and the reference screen (the nested item at the end).
+      origin one is still empty — decision 4) and the rungs at 4 and 5 (decision
+      6, they wait for 5v5). The reference screen — the nested item at the end —
+      shipped in #319.
 
       ⚠️ **Reachability is not a detail — it is measured, and it kills two of the
       four obvious axes outright.** Multiplicity across the nineteen shipped
@@ -2839,7 +2841,32 @@ is only so the shape is readable.
       the screen suites and ask of each whether the rule it walks past is held
       anywhere else.
 
-- [ ] **A field inside a `modifier` is still dropped silently, in all three
+- [x] **A field inside a `modifier` was dropped silently in all three books —
+      DONE, and the asymmetry it warned about was closed with it.**
+      `Modifier.UnmarshalJSON` decodes strictly now, so the typo lands as a
+      sentence naming the field in a status, a trait and a skill at once; and
+      `skill.ParseBook` and `passive.ParseBook` refuse an unknown field at their
+      own level too, which is what stops "a misspelt field on a status is refused
+      and the same typo on a skill is not" from being the new hole.
+      ⚠️ **Measured before either was turned on, which is the half a stricter
+      decoder needs**: both shipped books decode strictly as they stand, so this
+      refuses nothing that ships — the risk named below (a stricter decoder can
+      refuse the data it was written for) was checked rather than hoped about.
+      ⚠️ **It refused something anyway, and that is the finding.** The test
+      fixture's electric skill carried `"damped": 400` inside its `requires`, a
+      field from an **earlier design** that `skill.go` still names in a comment as
+      abandoned — dead data every suite in the repository had been reading past
+      since it was dropped. Nothing was measuring it and nothing could: the whole
+      point of the hole is that the file looks like it worked. It is deleted, and
+      it is the argument for the change rather than a cost of it.
+      The tests are at the level that was missed: `internal/core/modifier`'s own,
+      because a book asserting its strictness proves nothing about what its
+      custom unmarshaller does, plus a near-miss typo per book (`accuarcy` on a
+      skill, `grant` for `grants` on a trait) — a singular where the book wants a
+      plural is the typo this is actually for, since a field nobody ever declared
+      is usually caught by the author writing it. The original entry:
+
+      **A field inside a `modifier` was dropped silently, in all three
       books.** Found 2026-09-06 while closing the same hole in `statuses.json`:
       `status.ParseBook` now decodes with `DisallowUnknownFields`, and that flag
       **stops at a custom unmarshaller**. `modifier.Modifier` has one, so
