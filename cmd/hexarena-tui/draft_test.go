@@ -9,6 +9,7 @@ import (
 
 	"github.com/vukyn/hexarena/internal/core/battle"
 	"github.com/vukyn/hexarena/internal/core/cast"
+	"github.com/vukyn/hexarena/internal/core/hex"
 	"github.com/vukyn/hexarena/internal/core/progression"
 	"github.com/vukyn/hexarena/internal/draft"
 	"github.com/vukyn/hexarena/internal/forge"
@@ -501,22 +502,30 @@ func TestADraftedRoomIsDrawnAndABanBeforeThePeerArrivesIsThrownAway(t *testing.T
 	}
 }
 
-// TestADraftIsPlayedOutToTheArrangePhaseOverALoopbackListener drives the whole
-// ban and pick with the keys a player presses, loadouts and pickers included.
+// TestADraftedMatchIsPlayedFromTheFirstBanToTheLastBlowOverALoopbackListener is
+// the test this step exists for, and until it landed **a drafting match could not
+// reach a board at all**.
 //
-// ⚠️ **It stops at the arrange phase and that is the honest end of step 5b.**
-// Picking closes into a phase with **two** decisions open at once and no screen
-// to take either — that is 5c — so the draft cannot reach a battle yet. What this
-// asserts is everything up to that line: eighteen decisions taken through this
-// client's own screen, both sides' picks with their loadouts in, and the arranging
-// notice drawn.
-func TestADraftIsPlayedOutToTheArrangePhaseOverALoopbackListener(t *testing.T) {
+// ⚠️ **That is measured rather than described.** Picking closed into a phase with
+// two decisions open and no screen to take either, so both clients' choosers were
+// asked for a StepArrange, answered nothing, and Play returned — *"a draft has no
+// pass, so there is nothing to send in its place"*. This test asserted that ending
+// **by name** until step 5c; what it asserts now is the whole vertical: a real
+// registry, a real server, a real listener, eighteen decisions taken through this
+// client's own screens, a formation placed with the arrow keys, and a battle
+// fought to a finish.
+//
+// *Sees:* both draft screens, the chooser, the one-slot channel, the mapping both
+// ways, the arrangement in pick order, the room opening the battle on the drafted
+// squads, and the result — over a real socket.
+// *Cannot see:* that a real *tea.Program delivered the messages. → the note at the
+// head of match_test.go.
+func TestADraftedMatchIsPlayedFromTheFirstBanToTheLastBlowOverALoopbackListener(t *testing.T) {
 	held, library := openADraftingRoom(t)
 	// ⚠️ **Both peers are dialled before either is driven**, which is the same
 	// arrangement socket's own headline draft test takes and for the same measured
-	// reason: the room announces nothing when it fills, so a host driven first
-	// bans into an empty room. That state has its own test above; this one is
-	// about the eighteen decisions after it.
+	// reason: the room announces nothing when it fills, so a host driven first bans
+	// into an empty room. That state has its own test above.
 	_, failed := theDraftingOpponent(t, held)
 	m, fake := joinedADraft(t, held, library)
 	deadline := time.Now().Add(theWholeMatch)
@@ -562,34 +571,171 @@ func TestADraftIsPlayedOutToTheArrangePhaseOverALoopbackListener(t *testing.T) {
 		2*2*draft.PicksPerSide(wire.Format3v3); got != want {
 		t.Errorf("the record holds %d decisions, want %d", got, want)
 	}
-	if !strings.Contains(drawnBody(m), firstLine(m.text(i18n.DraftArrangingNow))) {
-		t.Fatalf("the arrange phase draws nothing saying picking is over:\n%s", drawnBody(m))
+	// ⚠️ **The phase opening is what moves the reader**, and nothing else announces
+	// it: the room records the first arrangement nowhere, so there is no second
+	// message behind this one. A client that did not move here would sit on a
+	// finished ban and pick until the allowance cancelled the draft.
+	if m.screen != screenArrange {
+		t.Fatalf("the arrange phase opened and this client is on screen %v:\n%s",
+			m.screen, drawnBody(m))
 	}
-	// And no keystroke on this screen can take an arrangement, which is what
-	// stops 5b sending a decision it has no screen for.
-	before := m.draft
-	for _, name := range []string{"enter", "s"} {
-		after := key(t, m, name)
-		if after.draft.Live.Recorded != before.Live.Recorded {
-			t.Errorf("%q took an arrangement this step has no screen for", name)
+	mine := m.arrange.Picks()
+	if len(mine) != units {
+		t.Fatalf("the arrange screen holds %d of this side's %d picks", len(mine), units)
+	}
+	// The formation, placed with the keys a player presses: the cursor opens on the
+	// front rank, each pick is walked a rank further round than the last, and enter
+	// puts it down.
+	//
+	// ⚠️ **The cells this produces are deliberately not in board order** — measured
+	// on the shipped pool it comes out `2,0 · 0,1 · 2,1` where reading the board
+	// would give `2,0 · 2,1 · 0,1` — so the check below is a real one: an
+	// arrangement that travelled sorted, or in the order the cells were chosen on
+	// the board, would put two of these three units in the wrong place.
+	for at := range mine {
+		for range at {
+			m = key(t, m, "right")
+		}
+		m = key(t, m, "enter")
+		if got := len(m.arrange.Slots); got != at+1 {
+			t.Fatalf("placing pick %d left %d cells taken", at, got)
 		}
 	}
-	// ⚠️ **And the opponent's loop ends HERE, naming the arrangement**, which is
-	// the boundary of this step written down rather than worked around: a draft
-	// has no pass, so a chooser with nothing to answer an arrange with reports a
-	// failure and Play returns — see socket.Client.answer, which says so in as
-	// many words. That is what 5c closes, and until it does, a drafting match
-	// cannot reach a board.
-	select {
-	case err := <-failed:
-		if err == nil || !strings.Contains(err.Error(), string(wire.StepArrange)) {
-			t.Fatalf("the opponent's loop ended during the draft with %v, want the arrange "+
-				"phase nothing can answer yet", err)
-		}
-		t.Logf("both loops end at the arrange phase, which is step 5c: %v", err)
-	case <-time.After(time.Second):
-		t.Log("the opponent's loop is still waiting out the arrange phase's allowance")
+	if !m.arrange.Whole() || m.arrange.Err != nil {
+		t.Fatalf("the formation is not whole or is refused: %v\n%s", m.arrange.Err, drawnBody(m))
 	}
+	arrangement := slices.Clone(m.arrange.Slots)
+	if len(arrangement) != len(slices.Compact(slices.Clone(arrangement))) {
+		t.Fatalf("two picks were put on one cell: %v", arrangement)
+	}
+	m = key(t, m, "enter")
+	if !m.arrange.Sent {
+		t.Fatal("enter on a whole formation sent nothing")
+	}
+	// And the room took it: the phase closes only when **both** arrangements are
+	// in, and the battle that follows is the room's answer to this one.
+	m = settled(t, m, fake, func(m model) bool { return m.screen == screenBattle })
+	if m.draft.Live.Refusal != "" {
+		t.Errorf("the room refused a decision on the way through: %q", m.draft.Live.Refusal)
+	}
+
+	// ⚠️ **The battle was opened on the drafted squads, by value.** This is the
+	// claim the whole step is for: what is standing on the board is what was picked,
+	// each unit on the cell this client chose for it, in the order the picks were
+	// taken.
+	stood := map[string]hex.Offset{}
+	var side hex.Side
+	m.session.read(func(sight socket.Sight) {
+		if sight.Fight == nil {
+			return
+		}
+		side = sight.Side
+		for _, unit := range sight.Fight.Units() {
+			if unit.Side == sight.Side {
+				// The id a drafted unit carries is `<side>.<character>` — the
+				// character is the unit id in a drafted squad, because the pool is
+				// exclusive, and placement.Squad.Take puts the side in front of it.
+				stood[strings.TrimPrefix(unit.ID, sight.Side.String()+".")] = unit.Cell
+			}
+		}
+	})
+	if len(stood) != len(mine) {
+		t.Fatalf("this client's half of the board holds %d units against %d picks: %v",
+			len(stood), len(mine), stood)
+	}
+	for at, pick := range mine {
+		want := placedAt(side, arrangement[at])
+		got, standing := stood[pick.Character]
+		if !standing {
+			t.Errorf("%s was drafted and is not on the board", pick.Character)
+			continue
+		}
+		if got != want {
+			t.Errorf("%s stands at %s and was arranged onto %s (%s): Slots[i] is the cell for "+
+				"the i-th pick and nothing may reorder it", pick.Character, got, arrangement[at], want)
+		}
+	}
+
+	// The battle, played out with the keys a player presses. It is match_test.go's
+	// own loop, and the only difference is where the board came from.
+	answers := 0
+	deadline = time.Now().Add(theWholeMatch)
+	for m.screen != screenResult && time.Now().Before(deadline) {
+		if !fake.awaits(time.Second) {
+			continue
+		}
+		for _, message := range fake.take() {
+			m = send(t, m, message)
+		}
+		for range 2 {
+			if m.screen != screenBattle || !m.battle.Live ||
+				m.battle.Pending == nil || m.battle.Answered {
+				break
+			}
+			m = key(t, m, "enter")
+		}
+		if m.battle.Answered {
+			answers++
+		}
+	}
+	if m.screen != screenResult {
+		t.Fatalf("the drafted match did not reach the result inside %s; the client is on "+
+			"screen %v", theWholeMatch, m.screen)
+	}
+	if err := <-failed; err != nil {
+		t.Fatalf("the opponent's loop: %v", err)
+	}
+	// ⚠️ **The vacuity guards, and they are what make "it finished" mean
+	// anything.** A capped battle is a **hang detector firing** rather than an
+	// ending — the engine concluded nothing about it and the room records it as
+	// undecided — and a run in which this client answered no turn would have proved
+	// the chooser and the channel were never exercised.
+	var fought []socket.Fought
+	m.session.read(func(sight socket.Sight) { fought = append(fought, sight.Fought...) })
+	if len(fought) != 1 {
+		t.Fatalf("a drafting room is a bo1 and this one settled %d battles", len(fought))
+	}
+	if fought[0].Capped {
+		t.Errorf("the battle stopped at the turn cap after %d turns, which is a hang detector "+
+			"firing rather than an ending", fought[0].Turns)
+	}
+	if !fought[0].Decided {
+		t.Errorf("the battle ended undecided (%s) after %d turns",
+			fought[0].Outcome, fought[0].Turns)
+	}
+	if answers == 0 {
+		t.Error("this client answered no turn at all, so the chooser and the channel were " +
+			"never exercised")
+	}
+	if m.result.Err != nil {
+		t.Errorf("the match ended with %v", m.result.Err)
+	}
+	standingMine, standingTheirs := m.result.standing()
+	t.Logf("drafted %v against %v; arranged %v on the %s side; %s won after %d turns "+
+		"(%s), standing %d-%d, %d turns answered here",
+		pickedNames(m.draft.Live.Picks[0]), pickedNames(m.draft.Live.Picks[1]),
+		arrangement, side, fought[0].Winner, fought[0].Turns, fought[0].Outcome,
+		standingMine, standingTheirs, answers)
+}
+
+// placedAt is where an authored formation cell lands on the shared board for a
+// side, which is the one rotation the geometry does: hex.Place maps the enemy
+// formation through 180 degrees, so a cell authored at 2,0 is a different
+// battlefield cell depending on which half it is fielded as.
+//
+// ⚠️ It goes through the engine's own function rather than restating the
+// arithmetic, which is the whole point of the assertion above: a test that worked
+// the rotation out for itself would agree with a client that had worked it out
+// wrong in the same way.
+func placedAt(side hex.Side, authored hex.Offset) hex.Offset { return hex.Place(side, authored) }
+
+// pickedNames is a side's picks as the ids a report reads by.
+func pickedNames(picks []draw.DraftPick) []string {
+	out := make([]string, 0, len(picks))
+	for _, pick := range picks {
+		out = append(out, pick.Character)
+	}
+	return out
 }
 
 // aDecisionTaken presses whatever the screen is offering and waits for the
@@ -842,6 +988,21 @@ func firstOffered(characters *cast.Book) socket.DraftChooser {
 				return socket.DraftAnswer{}, false
 			}
 			answer.Decision.Skills, answer.Decision.Passives = skills, passives
+		case wire.StepArrange:
+			// ⚠️ **One cell per pick, in pick order, and the phase closes only when
+			// BOTH sides have answered** — so an opponent that could not arrange is
+			// an opponent whose Play loop ends the moment the picking does, which is
+			// exactly what this fixture could not do before step 5c.
+			//
+			// The cells are the formation's own first n, which is the simplest legal
+			// answer there is: draw.FormationSlots is front first, so this side is
+			// packed into its front column. What a *player* does with the decision is
+			// the client's screen, and that is what the test above drives.
+			slots := draw.FormationSlots()
+			if len(prompt.Mine) > len(slots) {
+				return socket.DraftAnswer{}, false
+			}
+			answer.Decision.Slots = slices.Clone(slots[:len(prompt.Mine)])
 		default:
 			return socket.DraftAnswer{}, false
 		}

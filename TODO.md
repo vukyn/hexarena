@@ -2358,7 +2358,25 @@ is only so the shape is readable.
             carries no platform flip; deciding which platform the goldens are
             authored on — or making the note's path separator platform-independent
             — is its own change. → the open item below.
-      - [ ] **A golden that cannot be green on two platforms.** Twelve lines of
+      - [x] **A golden that cannot be green on two platforms.** ⚠️ **Closed
+            2026-09-06 as no longer true, and the reason it closed is worth more
+            than the item: nobody fixed it here.** It was written from a real
+            measurement at `c8edde3` — a clean `git archive` of main was red on
+            macOS on exactly these lines — and it went away between `c8edde3` and
+            `491a66e`, arriving with a merge from main. Re-measured twice since:
+            `make check` is green on a clean archive, and **neither golden holds a
+            `\` path at all** (`grep -c 'seed\\data\|battles\\'` answers nought in
+            both). So the twelve lines were re-accepted on a machine that writes
+            `/`, which is the flip the item predicted, in the direction that
+            happens to be right for everyone but the next Windows author.
+            ⚠️ **The underlying hazard is NOT closed** and is the half to keep: a
+            golden recording `filepath.Join`'s output is green on whichever
+            platform last ran `make golden` and red on the other, so the next
+            author to accept one from Windows re-opens this by construction. The
+            three ways out below are still the three ways out, and none of them has
+            been taken — this is a record of the symptom clearing, not of the cause
+            being answered. Left as the item's own body:
+            Twelve lines of
             `internal/screen/testdata/screens.golden` and
             `cmd/hexarena-tui/testdata/screens.golden` were accepted on Windows and
             hold `\` where `filepath.Join` writes `/` everywhere else, so both
@@ -2390,26 +2408,76 @@ is only so the shape is readable.
             *about* the digest and take this golden out of the path of every
             balance commit. Not done, because it is the join screen's to answer
             and 5b had no business editing it.
-      - [ ] **The arrange screen — step 5c.** The 3x3 formation, both sides at
-            once and neither shown the other's, over
-            `DraftSight.Arranging`/`Awaiting`. ⚠️ The clock is **not** one
-            allowance for the phase: `Server.settled` re-arms off the reading
-            after every batch, so whichever side arranges first hands its opponent
-            a fresh full allowance and the phase's worst case is about twice one.
-            ⚠️ **Until this lands a drafting match cannot reach a board at all,
-            and step 5b measured it.** Picking closes into a phase with two
-            decisions open and no screen to take either, so both clients' choosers
-            are asked for a `StepArrange`, answer nothing, and `Play` returns —
-            *"a draft has no pass, so there is nothing to send in its place"*.
-            `TestADraftIsPlayedOutToTheArrangePhaseOverALoopbackListener` asserts
-            that ending **by name** rather than working around it, so the day this
-            item lands that assertion is the thing to change.
-            What 5b leaves ready: `draw.DraftStepArrange` is in the screen's
-            vocabulary and both mapping walks cover it, `DraftLive.Arranging` is
-            drawn (the picking-is-over notice, and no pool listing at all), and no
-            keystroke on the draft screen can take an arrangement — which is
-            asserted, so the arrange screen's own keys cannot be reached by
-            accident from the wrong screen.
+      - [x] **The arrange screen — step 5c. Done 2026-09-06.** A drafting match
+            reaches a board now: `internal/screen/arrange.go` is the screen
+            (`draw.ArrangeScreen`), `screenArrange` is the client's fourteenth
+            view, and
+            `TestADraftedMatchIsPlayedFromTheFirstBanToTheLastBlowOverALoopbackListener`
+            plays one from the first ban to the last blow over a real listener.
+            That test **is** the old
+            `TestADraftIsPlayedOutToTheArrangePhaseOverALoopbackListener`, whose
+            whole ending was the phase nothing could answer.
+            ⚠️ **A SCREEN, not a mode of the draft screen, and what the decision
+            bought.** The draft is a cursor over a list and this is a cursor over
+            a 3x3; the two share no key; and a mode would have quietly deleted
+            5b's assertion that *no keystroke on the draft screen can take an
+            arrangement*. That assertion is now
+            `TestNoKeystrokeOnTheDraftScreenTakesAnArrangement` in
+            `internal/screen`, where it holds wherever the screen is drawn rather
+            than depending on a match stopping. The cost is the fourteenth entry
+            in `screenCount`, which is what turned the client's sweep red until
+            every state was registered — the mechanism this repository added
+            after losing five screens' width, translation and leak tests.
+            ⚠️ **`DraftLive` is REUSED and no third vocabulary was declared.**
+            Everything the phase needs is already on that reading — this side's
+            picks in pick order, whether the phase is open, whether this reader is
+            still being asked — so the two mapping walks 5b built stay the whole
+            cost of the split, rather than gaining a second pair.
+            ⚠️ **The whole board is drawn, and the reason is not symmetry.**
+            Placement is purely defensive and its value is rank depth: the shipped
+            roster's aces moved to the back column read **27.6% → 47.3%** ally over
+            4000 seeds, and splitting the screening pair read **31.1%** against the
+            adjacent pair's 47.3%. So the far half is drawn (`hex.Render`, the
+            shape diagram's own use of it) and every row carries `RankLabel`
+            beside its coordinate. `i18n.ArrangeDepth` says why, and it is the one
+            line a short window gives up — measured: at 120x24 the screen spends
+            all twenty rows a frame leaves, and dropping a **pick** row instead
+            would be a decision a player cannot finish.
+            ⚠️ **The clock is WORDED and never counted down** — `i18n.ArrangeAllowance`
+            — because the allowance is not one for the phase. And a countdown
+            here would have been free to write: the reading carries a `PlayClock`,
+            so `TestTheArrangeScreenWordsTheAllowanceRatherThanCountingItDown`
+            holds it by drawing the same state with a clock ticking on it and
+            demanding the same bytes.
+            ⚠️ **Nothing tells a client its own arrangement landed, and that is a
+            protocol gap rather than a screen one.** `Draft.Arrange` records the
+            first arrangement **nowhere** — appending it would be showing it to
+            the other player — so a client that has arranged reads exactly what it
+            read before, and the room sends nothing until both are in. So the send
+            is a keystroke after which no reading changes, for up to a whole
+            allowance. `ArrangeScreen.Sent` is local state that says so and
+            **gates nothing**: the keys stay live and the footer goes on naming
+            them, because a refused arrangement is one to send again and the
+            retry-on-refusal loop is the only thing that gets a turned-away
+            decision through. It is the same shape as 5a's *"nothing says the room
+            is full"*, one phase later; if either is ever answered on the wire,
+            both should be.
+            ⚠️ **`u` takes a placement back, not backspace.** Without an undo a
+            misplaced unit could only be answered by letting the allowance run
+            out, and a draft that runs out of time is cancelled outright — so the
+            cost of no undo was the whole match. It is `u` because that is the
+            battle screen's own key for the same idea, and because
+            *"backspace"* holds the word `back`, which the client's
+            both-languages sweep refuses on a Vietnamese screen.
+            What 5c leaves ready for step 6: a drafting match is playable end to
+            end by two real clients, so the only thing between a **person** and a
+            drafted match is a room they can open.
+            The goldens: `internal/screen` **+28 renders** and
+            `cmd/hexarena-tui` **+16**, additions only in both, no existing block
+            moved and `cmd/hexforge-tui`'s unchanged. The two extra entries in the
+            package record are the states no keystroke can reach — an arrangement
+            the **rule** refuses (the cursor steps over an occupied cell, so it
+            has to be built by hand) and one the **room** turned down.
       - [ ] **The host's own flag — step 6.** `cmd/hexarena-host` cannot open a
             drafting room, so **nothing outside a test opens one**: `room.Config`
             has `Drafts` and the host binary has no `-draft` to set it with. Steps

@@ -619,6 +619,29 @@ Mew  cấp 60
 
   … 17/29 dòng, [/] để cuộn
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 120x24 | a whole arrangement =====
+
+đội hình của bạn  đã xếp 3 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+  bấm enter để gửi đội hình này — phòng không báo lại cho tới khi cả hai bên xếp xong
+
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 120x24 | aiming =====
 
 trận đấu  seed 1
@@ -665,6 +688,75 @@ nhắm strike vào
   3,1  E2 Bloom
   3,0  E3 Bloom
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 120x24 | an arrangement =====
+
+đội hình của bạn  đã xếp 0 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/[]\__/::\__
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+> 1 pokemon.squirtle         chưa có ô
+  2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.squirtle đang chờ một ô  ·  con trỏ đang ở 2,0, hàng đầu
+
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 120x24 | an arrangement part way =====
+
+đội hình của bạn  đã xếp 1 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+> 2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.gastly đang chờ một ô  ·  con trỏ đang ở 2,1, hàng đầu
+
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 120x24 | an arrangement sent =====
+
+đội hình của bạn  đã xếp 3 trên 3
+
+  Đội hình của bạn đã gửi về phòng. Bên kia vẫn đang xếp, và không bên nào thấy đội hình của bên kia cho tới khi vào
+  trận.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+  bấm enter để gửi đội hình này — phòng không báo lại cho tới khi cả hai bên xếp xong
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 120x24 | an empty squad catalogue =====
 
 đội hình  đã dựng 0 đội, mỗi phe tối đa 5 người
@@ -2649,6 +2741,65 @@ Mew  cấp 60
 
 
 ↑/↓ nhân vật · ←/→ cấp · ctrl+l English · ? hoặc esc quay lại · q thoát
+===== vi | 160x60 | a whole arrangement =====
+
+đội hình của bạn  đã xếp 3 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+  bấm enter để gửi đội hình này — phòng không báo lại cho tới khi cả hai bên xếp xong
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 160x60 | aiming =====
 
 trận đấu  seed 1  diễn biến 46-68/68
@@ -2767,6 +2918,183 @@ nhắm strike vào
   3,1  E2 Bloom
   3,0  E3 Bloom
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 160x60 | an arrangement =====
+
+đội hình của bạn  đã xếp 0 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/[]\__/::\__
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+> 1 pokemon.squirtle         chưa có ô
+  2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.squirtle đang chờ một ô  ·  con trỏ đang ở 2,0, hàng đầu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 160x60 | an arrangement part way =====
+
+đội hình của bạn  đã xếp 1 trên 3
+
+  Cấm và chọn tướng đã xong. Hai bên đang xếp đội, và không bên nào thấy đội hình của bên kia.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+> 2 pokemon.gastly           chưa có ô
+  3 pokemon.machop           chưa có ô
+  pokemon.gastly đang chờ một ô  ·  con trỏ đang ở 2,1, hàng đầu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓/←/→ chọn ô · enter đặt · u lấy lại một · ctrl+l English · esc rời trận
+===== vi | 160x60 | an arrangement sent =====
+
+đội hình của bạn  đã xếp 3 trên 3
+
+  Đội hình của bạn đã gửi về phòng. Bên kia vẫn đang xếp, và không bên nào thấy đội hình của bên kia cho tới khi vào
+  trận.
+  Mỗi bên được tính giờ riêng ở đây, và giờ của bên kia bắt đầu khi giờ của bạn hết.
+  Tầm đánh đếm theo hàng có người, nên ai đứng ở một cột sẽ che cho tất cả những người phía sau. Cột sát nửa bên kia là
+  hàng đầu.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] là con trỏ · :: là nửa bên kia — số là chỗ đứng của lượt chọn tướng đó
+
+  1 pokemon.squirtle         2,0  hàng đầu
+  2 pokemon.gastly           2,1  hàng đầu
+  3 pokemon.machop           2,2  hàng đầu
+  bấm enter để gửi đội hình này — phòng không báo lại cho tới khi cả hai bên xếp xong
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓/←/→ chọn ô · enter gửi · u lấy lại một · ctrl+l English · esc rời trận
 ===== vi | 160x60 | an empty squad catalogue =====
 
 đội hình  đã dựng 0 đội, mỗi phe tối đa 5 người
@@ -4391,6 +4719,29 @@ Mew  level 60
   blood_thirst
   … 17/22 lines, [/] to scroll
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 120x24 | a whole arrangement =====
+
+your formation  3 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+  enter sends this formation — the room says nothing back until both sides have arranged
+
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 120x24 | aiming =====
 
 the battle  seed 1
@@ -4437,6 +4788,75 @@ point strike at
   3,1  E2 Bloom
   3,0  E3 Bloom
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 120x24 | an arrangement =====
+
+your formation  0 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/[]\__/::\__
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+> 1 pokemon.squirtle         no cell yet
+  2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.squirtle is waiting for a cell  ·  the cursor is on 2,0, the front rank
+
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 120x24 | an arrangement part way =====
+
+your formation  1 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+> 2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.gastly is waiting for a cell  ·  the cursor is on 2,1, the front rank
+
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 120x24 | an arrangement sent =====
+
+your formation  3 of 3 placed
+
+  Your formation has gone to the room. The other side is still placing, and neither of you is shown the other's until
+  the battle opens.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+  enter sends this formation — the room says nothing back until both sides have arranged
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 120x24 | an empty squad catalogue =====
 
 squads  0 built, at most 5 to a side
@@ -6421,6 +6841,65 @@ Mew  level 60
 
 
 ↑/↓ character · ←/→ level · ctrl+l tiếng Việt · ? or esc back · q quit
+===== en | 160x60 | a whole arrangement =====
+
+your formation  3 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+  enter sends this formation — the room says nothing back until both sides have arranged
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 160x60 | aiming =====
 
 the battle  seed 1  log 46-68/68
@@ -6539,6 +7018,183 @@ point strike at
   3,1  E2 Bloom
   3,0  E3 Bloom
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 160x60 | an arrangement =====
+
+your formation  0 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/[]\__/::\__
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+> 1 pokemon.squirtle         no cell yet
+  2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.squirtle is waiting for a cell  ·  the cursor is on 2,0, the front rank
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 160x60 | an arrangement part way =====
+
+your formation  1 of 3 placed
+
+  The banning and picking is over. Both sides are placing their units now, and neither is shown the other's formation.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/  \__/::\__/::\
+  /  \__/[]\__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/  \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+> 2 pokemon.gastly           no cell yet
+  3 pokemon.machop           no cell yet
+  pokemon.gastly is waiting for a cell  ·  the cursor is on 2,1, the front rank
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓/←/→ cell · enter place · u take one back · ctrl+l tiếng Việt · esc leave
+===== en | 160x60 | an arrangement sent =====
+
+your formation  3 of 3 placed
+
+  Your formation has gone to the room. The other side is still placing, and neither of you is shown the other's until
+  the battle opens.
+  Each side is allowed its own time here, and the other side's starts when yours ends.
+  Reach is counted in occupied ranks, so whoever stands in a column shields everyone behind them. The column nearest
+  the other half is the front rank.
+
+   __    __    __
+  /  \__/1 \__/::\__
+  \__/[]\__/::\__/::\
+  /  \__/2 \__/::\__/
+  \__/  \__/::\__/::\
+  /  \__/3 \__/::\__/
+  \__/  \__/::\__/::\
+     \__/  \__/  \__/
+  [] the cursor · :: the other half — a number is where that pick stands
+
+  1 pokemon.squirtle         2,0  front rank
+  2 pokemon.gastly           2,1  front rank
+  3 pokemon.machop           2,2  front rank
+  enter sends this formation — the room says nothing back until both sides have arranged
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+↑/↓/←/→ cell · enter send · u take one back · ctrl+l tiếng Việt · esc leave
 ===== en | 160x60 | an empty squad catalogue =====
 
 squads  0 built, at most 5 to a side

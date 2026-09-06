@@ -90,6 +90,19 @@ const (
 	// screenBattle is reached from a match: a draft is a thing the room announced,
 	// not a screen a reader asks for. → model.stepped.
 	screenDraft
+	// screenArrange is the last decision of a draft: this side's picks put on its
+	// own 3x3, with the whole board drawn so a player can see which rank a cell is.
+	//
+	// ⚠️ **A screen of its own rather than a mode of screenDraft**, which is the
+	// decision step 5c took: the draft is a cursor over a list and this is a cursor
+	// over a grid, the two share no key, and a mode would have quietly deleted the
+	// assertion that no keystroke on the draft screen can take an arrangement. →
+	// draw.ArrangeScreen, where the argument is.
+	//
+	// It is reached from screenDraft the way screenDraft is reached from
+	// screenWaiting: the phase opening is a thing the room's record announced, not
+	// a screen a reader asks for. → model.stepped.
+	screenArrange
 	// screenResult is the match's end, and it is the one screen that draws a
 	// wire.Closure — the ending a mirror cannot compute for itself.
 	screenResult
@@ -222,6 +235,10 @@ type model struct {
 	// field above — see screenDraft for why it is not one of the lobby's three —
 	// and it is pointed at the mirror by model.stepped, the way the battle is.
 	draft draw.DraftScreen
+	// arrange is the draft's last decision, and it is attached from the same
+	// reading the draft screen is — see screenArrange for why it is a second
+	// screen rather than a mode of the first.
+	arrange draw.ArrangeScreen
 	// picker holds the multi-select while it is open, over whichever screen
 	// raised it.
 	//
@@ -284,6 +301,7 @@ func newModel(lib *forge.Library, lang i18n.Lang, sess *session) model {
 		statuses: draw.NewStatusesScreen(lib),
 		preview:  draw.NewPreviewScreen(),
 		draft:    draw.NewDraftScreen(),
+		arrange:  draw.NewArrangeScreen(),
 		join:     newJoinScreen(),
 		session:  sess,
 	}
@@ -423,15 +441,31 @@ func (m model) stepped() model {
 	pool := m.session.pool()
 	m.session.read(func(sight socket.Sight) {
 		if sight.Draft.Mirrored {
-			m.draft = m.draft.Attach(m.ctx(),
-				draftLiveOf(sight, sight.Welcome.Seat, pool, m.session.countdown(sight)))
+			live := draftLiveOf(sight, sight.Welcome.Seat, pool, m.session.countdown(sight))
+			m.draft = m.draft.Attach(m.ctx(), live)
+			// ⚠️ **Both screens are attached from the one reading**, rather than
+			// whichever is in front: the arrange screen has to be holding the picks
+			// before the phase opens, because the phase opening is the moment it is
+			// put in front and there is no second message behind it.
+			m.arrange = m.arrange.Attach(m.ctx(), live)
 			if m.screen == screenWaiting {
 				m.screen = screenDraft
+			}
+			// The phase opening moves the reader, exactly as the welcome moved them
+			// onto the draft: nothing else announces it, and a reader left on the
+			// pool would be looking at a finished ban and pick while the decision
+			// that ends the draft ran out of time. The picker goes with the screen
+			// it was raised over — a loadout list still up would swallow every key
+			// the formation is about.
+			if sight.Draft.Arranging && m.screen == screenDraft {
+				m.picker = nil
+				m.screen = screenArrange
 			}
 		}
 		if sight.Fight != nil {
 			m.battle = m.battle.Attach(m.ctx(), liveOf(sight, m.session.countdown(sight)))
-			if m.screen == screenWaiting || m.screen == screenDraft {
+			if m.screen == screenWaiting || m.screen == screenDraft ||
+				m.screen == screenArrange {
 				// The picker is taken down with the screen it was raised over: a
 				// loadout list still in front of a battle would swallow every key
 				// the turn is about.
@@ -618,6 +652,8 @@ func (m model) key(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m.updateWaiting(message)
 	case screenDraft:
 		return m.updateDraft(message)
+	case screenArrange:
+		return m.updateArrange(message)
 	case screenResult:
 		return m.updateResult(message)
 	}
@@ -855,6 +891,12 @@ func (m model) navigate(from screen, action draw.Action) (tea.Model, tea.Cmd) {
 		if from == screenDraft && m.draft.Drafting {
 			return m.leaveMatch(), nil
 		}
+		// And the same one decision later, for the same reason: the screen behind
+		// an arrangement is the draft it came out of, which is not a place a player
+		// can go back to — a decision already taken is the room's.
+		if from == screenArrange && m.arrange.Arranging {
+			return m.leaveMatch(), nil
+		}
 		return m.goBack(), nil
 	case draw.Raise:
 		return m.raise(from, action)
@@ -1068,6 +1110,14 @@ func (m model) enterUnlessInAMatch(target screen) model {
 	// A draft in progress is where the reader was trying to get back to, exactly
 	// as a battle is: the match is a thing two people are in the middle of, and
 	// this one has not reached a board yet.
+	// The arrange screen is asked about first, because it is the later of the two
+	// and both are attached from one reading: a draft that has reached the phase
+	// still holds its last picking reading, so asking the draft first would put a
+	// finished ban and pick in front of a player who owes a formation.
+	if m.arrange.Arranging && m.arrange.Live.Arranging {
+		m.screen = screenArrange
+		return m
+	}
 	if m.draft.Drafting {
 		m.screen = screenDraft
 		return m
@@ -1140,6 +1190,8 @@ func (m model) parts() (body, footer string) {
 		return m.waiting.View(m.ctx())
 	case screenDraft:
 		return m.draft.View(m.ctx())
+	case screenArrange:
+		return m.arrange.View(m.ctx())
 	case screenResult:
 		return m.result.View(m.ctx())
 	}
