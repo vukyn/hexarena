@@ -19,6 +19,17 @@ compiling untouched. On an older toolchain each of those literals would have
 needed the embedded field spelled out, and the churn would have made the
 duplicate-struct-plus-test shape look cheaper than it is.
 
+⚠️ **Confirmed a second time, and this one is the stronger case: embedding can
+WIDEN a return type at zero call-site cost.** `internal/room`'s gate had to grow
+a third answer (seated / **watching** / refused) where a `wire.Seat` holds two,
+so `Room.Join` now returns a `room.Admission{Seat, Watching}` and `room.Answer`
+**embeds** it. Everything reading `answered.Seat` — all of `internal/socket`, and
+a `room.Answer{Seat: seat, …}` literal in a test — compiled **untouched**, and
+`answerFrom`'s copy became one assignment (`answer.Admission, answer.Out,
+err = playing.Join(…)`) instead of a field-by-field restatement. So the choice
+"restate the two fields on the outer type and keep them in step by hand" versus
+"declare once and embed" costs nothing on this toolchain; take the embed.
+
 **How to apply:** when a shared field list wants declaring once, reach for an
 anonymous embed — `encoding/json` inlines it too, so the JSON stays flat and a
 golden shows one struct. Do check the toolchain (`go.mod` directive + `go

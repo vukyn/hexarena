@@ -84,8 +84,8 @@ type board interface {
 type aloneOn struct{ playing *room.Room }
 
 func (b aloneOn) join(hello wire.Hello) (room.Answer, error) {
-	seat, out, err := b.playing.Join(hello)
-	return room.Answer{Seat: seat, Out: out, Reading: b.read(), Known: true}, err
+	admitted, out, err := b.playing.Join(hello)
+	return room.Answer{Admission: admitted, Out: out, Reading: b.read(), Known: true}, err
 }
 
 func (b aloneOn) deliver(seat wire.Seat, body wire.Body) (room.Answer, error) {
@@ -675,6 +675,13 @@ func TestAnUnknownCodeAnswersRoomUnknown(t *testing.T) {
 	// rather than answering a code to nobody.
 	if _, known := registry.Read(stale); known {
 		t.Error("the registry read a room it is not running")
+	}
+	// A watcher's read draws the same distinction, and it is the one that would
+	// go wrong quietly: an unknown code answered with an empty record looks
+	// exactly like a watcher that is up to date.
+	if bodies, cursor, known := registry.Since(stale, 0); known {
+		t.Errorf("the registry handed a watcher %d bodies at cursor %d off a room it is not running",
+			len(bodies), cursor)
 	}
 	if got := registry.Count(); got != 0 {
 		t.Errorf("refusing five messages left %d rooms on the map", got)

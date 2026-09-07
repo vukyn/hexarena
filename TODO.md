@@ -1280,15 +1280,67 @@ is only so the shape is readable.
                   the roster stays legal and two peers who both hold the watcher
                   agree on every digest — so a comparison against a match played
                   *without* one is the only shape that can see it.
-            - [ ] **The registry seats a watcher — step 3.** `Registry` is what
-                  turns a room code into a room, so it is where a hello carrying
-                  `Watch` has to end up somewhere other than `Room.Join`. What it
-                  hands back is not a seat: it is the room's record and a cursor
-                  starting at nought, which is why the read landed first.
-                  ⚠️ `internal/room/registry.go` already says which layer owns
-                  what — *"a third seat is a room change, not a registry one"* —
-                  and step 2 is the answer to that: there is no third seat to
-                  make, so this step is a registry change and nothing else.
+            - [x] **The gate admits a watcher, and the registry hands out its
+                  reading — step 3. Done 2026-09-07.** `internal/room` only.
+                  ⚠️ **This item's own heading was wrong and is corrected above**:
+                  it read *"The registry seats a watcher"* and said a watching
+                  hello *"has to end up somewhere other than `Room.Join`"*, and
+                  the opposite is what shipped — the gate is **one** gate, and a
+                  second entry point would be the version-then-password order
+                  declared twice. `Room.Join` welcomes a watcher itself, three
+                  lines after the password and **before** `freeSeat`, because the
+                  match worth watching is one already being played: a gate that
+                  ran the seat check first would refuse every watcher that
+                  mattered. Its squad is ignored and `squadIsFieldable` is not
+                  called on it (`CodeSquadUnwanted`'s wording would send a
+                  watcher to fix something that is not wrong); its version and
+                  password still apply, because they are above the branch.
+                  ⚠️ **Three answers do not fit in a `wire.Seat`**, so `Room.Join`
+                  now returns a **`room.Admission`** (`Seat`, `Watching`) rather
+                  than a seat: a refusal and a welcomed watcher both have no
+                  seat, and telling them apart by reading the seat is the mistake
+                  step 4 would otherwise make. `room.Answer` **embeds**
+                  `Admission`, so `Answer.Seat` reads exactly as it did — no
+                  `internal/socket` change at all — and `Answer.Watching` is the
+                  discriminator the transport branches on. It is what the room
+                  **did**, never what the hello **asked**: a watching hello
+                  refused for its password is a refusal like any other.
+                  ⚠️ **The reading is `Registry.Since(code, cursor)
+                  ([]wire.Body, int, bool)`**, in `Registry.Read`'s shape — a new
+                  `inputSince`, a `cursor` on the `request`, an arm in the
+                  goroutine's switch, and the answer **copied** out on
+                  `Answer.Watched`/`Answer.Cursor`. An unknown code is *not
+                  known* rather than an empty read. ⚠️ The copy is not what makes
+                  it safe — `Room.Since`'s three-index view already is, because
+                  `append` only ever writes at an index the view cannot address —
+                  it is taken for `Reading.Played`'s reason, so the property is
+                  one line to check rather than an argument about `append` that a
+                  record which ever *rewrote* a slot would silently invalidate.
+                  ⚠️ **A cursor must be dropped with its room**: a finished room
+                  gives its code back to the lowest-free-byte allocator, and
+                  `Room.Since` panics on a cursor its record cannot answer, so a
+                  watcher's stale cursor pointed at a fresh room is step 4's one
+                  real hazard.
+                  ⚠️ **No count, no list, no cap** — of watchers, anywhere in the
+                  room or the registry. The room holds no watcher state at all,
+                  which is why `seatCount` is still 2 and `other()` still works;
+                  the cap belongs to whoever holds the connections, which is step
+                  4. `registry.go`'s *"a third seat is a room change, not a
+                  registry one; a watcher is a cursor"* bullet is rewritten to
+                  say which half landed here.
+                  ⚠️ **A watcher of a drafting room is welcomed and then sees
+                  nothing** until the first battle starts, per step 2 — said at
+                  the gate now as well as at the record, because that is where a
+                  reader will look. Step 7.
+                  The nets: `TestAWatcherIsWelcomedIntoAFullRoom` (the same room
+                  answers a *player* `room_full`, so it cannot pass on a room
+                  that welcomes everybody), `TestAMatchPlayedWithWatchersJoining
+                  IsTheSameMatch` (the gate-level twin of step 2's reading
+                  comparison — a different mutation, a seat rather than a
+                  cursor), `TestAWatchersSquadIsIgnoredWhateverItBrought` (⚠️ the
+                  **illegal** squad is the arm that measures it), and
+                  `TestTheRegistryHandsOutAWatchersRead`, whose copy claim is
+                  measured by writing into what the registry handed back.
             - [ ] **The transport holds watcher connections — step 4.**
                   `internal/socket`. ⚠️ **`Outbound` cannot address a watcher and
                   must not be taught to**: `Outbound.To` is a `wire.Seat` and

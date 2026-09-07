@@ -31,6 +31,7 @@
 - [Measuring an installed binary](feedback_measuring_an_installed_binary.md) — a file GOPROXY prices the go-install path with no network; the module cache SHADOWS GOPROXY and re-installs the old code
 - [Normalised upstream cannot discriminate](feedback_normalised_upstream_cannot_discriminate.md) — Build.Stage is resolved by the parser (28/28) and every form is reached at LevelCap, so both guards count everything
 - [A two-element map range is a coin flip](feedback_two_element_map_range_is_a_coin_flip.md) — 17/20 not 20/20; read one state 64× · and label a release nothing can observe (0/10) as such
+- [A mutation must hit the arm you claim](feedback_a_mutation_must_hit_the_arm_you_claim.md) — a blunt one died on table row 1; a full room hid a stolen seat; decoy a method to test a walk
 
 ## Ongoing work
 - [The internal/screen extraction](project_screen_extraction.md) — DONE 1…6c: cmd/hexarena-tui is the second client; Context.Authoring gates the 3 authoring screens; pairing.go is the PvP seam
