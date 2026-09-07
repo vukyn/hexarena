@@ -92,8 +92,9 @@ is only so the shape is readable.
   the entry that would have caught it. The same probe registered the origins
   picker, whose title line no other screen draws.
 - **The opponent.** `Suggest` prices statuses, buffs, guards, heals, cleanses,
-  kills, summons and **tempo** in damage over capped horizons — tempo off the
-  speed stat, never off the queue. Both halves of an all-sided skill, a tie
+  kills, summons, **hiding** and **tempo** in damage over capped horizons — tempo
+  off the speed stat, never off the queue, and hiding off what the enemy's best
+  blow on the holder beats its best blow on anybody else by. Both halves of an all-sided skill, a tie
   broken by what an option costs to have spent rather than by kit order, and the
   two costs of acting: what a skill does to its own side and **what the units it
   hurts answer with**. The roster was re-levelled once along the way, which is
@@ -3449,47 +3450,52 @@ is only so the shape is readable.
       listing, which is most of them; that is the change being visible rather than
       a fixture problem.
 
-- [ ] **The rating cannot price hiding, so nothing will ever cast it.** The
-      burrow mechanic shipped 2026-09-05 — a status that takes its holder off
-      `aims` and refuses every application somebody else throws — and `Suggest`
-      has no term for any of it.
+- [x] **The rating could not price hiding — DONE.** `pricing.hidden` is the term,
+      and it is `taunting` pointed the other way: a taunt is priced by what it
+      *forces* an enemy to do, hiding by what it *stops* them doing, and both ask
+      about the enemy's options rather than about the holder's danger. That is the
+      `brace` precedent the entry named, arrived at through the sibling that was
+      already in the file rather than through `selfSpendable`.
 
-      ⚠️ **This entry once said the same of the SPLIT and that half was wrong.**
-      Measured 2026-09-06: the shipped split is cast **178 times over 90 duels**,
-      because `Suggest`'s summon branch prices it through `summonWorth`. What it
-      did not price was the cost — that branch `continue`s and so never reaches
-      `prices.rate`, where `spentHealth` is subtracted — so the rating was buying
-      a body and being charged nothing. Fixed by subtracting the price inside
-      `summonWorth`; casts fell to **90 over 90 duels**, one a duel, the first
-      taken and the second declined. Hiding is still unpriced, and the difference
-      between the two is worth keeping in mind here: a summon has a branch that
-      rates it and hiding has none at all.
+      ⚠️ **What is denied is the DIFFERENCE, not the attack.** An enemy whose best
+      blow was aimed at somebody else loses nothing when the holder vanishes — it
+      hits that somebody else, exactly as it was going to. So each enemy
+      contributes what its best blow on the holder beats its best blow on anyone
+      else by, over the turns the status lasts, and an enemy that never wanted this
+      target contributes nought. Pricing the whole attack instead had a rear-line
+      unit burrowing to deny blows that were never coming at it, which is what
+      `TestSuggestDeclinesABurrowThatDeniesNothing` holds.
 
-      What a turn is worth to the rating is damage done, health restored and
-      statuses landed. Hiding does **none** of those: it is worth the damage that
-      *does not arrive*, which is a quantity the rating never computes because
-      nothing else in the engine has ever needed it. So a burrow priced today
-      reads as nought, and an AI holding it casts anything else instead.
+      ⚠️ **It reads nothing off the holder's health**, which is the cheap wrong
+      answer the entry warned about: "the damage I would take this turn" peaks
+      exactly when the holder is one point from dead, the moment a turn spent
+      hiding is worth least.
 
-      ⚠️ **This is the shape `brace` was in**, and that is the precedent to copy
-      rather than a warning: a cooldownless self-buff that buys a later turn was
-      also worth nought until `pricing.selfSpendable` grew an arm that priced the
-      fuel by what the gated spender would do with it. The equivalent here is to
-      price a hidden turn by what the other side would otherwise have thrown at
-      the holder — `b.expected` already computes exactly that figure from the
-      other direction, once per enemy option.
+      ⚠️ **Two known inexactnesses, in opposite directions, neither computed.**
+      Over: a burrowed unit is still caught by splash, so part of the denied blow
+      arrives from the cell next door. Under: the status also refuses every
+      application thrown at its holder, and that is not priced at all — exactly as
+      `taunting` prices no status either. Both are written on the function.
 
-      ⚠️ **A cheap wrong answer to avoid:** pricing it as "the damage I would take
-      this turn" makes it best when the holder is about to die, which is when the
-      turn is worth least — the holder is on one point either way and the turn
-      would have been better spent killing something. `spentHealth`'s note records
-      the same trap for a health cost and the same fix: read what the skill
-      *asks*, not what the moment happens to make it worth.
+      Four mutations, three red — the term deleted, the whole attack denied instead
+      of the difference, and the horizon dropped. The fourth (deleting the side
+      test) is **green and expected**: `aims` offers an enemy-aimed skill nothing
+      but enemy cells, so `bestAgainst` between two units of one side is nought
+      anyway. `taunting` carries the same redundant line for the same reason, and
+      the function now says so.
 
-      Until this is done, burrow is a **human-only** skill: it works, it is
-      measured (TestABurrowedUnitCannotBeAimedAtButIsStillSplashed), and the
-      auto-battle simply never chooses it — which also means every squad
-      measurement that includes it is measuring a unit one skill short.
+      ⚠️ **The horizon needed a figure test, not a decision test.** Dropping
+      `× turnsOf(kind, buffHorizon)` halves every price and reddens no decision on
+      any board that is not tuned to the exact rung where the halving flips a
+      comparison. `hiding_term_test.go` is in package `battle` for that reason and
+      asks the term directly: one equality for the arithmetic, and one for twice
+      the turns being worth twice the denial.
+
+      ⚠️ **`burrow` is in no shipped build.** It is in `pokemon.diglett`'s learnset
+      and nowhere else, so the auto-battle now knows what hiding is worth and no
+      shipped roster carries the skill to use it. Putting it in a build is an
+      authoring decision and deliberately not folded in here — but a player build
+      that takes it is no longer a unit one skill short.
 
 - [ ] **A gate at the top of the health bar — `passive.Condition.AboveHealth`.**
       Built and measured on 2026-09-07 while closing the `reckless` item, reverted
