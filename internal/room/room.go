@@ -62,7 +62,13 @@
 //   - **Writing the finished match out as a battle.Log.** The room holds every
 //     decision the engine took only through the engine; a log writer is another
 //     cursor over the record, which is exactly why Since exists.
-//   - **Spectators**, which the cursor makes nearly free.
+//   - **Seating a spectator.** The *reading* half is here — Since, an
+//     append-only record of the bodies a watcher is owed, and watch.go for the
+//     whole of it — and the half that is not is everything that decides somebody
+//     is watching: the registry's Watch, the transport holding a connection with
+//     no seat, and a client that draws a match it is not playing. ⚠️ A watcher is
+//     **not** a third seat and must never become one, because the order the two
+//     seats are visited in reaches the roster and the roster decides a speed tie.
 //   - **The contested-speed-group alternation.** → Config.HomeFor, which says
 //     what is implemented and what is deferred and why.
 //
@@ -71,11 +77,20 @@
 // The battle is read through Battle.Since and a cursor, and ⚠️ **Drain is never
 // called in this package** — TestNothingHereDrainsTheBattle holds that with the
 // same walk the clock test uses. Drain empties its consumer's cursor into the
-// battle itself, and a room with two players, a log to write and spectators
-// later is exactly the multi-consumer case it cannot serve. Today there is one
-// cursor, the one that turns a turn's events into the digest on wire.Turn; the
-// point of reading it this way is that the second and third consumers need no
-// change here and cannot disturb the first.
+// battle itself, and a room with two players, a log to write and a watcher is
+// exactly the multi-consumer case it cannot serve. There is one cursor into the
+// battle, the one that turns a turn's events into the digest on wire.Turn; the
+// point of reading it this way is that the other consumers need no change here
+// and cannot disturb it.
+//
+// ⚠️ **A watcher does NOT get a second cursor into the battle**, and that is
+// worth being exact about because it is the obvious move. It reads the room's
+// own record of *bodies* (→ watch.go), not the battle's record of events: what a
+// client is owed is the decision and the digest, and rebuilding a
+// battle.Decision out of battle.Events would be a second derivation of a
+// recorded string. A watcher read written against r.cursor would take the
+// players' own events out from under them —
+// TestAMatchPlayedWithAWatcherReadingIsTheSameMatch is the net for it.
 //
 // # What a client is handed, and what it is not
 //
@@ -193,6 +208,13 @@ type Room struct {
 	// skipped turns at all. The same shape as the scan counts in the two AST
 	// walks and as cmd/hexarena-tui's screenCount.
 	skipped int
+
+	// watched is the append-only record of every body a watcher has to be
+	// handed, and the room **writes it and never reads it** — no behaviour here
+	// branches on it, which is what makes a watcher unable to change the match
+	// it is watching. → watch.go, which is the whole of the room's watcher half,
+	// and Since, which is the only read.
+	watched []wire.Body
 
 	// drafting is the ban and pick this room runs before its battle, and nil in
 	// a room that does not draft. → draft.go, which is the whole of the room's
@@ -499,7 +521,17 @@ func (r *Room) resolved(decision battle.Decision) ([]Outbound, error) {
 	if err != nil {
 		return nil, fmt.Errorf("digest the events of %q's turn: %w", decision.Unit, err)
 	}
-	out := r.both(wire.Turn{Decision: decision, Events: digest})
+	turn := wire.Turn{Decision: decision, Events: digest}
+	out := r.both(turn)
+	// The watcher's record takes the same body the two players were just sent,
+	// on the line the room sends it, so the two cannot come apart. ⚠️ It is
+	// recorded rather than derived from the battle for the reason the wire
+	// carries a decision and not events: reconstructing a battle.Decision out of
+	// battle.Events would be a second derivation of a recorded string — a pass
+	// reason is battle.NoActionReason and the room's TimeoutReason is the room's
+	// own — and it is the digest a mirror checks against, which nothing outside
+	// this call can produce. → watch.
+	r.watch(turn)
 	if !r.fight.Finished() && !r.capped {
 		return out, nil
 	}
@@ -602,6 +634,20 @@ func (r *Room) begin() ([]Outbound, error) {
 			Battle: r.index,
 		}})
 	}
+	// A watcher gets the same wire.Start, from the **host's** chair: Side is the
+	// half of the board a client plays and a watcher plays neither, so it is
+	// given the seat a room hands out first rather than whatever fell out of the
+	// loop above. Everything else is identical to the players' — the same seed,
+	// the same roster in the same order, the same battle index — and recording
+	// the whole body is what lets a watcher joining halfway build its own mirror
+	// with no Battle.Roster() accessor and no second copy of that slice.
+	// → Since, which carries the argument for the side.
+	r.watch(wire.Start{
+		Seed:   r.seed,
+		Roster: roster,
+		Side:   r.sideOf(wire.SeatHost),
+		Battle: r.index,
+	})
 	// The opening board and the first turn's beginning are events, and no
 	// wire.Turn carries them: a mirror produces them itself by calling Begin and
 	// advancing to the same prompt. So the cursor starts *after* them, which is
@@ -676,7 +722,17 @@ func (r *Room) abandon(departed wire.Seat) []Outbound {
 		Battles:  len(r.played),
 	}
 	r.fight, r.prompt, r.onTurn = nil, nil, -1
-	return []Outbound{{To: other(departed), Body: wire.Closed{Reason: wire.ClosureLeft}}}
+	closed := wire.Closed{Reason: wire.ClosureLeft}
+	// ⚠️ **A watcher takes this off the record rather than out of an Outbound,
+	// and that is what keeps other() honest.** The message below is addressed to
+	// one seat because the transport has already decided nobody is at the other;
+	// a watcher is not a seat at all, so widening the addressing to reach it
+	// would be exactly the third-citizen change seatCount refuses. It needs the
+	// body for the reason the remaining player does — there is no Ended for the
+	// battle this interrupted and no further Start, so a mirror handed nothing
+	// hangs on its own open prompt. → watch.go.
+	r.watch(closed)
+	return []Outbound{{To: other(departed), Body: closed}}
 }
 
 // refuse is one wire.Refused for one seat.
