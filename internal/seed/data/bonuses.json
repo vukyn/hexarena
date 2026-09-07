@@ -18,6 +18,33 @@
       ]
     },
     {
+      "id": "dark_edge",
+      "name": "cùng bóng tối",
+      "axis": "element",
+      "value": "dark",
+      "scope": "sharers",
+      "rungs": [
+        {
+          "at": 2,
+          "grants": [
+            {
+              "status": "keenedge",
+              "stacks": 1
+            }
+          ]
+        },
+        {
+          "at": 3,
+          "grants": [
+            {
+              "status": "keenedge",
+              "stacks": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "water_tide",
       "name": "cùng dòng nước",
       "axis": "element",

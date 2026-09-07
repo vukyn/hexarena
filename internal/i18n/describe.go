@@ -1513,6 +1513,22 @@ func (l Lang) describeStatusEffect(kind status.Kind) []string {
 				statusAmount(term, kind.MaxStacks)))
 		}
 	}
+	if kind.PierceShare > 0 {
+		// Outside the switch beside the modifier terms, because a pierce share
+		// belongs to no category — a switch arm would be exactly where it went
+		// missing. Without this a status whose only effect is a share describes
+		// itself as BlurbStatusNothing, which is the "a debuff with empty terms
+		// describes itself as nothing" trap two categories have already paid for.
+		pierces := BlurbStatusPiercesOnce
+		if kind.MaxStacks > 1 {
+			pierces = BlurbStatusPierces
+		}
+		out = append(out, l.Say(pierces, share(kind.PierceShare)))
+		if kind.MaxStacks > 1 {
+			out = append(out, l.Say(BlurbStatusStacked,
+				share(kind.PierceShare*kind.MaxStacks)))
+		}
+	}
 	if len(out) == 0 {
 		// A buff with no terms, which is authorable and does nothing. Saying so
 		// is the point: an empty description would read as this function failing

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/vukyn/hexarena/internal/core/modifier"
+	"github.com/vukyn/hexarena/internal/core/scale"
 	"github.com/vukyn/hexarena/internal/core/status"
 )
 
@@ -1012,5 +1013,37 @@ func TestGroupedFilesEveryKindUnderItsCategory(t *testing.T) {
 	}
 	if counted != len(book.Kinds()) {
 		t.Errorf("the book holds %d kinds and the groups hold %d", len(book.Kinds()), counted)
+	}
+}
+
+// TestAPierceShareAccumulatesAndIsBounded is the arithmetic of the set, asked
+// directly.
+//
+// ⚠️ Both halves were held by nothing when the field landed, and a mutation
+// found it: making the stacks not add, and removing the cap, each left the whole
+// suite green. A share is only interesting because it stacks, and it is only safe
+// because it stops.
+func TestAPierceShareAccumulatesAndIsBounded(t *testing.T) {
+	kind := status.Kind{
+		ID: "sunder", Category: status.Buff, MaxStacks: 3, Duration: 3, PierceShare: 400,
+	}
+	var set status.Set
+	if got := set.PierceShare(); got != 0 {
+		t.Errorf("an empty set pierces %d, want none", got)
+	}
+	set = set.With(kind, 0, 1)
+	if got := set.PierceShare(); got != 400 {
+		t.Errorf("one stack pierces %d, want 400", got)
+	}
+	set = set.With(kind, 0, 1)
+	if got := set.PierceShare(); got != 800 {
+		t.Errorf("two stacks pierce %d, want 800: the stacks are not adding", got)
+	}
+	// The third crosses the base, where combat.Pierced already treats anything at
+	// or past it as no defence at all — so a stack beyond that buys nothing and
+	// the cap says so once.
+	set = set.With(kind, 0, 1)
+	if got := set.PierceShare(); got != scale.Base {
+		t.Errorf("three stacks pierce %d, want it capped at %d", got, scale.Base)
 	}
 }

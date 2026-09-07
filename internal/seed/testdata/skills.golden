@@ -470,6 +470,7 @@ verdure     reserve           999       5            0      0               0   
 moisture    reserve           999       5            0      0               0          0   -
 heft        reserve             5       4            0      0               0          0   -
 stoked      buff                5       2            0      0               0          0   speed +12.0%
+keenedge    buff                2       0            0      0               0          0   -
 tidewell    heal_mend           2       0            0      0               0        250   -
 phalanx     buff                2       0            0      0               0          0   defense +10.0%
 kinship     buff                2       0            0      0               0          0   attack +10.0%

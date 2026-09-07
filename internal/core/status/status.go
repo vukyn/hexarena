@@ -412,6 +412,26 @@ type Kind struct {
 	// would mean relaxing that check for one category and losing the guarantee
 	// for every other.
 	PoolPower int
+	// PierceShare is the share of a target's defence one stack lets its holder's
+	// blows ignore, in parts per thousand, ADDED to whatever the skill already
+	// pierces.
+	//
+	// ⚠️ **Added rather than substituted, and a skill that pierces nothing is
+	// still raised.** A share that only applied to skills already piercing would
+	// be a bonus a kit either has or cannot use, which is a different design and a
+	// narrower one; this is the author's call, recorded here because the two read
+	// the same in a data file and not at all the same on a board.
+	//
+	// It is a field here rather than a modifier.Target for the reason Pierce is a
+	// field on a skill rather than a stat: `modifier.Target` maps onto
+	// progression's stat line, `Battle.Stats` returns that line, and a term nothing
+	// in progression names would be a value the stat machinery carries and never
+	// applies. Pierce is a property of a BLOW, and the blow is where it is read.
+	//
+	// Refused on a counter, exactly as Modifiers are and for the same reason: a
+	// counter is bounded by max_counter_stacks, which bounds a tally rather than an
+	// effect, so an effect on one is a number the stat budget never answered.
+	PierceShare int
 	// Modifiers are the stat terms one stack contributes while it lasts.
 	//
 	// They belong to the status rather than to the skill that applies it, so
@@ -624,6 +644,24 @@ func (s *Set) TimedIn(categories []Category) bool {
 		}
 	}
 	return false
+}
+
+// PierceShare is what every active stack lets its holder's blows ignore of a
+// target's defence, accumulated and bounded at the base.
+//
+// It composes by addition per stack, the way HealShare does, and is capped at
+// total piercing because combat.Pierced treats anything at or past the base as
+// "resolve against no defence at all" — so a stack beyond that buys nothing and a
+// cap here says so once rather than leaving every reader to notice.
+func (s *Set) PierceShare() int {
+	total := 0
+	for i := range s.entries {
+		total += len(s.entries[i].stacks) * s.entries[i].kind.PierceShare
+	}
+	if total > scale.Base {
+		return scale.Base
+	}
+	return total
 }
 
 // Modifiers returns the stat terms every active stack contributes, accumulated.
@@ -1108,16 +1146,17 @@ type bookFile struct {
 	MaxDuration      int `json:"max_duration"`
 	MaxCounterStacks int `json:"max_counter_stacks"`
 	Kinds            []struct {
-		ID        string              `json:"id"`
-		Name      string              `json:"name,omitempty"`
-		Category  string              `json:"category"`
-		MaxStacks int                 `json:"max_stacks"`
-		Duration  int                 `json:"duration"`
-		Permanent bool                `json:"permanent,omitempty"`
-		TickPower int                 `json:"tick_power"`
-		HealShare int                 `json:"heal_share"`
-		PoolPower int                 `json:"pool_power"`
-		Modifiers []modifier.Modifier `json:"modifiers"`
+		ID          string              `json:"id"`
+		Name        string              `json:"name,omitempty"`
+		Category    string              `json:"category"`
+		MaxStacks   int                 `json:"max_stacks"`
+		Duration    int                 `json:"duration"`
+		Permanent   bool                `json:"permanent,omitempty"`
+		TickPower   int                 `json:"tick_power"`
+		HealShare   int                 `json:"heal_share"`
+		PierceShare int                 `json:"pierce_share,omitempty"`
+		PoolPower   int                 `json:"pool_power"`
+		Modifiers   []modifier.Modifier `json:"modifiers"`
 	} `json:"kinds"`
 }
 
@@ -1269,6 +1308,17 @@ func ParseBook(raw []byte) (*Book, error) {
 		// would come back full each time its holder crossed the line. That is a
 		// fact about a passive rather than about a status, so it is refused where
 		// it can be seen: passive.ParseBook, on the trait that names the gate.
+		// A pierce share is bounded on both sides and refused on a counter, for the
+		// two reasons written on the field: past the base it buys nothing, and a
+		// counter's cap bounds a tally rather than an effect.
+		switch {
+		case declared.PierceShare < 0 || declared.PierceShare > scale.Base:
+			return nil, fmt.Errorf("status %q pierces %d, want a share in parts per thousand between 0 and %d",
+				declared.ID, declared.PierceShare, scale.Base)
+		case category.Counter() && declared.PierceShare != 0:
+			return nil, fmt.Errorf("status %q is a %s piercing %d: a counter that is spent may not also change what a blow ignores, because its cap of %d bounds an effect it was never meant to have",
+				declared.ID, category, declared.PierceShare, stackCap)
+		}
 		if category.Counter() && len(declared.Modifiers) > 0 {
 			return nil, fmt.Errorf("status %q is a %s carrying %d modifier(s): a counter that is spent may not also change a stat, because its cap of %d bounds an effect it was never meant to have",
 				declared.ID, category, len(declared.Modifiers), stackCap)
@@ -1309,8 +1359,9 @@ func ParseBook(raw []byte) (*Book, error) {
 			MaxStacks: declared.MaxStacks, Duration: declared.Duration,
 			Permanent: declared.Permanent,
 			TickPower: declared.TickPower, HealShare: declared.HealShare,
-			PoolPower: declared.PoolPower,
-			Modifiers: declared.Modifiers,
+			PierceShare: declared.PierceShare,
+			PoolPower:   declared.PoolPower,
+			Modifiers:   declared.Modifiers,
 		}
 		book.byID[kind.ID] = kind
 		book.kinds = append(book.kinds, kind)
