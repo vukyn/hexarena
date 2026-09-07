@@ -749,6 +749,29 @@ nhắm psychic vào
   3,0  E3 Machamp
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 120x24 | aiming at an area skill =====
+trận đấu  seed 1
+cửa sổ quá ngắn cho: bàn cờ, 3 đơn vị, thứ tự lượt, diễn biến
+
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+A2   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+
+A1 Sennin, lượt 1
+  kunai          70% công · tầm 2
+  substitution   tự nhận mờ ảo x2 · bản thân · hồi 4
+  shadow_clone   2 phân thân · bản thân · hồi 5
+  wind_shuriken  124% công · tầm 2 · 3 ô · hồi 2
+
+nhắm wind_shuriken vào  .. là ô phụ, ăn 50% lực
+> 3,2  E1 Sennin
+    .. 3,1  E2 Sennin
+    .. 4,2
+  3,1  E2 Sennin
+  3,0  E3 Sennin
+----- footer -----
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 120x24 | allowlist picker =====
 nhân vật nào được học chiêu này  0/21
 space để chọn · để trống thì ai cũng học được chiêu này
@@ -2391,6 +2414,64 @@ nhắm psychic vào
 > 3,2  E1 Mew
   3,1  E2 Venusaur
   3,0  E3 Machamp
+----- footer -----
+↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
+===== vi | 160x60 | aiming at an area skill =====
+trận đấu  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+A2   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+E1   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+E2   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+E3   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+
+next: A2 A3 E1 E2 E3 A1
+
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A1   3 of wind: kinship <đồng khí> x2 (same_element <đồng hệ>)
+    A2  Sennin enters at 2,1 on the ally side with 3400 health, wind
+    A2   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A2   3 of wind: kinship <đồng khí> x2 (same_element <đồng hệ>)
+    A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
+    A3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    A3   3 of wind: kinship <đồng khí> x2 (same_element <đồng hệ>)
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E1   3 of wind: kinship <đồng khí> x2 (same_element <đồng hệ>)
+    E2  Sennin enters at 3,1 on the enemy side with 3400 health, wind
+    E2   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E2   3 of wind: kinship <đồng khí> x2 (same_element <đồng hệ>)
+    E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
+    E3   holds endurance <bền bỉ>: toughened <kiên cường> x1
+    E3   3 of wind: kinship <đồng khí> x2 (same_element <đồng hệ>)
+  
+  A1  turn 1
+
+A1 Sennin, lượt 1
+  kunai          70% công · tầm 2
+  substitution   tự nhận mờ ảo x2 · bản thân · hồi 4
+  shadow_clone   2 phân thân · bản thân · hồi 5
+  wind_shuriken  124% công · tầm 2 · 3 ô · hồi 2
+
+nhắm wind_shuriken vào  .. là ô phụ, ăn 50% lực
+> 3,2  E1 Sennin
+    .. 3,1  E2 Sennin
+    .. 4,2
+  3,1  E2 Sennin
+  3,0  E3 Sennin
 ----- footer -----
 ↑/↓ chọn chỗ · enter đánh · ? xem · [/] cuộn · esc chọn chiêu khác
 ===== vi | 160x60 | allowlist picker =====
@@ -4132,6 +4213,29 @@ point psychic at
   3,0  E3 Machamp
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 120x24 | aiming at an area skill =====
+the battle  seed 1
+the window is too short for: board, 3 units, turn order, log
+
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+A2   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+
+A1 Sennin, turn 1
+  kunai          70% attack · range 2
+  substitution   self veil x2 · itself · cd 4
+  shadow_clone   2 copies · itself · cd 5
+  wind_shuriken  124% attack · range 2 · 3 cells · cd 2
+
+point wind_shuriken at  .. is a splash cell, at 50%
+> 3,2  E1 Sennin
+    .. 3,1  E2 Sennin
+    .. 4,2
+  3,1  E2 Sennin
+  3,0  E3 Sennin
+----- footer -----
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 120x24 | allowlist picker =====
 characters allowed to carry it  0 of 21
 space chooses · leaving it empty lets anyone carry the skill
@@ -5753,6 +5857,64 @@ point psychic at
 > 3,2  E1 Mew
   3,1  E2 Venusaur
   3,0  E3 Machamp
+----- footer -----
+↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
+===== en | 160x60 | aiming at an area skill =====
+the battle  seed 1
+
+ c0  c1  c2  c3  c4  c5
+ BK  MD  FR  FR  MD  BK
+ __    __    __
+/  \__/A1\__/  \__
+\__/  \__/E3\__/  \
+/  \__/A2\__/  \__/
+\__/  \__/E2\__/  \
+/  \__/A3\__/  \__/
+\__/  \__/E1\__/  \
+   \__/  \__/  \__/
+tag  unit                 hp                        spd   effects
+A1   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+A2   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+A3   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+E1   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+E2   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+E3   Sennin               [##########]  3400/3400    134   toughened (always), kinship x2 (always)
+
+next: A2 A3 E1 E2 E3 A1
+
+    A1  Sennin enters at 2,0 on the ally side with 3400 health, wind
+    A1   holds endurance: toughened x1
+    A1   3 of wind: kinship x2 (same_element)
+    A2  Sennin enters at 2,1 on the ally side with 3400 health, wind
+    A2   holds endurance: toughened x1
+    A2   3 of wind: kinship x2 (same_element)
+    A3  Sennin enters at 2,2 on the ally side with 3400 health, wind
+    A3   holds endurance: toughened x1
+    A3   3 of wind: kinship x2 (same_element)
+    E1  Sennin enters at 3,2 on the enemy side with 3400 health, wind
+    E1   holds endurance: toughened x1
+    E1   3 of wind: kinship x2 (same_element)
+    E2  Sennin enters at 3,1 on the enemy side with 3400 health, wind
+    E2   holds endurance: toughened x1
+    E2   3 of wind: kinship x2 (same_element)
+    E3  Sennin enters at 3,0 on the enemy side with 3400 health, wind
+    E3   holds endurance: toughened x1
+    E3   3 of wind: kinship x2 (same_element)
+  
+  A1  turn 1
+
+A1 Sennin, turn 1
+  kunai          70% attack · range 2
+  substitution   self veil x2 · itself · cd 4
+  shadow_clone   2 copies · itself · cd 5
+  wind_shuriken  124% attack · range 2 · 3 cells · cd 2
+
+point wind_shuriken at  .. is a splash cell, at 50%
+> 3,2  E1 Sennin
+    .. 3,1  E2 Sennin
+    .. 4,2
+  3,1  E2 Sennin
+  3,0  E3 Sennin
 ----- footer -----
 ↑/↓ where · enter strike · ? read · [/] scroll · esc pick another skill
 ===== en | 160x60 | allowlist picker =====

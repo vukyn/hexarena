@@ -1586,7 +1586,16 @@ func (p PlayScreen) Choices(c Context) string {
 		return out.String()
 	}
 	option := p.Pending.Options[Clamp(p.Option, 0, len(p.Pending.Options)-1)]
-	out.WriteString("\n" + c.Style.Label.Render(c.Text(i18n.PlayAimAt, option.Skill)) + "\n")
+	// The splash the aim under the cursor also reaches, worked out before the
+	// heading because the heading is where the mark is explained and there is
+	// nothing to explain when the shape catches one cell.
+	splash := p.splashUnder(c, option)
+	heading := c.Text(i18n.PlayAimAt, option.Skill)
+	if len(splash) > 0 {
+		heading += "  " + c.Style.Dim.Render(
+			c.Text(i18n.PlayAimSplash, shapeSplashMark, c.Lib.SplashShare()))
+	}
+	out.WriteString("\n" + c.Style.Label.Render(heading) + "\n")
 	for index, cell := range option.Aims {
 		marker := "  "
 		line := cell.String()
@@ -1598,8 +1607,51 @@ func (p PlayScreen) Choices(c Context) string {
 			line = c.Style.Selected.Render(line)
 		}
 		out.WriteString(marker + line + "\n")
+		// Under the aim they belong to rather than in a block of their own: a
+		// splash cell is a fact about ONE aim, and a list printed beside the
+		// others would be read as another cell the cursor could move to.
+		if index != p.Aim {
+			continue
+		}
+		for _, caught := range splash {
+			row := shapeSplashMark + " " + caught.String()
+			if held := p.occupant(caught); held != "" {
+				row += "  " + held
+			}
+			out.WriteString("    " + c.Style.Dim.Render(row) + "\n")
+		}
 	}
 	return out.String()
+}
+
+// splashUnder is every cell but the primary that the option under the cursor
+// catches from the aim the cursor is on.
+//
+// ⚠️ **It is resolved from the aim and it has to be.** The shape diagram on the
+// authoring screen walks from forge.ShapeDiagramCell, a fixed cell chosen so
+// eight of the nine shipped shapes draw in full; a battle is asking about *this*
+// aim on *this* board, where a two-step chain pointed near an edge really does
+// lose its far cell. Drawing the diagram's footprint here would be a picture of
+// a different board, and it would promise a cell the resolution drops.
+//
+// Nothing at all for a single-cell shape, which is most of them: the rows exist
+// to answer "who else does this reach", and a shape that reaches nobody else has
+// no answer to draw.
+//
+// A skill the book cannot find catches nothing rather than reporting an error,
+// which is the reading summarise gives the same miss two hundred lines down: the
+// options come out of a battle built from this library, so it is unreachable,
+// and an aim row is the wrong place to say so.
+func (p PlayScreen) splashUnder(c Context, option battle.Option) []hex.Offset {
+	if len(option.Aims) == 0 {
+		return nil
+	}
+	aim := option.Aims[Clamp(p.Aim, 0, len(option.Aims)-1)]
+	coverage, err := c.Lib.AimCoverage(option.Skill, aim)
+	if err != nil {
+		return nil
+	}
+	return coverage.Splash
 }
 
 // The two fixed columns a row spends before its summary: the cursor marker, and

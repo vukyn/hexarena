@@ -326,6 +326,7 @@ func everyMovedScreen(t *testing.T, c Context, lib *forge.Library) map[string]dr
 		// rule rather than tidiness.
 		"a battle":                 aBattle(t, c),
 		"aiming":                   aBattleAiming(t, c),
+		"aiming at an area skill":  aBattleAimingAnArea(t, c),
 		"a battle over":            aFinishedBattle(t, c),
 		"a scrolled battle log":    aScrolledBattleLog(t, c),
 		"a saved battle":           aSavedBattle(t, c),
@@ -506,6 +507,34 @@ func aBattle(t *testing.T, c Context) PlayScreen {
 // ⚠️ Its own battle, and the aim list is asserted rather than assumed: an option
 // with one cell never opens the question, so a state built on the wrong row
 // records an ordinary battle screen twice.
+// aBattleAimingAnArea is the aim list with a footprint under the cursor, which
+// `aiming` above cannot draw and never could.
+//
+// ⚠️ **It is a second entry rather than a change to the first, and the reason is
+// the fixture cast.** The cast battleCast picks brings four `single` skills, so
+// `aiming` draws a correct aim list with no splash rows on it — and would go on
+// drawing one if the rows were deleted. Twenty-one area skills ship in
+// builds.json, so this is a state a real battle reaches on most turns of a real
+// kit, and it had no picture. A feature nothing pictures is the blindness
+// memory/hexarena-a-golden-cannot-hold-a-keystroke-rule.md is about.
+//
+// The character is chosen BY PROPERTY — the first whose furthest kit carries a
+// shape covering more than one cell — for the reason #328 gave the battle
+// fixture: a named one goes stale the day its learnset is rebalanced, and it goes
+// stale silently, because a kit of `single` skills draws a screen with nothing
+// on it and no line to notice missing.
+func aBattleAimingAnArea(t *testing.T, c Context) PlayScreen {
+	t.Helper()
+	p, splash := aimingAtAnAreaFrom(t, c, withAFullLog(t, c, anAreaBattle(t, c)))
+	drawn, _ := p.View(c)
+	for _, cell := range splash {
+		if !strings.Contains(drawn, cell.String()) {
+			t.Fatalf("the area aim list does not draw the caught cell %s:\n%s", cell, drawn)
+		}
+	}
+	return p
+}
+
 func aBattleAiming(t *testing.T, c Context) PlayScreen {
 	t.Helper()
 	p := withAFullLog(t, c, atABattleOf(t, c, 3))
