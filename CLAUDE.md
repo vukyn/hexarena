@@ -117,6 +117,9 @@ go run ./cmd/hexforge-tui --lang en               # ...in English; HEXARENA_LANG
 
 go run ./cmd/hexarena-tui                        # play, full screen: the catalogues a reader wants, a battle, and a room to join
 go run ./cmd/hexarena-tui --lang en              # ...in English; same flag, same variable, same ctrl+l
+go run ./cmd/hexarena-tui --squads mine.json     # bring sides out of a file of your own, beside the shipped four
+#   the default is under os.UserConfigDir(), resolved once in main and handed down; a
+#   side there wins the id it shares with a shipped one and its row says whose it is
 #   ninth menu entry: paste the twelve-character code a host printed, type the room's
 #   password if it has one, pick the squad to bring, and play the other person
 

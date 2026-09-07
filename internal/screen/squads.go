@@ -211,8 +211,15 @@ func NewSquadsScreen(c Context) SquadsScreen {
 
 // Refresh re-reads the catalogue, and leaves a squad under edit alone: entering
 // the screen while building one is the ordinary way back from a picker.
+//
+// ⚠️ **The catalogue is the game's sides AND the player's own**, laid over each
+// other by forge.SquadsOffered rather than concatenated, because the id a row is
+// named by has to be unique for a raise about one to name a row. A client that
+// brings no player file (the authoring tool, which has no business in one) gets
+// exactly what Lib.Squads() answered, so this is the game's own catalogue
+// unchanged wherever nobody declared otherwise. → Context.Player.
 func (s SquadsScreen) Refresh(c Context) SquadsScreen {
-	s.Saved = c.Lib.Squads()
+	s.Saved = forge.SquadsOffered(c.Lib.Squads(), c.Player)
 	s.Characters = c.Lib.Characters().All()
 	s.Cursor = Clamp(s.Cursor, 0, len(s.Saved)-1)
 	return s
@@ -1137,6 +1144,12 @@ func (s SquadsScreen) viewList(c Context) string {
 			c.Text(i18n.SquadMemberCount, len(squad.Units))
 		if squad.Name != "" {
 			line += "  " + squad.Name
+		}
+		// Whose side it is, drawn on the row rather than left to a reader of the
+		// merge. → Context.PlayerSquad for why an unmarked substitution would be
+		// the one thing the collision rule may not be.
+		if c.PlayerSquad(squad.ID) {
+			line += "  " + c.Text(i18n.SquadMine)
 		}
 		if index == s.Cursor {
 			marker = "> "

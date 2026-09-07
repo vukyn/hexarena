@@ -1050,9 +1050,58 @@ is only so the shape is readable.
             own** count of its turns and not a position in the battle — a reader
             who takes it for the latter will see `A1 turn 5` before `E1 turn 4` and
             think the report is wrong.
-      - [ ] A player squad file under `os.UserConfigDir()`, separate from
+      - [x] A player squad file under `os.UserConfigDir()`, separate from
             `internal/seed/data/squads.json` — that one is the game's own data,
             edited by the authoring tool, and a player has no business in it.
+            Done: `internal/forge/player.go` holds all three answers —
+            `PlayerSquadsPath` builds the path, `Library.PlayerSquads` reads and
+            checks the file, and `SquadsOffered` lays it over the game's sides —
+            and `cmd/hexarena-tui` reads it once at startup behind a `--squads`
+            flag and hands the list down on `screen.Context.Player`, so both
+            places a player picks a side (the squad catalogue and the join
+            screen's chooser) offer the player's sides beside the shipped four.
+            ⚠️ **`os.UserConfigDir` is called in exactly ONE place, `main.go`'s
+            `playerSquadsPath`, and the entry's wording invites the opposite.**
+            "Under `os.UserConfigDir()`" is where the file *is*; it is not where
+            the call belongs. That function reads the environment and resolves
+            differently on every platform (`$XDG_CONFIG_HOME`, `~/Library/
+            Application Support`, `%AppData%`), so anything below the binary's
+            edge that called it would be measuring the machine the test happened
+            to run on — `memory/windows-sets-no-term.md` again. The directory is
+            resolved once and handed down as a value, and the flag overriding it
+            has `--data`'s shape.
+            ⚠️ **Both files may legitimately hold `s01`, and a silent collision
+            would be a player picking one side and fielding another** — a squad
+            is chosen by id, and `cmd/hexarena-tui`'s `landSquad` turns an id
+            back into a row by taking the first match. So `SquadsOffered` merges
+            rather than concatenates: the player's side **wins** the id it
+            shares, replacing that row in place. Refusing the clash was rejected
+            because the obvious way to start a file is to copy the shipped one,
+            and because the game shipping an `s05` would then break a file it
+            does not own. The half that keeps it from being silent is on screen:
+            a side out of the player's file is marked `i18n.SquadMine` on the
+            catalogue's row and in the join chooser, in both languages.
+            ⚠️ **An absent file is silent and a malformed one stops the binary.**
+            Absent is the ordinary case — the same reading `forge.Load` already
+            takes of a data directory with no `squads.json` — and so is the empty
+            path a machine with no resolvable configuration directory hands down.
+            A file that will not parse, or a side `Squad.Take` refuses, is
+            reported with the path in it and returns **no** sides at all, and
+            `run` stops on it before a screen exists: a player who hand-edited
+            their own file needs to be told about the comma, not shown the
+            shipped sides and left to conclude their work vanished. The legality
+            check is `Squad.Take` against the cast book — the call `SaveSquad`
+            makes before it writes and the call `room`'s gate makes before it
+            seats anybody — rather than a second validator written here.
+            ⚠️ **WRITING the file is deliberately still not possible, and that is
+            the next item rather than an omission.** No authoring key was turned
+            on, `screen.Context.Authoring` is still nought in this client, and
+            `readonly_test.go` is unchanged and green. ⚠️ Its tests are blind to
+            this, though: every one of them builds a client with **no** player
+            file, so `Authoring: len(m.player) > 0` in `model.ctx` leaves all of
+            them passing. `TestAPlayerFileTurnsNoAuthoringKeyOn` is what catches
+            that, and it also asserts the file's bytes are unchanged after every
+            key this suite can send.
       - [x] Lobby, room and waiting screens — **registered in `everyScreen` in
             the same commit that adds them**, for the reason at the top of this
             list. Done: `cmd/hexarena-tui/lobby.go` holds `joinScreen`,

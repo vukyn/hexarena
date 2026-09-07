@@ -57,15 +57,21 @@ const programName = "hexarena-tui"
 // options is one invocation: which data directory, which language, and whether
 // the ask is for a screen at all.
 type options struct {
-	dir  string
-	lang i18n.Lang
+	dir string
+	// squads is the player's **own** squad file — a different file from the
+	// game's own squads.json, which lives in dir and which a player has no
+	// business in. Empty means there is none to read, which is both what a
+	// machine with no resolvable configuration directory answers and what
+	// `--squads ""` asks for. → forge.PlayerSquads.
+	squads string
+	lang   i18n.Lang
 	// version is the ask that is answered instead of taking over the screen:
 	// print what this binary is and exit.
 	version bool
 }
 
 func main() {
-	chosen, err := parseOptions(os.Args[1:], os.Getenv(i18n.EnvVar), os.Stderr)
+	chosen, err := parseOptions(os.Args[1:], os.Getenv(i18n.EnvVar), playerSquadsPath(), os.Stderr)
 	if err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return
@@ -91,11 +97,18 @@ func main() {
 // worded before the strict check, because the flag package prints them while it
 // is still parsing. Two front-ends reading `HEXARENA_LANG` differently would be
 // two answers to a standing preference.
-func parseOptions(arguments []string, environment string, out io.Writer) (options, error) {
+func parseOptions(arguments []string, environment, playerSquads string, out io.Writer) (options, error) {
 	described := i18n.Prefer("", environment)
 	set := flag.NewFlagSet(programName, flag.ContinueOnError)
 	set.SetOutput(out)
 	dir := set.String("data", forge.DefaultDataDir, described.Text(i18n.DataFlagUsage))
+	// The default is a **parameter** rather than something worked out here, and
+	// that is the one decision this flag carries. os.UserConfigDir reads the
+	// environment and resolves differently on every platform, so a function that
+	// called it would answer whatever machine it ran on — main resolves it once
+	// and hands the answer in, exactly as it already hands the language variable
+	// in rather than reading it here. → playerSquadsPath and forge.PlayerSquadsPath.
+	squads := set.String("squads", playerSquads, described.Text(i18n.SquadsFlagUsage))
 	chosen := set.String(i18n.FlagName, "", described.Text(i18n.LanguageFlagUsage))
 	version := set.Bool("version", false, described.Text(i18n.VersionFlagUsage))
 	if err := set.Parse(arguments); err != nil {
@@ -108,7 +121,31 @@ func parseOptions(arguments []string, environment string, out io.Writer) (option
 	if operands := set.Args(); len(operands) > 0 {
 		return options{}, errors.New(lang.Say(i18n.NoArguments, operands))
 	}
-	return options{dir: *dir, lang: lang, version: *version}, nil
+	return options{dir: *dir, squads: *squads, lang: lang, version: *version}, nil
+}
+
+// playerSquadsPath is the default a player's own squad file is looked for at,
+// and it is the one line of this program that asks the operating system where a
+// player's configuration lives.
+//
+// ⚠️ **This is the edge, and it is deliberately the whole of it.** os.UserConfigDir
+// reads the environment ($XDG_CONFIG_HOME, ~/Library/Application Support,
+// %AppData%), so a test that drove anything below it would be measuring the
+// platform it happened to run on rather than this program — which is the mistake
+// memory/windows-sets-no-term.md is about, and the reason the path is resolved
+// once here and taken as a value everywhere else. Nothing under this function
+// calls it, and the flag can name a file without it.
+//
+// A machine with no resolvable configuration directory answers the empty path,
+// which forge.PlayerSquads reads as "there is no player file" — the same silent
+// answer an absent file gets, because a directory that does not exist cannot be
+// hiding one.
+func playerSquadsPath() string {
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		return ""
+	}
+	return forge.PlayerSquadsPath(dir)
 }
 
 // run is the invocation, with the writer -version answers through handed in —
@@ -143,6 +180,22 @@ func run(chosen options, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	// ⚠️ **A malformed player file stops the program here, and that placement is
+	// the answer to "where is it said".** The file is hand-edited, so a missing
+	// comma is a thing that happens, and the one outcome that may not follow is
+	// the player's squads quietly not being there — a player who was shown the
+	// shipped sides and nothing else would read it as their work having
+	// vanished. Refusing before a screen exists is what makes it unswallowable:
+	// there is no drawing for the sentence to be missed on and no screen the
+	// reader might not visit. It is also exactly what a --data directory that
+	// will not parse already gets, three lines up.
+	//
+	// An **absent** file is silent and answers no squads at all, because a player
+	// who has never built a side is the ordinary case rather than a broken one.
+	player, err := lib.PlayerSquads(chosen.squads)
+	if err != nil {
+		return err
+	}
 	// No alternate-screen option here: bubbletea v2 asks for it on the view the
 	// model returns, so it is model.View that says so.
 	//
@@ -158,7 +211,7 @@ func run(chosen options, out io.Writer) error {
 	// cannot be built until the model is, and the model cannot be built until
 	// the session is, so the session learns where to send **after** both exist.
 	sess := newSession()
-	program := tea.NewProgram(newModel(lib, chosen.lang, sess))
+	program := tea.NewProgram(newModel(lib, chosen.lang, sess, player))
 	sess.attach(program)
 	defer sess.leave()
 	_, err = program.Run()
