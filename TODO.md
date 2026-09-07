@@ -3239,20 +3239,79 @@ is only so the shape is readable.
       → `internal/core/skill/skill.go` (`resolveGradient`),
       `internal/forge/weigh.go` (`WeighField`).
 
-- [ ] ⚠️ **A declined turn makes a slow board slower, on a wall-heavy roster.**
-      Measured 2026-09-03, before the block-charge clause landed: `forge.Bout` on a
-      board of two `carapace` walls carrying `withdraw` a side leaves **175 of
-      800** battles undecided with #234's pass rule off and **308 of 800** with it
-      on — and with it on the refusal comes from the CONTROL, `Suggest` against
-      itself. The shipped roster is unaffected: four declines over two hundred
-      battles, every one resolved.
-      ⚠️ `frozen()` cannot call such a board a draw, because a unit holding a
-      self-aimed utility can still aim at something, so the turn limit catches it
-      instead — and a battle that ends on the limit reports nothing about what
-      happened. Recorded rather than acted on: the board is a constructed extreme
-      and it was already refusing before the rule. **It was written down once and
-      lost in a rewrite of the entry above it**, which is the only reason it is
-      dated to a session that had already finished with it.
+- [x] ⚠️ **A declined turn makes a slow board slower — RE-TAKEN, and every
+      statement in the old entry was wrong.** The figures were dated 2026-09-03,
+      *before the block-charge clause landed*, and nobody re-took them. Measured
+      2026-09-07, 200 seeds a row at a limit of 600 turns, mirror boards of
+      Blastoise stat lines:
+
+          board                     1v1 endless   2v2 endless   turns
+          no guard                     0.0%          0.0%       66 / 115
+          endurance                    0.0%          0.0%       72 / 126
+          carapace                   100.0%        100.0%        —
+          withdraw                   100.0%        100.0%        —
+          both                       100.0%        100.0%        —
+
+      - **Not "a wall-heavy roster".** A plain **1v1** stalls. Squad size is not a
+        term in it at all.
+      - **Not 175/800 and 308/800.** It is **100%**, and it is not the pass rule:
+        the no-guard mirror and the `endurance` mirror both resolve every seed.
+      - **Not `frozen()`.** That predicate is right to return false — both units
+        *can* aim at each other. They choose not to.
+
+      ⚠️ **There are TWO causes and only one of them is a defect.**
+      - **`carapace` is a rating defect.** A blow a `bastion` pool would eat whole
+        is priced at **nought**, the pass rule reads "nothing worth doing", and both
+        sides pass for ever — so the pool is never spent because no blow is ever
+        thrown at it. Measured to the turn: over eight turns neither unit acts once,
+        and after 600 turns both stand at **3600/3600 with 576 pool left**. → the
+        entry below.
+      - **`withdraw` is arithmetic, and no rating change touches it.** The rating
+        does *not* refuse here — a `water_gun` lands for 146 on turn 5 — but
+        `withdraw` restores **500** every four turns. The heal outruns the damage
+        and nobody can die. That is the data, on a mirror, and it is not a bug.
+
+      ⚠️ **`docs/balance.md` asks for "a wall board that FINISHES" and no method
+      was written under it. Here it is: only ONE side may carry the guard.**
+      Measured: `withdraw` vs plain **0% endless, ~104 turns**; `withdraw` vs a
+      heavier kit **0%, ~104**; `carapace` vs plain **0%, ~67**; either of them
+      mirrored **100%**. That is also the right shape for the question, since what
+      a guard is worth is what it buys against a side not carrying one.
+      `TestAGuardBoardResolvesOnlyWhenOneSideCarriesIt` holds all three rows,
+      including the negative one, so the day a mirror starts resolving the
+      condition says so instead of guarding nothing.
+
+- [ ] **A guarded mirror never resolves, because the rating will not spend a
+      guard.** Split out of the entry above, where it is measured. A blow a pool
+      would absorb whole rates **nought**, so `Suggest` passes rather than throwing
+      it, so the pool is never depleted — a unit with a `bastion` and an opponent
+      with an attack stand at full health for six hundred turns without either one
+      acting.
+
+      **It is the same family as the burrow finding and one step worse.** There the
+      rating mis-priced a new option; here every option reads nought and the rating
+      stops **playing** — which hides better, because two sides standing still look
+      like a long battle rather than a broken one.
+
+      **A costed fix exists and is not shipped.** Crediting what a blow takes out of
+      a guard — `whole - landed`, at a share, added back in `Battle.against` — fixes
+      the `carapace` mirror at **any share from 10% upwards**: 100% endless → **0%
+      endless**, ~77 turns at 1v1 and ~135 at 2v2, and 10%, 25%, 50% and 100% give
+      the *same* answer. A step rather than a curve, which is the signature of an
+      option that was reading exactly nought: it only has to be positive.
+      ⚠️ It does **not** touch the `withdraw` mirror at any share, because that
+      stall is arithmetic and not a refusal.
+      ⚠️ **The blast radius is real and is why it is not shipped here.** Three
+      shipped builds carry a guard — `squirtle.fortress` and `squirtle.ram`
+      (`withdraw`), `machop.charge` (`brace`) — so this moves balance figures and is
+      the author's call rather than a bug fix. What it needs before shipping is the
+      one thing this file always asks: the figure re-taken on the shipped roster,
+      one change at a time.
+      ⚠️ And the share needs a reason, not a rung. Every value tested gives the same
+      board outcome, so the sweep cannot choose one — the argument has to come from
+      what destroying a guard is *worth*, the way `shielded` prices a charge from
+      the defender's side.
+
 - [x] ⚠️ **A `hexforge new` churned `screens.golden` — DONE, by the third option
       this entry named and had not tried.** `aSquadOfSide` picks by a **property
       the screen measures** now, not by a position and not by a name: the most
