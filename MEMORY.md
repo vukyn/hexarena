@@ -139,6 +139,8 @@ that owns the subject wins and the note is the thing to fix.
 - [kill test ports after smoke](memory/kill-test-ports-after-smoke.md) — go-run child outlives parent → `lsof -ti :PORT|xargs kill -9`
 - [gopls stale diagnostics multirepo](memory/gopls-stale-diagnostics-multirepo.md) — false BrokenImport; trust `go build`/`go vet`
 - [Fixture hides a branch](memory/fixture-hidden-branch.md) — 5× in hexarena; test must fail when its own branch unexercised
+- [Gate fixture must be crossable](memory/a-gate-fixture-must-be-crossable-by-the-thing-under-test.md) — gate 500 vs raise 200‰ never fires; passed with the code deleted
+- [Blanket refusal hides its legs](memory/a-blanket-refusal-hides-where-its-legs-live.md) — narrowing one guard; the gated-trait leg lived in another book
 - [bỏ một default đã ship](memory/turning-a-shipped-default-into-an-opt-in.md) — 17 test cũ phải ĐỎ, không phải im; ⚠️ ban đã nới một lần sẽ tả sai phần còn lại
 - [⚠️ test tự hoàn thành ko thấy đồng hồ tắt](memory/a-test-that-finishes-itself-cannot-see-a-stopped-clock.md) — allowance.set tắt clock ghế đang hỏi; treo, ship v0.1.0, suite xanh
 - [⚠️ dữ liệu thật có thể thoả sẵn](memory/real-data-can-satisfy-the-property.md) — cast.json vốn sắp theo id → test thứ tự pass cả khi hàm sort
